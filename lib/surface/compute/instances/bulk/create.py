@@ -163,6 +163,7 @@ class Create(base.Command):
   _support_instance_flexibility_policy = True
   _support_workload_identity_config = False
   _support_instance_selection_min_cpu_platform = False
+  _support_vsock_mode = False
 
   _log_async = False
 
@@ -186,6 +187,7 @@ class Create(base.Command):
         support_instance_flexibility_policy=cls._support_instance_flexibility_policy,
         support_workload_identity_config=cls._support_workload_identity_config,
         support_instance_selection_min_cpu_platform=cls._support_instance_selection_min_cpu_platform,
+        support_vsock_mode=cls._support_vsock_mode,
     )
     cls.AddSourceInstanceTemplate(parser)
 
@@ -233,6 +235,7 @@ class Create(base.Command):
         self._support_instance_flexibility_policy,
         self._support_workload_identity_config,
         self._support_instance_selection_min_cpu_platform,
+        support_vsock_mode=self._support_vsock_mode,
     )
     bulk_instance_resource = bulk_util.CreateBulkInsertInstanceResource(
         args,
@@ -406,6 +409,7 @@ class CreateBeta(Create):
         support_instance_flexibility_policy=cls._support_instance_flexibility_policy,
         support_workload_identity_config=cls._support_workload_identity_config,
         support_instance_selection_min_cpu_platform=cls._support_instance_selection_min_cpu_platform,
+        support_vsock_mode=cls._support_vsock_mode,
     )
     cls.AddSourceInstanceTemplate(parser)
 
@@ -437,6 +441,7 @@ class CreateAlpha(Create):
   _support_instance_flexibility_policy = True
   _support_workload_identity_config = True
   _support_instance_selection_min_cpu_platform = True
+  _support_vsock_mode = True
 
   @classmethod
   def Args(cls, parser):
@@ -460,6 +465,7 @@ class CreateAlpha(Create):
         support_instance_flexibility_policy=cls._support_instance_flexibility_policy,
         support_workload_identity_config=cls._support_workload_identity_config,
         support_instance_selection_min_cpu_platform=cls._support_instance_selection_min_cpu_platform,
+        support_vsock_mode=cls._support_vsock_mode,
     )
 
     cls.AddSourceInstanceTemplate(parser)

@@ -33,6 +33,8 @@ EXAMPLES = """\
    """
 
 
+@base.DefaultUniverseOnly
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.Command):
   """Delete a Database Migration private connection."""
@@ -72,12 +74,15 @@ class Delete(base.Command):
 
     if not console_io.PromptContinue(message=delete_warning):
       return None
+    location = private_connection_ref.locationsId
 
     pc_client = private_connections.PrivateConnectionsClient(
-        release_track=self.ReleaseTrack())
+        release_track=self.ReleaseTrack(),
+        location=location,
+    )
     result_operation = pc_client.Delete(private_connection_ref.RelativeName())
 
-    client = api_util.GetClientInstance(self.ReleaseTrack())
+    client = api_util.GetClientInstance(self.ReleaseTrack(), location=location)
     messages = api_util.GetMessagesModule(self.ReleaseTrack())
     resource_parser = api_util.GetResourceParser(self.ReleaseTrack())
 

@@ -47,3 +47,5 @@
     - hypercomputecluster.projects.locations.machineLearningRuns.monitoredEvents
   response:
     id_field: name
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.mldiagnostics.hooks:RemoveAnalyzerReports

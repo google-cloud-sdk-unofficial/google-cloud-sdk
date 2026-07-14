@@ -81,6 +81,7 @@ EXAMPLES_BETA = """\
    """
 
 
+@base.RegionalEndpointsSupported
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
@@ -190,12 +191,14 @@ class Create(base.Command):
       )
 
     cp_type = (args.type).upper()
-    cp_client = connection_profiles.ConnectionProfilesClient()
+    cp_client = connection_profiles.ConnectionProfilesClient(
+        location=connection_profile_ref.locationsId
+    )
     result_operation = cp_client.Create(
         parent_ref, connection_profile_ref.connectionProfilesId, cp_type,
         self.ReleaseTrack(), args)
 
-    client = util.GetClientInstance()
+    client = util.GetClientInstance(location=connection_profile_ref.locationsId)
     messages = util.GetMessagesModule()
     resource_parser = util.GetResourceParser()
 
@@ -212,8 +215,13 @@ class Create(base.Command):
 
 @base.Deprecate(
     is_removed=False,
-    warning=('Datastream beta version is deprecated. Please use`gcloud '
-             'datastream connection-profiles create` command instead.'))
+    warning=(
+        'Datastream beta version is deprecated. Please use`gcloud '
+        'datastream connection-profiles create` command instead.'
+    ),
+)
+@base.RegionalEndpointsSupported
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create a Datastream connection profile."""

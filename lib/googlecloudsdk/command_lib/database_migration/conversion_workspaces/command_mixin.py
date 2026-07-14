@@ -27,11 +27,14 @@ from googlecloudsdk.generated_clients.apis.datamigration.v1 import datamigration
 class ConversionWorkspacesCommandMixin:
   """Mixin for conversion workspaces commands."""
 
-  @property
-  def client(self) -> conversion_workspaces.ConversionWorkspacesClient:
+  def GetClient(
+      self,
+      location: Optional[str] = None,
+  ) -> conversion_workspaces.ConversionWorkspacesClient:
     """Return the conversion workspaces client."""
     return conversion_workspaces.ConversionWorkspacesClient(
         release_track=self.ReleaseTrack(),
+        location=location,
     )
 
   def ExtractBackendFilter(self, args: argparse.Namespace) -> Optional[str]:
@@ -67,7 +70,9 @@ class ConversionWorkspacesCommandMixin:
       sync: bool,
       has_resource: bool = True,
   ) -> Optional[messages.Operation]:
-    """Handle the LRO for the conversion workspace.
+    """Handle LRO operation result.
+
+    If async, return the LRO status. If sync, wait for the LRO to complete.
 
     Args:
       conversion_workspace_ref: The conversion workspace reference.
@@ -79,8 +84,9 @@ class ConversionWorkspacesCommandMixin:
     Returns:
       The LRO status if async, None if sync.
     """
+    client = self.GetClient(location=conversion_workspace_ref.locationsId)
     if not sync:
-      return self.client.lro.Read(
+      return client.lro.Read(
           operation=result_operation,
           project_id=conversion_workspace_ref.projectsId,
           location_id=conversion_workspace_ref.locationsId,
@@ -91,7 +97,7 @@ class ConversionWorkspacesCommandMixin:
         f' [{conversion_workspace_ref.conversionWorkspacesId}] to be'
         f' {operation_name.lower()} with [{result_operation.name}]',
     )
-    self.client.lro.Wait(
+    client.lro.Wait(
         operation=result_operation,
         has_resource=has_resource,
     )

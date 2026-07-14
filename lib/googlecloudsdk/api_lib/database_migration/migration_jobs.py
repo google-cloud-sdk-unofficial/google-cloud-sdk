@@ -15,6 +15,8 @@
 """Database Migration Service migration jobs API."""
 
 
+from typing import Optional
+
 from apitools.base.py import encoding
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.database_migration import api_util
@@ -47,8 +49,9 @@ class MigrationJobsClient(object):
   ]
   _REVERSE_MAP = ['vm_ip', 'vm_port', 'vm', 'vpc']
 
-  def __init__(self, release_track):
-    self.client = api_util.GetClientInstance(release_track)
+  def __init__(self, release_track, location: Optional[str] = None):
+    self.location = location
+    self.client = api_util.GetClientInstance(release_track, location=location)
     self.messages = api_util.GetMessagesModule(release_track)
     self._service = self.client.projects_locations_migrationJobs
     if release_track == base.ReleaseTrack.GA:
@@ -177,6 +180,7 @@ class MigrationJobsClient(object):
     """
     cw_client = conversion_workspaces.ConversionWorkspacesClient(
         release_track=self.release_track,
+        location=self.location,
     )
     conversion_workspace = cw_client.crud.Read(
         name=conversion_workspace_name,
@@ -246,6 +250,7 @@ class MigrationJobsClient(object):
     # Get conversion workspace's latest commit id.
     cw_client = conversion_workspaces.ConversionWorkspacesClient(
         release_track=self.release_track,
+        location=self.location,
     )
     cst_conversion_workspace = cw_client.crud.Read(
         name=conversion_workspace.name,

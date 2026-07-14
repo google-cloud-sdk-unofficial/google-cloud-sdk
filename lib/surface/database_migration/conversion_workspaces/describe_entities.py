@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.database_migration.conversion_workspaces import 
 _DEFAULT_PAGE_SIZE = 100
 
 
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class DescribeEntities(
@@ -77,7 +78,8 @@ class DescribeEntities(
       A list of entities for the specified conversion workspace and arguments.
     """
     conversion_workspace_ref = args.CONCEPTS.conversion_workspace.Parse()
-    return self.client.entities.DescribeEntities(
+    client = self.GetClient(location=conversion_workspace_ref.locationsId)
+    return client.entities.DescribeEntities(
         name=conversion_workspace_ref.RelativeName(),
         commit_id=args.commit_id,
         uncommitted=args.uncommitted,

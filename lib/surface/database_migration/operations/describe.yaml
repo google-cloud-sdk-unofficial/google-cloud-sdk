@@ -8,6 +8,7 @@
         $ {command} my-operation --region=us-central1
 
   request:
+    regional_endpoint_compatibility: SUPPORTED
     collection: datamigration.projects.locations.operations
     GA:
       api_version: v1

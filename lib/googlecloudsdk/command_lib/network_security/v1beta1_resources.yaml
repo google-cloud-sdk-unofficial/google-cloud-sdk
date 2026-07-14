@@ -66,6 +66,42 @@ projects_locations_mirroring_endpoints:
     attribute_name: mirroring_endpoint
     help: The mirroringEndpoint id of the {resource} resource.
   disable_auto_completers: false
+projects_locations_ull_mirroring_collectors:
+  name: ullMirroringCollector
+  plural_name: ullMirroringCollectors
+  collection: networksecurity.projects.locations.ullMirroringCollectors
+  attributes:
+  - *project
+  - *location
+  - &ullMirroringCollector
+    parameter_name: ullMirroringCollectorsId
+    attribute_name: ull_mirroring_collector
+    help: The ullMirroringCollector id of the {resource} resource.
+  disable_auto_completers: false
+projects_locations_ull_mirroring_engines:
+  name: ullMirroringEngine
+  plural_name: ullMirroringEngines
+  collection: networksecurity.projects.locations.ullMirroringEngines
+  attributes:
+  - *project
+  - *location
+  - &ullMirroringEngine
+    parameter_name: ullMirroringEnginesId
+    attribute_name: ull_mirroring_engine
+    help: The ullMirroringEngine id of the {resource} resource.
+  disable_auto_completers: false
+projects_locations_ull_mirroring_infras:
+  name: ullMirroringInfra
+  plural_name: ullMirroringInfras
+  collection: networksecurity.projects.locations.ullMirroringInfras
+  attributes:
+  - *project
+  - *location
+  - &ullMirroringInfra
+    parameter_name: ullMirroringInfrasId
+    attribute_name: ull_mirroring_infra
+    help: The ullMirroringInfra id of the {resource} resource.
+  disable_auto_completers: false
 projects_none_networks:
   name: network
   plural_name: networks
@@ -77,3 +113,16 @@ projects_none_networks:
     attribute_name: network
     help: The network id of the {resource} resource.
   disable_auto_completers: true
+projects_locations_ull_mirroring_collectors_rules:
+  name: ullMirroringCollectorRule
+  plural_name: rules
+  collection: networksecurity.projects.locations.ullMirroringCollectors.rules
+  attributes:
+  - *project
+  - *location
+  - *ullMirroringCollector
+  - &ullMirroringCollectorRule
+    parameter_name: rulesId
+    attribute_name: ull_mirroring_collector_rule
+    help: The ullMirroringCollectorRule id of the {resource} resource.
+  disable_auto_completers: false

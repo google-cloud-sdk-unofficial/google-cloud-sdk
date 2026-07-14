@@ -28,6 +28,7 @@ from googlecloudsdk.generated_clients.apis.datamigration.v1 import datamigration
 GlobalSettingsValue = TypeVar('GlobalSettingsValue')
 
 
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class Create(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
@@ -84,8 +85,9 @@ class Create(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
     self._ValidateEngineProviderFlags(args)
 
     conversion_workspace_ref = args.CONCEPTS.conversion_workspace.Parse()
+    client = self.GetClient(location=conversion_workspace_ref.locationsId)
 
-    result_operation = self.client.crud.Create(
+    result_operation = client.crud.Create(
         parent_ref=conversion_workspace_ref.Parent().RelativeName(),
         conversion_workspace_id=conversion_workspace_ref.conversionWorkspacesId,
         display_name=args.display_name,
@@ -97,7 +99,7 @@ class Create(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
         destination_database_version=args.destination_database_version,
         global_settings=self._BuildGlobalSettings(
             args=args,
-            global_settings_value_cls=self.client.crud.messages.ConversionWorkspace.GlobalSettingsValue,
+            global_settings_value_cls=client.crud.messages.ConversionWorkspace.GlobalSettingsValue,
         ),
     )
 

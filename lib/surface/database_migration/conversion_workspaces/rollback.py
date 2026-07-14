@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.database_migration.conversion_workspaces import 
 from googlecloudsdk.generated_clients.apis.datamigration.v1 import datamigration_v1_messages as messages
 
 
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class Rollback(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
@@ -64,7 +65,8 @@ class Rollback(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
       operation if the rollback was successful.
     """
     conversion_workspace_ref = args.CONCEPTS.conversion_workspace.Parse()
-    result_operation = self.client.operations.Rollback(
+    client = self.GetClient(location=conversion_workspace_ref.locationsId)
+    result_operation = client.operations.Rollback(
         name=conversion_workspace_ref.RelativeName(),
     )
     return self.HandleOperationResult(

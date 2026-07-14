@@ -45,7 +45,7 @@ class List(base.ListCommand):
         collection='devicerun.projects',
     )
     client = device_run.LocationsClient(api_version='v1alpha')
-    return client.List(project_ref, limit=args.limit)
+    return list(client.List(project_ref, limit=args.limit))
 
 
 List.detailed_help = {

@@ -23,6 +23,7 @@ from googlecloudsdk.command_lib.database_migration.conversion_workspaces import 
 from googlecloudsdk.core import log
 
 
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class ImportRules(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
@@ -63,10 +64,11 @@ class ImportRules(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
         with.
     """
     conversion_workspace_ref = args.CONCEPTS.conversion_workspace.Parse()
+    client = self.GetClient(location=conversion_workspace_ref.locationsId)
 
     # Import mapping rules is a passthrough method and returns only done: true
     # along with the error (if any)
-    result_operation = self.client.operations.ImportRules(
+    result_operation = client.operations.ImportRules(
         name=conversion_workspace_ref.RelativeName(),
         config_files=args.config_files,
         file_format=args.file_format,

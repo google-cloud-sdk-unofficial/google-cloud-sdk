@@ -78,6 +78,7 @@ EXAMPLES_BETA = """\
    """
 
 
+@base.RegionalEndpointsSupported
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):
@@ -188,11 +189,13 @@ class Update(base.Command):
       )
 
     cp_type = (args.type).upper()
-    cp_client = connection_profiles.ConnectionProfilesClient()
+    cp_client = connection_profiles.ConnectionProfilesClient(
+        location=connection_profile_ref.locationsId
+    )
     result_operation = cp_client.Update(connection_profile_ref.RelativeName(),
                                         cp_type, self.ReleaseTrack(), args)
 
-    client = util.GetClientInstance()
+    client = util.GetClientInstance(location=connection_profile_ref.locationsId)
     messages = util.GetMessagesModule()
     resource_parser = util.GetResourceParser()
 
@@ -209,9 +212,13 @@ class Update(base.Command):
 
 @base.Deprecate(
     is_removed=False,
-    warning=('Datastream beta version is deprecated. Please use`gcloud '
-             'datastream connection-profiles update` command instead.')
+    warning=(
+        'Datastream beta version is deprecated. Please use`gcloud '
+        'datastream connection-profiles update` command instead.'
+    ),
 )
+@base.RegionalEndpointsSupported
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
   """Update a Datastream connection profile."""

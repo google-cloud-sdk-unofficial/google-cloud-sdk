@@ -2678,6 +2678,9 @@ class ZoneDistributionConfig(_messages.Message):
     mode: Optional. Current zone distribution mode. Defaults to MULTI_ZONE.
     zone: Optional. Defines zone where all resources will be allocated with
       SINGLE_ZONE mode. Ignored for MULTI_ZONE mode.
+    zones: Optional. Specify the zones of a multi-zone instance where
+      Memorystore instance allocates resources. This flag isn't applicable for
+      single-zone instances.
   """
 
   class ModeValueValuesEnum(_messages.Enum):
@@ -2696,6 +2699,7 @@ class ZoneDistributionConfig(_messages.Message):
 
   mode = _messages.EnumField('ModeValueValuesEnum', 1)
   zone = _messages.StringField(2)
+  zones = _messages.StringField(3, repeated=True)
 
 
 encoding.AddCustomJsonFieldMapping(

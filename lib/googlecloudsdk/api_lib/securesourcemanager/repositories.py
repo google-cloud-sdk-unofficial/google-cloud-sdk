@@ -49,6 +49,7 @@ class RepositoriesClient(object):
       gitignores,
       license_name,
       readme,
+      service_account,
   ):
     """Create a new Secure Source Manager repository.
 
@@ -62,6 +63,7 @@ class RepositoriesClient(object):
       gitignores: list of gitignore template names
       license_name: license template name
       readme: README template name
+      service_account: the service account to attach to the repository
 
     Returns:
       Created repository.
@@ -85,6 +87,7 @@ class RepositoriesClient(object):
         description=description,
         instance=instance.RelativeName(),
         initialConfig=initial_config,
+        serviceAccount=service_account,
     )
     create_req = self.messages.SecuresourcemanagerProjectsLocationsRepositoriesCreateRequest(
         parent=repository_ref.Parent().RelativeName(),
@@ -167,7 +170,14 @@ class RepositoriesClient(object):
         )
     )
 
-  def Update(self, repository_ref, update_mask, validate_only, description):
+  def Update(
+      self,
+      repository_ref,
+      update_mask,
+      validate_only,
+      description,
+      service_account=None,
+  ):
     """Update a Secure Source Manager repository.
 
     Args:
@@ -178,6 +188,7 @@ class RepositoriesClient(object):
       validate_only: Optional. If set to true, and the repository is not found,
         the request will succeed but no action will be taken on the server.
       description: Description of the repository.
+      service_account: The service account to attach to the repository.
 
     Returns:
     Updated Repository Resource.
@@ -186,6 +197,7 @@ class RepositoriesClient(object):
     repository = self.messages.Repository(
         name=repository_ref.RelativeName(),
         description=description,
+        serviceAccount=service_account,
     )
     update_req = self.messages.SecuresourcemanagerProjectsLocationsRepositoriesPatchRequest(
         name=repository_ref.RelativeName(),

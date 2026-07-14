@@ -57,6 +57,7 @@ EXAMPLES_BETA = """\
    """
 
 
+@base.RegionalEndpointsSupported
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):
@@ -101,11 +102,11 @@ class Update(base.Command):
     """
     stream_ref = args.CONCEPTS.stream.Parse()
 
-    stream_client = streams.StreamsClient()
+    stream_client = streams.StreamsClient(location=stream_ref.locationsId)
     result_operation = stream_client.Update(stream_ref.RelativeName(),
                                             self.ReleaseTrack(), args)
 
-    client = util.GetClientInstance()
+    client = util.GetClientInstance(location=stream_ref.locationsId)
     messages = util.GetMessagesModule()
     resource_parser = util.GetResourceParser()
 
@@ -122,9 +123,13 @@ class Update(base.Command):
 
 @base.Deprecate(
     is_removed=False,
-    warning=('Datastream beta version is deprecated. Please use`gcloud '
-             'datastream streams update` command instead.')
+    warning=(
+        'Datastream beta version is deprecated. Please use`gcloud '
+        'datastream streams update` command instead.'
+    ),
 )
+@base.RegionalEndpointsSupported
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
   """Updates a Datastream stream."""

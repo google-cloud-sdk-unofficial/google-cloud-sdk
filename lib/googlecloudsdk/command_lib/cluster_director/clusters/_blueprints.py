@@ -23,28 +23,44 @@ import uuid
 from googlecloudsdk.command_lib.cluster_director.clusters import errors
 
 BLUEPRINT_DEFINITIONS = {
-    "a3-ultra": {
+    "quickstart": {
         "computeResources": {
-            "a3-ultra-fleet": {
+            "quickstart-fleet": {
                 "config": {
-                    "newReservedInstances": {
-                        "machineType": "a3-ultragpu-8g"
+                    "newFlexStartInstances": {
+                        "machineType": "a3-megagpu-8g",
+                        "maxDuration": "604800s",
                     }
                 }
             }
         },
-        "nodeCount": 4,
-        "loginNode": {
-            "machineType": "n2-standard-16",
-            "count": 1
-        },
+        "nodeCount": 2,
+        "loginNode": {"machineType": "n2-standard-16", "count": 1},
         "storageResources": {
             "scratch-disk": {
                 "config": {
                     "newLustre": {
                         "capacityGb": 36000,
                         "perUnitStorageThroughput": 500,
-                        "filesystem": "scratch-fs"
+                        "filesystem": "scratch-fs",
+                    }
+                }
+            }
+        },
+    },
+    "a3-ultra": {
+        "computeResources": {
+            "a3-ultra-fleet": {"config": {"newReservedInstances": {}}}
+        },
+        "nodeCount": 4,
+        "loginNode": {"machineType": "n2-standard-16", "count": 1},
+        "storageResources": {
+            "scratch-disk": {
+                "config": {
+                    "newLustre": {
+                        "capacityGb": 36000,
+                        "perUnitStorageThroughput": 500,
+                        "filesystem": "scratch-fs",
                     }
                 }
             },
@@ -54,11 +70,11 @@ BLUEPRINT_DEFINITIONS = {
                         "tier": "ZONAL",
                         "fileShares": [
                             {"capacityGb": 5120, "fileShare": "nfsshare"}
-                        ]
+                        ],
                     }
                 }
-            }
-        }
+            },
+        },
     },
     "a4-high-flex-start": {
         "computeResources": {
@@ -66,23 +82,20 @@ BLUEPRINT_DEFINITIONS = {
                 "config": {
                     "newFlexStartInstances": {
                         "machineType": "a4-highgpu-8g",
-                        "maxDuration": "604800s"
+                        "maxDuration": "604800s",
                     }
                 }
             }
         },
         "nodeCount": 4,
-        "loginNode": {
-            "machineType": "n2-standard-16",
-            "count": 1
-        },
+        "loginNode": {"machineType": "n2-standard-16", "count": 1},
         "storageResources": {
             "scratch-disk": {
                 "config": {
                     "newLustre": {
                         "capacityGb": 18000,
                         "perUnitStorageThroughput": 500,
-                        "filesystem": "scratch-fs"
+                        "filesystem": "scratch-fs",
                     }
                 }
             },
@@ -92,38 +105,29 @@ BLUEPRINT_DEFINITIONS = {
                         "tier": "ZONAL",
                         "fileShares": [
                             {"capacityGb": 2048, "fileShare": "nfsshare"}
-                        ]
+                        ],
                     }
                 }
-            }
-        }
+            },
+        },
     },
     "a4x-high": {
         "computeResources": {
-            "a4x-fleet": {
-                "config": {
-                    "newReservedInstances": {
-                        "machineType": "a4x-highgpu-4g"
-                    }
-                }
-            }
+            "a4x-fleet": {"config": {"newReservedInstances": {}}}
         },
         "nodeCount": 18,
-        "loginNode": {
-            "machineType": "n2-standard-16",
-            "count": 1
-        },
+        "loginNode": {"machineType": "n2-standard-16", "count": 1},
         "storageResources": {
             "scratch-disk": {
                 "config": {
                     "newLustre": {
                         "capacityGb": 36000,
                         "perUnitStorageThroughput": 1000,
-                        "filesystem": "scratch-fs"
+                        "filesystem": "scratch-fs",
                     }
                 }
             }
-        }
+        },
     },
     "g4": {
         "computeResources": {
@@ -131,23 +135,20 @@ BLUEPRINT_DEFINITIONS = {
                 "config": {
                     "newFlexStartInstances": {
                         "machineType": "g4-standard-384",
-                        "maxDuration": "604800s"
+                        "maxDuration": "604800s",
                     }
                 }
             }
         },
         "nodeCount": 4,
-        "loginNode": {
-            "machineType": "n2-standard-16",
-            "count": 1
-        },
+        "loginNode": {"machineType": "n2-standard-16", "count": 1},
         "storageResources": {
             "scratch-disk": {
                 "config": {
                     "newLustre": {
                         "capacityGb": 36000,
                         "perUnitStorageThroughput": 500,
-                        "filesystem": "scratch-fs"
+                        "filesystem": "scratch-fs",
                     }
                 }
             },
@@ -157,11 +158,11 @@ BLUEPRINT_DEFINITIONS = {
                         "tier": "ZONAL",
                         "fileShares": [
                             {"capacityGb": 10240, "fileShare": "nfsshare"}
-                        ]
+                        ],
                     }
                 }
-            }
-        }
+            },
+        },
     },
     "h4d-highmem": {
         "computeResources": {
@@ -169,23 +170,20 @@ BLUEPRINT_DEFINITIONS = {
                 "config": {
                     "newFlexStartInstances": {
                         "machineType": "h4d-highmem-192",
-                        "maxDuration": "604800s"
+                        "maxDuration": "604800s",
                     }
                 }
             }
         },
         "nodeCount": 4,
-        "loginNode": {
-            "machineType": "n2-standard-16",
-            "count": 1
-        },
+        "loginNode": {"machineType": "n2-standard-16", "count": 1},
         "storageResources": {
             "scratch-disk": {
                 "config": {
                     "newLustre": {
                         "capacityGb": 18000,
                         "perUnitStorageThroughput": 500,
-                        "filesystem": "scratch-fs"
+                        "filesystem": "scratch-fs",
                     }
                 }
             },
@@ -195,28 +193,42 @@ BLUEPRINT_DEFINITIONS = {
                         "tier": "ZONAL",
                         "fileShares": [
                             {"capacityGb": 1024, "fileShare": "nfsshare"}
-                        ]
+                        ],
                     }
                 }
-            }
-        }
-    }
+            },
+        },
+    },
 }
 
 
-def ApplyBlueprint(args: Any, message_module: Any, cluster_ref: Any) -> None:
-  """Applies blueprint defaults to arguments."""
+def ApplyBlueprint(
+    args: Any, message_module: Any, cluster_ref: Any
+) -> None:
+  """Applies blueprint or quickstart defaults to arguments."""
   blueprint = getattr(args, "blueprint", None)
-  if not blueprint:
+  quickstart = getattr(args, "quickstart_cluster", False)
+  if not blueprint and not quickstart:
     return
 
-  blueprint_spec = cast(Dict[str, Any], BLUEPRINT_DEFINITIONS.get(blueprint))
-  if not blueprint_spec:
+  if blueprint and quickstart:
     raise errors.ClusterDirectorError(
-        f"Blueprint '{blueprint}' is not defined."
+        "Cannot specify both --blueprint and --quickstart-cluster."
     )
 
-  _ApplySpec(args, message_module, cluster_ref, blueprint_spec, blueprint)
+  if quickstart:
+    blueprint_spec = BLUEPRINT_DEFINITIONS.get("quickstart")
+    label = "--quickstart-cluster"
+  else:
+    blueprint_spec = cast(Dict[str, Any], BLUEPRINT_DEFINITIONS.get(blueprint))
+    label = f"'{blueprint}'"
+
+  if not blueprint_spec:
+    raise errors.ClusterDirectorError(
+        f"Blueprint {label} is not defined."
+    )
+
+  _ApplySpec(args, message_module, cluster_ref, blueprint_spec, label)
 
 
 def _ApplySpec(
@@ -231,7 +243,6 @@ def _ApplySpec(
   zone = f"{cluster_ref.locationsId}-b"  # Default zone if not specified.
   ri_zone = zone
   compute_id = f"{prefix}-compute"
-  tier_enum = message_module.NewFilestoreConfig.TierValueValuesEnum.ZONAL
 
   # 1. Process Compute Resources from Spec
   compute_resources = spec.get("computeResources", {})
@@ -241,10 +252,9 @@ def _ApplySpec(
     config_spec = resource_spec.get("config", {})
 
     if "newReservedInstances" in config_spec:
-      spec_reserved = config_spec["newReservedInstances"]
       if not args.IsSpecified("reserved_instances"):
         raise errors.ClusterDirectorError(
-            f"Blueprint '{label}' requires a reservation. Please specify "
+            f"Blueprint {label} requires a reservation. Please specify "
             "the --reserved-instances flag with a valid reservation."
         )
       for ri in args.reserved_instances:
@@ -254,7 +264,7 @@ def _ApplySpec(
             or ri.get("reservationSubBlock")
         ):
           raise errors.ClusterDirectorError(
-              f"Blueprint '{label}' requires a reservation. Please specify a"
+              f"Blueprint {label} requires a reservation. Please specify a"
               " reservation, reservationBlock, or reservationSubBlock in"
               " --reserved-instances."
           )
@@ -264,8 +274,6 @@ def _ApplySpec(
           inferred_zone = _GetZoneFromReservation(res_path)
 
         ri_zone = inferred_zone or zone
-        if not ri.get("machineType"):
-          ri["machineType"] = spec_reserved["machineType"]
         if not ri.get("zone"):
           ri["zone"] = ri_zone
 
@@ -352,7 +360,7 @@ def _ApplySpec(
   node_count = spec.get("nodeCount", 1)
   if not args.IsSpecified("slurm_node_sets"):
     args.slurm_node_sets = [{
-        "id": f"{prefix}-ns",
+        "id": f"{prefix}ns",
         "computeId": compute_id,
         "type": "gce",
         "staticNodeCount": node_count,
@@ -360,12 +368,12 @@ def _ApplySpec(
     _SetSpecified(args, "slurm_node_sets", "--slurm-node-sets")
   if not args.IsSpecified("slurm_partitions"):
     args.slurm_partitions = [{
-        "id": f"{prefix}-partition",
-        "nodeSetIds": [f"{prefix}-ns"],
+        "id": f"{prefix}partition",
+        "nodeSetIds": [f"{prefix}ns"],
     }]
     _SetSpecified(args, "slurm_partitions", "--slurm-partitions")
   if not args.IsSpecified("slurm_default_partition"):
-    args.slurm_default_partition = f"{prefix}-partition"
+    args.slurm_default_partition = f"{prefix}partition"
     _SetSpecified(args, "slurm_default_partition", "--slurm-default-partition")
 
   # 5. Default Login Nodes

@@ -508,6 +508,7 @@ def configure_formatter(
             'Runtime Version',
             'Container Memory',
             'Container CPU',
+            'Container Request Concurrency',
         ))
   elif reference_type == bq_id_utils.ApiClientHelper.RowAccessPolicyReference:
     if print_format == 'list' or print_format == 'show':
@@ -969,6 +970,9 @@ def format_routine_info(routine_info):
     result['Container CPU'] = routine_info['externalRuntimeOptions'].get(
         'containerCpu'
     )
+    result['Container Request Concurrency'] = routine_info[
+        'externalRuntimeOptions'
+    ].get('containerRequestConcurrency')
     result['Connection'] = routine_info['externalRuntimeOptions'].get(
         'runtimeConnection'
     )

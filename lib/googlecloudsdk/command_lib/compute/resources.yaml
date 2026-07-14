@@ -157,6 +157,16 @@ instance:
     attribute_name: instance
     help: The name of the Google Compute Engine instance.
 
+instance_group:
+  name: instance_group
+  collection: compute.instanceGroups
+  attributes:
+  - *project
+  - *zone
+  - parameter_name: instanceGroup
+    attribute_name: instance_group
+    help: The name of the Google Compute Engine instance group.
+
 instance_template:
   name: instance_template
   collection: compute.instanceTemplates

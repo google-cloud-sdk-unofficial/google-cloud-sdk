@@ -19,12 +19,12 @@
   - GA
   auto_generated: true
   help_text:
-    brief: Delete exascaleDbStorageVaults
-    description: Delete an exascaleDbStorageVault
+    brief: Delete an ExascaleDbStorageVault.
+    description: Delete an ExascaleDbStorageVault.
     examples: |-
-      To delete the exascaleDbStorageVault, run:
+      To delete an ExascaleDbStorageVault with id `my-vault` in the location `us-east4`, run:
 
-          $ {command}
+        $ {command} my-vault --location=us-east4
   arguments:
     params:
     - help_text: |-

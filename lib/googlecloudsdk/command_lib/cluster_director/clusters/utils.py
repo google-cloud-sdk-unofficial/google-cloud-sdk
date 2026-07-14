@@ -86,12 +86,13 @@ class ClusterUtil:
   def MakeCluster(self) -> Any:
     """Returns a cluster message."""
     blueprint = getattr(self.args, "blueprint", None)
-    if blueprint:
+    quickstart = getattr(self.args, "quickstart_cluster", False)
+    if blueprint or quickstart:
       _blueprints.ApplyBlueprint(
           self.args, self.message_module, self.cluster_ref
       )
 
-    if not blueprint and not self.args.IsSpecified("config"):
+    if not blueprint and not quickstart and not self.args.IsSpecified("config"):
       if not self.args.IsSpecified("network") and not self.args.IsSpecified(
           "create_network"
       ):

@@ -104,8 +104,12 @@ def ParseMessageAndValidateSchema(config_file_path, schema_name, message_type):
   return message
 
 
-def GetClientInstance(api_version=_DEFAULT_API_VERSION, no_http=False):
-  return apis.GetClientInstance('datastream', api_version, no_http=no_http)
+def GetClientInstance(
+    api_version=_DEFAULT_API_VERSION, no_http=False, location=None
+):
+  return apis.GetClientInstance(
+      'datastream', api_version, no_http=no_http, location=location
+  )
 
 
 def GetMessagesModule(api_version=_DEFAULT_API_VERSION):
@@ -246,8 +250,8 @@ def _GetRDBMSFieldName(field, release_track):
   )
 
 
-# Deprecated BETA methods - TODO(b/207467120).
-# remove after full BETA deprecation.
+# TODO(b/207467120): Deprecated BETA methods - remove after full BETA
+# deprecation.
 def ParseMysqlColumn(messages, mysql_column_object, release_track):
   """Parses a raw mysql column json/yaml into the MysqlColumn message."""
   message = messages.MysqlColumn(

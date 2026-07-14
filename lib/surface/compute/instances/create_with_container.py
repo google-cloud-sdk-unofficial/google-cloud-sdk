@@ -49,6 +49,7 @@ def _Args(
     support_flex_start=True,
     support_skip_guest_os_shutdown=False,
     support_workload_identity_config=False,
+    support_vsock_mode=False,
 ):
   """Add flags shared by all release tracks."""
   parser.display_info.AddFormat(instances_flags.DEFAULT_LIST_FORMAT)
@@ -76,6 +77,8 @@ def _Args(
       parser, deprecate=deprecate_maintenance_policy
   )
   instances_flags.AddNoRestartOnFailureArgs(parser)
+  if support_vsock_mode:
+    instances_flags.AddVsockModeArgs(parser)
   instances_flags.AddPreemptibleVmArgs(parser)
   instances_flags.AddProvisioningModelVmArgs(
       parser,
@@ -183,6 +186,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_graceful_shutdown = True
   _support_skip_guest_os_shutdown = True
   _support_workload_identity_config = False
+  _support_vsock_mode = False
 
   @staticmethod
   def Args(parser):
@@ -200,6 +204,7 @@ class CreateWithContainer(base.CreateCommand):
         support_ipv6_only=True,
         support_skip_guest_os_shutdown=True,
         support_workload_identity_config=False,
+        support_vsock_mode=False,
     )
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
@@ -343,6 +348,7 @@ class CreateWithContainer(base.CreateCommand):
         support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout,
         support_graceful_shutdown=self._support_graceful_shutdown,
         support_skip_guest_os_shutdown=self._support_skip_guest_os_shutdown,
+        support_vsock_mode=self._support_vsock_mode,
     )
     service_accounts = instance_utils.GetServiceAccounts(
         args, compute_client, skip_defaults
@@ -584,6 +590,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         support_flex_start=True,
         support_skip_guest_os_shutdown=True,
         support_workload_identity_config=False,
+        support_vsock_mode=False,
     )
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgs(parser)
@@ -620,6 +627,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   _support_ipv6_only = True
   _support_skip_guest_os_shutdown = True
   _support_workload_identity_config = True
+  _support_vsock_mode = True
 
   @staticmethod
   def Args(parser):
@@ -638,6 +646,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         support_flex_start=True,
         support_skip_guest_os_shutdown=True,
         support_workload_identity_config=True,
+        support_vsock_mode=True,
     )
 
     instances_flags.AddNetworkTierArgs(parser, instance=True)

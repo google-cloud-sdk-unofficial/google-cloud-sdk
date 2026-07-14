@@ -1276,16 +1276,49 @@ class WorkerPoolCpuScalingChange(config_changes.NonTemplateConfigChanger):
       # Handled as "disabled"
       if not resource.scaling.cpu_scaling:
         resource.scaling.cpu_scaling = vendor_settings.CpuScaling()
-      resource.scaling.cpu_scaling.utilization = 0.0
+      resource.scaling.cpu_scaling.cpu_utilization = 0.0
     else:
       if not resource.scaling.cpu_scaling:
         # Ensure the sub-object exists
         resource.scaling.cpu_scaling = vendor_settings.CpuScaling()
-      resource.scaling.cpu_scaling.utilization = self.cpu_utilization
+      resource.scaling.cpu_scaling.cpu_utilization = self.cpu_utilization
       resource.scaling.scaling_mode = (
           vendor_settings.WorkerPoolScaling.ScalingMode.AUTOMATIC
       )
       # Clear manual instance count when autoscaling is enabled
+      resource.scaling.manual_instance_count = None
+    return resource
+
+
+@dataclasses.dataclass(frozen=True)
+class WorkerPoolMinMaxScalingChange(config_changes.NonTemplateConfigChanger):
+  """Represents the user intent to adjust worker pool min/max scaling limits.
+
+  Attributes:
+    min_instances: The min instances value to set.
+    max_instances: The max instances value to set.
+  """
+
+  min_instances: flags.ScaleValue | None = None
+  max_instances: flags.ScaleValue | None = None
+
+  def Adjust(
+      self, resource: worker_pool_objects.WorkerPool
+  ) -> worker_pool_objects.WorkerPool:
+    if self.min_instances:
+      if self.min_instances.restore_default:
+        resource.scaling.min_instance_count = None
+      else:
+        resource.scaling.min_instance_count = self.min_instances.instance_count
+    if self.max_instances:
+      if self.max_instances.restore_default:
+        resource.scaling.max_instance_count = None
+      else:
+        resource.scaling.max_instance_count = self.max_instances.instance_count
+    if self.min_instances or self.max_instances:
+      resource.scaling.scaling_mode = (
+          vendor_settings.WorkerPoolScaling.ScalingMode.AUTOMATIC
+      )
       resource.scaling.manual_instance_count = None
     return resource
 

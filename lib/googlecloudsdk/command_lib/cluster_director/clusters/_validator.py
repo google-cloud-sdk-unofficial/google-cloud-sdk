@@ -26,20 +26,20 @@ ClusterDirectorError = errors.ClusterDirectorError
 
 
 def ValidateFilestoreCapacity(capacity_gb: int) -> None:
-  """Validates that Filestore capacity is between 1024 and 102400 GB."""
+  """Validates that Filestore capacity is between 1024 and 102400 GiB."""
   if capacity_gb < 1024 or capacity_gb > 102400:
     raise ClusterDirectorError(
-        "Filestore capacity must be between 1024 and 102400 GB, found"
-        f" {capacity_gb} GB."
+        "Filestore capacity must be between 1024 and 102400 GiB, found"
+        f" {capacity_gb} GiB."
     )
 
 
 def ValidateLustreCapacity(capacity_gb: int) -> None:
-  """Validates that Lustre capacity is between 18000 and 7632000 GB."""
+  """Validates that Lustre capacity is between 18000 and 7632000 GiB."""
   if capacity_gb < 18000 or capacity_gb > 7632000:
     raise ClusterDirectorError(
-        "Lustre capacity must be between 18000 and 7632000 GB, found"
-        f" {capacity_gb} GB."
+        "Lustre capacity must be between 18000 and 7632000 GiB, found"
+        f" {capacity_gb} GiB."
     )
 
 

@@ -170,8 +170,35 @@ class DevicerunV1alpha(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+    def Cancel(self, request, global_params=None):
+      r"""Cancels an in-progress automation session. This RPC returns immediately and cancellation proceeds asynchronously. If the session is already finished, this RPC will have no effect.
+
+      Args:
+        request: (DevicerunProjectsLocationsSessionsCancelRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (CancelSessionResponse) The response message.
+      """
+      config = self.GetMethodConfig('Cancel')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Cancel.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/sessions/{sessionsId}:cancel',
+        http_method='POST',
+        method_id='devicerun.projects.locations.sessions.cancel',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:cancel',
+        request_field='cancelSessionRequest',
+        request_type_name='DevicerunProjectsLocationsSessionsCancelRequest',
+        response_type_name='CancelSessionResponse',
+        supports_download=False,
+    )
+
     def Create(self, request, global_params=None):
-      r"""Creates and starts an automation session. The returned session will not yet contain the job reports that will be created for this session. Job creation happens asynchronously and will require a call to GetSession to retrieve the job reports.
+      r"""Starts an automation session with the specified configuration. This method returns a long-running `Operation`, awaiting the completion of all jobs in the session.
 
       Args:
         request: (DevicerunProjectsLocationsSessionsCreateRequest) input message
@@ -225,7 +252,7 @@ class DevicerunV1alpha(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets the result of an automation session.
+      r"""Returns information about a previously created automation session.
 
       Args:
         request: (DevicerunProjectsLocationsSessionsGetRequest) input message
@@ -252,7 +279,7 @@ class DevicerunV1alpha(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists the results of sessions.
+      r"""Lists previously created automation sessions. Sessions may still be in-progress, or may have finished successfully, or unsuccessfully.
 
       Args:
         request: (DevicerunProjectsLocationsSessionsListRequest) input message

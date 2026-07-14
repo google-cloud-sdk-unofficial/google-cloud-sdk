@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "2.1.32",
+  "CLI_VERSION": "2.1.33",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -926,6 +926,20 @@
       "is_hidden": false,
       "is_required": false,
       "name": "--use_gcloud_config",
+      "nargs": "0",
+      "type": "bool",
+      "value": ""
+    },
+    "--use_gcloud_config_cache": {
+      "attr": {},
+      "category": "",
+      "default": "'false'",
+      "description": "If true, use a persistent cache for gcloud config and credentials.",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--use_gcloud_config_cache",
       "nargs": "0",
       "type": "bool",
       "value": ""

@@ -34,7 +34,13 @@ _accelerator_choices = [
     'NVIDIA_A100_80GB',
     'NVIDIA_L4',
 ]
-_disk_choices = ['PD_STANDARD', 'PD_SSD', 'PD_BALANCED', 'PD_EXTREME']
+_disk_choices = [
+    'PD_STANDARD',
+    'PD_SSD',
+    'PD_BALANCED',
+    'PD_EXTREME',
+    'HYPERDISK_BALANCED',
+]
 _post_startup_script_behavior_choices = [
     'POST_STARTUP_SCRIPT_BEHAVIOR_UNSPECIFIED',
     'RUN_ONCE',
@@ -316,9 +322,9 @@ def AddCustomEnvSpecFlags(parser, workbench_execution=False):
   )
   disk_spec_group.add_argument(
       '--disk-type',
-      help='The type of the persistent disk.',
+      help='The type of the disk.',
       choices=_disk_choices,
-      default='PD_STANDARD',
+      default=None,
   )
   disk_spec_group.add_argument(
       '--disk-size-gb',

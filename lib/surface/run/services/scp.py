@@ -21,7 +21,7 @@ from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import scp_command
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 @base.Hidden
 @base.DefaultUniverseOnly
 class Scp(scp_command.BaseScpCommand):
@@ -108,12 +108,3 @@ class Scp(scp_command.BaseScpCommand):
         sources,
         destination,
     )
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
-@base.DefaultUniverseOnly
-class ScpAlpha(Scp):
-  """A command to copy files to and from a Cloud Run service."""
-
-  _support_revision = False

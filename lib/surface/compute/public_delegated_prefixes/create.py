@@ -110,6 +110,11 @@ class CreateBeta(Create):
 
   _api_version = compute_api.COMPUTE_BETA_API_VERSION
 
+  @classmethod
+  def Args(cls, parser):
+    flags.AddPdpPurpose(parser)
+    super(CreateBeta, cls).Args(parser)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
@@ -124,11 +129,6 @@ class CreateAlpha(CreateBeta):
   """
 
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION
-
-  @classmethod
-  def Args(cls, parser):
-    flags.AddPdpPurpose(parser)
-    super(CreateAlpha, cls).Args(parser)
 
   def Run(self, args):
     return self._Run(args)

@@ -15,6 +15,7 @@
 """Cloud Database Migration API utilities."""
 
 import pprint
+from typing import Optional
 import uuid
 
 from apitools.base.py import encoding
@@ -34,11 +35,16 @@ def GetApiVersion(release_track: base.ReleaseTrack) -> str:
   return 'v1'
 
 
-def GetClientInstance(release_track: base.ReleaseTrack, no_http: bool = False):
+def GetClientInstance(
+    release_track: base.ReleaseTrack,
+    no_http: bool = False,
+    location: Optional[str] = None,
+):
   return apis.GetClientInstance(
       api_name=_API_NAME,
       api_version=GetApiVersion(release_track),
       no_http=no_http,
+      location=location,
   )
 
 

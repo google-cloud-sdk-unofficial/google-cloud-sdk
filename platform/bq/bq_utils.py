@@ -20,7 +20,6 @@ import urllib3
 
 from pyglib import stringutil
 
-
 FLAGS = flags.FLAGS
 
 _GDRIVE_SCOPE = 'https://www.googleapis.com/auth/drive'
@@ -557,18 +556,42 @@ def GetResourceFlagNames() -> frozenset[str]:
   return _RESOURCE_FLAG_NAMES
 
 
+_AI_AGENTS = [
+    ('ANTIGRAVITY_AGENT', 'antigravity'),
+    ('CLAUDECODE', 'claude_code'),
+    ('CLINE_ACTIVE', 'cline'),
+    ('CODEX_SANDBOX', 'codex_cli'),
+    ('CURSOR_AGENT', 'cursor'),
+    ('GEMINI_CLI', 'gemini_cli'),
+    ('OPENCODE', 'open_code'),
+    ('ANDROID_STUDIO_AGENT', 'android_studio_agent'),
+    ('KIRO_AGENT_PATH', 'kiro'),
+]
+
+
+def _DetectAIAgent() -> Optional[str]:
+  """Detects the AI agent based on environment variables."""
+  for env_var, agent_name in _AI_AGENTS:
+    if os.environ.get(env_var):
+      return agent_name
+  return None
+
+
 def GetUserAgent() -> str:
   """Returns the user agent for BigQuery API requests."""
   google_python_client_name = 'google-api-python-client'
   if os.environ.get('CLOUDSDK_WRAPPER') == '1':
-    return (
-        'google-cloud-sdk'
-        + os.environ.get('CLOUDSDK_VERSION', VERSION_NUMBER)
-        + ' '
-        + google_python_client_name
-    )
+    sdk_version = os.environ.get('CLOUDSDK_VERSION', VERSION_NUMBER)
+    client_prefix = f'google-cloud-sdk{sdk_version}'
   else:
-    return 'bq/' + VERSION_NUMBER + ' ' + google_python_client_name
+    client_prefix = f'bq/{VERSION_NUMBER}'
+
+  agent_name = _DetectAIAgent()
+  if agent_name:
+    return (
+        f'{client_prefix} agent-name/{agent_name} {google_python_client_name}'
+    )
+  return f'{client_prefix} {google_python_client_name}'
 
 
 # See go/cloud-iam-service-account-types.

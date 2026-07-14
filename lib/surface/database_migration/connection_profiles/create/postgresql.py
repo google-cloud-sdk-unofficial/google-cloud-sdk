@@ -46,8 +46,9 @@ DETAILED_HELP = {
 }
 
 
-@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.GA)
 @calliope_base.DefaultUniverseOnly
+@calliope_base.RegionalEndpointsSupported
+@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.GA)
 class PostgreSQL(calliope_base.Command):
   """Create a Database Migration Service connection profile for PostgreSQL."""
 

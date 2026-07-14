@@ -536,6 +536,8 @@ def _HasWorkerPoolScalingChanges(
         'instances',
         'scaling',
         'scaling_cpu_target',
+        'min',
+        'max',
     ]
   else:
     scaling_flags = [
@@ -553,6 +555,8 @@ def _GetWorkerPoolScalingChanges(
   has_instances = flags.FlagIsExplicitlySet(args, 'instances')
   has_scaling = flags.FlagIsExplicitlySet(args, 'scaling')
   has_cpu_scaling = flags.FlagIsExplicitlySet(args, 'scaling_cpu_target')
+  has_min = flags.FlagIsExplicitlySet(args, 'min')
+  has_max = flags.FlagIsExplicitlySet(args, 'max')
 
   if release_track == base.ReleaseTrack.ALPHA:
     if has_instances and has_scaling:
@@ -562,6 +566,17 @@ def _GetWorkerPoolScalingChanges(
 
     has_scaling_manual = has_scaling and not args.scaling.auto_scaling
     has_scaling_auto = has_scaling and args.scaling.auto_scaling
+
+    if has_instances or has_scaling_manual:
+      manual_flag = '--instances' if has_instances else '--scaling'
+      if has_min:
+        raise exceptions.ConfigurationError(
+            f'Cannot specify both {manual_flag} and --min.'
+        )
+      if has_max:
+        raise exceptions.ConfigurationError(
+            f'Cannot specify both {manual_flag} and --max.'
+        )
 
     if has_instances and has_cpu_scaling:
       raise exceptions.ConfigurationError(
@@ -596,6 +611,14 @@ def _GetWorkerPoolScalingChanges(
     elif has_scaling_auto:
       changes.append(
           config_changes.WorkerPoolCpuScalingChange(cpu_utilization=None)
+      )
+
+    if has_min or has_max:
+      changes.append(
+          config_changes.WorkerPoolMinMaxScalingChange(
+              min_instances=args.min if has_min else None,
+              max_instances=args.max if has_max else None,
+          )
       )
 
   else:

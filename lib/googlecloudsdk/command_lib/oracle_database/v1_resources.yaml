@@ -134,18 +134,6 @@ projects_locations_exascale_db_storage_vaults:
     attribute_name: exascale_db_storage_vault
     help: The exascaleDbStorageVault id of the {resource} resource.
   disable_auto_completers: false
-projects_locations_gi_versions:
-  name: giVersion
-  plural_name: giVersions
-  collection: oracledatabase.projects.locations.giVersions
-  attributes:
-  - *project
-  - *location
-  - &giVersion
-    parameter_name: giVersionsId
-    attribute_name: gi_version
-    help: The giVersion id of the {resource} resource.
-  disable_auto_completers: true
 projects_locations_goldengate_connection_assignments:
   name: goldengateConnectionAssignment
   plural_name: goldengateConnectionAssignments
@@ -193,7 +181,7 @@ projects_locations_odb_networks:
     parameter_name: odbNetworksId
     attribute_name: odb_network
     help: The odbNetwork id of the {resource} resource.
-  disable_auto_completers: false
+  disable_auto_completers: true
 projects_locations_pluggable_databases:
   name: pluggableDatabase
   plural_name: pluggableDatabases

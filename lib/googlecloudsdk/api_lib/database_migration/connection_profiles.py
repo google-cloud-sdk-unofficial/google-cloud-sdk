@@ -16,10 +16,9 @@
 
 
 import re
-from typing import Any
+from typing import Any, Optional
 
 from apitools.base.py import list_pager
-
 from googlecloudsdk.api_lib.database_migration import api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
@@ -34,9 +33,9 @@ class UnsupportedConnectionProfileDBTypeError(core_exceptions.Error):
 class ConnectionProfilesClient(object):
   """Client for connection profiles service in the API."""
 
-  def __init__(self, release_track):
+  def __init__(self, release_track, location: Optional[str] = None):
     self._api_version = api_util.GetApiVersion(release_track)
-    self.client = api_util.GetClientInstance(release_track)
+    self.client = api_util.GetClientInstance(release_track, location=location)
     self.messages = api_util.GetMessagesModule(release_track)
     self._service = self.client.projects_locations_connectionProfiles
     self.resource_parser = api_util.GetResourceParser(release_track)

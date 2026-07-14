@@ -47,6 +47,7 @@ class SupportedFeatures:
       support_instance_flexibility_policy,
       support_workload_identity_config,
       support_instance_selection_min_cpu_platform,
+      support_vsock_mode=False,
   ):
     self.support_secure_tags = support_secure_tags
     self.support_display_device = support_display_device
@@ -71,6 +72,7 @@ class SupportedFeatures:
     self.support_instance_selection_min_cpu_platform = (
         support_instance_selection_min_cpu_platform
     )
+    self.support_vsock_mode = support_vsock_mode
 
 
 def _GetSourceInstanceTemplate(args, resources, instance_template_resource):
@@ -357,6 +359,7 @@ def CreateBulkInsertInstanceResource(
       support_preemption_notice_duration=(
           supported_features.support_preemption_notice_duration
       ),
+      support_vsock_mode=supported_features.support_vsock_mode,
   )
   tags = instance_utils.GetTags(args, compute_client)
   labels = instance_utils.GetLabels(

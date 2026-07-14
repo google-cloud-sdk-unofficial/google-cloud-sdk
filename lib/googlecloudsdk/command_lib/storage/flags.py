@@ -1723,3 +1723,58 @@ def add_batch_jobs_flags(parser, track=calliope_base.ReleaseTrack.GA):
           ' after the comma (e.g., --log-action-states=succeeded,failed).'
       ),
   )
+
+
+def add_feature_config_filter_flags(parser):
+  """Adds the filter flags for feature-configs commands."""
+  locations_group = parser.add_mutually_exclusive_group(
+      category='LOCATIONS',
+      help='Specify locations to include or exclude.',
+  )
+  locations_group.add_argument(
+      '--include-locations',
+      type=arg_parsers.ArgList(),
+      metavar='INCLUDE_LOCATIONS',
+      help='Comma-separated list of locations to include.',
+  )
+  locations_group.add_argument(
+      '--exclude-locations',
+      type=arg_parsers.ArgList(),
+      metavar='EXCLUDE_LOCATIONS',
+      help='Comma-separated list of locations to exclude.',
+  )
+
+  buckets_group = parser.add_mutually_exclusive_group(
+      category='BUCKET REGEXES',
+      help='Specify bucket ID regexes to include or exclude.',
+  )
+  buckets_group.add_argument(
+      '--include-bucket-id-regexes',
+      type=arg_parsers.ArgList(),
+      metavar='INCLUDE_BUCKET_ID_REGEXES',
+      help='Comma-separated list of bucket ID regexes to include.',
+  )
+  buckets_group.add_argument(
+      '--exclude-bucket-id-regexes',
+      type=arg_parsers.ArgList(),
+      metavar='EXCLUDE_BUCKET_ID_REGEXES',
+      help='Comma-separated list of bucket ID regexes to exclude.',
+  )
+
+
+def add_feature_config_description_flag(parser):
+  """Adds description flag for feature-configs commands."""
+  parser.add_argument(
+      '--description',
+      help='The description of the feature configuration.',
+  )
+
+
+def add_feature_config_auto_annotate_models_flag(parser):
+  """Adds auto-annotate-models flag for feature-configs commands."""
+  parser.add_argument(
+      '--auto-annotate-models',
+      type=arg_parsers.ArgList(),
+      metavar='AUTO_ANNOTATE_MODELS',
+      help='Comma-separated list of models to configure.',
+  )

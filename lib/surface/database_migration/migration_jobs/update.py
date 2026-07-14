@@ -84,11 +84,15 @@ class _Update(object):
     source_ref = args.CONCEPTS.source.Parse()
     destination_ref = args.CONCEPTS.destination.Parse()
 
-    mj_client = migration_jobs.MigrationJobsClient(self.ReleaseTrack())
+    location = migration_job_ref.locationsId
+    mj_client = migration_jobs.MigrationJobsClient(
+        self.ReleaseTrack(),
+        location=location,
+    )
     result_operation = mj_client.Update(migration_job_ref.RelativeName(),
                                         source_ref, destination_ref, args)
 
-    client = api_util.GetClientInstance(self.ReleaseTrack())
+    client = api_util.GetClientInstance(self.ReleaseTrack(), location=location)
     messages = api_util.GetMessagesModule(self.ReleaseTrack())
     resource_parser = api_util.GetResourceParser(self.ReleaseTrack())
 
@@ -115,6 +119,8 @@ class _Update(object):
             name=operation_ref.operationsId))
 
 
+@base.DefaultUniverseOnly
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateGA(_Update, base.Command):
   """Update a Database Migration Service migration job."""
@@ -134,6 +140,8 @@ class UpdateGA(_Update, base.Command):
     mj_flags.AddPostgresHomogeneousConfigFlag(parser, is_update=True)
 
 
+@base.DefaultUniverseOnly
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(_Update, base.Command):
   """Update a Database Migration Service migration job."""

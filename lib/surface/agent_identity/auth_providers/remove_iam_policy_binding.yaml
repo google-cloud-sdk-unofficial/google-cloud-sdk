@@ -1,0 +1,24 @@
+- release_tracks: [ALPHA, BETA]
+  help_text:
+    brief: Remove IAM policy binding from an Agent Identity authProvider.
+    description: |
+      Remove an IAM policy binding from the IAM policy of an Agent Identity authProvider. One binding consists of a member,
+      and a role.
+
+    examples: |
+      To remove an IAM policy binding for the role of 'roles/agentidentity.user' for the user 'test-user@gmail.com'
+      with authProvider 'my-auth-provider' and location 'us-central1', run:
+
+        $ {command} my-auth-provider --location='us-central1' --member='user:test-user@gmail.com' --role='roles/agentidentity.user'
+
+  request:
+    api_version: v1alpha
+    collection: agentidentity.projects.locations.authProviders
+
+  arguments:
+    resource:
+      help_text: The authProvider for which to remove the IAM policy binding.
+      spec: !REF googlecloudsdk.command_lib.agent_identity.authprovider_v1alpha_resources:projects_locations_auth_providers
+
+  iam:
+    enable_condition: false

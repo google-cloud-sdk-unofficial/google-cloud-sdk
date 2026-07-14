@@ -21,8 +21,10 @@ from clients import bigquery_client_extended
 from clients import wait_printer
 from frontend import utils as bq_frontend_utils
 from utils import bq_api_utils
+
 from utils import bq_gcloud_utils
 from utils import bq_logging
+
 
 
 FLAGS = flags.FLAGS

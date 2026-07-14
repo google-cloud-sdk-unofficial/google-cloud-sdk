@@ -25,6 +25,7 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.generated_clients.apis.datamigration.v1 import datamigration_v1_messages as messages
 
 
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class Delete(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
@@ -79,8 +80,9 @@ class Delete(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
         )
     ):
       return
+    client = self.GetClient(location=conversion_workspace_ref.locationsId)
 
-    result_operation = self.client.crud.Delete(
+    result_operation = client.crud.Delete(
         name=conversion_workspace_ref.RelativeName(),
     )
 

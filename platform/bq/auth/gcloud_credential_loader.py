@@ -4,7 +4,7 @@
 import datetime
 import logging
 import subprocess
-from typing import Iterator, List, Optional
+from typing import List, Optional
 
 from google.oauth2 import credentials as google_oauth2
 
@@ -75,19 +75,22 @@ def _GetAccessTokenAndPrintOutput(
 
 def _GetTokenFromGcloudAndPrintOtherOutput(
     cmd: List[str],
-    stderr: Optional[int] = subprocess.STDOUT,
+    stderr: Optional[int] = subprocess.PIPE,
 ) -> Optional[str]:
   """Returns a token or prints other messages from the given gcloud command."""
   try:
-    token = None
-    for output in _RunGcloudCommand(cmd, stderr):
-      if output and ' ' not in output:
-        # Token is a non-empty string of non-space characters.
-        token = output
-        break
-      else:
-        print(output)
-    return token
+    proc = gcloud_runner.run_gcloud_command(cmd, stderr=stderr)
+    out, err = proc.communicate()
+
+    if stderr == subprocess.PIPE and err:
+      logging.warning(
+          'Stderr message from gcloud auth print-access-token: %s', err
+      )
+
+    if proc.returncode != 0:
+      raise bq_error.BigqueryError(err or '')
+
+    return out.strip() if out else None
   except bq_error.BigqueryError as e:
     single_line_error_msg = str(e).replace('\n', '')
     if 'security key' in single_line_error_msg:
@@ -119,39 +122,6 @@ def _GetTokenFromGcloudAndPrintOtherOutput(
     raise bq_error.BigqueryError(
         'Error retrieving auth credentials from gcloud: %s' % str(e)
     )
-
-
-def _RunGcloudCommand(
-    cmd: List[str], stderr: Optional[int] = subprocess.STDOUT
-) -> Iterator[str]:
-  """Runs the given gcloud command and yields output.
-
-  Yields each line of stdout from the gcloud command. Raises a BigqueryError
-  if the command returns a non-zero exit code.
-
-  Args:
-    cmd: The gcloud command as a list of strings.
-    stderr: Where to redirect stderr. Defaults to subprocess.STDOUT.
-
-  Yields:
-    Each line of the command's standard output.
-
-  Raises:
-    bq_error.BigqueryError: If the gcloud command fails.
-  """
-  proc = gcloud_runner.run_gcloud_command(cmd, stderr=stderr)
-  error_msgs = []
-  if proc.stdout:
-    for stdout_line in iter(proc.stdout.readline, ''):
-      line = str(stdout_line).strip()
-      if line.startswith('ERROR:') or error_msgs:
-        error_msgs.append(line)
-      else:
-        yield line
-    proc.stdout.close()
-  return_code = proc.wait()
-  if return_code:
-    raise bq_error.BigqueryError('\n'.join(error_msgs))
 
 
 def _GetReauthMessage() -> str:

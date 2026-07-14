@@ -198,3 +198,15 @@ def AddEnableWorkforceIdentityFederation(
       required=False,
       help=help_text,
   )
+
+
+def AddServiceAccount(
+    parser,
+    help_text="The service account to attach to the repository.",
+):
+  parser.add_argument(
+      "--service-account",
+      required=False,
+      help=help_text,
+  )
+

@@ -27,11 +27,14 @@ class CreateHelper:
              cp_type):
     """Create a connection profile and wait for its LRO to complete, if necessary.
     """
-    cp_client = connection_profiles.ConnectionProfilesClient(release_track)
+    location = connection_profile_ref.locationsId
+    cp_client = connection_profiles.ConnectionProfilesClient(
+        release_track, location=location
+    )
     result_operation = cp_client.Create(
         parent_ref, connection_profile_ref.connectionProfilesId, cp_type, args)
 
-    client = api_util.GetClientInstance(release_track)
+    client = api_util.GetClientInstance(release_track, location=location)
     messages = api_util.GetMessagesModule(release_track)
     resource_parser = api_util.GetResourceParser(release_track)
 

@@ -1,0 +1,39 @@
+release_tracks: [BETA]
+help_text:
+  brief: Deprovision the semantic governance policy engine.
+  description: |
+    Deprovision the semantic governance policy engine, tearing down the
+    associated tenant project, GKE cluster, and PSC service attachments.
+    This operation is irreversible.
+  examples: |-
+    To deprovision the semantic governance policy engine in location
+    `us-central1`, run:
+
+      $ {command} --location=us-central1
+arguments:
+  resource:
+    help_text: The semantic governance policy engine to deprovision.
+    spec:
+      name: location
+      collection: aiplatform.projects.locations.semanticGovernancePolicyEngine
+      attributes:
+      - parameter_name: projectsId
+        attribute_name: project
+        help: The project containing the location.
+      - parameter_name: locationsId
+        attribute_name: location
+        help: The location of the semantic governance policy engine.
+    is_positional: false
+
+request:
+  api_version: v1beta1
+  collection: aiplatform.projects.locations.semanticGovernancePolicyEngine
+  method: deprovision
+  disable_resource_check: true
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.ai.semantic_governance_policies.util:set_regional_endpoint
+  - googlecloudsdk.command_lib.ai.semantic_governance_policies.util:set_engine_name
+
+async:
+  collection: aiplatform.projects.locations.operations
+  extract_resource_result: false

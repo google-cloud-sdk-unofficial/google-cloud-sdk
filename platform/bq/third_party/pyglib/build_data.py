@@ -57,7 +57,7 @@ def _ParseBuildData(filename: str) -> dict[str, str]:
       'TARGET': '',
       'TIMESTAMP': '',
       'VERSIONMAP': '',
-      }
+  }
 
   # Read generated build info if available
   try:
@@ -319,10 +319,15 @@ def BuildData() -> str:
   if paropts:
     buf.write('Built with par options %s\n' % paropts)
 
+  gil_enabled = getattr(sys, '_is_gil_enabled', lambda: False)()
+  if gil_enabled:
+    gil_enabled_str = ''
+  else:
+    gil_enabled_str = ' (Python free-threading - no GIL)'
+  python_executable = sys.executable if sys.executable else 'embedded.'
   buf.write(
-      'Currently running under Python {0}: {1}\n'.format(
-          sys.version, sys.executable if sys.executable else 'embedded.'
-      )
+      f'Currently running under Python {sys.version}:'
+      f' {python_executable}{gil_enabled_str}.\n'
   )
 
   data_str = buf.getvalue()

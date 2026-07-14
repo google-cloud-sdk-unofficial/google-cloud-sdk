@@ -37,6 +37,11 @@ class DeviceRunClient(object):
   def __init__(self, api_version='v1alpha'):
     self.client = apis.GetClientInstance('devicerun', api_version)
     self.messages = self.client.MESSAGES_MODULE
+    self._service = None
+
+  @property
+  def service(self):
+    return self._service
 
 
 class SessionsClient(DeviceRunClient):
@@ -95,6 +100,13 @@ class SessionsClient(DeviceRunClient):
         requestId=request_id,
     )
     return self._service.Delete(request)
+
+  def Cancel(self, session_ref):
+    """Starts asynchronous cancellation on an automation session of Device Run."""
+    request = self.messages.DevicerunProjectsLocationsSessionsCancelRequest(
+        name=session_ref.RelativeName()
+    )
+    return self._service.Cancel(request)
 
 
 class OperationsClient(DeviceRunClient):

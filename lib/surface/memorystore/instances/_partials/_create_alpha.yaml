@@ -457,6 +457,14 @@
           help_text: |-
             Defines zone where all resources will be allocated with SINGLE_ZONE mode.
             Ignored for MULTI_ZONE mode.
+        - arg_name: zone-distribution-config-zones
+          api_field: instance.zoneDistributionConfig.zones
+          required: false
+          repeated: true
+          help_text: |-
+            Specify the zones of a multi-zone instance where Memorystore instance
+            allocates resources. This flag isn't applicable for single-zone
+            instances.
         - arg_name: zone-distribution-config-mode
           api_field: instance.zoneDistributionConfig.mode
           required: false

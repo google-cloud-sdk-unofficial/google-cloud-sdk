@@ -1,0 +1,29 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Test IAM permissions for a Compute Engine instance group.
+    description: |
+      Returns permissions that a caller has on the specified instance group.
+    examples: |
+      To test if the caller has 'compute.instanceGroups.get' permission on an instance group, run:
+
+        $ {command} my-instance-group --zone=ZONE --permissions=compute.instanceGroups.get
+
+  request:
+    collection: compute.instanceGroups
+    api_version: alpha
+    method: testIamPermissions
+    use_relative_name: false
+
+  command_type: GENERIC
+
+  arguments:
+    resource:
+      help_text: The instance group for which to test permissions.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:instance_group
+    params:
+    - arg_name: permissions
+      api_field: testPermissionsRequest.permissions
+      required: true
+      repeated: true
+      help_text: |-
+        Permissions to be tested.

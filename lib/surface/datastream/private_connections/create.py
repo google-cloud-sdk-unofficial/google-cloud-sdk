@@ -44,6 +44,7 @@ EXAMPLES_BETA = """\
    """
 
 
+@base.RegionalEndpointsSupported
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
@@ -116,12 +117,14 @@ class Create(base.Command):
     private_connection_ref = args.CONCEPTS.private_connection.Parse()
     parent_ref = private_connection_ref.Parent().RelativeName()
 
-    pc_client = private_connections.PrivateConnectionsClient()
+    pc_client = private_connections.PrivateConnectionsClient(
+        location=private_connection_ref.locationsId
+    )
     result_operation = pc_client.Create(
         parent_ref, private_connection_ref.privateConnectionsId,
         self.ReleaseTrack(), args)
 
-    client = util.GetClientInstance()
+    client = util.GetClientInstance(location=private_connection_ref.locationsId)
     messages = util.GetMessagesModule()
     resource_parser = util.GetResourceParser()
 
@@ -138,9 +141,13 @@ class Create(base.Command):
 
 @base.Deprecate(
     is_removed=False,
-    warning=('Datastream beta version is deprecated. Please use`gcloud '
-             'datastream private-connections create` command instead.')
+    warning=(
+        'Datastream beta version is deprecated. Please use`gcloud '
+        'datastream private-connections create` command instead.'
+    ),
 )
+@base.RegionalEndpointsSupported
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create a Datastream private connection."""

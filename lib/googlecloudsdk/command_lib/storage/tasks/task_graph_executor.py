@@ -311,7 +311,7 @@ def _thread_worker(
       # If any exception is raised, it will prevent the executor from exiting.
       except Exception as exception:
         log.error(
-            'Task %r failed: %r',
+            'Task %r failed: %s',
             getattr(task_wrapper, 'id', None),
             exception,
         )

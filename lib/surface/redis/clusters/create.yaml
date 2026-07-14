@@ -138,6 +138,13 @@
       help_text: |
         The zone used to allocate the cluster nodes. Applicable only if the zone-distribution-mode
         is set to single-zone.
+    - arg_name: zones
+      api_field: cluster.zoneDistributionConfig.zones
+      required: false
+      repeated: true
+      help_text: |
+        Specify the zones of a multi-zone cluster where Memorystore for Redis Cluster allocates
+        resources. This flag isn't applicable for single-zone clusters.
     - arg_name: persistence-mode
       api_field: cluster.persistenceConfig.mode
       help_text: |

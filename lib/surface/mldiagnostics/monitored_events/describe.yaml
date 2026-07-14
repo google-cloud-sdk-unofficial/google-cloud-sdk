@@ -27,6 +27,19 @@
           ```
             {
               "analyzerInsightFound": true,
+              "analyzerReports": [
+                {
+                  "analyzer": "TPU Duty Cycle Analyzer",
+                  "detectionState": "DETECTED",
+                  "details": "TPU duty cycle dropped by 20% below average.",
+                  "recommendedActions": [
+                    {
+                      "description": "Investigate node health and running processes.",
+                      "documentationUrl": "https://docs.cloud.google.com/tpu/docs/ml-diagnostics/workload-monitoring"
+                    }
+                  ]
+                }
+              ],
               "displayName": "performance-degradation-event",
               "name": "projects/PROJECT_ID/locations/us-central1/machineLearningRuns/my-run-123/monitoredEvents/abc-123-def-456",
               "startTime": "2026-05-01T12:00:00Z",

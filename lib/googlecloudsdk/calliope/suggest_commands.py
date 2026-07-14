@@ -271,18 +271,19 @@ def _GetScoredCommandsContaining(command_words):
   return scored_commands
 
 
-def GetCommandSuggestions(command_words):
+def GetCommandSuggestions(command_words, cli_name='gcloud'):
   """Return suggested commands containing input command words.
 
   Args:
     command_words: List of input command words.
+    cli_name: str, The name of the configured CLI, defaults to 'gcloud'.
 
   Returns:
-    [command]: A list of canonical command strings with 'gcloud' prepended. Only
-      commands whose scores have a ratio of at least MIN_RATIO against the top
-      score are returned. At most MAX_SUGGESTIONS command strings are returned.
-      If many commands from the same group are being suggested, then the common
-      groups are suggested instead.
+    [command]: A list of canonical command strings with the configured CLI name
+      [cli_name] prepended. Only commands whose scores have a ratio of at least
+      MIN_RATIO against the top score are returned. At most MAX_SUGGESTIONS
+      command strings are returned. If many commands from the same group are
+      being suggested, then the common groups are suggested instead.
   """
   suggested_commands = []
   try:
@@ -299,7 +300,7 @@ def GetCommandSuggestions(command_words):
   suggested_groups = set()
   for command, score in scored_commands:
     if score / top_score >= MIN_RATIO:
-      suggested_commands.append(' '.join(['gcloud'] + command))
+      suggested_commands.append(' '.join([cli_name] + command))
       suggested_groups.add(' '.join(command[:-1]))
       if len(suggested_commands) >= MAX_SUGGESTIONS:
         too_many = True
@@ -319,7 +320,7 @@ def GetCommandSuggestions(command_words):
       for command, score in scored_commands:
         if score / top_score < MIN_RATIO:
           break
-        suggested_groups.add(' '.join(['gcloud'] + command[:common_length]))
+        suggested_groups.add(' '.join([cli_name] + command[:common_length]))
         if len(suggested_groups) >= MAX_SUGGESTIONS:
           break
       suggested_commands = sorted(suggested_groups)

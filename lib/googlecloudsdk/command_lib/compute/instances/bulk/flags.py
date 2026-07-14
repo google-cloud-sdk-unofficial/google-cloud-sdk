@@ -417,6 +417,7 @@ def AddCommonBulkInsertArgs(
     support_instance_flexibility_policy=False,
     support_workload_identity_config=False,
     support_instance_selection_min_cpu_platform=False,
+    support_vsock_mode=False,
 ):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
@@ -435,6 +436,8 @@ def AddCommonBulkInsertArgs(
   instances_flags.AddMachineTypeArgs(parser)
   instances_flags.AddMaintenancePolicyArgs(parser, deprecate=True)
   instances_flags.AddNoRestartOnFailureArgs(parser)
+  if support_vsock_mode:
+    instances_flags.AddVsockModeArgs(parser)
   instances_flags.AddPreemptibleVmArgs(parser)
   instances_flags.AddProvisioningModelVmArgs(
       parser,

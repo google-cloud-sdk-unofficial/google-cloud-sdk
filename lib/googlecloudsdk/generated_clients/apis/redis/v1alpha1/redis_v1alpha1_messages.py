@@ -6145,9 +6145,8 @@ class ZoneDistributionConfig(_messages.Message):
     zone: Optional. When SINGLE ZONE distribution is selected, zone field
       would be used to allocate all resources in that zone. This is not
       applicable to MULTI_ZONE, and would be ignored for MULTI_ZONE clusters.
-    zones: Optional. When MULTI_ZONE distribution is selected, zones field
-      would be used to allocate all resources in those zones. This is not
-      applicable to SINGLE_ZONE, and would be ignored for SINGLE_ZONE
+    zones: Optional. Specify the zones of a multi-zone cluster where Redis
+      Cluster allocates resources. This flag isn't applicable for single-zone
       clusters.
   """
 

@@ -126,7 +126,7 @@ class RunV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a Instance.
+      r"""Deletes an Instance.
 
       Args:
         request: (RunProjectsLocationsInstancesDeleteRequest) input message
@@ -153,7 +153,7 @@ class RunV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a Instance.
+      r"""Gets an Instance.
 
       Args:
         request: (RunProjectsLocationsInstancesGetRequest) input message

@@ -75,20 +75,28 @@ class _Discover:
     location = args.location
     parent_ref = util.ParentRef(project, location)
 
-    cp_client = connection_profiles.ConnectionProfilesClient()
+    cp_client = connection_profiles.ConnectionProfilesClient(
+        location=args.location
+    )
     return cp_client.Discover(parent_ref, self.ReleaseTrack(), args)
 
 
 @base.Deprecate(
     is_removed=False,
-    warning=('Datastream beta version is deprecated. Please use`gcloud '
-             'datastream connection-profiles discover` command instead.')
+    warning=(
+        'Datastream beta version is deprecated. Please use`gcloud '
+        'datastream connection-profiles discover` command instead.'
+    ),
 )
+@base.RegionalEndpointsSupported
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DiscoverBeta(_Discover, base.Command):
   """Discover a Datastream connection profile."""
 
 
+@base.RegionalEndpointsSupported
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Discover(_Discover, base.Command):
   """Discover a Datastream connection profile."""

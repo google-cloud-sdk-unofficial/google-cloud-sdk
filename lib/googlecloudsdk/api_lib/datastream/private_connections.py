@@ -30,8 +30,8 @@ def GetPrivateConnectionURI(resource):
 class PrivateConnectionsClient:
   """Client for private connections service in the API."""
 
-  def __init__(self, client=None, messages=None):
-    self._client = client or util.GetClientInstance()
+  def __init__(self, client=None, messages=None, location=None):
+    self._client = client or util.GetClientInstance(location=location)
     self._messages = messages or util.GetMessagesModule()
     self._service = self._client.projects_locations_privateConnections
     self._resource_parser = util.GetResourceParser()

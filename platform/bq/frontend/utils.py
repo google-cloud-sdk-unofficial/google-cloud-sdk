@@ -1318,7 +1318,7 @@ def GetJobMessagesForPrinting(printable_job_info):
           ):
             index_progress_instruction = (
                 'Please query %s.%s.INFORMATION_SCHEMA to check the progress '
-                ' of the index.\n'
+                'of the index.\n'
             ) % (project_id, dataset_id)
           result_lines.append(
               '%s vector index on table %s.%s.%s\n%s'

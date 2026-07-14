@@ -432,7 +432,11 @@ def AddDefaultAlgorithmFlag(parser):
 def AddRequiredImportMethodFlag(parser):
   parser.add_argument(
       '--import-method',
-      choices=sorted(maps.IMPORT_METHOD_MAPPER.choices)[1:],
+      choices=sorted([
+          c
+          for c in maps.IMPORT_METHOD_MAPPER.choices
+          if c != 'import-method-unspecified'
+      ]),
       help=(
           'The wrapping method to be used for incoming key material. For more '
           'information about choosing an import method, see '

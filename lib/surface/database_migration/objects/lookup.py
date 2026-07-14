@@ -31,6 +31,7 @@ EXAMPLES = """\
    """
 
 
+@base.RegionalEndpointsSupported
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Lookup(base.Command):
@@ -62,7 +63,10 @@ class Lookup(base.Command):
       A dict object representing the looked up migration job object if the
       lookup was successful.
     """
-    objects_client = objects.ObjectsClient(self.ReleaseTrack())
     migration_job_ref = args.CONCEPTS.migration_job.Parse()
+    objects_client = objects.ObjectsClient(
+        self.ReleaseTrack(),
+        location=migration_job_ref.locationsId,
+    )
 
     return objects_client.Lookup(migration_job_ref, args)

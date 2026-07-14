@@ -903,13 +903,8 @@ class ArgumentParser(argparse.ArgumentParser):
       else:
         # Command group choices will be displayed in the usage message.
         message += '\n\nValid choices are [{0}].'.format(
-            ', '.join([six.text_type(c) for c in choices]))
-    else:
-      # Show subcommands for (non top-level) groups.
-      if len(self._calliope_command.GetPath()) > 1:
-        message += '\nMaybe you meant:\n  '
-        path = self._calliope_command.GetPath()
-        message += '\n  '.join([' '.join(path + [c]) for c in choices])
+            ', '.join([six.text_type(c) for c in choices])
+        )
 
     # Log to analytics the attempt to execute a command.
     # We don't know if the user entered 'value' is a mistyped command or
@@ -1125,9 +1120,37 @@ class ArgumentParser(argparse.ArgumentParser):
         is_invalid_command = ('Invalid choice' in message and
                               'Valid choices' not in message)
         if is_invalid_command:
-          suggestions = suggest_commands.GetCommandSuggestions(
-              self._GetOriginalArgs())
+          similarity_suggestions = suggest_commands.GetCommandSuggestions(
+              self._GetOriginalArgs(),
+              cli_name=self._calliope_command.GetPath()[0],
+          )
           self._ClearOriginalArgs()
+
+          is_bad_command = isinstance(error, parser_errors.UnknownCommandError)
+          is_flag_error = error.argument is not None
+          is_root_command = len(self._calliope_command.GetPath()) == 1
+
+          subcommand_suggestions = []
+          if is_bad_command and not is_flag_error and not is_root_command:
+            choices = error.error_extra_info.get('suggestions', [])
+            path = self._calliope_command.GetPath()
+            subcommand_suggestions = [' '.join(path + [c]) for c in choices]
+          subcommand_suggestions.sort()
+
+          # Merge and deduplicate
+          suggestions = list(
+              dict.fromkeys(similarity_suggestions + subcommand_suggestions)
+          )
+
+          # Filter out parent groups if a subcommand suggestion already exists
+          # in the list. (ex: If "gcloud compute instances create" is a
+          # suggestion, then don't also suggest "gcloud compute instances".)
+          suggestions = [
+              s
+              for s in suggestions
+              if not any(other.startswith(s + ' ') for other in suggestions)
+          ]
+
         if suggestions:
           argparse._sys.stderr.write(
               '\n  '.join(['Maybe you meant:'] + suggestions) + '\n')

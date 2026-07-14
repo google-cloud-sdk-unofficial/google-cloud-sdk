@@ -37,6 +37,7 @@ DETAILED_HELP = {
 }
 
 
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class Test(base.Command):
@@ -67,13 +68,15 @@ class Test(base.Command):
       operation.
     """
     connection_profile_ref = args.CONCEPTS.connection_profile.Parse()
+    location = connection_profile_ref.locationsId
 
     cp_client = connection_profiles.ConnectionProfilesClient(
-        self.ReleaseTrack()
+        self.ReleaseTrack(),
+        location=location,
     )
     result_operation = cp_client.Test(connection_profile_ref.RelativeName())
 
-    client = api_util.GetClientInstance(self.ReleaseTrack())
+    client = api_util.GetClientInstance(self.ReleaseTrack(), location=location)
     messages = api_util.GetMessagesModule(self.ReleaseTrack())
     resource_parser = api_util.GetResourceParser(self.ReleaseTrack())
 

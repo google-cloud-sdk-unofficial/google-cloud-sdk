@@ -58,7 +58,6 @@ def ContainerArgGroup(release_track=base.ReleaseTrack.ALPHA):
       flags.MutexEnvVarsFlags(release_track=release_track),
       flags.MemoryFlag(),
       flags.CpuFlag(),
-      flags.GpuFlag(),
       flags.ArgsFlag(),
       flags.SecretsFlags(),
       flags.CommandFlag(),
@@ -109,7 +108,6 @@ class AlphaUpdate(base.Command):
     flags.AddLabelsFlags(parser)
     flags.AddServiceAccountFlag(parser)
     flags.AddSetCloudSQLFlag(parser)
-    flags.AddVpcConnectorArg(parser)
     flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='instance')
     flags.AddEgressSettingsFlag(parser)
     flags.AddClientNameAndVersionFlags(parser)
@@ -118,12 +116,9 @@ class AlphaUpdate(base.Command):
     flags.AddCmekKeyFlag(parser, with_clear=False)
     flags.AddGeneralAnnotationFlags(parser)
     flags.AddVolumesFlags(parser, cls.ReleaseTrack())
-    flags.AddGpuTypeFlag(parser)
-    flags.GpuZonalRedundancyFlag(parser)
     flags.AddIngressFlag(parser)
     flags.AddInvokerIamCheckFlag(parser)
     flags.AddRestartPolicyFlag(parser)
-    flags.AddTimeoutFlag(parser)
     flags.AddDefaultUrlFlag(parser, resource_kind='instance')
 
     polling_group = parser.add_mutually_exclusive_group()
@@ -162,7 +157,6 @@ class AlphaUpdate(base.Command):
         config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack())
     )
 
-    messages_util.MaybeLogDefaultGpuTypeMessage(args, resource=None)
     with serverless_operations.Connect(conn_context) as operations:
       existing_instance = operations.GetInstance(instance_ref)
       if existing_instance is None:

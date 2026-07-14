@@ -5,7 +5,7 @@
   "name": "bigquery",
   "canonicalName": "Bigquery",
   "version": "v2",
-  "revision": "20260519",
+  "revision": "20260617",
   "title": "BigQuery API",
   "description": "A data platform for customers to create, manage, share and query data.",
   "ownerDomain": "google.com",
@@ -5389,7 +5389,7 @@
           "$ref": "SparkStatistics"
         },
         "transferredBytes": {
-          "description": "Output only. Total bytes transferred for cross-cloud queries such as Cross Cloud Transfer and CREATE TABLE AS SELECT (CTAS).",
+          "description": "Output only. Total bytes transferred for BigQuery Omni queries from the remote cloud back to Google Cloud. This tracks data movement over Google-managed connections (like query results). It doesn't include input data read from the external data lake (for example, S3) because that data stays within the remote cloud.",
           "readOnly": true,
           "type": "string",
           "format": "int64"
@@ -7421,6 +7421,24 @@
         "writeIncrementalResults": {
           "description": "Optional. This is only supported for SELECT query. If set, the query is allowed to write results incrementally to the temporary result table. This may incur a performance penalty. This option cannot be used with Legacy SQL. This feature is not yet available.",
           "type": "boolean"
+        },
+        "queryResultsFormat": {
+          "description": "Optional. The query results format. If the value is anything other than `STRUCT_ENCODING` or unspecified: * The schema of the results will be provided in `QueryResponse.results_schema` field. * The results of the first page will be provided in `QueryResponse.results` field. * The `QueryResponse.rows` will not be populated. * The `QueryResponse.schema` for `QueryResponse.rows` will also not be populated since it is the schema of the `QueryResponse.rows`. This feature is not yet available.",
+          "type": "string",
+          "enumDescriptions": [
+            "If unspecified it will default to struct `QueryResponse.rows` (`STRUCT_ENCODING`)",
+            "Default encoding of results as struct in `QueryResponse.rows`",
+            "Arrow is a standard open source column-based message format. See https:\/\/arrow.apache.org\/ for more details."
+          ],
+          "enum": [
+            "QUERY_RESULTS_FORMAT_UNSPECIFIED",
+            "STRUCT_ENCODING",
+            "ARROW"
+          ]
+        },
+        "arrowSerializationOptions": {
+          "description": "Optional. Options specific to the Apache Arrow output format.",
+          "$ref": "ArrowSerializationOptions"
         }
       }
     },
@@ -7447,6 +7465,43 @@
             "FLOAT64",
             "INT64",
             "ISO8601_STRING"
+          ]
+        }
+      }
+    },
+    "ArrowSerializationOptions": {
+      "id": "ArrowSerializationOptions",
+      "description": "Contains options specific to Arrow Serialization. This feature is not yet available.",
+      "type": "object",
+      "properties": {
+        "bufferCompression": {
+          "description": "The compression codec to use for Arrow buffers in serialized record batches.",
+          "type": "string",
+          "enumDescriptions": [
+            "If unspecified no compression will be used.",
+            "LZ4 Frame (https:\/\/github.com\/lz4\/lz4\/blob\/dev\/doc\/lz4_Frame_format.md)",
+            "Zstandard compression."
+          ],
+          "enum": [
+            "COMPRESSION_UNSPECIFIED",
+            "LZ4_FRAME",
+            "ZSTD"
+          ]
+        },
+        "picosTimestampPrecision": {
+          "description": "Optional. Set timestamp precision option. If not set, the default precision is microseconds.",
+          "type": "string",
+          "enumDescriptions": [
+            "Unspecified timestamp precision. The default precision is microseconds.",
+            "Timestamp values returned in the results will be truncated to microsecond level precision. The value will be encoded as Arrow TIMESTAMP type in a 64 bit integer.",
+            "Timestamp values returned in the results will be truncated to nanosecond level precision. The value will be encoded as Arrow TIMESTAMP type in a 64 bit integer.",
+            "Timestamp values returned in the results will contain full precision picosecond value. The value will be encoded as a string which conforms to ISO 8601 format."
+          ],
+          "enum": [
+            "PICOS_TIMESTAMP_PRECISION_UNSPECIFIED",
+            "TIMESTAMP_PRECISION_MICROS",
+            "TIMESTAMP_PRECISION_NANOS",
+            "TIMESTAMP_PRECISION_PICOS"
           ]
         }
       }
@@ -7563,6 +7618,46 @@
           "readOnly": true,
           "type": "string",
           "format": "int64"
+        },
+        "arrowSchema": {
+          "description": "Output only. Arrow schema",
+          "readOnly": true,
+          "$ref": "ArrowSchema"
+        },
+        "arrowRecordBatch": {
+          "description": "Output only. Serialized row data in Arrow RecordBatch format.",
+          "readOnly": true,
+          "$ref": "ArrowRecordBatch"
+        },
+        "pageRowCount": {
+          "description": "Output only. The number of rows out of `total_rows` returned in this response. This feature is not yet available.",
+          "readOnly": true,
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "ArrowSchema": {
+      "id": "ArrowSchema",
+      "description": "Arrow schema as specified in https:\/\/arrow.apache.org\/docs\/python\/api\/datatypes.html and serialized to bytes using IPC: https:\/\/arrow.apache.org\/docs\/format\/Columnar.html#serialization-and-interprocess-communication-ipc See code samples on how this message can be deserialized. This feature is not yet available.",
+      "type": "object",
+      "properties": {
+        "serializedSchema": {
+          "description": "IPC serialized Arrow schema.",
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "ArrowRecordBatch": {
+      "id": "ArrowRecordBatch",
+      "description": "Arrow RecordBatch. This feature is not yet available.",
+      "type": "object",
+      "properties": {
+        "serializedRecordBatch": {
+          "description": "IPC-serialized Arrow RecordBatch.",
+          "type": "string",
+          "format": "byte"
         }
       }
     },
@@ -8008,7 +8103,7 @@
           "type": "string"
         },
         "containerRequestConcurrency": {
-          "description": "Optional. Maximum number of requests that a Python UDF container instance can handle concurrently. If absent or if `0`, a default concurrency is used.",
+          "description": "Optional. Maximum number of requests that a Python UDF instance can handle concurrently. If absent or if `0`, the default concurrency value is used. For more information, see [Configure container limits for Python UDFs](https:\/\/cloud.google.com\/bigquery\/docs\/user-defined-functions-python#configure-container-limits).",
           "type": "string",
           "format": "int64"
         }
@@ -9448,7 +9543,7 @@
             "https://www.googleapis.com/auth/cloud-platform",
             "https://www.googleapis.com/auth/cloud-platform.read-only"
           ],
-          "description": "Returns the dataset specified by datasetID."
+          "description": "Returns the dataset specified by datasetID. # IAM Permissions Requires the `bigquery.datasets.get` permission on the dataset."
         },
         "insert": {
           "id": "bigquery.datasets.insert",
@@ -9483,7 +9578,7 @@
             "https://www.googleapis.com/auth/bigquery",
             "https://www.googleapis.com/auth/cloud-platform"
           ],
-          "description": "Creates a new empty dataset."
+          "description": "Creates a new empty dataset. # IAM Permissions Requires the `bigquery.datasets.create` permission on the project."
         },
         "patch": {
           "id": "bigquery.datasets.patch",
@@ -9543,7 +9638,7 @@
             "https://www.googleapis.com/auth/bigquery",
             "https://www.googleapis.com/auth/cloud-platform"
           ],
-          "description": "Updates information in an existing dataset. The update method replaces the entire dataset resource, whereas the patch method only replaces fields that are provided in the submitted dataset resource. This method supports RFC5789 patch semantics."
+          "description": "Updates information in an existing dataset. The update method replaces the entire dataset resource, whereas the patch method only replaces fields that are provided in the submitted dataset resource. This method supports RFC5789 patch semantics. # IAM Permissions Requires the following IAM permission(s) to use this method: - `bigquery.datasets.update` on the dataset. - `bigquery.datasets.get` on the dataset."
         },
         "update": {
           "id": "bigquery.datasets.update",
@@ -9603,7 +9698,7 @@
             "https://www.googleapis.com/auth/bigquery",
             "https://www.googleapis.com/auth/cloud-platform"
           ],
-          "description": "Updates information in an existing dataset. The update method replaces the entire dataset resource, whereas the patch method only replaces fields that are provided in the submitted dataset resource."
+          "description": "Updates information in an existing dataset. The update method replaces the entire dataset resource, whereas the patch method only replaces fields that are provided in the submitted dataset resource. # IAM Permissions Requires the `bigquery.datasets.update` permission on the dataset."
         },
         "delete": {
           "id": "bigquery.datasets.delete",
@@ -9639,7 +9734,7 @@
             "https://www.googleapis.com/auth/bigquery",
             "https://www.googleapis.com/auth/cloud-platform"
           ],
-          "description": "Deletes the dataset specified by the datasetId value. Before you can delete a dataset, you must delete all its tables, either manually or by specifying deleteContents. Immediately after deletion, you can create another dataset with the same name."
+          "description": "Deletes the dataset specified by the datasetId value. Before you can delete a dataset, you must delete all its tables, either manually or by specifying deleteContents. Immediately after deletion, you can create another dataset with the same name. # IAM Permissions Requires the `bigquery.datasets.delete` permission on the dataset."
         },
         "list": {
           "id": "bigquery.datasets.list",
@@ -9687,7 +9782,7 @@
             "https://www.googleapis.com/auth/cloud-platform",
             "https://www.googleapis.com/auth/cloud-platform.read-only"
           ],
-          "description": "Lists all datasets in the specified project to which the user has been granted the READER dataset role."
+          "description": "Lists all datasets in the specified project to which the user has been granted the READER dataset role. # IAM Permissions Requires no specific IAM permission(s) to use this method. Results are filtered to only include datasets on which the caller has the `bigquery.datasets.get` permission."
         },
         "undelete": {
           "id": "bigquery.datasets.undelete",
@@ -9724,7 +9819,7 @@
             "https://www.googleapis.com/auth/bigquery",
             "https://www.googleapis.com/auth/cloud-platform"
           ],
-          "description": "Undeletes a dataset which is within time travel window based on datasetId. If a time is specified, the dataset version deleted at that time is undeleted, else the last live version is undeleted."
+          "description": "Undeletes a dataset which is within time travel window based on datasetId. If a time is specified, the dataset version deleted at that time is undeleted, else the last live version is undeleted. # IAM Permissions Requires the following IAM permission(s) to use this method: - `bigquery.datasets.create` on the project. - `bigquery.datasets.get` on the dataset."
         },
         "setIamPolicy": {
           "id": "bigquery.datasets.setIamPolicy",
@@ -9860,7 +9955,7 @@
             "https://www.googleapis.com/auth/cloud-platform",
             "https://www.googleapis.com/auth/cloud-platform.read-only"
           ],
-          "description": "Gets the specified model resource by model ID."
+          "description": "Gets the specified model resource by model ID. # IAM Permissions Requires the `bigquery.models.getMetadata` permission on the model."
         },
         "list": {
           "id": "bigquery.models.list",
@@ -9906,7 +10001,7 @@
             "https://www.googleapis.com/auth/cloud-platform",
             "https://www.googleapis.com/auth/cloud-platform.read-only"
           ],
-          "description": "Lists all models in the specified dataset. Requires the READER dataset role. After retrieving the list of models, you can get information about a particular model by calling the models.get method."
+          "description": "Lists all models in the specified dataset. Requires the READER dataset role. After retrieving the list of models, you can get information about a particular model by calling the models.get method. # IAM Permissions Requires the `bigquery.models.list` permission on the dataset."
         },
         "patch": {
           "id": "bigquery.models.patch",
@@ -9951,7 +10046,7 @@
             "https://www.googleapis.com/auth/bigquery",
             "https://www.googleapis.com/auth/cloud-platform"
           ],
-          "description": "Patch specific fields in the specified model."
+          "description": "Patch specific fields in the specified model. # IAM Permissions Requires the `bigquery.models.updateMetadata` permission on the model."
         },
         "delete": {
           "id": "bigquery.models.delete",
@@ -9990,7 +10085,7 @@
             "https://www.googleapis.com/auth/bigquery",
             "https://www.googleapis.com/auth/cloud-platform"
           ],
-          "description": "Deletes the model specified by modelId from the dataset."
+          "description": "Deletes the model specified by modelId from the dataset. # IAM Permissions Requires the `bigquery.models.delete` permission on the model."
         }
       }
     },
@@ -10033,7 +10128,7 @@
             "https://www.googleapis.com/auth/bigquery",
             "https://www.googleapis.com/auth/cloud-platform"
           ],
-          "description": "Requests that a job be cancelled. This call will return immediately, and the client will need to poll for the job status to see if the cancel completed successfully. Cancelled jobs may still incur costs."
+          "description": "Requests that a job be cancelled. This call will return immediately, and the client will need to poll for the job status to see if the cancel completed successfully. Cancelled jobs may still incur costs. # IAM Permissions Requires the `bigquery.jobs.update` permission on the job resource. If the user matches the creator of the job, the `bigquery.jobs.create` permission on the project is required instead."
         },
         "get": {
           "id": "bigquery.jobs.get",
@@ -10073,7 +10168,7 @@
             "https://www.googleapis.com/auth/cloud-platform",
             "https://www.googleapis.com/auth/cloud-platform.read-only"
           ],
-          "description": "Returns information about a specific job. Job information is available for a six month period after creation. Requires that you're the person who ran the job, or have the Is Owner project role."
+          "description": "Returns information about a specific job. Job information is available for a six month period after creation. Requires that you're the person who ran the job, or have the Is Owner project role. # IAM Permissions Requires the `bigquery.jobs.get` permission on the job resource. If the user matches the creator of the job, the `bigquery.jobs.create` permission on the project is required instead."
         },
         "insert": {
           "id": "bigquery.jobs.insert",
@@ -10121,7 +10216,7 @@
             "https://www.googleapis.com/auth/devstorage.read_only",
             "https://www.googleapis.com/auth/devstorage.read_write"
           ],
-          "description": "Starts a new asynchronous job. This API has two different kinds of endpoint URIs, as this method supports a variety of use cases. * The *Metadata* URI is used for most interactions, as it accepts the job configuration directly. * The *Upload* URI is ONLY for the case when you're sending both a load job configuration and a data stream together. In this case, the Upload URI accepts the job configuration and the data as two distinct multipart MIME parts."
+          "description": "Starts a new asynchronous job. This API has two different kinds of endpoint URIs, as this method supports a variety of use cases. * The *Metadata* URI is used for most interactions, as it accepts the job configuration directly. * The *Upload* URI is ONLY for the case when you're sending both a load job configuration and a data stream together. In this case, the Upload URI accepts the job configuration and the data as two distinct multipart MIME parts. # IAM Permissions Requires the `bigquery.jobs.create` permission on the project resource. Additional permissions are required depending on the job type: - **Load, Export, and Copy jobs**: Generally require data-level permissions such as `bigquery.tables.export` or access to external storage. - **Query jobs**: Permissions are dependent on the SQL statement. Complex queries (DDL, DCL) may require additional permissions to create reservations, modify IAM policies, or update project settings."
         },
         "delete": {
           "id": "bigquery.jobs.delete",
@@ -10157,7 +10252,7 @@
             "https://www.googleapis.com/auth/bigquery",
             "https://www.googleapis.com/auth/cloud-platform"
           ],
-          "description": "Requests the deletion of the metadata of a job. This call returns when the job's metadata is deleted."
+          "description": "Requests the deletion of the metadata of a job. This call returns when the job's metadata is deleted. # IAM Permissions Requires the `bigquery.jobs.delete` permission on the job resource."
         },
         "list": {
           "id": "bigquery.jobs.list",
@@ -10246,7 +10341,7 @@
             "https://www.googleapis.com/auth/cloud-platform",
             "https://www.googleapis.com/auth/cloud-platform.read-only"
           ],
-          "description": "Lists all jobs that you started in the specified project. Job information is available for a six month period after creation. The job list is sorted in reverse chronological order, by job creation time. Requires the Can View project role, or the Is Owner project role if you set the allUsers property."
+          "description": "Lists all jobs that you started in the specified project. Job information is available for a six month period after creation. The job list is sorted in reverse chronological order, by job creation time. Requires the Can View project role, or the Is Owner project role if you set the allUsers property. # IAM Permissions Requires no specific IAM permission(s) to use this method. Users are able to list the jobs they created. Additional access is granted based on the following permissions: - Users with the `bigquery.jobs.listAll` permission can list all jobs with all metadata. - Users with the `bigquery.jobs.list` permission can list all jobs, but with redacted information for jobs they did not create."
         },
         "getQueryResults": {
           "id": "bigquery.jobs.getQueryResults",
@@ -10331,7 +10426,7 @@
             "https://www.googleapis.com/auth/cloud-platform",
             "https://www.googleapis.com/auth/cloud-platform.read-only"
           ],
-          "description": "RPC to get the results of a query job."
+          "description": "RPC to get the results of a query job. # IAM Permissions Requires the following IAM permission(s) to use this method: - `bigquery.jobs.get` on the job. - `bigquery.tables.getData` on the destination table. If the user matches the creator of the job, the following IAM permission(s) are required instead: - `bigquery.jobs.create` on the project. - `bigquery.tables.getData` on the destination table."
         },
         "query": {
           "id": "bigquery.jobs.query",
@@ -10361,7 +10456,7 @@
             "https://www.googleapis.com/auth/cloud-platform",
             "https://www.googleapis.com/auth/cloud-platform.read-only"
           ],
-          "description": "Runs a BigQuery SQL query synchronously and returns query results if the query completes within a specified timeout."
+          "description": "Runs a BigQuery SQL query synchronously and returns query results if the query completes within a specified timeout. # IAM Permissions Requires the `bigquery.jobs.create` permission on the project resource. Data-level permissions are highly dependent on the SQL statement being executed. While standard queries require data access (such as `bigquery.tables.getData`), complex operations like DDL or DCL may require permissions to manage reservations, IAM policies, or project settings."
         }
       }
     },
@@ -10395,7 +10490,7 @@
             "https://www.googleapis.com/auth/cloud-platform",
             "https://www.googleapis.com/auth/cloud-platform.read-only"
           ],
-          "description": "RPC to list projects to which the user has been granted any project role. Users of this method are encouraged to consider the [Resource Manager](https:\/\/cloud.google.com\/resource-manager\/docs\/) API, which provides the underlying data for this method and has more capabilities."
+          "description": "RPC to list projects to which the user has been granted any project role. Users of this method are encouraged to consider the [Resource Manager](https:\/\/cloud.google.com\/resource-manager\/docs\/) API, which provides the underlying data for this method and has more capabilities. # IAM Permissions Requires no specific IAM permission(s) to use this method. The results are filtered to only include projects on which the caller has been granted a project-level role such as a BigQuery predefined IAM role or a basic role such as Viewer or Owner."
         },
         "getServiceAccount": {
           "id": "bigquery.projects.getServiceAccount",
@@ -10422,7 +10517,7 @@
             "https://www.googleapis.com/auth/cloud-platform",
             "https://www.googleapis.com/auth/cloud-platform.read-only"
           ],
-          "description": "RPC to get the service account for a project used for interactions with Google Cloud KMS"
+          "description": "RPC to get the service account for a project used for interactions with Google Cloud KMS. Requires the `bigquery.jobs.create` permission on the project resource. This permission is required to authorize the retrieval of the project's service identity for technical management tasks like encryption configuration."
         }
       }
     },
@@ -10475,7 +10570,7 @@
             "https://www.googleapis.com/auth/cloud-platform",
             "https://www.googleapis.com/auth/cloud-platform.read-only"
           ],
-          "description": "Gets the specified routine resource by routine ID."
+          "description": "Gets the specified routine resource by routine ID. # IAM Permissions Requires the `bigquery.routines.get` permission on the routine."
         },
         "insert": {
           "id": "bigquery.routines.insert",
@@ -10512,7 +10607,7 @@
             "https://www.googleapis.com/auth/bigquery",
             "https://www.googleapis.com/auth/cloud-platform"
           ],
-          "description": "Creates a new routine in the dataset."
+          "description": "Creates a new routine in the dataset. # IAM Permissions Requires the `bigquery.routines.create` permission on the dataset."
         },
         "update": {
           "id": "bigquery.routines.update",
@@ -10557,7 +10652,7 @@
             "https://www.googleapis.com/auth/bigquery",
             "https://www.googleapis.com/auth/cloud-platform"
           ],
-          "description": "Updates information in an existing routine. The update method replaces the entire Routine resource."
+          "description": "Updates information in an existing routine. The update method replaces the entire Routine resource. # IAM Permissions Requires the `bigquery.routines.update` permission on the routine."
         },
         "delete": {
           "id": "bigquery.routines.delete",
@@ -10596,7 +10691,7 @@
             "https://www.googleapis.com/auth/bigquery",
             "https://www.googleapis.com/auth/cloud-platform"
           ],
-          "description": "Deletes the routine specified by routineId from the dataset."
+          "description": "Deletes the routine specified by routineId from the dataset. # IAM Permissions Requires the `bigquery.routines.delete` permission on the routine."
         },
         "list": {
           "id": "bigquery.routines.list",
@@ -10653,7 +10748,7 @@
             "https://www.googleapis.com/auth/cloud-platform",
             "https://www.googleapis.com/auth/cloud-platform.read-only"
           ],
-          "description": "Lists all routines in the specified dataset. Requires the READER dataset role."
+          "description": "Lists all routines in the specified dataset. Requires the READER dataset role. # IAM Permissions Requires the `bigquery.routines.list` permission on the dataset."
         },
         "setIamPolicy": {
           "id": "bigquery.routines.setIamPolicy",
@@ -10800,7 +10895,7 @@
             "https://www.googleapis.com/auth/cloud-platform",
             "https://www.googleapis.com/auth/cloud-platform.read-only"
           ],
-          "description": "Lists all row access policies on the specified table."
+          "description": "Lists all row access policies on the specified table. # IAM Permissions Requires the `bigquery.rowAccessPolicies.list` permission on the table."
         },
         "get": {
           "id": "bigquery.rowAccessPolicies.get",
@@ -10851,7 +10946,7 @@
             "https://www.googleapis.com/auth/cloud-platform",
             "https://www.googleapis.com/auth/cloud-platform.read-only"
           ],
-          "description": "Gets the specified row access policy by policy ID."
+          "description": "Gets the specified row access policy by policy ID. # IAM Permissions Requires the `bigquery.rowAccessPolicies.get` permission on the table."
         },
         "insert": {
           "id": "bigquery.rowAccessPolicies.insert",
@@ -10896,7 +10991,7 @@
             "https://www.googleapis.com/auth/bigquery",
             "https://www.googleapis.com/auth/cloud-platform"
           ],
-          "description": "Creates a row access policy."
+          "description": "Creates a row access policy. # IAM Permissions Requires the following IAM permission(s) on the table: - `bigquery.rowAccessPolicies.create` - `bigquery.rowAccessPolicies.setIamPolicy` - `bigquery.tables.getData`"
         },
         "update": {
           "id": "bigquery.rowAccessPolicies.update",
@@ -10949,7 +11044,7 @@
             "https://www.googleapis.com/auth/bigquery",
             "https://www.googleapis.com/auth/cloud-platform"
           ],
-          "description": "Updates a row access policy."
+          "description": "Updates a row access policy. # IAM Permissions Requires the following IAM permission(s) on the table: - `bigquery.rowAccessPolicies.update` - `bigquery.rowAccessPolicies.setIamPolicy` - `bigquery.tables.getData`"
         },
         "delete": {
           "id": "bigquery.rowAccessPolicies.delete",
@@ -11001,7 +11096,7 @@
             "https://www.googleapis.com/auth/bigquery",
             "https://www.googleapis.com/auth/cloud-platform"
           ],
-          "description": "Deletes a row access policy."
+          "description": "Deletes a row access policy. # IAM Permissions Requires the following IAM permission(s) on the table: - `bigquery.rowAccessPolicies.delete` - `bigquery.rowAccessPolicies.setIamPolicy`"
         },
         "batchDelete": {
           "id": "bigquery.rowAccessPolicies.batchDelete",
@@ -11043,7 +11138,7 @@
             "https://www.googleapis.com/auth/bigquery",
             "https://www.googleapis.com/auth/cloud-platform"
           ],
-          "description": "Deletes provided row access policies."
+          "description": "Deletes provided row access policies. # IAM Permissions Requires the following IAM permission(s) on the table: - `bigquery.rowAccessPolicies.delete` - `bigquery.rowAccessPolicies.setIamPolicy`"
         },
         "getIamPolicy": {
           "id": "bigquery.rowAccessPolicies.getIamPolicy",
@@ -11172,7 +11267,7 @@
             "https://www.googleapis.com/auth/cloud-platform",
             "https://www.googleapis.com/auth/cloud-platform.read-only"
           ],
-          "description": "Gets the specified table resource by table ID. This method does not return the data in the table, it only returns the table resource, which describes the structure of this table."
+          "description": "Gets the specified table resource by table ID. This method does not return the data in the table, it only returns the table resource, which describes the structure of this table. # IAM Permissions Requires the `bigquery.tables.get` permission on the table."
         },
         "insert": {
           "id": "bigquery.tables.insert",
@@ -11209,7 +11304,7 @@
             "https://www.googleapis.com/auth/bigquery",
             "https://www.googleapis.com/auth/cloud-platform"
           ],
-          "description": "Creates a new, empty table in the dataset."
+          "description": "Creates a new, empty table in the dataset. # IAM Permissions Requires the `bigquery.tables.create` permission on the dataset."
         },
         "patch": {
           "id": "bigquery.tables.patch",
@@ -11259,7 +11354,7 @@
             "https://www.googleapis.com/auth/bigquery",
             "https://www.googleapis.com/auth/cloud-platform"
           ],
-          "description": "Updates information in an existing table. The update method replaces the entire table resource, whereas the patch method only replaces fields that are provided in the submitted table resource. This method supports RFC5789 patch semantics."
+          "description": "Updates information in an existing table. The update method replaces the entire table resource, whereas the patch method only replaces fields that are provided in the submitted table resource. This method supports RFC5789 patch semantics. # IAM Permissions Requires the following IAM permission(s) on the table: - `bigquery.tables.update` - `bigquery.tables.get`"
         },
         "update": {
           "id": "bigquery.tables.update",
@@ -11309,7 +11404,7 @@
             "https://www.googleapis.com/auth/bigquery",
             "https://www.googleapis.com/auth/cloud-platform"
           ],
-          "description": "Updates information in an existing table. The update method replaces the entire Table resource, whereas the patch method only replaces fields that are provided in the submitted Table resource."
+          "description": "Updates information in an existing table. The update method replaces the entire Table resource, whereas the patch method only replaces fields that are provided in the submitted Table resource. # IAM Permissions Requires the `bigquery.tables.update` permission on the table."
         },
         "delete": {
           "id": "bigquery.tables.delete",
@@ -11348,7 +11443,7 @@
             "https://www.googleapis.com/auth/bigquery",
             "https://www.googleapis.com/auth/cloud-platform"
           ],
-          "description": "Deletes the table specified by tableId from the dataset. If the table contains data, all the data will be deleted."
+          "description": "Deletes the table specified by tableId from the dataset. If the table contains data, all the data will be deleted. # IAM Permissions Requires the `bigquery.tables.delete` permission on the table."
         },
         "list": {
           "id": "bigquery.tables.list",
@@ -11394,7 +11489,7 @@
             "https://www.googleapis.com/auth/cloud-platform",
             "https://www.googleapis.com/auth/cloud-platform.read-only"
           ],
-          "description": "Lists all tables in the specified dataset. Requires the READER dataset role."
+          "description": "Lists all tables in the specified dataset. Requires the READER dataset role. # IAM Permissions Requires the `bigquery.tables.list` permission on the dataset."
         },
         "setIamPolicy": {
           "id": "bigquery.tables.setIamPolicy",
@@ -11533,7 +11628,7 @@
             "https://www.googleapis.com/auth/bigquery.insertdata",
             "https://www.googleapis.com/auth/cloud-platform"
           ],
-          "description": "Streams data into BigQuery one record at a time without needing to run a load job."
+          "description": "Streams data into BigQuery one record at a time without needing to run a load job. # IAM Permissions Requires the following IAM permission(s) to use this method: - `bigquery.tables.updateData` on the table. - `bigquery.tables.get` on the table. - `bigquery.datasets.get` on the dataset."
         },
         "list": {
           "id": "bigquery.tabledata.list",
@@ -11620,7 +11715,7 @@
             "https://www.googleapis.com/auth/cloud-platform",
             "https://www.googleapis.com/auth/cloud-platform.read-only"
           ],
-          "description": "List the content of a table in rows."
+          "description": "List the content of a table in rows. # IAM Permissions Requires the `bigquery.tables.getData` permission on the table."
         }
       }
     }

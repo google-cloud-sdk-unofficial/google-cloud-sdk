@@ -1470,14 +1470,23 @@ To revert your CLI to the previously installed version, you may run:
                              ','.join(installed_component_ids))
     installer_path = os.path.join(staging_state.sdk_root,
                                   'bin', 'bootstrapping', 'install.py')
-    p = subprocess.Popen([sys.executable, '-S', installer_path], env=env)
+    try:
+      python_executable = execution_utils.GetPythonExecutable(
+          staging_state.sdk_root
+      )
+    except ValueError as e:
+      log.error('No valid python interpreter found: %s', e)
+      self._RaiseReinstallationFailedError()
+
+    p = subprocess.Popen([python_executable, '-S', installer_path], env=env)
     ret_val = p.wait()
     if ret_val:
       self._RaiseReinstallationFailedError()
 
     with console_io.ProgressBar(
         label='Creating backup and activating new installation',
-        stream=log.status) as pb:
+        stream=log.status,
+    ) as pb:
       install_state.ReplaceWith(staging_state, pb.SetProgress)
 
     self.__Write(log.status, '\nComponents updated!\n')

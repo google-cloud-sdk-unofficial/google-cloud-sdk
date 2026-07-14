@@ -266,6 +266,8 @@ class AlphaUpdate(BetaUpdate):
   def Args(cls, parser) -> None:
     cls.CommonArgs(parser)
     flags.AddCpuUtilizationFlag(parser, hidden=True, resource_kind='workerPool')
+    flags.AddWorkerPoolMinInstancesFlag(parser)
+    flags.AddWorkerPoolMaxInstancesFlag(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(
         parser, container_args, cls.ReleaseTrack()

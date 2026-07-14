@@ -8,6 +8,7 @@
         $ {command} my-migration-job --region=us-central1
 
   request:
+    regional_endpoint_compatibility: SUPPORTED
     collection: datamigration.projects.locations.migrationJobs
     GA:
       api_version: v1

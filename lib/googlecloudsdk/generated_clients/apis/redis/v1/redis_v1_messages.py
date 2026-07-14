@@ -5955,6 +5955,9 @@ class ZoneDistributionConfig(_messages.Message):
     zone: Optional. When SINGLE ZONE distribution is selected, zone field
       would be used to allocate all resources in that zone. This is not
       applicable to MULTI_ZONE, and would be ignored for MULTI_ZONE clusters.
+    zones: Optional. Specify the zones of a multi-zone cluster where Redis
+      Cluster allocates resources. This flag isn't applicable for single-zone
+      clusters.
   """
 
   class ModeValueValuesEnum(_messages.Enum):
@@ -5974,6 +5977,7 @@ class ZoneDistributionConfig(_messages.Message):
 
   mode = _messages.EnumField('ModeValueValuesEnum', 1)
   zone = _messages.StringField(2)
+  zones = _messages.StringField(3, repeated=True)
 
 
 encoding.AddCustomJsonFieldMapping(

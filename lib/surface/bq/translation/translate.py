@@ -106,7 +106,7 @@ def _build_translation_details(
     explanation_output_file=None,
     translation_config_files=None,
     metadata_gcs_uri=None,
-    generated_ddl_output_file=None,
+    source_ddl_output_file=None,
 ):
   """Builds the translation details message for the migration task."""
   target_return_literals = ['sql/query.sql']
@@ -122,7 +122,7 @@ def _build_translation_details(
       )
   ]
 
-  if generated_ddl_output_file:
+  if source_ddl_output_file:
     target_return_literals.append('source_sql_metadata_generation_suggestion/')
     if 'suggestion' not in target_types:
       target_types.append('suggestion')
@@ -191,7 +191,7 @@ def _build_migration_workflow(
     explanation_output_file=None,
     translation_config_files=None,
     metadata_gcs_uri=None,
-    generated_ddl_output_file=None,
+    source_ddl_output_file=None,
 ):
   """Builds the migration workflow message and returns it with the task type."""
   task_type = _get_task_type(source_dialect, target_dialect)
@@ -201,7 +201,7 @@ def _build_migration_workflow(
       explanation_output_file,
       translation_config_files,
       metadata_gcs_uri,
-      generated_ddl_output_file,
+      source_ddl_output_file,
   )
 
   task = messages.GoogleCloudBigqueryMigrationV2MigrationTask(
@@ -370,10 +370,10 @@ def _process_workflow_result(wait_response, task_type, args):
         f' {args.explanation_output_file}.'
     )
 
-  if args.generated_ddl_output_file and generated_ddl:
-    files.WriteFileContents(args.generated_ddl_output_file, generated_ddl)
+  if args.source_ddl_output_file and generated_ddl:
+    files.WriteFileContents(args.source_ddl_output_file, generated_ddl)
     log.status.Print(
-        f'Successfully saved generated DDL to {args.generated_ddl_output_file}.'
+        f'Successfully saved source DDL to {args.source_ddl_output_file}.'
     )
 
   if args.translation_log_file:
@@ -481,8 +481,8 @@ To translate a Snowflake query from a file and save the output and logs to files
         required=False,
     )
     parser.add_argument(
-        '--generated-ddl-output-file',
-        help='File to which to write the generated DDL.',
+        '--source-ddl-output-file',
+        help='File to which to write the generated source DDL.',
         required=False,
     )
 
@@ -512,7 +512,7 @@ To translate a Snowflake query from a file and save the output and logs to files
         explanation_output_file=args.explanation_output_file,
         translation_config_files=args.translation_config_files,
         metadata_gcs_uri=args.metadata_gcs_uri,
-        generated_ddl_output_file=args.generated_ddl_output_file,
+        source_ddl_output_file=args.source_ddl_output_file,
     )
 
     request_type = api_util.GetMigrationApiMessage(

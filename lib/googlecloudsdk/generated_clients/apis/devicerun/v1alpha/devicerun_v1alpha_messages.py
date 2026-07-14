@@ -63,14 +63,11 @@ class AndroidBugreportDeviceAction(_messages.Message):
 
 
 class AndroidFilePullingDeviceAction(_messages.Message):
-  r"""Pulls directories and files from the device to the output directory at
-  the end of the run. Artifacts will be copied to the '/artifacts' directory,
-  with the absolute path structure preserved. Note that: 1. Assume a clean
-  device is provided for the run. 2. File overwriting is supported when the
-  file with the same absolute path already exists in the output directory, if
-  permissions allow. 3. Pull files with best effort. Will skip the files if
-  they don't exist on the device or encountering any error during pulling. 4.
-  Always preserve absolute path structure in the output directory.
+  r"""Pulls directories and files from the device at the end of the run. Files
+  will be copied to the '/artifacts' directory, with the absolute path
+  structure preserved. Note that: 1. A clean device is provided for the run.
+  2. Any existing files in the output directory may be overwritten. 3. Pulling
+  files is best effort. Will skip files if they don't exist on the device.
 
   Fields:
     srcPathsOnDevice: Required. Absolute directory or file paths to pull from
@@ -93,10 +90,9 @@ class AndroidFilePushingConfig(_messages.Message):
 
 
 class AndroidFilePushingDeviceAction(_messages.Message):
-  r"""Pushes files to the device. Note that: 1. File overwriting is supported
-  when the file with the same path already exists on the device, if
-  permissions allow. 2. When pushing a file, always prepare the destination
-  directory if it doesn't exist.
+  r"""Pushes files to the device at the beginning of the run. Files are
+  overwritten if a file with the same path already exists on the device, if
+  device permissions allow.
 
   Fields:
     filePushingConfigs: Required. Configs of pushing files to the device.
@@ -226,8 +222,8 @@ class AndroidInstrumentationTest(_messages.Message):
 
 
 class AndroidLogcatDeviceAction(_messages.Message):
-  r"""Async collecting logcat when the job shard is running on the device and
-  write to an output file.
+  r"""Collects logcat output from the device. The output will be written to a
+  file named `logcat.txt` in the execution output directory.
 
   Fields:
     logFilterSpecs: Optional. The log filter specs to filter the logcat.
@@ -302,7 +298,8 @@ class AndroidOrientationDeviceAction(_messages.Message):
   r"""Sets the orientation of the device.
 
   Fields:
-    orientation: Required. The orientation to set the device to.
+    orientation: Required. The orientation to set the device to. One of
+      `portrait` or `landscape`.
   """
 
   orientation = _messages.StringField(1)
@@ -319,10 +316,6 @@ class AndroidPackageInstallationDeviceAction(_messages.Message):
   """
 
   installables = _messages.MessageField('AndroidInstallable', 1, repeated=True)
-
-
-class AndroidPerformanceMetricsDeviceAction(_messages.Message):
-  r"""Collects performance metrics for Android devices."""
 
 
 class AndroidPhysicalDeviceRequirement(_messages.Message):
@@ -348,15 +341,30 @@ class AndroidRoboTest(_messages.Message):
   r"""Android specific Robo test message."""
 
 
-class AndroidVideoRecordingDeviceAction(_messages.Message):
-  r"""Records video when the test is running on the device.
+class AndroidSwitchLocaleDeviceAction(_messages.Message):
+  r"""Switches the locale (language and region) of the device.
 
   Fields:
-    disableVideoRecordingOnPass: Optional. Whether to disable video recording
+    localeCode: Required. The locale (language and region) to switch the
+      device to. The format is `language-region`, e.g. "en-US", "zh-CN", etc.
+      The typical language value is a two or three-letter language code as
+      defined in ISO639. The typical region value is a two-letter ISO 3166
+      code or a three-digit UN M.49 area code.
+  """
+
+  localeCode = _messages.StringField(1)
+
+
+class AndroidVideoRecordingDeviceAction(_messages.Message):
+  r"""Records a video of the device screen during the run. The video will be
+  written to a file named `video.mp4` in the execution output directory.
+
+  Fields:
+    discardOnPass: Optional. Whether to discard and not upload the recording
       when the test passes. Default is false.
   """
 
-  disableVideoRecordingOnPass = _messages.BooleanField(1)
+  discardOnPass = _messages.BooleanField(1)
 
 
 class AttemptReport(_messages.Message):
@@ -379,25 +387,53 @@ class AttemptReport(_messages.Message):
   subDeviceIndex = _messages.IntegerField(5, variant=_messages.Variant.INT32)
 
 
+class CancelSessionRequest(_messages.Message):
+  r"""Request to cancel a session."""
+
+
+class CancelSessionResponse(_messages.Message):
+  r"""Response of the cancel session request.
+
+  Enums:
+    CancelResultValueValuesEnum: The result of the request.
+
+  Fields:
+    cancelResult: The result of the request.
+  """
+
+  class CancelResultValueValuesEnum(_messages.Enum):
+    r"""The result of the request.
+
+    Values:
+      CANCEL_RESULT_UNSPECIFIED: Unspecified cancel result.
+      SESSION_MARKED_AS_CANCELLED: The session is marked as cancelled, but has
+        not finished yet.
+      SESSION_FINISHED: The session is finished, either by itself or by the
+        cancel request.
+    """
+    CANCEL_RESULT_UNSPECIFIED = 0
+    SESSION_MARKED_AS_CANCELLED = 1
+    SESSION_FINISHED = 2
+
+  cancelResult = _messages.EnumField('CancelResultValueValuesEnum', 1)
+
+
 class DeviceAction(_messages.Message):
   r"""The action to be performed on a device.
 
   Fields:
-    androidBugreport: Action to collect bugreport.
-    androidFilePulling: Action to pull files from the device.
-    androidFilePushing: Action to push files to the device.
-    androidLogcat: Action to collect logcat.
-    androidOrientation: Action to set the orientation of the device.
-    androidPackageInstallation: Action to install Android packages on the
+    androidBugreport: Retrieves the Android device bugreport of the test.
+    androidFilePulling: Pulls directories and files from the device at the end
+      of the run.
+    androidFilePushing: Pushes files to the device at the beginning of the
+      run.
+    androidLogcat: Collects logcat output from the device.
+    androidOrientation: Sets the orientation of the device.
+    androidPackageInstallation: Installs Android packages on the device.
+    androidSwitchLocale: Switches the locale (language and region) of the
       device.
-    androidPerformanceMetrics: Action to collect performance metrics.
-    androidVideoRecording: Android actions. Action to record video.
-    iosAppInstallation: Action to install the apps to the device.
-    iosFilePulling: Action to pull files from the device.
-    iosFilePushing: Action to push files to the device.
-    iosOrientation: Action to set the orientation of the device.
-    iosPerformanceMetrics: Action to collect performance metrics.
-    iosVideoRecordingAction: iOS actions. Action to record video.
+    androidVideoRecording: Records a video of the device screen during the
+      run.
   """
 
   androidBugreport = _messages.MessageField('AndroidBugreportDeviceAction', 1)
@@ -406,22 +442,16 @@ class DeviceAction(_messages.Message):
   androidLogcat = _messages.MessageField('AndroidLogcatDeviceAction', 4)
   androidOrientation = _messages.MessageField('AndroidOrientationDeviceAction', 5)
   androidPackageInstallation = _messages.MessageField('AndroidPackageInstallationDeviceAction', 6)
-  androidPerformanceMetrics = _messages.MessageField('AndroidPerformanceMetricsDeviceAction', 7)
+  androidSwitchLocale = _messages.MessageField('AndroidSwitchLocaleDeviceAction', 7)
   androidVideoRecording = _messages.MessageField('AndroidVideoRecordingDeviceAction', 8)
-  iosAppInstallation = _messages.MessageField('IosAppInstallationDeviceAction', 9)
-  iosFilePulling = _messages.MessageField('IosFilePullingDeviceAction', 10)
-  iosFilePushing = _messages.MessageField('IosFilePushingDeviceAction', 11)
-  iosOrientation = _messages.MessageField('IosOrientationDeviceAction', 12)
-  iosPerformanceMetrics = _messages.MessageField('IosPerformanceMetricsDeviceAction', 13)
-  iosVideoRecordingAction = _messages.MessageField('IosVideoRecordingDeviceAction', 14)
 
 
 class DeviceConfig(_messages.Message):
-  r"""The configuration of a test on a device.
+  r"""The configuration of a run on a device.
 
   Fields:
-    deviceActions: Required. The actions to be performed on the device. The
-      actions will be executed in the order they are specified in the list.
+    deviceActions: Required. The actions to be performed on the device.
+      Actions will be executed in the order they are specified in the list.
     deviceRequirement: Required. The requirement of the device.
   """
 
@@ -435,11 +465,9 @@ class DeviceRequirement(_messages.Message):
   Fields:
     androidPhysicalDeviceRequirement: The requirement of a physical Android
       device.
-    iosPhysicalDeviceRequirement: The requirement of a physical iOS device.
   """
 
   androidPhysicalDeviceRequirement = _messages.MessageField('AndroidPhysicalDeviceRequirement', 1)
-  iosPhysicalDeviceRequirement = _messages.MessageField('IosPhysicalDeviceRequirement', 2)
 
 
 class DevicerunProjectsLocationsGetRequest(_messages.Message):
@@ -533,12 +561,26 @@ class DevicerunProjectsLocationsOperationsListRequest(_messages.Message):
   returnPartialSuccess = _messages.BooleanField(5)
 
 
+class DevicerunProjectsLocationsSessionsCancelRequest(_messages.Message):
+  r"""A DevicerunProjectsLocationsSessionsCancelRequest object.
+
+  Fields:
+    cancelSessionRequest: A CancelSessionRequest resource to be passed as the
+      request body.
+    name: Required. The name of the session. Format:
+      "projects/{project}/locations/{location}/sessions/{session}"
+  """
+
+  cancelSessionRequest = _messages.MessageField('CancelSessionRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
 class DevicerunProjectsLocationsSessionsCreateRequest(_messages.Message):
   r"""A DevicerunProjectsLocationsSessionsCreateRequest object.
 
   Fields:
-    parent: Required. The parent resource where this automation session will
-      be created. Format: "projects/{project}/locations/{location}"
+    parent: Required. The parent resource where this session will be created.
+      Format: `projects/{project}/locations/{location}`.
     requestId: Optional. A unique identifier for this request. This request is
       only idempotent if a `request_id` is provided, i.e. if a request with
       the same `request_id` is received, then the previous result will be
@@ -563,7 +605,8 @@ class DevicerunProjectsLocationsSessionsDeleteRequest(_messages.Message):
   r"""A DevicerunProjectsLocationsSessionsDeleteRequest object.
 
   Fields:
-    name: Required. Name of the resource
+    name: Required. The name of the session. Format:
+      `projects/{project}/locations/{location}/sessions/{session}`.
     requestId: Optional. A unique identifier for this request. This request is
       only idempotent if a `request_id` is provided, i.e. if a request with
       the same `request_id` is received, then the previous result will be
@@ -585,8 +628,8 @@ class DevicerunProjectsLocationsSessionsGetRequest(_messages.Message):
       set, the default BASIC view will be returned.
 
   Fields:
-    name: Required. The name of the automation session. Format:
-      "projects/{project}/locations/{location}/sessions/{session}"
+    name: Required. The name of the session. Format:
+      `projects/{project}/locations/{location}/sessions/{session}`.
     view: Optional. The view of the session to return. If not set, the default
       BASIC view will be returned.
   """
@@ -617,23 +660,29 @@ class DevicerunProjectsLocationsSessionsListRequest(_messages.Message):
 
   Enums:
     ViewValueValuesEnum: Optional. The view of the sessions to return. If not
-      set, the default BASIC view will be returned.
+      set, the `BASIC` view will be returned.
 
   Fields:
-    filter: Optional. Filtering results
-    orderBy: Optional. Hint for how to order the results
-    pageSize: Optional. Requested page size. Server may return fewer items
-      than requested. If unspecified, server will pick an appropriate default.
-    pageToken: Optional. A token identifying a page of results the server
-      should return.
-    parent: Required. Parent value for ListSessionsRequest
+    filter: Optional. The raw filter text to constrain the results.
+    orderBy: Optional. The order to sort results by.
+    pageSize: Optional. The maximum number of sessions to return. The server
+      may return fewer items than this value. If unspecified, at most 20
+      sessions will be returned. The maximum value is 100, values above will
+      be coerced to 100.
+    pageToken: Optional. A page token, received from a previous `ListSessions`
+      call. Provide this to receive the subsequent page. When paginating, all
+      other parameters provided to `ListSessions` must match the call that
+      provided the page token.
+    parent: Required. Parent value for ListSessionsRequest The parent of the
+      collection of sessions. Format:
+      `projects/{project}/locations/{location}`.
     view: Optional. The view of the sessions to return. If not set, the
-      default BASIC view will be returned.
+      `BASIC` view will be returned.
   """
 
   class ViewValueValuesEnum(_messages.Enum):
-    r"""Optional. The view of the sessions to return. If not set, the default
-    BASIC view will be returned.
+    r"""Optional. The view of the sessions to return. If not set, the `BASIC`
+    view will be returned.
 
     Values:
       SESSION_VIEW_UNSPECIFIED: The default / unset value. The API will
@@ -675,28 +724,30 @@ class ExecutionReport(_messages.Message):
       ExecutionConfig.
     endTime: Output only. The end time of the execution.
     genFiles: Output only. The output files of the execution.
+    id: Output only. The unique identifier of the execution.
     result: Output only. The result of the execution.
     startTime: Output only. The start time of the execution.
     status: Output only. The status of the execution.
-    uid: Output only. The unique identifier of the execution.
+    warnings: Output only. Non-fatal warnings collected during the execution.
   """
 
   attemptReport = _messages.MessageField('AttemptReport', 1)
   displayName = _messages.StringField(2)
   endTime = _messages.StringField(3)
   genFiles = _messages.MessageField('OutputFile', 4, repeated=True)
-  result = _messages.MessageField('Result', 5)
-  startTime = _messages.StringField(6)
-  status = _messages.MessageField('Status', 7)
-  uid = _messages.StringField(8)
+  id = _messages.StringField(5)
+  result = _messages.MessageField('Result', 6)
+  startTime = _messages.StringField(7)
+  status = _messages.MessageField('Status', 8)
+  warnings = _messages.MessageField('Warning', 9, repeated=True)
 
 
 class GcsPath(_messages.Message):
   r"""A path to a file or directory in Google Cloud Storage.
 
   Fields:
-    path: Required. The Google Cloud Storage path of the file, in the format
-      of `gs:///`.
+    path: Required. The Google Cloud Storage path of the file or directory.
+      Format: `gs:///`.
   """
 
   path = _messages.StringField(1)
@@ -920,102 +971,44 @@ class IntRequirement(_messages.Message):
   range = _messages.MessageField('IntRangeRequirement', 2)
 
 
-class IosAppInstallationDeviceAction(_messages.Message):
-  r"""Installs the apps to the device.
-
-  Fields:
-    ipas: Required. Apps to be installed to the device.
-  """
-
-  ipas = _messages.MessageField('InputFile', 1, repeated=True)
-
-
-class IosFilePullingDeviceAction(_messages.Message):
-  r"""Pulls files from the device."""
-
-
-class IosFilePushingConfig(_messages.Message):
-  r"""The configuration of pushing a file to the device.
-
-  Fields:
-    bundleId: Optional. The bundle id of the file to be pushed to the device.
-    destPathOnDevice: Required. The destination path on the device.
-    sourceFile: Required. The file to be pushed to the device.
-  """
-
-  bundleId = _messages.StringField(1)
-  destPathOnDevice = _messages.StringField(2)
-  sourceFile = _messages.MessageField('InputFile', 3)
-
-
-class IosFilePushingDeviceAction(_messages.Message):
-  r"""Pushes files to the device.
-
-  Fields:
-    filePushingConfigs: Required. Configs of pushing files to the device.
-  """
-
-  filePushingConfigs = _messages.MessageField('IosFilePushingConfig', 1, repeated=True)
-
-
-class IosOrientationDeviceAction(_messages.Message):
-  r"""Sets the orientation of the device.
-
-  Fields:
-    orientation: Required. The orientation to set the device to.
-  """
-
-  orientation = _messages.StringField(1)
-
-
-class IosPerformanceMetricsDeviceAction(_messages.Message):
-  r"""Collects performance metrics for iOS devices."""
-
-
-class IosPhysicalDeviceRequirement(_messages.Message):
-  r"""The requirement of an iOS physical device."""
-
-
 class IosRoboTest(_messages.Message):
   r"""iOS specific Robo test message."""
 
 
-class IosTestLoop(_messages.Message):
-  r"""The configuration of an iOS test loop.
+class IssueSummary(_messages.Message):
+  r"""Describes the summary of an issue (error or warning) with structured
+  details.
+
+  Enums:
+    TypeValueValuesEnum: Output only. The issue classification based on
+      responsibility.
 
   Fields:
-    appIpa: Required. The .ipa of the application to test.
-    scenarios: Optional. The list of scenarios that should be run during the
-      test. Defaults to the single scenario 0 if unspecified.
+    message: Output only. Human-readable explanation of the issue in English.
+    reason: Output only. The reason of the issue. This is a constant value
+      that identifies the proximate cause of the issue. This should be at most
+      63 characters and match a regular expression of `A-Z*[A-Z0-9]`, which
+      represents UPPER_SNAKE_CASE.
+    type: Output only. The issue classification based on responsibility.
   """
 
-  appIpa = _messages.MessageField('InputFile', 1)
-  scenarios = _messages.IntegerField(2, repeated=True, variant=_messages.Variant.INT32)
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The issue classification based on responsibility.
 
+    Values:
+      ISSUE_TYPE_UNSPECIFIED: Unspecified issue type. This value is unused.
+      INFRA: Platform infrastructure or operational execution environment
+        failure.
+      CUSTOMER: Customer test script failure, malformed APK, or bad user
+        configuration.
+    """
+    ISSUE_TYPE_UNSPECIFIED = 0
+    INFRA = 1
+    CUSTOMER = 2
 
-class IosVideoRecordingDeviceAction(_messages.Message):
-  r"""Records video when the test is running on the device."""
-
-
-class IosXcTest(_messages.Message):
-  r"""The configuration of an iOS XCTest.
-
-  Fields:
-    testSpecialEntitlements: Optional. The option to test special app
-      entitlements. Setting this would re-sign the app having special
-      entitlements with an explicit application-identifier.
-    testsZip: Required. The .zip containing the .xctestrun file and the
-      contents of the DerivedData/Build/Products directory.
-    xcodeVersion: Optional. The Xcode version that should be used for the
-      test.
-    xctestrun: Optional. An .xctestrun file that will override the .xctestrun
-      file in the tests zip.
-  """
-
-  testSpecialEntitlements = _messages.BooleanField(1)
-  testsZip = _messages.MessageField('InputFile', 2)
-  xcodeVersion = _messages.StringField(3)
-  xctestrun = _messages.MessageField('InputFile', 4)
+  message = _messages.StringField(1)
+  reason = _messages.StringField(2)
+  type = _messages.EnumField('TypeValueValuesEnum', 3)
 
 
 class JobAction(_messages.Message):
@@ -1024,18 +1017,12 @@ class JobAction(_messages.Message):
   Fields:
     androidInstrumentationTest: Android instrumentation test.
     androidNativeBinary: Android native binary execution.
-    iosTestLoop: iOS test loop.
-    iosXcTest: iOS XCTest.
-    moblyTest: Mobly test.
     roboTest: Robo test.
   """
 
   androidInstrumentationTest = _messages.MessageField('AndroidInstrumentationTest', 1)
   androidNativeBinary = _messages.MessageField('AndroidNativeBinary', 2)
-  iosTestLoop = _messages.MessageField('IosTestLoop', 3)
-  iosXcTest = _messages.MessageField('IosXcTest', 4)
-  moblyTest = _messages.MessageField('MoblyTest', 5)
-  roboTest = _messages.MessageField('RoboTest', 6)
+  roboTest = _messages.MessageField('RoboTest', 3)
 
 
 class JobConfig(_messages.Message):
@@ -1050,17 +1037,17 @@ class JobConfig(_messages.Message):
       size of all labels must not exceed 16 KiB.
 
   Fields:
+    action: Required. Job action.
     allocationConfig: Required. Allocation config.
     displayName: Required. User-settable, human-readable name for the job. Up
       to 63 characters.
-    jobAction: Required. Job action.
-    jobSettings: Optional. Job settings.
     labels: Optional. User-defined metadata for tracking or categorization.
       These labels do not affect job execution and are surfaced in the
       JobReport. The maximum number of labels is 64. Each label key is limited
       to 128 characters and must conform to POSIX standards. Each label value
       is limited to 1024 characters. The total size of all labels must not
       exceed 16 KiB.
+    settings: Optional. Job settings.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -1092,11 +1079,11 @@ class JobConfig(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  allocationConfig = _messages.MessageField('AllocationConfig', 1)
-  displayName = _messages.StringField(2)
-  jobAction = _messages.MessageField('JobAction', 3)
-  jobSettings = _messages.MessageField('JobSettings', 4)
-  labels = _messages.MessageField('LabelsValue', 5)
+  action = _messages.MessageField('JobAction', 1)
+  allocationConfig = _messages.MessageField('AllocationConfig', 2)
+  displayName = _messages.StringField(3)
+  labels = _messages.MessageField('LabelsValue', 4)
+  settings = _messages.MessageField('JobSettings', 5)
 
 
 class JobReport(_messages.Message):
@@ -1111,13 +1098,14 @@ class JobReport(_messages.Message):
     endTime: Output only. The end time of the job.
     executionReports: Output only. Reports of the execution attempts of the
       job.
+    id: Output only. The unique identifier of the job.
     labels: Output only. The original labels provided by the user during job
       creation.
     outputFiles: Output only. The output files of the job.
     result: Output only. The result of the job.
     startTime: Output only. The start time of the job.
     status: Output only. The status of the job.
-    uid: Output only. The unique identifier of the job.
+    warnings: Output only. Non-fatal warnings collected during the job.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -1148,12 +1136,13 @@ class JobReport(_messages.Message):
   displayName = _messages.StringField(1)
   endTime = _messages.StringField(2)
   executionReports = _messages.MessageField('ExecutionReport', 3, repeated=True)
-  labels = _messages.MessageField('LabelsValue', 4)
-  outputFiles = _messages.MessageField('OutputFile', 5, repeated=True)
-  result = _messages.MessageField('Result', 6)
-  startTime = _messages.StringField(7)
-  status = _messages.MessageField('Status', 8)
-  uid = _messages.StringField(9)
+  id = _messages.StringField(4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  outputFiles = _messages.MessageField('OutputFile', 6, repeated=True)
+  result = _messages.MessageField('Result', 7)
+  startTime = _messages.StringField(8)
+  status = _messages.MessageField('Status', 9)
+  warnings = _messages.MessageField('Warning', 10, repeated=True)
 
 
 class JobSettings(_messages.Message):
@@ -1184,12 +1173,12 @@ class ListLocationsResponse(_messages.Message):
 
 
 class ListSessionsResponse(_messages.Message):
-  r"""Message for response to listing Sessions
+  r"""Response including listed sessions.
 
   Fields:
-    nextPageToken: A token identifying a page of results the server should
-      return.
-    sessions: The list of Sessions
+    nextPageToken: Token to receive the next page of sessions. This will be
+      absent if the end of the response list has been reached.
+    sessions: The list of sessions.
     unreachable: Unordered list. Sessions that could not be reached.
   """
 
@@ -1278,21 +1267,6 @@ class Location(_messages.Message):
   name = _messages.StringField(5)
 
 
-class MoblyTest(_messages.Message):
-  r"""The configuration of a Mobly test.
-
-  Fields:
-    testCaseSelector: Optional. By default, all testcases in a Mobly test
-      class are executed. To only execute a subset of tests, supply the test
-      names in this param as: "test_a test_b ..."
-    testLibParGcsPath: Required. The Cloud Storage path of the test_lib.par
-      file.
-  """
-
-  testCaseSelector = _messages.StringField(1)
-  testLibParGcsPath = _messages.StringField(2)
-
-
 class OperationMetadata(_messages.Message):
   r"""Represents the metadata of the long-running operation.
 
@@ -1360,6 +1334,8 @@ class Result(_messages.Message):
       session/job/execution.
 
   Fields:
+    cause: Output only. Detailed result cause diagnostics. Set if type is not
+      PASSED.
     resultType: Output only. The result type of the session/job/execution.
   """
 
@@ -1384,7 +1360,19 @@ class Result(_messages.Message):
     TIMED_OUT = 4
     CANCELLED = 5
 
-  resultType = _messages.EnumField('ResultTypeValueValuesEnum', 1)
+  cause = _messages.MessageField('ResultCause', 1)
+  resultType = _messages.EnumField('ResultTypeValueValuesEnum', 2)
+
+
+class ResultCause(_messages.Message):
+  r"""Describes the cause of the non-passed result occurred during the
+  execution.
+
+  Fields:
+    summary: Output only. Structured cause detail.
+  """
+
+  summary = _messages.MessageField('IssueSummary', 1)
 
 
 class RetrySettings(_messages.Message):
@@ -1435,14 +1423,16 @@ class RoboTest(_messages.Message):
 
 
 class Session(_messages.Message):
-  r"""Message for an automation session.
+  r"""A session resource in the AutomationSession API. At a high level,
+  `Session` describes the configuration of one or multiple jobs, the state
+  transitions it goes through, and the results.
 
   Fields:
     name: Identifier. The resource name of the session. Format:
-      projects/{project}/locations/{location}/sessions/{session}.
-    sessionConfig: Required. Config used to create the session.
+      `projects/{project}/locations/{location}/sessions/{session}`.
+    sessionConfig: Required. Configuration used to create the session.
     sessionReport: Output only. The runtime information and result report of
-      the session. Only available when the session is created.
+      the session.
   """
 
   name = _messages.StringField(1)
@@ -1495,19 +1485,19 @@ class SessionReport(_messages.Message):
 
   Fields:
     endTime: Output only. The end time of the session.
+    id: Output only. The unique identifier of the session.
     jobReports: Output only. Reports of the jobs in the session.
     result: Output only. The result of the session.
     startTime: Output only. The start time of the session.
     status: Output only. The status of the session.
-    uid: Output only. The unique identifier of the session.
   """
 
   endTime = _messages.StringField(1)
-  jobReports = _messages.MessageField('JobReport', 2, repeated=True)
-  result = _messages.MessageField('Result', 3)
-  startTime = _messages.StringField(4)
-  status = _messages.MessageField('Status', 5)
-  uid = _messages.StringField(6)
+  id = _messages.StringField(2)
+  jobReports = _messages.MessageField('JobReport', 3, repeated=True)
+  result = _messages.MessageField('Result', 4)
+  startTime = _messages.StringField(5)
+  status = _messages.MessageField('Status', 6)
 
 
 class SmartSharding(_messages.Message):
@@ -1671,6 +1661,16 @@ class UniformSharding(_messages.Message):
   """
 
   shardCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+
+
+class Warning(_messages.Message):
+  r"""Non-fatal operational anomaly, lint observation, or execution insight.
+
+  Fields:
+    summary: Output only. Detailed warning summary.
+  """
+
+  summary = _messages.MessageField('IssueSummary', 1)
 
 
 encoding.AddCustomJsonFieldMapping(

@@ -8,6 +8,7 @@
         $ {command} my-private-connection --region=us-central1
 
   request:
+    regional_endpoint_compatibility: SUPPORTED
     collection: datamigration.projects.locations.privateConnections
     api_version: v1
 

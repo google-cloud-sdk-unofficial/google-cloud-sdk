@@ -56,6 +56,9 @@ class Container(proto.Message):
     Note that additional arguments can be supplied by the system to
     the container at runtime.
 
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
     Attributes:
         name (str):
             Name of the container specified as a DNS_LABEL (RFC 1123).
@@ -124,6 +127,12 @@ class Container(proto.Message):
         build_config (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.BuildConfiguration):
             Optional. The build configuration for the
             container image.
+        sandbox_launcher (bool):
+            Optional. Indicates that this container can
+            act as a sandbox supervisor and launch
+            sandboxes.
+
+            This field is a member of `oneof`_ ``_sandbox_launcher``.
     """
 
     name: str = proto.Field(
@@ -203,6 +212,11 @@ class Container(proto.Message):
         proto.MESSAGE,
         number=19,
         message='BuildConfiguration',
+    )
+    sandbox_launcher: bool = proto.Field(
+        proto.BOOL,
+        number=22,
+        optional=True,
     )
 
 

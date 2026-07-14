@@ -338,6 +338,17 @@
       resource_method_params:
         cloudVmCluster.backupOdbSubnet: '{__relative_name__}'
       required: false
+    - arg_name: exascale-db-storage-vault
+      help_text: |-
+        The name of ExascaleDbStorageVault associated with the VM Cluster.
+        Format:
+        projects/{project}/locations/{location}/exascaleDbStorageVaults/{exascale_db_storage_vault}
+      is_positional: false
+      is_primary_resource: false
+      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_locations_exascale_db_storage_vaults
+      resource_method_params:
+        cloudVmCluster.exascaleDbStorageVault: '{__relative_name__}'
+      required: false
     - arg_name: request-id
       api_field: requestId
       required: false

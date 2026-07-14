@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.database_migration.conversion_workspaces import 
 from googlecloudsdk.generated_clients.apis.datamigration.v1 import datamigration_v1_messages as messages
 
 
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class Seed(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
@@ -75,8 +76,9 @@ class Seed(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
 
     src_cp_ref = args.CONCEPTS.source_connection_profile.Parse()
     dest_cp_ref = args.CONCEPTS.destination_connection_profile.Parse()
+    client = self.GetClient(location=conversion_workspace_ref.locationsId)
 
-    result_operation = self.client.operations.Seed(
+    result_operation = client.operations.Seed(
         name=conversion_workspace_ref.RelativeName(),
         src_connection_profile_ref=src_cp_ref,
         dest_connection_profile_ref=dest_cp_ref,

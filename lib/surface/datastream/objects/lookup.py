@@ -47,6 +47,7 @@ EXAMPLES = """\
    """
 
 
+@base.RegionalEndpointsSupported
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Lookup(base.Command):
@@ -83,6 +84,9 @@ class Lookup(base.Command):
       successful.
     """
     project_id = properties.VALUES.core.project.Get(required=True)
-    stream_id = args.CONCEPTS.stream.Parse().streamsId
-    so_client = stream_objects.StreamObjectsClient()
+    stream_ref = args.CONCEPTS.stream.Parse()
+    stream_id = stream_ref.streamsId
+    so_client = stream_objects.StreamObjectsClient(
+        location=stream_ref.locationsId
+    )
     return so_client.Lookup(project_id, stream_id, args)

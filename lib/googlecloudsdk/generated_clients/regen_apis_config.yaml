@@ -134,6 +134,15 @@ apis:
         projects.locations.indexEndpoints.operations:
           path:
             projects/{projectsId}/locations/{locationsId}/indexEndpoints/{indexEndpointsId}/operations/{operationsId}
+        projects.locations.semanticGovernancePolicies:
+          path:
+            projects/{projectsId}/locations/{locationsId}/semanticGovernancePolicies/{semanticGovernancePoliciesId}
+        projects.locations.semanticGovernancePolicies.operations:
+          path:
+            projects/{projectsId}/locations/{locationsId}/semanticGovernancePolicies/{semanticGovernancePoliciesId}/operations/{operationsId}
+        projects.locations.semanticGovernancePolicyEngine:
+          path:
+            projects/{projectsId}/locations/{locationsId}/semanticGovernancePolicyEngine
   alloydb:
     v1alpha:
       discovery_doc: alloydb_v1alpha.json
@@ -1780,6 +1789,8 @@ apis:
     v2:
       discovery_doc: run_v2.json
       gcloud_gapic_library: google/cloud/run/v2:run_v2_py
+      skip:
+        bug: b/522732401
   runapps:
     v1alpha1:
       discovery_doc: runapps_v1alpha1.json

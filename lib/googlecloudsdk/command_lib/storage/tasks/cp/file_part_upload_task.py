@@ -227,7 +227,8 @@ class FilePartUploadTask(file_part_task.FilePartTask):
             except api_errors.CloudApiError:
               # Any problem fetching existing object metadata can be ignored,
               # since we'll just re-upload the object.
-              pass
+              tracker_file_util.delete_tracker_file(tracker_file_path)
+              serialization_data = None
             else:
               # The API call will not error if we provide an encryption key but
               # the destination is unencrypted, hence the additional (defensive)
@@ -237,6 +238,9 @@ class FilePartUploadTask(file_part_task.FilePartTask):
               if (destination_key_hash == encryption_key_hash_sha256 and
                   self._existing_destination_is_valid(destination_resource)):
                 return self._get_output(destination_resource)
+              else:
+                tracker_file_util.delete_tracker_file(tracker_file_path)
+                serialization_data = None
 
         def attempt_upload() -> resource_reference.ObjectResource:
           log.debug('attempt_upload, serialization_data: %s',

@@ -910,6 +910,9 @@ class _SectionApiEndpointOverrides(_Section):
     self.iamcredentials = self._Add('iamcredentials', command='gcloud iam')
     self.iap = self._Add('iap', command='gcloud iap')
     self.ids = self._Add('ids', command='gcloud ids')
+    self.kmsinventory = self._Add(
+        'kmsinventory', command='gcloud kms inventory'
+    )
     self.krmapihosting = self._Add(
         'krmapihosting', command='gcloud anthos config controller')
     self.kubernetespolicy = self._Add('kubernetespolicy', hidden=True)

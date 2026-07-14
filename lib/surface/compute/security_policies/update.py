@@ -54,6 +54,8 @@ class UpdateGa(base.UpdateCommand):
     flags.AddAdvancedOptions(parser)
     flags.AddRecaptchaOptions(parser)
     flags.AddDdosProtectionConfigWithAdvancedPreview(parser)
+    flags.AddNetworkDdosAdaptiveProtection(parser)
+    flags.AddNetworkDdosImpactedBaselineThreshold(parser)
 
   def _ValidateArgs(self, args):
     """Validates that at least one field to update is specified.
@@ -62,21 +64,33 @@ class UpdateGa(base.UpdateCommand):
       args: The arguments given to the update command.
     """
 
-    if not (args.IsSpecified('description') or
-            args.IsSpecified('enable_layer7_ddos_defense') or
-            args.IsSpecified('layer7_ddos_defense_rule_visibility') or
-            args.IsSpecified('json_parsing') or
-            args.IsSpecified('json_custom_content_types') or
-            args.IsSpecified('log_level') or
-            args.IsSpecified('recaptcha_redirect_site_key') or
-            args.IsSpecified('network_ddos_protection') or
-            args.IsSpecified('user_ip_request_headers')):
+    if not (
+        args.IsSpecified('description')
+        or args.IsSpecified('enable_layer7_ddos_defense')
+        or args.IsSpecified('layer7_ddos_defense_rule_visibility')
+        or args.IsSpecified('json_parsing')
+        or args.IsSpecified('json_custom_content_types')
+        or args.IsSpecified('log_level')
+        or args.IsSpecified('recaptcha_redirect_site_key')
+        or args.IsSpecified('network_ddos_protection')
+        or args.IsSpecified('network_ddos_adaptive_protection')
+        or args.IsSpecified('network_ddos_impacted_baseline_threshold')
+        or args.IsSpecified('clear_network_ddos_impacted_baseline_threshold')
+        or args.IsSpecified('user_ip_request_headers')
+    ):
       parameter_names = [
-          '--description', '--enable-layer7-ddos-defense',
-          '--layer7-ddos-defense-rule-visibility', '--json-parsing',
-          '--json-custom-content-types', '--log-level',
-          '--recaptcha-redirect-site-key', '--network-ddos-protection',
-          '--user-ip-request-headers'
+          '--description',
+          '--enable-layer7-ddos-defense',
+          '--layer7-ddos-defense-rule-visibility',
+          '--json-parsing',
+          '--json-custom-content-types',
+          '--log-level',
+          '--recaptcha-redirect-site-key',
+          '--network-ddos-protection',
+          '--network-ddos-adaptive-protection',
+          '--network-ddos-impacted-baseline-threshold',
+          '--clear-network-ddos-impacted-baseline-threshold',
+          '--user-ip-request-headers',
       ]
       raise exceptions.MinimumArgumentException(
           parameter_names, 'Please specify at least one property to update')
@@ -103,11 +117,13 @@ class UpdateGa(base.UpdateCommand):
 
     if args.description is not None:
       description = args.description
+      field_mask.append('description')
     if (args.IsSpecified('enable_layer7_ddos_defense') or
         args.IsSpecified('layer7_ddos_defense_rule_visibility')):
       adaptive_protection_config = (
           security_policies_utils.CreateAdaptiveProtectionConfig(
               holder.client, args, adaptive_protection_config))
+      field_mask.append('adaptive_protection_config')
     if (args.IsSpecified('json_parsing') or
         args.IsSpecified('json_custom_content_types') or
         args.IsSpecified('log_level') or
@@ -120,15 +136,43 @@ class UpdateGa(base.UpdateCommand):
               enable_large_body_size=False,
           )
       )
+      field_mask.append('advanced_options_config')
     if args.IsSpecified('recaptcha_redirect_site_key'):
       recaptcha_options_config = (
           security_policies_utils.CreateRecaptchaOptionsConfig(
               holder.client, args, recaptcha_options_config))
+      field_mask.append('recaptcha_options_config')
     if args.IsSpecified('network_ddos_protection'):
       ddos_protection_config = (
           security_policies_utils.CreateDdosProtectionConfig(
               holder.client, args, ddos_protection_config))
       field_mask.append('ddos_protection_config')
+    if args.IsSpecified('network_ddos_adaptive_protection'):
+      ddos_protection_config = security_policies_utils.CreateDdosProtectionConfigWithDdosAdaptiveProtection(
+          holder.client, args, ddos_protection_config
+      )
+      if 'ddos_protection_config' not in field_mask:
+        field_mask.append('ddos_protection_config')
+    if args.IsSpecified('network_ddos_impacted_baseline_threshold'):
+      ddos_protection_config = security_policies_utils.CreateDdosProtectionConfigWithNetworkDdosImpactedBaselineThreshold(
+          holder.client, args, ddos_protection_config
+      )
+      if 'ddos_protection_config' not in field_mask:
+        field_mask.append('ddos_protection_config')
+      field_mask.append(
+          'ddos_protection_config.ddos_impacted_baseline_threshold'
+      )
+    elif args.IsSpecified('clear_network_ddos_impacted_baseline_threshold'):
+      if ddos_protection_config is None:
+        ddos_protection_config = (
+            holder.client.messages.SecurityPolicyDdosProtectionConfig()
+        )
+      ddos_protection_config.ddosImpactedBaselineThreshold = None
+      if 'ddos_protection_config' not in field_mask:
+        field_mask.append('ddos_protection_config')
+      field_mask.append(
+          'ddos_protection_config.ddos_impacted_baseline_threshold'
+      )
 
     updated_security_policy = holder.client.messages.SecurityPolicy(
         description=description,
@@ -249,6 +293,7 @@ class UpdateBeta(UpdateGa):
 
     if args.description is not None:
       description = args.description
+      field_mask.append('description')
     if (args.IsSpecified('enable_layer7_ddos_defense') or
         args.IsSpecified('layer7_ddos_defense_rule_visibility') or
         args.IsSpecified('layer7_ddos_defense_auto_deploy_load_threshold') or
@@ -260,6 +305,7 @@ class UpdateBeta(UpdateGa):
           security_policies_utils
           .CreateAdaptiveProtectionConfigWithAutoDeployConfig(
               holder.client, args, adaptive_protection_config))
+      field_mask.append('adaptive_protection_config')
     if (
         args.IsSpecified('json_parsing')
         or args.IsSpecified('json_custom_content_types')
@@ -275,10 +321,12 @@ class UpdateBeta(UpdateGa):
               enable_large_body_size=True,
           )
       )
+      field_mask.append('advanced_options_config')
     if args.IsSpecified('recaptcha_redirect_site_key'):
       recaptcha_options_config = (
           security_policies_utils.CreateRecaptchaOptionsConfig(
               holder.client, args, recaptcha_options_config))
+      field_mask.append('recaptcha_options_config')
     if args.IsSpecified('network_ddos_protection'):
       ddos_protection_config = (
           security_policies_utils.CreateDdosProtectionConfig(
@@ -431,9 +479,11 @@ class UpdateAlpha(UpdateBeta):
 
     if args.description is not None:
       description = args.description
+      field_mask.append('description')
     if args.enable_ml is not None:
       cloud_armor_config = security_policies_utils.CreateCloudArmorConfig(
           holder.client, args)
+      field_mask.append('cloud_armor_config')
     if (args.IsSpecified('enable_layer7_ddos_defense') or
         args.IsSpecified('layer7_ddos_defense_rule_visibility') or
         args.IsSpecified('layer7_ddos_defense_auto_deploy_load_threshold') or
@@ -445,6 +495,7 @@ class UpdateAlpha(UpdateBeta):
           security_policies_utils
           .CreateAdaptiveProtectionConfigWithAutoDeployConfig(
               holder.client, args, adaptive_protection_config))
+      field_mask.append('adaptive_protection_config')
     if (
         args.IsSpecified('json_parsing')
         or args.IsSpecified('json_custom_content_types')
@@ -460,10 +511,12 @@ class UpdateAlpha(UpdateBeta):
               enable_large_body_size=True,
           )
       )
+      field_mask.append('advanced_options_config')
     if args.IsSpecified('recaptcha_redirect_site_key'):
       recaptcha_options_config = (
           security_policies_utils.CreateRecaptchaOptionsConfig(
               holder.client, args, recaptcha_options_config))
+      field_mask.append('recaptcha_options_config')
     if args.IsSpecified('ddos_protection'):
       ddos_protection_config = (
           security_policies_utils.CreateDdosProtectionConfigOld(

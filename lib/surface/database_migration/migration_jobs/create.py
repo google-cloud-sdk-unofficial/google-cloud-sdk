@@ -149,7 +149,10 @@ class _Create(object):
       original_migration_name_ref = None
       cmek_key_ref = None
 
-    mj_client = migration_jobs.MigrationJobsClient(self.ReleaseTrack())
+    mj_client = migration_jobs.MigrationJobsClient(
+        self.ReleaseTrack(),
+        location=migration_job_ref.locationsId,
+    )
     result_operation = mj_client.Create(
         parent_ref,
         migration_job_ref.migrationJobsId,
@@ -161,7 +164,10 @@ class _Create(object):
         args,
     )
 
-    client = api_util.GetClientInstance(self.ReleaseTrack())
+    client = api_util.GetClientInstance(
+        self.ReleaseTrack(),
+        location=migration_job_ref.locationsId,
+    )
     messages = api_util.GetMessagesModule(self.ReleaseTrack())
     resource_parser = api_util.GetResourceParser(self.ReleaseTrack())
 
@@ -188,6 +194,8 @@ class _Create(object):
             name=operation_ref.operationsId))
 
 
+@base.DefaultUniverseOnly
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateGA(_Create, base.Command):
   """Create a Database Migration Service migration job."""
@@ -216,6 +224,8 @@ class CreateGA(_Create, base.Command):
     mj_flags.AddPostgresHomogeneousConfigFlag(parser)
 
 
+@base.DefaultUniverseOnly
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(_Create, base.Command):
   """Create a Database Migration Service migration job."""

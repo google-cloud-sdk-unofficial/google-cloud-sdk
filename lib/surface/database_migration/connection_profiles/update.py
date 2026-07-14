@@ -90,12 +90,15 @@ class _Update(object):
     if args.prompt_for_password:
       args.password = console_io.PromptPassword('Please Enter Password: ')
 
+    location = connection_profile_ref.locationsId
     cp_client = connection_profiles.ConnectionProfilesClient(
-        self.ReleaseTrack())
+        self.ReleaseTrack(),
+        location=location,
+    )
     result_operation = cp_client.Update(connection_profile_ref.RelativeName(),
                                         args)
 
-    client = api_util.GetClientInstance(self.ReleaseTrack())
+    client = api_util.GetClientInstance(self.ReleaseTrack(), location=location)
     messages = api_util.GetMessagesModule(self.ReleaseTrack())
     resource_parser = api_util.GetResourceParser(self.ReleaseTrack())
 
@@ -110,6 +113,8 @@ class _Update(object):
             name=operation_ref.operationsId))
 
 
+@base.DefaultUniverseOnly
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(_Update, base.Command):
   """Update a Database Migration Service connection profile."""
@@ -121,6 +126,8 @@ class UpdateAlpha(_Update, base.Command):
     cp_flags.AddInstanceFlag(parser)
 
 
+@base.DefaultUniverseOnly
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateGA(_Update, base.Command):
   """Update a Database Migration Service connection profile."""

@@ -294,6 +294,8 @@ class Client(object):
             binauthz_enum.ECDSA_P256_SHA256,
         kms_enum.EC_SIGN_P384_SHA384.name:
             binauthz_enum.ECDSA_P384_SHA384,
+        kms_enum.PQ_SIGN_ML_DSA_65.name:
+            binauthz_enum.ML_DSA_65,
     }
     try:
       return alg_map[kms_algorithm.name]

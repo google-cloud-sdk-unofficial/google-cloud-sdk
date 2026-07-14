@@ -98,6 +98,8 @@ class _CloudSQL(object):
                          connection_profile_ref, args, 'CLOUDSQL')
 
 
+@base.DefaultUniverseOnly
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CloudSQLAlpha(_CloudSQL, base.Command):
   """Create a Database Migration Service connection profile for Cloud SQL."""
@@ -112,6 +114,8 @@ class CloudSQLAlpha(_CloudSQL, base.Command):
     )
 
 
+@base.DefaultUniverseOnly
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class CloudSQLGA(_CloudSQL, base.Command):
   """Create a Database Migration Service connection profile for Cloud SQL."""

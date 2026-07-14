@@ -48,6 +48,7 @@ def _Args(
     support_flex_start=False,
     support_skip_guest_os_shutdown=False,
     support_workload_identity_config=False,
+    support_vsock_mode=False,
 ):
   """Add flags shared by all release tracks."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -139,6 +140,8 @@ def _Args(
     instances_flags.AddSkipGuestOsShutdownArgs(parser)
   if support_workload_identity_config:
     instances_flags.AddWorkloadIdentityConfigArgs(parser)
+  if support_vsock_mode:
+    instances_flags.AddVsockModeArgs(parser)
 
 
 @base.Deprecate(
@@ -169,6 +172,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_disk_labels = False
   _support_skip_guest_os_shutdown = True
   _support_workload_identity_config = False
+  _support_vsock_mode = False
 
   @staticmethod
   def Args(parser):
@@ -281,6 +285,9 @@ class CreateWithContainer(base.CreateCommand):
         'skip_guest_os_shutdown'
     ):
       skip_guest_os_shutdown = args.skip_guest_os_shutdown
+    vsock_mode = None
+    if self._support_vsock_mode and args.IsSpecified('vsock_mode'):
+      vsock_mode = args.vsock_mode
     return instance_utils.CreateSchedulingMessage(
         messages=client.messages,
         maintenance_policy=args.maintenance_policy,
@@ -288,6 +295,7 @@ class CreateWithContainer(base.CreateCommand):
         provisioning_model=args.provisioning_model,
         restart_on_failure=args.restart_on_failure,
         skip_guest_os_shutdown=skip_guest_os_shutdown,
+        vsock_mode=vsock_mode,
     )
 
   def _GetServiceAccounts(self, args, client):
@@ -504,6 +512,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         support_flex_start=True,
         support_skip_guest_os_shutdown=True,
         support_workload_identity_config=False,
+        support_vsock_mode=False,
     )
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_BETA_API_VERSION
@@ -646,6 +655,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   _support_ipv6_only = True
   _support_skip_guest_os_shutdown = True
   _support_workload_identity_config = True
+  _support_vsock_mode = True
 
   @staticmethod
   def Args(parser):
@@ -662,6 +672,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         support_flex_start=True,
         support_skip_guest_os_shutdown=True,
         support_workload_identity_config=True,
+        support_vsock_mode=True,
     )
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(

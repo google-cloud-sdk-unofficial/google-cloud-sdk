@@ -126,11 +126,12 @@ def GetPersistentDiskSpecFromArgs(args, messages):
         '--disk-type',
         'Disk type must be specified when disk size is specified.',
     )
-  else:
-    disk_type = FormatDiskTypeForApiRequest(args.disk_type)
-    return persistent_disk_spec_config(
-        diskType=disk_type, diskSizeGb=args.disk_size_gb
-    )
+  if not hasattr(args, 'disk_type') or args.disk_type is None:
+    return None
+  disk_type = FormatDiskTypeForApiRequest(args.disk_type)
+  return persistent_disk_spec_config(
+      diskType=disk_type, diskSizeGb=args.disk_size_gb
+  )
 
 
 def GetNetworkSpecFromArgs(args, messages):

@@ -38,6 +38,9 @@ def _RunUpdateV2(cmd, args):
     args: the args passed to the command
   """
 
+  is_fleet_update = args.fleet_default_member_config or getattr(
+      args, 'modernization_compatibility', None
+  )
   memberships = []
   resource = False
   update_mask = []
@@ -46,7 +49,7 @@ def _RunUpdateV2(cmd, args):
   if args.IsKnownAndSpecified('membership'):
     resource = False
     memberships = utils.ParseMemberships(args)
-  elif args.fleet_default_member_config is None:
+  elif not is_fleet_update:
     resource = True
     memberships = features_base.ParseMembershipsPlural(
         args, prompt=True, search=True
@@ -83,7 +86,7 @@ def _RunUpdateV2(cmd, args):
         management_v2 = (
             cmd.messages_v2.ServiceMeshSpec.ManagementValueValuesEnum(
                 'MANAGEMENT_AUTOMATIC'))
-      if args.management == 'not_installed':
+      if args.management == 'not-installed':
         management_v2 = (
             cmd.messages_v2.ServiceMeshSpec.ManagementValueValuesEnum(
                 'MANAGEMENT_NOT_INSTALLED'))
@@ -144,6 +147,18 @@ def _RunUpdateV2(cmd, args):
         cmd.messages.CommonFleetDefaultMemberConfigSpec(mesh=member_config)
     )
     update_mask.append('fleet_default_member_config')
+  elif getattr(args, 'modernization_compatibility', None):
+    spec = cmd.messages.ServiceMeshFeatureSpec()
+    mod_compat_enum = (
+        cmd.messages.ServiceMeshFeatureSpec
+        .ModernizationCompatibilityValueValuesEnum
+    )
+    if args.modernization_compatibility == 'validation-enabled':
+      spec.modernizationCompatibility = mod_compat_enum.VALIDATION_ENABLED
+    elif args.modernization_compatibility == 'validation-disabled':
+      spec.modernizationCompatibility = mod_compat_enum.VALIDATION_DISABLED
+    f.spec = cmd.messages.CommonFeatureSpec(mesh=spec)
+    update_mask.append('spec.mesh.modernizationCompatibility')
 
   if update_mask:
     cmd.Update(update_mask, f)
@@ -159,6 +174,9 @@ def _RunUpdate(cmd, args):
     args: the args passed to the command
   """
 
+  is_fleet_update = args.fleet_default_member_config or getattr(
+      args, 'modernization_compatibility', None
+  )
   memberships = []
   resource = False
   update_mask = []
@@ -168,7 +186,7 @@ def _RunUpdate(cmd, args):
     resource = False
     memberships = utils.ParseMemberships(args)
     update_mask = ['membershipSpecs']
-  elif args.fleet_default_member_config is None:
+  elif not is_fleet_update:
     resource = True
     memberships = features_base.ParseMembershipsPlural(
         args, prompt=True, search=True
@@ -209,7 +227,7 @@ def _RunUpdate(cmd, args):
                 'MANAGEMENT_AUTOMATIC'
             )
         )
-      if args.management == 'not_installed':
+      if args.management == 'not-installed':
         management = (
             cmd.messages_v2.ServiceMeshSpec.ManagementValueValuesEnum(
                 'MANAGEMENT_NOT_INSTALLED'))
@@ -276,6 +294,18 @@ def _RunUpdate(cmd, args):
         cmd.messages.CommonFleetDefaultMemberConfigSpec(mesh=member_config)
     )
     update_mask.append('fleet_default_member_config')
+  elif getattr(args, 'modernization_compatibility', None):
+    spec = cmd.messages.ServiceMeshFeatureSpec()
+    mod_compat_enum = (
+        cmd.messages.ServiceMeshFeatureSpec
+        .ModernizationCompatibilityValueValuesEnum
+    )
+    if args.modernization_compatibility == 'validation-enabled':
+      spec.modernizationCompatibility = mod_compat_enum.VALIDATION_ENABLED
+    elif args.modernization_compatibility == 'validation-disabled':
+      spec.modernizationCompatibility = mod_compat_enum.VALIDATION_DISABLED
+    f.spec = cmd.messages.CommonFeatureSpec(mesh=spec)
+    update_mask.append('spec.mesh.modernizationCompatibility')
 
   cmd.Update(update_mask, f)
 # LINT.ThenChange(:update_v2)
@@ -313,6 +343,15 @@ class UpdateAlpha(features_base.UpdateCommand, mf_base.UpdateCommand):
         membership configuration, run:
 
           $ {command} --fleet-default-member-config=/path/to/service-mesh.yaml""",
+    )
+    args_group.add_argument(
+        '--modernization-compatibility',
+        choices=['validation-enabled', 'validation-disabled'],
+        help="""The modernization compatibility of the mesh.
+
+        To set the modernization compatibility of the mesh, run:
+
+          $ {command} --modernization-compatibility=validation-enabled""",
     )
 
     membership_group = args_group.add_group(
@@ -359,7 +398,7 @@ class UpdateAlpha(features_base.UpdateCommand, mf_base.UpdateCommand):
     )
     membership_controlplane_group.add_argument(
         '--management',
-        choices=['automatic', 'manual', 'not_installed'],
+        choices=['automatic', 'manual', 'not-installed'],
         help='The management mode to update to.',
     )
     membership_controlplane_group.add_argument(

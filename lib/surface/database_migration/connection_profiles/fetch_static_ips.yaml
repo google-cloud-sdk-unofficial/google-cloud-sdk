@@ -11,6 +11,7 @@
         $ {command} my-location
 
   request:
+    regional_endpoint_compatibility: SUPPORTED
     collection: datamigration.projects.locations
     method: fetchStaticIps
     api_version: v1

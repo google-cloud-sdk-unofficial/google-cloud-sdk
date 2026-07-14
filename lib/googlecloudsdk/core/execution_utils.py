@@ -20,6 +20,7 @@ import contextlib
 import errno
 import os
 import re
+import shutil
 import signal
 import subprocess
 import sys
@@ -127,15 +128,75 @@ except AttributeError:
 
 
 # Doesn't work in par or stub files.
-def GetPythonExecutable():
-  """Gets the path to the Python interpreter that should be used."""
+def GetPythonExecutable(sdk_root=None):
+  """Gets the path to the Python interpreter that should be used.
+
+  Args:
+    sdk_root: str, optional SDK root path. If not provided, uses the current
+      SDK root from config.
+
+  Returns:
+    str, The path to the Python executable.
+
+  Raises:
+    ValueError: If no valid python interpreter is found.
+  """
   cloudsdk_python = encoding.GetEncodedValue(os.environ, 'CLOUDSDK_PYTHON')
   if cloudsdk_python:
     return cloudsdk_python
-  python_bin = sys.executable
-  if not python_bin:
+
+  python_executable = sys.executable
+  if not python_executable:
     raise ValueError('Could not find Python executable.')
-  return python_bin
+
+  executable_name = os.path.splitext(os.path.basename(python_executable))[0]
+  if executable_name in ('gocloud', 'gcloud'):
+    # 1. Determine the bundled Python path based on OS
+    current_os = platforms.OperatingSystem.Current()
+    root = sdk_root or config.Paths().sdk_root_path
+    bundled = None
+    if root:
+      if current_os is platforms.OperatingSystem.WINDOWS:
+        bundled = os.path.join(
+            root, 'platform', 'bundledpython', 'python.exe'
+        )
+      else:
+        bundled = os.path.join(
+            root,
+            'platform',
+            'bundledpythonunix',
+            'bin',
+            'python3',
+        )
+
+    # 2. Define candidates in order of preference
+    virtualenv_python = None
+    if (
+        platforms.OperatingSystem.Current() == platforms.OperatingSystem.MACOSX
+        and config.Paths().virtualenv_dir
+    ):
+      virtualenv_python = os.path.join(
+          config.Paths().virtualenv_dir, 'bin', 'python'
+      )
+
+    candidates = [
+        bundled,
+        virtualenv_python,
+        'python3',
+        'python',
+    ]
+
+    # 3. Find the first candidate that exists and is executable
+    for candidate in candidates:
+      if candidate:
+        resolved = shutil.which(candidate)
+        if resolved:
+          log.debug('Using python interpreter: %s', resolved)
+          return resolved
+
+    raise ValueError('No valid python interpreter found.')
+
+  return python_executable
 
 
 # From https://en.wikipedia.org/wiki/Unix_shell#Bourne_shell_compatible
@@ -339,7 +400,12 @@ def _ReplaceSignal(signo, handler):
   try:
     yield
   finally:
-    signal.signal(signo, old_handler)
+    try:
+      signal.signal(signo, old_handler)
+    except TypeError:
+      # This happens in production under Go when old_handler is None
+      # (C handler). We can't restore it, so we just pass.
+      pass
 
 
 def _Exec(args,

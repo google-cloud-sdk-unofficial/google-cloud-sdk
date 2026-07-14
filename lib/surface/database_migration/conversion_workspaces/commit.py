@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.database_migration.conversion_workspaces import 
 from googlecloudsdk.generated_clients.apis.datamigration.v1 import datamigration_v1_messages as messages
 
 
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class Commit(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
@@ -66,7 +67,8 @@ class Commit(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
       operation if the commit was successful.
     """
     conversion_workspace_ref = args.CONCEPTS.conversion_workspace.Parse()
-    result_operation = self.client.operations.Commit(
+    client = self.GetClient(location=conversion_workspace_ref.locationsId)
+    result_operation = client.operations.Commit(
         name=conversion_workspace_ref.RelativeName(),
         commit_name=args.commit_name,
     )

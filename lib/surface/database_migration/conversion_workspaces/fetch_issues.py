@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.database_migration.conversion_workspaces import 
 _DEFAULT_PAGE_SIZE = 100
 
 
+@base.RegionalEndpointsSupported
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
@@ -83,7 +84,8 @@ class FetchIssues(
       arguments.
     """
     conversion_workspace_ref = args.CONCEPTS.conversion_workspace.Parse()
-    return self.client.entities.FetchIssues(
+    client = self.GetClient(location=conversion_workspace_ref.locationsId)
+    return client.entities.FetchIssues(
         name=conversion_workspace_ref.RelativeName(),
         all_issues=args.all_issues,
         filter_expr=self.ExtractBackendFilter(args),

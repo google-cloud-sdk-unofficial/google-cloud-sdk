@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.database_migration.conversion_workspaces import 
 from googlecloudsdk.generated_clients.apis.datamigration.v1 import datamigration_v1_messages as messages
 
 
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class Convert(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
@@ -65,7 +66,8 @@ class Convert(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
       operation if the convert was successful.
     """
     conversion_workspace_ref = args.CONCEPTS.conversion_workspace.Parse()
-    result_operation = self.client.operations.Convert(
+    client = self.GetClient(location=conversion_workspace_ref.locationsId)
+    result_operation = client.operations.Convert(
         name=conversion_workspace_ref.RelativeName(),
         filter_expr=self.ExtractBackendFilter(args),
         auto_commit=args.auto_commit,

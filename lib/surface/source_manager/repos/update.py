@@ -52,6 +52,7 @@ class Update(base.UpdateCommand):
     resource_args.AddRepositoryResourceArg(parser, "to update")
     flags.AddDescription(parser)
     flags.AddValidateOnly(parser)
+    flags.AddServiceAccount(parser)
 
   def Run(self, args):
     # Get resource args to contruct base url
@@ -65,11 +66,14 @@ class Update(base.UpdateCommand):
     update_mask = []
     if args.IsSpecified("description"):
       update_mask.append("description")
+    if args.IsSpecified("service_account"):
+      update_mask.append("serviceAccount")
 
     if not update_mask:
       raise exceptions.MinimumArgumentException(
           [
               "--description",
+              "--service-account",
           ],
           self.NO_CHANGES_MESSAGE.format(repository=repository_ref.Name()),
       )
@@ -77,8 +81,13 @@ class Update(base.UpdateCommand):
     # this is a shortcut LRO, it completes immediately and is marked as done
     # there is no need to wait
     update_operation = client.Update(
-        repository_ref, update_mask, args.validate_only, args.description
+        repository_ref,
+        update_mask,
+        args.validate_only,
+        args.description,
+        args.service_account,
     )
+
     log.UpdatedResource(repository_ref.RelativeName())
     return update_operation
 

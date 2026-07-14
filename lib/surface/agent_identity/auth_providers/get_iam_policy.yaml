@@ -1,0 +1,19 @@
+- release_tracks: [ALPHA, BETA]
+
+  help_text:
+    brief: Get the IAM policy for an Agent Identity authProvider.
+    description: |
+      This command gets the IAM policy for an authProvider.
+    examples: |
+      To print the IAM policy for a given authProvider, run:
+
+        $ {command} my-auth-provider --location=LOCATION
+
+  request:
+    api_version: v1alpha
+    collection: agentidentity.projects.locations.authProviders
+
+  arguments:
+    resource:
+      help_text: The authProvider for which to display the IAM policy.
+      spec: !REF googlecloudsdk.command_lib.agent_identity.authprovider_v1alpha_resources:projects_locations_auth_providers

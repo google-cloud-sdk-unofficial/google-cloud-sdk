@@ -61,6 +61,7 @@ EXAMPLES_BETA = """\
    """
 
 
+@base.RegionalEndpointsSupported
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
@@ -105,11 +106,11 @@ class Create(base.Command):
     stream_ref = args.CONCEPTS.stream.Parse()
     parent_ref = stream_ref.Parent().RelativeName()
 
-    stream_client = streams.StreamsClient()
+    stream_client = streams.StreamsClient(location=stream_ref.locationsId)
     result_operation = stream_client.Create(parent_ref, stream_ref.streamsId,
                                             self.ReleaseTrack(), args)
 
-    client = util.GetClientInstance()
+    client = util.GetClientInstance(location=stream_ref.locationsId)
     messages = util.GetMessagesModule()
     resource_parser = util.GetResourceParser()
 
@@ -126,8 +127,13 @@ class Create(base.Command):
 
 @base.Deprecate(
     is_removed=False,
-    warning=('Datastream beta version is deprecated. Please use`gcloud '
-             'datastream streams create` command instead.'))
+    warning=(
+        'Datastream beta version is deprecated. Please use`gcloud '
+        'datastream streams create` command instead.'
+    ),
+)
+@base.RegionalEndpointsSupported
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Creates a Datastream stream."""

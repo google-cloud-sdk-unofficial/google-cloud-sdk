@@ -563,6 +563,33 @@ class OracledatabaseV1(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+    def ConfigureExascale(self, request, global_params=None):
+      r"""Configures Exascale for a single Exadata Infrastructure.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsCloudExadataInfrastructuresConfigureExascaleRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('ConfigureExascale')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ConfigureExascale.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/cloudExadataInfrastructures/{cloudExadataInfrastructuresId}:configureExascale',
+        http_method='POST',
+        method_id='oracledatabase.projects.locations.cloudExadataInfrastructures.configureExascale',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:configureExascale',
+        request_field='configureExascaleCloudExadataInfrastructureRequest',
+        request_type_name='OracledatabaseProjectsLocationsCloudExadataInfrastructuresConfigureExascaleRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Create(self, request, global_params=None):
       r"""Creates a new Exadata Infrastructure in a given project and location.
 

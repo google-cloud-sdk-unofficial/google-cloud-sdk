@@ -74,13 +74,18 @@ class _Restart(object):
     """
     migration_job_ref = args.CONCEPTS.migration_job.Parse()
 
-    mj_client = migration_jobs.MigrationJobsClient(self.ReleaseTrack())
+    mj_client = migration_jobs.MigrationJobsClient(
+        self.ReleaseTrack(),
+        location=migration_job_ref.locationsId,
+    )
     return mj_client.Restart(
         migration_job_ref.RelativeName(),
         args,
     )
 
 
+@base.DefaultUniverseOnly
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class RestartGA(_Restart, base.Command):
   """Restart a Database Migration Service migration job."""
@@ -101,6 +106,8 @@ class RestartGA(_Restart, base.Command):
     mj_flags.AddRestartFailedObjectsFlag(parser)
 
 
+@base.DefaultUniverseOnly
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class RestartAlpha(_Restart, base.Command):
   """Restart a Database Migration Service migration job."""

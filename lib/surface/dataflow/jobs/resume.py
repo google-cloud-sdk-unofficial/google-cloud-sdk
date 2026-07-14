@@ -14,6 +14,7 @@
 # limitations under the License.
 """Implementation of gcloud dataflow jobs resume command."""
 
+
 from googlecloudsdk.api_lib.dataflow import apis
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
@@ -30,6 +31,8 @@ class Resume(base.Command):
   Once resume is triggered, if eligible, the job will enter the
   `JOB_STATE_RUNNING` state if the operation is successful. If the operation is
   not successful or the job is already running, the job state will be unchanged.
+  If a job is already in the `JOB_STATE_RUNNING` state, the command will succeed
+  and do nothing.
   """
 
   @staticmethod
@@ -44,11 +47,12 @@ class Resume(base.Command):
             project_id=job_ref.projectId,
             region_id=job_ref.location,
         )
-        log.status.Print(f'Started resuming job [{job_ref.jobId}]')
+        log.status.Print(
+            f'Resumed job [{job_ref.jobId}]. Note that the job may take'
+            ' several minutes to start processing data again.'
+        )
       except exceptions.HttpException as error:
         log.status.Print(
             f'Failed to resume job [{job_ref.jobId}]:'
-            f' {error.payload.status_message} Ensure that you have permission'
-            ' to access the job and that the `--region` flag,'
-            f" {job_ref.location}, matches the job's region."
+            f' {error.payload.status_message}'
         )

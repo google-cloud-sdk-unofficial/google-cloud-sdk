@@ -42,6 +42,7 @@ class BaseConversionWorkspacesClient(abc.ABC):
     release_track: The release track of the client, controlling the API version
       to use.
     parent_client: The parent client of the conversion workspaces client.
+    location: The location of the resources.
     client: The client used to send API requests.
     messages: The messages module used to construct API requests.
   """
@@ -50,6 +51,7 @@ class BaseConversionWorkspacesClient(abc.ABC):
       self,
       release_track: base.ReleaseTrack,
       parent_client: 'conversion_workspaces_client.ConversionWorkspacesClient',
+      location: Optional[str] = None,
   ):
     """Initializes the instance with an API client based on the release track.
 
@@ -57,13 +59,15 @@ class BaseConversionWorkspacesClient(abc.ABC):
       release_track: The release track of the client, controlling the API
         version to use.
       parent_client: The parent client of the conversion workspaces client.
+      location: The location of the resources.
     """
 
     self.release_track = release_track
     self.parent_client = parent_client
 
     self.client: client.DatamigrationV1 = api_util.GetClientInstance(
-        release_track=release_track
+        release_track=release_track,
+        location=location,
     )
     self.messages = api_util.GetMessagesModule(release_track=release_track)
 

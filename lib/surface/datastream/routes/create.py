@@ -33,6 +33,8 @@ EXAMPLES = """\
    """
 
 
+@base.RegionalEndpointsSupported
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create a Datastream private connection route."""
@@ -68,11 +70,11 @@ class Create(base.Command):
     route_ref = args.CONCEPTS.route.Parse()
     parent_ref = route_ref.Parent().RelativeName()
 
-    routes_client = routes.RoutesClient()
+    routes_client = routes.RoutesClient(location=route_ref.locationsId)
     result_operation = routes_client.Create(
         parent_ref, route_ref.routesId, args)
 
-    client = util.GetClientInstance()
+    client = util.GetClientInstance(location=route_ref.locationsId)
     messages = util.GetMessagesModule()
     resource_parser = util.GetResourceParser()
 
@@ -89,10 +91,13 @@ class Create(base.Command):
 
 @base.Deprecate(
     is_removed=False,
-    warning=('Datastream beta version is deprecated. Please use`gcloud '
-             'datastream routes create` command instead.')
+    warning=(
+        'Datastream beta version is deprecated. Please use`gcloud '
+        'datastream routes create` command instead.'
+    ),
 )
+@base.RegionalEndpointsSupported
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create a Datastream private connection route."""
-

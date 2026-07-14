@@ -15,6 +15,8 @@
 """Database Migration Service connection profiles API."""
 
 
+from typing import Optional
+
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.database_migration import api_util
 
@@ -22,9 +24,9 @@ from googlecloudsdk.api_lib.database_migration import api_util
 class ObjectsClient(object):
   """Client for migration job objects service in the API."""
 
-  def __init__(self, release_track):
+  def __init__(self, release_track, location: Optional[str] = None):
     self._api_version = api_util.GetApiVersion(release_track)
-    self.client = api_util.GetClientInstance(release_track)
+    self.client = api_util.GetClientInstance(release_track, location=location)
     self.messages = api_util.GetMessagesModule(release_track)
     self._service = self.client.projects_locations_migrationJobs_objects
     self.resource_parser = api_util.GetResourceParser(release_track)
@@ -90,5 +92,3 @@ class ObjectsClient(object):
           )
     return (self.messages.SourceObjectIdentifier.TypeValueValuesEnum
             .lookup_by_name('DATABASE'))
-
-

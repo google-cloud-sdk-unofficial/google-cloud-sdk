@@ -595,9 +595,13 @@ class GitClient(object):
                     cb(pkt)
 
     @staticmethod
-    def _should_send_pack(new_refs):
+    def _should_send_pack(new_refs, old_refs):
         # The packfile MUST NOT be sent if the only command used is delete.
-        return any(sha != ZERO_SHA for sha in new_refs.values())
+        for refname, new_sha in new_refs.items():
+            old_sha = old_refs.get(refname, ZERO_SHA)
+            if old_sha != new_sha and new_sha != ZERO_SHA:
+                return True
+        return False
 
     def _handle_receive_pack_head(self, proto, capabilities, old_refs, new_refs):
         """Handle the head of a 'git-receive-pack' request.
@@ -973,7 +977,7 @@ class TraditionalGitClient(GitClient):
                 ofs_delta=(CAPABILITY_OFS_DELTA in negotiated_capabilities),
             )
 
-            if self._should_send_pack(new_refs):
+            if self._should_send_pack(new_refs, old_refs):
                 write_pack_data(proto.write_file(), pack_data_count, pack_data)
 
             ref_status = self._handle_receive_pack_tail(
@@ -1886,9 +1890,12 @@ class HttpGitClient(GitClient):
         # Check if geturl() is available (urllib3 version >= 1.23)
         try:
             resp_url = resp.geturl()
+            if resp_url:
+                resp_url = urljoin(url, resp_url)
         except AttributeError:
-            # get_redirect_location() is available for urllib3 >= 1.1
             resp.redirect_location = resp.get_redirect_location()
+            if resp.redirect_location:
+                resp.redirect_location = urljoin(url, resp.redirect_location)
         else:
             resp.redirect_location = resp_url if resp_url != url else ""
         return resp, read
@@ -1996,7 +2003,7 @@ class HttpGitClient(GitClient):
             want,
             ofs_delta=(CAPABILITY_OFS_DELTA in negotiated_capabilities),
         )
-        if self._should_send_pack(new_refs):
+        if self._should_send_pack(new_refs, old_refs):
             write_pack_data(req_proto.write_file(), pack_data_count, pack_data)
         resp, read = self._smart_request(
             "git-receive-pack", url, data=req_data.getvalue()

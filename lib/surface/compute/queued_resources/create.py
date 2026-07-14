@@ -62,6 +62,7 @@ class Create(base.CreateCommand):
   _support_preemption_notice_duration = True
   _support_workload_identity_config = True
   _support_instance_selection_min_cpu_platform = True
+  _support_vsock_mode = True
 
   @classmethod
   def Args(cls, parser):
@@ -87,6 +88,7 @@ class Create(base.CreateCommand):
         support_instance_flexibility_policy=False,
         support_workload_identity_config=cls._support_workload_identity_config,
         support_instance_selection_min_cpu_platform=cls._support_instance_selection_min_cpu_platform,
+        support_vsock_mode=cls._support_vsock_mode,
     )
     cls.AddSourceInstanceTemplate(parser)
     instances_flags.AddSecureTagsArgs(parser)
@@ -161,6 +163,7 @@ class Create(base.CreateCommand):
         False,
         self._support_workload_identity_config,
         self._support_instance_selection_min_cpu_platform,
+        support_vsock_mode=self._support_vsock_mode,
     )
     bulk_insert_instance_resource = bulk_util.CreateBulkInsertInstanceResource(
         args,

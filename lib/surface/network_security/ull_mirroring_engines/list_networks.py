@@ -21,8 +21,9 @@ from googlecloudsdk.command_lib.network_security import ull_mirroring_engine_fla
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class ListNetworks(base.ListCommand):
   """List networks configured for mirroring for a Google Cloud ULL Mirroring Engine.
 
@@ -37,7 +38,8 @@ class ListNetworks(base.ListCommand):
   @classmethod
   def Args(cls, parser):
     ull_mirroring_engine_flags.AddUllMirroringEngineResource(
-        parser, cls.ReleaseTrack(),
+        parser,
+        cls.ReleaseTrack(),
     )
     parser.display_info.AddFormat("""
         table(

@@ -462,6 +462,15 @@ def AddMaintenanceInterval():
   )
 
 
+def AddVsockModeArgs(parser):
+  """Adds vsock-mode arg to the parser."""
+  parser.add_argument(
+      '--vsock-mode',
+      choices=['enabled', 'disabled'],
+      help='Specifies the vsock mode for the instance.',
+  )
+
+
 def AddMaintenanceFreezeDuration():
   return base.Argument(
       '--maintenance-freeze-duration',

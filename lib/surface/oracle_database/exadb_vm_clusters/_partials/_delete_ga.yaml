@@ -19,12 +19,12 @@
   - GA
   auto_generated: true
   help_text:
-    brief: Delete exadbVmClusters
-    description: Delete an exadbVmCluster
+    brief: Delete an ExadbVmCluster.
+    description: Delete an ExadbVmCluster.
     examples: |-
-      To delete the exadbVmCluster, run:
+      To delete an ExadbVmCluster with id `my-instance` in the location `us-east4`, run:
 
-          $ {command}
+        $ {command} my-instance --location=us-east4
   arguments:
     params:
     - help_text: |-

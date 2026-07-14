@@ -79,6 +79,7 @@ def _CommonArgs(
     support_alias_ipv6_ranges=False,
     support_dns64_eligible=False,
     support_nat64_eligible=False,
+    support_vsock_mode=False,
 ):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -114,6 +115,8 @@ def _CommonArgs(
   deprecate_maintenance_policy = release_track in [base.ReleaseTrack.ALPHA]
   instances_flags.AddMaintenancePolicyArgs(parser, deprecate_maintenance_policy)
   instances_flags.AddNoRestartOnFailureArgs(parser)
+  if support_vsock_mode:
+    instances_flags.AddVsockModeArgs(parser)
   instances_flags.AddPreemptibleVmArgs(parser)
   instances_flags.AddServiceAccountAndScopeArgs(parser, False)
   instances_flags.AddTagsArgs(parser)
@@ -601,6 +604,7 @@ def _RunCreate(
     support_alias_ipv6_ranges=False,
     support_dns64_eligible=False,
     support_nat64_eligible=False,
+    support_vsock_mode=False,
 ):
   """Common routine for creating instance template.
 
@@ -664,8 +668,9 @@ def _RunCreate(
       support_workload_identity_config: Indicate whether workload identity
         config is supported.
       support_alias_ipv6_ranges: Indicate whether alias ipv6 range is supported.
-    support_dns64_eligible: Indicate whether dns64 is supported.
-    support_nat64_eligible: Indicate whether nat64 is supported.
+      support_dns64_eligible: Indicate whether dns64 is supported.
+      support_nat64_eligible: Indicate whether nat64 is supported.
+      support_vsock_mode: Indicate whether vsock mode is supported.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -877,6 +882,10 @@ def _RunCreate(
   ):
     preemption_notice_duration = args.preemption_notice_duration
 
+  vsock_mode = None
+  if support_vsock_mode and args.IsSpecified('vsock_mode'):
+    vsock_mode = args.vsock_mode
+
   scheduling = instance_utils.CreateSchedulingMessage(
       messages=client.messages,
       maintenance_policy=args.maintenance_policy,
@@ -896,6 +905,7 @@ def _RunCreate(
       discard_local_ssds_at_termination_timestamp=discard_local_ssds_at_termination_timestamp,
       skip_guest_os_shutdown=skip_guest_os_shutdown,
       preemption_notice_duration=preemption_notice_duration,
+      vsock_mode=vsock_mode,
   )
 
   if args.no_service_account:
@@ -1241,6 +1251,7 @@ class Create(base.CreateCommand):
   _support_alias_ipv6_ranges = False
   _support_dns64_eligible = False
   _support_nat64_eligible = False
+  _support_vsock_mode = False
 
   @classmethod
   def Args(cls, parser):
@@ -1278,6 +1289,7 @@ class Create(base.CreateCommand):
         support_alias_ipv6_ranges=cls._support_alias_ipv6_ranges,
         support_dns64_eligible=cls._support_dns64_eligible,
         support_nat64_eligible=cls._support_nat64_eligible,
+        support_vsock_mode=cls._support_vsock_mode,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1335,6 +1347,9 @@ class Create(base.CreateCommand):
         support_enable_vpc_scoped_dns=self._support_enable_vpc_scoped_dns,
         support_workload_identity_config=self._support_workload_identity_config,
         support_alias_ipv6_ranges=self._support_alias_ipv6_ranges,
+        support_dns64_eligible=self._support_dns64_eligible,
+        support_nat64_eligible=self._support_nat64_eligible,
+        support_vsock_mode=self._support_vsock_mode,
     )
 
 
@@ -1390,8 +1405,8 @@ class CreateBeta(Create):
   _support_enable_vpc_scoped_dns = False
   _support_workload_identity_config = False
   _support_alias_ipv6_ranges = True
-  _support_dns64_eligible = False
-  _support_nat64_eligible = False
+  _support_dns64_eligible = True
+  _support_nat64_eligible = True
 
   @classmethod
   def Args(cls, parser):
@@ -1429,6 +1444,7 @@ class CreateBeta(Create):
         support_alias_ipv6_ranges=cls._support_alias_ipv6_ranges,
         support_dns64_eligible=cls._support_dns64_eligible,
         support_nat64_eligible=cls._support_nat64_eligible,
+        support_vsock_mode=cls._support_vsock_mode,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1489,8 +1505,9 @@ class CreateBeta(Create):
         support_enable_vpc_scoped_dns=self._support_enable_vpc_scoped_dns,
         support_workload_identity_config=self._support_workload_identity_config,
         support_alias_ipv6_ranges=self._support_alias_ipv6_ranges,
-        support_dns64_eligible=True,
-        support_nat64_eligible=True,
+        support_dns64_eligible=self._support_dns64_eligible,
+        support_nat64_eligible=self._support_nat64_eligible,
+        support_vsock_mode=self._support_vsock_mode,
     )
 
 
@@ -1546,6 +1563,7 @@ class CreateAlpha(Create):
   _support_enable_vpc_scoped_dns = True
   _support_workload_identity_config = True
   _support_alias_ipv6_ranges = True
+  _support_vsock_mode = True
   _support_dns64_eligible = True
   _support_nat64_eligible = True
 
@@ -1586,6 +1604,7 @@ class CreateAlpha(Create):
         support_alias_ipv6_ranges=cls._support_alias_ipv6_ranges,
         support_dns64_eligible=cls._support_dns64_eligible,
         support_nat64_eligible=cls._support_nat64_eligible,
+        support_vsock_mode=cls._support_vsock_mode,
     )
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
@@ -1649,8 +1668,9 @@ class CreateAlpha(Create):
         support_enable_vpc_scoped_dns=self._support_enable_vpc_scoped_dns,
         support_workload_identity_config=self._support_workload_identity_config,
         support_alias_ipv6_ranges=self._support_alias_ipv6_ranges,
-        support_dns64_eligible=True,
-        support_nat64_eligible=True,
+        support_dns64_eligible=self._support_dns64_eligible,
+        support_nat64_eligible=self._support_nat64_eligible,
+        support_vsock_mode=self._support_vsock_mode,
     )
 
 

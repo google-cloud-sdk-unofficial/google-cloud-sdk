@@ -17,6 +17,7 @@
   request:
     collection: datastream.projects.locations.privateConnections.routes
     api_version: v1
+    regional_endpoint_compatibility: SUPPORTED
 
   response:
     id_field: name

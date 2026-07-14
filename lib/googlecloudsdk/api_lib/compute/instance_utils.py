@@ -282,6 +282,7 @@ def CreateSchedulingMessage(
     skip_guest_os_shutdown=None,
     preemption_notice_duration=None,
     current_cpus=None,
+    vsock_mode=None,
 ):
   """Create scheduling message for VM."""
   # Note: We always specify automaticRestart=False for preemptible VMs. This
@@ -372,6 +373,12 @@ def CreateSchedulingMessage(
   if preemption_notice_duration is not None:
     scheduling.preemptionNoticeDuration = messages.Duration(
         seconds=preemption_notice_duration
+    )
+
+  if vsock_mode is not None:
+    vsock_mode_val = vsock_mode.upper()
+    scheduling.vsockMode = messages.SchedulingVsockMode(
+        mode=messages.SchedulingVsockMode.ModeValueValuesEnum(vsock_mode_val)
     )
 
   return scheduling
@@ -760,6 +767,7 @@ def GetScheduling(
     support_graceful_shutdown=False,
     support_skip_guest_os_shutdown=False,
     support_preemption_notice_duration=False,
+    support_vsock_mode=False,
 ):
   """Generate a Scheduling Message or None based on specified args."""
   node_affinities = None
@@ -846,6 +854,12 @@ def GetScheduling(
   ):
     preemption_notice_duration = args.preemption_notice_duration
 
+  vsock_mode = None
+  if support_vsock_mode and args.IsKnownAndSpecified('vsock_mode') and hasattr(
+      args, 'vsock_mode'
+  ):
+    vsock_mode = args.vsock_mode
+
   current_cpus = None
   if args.IsKnownAndSpecified('current_cpus') and hasattr(
       args, 'current_cpus'
@@ -871,6 +885,8 @@ def GetScheduling(
       and not local_ssd_recovery_timeout
       and not graceful_shutdown
       and not preemption_notice_duration
+      and not vsock_mode
+      and not current_cpus
   ):
     return None
 
@@ -896,6 +912,7 @@ def GetScheduling(
       skip_guest_os_shutdown=skip_guest_os_shutdown,
       preemption_notice_duration=preemption_notice_duration,
       current_cpus=current_cpus,
+      vsock_mode=vsock_mode,
   )
 
 

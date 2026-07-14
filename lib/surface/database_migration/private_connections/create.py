@@ -41,6 +41,7 @@ EXAMPLES = """\
    """
 
 
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
 class Create(base.Command):
@@ -110,13 +111,16 @@ class Create(base.Command):
     """
     private_connection_ref = args.CONCEPTS.private_connection.Parse()
     parent_ref = private_connection_ref.Parent().RelativeName()
+    location = private_connection_ref.locationsId
 
     pc_client = private_connections.PrivateConnectionsClient(
-        release_track=self.ReleaseTrack())
+        release_track=self.ReleaseTrack(),
+        location=location,
+    )
     result_operation = pc_client.Create(
         parent_ref, private_connection_ref.privateConnectionsId, args)
 
-    client = api_util.GetClientInstance(self.ReleaseTrack())
+    client = api_util.GetClientInstance(self.ReleaseTrack(), location=location)
     messages = api_util.GetMessagesModule(self.ReleaseTrack())
     resource_parser = api_util.GetResourceParser(self.ReleaseTrack())
 

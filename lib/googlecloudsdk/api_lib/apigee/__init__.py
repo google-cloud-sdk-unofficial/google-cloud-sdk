@@ -72,6 +72,34 @@ class APIsClient(base.BaseClient):
   _entity_path = ["organization", "api"]
 
   @classmethod
+  def Create(cls, identifiers, proxy_info, bundle_file):
+    """Creates an API proxy.
+
+    Args:
+      identifiers: Dict of identifiers for the request entity path, as generated
+        by resource_args.ParseResources(). Must include "organizationsId" and
+        "apisId".
+      proxy_info: Dict of additional parameters to the API call. Only "space" is
+        currently supported.
+      bundle_file: A file-like object containing the API proxy bundle to upload.
+
+    Returns:
+      A dict of the API response.
+    """
+    query_params = {"action": "import", "name": identifiers["apisId"]}
+    if "space" in proxy_info:
+      query_params["space"] = proxy_info["space"]
+    return request.ResponseToApiRequest(
+        identifiers,
+        ["organization"],
+        "api",
+        method="POST",
+        body=bundle_file,
+        body_mimetype="application/octet-stream",
+        query_params=query_params,
+    )
+
+  @classmethod
   def Deploy(cls, identifiers, override=False):
     deployment_path = ["organization", "environment", "api", "revision"]
     query_params = {"override": "true"} if override else {}

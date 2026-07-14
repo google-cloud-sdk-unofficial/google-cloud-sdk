@@ -104,6 +104,19 @@ def AddBlueprint(parser, api_version=None, hidden=False):
   )
 
 
+def AddQuickstartCluster(parser, hidden=False):
+  """Adds the --quickstart-cluster flag to the parser."""
+  parser.add_argument(
+      "--quickstart-cluster",
+      action="store_true",
+      help=(
+          "If specified, creates a cluster with sensible defaults for compute,"
+          " network, and orchestrator."
+      ),
+      hidden=hidden,
+  )
+
+
 def AddUpdateMask(parser, api_version=None, required=False, hidden=False):
   """Adds an update mask flag for the given API version."""
   if api_version not in ["v1alpha", "v1beta"]:
@@ -279,7 +292,7 @@ def AddCreateFilestores(
         id: ID of the filestore resource, used to refer to this resource in storage-configs.
         name: Name of the filestore instance to create in your project in the format of locations/us-central1/instances/filestore-1.
 
-        capacityGb: Size of the filestore in GB. Must be between 1024 and 102400, and must meet scalability requirements described at
+        capacityGb: Size of the filestore in GiB. Must be between 1024 and 102400, and must meet scalability requirements described at
         https://cloud.google.com/filestore/docs/service-tiers.
 
         fileshare: The directory on a Filestore instance where all shared files

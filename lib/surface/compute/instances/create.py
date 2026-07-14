@@ -126,6 +126,7 @@ def _CommonArgs(
     support_alias_ipv6_ranges=False,
     support_dns64_eligible=False,
     support_nat64_eligible=False,
+    support_vsock_mode=False,
 ):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
@@ -164,6 +165,8 @@ def _CommonArgs(
   instances_flags.AddMaintenancePolicyArgs(
       parser, deprecate=deprecate_maintenance_policy)
   instances_flags.AddNoRestartOnFailureArgs(parser)
+  if support_vsock_mode:
+    instances_flags.AddVsockModeArgs(parser)
   instances_flags.AddPreemptibleVmArgs(parser)
   instances_flags.AddServiceAccountAndScopeArgs(
       parser,
@@ -345,6 +348,7 @@ class Create(base.CreateCommand):
   _support_alias_ipv6_ranges = False
   _support_dns64_eligible = False
   _support_nat64_eligible = False
+  _support_vsock_mode = False
 
   @classmethod
   def Args(cls, parser):
@@ -379,6 +383,7 @@ class Create(base.CreateCommand):
         support_alias_ipv6_ranges=cls._support_alias_ipv6_ranges,
         support_dns64_eligible=cls._support_dns64_eligible,
         support_nat64_eligible=cls._support_nat64_eligible,
+        support_vsock_mode=cls._support_vsock_mode,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()
@@ -454,6 +459,7 @@ class Create(base.CreateCommand):
         support_graceful_shutdown=self._support_graceful_shutdown,
         support_skip_guest_os_shutdown=self._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=self._support_preemption_notice_duration,
+        support_vsock_mode=self._support_vsock_mode,
     )
     tags = instance_utils.GetTags(args, compute_client)
     labels = instance_utils.GetLabels(args, compute_client)
@@ -943,6 +949,7 @@ class CreateBeta(Create):
         support_alias_ipv6_ranges=cls._support_alias_ipv6_ranges,
         support_dns64_eligible=cls._support_dns64_eligible,
         support_nat64_eligible=cls._support_nat64_eligible,
+        support_vsock_mode=cls._support_vsock_mode,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()
@@ -1025,9 +1032,10 @@ class CreateAlpha(CreateBeta):
   _support_preemption_notice_duration = True
   _support_enable_vpc_scoped_dns = True
   _support_workload_identity_config = True
-  _support_alias_ipv6_ranges = True
+  _support_vsock_mode = True
   _support_dns64_eligible = True
   _support_nat64_eligible = True
+  _support_alias_ipv6_ranges = True
 
   @classmethod
   def Args(cls, parser):
@@ -1067,6 +1075,7 @@ class CreateAlpha(CreateBeta):
         support_alias_ipv6_ranges=cls._support_alias_ipv6_ranges,
         support_dns64_eligible=cls._support_dns64_eligible,
         support_nat64_eligible=cls._support_nat64_eligible,
+        support_vsock_mode=cls._support_vsock_mode,
     )
 
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (

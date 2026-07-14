@@ -644,6 +644,19 @@ class GoogleCloudRunV2ContainerStatus(_messages.Message):
   name = _messages.StringField(3)
 
 
+class GoogleCloudRunV2CpuScaling(_messages.Message):
+  r"""Represents CPU-related scaling settings.
+
+  Fields:
+    cpuUtilization: Optional. Determines a threshold for CPU utilization
+      before scaling begins. Accepted values are between `0.1` and `0.95`
+      (inclusive) or `0.0` to disable CPU utilization as threshold for
+      scaling.
+  """
+
+  cpuUtilization = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
+
+
 class GoogleCloudRunV2DockerBuild(_messages.Message):
   r"""Build the source using Docker. This means the source has a Dockerfile.
   """
@@ -1336,15 +1349,15 @@ class GoogleCloudRunV2Instance(_messages.Message):
       encryption key is revoked.
     IngressValueValuesEnum: Optional. Provides the ingress settings for this
       Instance. On output, returns the currently observed ingress settings, or
-      INGRESS_TRAFFIC_UNSPECIFIED if no revision is active.
+      `INGRESS_TRAFFIC_UNSPECIFIED` if no revision is active.
     LaunchStageValueValuesEnum: The launch stage as defined by [Google Cloud
       Platform Launch Stages](https://cloud.google.com/terms/launch-stages).
       Cloud Run supports `ALPHA`, `BETA`, and `GA`. If no value is specified,
-      GA is assumed. Set the launch stage to a preview stage on input to allow
-      use of preview features in that stage. On read (or output), describes
-      whether the resource uses preview features. For example, if ALPHA is
-      provided as input, but only BETA and GA-level features are used, this
-      field will be BETA on output.
+      `GA` is assumed. Set the launch stage to a preview stage on input to
+      allow use of preview features in that stage. On read (or output),
+      describes whether the resource uses preview features. For example, if
+      `ALPHA` is provided as input, but only `BETA` and `GA`-level features
+      are used, this field will be `BETA` on output.
     RestartPolicyValueValuesEnum: Optional. Restart policy for the Instance.
 
   Messages:
@@ -1377,8 +1390,8 @@ class GoogleCloudRunV2Instance(_messages.Message):
       https://cloud.google.com/run/docs/securing/using-cmek
     encryptionKeyRevocationAction: The action to take if the encryption key is
       revoked.
-    encryptionKeyShutdownDuration: If encryption_key_revocation_action is
-      SHUTDOWN, the duration before shutting down all instances. The minimum
+    encryptionKeyShutdownDuration: If `encryption_key_revocation_action` is
+      `SHUTDOWN`, the duration before shutting down all instances. The minimum
       increment is 1 hour.
     etag: Optional. A system-generated fingerprint for this version of the
       resource. May be used to detect modification conflict during updates.
@@ -1386,16 +1399,16 @@ class GoogleCloudRunV2Instance(_messages.Message):
       will be permamently deleted.
     generation: Output only. A number that monotonically increases every time
       the user modifies the desired state. Please note that unlike v1, this is
-      an int64 value. As with most Google APIs, its JSON representation will
+      an `int64` value. As with most Google APIs, its JSON representation will
       be a `string` instead of an `integer`.
     gpuZonalRedundancyDisabled: Optional. True if GPU zonal redundancy is
       disabled on this instance.
     iapEnabled: Optional. IAP settings on the Instance.
     ingress: Optional. Provides the ingress settings for this Instance. On
       output, returns the currently observed ingress settings, or
-      INGRESS_TRAFFIC_UNSPECIFIED if no revision is active.
+      `INGRESS_TRAFFIC_UNSPECIFIED` if no revision is active.
     invokerIamDisabled: Optional. Disables IAM permission check for
-      run.routes.invoke for callers of this Instance. For more information,
+      `run.routes.invoke` for callers of this Instance. For more information,
       visit https://cloud.google.com/run/docs/securing/managing-
       access#invoker_check.
     labels: A LabelsValue attribute.
@@ -1403,35 +1416,35 @@ class GoogleCloudRunV2Instance(_messages.Message):
       modifier.
     launchStage: The launch stage as defined by [Google Cloud Platform Launch
       Stages](https://cloud.google.com/terms/launch-stages). Cloud Run
-      supports `ALPHA`, `BETA`, and `GA`. If no value is specified, GA is
+      supports `ALPHA`, `BETA`, and `GA`. If no value is specified, `GA` is
       assumed. Set the launch stage to a preview stage on input to allow use
       of preview features in that stage. On read (or output), describes
-      whether the resource uses preview features. For example, if ALPHA is
-      provided as input, but only BETA and GA-level features are used, this
-      field will be BETA on output.
+      whether the resource uses preview features. For example, if `ALPHA` is
+      provided as input, but only `BETA` and `GA`-level features are used,
+      this field will be `BETA` on output.
     logUri: Output only. The Google Console URI to obtain logs for the
       Instance.
-    name: The fully qualified name of this Instance. In CreateInstanceRequest,
-      this field is ignored, and instead composed from
-      CreateInstanceRequest.parent and CreateInstanceRequest.instance_id.
-      Format: projects/{project}/locations/{location}/instances/{instance_id}
+    name: The fully qualified name of this Instance. In
+      `CreateInstanceRequest`, this field is ignored, and instead composed
+      from `CreateInstanceRequest.parent` and
+      `CreateInstanceRequest.instance_id`.
     nodeSelector: Optional. The node selector for the instance.
     observedGeneration: Output only. The generation of this Instance currently
       serving traffic. See comments in `reconciling` for additional
       information on reconciliation process in Cloud Run. Please note that
-      unlike v1, this is an int64 value. As with most Google APIs, its JSON
+      unlike v1, this is an `int64` value. As with most Google APIs, its JSON
       representation will be a `string` instead of an `integer`.
-    reconciling: Output only. Returns true if the Instance is currently being
-      acted upon by the system to bring it into the desired state. When a new
-      Instance is created, or an existing one is updated, Cloud Run will
+    reconciling: Output only. Returns `true` if the Instance is currently
+      being acted upon by the system to bring it into the desired state. When
+      a new Instance is created, or an existing one is updated, Cloud Run will
       asynchronously perform all necessary steps to bring the Instance to the
       desired serving state. This process is called reconciliation. While
       reconciliation is in process, `observed_generation` will have a
       transient value that might mismatch the intended state. Once
-      reconciliation is over (and this field is false), there are two possible
-      outcomes: reconciliation succeeded and the serving state matches the
-      Instance, or there was an error, and reconciliation failed. This state
-      can be found in `terminal_condition.state`.
+      reconciliation is over (and this field is `false`), there are two
+      possible outcomes: reconciliation succeeded and the serving state
+      matches the Instance, or there was an error, and reconciliation failed.
+      This state can be found in `terminal_condition.state`.
     restartPolicy: Optional. Restart policy for the Instance.
     satisfiesPzs: Output only. Reserved for future use.
     serviceAccount: A string attribute.
@@ -1466,7 +1479,7 @@ class GoogleCloudRunV2Instance(_messages.Message):
   class IngressValueValuesEnum(_messages.Enum):
     r"""Optional. Provides the ingress settings for this Instance. On output,
     returns the currently observed ingress settings, or
-    INGRESS_TRAFFIC_UNSPECIFIED if no revision is active.
+    `INGRESS_TRAFFIC_UNSPECIFIED` if no revision is active.
 
     Values:
       INGRESS_TRAFFIC_UNSPECIFIED: Unspecified
@@ -1485,12 +1498,12 @@ class GoogleCloudRunV2Instance(_messages.Message):
   class LaunchStageValueValuesEnum(_messages.Enum):
     r"""The launch stage as defined by [Google Cloud Platform Launch
     Stages](https://cloud.google.com/terms/launch-stages). Cloud Run supports
-    `ALPHA`, `BETA`, and `GA`. If no value is specified, GA is assumed. Set
+    `ALPHA`, `BETA`, and `GA`. If no value is specified, `GA` is assumed. Set
     the launch stage to a preview stage on input to allow use of preview
     features in that stage. On read (or output), describes whether the
-    resource uses preview features. For example, if ALPHA is provided as
-    input, but only BETA and GA-level features are used, this field will be
-    BETA on output.
+    resource uses preview features. For example, if `ALPHA` is provided as
+    input, but only `BETA` and `GA`-level features are used, this field will
+    be `BETA` on output.
 
     Values:
       LAUNCH_STAGE_UNSPECIFIED: Do not use this default value.
@@ -2367,7 +2380,6 @@ class GoogleCloudRunV2Revision(_messages.Message):
     reconciling: Output only. Indicates whether the resource's reconciliation
       is still in progress. See comments in `Service.reconciling` for
       additional information on reconciliation process in Cloud Run.
-    sandboxes: Output only. Configuration for sandboxes.
     satisfiesPzs: Output only. Reserved for future use.
     scaling: Scaling settings for this revision.
     scalingStatus: Output only. The current effective scaling settings for the
@@ -2545,19 +2557,18 @@ class GoogleCloudRunV2Revision(_messages.Message):
   nodeSelector = _messages.MessageField('GoogleCloudRunV2NodeSelector', 22)
   observedGeneration = _messages.IntegerField(23)
   reconciling = _messages.BooleanField(24)
-  sandboxes = _messages.MessageField('GoogleCloudRunV2SandboxConfiguration', 25)
-  satisfiesPzs = _messages.BooleanField(26)
-  scaling = _messages.MessageField('GoogleCloudRunV2RevisionScaling', 27)
-  scalingStatus = _messages.MessageField('GoogleCloudRunV2RevisionScalingStatus', 28)
-  service = _messages.StringField(29)
-  serviceAccount = _messages.StringField(30)
-  serviceMesh = _messages.MessageField('GoogleCloudRunV2ServiceMesh', 31)
-  sessionAffinity = _messages.BooleanField(32)
-  timeout = _messages.StringField(33)
-  uid = _messages.StringField(34)
-  updateTime = _messages.StringField(35)
-  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 36, repeated=True)
-  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 37)
+  satisfiesPzs = _messages.BooleanField(25)
+  scaling = _messages.MessageField('GoogleCloudRunV2RevisionScaling', 26)
+  scalingStatus = _messages.MessageField('GoogleCloudRunV2RevisionScalingStatus', 27)
+  service = _messages.StringField(28)
+  serviceAccount = _messages.StringField(29)
+  serviceMesh = _messages.MessageField('GoogleCloudRunV2ServiceMesh', 30)
+  sessionAffinity = _messages.BooleanField(31)
+  timeout = _messages.StringField(32)
+  uid = _messages.StringField(33)
+  updateTime = _messages.StringField(34)
+  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 35, repeated=True)
+  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 36)
 
 
 class GoogleCloudRunV2RevisionScaling(_messages.Message):
@@ -2678,7 +2689,6 @@ class GoogleCloudRunV2RevisionTemplate(_messages.Message):
     nodeSelector: Optional. The node selector for the revision template.
     revision: Optional. The unique name for the revision. If this field is
       omitted, it will be automatically generated based on the Service name.
-    sandboxes: Optional. Configuration for sandboxes.
     scaling: Optional. Scaling settings for this Revision.
     serviceAccount: Optional. Email address of the IAM service account
       associated with the revision of the service. The service account
@@ -2799,14 +2809,13 @@ class GoogleCloudRunV2RevisionTemplate(_messages.Message):
   maxInstanceRequestConcurrency = _messages.IntegerField(12, variant=_messages.Variant.INT32)
   nodeSelector = _messages.MessageField('GoogleCloudRunV2NodeSelector', 13)
   revision = _messages.StringField(14)
-  sandboxes = _messages.MessageField('GoogleCloudRunV2SandboxConfiguration', 15)
-  scaling = _messages.MessageField('GoogleCloudRunV2RevisionScaling', 16)
-  serviceAccount = _messages.StringField(17)
-  serviceMesh = _messages.MessageField('GoogleCloudRunV2ServiceMesh', 18)
-  sessionAffinity = _messages.BooleanField(19)
-  timeout = _messages.StringField(20)
-  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 21, repeated=True)
-  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 22)
+  scaling = _messages.MessageField('GoogleCloudRunV2RevisionScaling', 15)
+  serviceAccount = _messages.StringField(16)
+  serviceMesh = _messages.MessageField('GoogleCloudRunV2ServiceMesh', 17)
+  sessionAffinity = _messages.BooleanField(18)
+  timeout = _messages.StringField(19)
+  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 20, repeated=True)
+  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 21)
 
 
 class GoogleCloudRunV2RunJobRequest(_messages.Message):
@@ -2825,17 +2834,6 @@ class GoogleCloudRunV2RunJobRequest(_messages.Message):
   etag = _messages.StringField(1)
   overrides = _messages.MessageField('GoogleCloudRunV2Overrides', 2)
   validateOnly = _messages.BooleanField(3)
-
-
-class GoogleCloudRunV2SandboxConfiguration(_messages.Message):
-  r"""Configuration for sandboxes.
-
-  Fields:
-    templates: Required. Container templates that can be launched through the
-      `sandbox` CLI.
-  """
-
-  templates = _messages.MessageField('GoogleCloudRunV2Container', 1, repeated=True)
 
 
 class GoogleCloudRunV2SecretKeySelector(_messages.Message):
@@ -4476,6 +4474,7 @@ class GoogleCloudRunV2WorkerPoolScaling(_messages.Message):
       pool.
 
   Fields:
+    cpuScaling: Optional. The CPU scaling settings for the worker pool.
     manualInstanceCount: Optional. The total number of instances in manual
       scaling mode.
     maxInstanceCount: Optional. The maximum count of instances distributed
@@ -4504,11 +4503,12 @@ class GoogleCloudRunV2WorkerPoolScaling(_messages.Message):
     AUTOMATIC = 1
     MANUAL = 2
 
-  manualInstanceCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  maxInstanceCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  maxSurge = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  minInstanceCount = _messages.IntegerField(4, variant=_messages.Variant.INT32)
-  scalingMode = _messages.EnumField('ScalingModeValueValuesEnum', 5)
+  cpuScaling = _messages.MessageField('GoogleCloudRunV2CpuScaling', 1)
+  manualInstanceCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  maxInstanceCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  maxSurge = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  minInstanceCount = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  scalingMode = _messages.EnumField('ScalingModeValueValuesEnum', 6)
 
 
 class GoogleDevtoolsCloudbuildV1ApprovalConfig(_messages.Message):
@@ -6934,7 +6934,8 @@ class RunProjectsLocationsInstancesCreateRequest(_messages.Message):
       50 characters. The name of the instance becomes
       {parent}/instances/{instance_id}. If not provided, the server will
       generate a unique `instance_id`.
-    parent: A string attribute.
+    parent: Required. The location and project in which this Instance should
+      be created.
     validateOnly: Optional. Indicates that the request should be validated and
       default values populated, without persisting the request or creating any
       resources.
@@ -6952,7 +6953,7 @@ class RunProjectsLocationsInstancesDeleteRequest(_messages.Message):
   Fields:
     etag: Optional. A system-generated fingerprint for this version of the
       resource. May be used to detect modification conflict during updates.
-    name: A string attribute.
+    name: Required. The name of the Instance to delete.
     validateOnly: Optional. Indicates that the request should be validated
       without actually deleting any resources.
   """
@@ -6992,7 +6993,7 @@ class RunProjectsLocationsInstancesGetRequest(_messages.Message):
   r"""A RunProjectsLocationsInstancesGetRequest object.
 
   Fields:
-    name: A string attribute.
+    name: Required. The name of the Instance to retrieve.
   """
 
   name = _messages.StringField(1, required=True)
@@ -7005,9 +7006,7 @@ class RunProjectsLocationsInstancesListRequest(_messages.Message):
     pageSize: Optional. Maximum number of Instances to return in this call.
     pageToken: Optional. A page token received from a previous call to
       ListInstances. All other parameters must match.
-    parent: Required. The location and project to list resources on. Format:
-      projects/{project}/locations/{location}, where {project} can be project
-      id or number.
+    parent: Required. The location and project to list resources on.
     showDeleted: Optional. If true, returns deleted (but unexpired) resources
       along with active ones.
   """
@@ -7022,16 +7021,16 @@ class RunProjectsLocationsInstancesPatchRequest(_messages.Message):
   r"""A RunProjectsLocationsInstancesPatchRequest object.
 
   Fields:
-    allowMissing: Optional. If set to true, and if the Instance does not
+    allowMissing: Optional. If set to `true`, and if the Instance does not
       exist, it will create a new one. The caller must have
-      'run.instances.create' permissions if this is set to true and the
+      `run.instances.create` permissions if this is set to `true` and the
       Instance does not exist.
     googleCloudRunV2Instance: A GoogleCloudRunV2Instance resource to be passed
       as the request body.
-    name: The fully qualified name of this Instance. In CreateInstanceRequest,
-      this field is ignored, and instead composed from
-      CreateInstanceRequest.parent and CreateInstanceRequest.instance_id.
-      Format: projects/{project}/locations/{location}/instances/{instance_id}
+    name: The fully qualified name of this Instance. In
+      `CreateInstanceRequest`, this field is ignored, and instead composed
+      from `CreateInstanceRequest.parent` and
+      `CreateInstanceRequest.instance_id`.
     updateMask: Optional. The list of fields to be updated.
     validateOnly: Optional. Indicates that the request should be validated and
       default values populated, without persisting the request or updating any
@@ -7068,9 +7067,7 @@ class RunProjectsLocationsInstancesStartRequest(_messages.Message):
     googleCloudRunV2StartInstanceRequest: A
       GoogleCloudRunV2StartInstanceRequest resource to be passed as the
       request body.
-    name: Required. The name of the Instance to stop. Format:
-      `projects/{project}/locations/{location}/instances/{instance}`, where
-      `{project}` can be project id or number.
+    name: Required. The name of the Instance to start.
   """
 
   googleCloudRunV2StartInstanceRequest = _messages.MessageField('GoogleCloudRunV2StartInstanceRequest', 1)
@@ -7083,9 +7080,7 @@ class RunProjectsLocationsInstancesStopRequest(_messages.Message):
   Fields:
     googleCloudRunV2StopInstanceRequest: A GoogleCloudRunV2StopInstanceRequest
       resource to be passed as the request body.
-    name: Required. The name of the Instance to stop. Format:
-      `projects/{project}/locations/{location}/instances/{instance}`, where
-      `{project}` can be project id or number.
+    name: Required. The name of the Instance to stop.
   """
 
   googleCloudRunV2StopInstanceRequest = _messages.MessageField('GoogleCloudRunV2StopInstanceRequest', 1)

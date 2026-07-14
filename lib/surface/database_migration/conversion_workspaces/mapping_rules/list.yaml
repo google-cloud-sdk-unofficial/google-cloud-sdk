@@ -8,6 +8,7 @@
         $ {command} --conversion-workspace=my-conversion-workspace --region=us-central1
 
   request:
+    regional_endpoint_compatibility: SUPPORTED
     collection: datamigration.projects.locations.conversionWorkspaces.mappingRules
     api_version: v1
 

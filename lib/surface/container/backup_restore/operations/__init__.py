@@ -17,7 +17,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class Operation(base.Group):
   """Backup for GKE Operations."""
 

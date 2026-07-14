@@ -85,8 +85,11 @@ class _List(object):
     Returns:
       An iterator over objects containing connection profile data.
     """
+    location = args.region if args.IsKnownAndSpecified('region') else None
     cp_client = connection_profiles.ConnectionProfilesClient(
-        self.ReleaseTrack())
+        self.ReleaseTrack(),
+        location=location,
+    )
     project_id = properties.VALUES.core.project.Get(required=True)
     profiles = cp_client.List(project_id, args)
 
@@ -99,6 +102,8 @@ class _List(object):
     return profiles
 
 
+@base.DefaultUniverseOnly
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListAlpha(_List, base.ListCommand):
   """List Database Migration Service connection profiles.
@@ -131,6 +136,8 @@ class ListAlpha(_List, base.ListCommand):
       return None
 
 
+@base.DefaultUniverseOnly
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class ListGA(_List, base.ListCommand):
   """List Database Migration Service connection profiles.

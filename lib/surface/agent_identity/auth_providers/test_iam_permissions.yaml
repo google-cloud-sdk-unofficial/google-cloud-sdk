@@ -1,0 +1,28 @@
+- release_tracks: [ALPHA, BETA]
+  help_text:
+    brief: Test IAM permissions for an Agent Identity authProvider.
+    description: |
+      Returns permissions that a caller has on the specified resource.
+    examples: |
+      To test if the caller has 'agentidentity.authProviders.get' permission on an authProvider, run:
+
+        $ {command} my-auth-provider --location=us-central1 --permissions=agentidentity.authProviders.get
+
+  request:
+    api_version: v1alpha
+    collection: agentidentity.projects.locations.authProviders
+    method: testIamPermissions
+
+  command_type: GENERIC
+
+  arguments:
+    resource:
+      help_text: The authProvider for which to test permissions.
+      spec: !REF googlecloudsdk.command_lib.agent_identity.authprovider_v1alpha_resources:projects_locations_auth_providers
+    params:
+    - arg_name: permissions
+      api_field: testIamPermissionsRequest.permissions
+      required: true
+      repeated: true
+      help_text: |-
+        The permissions to test.

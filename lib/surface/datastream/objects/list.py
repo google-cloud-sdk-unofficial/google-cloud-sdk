@@ -46,6 +46,7 @@ class _StreamObjectInfo:
     )
 
 
+@base.RegionalEndpointsSupported
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
@@ -90,9 +91,11 @@ class List(base.ListCommand):
     Returns:
       An iterator over objects containing stream objects data.
     """
-    so_client = stream_objects.StreamObjectsClient()
     project_id = properties.VALUES.core.project.Get(required=True)
     stream_ref = args.CONCEPTS.stream.Parse()
+    so_client = stream_objects.StreamObjectsClient(
+        location=stream_ref.locationsId
+    )
     objects = so_client.List(project_id, stream_ref.streamsId, args)
 
     return [_StreamObjectInfo(o, self._GetSourceObject(o)) for o in objects]

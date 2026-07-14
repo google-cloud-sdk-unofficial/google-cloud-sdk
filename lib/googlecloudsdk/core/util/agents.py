@@ -18,6 +18,7 @@ import os
 
 from googlecloudsdk.core.util import encoding
 
+# LINT.IfChange
 AI_AGENTS = [
     ('ANTIGRAVITY_AGENT', 'antigravity'),
     ('CLAUDECODE', 'claude_code'),
@@ -29,6 +30,7 @@ AI_AGENTS = [
     ('ANDROID_STUDIO_AGENT', 'android_studio_agent'),
     ('KIRO_AGENT_PATH', 'kiro'),
 ]
+# LINT.ThenChange(../../../../../cloud/helix/clients/cli/bq_utils.py)
 
 
 def DetectAIAgent():

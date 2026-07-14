@@ -22,8 +22,8 @@ from googlecloudsdk.api_lib.datastream import util
 class StreamObjectsClient:
   """Client for stream objects service in the API."""
 
-  def __init__(self, client=None, messages=None):
-    self._client = client or util.GetClientInstance()
+  def __init__(self, client=None, messages=None, location=None):
+    self._client = client or util.GetClientInstance(location=location)
     self._messages = messages or util.GetMessagesModule()
     self._service = self._client.projects_locations_streams_objects
     self._resource_parser = util.GetResourceParser()

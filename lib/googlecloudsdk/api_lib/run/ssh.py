@@ -192,10 +192,7 @@ class Ssh:
     workload_json = self._GetWorkloadJson()
     _ValidateGen2(workload_json)
 
-    if (
-        self.workload_type == self.WorkloadType.SERVICE
-        and self.release_track != base.ReleaseTrack.ALPHA
-    ):
+    if self.workload_type == self.WorkloadType.SERVICE:
       self.revision = self._GetOrValidateRevision(workload_json)
       _ValidateSSHEnabled(workload_json)
 
@@ -269,8 +266,7 @@ class Ssh:
     if self.iap_tunnel_url_override:
       return False
     if self.release_track == base.ReleaseTrack.ALPHA and (
-        self.workload_type == self.WorkloadType.SERVICE
-        or self.workload_type == self.WorkloadType.INSTANCE
+        self.workload_type == self.WorkloadType.INSTANCE
     ):
       return False
     return True

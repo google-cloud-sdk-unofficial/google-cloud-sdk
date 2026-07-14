@@ -125,16 +125,7 @@ def _SendInsertRequest(client, resources, url_map_ref, url_map):
 def _GetClearedFieldsForDuration(duration, field_prefix):
   """Gets a list of fields cleared by the user for Duration."""
   cleared_fields = []
-  if hasattr(duration, 'seconds'):
-    cleared_fields.append(field_prefix + 'seconds')
-  if hasattr(duration, 'nanos'):
-    cleared_fields.append(field_prefix + 'nanos')
-  return cleared_fields
 
-
-def _GetClearedFieldsForCachePolicyDuration(duration, field_prefix):
-  """Gets a list of fields cleared by the user for Duration."""
-  cleared_fields = []
   if hasattr(duration, 'seconds') and duration.seconds is None:
     cleared_fields.append(field_prefix + 'seconds')
   if hasattr(duration, 'nanos') and duration.nanos is None:
@@ -159,13 +150,16 @@ def _GetClearedFieldsForRetryPolicy(retry_policy, field_prefix):
   cleared_fields = []
   if not retry_policy.retryConditions:
     cleared_fields.append(field_prefix + 'retryConditions')
-  if hasattr(retry_policy, 'numRetries'):
+  if hasattr(retry_policy, 'numRetries') and retry_policy.numRetries is None:
     cleared_fields.append(field_prefix + 'numRetries')
   if not retry_policy.perTryTimeout:
     cleared_fields.append(field_prefix + 'perTryTimeout')
   else:
-    cleared_fields = cleared_fields + _GetClearedFieldsForDuration(
-        retry_policy.perTryTimeout, field_prefix + 'perTryTimeout.')
+    cleared_fields.extend(
+        _GetClearedFieldsForDuration(
+            retry_policy.perTryTimeout, field_prefix + 'perTryTimeout.'
+        )
+    )
   return cleared_fields
 
 
@@ -205,8 +199,11 @@ def _GetClearedFieldsForFaultDelay(fault_delay, field_prefix):
   if not fault_delay.fixedDelay:
     cleared_fields.append(field_prefix + 'fixedDelay')
   else:
-    cleared_fields = cleared_fields + _GetClearedFieldsForDuration(
-        fault_delay.fixedDelay, field_prefix + 'fixedDelay.')
+    cleared_fields.extend(
+        _GetClearedFieldsForDuration(
+            fault_delay.fixedDelay, field_prefix + 'fixedDelay.'
+        )
+    )
   if not fault_delay.percentage:
     cleared_fields.append(field_prefix + 'percentage')
   return cleared_fields
@@ -265,8 +262,11 @@ def _GetClearedFieldsForCachePolicy(cache_policy, field_prefix):
   if not cache_policy.cacheKeyPolicy:
     cleared_fields.append(field_prefix + 'cacheKeyPolicy')
   else:
-    cleared_fields = cleared_fields + _GetClearedFieldsForCacheKeyPolicy(
-        cache_policy.cacheKeyPolicy, field_prefix + 'cacheKeyPolicy.')
+    cleared_fields.extend(
+        _GetClearedFieldsForCacheKeyPolicy(
+            cache_policy.cacheKeyPolicy, field_prefix + 'cacheKeyPolicy.'
+        )
+    )
   if cache_policy.requestCoalescing is None:
     cleared_fields.append(field_prefix + 'requestCoalescing')
   if not cache_policy.cacheMode:
@@ -274,18 +274,27 @@ def _GetClearedFieldsForCachePolicy(cache_policy, field_prefix):
   if cache_policy.defaultTtl is None:
     cleared_fields.append(field_prefix + 'defaultTtl')
   else:
-    cleared_fields = cleared_fields + _GetClearedFieldsForCachePolicyDuration(
-        cache_policy.defaultTtl, field_prefix + 'defaultTtl.')
+    cleared_fields.extend(
+        _GetClearedFieldsForDuration(
+            cache_policy.defaultTtl, field_prefix + 'defaultTtl.'
+        )
+    )
   if cache_policy.maxTtl is None:
     cleared_fields.append(field_prefix + 'maxTtl')
   else:
-    cleared_fields = cleared_fields + _GetClearedFieldsForCachePolicyDuration(
-        cache_policy.maxTtl, field_prefix + 'maxTtl.')
+    cleared_fields.extend(
+        _GetClearedFieldsForDuration(
+            cache_policy.maxTtl, field_prefix + 'maxTtl.'
+        )
+    )
   if cache_policy.clientTtl is None:
     cleared_fields.append(field_prefix + 'clientTtl')
   else:
-    cleared_fields = cleared_fields + _GetClearedFieldsForCachePolicyDuration(
-        cache_policy.clientTtl, field_prefix + 'clientTtl.')
+    cleared_fields.extend(
+        _GetClearedFieldsForDuration(
+            cache_policy.clientTtl, field_prefix + 'clientTtl.'
+        )
+    )
   if cache_policy.negativeCaching is None:
     cleared_fields.append(field_prefix + 'negativeCaching')
   if not cache_policy.negativeCachingPolicy:
@@ -295,8 +304,11 @@ def _GetClearedFieldsForCachePolicy(cache_policy, field_prefix):
   if cache_policy.serveWhileStale is None:
     cleared_fields.append(field_prefix + 'serveWhileStale')
   else:
-    cleared_fields = cleared_fields + _GetClearedFieldsForCachePolicyDuration(
-        cache_policy.serveWhileStale, field_prefix + 'serveWhileStale.')
+    cleared_fields.extend(
+        _GetClearedFieldsForDuration(
+            cache_policy.serveWhileStale, field_prefix + 'serveWhileStale.'
+        )
+    )
   return cleared_fields
 
 

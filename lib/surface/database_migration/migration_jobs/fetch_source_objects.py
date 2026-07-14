@@ -46,6 +46,7 @@ class _MigrationJobObjectInfo:
     self.update_time = message.updateTime
 
 
+@base.RegionalEndpointsSupported
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class FetchSourceObjects(base.Command):
@@ -81,13 +82,20 @@ class FetchSourceObjects(base.Command):
       operation if the restart was successful.
     """
     migration_job_ref = args.CONCEPTS.migration_job.Parse()
+    location = migration_job_ref.locationsId
 
-    mj_client = migration_jobs.MigrationJobsClient(self.ReleaseTrack())
+    mj_client = migration_jobs.MigrationJobsClient(
+        self.ReleaseTrack(),
+        location=location,
+    )
     result_operation = mj_client.FetchSourceObjects(
         migration_job_ref.RelativeName(),
     )
 
-    client = api_util.GetClientInstance(self.ReleaseTrack())
+    client = api_util.GetClientInstance(
+        self.ReleaseTrack(),
+        location=location,
+    )
 
     log.status.Print(
         'Waiting for migration job [{}] to fetch source objects with [{}]'

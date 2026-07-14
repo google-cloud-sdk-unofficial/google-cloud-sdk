@@ -1,5 +1,4 @@
 release_tracks: [GA]
-
 help_text:
   brief: Stop a backfill job for a Stream object.
   description: Stop a backfill job for a Stream object.
@@ -12,6 +11,7 @@ request:
   collection: datastream.projects.locations.streams.objects
   method: stopBackfillJob
   api_version: v1
+  regional_endpoint_compatibility: SUPPORTED
 
 arguments:
   resource:

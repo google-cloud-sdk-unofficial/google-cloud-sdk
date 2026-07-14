@@ -31,6 +31,7 @@ __protobuf__ = proto.module(
         'RevisionScaling',
         'ServiceMesh',
         'ServiceScaling',
+        'CpuScaling',
         'WorkerPoolScaling',
         'NodeSelector',
         'BuildConfig',
@@ -373,17 +374,21 @@ class ServiceScaling(proto.Message):
 
 
 class CpuScaling(proto.Message):
-    r"""The CPU scaling settings for the worker pool.
+    r"""Represents CPU-related scaling settings.
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
 
     Attributes:
-        utilization (float):
-            Optional. Determines a threshold for CPU utilization
-            before scaling begins. Accepted values are between ``0.1`` and ``0.95``
-            (inclusive) or ``0.0`` to disable CPU utilization as threshold for
-            scaling.
+        cpu_utilization (float):
+            Optional. Determines a threshold for CPU utilization before
+            scaling begins. Accepted values are between ``0.1`` and
+            ``0.95`` (inclusive) or ``0.0`` to disable CPU utilization
+            as threshold for scaling.
+
+            This field is a member of `oneof`_ ``_cpu_utilization``.
     """
 
-    utilization: float = proto.Field(
+    cpu_utilization: float = proto.Field(
         proto.FLOAT,
         number=1,
         optional=True,
@@ -430,6 +435,11 @@ class WorkerPoolScaling(proto.Message):
             manual scaling mode.
 
             This field is a member of `oneof`_ ``_manual_instance_count``.
+        cpu_scaling (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.CpuScaling):
+            Optional. The CPU scaling settings for the
+            worker pool.
+
+            This field is a member of `oneof`_ ``_cpu_scaling``.
     """
     class ScalingMode(proto.Enum):
         r"""The scaling mode for the worker pool. If not provided, it
@@ -472,10 +482,11 @@ class WorkerPoolScaling(proto.Message):
         number=6,
         optional=True,
     )
-    cpu_scaling: CpuScaling = proto.Field(
+    cpu_scaling: 'CpuScaling' = proto.Field(
         proto.MESSAGE,
         number=8,
-        message=CpuScaling,
+        optional=True,
+        message='CpuScaling',
     )
 
 

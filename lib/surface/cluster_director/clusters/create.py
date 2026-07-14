@@ -61,6 +61,14 @@ DETAILED_HELP = {
         Or create a JSON file `my-cluster-config.json` with the cluster specs and run the following file example:
 
         $ {command} my-cluster --location=us-central1 --config=my-cluster-config.json
+
+        To create a cluster `my-cluster` in location `us-central1` using the quickstart setup with default cluster parameters, run the following example:
+
+        $ {command} my-cluster --location=us-central1 --quickstart-cluster --create-network name=network0
+
+        To create a cluster `my-cluster` in location `us-central1` using a pre-defined blueprint choice (such as `g4`), run the following example:
+
+        $ {command} my-cluster --location=us-central1 --blueprint=g4 --create-network name=network0
         """),
 }
 
@@ -109,7 +117,9 @@ class Create(base.CreateCommand):
     flags.AddNetworkProject(
         parser=network_source_group, api_version=api_version
     )
-    flags.AddBlueprint(parser=flag_group, api_version=api_version)
+    blueprint_group = flag_group.add_group(mutex=True)
+    flags.AddBlueprint(parser=blueprint_group, api_version=api_version)
+    flags.AddQuickstartCluster(parser=blueprint_group)
     flags.AddCreateFilestores(parser=flag_group, api_version=api_version)
     flags.AddFilestores(parser=flag_group, api_version=api_version)
     flags.AddCreateGcsBuckets(parser=flag_group, api_version=api_version)

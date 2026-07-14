@@ -60,7 +60,6 @@ Container Flags
   group.AddArgument(flags.MutexEnvVarsFlags(release_track=release_track))
   group.AddArgument(flags.MemoryFlag())
   group.AddArgument(flags.CpuFlag())
-  group.AddArgument(flags.GpuFlag())
   group.AddArgument(flags.ArgsFlag())
   group.AddArgument(flags.SecretsFlags())
   group.AddArgument(flags.CommandFlag())
@@ -140,7 +139,6 @@ class Create(base.Command):
     flags.AddLabelsFlag(parser)
     flags.AddServiceAccountFlag(parser)
     flags.AddSetCloudSQLFlag(parser)
-    flags.AddVpcConnectorArg(parser)
     flags.AddVpcNetworkGroupFlagsForCreate(parser, resource_kind='instance')
     flags.AddEgressSettingsFlag(parser)
     flags.AddClientNameAndVersionFlags(parser)
@@ -149,8 +147,6 @@ class Create(base.Command):
     flags.AddCmekKeyFlag(parser, with_clear=False)
     flags.AddGeneralAnnotationFlags(parser)
     flags.AddVolumesFlags(parser, cls.ReleaseTrack())
-    flags.AddGpuTypeFlag(parser)
-    flags.GpuZonalRedundancyFlag(parser)
     flags.AddIngressFlag(parser)
     flags.AddInvokerIamCheckFlag(parser)
     flags.AddRestartPolicyFlag(parser)
@@ -212,8 +208,6 @@ class Create(base.Command):
     changes.append(
         config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack())
     )
-
-    messages_util.MaybeLogDefaultGpuTypeMessage(args, resource=None)
 
     try:
       return self._DoCreate(

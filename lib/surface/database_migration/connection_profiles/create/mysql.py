@@ -79,6 +79,8 @@ class _MySQL(object):
                          connection_profile_ref, args, 'MYSQL')
 
 
+@base.DefaultUniverseOnly
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class MySQLAlpha(_MySQL, base.Command):
   """Create a Database Migration Service connection profile for MySQL."""
@@ -95,6 +97,8 @@ class MySQLAlpha(_MySQL, base.Command):
     cp_flags.AddInstanceFlag(parser)
 
 
+@base.DefaultUniverseOnly
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class MySQLGA(_MySQL, base.Command):
   """Create a Database Migration Service connection profile for MySQL."""

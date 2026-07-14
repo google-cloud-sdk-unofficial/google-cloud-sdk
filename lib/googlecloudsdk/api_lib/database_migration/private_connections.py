@@ -15,6 +15,8 @@
 """Cloud database migration private connections API."""
 
 
+from typing import Optional
+
 from googlecloudsdk.api_lib.database_migration import api_util
 from googlecloudsdk.core import resources
 
@@ -29,8 +31,17 @@ def GetPrivateConnectionURI(resource):
 class PrivateConnectionsClient:
   """Client for private connections service in the API."""
 
-  def __init__(self, release_track, client=None, messages=None):
-    self._client = client or api_util.GetClientInstance(release_track)
+  def __init__(
+      self,
+      release_track,
+      client=None,
+      messages=None,
+      location: Optional[str] = None,
+  ):
+    self._client = client or api_util.GetClientInstance(
+        release_track,
+        location=location,
+    )
     self._messages = messages or api_util.GetMessagesModule(release_track)
     self._service = self._client.projects_locations_privateConnections
     self._resource_parser = api_util.GetResourceParser(release_track)

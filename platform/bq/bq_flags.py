@@ -92,6 +92,13 @@ USE_GCLOUD_CONFIG = flags.DEFINE_boolean(
     'If true, use gcloud config to override default flag values.',
 )
 
+USE_GCLOUD_CONFIG_CACHE = flags.DEFINE_boolean(
+    'use_gcloud_config_cache',
+    False,
+    'If true, use a persistent cache for gcloud config and credentials.',
+)
+
+
 API_VERSION = flags.DEFINE_string('api_version', 'v2', 'API version to use.')
 DEBUG_MODE = flags.DEFINE_boolean(
     'debug_mode', False, 'Show tracebacks on Python exceptions.'

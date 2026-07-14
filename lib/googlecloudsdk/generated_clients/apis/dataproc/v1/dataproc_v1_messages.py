@@ -603,9 +603,6 @@ class AttachedDiskConfig(_messages.Message):
   Fields:
     diskSizeGb: Optional. Disk size in GB.
     diskType: Optional. Disk type.
-    name: Optional. Uniquely identifying name for the disk. This name can
-      later be used to override the disk config in FLEX MIG instance
-      selection.
     provisionedIops: Optional. Indicates how many IOPS to provision for the
       attached disk. This sets the number of I/O operations per second that
       the disk can handle. See
@@ -636,9 +633,8 @@ class AttachedDiskConfig(_messages.Message):
 
   diskSizeGb = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   diskType = _messages.EnumField('DiskTypeValueValuesEnum', 2)
-  name = _messages.StringField(3)
-  provisionedIops = _messages.IntegerField(4)
-  provisionedThroughput = _messages.IntegerField(5)
+  provisionedIops = _messages.IntegerField(3)
+  provisionedThroughput = _messages.IntegerField(4)
 
 
 class AuthenticationConfig(_messages.Message):
@@ -5165,7 +5161,6 @@ class Empty(_messages.Message):
   or the response type of an API method. For instance: service Foo { rpc
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
-
 
 
 class EncryptionConfig(_messages.Message):

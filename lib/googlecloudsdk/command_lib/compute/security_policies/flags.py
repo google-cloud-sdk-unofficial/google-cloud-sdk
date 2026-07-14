@@ -301,6 +301,7 @@ def AddNetworkDdosAdaptiveProtection(parser, required=False):
       choices=['DISABLED', 'ENABLED', 'PREVIEW'],
       type=lambda x: x.upper(),
       required=required,
+      hidden=True,
       help=(
           'The DDoS adaptive protection level for network load balancing and'
           ' instances with external IPs'
@@ -311,11 +312,12 @@ def AddNetworkDdosAdaptiveProtection(parser, required=False):
 def AddNetworkDdosImpactedBaselineThreshold(parser, required=False):
   """Adds the Cloud Armor Network DDoS impacted baseline threshold argument."""
   impacted_baseline_threshold_group = parser.add_mutually_exclusive_group(
-      required=required
+      required=required, hidden=True
   )
   impacted_baseline_threshold_group.add_argument(
       '--network-ddos-impacted-baseline-threshold',
       type=float,
+      hidden=True,
       help="""\
       DDoS Protection for Network Load Balancers (and VMs with public IPs)
       builds DDoS mitigations that minimize collateral damage. It quantifies
@@ -335,6 +337,7 @@ def AddNetworkDdosImpactedBaselineThreshold(parser, required=False):
   impacted_baseline_threshold_group.add_argument(
       '--clear-network-ddos-impacted-baseline-threshold',
       action='store_true',
+      hidden=True,
       help=('If provided, clears the Network DDoS impacted baseline threshold '
             'from the security policy.'),
   )

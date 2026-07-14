@@ -1,5 +1,4 @@
 release_tracks: [GA]
-
 help_text:
   brief: Start a backfill job for a Stream object.
   description: Start a backfill job for a Stream object.
@@ -16,6 +15,7 @@ request:
   collection: datastream.projects.locations.streams.objects
   method: startBackfillJob
   api_version: v1
+  regional_endpoint_compatibility: SUPPORTED
 
 arguments:
   resource:

@@ -1,5 +1,4 @@
 release_tracks: [GA]
-
 help_text:
   brief: Show details about a Stream object.
   description: Show details about a Stream object.
@@ -11,6 +10,7 @@ help_text:
 request:
   collection: datastream.projects.locations.streams.objects
   api_version: v1
+  regional_endpoint_compatibility: SUPPORTED
 
 arguments:
   resource:

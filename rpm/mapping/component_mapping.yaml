@@ -16,7 +16,7 @@ cloud-run-proxy: google-cloud-cli-cloud-run-proxy
 cloud_sql_proxy: unavailable
 cloud-sql-proxy: unavailable
 run-compose: google-cloud-cli-run-compose
-universal-maker: unavailable
+universal-maker: google-cloud-cli-universal-maker
 cloud-datastore-emulator: google-cloud-cli-datastore-emulator
 cloud-firestore-emulator: google-cloud-cli-firestore-emulator
 cloud-spanner-emulator: google-cloud-cli-spanner-emulator

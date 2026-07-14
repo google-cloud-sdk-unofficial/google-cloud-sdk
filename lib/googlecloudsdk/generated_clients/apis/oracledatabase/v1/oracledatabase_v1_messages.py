@@ -1235,6 +1235,8 @@ class CloudExadataInfrastructureProperties(_messages.Message):
     dbNodeStorageSizeGb: Output only. The local node storage allocated in GBs.
     dbServerVersion: Output only. The software version of the database servers
       (dom0) in the Exadata Infrastructure.
+    exascaleConfig: Output only. The Exascale configuration for the Exadata
+      Infrastructure.
     maintenanceWindow: Optional. Maintenance window for repair.
     maxCpuCount: Output only. The total number of CPU cores available.
     maxDataStorageTb: Output only. The total available DATA disk group size.
@@ -1319,25 +1321,26 @@ class CloudExadataInfrastructureProperties(_messages.Message):
   databaseServerType = _messages.StringField(9)
   dbNodeStorageSizeGb = _messages.IntegerField(10, variant=_messages.Variant.INT32)
   dbServerVersion = _messages.StringField(11)
-  maintenanceWindow = _messages.MessageField('MaintenanceWindow', 12)
-  maxCpuCount = _messages.IntegerField(13, variant=_messages.Variant.INT32)
-  maxDataStorageTb = _messages.FloatField(14)
-  maxDbNodeStorageSizeGb = _messages.IntegerField(15, variant=_messages.Variant.INT32)
-  maxMemoryGb = _messages.IntegerField(16, variant=_messages.Variant.INT32)
-  memorySizeGb = _messages.IntegerField(17, variant=_messages.Variant.INT32)
-  monthlyDbServerVersion = _messages.StringField(18)
-  monthlyStorageServerVersion = _messages.StringField(19)
-  nextMaintenanceRunId = _messages.StringField(20)
-  nextMaintenanceRunTime = _messages.StringField(21)
-  nextSecurityMaintenanceRunTime = _messages.StringField(22)
-  ociUrl = _messages.StringField(23)
-  ocid = _messages.StringField(24)
-  shape = _messages.StringField(25)
-  state = _messages.EnumField('StateValueValuesEnum', 26)
-  storageCount = _messages.IntegerField(27, variant=_messages.Variant.INT32)
-  storageServerType = _messages.StringField(28)
-  storageServerVersion = _messages.StringField(29)
-  totalStorageSizeGb = _messages.IntegerField(30, variant=_messages.Variant.INT32)
+  exascaleConfig = _messages.MessageField('ExascaleConfig', 12)
+  maintenanceWindow = _messages.MessageField('MaintenanceWindow', 13)
+  maxCpuCount = _messages.IntegerField(14, variant=_messages.Variant.INT32)
+  maxDataStorageTb = _messages.FloatField(15)
+  maxDbNodeStorageSizeGb = _messages.IntegerField(16, variant=_messages.Variant.INT32)
+  maxMemoryGb = _messages.IntegerField(17, variant=_messages.Variant.INT32)
+  memorySizeGb = _messages.IntegerField(18, variant=_messages.Variant.INT32)
+  monthlyDbServerVersion = _messages.StringField(19)
+  monthlyStorageServerVersion = _messages.StringField(20)
+  nextMaintenanceRunId = _messages.StringField(21)
+  nextMaintenanceRunTime = _messages.StringField(22)
+  nextSecurityMaintenanceRunTime = _messages.StringField(23)
+  ociUrl = _messages.StringField(24)
+  ocid = _messages.StringField(25)
+  shape = _messages.StringField(26)
+  state = _messages.EnumField('StateValueValuesEnum', 27)
+  storageCount = _messages.IntegerField(28, variant=_messages.Variant.INT32)
+  storageServerType = _messages.StringField(29)
+  storageServerVersion = _messages.StringField(30)
+  totalStorageSizeGb = _messages.IntegerField(31, variant=_messages.Variant.INT32)
 
 
 class CloudVmCluster(_messages.Message):
@@ -1360,6 +1363,9 @@ class CloudVmCluster(_messages.Message):
       resource on which VM cluster resource is created, in the following
       format: projects/{project}/locations/{region}/cloudExadataInfrastuctures
       /{cloud_extradata_infrastructure}
+    exascaleDbStorageVault: Optional. The name of ExascaleDbStorageVault
+      associated with the VM Cluster. Format: projects/{project}/locations/{lo
+      cation}/exascaleDbStorageVaults/{exascale_db_storage_vault}
     gcpOracleZone: Output only. The GCP Oracle zone where Oracle
       CloudVmCluster is hosted. This will be the same as the gcp_oracle_zone
       of the CloudExadataInfrastructure. Example: us-east4-b-r2.
@@ -1411,14 +1417,15 @@ class CloudVmCluster(_messages.Message):
   createTime = _messages.StringField(4)
   displayName = _messages.StringField(5)
   exadataInfrastructure = _messages.StringField(6)
-  gcpOracleZone = _messages.StringField(7)
-  identityConnector = _messages.MessageField('IdentityConnector', 8)
-  labels = _messages.MessageField('LabelsValue', 9)
-  name = _messages.StringField(10)
-  network = _messages.StringField(11)
-  odbNetwork = _messages.StringField(12)
-  odbSubnet = _messages.StringField(13)
-  properties = _messages.MessageField('CloudVmClusterProperties', 14)
+  exascaleDbStorageVault = _messages.StringField(7)
+  gcpOracleZone = _messages.StringField(8)
+  identityConnector = _messages.MessageField('IdentityConnector', 9)
+  labels = _messages.MessageField('LabelsValue', 10)
+  name = _messages.StringField(11)
+  network = _messages.StringField(12)
+  odbNetwork = _messages.StringField(13)
+  odbSubnet = _messages.StringField(14)
+  properties = _messages.MessageField('CloudVmClusterProperties', 15)
 
 
 class CloudVmClusterProperties(_messages.Message):
@@ -1430,6 +1437,8 @@ class CloudVmClusterProperties(_messages.Message):
     DiskRedundancyValueValuesEnum: Optional. The type of redundancy.
     LicenseTypeValueValuesEnum: Required. License type of VM Cluster.
     StateValueValuesEnum: Output only. State of the cluster.
+    StorageManagementTypeValueValuesEnum: Output only. The storage management
+      type of the VM Cluster.
 
   Fields:
     clusterName: Optional. OCI Cluster name.
@@ -1467,6 +1476,8 @@ class CloudVmClusterProperties(_messages.Message):
     sparseDiskgroupEnabled: Optional. Use exadata sparse snapshots.
     sshPublicKeys: Optional. SSH public keys to be stored with cluster.
     state: Output only. State of the cluster.
+    storageManagementType: Output only. The storage management type of the VM
+      Cluster.
     storageSizeGb: Output only. The storage allocation for the disk group, in
       gigabytes (GB).
     systemVersion: Optional. Operating system version of the image.
@@ -1536,6 +1547,19 @@ class CloudVmClusterProperties(_messages.Message):
     FAILED = 6
     MAINTENANCE_IN_PROGRESS = 7
 
+  class StorageManagementTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The storage management type of the VM Cluster.
+
+    Values:
+      STORAGE_MANAGEMENT_TYPE_UNSPECIFIED: Unspecified storage management
+        type.
+      ASM: Automatic Storage Management.
+      EXASCALE: Exascale storage management.
+    """
+    STORAGE_MANAGEMENT_TYPE_UNSPECIFIED = 0
+    ASM = 1
+    EXASCALE = 2
+
   clusterName = _messages.StringField(1)
   compartmentId = _messages.StringField(2)
   computeModel = _messages.EnumField('ComputeModelValueValuesEnum', 3)
@@ -1566,9 +1590,23 @@ class CloudVmClusterProperties(_messages.Message):
   sparseDiskgroupEnabled = _messages.BooleanField(28)
   sshPublicKeys = _messages.StringField(29, repeated=True)
   state = _messages.EnumField('StateValueValuesEnum', 30)
-  storageSizeGb = _messages.IntegerField(31, variant=_messages.Variant.INT32)
-  systemVersion = _messages.StringField(32)
-  timeZone = _messages.MessageField('TimeZone', 33)
+  storageManagementType = _messages.EnumField('StorageManagementTypeValueValuesEnum', 31)
+  storageSizeGb = _messages.IntegerField(32, variant=_messages.Variant.INT32)
+  systemVersion = _messages.StringField(33)
+  timeZone = _messages.MessageField('TimeZone', 34)
+
+
+class ConfigureExascaleCloudExadataInfrastructureRequest(_messages.Message):
+  r"""The request for `CloudExadataInfrastructure.ConfigureExascale`.
+
+  Fields:
+    requestId: Optional. An optional ID to identify the request.
+    totalStorageSizeGb: Required. The total storage to be allocated to
+      Exascale in GBs.
+  """
+
+  requestId = _messages.StringField(1)
+  totalStorageSizeGb = _messages.IntegerField(2, variant=_messages.Variant.INT32)
 
 
 class CustomerContact(_messages.Message):
@@ -3034,6 +3072,20 @@ class ExadbVmClusterStorageDetails(_messages.Message):
   sizeInGbsPerNode = _messages.IntegerField(1, variant=_messages.Variant.INT32)
 
 
+class ExascaleConfig(_messages.Message):
+  r"""Details of the Exascale configuration for the Exadata Infrastructure.
+
+  Fields:
+    availableStorageSizeGb: Output only. Available storage size for Exascale
+      in GBs.
+    totalStorageSizeGb: Output only. Total storage size needed for Exascale in
+      GBs.
+  """
+
+  availableStorageSizeGb = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  totalStorageSizeGb = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+
+
 class ExascaleDbStorageDetails(_messages.Message):
   r"""The storage details of the ExascaleDbStorageVault.
 
@@ -3065,6 +3117,10 @@ class ExascaleDbStorageVault(_messages.Message):
       be 1-255 characters long and can only contain alphanumeric characters.
     entitlementId: Output only. The ID of the subscription entitlement
       associated with the ExascaleDbStorageVault.
+    exadataInfrastructure: Optional. The Exadata Infrastructure resource on
+      which ExascaleDbStorageVault resource is created, in the following
+      format: projects/{project}/locations/{region}/cloudExadataInfrastuctures
+      /{cloud_extradata_infrastructure}
     gcpOracleZone: Optional. The GCP Oracle zone where Oracle
       ExascaleDbStorageVault is hosted. Example: us-east4-b-r2. If not
       specified, the system will pick a zone based on availability.
@@ -3104,10 +3160,11 @@ class ExascaleDbStorageVault(_messages.Message):
   createTime = _messages.StringField(1)
   displayName = _messages.StringField(2)
   entitlementId = _messages.StringField(3)
-  gcpOracleZone = _messages.StringField(4)
-  labels = _messages.MessageField('LabelsValue', 5)
-  name = _messages.StringField(6)
-  properties = _messages.MessageField('ExascaleDbStorageVaultProperties', 7)
+  exadataInfrastructure = _messages.StringField(4)
+  gcpOracleZone = _messages.StringField(5)
+  labels = _messages.MessageField('LabelsValue', 6)
+  name = _messages.StringField(7)
+  properties = _messages.MessageField('ExascaleDbStorageVaultProperties', 8)
 
 
 class ExascaleDbStorageVaultProperties(_messages.Message):
@@ -7336,6 +7393,23 @@ class OracledatabaseProjectsLocationsAutonomousDbVersionsListRequest(_messages.M
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
+
+
+class OracledatabaseProjectsLocationsCloudExadataInfrastructuresConfigureExascaleRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsCloudExadataInfrastructuresConfigureExa
+  scaleRequest object.
+
+  Fields:
+    configureExascaleCloudExadataInfrastructureRequest: A
+      ConfigureExascaleCloudExadataInfrastructureRequest resource to be passed
+      as the request body.
+    name: Required. The name of the Cloud Exadata Infrastructure in the
+      following format: projects/{project}/locations/{location}/cloudExadataIn
+      frastructures/{cloud_exadata_infrastructure}.
+  """
+
+  configureExascaleCloudExadataInfrastructureRequest = _messages.MessageField('ConfigureExascaleCloudExadataInfrastructureRequest', 1)
+  name = _messages.StringField(2, required=True)
 
 
 class OracledatabaseProjectsLocationsCloudExadataInfrastructuresCreateRequest(_messages.Message):

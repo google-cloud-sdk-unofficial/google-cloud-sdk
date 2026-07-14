@@ -33,6 +33,7 @@ class _MigrationJobObjectInfo:
     self.update_time = message.updateTime
 
 
+@base.RegionalEndpointsSupported
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
@@ -75,8 +76,11 @@ class List(base.ListCommand):
     Returns:
       An iterator over objects containing migration job objects data.
     """
-    objects_client = objects.ObjectsClient(self.ReleaseTrack())
     migration_job_ref = args.CONCEPTS.migration_job.Parse()
+    objects_client = objects.ObjectsClient(
+        self.ReleaseTrack(),
+        location=migration_job_ref.locationsId,
+    )
     obj = objects_client.List(migration_job_ref, args)
 
     return [_MigrationJobObjectInfo(o) for o in obj]

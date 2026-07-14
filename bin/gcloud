@@ -197,4 +197,8 @@ export PYTHONIOENCODING="$CLOUDSDK_ENCODING"
 
 # </cloud-sdk-sh-preamble>
 
+if [ -n "${CLOUDSDK_USE_GOCLOUD:-}" ]; then
+  exec "${CLOUDSDK_ROOT_DIR}/bin/gocloud" "$@"
+fi
+
 exec "$CLOUDSDK_PYTHON" $CLOUDSDK_PYTHON_ARGS "${CLOUDSDK_ROOT_DIR}/lib/gcloud.py" "$@"

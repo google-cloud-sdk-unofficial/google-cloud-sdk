@@ -48,6 +48,7 @@ class Create(base.CreateCommand):
     flags.AddInstance(parser)
     flags.AddDescription(parser)
     flags.AddInitialConfigGroup(parser)
+    flags.AddServiceAccount(parser)
 
   def Run(self, args):
     # Get resource args to contruct base url
@@ -67,7 +68,9 @@ class Create(base.CreateCommand):
         args.gitignores,
         args.license,
         args.readme,
+        args.service_account,
     )
+
     log.CreatedResource(repository_ref.RelativeName())
     return create_operation
 

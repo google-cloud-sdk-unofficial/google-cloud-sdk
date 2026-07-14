@@ -1367,13 +1367,29 @@ def AddStorageSizeForStorageShrink(parser):
 
 def AddTier(parser, is_patch=False, hidden=False):
   """Adds '--tier' flag to the parser."""
-  help_text = (
-      "Machine type for a shared-core instance e.g. ``db-g1-small''. "
-      'For all other instances, instead of using tiers, customize '
-      'your instance by specifying its CPU and memory. You can do so '
-      'with the `--cpu` and `--memory` flags. Learn more about how '
-      'CPU and memory affects pricing: '
-      'https://cloud.google.com/sql/pricing.'
+  help_text = arg_parsers.UniverseHelpText(
+      default=(
+          'Specifies the machine type for the instance. The usage of this flag'
+          ' depends on the selected `--edition`.\n\nEnterprise Edition: Use'
+          ' `--tier` for shared-core instances (e.g., `db-f1-micro`,'
+          ' `db-g1-small`). For dedicated-core instances, do not use `--tier`;'
+          ' instead, customize your instance by specifying its CPU and memory'
+          ' with the `--cpu` and `--memory` flags.\n\nEnterprise Plus Edition:'
+          ' `--tier` is required to specify the predefined machine type. The'
+          ' `--cpu` and `--memory` flags are not supported for Enterprise Plus.'
+          ' Examples include `db-perf-optimized-N-2` (N2 series) or'
+          ' `db-c4a-highmem-2` (C4A series).\n\nFor a detailed list of'
+          ' available machine types and series, refer to the documentation for'
+          ' your database engine:\n\n*   MySQL:'
+          ' https://cloud.google.com/sql/docs/mysql/machine-series-overview\n* '
+          '  PostgreSQL:'
+          ' https://cloud.google.com/sql/docs/postgres/machine-series-overview\n*'
+          '   SQL Server:'
+          ' https://cloud.google.com/sql/docs/sqlserver/machine-series-overview\n\nLearn'
+          ' more about how machine types, CPU, and memory affect pricing:'
+          ' https://cloud.google.com/sql/pricing'
+      ),
+      universe_help='Refer to the documentation portal for your environment.',
   )
   if is_patch:
     help_text += ' WARNING: Instance will be restarted.'

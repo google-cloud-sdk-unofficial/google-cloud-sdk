@@ -70,7 +70,9 @@ class _List:
     Returns:
       An iterator over objects containing connection profile data.
     """
-    cp_client = connection_profiles.ConnectionProfilesClient()
+    cp_client = connection_profiles.ConnectionProfilesClient(
+        location=args.location
+    )
     project_id = properties.VALUES.core.project.Get(required=True)
     profiles = cp_client.List(project_id, args)
 
@@ -94,9 +96,13 @@ class _List:
 
 @base.Deprecate(
     is_removed=False,
-    warning=("Datastream beta version is deprecated. Please use`gcloud "
-             "datastream connection-profiles list` command instead.")
+    warning=(
+        "Datastream beta version is deprecated. Please use`gcloud "
+        "datastream connection-profiles list` command instead."
+    ),
 )
+@base.RegionalEndpointsSupported
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListBeta(_List, base.ListCommand):
   """List Datastream connection profiles.
@@ -128,6 +134,8 @@ class ListBeta(_List, base.ListCommand):
       return None
 
 
+@base.RegionalEndpointsSupported
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(_List, base.ListCommand):
   """List Datastream connection profiles.

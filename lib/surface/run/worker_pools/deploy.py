@@ -430,6 +430,8 @@ class AlphaDeploy(BetaDeploy):
     super(AlphaDeploy, cls).Args(parser)
     # Worker Pool flag
     flags.AddCpuUtilizationFlag(parser, hidden=True, resource_kind='workerPool')
+    flags.AddWorkerPoolMinInstancesFlag(parser)
+    flags.AddWorkerPoolMaxInstancesFlag(parser)
 
 
 AlphaDeploy.__doc__ = Deploy.__doc__

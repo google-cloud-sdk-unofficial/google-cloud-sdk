@@ -20,7 +20,7 @@ from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import ssh_command
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 @base.Hidden
 @base.DefaultUniverseOnly
 class Ssh(ssh_command.BaseSshCommand):
@@ -61,12 +61,3 @@ class Ssh(ssh_command.BaseSshCommand):
         args.service,
         getattr(args, 'instance', None),
     )
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
-@base.DefaultUniverseOnly
-class SshAlpha(Ssh):
-  """SSH into a service instance."""
-
-  _support_revision = False

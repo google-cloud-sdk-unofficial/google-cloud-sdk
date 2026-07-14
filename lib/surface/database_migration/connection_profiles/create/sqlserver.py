@@ -43,6 +43,7 @@ DETAILED_HELP = {
 }
 
 
+@base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class _SQLServer(base.Command):

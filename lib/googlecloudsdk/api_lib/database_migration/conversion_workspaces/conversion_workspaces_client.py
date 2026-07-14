@@ -14,6 +14,8 @@
 # limitations under the License.
 """Database Migration Service conversion workspaces composite client."""
 
+from typing import Optional
+
 from googlecloudsdk.api_lib.database_migration.conversion_workspaces import conversion_workspaces_crud_client
 from googlecloudsdk.api_lib.database_migration.conversion_workspaces import conversion_workspaces_entities_client
 from googlecloudsdk.api_lib.database_migration.conversion_workspaces import conversion_workspaces_lro_client
@@ -30,33 +32,43 @@ class ConversionWorkspacesClient:
     operations: The client for the conversion workspaces operations APIs.
     entities: The client for the conversion workspaces entities APIs.
     lro: The client for the conversion workspaces LRO APIs.
+    location: The location of the resources.
   """
 
-  def __init__(self, release_track: base.ReleaseTrack):
+  def __init__(
+      self,
+      release_track: base.ReleaseTrack,
+      location: Optional[str] = None,
+  ):
     """Initializes the conversion workspaces client.
 
     Args:
       release_track: The release track of the client, controlling the API
         version to use.
+      location: The location of the resources.
     """
     self.crud = (
         conversion_workspaces_crud_client.ConversionWorkspacesCRUDClient(
             parent_client=self,
             release_track=release_track,
+            location=location,
         )
     )
 
     self.operations = conversion_workspaces_operations_client.ConversionWorkspacesOperationsClient(
         parent_client=self,
         release_track=release_track,
+        location=location,
     )
 
     self.entities = conversion_workspaces_entities_client.ConversionWorkspacesEntitiesClient(
         parent_client=self,
         release_track=release_track,
+        location=location,
     )
 
     self.lro = conversion_workspaces_lro_client.ConversionWorkspacesLROClient(
         parent_client=self,
         release_track=release_track,
+        location=location,
     )

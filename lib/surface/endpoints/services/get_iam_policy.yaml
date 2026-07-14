@@ -22,3 +22,8 @@
     resource:
       help_text: The service for which to display the IAM policy.
       spec: !REF googlecloudsdk.command_lib.endpoints.resources:service
+
+- release_tracks: [BETA, GA]
+  is_python_command: true
+  hints:
+    read_only: true

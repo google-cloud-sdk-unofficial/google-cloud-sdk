@@ -1714,6 +1714,7 @@ def AddWorkerPoolMinInstancesFlag(parser):
   parser.add_argument(
       '--min',
       type=ScaleValue,
+      hidden=True,
       help=(
           'The minimum number of container instances to run for this WorkerPool'
           " or 'default' to use system default of 1. These instances will be"
@@ -1728,6 +1729,7 @@ def AddWorkerPoolMaxInstancesFlag(parser):
   parser.add_argument(
       '--max',
       type=ScaleValue,
+      hidden=True,
       help=(
           'The maximum number of container instances to run for this WorkerPool'
           " or 'default' to use system default of 100. This instance limit will"

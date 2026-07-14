@@ -1501,6 +1501,7 @@ class Repository(_messages.Message):
     name: Identifier. A unique identifier for a repository. The name should be
       of the format: `projects/{project}/locations/{location_id}/repositories/
       {repository_id}`
+    serviceAccount: Optional. Repository level service account (BYOSA).
     uid: Output only. Unique identifier of the repository.
     updateTime: Output only. Update timestamp.
     uris: Output only. URIs for the repository.
@@ -1512,9 +1513,10 @@ class Repository(_messages.Message):
   initialConfig = _messages.MessageField('InitialConfig', 4)
   instance = _messages.StringField(5)
   name = _messages.StringField(6)
-  uid = _messages.StringField(7)
-  updateTime = _messages.StringField(8)
-  uris = _messages.MessageField('URIs', 9)
+  serviceAccount = _messages.StringField(7)
+  uid = _messages.StringField(8)
+  updateTime = _messages.StringField(9)
+  uris = _messages.MessageField('URIs', 10)
 
 
 class ResolvePullRequestCommentsRequest(_messages.Message):

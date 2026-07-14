@@ -178,16 +178,10 @@ class AgentSpec(_messages.Message):
         empty.
       A2A_AGENT_CARD: The content is an A2A Agent Card following the A2A
         specification. The `interfaces` field must be empty.
-      MARKETPLACE_AGENT: The agent is procured from the Marketplace. The
-        content field must contain the struct with the `entitlement` field.
-        The caller must have `consumerprocurement.entitlements.get` IAM
-        permission on the specified entitlement. Example: ``` { "entitlement":
-        "projects/1234/entitlements/entitlement-id" } ```
     """
     TYPE_UNSPECIFIED = 0
     NO_SPEC = 1
     A2A_AGENT_CARD = 2
-    MARKETPLACE_AGENT = 3
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class ContentValue(_messages.Message):
@@ -217,38 +211,6 @@ class AgentSpec(_messages.Message):
 
   content = _messages.MessageField('ContentValue', 1)
   type = _messages.EnumField('TypeValueValuesEnum', 2)
-
-
-class AgentregistryMediaDownloadRequest(_messages.Message):
-  r"""A AgentregistryMediaDownloadRequest object.
-
-  Fields:
-    name: Required. Target revision name. Format: `projects/{project}/location
-      s/{location}/skills/{skill}/revisions/{revision}`
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
-class AgentregistryProjectsLocationsAgentsFetchInvokableRequest(_messages.Message):
-  r"""A AgentregistryProjectsLocationsAgentsFetchInvokableRequest object.
-
-  Fields:
-    filter: Optional. Filtering results.
-    orderBy: Optional. Field to sort by.
-    pageSize: Optional. Requested page size. Server may return fewer items
-      than requested. If unspecified, server will pick an appropriate default.
-    pageToken: Optional. A token identifying a page of results the server
-      should return.
-    parent: Required. Parent value for FetchInvokableAgentsRequest. Format:
-      `projects/{project}/locations/{location}`.
-  """
-
-  filter = _messages.StringField(1)
-  orderBy = _messages.StringField(2)
-  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(4)
-  parent = _messages.StringField(5, required=True)
 
 
 class AgentregistryProjectsLocationsAgentsGetRequest(_messages.Message):
@@ -477,65 +439,6 @@ class AgentregistryProjectsLocationsEndpointsListRequest(_messages.Message):
   parent = _messages.StringField(4, required=True)
 
 
-class AgentregistryProjectsLocationsFetchMarketplaceAgentsRequest(_messages.Message):
-  r"""A AgentregistryProjectsLocationsFetchMarketplaceAgentsRequest object.
-
-  Fields:
-    filter: Optional. Filtering results. The filter string will be passed to
-      the underlying call to ConsumerProcurementService.ListEntitlements.
-    orderBy: Optional. Field to sort by. The order_by string will be passed to
-      the underlying call to ConsumerProcurementService.ListEntitlements.
-      Typically, this supports fields like 'create_time'. Example:
-      "create_time desc"
-    pageSize: Optional. The page size for search result pagination. Page size
-      is 500 if unspecified and is capped at `500` even if a larger value is
-      given. A negative value will result in an `INVALID_ARGUMENT` error. If
-      set to zero, server will pick an appropriate default. Returned results
-      may be fewer than requested.
-    pageToken: Optional. If present, then retrieve the next batch of results
-      from the preceding call to this method. `page_token` must be the value
-      of `next_page_token` from the previous response. The values of all other
-      method parameters, must be identical to those in the previous call.
-    parent: Required. Parent value for FetchMarketplaceAgentsRequest.
-  """
-
-  filter = _messages.StringField(1)
-  orderBy = _messages.StringField(2)
-  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(4)
-  parent = _messages.StringField(5, required=True)
-
-
-class AgentregistryProjectsLocationsFetchMarketplaceMcpServersRequest(_messages.Message):
-  r"""A AgentregistryProjectsLocationsFetchMarketplaceMcpServersRequest
-  object.
-
-  Fields:
-    filter: Optional. Filtering results. The filter string will be passed to
-      the underlying call to ConsumerProcurementService.ListEntitlements.
-    orderBy: Optional. Field to sort by. The order_by string will be passed to
-      the underlying call to ConsumerProcurementService.ListEntitlements.
-      Typically, this supports fields like 'create_time'. Example:
-      "create_time desc"
-    pageSize: Optional. The page size for search result pagination. Page size
-      is 500 if unspecified and is capped at `500` even if a larger value is
-      given. A negative value will result in an `INVALID_ARGUMENT` error. If
-      set to zero, server will pick an appropriate default. Returned results
-      may be fewer than requested.
-    pageToken: Optional. If present, then retrieve the next batch of results
-      from the preceding call to this method. `page_token` must be the value
-      of `next_page_token` from the previous response. The values of all other
-      method parameters, must be identical to those in the previous call.
-    parent: Required. Parent value for FetchMarketplaceMcpServersRequest.
-  """
-
-  filter = _messages.StringField(1)
-  orderBy = _messages.StringField(2)
-  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(4)
-  parent = _messages.StringField(5, required=True)
-
-
 class AgentregistryProjectsLocationsGetRequest(_messages.Message):
   r"""A AgentregistryProjectsLocationsGetRequest object.
 
@@ -567,27 +470,6 @@ class AgentregistryProjectsLocationsListRequest(_messages.Message):
   name = _messages.StringField(3, required=True)
   pageSize = _messages.IntegerField(4, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(5)
-
-
-class AgentregistryProjectsLocationsMcpServersFetchInvokableRequest(_messages.Message):
-  r"""A AgentregistryProjectsLocationsMcpServersFetchInvokableRequest object.
-
-  Fields:
-    filter: Optional. Filtering results.
-    orderBy: Optional. Hint for how to order the results
-    pageSize: Optional. Requested page size. Server may return fewer items
-      than requested. If unspecified, server will pick an appropriate default.
-    pageToken: Optional. A token identifying a page of results the server
-      should return.
-    parent: Required. Parent value for FetchInvokableMcpServersRequest.
-      Format: `projects/{project}/locations/{location}`.
-  """
-
-  filter = _messages.StringField(1)
-  orderBy = _messages.StringField(2)
-  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(4)
-  parent = _messages.StringField(5, required=True)
 
 
 class AgentregistryProjectsLocationsMcpServersGetRequest(_messages.Message):
@@ -690,80 +572,6 @@ class AgentregistryProjectsLocationsOperationsListRequest(_messages.Message):
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   returnPartialSuccess = _messages.BooleanField(5)
-
-
-class AgentregistryProjectsLocationsPublishersCreateRequest(_messages.Message):
-  r"""A AgentregistryProjectsLocationsPublishersCreateRequest object.
-
-  Fields:
-    parent: Required. Parent location name. Format:
-      `projects/{project}/locations/{location}`
-    publisher: A Publisher resource to be passed as the request body.
-    publisherId: Required. Unique identifier for the publisher. Format: 4-63
-      characters containing only lowercase letters, numbers, and hyphens.
-    requestId: Optional. Signed UUID request idempotency token.
-  """
-
-  parent = _messages.StringField(1, required=True)
-  publisher = _messages.MessageField('Publisher', 2)
-  publisherId = _messages.StringField(3)
-  requestId = _messages.StringField(4)
-
-
-class AgentregistryProjectsLocationsPublishersDeleteRequest(_messages.Message):
-  r"""A AgentregistryProjectsLocationsPublishersDeleteRequest object.
-
-  Fields:
-    name: Required. Target publisher resource name to remove. Format:
-      `projects/{project}/locations/{location}/publishers/{publisher}`
-    requestId: Optional. Signed UUID request idempotency token.
-  """
-
-  name = _messages.StringField(1, required=True)
-  requestId = _messages.StringField(2)
-
-
-class AgentregistryProjectsLocationsPublishersGetRequest(_messages.Message):
-  r"""A AgentregistryProjectsLocationsPublishersGetRequest object.
-
-  Fields:
-    name: Required. Target publisher resource name. Format:
-      `projects/{project}/locations/{location}/publishers/{publisher}`
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
-class AgentregistryProjectsLocationsPublishersListRequest(_messages.Message):
-  r"""A AgentregistryProjectsLocationsPublishersListRequest object.
-
-  Fields:
-    pageSize: Optional. Page limit size.
-    pageToken: Optional. Page offset token.
-    parent: Required. Parent location to query. Format:
-      `projects/{project}/locations/{location}`
-  """
-
-  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
-
-
-class AgentregistryProjectsLocationsPublishersPatchRequest(_messages.Message):
-  r"""A AgentregistryProjectsLocationsPublishersPatchRequest object.
-
-  Fields:
-    name: Identifier. Resource name of the publisher. Format:
-      `projects/{project}/locations/{location}/publishers/{publisher}`
-    publisher: A Publisher resource to be passed as the request body.
-    requestId: Optional. Signed UUID request idempotency token.
-    updateMask: Optional. Standard update target mask mapping relative fields.
-  """
-
-  name = _messages.StringField(1, required=True)
-  publisher = _messages.MessageField('Publisher', 2)
-  requestId = _messages.StringField(3)
-  updateMask = _messages.StringField(4)
 
 
 class AgentregistryProjectsLocationsServicesCreateRequest(_messages.Message):
@@ -885,161 +693,6 @@ class AgentregistryProjectsLocationsServicesPatchRequest(_messages.Message):
   updateMask = _messages.StringField(4)
 
 
-class AgentregistryProjectsLocationsSkillsCreateRequest(_messages.Message):
-  r"""A AgentregistryProjectsLocationsSkillsCreateRequest object.
-
-  Fields:
-    parent: Required. The project and location location to bootstrap.
-    requestId: Optional. Signed UUID request idempotency token.
-    skill: A Skill resource to be passed as the request body.
-    skillId: Required. Custom, user-defined unique container identifier. Must
-      be unique within the parent project and location. This value should be
-      4-63 characters, and valid characters are `/a-z-/`.
-  """
-
-  parent = _messages.StringField(1, required=True)
-  requestId = _messages.StringField(2)
-  skill = _messages.MessageField('Skill', 3)
-  skillId = _messages.StringField(4)
-
-
-class AgentregistryProjectsLocationsSkillsDeleteRequest(_messages.Message):
-  r"""A AgentregistryProjectsLocationsSkillsDeleteRequest object.
-
-  Fields:
-    force: Optional. If set to true, any child SkillRevisions under this Skill
-      will also be deleted. Otherwise, the request will only succeed if the
-      Skill has no child SkillRevisions.
-    name: Required. Target Skill container name to remove.
-    requestId: Optional. Signed UUID request idempotency token.
-  """
-
-  force = _messages.BooleanField(1)
-  name = _messages.StringField(2, required=True)
-  requestId = _messages.StringField(3)
-
-
-class AgentregistryProjectsLocationsSkillsGetRequest(_messages.Message):
-  r"""A AgentregistryProjectsLocationsSkillsGetRequest object.
-
-  Fields:
-    name: Required. Target resource container name.
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
-class AgentregistryProjectsLocationsSkillsListRequest(_messages.Message):
-  r"""A AgentregistryProjectsLocationsSkillsListRequest object.
-
-  Fields:
-    filter: Optional. Raw search matching filter.
-    orderBy: Optional. Sorting properties layout criteria.
-    pageSize: Optional. Maximum records page limit count.
-    pageToken: Optional. Continuation query page offset index token.
-    parent: Required. Parent project location path to query.
-  """
-
-  filter = _messages.StringField(1)
-  orderBy = _messages.StringField(2)
-  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(4)
-  parent = _messages.StringField(5, required=True)
-
-
-class AgentregistryProjectsLocationsSkillsPatchRequest(_messages.Message):
-  r"""A AgentregistryProjectsLocationsSkillsPatchRequest object.
-
-  Fields:
-    name: Identifier. Resource name of the Skill. Format:
-      `projects/{project}/locations/{location}/skills/{skill}` The `{skill}`
-      segment acts as the resource ID. If the skill is associated with a
-      Publisher, this segment typically uses a hyphenated namespace prefix
-      corresponding to the publisher (e.g., `google-workspace-create-docs`).
-    requestId: Optional. Signed UUID request idempotency token.
-    skill: A Skill resource to be passed as the request body.
-    updateMask: Optional. Standard update target mask mapping relative fields.
-  """
-
-  name = _messages.StringField(1, required=True)
-  requestId = _messages.StringField(2)
-  skill = _messages.MessageField('Skill', 3)
-  updateMask = _messages.StringField(4)
-
-
-class AgentregistryProjectsLocationsSkillsRevisionsCreateRequest(_messages.Message):
-  r"""A AgentregistryProjectsLocationsSkillsRevisionsCreateRequest object.
-
-  Fields:
-    parent: Required. Parent logical container name.
-    requestId: Optional. Signed UUID request idempotency token.
-    skillRevision: A SkillRevision resource to be passed as the request body.
-    skillRevisionId: Optional. Custom, user-defined unique revision
-      identifier. Format: 4-63 characters, matching regex
-      `^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$`
-  """
-
-  parent = _messages.StringField(1, required=True)
-  requestId = _messages.StringField(2)
-  skillRevision = _messages.MessageField('SkillRevision', 3)
-  skillRevisionId = _messages.StringField(4)
-
-
-class AgentregistryProjectsLocationsSkillsRevisionsDeleteRevisionRequest(_messages.Message):
-  r"""A AgentregistryProjectsLocationsSkillsRevisionsDeleteRevisionRequest
-  object.
-
-  Fields:
-    name: Required. Target revision name to remove.
-    requestId: Optional. Signed UUID request idempotency token.
-  """
-
-  name = _messages.StringField(1, required=True)
-  requestId = _messages.StringField(2)
-
-
-class AgentregistryProjectsLocationsSkillsRevisionsGetRequest(_messages.Message):
-  r"""A AgentregistryProjectsLocationsSkillsRevisionsGetRequest object.
-
-  Fields:
-    name: Required. Target revision name.
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
-class AgentregistryProjectsLocationsSkillsRevisionsListRequest(_messages.Message):
-  r"""A AgentregistryProjectsLocationsSkillsRevisionsListRequest object.
-
-  Fields:
-    pageSize: Optional. Page limit size.
-    pageToken: Optional. Page offset token.
-    parent: Required. Parent logical container name to query.
-  """
-
-  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
-
-
-class AgentregistryProjectsLocationsSkillsSearchRequest(_messages.Message):
-  r"""A AgentregistryProjectsLocationsSkillsSearchRequest object.
-
-  Fields:
-    filter: Optional. Match constraints filter.
-    pageSize: Optional. Maximum records limit.
-    pageToken: Optional. Query offset offset index token.
-    parent: Required. Parent location.
-    query: Required. Plain-text query to search inside skill files.
-  """
-
-  filter = _messages.StringField(1)
-  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(3)
-  parent = _messages.StringField(4, required=True)
-  query = _messages.StringField(5)
-
-
 class Annotations(_messages.Message):
   r"""Annotations describing the characteristics and behavior of a tool or
   operation.
@@ -1067,17 +720,6 @@ class Annotations(_messages.Message):
   openWorldHint = _messages.BooleanField(3)
   readOnlyHint = _messages.BooleanField(4)
   title = _messages.StringField(5)
-
-
-class ArchiveUploadSource(_messages.Message):
-  r"""Direct write-only raw archive payload upload.
-
-  Fields:
-    archiveContent: Required. Write-only raw ZIP/TAR archive payload bytes
-      containing the skill package. Maximum allowed size is 5MB.
-  """
-
-  archiveContent = _messages.BytesField(1)
 
 
 class AuthProviderBinding(_messages.Message):
@@ -1122,40 +764,6 @@ class Binding(_messages.Message):
   source = _messages.MessageField('Source', 6)
   target = _messages.MessageField('Target', 7)
   updateTime = _messages.StringField(8)
-
-
-class Blobstore2Info(_messages.Message):
-  r"""Information to read/write to blobstore2.
-
-  Fields:
-    blobGeneration: The blob generation id.
-    blobId: The blob id, e.g., /blobstore/prod/playground/scotty
-    downloadExternalReadToken: A serialized External Read Token passed from
-      Bigstore -> Scotty for a GCS download. This field must never be consumed
-      outside of Bigstore, and is not applicable to non-GCS media uploads.
-    downloadReadHandle: Read handle passed from Bigstore -> Scotty for a GCS
-      download. This is a signed, serialized blobstore2.ReadHandle proto which
-      must never be set outside of Bigstore, and is not applicable to non-GCS
-      media downloads.
-    readToken: The blob read token. Needed to read blobs that have not been
-      replicated. Might not be available until the final call.
-    uploadFragmentListCreationInfo: A serialized Object Fragment List Creation
-      Info passed from Bigstore -> Scotty for a GCS upload. This field must
-      never be consumed outside of Bigstore, and is not applicable to non-GCS
-      media uploads.
-    uploadMetadataContainer: Metadata passed from Blobstore -> Scotty for a
-      new GCS upload. This is a signed, serialized
-      blobstore2.BlobMetadataContainer proto which must never be consumed
-      outside of Bigstore, and is not applicable to non-GCS media uploads.
-  """
-
-  blobGeneration = _messages.IntegerField(1)
-  blobId = _messages.StringField(2)
-  downloadExternalReadToken = _messages.BytesField(3)
-  downloadReadHandle = _messages.BytesField(4)
-  readToken = _messages.StringField(5)
-  uploadFragmentListCreationInfo = _messages.BytesField(6)
-  uploadMetadataContainer = _messages.BytesField(7)
 
 
 class CancelOperationRequest(_messages.Message):
@@ -1212,209 +820,6 @@ class Card(_messages.Message):
 
   content = _messages.MessageField('ContentValue', 1)
   type = _messages.EnumField('TypeValueValuesEnum', 2)
-
-
-class CompositeMedia(_messages.Message):
-  r"""A sequence of media data references representing composite data.
-  Introduced to support Bigstore composite objects. For details, visit
-  http://go/bigstore-composites.
-
-  Enums:
-    ReferenceTypeValueValuesEnum: Describes what the field reference contains.
-
-  Fields:
-    blobRef: Blobstore v1 reference, set if reference_type is BLOBSTORE_REF
-      This should be the byte representation of a blobstore.BlobRef. Since
-      Blobstore is deprecating v1, use blobstore2_info instead. For now, any
-      v2 blob will also be represented in this field as v1 BlobRef.
-    blobstore2Info: Blobstore v2 info, set if reference_type is BLOBSTORE_REF
-      and it refers to a v2 blob.
-    cosmoBinaryReference: A binary data reference for a media download. Serves
-      as a technology-agnostic binary reference in some Google infrastructure.
-      This value is a serialized storage_cosmo.BinaryReference proto. Storing
-      it as bytes is a hack to get around the fact that the cosmo proto (as
-      well as others it includes) doesn't support JavaScript. This prevents us
-      from including the actual type of this field.
-    crc32cHash: crc32.c hash for the payload.
-    inline: Media data, set if reference_type is INLINE
-    length: Size of the data, in bytes
-    md5Hash: MD5 hash for the payload.
-    objectId: Reference to a TI Blob, set if reference_type is BIGSTORE_REF.
-    path: Path to the data, set if reference_type is PATH
-    referenceType: Describes what the field reference contains.
-    sha1Hash: SHA-1 hash for the payload.
-  """
-
-  class ReferenceTypeValueValuesEnum(_messages.Enum):
-    r"""Describes what the field reference contains.
-
-    Values:
-      PATH: Reference contains a GFS path or a local path.
-      BLOB_REF: Reference points to a blobstore object. This could be either a
-        v1 blob_ref or a v2 blobstore2_info. Clients should check
-        blobstore2_info first, since v1 is being deprecated.
-      INLINE: Data is included into this proto buffer
-      BIGSTORE_REF: Reference points to a bigstore object
-      COSMO_BINARY_REFERENCE: Indicates the data is stored in
-        cosmo_binary_reference.
-    """
-    PATH = 0
-    BLOB_REF = 1
-    INLINE = 2
-    BIGSTORE_REF = 3
-    COSMO_BINARY_REFERENCE = 4
-
-  blobRef = _messages.BytesField(1)
-  blobstore2Info = _messages.MessageField('Blobstore2Info', 2)
-  cosmoBinaryReference = _messages.BytesField(3)
-  crc32cHash = _messages.IntegerField(4, variant=_messages.Variant.UINT32)
-  inline = _messages.BytesField(5)
-  length = _messages.IntegerField(6)
-  md5Hash = _messages.BytesField(7)
-  objectId = _messages.MessageField('ObjectId', 8)
-  path = _messages.StringField(9)
-  referenceType = _messages.EnumField('ReferenceTypeValueValuesEnum', 10)
-  sha1Hash = _messages.BytesField(11)
-
-
-class ContentTypeInfo(_messages.Message):
-  r"""Detailed Content-Type information from Scotty. The Content-Type of the
-  media will typically be filled in by the header or Scotty's best_guess, but
-  this extended information provides the backend with more information so that
-  it can make a better decision if needed. This is only used on media upload
-  requests from Scotty.
-
-  Fields:
-    bestGuess: Scotty's best guess of what the content type of the file is.
-    fromBytes: The content type of the file derived by looking at specific
-      bytes (i.e. "magic bytes") of the actual file.
-    fromFileName: The content type of the file derived from the file extension
-      of the original file name used by the client.
-    fromFusionId: The content type of the file detected by Fusion ID.
-      go/fusionid
-    fromHeader: The content type of the file as specified in the request
-      headers, multipart headers, or RUPIO start request.
-    fromUrlPath: The content type of the file derived from the file extension
-      of the URL path. The URL path is assumed to represent a file name (which
-      is typically only true for agents that are providing a REST API).
-    fusionIdDetectionMetadata: Metadata information from Fusion ID detection.
-      Serialized FusionIdDetectionMetadata proto. Only set if from_fusion_id
-      is set.
-  """
-
-  bestGuess = _messages.StringField(1)
-  fromBytes = _messages.StringField(2)
-  fromFileName = _messages.StringField(3)
-  fromFusionId = _messages.StringField(4)
-  fromHeader = _messages.StringField(5)
-  fromUrlPath = _messages.StringField(6)
-  fusionIdDetectionMetadata = _messages.BytesField(7)
-
-
-class DiffChecksumsResponse(_messages.Message):
-  r"""Backend response for a Diff get checksums response. For details on the
-  Scotty Diff protocol, visit http://go/scotty-diff-protocol.
-
-  Fields:
-    checksumsLocation: Exactly one of these fields must be populated. If
-      checksums_location is filled, the server will return the corresponding
-      contents to the user. If object_location is filled, the server will
-      calculate the checksums based on the content there and return that to
-      the user. For details on the format of the checksums, see
-      http://go/scotty-diff-protocol.
-    chunkSizeBytes: The chunk size of checksums. Must be a multiple of 256KB.
-    objectLocation: If set, calculate the checksums based on the contents and
-      return them to the caller.
-    objectSizeBytes: The total size of the server object.
-    objectVersion: The object version of the object the checksums are being
-      returned for.
-  """
-
-  checksumsLocation = _messages.MessageField('CompositeMedia', 1)
-  chunkSizeBytes = _messages.IntegerField(2)
-  objectLocation = _messages.MessageField('CompositeMedia', 3)
-  objectSizeBytes = _messages.IntegerField(4)
-  objectVersion = _messages.StringField(5)
-
-
-class DiffDownloadResponse(_messages.Message):
-  r"""Backend response for a Diff download response. For details on the Scotty
-  Diff protocol, visit http://go/scotty-diff-protocol.
-
-  Fields:
-    objectLocation: The original object location.
-  """
-
-  objectLocation = _messages.MessageField('CompositeMedia', 1)
-
-
-class DiffUploadRequest(_messages.Message):
-  r"""A Diff upload request. For details on the Scotty Diff protocol, visit
-  http://go/scotty-diff-protocol.
-
-  Fields:
-    checksumsInfo: The location of the checksums for the new object. Agents
-      must clone the object located here, as the upload server will delete the
-      contents once a response is received. For details on the format of the
-      checksums, see http://go/scotty-diff-protocol.
-    objectInfo: The location of the new object. Agents must clone the object
-      located here, as the upload server will delete the contents once a
-      response is received.
-    objectVersion: The object version of the object that is the base version
-      the incoming diff script will be applied to. This field will always be
-      filled in.
-  """
-
-  checksumsInfo = _messages.MessageField('CompositeMedia', 1)
-  objectInfo = _messages.MessageField('CompositeMedia', 2)
-  objectVersion = _messages.StringField(3)
-
-
-class DiffUploadResponse(_messages.Message):
-  r"""Backend response for a Diff upload request. For details on the Scotty
-  Diff protocol, visit http://go/scotty-diff-protocol.
-
-  Fields:
-    objectVersion: The object version of the object at the server. Must be
-      included in the end notification response. The version in the end
-      notification response must correspond to the new version of the object
-      that is now stored at the server, after the upload.
-    originalObject: The location of the original file for a diff upload
-      request. Must be filled in if responding to an upload start
-      notification.
-  """
-
-  objectVersion = _messages.StringField(1)
-  originalObject = _messages.MessageField('CompositeMedia', 2)
-
-
-class DiffVersionResponse(_messages.Message):
-  r"""Backend response for a Diff get version response. For details on the
-  Scotty Diff protocol, visit http://go/scotty-diff-protocol.
-
-  Fields:
-    objectSizeBytes: The total size of the server object.
-    objectVersion: The version of the object stored at the server.
-  """
-
-  objectSizeBytes = _messages.IntegerField(1)
-  objectVersion = _messages.StringField(2)
-
-
-class DownloadParameters(_messages.Message):
-  r"""Parameters specific to media downloads.
-
-  Fields:
-    allowGzipCompression: A boolean to be returned in the response to Scotty.
-      Allows/disallows gzip encoding of the payload content when the server
-      thinks it's advantageous (hence, does not guarantee compression) which
-      allows Scotty to GZip the response to the client.
-    ignoreRange: Determining whether or not Apiary should skip the inclusion
-      of any Content-Range header on its response to Scotty.
-  """
-
-  allowGzipCompression = _messages.BooleanField(1)
-  ignoreRange = _messages.BooleanField(2)
 
 
 class Empty(_messages.Message):
@@ -1583,120 +988,6 @@ class FetchAvailableBindingsResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
-class FetchInvokableAgentsResponse(_messages.Message):
-  r"""Message for response to listing available Agents
-
-  Fields:
-    agents: The list of Agents.
-    nextPageToken: A token identifying a page of results the server should
-      return.
-  """
-
-  agents = _messages.MessageField('Agent', 1, repeated=True)
-  nextPageToken = _messages.StringField(2)
-
-
-class FetchInvokableMcpServersResponse(_messages.Message):
-  r"""Message for response to fetching list of McpServers
-
-  Fields:
-    mcpServers: The list of McpServers.
-    nextPageToken: A token identifying a page of results the server should
-      return.
-  """
-
-  mcpServers = _messages.MessageField('McpServer', 1, repeated=True)
-  nextPageToken = _messages.StringField(2)
-
-
-class FetchMarketplaceAgentsResponse(_messages.Message):
-  r"""Message for response to listing available Marketplace Agents.
-
-  Fields:
-    marketplaceAgents: The list of Agents derived from Marketplace
-      entitlements.
-    nextPageToken: A token identifying a page of results the server should
-      return.
-  """
-
-  marketplaceAgents = _messages.MessageField('MarketplaceAgent', 1, repeated=True)
-  nextPageToken = _messages.StringField(2)
-
-
-class FetchMarketplaceMcpServersResponse(_messages.Message):
-  r"""Message for response to listing available Marketplace McpServers.
-
-  Fields:
-    marketplaceMcpServers: The list of McpServers derived from Marketplace
-      entitlements.
-    nextPageToken: A token identifying a page of results the server should
-      return.
-  """
-
-  marketplaceMcpServers = _messages.MessageField('MarketplaceMcpServer', 1, repeated=True)
-  nextPageToken = _messages.StringField(2)
-
-
-class Frontmatter(_messages.Message):
-  r"""Structured metadata attributes extracted from the package's local
-  SKILL.md frontmatter.
-
-  Messages:
-    MetadataValue: Optional. Extensible flattened map mapping custom tags,
-      authors, and version parameters.
-
-  Fields:
-    compatibility: Optional. Environmental dependencies or local sidecars.
-    description: Optional. Functional description.
-    metadata: Optional. Extensible flattened map mapping custom tags, authors,
-      and version parameters.
-    packageId: Optional. Portable package ID declared in YAML frontmatter
-      (e.g. "@acme/finance/sql-expert").
-  """
-
-  @encoding.MapUnrecognizedFields('additionalProperties')
-  class MetadataValue(_messages.Message):
-    r"""Optional. Extensible flattened map mapping custom tags, authors, and
-    version parameters.
-
-    Messages:
-      AdditionalProperty: An additional property for a MetadataValue object.
-
-    Fields:
-      additionalProperties: Additional properties of type MetadataValue
-    """
-
-    class AdditionalProperty(_messages.Message):
-      r"""An additional property for a MetadataValue object.
-
-      Fields:
-        key: Name of the additional property.
-        value: A string attribute.
-      """
-
-      key = _messages.StringField(1)
-      value = _messages.StringField(2)
-
-    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
-
-  compatibility = _messages.StringField(1)
-  description = _messages.StringField(2)
-  metadata = _messages.MessageField('MetadataValue', 3)
-  packageId = _messages.StringField(4)
-
-
-class GcsSource(_messages.Message):
-  r"""Specifications for Cloud Storage objects.
-
-  Fields:
-    generation: Required. Cloud Storage object generation ID.
-    uri: Required. Cloud Storage object URI.
-  """
-
-  generation = _messages.StringField(1)
-  uri = _messages.StringField(2)
-
-
 class Interface(_messages.Message):
   r"""Represents the connection details for an Agent or MCP Server.
 
@@ -1814,18 +1105,6 @@ class ListOperationsResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
-class ListPublishersResponse(_messages.Message):
-  r"""Response listing Publishers.
-
-  Fields:
-    nextPageToken: Page offset continuation token.
-    publishers: The returned list of Publishers.
-  """
-
-  nextPageToken = _messages.StringField(1)
-  publishers = _messages.MessageField('Publisher', 2, repeated=True)
-
-
 class ListServicesResponse(_messages.Message):
   r"""Message for response to listing Services
 
@@ -1839,32 +1118,6 @@ class ListServicesResponse(_messages.Message):
 
   nextPageToken = _messages.StringField(1)
   services = _messages.MessageField('Service', 2, repeated=True)
-
-
-class ListSkillRevisionsResponse(_messages.Message):
-  r"""Response listing Revisions.
-
-  Fields:
-    nextPageToken: Page offset continuation token.
-    skillRevisions: Returned version snapshot list.
-  """
-
-  nextPageToken = _messages.StringField(1)
-  skillRevisions = _messages.MessageField('SkillRevision', 2, repeated=True)
-
-
-class ListSkillsResponse(_messages.Message):
-  r"""Response structure listing logical Skills.
-
-  Fields:
-    nextPageToken: Page continuation continuation token.
-    skills: Returned container list.
-    unreachable: Unreachable locations or failures.
-  """
-
-  nextPageToken = _messages.StringField(1)
-  skills = _messages.MessageField('Skill', 2, repeated=True)
-  unreachable = _messages.StringField(3, repeated=True)
 
 
 class Location(_messages.Message):
@@ -1945,88 +1198,6 @@ class Location(_messages.Message):
   locationId = _messages.StringField(3)
   metadata = _messages.MessageField('MetadataValue', 4)
   name = _messages.StringField(5)
-
-
-class MarketplaceAgent(_messages.Message):
-  r"""Represents an Agent as fetched from the Marketplace context.
-
-  Messages:
-    AgentValue: Output only. The Agent resource.
-
-  Fields:
-    agent: Output only. The Agent resource.
-    entitlement: Output only. The resource Name of the Entitlement.
-      Entitlement names have the form
-      `projects/{project_id}/entitlements/{entitlement_id}`.
-  """
-
-  @encoding.MapUnrecognizedFields('additionalProperties')
-  class AgentValue(_messages.Message):
-    r"""Output only. The Agent resource.
-
-    Messages:
-      AdditionalProperty: An additional property for a AgentValue object.
-
-    Fields:
-      additionalProperties: Properties of the object.
-    """
-
-    class AdditionalProperty(_messages.Message):
-      r"""An additional property for a AgentValue object.
-
-      Fields:
-        key: Name of the additional property.
-        value: A extra_types.JsonValue attribute.
-      """
-
-      key = _messages.StringField(1)
-      value = _messages.MessageField('extra_types.JsonValue', 2)
-
-    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
-
-  agent = _messages.MessageField('AgentValue', 1)
-  entitlement = _messages.StringField(2)
-
-
-class MarketplaceMcpServer(_messages.Message):
-  r"""Represents an McpServer as fetched from the Marketplace context.
-
-  Messages:
-    McpServerValue: Output only. The McpServer resource.
-
-  Fields:
-    entitlement: Output only. The resource Name of the Entitlement.
-      Entitlement names have the form
-      `projects/{project_id}/entitlements/{entitlement_id}`.
-    mcpServer: Output only. The McpServer resource.
-  """
-
-  @encoding.MapUnrecognizedFields('additionalProperties')
-  class McpServerValue(_messages.Message):
-    r"""Output only. The McpServer resource.
-
-    Messages:
-      AdditionalProperty: An additional property for a McpServerValue object.
-
-    Fields:
-      additionalProperties: Properties of the object.
-    """
-
-    class AdditionalProperty(_messages.Message):
-      r"""An additional property for a McpServerValue object.
-
-      Fields:
-        key: Name of the additional property.
-        value: A extra_types.JsonValue attribute.
-      """
-
-      key = _messages.StringField(1)
-      value = _messages.MessageField('extra_types.JsonValue', 2)
-
-    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
-
-  entitlement = _messages.StringField(1)
-  mcpServer = _messages.MessageField('McpServerValue', 2)
 
 
 class McpServer(_messages.Message):
@@ -2186,179 +1357,6 @@ class McpServerSpec(_messages.Message):
 
   content = _messages.MessageField('ContentValue', 1)
   type = _messages.EnumField('TypeValueValuesEnum', 2)
-
-
-class Media(_messages.Message):
-  r"""A reference to data stored on the filesystem, on GFS or in blobstore.
-
-  Enums:
-    ReferenceTypeValueValuesEnum: Describes what the field reference contains.
-
-  Fields:
-    algorithm: Deprecated, use one of explicit hash type fields instead.
-      Algorithm used for calculating the hash. As of 2011/01/21, "MD5" is the
-      only possible value for this field. New values may be added at any time.
-    bigstoreObjectRef: Use object_id instead.
-    blobRef: Blobstore v1 reference, set if reference_type is BLOBSTORE_REF
-      This should be the byte representation of a blobstore.BlobRef. Since
-      Blobstore is deprecating v1, use blobstore2_info instead. For now, any
-      v2 blob will also be represented in this field as v1 BlobRef.
-    blobstore2Info: Blobstore v2 info, set if reference_type is BLOBSTORE_REF
-      and it refers to a v2 blob.
-    compositeMedia: A composite media composed of one or more media objects,
-      set if reference_type is COMPOSITE_MEDIA. The media length field must be
-      set to the sum of the lengths of all composite media objects. Note: All
-      composite media must have length specified.
-    contentType: MIME type of the data
-    contentTypeInfo: Extended content type information provided for Scotty
-      uploads.
-    cosmoBinaryReference: A binary data reference for a media download. Serves
-      as a technology-agnostic binary reference in some Google infrastructure.
-      This value is a serialized storage_cosmo.BinaryReference proto. Storing
-      it as bytes is a hack to get around the fact that the cosmo proto (as
-      well as others it includes) doesn't support JavaScript. This prevents us
-      from including the actual type of this field.
-    crc32cHash: For Scotty Uploads: Scotty-provided hashes for uploads For
-      Scotty Downloads: (WARNING: DO NOT USE WITHOUT PERMISSION FROM THE
-      SCOTTY TEAM.) A Hash provided by the agent to be used to verify the data
-      being downloaded. Currently only supported for inline payloads. Further,
-      only crc32c_hash is currently supported.
-    diffChecksumsResponse: Set if reference_type is DIFF_CHECKSUMS_RESPONSE.
-    diffDownloadResponse: Set if reference_type is DIFF_DOWNLOAD_RESPONSE.
-    diffUploadRequest: Set if reference_type is DIFF_UPLOAD_REQUEST.
-    diffUploadResponse: Set if reference_type is DIFF_UPLOAD_RESPONSE.
-    diffVersionResponse: Set if reference_type is DIFF_VERSION_RESPONSE.
-    downloadParameters: Parameters for a media download.
-    filename: Original file name
-    hash: Deprecated, use one of explicit hash type fields instead. These two
-      hash related fields will only be populated on Scotty based media uploads
-      and will contain the content of the hash group in the
-      NotificationRequest: http://cs/#google3/blobstore2/api/scotty/service/pr
-      oto/upload_listener.proto&q=class:Hash Hex encoded hash value of the
-      uploaded media.
-    hashVerified: For Scotty uploads only. If a user sends a hash code and the
-      backend has requested that Scotty verify the upload against the client
-      hash, Scotty will perform the check on behalf of the backend and will
-      reject it if the hashes don't match. This is set to true if Scotty
-      performed this verification.
-    inline: Media data, set if reference_type is INLINE
-    isPotentialRetry: |is_potential_retry| is set false only when Scotty is
-      certain that it has not sent the request before. When a client resumes
-      an upload, this field must be set true in agent calls, because Scotty
-      cannot be certain that it has never sent the request before due to
-      potential failure in the session state persistence.
-    length: Size of the data, in bytes
-    md5Hash: Scotty-provided MD5 hash for an upload.
-    mediaId: Media id to forward to the operation GetMedia. Can be set if
-      reference_type is GET_MEDIA.
-    objectId: Reference to a TI Blob, set if reference_type is BIGSTORE_REF.
-    path: Path to the data, set if reference_type is PATH
-    referenceType: Describes what the field reference contains.
-    sha1Hash: Scotty-provided SHA1 hash for an upload.
-    sha256Hash: Scotty-provided SHA256 hash for an upload.
-    sha512Hash: Scotty-provided SHA512 hash for an upload.
-    timestamp: Time at which the media data was last updated, in milliseconds
-      since UNIX epoch
-    token: A unique fingerprint/version id for the media data
-  """
-
-  class ReferenceTypeValueValuesEnum(_messages.Enum):
-    r"""Describes what the field reference contains.
-
-    Values:
-      PATH: Reference contains a GFS path or a local path.
-      BLOB_REF: Reference points to a blobstore object. This could be either a
-        v1 blob_ref or a v2 blobstore2_info. Clients should check
-        blobstore2_info first, since v1 is being deprecated.
-      INLINE: Data is included into this proto buffer
-      GET_MEDIA: Data should be accessed from the current service using the
-        operation GetMedia.
-      COMPOSITE_MEDIA: The content for this media object is stored across
-        multiple partial media objects under the composite_media field.
-      BIGSTORE_REF: Reference points to a bigstore object
-      DIFF_VERSION_RESPONSE: Indicates the data is stored in
-        diff_version_response.
-      DIFF_CHECKSUMS_RESPONSE: Indicates the data is stored in
-        diff_checksums_response.
-      DIFF_DOWNLOAD_RESPONSE: Indicates the data is stored in
-        diff_download_response.
-      DIFF_UPLOAD_REQUEST: Indicates the data is stored in
-        diff_upload_request.
-      DIFF_UPLOAD_RESPONSE: Indicates the data is stored in
-        diff_upload_response.
-      COSMO_BINARY_REFERENCE: Indicates the data is stored in
-        cosmo_binary_reference.
-      ARBITRARY_BYTES: Informs Scotty to generate a response payload with the
-        size specified in the length field. The contents of the payload are
-        generated by Scotty and are undefined. This is useful for testing
-        download speeds between the user and Scotty without involving a real
-        payload source. Note: range is not supported when using
-        arbitrary_bytes.
-    """
-    PATH = 0
-    BLOB_REF = 1
-    INLINE = 2
-    GET_MEDIA = 3
-    COMPOSITE_MEDIA = 4
-    BIGSTORE_REF = 5
-    DIFF_VERSION_RESPONSE = 6
-    DIFF_CHECKSUMS_RESPONSE = 7
-    DIFF_DOWNLOAD_RESPONSE = 8
-    DIFF_UPLOAD_REQUEST = 9
-    DIFF_UPLOAD_RESPONSE = 10
-    COSMO_BINARY_REFERENCE = 11
-    ARBITRARY_BYTES = 12
-
-  algorithm = _messages.StringField(1)
-  bigstoreObjectRef = _messages.BytesField(2)
-  blobRef = _messages.BytesField(3)
-  blobstore2Info = _messages.MessageField('Blobstore2Info', 4)
-  compositeMedia = _messages.MessageField('CompositeMedia', 5, repeated=True)
-  contentType = _messages.StringField(6)
-  contentTypeInfo = _messages.MessageField('ContentTypeInfo', 7)
-  cosmoBinaryReference = _messages.BytesField(8)
-  crc32cHash = _messages.IntegerField(9, variant=_messages.Variant.UINT32)
-  diffChecksumsResponse = _messages.MessageField('DiffChecksumsResponse', 10)
-  diffDownloadResponse = _messages.MessageField('DiffDownloadResponse', 11)
-  diffUploadRequest = _messages.MessageField('DiffUploadRequest', 12)
-  diffUploadResponse = _messages.MessageField('DiffUploadResponse', 13)
-  diffVersionResponse = _messages.MessageField('DiffVersionResponse', 14)
-  downloadParameters = _messages.MessageField('DownloadParameters', 15)
-  filename = _messages.StringField(16)
-  hash = _messages.StringField(17)
-  hashVerified = _messages.BooleanField(18)
-  inline = _messages.BytesField(19)
-  isPotentialRetry = _messages.BooleanField(20)
-  length = _messages.IntegerField(21)
-  md5Hash = _messages.BytesField(22)
-  mediaId = _messages.BytesField(23)
-  objectId = _messages.MessageField('ObjectId', 24)
-  path = _messages.StringField(25)
-  referenceType = _messages.EnumField('ReferenceTypeValueValuesEnum', 26)
-  sha1Hash = _messages.BytesField(27)
-  sha256Hash = _messages.BytesField(28)
-  sha512Hash = _messages.BytesField(29)
-  timestamp = _messages.IntegerField(30, variant=_messages.Variant.UINT64)
-  token = _messages.StringField(31)
-
-
-class ObjectId(_messages.Message):
-  r"""This is a copy of the tech.blob.ObjectId proto, which could not be used
-  directly here due to transitive closure issues with JavaScript support; see
-  http://b/8801763.
-
-  Fields:
-    bucketName: The name of the bucket to which this object belongs.
-    generation: Generation of the object. Generations are monotonically
-      increasing across writes, allowing them to be be compared to determine
-      which generation is newer. If this is omitted in a request, then you are
-      requesting the live object. See http://go/bigstore-versions
-    objectName: The name of the object.
-  """
-
-  bucketName = _messages.StringField(1)
-  generation = _messages.IntegerField(2)
-  objectName = _messages.StringField(3)
 
 
 class Operation(_messages.Message):
@@ -2527,64 +1525,10 @@ class Protocol(_messages.Message):
   type = _messages.EnumField('TypeValueValuesEnum', 3)
 
 
-class Publisher(_messages.Message):
-  r"""Represents a verified Publisher of Skills. Prepopulated publishers
-  include `publishers/google`.
-
-  Enums:
-    PublisherTierValueValuesEnum: Output only. The curation tier of the
-      publisher.
-
-  Fields:
-    displayName: Optional. Human readable display name of the publisher.
-    documentationUri: Optional. URI pointing to official publisher
-      documentation.
-    name: Identifier. Resource name of the publisher. Format:
-      `projects/{project}/locations/{location}/publishers/{publisher}`
-    publisherTier: Output only. The curation tier of the publisher.
-    supportUri: Optional. URI pointing to the support portal or email.
-    verifiedPrefix: Required. The verified prefix (e.g. "snowflake-",
-      "google-") associated with this publisher. The system uses this prefix
-      to enforce name-squatting rules during Skill registration. Must be
-      globally unique across all publishers.
-  """
-
-  class PublisherTierValueValuesEnum(_messages.Enum):
-    r"""Output only. The curation tier of the publisher.
-
-    Values:
-      PUBLISHER_TIER_UNSPECIFIED: Default value. Unspecified.
-      FIRST_PARTY: First-party Google-curated and verified global publishers.
-      THIRD_PARTY: Third-party verified enterprise partner publishers.
-      PRIVATE: Private publishers within the developer's workspace/project.
-    """
-    PUBLISHER_TIER_UNSPECIFIED = 0
-    FIRST_PARTY = 1
-    THIRD_PARTY = 2
-    PRIVATE = 3
-
-  displayName = _messages.StringField(1)
-  documentationUri = _messages.StringField(2)
-  name = _messages.StringField(3)
-  publisherTier = _messages.EnumField('PublisherTierValueValuesEnum', 4)
-  supportUri = _messages.StringField(5)
-  verifiedPrefix = _messages.StringField(6)
-
-
 class SearchAgentsRequest(_messages.Message):
   r"""Message for searching Agents
 
-  Enums:
-    SearchTypeValueValuesEnum: Optional. The type of search. If set, must be
-      set to `KEYWORD`.
-
   Fields:
-    filter: Optional. Use this field to specify additional filter criteria on
-      search results.
-    orderBy: Optional. A comma-separated list of fields specifying the sorting
-      order of the results. The default order is ascending. Add "` DESC`"
-      after the field name to indicate descending order. Format should follow
-      [AIP 132](https://google.aip.dev/132#ordering) ordering syntax.
     pageSize: Optional. The maximum number of search results to return per
       page. The page size is capped at `100`, even if a larger value is
       specified. A negative value will result in an `INVALID_ARGUMENT` error.
@@ -2618,26 +1562,11 @@ class SearchAgentsRequest(_messages.Message):
       `skills.tags:test` to find agents whose skills tags contain `test`. *
       `planner OR booking` to find agents whose metadata contains the words
       `planner` or `booking`.
-    searchType: Optional. The type of search. If set, must be set to
-      `KEYWORD`.
   """
 
-  class SearchTypeValueValuesEnum(_messages.Enum):
-    r"""Optional. The type of search. If set, must be set to `KEYWORD`.
-
-    Values:
-      SEARCH_TYPE_UNSPECIFIED: Invalid search type.
-      KEYWORD: Search for a keyword across all searchable fields.
-    """
-    SEARCH_TYPE_UNSPECIFIED = 0
-    KEYWORD = 1
-
-  filter = _messages.StringField(1)
-  orderBy = _messages.StringField(2)
-  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(4)
-  searchString = _messages.StringField(5)
-  searchType = _messages.EnumField('SearchTypeValueValuesEnum', 6)
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  searchString = _messages.StringField(3)
 
 
 class SearchAgentsResponse(_messages.Message):
@@ -2658,17 +1587,7 @@ class SearchAgentsResponse(_messages.Message):
 class SearchMcpServersRequest(_messages.Message):
   r"""Message for searching MCP Servers
 
-  Enums:
-    SearchTypeValueValuesEnum: Optional. The type of search. If set, must be
-      set to `KEYWORD`.
-
   Fields:
-    filter: Optional. Use this field to specify additional filter criteria on
-      search results.
-    orderBy: Optional. A comma-separated list of fields specifying the sorting
-      order of the results. The default order is ascending. Add "` DESC`"
-      after the field name to indicate descending order. Format should follow
-      [AIP 132](https://google.aip.dev/132#ordering) ordering syntax.
     pageSize: Optional. The maximum number of search results to return per
       page. The page size is capped at `100`, even if a larger value is
       specified. A negative value will result in an `INVALID_ARGUMENT` error.
@@ -2700,26 +1619,11 @@ class SearchMcpServersRequest(_messages.Message):
       (displayName:planner OR displayName:booking)` to find MCP Servers whose
       MCP Server ID contains `service-id` and whose display name contains
       `planner` or `booking`.
-    searchType: Optional. The type of search. If set, must be set to
-      `KEYWORD`.
   """
 
-  class SearchTypeValueValuesEnum(_messages.Enum):
-    r"""Optional. The type of search. If set, must be set to `KEYWORD`.
-
-    Values:
-      SEARCH_TYPE_UNSPECIFIED: Invalid search type.
-      KEYWORD: Search for a keyword across all searchable fields.
-    """
-    SEARCH_TYPE_UNSPECIFIED = 0
-    KEYWORD = 1
-
-  filter = _messages.StringField(1)
-  orderBy = _messages.StringField(2)
-  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(4)
-  searchString = _messages.StringField(5)
-  searchType = _messages.EnumField('SearchTypeValueValuesEnum', 6)
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  searchString = _messages.StringField(3)
 
 
 class SearchMcpServersResponse(_messages.Message):
@@ -2735,18 +1639,6 @@ class SearchMcpServersResponse(_messages.Message):
 
   mcpServers = _messages.MessageField('McpServer', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
-
-
-class SearchSkillsResponse(_messages.Message):
-  r"""Response listing searched Skills.
-
-  Fields:
-    nextPageToken: Query page offset continuation token.
-    skills: Matched Skills list.
-  """
-
-  nextPageToken = _messages.StringField(1)
-  skills = _messages.MessageField('Skill', 2, repeated=True)
 
 
 class Service(_messages.Message):
@@ -2785,160 +1677,6 @@ class Service(_messages.Message):
   name = _messages.StringField(8)
   registryResource = _messages.StringField(9)
   updateTime = _messages.StringField(10)
-
-
-class Skill(_messages.Message):
-  r"""Represents an Executable Agent Skill or a Composite Tool Suite (Bundle).
-  Sibling resource with Agent and McpServer under
-  agentregistry.googleapis.com.
-
-  Enums:
-    StateValueValuesEnum: Output only. Active operational target release state
-      of the parent container, derived from its active revisions.
-    TypeValueValuesEnum: Required. Structural deployment type (SIMPLE leaf vs
-      COMPOSITE bundle).
-
-  Fields:
-    createTime: Output only. Create time.
-    defaultRevision: Output only. The full resource name of the revision
-      currently served by default (floating track). Format: `projects/{project
-      }/locations/{location}/skills/{skill}/revisions/{revision}`
-    description: Optional. Brief summary describing the capabilities of the
-      skill. Maximum length is 2048 characters.
-    displayName: Required. Human-readable display name of the skill. Maximum
-      length is 128 characters.
-    frontmatter: Output only. Lightweight frontmatter metadata attributes
-      copied from the default revision.
-    initialRevision: Optional. Input only. Optional nested initial revision
-      payload to support standard one-shot creation. The server processes this
-      field on input during creation but must never return it in responses.
-    name: Identifier. Resource name of the Skill. Format:
-      `projects/{project}/locations/{location}/skills/{skill}` The `{skill}`
-      segment acts as the resource ID. If the skill is associated with a
-      Publisher, this segment typically uses a hyphenated namespace prefix
-      corresponding to the publisher (e.g., `google-workspace-create-docs`).
-    publisher: Optional. The publisher resource associated with this skill.
-      Format: `projects/{project}/locations/{location}/publishers/{publisher}`
-      The publisher dictates the allowed namespace prefixes for the skill's
-      name and logical `skill_id` (e.g., Publisher `google` authorizes the
-      `google-*` prefix).
-    skillId: Output only. A stable, globally unique logical identifier for the
-      skill. It is securely constructed by the backend by combining the
-      associated `publisher`'s verified namespace and the skill's resource ID
-      to enforce strict ownership. For example, the prefix `google-` is
-      reserved exclusively for first-party Google publishers to prevent
-      namespace squatting. Example: `urn:skill:google-workspace:create-docs`
-    state: Output only. Active operational target release state of the parent
-      container, derived from its active revisions.
-    type: Required. Structural deployment type (SIMPLE leaf vs COMPOSITE
-      bundle).
-    uid: Output only. Universally unique identifier (UUID4) for the logical
-      container.
-    updateTime: Output only. Update time.
-  """
-
-  class StateValueValuesEnum(_messages.Enum):
-    r"""Output only. Active operational target release state of the parent
-    container, derived from its active revisions.
-
-    Values:
-      STATE_UNSPECIFIED: Default value. This value is unused.
-      DRAFT: Sandbox draft configuration (User target).
-      ACTIVE: Promoted and active for runtime execution (User target).
-      DISABLED: Manually disabled or temporarily deactivated (User target).
-      DEPRECATED: Sunsetting deprecation countdown window phase (User target).
-      DECOMMISSIONED: Permanent deprecation cutoff date exceeded (User
-        target).
-    """
-    STATE_UNSPECIFIED = 0
-    DRAFT = 1
-    ACTIVE = 2
-    DISABLED = 3
-    DEPRECATED = 4
-    DECOMMISSIONED = 5
-
-  class TypeValueValuesEnum(_messages.Enum):
-    r"""Required. Structural deployment type (SIMPLE leaf vs COMPOSITE
-    bundle).
-
-    Values:
-      TYPE_UNSPECIFIED: Default value. This value is unused.
-      SIMPLE: A standard, leaf executable skill containing natural language
-        and code.
-    """
-    TYPE_UNSPECIFIED = 0
-    SIMPLE = 1
-
-  createTime = _messages.StringField(1)
-  defaultRevision = _messages.StringField(2)
-  description = _messages.StringField(3)
-  displayName = _messages.StringField(4)
-  frontmatter = _messages.MessageField('Frontmatter', 5)
-  initialRevision = _messages.MessageField('SkillRevision', 6)
-  name = _messages.StringField(7)
-  publisher = _messages.StringField(8)
-  skillId = _messages.StringField(9)
-  state = _messages.EnumField('StateValueValuesEnum', 10)
-  type = _messages.EnumField('TypeValueValuesEnum', 11)
-  uid = _messages.StringField(12)
-  updateTime = _messages.StringField(13)
-
-
-class SkillRevision(_messages.Message):
-  r"""Represents an immutable, versioned snapshot of a Skill package.
-
-  Enums:
-    StateValueValuesEnum: Optional. The user administrative desired release
-      state of this specific revision. Developers can explicitly pass DRAFT or
-      DISABLED during ingestion to sandbox it.
-
-  Fields:
-    archiveUploadSource: Optional. Immutable. Direct write-only raw archive
-      upload source.
-    createTime: Output only. Revision creation timestamp.
-    frontmatter: Output only. Extracted YAML frontmatter configuration
-      snapshot.
-    gcsSource: Optional. Immutable. Cloud Storage object generation URI.
-    name: Identifier. Resource name of the SkillRevision. Format: `projects/{p
-      roject}/locations/{location}/skills/{skill}/revisions/{revision}`
-    sha256Hash: Output only. Cryptographic SHA-256 integrity and deduplication
-      digest of the payload zip.
-    sizeBytes: Output only. Size of the compiled zip payload in bytes (assists
-      client download progress).
-    state: Optional. The user administrative desired release state of this
-      specific revision. Developers can explicitly pass DRAFT or DISABLED
-      during ingestion to sandbox it.
-  """
-
-  class StateValueValuesEnum(_messages.Enum):
-    r"""Optional. The user administrative desired release state of this
-    specific revision. Developers can explicitly pass DRAFT or DISABLED during
-    ingestion to sandbox it.
-
-    Values:
-      STATE_UNSPECIFIED: Default value. This value is unused.
-      DRAFT: Sandbox draft configuration (User target).
-      ACTIVE: Promoted and active for runtime execution (User target).
-      DISABLED: Manually disabled or temporarily deactivated (User target).
-      DEPRECATED: Sunsetting deprecation countdown window phase (User target).
-      DECOMMISSIONED: Permanent deprecation cutoff date exceeded (User
-        target).
-    """
-    STATE_UNSPECIFIED = 0
-    DRAFT = 1
-    ACTIVE = 2
-    DISABLED = 3
-    DEPRECATED = 4
-    DECOMMISSIONED = 5
-
-  archiveUploadSource = _messages.MessageField('ArchiveUploadSource', 1)
-  createTime = _messages.StringField(2)
-  frontmatter = _messages.MessageField('Frontmatter', 3)
-  gcsSource = _messages.MessageField('GcsSource', 4)
-  name = _messages.StringField(5)
-  sha256Hash = _messages.StringField(6)
-  sizeBytes = _messages.IntegerField(7)
-  state = _messages.EnumField('StateValueValuesEnum', 8)
 
 
 class Source(_messages.Message):

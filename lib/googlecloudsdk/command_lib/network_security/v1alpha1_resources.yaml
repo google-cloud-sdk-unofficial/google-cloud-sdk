@@ -77,7 +77,7 @@ projects_locations_ull_mirroring_collectors:
     parameter_name: ullMirroringCollectorsId
     attribute_name: ull_mirroring_collector
     help: The ullMirroringCollector id of the {resource} resource.
-  disable_auto_completers: false
+  disable_auto_completers: true
 projects_locations_ull_mirroring_engines:
   name: ullMirroringEngine
   plural_name: ullMirroringEngines

@@ -397,7 +397,7 @@ def GetServiceV2Beta(service):
     exceptions.ReraiseError(e, exceptions.GetServiceException)
 
 
-def BatchGetService(parent, services):
+def BatchGetServiceV2Beta(parent, services):
   """Make API call to get service state for multiple services .
 
   Args:
@@ -1640,7 +1640,9 @@ def ListServicesV2Beta(
           limit -= 1
 
       for value in range(0, len(parent), 20):
-        response = BatchGetService(resource_name, parent[value : value + 20])
+        response = BatchGetServiceV2Beta(
+            resource_name, parent[value : value + 20]
+        )
         for service_state in response.services:
           service_name = '/'.join(service_state.name.split('/')[2:])
           services[service_name] = service_state.service.displayName
@@ -1716,7 +1718,9 @@ def ListMcpServicesV2Beta(
           parent.append(f'{resource_name}/{service}')
 
       for value in range(0, len(parent), 20):
-        response = BatchGetService(resource_name, parent[value : value + 20])
+        response = BatchGetServiceV2Beta(
+            resource_name, parent[value : value + 20]
+        )
         for service_state in response.services:
           if limit == 0:
             break
