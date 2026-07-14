@@ -59,6 +59,8 @@ def CreateNetworkInterfaceMessage(
     enable_vpc_scoped_dns=None,
     service_class_id=None,
     support_alias_ipv6_ranges=False,
+    dns64_eligible=None,
+    nat64_eligible=None,
 ):
   """Creates and returns a new NetworkInterface message.
 
@@ -111,6 +113,10 @@ def CreateNetworkInterfaceMessage(
       network interface. Can only be used with network_attachment.
     support_alias_ipv6_ranges: Indicates whether setting alias IPv6 ranges on
       network interfaces is supported.
+    dns64_eligible: If True, indicates that this network interface is eligible
+      for DNS64.
+    nat64_eligible: If True, indicates that this network interface is eligible
+      for NAT64.
 
   Returns:
     network_interface: a NetworkInterface message object
@@ -255,6 +261,11 @@ def CreateNetworkInterfaceMessage(
   if service_class_id:
     network_interface.serviceClassId = service_class_id
 
+  if dns64_eligible:
+    network_interface.dns64Eligible = dns64_eligible
+  if nat64_eligible:
+    network_interface.nat64Eligible = nat64_eligible
+
   return network_interface
 
 
@@ -266,6 +277,8 @@ def CreateNetworkInterfaceMessages(
     subnet_region,
     support_enable_vpc_scoped_dns=False,
     support_alias_ipv6_ranges=False,
+    support_dns64_eligible=False,
+    support_nat64_eligible=False,
 ):
   """Create network interface messages.
 
@@ -279,6 +292,10 @@ def CreateNetworkInterfaceMessages(
       dns on network interfaces is supported.
     support_alias_ipv6_ranges: Indicates whether setting alias IPv6 ranges on
       network interfaces is supported.
+    support_dns64_eligible: If True, indicates that this network interface is
+      eligible for DNS64.
+    support_nat64_eligible: If True, indicates that this network interface is
+      eligible for NAT64.
 
   Returns:
     list, items are NetworkInterfaceMessages.
@@ -301,6 +318,12 @@ def CreateNetworkInterfaceMessages(
       if support_enable_vpc_scoped_dns:
         enable_vpc_scoped_dns = 'enable-vpc-scoped-dns' in interface
       service_class_id = interface.get('service-class-id', None)
+      dns64_eligible = (
+          'dns64-eligible' in interface if support_dns64_eligible else None
+      )
+      nat64_eligible = (
+          'nat64-eligible' in interface if support_nat64_eligible else None
+      )
 
       result.append(
           CreateNetworkInterfaceMessage(
@@ -342,6 +365,8 @@ def CreateNetworkInterfaceMessages(
               enable_vpc_scoped_dns=enable_vpc_scoped_dns,
               service_class_id=service_class_id,
               support_alias_ipv6_ranges=support_alias_ipv6_ranges,
+              dns64_eligible=dns64_eligible,
+              nat64_eligible=nat64_eligible,
           )
       )
   return result

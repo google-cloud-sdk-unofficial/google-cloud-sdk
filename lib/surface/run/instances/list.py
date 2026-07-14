@@ -16,6 +16,7 @@
 
 
 from googlecloudsdk.api_lib.run import global_methods
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import exceptions
@@ -29,6 +30,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.resource import resource_printer
 
 
+@base.RegionalEndpointsSupported
 class List(commands.List):
   """List instances."""
 
@@ -96,4 +98,3 @@ class List(commands.List):
       with serverless_operations.Connect(conn_context) as client:
         self.SetCompleteApiEndpoint(conn_context.endpoint)
         return commands.SortByName(client.ListInstances(namespace_ref))
-

@@ -25,14 +25,30 @@ class AISkillAnalysisOccurrence(_messages.Message):
   r"""AISkillAnalysisOccurrence provides the results of an AI-based skill
   analysis.
 
+  Enums:
+    MaxSeverityValueValuesEnum: Optional. Maximum severity found among
+      findings.
+
   Fields:
     findings: Optional. Findings produced by the analysis.
     maxSeverity: Optional. Maximum severity found among findings.
     skillName: Optional. Name of the skill that produced this analysis.
   """
 
+  class MaxSeverityValueValuesEnum(_messages.Enum):
+    r"""Optional. Maximum severity found among findings.
+
+    Values:
+      SEVERITY_UNSPECIFIED: Unspecified severity.
+      CRITICAL: Critical severity.
+      HIGH: High severity.
+    """
+    SEVERITY_UNSPECIFIED = 0
+    CRITICAL = 1
+    HIGH = 2
+
   findings = _messages.MessageField('Finding', 1, repeated=True)
-  maxSeverity = _messages.StringField(2)
+  maxSeverity = _messages.EnumField('MaxSeverityValueValuesEnum', 2)
   skillName = _messages.StringField(3)
 
 
@@ -4298,8 +4314,14 @@ class Finding(_messages.Message):
   r"""Finding provides details for a single finding within an
   AISkillAnalysisOccurrence.
 
+  Enums:
+    ScannerValueValuesEnum: Optional. Scanner determines which engine (e.g.
+      static, llm) emitted the finding.
+    SeverityValueValuesEnum: Optional. Severity of the finding.
+
   Fields:
     category: Optional. Category of the finding.
+    details: Optional. Description of the finding category.
     location: Optional. Location (path and line) where the finding was
       detected.
     scanner: Optional. Scanner determines which engine (e.g. static, llm)
@@ -4307,10 +4329,36 @@ class Finding(_messages.Message):
     severity: Optional. Severity of the finding.
   """
 
+  class ScannerValueValuesEnum(_messages.Enum):
+    r"""Optional. Scanner determines which engine (e.g. static, llm) emitted
+    the finding.
+
+    Values:
+      SCANNER_UNSPECIFIED: Unspecified scanner.
+      STATIC: Static scanner.
+      LLM: LLM scanner.
+    """
+    SCANNER_UNSPECIFIED = 0
+    STATIC = 1
+    LLM = 2
+
+  class SeverityValueValuesEnum(_messages.Enum):
+    r"""Optional. Severity of the finding.
+
+    Values:
+      SEVERITY_UNSPECIFIED: Unspecified severity.
+      CRITICAL: Critical severity.
+      HIGH: High severity.
+    """
+    SEVERITY_UNSPECIFIED = 0
+    CRITICAL = 1
+    HIGH = 2
+
   category = _messages.StringField(1)
-  location = _messages.MessageField('FindingLocation', 2)
-  scanner = _messages.StringField(3)
-  severity = _messages.StringField(4)
+  details = _messages.StringField(2)
+  location = _messages.MessageField('FindingLocation', 3)
+  scanner = _messages.EnumField('ScannerValueValuesEnum', 4)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 5)
 
 
 class FindingLocation(_messages.Message):

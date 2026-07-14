@@ -244,6 +244,16 @@ def _get_input_data_by_input_type(
               Mapping[str, str], gcloud_output.envVariables.additionalProperties
           )}
       )
+    if getattr(gcloud_output, 'buildEnvVariables', None) is not None:
+      version_data['build_env_variables'] = {
+          prop.key: prop.value
+          for prop in gcloud_output.buildEnvVariables.additionalProperties
+      }
+    if getattr(gcloud_output, 'runtimeConfig', None) is not None:
+      version_data['runtime_config'] = {
+          prop.key: prop.value
+          for prop in gcloud_output.runtimeConfig.additionalProperties
+      }
     return version_data
 
   # appyaml is input type
@@ -259,3 +269,85 @@ def _get_input_data_by_input_type(
         ' --appyaml flag to specify the correct app.yaml location.'
     )
   return None
+
+
+_DEFAULT_STACK_VERSION = '22'
+_STACK_18_RUNTIMES: Sequence[str] = (
+    'python37',
+    'nodejs10',
+    'nodejs12',
+    'nodejs14',
+    'php7',
+    'ruby2',
+    'go111',
+    'go112',
+    'go113',
+    'go114',
+    'go115',
+    'go116',
+)
+_STACK_24_RUNTIMES: Sequence[str] = (
+    'python313',
+    'nodejs24',
+    'java23',
+    'go123',
+    'php84',
+    'ruby33',
+)
+_BASE_IMAGE_URI_FORMAT = (
+    '{region}-docker.pkg.dev/serverless-runtimes/google-{stack_version}-full/'
+    'runtimes/{base_runtime}'
+)
+
+
+def determine_base_image(
+    input_data: Mapping[str, Any], region: str | None = None
+) -> str | None:
+  """Determines the base image URI from the App Engine configuration.
+
+  Args:
+    input_data: The configuration data parsed from input.
+    region: The Google Cloud region, defaults to 'us-central1'.
+
+  Returns:
+    str | None: The URI of the base image, or None if it cannot be determined.
+  """
+  if not region:
+    # For --export-only runs, region might not be provided/prompted, so we
+    # default to 'us-central1' to construct a valid registry URL for the base
+    # image.
+    region = 'us-central1'
+  runtime = input_data.get('runtime')
+  runtime_config = input_data.get('runtime_config')
+  base_image = None
+  if runtime and runtime != 'custom':
+    base_runtime = runtime
+    stack_version = _DEFAULT_STACK_VERSION
+    if runtime_config:
+      if 'operating_system' in runtime_config:
+        os_val = str(runtime_config['operating_system']).lower()
+        if 'ubuntu' in os_val:
+          stack_version = os_val.replace('ubuntu', '')
+      for key, val in runtime_config.items():
+        if key in (
+            f'{runtime}_version',
+            f'{runtime}Version',
+            'runtime_version',
+            'runtimeVersion',
+        ):
+          base_runtime = f'{runtime}{str(val).replace(".", "")}'
+          break
+        elif key == 'jdk':
+          base_runtime = str(val).replace('openjdk', 'java')
+          break
+    if not base_runtime[-1].isdigit():
+      return None
+    if stack_version == _DEFAULT_STACK_VERSION and runtime:
+      if any(runtime.startswith(prefix) for prefix in _STACK_18_RUNTIMES):
+        stack_version = '18'
+      elif any(runtime.startswith(prefix) for prefix in _STACK_24_RUNTIMES):
+        stack_version = '24'
+    base_image = _BASE_IMAGE_URI_FORMAT.format(
+        region=region, stack_version=stack_version, base_runtime=base_runtime
+    )
+  return base_image

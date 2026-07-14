@@ -1,4 +1,4 @@
-- release_tracks: [BETA]
+- release_tracks: [BETA, GA]
 
   help_text:
     brief: Create a new gateway advertised route.
@@ -16,10 +16,14 @@
     - arg_name: description
       BETA:
         api_field: googleCloudNetworkconnectivityV1betaGatewayAdvertisedRoute.description
+      GA:
+        api_field: gatewayAdvertisedRoute.description
       help_text: Description of the advertised route to be created.
     - arg_name: ip-range
       BETA:
         api_field: googleCloudNetworkconnectivityV1betaGatewayAdvertisedRoute.ipRange
+      GA:
+        api_field: gatewayAdvertisedRoute.ipRange
       required: true
       help_text: Advertise this IP range.
     - group:
@@ -32,10 +36,14 @@
     - arg_name: priority
       BETA:
         api_field: googleCloudNetworkconnectivityV1betaGatewayAdvertisedRoute.priority
+      GA:
+        api_field: gatewayAdvertisedRoute.priority
       help_text: This route's priority. Must be between 0 and 65335.
     - arg_name: labels
       BETA:
         api_field: googleCloudNetworkconnectivityV1betaGatewayAdvertisedRoute.labels.additionalProperties
+      GA:
+        api_field: gatewayAdvertisedRoute.labels.additionalProperties
       metavar: KEY=VALUE
       help_text: |
         List of label KEY=VALUE pairs to add.
@@ -51,6 +59,8 @@
   request: &request
     BETA:
       api_version: v1beta
+    GA:
+      api_version: v1
     modify_request_hooks:
     - googlecloudsdk.command_lib.network_connectivity.util:SetGatewayAdvertisedRouteRecipient
     method: create

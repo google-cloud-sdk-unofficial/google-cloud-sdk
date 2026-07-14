@@ -14,15 +14,17 @@
 # limitations under the License.
 """Flags and helpers for the connection profiles related commands."""
 
-
 from googlecloudsdk.api_lib.database_migration import api_util
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base as calliope_base
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 
 
 def AddNoAsyncFlag(parser):
   """Adds a --no-async flag to the given parser."""
-  help_text = ('Waits for the operation in progress to complete before '
-               'returning.')
+  help_text = (
+      'Waits for the operation in progress to complete before returning.'
+  )
   parser.add_argument('--no-async', action='store_true', help=help_text)
 
 
@@ -38,9 +40,13 @@ def AddDisplayNameFlag(parser):
 def AddDatabaseParamsFlags(
     parser,
     require_password=True,
+    require_host_port=True,
     with_database_name=False,
     supports_iam_auth=False,
     database_help_text=None,
+    support_optional_host_port=False,
+    include_cloudsql=False,
+    include_alloydb=False,
 ):
   """Adds the database connectivity flags to the given parser."""
   database_params_group = parser.add_group(required=False, mutex=False)
@@ -55,8 +61,21 @@ def AddDatabaseParamsFlags(
   else:
     AddUsernameFlag(database_params_group, required=True)
     AddPasswordFlagGroup(database_params_group, required=require_password)
-  AddHostFlag(database_params_group, required=True)
-  AddPortFlag(database_params_group, required=True)
+  AddHostFlag(
+      database_params_group,
+      required=require_host_port,
+      support_optional_host_port=support_optional_host_port,
+      include_alloydb=include_alloydb,
+  )
+  AddPortFlag(
+      database_params_group,
+      required=require_host_port,
+      support_optional_host_port=support_optional_host_port,
+  )
+  if include_cloudsql:
+    AddCloudSQLInstanceFlag(database_params_group)
+  if include_alloydb:
+    AddAlloydbClusterFlag(database_params_group)
   if with_database_name:
     AddDatabaseFlag(
         database_params_group, required=False, help_text=database_help_text
@@ -93,35 +112,59 @@ def AddPasswordFlagGroup(parser, required=False):
           Password for the user that Database Migration Service uses to
           connect to the database. Database Migration Service encrypts
           the value when storing it, and the field is not returned on request.
-          """)
+          """,
+  )
   password_group.add_argument(
       '--prompt-for-password',
       action='store_true',
-      help='Prompt for the password used to connect to the database.')
+      help='Prompt for the password used to connect to the database.',
+  )
 
 
-def AddHostFlag(parser, required=False):
+def AddHostFlag(
+    parser,
+    required=False,
+    support_optional_host_port=False,
+    include_alloydb=False,
+):
   """Adds --host flag to the given parser."""
-  help_text = """\
-    IP or hostname of the database.
-    When `--psc-service-attachment` is also specified, this field value should be:
+  help_text = 'IP or hostname of the database.'
+  if support_optional_host_port:
+    help_text += """
 
-    1. For Cloud SQL PSC enabled instance - the dns_name field (e.g <uid>.<region>.sql.goog.).
+    For PostgreSQL destination profiles with Cloud SQL or AlloyDB, this flag is
+    optional if the instance or cluster is provided.
+    """
 
-    2. For Cloud SQL PSA instance (vpc peering) - the private ip of the instance.
+  help_text += """
 
-    3. For AlloyDB PSC enabled cluster - the dns_name field of the primary instance (e.g <uid>.<region>.alloydb-psc.goog.).
+    When `--psc-service-attachment` is also specified, this field value
+    should be:
+
+    1. For Cloud SQL PSC enabled instance - the dns_name field
+       (e.g <uid>.<region>.sql.goog.).
+    2. For Cloud SQL PSA instance (vpc peering) - the private ip of the
+       instance.
+"""
+  if include_alloydb:
+    help_text += """
+    3. For AlloyDB PSC enabled cluster - the dns_name field of the primary
+       instance (e.g <uid>.<region>.alloydb-psc.goog.).
 
     4. For AlloyDB PSA cluster - the private ip of the primary instance.
-  """
+"""
   parser.add_argument('--host', help=help_text, required=required)
 
 
-def AddPortFlag(parser, required=False):
+def AddPortFlag(parser, required=False, support_optional_host_port=False):
   """Adds --port flag to the given parser."""
-  help_text = """\
-    Network port of the database.
-  """
+  help_text = 'Network port of the database.'
+  if support_optional_host_port:
+    help_text += """
+
+    For PostgreSQL destination profiles with Cloud SQL or AlloyDB, this flag is
+    optional if the instance or cluster is provided.
+    """
   parser.add_argument('--port', help=help_text, required=required, type=int)
 
 
@@ -139,7 +182,7 @@ def AddSslConfigGroup(parser, release_track):
   """Adds ssl server only & server client config group to the given parser."""
   ssl_config = parser.add_group()
   client_cert = ssl_config.add_group()
-  if release_track == release_track.GA:
+  if release_track == calliope_base.ReleaseTrack.GA:
     AddSslTypeFlag(ssl_config, hidden=False, choices=None)
   AddCaCertificateFlag(ssl_config, False)
   AddPrivateKeyFlag(client_cert, required=False)
@@ -170,13 +213,15 @@ def AddSslFlags(parser):
   help_text = """\
     Comma-separated list of SSL flags used for establishing SSL connection to
     the database. Use an equals sign to separate the flag name and value.
-    Example: `--ssl-flags ssl_mode=enable,server_certificate_hostname=server.com`.
+    Example:
+    `--ssl-flags ssl_mode=enable,server_certificate_hostname=server.com`.
   """
   parser.add_argument(
       '--ssl-flags',
       type=arg_parsers.ArgDict(),
       metavar='FLAG=VALUE',
-      help=help_text)
+      help=help_text,
+  )
 
 
 def AddSslTypeFlag(parser, hidden=False, choices=None):
@@ -323,4 +368,45 @@ def AddEnableIamAuthenticationFlag(parser, required=False, for_create=False):
         const=False,
         dest='enable_iam_authentication',
         required=False,
+    )
+
+
+def ValidateHostPortFlags(args, support_optional_host_port=True):
+  """Validates host and port flags for connection profiles.
+
+  Args:
+    args: argparse.Namespace, The arguments that this command was invoked with.
+    support_optional_host_port: bool, Whether host and port are allowed to be
+      optional for destination profiles with managed instances.
+  """
+  role = getattr(args, 'role', None)
+  if role is not None:
+    role = str(role)
+
+  cloudsql = getattr(args, 'cloudsql_instance', None)
+  alloydb = getattr(args, 'alloydb_cluster', None)
+  instance = getattr(args, 'instance', None)
+  host = getattr(args, 'host', None)
+  port = getattr(args, 'port', None)
+
+  is_destination = role == 'DESTINATION'
+  has_managed = cloudsql or alloydb or instance
+  host_port_required = (
+      not support_optional_host_port or not is_destination or not has_managed
+  )
+
+  if host_port_required:
+    if not host or not port:
+      missing = [f for f, v in [('--host', host), ('--port', port)] if not v]
+      raise calliope_exceptions.RequiredArgumentException(
+          ', '.join(missing),
+          (
+              'Host and Port are required when --role=SOURCE or when '
+              '--cloudsql-instance/--alloydb-cluster are absent.'
+          ),
+      )
+  elif (host is not None) ^ (port is not None):
+    missing = '--port' if host else '--host'
+    raise calliope_exceptions.RequiredArgumentException(
+        missing, '--host and --port must be specified together.'
     )

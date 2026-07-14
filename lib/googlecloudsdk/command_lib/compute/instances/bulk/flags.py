@@ -416,6 +416,7 @@ def AddCommonBulkInsertArgs(
     support_preemption_notice_duration=False,
     support_instance_flexibility_policy=False,
     support_workload_identity_config=False,
+    support_instance_selection_min_cpu_platform=False,
 ):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
@@ -548,7 +549,10 @@ def AddCommonBulkInsertArgs(
   if support_skip_guest_os_shutdown:
     instances_flags.AddSkipGuestOsShutdownArgs(parser)
   if support_instance_flexibility_policy:
-    compute_flags.AddInstanceFlexibilityPolicyArgs(parser)
+    compute_flags.AddInstanceFlexibilityPolicyArgs(
+        parser,
+        support_instance_selection_min_cpu_platform=support_instance_selection_min_cpu_platform,
+    )
   if support_workload_identity_config:
     instances_flags.AddWorkloadIdentityConfigArgs(parser)
 

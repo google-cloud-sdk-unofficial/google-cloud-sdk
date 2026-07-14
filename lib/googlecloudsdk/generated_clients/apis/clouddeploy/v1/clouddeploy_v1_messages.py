@@ -4339,6 +4339,7 @@ class Empty(_messages.Message):
   """
 
 
+
 class EmptyDirVolumeSource(_messages.Message):
   r"""In memory (tmpfs) ephemeral storage.
 
@@ -8360,9 +8361,7 @@ class TargetConfig(_messages.Message):
   """
 
   runtimeConfigFiles = _messages.MessageField('RuntimeConfigFiles', 1)
-  runtimeWorkloadDefinition = _messages.MessageField(
-      'RuntimeWorkloadDefinition', 2
-  )
+  runtimeWorkloadDefinition = _messages.MessageField('RuntimeWorkloadDefinition', 2)
 
 
 class TargetConfigSelection(_messages.Message):

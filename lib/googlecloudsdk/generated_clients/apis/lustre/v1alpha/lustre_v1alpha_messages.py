@@ -383,6 +383,9 @@ class ExportDataRequest(_messages.Message):
     requestId: Optional. UUID to identify requests.
     serviceAccount: Optional. User-specified service account used to perform
       the transfer. If unspecified, the Managed Lustre service agent is used.
+      Use one of the following formats: * `{EMAIL_ADDRESS_OR_UNIQUE_ID}` *
+      `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS_OR_UNIQUE_ID}` *
+      `projects/-/serviceAccounts/{EMAIL_ADDRESS_OR_UNIQUE_ID}`
   """
 
   gcsPath = _messages.MessageField('GcsPath', 1)
@@ -460,7 +463,10 @@ class ImportDataRequest(_messages.Message):
     requestId: Optional. UUID to identify requests.
     serviceAccount: Optional. User-specified service account used to perform
       the transfer. If unspecified, the default Managed Lustre service agent
-      will be used.
+      will be used. Use one of the following formats: *
+      `{EMAIL_ADDRESS_OR_UNIQUE_ID}` *
+      `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS_OR_UNIQUE_ID}` *
+      `projects/-/serviceAccounts/{EMAIL_ADDRESS_OR_UNIQUE_ID}`
   """
 
   gcsPath = _messages.MessageField('GcsPath', 1)
@@ -500,9 +506,9 @@ class Instance(_messages.Message):
       This name is used by client-side tools, including when mounting the
       instance. Must be eight characters or less and can only contain letters
       and numbers.
-    gkeSupportEnabled: Optional. Indicates whether you want to enable support
-      for GKE clients. By default, GKE clients are not supported. Deprecated.
-      No longer required for GKE instance creation.
+    gkeSupportEnabled: Optional. Deprecated: No longer required for GKE
+      instance creation. Indicates whether you want to enable support for GKE
+      clients. By default, GKE clients are not supported.
     iamAccessControlEnabled: Optional. Whether the IAM-based access control is
       enabled or not.
     initialCompressionAlgorithm: Optional. Input only. The compression

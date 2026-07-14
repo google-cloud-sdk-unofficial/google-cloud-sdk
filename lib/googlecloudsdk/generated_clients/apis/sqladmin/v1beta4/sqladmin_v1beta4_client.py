@@ -517,6 +517,32 @@ class SqladminV1beta4(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Resolve(self, request, global_params=None):
+      r"""Retrieves connect settings about a Cloud SQL instance using the instance DNS name.
+
+      Args:
+        request: (SqlConnectResolveRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+
+      Returns:
+        (ConnectSettings) The response message.
+      """
+      config = self.GetMethodConfig('Resolve')
+      return self._RunMethod(config, request, global_params=global_params)
+
+    Resolve.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='sql.connect.resolve',
+        ordered_params=['location', 'dnsName'],
+        path_params=['dnsName', 'location'],
+        query_params=[],
+        relative_path='sql/v1beta4/locations/{location}/dns/{dnsName}:resolveConnectSettings',
+        request_field='',
+        request_type_name='SqlConnectResolveRequest',
+        response_type_name='ConnectSettings',
+        supports_download=False,
+    )
+
   class DatabasesService(base_api.BaseApiService):
     """Service class for the databases resource."""
 

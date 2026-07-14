@@ -30,6 +30,187 @@ class AWSV4Signature(_messages.Message):
   secretAccessKeyVersion = _messages.StringField(3)
 
 
+class AgentGateway(_messages.Message):
+  r"""AgentGateway represents the agent gateway resource.
+
+  Enums:
+    ProtocolsValueListEntryValuesEnum:
+
+  Messages:
+    LabelsValue: Optional. Set of label tags associated with the AgentGateway
+      resource.
+
+  Fields:
+    agentGatewayCard: Output only. Field for populated AgentGateway card.
+    createTime: Output only. The timestamp when the resource was created.
+    description: Optional. A free-text description of the resource. Max length
+      1024 characters.
+    etag: Optional. Etag of the resource. If this is provided, it must match
+      the server's etag. If the provided etag does not match the server's
+      etag, the request will fail with a 409 ABORTED error.
+    googleManaged: Optional. Proxy is orchestrated and managed by GoogleCloud
+      in a tenant project.
+    labels: Optional. Set of label tags associated with the AgentGateway
+      resource.
+    name: Identifier. Name of the AgentGateway resource. It matches pattern
+      `projects/*/locations/*/agentGateways/`.
+    networkConfig: Optional. Network configuration for the AgentGateway.
+    protocols: Required. List of protocols supported by an Agent Gateway
+    registries: Optional. A list of Agent registries containing the agents,
+      MCP servers and tools governed by the Agent Gateway. Note: Currently
+      limited to project-scoped registries Must be of format
+      `//agentregistry.googleapis.com/projects/{project}/locations/{location}/
+    selfManaged: Optional. Attach to existing Application Load Balancers or
+      Secure Web Proxies.
+    updateTime: Output only. The timestamp when the resource was updated.
+  """
+
+  class ProtocolsValueListEntryValuesEnum(_messages.Enum):
+    r"""ProtocolsValueListEntryValuesEnum enum type.
+
+    Values:
+      PROTOCOL_UNSPECIFIED: Unspecified protocol.
+      MCP: Message Control Plane protocol.
+    """
+    PROTOCOL_UNSPECIFIED = 0
+    MCP = 1
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Set of label tags associated with the AgentGateway resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  agentGatewayCard = _messages.MessageField('AgentGatewayAgentGatewayOutputCard', 1)
+  createTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  etag = _messages.StringField(4)
+  googleManaged = _messages.MessageField('AgentGatewayGoogleManaged', 5)
+  labels = _messages.MessageField('LabelsValue', 6)
+  name = _messages.StringField(7)
+  networkConfig = _messages.MessageField('AgentGatewayNetworkConfig', 8)
+  protocols = _messages.EnumField('ProtocolsValueListEntryValuesEnum', 9, repeated=True)
+  registries = _messages.StringField(10, repeated=True)
+  selfManaged = _messages.MessageField('AgentGatewaySelfManaged', 11)
+  updateTime = _messages.StringField(12)
+
+
+class AgentGatewayAgentGatewayOutputCard(_messages.Message):
+  r"""AgentGatewayOutputCard contains informational output-only fields
+
+  Fields:
+    mtlsEndpoint: Output only. mTLS Endpoint associated with this AgentGateway
+    rootCertificates: Output only. Root Certificates for Agents to validate
+      this AgentGateway
+    serviceExtensionsServiceAccount: Output only. Service Account used by
+      Service Extensions to operate.
+  """
+
+  mtlsEndpoint = _messages.StringField(1)
+  rootCertificates = _messages.StringField(2, repeated=True)
+  serviceExtensionsServiceAccount = _messages.StringField(3)
+
+
+class AgentGatewayGoogleManaged(_messages.Message):
+  r"""Configuration for Google Managed deployment mode. Proxy is orchestrated
+  and managed by GoogleCloud in a tenant project.
+
+  Enums:
+    GovernedAccessPathValueValuesEnum: Optional. Operating Mode of Agent
+      Gateway.
+
+  Fields:
+    governedAccessPath: Optional. Operating Mode of Agent Gateway.
+  """
+
+  class GovernedAccessPathValueValuesEnum(_messages.Enum):
+    r"""Optional. Operating Mode of Agent Gateway.
+
+    Values:
+      GOVERNED_ACCESS_PATH_UNSPECIFIED: Governed access path is not specified.
+      AGENT_TO_ANYWHERE: Govern agent conections to destinations.
+      CLIENT_TO_AGENT: Protect connection to Agent or Tool.
+    """
+    GOVERNED_ACCESS_PATH_UNSPECIFIED = 0
+    AGENT_TO_ANYWHERE = 1
+    CLIENT_TO_AGENT = 2
+
+  governedAccessPath = _messages.EnumField('GovernedAccessPathValueValuesEnum', 1)
+
+
+class AgentGatewayNetworkConfig(_messages.Message):
+  r"""NetworkConfig contains network configurations for the AgentGateway.
+
+  Fields:
+    dnsPeeringConfig: Optional. Optional DNS peering configuration for
+      connectivity to your private VPC network.
+    egress: Optional. Optional PSC-Interface network attachment for
+      connectivity to your private VPCs network.
+  """
+
+  dnsPeeringConfig = _messages.MessageField('AgentGatewayNetworkConfigDnsPeeringConfig', 1)
+  egress = _messages.MessageField('AgentGatewayNetworkConfigEgress', 2)
+
+
+class AgentGatewayNetworkConfigDnsPeeringConfig(_messages.Message):
+  r"""DNS peering config for the user VPC network.
+
+  Fields:
+    domains: Required. Domain names for which DNS queries should be forwarded
+      to the target network.
+    targetNetwork: Required. Target network in 'target project' to which DNS
+      queries should be forwarded to. Must be in format of
+      `projects/{project}/global/networks/{network}`.
+    targetProject: Required. Target project ID to which DNS queries should be
+      forwarded to. This can be the same project that contains the
+      AgentGateway or a different project.
+  """
+
+  domains = _messages.StringField(1, repeated=True)
+  targetNetwork = _messages.StringField(2)
+  targetProject = _messages.StringField(3)
+
+
+class AgentGatewayNetworkConfigEgress(_messages.Message):
+  r"""Configuration for Egress
+
+  Fields:
+    networkAttachment: Optional. The URI of the Network Attachment resource.
+  """
+
+  networkAttachment = _messages.StringField(1)
+
+
+class AgentGatewaySelfManaged(_messages.Message):
+  r"""Configuration for Self Managed deployment mode. Attach to existing
+  Application Load Balancers or Secure Web Proxies.
+
+  Fields:
+    resourceUri: Optional. A supported Google Cloud networking proxy in the
+      Project and Location
+  """
+
+  resourceUri = _messages.StringField(1)
+
+
 class AuditConfig(_messages.Message):
   r"""Specifies the audit configuration for a service. The configuration
   determines which permission types are logged, and what identities, if any,
@@ -434,7 +615,7 @@ class CDNPolicy(_messages.Message):
     clientTtl: Optional. Specifies a separate client (such as browser client)
       TTL, separate from the TTL used by the edge caches. Leaving this empty
       uses the same cache TTL for both the CDN and the client-facing response.
-      - The TTL must be > `0` and <= `86400s` (1 day) - The `client_ttl`
+      - The TTL must be >= `0s` and <= `86400s` (1 day) - The `client_ttl`
       cannot be larger than the default_ttl (if set) - Fractions of a second
       are not allowed. Omit this field to use the `default_ttl`, or the max-
       age set by the origin, as the client-facing TTL. When the CacheMode is
@@ -3578,6 +3759,25 @@ class LbTrafficExtension(_messages.Message):
   updateTime = _messages.StringField(9)
 
 
+class ListAgentGatewaysResponse(_messages.Message):
+  r"""Response returned by the ListAgentGateways method.
+
+  Fields:
+    agentGateways: List of AgentGateway resources.
+    nextPageToken: If there might be more results than those appearing in this
+      response, then `next_page_token` is included. To get the next set of
+      results, call this method again using the value of `next_page_token` as
+      `page_token`.
+    unreachable: Unreachable resources. Populated when the request attempts to
+      list all resources across all supported locations, while some locations
+      are temporarily unavailable.
+  """
+
+  agentGateways = _messages.MessageField('AgentGateway', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListAuthzExtensionsResponse(_messages.Message):
   r"""Message for response to listing `AuthzExtension` resources.
 
@@ -5280,6 +5480,87 @@ class MulticastResourceState(_messages.Message):
     OBSOLETE = 8
 
   state = _messages.EnumField('StateValueValuesEnum', 1)
+
+
+class NetworkservicesProjectsLocationsAgentGatewaysCreateRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsAgentGatewaysCreateRequest object.
+
+  Fields:
+    agentGateway: A AgentGateway resource to be passed as the request body.
+    agentGatewayId: Required. Short name of the AgentGateway resource to be
+      created.
+    parent: Required. The parent resource of the AgentGateway. Must be in the
+      format `projects/*/locations/*`.
+  """
+
+  agentGateway = _messages.MessageField('AgentGateway', 1)
+  agentGatewayId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class NetworkservicesProjectsLocationsAgentGatewaysDeleteRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsAgentGatewaysDeleteRequest object.
+
+  Fields:
+    etag: Optional. The etag of the AgentGateway to delete.
+    name: Required. A name of the AgentGateway to delete. Must be in the
+      format `projects/*/locations/*/agentGateways/*`.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+
+
+class NetworkservicesProjectsLocationsAgentGatewaysGetRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsAgentGatewaysGetRequest object.
+
+  Fields:
+    name: Required. A name of the AgentGateway to get. Must be in the format
+      `projects/*/locations/*/agentGateways/*`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworkservicesProjectsLocationsAgentGatewaysListRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsAgentGatewaysListRequest object.
+
+  Fields:
+    pageSize: Optional. Maximum number of AgentGateways to return per call.
+    pageToken: Optional. The value returned by the last
+      `ListAgentGatewaysResponse` Indicates that this is a continuation of a
+      prior `ListAgentGateways` call, and that the system should return the
+      next page of data.
+    parent: Required. The project and location from which the AgentGateways
+      should be listed, specified in the format `projects/*/locations/*`.
+    returnPartialSuccess: Optional. If true, allow partial responses for
+      multi-regional Aggregated List requests. Otherwise if one of the
+      locations is down or unreachable, the Aggregated List request will fail.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  returnPartialSuccess = _messages.BooleanField(4)
+
+
+class NetworkservicesProjectsLocationsAgentGatewaysPatchRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsAgentGatewaysPatchRequest object.
+
+  Fields:
+    agentGateway: A AgentGateway resource to be passed as the request body.
+    name: Identifier. Name of the AgentGateway resource. It matches pattern
+      `projects/*/locations/*/agentGateways/`.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the AgentGateway resource by the update. The fields
+      specified in the update_mask are relative to the resource, not the full
+      request. A field will be overwritten if it is in the mask. If the user
+      does not provide a mask then all fields will be overwritten.
+  """
+
+  agentGateway = _messages.MessageField('AgentGateway', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
 
 
 class NetworkservicesProjectsLocationsAuthzExtensionsCreateRequest(_messages.Message):

@@ -31,7 +31,7 @@
     - help_text: |-
         The parent application template from which policies are listed in the
         following format:
-        projects/$project/locations/$location/spaces/$space/applicationTemplates/$applicationTemplate
+        `projects/$project/locations/$location/spaces/$space/applicationTemplates/$applicationTemplate`
       is_positional: false
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.design_center.v1_resources:projects_locations_spaces_application_templates

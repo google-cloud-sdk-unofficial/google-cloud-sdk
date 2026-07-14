@@ -1,0 +1,38 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: Update a regional multicast group range activation.
+  description: |
+    Update a regional multicast group range activation in the specified
+    location of the current project.
+  examples: |
+    Update a regional multicast group range activation with the name `my-rmgra`
+    and location `region`.
+
+      $ {command} my-rmgra --enable-logging --location=region
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:regionalMulticastGroupRangeActivation
+    help_text: |
+      Name of the regional multicast group range activation to be updated.
+  params:
+  - arg_name: enable-logging
+    api_field: regionalMulticastGroupRangeActivation.logConfig.enabled
+    help_text: |
+      Whether to enable logging for this regional multicast group range
+      activation.
+    action: store_true_false
+  - arg_name: description
+    api_field: regionalMulticastGroupRangeActivation.description
+    help_text: |
+      The description for the regional multicast group range activation.
+  labels:
+    api_field: regionalMulticastGroupRangeActivation.labels
+update:
+  read_modify_update: true
+async:
+  collection: networkservices.projects.locations.operations
+request:
+  ALPHA:
+    api_version: v1alpha1
+  collection: networkservices.projects.locations.regionalMulticastGroupRangeActivations
+  method: patch

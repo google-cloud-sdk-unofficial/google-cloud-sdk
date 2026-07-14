@@ -325,7 +325,7 @@ class LookerV1(base_api.BaseApiClient):
         method_id='looker.projects.locations.instances.list',
         ordered_params=['parent'],
         path_params=['parent'],
-        query_params=['pageSize', 'pageToken'],
+        query_params=['pageSize', 'pageToken', 'showDeleted'],
         relative_path='v1/{+parent}/instances',
         request_field='',
         request_type_name='LookerProjectsLocationsInstancesListRequest',
@@ -410,6 +410,33 @@ class LookerV1(base_api.BaseApiClient):
         relative_path='v1/{+name}:restore',
         request_field='restoreInstanceRequest',
         request_type_name='LookerProjectsLocationsInstancesRestoreRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Undelete(self, request, global_params=None):
+      r"""Undeletes Looker instance.
+
+      Args:
+        request: (LookerProjectsLocationsInstancesUndeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Undelete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Undelete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}:undelete',
+        http_method='POST',
+        method_id='looker.projects.locations.instances.undelete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:undelete',
+        request_field='undeleteInstanceRequest',
+        request_type_name='LookerProjectsLocationsInstancesUndeleteRequest',
         response_type_name='Operation',
         supports_download=False,
     )

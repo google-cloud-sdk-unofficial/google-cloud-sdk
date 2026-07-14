@@ -14,7 +14,6 @@
 # limitations under the License.
 """Utilities for debugging task graph."""
 
-
 import re
 import sys
 import threading
@@ -26,6 +25,10 @@ from googlecloudsdk.command_lib.storage.tasks import task_graph as task_graph_mo
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
+
+
+_STOP_EVENT = threading.Event()
+_DEBUGGER_THREAD = None
 
 
 def is_task_graph_debugging_enabled() -> bool:
@@ -93,7 +96,7 @@ def _yield_management_thread_stack_traces(
 
 def print_management_thread_stacks(
     management_threads_name_to_function: Dict[str, threading.Thread],
-):
+) -> None:
   """Prints stack traces of the management threads."""
   log.status.Print(
       'Initiating stack trace information of the management threads.'
@@ -172,7 +175,7 @@ def task_graph_debugger_worker(
   # atleast once.
   is_some_management_thread_alive = True
 
-  while (
+  while not _STOP_EVENT.is_set() and (
       is_some_management_thread_alive
       or not is_task_graph_empty
       or not is_task_buffer_empty
@@ -193,8 +196,7 @@ def task_graph_debugger_worker(
 
     # Wait for the delay_seconds to pass before taking the next snapshot
     # if conditions are met.
-    event = threading.Event()
-    event.wait(delay_seconds)
+    _STOP_EVENT.wait(delay_seconds)
 
 
 def start_thread_for_task_graph_debugging(
@@ -202,10 +204,12 @@ def start_thread_for_task_graph_debugging(
     stack_trace_file: str,
     task_graph: task_graph_module.TaskGraph,
     task__buffer: task_buffer.TaskBuffer,
-):
+) -> None:
   """Starts a thread for task graph debugging."""
+  global _DEBUGGER_THREAD
+  _STOP_EVENT.clear()
   try:
-    thread_for_task_graph_debugging = threading.Thread(
+    _DEBUGGER_THREAD = threading.Thread(
         target=task_graph_debugger_worker,
         args=(
             management_threads_name_to_function,
@@ -215,10 +219,20 @@ def start_thread_for_task_graph_debugging(
             get_time_interval_between_snapshots(),
         ),
     )
-    thread_for_task_graph_debugging.start()
+    _DEBUGGER_THREAD.start()
 
   except Exception as e:  # pylint: disable=broad-except
     log.error(f'Error starting thread: {e}')
+
+
+def stop_thread_for_task_graph_debugging() -> None:
+  """Stops the thread for task graph debugging."""
+  global _DEBUGGER_THREAD
+  if _DEBUGGER_THREAD is not None:
+    _STOP_EVENT.set()
+    if _DEBUGGER_THREAD.is_alive():
+      _DEBUGGER_THREAD.join(timeout=5.0)
+    _DEBUGGER_THREAD = None
 
 
 def write_stack_traces_to_file(

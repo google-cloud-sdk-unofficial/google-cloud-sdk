@@ -704,6 +704,8 @@ def CreateInstanceResizeDisk(args, messages):
 def CreateInstanceUpgradeRequest(args, messages):
   instance = GetInstanceResource(args).RelativeName()
   upgrade_request = messages.UpgradeInstanceRequest()
+  if args.IsSpecified('image_family'):
+    upgrade_request.imageFamily = args.image_family
   return messages.NotebooksProjectsLocationsInstancesUpgradeRequest(
       name=instance, upgradeInstanceRequest=upgrade_request)
 

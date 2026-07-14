@@ -34,7 +34,7 @@
     - help_text: |-
         The application name.
         Format:
-        projects/$project/locations/$location/spaces/$space/applications/$application
+        `projects/$project/locations/$location/spaces/$space/applications/$application`
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.design_center.v1alpha_resources:projects_locations_spaces_applications

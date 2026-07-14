@@ -16,10 +16,14 @@
 
 
 from googlecloudsdk.api_lib.database_migration import resource_args
-from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.database_migration import flags
-from googlecloudsdk.command_lib.database_migration.connection_profiles import create_helper
-from googlecloudsdk.command_lib.database_migration.connection_profiles import flags as cp_flags
+from googlecloudsdk.command_lib.database_migration.connection_profiles import (
+    create_helper,
+)
+from googlecloudsdk.command_lib.database_migration.connection_profiles import (
+    flags as cp_flags,
+)
 from googlecloudsdk.core.console import console_io
 
 DETAILED_HELP = {
@@ -42,9 +46,9 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.DefaultUniverseOnly
-class PostgreSQL(base.Command):
+@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.GA)
+@calliope_base.DefaultUniverseOnly
+class PostgreSQL(calliope_base.Command):
   """Create a Database Migration Service connection profile for PostgreSQL."""
 
   detailed_help = DETAILED_HELP
@@ -64,15 +68,17 @@ class PostgreSQL(base.Command):
         parser,
         with_database_name=True,
         supports_iam_auth=True,
+        require_host_port=False,
+        support_optional_host_port=True,
+        include_cloudsql=True,
+        include_alloydb=True,
         database_help_text=(
             'The name of the specific database within the host. For Native'
             ' Logical Postgres migrations, one of the replicating databases'
             ' must be specified.'
         ),
     )
-    cp_flags.AddSslConfigGroup(parser, base.ReleaseTrack.GA)
-    cp_flags.AddCloudSQLInstanceFlag(parser)
-    cp_flags.AddAlloydbClusterFlag(parser)
+    cp_flags.AddSslConfigGroup(parser, calliope_base.ReleaseTrack.GA)
     cp_flags.AddRoleFlag(parser)
     flags.AddLabelsCreateFlags(parser)
 
@@ -89,6 +95,8 @@ class PostgreSQL(base.Command):
     """
     connection_profile_ref = args.CONCEPTS.connection_profile.Parse()
     parent_ref = connection_profile_ref.Parent().RelativeName()
+
+    cp_flags.ValidateHostPortFlags(args)
 
     if args.prompt_for_password:
       args.password = console_io.PromptPassword('Please Enter Password: ')

@@ -19,6 +19,7 @@ import argparse
 import datetime
 import time
 
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.command_lib.util.ssh import ssh
@@ -99,24 +100,39 @@ def PrepareEnvironment(args):
     if key == candidate:
       has_key = True
       break
+  add_public_key_error = None
   if not has_key:
-    add_public_key_operation = client.users_environments.AddPublicKey(
-        messages.CloudshellUsersEnvironmentsAddPublicKeyRequest(
-            environment=DEFAULT_ENVIRONMENT_NAME,
-            addPublicKeyRequest=messages.AddPublicKeyRequest(key=key),
-        ))
+    try:
+      add_public_key_operation = client.users_environments.AddPublicKey(
+          messages.CloudshellUsersEnvironmentsAddPublicKeyRequest(
+              environment=DEFAULT_ENVIRONMENT_NAME,
+              addPublicKeyRequest=messages.AddPublicKeyRequest(key=key),
+          )
+      )
 
-    environment = waiter.WaitFor(
-        EnvironmentPoller(client.users_environments,
-                          operations_client.operations),
-        add_public_key_operation,
-        'Pushing your public key to Cloud Shell',
-        sleep_ms=500,
-        max_wait_ms=None)
-    # Wait for the public key to propagate. Unfortunately there is no
-    # api we can check for this.
-    log.Print('Waiting for your public key to propagate...')
-    time.sleep(5)
+      environment = waiter.WaitFor(
+          EnvironmentPoller(
+              client.users_environments, operations_client.operations
+          ),
+          add_public_key_operation,
+          'Pushing your public key to Cloud Shell',
+          sleep_ms=500,
+          max_wait_ms=None,
+      )
+      # Wait for the public key to propagate. Unfortunately there is no
+      # api we can check for this.
+      log.Print('Waiting for your public key to propagate...')
+      time.sleep(5)
+      key_file = keys.key_file
+    except apitools_exceptions.HttpError as e:
+      if e.status_code == 410:
+        log.Print('AddPublicKey is deprecated. Skipping public key push.')
+        key_file = None
+        add_public_key_error = e
+      else:
+        raise
+  else:
+    key_file = keys.key_file
 
   # If the environment isn't running, start it.
   start_operation = None
@@ -156,7 +172,9 @@ def PrepareEnvironment(args):
       user=environment.sshUsername,
       host=environment.sshHost,
       port=environment.sshPort,
-      key=keys.key_file,
+      key=key_file,
+      web_host=environment.webHost,
+      add_public_key_error=add_public_key_error,
   )
 
 
@@ -249,14 +267,37 @@ def AuthorizeEnvironment():
                 accessToken=access_token)))
 
 
-class ConnectionInfo(object):
+def GenerateAccessToken(environment=DEFAULT_ENVIRONMENT_NAME):
+  """Generates an access token for the user's environment."""
+  client = apis.GetClientInstance('cloudshell', 'v1')
+  messages = apis.GetMessagesModule('cloudshell', 'v1')
+  req = messages.CloudshellUsersEnvironmentsGenerateAccessTokenRequest(
+      environment=environment
+  )
+  res = client.users_environments.GenerateAccessToken(req)
+  return res.accessToken
 
-  def __init__(self, ssh_env, user, host, port, key):
+
+class ConnectionInfo(object):
+  """Connection information for Cloud Shell."""
+
+  def __init__(
+      self,
+      ssh_env,
+      user,
+      host,
+      port,
+      key,
+      web_host=None,
+      add_public_key_error=None,
+  ):
     self.ssh_env = ssh_env
     self.user = user
     self.host = host
     self.port = port
     self.key = key
+    self.web_host = web_host
+    self.add_public_key_error = add_public_key_error
 
 
 class EnvironmentPoller(waiter.OperationPoller):

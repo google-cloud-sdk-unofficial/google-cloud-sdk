@@ -16,6 +16,7 @@
 
 
 import re
+from typing import Any, Optional
 
 from googlecloudsdk.api_lib.sql import constants
 from googlecloudsdk.api_lib.sql import exceptions as sql_exceptions
@@ -250,6 +251,16 @@ def _ParseServerCertificateRotationMode(sql_messages, server_certificate_rotatio
           server_certificate_rotation_mode.upper()
       )
   )
+
+
+def _ParseMsdtcRpcAuthMode(
+    sql_messages: Any, msdtc_rpc_auth_mode: Optional[str]
+) -> Optional[Any]:
+  if msdtc_rpc_auth_mode:
+    return sql_messages.Settings.MsdtcRpcAuthModeValueValuesEnum.lookup_by_name(
+        msdtc_rpc_auth_mode.replace('-', '_').upper()
+    )
+  return None
 
 
 # TODO(b/122660263): Remove when V1 instances are no longer supported.
@@ -538,6 +549,23 @@ class _BaseInstances(object):
 
     if args.retain_backups_on_delete is not None:
       settings.retainBackupsOnDelete = args.retain_backups_on_delete
+
+    if args.IsKnownAndSpecified('msdtc_enabled'):
+      settings.msdtcEnabled = args.msdtc_enabled
+
+    if (
+        args.IsKnownAndSpecified('msdtc_host_mappings')
+        and args.msdtc_host_mappings is not None
+    ):
+      settings.hostMappings = [
+          sql_messages.HostMapping(ipAddress=ip, hostname=name)
+          for ip, name in args.msdtc_host_mappings.items()
+      ]
+
+    if args.IsKnownAndSpecified('msdtc_rpc_auth_mode'):
+      settings.msdtcRpcAuthMode = _ParseMsdtcRpcAuthMode(
+          sql_messages, args.msdtc_rpc_auth_mode
+      )
 
     if args.IsKnownAndSpecified('enable_auto_upgrade_minor_version'):
       settings.autoUpgradeEnabled = True
@@ -1271,10 +1299,15 @@ class _BaseInstances(object):
 
     is_primary = instance_resource.masterInstanceName is None
     key_name = _GetAndValidateCmekKeyName(args, is_primary)
-    if key_name:
+    enable_confidential = getattr(args, 'enable_confidential_storage', None)
+    if key_name or enable_confidential is not None:
       config = sql_messages.DiskEncryptionConfiguration(
-          kind='sql#diskEncryptionConfiguration', kmsKeyName=key_name
+          kind='sql#diskEncryptionConfiguration'
       )
+      if key_name:
+        config.kmsKeyName = key_name
+      if enable_confidential is not None:
+        config.confidentialMode = enable_confidential
       instance_resource.diskEncryptionConfiguration = config
 
     tags = getattr(args, 'tags')

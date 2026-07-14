@@ -256,7 +256,7 @@ def AddCreateInstanceFlags(parser):
       'NVIDIA_TESLA_A100', 'NVIDIA_A100_80GB',
       'NVIDIA_TESLA_T4_VWS', 'NVIDIA_TESLA_P100_VWS', 'NVIDIA_TESLA_P4_VWS',
       'NVIDIA_L4', 'NVIDIA_H100_80GB', 'NVIDIA_H100_MEGA_80GB',
-      'NVIDIA_H200_141GB', 'NVIDIA_B200'
+      'NVIDIA_H200_141GB', 'NVIDIA_B200', 'NVIDIA_RTX6000'
   ]
   boot_disk_choices = [
       'PD_STANDARD',
@@ -689,6 +689,18 @@ def AddIsUpgradeableInstanceFlags(parser):
 
 def AddUpgradeInstanceFlags(parser):
   AddInstanceResource(parser)
+  parser.add_argument(
+      '--image-family',
+      help=(
+          'The full Compute Engine image family resource name to upgrade to.'
+          ' Format:'
+          ' `projects/{project_id}/global/images/family/{image_family}`. If'
+          ' specified, the instance will be upgraded to the latest image in'
+          ' the specified image family, allowing upgrades across image'
+          ' families. If not specified, the instance will be upgraded to the'
+          ' latest image in its current image family.'
+      ),
+  )
 
 
 def AddRollbackInstanceFlags(parser):
@@ -707,7 +719,7 @@ def AddUpdateInstanceFlags(parser):
       'NVIDIA_TESLA_A100', 'NVIDIA_A100_80GB',
       'NVIDIA_TESLA_T4_VWS', 'NVIDIA_TESLA_P100_VWS', 'NVIDIA_TESLA_P4_VWS',
       'NVIDIA_L4', 'NVIDIA_H100_80GB', 'NVIDIA_H100_MEGA_80GB',
-      'NVIDIA_H200_141GB', 'NVIDIA_B200'
+      'NVIDIA_H200_141GB', 'NVIDIA_B200', 'NVIDIA_RTX6000'
   ]
   AddInstanceResource(parser)
   gce_setup_group = parser.add_group(

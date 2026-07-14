@@ -14,6 +14,7 @@
 # limitations under the License.
 """Task for listing, sorting, and writing files for rsync."""
 
+from __future__ import annotations
 
 import errno
 import heapq
@@ -28,6 +29,7 @@ from googlecloudsdk.command_lib.storage import regex_util
 from googlecloudsdk.command_lib.storage import rsync_command_util
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import wildcard_iterator
+from googlecloudsdk.command_lib.storage.resources import resource_reference
 from googlecloudsdk.command_lib.storage.tasks import task
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -52,6 +54,55 @@ def sorting_key_for_csv_line(csv_line):
   return fields[0]
 
 
+def get_resource_chunk(
+    file_iterator: iter, chunk_size: int, gstmp_path: str | None = None
+) -> list[resource_reference.Resource]:
+  """Returns a chunk of resources from the file iterator.
+
+  This method iterates through the file iterator and returns a chunk of
+  resources. If gstmp_path is not None and
+  use_rsync_unmatched_gstmp_handling is enabled, the gstmp file entry will be
+  written to the gstmp_path, and the resource will not be included in the
+  returned list.
+
+  Args:
+    file_iterator: An iterator yielding resource objects.
+    chunk_size (int): The maximum number of items to retrieve in the chunk.
+    gstmp_path (str|None): If not None, store the temporary list file in this
+      path.
+
+  Returns:
+    list: A list of resources from the iterator, up to chunk_size.
+  """
+  if gstmp_path is None or not (
+      properties.VALUES.storage.use_rsync_unmatched_gstmp_handling.GetBool()
+  ):
+    return list(itertools.islice(file_iterator, chunk_size))
+
+  # Use gstmp_path to store temporary list file if
+  # use_rsync_unmatched_gstmp_handling is enabled.
+  resource_chunk = []
+  resource_chunk_size = 0
+  with files.FileWriter(
+      gstmp_path, create_path=True, append=True
+  ) as file_writer:
+    while resource_chunk_size < chunk_size:
+      try:
+        file = next(file_iterator)
+        if file.storage_url.url_string.endswith(
+            storage_url.TEMPORARY_FILE_SUFFIX
+        ):
+          file_writer.write(
+              rsync_command_util.get_csv_line_from_resource(file) + '\n'
+          )
+          continue
+        resource_chunk.append(file)
+        resource_chunk_size += 1
+      except StopIteration:
+        break
+  return resource_chunk
+
+
 class GetSortedContainerContentsTask(task.Task):
   """Updates a local file's POSIX metadata."""
 
@@ -63,6 +114,7 @@ class GetSortedContainerContentsTask(task.Task):
       managed_folders_only=False,
       ignore_symlinks=True,
       recurse=False,
+      gstmp_path=None,
   ):
     """Initializes task.
 
@@ -75,12 +127,18 @@ class GetSortedContainerContentsTask(task.Task):
         folders. Otherwise, populates the file with object resources.
       ignore_symlinks (bool): Should FileWildcardIterator skip symlinks.
       recurse (bool): Gather nested items in container.
+      gstmp_path (str|None): If not None, store the gstmp file list in this
+        path.
     """
     super(GetSortedContainerContentsTask, self).__init__()
     self._container_query_path = container.storage_url.join(
         '**' if recurse else '*'
     ).url_string
     self._output_path = output_path
+    self._gstmp_path = gstmp_path
+    if self._gstmp_path:
+      # We will overwrite the gstmp file list if it exists.
+      rsync_command_util.try_to_delete_file(self._gstmp_path)
 
     if exclude_pattern_strings:
       container_url_trailing_delimiter = container.storage_url.join('')
@@ -137,7 +195,9 @@ class GetSortedContainerContentsTask(task.Task):
     chunk_size = properties.VALUES.storage.rsync_list_chunk_size.GetInt()
     try:
       while True:
-        resources_chunk = list(itertools.islice(file_iterator, chunk_size))
+        resources_chunk = get_resource_chunk(
+            file_iterator, chunk_size, self._gstmp_path
+        )
         if not resources_chunk:
           break
         chunk_count += 1

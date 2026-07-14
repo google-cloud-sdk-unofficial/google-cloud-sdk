@@ -576,6 +576,11 @@ class InstallationState(object):
 
     This does not raise exceptions if compiling a given file fails.
     """
+    if (encoding.GetEncodedValue(
+        os.environ, 'CLOUDSDK_SKIP_PY_COMPILATION') == '1'):
+      logging.info('Skipping Python compilation as requested by environment.')
+      return
+
     # Some python code shipped in the SDK is not 2 + 3 compatible.
     # Create execlusion patterns to avoid compilation errors.
     # This is pretty hacky, ideally we would have this information in the

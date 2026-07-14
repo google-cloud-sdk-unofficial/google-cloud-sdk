@@ -2365,6 +2365,26 @@ class RenameFolderRequest(_messages.Message):
   requestId = _messages.StringField(4)
 
 
+class ReplaceBucketEncryptionKeyRequest(_messages.Message):
+  r"""Request message for ReplaceBucketEncryptionKey.
+
+  Fields:
+    destKmsKey: Required. The id of the Cloud KMS key to use for replacement.
+      This cannot be the same as src_kms_key. e.g.
+      projects/P/locations/L/keyRing/R/cryptoKeys/K
+    requestId: Optional. A unique identifier for this request. A random UUID
+      is recommended. This request is only idempotent if a `request_id` is
+      provided.
+    srcKmsKey: Required. The id of the bucket Cloud KMS key version to be
+      replaced. e.g.
+      projects/P/locations/L/keyRing/R/cryptoKeys/K/cryptoKeyVersions/V
+  """
+
+  destKmsKey = _messages.StringField(1)
+  requestId = _messages.StringField(2)
+  srcKmsKey = _messages.StringField(3)
+
+
 class ReplicationStatus(_messages.Message):
   r"""Response message for the `GetReplicationStatus` method.
 
@@ -2396,6 +2416,22 @@ class RetentionPolicy(_messages.Message):
   effectiveTime = _messages.StringField(1)
   isLocked = _messages.BooleanField(2)
   retentionDuration = _messages.StringField(3)
+
+
+class RotateBucketEncryptionKeyRequest(_messages.Message):
+  r"""Request message for RotateBucketEncryptionKey.
+
+  Fields:
+    kmsKey: Required. The id of the bucket Cloud KMS key version to be rotated
+      to the primary key version. e.g.
+      projects/P/locations/L/keyRing/R/cryptoKeys/K/cryptoKeyVersions/V
+    requestId: Optional. A unique identifier for this request. A random UUID
+      is recommended. This request is only idempotent if a `request_id` is
+      provided.
+  """
+
+  kmsKey = _messages.StringField(1)
+  requestId = _messages.StringField(2)
 
 
 class Rule(_messages.Message):
@@ -3187,6 +3223,32 @@ class StorageProjectsBucketsObjectsViewFullContextRequest(_messages.Message):
   bucket = _messages.StringField(2, required=True)
   generation = _messages.IntegerField(3)
   object = _messages.StringField(4, required=True)
+
+
+class StorageProjectsBucketsReplaceBucketEncryptionKeyRequest(_messages.Message):
+  r"""A StorageProjectsBucketsReplaceBucketEncryptionKeyRequest object.
+
+  Fields:
+    parent: Required. The name of the bucket resource on which to replace key.
+    replaceBucketEncryptionKeyRequest: A ReplaceBucketEncryptionKeyRequest
+      resource to be passed as the request body.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  replaceBucketEncryptionKeyRequest = _messages.MessageField('ReplaceBucketEncryptionKeyRequest', 2)
+
+
+class StorageProjectsBucketsRotateBucketEncryptionKeyRequest(_messages.Message):
+  r"""A StorageProjectsBucketsRotateBucketEncryptionKeyRequest object.
+
+  Fields:
+    parent: Required. The name of the bucket resource on which to rotate.
+    rotateBucketEncryptionKeyRequest: A RotateBucketEncryptionKeyRequest
+      resource to be passed as the request body.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  rotateBucketEncryptionKeyRequest = _messages.MessageField('RotateBucketEncryptionKeyRequest', 2)
 
 
 class StorageProjectsBucketsSnapshotsCreateRequest(_messages.Message):

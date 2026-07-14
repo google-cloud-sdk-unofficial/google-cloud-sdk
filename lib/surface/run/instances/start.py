@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
 @base.UniverseCompatible
+@base.RegionalEndpointsSupported
 class Start(base.Command):
   """Start a stopped instance."""
 

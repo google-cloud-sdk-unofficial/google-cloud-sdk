@@ -629,6 +629,10 @@ class Condition(_messages.Message):
       MODERNIZATION_COMPATIBLE: Fleet is compatible for modernization.
       MODERNIZATION_INCOMPATIBLE: Fleet is not yet compatible for
         modernization.
+      MODERNIZATION_INCOMPATIBLE_FLEET_SCALE: Fleet exceeds service mesh
+        fleet-level scalability limits.
+      MODERNIZATION_INCOMPATIBLE_FLEET_QUOTA: Fleet exceeds service mesh
+        fleet-level quota limits.
     """
     CODE_UNSPECIFIED = 0
     MESH_IAM_PERMISSION_DENIED = 1
@@ -691,6 +695,8 @@ class Condition(_messages.Message):
     MODERNIZATION_INCOMPATIBLE_SERVICES_SCALE = 58
     MODERNIZATION_COMPATIBLE = 59
     MODERNIZATION_INCOMPATIBLE = 60
+    MODERNIZATION_INCOMPATIBLE_FLEET_SCALE = 61
+    MODERNIZATION_INCOMPATIBLE_FLEET_QUOTA = 62
 
   class SeverityValueValuesEnum(_messages.Enum):
     r"""Severity level of the condition.

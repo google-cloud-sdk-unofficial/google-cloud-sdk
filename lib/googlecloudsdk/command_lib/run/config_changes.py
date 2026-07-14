@@ -2123,6 +2123,26 @@ class GpuTypeChange(TemplateConfigChanger):
 
 
 @dataclasses.dataclass(frozen=True)
+class RestartPolicyChange(TemplateConfigChanger):
+  """Sets the restartPolicy in the instance spec.
+
+  Attributes:
+    restart_policy: The restart policy value to set.
+  """
+
+  restart_policy: str
+
+  def Adjust(self, resource):
+    if self.restart_policy == 'always':
+      resource.spec.restartPolicy = 'Always'
+    elif self.restart_policy == 'on-failure':
+      resource.spec.restartPolicy = 'OnFailure'
+    elif self.restart_policy == 'never':
+      resource.spec.restartPolicy = 'Never'
+    return resource
+
+
+@dataclasses.dataclass(frozen=True)
 class GpuZonalRedundancyChange(TemplateConfigChanger):
   """Sets the gpu zonal redundancy annotation on the revision annotations.
 

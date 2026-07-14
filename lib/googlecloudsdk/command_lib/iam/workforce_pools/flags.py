@@ -14,7 +14,6 @@
 # limitations under the License.
 """Common flags for workforce pools commands."""
 
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 
@@ -97,18 +96,12 @@ def ExtendedAttributesOAuth2ClientAttributesGroup(required=True):
       type=str,
       required=required,
       metavar='EXTENDED_ATTRIBUTES_CLIENT_ID',
-      action=actions.DeprecationAction(
-          '--extended-attributes-client-id',
-          warn=(
-              'The {flag_name} flag is restricted. We suggest you use SCIM'
-              ' instead.'
-          ),
-          removed=False,
-      ),
       help=(
           'The OAuth 2.0 client ID for retrieving extended attributes from the'
           ' identity provider. Required to get extended group memberships for'
-          ' a subset of Google Cloud products.'
+          ' a subset of Google Cloud products. The'
+          ' --extended-attributes-client-id flag is restricted. We suggest you'
+          ' use SCIM instead.'
       ),
   )
   extended_attributes_client_secret_value_arg = base.Argument(
@@ -117,18 +110,12 @@ def ExtendedAttributesOAuth2ClientAttributesGroup(required=True):
       type=str,
       required=required,
       metavar='EXTENDED_ATTRIBUTES_CLIENT_SECRET_VALUE',
-      action=actions.DeprecationAction(
-          '--extended-attributes-client-secret-value',
-          warn=(
-              'The {flag_name} flag is restricted. We suggest you use SCIM'
-              ' instead.'
-          ),
-          removed=False,
-      ),
       help=(
           'The OAuth 2.0 client secret for retrieving extended attributes from'
           ' the identity provider. Required to get extended group memberships'
-          ' for a subset of Google Cloud products.'
+          ' for a subset of Google Cloud products. The'
+          ' --extended-attributes-client-secret-value flag is restricted. We'
+          ' suggest you use SCIM instead.'
       ),
   )
   extended_attributes_issuer_uri_arg = base.Argument(
@@ -137,18 +124,11 @@ def ExtendedAttributesOAuth2ClientAttributesGroup(required=True):
       type=str,
       required=required,
       metavar='EXTENDED_ATTRIBUTES_ISSUER_URI',
-      action=actions.DeprecationAction(
-          '--extended-attributes-issuer-uri',
-          warn=(
-              'The {flag_name} flag is restricted. We suggest you use SCIM'
-              ' instead.'
-          ),
-          removed=False,
-      ),
       help=(
           "OIDC identity provider's issuer URI. Must be a valid URI using"
           ' the `https` scheme. Required to get the OIDC discovery'
-          ' document.'
+          ' document. The --extended-attributes-issuer-uri flag is restricted.'
+          ' We suggest you use SCIM instead.'
       ),
   )
   # Adding this flag as a ArgList to hide `AZURE_AD_GROUPS_DISPLAY_NAME` from
@@ -166,17 +146,10 @@ def ExtendedAttributesOAuth2ClientAttributesGroup(required=True):
       ),
       required=required,
       metavar='EXTENDED_ATTRIBUTES_TYPE',
-      action=actions.DeprecationAction(
-          '--extended-attributes-type',
-          warn=(
-              'The {flag_name} flag is restricted. We suggest you use SCIM'
-              ' instead.'
-          ),
-          removed=False,
-      ),
       help=(
           'Represents the identity provider and type of claims that should'
-          ' be fetched.'
+          ' be fetched. The --extended-attributes-type flag is restricted. We'
+          ' suggest you use SCIM instead.'
       ),
   )
   extended_attributes_filter_arg = base.Argument(
@@ -185,14 +158,6 @@ def ExtendedAttributesOAuth2ClientAttributesGroup(required=True):
       type=str,
       required=False,
       metavar='EXTENDED_ATTRIBUTES_FILTER',
-      action=actions.DeprecationAction(
-          '--extended-attributes-filter',
-          warn=(
-              'The {flag_name} flag is restricted. We suggest you use SCIM'
-              ' instead.'
-          ),
-          removed=False,
-      ),
       help=(
           'The filter used to request specific records from the IdP. By'
           ' default, all of the groups that are associated with a user are'
@@ -208,7 +173,9 @@ def ExtendedAttributesOAuth2ClientAttributesGroup(required=True):
           ' based on the value of `attributes_type`. Values passed to `filter`'
           ' are converted to `$search` query parameters. Additional `$filter`'
           ' query parameters cannot be added using this field. \n\n*'
-          ' `AZURE_AD_GROUPS_ID`: `securityEnabled` filter is applied.'
+          ' `AZURE_AD_GROUPS_ID`: `securityEnabled` filter is applied. The'
+          ' --extended-attributes-filter flag is restricted. We suggest you use'
+          ' SCIM instead.'
       ),
   )
   create_extended_attributes_group = base.ArgumentGroup()

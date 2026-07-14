@@ -52,6 +52,13 @@ properties:
       To see which load balancers support fault injection, see Load balancing:
       Routing and traffic management features.
     $ref: HttpFaultInjection.yaml
+  imageOptimizationPolicy:
+    description: |-
+      Image optimization policy for this URL Map's route. Available only for
+      Global EXTERNAL_MANAGED load balancer schemes. Either Cloud CDN must be
+      enabled on the backend service or backend bucket serving the route, or
+      cache policy must be configured on the same route
+    $ref: ImageOptimizationPolicy.yaml
   maxStreamDuration:
     description: |-
       Specifies the maximum duration (timeout) for streams on the selected

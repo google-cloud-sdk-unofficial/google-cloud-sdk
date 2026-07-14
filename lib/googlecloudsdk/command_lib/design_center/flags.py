@@ -690,3 +690,26 @@ def AddGenerateAssessmentReportFlags(parser):
           '''),
       required=False,
   )
+
+
+def AddGenerateTerraformAssessmentReportFlags(parser):
+  """Adds flags for GenerateTerraformAssessmentReport command.
+
+  Args:
+    parser: An argparse.ArgumentParser-like object. It is mocked out in tests.
+  """
+  GetSpaceResourceArg(positional=True).AddToParser(parser)
+
+  parser.add_argument(
+      '--terraform-plan',
+      type=arg_parsers.FileContents(binary=True),
+      required=True,
+      help='Path to the Terraform plan file (JSON format).',
+  )
+
+  parser.add_argument(
+      '--additional-frameworks',
+      type=arg_parsers.ArgList(),
+      metavar='FRAMEWORK',
+      help='Additional frameworks to run assessment against.',
+  )

@@ -30,7 +30,7 @@
     params:
     - help_text: |-
         The policy name in the following format:
-        projects/$project/locations/$location/spaces/$space/applicationTemplates/$applicationTemplate/policies/$policy
+        `projects/$project/locations/$location/spaces/$space/applicationTemplates/$applicationTemplate/policies/$policy`
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.design_center.v1_resources:projects_locations_spaces_application_templates_policies

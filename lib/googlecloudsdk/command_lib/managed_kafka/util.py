@@ -105,6 +105,67 @@ def PrepareUpdateWithCaPools(_, args, request):
   return MapCaPoolsToCASConfig(_, args, request)
 
 
+def PrepareUpdateWithPublicEndpoint(_, args, request):
+  """Prepare the update request with the public endpoint flag.
+
+  Args:
+    _:  resource parameter required but unused variable.
+    args: list of flags.
+    request:  the payload to return.
+
+  Returns:
+    The updated request with public endpoint config.
+  """
+  public_endpoint = getattr(args, "public_endpoint", None)
+  allowed_ranges = getattr(args, "allowed_source_ip_ranges", None)
+
+  if public_endpoint is None and not allowed_ranges:
+    return request
+
+  if not request.cluster:
+    request.cluster = {}
+
+  if not request.cluster.gcpConfig:
+    request.cluster.gcpConfig = {}
+
+  # --no-public-endpoint
+  if public_endpoint is not None and not public_endpoint:
+    if allowed_ranges:
+      raise exceptions.InvalidArgumentException(
+          "--allowed-source-ip-ranges",
+          "Cannot specify allowed source IP ranges when disabling public"
+          " endpoint.",
+      )
+    # Clear publicClusterConfig
+    request.updateMask = AppendUpdateMask(
+        request.updateMask, "gcpConfig.accessConfig.publicClusterConfig"
+    )
+    # We don't populate it in request.cluster, so it will be cleared
+    return request
+
+  if public_endpoint and not allowed_ranges:
+    raise exceptions.InvalidArgumentException(
+        "--allowed-source-ip-ranges",
+        "Must specify at least one IPv4 CIDR range when public endpoint is"
+        " enabled.",
+    )
+
+  # If they specify allowed_source_ip_ranges, they are updating or enabling it
+  if allowed_ranges:
+    request.updateMask = AppendUpdateMask(
+        request.updateMask, "gcpConfig.accessConfig.publicClusterConfig"
+    )
+    if not request.cluster.gcpConfig.accessConfig:
+      request.cluster.gcpConfig.accessConfig = {}
+
+    public_config = {"allowedSourceIpRanges": allowed_ranges}
+    request.cluster.gcpConfig.accessConfig.publicClusterConfig = (
+        encoding.DictToMessage(public_config, _MESSAGE.PublicClusterConfig)
+    )
+
+  return request
+
+
 def AppendUpdateMask(update_mask, new_mask):
   """Handles appending a new mask to an existing mask.
 
@@ -139,6 +200,28 @@ def MapSubnetsToNetworkConfig(_, args, request):
     request.cluster.gcpConfig.accessConfig.networkConfigs.append(
         encoding.DictToMessage(network_config, _MESSAGE.NetworkConfig)
     )
+
+  # Handle public cluster config mapping
+  public_endpoint = getattr(args, "public_endpoint", None)
+  allowed_ranges = getattr(args, "allowed_source_ip_ranges", None)
+
+  if public_endpoint:
+    if not allowed_ranges:
+      raise exceptions.InvalidArgumentException(
+          "--allowed-source-ip-ranges",
+          "Must specify at least one IPv4 CIDR range when public endpoint is"
+          " enabled.",
+      )
+    public_config = {"allowedSourceIpRanges": allowed_ranges}
+    request.cluster.gcpConfig.accessConfig.publicClusterConfig = (
+        encoding.DictToMessage(public_config, _MESSAGE.PublicClusterConfig)
+    )
+  elif allowed_ranges:
+    raise exceptions.InvalidArgumentException(
+        "--public-endpoint",
+        "Must enable public endpoint to specify allowed source IP ranges.",
+    )
+
   return request
 
 

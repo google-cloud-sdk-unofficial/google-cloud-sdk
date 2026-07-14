@@ -16,7 +16,6 @@
 
 
 import os
-import platform
 
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
@@ -28,15 +27,11 @@ import six
 MODULES = [
     'crcmod',
     'grpcio==1.80.0',
-    'pyopenssl==24.2.1',
+    'pyopenssl==26.0.0',
     'google_crc32c',
     'certifi',
-    'https://github.com/googleapis/enterprise-certificate-proxy/releases/download/v0.3.6/cryptography-42.0.7-{}.whl'
-    .format(
-        'cp39-abi3-macosx_10_12_universal2'
-        if platform.processor() == 'arm'
-        else 'cp37-abi3-macosx_10_12_x86_64'
-    ),
+    ('https://github.com/googleapis/enterprise-certificate-proxy/releases/down'
+     'load/v0.3.15/cryptography-46.0.7-cp38-abi3-macosx_10_9_universal2.whl'),
     'setuptools',
 ]
 

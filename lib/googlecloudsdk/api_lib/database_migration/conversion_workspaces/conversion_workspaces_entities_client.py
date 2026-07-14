@@ -354,6 +354,9 @@ class ConversionWorkspacesEntitiesClient(
         'FULL_WITH_DEPENDENCIES': (
             self.messages.DatamigrationProjectsLocationsConversionWorkspacesFetchEntitiesStatusViewRequest.FetchViewValueValuesEnum.FULL_WITH_DEPENDENCIES
         ),
+        'SUMMARY': (
+            self.messages.DatamigrationProjectsLocationsConversionWorkspacesFetchEntitiesStatusViewRequest.FetchViewValueValuesEnum.SUMMARY
+        ),
     }
     view = fetch_view_str_to_enum.get(
         fetch_view,

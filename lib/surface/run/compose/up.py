@@ -49,6 +49,13 @@ class Up(base.BinaryBackedCommand):
   detailed_help = {
       'DESCRIPTION': """\
           {description}
+
+          The below attribute in the Compose file specifies the service to be
+          used as the ingress container in Cloud Run. Only one service can be
+          designated as the ingress container.
+
+              x-google-cloudrun:
+                ingress-container: true
           """,
       'EXAMPLES': """\
           To deploy a container from the source Compose file on Cloud Run:

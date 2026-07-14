@@ -260,6 +260,23 @@ class AssuredworkloadsOrganizationsLocationsWorkloadsViolationsAcknowledgeReques
   name = _messages.StringField(2, required=True)
 
 
+class AssuredworkloadsOrganizationsLocationsWorkloadsViolationsBatchAcknowledgeViolationsRequest(_messages.Message):
+  r"""A AssuredworkloadsOrganizationsLocationsWorkloadsViolationsBatchAcknowle
+  dgeViolationsRequest object.
+
+  Fields:
+    googleCloudAssuredworkloadsV1beta1BatchAcknowledgeViolationsRequest: A
+      GoogleCloudAssuredworkloadsV1beta1BatchAcknowledgeViolationsRequest
+      resource to be passed as the request body.
+    parent: Optional. The parent resource shared by all violations being
+      acknowledged. Format:
+      organizations/{organization}/locations/{location}/workloads/{workload}
+  """
+
+  googleCloudAssuredworkloadsV1beta1BatchAcknowledgeViolationsRequest = _messages.MessageField('GoogleCloudAssuredworkloadsV1beta1BatchAcknowledgeViolationsRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
 class AssuredworkloadsOrganizationsLocationsWorkloadsViolationsGetRequest(_messages.Message):
   r"""A AssuredworkloadsOrganizationsLocationsWorkloadsViolationsGetRequest
   object.
@@ -463,6 +480,44 @@ class GoogleCloudAssuredworkloadsV1beta1AssetMoveAnalysis(_messages.Message):
   analysisGroups = _messages.MessageField('GoogleCloudAssuredworkloadsV1beta1MoveAnalysisGroup', 1, repeated=True)
   asset = _messages.StringField(2)
   assetType = _messages.StringField(3)
+
+
+class GoogleCloudAssuredworkloadsV1beta1BatchAcknowledgeViolationsRequest(_messages.Message):
+  r"""Request for acknowledging the violations in a batch
+
+  Enums:
+    AcknowledgeTypeValueValuesEnum: Optional. Acknowledge type of specified
+      violations.
+
+  Fields:
+    acknowledgeType: Optional. Acknowledge type of specified violations.
+    comment: Required. Business justification explaining the need for
+      violations acknowledgement
+    names: Required. The resource names of the Violations to acknowledge.
+      Format for each name: organizations/{organization}/locations/{location}/
+      workloads/{workload}/violations/{violation}
+  """
+
+  class AcknowledgeTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. Acknowledge type of specified violations.
+
+    Values:
+      ACKNOWLEDGE_TYPE_UNSPECIFIED: Acknowledge type unspecified.
+      SINGLE_VIOLATION: Acknowledge only the specific violation.
+      EXISTING_CHILD_RESOURCE_VIOLATIONS: Acknowledge specified orgPolicy
+        violation and also associated resource violations.
+    """
+    ACKNOWLEDGE_TYPE_UNSPECIFIED = 0
+    SINGLE_VIOLATION = 1
+    EXISTING_CHILD_RESOURCE_VIOLATIONS = 2
+
+  acknowledgeType = _messages.EnumField('AcknowledgeTypeValueValuesEnum', 1)
+  comment = _messages.StringField(2)
+  names = _messages.StringField(3, repeated=True)
+
+
+class GoogleCloudAssuredworkloadsV1beta1BatchAcknowledgeViolationsResponse(_messages.Message):
+  r"""Response for batch violation acknowledgement"""
 
 
 class GoogleCloudAssuredworkloadsV1beta1CreateWorkloadOperationMetadata(_messages.Message):

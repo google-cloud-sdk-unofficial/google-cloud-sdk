@@ -124,6 +124,8 @@ def _CommonArgs(
     support_enable_vpc_scoped_dns=False,
     support_workload_identity_config=False,
     support_alias_ipv6_ranges=False,
+    support_dns64_eligible=False,
+    support_nat64_eligible=False,
 ):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
@@ -154,6 +156,8 @@ def _CommonArgs(
       support_igmp_query=support_igmp_query,
       support_enable_vpc_scoped_dns=support_enable_vpc_scoped_dns,
       support_alias_ipv6_ranges=support_alias_ipv6_ranges,
+      support_dns64_eligible=support_dns64_eligible,
+      support_nat64_eligible=support_nat64_eligible,
   )
   instances_flags.AddAcceleratorArgs(parser)
   instances_flags.AddMachineTypeArgs(parser)
@@ -339,6 +343,8 @@ class Create(base.CreateCommand):
   _support_enable_vpc_scoped_dns = False
   _support_workload_identity_config = False
   _support_alias_ipv6_ranges = False
+  _support_dns64_eligible = False
+  _support_nat64_eligible = False
 
   @classmethod
   def Args(cls, parser):
@@ -371,6 +377,8 @@ class Create(base.CreateCommand):
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
         support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
         support_alias_ipv6_ranges=cls._support_alias_ipv6_ranges,
+        support_dns64_eligible=cls._support_dns64_eligible,
+        support_nat64_eligible=cls._support_nat64_eligible,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()
@@ -466,6 +474,8 @@ class Create(base.CreateCommand):
         support_internal_ipv6_reservation=self._support_internal_ipv6_reservation,
         support_enable_vpc_scoped_dns=self._support_enable_vpc_scoped_dns,
         support_alias_ipv6_ranges=self._support_alias_ipv6_ranges,
+        support_dns64_eligible=self._support_dns64_eligible,
+        support_nat64_eligible=self._support_nat64_eligible,
     )
 
     confidential_vm_type = instance_utils.GetConfidentialVmType(
@@ -880,6 +890,8 @@ class CreateBeta(Create):
   _support_enable_vpc_scoped_dns = False
   _support_workload_identity_config = False
   _support_alias_ipv6_ranges = True
+  _support_dns64_eligible = False
+  _support_nat64_eligible = False
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -929,6 +941,8 @@ class CreateBeta(Create):
         support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
         support_workload_identity_config=cls._support_workload_identity_config,
         support_alias_ipv6_ranges=cls._support_alias_ipv6_ranges,
+        support_dns64_eligible=cls._support_dns64_eligible,
+        support_nat64_eligible=cls._support_nat64_eligible,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()
@@ -1012,6 +1026,8 @@ class CreateAlpha(CreateBeta):
   _support_enable_vpc_scoped_dns = True
   _support_workload_identity_config = True
   _support_alias_ipv6_ranges = True
+  _support_dns64_eligible = True
+  _support_nat64_eligible = True
 
   @classmethod
   def Args(cls, parser):
@@ -1049,6 +1065,8 @@ class CreateAlpha(CreateBeta):
         support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
         support_workload_identity_config=cls._support_workload_identity_config,
         support_alias_ipv6_ranges=cls._support_alias_ipv6_ranges,
+        support_dns64_eligible=cls._support_dns64_eligible,
+        support_nat64_eligible=cls._support_nat64_eligible,
     )
 
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
@@ -1078,6 +1096,7 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddIPv6AddressAlphaArgs(parser)
     instances_flags.AddIPv6PrefixLengthAlphaArgs(parser)
     instances_flags.AddAvailabilityDomainAgrs(parser)
+    instances_flags.AddCurrentCpusArgs(parser)
     instances_flags.AddPerformanceMonitoringUnitArgs(parser)
     instances_flags.AddProvisioningModelVmArgs(
         parser,

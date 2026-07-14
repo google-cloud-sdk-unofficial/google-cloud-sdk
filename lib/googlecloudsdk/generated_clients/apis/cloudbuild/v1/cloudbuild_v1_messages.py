@@ -868,6 +868,7 @@ class BuildOptions(_messages.Message):
       E2_HIGHCPU_8: Highcpu e2 machine with 8 CPUs.
       E2_HIGHCPU_32: Highcpu e2 machine with 32 CPUs.
       E2_MEDIUM: E2 machine with 1 CPU.
+      E2_STANDARD_2: E2 machine with 2 CPUs.
     """
     UNSPECIFIED = 0
     N1_HIGHCPU_8 = 1
@@ -875,6 +876,7 @@ class BuildOptions(_messages.Message):
     E2_HIGHCPU_8 = 3
     E2_HIGHCPU_32 = 4
     E2_MEDIUM = 5
+    E2_STANDARD_2 = 6
 
   class RequestedVerifyOptionValueValuesEnum(_messages.Enum):
     r"""Requested verifiability options.
@@ -5577,6 +5579,8 @@ class TrustedPoolConfig(_messages.Message):
       Artifact Registry. This service account is used exclusively by the TBI
       borg job to fetch configs from GoB and push/pull artifacts to/from
       Artifact Registry and Cloud Storage.
+    waitingForQuota: Output only. Indicates if this trusted pool is waiting
+      for quota.
     workerCount: Required. Worker count sets the number of workers in the
       pool.
   """
@@ -5585,7 +5589,8 @@ class TrustedPoolConfig(_messages.Message):
   defaultWorkloadAccount = _messages.StringField(2)
   linuxPool = _messages.MessageField('LinuxPool', 3)
   resourceAccessAccount = _messages.StringField(4)
-  workerCount = _messages.MessageField('WorkerCount', 5)
+  waitingForQuota = _messages.BooleanField(5)
+  workerCount = _messages.MessageField('WorkerCount', 6)
 
 
 class TrustedPoolDiskConfig(_messages.Message):

@@ -86,8 +86,7 @@
       required: false
       help_text: |-
         The composition type of the applicationTemplate: STANDARD OR COMPOSITE.
-        This is a create time only param. In future, we may support conversion from
-        STANDARD to COMPOSITE.
+        This is a create time only param.
       choices:
       - arg_value: standard
         enum_value: STANDARD

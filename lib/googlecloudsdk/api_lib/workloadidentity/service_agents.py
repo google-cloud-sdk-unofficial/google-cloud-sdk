@@ -45,13 +45,29 @@ def GenerateServiceAgents(parent, release_track):
   client = util.GetClientInstance(release_track)
   messages = util.GetMessagesModule(release_track)
 
-  request = messages.WorkloadidentityLocationsServiceProducersGenerateServiceAgentsRequest(
-      parent=parent,
-      generateServiceAgentsRequest=messages.GenerateServiceAgentsRequest(),
-  )
+  if parent.startswith('projects/'):
+    service = client.projects_locations_serviceProducers
+    request = messages.WorkloadidentityProjectsLocationsServiceProducersGenerateServiceAgentsRequest(
+        parent=parent,
+        generateServiceAgentsRequest=messages.GenerateServiceAgentsRequest(),
+    )
+  elif parent.startswith('folders/'):
+    service = client.folders_locations_serviceProducers
+    request = messages.WorkloadidentityFoldersLocationsServiceProducersGenerateServiceAgentsRequest(
+        parent=parent,
+        generateServiceAgentsRequest=messages.GenerateServiceAgentsRequest(),
+    )
+  elif parent.startswith('organizations/'):
+    service = client.organizations_locations_serviceProducers
+    request = messages.WorkloadidentityOrganizationsLocationsServiceProducersGenerateServiceAgentsRequest(
+        parent=parent,
+        generateServiceAgentsRequest=messages.GenerateServiceAgentsRequest(),
+    )
+  else:
+    raise exceptions.Error(f'Unsupported parent resource: {parent}')
 
   try:
-    return client.locations_serviceProducers.GenerateServiceAgents(request)
+    return service.GenerateServiceAgents(request)
   except (
       apitools_exceptions.HttpForbiddenError,
       apitools_exceptions.HttpNotFoundError,

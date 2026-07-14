@@ -2989,6 +2989,8 @@ class InstanceSpec(_messages.Message):
       disallow a number of fields on this Container.
     nodeSelector: Optional. The Node Selector configuration. Map of selector
       key to a value which matches a node.
+    restartPolicy: Optional. Restart policy for the Instance. Allowable values
+      are 'Always', 'OnFailure', or 'Never'.
     serviceAccountName: Optional. Email address of the IAM service account
       associated with the Instance. The service account represents the
       identity of the running container, and determines what permissions the
@@ -3026,8 +3028,9 @@ class InstanceSpec(_messages.Message):
 
   containers = _messages.MessageField('Container', 1, repeated=True)
   nodeSelector = _messages.MessageField('NodeSelectorValue', 2)
-  serviceAccountName = _messages.StringField(3)
-  volumes = _messages.MessageField('Volume', 4, repeated=True)
+  restartPolicy = _messages.StringField(3)
+  serviceAccountName = _messages.StringField(4)
+  volumes = _messages.MessageField('Volume', 5, repeated=True)
 
 
 class InstanceSplit(_messages.Message):

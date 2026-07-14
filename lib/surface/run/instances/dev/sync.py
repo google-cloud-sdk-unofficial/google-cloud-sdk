@@ -55,6 +55,7 @@ Container Flags
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
+@base.RegionalEndpointsSupported
 @base.Hidden
 class Sync(base.Command):
   """Sync into a Cloud Run Instance."""

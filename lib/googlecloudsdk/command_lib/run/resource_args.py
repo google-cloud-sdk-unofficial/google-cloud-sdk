@@ -214,6 +214,8 @@ class ProjectPromptFallthrough(PromptFallthrough):
         message='Please specify a project ID', default=default_project
     )
     if project:
+      project = project.strip()
+    if project:
       properties.VALUES.core.project.Set(project)
     return project
 

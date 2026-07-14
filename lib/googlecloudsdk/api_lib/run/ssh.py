@@ -286,12 +286,17 @@ class Ssh:
     """Retrieves the JSON representation of the Cloud Run workload."""
     command = execution_utils.ArgsForGcloud()
 
+    track_prefix = (
+        [self.release_track.prefix]
+        if self.release_track and self.release_track.prefix
+        else []
+    )
     if self.workload_type == self.WorkloadType.SERVICE:
-      command.extend(["run", "services", "describe"])
+      command.extend(track_prefix + ["run", "services", "describe"])
     elif self.workload_type == self.WorkloadType.WORKER_POOL:
       command.extend(["beta", "run", "worker-pools", "describe"])
     elif self.workload_type == self.WorkloadType.JOB:
-      command.extend(["run", "jobs", "describe"])
+      command.extend(track_prefix + ["run", "jobs", "describe"])
     elif self.workload_type == self.WorkloadType.INSTANCE:
       command.extend(["alpha", "run", "instances", "describe"])
     else:

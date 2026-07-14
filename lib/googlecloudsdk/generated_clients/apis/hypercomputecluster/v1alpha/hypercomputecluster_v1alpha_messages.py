@@ -832,6 +832,32 @@ class DeleteStorageBucket(_messages.Message):
   bucket = _messages.StringField(1)
 
 
+class DynamicTierOptions(_messages.Message):
+  r"""Dynamic tier options for the Managed Lustre instance.
+
+  Enums:
+    ModeValueValuesEnum: Optional. Immutable. The dynamic tier mode of the
+      instance.
+
+  Fields:
+    mode: Optional. Immutable. The dynamic tier mode of the instance.
+  """
+
+  class ModeValueValuesEnum(_messages.Enum):
+    r"""Optional. Immutable. The dynamic tier mode of the instance.
+
+    Values:
+      MODE_UNSPECIFIED: Dynamic tier mode is unspecified.
+      DISABLED: Dynamic tier is explicitly disabled.
+      DEFAULT_CACHE: Dynamic tier is enabled.
+    """
+    MODE_UNSPECIFIED = 0
+    DISABLED = 1
+    DEFAULT_CACHE = 2
+
+  mode = _messages.EnumField('ModeValueValuesEnum', 1)
+
+
 class Empty(_messages.Message):
   r"""A generic empty message that you can re-use to avoid defining duplicated
   empty messages in your APIs. A typical example is to use it as the request
@@ -999,7 +1025,7 @@ class GKEWorkloadDetails(_messages.Message):
       projects//locations//clusters/
     createTime: Optional. Time when the workload was created.
     id: Required. The identifier of the workload. Example - jobset-abcd
-    kind: Required. The kind of the workload. Possible values are JobSet,
+    kind: Required. The kind of the workload. Possible values are Job, JobSet,
       LeaderWorkerSet, RayCluster, RayJob, and Deployment.
     labels: Optional. labels for the workload. Example: {"type": "workload",
       "app": "simulation"}.
@@ -2372,6 +2398,8 @@ class NewLustreConfig(_messages.Message):
       gibibytes (GiB). Allowed values are between 18000 and 7632000.
     description: Optional. Immutable. Description of the Managed Lustre
       instance. Maximum of 2048 characters.
+    dynamicTierOptions: Optional. Immutable. Dynamic tier options for the
+      Managed Lustre instance.
     filesystem: Required. Immutable. Filesystem name for this instance. This
       name is used by client-side tools, including when mounting the instance.
       Must be 8 characters or less and can only contain letters and numbers.
@@ -2386,9 +2414,10 @@ class NewLustreConfig(_messages.Message):
 
   capacityGb = _messages.IntegerField(1)
   description = _messages.StringField(2)
-  filesystem = _messages.StringField(3)
-  lustre = _messages.StringField(4)
-  perUnitStorageThroughput = _messages.IntegerField(5)
+  dynamicTierOptions = _messages.MessageField('DynamicTierOptions', 3)
+  filesystem = _messages.StringField(4)
+  lustre = _messages.StringField(5)
+  perUnitStorageThroughput = _messages.IntegerField(6)
 
 
 class NewNetworkConfig(_messages.Message):
@@ -3921,9 +3950,56 @@ class WorkloadDetails(_messages.Message):
 
   Fields:
     gke: GKE Workload metadata.
+    targets: Optional. List of Targets/Hosts associated with the workload.
   """
 
   gke = _messages.MessageField('GKEWorkloadDetails', 1)
+  targets = _messages.MessageField('WorkloadTarget', 2, repeated=True)
+
+
+class WorkloadTarget(_messages.Message):
+  r"""Represents a target/host associated with the workload.
+
+  Enums:
+    StateValueValuesEnum: Output only. Target state
+
+  Fields:
+    displayName: Required. Display name of the target/host. This will be pod
+      name in GKE, node name in Slurm, hostname in Google Compute Engine etc.
+      This name shall be used by UI to display list for user and xprof UI to
+      represent the hosts.
+    hostname: Required. Hostname of the VM. This is Compute engine construct
+      to identify each host. If set, it should be a hostname hostname of the
+      VM. This shall be used to identify corresponding daemon running on the
+      host.
+    instanceId: Required. Target identifier of the VM. This is Compute engine
+      construct to identify each host. If set, it should be an instance ID of
+      the VM. This shall be used to identify corresponding daemon running on
+      the host.
+    state: Output only. Target state
+    zone: Required. Zone of the target, e.g., `us-central1-a`.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. Target state
+
+    Values:
+      STATE_UNSPECIFIED: State is not specified.
+      RUNNING: Target is running within the run.
+      SUCCEEDED: Target is terminated after successfully completion of the
+        workload.
+      FAILED: Target is terminated due to an error.
+    """
+    STATE_UNSPECIFIED = 0
+    RUNNING = 1
+    SUCCEEDED = 2
+    FAILED = 3
+
+  displayName = _messages.StringField(1)
+  hostname = _messages.StringField(2)
+  instanceId = _messages.StringField(3)
+  state = _messages.EnumField('StateValueValuesEnum', 4)
+  zone = _messages.StringField(5)
 
 
 class Xprof(_messages.Message):

@@ -172,6 +172,7 @@ def ValidateFieldArg(ref, unused_args, request):
     ref: The field resource reference.
     unused_args: The parsed arg namespace (unused).
     request: The field describe request.
+
   Returns:
     The original request assuming the field configuration is valid.
   Raises:

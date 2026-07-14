@@ -292,7 +292,6 @@ def ListQuotaPreferences(
   client = _GetClientInstance(release_track)
   messages = client.MESSAGES_MODULE
   parent = _CONSUMER_LOCATION_RESOURCE % consumer
-  print(args.page_size)
 
   if args.project:
     request = messages.CloudquotasProjectsLocationsQuotaPreferencesListRequest(

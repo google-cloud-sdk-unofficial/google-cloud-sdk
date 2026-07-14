@@ -32,6 +32,19 @@ def AddAsyncFlag(parser):
   base.ASYNC_FLAG.AddToParser(parser)
 
 
+def AddWorkstationUpdatePersistentDirectoryFields(parser):
+  """Adds persistent directory flags for updating a workstation."""
+  group = parser.add_group(help='Persistent directory settings.')
+  group.add_argument(
+      '--pd-disk-size',
+      type=int,
+      help=(
+          'Specifies the desired size in GB of the persistent directory '
+          'mounted at /home.'
+      ),
+  )
+
+
 def AddAllowUnauthenticatedCorsPreflightRequestsFlag(parser):
   """Adds a --allow-unauthenticated-cors-preflight-requests flag to the given parser."""
   help_text = """\

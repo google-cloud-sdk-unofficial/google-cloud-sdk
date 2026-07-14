@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.container.fleet.rolloutsequences import flags as rolloutsequence_flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_io
 from googlecloudsdk.generated_clients.apis.gkehub.v1alpha import gkehub_v1alpha_messages as alpha_messages
 from googlecloudsdk.generated_clients.apis.gkehub.v1beta import gkehub_v1beta_messages as beta_messages
 
@@ -58,19 +59,27 @@ class Delete(base.DeleteCommand):
         args, release_track=self.ReleaseTrack()
     )
     fleet_client = client.FleetClient(release_track=self.ReleaseTrack())
+    rollout_sequence_name = util.RolloutSequenceName(args)
     req = (
         fleet_client.messages.GkehubProjectsLocationsRolloutSequencesDeleteRequest()
     )
-    req.name = util.RolloutSequenceName(args)
+    req.name = rollout_sequence_name
+
+    console_io.PromptContinue(
+        message=(
+            'You are about to delete rollout sequence'
+            f' [{rollout_sequence_name}].'
+        ),
+        cancel_on_no=True,
+    )
 
     operation = fleet_client.DeleteRolloutSequence(req)
     rolloutsequence_ref = util.RolloutSequenceRef(args)
 
     if flag_parser.Async():
       log.Print(
-          'Delete in progress for Rollout sequence [{}]'.format(
-              rolloutsequence_ref.SelfLink()
-          )
+          'Delete in progress for Rollout sequence'
+          f' [{rolloutsequence_ref.SelfLink()}]'
       )
       return operation
 
@@ -78,11 +87,7 @@ class Delete(base.DeleteCommand):
         release_track=self.ReleaseTrack()
     )
     completed_operation = operation_client.Wait(util.OperationRef(operation))
-    log.Print(
-        'Deleted Rollout sequence [{}].'.format(
-            rolloutsequence_ref.SelfLink()
-        )
-    )
+    log.Print(f'Deleted Rollout sequence [{rolloutsequence_ref.SelfLink()}].')
 
     return completed_operation
 

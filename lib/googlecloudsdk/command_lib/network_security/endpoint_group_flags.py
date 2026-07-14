@@ -35,7 +35,10 @@ DEPLOYMENT_GROUP_RESOURCE_COLLECTION = (
     "networksecurity.projects.locations.mirroringDeploymentGroups"
 )
 
-_PACKET_BROKER_SUPPORTED = (base.ReleaseTrack.ALPHA,)
+_PACKET_BROKER_SUPPORTED = (
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+)
 
 
 def AddEndpointGroupResource(release_track, parser):

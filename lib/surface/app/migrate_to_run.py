@@ -16,8 +16,10 @@
 """The gcloud app migrate-to-run command."""
 
 import collections
+import os
 import re
-from typing import Any, Mapping, Sequence
+import textwrap
+from typing import Any, Mapping
 
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.run import k8s_object
@@ -27,12 +29,25 @@ from googlecloudsdk.command_lib.app.gae_to_cr_migration_util import export_image
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util import list_incompatible_features
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util import translate
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.common import util
-from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.config import feature_helper
+from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.translation_rules import required_flags
+from googlecloudsdk.command_lib.artifacts import docker_util
+from googlecloudsdk.command_lib.run import artifact_registry
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import resource_args
+from googlecloudsdk.command_lib.run import stages
+from googlecloudsdk.command_lib.run.sourcedeploys import deployer
+from googlecloudsdk.command_lib.util.concepts import concept_parsers
+from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from surface.run import deploy
+from googlecloudsdk.core import resources
+from googlecloudsdk.core import yaml
+from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.console import progress_tracker
+from googlecloudsdk.core.util import files
+from surface.run.services import replace
 
 
 def _parse_labels(labels_str: str) -> Mapping[str, str]:
@@ -131,28 +146,42 @@ class _HiddenParserProxy:
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class AppEngineToCloudRun(deploy.Deploy):
+class AppEngineToCloudRun(replace.Replace):
   """Migrate a second-generation App Engine app to Cloud Run."""
+
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION': textwrap.dedent("""\
           Migrates the second-generation App Engine app to Cloud Run.
-          """,
-      'EXAMPLES': """\
+          """),
+      'EXAMPLES': textwrap.dedent("""\
           To migrate an App Engine app to Cloud Run:\n
           through app.yaml\n
           gcloud app migrate-to-run --appyaml=path/to/app.yaml\n
           OR\n
           through service and version\n
           gcloud app migrate-to-run --service=default --version=v1\n
-          """,
+          """),
   }
 
   @classmethod
   def Args(cls, parser):
-    hidden_parser = _HiddenParserProxy(parser)
-    deploy.Deploy.CommonArgs(hidden_parser)
+    namespace_presentation = presentation_specs.ResourcePresentationSpec(
+        '--namespace',
+        resource_args.GetNamespaceResourceSpec(),
+        'Namespace to replace service.',
+        required=False,
+        prefixes=False,
+        hidden=True,
+    )
+    concept_parsers.ConceptParser([namespace_presentation]).AddToParser(parser)
+
+    flags.AddAsyncFlag(parser)
+    flags.AddClientNameAndVersionFlags(parser)
+    flags.AddDryRunFlag(parser)
+
+    parser.display_info.AddFormat('none')
+
     cls.CommonArgs(parser)
-    cls.AddCloudRunFlags(hidden_parser)
 
   @classmethod
   def CommonArgs(cls, parser) -> None:
@@ -181,33 +210,17 @@ class AppEngineToCloudRun(deploy.Deploy):
             ' app.yaml in the current directory will be ignored.'
         ),
     )
-
-  @classmethod
-  def AddCloudRunFlags(cls, parser) -> None:
-    """Adds Cloud Run flags common to Alpha and Beta migration commands."""
-    container_args = deploy.ContainerArgGroup(cls.ReleaseTrack())
-    container_args.AddArgument(flags.ReadinessProbeFlag())
-    deploy.container_parser.AddContainerFlags(
-        parser, container_args, cls.ReleaseTrack()
+    parser.add_argument(
+        '--export-only',
+        metavar='EXPORT_PATH',
+        help=(
+            'Export the generated Cloud Run service.yaml to the provided path.'
+            ' Migration stops without deploying the service.'
+        ),
     )
 
-    flags.AddRuntimeFlag(parser)
-    flags.SERVICE_MESH_FLAG.AddToParser(parser)
-    flags.IDENTITY_FLAG.AddToParser(parser)
-    flags.IDENTITY_CERTIFICATE_FLAG.AddToParser(parser)
-    flags.IDENTITY_TYPE_FLAG.AddToParser(parser)
-    flags.FUNCTIONAL_TYPE_FLAG.AddToParser(parser)
-    flags.MESH_DATAPLANE_FLAG.AddToParser(parser)
-    flags.AddDelegateBuildsFlag(parser)
-    flags.AddOverflowScalingFlag(parser)
-    flags.AddCpuUtilizationFlag(parser)
-    flags.AddConcurrencyUtilizationFlag(parser)
-    flags.AddPresetFlags(parser)
-
   def Run(self, args):
-    """Overrides the Deploy.Run method.
-
-    This method applies wrapper logic for FlagIsExplicitlySet.
+    """Overrides the Replace.Run method.
 
     Args:
       args: The argparse namespace.
@@ -217,22 +230,17 @@ class AppEngineToCloudRun(deploy.Deploy):
     )
     gae_to_cr_migration_util.GAEToCRMigrationUtil(self.api_client, args)
     self.release_track = self.ReleaseTrack()
-    original_flag_is_explicitly_set = flags.FlagIsExplicitlySet
-    try:
-      flags.FlagIsExplicitlySet = self._flag_is_explicitly_set_wrapper
-      self._start_migration(args)
-      # Execute the gcloud run deploy command using the arguments prepared in
-      # StartMigration.
 
-      # Calling super().Run() from a parent class is considered an
-      # anti-pattern and should not be replicated(see yaqs/3868851564655411200).
-      # Our long-term plan is to refactor the cloud run deploy logic into a
-      # shared command_lib so that both the App Engine migration tool and Cloud
-      # Run can utilize it.
-      super().Run(args)
-      self._print_migration_summary(args)
-    finally:
-      flags.FlagIsExplicitlySet = original_flag_is_explicitly_set
+    # If region is not specified, default to us-central1.
+    if not flags.GetRegion(args):
+      properties.VALUES.run.region.Set('us-central1')
+      setattr(args, 'region', 'us-central1')
+
+    if not self._start_migration(args):
+      return
+
+    super().Run(args)
+    self._print_migration_summary(args)
 
   def _flag_is_explicitly_set_wrapper(self, unused_args, flag) -> bool:
     """Wrapper function to check if a flag is explicitly set.
@@ -263,17 +271,156 @@ class AppEngineToCloudRun(deploy.Deploy):
     )
     return changes
 
-  def _start_migration(self, args) -> None:
-    """Starts the migration process.
-
-    This method translates App Engine configuration to Cloud Run deployment
-    flags and updates the `args` object with these flags, preparing it
-    for the `gcloud run deploy` command.
+  def _get_image(self, args, input_data, project, preview_only=False):
+    """Gets the image from arguments or infers it based on environment and flags.
 
     Args:
-      args: The argparse namespace containing command line arguments. This
-        object is mutated to include flags necessary for the Cloud Run
-        deployment.
+      args: The argparse namespace containing command line arguments.
+      input_data: The parsed App Engine configuration data.
+      project: The Google Cloud project ID.
+      preview_only: If True, only attempts to find an existing image without
+        triggering an export for Standard environments.
+
+    Returns:
+      tuple: (str, str): The URI of the container image and the base image,
+      or (None, None) if they cannot be determined.
+    """
+
+    # Image-based deployment is only supported in ALPHA track with --from-image.
+    if self.ReleaseTrack() is not base.ReleaseTrack.ALPHA:
+      return None, None
+    if not getattr(args, 'from_image', False):
+      return None, None
+
+    # For Flex environments, extract the existing container image.
+    if util.is_flex_env(input_data):
+      if 'deployment' in input_data and hasattr(
+          input_data['deployment'], 'container'
+      ):
+        return input_data['deployment'].container.image, None
+      return None, None
+
+    if preview_only:
+      return None, None
+
+    # For Standard environments, perform an image export.
+    export_image_response = export_image.export_image(
+        project,
+        args.service,
+        args.version,
+        getattr(args, 'destination_repository', None),
+        api_client=self.api_client,
+    )
+    if export_image_response:
+      return (
+          export_image_response.image_uri,
+          export_image_response.runtime_base_image,
+      )
+
+    return None, None
+
+  def _build_image_from_source(
+      self, args, input_data, input_type, project, target_service
+  ):
+    """Builds a container image from the application source.
+
+    This function determines the source path, sets up an Artifact Registry
+    repository, and uses the Cloud Build service to build a container image
+    from the provided source code, potentially using a Dockerfile or buildpacks.
+
+    Args:
+      args: The argparse namespace containing command line arguments.
+      input_data: The configuration data parsed from input.
+      input_type: The type of input provided (e.g., 'appyaml',
+        'service_version').
+      project: The Google Cloud project ID.
+      target_service: The name of the Cloud Run service.
+
+    Returns:
+      tuple: (str, str): The URI of the built container image with digest and
+      the rectified base image URI, or (None, None) if the build fails.
+
+    Raises:
+      core_exceptions.Error: If the image build process fails.
+    """
+    # For --export-only runs, region might not be provided/prompted, so we
+    # default to 'us-central1' to construct valid Artifact Registry repository
+    # paths.
+    region = flags.GetRegion(args) or 'us-central1'
+    source_path = translate.get_source_path(input_type, args.appyaml)
+
+    service_ref = resources.REGISTRY.Parse(
+        target_service,
+        params={'namespacesId': project},
+        collection='run.namespaces.services',
+    )
+
+    ar_repo = docker_util.DockerRepo(
+        project_id=project,
+        location_id=region,
+        repo_id='cloud-run-source-deploy',
+    )
+    if artifact_registry.ShouldCreateRepository(
+        ar_repo, skip_activation_prompt=True
+    ):
+      repo_to_create = ar_repo
+    else:
+      repo_to_create = None
+
+    build_image = f'{ar_repo.GetDockerString()}/{target_service}'
+
+    build_env_vars = input_data.get('build_env_variables')
+    base_image = util.determine_base_image(input_data, region)
+
+    with progress_tracker.StagedProgressTracker(
+        'Building Container...',
+        stages.ServiceStages(
+            include_upload_source=True,
+            include_build=True,
+            include_create_repo=repo_to_create is not None,
+        ),
+        failure_message='Container build failed',
+        suppress_output=False,
+    ) as tracker:
+      docker_file = os.path.join(source_path, 'Dockerfile')
+      build_pack = (
+          [{'image': build_image}] if not os.path.exists(docker_file) else None
+      )
+      enable_automatic_updates = (
+          base_image is not None and build_pack is not None
+      )
+      image_digest, base_image_from_build, *_ = deployer.CreateImage(
+          tracker=tracker,
+          build_image=build_image,
+          build_source=source_path,
+          build_pack=build_pack,
+          repo_to_create=repo_to_create,
+          release_track=self.ReleaseTrack(),
+          already_activated_services=True,
+          region=region,
+          resource_ref=service_ref,
+          base_image=base_image,
+          build_env_vars=build_env_vars,
+          enable_automatic_updates=enable_automatic_updates,
+      )
+      if image_digest is None:
+        raise core_exceptions.Error('Failed to create image.')
+      if not enable_automatic_updates:
+        base_image_from_build = None
+      return f'{build_image}@{image_digest}', base_image_from_build
+
+  def _start_migration(self, args) -> bool:
+    """Starts the migration process.
+
+    This method translates App Engine configuration to a Cloud Run service.yaml
+    dictionary, performs source upload/build if necessary, and populates
+    args.FILE.
+
+    Args:
+      args: The argparse namespace containing command line arguments.
+
+    Returns:
+      True if deployment should proceed, False if cancelled.
     """
 
     # List incompatible features.
@@ -284,90 +431,114 @@ class AppEngineToCloudRun(deploy.Deploy):
         input_data, input_type, args.appyaml, args.service, args.version
     )
 
-    if util.is_flex_env(input_data):
-      cloud_run_deploy_command = self._run_deploy_command_for_flex(
-          args, input_data, input_type
-      )
+    if getattr(args, 'dry_run', False):
+      log.status.Print('To deploy, use the command without the --dry-run flag.')
+      return False
+
+    project = properties.VALUES.core.project.Get()
+    service_name = args.service
+    service_yaml = translate.translate_to_service_yaml(
+        input_data, input_type, project, service_name
+    )
+    target_service = service_yaml['metadata']['name']
+
+    image, runtime_base_image = self._get_image(
+        args, input_data, project, preview_only=True
+    )
+
+    if not image:
+      service_yaml['spec']['template']['spec']['containers'][0][
+          'image'
+      ] = '<built-from-source>'
+      if not getattr(args, 'from_image', False):
+        runtime_base_image = util.determine_base_image(
+            input_data, flags.GetRegion(args)
+        )
     else:
-      cloud_run_deploy_command = self._run_deploy_command_for_standard(
-          args, input_data, input_type
+      service_yaml['spec']['template']['spec']['containers'][0]['image'] = image
+
+    if runtime_base_image:
+      required_flags.update_service_yaml_with_base_image(
+          service_yaml, runtime_base_image
       )
 
-    print_deploy_command = ' '.join(cloud_run_deploy_command) + ' '
-    log.status.Print('Command to run:', print_deploy_command, '\n')
-    setattr(args, 'SERVICE', cloud_run_deploy_command[3])
-    self._migration_flags = []
-    for command_str in cloud_run_deploy_command:
-      if command_str.startswith('--'):
-        command_str = command_str.replace('--', '')
-        # TODO: b/445905035 - Use ArgDict type for args to simplify the parsing
-        # logic
-        parts = command_str.split('=', 1)
-        flag_name = parts[0].replace('-', '_')
-        self._migration_flags.append(flag_name)
-        flag_value = parts[1] if len(parts) > 1 else None
-        if flag_name == 'labels':
-          label_value = parts[1] if len(parts) > 1 else ''
-          setattr(args, flag_name, _parse_labels(label_value))
-          continue
-        if flag_name == 'image':
-          setattr(args, flag_name, flag_value)
-          continue
-        if flag_name == 'set_env_vars':
-          env_vars_value = parts[1] if len(parts) > 1 else ''
-          setattr(
-              args, flag_name, _parse_set_env_vars(env_vars_value.strip('"'))
+    yaml_str = yaml.dump(service_yaml)
+    log.status.Print('\n--- Generated service.yaml ---\n')
+    log.status.Print(yaml_str)
+
+    from_image = getattr(args, 'from_image', False)
+    export_val = getattr(args, 'export_only', None)
+    yaml_path = None
+
+    if export_val:
+      if os.path.isdir(export_val):
+        yaml_path = os.path.join(export_val, 'service.yaml')
+      else:
+        yaml_path = export_val
+    elif not from_image:
+      base_dir = '.'
+      if getattr(args, 'appyaml', None):
+        base_dir = os.path.dirname(args.appyaml) or '.'
+      yaml_path = os.path.join(base_dir, 'service.yaml')
+
+    if export_val is not None:
+      try:
+        files.WriteFileContents(yaml_path, yaml_str)
+        log.status.Print(f'\nSaved service configuration to {yaml_path}')
+      except (files.Error, OSError) as e:
+        log.warning(
+            'Could not save service configuration to %r. Error: %s',
+            yaml_path,
+            e,
+        )
+      return False
+
+    if not console_io.PromptContinue(message='Proceed with the deployment?'):
+      log.status.Print('Deployment cancelled by user.')
+      return False
+
+    if not image:
+      if from_image:
+        final_image, runtime_base_image = self._get_image(
+            args, input_data, project, preview_only=False
+        )
+      else:
+        final_image, runtime_base_image = self._build_image_from_source(
+            args, input_data, input_type, project, target_service
+        )
+
+      if final_image:
+        service_yaml['spec']['template']['spec']['containers'][0][
+            'image'
+        ] = final_image
+        if runtime_base_image:
+          required_flags.update_service_yaml_with_base_image(
+              service_yaml, runtime_base_image
           )
-          continue
-        if flag_name == 'timeout':
-          if flag_value == '600':
-            setattr(args, flag_name, 600)
-          elif flag_value == '3600':
-            setattr(args, flag_name, 3600)
-          continue
-        if flag_name == 'min_instances':
-          setattr(args, flag_name, flags.ScaleValue(flag_value))
-          continue
-        if flag_name == 'max_instances':
-          setattr(args, flag_name, flags.ScaleValue(flag_value))
-          continue
-        if flag_name in ['liveness_probe', 'readiness_probe']:
-          setattr(args, flag_name, self._parse_dict_string(flag_value))
-          continue
-        if flag_name == 'scaling':
-          setattr(args, flag_name, flags.ScalingValue(flag_value))
-          continue
-        if flag_name in ['add_volume', 'add_volume_mount']:
-          current_value = getattr(args, flag_name, None)
-          if current_value is None:
-            setattr(args, flag_name, [])
-          getattr(args, flag_name).append(
-              self._parse_dict_string(flag_value)
-          )
-          continue
-        if flag_name == 'network_tags':
-          setattr(args, flag_name, flag_value.split(',') if flag_value else [])
-          continue
-        if flag_name == 'ingress':
-          setattr(args, flag_name, flag_value)
-          continue
-        if flag_name == 'network':
-          setattr(args, flag_name, flag_value)
-          continue
-        if flag_name == 'subnet':
-          setattr(args, flag_name, flag_value)
-          continue
-        if flag_name == 'session_affinity':
-          setattr(args, flag_name, True)
-          continue
-        if flag_name == 'port':
-          setattr(args, flag_name, flag_value)
-          continue
-        if flag_value is not None:
-          setattr(args, flag_name, flag_value)
-        else:
-          setattr(args, flag_name, True)
-    return
+        yaml_str = yaml.dump(service_yaml)
+
+    if not from_image:
+      try:
+        files.WriteFileContents(yaml_path, yaml_str)
+        log.status.Print(f'\nSaved service configuration to {yaml_path}')
+      except (files.Error, OSError) as e:
+        log.warning(
+            'Could not save service configuration to %r. Error:'
+            ' %s\nContinuing with deployment...',
+            yaml_path,
+            e,
+        )
+
+    setattr(args, 'FILE', service_yaml)
+    setattr(args, 'SERVICE', target_service)
+
+    # We must provide the correct namespace in the args.
+    if not hasattr(args, 'namespace'):
+      # Just stub this so the concept parser in replace.py doesn't complain
+      # if the user hasn't supplied --namespace. We parsed it above anyway.
+      pass
+
+    return True
 
   def _print_migration_summary(self, args):
     """Prints the migration summary."""
@@ -384,18 +555,18 @@ class AppEngineToCloudRun(deploy.Deploy):
     if self.release_track is base.ReleaseTrack.ALPHA and args.from_image:
       log.status.Print(
           'View and edit in Cloud Run console:'
-          f' https://console.cloud.google.com/run/detail/{region}/{service}/metrics?project={project}\n'
-          f'Deploy new versions of your code with the same configuration using "gcloud'
-          f' run deploy {service} --image=<new-image>'
-          f' --region={region} --project={project}"\n'
+          f' https://console.cloud.google.com/run/detail/{region}/{service}/metrics?project={project}\nDeploy'
+          ' new versions of your code with the same configuration using'
+          f' "gcloud run deploy {service} --image=<new-image> --region={region}'
+          f' --project={project}"\n'
       )
     else:
       log.status.Print(
           'View and edit in Cloud Run console:'
           f' https://console.cloud.google.com/run/detail/{region}/{service}/metrics?project={project}\nDeploy'
-          ' new versions of your code with the same configuration using "gcloud'
-          f' run deploy {service} --source=.'
-          f' --region={region} --project={project}"\n'
+          ' new versions of your code with the same configuration using'
+          f' "gcloud run deploy {service} --source=. --region={region}'
+          f' --project={project}"\n'
       )
 
   def _parse_dict_string(self, value_str: str) -> dict[str, str]:
@@ -437,52 +608,6 @@ class AppEngineToCloudRun(deploy.Deploy):
     )
     return env_vars
 
-  def _run_deploy_command_for_flex(
-      self,
-      args,
-      input_data: Mapping[str, any],
-      input_type: feature_helper.InputType,
-  ) -> Sequence[str]:
-    """Handles the flex environment."""
-    if getattr(args, 'from_image', False):
-      return translate.translate_from_image(
-          input_data,
-          args.service,
-      )
-    else:
-      return translate.translate_from_source(
-          input_data, input_type, args.appyaml, args.service
-      )
-
-  def _run_deploy_command_for_standard(
-      self,
-      args,
-      input_data: Mapping[str, any],
-      input_type: feature_helper.InputType,
-  ) -> Sequence[str]:
-    """Handles the standard environment."""
-
-    if self.release_track is base.ReleaseTrack.ALPHA and args.from_image:
-      project = properties.VALUES.core.project.Get()
-
-      export_image_response = export_image.export_image(
-          project,
-          args.service,
-          args.version,
-          args.destination_repository,
-          api_client=self.api_client,
-      )
-
-      return translate.translate_from_exported_image(
-          input_data,
-          args.service,
-          export_image_response,
-      )
-    else:
-      return translate.translate_from_source(
-          input_data, input_type, args.appyaml, args.service
-      )
-
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AppEngineToCloudRunAlpha(AppEngineToCloudRun):
@@ -508,10 +633,3 @@ class AppEngineToCloudRunAlpha(AppEngineToCloudRun):
             ' format of projects/*/locations/*/repositories/*.'
         ),
     )
-
-  def _ValidateAndGeDeployFromSource(self, containers: Any) -> dict[Any, Any]:
-    if hasattr(self, '_migration_flags') and 'image' in self._migration_flags:
-      # If an image is provided, we are not deploying from source, so we return
-      # an empty dict to skip source deployment validation.
-      return {}
-    return super()._ValidateAndGeDeployFromSource(containers)

@@ -86,7 +86,6 @@ REPAIR_PHASES_FIELD = 'repairPhases'
 BACKOFF_MODE_FIELD = 'backoffMode'
 SCHEDULE_FIELD = 'schedule'
 TIME_ZONE_FIELD = 'timeZone'
-labels_field = 'labels'
 DEPLOYMENT_OPTIONS_FIELD = 'deploymentOptions'
 KUBERNETES_FIELD = 'kubernetes'
 CLOUD_RUN_FIELD = 'cloudRun'
@@ -121,6 +120,10 @@ BUCKET_FIELD = 'bucket'
 OBJECT_FIELD = 'object'
 TARGET_CONFIGS_FIELD = 'targetConfigs'
 TARGET_CONFIGS_TYPES = (RAW_YAML_FIELD, HELM_CHART_FIELD, KUSTOMIZE_FIELD)
+CLOUD_RUN_SERVICE_FIELD = 'cloudRunService'
+RUNTIME_WORKLOAD_DEFINITION_FIELD = 'runtimeWorkloadDefinition'
+WORKLOAD_CONFIGS_TYPES = (CLOUD_RUN_SERVICE_FIELD,)
+ALL_TARGET_CONFIG_TYPES = TARGET_CONFIGS_TYPES + WORKLOAD_CONFIGS_TYPES
 COMMON_FIELDS = (
     API_VERSION_FIELD,
     KIND_FIELD,
@@ -1363,6 +1366,20 @@ def _StorageSourceFromStorage(
     source[STORAGE_SOURCE_FIELD] = source.pop(STORAGE_FIELD)
 
 
+def _NormalizeHelmChartConfig(helm: MutableMapping[str, Any]) -> None:
+  """Normalizes the Helm chart configuration fields in place."""
+  if VALUES_FROM_FILE_FIELD in helm:
+    helm[SET_FILES_VALUES_FIELD] = helm.pop(VALUES_FROM_FILE_FIELD)
+  if EXCLUDE_TESTS_FIELD in helm:
+    helm[TESTS_EXCLUDED_FIELD] = helm.pop(EXCLUDE_TESTS_FIELD)
+  if EXCLUDE_HOOKS_FIELD in helm:
+    helm[HOOKS_EXCLUDED_FIELD] = helm.pop(EXCLUDE_HOOKS_FIELD)
+  if EXCLUDE_CRDS_FIELD in helm:
+    helm[CRDS_EXCLUDED_FIELD] = helm.pop(EXCLUDE_CRDS_FIELD)
+  if HELM_RELEASE_NAME_FIELD in helm:
+    helm[HELM_RELEASE_FIELD] = helm.pop(HELM_RELEASE_NAME_FIELD)
+
+
 def _ConvertReleaseTargetConfig(
     target: MutableMapping[str, Any], transform_context: _TransformContext
 ) -> MutableMapping[str, Any]:
@@ -1378,29 +1395,28 @@ def _ConvertReleaseTargetConfig(
   Raises:
     exceptions.CloudDeployConfigError: If the target is invalid.
   """
-  runtime_config = {}
   for key in target:
-    if key not in TARGET_CONFIGS_TYPES + (ID_FIELD, MATCH_LABELS_FIELD):
+    if key not in ALL_TARGET_CONFIG_TYPES + (ID_FIELD, MATCH_LABELS_FIELD):
       raise exceptions.CloudDeployConfigError.for_resource_field(
           transform_context.kind,
           transform_context.name,
           transform_context.field,
           f'unsupported target config field: {key}',
       )
-  found_keys = [k for k in TARGET_CONFIGS_TYPES if k in target]
+  found_keys = [k for k in ALL_TARGET_CONFIG_TYPES if k in target]
   if len(found_keys) == 0:
     raise exceptions.CloudDeployConfigError.for_resource_field(
         transform_context.kind,
         transform_context.name,
         transform_context.field,
-        f'A target must have one of {", ".join(TARGET_CONFIGS_TYPES)}',
+        f'A target must have one of {", ".join(ALL_TARGET_CONFIG_TYPES)}',
     )
   if len(found_keys) > 1:
     raise exceptions.CloudDeployConfigError.for_resource_field(
         transform_context.kind,
         transform_context.name,
         transform_context.field,
-        f'A target can only have one of {", ".join(TARGET_CONFIGS_TYPES)}',
+        f'A target can only have one of {", ".join(ALL_TARGET_CONFIG_TYPES)}',
     )
   if ID_FIELD not in target and MATCH_LABELS_FIELD not in target:
     raise exceptions.CloudDeployConfigError.for_resource_field(
@@ -1419,23 +1435,16 @@ def _ConvertReleaseTargetConfig(
 
   # found_keys is guaranteed to have exactly one element.
   k = found_keys[0]
-  runtime_config[k] = target.pop(k)
+  extracted_config = {k: target.pop(k)}
 
-  if HELM_CHART_FIELD in runtime_config:
-    helm = runtime_config[HELM_CHART_FIELD]
-    if isinstance(helm, dict):
-      if VALUES_FROM_FILE_FIELD in helm:
-        helm[SET_FILES_VALUES_FIELD] = helm.pop(VALUES_FROM_FILE_FIELD)
-      if EXCLUDE_TESTS_FIELD in helm:
-        helm[TESTS_EXCLUDED_FIELD] = helm.pop(EXCLUDE_TESTS_FIELD)
-      if EXCLUDE_HOOKS_FIELD in helm:
-        helm[HOOKS_EXCLUDED_FIELD] = helm.pop(EXCLUDE_HOOKS_FIELD)
-      if EXCLUDE_CRDS_FIELD in helm:
-        helm[CRDS_EXCLUDED_FIELD] = helm.pop(EXCLUDE_CRDS_FIELD)
-      if HELM_RELEASE_NAME_FIELD in helm:
-        helm[HELM_RELEASE_FIELD] = helm.pop(HELM_RELEASE_NAME_FIELD)
-
-  target[CONFIG_FIELD] = {RUNTIME_CONFIG_FIELD: runtime_config}
+  if k in TARGET_CONFIGS_TYPES:
+    if HELM_CHART_FIELD in extracted_config:
+      helm = extracted_config[HELM_CHART_FIELD]
+      if isinstance(helm, dict):
+        _NormalizeHelmChartConfig(helm)
+    target[CONFIG_FIELD] = {RUNTIME_CONFIG_FIELD: extracted_config}
+  elif k in WORKLOAD_CONFIGS_TYPES:
+    target[CONFIG_FIELD] = {RUNTIME_WORKLOAD_DEFINITION_FIELD: extracted_config}
   if MATCH_LABELS_FIELD in target:
     target[MATCH_LABELS_FIELD] = {labels_field: target.pop(MATCH_LABELS_FIELD)}
   return target
@@ -1499,7 +1508,7 @@ def ParseReleaseConfig(
   # Normalize root if `targets` is missing but runtime configs exist
   if TARGETS_FIELD not in manifest:
     target = {ID_FIELD: '*'}
-    valid_fields = TARGET_CONFIGS_TYPES + (SOURCE_FIELD,) + COMMON_FIELDS
+    valid_fields = ALL_TARGET_CONFIG_TYPES + (SOURCE_FIELD,) + COMMON_FIELDS
     for key in manifest:
       if key not in valid_fields:
         raise exceptions.CloudDeployConfigError.for_resource_field(
@@ -1509,7 +1518,7 @@ def ParseReleaseConfig(
             f'unsupported target config field: {key}',
         )
     # Move runtime configs to target
-    for key in TARGET_CONFIGS_TYPES:
+    for key in ALL_TARGET_CONFIG_TYPES:
       if key in manifest:
         target[key] = manifest.pop(key)
     if len(target) > 1:

@@ -15,6 +15,7 @@
 """Command for update to instance network interfaces."""
 
 
+import argparse
 import ipaddress
 
 from googlecloudsdk.api_lib.compute import alias_ip_range_utils
@@ -50,11 +51,13 @@ class Update(base.UpdateCommand):
 
   support_ipv6_assignment = False
   support_alias_ipv6_ranges = False
+  support_dns64_eligible = False
+  support_nat64_eligible = False
 
   SECURITY_POLICY_ARG = None
 
   @classmethod
-  def Args(cls, parser):
+  def Args(cls, parser: argparse.ArgumentParser):
     instances_flags.INSTANCE_ARG.AddArgument(parser)
     network_interfaces_flags.AddNetworkInterfaceArgForUpdate(parser)
     network_interfaces_flags.AddNetworkArg(parser)
@@ -70,6 +73,10 @@ class Update(base.UpdateCommand):
     network_interfaces_flags.AddInternalIpv6AddressArg(parser)
     network_interfaces_flags.AddInternalIpv6PrefixLengthArg(parser)
     network_interfaces_flags.AddIgmpQueryArg(parser)
+    if cls.support_dns64_eligible:
+      network_interfaces_flags.AddDns64EligibleArg(parser)
+    if cls.support_nat64_eligible:
+      network_interfaces_flags.AddNat64EligibleArg(parser)
 
     if cls.support_ipv6_assignment:
       network_interfaces_flags.AddIpv6AddressArg(parser)
@@ -82,7 +89,7 @@ class Update(base.UpdateCommand):
     )
     cls.SECURITY_POLICY_ARG.AddArgument(parser)
 
-  def Run(self, args):
+  def Run(self, args: argparse.Namespace):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client.apitools_client
     messages = holder.client.messages
@@ -172,6 +179,8 @@ class Update(base.UpdateCommand):
     internal_ipv6_prefix_length = getattr(
         args, 'internal_ipv6_prefix_length', None
     )
+    dns64_eligible = getattr(args, 'dns64_eligible', None)
+    nat64_eligible = getattr(args, 'nat64_eligible', None)
 
     if stack_type is not None:
       stack_type_enum = messages.NetworkInterface.StackTypeValueValuesEnum(
@@ -237,7 +246,7 @@ class Update(base.UpdateCommand):
                 messages, True, args.ipv6_aliases
             )
         )
-        patch_network_interface = messages.NetworkInterface(
+        nic_kwargs = dict(
             aliasIpRanges=alias_ip_ranges,
             aliasIpv6Ranges=alias_ipv6_ranges,
             network=network_uri,
@@ -249,13 +258,18 @@ class Update(base.UpdateCommand):
             ipv6Address=internal_ipv6_address,
             internalIpv6PrefixLength=internal_ipv6_prefix_length,
         )
+        if self.support_dns64_eligible:
+          nic_kwargs['dns64Eligible'] = dns64_eligible
+        if self.support_nat64_eligible:
+          nic_kwargs['nat64Eligible'] = nat64_eligible
+        patch_network_interface = messages.NetworkInterface(**nic_kwargs)
       else:
         alias_ip_ranges = (
             alias_ip_range_utils.CreateAliasIpRangeMessagesFromStringOld(
                 messages, True, args.aliases
             )
         )
-        patch_network_interface = messages.NetworkInterface(
+        nic_kwargs = dict(
             aliasIpRanges=alias_ip_ranges,
             network=network_uri,
             subnetwork=subnetwork_uri,
@@ -266,16 +280,26 @@ class Update(base.UpdateCommand):
             ipv6Address=internal_ipv6_address,
             internalIpv6PrefixLength=internal_ipv6_prefix_length,
         )
+        if self.support_dns64_eligible:
+          nic_kwargs['dns64Eligible'] = dns64_eligible
+        if self.support_nat64_eligible:
+          nic_kwargs['nat64Eligible'] = nat64_eligible
+        patch_network_interface = messages.NetworkInterface(**nic_kwargs)
     elif igmp_query is not None:
       igmp_query_enum = messages.NetworkInterface.IgmpQueryValueValuesEnum(
           igmp_query
       )
-      patch_network_interface = messages.NetworkInterface(
+      nic_kwargs = dict(
           network=network_uri,
           subnetwork=subnetwork_uri,
           igmpQuery=igmp_query_enum,
           fingerprint=fingerprint,
       )
+      if self.support_dns64_eligible:
+        nic_kwargs['dns64Eligible'] = dns64_eligible
+      if self.support_nat64_eligible:
+        nic_kwargs['nat64Eligible'] = nat64_eligible
+      patch_network_interface = messages.NetworkInterface(**nic_kwargs)
     else:
       if self.support_alias_ipv6_ranges:
         alias_ip_ranges = (
@@ -288,7 +312,7 @@ class Update(base.UpdateCommand):
                 messages, True, args.ipv6_aliases
             )
         )
-        patch_network_interface = messages.NetworkInterface(
+        nic_kwargs = dict(
             aliasIpRanges=alias_ip_ranges,
             aliasIpv6Ranges=alias_ipv6_ranges,
             network=network_uri,
@@ -296,19 +320,29 @@ class Update(base.UpdateCommand):
             networkIP=getattr(args, 'private_network_ip', None),
             fingerprint=fingerprint,
         )
+        if self.support_dns64_eligible:
+          nic_kwargs['dns64Eligible'] = dns64_eligible
+        if self.support_nat64_eligible:
+          nic_kwargs['nat64Eligible'] = nat64_eligible
+        patch_network_interface = messages.NetworkInterface(**nic_kwargs)
       else:
         alias_ip_ranges = (
             alias_ip_range_utils.CreateAliasIpRangeMessagesFromStringOld(
                 messages, True, args.aliases
             )
         )
-        patch_network_interface = messages.NetworkInterface(
+        nic_kwargs = dict(
             aliasIpRanges=alias_ip_ranges,
             network=network_uri,
             subnetwork=subnetwork_uri,
             networkIP=getattr(args, 'private_network_ip', None),
             fingerprint=fingerprint,
         )
+        if self.support_dns64_eligible:
+          nic_kwargs['dns64Eligible'] = dns64_eligible
+        if self.support_nat64_eligible:
+          nic_kwargs['nat64Eligible'] = nat64_eligible
+        patch_network_interface = messages.NetworkInterface(**nic_kwargs)
 
     request = messages.ComputeInstancesUpdateNetworkInterfaceRequest(
         project=instance_ref.project,
@@ -358,6 +392,8 @@ class UpdateBeta(Update):
   support_ipv6_assignment = False
   support_igmp_query = True
   support_alias_ipv6_ranges = True
+  support_dns64_eligible = False
+  support_nat64_eligible = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -376,3 +412,5 @@ class UpdateAlpha(UpdateBeta):
   support_ipv6_assignment = True
   support_igmp_query = True
   support_alias_ipv6_ranges = True
+  support_dns64_eligible = True
+  support_nat64_eligible = True

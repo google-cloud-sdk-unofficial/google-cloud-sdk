@@ -440,9 +440,10 @@ class Update(base.UpdateCommand):
     flags.AddEnableFqdnNetworkPolicyFlag(group)
     flags.AddEnableKubeletReadonlyPortFlag(group)
     flags.AddAutoprovisioningEnableKubeletReadonlyPortFlag(group)
-    flags.AddEnableRayClusterLogging(group, is_update=True)
     flags.AddEnableKueueLogging(group)
-    flags.AddEnableRayClusterMonitoring(group, is_update=True)
+    ray_group = group.add_group()
+    flags.AddEnableRayClusterLogging(ray_group, is_update=True)
+    flags.AddEnableRayClusterMonitoring(ray_group, is_update=True)
     flags.AddSecretManagerEnableFlagGroup(group, is_update=True)
     flags.AddSecretSyncFlagGroup(group, is_update=True)
     flags.AddInsecureRBACBindingFlags(group, hidden=False)
@@ -908,13 +909,22 @@ to completion."""
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     elif getattr(args, 'maintenance_window_start', None) is not None:
       try:
-        op_ref = adapter.SetRecurringMaintenanceWindow(
-            cluster_ref,
-            cluster.maintenancePolicy,
-            args.maintenance_window_start,
-            args.maintenance_window_end,
-            args.maintenance_window_recurrence,
-        )
+        if getattr(args, 'maintenance_window_end', None) is not None:
+          op_ref = adapter.SetRecurringTimeWindow(
+              cluster_ref,
+              cluster.maintenancePolicy,
+              args.maintenance_window_start,
+              args.maintenance_window_end,
+              args.maintenance_window_recurrence,
+          )
+        else:
+          op_ref = adapter.SetRecurringMaintenanceWindow(
+              cluster_ref,
+              cluster.maintenancePolicy,
+              args.maintenance_window_start,
+              args.maintenance_window_duration,
+              args.maintenance_window_recurrence,
+          )
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     elif getattr(args, 'clear_maintenance_window', None):
@@ -1035,11 +1045,15 @@ to completion."""
         )
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
-    elif getattr(args, 'enable_ray_cluster_logging', None) is not None:
+    elif (
+        getattr(args, 'enable_ray_cluster_logging', None) is not None
+        or getattr(args, 'enable_ray_cluster_monitoring', None) is not None
+    ):
       try:
-        op_ref = adapter.ModifyRayClusterLoggingConfig(
+        op_ref = adapter.ModifyRayClusterConfig(
             cluster_ref,
-            args.enable_ray_cluster_logging,
+            getattr(args, 'enable_ray_cluster_logging', None),
+            getattr(args, 'enable_ray_cluster_monitoring', None),
         )
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
@@ -1051,14 +1065,6 @@ to completion."""
         )
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT) from error
-    elif getattr(args, 'enable_ray_cluster_monitoring', None) is not None:
-      try:
-        op_ref = adapter.ModifyRayClusterMonitoringConfig(
-            cluster_ref,
-            args.enable_ray_cluster_monitoring,
-        )
-      except apitools_exceptions.HttpError as error:
-        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     elif getattr(args, 'enable_legacy_lustre_port', None) is not None:
       try:
         op_ref = adapter.ModifyLegacyLustrePortEnabled(
@@ -1346,9 +1352,10 @@ class UpdateBeta(Update):
     flags.AddEnableCiliumClusterwideNetworkPolicyFlag(group, is_update=True)
     flags.AddEnableKubeletReadonlyPortFlag(group)
     flags.AddAutoprovisioningEnableKubeletReadonlyPortFlag(group)
-    flags.AddEnableRayClusterLogging(group, is_update=True)
     flags.AddEnableKueueLogging(group)
-    flags.AddEnableRayClusterMonitoring(group, is_update=True)
+    ray_group = group.add_group()
+    flags.AddEnableRayClusterLogging(ray_group, is_update=True)
+    flags.AddEnableRayClusterMonitoring(ray_group, is_update=True)
     flags.AddInsecureRBACBindingFlags(group, hidden=False)
     group_add_additional_ip_ranges = group.add_group()
     flags.AddAdditionalIpRangesFlag(group_add_additional_ip_ranges)
@@ -1760,9 +1767,10 @@ class UpdateAlpha(Update):
     flags.AddEnableCiliumClusterwideNetworkPolicyFlag(group, is_update=True)
     flags.AddEnableKubeletReadonlyPortFlag(group)
     flags.AddAutoprovisioningEnableKubeletReadonlyPortFlag(group)
-    flags.AddEnableRayClusterLogging(group, is_update=True)
     flags.AddEnableKueueLogging(group)
-    flags.AddEnableRayClusterMonitoring(group, is_update=True)
+    ray_group = group.add_group()
+    flags.AddEnableRayClusterLogging(ray_group, is_update=True)
+    flags.AddEnableRayClusterMonitoring(ray_group, is_update=True)
     flags.AddInsecureRBACBindingFlags(group, hidden=False)
     group_add_additional_ip_ranges = group.add_group()
     flags.AddAdditionalIpRangesFlag(group_add_additional_ip_ranges)

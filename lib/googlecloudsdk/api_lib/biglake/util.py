@@ -297,6 +297,18 @@ def CheckValidUnityArgCombinations(args):
         '--unity-catalog-name must be specified when federated catalog type'
         ' is unity.'
     )
+  if args.IsKnownAndSpecified('glue_warehouse'):
+    raise arg_parsers.ArgumentTypeError(
+        '--glue-warehouse is not supported for Unity federated catalogs.'
+    )
+  if args.IsKnownAndSpecified('glue_aws_region'):
+    raise arg_parsers.ArgumentTypeError(
+        '--glue-aws-region is not supported for Unity federated catalogs.'
+    )
+  if args.IsKnownAndSpecified('glue_aws_role_arn'):
+    raise arg_parsers.ArgumentTypeError(
+        '--glue-aws-role-arn is not supported for Unity federated catalogs.'
+    )
 
 
 def CheckValidGlueArgCombinations(args):

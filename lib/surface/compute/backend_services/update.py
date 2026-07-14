@@ -165,6 +165,7 @@ class UpdateHelper(object):
     flags.AddZonalAffinity(parser)
     if support_allow_multinetwork:
       flags.AddAllowMultinetwork(parser)
+    flags.AddHaPolicyLeaderFlags(parser)
 
   def __init__(
       self,
@@ -367,6 +368,8 @@ class UpdateHelper(object):
         'allow_multinetwork'
     ):
       replacement.allowMultinetwork = args.allow_multinetwork
+
+    backend_services_utils.ApplyHaPolicyArgs(client.messages, args, replacement)
     return replacement, cleared_fields
 
   def ValidateArgs(self, args):
@@ -460,6 +463,8 @@ class UpdateHelper(object):
         args.IsSpecified('allow_multinetwork')
         if self._support_allow_multinetwork
         else False,
+        args.IsSpecified('ha_policy_leader_backend_group'),
+        args.IsSpecified('ha_policy_leader_instance'),
     ]):
       raise compute_exceptions.UpdatePropertyError(
           'At least one property must be modified.')

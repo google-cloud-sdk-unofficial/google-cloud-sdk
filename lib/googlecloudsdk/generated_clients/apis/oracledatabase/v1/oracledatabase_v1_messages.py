@@ -1461,8 +1461,8 @@ class CloudVmClusterProperties(_messages.Message):
       scan.ocispdelegated.ocisp10jvnet.oraclevcn.com
     scanDnsRecordId: Output only. OCID of scan DNS record.
     scanIpIds: Output only. OCIDs of scan IPs.
-    scanListenerPortTcp: Output only. SCAN listener port - TCP
-    scanListenerPortTcpSsl: Output only. SCAN listener port - TLS
+    scanListenerPortTcp: Optional. SCAN listener port - TCP
+    scanListenerPortTcpSsl: Optional. SCAN listener port - TLS
     shape: Output only. Shape of VM Cluster.
     sparseDiskgroupEnabled: Optional. Use exadata sparse snapshots.
     sshPublicKeys: Optional. SSH public keys to be stored with cluster.
@@ -4776,8 +4776,9 @@ class GoldengateGoogleBigQueryConnectionProperties(_messages.Message):
   r"""The properties of GoldengateGoogleBigQueryConnectionProperties.
 
   Fields:
-    serviceAccountKeyFile: Optional. The service account key file Cloud
-      Storage containing the credentials required to use Google BigQuery.
+    serviceAccountKeyFile: Optional. The base64 encoded content of the service
+      account key file containing the credentials required to use Google
+      BigQuery.
     technologyType: Optional. The technology type.
   """
 
@@ -4789,8 +4790,9 @@ class GoldengateGoogleCloudStorageConnectionProperties(_messages.Message):
   r"""The properties of GoldengateGoogleCloudStorageConnectionProperties.
 
   Fields:
-    serviceAccountKeyFile: Optional. The service account key Cloud Storage
-      file containing the credentials required to use Google Cloud Storage.
+    serviceAccountKeyFile: Optional. The base64 encoded content of the service
+      account key file containing the credentials required to use Google Cloud
+      Storage.
     technologyType: Optional. The technology type.
   """
 
@@ -4802,8 +4804,9 @@ class GoldengateGooglePubsubConnectionProperties(_messages.Message):
   r"""The properties of GoldengateGooglePubsubConnection.
 
   Fields:
-    serviceAccountKeyFile: Optional. The content of the service account key
-      file containing the credentials required to use Google Pub/Sub.
+    serviceAccountKeyFile: Optional. The base64 encoded content of the service
+      account key file containing the credentials required to use Google
+      Pub/Sub.
     technologyType: Optional. The technology type of GooglePubsubConnection.
   """
 
@@ -4883,7 +4886,7 @@ class GoldengateJavaMessageServiceConnectionProperties(_messages.Message):
       principal.
     jndiSecurityPrincipal: Optional. Specifies the identity of the principal
       (user) to be authenticated.
-    keyStoreFile: Optional. The content of the KeyStore file.
+    keyStoreFile: Optional. The base64 encoded content of the KeyStore file.
     keyStorePassword: Optional. Input only. The KeyStore password in plain
       text.
     keyStorePasswordSecretVersion: Optional. Input only. The resource name of
@@ -4904,7 +4907,8 @@ class GoldengateJavaMessageServiceConnectionProperties(_messages.Message):
       projects/{project}/secrets/{secret}/versions/{version}.
     technologyType: Optional. The technology type of
       JavaMessageServiceConnection.
-    trustStoreFile: Optional. The content of the TrustStore file.
+    trustStoreFile: Optional. The base64 encoded content of the TrustStore
+      file.
     trustStorePassword: Optional. Input only. The TrustStore password in plain
       text.
     trustStorePasswordSecretVersion: Optional. Input only. The resource name
@@ -4981,9 +4985,9 @@ class GoldengateKafkaConnectionProperties(_messages.Message):
       "server1.example.com:9092,server2.example.com:9092"
     clusterId: Optional. The OCID of the Kafka cluster being referenced from
       OCI Streaming with Apache Kafka.
-    consumerPropertiesFile: Optional. The content of the consumer.properties
-      file.
-    keyStoreFile: Optional. The content of the KeyStore file.
+    consumerPropertiesFile: Optional. The base64 encoded content of the
+      consumer.properties file.
+    keyStoreFile: Optional. The base64 encoded content of the KeyStore file.
     keyStorePassword: Optional. Input only. The KeyStore password in plain
       text.
     keyStorePasswordSecretVersion: Optional. Input only. The resource name of
@@ -4995,8 +4999,8 @@ class GoldengateKafkaConnectionProperties(_messages.Message):
       version in Secret Manager which contains the password for Kafka
       basic/SASL auth. Format:
       projects/{project}/secrets/{secret}/versions/{version}.
-    producerPropertiesFile: Optional. The content of the producer.properties
-      file.
+    producerPropertiesFile: Optional. The base64 encoded content of the
+      producer.properties file.
     securityProtocol: Optional. Security Type for Kafka.
     sslKeyPassword: Optional. Input only. The password for the cert inside of
       the KeyStore in plain text.
@@ -5006,7 +5010,8 @@ class GoldengateKafkaConnectionProperties(_messages.Message):
       projects/{project}/secrets/{secret}/versions/{version}.
     streamPoolId: Optional. The OCID of the stream pool being referenced.
     technologyType: Optional. The technology type of KafkaConnection.
-    trustStoreFile: Optional. The content of the TrustStore file.
+    trustStoreFile: Optional. The base64 encoded content of the TrustStore
+      file.
     trustStorePassword: Optional. Input only. The TrustStore password in plain
       text.
     trustStorePasswordSecretVersion: Optional. Input only. The resource name
@@ -5067,7 +5072,7 @@ class GoldengateKafkaSchemaRegistryConnectionProperties(_messages.Message):
   Fields:
     authenticationType: Optional. Used authentication mechanism to access
       Schema Registry.
-    keyStoreFile: Optional. The content of the KeyStore file.
+    keyStoreFile: Optional. The base64 encoded content of the KeyStore file.
     keyStorePassword: Optional. Input only. The KeyStore password in plain
       text.
     keyStorePasswordSecretVersion: Optional. Input only. The resource name of
@@ -5087,7 +5092,8 @@ class GoldengateKafkaSchemaRegistryConnectionProperties(_messages.Message):
       projects/{project}/secrets/{secret}/versions/{version}.
     technologyType: Optional. The technology type of
       KafkaSchemaRegistryConnection.
-    trustStoreFile: Optional. The content of the TrustStore file.
+    trustStoreFile: Optional. The base64 encoded content of the TrustStore
+      file.
     trustStorePassword: Optional. Input only. The TrustStore password in plain
       text.
     trustStorePasswordSecretVersion: Optional. Input only. The resource name
@@ -5244,8 +5250,8 @@ class GoldengateMicrosoftSqlserverConnectionProperties(_messages.Message):
     securityProtocol: Optional. Security Type for Microsoft SQL Server.
     serverCertificateValidationRequired: Optional. If set to true, the driver
       validates the certificate that is sent by the database server.
-    sslCaFile: Optional. Database Certificate - The content of a .pem or .crt
-      file containing the server public key (for 1-way SSL).
+    sslCaFile: Optional. Database Certificate - The base64 encoded content of
+      a .pem or .crt file containing the server public key (for 1-way SSL).
     technologyType: Optional. The technology type of
       MicrosoftSqlserverConnection.
     username: Optional. The username Oracle Goldengate uses to connect to the
@@ -5296,10 +5302,11 @@ class GoldengateMongodbConnectionProperties(_messages.Message):
       projects/{project}/secrets/{secret}/versions/{version}.
     securityProtocol: Optional. Security Type for MongoDB.
     technologyType: Optional. The technology type of MongodbConnection.
-    tlsCaFile: Optional. Database Certificate - The content of a .pem file,
-      containing the server public key (for 1 and 2-way SSL).
-    tlsCertificateKeyFile: Optional. Client Certificate - The content of a
-      .pem file, containing the client public key (for 2-way SSL).
+    tlsCaFile: Optional. Database Certificate - The base64 encoded content of
+      a .pem file, containing the server public key (for 1 and 2-way SSL).
+    tlsCertificateKeyFile: Optional. Client Certificate - The base64 encoded
+      content of a .pem file, containing the client public key (for 2-way
+      SSL).
     tlsCertificateKeyFilePassword: Optional. Input only. The Client
       Certificate key file password in plain text.
     tlsCertificateKeyFilePasswordSecretVersion: Optional. Input only. The
@@ -5359,14 +5366,15 @@ class GoldengateMysqlConnectionProperties(_messages.Message):
     port: Optional. The port of an endpoint usually specified for a
       connection.
     securityProtocol: Optional. Security Type for MySQL.
-    sslCaFile: Optional. Database Certificate - The content of a .pem or .crt
-      file containing the server public key (for 1 and 2-way SSL).
-    sslCertFile: Optional. Client Certificate - The content of a .pem or .crt
-      file containing the client public key (for 2-way SSL).
-    sslCrlFile: Optional. The list of certificates revoked by the trusted
-      certificate authorities (Trusted CA).
-    sslKeyFile: Optional. Client Key - The content of a .pem or .crt file
-      containing the client private key (for 2-way SSL).
+    sslCaFile: Optional. Database Certificate - The base64 encoded content of
+      a .pem or .crt file containing the server public key (for 1 and 2-way
+      SSL).
+    sslCertFile: Optional. Client Certificate - The base64 encoded content of
+      a .pem or .crt file containing the client public key (for 2-way SSL).
+    sslCrlFile: Optional. The base64 encoded list of certificates revoked by
+      the trusted certificate authorities (Trusted CA).
+    sslKeyFile: Optional. Client Key - The base64 encoded content of a .pem or
+      .crt file containing the client private key (for 2-way SSL).
     sslMode: Optional. SSL modes for MySQL.
     technologyType: Optional. The technology type of MysqlConnection.
     username: Optional. The username Oracle Goldengate uses to connect the
@@ -5563,7 +5571,8 @@ class GoldengateOracleConnectionProperties(_messages.Message):
     technologyType: Optional. The technology type.
     username: Optional. The username Oracle Goldengate uses to connect.
     walletFile: Optional. The wallet contents Oracle Goldengate uses to make
-      connections to a database.
+      connections to a database. This attribute is expected to be base64
+      encoded.
   """
 
   class AuthenticationModeValueValuesEnum(_messages.Enum):
@@ -5666,12 +5675,14 @@ class GoldengatePostgresqlConnectionProperties(_messages.Message):
     port: Optional. The port of an endpoint usually specified for a
       connection.
     securityProtocol: Optional. Security protocol for PostgreSQL.
-    sslCaFile: Optional. The certificate of the trusted certificate
-      authorities (Trusted CA) for PostgreSQL.
-    sslCertFile: Optional. The certificate of the PostgreSQL server.
-    sslCrlFile: Optional. The list of certificates revoked by the trusted
-      certificate authorities (Trusted CA).
-    sslKeyFile: Optional. The private key of the PostgreSQL server.
+    sslCaFile: Optional. The base64 encoded certificate of the trusted
+      certificate authorities (Trusted CA) for PostgreSQL.
+    sslCertFile: Optional. The base64 encoded certificate of the PostgreSQL
+      server.
+    sslCrlFile: Optional. The base64 encoded list of certificates revoked by
+      the trusted certificate authorities (Trusted CA).
+    sslKeyFile: Optional. The base64 encoded private key of the PostgreSQL
+      server.
     sslMode: Optional. SSL modes for PostgreSQL.
     technologyType: Optional. The technology type of PostgresqlConnection.
     username: Optional. The username Oracle Goldengate uses to connect the
@@ -5736,7 +5747,7 @@ class GoldengateRedisConnectionProperties(_messages.Message):
 
   Fields:
     authenticationType: Optional. Authentication type for Redis.
-    keyStoreFile: Optional. The content of the KeyStore file.
+    keyStoreFile: Optional. The base64 encoded content of the KeyStore file.
     keyStorePassword: Optional. Input only. The KeyStore password in plain
       text.
     keyStorePasswordSecretVersion: Optional. Input only. The resource name of
@@ -5755,7 +5766,8 @@ class GoldengateRedisConnectionProperties(_messages.Message):
       specified, it defaults to 6379. Example:
       "server1.example.com:6379,server2.example.com:6379"
     technologyType: Optional. The technology type of RedisConnection.
-    trustStoreFile: Optional. The content of the TrustStore file.
+    trustStoreFile: Optional. The base64 encoded content of the TrustStore
+      file.
     trustStorePassword: Optional. Input only. The TrustStore password in plain
       text.
     trustStorePasswordSecretVersion: Optional. Input only. The resource name
@@ -5863,8 +5875,8 @@ class GoogleCloudStorageIcebergStorage(_messages.Message):
   Fields:
     bucket: Required. The bucket of Google Cloud Storage.
     projectId: Required. The project ID of Google Cloud Storage.
-    serviceAccountKeyFile: Optional. The service account key file of Google
-      Cloud Storage.
+    serviceAccountKeyFile: Optional. The base64 encoded content of the service
+      account key file of Google Cloud Storage.
   """
 
   bucket = _messages.StringField(1)
@@ -9133,8 +9145,8 @@ class RestIcebergCatalog(_messages.Message):
   r"""The REST Iceberg catalog.
 
   Fields:
-    properties: Optional. The content of the configuration file containing
-      additional properties for the REST catalog.
+    properties: Optional. The base64 encoded content of the configuration file
+      containing additional properties for the REST catalog.
     uri: Required. The REST uri.
   """
 

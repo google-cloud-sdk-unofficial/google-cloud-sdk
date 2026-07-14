@@ -586,8 +586,9 @@ class Cluster(_messages.Message):
       cluster.
     preciseSizeGb: Output only. Precise value of redis memory size in GB for
       the entire cluster.
-    primaryZones: Optional. Immutable. Set of zones to be used for cluster
-      primary nodes.
+    primaryZones: Optional. Immutable. Deprecated: Primary zones are no longer
+      specified directly at the root level. Use zone_distribution_config
+      instead. Set of zones to be used for cluster primary nodes.
     pscConfigs: Optional. Each PscConfig configures the consumer network where
       IPs will be designated to the cluster for client access through Private
       Service Connect Automation. Currently, only one PscConfig is supported.
@@ -622,7 +623,9 @@ class Cluster(_messages.Message):
     zoneDistributionConfig: Optional. This config will be used to determine
       how the customer wants us to distribute cluster resources within the
       region.
-    zones: Optional. Immutable. Set of zones to be used for cluster nodes.
+    zones: Optional. Immutable. Deprecated: Zones are no longer specified
+      directly at the root level. Use zone_distribution_config instead. Set of
+      zones to be used for cluster nodes.
   """
 
   class AuthorizationModeValueValuesEnum(_messages.Enum):
@@ -5402,6 +5405,8 @@ class ResourceMaintenanceInfo(_messages.Message):
       database resource.
     maintenanceVersion: Optional. Current Maintenance version of the database
       resource. Example: "MYSQL_8_0_41.R20250531.01_15"
+    nextAvailableMaintenanceVersions: Optional. List of next available
+      maintenance versions.
     upcomingMaintenance: Optional. Upcoming maintenance for the database
       resource. This field is populated once SLM generates and publishes
       upcoming maintenance window.
@@ -5434,7 +5439,8 @@ class ResourceMaintenanceInfo(_messages.Message):
   maintenanceSchedule = _messages.MessageField('ResourceMaintenanceSchedule', 4)
   maintenanceState = _messages.EnumField('MaintenanceStateValueValuesEnum', 5)
   maintenanceVersion = _messages.StringField(6)
-  upcomingMaintenance = _messages.MessageField('UpcomingMaintenance', 7)
+  nextAvailableMaintenanceVersions = _messages.StringField(7, repeated=True)
+  upcomingMaintenance = _messages.MessageField('UpcomingMaintenance', 8)
 
 
 class ResourceMaintenanceSchedule(_messages.Message):

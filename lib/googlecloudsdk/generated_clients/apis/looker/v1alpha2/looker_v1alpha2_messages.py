@@ -332,6 +332,8 @@ class Instance(_messages.Message):
     PlatformEditionValueValuesEnum: Platform edition.
     ReleaseChannelValueValuesEnum: Optional. The selected release channel for
       the instance.
+    SoftDeleteReasonValueValuesEnum: Output only. The reason for the instance
+      being in a soft-deleted state.
     StateValueValuesEnum: Output only. The state of the instance.
     TierValueValuesEnum: Optional. Tier
 
@@ -392,7 +394,11 @@ class Instance(_messages.Message):
       connection. May or may not be specified in a create request.
     satisfiesPzi: Output only. Reserved for future use.
     satisfiesPzs: Output only. Reserved for future use.
+    softDeleteReason: Output only. The reason for the instance being in a
+      soft-deleted state.
     state: Output only. The state of the instance.
+    suspendedTime: Output only. The time when the Looker instance was
+      suspended (soft deleted).
     tier: Optional. Tier
     updateTime: Output only. The time when the Looker instance was last
       updated.
@@ -454,6 +460,23 @@ class Instance(_messages.Message):
     RAPID = 1
     REGULAR = 2
     STABLE = 3
+
+  class SoftDeleteReasonValueValuesEnum(_messages.Enum):
+    r"""Output only. The reason for the instance being in a soft-deleted
+    state.
+
+    Values:
+      SOFT_DELETE_REASON_UNSPECIFIED: Soft delete reason is unspecified. This
+        is the default value.
+      BILLING_ACCOUNT_ISSUE: Instance is soft deleted due to billing account
+        issues.
+      TRIAL_EXPIRED: Instance is soft deleted due to trial expiration.
+      CUSTOMER_REQUEST: Instance is soft deleted by the customer.
+    """
+    SOFT_DELETE_REASON_UNSPECIFIED = 0
+    BILLING_ACCOUNT_ISSUE = 1
+    TRIAL_EXPIRED = 2
+    CUSTOMER_REQUEST = 3
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. The state of the instance.
@@ -534,10 +557,12 @@ class Instance(_messages.Message):
   reservedRange = _messages.StringField(35)
   satisfiesPzi = _messages.BooleanField(36)
   satisfiesPzs = _messages.BooleanField(37)
-  state = _messages.EnumField('StateValueValuesEnum', 38)
-  tier = _messages.EnumField('TierValueValuesEnum', 39)
-  updateTime = _messages.StringField(40)
-  userMetadata = _messages.MessageField('UserMetadata', 41)
+  softDeleteReason = _messages.EnumField('SoftDeleteReasonValueValuesEnum', 38)
+  state = _messages.EnumField('StateValueValuesEnum', 39)
+  suspendedTime = _messages.StringField(40)
+  tier = _messages.EnumField('TierValueValuesEnum', 41)
+  updateTime = _messages.StringField(42)
+  userMetadata = _messages.MessageField('UserMetadata', 43)
 
 
 class InstanceBackup(_messages.Message):
@@ -864,11 +889,14 @@ class LookerProjectsLocationsInstancesListRequest(_messages.Message):
       most 256 will be returned. The maximum possible value is 2048.
     pageToken: A page token received from a previous ListInstancesRequest.
     parent: Required. Format: `projects/{project}/locations/{location}`.
+    showDeleted: Optional. Whether to include deleted instances in the
+      response.
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
+  showDeleted = _messages.BooleanField(4)
 
 
 class LookerProjectsLocationsInstancesPatchRequest(_messages.Message):
@@ -929,6 +957,20 @@ class LookerProjectsLocationsInstancesRestoreRequest(_messages.Message):
 
   name = _messages.StringField(1, required=True)
   restoreInstanceRequest = _messages.MessageField('RestoreInstanceRequest', 2)
+
+
+class LookerProjectsLocationsInstancesUndeleteRequest(_messages.Message):
+  r"""A LookerProjectsLocationsInstancesUndeleteRequest object.
+
+  Fields:
+    name: Required. Format:
+      projects/{project}/locations/{location}/instances/{instance}
+    undeleteInstanceRequest: A UndeleteInstanceRequest resource to be passed
+      as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  undeleteInstanceRequest = _messages.MessageField('UndeleteInstanceRequest', 2)
 
 
 class LookerProjectsLocationsListRequest(_messages.Message):
@@ -1640,6 +1682,10 @@ class TimeOfDay(_messages.Message):
   minutes = _messages.IntegerField(2, variant=_messages.Variant.INT32)
   nanos = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   seconds = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+
+
+class UndeleteInstanceRequest(_messages.Message):
+  r"""Request options for undeleting an instance."""
 
 
 class UserMetadata(_messages.Message):

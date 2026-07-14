@@ -15,6 +15,7 @@
 """Shared resource flags for Database Migration Service commands."""
 
 
+from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
@@ -697,7 +698,21 @@ def AddConversionWorkspaceSeedResourceArg(parser, verb, positional=True):
   else:
     name = '--conversion-workspace'
 
-  connection_profile = parser.add_group(mutex=True, required=True)
+  # Top-level mutually exclusive group for seed source
+  seed_from_group = parser.add_group(
+      mutex=True,
+      required=True,
+      help='The source for seeding the conversion workspace.',
+  )
+
+  seed_from_group.add_argument(
+      '--gcs-path',
+      type=storage_util.ObjectReference.FromArgument,
+      help=(
+          'The Cloud Storage path containing the schema report files. '
+          'Must be in the format gs://bucket/prefix.'
+      ),
+  )
 
   resource_specs = [
       presentation_specs.ResourcePresentationSpec(
@@ -711,14 +726,14 @@ def AddConversionWorkspaceSeedResourceArg(parser, verb, positional=True):
           GetConnectionProfileResourceSpec(),
           'The connection profile {} from.'.format(verb),
           flag_name_overrides={'region': ''},
-          group=connection_profile,
+          group=seed_from_group,
       ),
       presentation_specs.ResourcePresentationSpec(
           '--destination-connection-profile',
           GetConnectionProfileResourceSpec(),
           'The connection profile {} from.'.format(verb),
           flag_name_overrides={'region': ''},
-          group=connection_profile,
+          group=seed_from_group,
       ),
   ]
   concept_parsers.ConceptParser(

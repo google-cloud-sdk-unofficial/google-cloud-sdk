@@ -72,7 +72,6 @@ class GAEToCRMigrationUtil():
       api_client: The AppEngine API client.
       args: The argparse arguments.
     """
-    print('\nDeploying to Cloud Run...\n')
     self.api_client = api_client
     self.input_dir = os.getcwd()
 

@@ -15,10 +15,12 @@
 """Flags and helpers for the compute instances network-interfaces commands."""
 
 
+import argparse
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
-def AddNetworkInterfaceArgForUpdate(parser):
+def AddNetworkInterfaceArgForUpdate(parser: argparse.ArgumentParser):
   parser.add_argument(
       '--network-interface',
       default='nic0',
@@ -26,7 +28,7 @@ def AddNetworkInterfaceArgForUpdate(parser):
   )
 
 
-def AddParentNicNameArg(parser):
+def AddParentNicNameArg(parser: argparse.ArgumentParser):
   parser.add_argument(
       '--parent-nic-name',
       type=str,
@@ -36,7 +38,7 @@ def AddParentNicNameArg(parser):
   )
 
 
-def AddVlanArg(parser):
+def AddVlanArg(parser: argparse.ArgumentParser):
   parser.add_argument(
       '--vlan',
       type=int,
@@ -47,7 +49,7 @@ def AddVlanArg(parser):
   )
 
 
-def AddNetworkArg(parser):
+def AddNetworkArg(parser: argparse.ArgumentParser):
   parser.add_argument(
       '--network',
       type=str,
@@ -55,7 +57,7 @@ def AddNetworkArg(parser):
   )
 
 
-def AddSubnetworkArg(parser):
+def AddSubnetworkArg(parser: argparse.ArgumentParser):
   parser.add_argument(
       '--subnetwork',
       type=str,
@@ -63,7 +65,9 @@ def AddSubnetworkArg(parser):
   )
 
 
-def AddPrivateNetworkIpArg(parser, add_network_interface=False):
+def AddPrivateNetworkIpArg(
+    parser: argparse.ArgumentParser, add_network_interface: bool = False
+):
   """Adds --private-network-ip argument to the parser."""
   if add_network_interface:
     help_text = """
@@ -87,7 +91,9 @@ def AddPrivateNetworkIpArg(parser, add_network_interface=False):
   )
 
 
-def AddAliasesArg(parser, add_network_interface=False):
+def AddAliasesArg(
+    parser: argparse.ArgumentParser, add_network_interface: bool = False
+):
   """Adds --aliases argument to the parser."""
   if add_network_interface:
     help_text = """
@@ -134,7 +140,9 @@ def AddAliasesArg(parser, add_network_interface=False):
   )
 
 
-def AddIpv6AliasesArg(parser, add_network_interface=False):
+def AddIpv6AliasesArg(
+    parser: argparse.ArgumentParser, add_network_interface: bool = False
+):
   """Adds --ipv6-aliases argument to the parser for alias IPv6 ranges."""
   if add_network_interface:
     help_text = """
@@ -169,7 +177,7 @@ def AddIpv6AliasesArg(parser, add_network_interface=False):
   )
 
 
-def AddStackTypeArg(parser):
+def AddStackTypeArg(parser: argparse.ArgumentParser):
   parser.add_argument(
       '--stack-type',
       choices={
@@ -187,7 +195,7 @@ def AddStackTypeArg(parser):
   )
 
 
-def AddIgmpQueryArg(parser):
+def AddIgmpQueryArg(parser: argparse.ArgumentParser):
   parser.add_argument(
       '--igmp-query',
       choices={
@@ -205,7 +213,7 @@ def AddIgmpQueryArg(parser):
   )
 
 
-def AddNetworkTierArg(parser):
+def AddNetworkTierArg(parser: argparse.ArgumentParser):
   parser.add_argument(
       '--network-tier',
       choices={
@@ -222,7 +230,7 @@ def AddNetworkTierArg(parser):
   )
 
 
-def AddIpv6NetworkTierArg(parser):
+def AddIpv6NetworkTierArg(parser: argparse.ArgumentParser):
   parser.add_argument(
       '--ipv6-network-tier',
       choices={'PREMIUM': 'High quality, Google-grade network tier.'},
@@ -234,7 +242,7 @@ def AddIpv6NetworkTierArg(parser):
   )
 
 
-def AddAddressArgs(parser):
+def AddAddressArgs(parser: argparse.ArgumentParser):
   """Adds --address and --no-address mutex arguments to the parser."""
   addresses = parser.add_mutually_exclusive_group()
   addresses.add_argument(
@@ -259,7 +267,7 @@ def AddAddressArgs(parser):
   )
 
 
-def AddExternalIpv6AddressArg(parser):
+def AddExternalIpv6AddressArg(parser: argparse.ArgumentParser):
   parser.add_argument(
       '--external-ipv6-address',
       type=str,
@@ -271,7 +279,7 @@ def AddExternalIpv6AddressArg(parser):
   )
 
 
-def AddExternalIpv6PrefixLengthArg(parser):
+def AddExternalIpv6PrefixLengthArg(parser: argparse.ArgumentParser):
   parser.add_argument(
       '--external-ipv6-prefix-length',
       type=int,
@@ -283,7 +291,7 @@ def AddExternalIpv6PrefixLengthArg(parser):
   )
 
 
-def AddInternalIpv6AddressArg(parser):
+def AddInternalIpv6AddressArg(parser: argparse.ArgumentParser):
   parser.add_argument(
       '--internal-ipv6-address',
       type=str,
@@ -296,7 +304,7 @@ def AddInternalIpv6AddressArg(parser):
   )
 
 
-def AddInternalIpv6PrefixLengthArg(parser):
+def AddInternalIpv6PrefixLengthArg(parser: argparse.ArgumentParser):
   parser.add_argument(
       '--internal-ipv6-prefix-length',
       type=int,
@@ -311,7 +319,7 @@ def AddInternalIpv6PrefixLengthArg(parser):
   )
 
 
-def AddIpv6AddressArg(parser):
+def AddIpv6AddressArg(parser: argparse.ArgumentParser):
   parser.add_argument(
       '--ipv6-address',
       type=str,
@@ -323,7 +331,7 @@ def AddIpv6AddressArg(parser):
   )
 
 
-def AddIpv6PrefixLengthArg(parser):
+def AddIpv6PrefixLengthArg(parser: argparse.ArgumentParser):
   parser.add_argument(
       '--ipv6-prefix-length',
       type=int,
@@ -335,7 +343,7 @@ def AddIpv6PrefixLengthArg(parser):
   )
 
 
-def AddNetworkAttachmentArg(parser):
+def AddNetworkAttachmentArg(parser: argparse.ArgumentParser):
   parser.add_argument(
       '--network-attachment',
       type=str,
@@ -345,7 +353,7 @@ def AddNetworkAttachmentArg(parser):
   )
 
 
-def AddServiceClassIdArg(parser):
+def AddServiceClassIdArg(parser: argparse.ArgumentParser):
   parser.add_argument(
       '--service-class-id',
       type=str,
@@ -354,5 +362,25 @@ def AddServiceClassIdArg(parser):
         with this network interface. Can only be used with network_attachment.
         It is not possible to use on its own; however, network_attachment
         can be used without service_class_id.
+      """,
+  )
+
+
+def AddDns64EligibleArg(parser: argparse.ArgumentParser):
+  parser.add_argument(
+      '--dns64-eligible',
+      action=arg_parsers.StoreTrueFalseAction,
+      help="""
+        If specified, indicates that this network interface is eligible for DNS64.
+      """,
+  )
+
+
+def AddNat64EligibleArg(parser: argparse.ArgumentParser):
+  parser.add_argument(
+      '--nat64-eligible',
+      action=arg_parsers.StoreTrueFalseAction,
+      help="""
+        If specified, indicates that this network interface is eligible for NAT64.
       """,
   )

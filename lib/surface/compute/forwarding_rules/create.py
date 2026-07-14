@@ -666,7 +666,7 @@ class CreateBeta(Create):
   """Create a forwarding rule to direct network traffic to a load balancer."""
   _support_all_protocol = False
   _support_sd_registration_for_regional = True
-  _support_external_passthrough = False
+  _support_external_passthrough = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

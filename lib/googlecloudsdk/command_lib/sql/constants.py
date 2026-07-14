@@ -46,6 +46,7 @@ TARGET_INSTANCE_OVERRIDE_FLAGS = (
     'disk_encryption_key_project',
     'edition',
     'enable_bin_log',
+    'enable_confidential_storage',
     'enable_data_cache',
     'enable_google_ml_integration',
     'enable_google_private_path',

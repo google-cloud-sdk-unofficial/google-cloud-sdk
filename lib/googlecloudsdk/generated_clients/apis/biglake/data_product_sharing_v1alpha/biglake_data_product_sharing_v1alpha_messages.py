@@ -58,7 +58,14 @@ class PublishDataProductRequest(_messages.Message):
     dataProduct: Knowledge Catalog Data Product to publish.
     icebergCatalog: The BigLake Iceberg REST Catalog whose tables will be
       published.
-    sapFederatedIdentity: A string attribute.
+    sapFederatedIdentity: Required. The Workload Identity Federation (WIF)
+      provider resource name representing the SAP federated identity. SAP BDC
+      will use this identity to call access the BigLake Iceberg REST Catalog
+      underlying the shared tables. Note that a user must manually grant this
+      federated identity the necessary IAM permissions (e.g.,
+      `roles/biglake.viewer`) on the underlying catalog. Example:
+      projects/123456789012/locations/global/workloadIdentityPools/sap-bdc-
+      pool/providers/sap-bdc-provider
     share: Required. The desired name of the Share as it will be published to
       SAP BDC.
   """

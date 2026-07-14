@@ -63,6 +63,7 @@
         inputVariables. Maximum 100.
       spec:
       - api_field: variable
+        required: true
         help_text: |-
           name of the variable
       - json_name: from
@@ -71,9 +72,11 @@
           Output variables which will get their values from dependencies
         spec:
         - api_field: dependency
+          required: true
           help_text: |-
             Alias of the dependency that the outputVariable will pass its value to
         - api_field: outputVariable
+          required: true
           help_text: |-
             Name of the outputVariable on the dependency
       - api_field: to
@@ -81,9 +84,11 @@
           Input variables whose values will be passed on to dependencies.
         spec:
         - api_field: dependency
+          required: true
           help_text: |-
             Alias of the dependency that the inputVariable will pass its value to
         - api_field: inputVariable
+          required: true
           help_text: |-
             Name of the inputVariable on the dependency
         - api_field: ignoreForLookup
@@ -99,6 +104,7 @@
         inputVariables. Maximum 100.
       spec:
       - api_field: variable
+        required: true
         help_text: |-
           name of the variable
       - json_name: from
@@ -107,9 +113,11 @@
           Output variables which will get their values from dependencies
         spec:
         - api_field: dependency
+          required: true
           help_text: |-
             Alias of the dependency that the outputVariable will pass its value to
         - api_field: outputVariable
+          required: true
           help_text: |-
             Name of the outputVariable on the dependency
       - api_field: to
@@ -117,9 +125,11 @@
           Input variables whose values will be passed on to dependencies.
         spec:
         - api_field: dependency
+          required: true
           help_text: |-
             Alias of the dependency that the inputVariable will pass its value to
         - api_field: inputVariable
+          required: true
           help_text: |-
             Name of the inputVariable on the dependency
         - api_field: ignoreForLookup

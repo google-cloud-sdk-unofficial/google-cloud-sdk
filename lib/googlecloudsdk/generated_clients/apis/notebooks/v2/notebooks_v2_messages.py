@@ -788,13 +788,18 @@ class ImageRelease(_messages.Message):
   r"""ConfigImage represents an image release available to create a WbI
 
   Fields:
+    description: Output only. The description of the image.
+    imageFamily: Output only. The image family of the image. (ex: workbench-
+      instances or workbench-2603)
     imageName: Output only. The name of the image of the form workbench-
       instances-vYYYYmmdd--
     releaseName: Output only. The release of the image of the form m123
   """
 
-  imageName = _messages.StringField(1)
-  releaseName = _messages.StringField(2)
+  description = _messages.StringField(1)
+  imageFamily = _messages.StringField(2)
+  imageName = _messages.StringField(3)
+  releaseName = _messages.StringField(4)
 
 
 class Instance(_messages.Message):

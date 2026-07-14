@@ -263,6 +263,20 @@
           repeated: false
           help_text: |-
             OCI Cluster name.
+        - arg_name: properties-scan-listener-port-tcp
+          api_field: cloudVmCluster.properties.scanListenerPortTcp
+          required: false
+          repeated: false
+          type: int
+          help_text: |-
+            SCAN listener port - TCP.
+        - arg_name: properties-scan-listener-port-tcp-ssl
+          api_field: cloudVmCluster.properties.scanListenerPortTcpSsl
+          required: false
+          repeated: false
+          type: int
+          help_text: |-
+            SCAN listener port - TLS.
     - arg_name: labels
       api_field: cloudVmCluster.labels
       required: false

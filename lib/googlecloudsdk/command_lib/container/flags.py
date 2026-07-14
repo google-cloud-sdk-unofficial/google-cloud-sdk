@@ -3092,6 +3092,19 @@ in this group are specified.
 """,
   )
 
+  window_end_group.add_argument(
+      '--maintenance-window-duration',
+      type=arg_parsers.Duration(),
+      hidden=hidden_for_create,
+      metavar='PT1H23M45S',
+      help="""\
+The duration of maintenance windows, expressed as an [ISO 8601
+duration](https://en.wikipedia.org/wiki/ISO_8601#Durations) in hours,
+minutes, and seconds. You must set a maintenance window to at least 4 hours (`4H`).
+Use this flag or the `--maintenance-window-end` flag for the duration of the maintenance window.
+""",
+  )
+
   set_window_group.add_argument(
       '--maintenance-window-recurrence',
       type=str,

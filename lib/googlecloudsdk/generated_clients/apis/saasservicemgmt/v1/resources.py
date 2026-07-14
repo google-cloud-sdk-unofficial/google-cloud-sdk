@@ -84,6 +84,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_SAASRELEASES = (
+      'projects.locations.saasReleases',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/saasReleases/'
+              '{saasReleasesId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_TENANTS = (
       'projects.locations.tenants',
       '{+name}',
@@ -91,6 +102,28 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/tenants/'
               '{tenantsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_UNITGROUPOPERATIONS = (
+      'projects.locations.unitGroupOperations',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'unitGroupOperations/{unitGroupOperationsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_UNITGROUPS = (
+      'projects.locations.unitGroups',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/unitGroups/'
+              '{unitGroupsId}',
       },
       ['name'],
       True

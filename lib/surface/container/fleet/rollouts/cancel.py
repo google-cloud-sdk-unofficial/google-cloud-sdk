@@ -21,6 +21,7 @@ from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.container.fleet.rollouts import flags as rollout_flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_io
 from googlecloudsdk.generated_clients.apis.gkehub.v1alpha import gkehub_v1alpha_messages as alpha_messages
 
 
@@ -46,13 +47,19 @@ class Cancel(base.UpdateCommand):
     flags.AddAsync()
 
   def Run(self, args: parser_extensions.Namespace) -> alpha_messages.Operation:
-    """Runs the describe command."""
+    """Runs the cancel command."""
     flag_parser = rollout_flags.RolloutFlagParser(
         args, release_track=base.ReleaseTrack.ALPHA
     )
+    rollout_name = util.RolloutName(args)
     req = alpha_messages.GkehubProjectsLocationsRolloutsCancelRequest(
-        name=util.RolloutName(args),
+        name=rollout_name,
         cancelRolloutRequest=alpha_messages.CancelRolloutRequest(),
+    )
+
+    console_io.PromptContinue(
+        message=f'You are about to cancel rollout [{rollout_name}].',
+        cancel_on_no=True,
     )
 
     fleet_client = client.FleetClient(release_track=self.ReleaseTrack())
@@ -61,9 +68,7 @@ class Cancel(base.UpdateCommand):
 
     if flag_parser.Async():
       log.status.Print(
-          'Cancel in progress for Fleet rollout [{}]'.format(
-              rollout_ref.SelfLink()
-          )
+          f'Cancel in progress for Fleet rollout [{rollout_ref.SelfLink()}]'
       )
       return operation
 
@@ -71,8 +76,6 @@ class Cancel(base.UpdateCommand):
         release_track=base.ReleaseTrack.ALPHA
     )
     completed_operation = operation_client.Wait(util.OperationRef(operation))
-    log.status.Print(
-        'Cancelled Fleet rollout [{}].'.format(rollout_ref.SelfLink())
-    )
+    log.status.Print(f'Cancelled Fleet rollout [{rollout_ref.SelfLink()}].')
 
     return completed_operation

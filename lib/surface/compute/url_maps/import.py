@@ -352,7 +352,7 @@ def _GetClearedFieldsForRoutAction(route_action, field_prefix):
           route_action.cachePolicy, field_prefix + 'cachePolicy.'
       )
 
-  # imageOptimizationPolicy is currently Alpha only.
+  # imageOptimizationPolicy is currently Alpha and Beta only.
   if hasattr(route_action, 'imageOptimizationPolicy'):
     if not route_action.imageOptimizationPolicy:
       cleared_fields.append(field_prefix + 'imageOptimizationPolicy')

@@ -1547,6 +1547,8 @@ def AddAddressArgs(
     support_igmp_query=False,
     support_enable_vpc_scoped_dns=False,
     support_alias_ipv6_ranges=False,
+    support_dns64_eligible=False,
+    support_nat64_eligible=False,
 ):
   """Adds address arguments for instances and instance-templates.
 
@@ -1568,6 +1570,10 @@ def AddAddressArgs(
     support_enable_vpc_scoped_dns: indicates whether setting enable vpc scoped
       dns on network interfaces is supported.
     support_alias_ipv6_ranges: indicates whether setting alias ipv6 ranges on
+      network interfaces is supported.
+    support_dns64_eligible: indicates whether setting dns64 eligible on
+      network interfaces is supported.
+    support_nat64_eligible: indicates whether setting nat64 eligible on
       network interfaces is supported.
   """
   addresses = parser.add_mutually_exclusive_group()
@@ -1602,6 +1608,10 @@ def AddAddressArgs(
       'enable-vpc-scoped-dns': None,
       'service-class-id': str,
   }
+  if support_dns64_eligible:
+    multiple_network_interface_cards_spec['dns64-eligible'] = None
+  if support_nat64_eligible:
+    multiple_network_interface_cards_spec['nat64-eligible'] = None
 
   multiple_network_interface_cards_spec['network-tier'] = _ValidateNetworkTier
 
@@ -1784,41 +1794,40 @@ def AddAddressArgs(
 
   if support_alias_ipv6_ranges:
     network_interface_help_texts.append("""
-        *ipv6-aliases*::: Specifies the IPv6 alias ranges to allocate for this
-        interface. If there are multiple IPv6 alias ranges, they are separated
-        by semicolons.
+      *ipv6-aliases*::: Specifies the IPv6 alias ranges to allocate for this
+      interface. If there are multiple IPv6 alias ranges, they are separated
+      by semicolons.
 
-        For example:
+      For example:
 
           --ipv6-aliases="/80;range1=/96;range2=2001:db8:1234:5678::/96"
 
-
-        """)
+      """)
 
     if instances:
       network_interface_help_texts.append("""
-        Each IPv6 alias range consists of a range name and an IPv6 range
-        separated by an equals sign (=), or just the IPv6 range.
-        The range name is the name of the range within the network
-        interface's subnet from which to allocate an IPv6 alias range. If
-        unspecified, it defaults to the primary IPv6 range of the subnet.
-        The IPv6 range can be an IPv6 CIDR range (e.g., `2001:db8:1:1::/96`)
-        or a netmask in CIDR format (e.g., `/96`). If the IPv6 range is
-        specified by a CIDR range, it must belong to the CIDR range
-        specified by the range name on the subnet. If the IPv6 range is
-        specified by netmask, the IP allocator will pick an available range
-        with the specified netmask and allocate it to this network interface.
-        """)
+      Each IPv6 alias range consists of a range name and an IPv6 range
+      separated by an equals sign (=), or just the IPv6 range.
+      The range name is the name of the range within the network
+      interface's subnet from which to allocate an IPv6 alias range. If
+      unspecified, it defaults to the primary IPv6 range of the subnet.
+      The IPv6 range can be an IPv6 CIDR range (e.g., `2001:db8:1:1::/96`)
+      or a netmask in CIDR format (e.g., `/96`). If the IPv6 range is
+      specified by a CIDR range, it must belong to the CIDR range
+      specified by the range name on the subnet. If the IPv6 range is
+      specified by netmask, the IP allocator will pick an available range
+      with the specified netmask and allocate it to this network interface.
+      """)
     else:
       network_interface_help_texts.append("""
-        Each IPv6 alias range consists of a range name and a CIDR netmask
-        (e.g., `/96`) separated by an equals sign (=), or just the netmask.
-        The range name is the name of the range within the network
-        interface's subnet from which to allocate an IPv6 alias range. If
-        unspecified, it defaults to the primary IPv6 range of the subnet.
-        The IP allocator will pick an available range with the specified
-        netmask and allocate it to this network interface.
-        """)
+      Each IPv6 alias range consists of a range name and a CIDR netmask
+      (e.g., `/96`) separated by an equals sign (=), or just the netmask.
+      The range name is the name of the range within the network
+      interface's subnet from which to allocate an IPv6 alias range. If
+      unspecified, it defaults to the primary IPv6 range of the subnet.
+      The IP allocator will pick an available range with the specified
+      netmask and allocate it to this network interface.
+      """)
 
   network_interface_help_texts.append("""
       *network-attachment*::: Specifies the network attachment that this
@@ -1852,6 +1861,17 @@ def AddAddressArgs(
       ``IGMP_QUERY'' must be one of: `IGMP_QUERY_V2`, `IGMP_QUERY_DISABLED`.
       It is disabled by default.
     """)
+
+  if support_dns64_eligible:
+    network_interface_help_texts.append("""
+      *dns64-eligible*::: If specified, indicates that this network interface
+      is eligible for DNS64.
+      """)
+  if support_nat64_eligible:
+    network_interface_help_texts.append("""
+      *nat64-eligible*::: If specified, indicates that this network interface
+      is eligible for NAT64.
+      """)
 
   if instance_create:
     network_interfaces = parser.add_group(mutex=True)
@@ -4198,6 +4218,17 @@ def AddAvailabilityDomainAgrs(parser):
           Specify a value from 1 to the number of domains that are available in
           your placement policy.
           """,
+  )
+
+
+def AddCurrentCpusArgs(parser):
+  parser.add_argument(
+      '--current-cpus',
+      type=arg_parsers.BoundedInt(lower_bound=0),
+      help=(
+          'Current number of vCPUs available for VM. 0 or unset means default '
+          'vCPUs of the current machine type.'
+      ),
   )
 
 

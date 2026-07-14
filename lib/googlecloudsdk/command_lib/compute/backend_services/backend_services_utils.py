@@ -1066,3 +1066,50 @@ def WaitForOperation(resources, service, operation, backend_service_ref,
       operation.name, params=params, collection=collection)
   operation_poller = poller.Poller(service, backend_service_ref)
   return waiter.WaitFor(operation_poller, operation_ref, message)
+
+
+def ApplyHaPolicyArgs(messages, args, backend_service):
+  """Applies HA policy arguments to the backend service."""
+  fast_ip_move_specified = hasattr(
+      args, 'ha_policy_fast_ip_move'
+  ) and args.IsSpecified('ha_policy_fast_ip_move')
+  backend_group_specified = args.IsSpecified('ha_policy_leader_backend_group')
+  instance_specified = args.IsSpecified('ha_policy_leader_instance')
+
+  leader_specified = backend_group_specified or instance_specified
+
+  if not fast_ip_move_specified and not leader_specified:
+    return
+
+  if not backend_service.haPolicy:
+    backend_service.haPolicy = messages.BackendServiceHAPolicy()
+
+  if fast_ip_move_specified:
+    backend_service.haPolicy.fastIPMove = (
+        messages.BackendServiceHAPolicy.FastIPMoveValueValuesEnum(
+            args.ha_policy_fast_ip_move
+        )
+    )
+
+  if not leader_specified:
+    return
+
+  if not backend_service.haPolicy.leader:
+    backend_service.haPolicy.leader = messages.BackendServiceHAPolicyLeader()
+
+  if backend_group_specified:
+    backend_service.haPolicy.leader.backendGroup = (
+        args.ha_policy_leader_backend_group
+    )
+
+  if not instance_specified:
+    return
+
+  if not backend_service.haPolicy.leader.networkEndpoint:
+    backend_service.haPolicy.leader.networkEndpoint = (
+        messages.BackendServiceHAPolicyLeaderNetworkEndpoint()
+    )
+
+  backend_service.haPolicy.leader.networkEndpoint.instance = (
+      args.ha_policy_leader_instance
+  )

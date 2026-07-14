@@ -615,7 +615,7 @@ class CDNPolicy(_messages.Message):
     clientTtl: Optional. Specifies a separate client (such as browser client)
       TTL, separate from the TTL used by the edge caches. Leaving this empty
       uses the same cache TTL for both the CDN and the client-facing response.
-      - The TTL must be > `0` and <= `86400s` (1 day) - The `client_ttl`
+      - The TTL must be >= `0s` and <= `86400s` (1 day) - The `client_ttl`
       cannot be larger than the default_ttl (if set) - Fractions of a second
       are not allowed. Omit this field to use the `default_ttl`, or the max-
       age set by the origin, as the client-facing TTL. When the CacheMode is

@@ -421,6 +421,8 @@ class GceHyperdiskBalancedHighAvailability(_messages.Message):
       greater startup time on next workstation start, as the service will need
       to create a disk from the archival snapshot. A value of `"0s"` indicates
       that the disk will never be archived.
+    maxSizeGb: Optional. Maximum size in GB to which this persistent directory
+      can be resized. Defaults to unlimited if not set.
     reclaimPolicy: Optional. Whether the persistent disk should be deleted
       when the workstation is deleted. Valid values are `DELETE` and `RETAIN`.
       Defaults to `DELETE`.
@@ -449,9 +451,10 @@ class GceHyperdiskBalancedHighAvailability(_messages.Message):
     RETAIN = 2
 
   archiveTimeout = _messages.StringField(1)
-  reclaimPolicy = _messages.EnumField('ReclaimPolicyValueValuesEnum', 2)
-  sizeGb = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  sourceSnapshot = _messages.StringField(4)
+  maxSizeGb = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  reclaimPolicy = _messages.EnumField('ReclaimPolicyValueValuesEnum', 3)
+  sizeGb = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  sourceSnapshot = _messages.StringField(5)
 
 
 class GceInstance(_messages.Message):
@@ -710,6 +713,8 @@ class GceRegionalPersistentDisk(_messages.Message):
     fsType: Optional. Type of file system that the disk should be formatted
       with. The workstation image must support this file system type. Must be
       empty if source_snapshot is set. Defaults to `"ext4"`.
+    maxSizeGb: Optional. Maximum size in GB to which this persistent directory
+      can be resized. Defaults to unlimited if not set.
     reclaimPolicy: Optional. Whether the persistent disk should be deleted
       when the workstation is deleted. Valid values are `DELETE` and `RETAIN`.
       Defaults to `DELETE`.
@@ -741,9 +746,10 @@ class GceRegionalPersistentDisk(_messages.Message):
   archiveTimeout = _messages.StringField(1)
   diskType = _messages.StringField(2)
   fsType = _messages.StringField(3)
-  reclaimPolicy = _messages.EnumField('ReclaimPolicyValueValuesEnum', 4)
-  sizeGb = _messages.IntegerField(5, variant=_messages.Variant.INT32)
-  sourceSnapshot = _messages.StringField(6)
+  maxSizeGb = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  reclaimPolicy = _messages.EnumField('ReclaimPolicyValueValuesEnum', 5)
+  sizeGb = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  sourceSnapshot = _messages.StringField(7)
 
 
 class GceShieldedInstanceConfig(_messages.Message):
@@ -1524,6 +1530,8 @@ class Workstation(_messages.Message):
       that are applied to the workstation and that are also propagated to the
       underlying Compute Engine resources.
     name: Identifier. Full name of this workstation.
+    persistentDirectories: Optional. Directories to persist across workstation
+      sessions.
     reconciling: Output only. Indicates whether this workstation is currently
       being updated to match its intended state.
     runtimeHost: Optional. Output only. Runtime host for the workstation when
@@ -1643,13 +1651,14 @@ class Workstation(_messages.Message):
   kmsKey = _messages.StringField(8)
   labels = _messages.MessageField('LabelsValue', 9)
   name = _messages.StringField(10)
-  reconciling = _messages.BooleanField(11)
-  runtimeHost = _messages.MessageField('RuntimeHost', 12)
-  sourceWorkstation = _messages.StringField(13)
-  startTime = _messages.StringField(14)
-  state = _messages.EnumField('StateValueValuesEnum', 15)
-  uid = _messages.StringField(16)
-  updateTime = _messages.StringField(17)
+  persistentDirectories = _messages.MessageField('WorkstationPersistentDirectory', 11, repeated=True)
+  reconciling = _messages.BooleanField(12)
+  runtimeHost = _messages.MessageField('RuntimeHost', 13)
+  sourceWorkstation = _messages.StringField(14)
+  startTime = _messages.StringField(15)
+  state = _messages.EnumField('StateValueValuesEnum', 16)
+  uid = _messages.StringField(17)
+  updateTime = _messages.StringField(18)
 
 
 class WorkstationCluster(_messages.Message):
@@ -2036,6 +2045,20 @@ class WorkstationConfig(_messages.Message):
   runningTimeout = _messages.StringField(24)
   uid = _messages.StringField(25)
   updateTime = _messages.StringField(26)
+
+
+class WorkstationPersistentDirectory(_messages.Message):
+  r"""A directory to persist across workstation sessions. Updates to this
+  field will only take effect on this workstation after it is restarted.
+
+  Fields:
+    mountPath: Optional. The mount path of the persistent directory.
+    sizeGb: Optional. Size of the persistent directory in GB. If specified in
+      an update request, this is the desired size of the directory.
+  """
+
+  mountPath = _messages.StringField(1)
+  sizeGb = _messages.IntegerField(2, variant=_messages.Variant.INT32)
 
 
 class WorkstationsProjectsLocationsGetRequest(_messages.Message):

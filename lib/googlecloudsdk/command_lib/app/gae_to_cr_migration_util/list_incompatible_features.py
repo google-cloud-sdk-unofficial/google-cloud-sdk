@@ -159,12 +159,6 @@ def _check_for_incompatibility(
   input_key_value_pairs = util.flatten_keys(processed_input_data, '')
   for key, val in input_key_value_pairs.items():
     # Check for unsupported features.
-    if key.startswith('build_env_variables'):
-      incompatible_list.append(unsupported_features['build_env_variables'])
-      continue
-    if key.startswith('buildEnvVariables'):
-      incompatible_list.append(unsupported_features['buildEnvVariables'])
-      continue
     if key in unsupported_features:
       if (
           key.startswith('inboundServices')
@@ -182,6 +176,16 @@ def _check_for_incompatibility(
         continue
       if key in ['app_engine_apis', 'appEngineApis'] and val:
         incompatible_list.append(unsupported_features[key])
+        continue
+      if (
+          key in ['resources.disk_size_gb', 'resources.diskGb']
+          and val is not None
+      ):
+        try:
+          if float(val) > 0:
+            incompatible_list.append(unsupported_features[key])
+        except (ValueError, TypeError):
+          pass
         continue
     # Check for basic scaling features.
     if key in [

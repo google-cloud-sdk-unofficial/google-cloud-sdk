@@ -41,6 +41,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_AGENTGATEWAYS = (
+      'projects.locations.agentGateways',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/agentGateways/'
+              '{agentGatewaysId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_AUTHZEXTENSIONS = (
       'projects.locations.authzExtensions',
       '{+name}',

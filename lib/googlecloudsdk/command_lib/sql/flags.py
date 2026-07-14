@@ -2421,6 +2421,66 @@ def AddSqlServerTimeZone(parser, hidden=False):
   )
 
 
+def AddMsdtcEnabled(
+    parser: parser_extensions.Namespace, hidden: bool = False
+) -> None:
+  """Adds the `--msdtc-enabled` flag to the parser."""
+  parser.add_argument(
+      '--msdtc-enabled',
+      action=arg_parsers.StoreTrueFalseAction,
+      required=False,
+      help=(
+          'Enable/Disable Microsoft Distributed Transaction Coordinator '
+          '(MSDTC) for SQL Server instances. Enabling MSDTC requires a SQL '
+          'Server restart to take effect.'
+      ),
+      hidden=hidden,
+  )
+
+
+def AddMsdtcRpcAuthMode(
+    parser: parser_extensions.Namespace, hidden: bool = False
+) -> None:
+  """Adds the '--msdtc-rpc-auth-mode' flag to the parser."""
+  help_text = (
+      'RPC authentication mode for Microsoft Distributed Transaction'
+      ' Coordinator (MSDTC) for SQL Server instances.'
+  )
+  base.ChoiceArgument(
+      '--msdtc-rpc-auth-mode',
+      required=False,
+      choices={
+          'allow-only-secure-rpc-calls': (
+              'Allow only secure RPC calls. Both servers (caller and receiver)'
+              " must successfully verify each other's identities."
+          ),
+          'allow-fallback-to-unsecure-rpc-if-necessary': (
+              'The caller authenticates to the receiver, but not vice-versa.'
+          ),
+          'none': 'No authentication.',
+      },
+      help_str=help_text,
+      hidden=hidden,
+  ).AddToParser(parser)
+
+
+def AddMsdtcHostMappings(
+    parser: parser_extensions.Namespace, hidden: bool = False
+) -> None:
+  """Adds the `--msdtc-host-mappings` flag to the parser."""
+  parser.add_argument(
+      '--msdtc-host-mappings',
+      type=arg_parsers.ArgDict(min_length=1),
+      metavar='KEY=VALUE',
+      required=False,
+      help=(
+          'Host mappings for the VM to be used by MSDTC. '
+          'Example: `--msdtc-host-mappings=10.0.0.1=host1,10.0.0.2=host2`'
+      ),
+      hidden=hidden,
+  )
+
+
 def AddThreadsPerCore(parser, hidden=False):
   """Adds the `--threads-per-core` flag to the parser."""
   parser.add_argument(
@@ -3915,6 +3975,7 @@ def AddSourceInstanceOverrideArgs(
   AddDenyMaintenancePeriodTime(parser)
   AddEdition(parser)
   AddEnableBinLog(parser)
+  AddEnableConfidentialStorage(parser)
   AddEnableDataCache(parser, hidden=True)
   AddEnableDataplexIntegration(parser, hidden=True)
   AddEnableGoogleMLIntegration(parser, hidden=True)
@@ -3969,6 +4030,17 @@ def AddSourceInstanceOverrideArgs(
       parser, 'instance', flag_overrides=kms_flag_overrides
   )
   # go/keep-sorted end
+
+
+def AddEnableConfidentialStorage(parser, hidden=True):
+  """Adds --enable-confidential-storage flag."""
+  parser.add_argument(
+      '--enable-confidential-storage',
+      required=False,
+      hidden=hidden,
+      help='Enable Confidential Storage.',
+      action=arg_parsers.StoreTrueFalseAction,
+  )
 
 
 def AddDataApiAccess(parser):

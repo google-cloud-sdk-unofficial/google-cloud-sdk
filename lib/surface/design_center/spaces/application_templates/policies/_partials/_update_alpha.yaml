@@ -46,7 +46,7 @@
             URI of the policy revision.
     - help_text: |-
         Identifier. The policy name in the following format:
-        projects/$project/locations/$location/spaces/$space/applicationTemplates/$applicationTemplate/policies/$policy
+        `projects/$project/locations/$location/spaces/$space/applicationTemplates/$applicationTemplate/policies/$policy`
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.design_center.v1alpha_resources:projects_locations_spaces_application_templates_policies
@@ -68,7 +68,7 @@
       required: false
       help_text: |-
         The policy type.
-        Policy type will be used to determine the domain of the policy.
+        Policy type is used to determine the domain of the policy.
       choices:
       - arg_value: compliance-framework
         enum_value: COMPLIANCE_FRAMEWORK
@@ -79,8 +79,8 @@
       required: false
       repeated: true
       help_text: |-
-        Conditions for applying the policy. Condition accepts AppTemplate
-        parameters like criticality, environment only.
+        Conditions for applying the policy. Condition accepts the `criticality` and
+        `environment` parameters from the application template.
       clearable: true
       spec:
       - api_field: conditionKey

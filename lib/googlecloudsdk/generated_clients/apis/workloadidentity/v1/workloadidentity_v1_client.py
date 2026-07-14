@@ -38,14 +38,15 @@ class WorkloadidentityV1(base_api.BaseApiClient):
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
     self.folders_locations_operations = self.FoldersLocationsOperationsService(self)
+    self.folders_locations_serviceProducers = self.FoldersLocationsServiceProducersService(self)
     self.folders_locations = self.FoldersLocationsService(self)
     self.folders = self.FoldersService(self)
-    self.locations_serviceProducers = self.LocationsServiceProducersService(self)
-    self.locations = self.LocationsService(self)
     self.organizations_locations_operations = self.OrganizationsLocationsOperationsService(self)
+    self.organizations_locations_serviceProducers = self.OrganizationsLocationsServiceProducersService(self)
     self.organizations_locations = self.OrganizationsLocationsService(self)
     self.organizations = self.OrganizationsService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
+    self.projects_locations_serviceProducers = self.ProjectsLocationsServiceProducersService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects = self.ProjectsService(self)
 
@@ -167,6 +168,43 @@ class WorkloadidentityV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class FoldersLocationsServiceProducersService(base_api.BaseApiService):
+    """Service class for the folders_locations_serviceProducers resource."""
+
+    _NAME = 'folders_locations_serviceProducers'
+
+    def __init__(self, client):
+      super(WorkloadidentityV1.FoldersLocationsServiceProducersService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def GenerateServiceAgents(self, request, global_params=None):
+      r"""Creates all ServiceAgents in a given project, location and serviceProducer.
+
+      Args:
+        request: (WorkloadidentityFoldersLocationsServiceProducersGenerateServiceAgentsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('GenerateServiceAgents')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GenerateServiceAgents.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/folders/{foldersId}/locations/{locationsId}/serviceProducers/{serviceProducersId}:generateServiceAgents',
+        http_method='POST',
+        method_id='workloadidentity.folders.locations.serviceProducers.generateServiceAgents',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1/{+parent}:generateServiceAgents',
+        request_field='generateServiceAgentsRequest',
+        request_type_name='WorkloadidentityFoldersLocationsServiceProducersGenerateServiceAgentsRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class FoldersLocationsService(base_api.BaseApiService):
     """Service class for the folders_locations resource."""
 
@@ -205,7 +243,7 @@ class WorkloadidentityV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the ListLocationsRequest.name field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
 
       Args:
         request: (WorkloadidentityFoldersLocationsListRequest) input message
@@ -238,53 +276,6 @@ class WorkloadidentityV1(base_api.BaseApiClient):
 
     def __init__(self, client):
       super(WorkloadidentityV1.FoldersService, self).__init__(client)
-      self._upload_configs = {
-          }
-
-  class LocationsServiceProducersService(base_api.BaseApiService):
-    """Service class for the locations_serviceProducers resource."""
-
-    _NAME = 'locations_serviceProducers'
-
-    def __init__(self, client):
-      super(WorkloadidentityV1.LocationsServiceProducersService, self).__init__(client)
-      self._upload_configs = {
-          }
-
-    def GenerateServiceAgents(self, request, global_params=None):
-      r"""Creates all ServiceAgents in a given project, location and serviceProducer.
-
-      Args:
-        request: (WorkloadidentityLocationsServiceProducersGenerateServiceAgentsRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (Operation) The response message.
-      """
-      config = self.GetMethodConfig('GenerateServiceAgents')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    GenerateServiceAgents.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='v1/{v1Id}/{v1Id1}/locations/{locationsId}/serviceProducers/{serviceProducersId}:generateServiceAgents',
-        http_method='POST',
-        method_id='workloadidentity.locations.serviceProducers.generateServiceAgents',
-        ordered_params=['parent'],
-        path_params=['parent'],
-        query_params=[],
-        relative_path='v1/{+parent}:generateServiceAgents',
-        request_field='generateServiceAgentsRequest',
-        request_type_name='WorkloadidentityLocationsServiceProducersGenerateServiceAgentsRequest',
-        response_type_name='Operation',
-        supports_download=False,
-    )
-
-  class LocationsService(base_api.BaseApiService):
-    """Service class for the locations resource."""
-
-    _NAME = 'locations'
-
-    def __init__(self, client):
-      super(WorkloadidentityV1.LocationsService, self).__init__(client)
       self._upload_configs = {
           }
 
@@ -406,6 +397,43 @@ class WorkloadidentityV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class OrganizationsLocationsServiceProducersService(base_api.BaseApiService):
+    """Service class for the organizations_locations_serviceProducers resource."""
+
+    _NAME = 'organizations_locations_serviceProducers'
+
+    def __init__(self, client):
+      super(WorkloadidentityV1.OrganizationsLocationsServiceProducersService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def GenerateServiceAgents(self, request, global_params=None):
+      r"""Creates all ServiceAgents in a given project, location and serviceProducer.
+
+      Args:
+        request: (WorkloadidentityOrganizationsLocationsServiceProducersGenerateServiceAgentsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('GenerateServiceAgents')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GenerateServiceAgents.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/organizations/{organizationsId}/locations/{locationsId}/serviceProducers/{serviceProducersId}:generateServiceAgents',
+        http_method='POST',
+        method_id='workloadidentity.organizations.locations.serviceProducers.generateServiceAgents',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1/{+parent}:generateServiceAgents',
+        request_field='generateServiceAgentsRequest',
+        request_type_name='WorkloadidentityOrganizationsLocationsServiceProducersGenerateServiceAgentsRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class OrganizationsLocationsService(base_api.BaseApiService):
     """Service class for the organizations_locations resource."""
 
@@ -444,7 +472,7 @@ class WorkloadidentityV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the ListLocationsRequest.name field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
 
       Args:
         request: (WorkloadidentityOrganizationsLocationsListRequest) input message
@@ -598,6 +626,43 @@ class WorkloadidentityV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsServiceProducersService(base_api.BaseApiService):
+    """Service class for the projects_locations_serviceProducers resource."""
+
+    _NAME = 'projects_locations_serviceProducers'
+
+    def __init__(self, client):
+      super(WorkloadidentityV1.ProjectsLocationsServiceProducersService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def GenerateServiceAgents(self, request, global_params=None):
+      r"""Creates all ServiceAgents in a given project, location and serviceProducer.
+
+      Args:
+        request: (WorkloadidentityProjectsLocationsServiceProducersGenerateServiceAgentsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('GenerateServiceAgents')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GenerateServiceAgents.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/serviceProducers/{serviceProducersId}:generateServiceAgents',
+        http_method='POST',
+        method_id='workloadidentity.projects.locations.serviceProducers.generateServiceAgents',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1/{+parent}:generateServiceAgents',
+        request_field='generateServiceAgentsRequest',
+        request_type_name='WorkloadidentityProjectsLocationsServiceProducersGenerateServiceAgentsRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class ProjectsLocationsService(base_api.BaseApiService):
     """Service class for the projects_locations resource."""
 
@@ -636,7 +701,7 @@ class WorkloadidentityV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the [ListLocationsRequest.name] field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the ListLocationsRequest.name field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
 
       Args:
         request: (WorkloadidentityProjectsLocationsListRequest) input message

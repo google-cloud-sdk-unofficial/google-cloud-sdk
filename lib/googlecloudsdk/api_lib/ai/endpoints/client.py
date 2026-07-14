@@ -967,12 +967,33 @@ class EndpointsClient(object):
     """
     is_gdc_ggs_model = _CheckIsGdcGgsModel(self, endpoint_ref)
     if is_gdc_ggs_model:
-      # send psudo dedicated resources for gdc ggs model.
-      machine_spec = self.messages.GoogleCloudAiplatformV1beta1MachineSpec(
-          machineType='n1-standard-2',
-          acceleratorType=self.messages.GoogleCloudAiplatformV1beta1MachineSpec.AcceleratorTypeValueValuesEnum.NVIDIA_TESLA_T4,
-          acceleratorCount=1,
-      )
+      if machine_type is not None:
+        # Honor the user-provided --machine-type. The server validates the
+        # value against the set of supported GGC machine types.
+        machine_spec = self.messages.GoogleCloudAiplatformV1beta1MachineSpec(
+            machineType=machine_type,
+        )
+        accelerator = flags.ParseAcceleratorFlag(
+            accelerator_dict, constants.BETA_VERSION
+        )
+        if accelerator is not None:
+          machine_spec.acceleratorType = accelerator.acceleratorType
+          machine_spec.acceleratorCount = accelerator.acceleratorCount
+      else:
+        # When the user omits --machine-type, send the legacy "user-omitted"
+        # sentinel. The server (see go/ggc-dynamic-machine-specs) detects
+        # this sentinel and translates it to the cluster's actual machine
+        # type via lookupInfraCluster, preserving today's behavior in which
+        # the gcloud-provided value is ignored and the cluster's real
+        # hardware is used.
+        machine_spec = self.messages.GoogleCloudAiplatformV1beta1MachineSpec(
+            machineType='n1-standard-2',
+            acceleratorType=self.messages.GoogleCloudAiplatformV1beta1MachineSpec.AcceleratorTypeValueValuesEnum.NVIDIA_TESLA_T4,
+            acceleratorCount=1,
+        )
+      # GGC does not support autoscaling at GA, so min_replica_count and
+      # max_replica_count are forced to 1 regardless of what the user passed.
+      # Server-side validation enforces min == max unconditionally.
       dedicated = self.messages.GoogleCloudAiplatformV1beta1DedicatedResources(
           machineSpec=machine_spec, minReplicaCount=1, maxReplicaCount=1
       )

@@ -41,6 +41,7 @@
                 Set of input variables. Maximum 100. (optional)
               spec:
               - api_field: variable
+                required: true
                 help_text: |-
                   Name of the variable from actuation configs.
               - api_field: type
@@ -78,6 +79,7 @@
                 Set of input variables. Maximum 100. (optional)
               spec:
               - api_field: variable
+                required: true
                 help_text: |-
                   Name of the variable from actuation configs.
               - api_field: type

@@ -44,6 +44,7 @@
               clearable: true
               spec:
               - api_field: variable
+                required: true
                 help_text: |-
                   Name of the variable from actuation configs.
               - api_field: type
@@ -83,6 +84,7 @@
               clearable: true
               spec:
               - api_field: variable
+                required: true
                 help_text: |-
                   Name of the variable from actuation configs.
               - api_field: type

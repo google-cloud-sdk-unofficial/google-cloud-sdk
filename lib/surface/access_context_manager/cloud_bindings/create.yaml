@@ -218,8 +218,7 @@
       arg_name: group-key
       type: str
       help_text: Google Group ID whose members are subject to the restrictions of this binding.
-      GA:
-        required: true
+      required: false
       ALPHA:
         help_text: |
           Google Group ID whose members are subject to the restrictions of this

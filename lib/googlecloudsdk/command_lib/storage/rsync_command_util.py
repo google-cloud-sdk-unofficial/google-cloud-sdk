@@ -14,9 +14,11 @@
 # limitations under the License.
 """Utils for the rsync command."""
 
+from __future__ import annotations
 
 import enum
 import os
+from typing import Iterator
 
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.command_lib.storage import errors
@@ -28,10 +30,12 @@ from googlecloudsdk.command_lib.storage import posix_util
 from googlecloudsdk.command_lib.storage import progress_callbacks
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import tracker_file_util
+from googlecloudsdk.command_lib.storage import user_request_args_factory
 from googlecloudsdk.command_lib.storage import wildcard_iterator
 from googlecloudsdk.command_lib.storage.resources import resource_reference
 from googlecloudsdk.command_lib.storage.resources import resource_util
 from googlecloudsdk.command_lib.storage.tasks import patch_file_posix_task
+from googlecloudsdk.command_lib.storage.tasks import task_graph_executor
 from googlecloudsdk.command_lib.storage.tasks.cp import copy_task_factory
 from googlecloudsdk.command_lib.storage.tasks.cp import copy_util
 from googlecloudsdk.command_lib.storage.tasks.objects import patch_object_task
@@ -50,6 +54,9 @@ _NO_MATCHES_MESSAGE = 'Did not find existing container at: {}'
 # Used to distinguish files containing objects and files containing managed
 # folders. Added to a file name which is hashed.
 _MANAGED_FOLDER_PREFIX = 'managed_folders'
+# Used to distinguish files containing gstmp objects. Added to a file name
+# which is hashed.
+_GSTMP_PREFIX = 'gstmp'
 
 
 def get_existing_or_placeholder_destination_resource(
@@ -102,8 +109,11 @@ def get_existing_container_resource(path, ignore_symlinks=True):
 
 
 def get_hashed_list_file_path(
-    list_file_name, chunk_number=None, is_managed_folder_list=False
-):
+    list_file_name: str,
+    chunk_number: int | None = None,
+    is_managed_folder_list: bool = False,
+    is_gstmp_list: bool = False,
+) -> str:
   """Hashes and returns a list file path.
 
   Args:
@@ -112,6 +122,8 @@ def get_hashed_list_file_path(
       chunk of total list.
     is_managed_folder_list (bool): If True, the file will contain managed folder
       resources instead of object resources, and should have a different name.
+    is_gstmp_list (bool): If True, the file will contain gstmp resources instead
+      of non-gstmp resources, and should have a different name.
 
   Returns:
     str: Final (hashed) list file path.
@@ -128,8 +140,9 @@ def get_hashed_list_file_path(
   managed_folder_prefix = (
       _MANAGED_FOLDER_PREFIX if is_managed_folder_list else ''
   )
+  gstmp_prefix = _GSTMP_PREFIX if is_gstmp_list else ''
   hashed_file_name = tracker_file_util.get_hashed_file_name(
-      managed_folder_prefix + delimiterless_file_name
+      managed_folder_prefix + gstmp_prefix + delimiterless_file_name
   )
 
   if chunk_number is None:
@@ -1060,4 +1073,48 @@ def get_operation_iterator(
   if task_status_queue and (operation_count or bytes_operated_on):
     progress_callbacks.workload_estimator_callback(
         task_status_queue, item_count=operation_count, size=bytes_operated_on
+    )
+
+
+def get_gstmp_delete_task_iterator(
+    user_request_args: user_request_args_factory._UserRequestArgs,
+    destination_gstmp_list: str,
+    dry_run: bool = False,
+    task_status_queue: (
+        task_graph_executor.multiprocessing_context.Queue | None
+    ) = None,
+) -> Iterator[delete_task.DeleteTask]:
+  """Yields tasks for deleting gstmp files.
+
+  Args:
+    user_request_args: User flags.
+    destination_gstmp_list (str): Path to the file containing a list of
+      temporary files to delete.
+    dry_run (bool): If True, prints what would be removed without
+      actually executing.
+    task_status_queue (Queue.Queue|None): A queue for reporting task status.
+
+  Yields:
+    delete_task.DeleteFileTask: Tasks for deleting temporary files.
+    Returns early if the gstmp list file does not exist.
+  """
+  operation_count = 0
+  # Check if destination_gstmp_list exists
+  if not os.path.exists(destination_gstmp_list):
+    return
+  log.status.Print('Removing leftover gstmp files...')
+
+  with files.FileReader(destination_gstmp_list) as destination_gstmp_reader:
+    while destination_gstmp_resource := parse_csv_line_to_resource(
+        next(destination_gstmp_reader, None),
+    ):
+      if dry_run:
+        _print_would_remove(destination_gstmp_resource)
+        continue
+      yield _get_delete_task(destination_gstmp_resource, user_request_args)
+      operation_count += 1
+
+  if task_status_queue is not None and operation_count:
+    progress_callbacks.workload_estimator_callback(
+        task_status_queue, item_count=operation_count
     )

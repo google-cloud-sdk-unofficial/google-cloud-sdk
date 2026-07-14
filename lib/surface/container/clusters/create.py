@@ -354,6 +354,7 @@ def ParseCreateOptionsBase(
       maintenance_window=get_default('maintenance_window'),
       maintenance_window_start=get_default('maintenance_window_start'),
       maintenance_window_end=get_default('maintenance_window_end'),
+      maintenance_window_duration=get_default('maintenance_window_duration'),
       maintenance_window_recurrence=get_default(
           'maintenance_window_recurrence'
       ),

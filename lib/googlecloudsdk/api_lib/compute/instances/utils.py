@@ -15,6 +15,7 @@
 """Convenience functions for dealing with instances."""
 
 import ipaddress
+from typing import Optional
 from googlecloudsdk.api_lib.compute import alias_ip_range_utils
 from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.api_lib.compute import utils
@@ -62,6 +63,8 @@ def CreateNetworkInterfaceMessage(
     enable_vpc_scoped_dns=None,
     service_class_id=None,
     support_alias_ipv6_ranges=False,
+    dns64_eligible: Optional[bool] = None,
+    nat64_eligible: Optional[bool] = None,
 ):
   """Returns a new NetworkInterface message."""
   # TODO(b/30460572): instance reference should have zone name, not zone URI.
@@ -265,5 +268,10 @@ def CreateNetworkInterfaceMessage(
     network_interface.igmpQuery = (
         messages.NetworkInterface.IgmpQueryValueValuesEnum(igmp_query)
     )
+
+  if dns64_eligible:
+    network_interface.dns64Eligible = dns64_eligible
+  if nat64_eligible:
+    network_interface.nat64Eligible = nat64_eligible
 
   return network_interface

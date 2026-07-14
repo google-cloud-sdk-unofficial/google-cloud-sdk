@@ -37,6 +37,7 @@ class NetworkservicesV1(base_api.BaseApiClient):
         default_global_params=default_global_params,
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
+    self.projects_locations_agentGateways = self.ProjectsLocationsAgentGatewaysService(self)
     self.projects_locations_authzExtensions = self.ProjectsLocationsAuthzExtensionsService(self)
     self.projects_locations_edgeCacheKeysets = self.ProjectsLocationsEdgeCacheKeysetsService(self)
     self.projects_locations_edgeCacheOrigins = self.ProjectsLocationsEdgeCacheOriginsService(self)
@@ -75,6 +76,151 @@ class NetworkservicesV1(base_api.BaseApiClient):
     self.projects_locations_wasmPlugins = self.ProjectsLocationsWasmPluginsService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects = self.ProjectsService(self)
+
+  class ProjectsLocationsAgentGatewaysService(base_api.BaseApiService):
+    """Service class for the projects_locations_agentGateways resource."""
+
+    _NAME = 'projects_locations_agentGateways'
+
+    def __init__(self, client):
+      super(NetworkservicesV1.ProjectsLocationsAgentGatewaysService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new AgentGateway in a given project and location.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsAgentGatewaysCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/agentGateways',
+        http_method='POST',
+        method_id='networkservices.projects.locations.agentGateways.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['agentGatewayId'],
+        relative_path='v1/{+parent}/agentGateways',
+        request_field='agentGateway',
+        request_type_name='NetworkservicesProjectsLocationsAgentGatewaysCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single AgentGateway.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsAgentGatewaysDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/agentGateways/{agentGatewaysId}',
+        http_method='DELETE',
+        method_id='networkservices.projects.locations.agentGateways.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['etag'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsAgentGatewaysDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single AgentGateway.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsAgentGatewaysGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AgentGateway) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/agentGateways/{agentGatewaysId}',
+        http_method='GET',
+        method_id='networkservices.projects.locations.agentGateways.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsAgentGatewaysGetRequest',
+        response_type_name='AgentGateway',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists AgentGateways in a given project and location.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsAgentGatewaysListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListAgentGatewaysResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/agentGateways',
+        http_method='GET',
+        method_id='networkservices.projects.locations.agentGateways.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken', 'returnPartialSuccess'],
+        relative_path='v1/{+parent}/agentGateways',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsAgentGatewaysListRequest',
+        response_type_name='ListAgentGatewaysResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single AgentGateway.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsAgentGatewaysPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/agentGateways/{agentGatewaysId}',
+        http_method='PATCH',
+        method_id='networkservices.projects.locations.agentGateways.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1/{+name}',
+        request_field='agentGateway',
+        request_type_name='NetworkservicesProjectsLocationsAgentGatewaysPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
 
   class ProjectsLocationsAuthzExtensionsService(base_api.BaseApiService):
     """Service class for the projects_locations_authzExtensions resource."""

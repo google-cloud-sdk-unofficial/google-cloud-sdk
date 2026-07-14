@@ -65,8 +65,10 @@ class _Update(object):
     cp_flags.AddDisplayNameFlag(parser)
     cp_flags.AddUsernameFlag(parser)
     cp_flags.AddPasswordFlagGroup(parser)
-    cp_flags.AddHostFlag(parser)
-    cp_flags.AddPortFlag(parser)
+    cp_flags.AddHostFlag(
+        parser, include_alloydb=True, support_optional_host_port=True
+    )
+    cp_flags.AddPortFlag(parser, support_optional_host_port=True)
     cp_flags.AddDbmPortFlag(parser)
     cp_flags.AddCaCertificateFlag(parser)
     cp_flags.AddPrivateKeyFlag(parser)

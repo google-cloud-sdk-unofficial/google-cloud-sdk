@@ -18,6 +18,7 @@
 from googlecloudsdk.api_lib.services import apikeys
 from googlecloudsdk.api_lib.services import services_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.services import common_flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -77,9 +78,7 @@ _DETAILED_HELP = {'EXAMPLES': """
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create an API key."""
 
@@ -161,3 +160,34 @@ class Create(base.CreateCommand):
     services_util.PrintOperationWithResponse(op)
     return op
   detailed_help = _DETAILED_HELP
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaCreate(Create):
+  """Create an API key with secure default restrictions."""
+
+  def Run(self, args):
+    """Run the create command for Alpha release track with secure defaults.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      The LRO object.
+
+    Raises:
+      googlecloudsdk.calliope.exceptions.InvalidArgumentException: If the key
+        lacks API target restrictions.
+    """
+    has_api_restriction = args.IsSpecified('api_target')
+
+    if not has_api_restriction:
+      raise exceptions.InvalidArgumentException(
+          '--api-target',
+          'API keys must be created with API target restrictions. Please'
+          ' specify `--api-target`.',
+      )
+
+    return super(AlphaCreate, self).Run(args)

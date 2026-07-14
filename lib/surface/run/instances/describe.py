@@ -29,6 +29,7 @@ from googlecloudsdk.core.resource import resource_printer
 
 
 @base.UniverseCompatible
+@base.RegionalEndpointsSupported
 class Describe(base.DescribeCommand):
   """Obtain details about instances."""
 

@@ -435,6 +435,8 @@ class GceHyperdiskBalancedHighAvailability(_messages.Message):
       greater startup time on next workstation start, as the service will need
       to create a disk from the archival snapshot. A value of `"0s"` indicates
       that the disk will never be archived.
+    maxSizeGb: Optional. Maximum size in GB to which this persistent directory
+      can be resized. Defaults to unlimited if not set.
     reclaimPolicy: Optional. Whether the persistent disk should be deleted
       when the workstation is deleted. Valid values are `DELETE` and `RETAIN`.
       Defaults to `DELETE`.
@@ -463,9 +465,10 @@ class GceHyperdiskBalancedHighAvailability(_messages.Message):
     RETAIN = 2
 
   archiveTimeout = _messages.StringField(1)
-  reclaimPolicy = _messages.EnumField('ReclaimPolicyValueValuesEnum', 2)
-  sizeGb = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  sourceSnapshot = _messages.StringField(4)
+  maxSizeGb = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  reclaimPolicy = _messages.EnumField('ReclaimPolicyValueValuesEnum', 3)
+  sizeGb = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  sourceSnapshot = _messages.StringField(5)
 
 
 class GceInstance(_messages.Message):
@@ -738,6 +741,8 @@ class GceRegionalPersistentDisk(_messages.Message):
     fsType: Optional. Type of file system that the disk should be formatted
       with. The workstation image must support this file system type. Must be
       empty if source_snapshot is set. Defaults to `"ext4"`.
+    maxSizeGb: Optional. Maximum size in GB to which this persistent directory
+      can be resized. Defaults to unlimited if not set.
     reclaimPolicy: Optional. Whether the persistent disk should be deleted
       when the workstation is deleted. Valid values are `DELETE` and `RETAIN`.
       Defaults to `DELETE`.
@@ -769,9 +774,10 @@ class GceRegionalPersistentDisk(_messages.Message):
   archiveTimeout = _messages.StringField(1)
   diskType = _messages.StringField(2)
   fsType = _messages.StringField(3)
-  reclaimPolicy = _messages.EnumField('ReclaimPolicyValueValuesEnum', 4)
-  sizeGb = _messages.IntegerField(5, variant=_messages.Variant.INT32)
-  sourceSnapshot = _messages.StringField(6)
+  maxSizeGb = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  reclaimPolicy = _messages.EnumField('ReclaimPolicyValueValuesEnum', 5)
+  sizeGb = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  sourceSnapshot = _messages.StringField(7)
 
 
 class GceShieldedInstanceConfig(_messages.Message):
@@ -2119,33 +2125,18 @@ class WorkstationConfig(_messages.Message):
   updateTime = _messages.StringField(30)
 
 
-class WorkstationGceRegionalPersistentDisk(_messages.Message):
-  r"""A Persistent Directory backed by a Compute Engine regional persistent
-  disk within the workstation.
-
-  Fields:
-    name: The name of the persistent directory.
-    sizeGb: Required. The desired size of the persistent directory in GB.
-  """
-
-  name = _messages.StringField(1)
-  sizeGb = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-
-
 class WorkstationPersistentDirectory(_messages.Message):
   r"""A directory to persist across workstation sessions. Updates to this
   field will only take effect on this workstation after it is restarted.
 
   Fields:
-    gcePd: A PersistentDirectory backed by a Compute Engine persistent disk.
     mountPath: Optional. The mount path of the persistent directory.
     sizeGb: Optional. Size of the persistent directory in GB. If specified in
       an update request, this is the desired size of the directory.
   """
 
-  gcePd = _messages.MessageField('WorkstationGceRegionalPersistentDisk', 1)
-  mountPath = _messages.StringField(2)
-  sizeGb = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  mountPath = _messages.StringField(1)
+  sizeGb = _messages.IntegerField(2, variant=_messages.Variant.INT32)
 
 
 class WorkstationsProjectsLocationsOperationsCancelRequest(_messages.Message):

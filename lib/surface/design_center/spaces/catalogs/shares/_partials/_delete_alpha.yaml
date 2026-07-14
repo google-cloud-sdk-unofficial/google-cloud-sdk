@@ -37,7 +37,7 @@
     params:
     - help_text: |-
         The share name in the following format:
-        projects/$project/locations/$location/spaces/$space/catalogs/$catalog/shares/$share
+        `projects/$project/locations/$location/spaces/$space/catalogs/$catalog/shares/$share`
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.design_center.v1alpha_resources:projects_locations_spaces_catalogs_shares

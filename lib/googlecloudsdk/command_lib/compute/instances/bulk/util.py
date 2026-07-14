@@ -46,6 +46,7 @@ class SupportedFeatures:
       support_preemption_notice_duration,
       support_instance_flexibility_policy,
       support_workload_identity_config,
+      support_instance_selection_min_cpu_platform,
   ):
     self.support_secure_tags = support_secure_tags
     self.support_display_device = support_display_device
@@ -67,6 +68,9 @@ class SupportedFeatures:
         support_instance_flexibility_policy
     )
     self.support_workload_identity_config = support_workload_identity_config
+    self.support_instance_selection_min_cpu_platform = (
+        support_instance_selection_min_cpu_platform
+    )
 
 
 def _GetSourceInstanceTemplate(args, resources, instance_template_resource):
@@ -208,7 +212,9 @@ def _GetPerInstanceProperties(
   )
 
 
-def _CreateInstanceFlexibilityPolicy(args, messages):
+def _CreateInstanceFlexibilityPolicy(
+    args, messages, support_instance_selection_min_cpu_platform=False
+):
   """Creates an InstanceFlexibilityPolicy message from the given arguments."""
   instance_selections = []
   if args.IsSpecified('instance_selection_machine_types'):
@@ -231,12 +237,21 @@ def _CreateInstanceFlexibilityPolicy(args, messages):
         if isinstance(rank, list):
           rank = rank[0]
         rank = int(rank)
+      min_cpu_platform = None
+      if (
+          support_instance_selection_min_cpu_platform
+          and 'min-cpu-platform' in instance_selection
+      ):
+        min_cpu_platform = instance_selection['min-cpu-platform']
+        if isinstance(min_cpu_platform, list):
+          min_cpu_platform = min_cpu_platform[0]
       _AddInstanceSelection(
           messages,
           instance_selections,
           name,
           machine_types,
           rank,
+          min_cpu_platform=min_cpu_platform,
       )
   if not instance_selections:
     return None
@@ -251,6 +266,7 @@ def _AddInstanceSelection(
     instance_selection_name,
     machine_types,
     rank,
+    min_cpu_platform=None,
 ):
   """Adds instance selection to instance selections list."""
   for instance_selection in instance_selections:
@@ -273,6 +289,8 @@ def _AddInstanceSelection(
   )
   if rank is not None:
     instance_selection_payload.rank = rank
+  if min_cpu_platform is not None:
+    instance_selection_payload.minCpuPlatform = min_cpu_platform
   instance_selections.append(
       messages.InstanceFlexibilityPolicy.InstanceSelectionsValue.AdditionalProperty(
           key=instance_selection_name,
@@ -579,7 +597,9 @@ def CreateBulkInsertInstanceResource(
 
   if supported_features.support_instance_flexibility_policy:
     instance_selections_value = _CreateInstanceFlexibilityPolicy(
-        args, compute_client.messages
+        args,
+        compute_client.messages,
+        support_instance_selection_min_cpu_platform=supported_features.support_instance_selection_min_cpu_platform,
     )
     if instance_selections_value:
       instance_flexibility_policy_obj = (

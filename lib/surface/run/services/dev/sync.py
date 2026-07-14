@@ -101,6 +101,7 @@ def NecessaryChangesForServicesDevSync(
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
+@base.RegionalEndpointsSupported
 @base.Hidden
 class Sync(base.Command):
   """A command to sync local workspace to a Cloud Run Service."""

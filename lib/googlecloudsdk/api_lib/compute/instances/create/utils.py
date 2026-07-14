@@ -989,6 +989,8 @@ def CreateNetworkInterfaceMessages(
     support_internal_ipv6_reservation=False,
     support_enable_vpc_scoped_dns=False,
     support_alias_ipv6_ranges=False,
+    support_dns64_eligible=False,
+    support_nat64_eligible=False,
 ):
   """Create network interface messages.
 
@@ -1009,6 +1011,8 @@ def CreateNetworkInterfaceMessages(
       supported.
     support_alias_ipv6_ranges: The flag indicates whether alias IPv6 ranges are
       supported.
+    support_dns64_eligible: The flag indicates whether DNS64 is supported.
+    support_nat64_eligible: The flag indicates whether NAT64 is supported.
 
   Returns:
     list, items are NetworkInterfaceMessages.
@@ -1031,6 +1035,12 @@ def CreateNetworkInterfaceMessages(
       if support_enable_vpc_scoped_dns:
         enable_vpc_scoped_dns = 'enable-vpc-scoped-dns' in interface
       service_class_id = interface.get('service-class-id', None)
+      dns64_eligible = (
+          'dns64-eligible' in interface if support_dns64_eligible else None
+      )
+      nat64_eligible = (
+          'nat64-eligible' in interface if support_nat64_eligible else None
+      )
 
       result.append(
           instances_utils.CreateNetworkInterfaceMessage(
@@ -1068,6 +1078,8 @@ def CreateNetworkInterfaceMessages(
               vlan=interface.get('vlan', None),
               igmp_query=interface.get('igmp-query', None),
               support_alias_ipv6_ranges=support_alias_ipv6_ranges,
+              dns64_eligible=dns64_eligible,
+              nat64_eligible=nat64_eligible,
           )
       )
   elif network_interface_json is not None:
@@ -1099,6 +1111,8 @@ def GetNetworkInterfacesWithValidation(
     support_internal_ipv6_reservation=False,
     support_enable_vpc_scoped_dns=False,
     support_alias_ipv6_ranges=False,
+    support_dns64_eligible=False,
+    support_nat64_eligible=False,
 ):
   """Validates and retrieves the network interface message."""
   network_interface_from_file = getattr(args, 'network_interface_from_file',
@@ -1120,6 +1134,8 @@ def GetNetworkInterfacesWithValidation(
         support_internal_ipv6_reservation=support_internal_ipv6_reservation,
         support_enable_vpc_scoped_dns=support_enable_vpc_scoped_dns,
         support_alias_ipv6_ranges=support_alias_ipv6_ranges,
+        support_dns64_eligible=support_dns64_eligible,
+        support_nat64_eligible=support_nat64_eligible,
     )
   else:
     instances_flags.ValidatePublicPtrFlags(args)

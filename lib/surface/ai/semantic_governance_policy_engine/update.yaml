@@ -38,5 +38,5 @@ update:
   disable_auto_field_mask: true
 
 async:
-  collection: aiplatform.projects.locations.semanticGovernancePolicyEngine.operations
+  collection: aiplatform.projects.locations.operations
   extract_resource_result: false

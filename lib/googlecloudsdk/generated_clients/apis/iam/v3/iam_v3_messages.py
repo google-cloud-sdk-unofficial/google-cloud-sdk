@@ -610,6 +610,9 @@ class GoogleIamV3PrincipalAccessBoundaryPolicyRule(_messages.Message):
       policy rule. Must be less than or equal to 256 characters.
     effect: Required. The access relationship of principals to the resources
       in this rule.
+    operation: Optional. The operation attributes that determine whether this
+      rule applies to a request. If this field is not specified, the rule
+      applies to all operations.
     resources: Required. A list of Resource Manager resources. If a resource
       is listed in the rule, then the rule applies for that resource and its
       descendants. The number of resources in a policy is limited to 500
@@ -634,7 +637,43 @@ class GoogleIamV3PrincipalAccessBoundaryPolicyRule(_messages.Message):
 
   description = _messages.StringField(1)
   effect = _messages.EnumField('EffectValueValuesEnum', 2)
-  resources = _messages.StringField(3, repeated=True)
+  operation = _messages.MessageField('GoogleIamV3PrincipalAccessBoundaryPolicyRuleOperation', 3)
+  resources = _messages.StringField(4, repeated=True)
+
+
+class GoogleIamV3PrincipalAccessBoundaryPolicyRuleOperation(_messages.Message):
+  r"""An operation attribute that defines the permissions applicable to this
+  rule.
+
+  Fields:
+    excludedPermissions: Optional. Specifies the permissions that this rule
+      excludes from the set of affected permissions given by `permissions`.
+      The number of excluded permission strings in this field is limited to
+      50. If a permission appears in both `permissions` and
+      `excluded_permissions` then it will _not_ be subject to the policy
+      effect. The excluded permissions can be specified using the same syntax
+      as `permissions`.
+    permissions: Optional. The permissions that are explicitly affected by
+      this rule. The number of permission strings in this field is limited to
+      50. Each permission uses the format `{service_fqdn}/{resource}.{verb}`,
+      where `{service_fqdn}` is the fully qualified domain name for the
+      service. `*` can be used as a wildcard to match all permissions for a
+      specific service, resource type, or verb. The following formats are
+      supported: * `{service_fqdn}/{resource}.{verb}`: A specific permission.
+      * `{service_fqdn}/{resource}.*`: All permissions for a specific resource
+      type. * `{service_fqdn}/*.*`: All permissions for all resource types
+      under a specific service. * `{service_fqdn}/*.{verb}`: All permissions
+      with a specific verb under a specific service. * `*`: All permissions
+      across all services. For example,
+      `compute.googleapis.com/*.setIamPolicy` refers to all setIamPolicy
+      permissions for any compute resource. Wildcards expand only to the
+      permissions specified in the `enforcement_version` of the policy. If the
+      `enforcement_version` is updated, the wildcard will automatically expand
+      to include new permissions in the updated version.
+  """
+
+  excludedPermissions = _messages.StringField(1, repeated=True)
+  permissions = _messages.StringField(2, repeated=True)
 
 
 class GoogleIamV3RegionalAccessBoundaryPolicy(_messages.Message):

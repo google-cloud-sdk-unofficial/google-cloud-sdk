@@ -31,7 +31,10 @@ _API_VERSION_FOR_TRACK = {
 }
 _API_NAME = 'networksecurity'
 
-_PACKET_BROKER_SUPPORTED = (base.ReleaseTrack.ALPHA,)
+_PACKET_BROKER_SUPPORTED = (
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+)
 
 
 def GetMessagesModule(release_track=base.ReleaseTrack.ALPHA):

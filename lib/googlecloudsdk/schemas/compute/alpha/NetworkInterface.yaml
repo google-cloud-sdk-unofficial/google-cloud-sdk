@@ -110,13 +110,15 @@ properties:
     type: string
   nicType:
     description: |-
-      The type of vNIC to be used on this interface. This may be
-      gVNIC or VirtioNet.
+      The type of vNIC to be used on this interface.
     type: string
     enum:
     - GVNIC
     - UNSPECIFIED_NIC_TYPE
     - VIRTIO_NET
+    - IRDMA
+    - MRDMA
+    - IDPF
   queueCount:
     description: |-
       The networking queue count that's specified by users for the

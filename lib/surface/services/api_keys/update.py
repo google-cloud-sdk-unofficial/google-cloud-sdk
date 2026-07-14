@@ -216,17 +216,42 @@ class AlphaUpdate(Update):
       The LRO object.
 
     Raises:
-      googlecloudsdk.calliope.exceptions.InvalidArgumentException: If --append
-        is used with --clear-restrictions or if attempting to append a
-        different client restriction type than already exists on the key.
+      googlecloudsdk.calliope.exceptions.InvalidArgumentException:
+        If the --clear-restrictions flag is specified, if the updated key
+        lacks API target restrictions, or if attempting to append a different
+        client restriction type than already exists on the key.
     """
+    client = apikeys.GetClientInstance(self.ReleaseTrack())
+    messages = client.MESSAGES_MODULE
+    key_ref = args.CONCEPTS.key.Parse()
+    request = messages.ApikeysProjectsLocationsKeysGetRequest(
+        name=key_ref.RelativeName()
+    )
+    current_key = client.projects_locations_keys.Get(request)
+
+    current_has_api_targets = (
+        current_key.restrictions is not None
+        and current_key.restrictions.apiTargets
+    )
+    is_clearing = args.IsSpecified('clear_restrictions')
+    is_specifying_api_target = args.IsSpecified('api_target')
+
+    if is_clearing:
+      raise exceptions.InvalidArgumentException(
+          '--clear-restrictions',
+          'The --clear-restrictions flag is not supported on the ALPHA track.',
+      )
+
+    if not (current_has_api_targets or is_specifying_api_target):
+      raise exceptions.InvalidArgumentException(
+          '--api-target',
+          'API keys must have API target restrictions. Please specify '
+          '`--api-target` to restrict this key.',
+      )
+
     if not args.append:
       return super(AlphaUpdate, self).Run(args)
 
-    client = apikeys.GetClientInstance()
-    messages = client.MESSAGES_MODULE
-
-    key_ref = args.CONCEPTS.key.Parse()
     update_mask = []
     key_proto = messages.V2Key(
         name=key_ref.RelativeName(), restrictions=messages.V2Restrictions()
@@ -240,15 +265,6 @@ class AlphaUpdate(Update):
       key_proto.displayName = args.display_name
     if args.IsSpecified('clear_annotations'):
       update_mask.append('annotations')
-    if args.IsSpecified('clear_restrictions'):
-      raise exceptions.InvalidArgumentException(
-          '--append', 'Cannot specify --append when clearing restrictions.'
-      )
-
-    request = messages.ApikeysProjectsLocationsKeysGetRequest(
-        name=key_ref.RelativeName()
-    )
-    current_key = client.projects_locations_keys.Get(request)
 
     # Copy etag from current key to ensure the update is based on the
     # latest version, preventing race conditions.

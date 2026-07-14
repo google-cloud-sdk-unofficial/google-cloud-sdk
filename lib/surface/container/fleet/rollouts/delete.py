@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.container.fleet.rollouts import flags as rollout_flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_io
 from googlecloudsdk.generated_clients.apis.gkehub.v1alpha import gkehub_v1alpha_messages as alpha_messages
 
 
@@ -52,8 +53,15 @@ class Delete(base.DeleteCommand):
     flag_parser = rollout_flags.RolloutFlagParser(
         args, release_track=base.ReleaseTrack.ALPHA
     )
-    req = alpha_messages.GkehubProjectsLocationsRolloutsDeleteRequest()
-    req.name = util.RolloutName(args)
+    rollout_name = util.RolloutName(args)
+    req = alpha_messages.GkehubProjectsLocationsRolloutsDeleteRequest(
+        name=rollout_name,
+    )
+
+    console_io.PromptContinue(
+        message=f'You are about to delete rollout [{rollout_name}].',
+        cancel_on_no=True,
+    )
 
     fleet_client = client.FleetClient(release_track=self.ReleaseTrack())
     operation = fleet_client.DeleteRollout(req)
@@ -61,9 +69,7 @@ class Delete(base.DeleteCommand):
 
     if flag_parser.Async():
       log.Print(
-          'Delete in progress for Fleet rollout [{}]'.format(
-              rollout_ref.SelfLink()
-          )
+          f'Delete in progress for Fleet rollout [{rollout_ref.SelfLink()}]'
       )
       return operation
 
@@ -71,8 +77,6 @@ class Delete(base.DeleteCommand):
         release_track=base.ReleaseTrack.ALPHA
     )
     completed_operation = operation_client.Wait(util.OperationRef(operation))
-    log.status.Print(
-        'Deleted Fleet rollout [{}].'.format(rollout_ref.SelfLink())
-    )
+    log.status.Print(f'Deleted Fleet rollout [{rollout_ref.SelfLink()}].')
 
     return completed_operation

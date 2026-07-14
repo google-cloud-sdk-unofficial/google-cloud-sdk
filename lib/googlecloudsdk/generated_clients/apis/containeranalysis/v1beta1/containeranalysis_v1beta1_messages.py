@@ -25,14 +25,29 @@ class AISkillAnalysisOccurrence(_messages.Message):
   r"""AISkillAnalysisOccurrence provides the results of an AI-based skill
   analysis.
 
+  Enums:
+    MaxSeverityValueValuesEnum: Maximum severity found among findings.
+
   Fields:
     findings: Findings produced by the analysis.
     maxSeverity: Maximum severity found among findings.
     skillName: Name of the skill that produced this analysis.
   """
 
+  class MaxSeverityValueValuesEnum(_messages.Enum):
+    r"""Maximum severity found among findings.
+
+    Values:
+      SEVERITY_UNSPECIFIED: Unspecified severity.
+      CRITICAL: Critical severity.
+      HIGH: High severity.
+    """
+    SEVERITY_UNSPECIFIED = 0
+    CRITICAL = 1
+    HIGH = 2
+
   findings = _messages.MessageField('Finding', 1, repeated=True)
-  maxSeverity = _messages.StringField(2)
+  maxSeverity = _messages.EnumField('MaxSeverityValueValuesEnum', 2)
   skillName = _messages.StringField(3)
 
 
@@ -4548,18 +4563,50 @@ class Finding(_messages.Message):
   r"""Finding provides details for a single finding within an
   AISkillAnalysisOccurrence.
 
+  Enums:
+    ScannerValueValuesEnum: Scanner determines which engine (e.g. static, llm)
+      emitted the finding.
+    SeverityValueValuesEnum: Severity of the finding.
+
   Fields:
     category: Category of the finding.
+    details: Description of the finding category.
     location: Location (path and line) where the finding was detected.
     scanner: Scanner determines which engine (e.g. static, llm) emitted the
       finding.
     severity: Severity of the finding.
   """
 
+  class ScannerValueValuesEnum(_messages.Enum):
+    r"""Scanner determines which engine (e.g. static, llm) emitted the
+    finding.
+
+    Values:
+      SCANNER_UNSPECIFIED: Unspecified scanner.
+      STATIC: Static scanner.
+      LLM: LLM scanner.
+    """
+    SCANNER_UNSPECIFIED = 0
+    STATIC = 1
+    LLM = 2
+
+  class SeverityValueValuesEnum(_messages.Enum):
+    r"""Severity of the finding.
+
+    Values:
+      SEVERITY_UNSPECIFIED: Unspecified severity.
+      CRITICAL: Critical severity.
+      HIGH: High severity.
+    """
+    SEVERITY_UNSPECIFIED = 0
+    CRITICAL = 1
+    HIGH = 2
+
   category = _messages.StringField(1)
-  location = _messages.MessageField('FindingLocation', 2)
-  scanner = _messages.StringField(3)
-  severity = _messages.StringField(4)
+  details = _messages.StringField(2)
+  location = _messages.MessageField('FindingLocation', 3)
+  scanner = _messages.EnumField('ScannerValueValuesEnum', 4)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 5)
 
 
 class FindingLocation(_messages.Message):
@@ -4893,6 +4940,7 @@ class GrafeasV1beta1VulnerabilityDetails(_messages.Message):
       high severity.
     cvssV2: The cvss v2 score for the vulnerability.
     cvssV3: The cvss v3 score for the vulnerability.
+    cvssV4: The cvss v4 score of this vulnerability.
     cvssVersion: Output only. CVSS version used to populate cvss_score and
       severity.
     effectiveSeverity: The distro assigned severity for this vulnerability
@@ -4981,16 +5029,17 @@ class GrafeasV1beta1VulnerabilityDetails(_messages.Message):
   cvssScore = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
   cvssV2 = _messages.MessageField('CVSS', 2)
   cvssV3 = _messages.MessageField('CVSS', 3)
-  cvssVersion = _messages.EnumField('CvssVersionValueValuesEnum', 4)
-  effectiveSeverity = _messages.EnumField('EffectiveSeverityValueValuesEnum', 5)
-  extraDetails = _messages.StringField(6)
-  longDescription = _messages.StringField(7)
-  packageIssue = _messages.MessageField('PackageIssue', 8, repeated=True)
-  relatedUrls = _messages.MessageField('RelatedUrl', 9, repeated=True)
-  severity = _messages.EnumField('SeverityValueValuesEnum', 10)
-  shortDescription = _messages.StringField(11)
-  type = _messages.StringField(12)
-  vexAssessment = _messages.MessageField('VexAssessment', 13)
+  cvssV4 = _messages.MessageField('CVSS', 4)
+  cvssVersion = _messages.EnumField('CvssVersionValueValuesEnum', 5)
+  effectiveSeverity = _messages.EnumField('EffectiveSeverityValueValuesEnum', 6)
+  extraDetails = _messages.StringField(7)
+  longDescription = _messages.StringField(8)
+  packageIssue = _messages.MessageField('PackageIssue', 9, repeated=True)
+  relatedUrls = _messages.MessageField('RelatedUrl', 10, repeated=True)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 11)
+  shortDescription = _messages.StringField(12)
+  type = _messages.StringField(13)
+  vexAssessment = _messages.MessageField('VexAssessment', 14)
 
 
 class Hash(_messages.Message):
@@ -7312,6 +7361,7 @@ class Vulnerability(_messages.Message):
     cvssScore: The CVSS score for this vulnerability.
     cvssV2: The full description of the CVSS for version 2.
     cvssV3: The full description of the CVSS for version 3.
+    cvssV4: The full description of the CVSS for version 4.
     cvssVersion: CVSS version used to populate cvss_score and severity.
     cwe: A list of CWE for this vulnerability. For details, see:
       https://cwe.mitre.org/index.html
@@ -7365,12 +7415,13 @@ class Vulnerability(_messages.Message):
   cvssScore = _messages.FloatField(2, variant=_messages.Variant.FLOAT)
   cvssV2 = _messages.MessageField('CVSS', 3)
   cvssV3 = _messages.MessageField('CVSSv3', 4)
-  cvssVersion = _messages.EnumField('CvssVersionValueValuesEnum', 5)
-  cwe = _messages.StringField(6, repeated=True)
-  details = _messages.MessageField('Detail', 7, repeated=True)
-  severity = _messages.EnumField('SeverityValueValuesEnum', 8)
-  sourceUpdateTime = _messages.StringField(9)
-  windowsDetails = _messages.MessageField('WindowsDetail', 10, repeated=True)
+  cvssV4 = _messages.MessageField('CVSS', 5)
+  cvssVersion = _messages.EnumField('CvssVersionValueValuesEnum', 6)
+  cwe = _messages.StringField(7, repeated=True)
+  details = _messages.MessageField('Detail', 8, repeated=True)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 9)
+  sourceUpdateTime = _messages.StringField(10)
+  windowsDetails = _messages.MessageField('WindowsDetail', 11, repeated=True)
 
 
 class VulnerabilityAssessmentNote(_messages.Message):

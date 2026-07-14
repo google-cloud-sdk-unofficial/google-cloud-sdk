@@ -14,8 +14,9 @@
 # limitations under the License.
 """Bigtable memory layers API helper."""
 
+from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.bigtable import util
-
+from googlecloudsdk.calliope import exceptions
 
 MEMORY_LAYER_SUFFIX = '/memoryLayer'
 
@@ -42,6 +43,51 @@ def Describe(cluster_ref, client=None, msgs=None):
       name=memory_layer_name
   )
   return client.projects_instances_clusters.GetMemoryLayer(msg)
+
+
+def List(
+    cluster_ref=None, instance_ref=None, cluster=None, client=None, msgs=None
+):
+  """List memory layers.
+
+  Args:
+    cluster_ref: A resource reference to the cluster to list memory layers for.
+    instance_ref: A resource reference to the instance to list memory layers
+      for.
+    cluster: string, The cluster ID if instance_ref is provided and cluster is
+      specified.
+    client: The API client.
+    msgs: The API messages.
+
+  Returns:
+    Generator of memory layer resource objects.
+  """
+  if client is None:
+    client = util.GetAdminClient()
+  if msgs is None:
+    msgs = util.GetAdminMessages()
+
+  if cluster_ref:
+    cluster_str = cluster_ref.RelativeName()
+  elif instance_ref:
+    if cluster:
+      cluster_str = instance_ref.RelativeName() + '/clusters/' + cluster
+    else:
+      cluster_str = instance_ref.RelativeName() + '/clusters/-'
+  else:
+    raise exceptions.InvalidArgumentException(
+        '--instance', '--instance must be specified'
+    )
+
+  msg = msgs.BigtableadminProjectsInstancesClustersMemoryLayersListRequest(
+      parent=cluster_str
+  )
+  return list_pager.YieldFromList(
+      client.projects_instances_clusters_memoryLayers,
+      msg,
+      field='memoryLayers',
+      batch_size_attribute=None,
+  )
 
 
 def Update(

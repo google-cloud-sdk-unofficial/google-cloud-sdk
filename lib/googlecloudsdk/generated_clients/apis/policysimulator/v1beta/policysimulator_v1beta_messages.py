@@ -899,7 +899,8 @@ class GoogleCloudPolicysimulatorV1betaAccessActivityResource(_messages.Message):
     fullResourceName: Deprecated: Migration to the `name` field is in
       progress. Use the `name` field instead. The full resource name of the
       resource.
-    locations: The locations the resource is in. Example: "us-central1"
+    locations: The locations of the resource, which contains the cloud region
+      and location group.
     name: The name of the resource. While this is normally a full resource
       name, the formatting is not guaranteed and it may some times be empty.
       The exact value is dependent on internal details of the activity
@@ -911,10 +912,26 @@ class GoogleCloudPolicysimulatorV1betaAccessActivityResource(_messages.Message):
 
   external = _messages.BooleanField(1)
   fullResourceName = _messages.StringField(2)
-  locations = _messages.StringField(3, repeated=True)
+  locations = _messages.MessageField('GoogleCloudPolicysimulatorV1betaAccessActivityResourceLocation', 3, repeated=True)
   name = _messages.StringField(4)
   service = _messages.StringField(5)
   type = _messages.StringField(6)
+
+
+class GoogleCloudPolicysimulatorV1betaAccessActivityResourceLocation(_messages.Message):
+  r"""The location of the resource, which contains the cloud region and
+  location group.
+
+  Fields:
+    location: The cloud region of the resource. For example: "us-central1",
+      "asia-east1".
+    locationGroup: The cloud location group that the above location belongs to
+      (e.g., "//cloudLocationGroups/us"). This uses the format of CLF location
+      group.
+  """
+
+  location = _messages.StringField(1)
+  locationGroup = _messages.StringField(2)
 
 
 class GoogleCloudPolicysimulatorV1betaAccessChange(_messages.Message):

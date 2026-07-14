@@ -46,8 +46,10 @@ class ConversionWorkspacesOperationsClient(
       src_connection_profile_ref,
       dest_connection_profile_ref,
       auto_commit: bool,
+      gcs_bucket: Optional[str] = None,
+      gcs_prefix: Optional[str] = None,
   ):
-    """Seeds a conversion workspace from a connection profile.
+    """Seeds a conversion workspace from a connection profile or GCS.
 
     Args:
       name: str, the reference of the conversion workspace to seed.
@@ -58,6 +60,9 @@ class ConversionWorkspacesOperationsClient(
         datamigration.projects.locations.connectionProfiles resource for
         destination connection profile.
       auto_commit: bool, whether to auto commit the conversion workspace.
+      gcs_bucket: Optional[str], the Cloud Storage bucket containing the schema
+        report files.
+      gcs_prefix: Optional[str], the prefix for the report paths in the bucket.
 
     Returns:
       Operation: the operation for seeding the conversion workspace.
@@ -72,12 +77,20 @@ class ConversionWorkspacesOperationsClient(
     if dest_connection_profile_ref is not None:
       dest_connection_profile = dest_connection_profile_ref.RelativeName()
 
+    gcs_source = None
+    if gcs_bucket is not None:
+      gcs_source = self.messages.GcsSource(
+          bucket=gcs_bucket,
+          prefix=gcs_prefix,
+      )
+
     return self.cw_service.Seed(
         self.messages.DatamigrationProjectsLocationsConversionWorkspacesSeedRequest(
             name=name,
             seedConversionWorkspaceRequest=self.messages.SeedConversionWorkspaceRequest(
                 sourceConnectionProfile=src_connection_profile,
                 destinationConnectionProfile=dest_connection_profile,
+                gcsSource=gcs_source,
                 autoCommit=auto_commit,
             ),
         ),
@@ -182,16 +195,18 @@ class ConversionWorkspacesOperationsClient(
       name: str,
       destination_connection_profile_ref,
       filter_expr: Optional[str],
+      dry_run: bool = False,
   ):
-    """applies a conversion workspace onto the destination database.
+    """Applies a conversion workspace onto the destination database.
 
     Args:
-      name: str, the reference of the conversion workspace to seed.
+      name: str, the reference of the conversion workspace to apply.
       destination_connection_profile_ref: a Resource reference to a
         datamigration.projects.locations.connectionProfiles resource for
         destination connection profile.
       filter_expr: Optional[str], the filter expression to apply to the
         conversion workspace.
+      dry_run: bool, whether to only validate the apply process.
 
     Returns:
       Operation: the operation for applying the conversion workspace.
@@ -202,6 +217,7 @@ class ConversionWorkspacesOperationsClient(
             applyConversionWorkspaceRequest=self.messages.ApplyConversionWorkspaceRequest(
                 connectionProfile=destination_connection_profile_ref.RelativeName(),
                 filter=filter_expr,
+                dryRun=dry_run,
             ),
         )
     )

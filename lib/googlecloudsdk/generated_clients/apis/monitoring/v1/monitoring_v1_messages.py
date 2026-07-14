@@ -1032,6 +1032,10 @@ class EventAnnotation(_messages.Message):
       SAP_BACKINT: Agent for SAP Backint related events.
       SAP_AVAILABILITY: Agent for SAP availability related events.
       SAP_OPERATIONS: Agent for SAP operations related events.
+      INTERCONNECT_MAINTENANCE_STARTED: Interconnect maintenance started
+        event.
+      INTERCONNECT_MAINTENANCE_COMPLETED: Interconnect maintenance completed
+        event.
     """
     EVENT_TYPE_UNSPECIFIED = 0
     GKE_WORKLOAD_DEPLOYMENT = 1
@@ -1058,6 +1062,8 @@ class EventAnnotation(_messages.Message):
     SAP_BACKINT = 22
     SAP_AVAILABILITY = 23
     SAP_OPERATIONS = 24
+    INTERCONNECT_MAINTENANCE_STARTED = 25
+    INTERCONNECT_MAINTENANCE_COMPLETED = 26
 
   displayName = _messages.StringField(1)
   enabled = _messages.BooleanField(2)

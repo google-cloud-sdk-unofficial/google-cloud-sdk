@@ -163,8 +163,8 @@ class DeltaSharingCatalog(_messages.Message):
       projects/{project}/catalogs/{catalog}
     refreshOptions: Optional. Configures options for refreshing a Delta
       Sharing catalog.
-    sapConfig: Config for a catalog that connects to SAP Business Data Cloud
-      (BDC).
+    sapConfig: Optional. Config for a catalog that connects to SAP Business
+      Data Cloud (BDC).
     serviceAccount: Output only. The service account used for SAP enrollment
       and is created as a side effect of creating the Delta Sharing catalog
       resource.
@@ -230,6 +230,7 @@ class Empty(_messages.Message):
   """
 
 
+
 class FederatedCatalogOptions(_messages.Message):
   r"""Configuration options for federated catalog.
 
@@ -247,9 +248,11 @@ class ListDeltaSharingCatalogsResponse(_messages.Message):
   r"""Response message for the ListDeltaSharingCatalogs method.
 
   Fields:
-    catalogs: The DeltaSharing catalogs from the specified project.
-    nextPageToken: A token, which can be sent as `page_token` to retrieve the
-      next page. If this field is omitted, there are no subsequent pages.
+    catalogs: Output only. The DeltaSharing catalogs from the specified
+      project.
+    nextPageToken: Output only. A token, which can be sent as `page_token` to
+      retrieve the next page. If this field is omitted, there are no
+      subsequent pages.
   """
 
   catalogs = _messages.MessageField('DeltaSharingCatalog', 1, repeated=True)
@@ -260,9 +263,11 @@ class ListDeltaSharingSchemasResponse(_messages.Message):
   r"""Response message for the ListDeltaSharingSchemas method.
 
   Fields:
-    deltaSharingSchemas: The Delta Sharing schemas from the specified share.
-    nextPageToken: A token, which can be sent as `page_token` to retrieve the
-      next page. If this field is omitted, there are no subsequent pages.
+    deltaSharingSchemas: Output only. The Delta Sharing schemas from the
+      specified share.
+    nextPageToken: Output only. A token, which can be sent as `page_token` to
+      retrieve the next page. If this field is omitted, there are no
+      subsequent pages.
   """
 
   deltaSharingSchemas = _messages.MessageField('DeltaSharingSchema', 1, repeated=True)
@@ -273,9 +278,11 @@ class ListDeltaSharingSharesResponse(_messages.Message):
   r"""Response message for the ListDeltaSharingShares method.
 
   Fields:
-    deltaSharingShares: The Delta Sharing shares from the specified catalog.
-    nextPageToken: A token, which can be sent as `page_token` to retrieve the
-      next page. If this field is omitted, there are no subsequent pages.
+    deltaSharingShares: Output only. The Delta Sharing shares from the
+      specified catalog.
+    nextPageToken: Output only. A token, which can be sent as `page_token` to
+      retrieve the next page. If this field is omitted, there are no
+      subsequent pages.
   """
 
   deltaSharingShares = _messages.MessageField('DeltaSharingShare', 1, repeated=True)
@@ -286,9 +293,11 @@ class ListDeltaSharingTablesResponse(_messages.Message):
   r"""Response message for the ListDeltaSharingTables method.
 
   Fields:
-    deltaSharingTables: The Delta Sharing tables from the specified schema.
-    nextPageToken: A token, which can be sent as `page_token` to retrieve the
-      next page. If this field is omitted, there are no subsequent pages.
+    deltaSharingTables: Output only. The Delta Sharing tables from the
+      specified schema.
+    nextPageToken: Output only. A token, which can be sent as `page_token` to
+      retrieve the next page. If this field is omitted, there are no
+      subsequent pages.
   """
 
   deltaSharingTables = _messages.MessageField('DeltaSharingTable', 1, repeated=True)

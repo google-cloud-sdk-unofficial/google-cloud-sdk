@@ -272,6 +272,33 @@ class AssuredworkloadsV1beta1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def BatchAcknowledgeViolations(self, request, global_params=None):
+      r"""Acknowledges multiple existing violations. By acknowledging violations, users acknowledge the existence of compliance violations in their workload and decide to ignore them due to a valid business justification. Acknowledgement is a permanent operation and it cannot be reverted. This is a batch version of AcknowledgeViolation.
+
+      Args:
+        request: (AssuredworkloadsOrganizationsLocationsWorkloadsViolationsBatchAcknowledgeViolationsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAssuredworkloadsV1beta1BatchAcknowledgeViolationsResponse) The response message.
+      """
+      config = self.GetMethodConfig('BatchAcknowledgeViolations')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    BatchAcknowledgeViolations.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/organizations/{organizationsId}/locations/{locationsId}/workloads/{workloadsId}/violations:batchAcknowledgeViolations',
+        http_method='POST',
+        method_id='assuredworkloads.organizations.locations.workloads.violations.batchAcknowledgeViolations',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1beta1/{+parent}/violations:batchAcknowledgeViolations',
+        request_field='googleCloudAssuredworkloadsV1beta1BatchAcknowledgeViolationsRequest',
+        request_type_name='AssuredworkloadsOrganizationsLocationsWorkloadsViolationsBatchAcknowledgeViolationsRequest',
+        response_type_name='GoogleCloudAssuredworkloadsV1beta1BatchAcknowledgeViolationsResponse',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Retrieves Assured Workload Violation based on ID.
 

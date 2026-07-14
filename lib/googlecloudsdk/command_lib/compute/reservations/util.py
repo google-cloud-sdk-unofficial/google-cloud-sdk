@@ -181,11 +181,14 @@ def MakeShareSettingsWithArgs(
           projectMap=project_map,
       )
     if setting_configs == 'folders':
+      folder_map = None
+      if share_with != 'remove_share_with':
+        folder_map = MakeFolderMapFromFolderList(
+            messages, getattr(args, share_with, None)
+        )
       return messages.ShareSettings(
           shareType=messages.ShareSettings.ShareTypeValueValuesEnum.DIRECT_PROJECTS_UNDER_SPECIFIC_FOLDERS,
-          folderMap=MakeFolderMapFromFolderList(
-              messages, getattr(args, share_with, None)
-          ),
+          folderMap=folder_map,
       )
   else:
     if args.IsKnownAndSpecified(share_with):

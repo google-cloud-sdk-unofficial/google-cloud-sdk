@@ -994,6 +994,25 @@ def AddBackupResourceArg(parser, verb):
   ]).AddToParser(parser)
 
 
+def AddMemoryLayerListResourceArg(parser, verb):
+  """Add memory layer list resource argument to the parser."""
+  concept_parsers.ConceptParser([
+      presentation_specs.ResourcePresentationSpec(
+          '--instance',
+          GetInstanceResourceSpec(),
+          'The instance {}.'.format(verb),
+          required=False,
+      ),
+      presentation_specs.ResourcePresentationSpec(
+          '--cluster',
+          GetClusterResourceSpec(),
+          'The cluster {}.'.format(verb),
+          required=False,
+          flag_name_overrides={'instance': ''},
+      ),
+  ]).AddToParser(parser)
+
+
 def AddTableRestoreResourceArg(parser):
   """Add Table resource args (source, destination) for restore command."""
   table_spec_data = yaml_data.ResourceYAMLData.FromPath('bigtable.table')

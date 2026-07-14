@@ -29,6 +29,7 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.UniverseCompatible
+@base.RegionalEndpointsSupported
 class Stop(base.Command):
   """Stop a running instance."""
 

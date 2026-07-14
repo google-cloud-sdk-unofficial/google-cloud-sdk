@@ -208,13 +208,7 @@ def AddGlueCatalogArgs(parser):
       '--glue-aws-region',
       help='The AWS region of the Glue catalog to connect to.',
   )
-  parser.add_argument(
-      '--glue-aws-role-arn',
-      help=(
-          'The AWS role ARN of the Glue catalog that the BigLake federated'
-          ' catalog will assume to access the catalog.'
-      ),
-  )
+  AddGlueAwsRoleArnArg(parser)
 
 
 def AddUpdateFederatedCatalogArgs(parser):
@@ -246,5 +240,16 @@ def AddUpdateFederatedCatalogArgs(parser):
       help=(
           'Filters to determine which namespaces are included in the refresh'
           ' process. Empty list means include all namespaces.'
+      ),
+  )
+
+
+def AddGlueAwsRoleArnArg(parser):
+  """Adds Glue AWS role ARN argument."""
+  parser.add_argument(
+      '--glue-aws-role-arn',
+      help=(
+          'The AWS role ARN of the Glue catalog that the BigLake federated'
+          ' catalog will assume to access the catalog.'
       ),
   )

@@ -65,11 +65,24 @@ class Seed(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
       operation if the seed was successful.
     """
     conversion_workspace_ref = args.CONCEPTS.conversion_workspace.Parse()
+
+    resolved_bucket = None
+    resolved_prefix = None
+
+    if args.gcs_path:
+      resolved_bucket = args.gcs_path.bucket
+      resolved_prefix = args.gcs_path.object
+
+    src_cp_ref = args.CONCEPTS.source_connection_profile.Parse()
+    dest_cp_ref = args.CONCEPTS.destination_connection_profile.Parse()
+
     result_operation = self.client.operations.Seed(
         name=conversion_workspace_ref.RelativeName(),
-        src_connection_profile_ref=args.CONCEPTS.source_connection_profile.Parse(),
-        dest_connection_profile_ref=args.CONCEPTS.destination_connection_profile.Parse(),
+        src_connection_profile_ref=src_cp_ref,
+        dest_connection_profile_ref=dest_cp_ref,
         auto_commit=args.auto_commit,
+        gcs_bucket=resolved_bucket,
+        gcs_prefix=resolved_prefix,
     )
 
     return self.HandleOperationResult(

@@ -134,5 +134,6 @@ properties:
       wire format.
     type: string
     enum:
+    - EXT_AUTHZ_GRPC
     - EXT_PROC_GRPC
     - WIRE_FORMAT_UNSPECIFIED

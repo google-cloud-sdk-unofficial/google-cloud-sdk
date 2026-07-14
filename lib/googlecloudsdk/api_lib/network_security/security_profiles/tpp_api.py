@@ -19,6 +19,7 @@ import copy
 
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib.network_security.security_profiles import sp_api
+from googlecloudsdk.core import exceptions
 
 THREAT_PREVENTION_PROFILE_TYPE = 'THREAT_PREVENTION'
 
@@ -92,7 +93,7 @@ class Client(sp_api.Client):
 
     if update_mask == 'antivirusOverrides':
       update_field = 'protocol'
-    if update_mask == 'severityOverrides':
+    elif update_mask == 'severityOverrides':
       update_field = 'severity'
     elif update_mask == 'threatOverrides':
       update_field = 'threatId'
@@ -124,17 +125,19 @@ class Client(sp_api.Client):
     Returns:
       Modified Threat Prevention Profile JSON object.
     """
+    update_field = ''
+    if update_mask == 'antivirusOverrides':
+      update_field = 'protocol'
+    elif update_mask == 'severityOverrides':
+      update_field = 'severity'
+    elif update_mask == 'threatOverrides':
+      update_field = 'threatId'
+
     if operation_type == 'add_override':
       for override in overrides:
-        does_override_exist, _ = self.CheckOverridesExist(
-            existing_threat_prevention_profile_object,
-            update_mask,
-            override,
+        existing_threat_prevention_profile_object.get(update_mask).extend(
+            [override]
         )
-        if not does_override_exist:
-          existing_threat_prevention_profile_object.get(update_mask).extend(
-              [override]
-          )
       return existing_threat_prevention_profile_object
     elif operation_type == 'update_override':
       for override in overrides:
@@ -149,6 +152,11 @@ class Client(sp_api.Client):
           )
           existing_threat_prevention_profile_object.get(update_mask).extend(
               [override]
+          )
+        else:
+          raise exceptions.Error(
+              "Override for {} does not exist. Use 'add-override' to add "
+              'it.'.format(override.get(update_field))
           )
       return existing_threat_prevention_profile_object
 

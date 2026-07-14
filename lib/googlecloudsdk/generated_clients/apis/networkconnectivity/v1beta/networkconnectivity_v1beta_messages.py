@@ -2101,8 +2101,8 @@ class GoogleCloudNetworkconnectivityV1betaRemoteTransportProfile(_messages.Messa
 
     Values:
       PROVIDER_TYPE_UNSPECIFIED: Unspecified provider type.
-      CLOUD: Represents a Cloud service provider for PCCI.
-      NETWORK: Represents a Network service provider for PCCI last mile.
+      CLOUD: Represents a Cloud service provider.
+      NETWORK: Represents a Network service provider.
     """
     PROVIDER_TYPE_UNSPECIFIED = 0
     CLOUD = 1

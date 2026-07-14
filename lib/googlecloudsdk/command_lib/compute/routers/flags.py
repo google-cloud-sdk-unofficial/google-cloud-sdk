@@ -181,7 +181,7 @@ def AddNccGatewayArg(parser):
   parser.add_argument(
       '--ncc-gateway',
       type=str,
-      help='The NCC gateway for this router.',
+      help='The NCC Gateway URI for this router.',
   )
 
 

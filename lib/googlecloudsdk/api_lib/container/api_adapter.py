@@ -14,6 +14,7 @@
 # limitations under the License.
 """Api client adapter containers commands."""
 
+import datetime
 import functools
 import operator
 import os
@@ -783,6 +784,7 @@ class CreateClusterOptions(object):
       system_config_from_file=None,
       maintenance_window_start=None,
       maintenance_window_end=None,
+      maintenance_window_duration=None,
       maintenance_window_recurrence=None,
       enable_cost_allocation=None,
       gpudirect_strategy=None,
@@ -1072,6 +1074,7 @@ class CreateClusterOptions(object):
     self.system_config_from_file = system_config_from_file
     self.maintenance_window_start = maintenance_window_start
     self.maintenance_window_end = maintenance_window_end
+    self.maintenance_window_duration = maintenance_window_duration
     self.maintenance_window_recurrence = maintenance_window_recurrence
     self.enable_cost_allocation = enable_cost_allocation
     self.gpudirect_strategy = gpudirect_strategy
@@ -2948,17 +2951,40 @@ class APIAdapter(object):
       )
     elif options.maintenance_window_start is not None:
       window_start = options.maintenance_window_start.isoformat()
-      window_end = options.maintenance_window_end.isoformat()
-      cluster.maintenancePolicy = self.messages.MaintenancePolicy(
-          window=self.messages.MaintenanceWindow(
-              recurringWindow=self.messages.RecurringTimeWindow(
-                  window=self.messages.TimeWindow(
-                      startTime=window_start, endTime=window_end
-                  ),
-                  recurrence=options.maintenance_window_recurrence,
-              )
-          )
-      )
+      if options.maintenance_window_end is not None:
+        window_end = options.maintenance_window_end.isoformat()
+        cluster.maintenancePolicy = self.messages.MaintenancePolicy(
+            window=self.messages.MaintenanceWindow(
+                recurringWindow=self.messages.RecurringTimeWindow(
+                    window=self.messages.TimeWindow(
+                        startTime=window_start, endTime=window_end
+                    ),
+                    recurrence=options.maintenance_window_recurrence,
+                )
+            )
+        )
+      else:
+        window_start_utc = options.maintenance_window_start.astimezone(
+            datetime.timezone.utc
+        )
+        cluster.maintenancePolicy = self.messages.MaintenancePolicy(
+            window=self.messages.MaintenanceWindow(
+                recurringMaintenanceWindow=self.messages.RecurringMaintenanceWindow(
+                    windowDuration=str(options.maintenance_window_duration)
+                    + 's',
+                    windowStartTime=self.messages.TimeOfDay(
+                        hours=window_start_utc.hour,
+                        minutes=window_start_utc.minute,
+                    ),
+                    delayUntil=self.messages.Date(
+                        year=window_start_utc.year,
+                        month=window_start_utc.month,
+                        day=window_start_utc.day,
+                    ),
+                    recurrence=options.maintenance_window_recurrence,
+                )
+            )
+        )
     disruption_budget = None
     if options.maintenance_minor_version_disruption_interval is not None:
       disruption_budget = self.messages.DisruptionBudget(
@@ -6618,6 +6644,8 @@ class APIAdapter(object):
     # Temporary until in GA:
     if hasattr(existing_policy.window, 'recurringWindow'):
       existing_policy.window.recurringWindow = None
+    if hasattr(existing_policy.window, 'recurringMaintenanceWindow'):
+      existing_policy.window.recurringMaintenanceWindow = None
     existing_policy.window.dailyMaintenanceWindow = daily_window
 
     return self._SendMaintenancePolicyRequest(cluster_ref, existing_policy)
@@ -8031,7 +8059,7 @@ class APIAdapter(object):
   def SetIamPolicy(self, cluster_ref):
     raise NotImplementedError('GetIamPolicy is not overridden')
 
-  def SetRecurringMaintenanceWindow(
+  def SetRecurringTimeWindow(
       self,
       cluster_ref,
       existing_policy,
@@ -8039,7 +8067,7 @@ class APIAdapter(object):
       window_end,
       window_recurrence,
   ):
-    """Sets a recurring maintenance window as the maintenance policy for a cluster.
+    """Sets a recurring time window as the maintenance policy for a cluster.
 
     Args:
       cluster_ref: The cluster to update.
@@ -8062,7 +8090,52 @@ class APIAdapter(object):
     if existing_policy.window is None:
       existing_policy.window = self.messages.MaintenanceWindow()
     existing_policy.window.dailyMaintenanceWindow = None
+    existing_policy.window.recurringMaintenanceWindow = None
     existing_policy.window.recurringWindow = recurring_window
+    return self._SendMaintenancePolicyRequest(cluster_ref, existing_policy)
+
+  def SetRecurringMaintenanceWindow(
+      self,
+      cluster_ref,
+      existing_policy,
+      window_start,
+      window_duration,
+      window_recurrence,
+  ):
+    """Sets a recurring maintenance window as the maintenance policy for a cluster.
+
+    Args:
+      cluster_ref: The cluster to update.
+      existing_policy: The existing maintenance policy, if any.
+      window_start: Start time of the window as a datetime.datetime.
+      window_duration: Duration of the window in seconds.
+      window_recurrence: RRULE str defining how the window will recur.
+
+    Returns:
+      The operation from this cluster update.
+    """
+
+    recurring_maintenance_window = self.messages.RecurringMaintenanceWindow(
+        windowStartTime=self.messages.TimeOfDay(
+            hours=window_start.hour, minutes=window_start.minute
+        ),
+        windowDuration=str(window_duration) + 's',
+        delayUntil=self.messages.Date(
+            year=window_start.year,
+            month=window_start.month,
+            day=window_start.day,
+        ),
+        recurrence=window_recurrence,
+    )
+    if existing_policy is None:
+      existing_policy = self.messages.MaintenancePolicy()
+    if existing_policy.window is None:
+      existing_policy.window = self.messages.MaintenanceWindow()
+    existing_policy.window.dailyMaintenanceWindow = None
+    existing_policy.window.recurringWindow = None
+    existing_policy.window.recurringMaintenanceWindow = (
+        recurring_maintenance_window
+    )
     return self._SendMaintenancePolicyRequest(cluster_ref, existing_policy)
 
   def RemoveMaintenanceWindow(self, cluster_ref, existing_policy):
@@ -8073,11 +8146,13 @@ class APIAdapter(object):
         or (
             existing_policy.window.dailyMaintenanceWindow is None
             and existing_policy.window.recurringWindow is None
+            and existing_policy.window.recurringMaintenanceWindow is None
         )
     ):
       raise util.Error(NOTHING_TO_UPDATE_ERROR_MSG)
     existing_policy.window.dailyMaintenanceWindow = None
     existing_policy.window.recurringWindow = None
+    existing_policy.window.recurringMaintenanceWindow = None
     return self._SendMaintenancePolicyRequest(cluster_ref, existing_policy)
 
   def _NormalizeMaintenanceExclusionsForPolicy(self, policy):
@@ -8476,41 +8551,29 @@ class APIAdapter(object):
     )
     return self.ParseOperation(op.name, cluster_ref.zone)
 
-  def ModifyRayClusterLoggingConfig(
-      self, cluster_ref, enable_ray_cluster_logging
+  def ModifyRayClusterConfig(
+      self,
+      cluster_ref,
+      enable_ray_cluster_logging,
+      enable_ray_cluster_monitoring,
   ):
-    """Enables Ray cluster log collection when using RayOperator addon."""
+    """Enables Ray cluster logging and/or cluster monitoring with Ray Addon."""
+
+    logging_config = None
+    if enable_ray_cluster_logging is not None:
+      logging_config = self.messages.RayClusterLoggingConfig(
+          enabled=enable_ray_cluster_logging
+      )
+    monitoring_config = None
+    if enable_ray_cluster_monitoring is not None:
+      monitoring_config = self.messages.RayClusterMonitoringConfig(
+          enabled=enable_ray_cluster_monitoring
+      )
 
     ray_operator_config = self.messages.RayOperatorConfig(
         enabled=True,
-        rayClusterLoggingConfig=self.messages.RayClusterLoggingConfig(
-            enabled=enable_ray_cluster_logging
-        ),
-    )
-    addons_config = self.messages.AddonsConfig(
-        rayOperatorConfig=ray_operator_config
-    )
-    update = self.messages.ClusterUpdate(desiredAddonsConfig=addons_config)
-    op = self.client.projects_locations_clusters.Update(
-        self.messages.UpdateClusterRequest(
-            name=ProjectLocationCluster(
-                cluster_ref.projectId, cluster_ref.zone, cluster_ref.clusterId
-            ),
-            update=update,
-        )
-    )
-    return self.ParseOperation(op.name, cluster_ref.zone)
-
-  def ModifyRayClusterMonitoringConfig(
-      self, cluster_ref, enable_ray_cluster_monitoring
-  ):
-    """Enables Ray cluster metrics collection when using RayOperator addon."""
-
-    ray_operator_config = self.messages.RayOperatorConfig(
-        enabled=True,
-        rayClusterMonitoringConfig=self.messages.RayClusterMonitoringConfig(
-            enabled=enable_ray_cluster_monitoring
-        ),
+        rayClusterLoggingConfig=logging_config,
+        rayClusterMonitoringConfig=monitoring_config,
     )
     addons_config = self.messages.AddonsConfig(
         rayOperatorConfig=ray_operator_config

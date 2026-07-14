@@ -14,6 +14,7 @@
 # limitations under the License.
 """Command to add a dynamic network interface to a Compute Engine instance."""
 
+import argparse
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.instances import utils as instances_utils
 from googlecloudsdk.api_lib.compute.operations import poller
@@ -40,9 +41,11 @@ class Add(base.UpdateCommand):
   enable_ipv6_assignment = False
   support_igmp_query = False
   support_alias_ipv6_ranges = False
+  support_dns64_eligible = False
+  support_nat64_eligible = False
 
   @classmethod
-  def Args(cls, parser):
+  def Args(cls, parser: argparse.ArgumentParser):
     instances_flags.INSTANCE_ARG.AddArgument(parser)
 
     network_interfaces_flags.AddParentNicNameArg(parser)
@@ -73,8 +76,12 @@ class Add(base.UpdateCommand):
 
     if cls.support_igmp_query:
       network_interfaces_flags.AddIgmpQueryArg(parser)
+    if cls.support_dns64_eligible:
+      network_interfaces_flags.AddDns64EligibleArg(parser)
+    if cls.support_nat64_eligible:
+      network_interfaces_flags.AddNat64EligibleArg(parser)
 
-  def Run(self, args):
+  def Run(self, args: argparse.Namespace):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     compute_client = holder.client
     api_client = compute_client.apitools_client
@@ -119,6 +126,8 @@ class Add(base.UpdateCommand):
         igmp_query=getattr(args, 'igmp_query', None),
         service_class_id=getattr(args, 'service_class_id', None),
         support_alias_ipv6_ranges=self.support_alias_ipv6_ranges,
+        dns64_eligible=getattr(args, 'dns64_eligible', None),
+        nat64_eligible=getattr(args, 'nat64_eligible', None),
     )
 
     request = messages.ComputeInstancesAddNetworkInterfaceRequest(
@@ -155,6 +164,8 @@ class AddBeta(Add):
   enable_ipv6_assignment = False
   support_igmp_query = False
   support_alias_ipv6_ranges = True
+  support_dns64_eligible = False
+  support_nat64_eligible = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -171,6 +182,8 @@ class AddAlpha(AddBeta):
   enable_ipv6_assignment = True
   support_igmp_query = True
   support_alias_ipv6_ranges = True
+  support_dns64_eligible = True
+  support_nat64_eligible = True
 
 
 Add.detailed_help = {

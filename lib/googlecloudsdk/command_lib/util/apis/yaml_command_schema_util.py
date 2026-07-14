@@ -686,7 +686,8 @@ class ArgObject(arg_utils.ArgObjectType):
     spec = []
     for field_data in params_data:
       arg_object = ArgObject.FromData(
-          field_data, parent_field=api_field or parent_field)
+          field_data, parent_field=api_field or parent_field
+      )
       # Flatten specs that do not have an api_field associated with them.
       # This supports the use case where there is a mutex arg group that does
       # not have an api_field associated with it.
@@ -745,11 +746,19 @@ class ArgObject(arg_utils.ArgObjectType):
         field_type=cls._FieldTypeFromData(group_data),
         spec=spec,
         disable_key_description=disable_key_description,
+        required=group_data.get('required'),
     )
 
-  def __init__(self, api_field=None, json_name=None, help_text=None,
-               hidden=None, field_type=None, spec=None,
-               disable_key_description=False):
+  def __init__(
+      self,
+      api_field=None,
+      json_name=None,
+      help_text=None,
+      hidden=None,
+      field_type=None,
+      spec=None,
+      disable_key_description=False,
+      required=None):
     # Represents user specified yaml data
     self.api_field = api_field
     self.json_name = json_name
@@ -758,6 +767,7 @@ class ArgObject(arg_utils.ArgObjectType):
     self.field_type = field_type
     self.spec = spec
     self.disable_key_description = disable_key_description
+    self.required = required
 
   def Action(self, field):
     """Returns the correct argument action.
@@ -775,7 +785,8 @@ class ArgObject(arg_utils.ArgObjectType):
   def _GetFieldTypeFromSpec(self, api_field):
     """Returns first spec field that matches the api_field."""
     default_type = ArgObject(
-        disable_key_description=self.disable_key_description)
+        disable_key_description=self.disable_key_description
+    )
     spec = self.spec or []
     return next((f for f in spec if f.api_field == api_field), default_type)
 
@@ -843,8 +854,10 @@ class ArgObject(arg_utils.ArgObjectType):
         help_text=self.help_text,
         hidden=field_spec.hidden,
         root_level=is_root,
+        enable_file_upload=is_root,
         disable_key_description=self.disable_key_description,
-        allow_key_only=True)
+        allow_key_only=True,
+    )
 
     additional_prop_spec_type = _AdditionalPropsType(
         arg_type=arg_obj,
@@ -900,21 +913,24 @@ class ArgObject(arg_utils.ArgObjectType):
         repeated=field_spec.repeated,
         hidden=field_spec.hidden,
         root_level=is_root,
+        enable_file_upload=is_root,
         disable_key_description=self.disable_key_description,
-        allow_key_only=True)
+        allow_key_only=True,
+    )
 
     return _MessageFieldType(
         arg_type=arg_obj,
         field_spec=field_spec,
         field_specs=field_specs)
 
-  def _GenerateFieldType(self, field_spec, is_label_field=False):
+  def _GenerateFieldType(self, field_spec, is_label_field=False, is_root=True):
     """Returns _FieldType that parses apitools field from string.
 
     Args:
       field_spec: _FieldSpec, information about the field
       is_label_field: bool, whether or not the field is for a labels map field.
         If true, supplies default validation and help text.
+      is_root: bool, whether or not the field is at the root level.
 
     Returns:
       _FieldType that takes string like '1' or ['1'] and parses it
@@ -937,8 +953,9 @@ class ArgObject(arg_utils.ArgObjectType):
         hidden=field_spec.hidden,
         root_level=False,
         enable_file_upload=(
-            not isinstance(value_type, arg_parsers.FileContents)),
-        disable_key_description=self.disable_key_description
+            is_root and not isinstance(value_type, arg_parsers.FileContents)
+        ),
+        disable_key_description=self.disable_key_description,
     )
     return _FieldType(
         arg_type=arg_obj,
@@ -960,7 +977,7 @@ class ArgObject(arg_utils.ArgObjectType):
     """
     field_spec = _FieldSpec.FromUserData(
         field, arg_name=self.json_name, field_type=self.field_type,
-        api_field=self.api_field, hidden=self.hidden)
+        api_field=self.api_field, hidden=self.hidden, required=self.required)
     field_variation = arg_utils.GetFieldType(field)
     if field_variation == arg_utils.FieldType.MAP:
       return self._GenerateMapType(field_spec, is_root)
@@ -968,7 +985,9 @@ class ArgObject(arg_utils.ArgObjectType):
     elif field_variation == arg_utils.FieldType.MESSAGE:
       return self._GenerateMessageType(field_spec, is_root)
     else:
-      return self._GenerateFieldType(field_spec, is_label_field)
+      return self._GenerateFieldType(
+          field_spec, is_label_field=is_label_field, is_root=is_root
+      )
 
 
 def _GetArgDictFieldType(message, user_field_spec):

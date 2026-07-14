@@ -33,7 +33,7 @@
     params:
     - help_text: |-
         The catalog name in the following format:
-        projects/$project/locations/$location/spaces/$space/catalogs/$catalog
+        `projects/$project/locations/$location/spaces/$space/catalogs/$catalog`
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.design_center.v1_resources:projects_locations_spaces_catalogs

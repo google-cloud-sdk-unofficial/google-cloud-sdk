@@ -61,6 +61,7 @@ class Create(base.CreateCommand):
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = True
   _support_workload_identity_config = True
+  _support_instance_selection_min_cpu_platform = True
 
   @classmethod
   def Args(cls, parser):
@@ -85,6 +86,7 @@ class Create(base.CreateCommand):
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
         support_instance_flexibility_policy=False,
         support_workload_identity_config=cls._support_workload_identity_config,
+        support_instance_selection_min_cpu_platform=cls._support_instance_selection_min_cpu_platform,
     )
     cls.AddSourceInstanceTemplate(parser)
     instances_flags.AddSecureTagsArgs(parser)
@@ -158,6 +160,7 @@ class Create(base.CreateCommand):
         # Instance flexibility policy is not supported in QueuedResource.
         False,
         self._support_workload_identity_config,
+        self._support_instance_selection_min_cpu_platform,
     )
     bulk_insert_instance_resource = bulk_util.CreateBulkInsertInstanceResource(
         args,

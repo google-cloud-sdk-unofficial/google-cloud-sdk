@@ -855,6 +855,60 @@ class StorageV2(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def ReplaceBucketEncryptionKey(self, request, global_params=None):
+      r"""Replace the Cloud KMS key used in a bucket.
+
+      Args:
+        request: (StorageProjectsBucketsReplaceBucketEncryptionKeyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('ReplaceBucketEncryptionKey')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ReplaceBucketEncryptionKey.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/buckets/{bucketsId}:replaceBucketEncryptionKey',
+        http_method='POST',
+        method_id='storage.projects.buckets.replaceBucketEncryptionKey',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v2/{+parent}:replaceBucketEncryptionKey',
+        request_field='replaceBucketEncryptionKeyRequest',
+        request_type_name='StorageProjectsBucketsReplaceBucketEncryptionKeyRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def RotateBucketEncryptionKey(self, request, global_params=None):
+      r"""Rotate the Cloud KMS key used in a bucket.
+
+      Args:
+        request: (StorageProjectsBucketsRotateBucketEncryptionKeyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('RotateBucketEncryptionKey')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    RotateBucketEncryptionKey.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/buckets/{bucketsId}:rotateBucketEncryptionKey',
+        http_method='POST',
+        method_id='storage.projects.buckets.rotateBucketEncryptionKey',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v2/{+parent}:rotateBucketEncryptionKey',
+        request_field='rotateBucketEncryptionKeyRequest',
+        request_type_name='StorageProjectsBucketsRotateBucketEncryptionKeyRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class ProjectsLocationsIntelligenceFindingsRevisionsService(base_api.BaseApiService):
     """Service class for the projects_locations_intelligenceFindings_revisions resource."""
 

@@ -1,4 +1,4 @@
-- release_tracks: [BETA]
+- release_tracks: [BETA, GA]
 
   help_text:
     brief: List gateway advertised routes.
@@ -19,6 +19,8 @@
   request: &request
     BETA:
       api_version: v1beta
+    GA:
+      api_version: v1
     collection: networkconnectivity.projects.locations.spokes.gatewayAdvertisedRoutes
     modify_request_hooks:
     - googlecloudsdk.command_lib.network_connectivity.util:CheckRegionSpecifiedIfSpokeSpecified
@@ -30,6 +32,18 @@
 
   output:
     BETA:
+      format: |
+        table(
+            name.basename():sort=3,
+            name.segment(3):label=LOCATION:sort=1,
+            name.segment(5):label=SPOKE:sort=2,
+            ip_range,
+            recipient,
+            priority,
+            state,
+            description
+        )
+    GA:
       format: |
         table(
             name.basename():sort=3,

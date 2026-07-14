@@ -18,6 +18,7 @@ import textwrap
 
 from googlecloudsdk.api_lib.biglake import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.biglake import arguments
 from googlecloudsdk.command_lib.biglake import flags
 from googlecloudsdk.core import log
@@ -50,6 +51,7 @@ class UpdateCatalog(base.UpdateCommand):
   _support_service_directory_name = False
   _support_federated_catalog = False
   _support_service_principal_application_id = False
+  _support_glue_catalog = False
 
   @classmethod
   def Args(cls, parser):
@@ -67,6 +69,8 @@ class UpdateCatalog(base.UpdateCommand):
       arguments.AddServiceDirectoryNameArg(parser)
     if cls._support_service_principal_application_id:
       arguments.AddServicePrincipalApplicationIdArg(parser)
+    if cls._support_glue_catalog:
+      arguments.AddGlueAwsRoleArnArg(parser)
     if cls._support_federated_catalog:
       arguments.AddUpdateFederatedCatalogArgs(parser)
 
@@ -75,32 +79,35 @@ class UpdateCatalog(base.UpdateCommand):
   ):
     """Updates catalog with federated catalog options."""
     catalog.federated_catalog_options = messages.FederatedCatalogOptions()
-    if self._support_service_directory_name and args.IsSpecified(
-        'service_directory_name'
-    ):
+    if args.IsKnownAndSpecified('service_directory_name'):
       update_mask.append('federated_catalog_options.service_directory_name')
       catalog.federated_catalog_options.service_directory_name = (
           args.service_directory_name
       )
-    if args.IsSpecified('secret_name'):
+    if args.IsKnownAndSpecified('secret_name'):
       update_mask.append('federated_catalog_options.secret_name')
       catalog.federated_catalog_options.secret_name = args.secret_name
-    if hasattr(args, 'service_principal_application_id') and args.IsSpecified(
-        'service_principal_application_id'
-    ):
+    if args.IsKnownAndSpecified('service_principal_application_id'):
       update_mask.append(
           'federated_catalog_options.unity_catalog_info.service_principal_application_id'
       )
       catalog.federated_catalog_options.unity_catalog_info = messages.UnityCatalogInfo(
           service_principal_application_id=args.service_principal_application_id
       )
-    if args.IsSpecified('refresh_interval') or args.IsSpecified(
+    if args.IsKnownAndSpecified('glue_aws_role_arn'):
+      update_mask.append(
+          'federated_catalog_options.glue_catalog_info.aws_role_arn'
+      )
+      catalog.federated_catalog_options.glue_catalog_info = (
+          messages.GlueCatalogInfo(aws_role_arn=args.glue_aws_role_arn)
+      )
+    if args.IsKnownAndSpecified('refresh_interval') or args.IsKnownAndSpecified(
         'namespace_filters'
     ):
       catalog.federated_catalog_options.refresh_options = (
           messages.RefreshOptions()
       )
-    if args.IsSpecified('refresh_interval'):
+    if args.IsKnownAndSpecified('refresh_interval'):
       update_mask.append(
           'federated_catalog_options.refresh_options.refresh_schedule'
       )
@@ -111,7 +118,7 @@ class UpdateCatalog(base.UpdateCommand):
               )
           )
       )
-    if args.IsSpecified('namespace_filters'):
+    if args.IsKnownAndSpecified('namespace_filters'):
       update_mask.append(
           'federated_catalog_options.refresh_options.refresh_scope'
       )
@@ -147,6 +154,57 @@ class UpdateCatalog(base.UpdateCommand):
         )
     )
     catalog_type = get_response.catalog_type
+
+    is_federated = (
+        catalog_type
+        == messages.IcebergCatalog.CatalogTypeValueValuesEnum.CATALOG_TYPE_FEDERATED
+    )
+
+    if (
+        args.IsKnownAndSpecified('secret_name')
+        or args.IsKnownAndSpecified('service_principal_application_id')
+        or args.IsKnownAndSpecified('glue_aws_role_arn')
+        or args.IsKnownAndSpecified('refresh_interval')
+        or args.IsKnownAndSpecified('namespace_filters')
+        or args.IsKnownAndSpecified('service_directory_name')
+    ):
+      if not is_federated:
+        raise exceptions.InvalidArgumentException(
+            '--',
+            'Cannot specify federated catalog arguments for a non-federated'
+            ' catalog.',
+        )
+
+      is_glue = (
+          get_response.federated_catalog_options
+          and get_response.federated_catalog_options.glue_catalog_info
+      )
+      is_unity = (
+          get_response.federated_catalog_options
+          and get_response.federated_catalog_options.unity_catalog_info
+      )
+
+      if is_glue and args.IsKnownAndSpecified(
+          'service_principal_application_id'
+      ):
+        raise exceptions.InvalidArgumentException(
+            '--service-principal-application-id',
+            '--service-principal-application-id is not supported for Glue'
+            ' federated catalogs.',
+        )
+
+      if is_glue and args.IsKnownAndSpecified('secret_name'):
+        raise exceptions.InvalidArgumentException(
+            '--secret-name',
+            '--secret-name is not supported for Glue federated catalogs.',
+        )
+
+      if is_unity and args.IsKnownAndSpecified('glue_aws_role_arn'):
+        raise exceptions.InvalidArgumentException(
+            '--glue-aws-role-arn',
+            'Cannot specify Glue Catalog arguments when updating a Unity'
+            ' federated catalog.',
+        )
     if (
         self._support_catalog_type_biglake
         and args.IsSpecified('catalog_type')
@@ -172,17 +230,12 @@ class UpdateCatalog(base.UpdateCommand):
 
     if self._support_federated_catalog:
       if (
-          (
-              hasattr(args, 'service_directory_name')
-              and args.IsSpecified('service_directory_name')
-          )
-          or args.IsSpecified('secret_name')
-          or (
-              hasattr(args, 'service_principal_application_id')
-              and args.IsSpecified('service_principal_application_id')
-          )
-          or args.IsSpecified('refresh_interval')
-          or args.IsSpecified('namespace_filters')
+          args.IsKnownAndSpecified('service_directory_name')
+          or args.IsKnownAndSpecified('secret_name')
+          or args.IsKnownAndSpecified('service_principal_application_id')
+          or args.IsKnownAndSpecified('glue_aws_role_arn')
+          or args.IsKnownAndSpecified('refresh_interval')
+          or args.IsKnownAndSpecified('namespace_filters')
       ):
         self._UpdateFederatedCatalogOptions(
             args, catalog, messages, update_mask
@@ -235,3 +288,4 @@ class UpdateAlpha(UpdateBeta):
   _support_catalog_type_biglake = True
   _support_service_directory_name = True
   _support_service_principal_application_id = True
+  _support_glue_catalog = True

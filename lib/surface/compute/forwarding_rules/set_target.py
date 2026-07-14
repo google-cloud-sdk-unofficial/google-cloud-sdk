@@ -126,7 +126,7 @@ class Set(base.UpdateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SetBeta(Set):
   """Modify a forwarding rule to direct network traffic to a new target."""
-  _support_external_passthrough = False
+  _support_external_passthrough = True
 
 
 @base.UniverseCompatible

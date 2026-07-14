@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import re
+from typing import Any
 
 from googlecloudsdk.command_lib.cluster_director.clusters import errors
 
@@ -60,3 +61,91 @@ def ValidateResourceID(resource_id: str) -> None:
         f"Resource ID '{resource_id}' must be 1-63 characters, lower-case"
         " alphanumeric or hyphen, start with a letter."
     )
+
+
+def ValidateStorageConfigs(
+    valid_storage_resources_map: dict[str, Any],
+    storage_configs: list[Any],
+    existing_mounts_by_id: dict[str, str],
+) -> None:
+  """Validates node set storage configs against the cluster's storage.
+
+  Args:
+    valid_storage_resources_map: Map of storage ID to StorageResource.
+    storage_configs: The list of StorageConfig dictionary objects to validate.
+    existing_mounts_by_id: Map of existing storage ID to its localMount path.
+
+  Raises:
+    ClusterDirectorError: If input fails rules.
+  """
+  seen_mounts = set()
+  for sc in storage_configs or []:
+    storage_id = sc.get("id")
+    local_mount = sc.get("localMount")
+
+    if not local_mount:
+      raise ClusterDirectorError(
+          f"The storage config '{storage_id}' is missing a local mount."
+      )
+
+    if not local_mount.startswith("/"):
+      raise ClusterDirectorError(
+          f"The storage config '{storage_id}' has a local mount"
+          f" '{local_mount}', which does not start with a forward slash."
+      )
+
+    if local_mount in seen_mounts:
+      raise ClusterDirectorError(
+          f"The storage config '{storage_id}' has a local mount"
+          f" '{local_mount}', which is already used by another storage config."
+      )
+    seen_mounts.add(local_mount)
+
+    if storage_id not in valid_storage_resources_map:
+      raise ClusterDirectorError(
+          f"Storage resource [{storage_id}] does not exist in the cluster."
+      )
+
+    if storage_id in existing_mounts_by_id:
+      if local_mount != existing_mounts_by_id[storage_id]:
+        raise ClusterDirectorError(
+            "Cannot update the localMount of already existing storage "
+            f"[{storage_id}]."
+        )
+
+    if local_mount == "/home":
+      continue
+
+    storage_resource = valid_storage_resources_map[storage_id]
+    if not storage_resource or not hasattr(storage_resource, "config"):
+      continue
+
+    config = storage_resource.config
+    if not config:
+      continue
+
+    if getattr(config, "newFilestore", None) or getattr(
+        config, "existingFilestore", None
+    ):
+      if not local_mount.startswith("/shared"):
+        raise ClusterDirectorError(
+            f"For Filestore storage [{storage_id}], local mount prefix must "
+            "be '/shared'."
+        )
+    elif getattr(config, "newLustre", None) or getattr(
+        config, "existingLustre", None
+    ):
+      if not local_mount.startswith("/scratch"):
+        raise ClusterDirectorError(
+            f"For Lustre storage [{storage_id}], local mount prefix must "
+            "be '/scratch'."
+        )
+    elif getattr(config, "newBucket", None) or getattr(
+        config, "existingBucket", None
+    ):
+      if not local_mount.startswith("/data"):
+        raise ClusterDirectorError(
+            f"For Bucket storage [{storage_id}], local mount prefix must "
+            "be '/data'."
+        )
+

@@ -14,22 +14,28 @@
 # limitations under the License.
 """Implementation of rsync command for Cloud Storage."""
 
+from __future__ import annotations
 
 import os
 import textwrap
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.storage import cp_command_util
 from googlecloudsdk.command_lib.storage import encryption_util
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import rsync_command_util
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import user_request_args_factory
+from googlecloudsdk.command_lib.storage.resources import resource_reference
 from googlecloudsdk.command_lib.storage.tasks import get_sorted_list_file_task
 from googlecloudsdk.command_lib.storage.tasks import task_executor
 from googlecloudsdk.command_lib.storage.tasks import task_graph_executor
 from googlecloudsdk.command_lib.storage.tasks import task_status
+from googlecloudsdk.command_lib.storage.tasks import task_util
+from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
 _COMMAND_DESCRIPTION = """
@@ -126,23 +132,48 @@ def _get_list_tasks_and_cleanup_paths(
       cleanup_paths (List[str]): The paths where inventories are stored. The
         caller is responsible for removing these after transfers complete.
   """
+  should_use_destination_gstmp_list = (
+      isinstance(
+          destination_container, resource_reference.FileDirectoryResource
+      )
+      and properties.VALUES.storage.use_rsync_unmatched_gstmp_handling.GetBool()
+      and args.delete_unmatched_destination_objects
+  )
+  # List task arguments are tuples of (container, managed_folders_only,
+  # destination_gstmp_only).
+  # We only need to consider gstmp files in case of local destination containers
+  # when deleting unmatched files. Hence, destination_gstmp_only is always False
+  # for source_container and source/destination container with
+  # include_managed_folders.
   list_task_arguments = [
-      (source_container, False),
-      (destination_container, False),
+      (source_container, False, False),
+      (destination_container, False, should_use_destination_gstmp_list),
   ]
   if args.include_managed_folders:
     list_task_arguments.extend(
-        [(source_container, True), (destination_container, True)]
+        [(source_container, True, False), (destination_container, True, False)]
     )
 
   cleanup_paths = []
   list_tasks = []
-  for container, managed_folders_only in list_task_arguments:
+  for (
+      container,
+      managed_folders_only,
+      destination_gstmp_only,
+  ) in list_task_arguments:
     path = rsync_command_util.get_hashed_list_file_path(
         container.storage_url.url_string,
         is_managed_folder_list=managed_folders_only,
     )
     cleanup_paths.append(path)
+    if destination_gstmp_only:
+      gstmp_path = rsync_command_util.get_hashed_list_file_path(
+          container.storage_url.url_string,
+          is_gstmp_list=True,
+      )
+      cleanup_paths.append(gstmp_path)
+    else:
+      gstmp_path = None
     task = get_sorted_list_file_task.GetSortedContainerContentsTask(
         container,
         path,
@@ -150,9 +181,44 @@ def _get_list_tasks_and_cleanup_paths(
         ignore_symlinks=args.ignore_symlinks,
         managed_folders_only=managed_folders_only,
         recurse=args.recursive,
+        gstmp_path=gstmp_path,
     )
     list_tasks.append(task)
   return list_tasks, cleanup_paths
+
+
+def _should_skip_delete_gstmp_tasks_after_rsync(
+    *,
+    rsync_exit_code: int,
+    args: parser_extensions.Namespace,
+    parallelizable: bool,
+    should_use_destination_gstmp_deletion: bool,
+) -> bool:
+  """Determines if GSTMP tasks should be skipped after rsync.
+
+  Args:
+    rsync_exit_code: The exit code of the rsync task execution.
+    args: The command line arguments.
+    parallelizable: Whether parallel execution was used for rsync tasks.
+    should_use_destination_gstmp_deletion: Whether a destination gstmp list is
+      being used.
+
+  Returns:
+    True if GSTMP tasks should be skipped after rsync, False otherwise.
+  """
+  if not should_use_destination_gstmp_deletion:
+    return True
+
+  # If rsync succeeded without errors, we should delete GSTMP files.
+  if not rsync_exit_code:
+    return False
+  # If parallel execution was used for rsync tasks, we should not delete GSTMP
+  # files, in case errors were encountered during rsync.
+  if task_util.should_use_parallelism() and parallelizable:
+    return True
+  # If --continue-on-error is used in sequential mode, we should delete GSTMP
+  # files even if rsync failed.
+  return not args.continue_on_error
 
 
 def _perform_rsync(
@@ -190,6 +256,12 @@ def _perform_rsync(
       destination_container.storage_url.url_string,
       is_managed_folder_list=perform_managed_folder_operations,
   )
+  destination_gstmp_list_path = rsync_command_util.get_hashed_list_file_path(
+      destination_container.storage_url.url_string,
+      is_gstmp_list=True,
+  )
+
+  parallelizable = not perform_managed_folder_operations
 
   task_status_queue = task_graph_executor.multiprocessing_context.Queue()
   operation_iterator = rsync_command_util.get_operation_iterator(
@@ -211,16 +283,53 @@ def _perform_rsync(
       skip_unsupported=args.skip_unsupported,
       task_status_queue=task_status_queue,
   )
-  return task_executor.execute_tasks(
+  rsync_exit_code = task_executor.execute_tasks(
       operation_iterator,
       continue_on_error=args.continue_on_error,
-      parallelizable=not perform_managed_folder_operations,
+      parallelizable=parallelizable,
       progress_manager_args=task_status.ProgressManagerArgs(
           task_status.IncrementType.FILES_AND_BYTES,
           manifest_path=user_request_args.manifest_path,
       ),
       task_status_queue=task_status_queue,
   )
+  should_use_destination_gstmp_deletion = (
+      isinstance(
+          destination_container, resource_reference.FileDirectoryResource
+      )
+      and properties.VALUES.storage.use_rsync_unmatched_gstmp_handling.GetBool()
+      and args.delete_unmatched_destination_objects
+  )
+
+  if _should_skip_delete_gstmp_tasks_after_rsync(
+      rsync_exit_code=rsync_exit_code,
+      args=args,
+      parallelizable=parallelizable,
+      should_use_destination_gstmp_deletion=(
+          should_use_destination_gstmp_deletion
+      ),
+  ):
+    return rsync_exit_code
+
+  # Delete unmatched destination GSTMP files after rsync if enabled and rsync
+  # did not fail (or if --continue-on-error is used).
+  log.debug('Deleting unmatched destination GSTMP files after rsync...')
+  delete_gstmp_exit_code = task_executor.execute_tasks(
+      rsync_command_util.get_gstmp_delete_task_iterator(
+          user_request_args,
+          destination_gstmp_list_path,
+          dry_run=args.dry_run,
+          task_status_queue=task_status_queue,
+      ),
+      continue_on_error=args.continue_on_error,
+      parallelizable=parallelizable,
+      progress_manager_args=task_status.ProgressManagerArgs(
+          task_status.IncrementType.INTEGER,
+          manifest_path=user_request_args.manifest_path,
+      ),
+      task_status_queue=task_status_queue,
+  )
+  return rsync_exit_code or delete_gstmp_exit_code
 
 
 @base.UniverseCompatible

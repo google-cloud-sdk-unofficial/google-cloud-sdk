@@ -95,8 +95,8 @@
               repeated: false
               help_text: |-
                 The branch in repo to which the content such as Infrastructure as Code
-                (IaC) should be written to. If empty, ADC will create a branch and push the
-                changes.
+                (IaC) should be written to. If empty, Application Design Center will create
+                a branch and push the changes.
             - arg_name: developer-connect-export-config-dir
               api_field: generateApplicationTemplateIaCRequest.artifactLocation.developerConnectExportConfig.dir
               required: true

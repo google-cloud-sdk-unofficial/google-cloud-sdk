@@ -86,13 +86,15 @@ properties:
     type: string
   nicType:
     description: |-
-      The type of vNIC to be used on this interface. This may be gVNIC
-      or VirtioNet.
+      The type of vNIC to be used on this interface.
     type: string
     enum:
     - GVNIC
     - UNSPECIFIED_NIC_TYPE
     - VIRTIO_NET
+    - IRDMA
+    - MRDMA
+    - IDPF
   subnetwork:
     description: |-
       The URL of the Subnetwork resource for this instance. If the

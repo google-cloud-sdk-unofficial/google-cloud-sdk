@@ -1016,7 +1016,8 @@ class TaskGraphExecutor:
             handle_task_output_thread.join()
             add_executable_tasks_to_queue_thread.join()
         finally:
-
+          if task_graph_debugger.is_task_graph_debugging_enabled():
+            task_graph_debugger.stop_thread_for_task_graph_debugging()
           # By calling the clean in the finally block, we ensure that the
           # progress manager exit is called first.
           # We also handle the scenario where an exception may be thrown by the

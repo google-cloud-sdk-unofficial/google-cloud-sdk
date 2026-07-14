@@ -46,6 +46,7 @@ _MAX_WAIT_TIME_IN_MS = 20 * 1000
 VERSION_MAP = {
     base.ReleaseTrack.ALPHA: 'v1',
     base.ReleaseTrack.BETA: 'v1',
+    base.ReleaseTrack.GA: 'v1',
 }
 
 
@@ -121,10 +122,19 @@ class InsightsConfigClient(object):
       create_request = self.create_apphub_insights_config_request(
           insight_config_ref, app_hub, user_artifact_configs, source_config,
       )
-    else:
+    elif target_projects:
       create_request = self.create_project_scope_insights_config_request(
           insight_config_ref, target_projects, user_artifact_configs,
           source_config,
+      )
+    elif source_config:
+      create_request = self.create_source_config_insights_config_request(
+          insight_config_ref, user_artifact_configs, source_config
+      )
+    else:
+      raise exceptions.Error(
+          'You must specify a runtime context (--app-hub-application or '
+          '--target-projects) and/or a source configuration (--source-config).'
       )
 
     try:
@@ -285,6 +295,54 @@ class InsightsConfigClient(object):
               artifactConfigs=artifact_configs,
           ),
       )
+
+  def create_source_config_insights_config_request(
+      self,
+      insight_config_ref,
+      user_artifact_configs,
+      source_config,
+  ) -> (
+      get_messages_module().DeveloperconnectProjectsLocationsInsightsConfigsCreateRequest
+  ):
+    """Creates the insight config request for source-only scope."""
+    # Since there's no runtime context, CAIS discovery is skipped.
+    cais_artifact_configs_dict = {}
+    user_artifact_configs_dict = name.parse_artifact_configs(
+        user_artifact_configs
+    )
+
+    merged_artifact_configs_dict = self.merge_artifact_configs(
+        cais_artifact_configs_dict, user_artifact_configs_dict
+    )
+    artifact_projects, artifact_configs = self.build_artifact_configs(
+        merged_artifact_configs_dict, cais_artifact_configs_dict
+    )
+
+    if artifact_projects:
+      self.init_service_account(
+          insight_config_ref.projectsId,
+          sorted(artifact_projects),
+          management_project=False,
+      )
+
+    insights_config_msg = self.messages.InsightsConfig(
+        name=insight_config_ref.RelativeName(),
+        artifactConfigs=artifact_configs,
+    )
+
+    # Populate source configs if the flag was provided.
+    if source_config:
+      insights_config_msg.sourceConfigs = [
+          self.messages.SourceConfig(
+              gitRepositoryLink=source_config.get('git-repository-link'),
+          )
+      ]
+
+    return self.messages.DeveloperconnectProjectsLocationsInsightsConfigsCreateRequest(
+        parent=insight_config_ref.Parent().RelativeName(),
+        insightsConfigId=insight_config_ref.insightsConfigsId,
+        insightsConfig=insights_config_msg,
+    )
 
   def merge_artifact_configs(
       self,

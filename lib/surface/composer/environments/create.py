@@ -1012,6 +1012,11 @@ class CreateAlpha(CreateBeta):
 
     # Adding alpha arguments
     parser.add_argument(
+        '--enable-development-mode',
+        action='store_true',
+        hidden=True,
+        help='Whether to build a development-mode environment.')
+    parser.add_argument(
         '--airflow-executor-type',
         hidden=True,
         choices={
@@ -1125,6 +1130,7 @@ class CreateAlpha(CreateBeta):
         disable_private_builds_only=args.disable_private_builds_only,
         release_track=self.ReleaseTrack(),
         storage_bucket=args.storage_bucket,
+        enable_development_mode=args.enable_development_mode,
     )
 
     return environments_api_util.Create(self.env_ref, create_flags,

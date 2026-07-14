@@ -2380,17 +2380,6 @@ class Collections(enum.Enum):
       ['projectsId', 'locationsId'],
       True
   )
-  PROJECTS_LOCATIONS_SEMANTICGOVERNANCEPOLICYENGINE_OPERATIONS = (
-      'projects.locations.semanticGovernancePolicyEngine.operations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'semanticGovernancePolicyEngine/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
   PROJECTS_LOCATIONS_SERVERLESSRAYJOBS = (
       'projects.locations.serverlessRayJobs',
       '{+name}',
@@ -2903,16 +2892,6 @@ class Collections(enum.Enum):
           '':
               'semanticGovernancePolicies/{semanticGovernancePoliciesId}/'
               'operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  SEMANTICGOVERNANCEPOLICYENGINE_OPERATIONS = (
-      'semanticGovernancePolicyEngine.operations',
-      '{+name}',
-      {
-          '':
-              'semanticGovernancePolicyEngine/operations/{operationsId}',
       },
       ['name'],
       True

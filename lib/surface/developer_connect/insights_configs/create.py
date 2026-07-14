@@ -46,8 +46,8 @@ DETAILED_HELP = {
 class Create(base.CreateCommand):
   """Create an insight config."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Adds arguments for this command."""
     try:
       resource_args.AddInsightConfigResourceArg(parser, verb='create')
@@ -55,16 +55,19 @@ class Create(base.CreateCommand):
       log.status.Print('Failed to add insight config resource argument.')
       raise e
 
-    # Relevant argument.
-    source_group = parser.add_mutually_exclusive_group(required=True)
+    # Use cls.ReleaseTrack() to check if we are in Alpha
+    is_alpha = cls.ReleaseTrack() == base.ReleaseTrack.ALPHA
+
+    source_group = parser.add_mutually_exclusive_group(required=not is_alpha)
     flags.AddAppHubApplicationArgument(source_group)
     flags.AddTargetProjectsArgument(source_group)
+
     flags.AddArtifactConfigsArgument(parser)
     flags.AddSourceConfigArgument(parser)
 
   def Run(self, args):
     max_wait = datetime.timedelta(seconds=30)
-    client = insights_config.InsightsConfigClient(base.ReleaseTrack.ALPHA)
+    client = insights_config.InsightsConfigClient(self.ReleaseTrack())
     insights_config_ref = args.CONCEPTS.insights_config.Parse()
     try:
       operation = client.create(

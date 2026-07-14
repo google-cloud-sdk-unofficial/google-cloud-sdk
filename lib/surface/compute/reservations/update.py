@@ -116,7 +116,11 @@ def _ValidateArgs(
   has_share_with = False
   if support_share_with_flag:
     has_share_with = args.IsSpecified('share_with')
-  has_add_share_with = args.IsSpecified('add_share_with')
+  has_add_share_with = (
+      args.IsKnownAndSpecified('add_share_with') or
+      args.IsKnownAndSpecified('add_share_with_folder') or
+      args.IsKnownAndSpecified('add_share_with_project')
+  )
   has_remove_share_with = args.IsSpecified('remove_share_with')
   if has_share_with or has_add_share_with or has_remove_share_with:
     share_with = True
@@ -176,7 +180,7 @@ def _ValidateArgs(
 
 def _GetShareSettingUpdateRequest(
     args, reservation_ref, holder, support_share_with_flag,
-    support_share_type):
+    support_share_type, support_folder_share_setting=False):
   """Create Update Request for share-with.
 
   Returns:
@@ -187,6 +191,7 @@ def _GetShareSettingUpdateRequest(
    holder: base_classes.ComputeApiHolder.
    support_share_with_flag: Check if share_with is supported.
    support_share_type: Check if share_type is supported.
+   support_folder_share_setting: Check if folder share setting is supported.
   """
   messages = holder.client.messages
   # Set updated properties and build update mask.
@@ -198,32 +203,80 @@ def _GetShareSettingUpdateRequest(
     update_mask.append('shareSettings.shareType')
 
   if support_share_with_flag:
+    if args.IsKnownAndSpecified('add_share_with_folder'):
+      setting_configs = 'folders'
+    elif args.IsKnownAndSpecified('add_share_with_project'):
+      setting_configs = 'projects'
+
     if not setting_configs and (args.IsSpecified('share_with') or
                                 args.IsSpecified('add_share_with') or
                                 args.IsSpecified('remove_share_with')):
-      setting_configs = 'projects'
+      if support_folder_share_setting:
+        service = holder.client.apitools_client.reservations
+        get_request = messages.ComputeReservationsGetRequest(
+            reservation=reservation_ref.Name(),
+            project=reservation_ref.project,
+            zone=reservation_ref.zone)
+        errors = []
+        res = list(request_helper.MakeRequests(
+            requests=[(service, 'Get', get_request)],
+            http=holder.client.apitools_client.http,
+            batch_url=holder.client.batch_url,
+            errors=errors))
+        if errors:
+          utils.RaiseToolException(errors)
+        existing_reservation = res[0] if res else None
+        if (existing_reservation and existing_reservation.shareSettings and
+            (existing_reservation.shareSettings.shareType ==
+             messages.ShareSettings.ShareTypeValueValuesEnum
+             .DIRECT_PROJECTS_UNDER_SPECIFIC_FOLDERS)):
+          setting_configs = 'folders'
+        else:
+          setting_configs = 'projects'
+      else:
+        setting_configs = 'projects'
 
     if args.IsSpecified('share_with'):
       share_settings = util.MakeShareSettingsWithArgs(
-          messages, args, setting_configs, share_with='share_with')
+          messages, args, setting_configs, share_with='share_with'
+      )
+      map_field = (
+          'folderMap.' if setting_configs == 'folders' else 'projectMap.'
+      )
       update_mask.extend([
-          'shareSettings.projectMap.' + project
+          'shareSettings.' + map_field + project
           for project in getattr(args, 'share_with', [])
       ])
   else:
     setting_configs = 'projects'
-  if args.IsSpecified('add_share_with'):
+  if args.IsKnownAndSpecified('add_share_with_folder'):
     share_settings = util.MakeShareSettingsWithArgs(
-        messages, args, setting_configs, share_with='add_share_with')
+        messages, args, 'folders', share_with='add_share_with_folder')
+    update_mask.extend([
+        'shareSettings.folderMap.' + folder
+        for folder in getattr(args, 'add_share_with_folder', [])
+    ])
+  elif args.IsKnownAndSpecified('add_share_with_project'):
+    share_settings = util.MakeShareSettingsWithArgs(
+        messages, args, 'projects', share_with='add_share_with_project')
     update_mask.extend([
         'shareSettings.projectMap.' + project
+        for project in getattr(args, 'add_share_with_project', [])
+    ])
+  elif args.IsSpecified('add_share_with'):
+    share_settings = util.MakeShareSettingsWithArgs(
+        messages, args, setting_configs, share_with='add_share_with')
+    map_field = 'folderMap.' if setting_configs == 'folders' else 'projectMap.'
+    update_mask.extend([
+        'shareSettings.' + map_field + project
         for project in getattr(args, 'add_share_with', [])
     ])
   elif args.IsSpecified('remove_share_with'):
     share_settings = util.MakeShareSettingsWithArgs(
         messages, args, setting_configs, share_with='remove_share_with')
+    map_field = 'folderMap.' if setting_configs == 'folders' else 'projectMap.'
     update_mask.extend([
-        'shareSettings.projectMap.' + project
+        'shareSettings.' + map_field + project
         for project in getattr(args, 'remove_share_with', [])
     ])
 
@@ -448,6 +501,7 @@ class Update(base.UpdateCommand):
   _support_share_type = False
   _support_scheduling_type = True
   _support_early_access_maintenance = True
+  _support_folder_share_setting = False
 
   @classmethod
   def Args(cls, parser):
@@ -455,6 +509,7 @@ class Update(base.UpdateCommand):
         parser, operation_type='update')
     r_flags.GetAddShareWithFlag().AddToParser(parser)
     r_flags.GetRemoveShareWithFlag().AddToParser(parser)
+    r_flags.GetAddShareWithProjectFlag().AddToParser(parser)
     r_flags.GetVmCountFlag(False).AddToParser(parser)
     r_flags.GetReservationSharingPolicyFlag().AddToParser(parser)
     r_flags.GetEnableEmergentMaintenanceFlag().AddToParser(parser)
@@ -487,8 +542,10 @@ class Update(base.UpdateCommand):
     result = list()
     errors = []
     share_with = False
-    if args.IsSpecified('add_share_with') or args.IsSpecified(
-        'remove_share_with'):
+    if (args.IsKnownAndSpecified('add_share_with') or
+        args.IsKnownAndSpecified('add_share_with_folder') or
+        args.IsKnownAndSpecified('add_share_with_project') or
+        args.IsKnownAndSpecified('remove_share_with')):
       share_with = True
     if self._support_share_with_flag:
       if args.IsSpecified('share_with'):
@@ -497,7 +554,8 @@ class Update(base.UpdateCommand):
     if share_with:
       r_update_request = _GetShareSettingUpdateRequest(
           args, reservation_ref, holder, self._support_share_with_flag,
-          self._support_share_type)
+          self._support_share_type,
+          self._support_folder_share_setting)
       # Invoke Reservation.update API.
       result.append(
           list(
@@ -628,6 +686,7 @@ class UpdateBeta(Update):
     r_flags.GetShareWithFlag().AddToParser(parser)
     r_flags.GetAddShareWithFlag().AddToParser(parser)
     r_flags.GetRemoveShareWithFlag().AddToParser(parser)
+    r_flags.GetAddShareWithProjectFlag().AddToParser(parser)
     r_flags.GetVmCountFlag(False).AddToParser(parser)
     r_flags.GetReservationSharingPolicyFlag().AddToParser(parser)
     r_flags.GetEnableEmergentMaintenanceFlag().AddToParser(parser)
@@ -658,20 +717,25 @@ class UpdateAlpha(Update):
   _support_share_type = True
   _support_scheduling_type = True
   _support_early_access_maintenance = True
+  _support_folder_share_setting = True
 
   @classmethod
   def Args(cls, parser):
     resource_args.GetReservationResourceArg().AddArgument(
         parser, operation_type='update'
     )
-    r_flags.GetShareWithFlag().AddToParser(parser)
+    r_flags.GetShareWithFlag(
+        support_folder_share_setting=True).AddToParser(parser)
     r_flags.GetAddShareWithFlag().AddToParser(parser)
     r_flags.GetRemoveShareWithFlag().AddToParser(parser)
+    r_flags.GetAddShareWithFolderFlag().AddToParser(parser)
+    r_flags.GetRemoveShareWithFolderFlag().AddToParser(parser)
+    r_flags.GetAddShareWithProjectFlag().AddToParser(parser)
     r_flags.GetVmCountFlag(False).AddToParser(parser)
     r_flags.GetReservationSharingPolicyFlag().AddToParser(parser)
     r_flags.GetEnableEmergentMaintenanceFlag().AddToParser(parser)
     r_flags.GetSharedSettingFlag(
-        support_folder_share_setting=False).AddToParser(parser)
+        support_folder_share_setting=True).AddToParser(parser)
     r_flags.GetSchedulingTypeFlag().AddToParser(parser)
     r_flags.GetEarlyAccessMaintenanceFlag().AddToParser(parser)
 

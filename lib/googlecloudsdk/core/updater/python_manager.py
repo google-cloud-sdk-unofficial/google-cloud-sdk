@@ -25,9 +25,9 @@ from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import platforms
 
 
-PYTHON_VERSION = '3.13'
-PYTHON_VERSION_INFO = (3, 13)
-MACOS_PYTHON = 'python-3.13.7-macos11.tar.gz'
+PYTHON_VERSION = '3.14'
+PYTHON_VERSION_INFO = (3, 14)
+MACOS_PYTHON = 'python-3.14.5-macos11.tar.gz'
 
 HOMEBREW_BIN = '/opt/homebrew/bin'
 MACOS_PYTHON_INSTALL_PATH = (
@@ -65,6 +65,25 @@ def _EnableVirtualEnv(cli):
   cli.Execute(['config', 'virtualenv', 'enable'])
 
 
+def _GetVirtualEnvPythonVersion(env_dir):
+  """Returns the Python version of the virtualenv as a tuple (major, minor)."""
+  cfg_path = os.path.join(env_dir, 'pyvenv.cfg')
+  if not os.path.isfile(cfg_path):
+    return None
+  try:
+    with files.FileReader(cfg_path) as f:
+      for line in f:
+        # pyvenv.cfg standard format includes: version = X.Y.Z
+        if line.startswith('version =') or line.startswith('version_info ='):
+          version_str = line.split('=')[1].strip()
+          parts = version_str.split('.')
+          if len(parts) >= 2:
+            return (int(parts[0]), int(parts[1]))
+  except Exception:  # pylint: disable=broad-except
+    pass
+  return None
+
+
 def UpdatePythonDependencies(python_to_use):
   """Enables virtual environment with new python version and dependencies."""
   try:
@@ -73,7 +92,9 @@ def UpdatePythonDependencies(python_to_use):
 
     # Assume we are executing in a virtual environment if env_dir exists
     env_dir = _VirtualEnvPath()
-    if env_dir and sys.version_info[:2] != PYTHON_VERSION_INFO:
+    if (env_dir and
+        (sys.version_info[:2] != PYTHON_VERSION_INFO
+         or _GetVirtualEnvPythonVersion(env_dir) != PYTHON_VERSION_INFO)):
       _RecreateVirtualEnv(cli, python_to_use, env_dir)
     elif env_dir:
       _UpdateVirtualEnv(cli)
@@ -148,7 +169,7 @@ def _MacInstallPython():
 
       exit_code = execution_utils.Exec([
           'sudo', 'installer', '-target', '/', '-pkg',
-          './python-3.13.7-macos11.pkg'
+          './python-3.14.5-macos11.pkg'
       ], no_exit=True)
       if exit_code != 0:
         _PrintPythonInstallError('Installer failed.')

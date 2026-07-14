@@ -4093,6 +4093,7 @@ class GoogleCloudBeyondcorpSecuritygatewaysV1alphaContextualHeaders(_messages.Me
 
   Fields:
     deviceInfo: Optional. The device information configuration.
+    dispatchInfo: Optional. The dispatch information configuration.
     groupInfo: Optional. Group details.
     outputType: Optional. Default output type for all enabled headers.
     userInfo: Optional. User details.
@@ -4113,9 +4114,10 @@ class GoogleCloudBeyondcorpSecuritygatewaysV1alphaContextualHeaders(_messages.Me
     NONE = 3
 
   deviceInfo = _messages.MessageField('GoogleCloudBeyondcorpSecuritygatewaysV1alphaContextualHeadersDelegatedDeviceInfo', 1)
-  groupInfo = _messages.MessageField('GoogleCloudBeyondcorpSecuritygatewaysV1alphaContextualHeadersDelegatedGroupInfo', 2)
-  outputType = _messages.EnumField('OutputTypeValueValuesEnum', 3)
-  userInfo = _messages.MessageField('GoogleCloudBeyondcorpSecuritygatewaysV1alphaContextualHeadersDelegatedUserInfo', 4)
+  dispatchInfo = _messages.MessageField('GoogleCloudBeyondcorpSecuritygatewaysV1alphaContextualHeadersDelegatedDispatchInfo', 2)
+  groupInfo = _messages.MessageField('GoogleCloudBeyondcorpSecuritygatewaysV1alphaContextualHeadersDelegatedGroupInfo', 3)
+  outputType = _messages.EnumField('OutputTypeValueValuesEnum', 4)
+  userInfo = _messages.MessageField('GoogleCloudBeyondcorpSecuritygatewaysV1alphaContextualHeadersDelegatedUserInfo', 5)
 
 
 class GoogleCloudBeyondcorpSecuritygatewaysV1alphaContextualHeadersDelegatedDeviceInfo(_messages.Message):
@@ -4131,6 +4133,36 @@ class GoogleCloudBeyondcorpSecuritygatewaysV1alphaContextualHeadersDelegatedDevi
 
   class OutputTypeValueValuesEnum(_messages.Enum):
     r"""Optional. The output type details for the delegated device.
+
+    Values:
+      OUTPUT_TYPE_UNSPECIFIED: The unspecified output type.
+      PROTOBUF: Protobuf output type.
+      JSON: JSON output type.
+      NONE: Explicitly disable header output.
+    """
+    OUTPUT_TYPE_UNSPECIFIED = 0
+    PROTOBUF = 1
+    JSON = 2
+    NONE = 3
+
+  outputType = _messages.EnumField('OutputTypeValueValuesEnum', 1)
+
+
+class GoogleCloudBeyondcorpSecuritygatewaysV1alphaContextualHeadersDelegatedDispatchInfo(_messages.Message):
+  r"""The delegated dispatch information configuration.
+
+  Enums:
+    OutputTypeValueValuesEnum: Optional. The output type details for the
+      delegated dispatch information.
+
+  Fields:
+    outputType: Optional. The output type details for the delegated dispatch
+      information.
+  """
+
+  class OutputTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The output type details for the delegated dispatch
+    information.
 
     Values:
       OUTPUT_TYPE_UNSPECIFIED: The unspecified output type.

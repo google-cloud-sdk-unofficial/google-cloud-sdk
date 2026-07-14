@@ -181,7 +181,6 @@ def AddSourceConfigArgument(parser):
       metavar='SOURCE_CONFIG',
       type=arg_parsers.ArgDict(spec={'git-repository-link': str}),
       dest='source_config',
-      help=(
-          'The source config of the git repository link.'
-      ),
+      hidden=True,
+      help='The source config of the git repository link.',
   )

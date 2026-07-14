@@ -1342,6 +1342,7 @@ class GoogleCloudRunV2Instance(_messages.Message):
       whether the resource uses preview features. For example, if ALPHA is
       provided as input, but only BETA and GA-level features are used, this
       field will be BETA on output.
+    RestartPolicyValueValuesEnum: Optional. Restart policy for the Instance.
 
   Messages:
     AnnotationsValue: A AnnotationsValue object.
@@ -1428,6 +1429,7 @@ class GoogleCloudRunV2Instance(_messages.Message):
       outcomes: reconciliation succeeded and the serving state matches the
       Instance, or there was an error, and reconciliation failed. This state
       can be found in `terminal_condition.state`.
+    restartPolicy: Optional. Restart policy for the Instance.
     satisfiesPzs: Output only. Reserved for future use.
     serviceAccount: A string attribute.
     terminalCondition: Output only. The Condition of this Instance, containing
@@ -1528,6 +1530,20 @@ class GoogleCloudRunV2Instance(_messages.Message):
     GA = 6
     DEPRECATED = 7
 
+  class RestartPolicyValueValuesEnum(_messages.Enum):
+    r"""Optional. Restart policy for the Instance.
+
+    Values:
+      RESTART_POLICY_UNSPECIFIED: Unspecified restart policy.
+      ALWAYS: Always restart the instance.
+      ON_FAILURE: Restart if the instance terminates with non-zero exit code.
+      NEVER: Never restart the instance.
+    """
+    RESTART_POLICY_UNSPECIFIED = 0
+    ALWAYS = 1
+    ON_FAILURE = 2
+    NEVER = 3
+
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AnnotationsValue(_messages.Message):
     r"""A AnnotationsValue object.
@@ -1607,14 +1623,15 @@ class GoogleCloudRunV2Instance(_messages.Message):
   nodeSelector = _messages.MessageField('GoogleCloudRunV2NodeSelector', 28)
   observedGeneration = _messages.IntegerField(29)
   reconciling = _messages.BooleanField(30)
-  satisfiesPzs = _messages.BooleanField(31)
-  serviceAccount = _messages.StringField(32)
-  terminalCondition = _messages.MessageField('GoogleCloudRunV2Condition', 33)
-  uid = _messages.StringField(34)
-  updateTime = _messages.StringField(35)
-  urls = _messages.StringField(36, repeated=True)
-  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 37, repeated=True)
-  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 38)
+  restartPolicy = _messages.EnumField('RestartPolicyValueValuesEnum', 31)
+  satisfiesPzs = _messages.BooleanField(32)
+  serviceAccount = _messages.StringField(33)
+  terminalCondition = _messages.MessageField('GoogleCloudRunV2Condition', 34)
+  uid = _messages.StringField(35)
+  updateTime = _messages.StringField(36)
+  urls = _messages.StringField(37, repeated=True)
+  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 38, repeated=True)
+  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 39)
 
 
 class GoogleCloudRunV2InstanceSplit(_messages.Message):

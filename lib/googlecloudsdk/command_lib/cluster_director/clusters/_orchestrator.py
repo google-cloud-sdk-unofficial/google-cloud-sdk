@@ -201,7 +201,7 @@ def MakeLabels(label_args, label_cls):
   )
 
 
-def _GetStorageConfigs(message_module, cluster):
+def _GetStorageConfigs(message_module, cluster, existing_storage_configs=None):
   """Returns the storage configs."""
   storage_configs: list[Any] = []
   if not cluster.storageResources:
@@ -210,16 +210,61 @@ def _GetStorageConfigs(message_module, cluster):
       cluster.storageResources.additionalProperties,
       key=lambda storage: storage.key,
   )
-  if sorted_storages:
-    first_storage = sorted_storages[0]
-    storage_configs.append(
-        message_module.StorageConfig(
-            id=first_storage.key,
-            localMount="/home",
-        )
-    )
+  if not sorted_storages:
+    return storage_configs
+
+  occupied_mounts = set()
+  existing_mounts_by_id = {}
   counters = collections.defaultdict(int)
-  for storage in sorted_storages[1:]:
+  if existing_storage_configs:
+    for existing_sc in existing_storage_configs:
+      occupied_mounts.add(existing_sc.localMount)
+      existing_mounts_by_id[existing_sc.id] = existing_sc.localMount
+      if existing_sc.localMount.startswith("/shared"):
+        try:
+          val = int(existing_sc.localMount[len("/shared"):])
+          counters["filestore"] = max(counters["filestore"], val + 1)
+        except ValueError:
+          pass
+      elif existing_sc.localMount.startswith("/scratch"):
+        try:
+          val = int(existing_sc.localMount[len("/scratch"):])
+          counters["lustre"] = max(counters["lustre"], val + 1)
+        except ValueError:
+          pass
+      elif existing_sc.localMount.startswith("/data"):
+        try:
+          val = int(existing_sc.localMount[len("/data"):])
+          counters["bucket"] = max(counters["bucket"], val + 1)
+        except ValueError:
+          pass
+
+  new_storages = [
+      s for s in sorted_storages if s.key not in existing_mounts_by_id
+  ]
+  home_mounted_id = None
+  if "/home" not in occupied_mounts and new_storages:
+    home_mounted_id = new_storages[0].key
+
+  for storage in sorted_storages:
+    if storage.key in existing_mounts_by_id:
+      storage_configs.append(
+          message_module.StorageConfig(
+              id=storage.key,
+              localMount=existing_mounts_by_id[storage.key],
+          )
+      )
+      continue
+
+    if storage.key == home_mounted_id:
+      storage_configs.append(
+          message_module.StorageConfig(
+              id=storage.key,
+              localMount="/home",
+          )
+      )
+      continue
+
     local_mount = None
     if storage.value:
       if (
@@ -340,11 +385,21 @@ def _MakeSlurmNodeSet(
     raise ClusterDirectorError(_GCE_FIELDS_ON_GKE_NODE_SET_ERROR)
   if not is_container_node_pool and has_gke_fields:
     raise ClusterDirectorError(_GKE_FIELDS_ON_GCE_NODE_SET_ERROR)
+
+  node_set_storage_configs = storage_configs
+  if "storageConfigs" in node_set:
+    node_set_storage_configs = [
+        message_module.StorageConfig(
+            id=sc.get("id"), localMount=sc.get("localMount")
+        )
+        for sc in node_set.get("storageConfigs")
+    ]
+
   slurm_node_set = message_module.SlurmNodeSet(
       id=node_set.get("id"),
       staticNodeCount=node_set.get("staticNodeCount", 1),
       maxDynamicNodeCount=node_set.get("maxDynamicNodeCount"),
-      storageConfigs=storage_configs,
+      storageConfigs=node_set_storage_configs,
       computeId=node_set.get("computeId"),
   )
   if is_container_node_pool:
@@ -553,6 +608,14 @@ def MakeClusterSlurmOrchestratorPatch(
     slurm.defaultPartition = args.slurm_default_partition
     update_mask.add("orchestrator.slurm.default_partition")
 
+  storage_resources_map = {}
+  if existing_cluster and existing_cluster.storageResources:
+    for prop in existing_cluster.storageResources.additionalProperties:
+      storage_resources_map[prop.key] = prop.value
+  if cluster_patch and cluster_patch.storageResources:
+    for prop in cluster_patch.storageResources.additionalProperties:
+      storage_resources_map[prop.key] = prop.value
+
   existing_slurm_node_sets = None
   if (
       existing_cluster
@@ -619,6 +682,39 @@ def MakeClusterSlurmOrchestratorPatch(
         existing_node_set.containerNodePool.startupScript = _GetBashScript(
             node_set.get("container-startup-script")
         )
+
+      if "storageConfigs" in node_set:
+        existing_mounts_by_id = {}
+        if existing_node_set.storageConfigs:
+          existing_mounts_by_id = {
+              esc.id: esc.localMount
+              for esc in existing_node_set.storageConfigs
+          }
+        _validator.ValidateStorageConfigs(
+            storage_resources_map,
+            node_set.get("storageConfigs"),
+            existing_mounts_by_id,
+        )
+        custom_storage_configs = [
+            message_module.StorageConfig(
+                id=sc.get("id"), localMount=sc.get("localMount")
+            )
+            for sc in node_set.get("storageConfigs")
+        ]
+        for ns in slurm_node_sets.values():
+          ns.storageConfigs = custom_storage_configs
+
+        if (
+            not slurm.loginNodes
+            and existing_cluster
+            and existing_cluster.orchestrator
+            and existing_cluster.orchestrator.slurm
+            and existing_cluster.orchestrator.slurm.loginNodes
+        ):
+          slurm.loginNodes = existing_cluster.orchestrator.slurm.loginNodes
+        if slurm.loginNodes:
+          slurm.loginNodes.storageConfigs = custom_storage_configs
+          update_mask.add("orchestrator.slurm.login_nodes")
 
       slurm_node_sets[node_set_id] = existing_node_set
       is_node_sets_updated = True
@@ -747,13 +843,54 @@ def MakeClusterSlurmOrchestratorPatch(
     update_mask.add("orchestrator.slurm.login_nodes")
 
   if "storage_resources" in update_mask:
-    new_storage_configs = _GetStorageConfigs(message_module, cluster_patch)
+    existing_storage_configs = []
+    if (
+        existing_cluster
+        and existing_cluster.orchestrator
+        and existing_cluster.orchestrator.slurm
+        and existing_cluster.orchestrator.slurm.nodeSets
+    ):
+      existing_storage_configs = existing_cluster.orchestrator.slurm.nodeSets[
+          0
+      ].storageConfigs
+
+    new_storage_configs = _GetStorageConfigs(
+        message_module, cluster_patch, existing_storage_configs
+    )
+
     if not slurm.nodeSets and slurm_node_sets:
       slurm.nodeSets = list(slurm_node_sets.values())
+
+    removed_storage_ids = set()
+    if (
+        existing_cluster
+        and existing_cluster.storageResources
+        and cluster_patch
+        and cluster_patch.storageResources
+    ):
+      existing_ids = {
+          prop.key
+          for prop in existing_cluster.storageResources.additionalProperties
+      }
+      updated_ids = {
+          prop.key
+          for prop in cluster_patch.storageResources.additionalProperties
+      }
+      removed_storage_ids = existing_ids - updated_ids
+
     if slurm.nodeSets:
       for ns in slurm.nodeSets:
+        if ns.storageConfigs:
+          ns.storageConfigs = [
+              sc for sc in ns.storageConfigs if sc.id not in removed_storage_ids
+          ]
         if not ns.storageConfigs:
           ns.storageConfigs = new_storage_configs
+        else:
+          existing_ids = {sc.id for sc in ns.storageConfigs}
+          for sc in new_storage_configs:
+            if sc.id not in existing_ids:
+              ns.storageConfigs.append(sc)
       update_mask.add("orchestrator.slurm.node_sets")
 
     if (
@@ -764,9 +901,26 @@ def MakeClusterSlurmOrchestratorPatch(
         and existing_cluster.orchestrator.slurm.loginNodes
     ):
       slurm.loginNodes = existing_cluster.orchestrator.slurm.loginNodes
-    if slurm.loginNodes and not slurm.loginNodes.storageConfigs:
-      slurm.loginNodes.storageConfigs = new_storage_configs
-      update_mask.add("orchestrator.slurm.login_nodes")
+    if slurm.loginNodes:
+      node_sets = None
+      if slurm.nodeSets:
+        node_sets = slurm.nodeSets
+      elif (
+          existing_cluster
+          and existing_cluster.orchestrator
+          and existing_cluster.orchestrator.slurm
+      ):
+        node_sets = existing_cluster.orchestrator.slurm.nodeSets
+      if node_sets:
+        slurm.loginNodes.storageConfigs = node_sets[0].storageConfigs
+        # Verify that the storageConfig update is successfully applied to the
+        # login nodes
+        if slurm.loginNodes.storageConfigs != node_sets[0].storageConfigs:
+          raise ClusterDirectorError(
+              "Login node storage configurations must match node set"
+              " configurations."
+          )
+        update_mask.add("orchestrator.slurm.login_nodes")
 
   # Prolog scripts
   prolog_scripts = []
@@ -873,5 +1027,39 @@ def MakeClusterSlurmOrchestratorPatch(
     if is_task_epilog_updated:
       slurm.taskEpilogBashScripts = task_epilog_scripts
       update_mask.add("orchestrator.slurm.task_epilog_bash_scripts")
+
+  # Validate that all slurm node sets have identical storage configurations
+  final_node_sets = None
+  if slurm.nodeSets:
+    final_node_sets = slurm.nodeSets
+  elif (
+      existing_cluster
+      and existing_cluster.orchestrator
+      and existing_cluster.orchestrator.slurm
+  ):
+    final_node_sets = existing_cluster.orchestrator.slurm.nodeSets
+
+  if final_node_sets and len(final_node_sets) > 1:
+    first_ns = final_node_sets[0]
+    first_configs = first_ns.storageConfigs or []
+    first_configs_map = {sc.id: sc.localMount for sc in first_configs}
+    for ns in final_node_sets[1:]:
+      current_configs = ns.storageConfigs or []
+      current_configs_map = {sc.id: sc.localMount for sc in current_configs}
+      if len(first_configs_map) != len(current_configs_map):
+        raise ClusterDirectorError(
+            "All Slurm node sets must have identical storage configurations. "
+            f"Node set '{ns.id}' has a different number of storage configs "
+            f"than '{first_ns.id}'."
+        )
+      for sc_id, local_mount in first_configs_map.items():
+        if (
+            sc_id not in current_configs_map
+            or current_configs_map[sc_id] != local_mount
+        ):
+          raise ClusterDirectorError(
+              "All Slurm node sets must have identical storage configurations. "
+              f"Node set '{ns.id}' does not match '{first_ns.id}'."
+          )
 
   return slurm

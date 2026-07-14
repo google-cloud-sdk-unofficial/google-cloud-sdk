@@ -199,6 +199,32 @@ def GetAddShareWithFlag(custom_name=None):
       help=help_text)
 
 
+def GetAddShareWithFolderFlag():
+  """Gets the --add-share-with-folder flag."""
+  help_text = """\
+  Specify a comma-separated list of folders to share the reservation
+  with. You must list the folders using folder IDs.
+  """
+  return base.Argument(
+      '--add-share-with-folder',
+      type=arg_parsers.ArgList(min_length=1),
+      metavar='FOLDER',
+      help=help_text)
+
+
+def GetAddShareWithProjectFlag():
+  """Gets the --add-share-with-project flag."""
+  help_text = """\
+  Specify a comma-separated list of projects to share the reservation
+  with. You must list the projects using project IDs or project numbers.
+  """
+  return base.Argument(
+      '--add-share-with-project',
+      type=arg_parsers.ArgList(min_length=1),
+      metavar='PROJECT',
+      help=help_text)
+
+
 def GetRemoveShareWithFlag(custom_name=None):
   """Gets the --remove-share-with flag."""
   help_text = """\
@@ -209,6 +235,19 @@ def GetRemoveShareWithFlag(custom_name=None):
       custom_name if custom_name else '--remove-share-with',
       type=arg_parsers.ArgList(min_length=1),
       metavar='PROJECT',
+      help=help_text)
+
+
+def GetRemoveShareWithFolderFlag():
+  """Gets the --remove-share-with-folder flag."""
+  help_text = """\
+  Specify a comma-separated list of folders to remove from the list of folders
+  that this reservation is shared with. List must contain folder IDs.
+  """
+  return base.Argument(
+      '--remove-share-with-folder',
+      type=arg_parsers.ArgList(min_length=1),
+      metavar='FOLDER',
       help=help_text)
 
 

@@ -3442,7 +3442,7 @@ class ComputeInstanceTargetEnvironment(_messages.Message):
   Fields:
     project: Required. Target project for the Compute Engine instance.
     useProjectServiceAccount: Optional. Whether to use the project service
-      account for the Compute Engine instance.
+      account for the Compute Engine instance restore.
     zone: Required. The zone of the Compute Engine instance.
   """
 
@@ -4055,7 +4055,7 @@ class DiskTargetEnvironment(_messages.Message):
   Fields:
     project: Required. Target project for the disk.
     useProjectServiceAccount: Optional. Whether to use the project service
-      account for the disk.
+      account for the disk restore.
     zone: Required. Target zone for the disk.
   """
 
@@ -5707,7 +5707,7 @@ class RegionDiskTargetEnvironment(_messages.Message):
     region: Required. Target region for the disk.
     replicaZones: Required. Target URLs of the replica zones for the disk.
     useProjectServiceAccount: Optional. Whether to use the project service
-      account for the disk.
+      account for the disk restore.
   """
 
   project = _messages.StringField(1)

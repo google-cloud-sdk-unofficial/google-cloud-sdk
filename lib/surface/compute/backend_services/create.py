@@ -117,7 +117,11 @@ class CreateHelper(object):
     flags.AddServiceBindings(parser)
     flags.AddTimeout(parser)
     flags.AddPortName(parser)
-    flags.AddProtocol(parser, default=None)
+    flags.AddProtocol(
+        parser,
+        default=None,
+        include_external_passthrough=support_external_passthrough,
+    )
     flags.AddEnableCdn(parser)
     flags.AddSessionAffinity(parser, support_stateful_affinity=True)
     flags.AddAffinityCookie(parser, support_stateful_affinity=True)
@@ -161,6 +165,8 @@ class CreateHelper(object):
     if support_allow_multinetwork:
       flags.AddAllowMultinetwork(parser)
     flags.AddResourceManagerTags(parser)
+    flags.AddHaPolicyCreateFlags(parser)
+    flags.AddHaPolicyLeaderFlags(parser)
 
   def __init__(
       self,
@@ -310,6 +316,10 @@ class CreateHelper(object):
     if self._support_allow_multinetwork:
       backend_service.allowMultinetwork = args.allow_multinetwork
 
+    backend_services_utils.ApplyHaPolicyArgs(
+        client.messages, args, backend_service
+    )
+
     request = client.messages.ComputeBackendServicesInsertRequest(
         backendService=backend_service, project=backend_services_ref.project
     )
@@ -436,6 +446,10 @@ class CreateHelper(object):
     if self._support_allow_multinetwork:
       backend_service.allowMultinetwork = args.allow_multinetwork
 
+    backend_services_utils.ApplyHaPolicyArgs(
+        client.messages, args, backend_service
+    )
+
     request = client.messages.ComputeRegionBackendServicesInsertRequest(
         backendService=backend_service,
         region=backend_services_ref.region,
@@ -456,9 +470,9 @@ class CreateHelper(object):
         and args.load_balancing_scheme == 'EXTERNAL_PASSTHROUGH'
     ):
       # Override default protocol for global external passthrough backend
-      # service to TCP. Do not set a port name, as it is not supported for
-      # passthrough load balancers.
-      default_protocol = 'TCP'
+      # service to UNSPECIFIED. Do not set a port name, as it is not supported
+      # for passthrough load balancers.
+      default_protocol = 'UNSPECIFIED'
     else:
       port_name = _ResolvePortName(args)
 
@@ -608,7 +622,7 @@ class CreateBeta(CreateGA):
   _support_forward_proxy = True
   _support_allow_multinetwork = False
   _support_identity = True
-  _support_external_passthrough = False
+  _support_external_passthrough = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -40,6 +40,7 @@ from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.translation_rules i
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.translation_rules import timeout
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.translation_rules import volumes
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.console import console_io
 
 
 ExportImageResult = appengine_api_client.ExportImageResult
@@ -85,7 +86,7 @@ def translate_from_source(
   else:
     input_flatten_as_appyaml = util.flatten_keys(input_data, parent_path='')
 
-  source_path = _get_source_path(feature_helper.InputType.APP_YAML, appyaml)
+  source_path = get_source_path(feature_helper.InputType.APP_YAML, appyaml)
 
   flags: Sequence[str] = _get_cloud_run_flags(
       input_data=input_data,
@@ -173,9 +174,7 @@ def translate_from_image(
   )
 
 
-def _get_source_path(
-    input_type: feature_helper.InputType, appyaml: str
-) -> str:
+def get_source_path(input_type: feature_helper.InputType, appyaml: str) -> str:
   """Gets the source path for the Cloud Run deploy command."""
   if input_type == feature_helper.InputType.APP_YAML:
     if appyaml:
@@ -184,10 +183,14 @@ def _get_source_path(
       return source_path if source_path else '.'
     return '.'
   else:
-    return input(
-        'Is the source code located in the current directory? If not, please'
-        ' provide its path relative to the current directory: '
-    ) + '/'
+    return (
+        console_io.PromptWithDefault(
+            'Is the source code located in the current directory? If not,'
+            ' please provide its path relative to the current directory: ',
+            default='.',
+        )
+        + '/'
+    )
 
 
 def _convert_keys_to_snake_case(data: Any) -> Any:
@@ -228,6 +231,74 @@ def _convert_admin_api_input_to_app_yaml(
     new_key = k.replace('.standard_scheduler_settings', '')
     result[new_key] = v
   return result
+
+
+def translate_to_service_yaml(
+    input_data: Mapping[str, Any],
+    input_type: feature_helper.InputType,
+    project: str,
+    service_name: str | None = None,
+) -> dict[str, Any]:
+  """Translates App Engine configuration to a Cloud Run service.yaml dictionary.
+
+  Args:
+    input_data: The original input data, either from app.yaml or the Admin API.
+    input_type: The input type of the input data.
+    project: The GCP project ID.
+    service_name: The desired Cloud Run service name.
+
+  Returns:
+    A dictionary representing the Cloud Run service.yaml.
+  """
+  if input_type == feature_helper.InputType.ADMIN_API:
+    input_flatten_as_appyaml = _convert_admin_api_input_to_app_yaml(input_data)
+  else:
+    input_flatten_as_appyaml = util.flatten_keys(input_data, parent_path='')
+
+  target_service = service_name or _get_service_name(input_data)
+  service_yaml = _get_basic_service_yaml(target_service)
+
+  feature_config = feature_helper.get_feature_config()
+  range_limited_features_app_yaml = (
+      feature_helper.get_feature_list_by_input_type(
+          feature_helper.InputType.APP_YAML, feature_config.range_limited
+      )
+  )
+
+  if util.is_flex_env(input_data):
+    health_checks.update_service_yaml_with_health_checks(
+        service_yaml, input_flatten_as_appyaml
+    )
+  timeout.update_service_yaml_with_timeout(
+      service_yaml, input_flatten_as_appyaml
+  )
+  volumes.update_service_yaml_with_volumes(
+      service_yaml, input_flatten_as_appyaml
+  )
+  concurrent_requests.update_service_yaml_with_concurrent_requests(
+      service_yaml, input_flatten_as_appyaml, range_limited_features_app_yaml
+  )
+  cpu_memory.update_service_yaml_with_cpu_memory(
+      service_yaml, input_flatten_as_appyaml
+  )
+  scaling.update_service_yaml_with_scaling(
+      service_yaml, input_flatten_as_appyaml, range_limited_features_app_yaml
+  )
+  supported_features.update_service_yaml_with_supported_features(
+      service_yaml, input_flatten_as_appyaml, project
+  )
+  network.update_service_yaml_with_network(
+      service_yaml, input_flatten_as_appyaml
+  )
+  required_flags.update_service_yaml_with_required_flags(
+      service_yaml, input_data
+  )
+
+  entrypoint.update_service_yaml_with_entrypoint(
+      service_yaml, input_flatten_as_appyaml
+  )
+
+  return service_yaml
 
 
 def _get_basic_service_yaml(service_name: str) -> dict[str, Any]:

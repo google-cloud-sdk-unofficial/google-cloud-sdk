@@ -3329,7 +3329,8 @@ class ListMirroringDeploymentsResponse(_messages.Message):
     nextPageToken: A token that can be sent as `page_token` to retrieve the
       next page. If this field is omitted, there are no subsequent pages. See
       https://google.aip.dev/158 for more details.
-    unreachable: Locations that could not be reached.
+    unreachable: Unordered list. Locations that could not be reached. See
+      https://google.aip.dev/217 for more details.
   """
 
   mirroringDeployments = _messages.MessageField('MirroringDeployment', 1, repeated=True)
@@ -3373,10 +3374,13 @@ class ListMirroringEndpointsResponse(_messages.Message):
     mirroringEndpoints: The list of mirroring endpoints.
     nextPageToken: A token identifying a page of results the server should
       return.
+    unreachable: Unordered list. Locations that could not be reached. See
+      https://google.aip.dev/217 for more details.
   """
 
   mirroringEndpoints = _messages.MessageField('MirroringEndpoint', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
 
 
 class ListNetworksForEngineRequest(_messages.Message):
@@ -11043,8 +11047,6 @@ class UllMirroringCollectorRuleMatch(_messages.Message):
     ipProtocols: Optional. IP protocols to match. When unset, matches any IP
       protocol. Examples: "tcp", "udp", "icmp". If unset, matches any IP
       protocol.
-    primaryIpRanges: Optional. Primary IP ranges to match (for the capture
-      point). When unset, matches any primary IP.
     srcIpRanges: Optional. Source IP ranges to match. When unset, matches any
       source IP range.
   """
@@ -11065,8 +11067,7 @@ class UllMirroringCollectorRuleMatch(_messages.Message):
   direction = _messages.EnumField('DirectionValueValuesEnum', 1)
   dstIpRanges = _messages.StringField(2, repeated=True)
   ipProtocols = _messages.StringField(3, repeated=True)
-  primaryIpRanges = _messages.StringField(4, repeated=True)
-  srcIpRanges = _messages.StringField(5, repeated=True)
+  srcIpRanges = _messages.StringField(4, repeated=True)
 
 
 class UllMirroringEngine(_messages.Message):

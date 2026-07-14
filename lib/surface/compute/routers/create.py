@@ -14,7 +14,6 @@
 # limitations under the License.
 """Command for creating Compute Engine routers."""
 
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
@@ -38,17 +37,13 @@ class Create(base.CreateCommand):
   """
 
   ROUTER_ARG = None
-  _support_ncc_gateway = False
   _support_tagging_at_creation = True
 
   @classmethod
   def _Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_CREATE_FORMAT)
 
-    if not cls._support_ncc_gateway:
-      cls.add_network_arg(parser)
-    else:
-      cls.add_ncc_gateway_and_network_arg(parser)
+    cls.add_ncc_gateway_and_network_arg(parser)
 
     if cls._support_tagging_at_creation:
       parser.add_argument(
@@ -76,8 +71,7 @@ class Create(base.CreateCommand):
     link_parser = parser.add_mutually_exclusive_group(required=True)
     flags.AddNccGatewayArg(link_parser)
     cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(
-        required=False,
-        short_help='The network for this router'
+        required=False, short_help='The network for this router'
     )
     cls.NETWORK_ARG.AddArgument(link_parser)
 
@@ -105,9 +99,8 @@ class Create(base.CreateCommand):
         description=args.description,
     )
 
-    if self._support_ncc_gateway:
-      if args.ncc_gateway is not None:
-        router_resource.nccGateway = args.ncc_gateway
+    if args.ncc_gateway is not None:
+      router_resource.nccGateway = args.ncc_gateway
 
     if self._support_tagging_at_creation:
       if args.resource_manager_tags is not None:
@@ -229,7 +222,6 @@ class CreateBeta(Create):
   tunnels and interconnects.
   """
 
-  _support_ncc_gateway = True
   _support_tagging_at_creation = True
 
 
@@ -240,5 +232,5 @@ class CreateAlpha(CreateBeta):
   *{command}* is used to create a router to provide dynamic routing to VPN
   tunnels and interconnects.
   """
-  _support_ncc_gateway = True
+
   _support_tagging_at_creation = True

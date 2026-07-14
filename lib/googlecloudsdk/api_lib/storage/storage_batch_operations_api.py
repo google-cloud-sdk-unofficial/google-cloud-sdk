@@ -120,7 +120,7 @@ class StorageBatchOperationsApi:
   def _instantiate_job_with_project_source(
       self,
       *,
-      target_project: str,
+      target_project: Optional[str] = None,
       insights_dataset_config: Optional[str] = None,
       bucket_filters: Optional[str] = None,
       object_filters: Optional[str] = None,
@@ -153,15 +153,14 @@ class StorageBatchOperationsApi:
     if dry_run:
       job.dryRun = True
 
-    # Prepend 'projects/' if not already present.
-    project_name = (
-        target_project if target_project.startswith("projects/")
-        else f"projects/{target_project}"
-    )
-
-    project_source = self.messages.ProjectSource(
-        project=project_name,
-    )
+    project_source = self.messages.ProjectSource()
+    if target_project is not None:
+      # Prepend 'projects/' if not already present.
+      project_name = (
+          target_project if target_project.startswith("projects/")
+          else f"projects/{target_project}"
+      )
+      project_source.project = project_name
     if insights_dataset_config is not None:
       project_source.insightsDatasetConfig = insights_dataset_config
     if bucket_filters is not None:
@@ -362,19 +361,28 @@ class StorageBatchOperationsApi:
       set_object_acls_dict: SetObjectAclsDict,
   ) -> None:
     """Modifies a job to set object ACLs."""
-    grants = None
-    if set_object_acls_dict.get("grants"):
-      grants = [
+    grants = set_object_acls_dict.get("grants")
+    remove_entities = set_object_acls_dict.get("remove_entities")
+    if not grants and not remove_entities:
+      raise errors.StorageBatchOperationsApiError(
+          "At least one of grants or remove_entities must be specified."
+      )
+
+    updates_kwargs = {}
+    if grants is not None:
+      updates_kwargs["grants"] = [
           self.messages.ObjectAccessControl(
               entity=grant.get("entity"), role=grant.get("role")
           )
-          for grant in set_object_acls_dict["grants"]
+          for grant in grants
       ]
+
+    if remove_entities is not None:
+      updates_kwargs["removeEntities"] = remove_entities
 
     job.setObjectAcls = self.messages.SetObjectAcls(
         accessControlsUpdates=self.messages.AccessControlsUpdates(
-            grants=grants,
-            removeEntities=set_object_acls_dict.get("remove_entities"),
+            **updates_kwargs
         )
     )
 
@@ -403,7 +411,10 @@ class StorageBatchOperationsApi:
 
   def create_batch_job(self, args, batch_job_name):
     """Creates a batch job based on command arguments."""
-    if getattr(args, "target_project", None) is not None:
+    if (
+        getattr(args, "target_project", None) is not None
+        or getattr(args, "dry_run_job_id", None) is not None
+    ):
       target_snapshot_time = getattr(args, "target_snapshot_time", None)
       if target_snapshot_time:
         target_snapshot_time = times.FormatDateTime(
@@ -473,7 +484,7 @@ class StorageBatchOperationsApi:
       self._modify_job_set_object_acls(job, args.set_object_acls_from_file)
     else:
       raise errors.StorageBatchOperationsApiError(
-          "Exactly one transformaiton must be specified."
+          "Exactly one transformation must be specified."
       )
 
     if args.log_actions and args.log_action_states:

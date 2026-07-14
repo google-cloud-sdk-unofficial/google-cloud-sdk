@@ -14,6 +14,9 @@
 # limitations under the License.
 """DesignCenter Spaces API."""
 
+from __future__ import annotations
+
+from typing import Any
 
 from googlecloudsdk.api_lib.design_center import utils as api_lib_utils
 from googlecloudsdk.calliope import base
@@ -88,3 +91,33 @@ class SpacesClient(object):
             testIamPermissionsRequest=test_iam_perm_req,
         ))
     return self._spaces_client.TestIamPermissions(test_req)
+
+  def GenerateTerraformPlanAssessmentReport(
+      self,
+      name: str,
+      *,
+      terraform_plan: bytes,
+      additional_frameworks: list[str] | None = None,
+  ) -> Any | None:
+    """Calls the GenerateTerraformPlanAssessmentReport RPC.
+
+    Args:
+      name: str, The full resource name of the Space.
+      terraform_plan: bytes, The raw bytes of the Terraform plan JSON.
+      additional_frameworks: list of str, Optional. Additional frameworks to
+        run assessment against.
+
+    Returns:
+      The response from the API call (an Operation).
+    """
+    if not name:
+      raise ValueError('Space name cannot be empty or None.')
+
+    req = self.messages.DesigncenterProjectsLocationsSpacesGenerateTerraformPlanAssessmentReportRequest(
+        name=name,
+        generateTerraformPlanAssessmentReportRequest=self.messages.GenerateTerraformPlanAssessmentReportRequest(
+            terraformPlan=terraform_plan,
+            additionalFrameworks=additional_frameworks or [],
+        ),
+    )
+    return self._spaces_client.GenerateTerraformPlanAssessmentReport(req)

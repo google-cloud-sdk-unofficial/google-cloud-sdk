@@ -110,10 +110,11 @@ def _add_capacity(pool, is_exapool=False):
   used_capacity_tb = used_capacity_bytes / TB
 
   if is_exapool:
-    exapool_provisioned_capacity_gb = int(
-        pool["exapoolProvisionedCapacityGb"]["writeOptimized"]
-        + pool["exapoolProvisionedCapacityGb"]["readOptimized"]
-        + pool["exapoolProvisionedCapacityGb"]["capacityOptimized"]
+    capacities = pool.get("exapoolProvisionedCapacityGb", {})
+    exapool_provisioned_capacity_gb = (
+        int(capacities.get("writeOptimized", 0))
+        + int(capacities.get("readOptimized", 0))
+        + int(capacities.get("capacityOptimized", 0))
     )
     exapool_provisioned_capacity_tb = exapool_provisioned_capacity_gb / TB_IN_GB
 

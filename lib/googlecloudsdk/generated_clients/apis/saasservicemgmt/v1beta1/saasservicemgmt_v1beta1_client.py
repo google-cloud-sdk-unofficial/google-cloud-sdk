@@ -45,7 +45,10 @@ class SaasservicemgmtV1beta1(base_api.BaseApiClient):
     self.projects_locations_rolloutKinds = self.ProjectsLocationsRolloutKindsService(self)
     self.projects_locations_rollouts = self.ProjectsLocationsRolloutsService(self)
     self.projects_locations_saas = self.ProjectsLocationsSaasService(self)
+    self.projects_locations_saasReleases = self.ProjectsLocationsSaasReleasesService(self)
     self.projects_locations_tenants = self.ProjectsLocationsTenantsService(self)
+    self.projects_locations_unitGroupOperations = self.ProjectsLocationsUnitGroupOperationsService(self)
+    self.projects_locations_unitGroups = self.ProjectsLocationsUnitGroupsService(self)
     self.projects_locations_unitKinds = self.ProjectsLocationsUnitKindsService(self)
     self.projects_locations_unitOperations = self.ProjectsLocationsUnitOperationsService(self)
     self.projects_locations_units = self.ProjectsLocationsUnitsService(self)
@@ -1212,6 +1215,151 @@ class SaasservicemgmtV1beta1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsSaasReleasesService(base_api.BaseApiService):
+    """Service class for the projects_locations_saasReleases resource."""
+
+    _NAME = 'projects_locations_saasReleases'
+
+    def __init__(self, client):
+      super(SaasservicemgmtV1beta1.ProjectsLocationsSaasReleasesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Create a new saas release.
+
+      Args:
+        request: (SaasservicemgmtProjectsLocationsSaasReleasesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SaasRelease) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/saasReleases',
+        http_method='POST',
+        method_id='saasservicemgmt.projects.locations.saasReleases.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['requestId', 'saasReleaseId', 'validateOnly'],
+        relative_path='v1beta1/{+parent}/saasReleases',
+        request_field='saasRelease',
+        request_type_name='SaasservicemgmtProjectsLocationsSaasReleasesCreateRequest',
+        response_type_name='SaasRelease',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Delete a single saas release.
+
+      Args:
+        request: (SaasservicemgmtProjectsLocationsSaasReleasesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/saasReleases/{saasReleasesId}',
+        http_method='DELETE',
+        method_id='saasservicemgmt.projects.locations.saasReleases.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['etag', 'requestId', 'validateOnly'],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='SaasservicemgmtProjectsLocationsSaasReleasesDeleteRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Retrieve a single saas release.
+
+      Args:
+        request: (SaasservicemgmtProjectsLocationsSaasReleasesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SaasRelease) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/saasReleases/{saasReleasesId}',
+        http_method='GET',
+        method_id='saasservicemgmt.projects.locations.saasReleases.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='SaasservicemgmtProjectsLocationsSaasReleasesGetRequest',
+        response_type_name='SaasRelease',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Retrieve a collection of saas releases.
+
+      Args:
+        request: (SaasservicemgmtProjectsLocationsSaasReleasesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListSaasReleasesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/saasReleases',
+        http_method='GET',
+        method_id='saasservicemgmt.projects.locations.saasReleases.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1beta1/{+parent}/saasReleases',
+        request_field='',
+        request_type_name='SaasservicemgmtProjectsLocationsSaasReleasesListRequest',
+        response_type_name='ListSaasReleasesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Update a single saas release.
+
+      Args:
+        request: (SaasservicemgmtProjectsLocationsSaasReleasesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SaasRelease) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/saasReleases/{saasReleasesId}',
+        http_method='PATCH',
+        method_id='saasservicemgmt.projects.locations.saasReleases.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask', 'validateOnly'],
+        relative_path='v1beta1/{+name}',
+        request_field='saasRelease',
+        request_type_name='SaasservicemgmtProjectsLocationsSaasReleasesPatchRequest',
+        response_type_name='SaasRelease',
+        supports_download=False,
+    )
+
   class ProjectsLocationsTenantsService(base_api.BaseApiService):
     """Service class for the projects_locations_tenants resource."""
 
@@ -1354,6 +1502,296 @@ class SaasservicemgmtV1beta1(base_api.BaseApiClient):
         request_field='tenant',
         request_type_name='SaasservicemgmtProjectsLocationsTenantsPatchRequest',
         response_type_name='Tenant',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsUnitGroupOperationsService(base_api.BaseApiService):
+    """Service class for the projects_locations_unitGroupOperations resource."""
+
+    _NAME = 'projects_locations_unitGroupOperations'
+
+    def __init__(self, client):
+      super(SaasservicemgmtV1beta1.ProjectsLocationsUnitGroupOperationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Create a new unit group operation.
+
+      Args:
+        request: (SaasservicemgmtProjectsLocationsUnitGroupOperationsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (UnitGroupOperation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/unitGroupOperations',
+        http_method='POST',
+        method_id='saasservicemgmt.projects.locations.unitGroupOperations.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['requestId', 'unitGroupOperationId', 'validateOnly'],
+        relative_path='v1beta1/{+parent}/unitGroupOperations',
+        request_field='unitGroupOperation',
+        request_type_name='SaasservicemgmtProjectsLocationsUnitGroupOperationsCreateRequest',
+        response_type_name='UnitGroupOperation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Delete a single unit group operation.
+
+      Args:
+        request: (SaasservicemgmtProjectsLocationsUnitGroupOperationsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/unitGroupOperations/{unitGroupOperationsId}',
+        http_method='DELETE',
+        method_id='saasservicemgmt.projects.locations.unitGroupOperations.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['etag', 'requestId', 'validateOnly'],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='SaasservicemgmtProjectsLocationsUnitGroupOperationsDeleteRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Retrieve a single unit group operation.
+
+      Args:
+        request: (SaasservicemgmtProjectsLocationsUnitGroupOperationsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (UnitGroupOperation) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/unitGroupOperations/{unitGroupOperationsId}',
+        http_method='GET',
+        method_id='saasservicemgmt.projects.locations.unitGroupOperations.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='SaasservicemgmtProjectsLocationsUnitGroupOperationsGetRequest',
+        response_type_name='UnitGroupOperation',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Retrieve a collection of unit group operations.
+
+      Args:
+        request: (SaasservicemgmtProjectsLocationsUnitGroupOperationsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListUnitGroupOperationsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/unitGroupOperations',
+        http_method='GET',
+        method_id='saasservicemgmt.projects.locations.unitGroupOperations.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1beta1/{+parent}/unitGroupOperations',
+        request_field='',
+        request_type_name='SaasservicemgmtProjectsLocationsUnitGroupOperationsListRequest',
+        response_type_name='ListUnitGroupOperationsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Update a single unit group operation.
+
+      Args:
+        request: (SaasservicemgmtProjectsLocationsUnitGroupOperationsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (UnitGroupOperation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/unitGroupOperations/{unitGroupOperationsId}',
+        http_method='PATCH',
+        method_id='saasservicemgmt.projects.locations.unitGroupOperations.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask', 'validateOnly'],
+        relative_path='v1beta1/{+name}',
+        request_field='unitGroupOperation',
+        request_type_name='SaasservicemgmtProjectsLocationsUnitGroupOperationsPatchRequest',
+        response_type_name='UnitGroupOperation',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsUnitGroupsService(base_api.BaseApiService):
+    """Service class for the projects_locations_unitGroups resource."""
+
+    _NAME = 'projects_locations_unitGroups'
+
+    def __init__(self, client):
+      super(SaasservicemgmtV1beta1.ProjectsLocationsUnitGroupsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Create a new unit group.
+
+      Args:
+        request: (SaasservicemgmtProjectsLocationsUnitGroupsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (UnitGroup) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/unitGroups',
+        http_method='POST',
+        method_id='saasservicemgmt.projects.locations.unitGroups.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['requestId', 'unitGroupId', 'validateOnly'],
+        relative_path='v1beta1/{+parent}/unitGroups',
+        request_field='unitGroup',
+        request_type_name='SaasservicemgmtProjectsLocationsUnitGroupsCreateRequest',
+        response_type_name='UnitGroup',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Delete a single unit group.
+
+      Args:
+        request: (SaasservicemgmtProjectsLocationsUnitGroupsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/unitGroups/{unitGroupsId}',
+        http_method='DELETE',
+        method_id='saasservicemgmt.projects.locations.unitGroups.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['etag', 'requestId', 'validateOnly'],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='SaasservicemgmtProjectsLocationsUnitGroupsDeleteRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Retrieve a single unit group.
+
+      Args:
+        request: (SaasservicemgmtProjectsLocationsUnitGroupsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (UnitGroup) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/unitGroups/{unitGroupsId}',
+        http_method='GET',
+        method_id='saasservicemgmt.projects.locations.unitGroups.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='SaasservicemgmtProjectsLocationsUnitGroupsGetRequest',
+        response_type_name='UnitGroup',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Retrieve a collection of unit groups.
+
+      Args:
+        request: (SaasservicemgmtProjectsLocationsUnitGroupsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListUnitGroupsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/unitGroups',
+        http_method='GET',
+        method_id='saasservicemgmt.projects.locations.unitGroups.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1beta1/{+parent}/unitGroups',
+        request_field='',
+        request_type_name='SaasservicemgmtProjectsLocationsUnitGroupsListRequest',
+        response_type_name='ListUnitGroupsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Update a single unit group.
+
+      Args:
+        request: (SaasservicemgmtProjectsLocationsUnitGroupsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (UnitGroup) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/unitGroups/{unitGroupsId}',
+        http_method='PATCH',
+        method_id='saasservicemgmt.projects.locations.unitGroups.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask', 'validateOnly'],
+        relative_path='v1beta1/{+name}',
+        request_field='unitGroup',
+        request_type_name='SaasservicemgmtProjectsLocationsUnitGroupsPatchRequest',
+        response_type_name='UnitGroup',
         supports_download=False,
     )
 

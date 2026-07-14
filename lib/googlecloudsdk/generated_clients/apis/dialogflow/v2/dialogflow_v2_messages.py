@@ -14554,12 +14554,21 @@ class GoogleCloudDialogflowV2HumanAgentAssistantConfigSuggestionConfig(_messages
 class GoogleCloudDialogflowV2HumanAgentAssistantConfigSuggestionFeatureConfig(_messages.Message):
   r"""Config for suggestion features.
 
+  Enums:
+    SuggestionTriggerEventValueValuesEnum: Optional. The trigger event for
+      suggestion. If unspecified, it will be `CUSTOMER_MESSAGE`. Supported
+      features: KNOWLEDGE_ASSIST For KNOWLEDGE_ASSIST, these four trigger
+      events are supported: 1. TRIGGER_EVENT_UNSPECIFIED 2. END_OF_UTTERANCE
+      3. CUSTOMER_MESSAGE 4. AGENT_MESSAGE
+
   Fields:
     conversationModelConfig: Configs of custom conversation model.
     conversationProcessConfig: Configs for processing conversation.
     disableAgentQueryLogging: Optional. Disable the logging of search queries
       sent by human agents. It can prevent those queries from being stored at
       answer records. Supported features: KNOWLEDGE_SEARCH.
+    disableQuerySearchContext: Optional. If true, disable appending available
+      search context to the search query. Supported features: KNOWLEDGE_ASSIST
     enableConversationAugmentedQuery: Optional. Enable including conversation
       context during query answer generation. Supported features:
       KNOWLEDGE_SEARCH.
@@ -14581,22 +14590,52 @@ class GoogleCloudDialogflowV2HumanAgentAssistantConfigSuggestionFeatureConfig(_m
     raiSettings: Optional. Settings for Responsible AI checks. Supported
       features: KNOWLEDGE_ASSIST
     suggestionFeature: The suggestion feature.
+    suggestionTriggerEvent: Optional. The trigger event for suggestion. If
+      unspecified, it will be `CUSTOMER_MESSAGE`. Supported features:
+      KNOWLEDGE_ASSIST For KNOWLEDGE_ASSIST, these four trigger events are
+      supported: 1. TRIGGER_EVENT_UNSPECIFIED 2. END_OF_UTTERANCE 3.
+      CUSTOMER_MESSAGE 4. AGENT_MESSAGE
     suggestionTriggerSettings: Settings of suggestion trigger. Currently, only
       ARTICLE_SUGGESTION and FAQ will use this field.
   """
 
+  class SuggestionTriggerEventValueValuesEnum(_messages.Enum):
+    r"""Optional. The trigger event for suggestion. If unspecified, it will be
+    `CUSTOMER_MESSAGE`. Supported features: KNOWLEDGE_ASSIST For
+    KNOWLEDGE_ASSIST, these four trigger events are supported: 1.
+    TRIGGER_EVENT_UNSPECIFIED 2. END_OF_UTTERANCE 3. CUSTOMER_MESSAGE 4.
+    AGENT_MESSAGE
+
+    Values:
+      TRIGGER_EVENT_UNSPECIFIED: Default value for TriggerEvent.
+      END_OF_UTTERANCE: Triggers when each chat message or voice utterance
+        ends.
+      MANUAL_CALL: Triggers on the conversation manually by API calls, such as
+        Conversations.GenerateStatelessSuggestion and
+        Conversations.GenerateSuggestions.
+      CUSTOMER_MESSAGE: Triggers after each customer message only.
+      AGENT_MESSAGE: Triggers after each agent message only.
+    """
+    TRIGGER_EVENT_UNSPECIFIED = 0
+    END_OF_UTTERANCE = 1
+    MANUAL_CALL = 2
+    CUSTOMER_MESSAGE = 3
+    AGENT_MESSAGE = 4
+
   conversationModelConfig = _messages.MessageField('GoogleCloudDialogflowV2HumanAgentAssistantConfigConversationModelConfig', 1)
   conversationProcessConfig = _messages.MessageField('GoogleCloudDialogflowV2HumanAgentAssistantConfigConversationProcessConfig', 2)
   disableAgentQueryLogging = _messages.BooleanField(3)
-  enableConversationAugmentedQuery = _messages.BooleanField(4)
-  enableEventBasedSuggestion = _messages.BooleanField(5)
-  enableQuerySuggestionOnly = _messages.BooleanField(6)
-  enableQuerySuggestionWhenNoAnswer = _messages.BooleanField(7)
-  enableResponseDebugInfo = _messages.BooleanField(8)
-  queryConfig = _messages.MessageField('GoogleCloudDialogflowV2HumanAgentAssistantConfigSuggestionQueryConfig', 9)
-  raiSettings = _messages.MessageField('GoogleCloudDialogflowV2RaiSettings', 10)
-  suggestionFeature = _messages.MessageField('GoogleCloudDialogflowV2SuggestionFeature', 11)
-  suggestionTriggerSettings = _messages.MessageField('GoogleCloudDialogflowV2HumanAgentAssistantConfigSuggestionTriggerSettings', 12)
+  disableQuerySearchContext = _messages.BooleanField(4)
+  enableConversationAugmentedQuery = _messages.BooleanField(5)
+  enableEventBasedSuggestion = _messages.BooleanField(6)
+  enableQuerySuggestionOnly = _messages.BooleanField(7)
+  enableQuerySuggestionWhenNoAnswer = _messages.BooleanField(8)
+  enableResponseDebugInfo = _messages.BooleanField(9)
+  queryConfig = _messages.MessageField('GoogleCloudDialogflowV2HumanAgentAssistantConfigSuggestionQueryConfig', 10)
+  raiSettings = _messages.MessageField('GoogleCloudDialogflowV2RaiSettings', 11)
+  suggestionFeature = _messages.MessageField('GoogleCloudDialogflowV2SuggestionFeature', 12)
+  suggestionTriggerEvent = _messages.EnumField('SuggestionTriggerEventValueValuesEnum', 13)
+  suggestionTriggerSettings = _messages.MessageField('GoogleCloudDialogflowV2HumanAgentAssistantConfigSuggestionTriggerSettings', 14)
 
 
 class GoogleCloudDialogflowV2HumanAgentAssistantConfigSuggestionQueryConfig(_messages.Message):
@@ -16263,6 +16302,16 @@ class GoogleCloudDialogflowV2KnowledgeAssistAnswer(_messages.Message):
   suggestedQueryAnswer = _messages.MessageField('GoogleCloudDialogflowV2KnowledgeAssistAnswerKnowledgeAnswer', 4)
 
 
+class GoogleCloudDialogflowV2KnowledgeAssistAnswerAdditionalSuggestedQueryResult(_messages.Message):
+  r"""Represents a single suggested query result.
+
+  Fields:
+    suggestedQuery: The suggested query based on the context.
+  """
+
+  suggestedQuery = _messages.MessageField('GoogleCloudDialogflowV2KnowledgeAssistAnswerSuggestedQuery', 1)
+
+
 class GoogleCloudDialogflowV2KnowledgeAssistAnswerKnowledgeAnswer(_messages.Message):
   r"""Represents an answer from Knowledge. Currently supports FAQ and
   Generative answers.
@@ -16364,9 +16413,25 @@ class GoogleCloudDialogflowV2KnowledgeAssistAnswerSuggestedQuery(_messages.Messa
 
   Fields:
     queryText: Suggested query text.
+    searchContexts: Optional. The search contexts for the query.
   """
 
   queryText = _messages.StringField(1)
+  searchContexts = _messages.MessageField('GoogleCloudDialogflowV2KnowledgeAssistAnswerSuggestedQuerySearchContext', 2, repeated=True)
+
+
+class GoogleCloudDialogflowV2KnowledgeAssistAnswerSuggestedQuerySearchContext(_messages.Message):
+  r"""Search context is information useful for knowledge search that helps
+  enrich the query. Example: search_context { key: "application name" value:
+  "DesignApp" }
+
+  Fields:
+    key: Optional. The key of the search context, e.g. "application name".
+    value: Optional. The value of the search context, e.g. "DesignApp".
+  """
+
+  key = _messages.StringField(1)
+  value = _messages.StringField(2)
 
 
 class GoogleCloudDialogflowV2KnowledgeAssistDebugInfo(_messages.Message):
@@ -19117,6 +19182,9 @@ class GoogleCloudDialogflowV2SuggestKnowledgeAssistResponse(_messages.Message):
   r"""The response message for Participants.SuggestKnowledgeAssist.
 
   Fields:
+    additionalSuggestedQueryResults: Optional. The list of additional
+      suggested queries based on the context. This is used for the cases when
+      we want to generate multiple queries for a single request.
     contextSize: Number of messages prior to and including latest_message to
       compile the suggestion. It may be smaller than the
       SuggestKnowledgeAssistRequest.context_size field in the request if there
@@ -19126,9 +19194,10 @@ class GoogleCloudDialogflowV2SuggestKnowledgeAssistResponse(_messages.Message):
       suggestion for. Format: `projects//locations//conversations//messages/`.
   """
 
-  contextSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  knowledgeAssistAnswer = _messages.MessageField('GoogleCloudDialogflowV2KnowledgeAssistAnswer', 2)
-  latestMessage = _messages.StringField(3)
+  additionalSuggestedQueryResults = _messages.MessageField('GoogleCloudDialogflowV2KnowledgeAssistAnswerAdditionalSuggestedQueryResult', 1, repeated=True)
+  contextSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  knowledgeAssistAnswer = _messages.MessageField('GoogleCloudDialogflowV2KnowledgeAssistAnswer', 3)
+  latestMessage = _messages.StringField(4)
 
 
 class GoogleCloudDialogflowV2SuggestSmartRepliesRequest(_messages.Message):
@@ -22969,6 +23038,16 @@ class GoogleCloudDialogflowV2beta1KnowledgeAssistAnswer(_messages.Message):
   suggestedQueryAnswer = _messages.MessageField('GoogleCloudDialogflowV2beta1KnowledgeAssistAnswerKnowledgeAnswer', 4)
 
 
+class GoogleCloudDialogflowV2beta1KnowledgeAssistAnswerAdditionalSuggestedQueryResult(_messages.Message):
+  r"""Represents a single suggested query result.
+
+  Fields:
+    suggestedQuery: Optional. The suggested query based on the context.
+  """
+
+  suggestedQuery = _messages.MessageField('GoogleCloudDialogflowV2beta1KnowledgeAssistAnswerSuggestedQuery', 1)
+
+
 class GoogleCloudDialogflowV2beta1KnowledgeAssistAnswerKnowledgeAnswer(_messages.Message):
   r"""Represents an answer from Knowledge. Currently supports FAQ and
   Generative answers.
@@ -23070,9 +23149,25 @@ class GoogleCloudDialogflowV2beta1KnowledgeAssistAnswerSuggestedQuery(_messages.
 
   Fields:
     queryText: Suggested query text.
+    searchContexts: Optional. The search contexts for the query.
   """
 
   queryText = _messages.StringField(1)
+  searchContexts = _messages.MessageField('GoogleCloudDialogflowV2beta1KnowledgeAssistAnswerSuggestedQuerySearchContext', 2, repeated=True)
+
+
+class GoogleCloudDialogflowV2beta1KnowledgeAssistAnswerSuggestedQuerySearchContext(_messages.Message):
+  r"""Search context is information useful for knowledge search that helps
+  enrich the query. Example: search_context { key: "application name" value:
+  "DesignApp" }
+
+  Fields:
+    key: Optional. The key of the search context, e.g. "application name".
+    value: Optional. The value of the search context, e.g. "DesignApp".
+  """
+
+  key = _messages.StringField(1)
+  value = _messages.StringField(2)
 
 
 class GoogleCloudDialogflowV2beta1KnowledgeAssistDebugInfo(_messages.Message):
@@ -24218,6 +24313,9 @@ class GoogleCloudDialogflowV2beta1SuggestKnowledgeAssistResponse(_messages.Messa
   r"""The response message for Participants.SuggestKnowledgeAssist.
 
   Fields:
+    additionalSuggestedQueryResults: Optional. The list of additional
+      suggested queries based on the context. This is used for the cases when
+      we want to generate multiple queries for a single request.
     contextSize: Number of messages prior to and including latest_message to
       compile the suggestion. It may be smaller than the
       SuggestKnowledgeAssistRequest.context_size field in the request if there
@@ -24227,9 +24325,10 @@ class GoogleCloudDialogflowV2beta1SuggestKnowledgeAssistResponse(_messages.Messa
       suggestion for. Format: `projects//locations//conversations//messages/`.
   """
 
-  contextSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  knowledgeAssistAnswer = _messages.MessageField('GoogleCloudDialogflowV2beta1KnowledgeAssistAnswer', 2)
-  latestMessage = _messages.StringField(3)
+  additionalSuggestedQueryResults = _messages.MessageField('GoogleCloudDialogflowV2beta1KnowledgeAssistAnswerAdditionalSuggestedQueryResult', 1, repeated=True)
+  contextSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  knowledgeAssistAnswer = _messages.MessageField('GoogleCloudDialogflowV2beta1KnowledgeAssistAnswer', 3)
+  latestMessage = _messages.StringField(4)
 
 
 class GoogleCloudDialogflowV2beta1SuggestSmartRepliesResponse(_messages.Message):

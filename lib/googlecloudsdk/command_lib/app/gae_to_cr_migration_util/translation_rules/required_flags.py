@@ -15,8 +15,8 @@
 
 """Add required flags to output gcloud run deploy command."""
 
-from collections.abc import Mapping, Sequence
 import os
+from typing import Any, Mapping, Sequence
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util.common import util
 
 
@@ -60,6 +60,37 @@ def translate_add_required_flags(
   return required_flags
 
 
+def update_service_yaml_with_required_flags(
+    service_yaml: dict[str, Any],
+    input_data: Mapping[str, Any],
+) -> None:
+  """Updates the service_yaml dict with required labels and annotations.
+
+  Args:
+    service_yaml: A dictionary representing the Cloud Run service.yaml.
+    input_data: A mapping containing the translated data from app.yaml.
+  """
+  is_flex = util.is_flex_env(input_data)
+  migration_tool = (
+      'gcloud-app-migrate-flexible-v1'
+      if is_flex
+      else 'gcloud-app-migrate-standard-v1'
+  )
+
+  # Update labels
+  metadata = service_yaml.setdefault('metadata', {})
+  labels = metadata.setdefault('labels', {})
+  labels['migrated-from'] = 'app-engine'
+  labels['migration-tool'] = migration_tool
+
+  # Update annotations
+  spec = service_yaml.setdefault('spec', {})
+  template = spec.setdefault('template', {})
+  template_metadata = template.setdefault('metadata', {})
+  annotations = template_metadata.setdefault('annotations', {})
+  annotations['run.googleapis.com/cpu-throttling'] = 'false'
+
+
 def _get_labels(*, migration_tool: str) -> str:
   """Get labels for gcloud run deploy command."""
   return f'migrated-from=app-engine,migration-tool={migration_tool}'
@@ -82,3 +113,38 @@ def _check_dockerfile_exists(source_path: str) -> bool:
       os.path.dirname(source_path), 'Dockerfile'
   )
   return os.path.exists(dockerfile_path)
+
+
+def update_service_yaml_with_base_image(
+    service_yaml: dict[str, Any],
+    runtime_base_image: str | None,
+) -> None:
+  """Updates the service_yaml dict with base image annotations if provided.
+
+  Args:
+    service_yaml: A dictionary representing the Cloud Run service.yaml.
+    runtime_base_image: The base image to use for the runtime.
+  """
+  if not runtime_base_image:
+    return
+
+  spec = service_yaml.setdefault('spec', {})
+  template = spec.setdefault('template', {})
+
+  # Set template metadata annotations
+  template_metadata = template.setdefault('metadata', {})
+  annotations = template_metadata.setdefault('annotations', {})
+  annotations['run.googleapis.com/base-images'] = (
+      f'{{"app":"{runtime_base_image}"}}'
+  )
+
+  # Set template spec runtimeClassName
+  template_spec = template.setdefault('spec', {})
+  template_spec['runtimeClassName'] = (
+      'run.googleapis.com/linux-base-image-update'
+  )
+
+  # Ensure container name is set to 'app'
+  containers = template_spec.setdefault('containers', [{}])
+  if containers:
+    containers[0]['name'] = 'app'

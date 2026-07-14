@@ -555,7 +555,7 @@ class DesigncenterV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""List policies for an application template.
+      r"""Lists policies for an application template.
 
       Args:
         request: (DesigncenterProjectsLocationsSpacesApplicationTemplatesPoliciesListRequest) input message
@@ -2199,6 +2199,33 @@ class DesigncenterV1(base_api.BaseApiClient):
         relative_path='v1/{+spaceName}:generateAssessmentReport',
         request_field='generateAssessmentReportRequest',
         request_type_name='DesigncenterProjectsLocationsSpacesGenerateAssessmentReportRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def GenerateTerraformPlanAssessmentReport(self, request, global_params=None):
+      r"""Generate a Terraform plan assessment report for a given Terraform plan.
+
+      Args:
+        request: (DesigncenterProjectsLocationsSpacesGenerateTerraformPlanAssessmentReportRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('GenerateTerraformPlanAssessmentReport')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GenerateTerraformPlanAssessmentReport.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/spaces/{spacesId}:generateTerraformPlanAssessmentReport',
+        http_method='POST',
+        method_id='designcenter.projects.locations.spaces.generateTerraformPlanAssessmentReport',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:generateTerraformPlanAssessmentReport',
+        request_field='generateTerraformPlanAssessmentReportRequest',
+        request_type_name='DesigncenterProjectsLocationsSpacesGenerateTerraformPlanAssessmentReportRequest',
         response_type_name='Operation',
         supports_download=False,
     )

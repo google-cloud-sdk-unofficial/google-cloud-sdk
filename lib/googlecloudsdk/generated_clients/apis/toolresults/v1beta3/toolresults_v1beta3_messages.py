@@ -868,6 +868,10 @@ class LauncherActivityNotFound(_messages.Message):
   r"""Failed to find the launcher activity of an app."""
 
 
+class LicensingProtectionTermination(_messages.Message):
+  r"""Licensing protection termination (Pairip) was detected."""
+
+
 class ListEnvironmentsResponse(_messages.Message):
   r"""Response message for EnvironmentService.ListEnvironments.
 
@@ -2240,6 +2244,8 @@ class TestIssue(_messages.Message):
       detectedAppSplashScreen: Robo detected a splash screen provided by app
         (vs. Android OS splash screen).
       assetIssue: There was an issue with the assets in this test.
+      licensingProtectionTermination: Licensing protection termination
+        (Pairip) was detected.
     """
     unspecifiedType = 0
     fatalException = 1
@@ -2274,6 +2280,7 @@ class TestIssue(_messages.Message):
     logcatCollectionError = 30
     detectedAppSplashScreen = 31
     assetIssue = 32
+    licensingProtectionTermination = 33
 
   category = _messages.EnumField('CategoryValueValuesEnum', 1)
   errorMessage = _messages.StringField(2)

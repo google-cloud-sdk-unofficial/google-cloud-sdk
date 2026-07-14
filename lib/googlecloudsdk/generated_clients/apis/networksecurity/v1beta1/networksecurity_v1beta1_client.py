@@ -64,6 +64,7 @@ class NetworksecurityV1beta1(base_api.BaseApiClient):
     self.projects_locations_mirroringDeployments = self.ProjectsLocationsMirroringDeploymentsService(self)
     self.projects_locations_mirroringEndpointGroupAssociations = self.ProjectsLocationsMirroringEndpointGroupAssociationsService(self)
     self.projects_locations_mirroringEndpointGroups = self.ProjectsLocationsMirroringEndpointGroupsService(self)
+    self.projects_locations_mirroringEndpoints = self.ProjectsLocationsMirroringEndpointsService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
     self.projects_locations_sacAttachments = self.ProjectsLocationsSacAttachmentsService(self)
     self.projects_locations_sacRealms = self.ProjectsLocationsSacRealmsService(self)
@@ -4202,6 +4203,151 @@ class NetworksecurityV1beta1(base_api.BaseApiClient):
         relative_path='v1beta1/{+name}',
         request_field='mirroringEndpointGroup',
         request_type_name='NetworksecurityProjectsLocationsMirroringEndpointGroupsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsMirroringEndpointsService(base_api.BaseApiService):
+    """Service class for the projects_locations_mirroringEndpoints resource."""
+
+    _NAME = 'projects_locations_mirroringEndpoints'
+
+    def __init__(self, client):
+      super(NetworksecurityV1beta1.ProjectsLocationsMirroringEndpointsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates an endpoint in a given project and location. See https://google.aip.dev/133.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsMirroringEndpointsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/mirroringEndpoints',
+        http_method='POST',
+        method_id='networksecurity.projects.locations.mirroringEndpoints.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['mirroringEndpointId', 'requestId'],
+        relative_path='v1beta1/{+parent}/mirroringEndpoints',
+        request_field='mirroringEndpoint',
+        request_type_name='NetworksecurityProjectsLocationsMirroringEndpointsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes an endpoint. See https://google.aip.dev/135.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsMirroringEndpointsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/mirroringEndpoints/{mirroringEndpointsId}',
+        http_method='DELETE',
+        method_id='networksecurity.projects.locations.mirroringEndpoints.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsMirroringEndpointsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets a specific endpoint. See https://google.aip.dev/131.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsMirroringEndpointsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (MirroringEndpoint) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/mirroringEndpoints/{mirroringEndpointsId}',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.mirroringEndpoints.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsMirroringEndpointsGetRequest',
+        response_type_name='MirroringEndpoint',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists endpoints in a given project and location. See https://google.aip.dev/132.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsMirroringEndpointsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListMirroringEndpointsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/mirroringEndpoints',
+        http_method='GET',
+        method_id='networksecurity.projects.locations.mirroringEndpoints.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1beta1/{+parent}/mirroringEndpoints',
+        request_field='',
+        request_type_name='NetworksecurityProjectsLocationsMirroringEndpointsListRequest',
+        response_type_name='ListMirroringEndpointsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates an endpoint group. See https://google.aip.dev/134.
+
+      Args:
+        request: (NetworksecurityProjectsLocationsMirroringEndpointsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/mirroringEndpoints/{mirroringEndpointsId}',
+        http_method='PATCH',
+        method_id='networksecurity.projects.locations.mirroringEndpoints.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1beta1/{+name}',
+        request_field='mirroringEndpoint',
+        request_type_name='NetworksecurityProjectsLocationsMirroringEndpointsPatchRequest',
         response_type_name='Operation',
         supports_download=False,
     )

@@ -53,6 +53,7 @@ class Apply(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
     resource_args.AddConversionWorkspaceApplyResourceArg(parser, 'to apply')
     cw_flags.AddNoAsyncFlag(parser)
     cw_flags.AddFilterFlag(parser)
+    cw_flags.AddDryRunFlag(parser)
 
   def Run(self, args: argparse.Namespace) -> Optional[messages.Operation]:
     """Apply a Database Migration Service conversion workspace.
@@ -70,6 +71,7 @@ class Apply(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
         name=conversion_workspace_ref.RelativeName(),
         destination_connection_profile_ref=args.CONCEPTS.destination_connection_profile.Parse(),
         filter_expr=self.ExtractBackendFilter(args),
+        dry_run=args.dry_run,
     )
     return self.HandleOperationResult(
         conversion_workspace_ref=conversion_workspace_ref,

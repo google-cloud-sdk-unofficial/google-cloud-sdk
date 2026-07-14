@@ -1775,7 +1775,13 @@ class SearchIpResourcesRequest(_messages.Message):
     SearchResourceTypesValueListEntryValuesEnum:
 
   Fields:
-    orderBy: Optional. Hint for how to order the results.
+    orderBy: Optional. Hint for how to order the results. Supported sort
+      fields are: - `name`: Sort alphabetically by the resource name. -
+      `create_time`: Sort by the creation timestamp of the resource. -
+      `update_time`: Sort by the last update timestamp of the resource.
+      Supported directions are `asc` (ascending) and `desc` (descending). If
+      unspecified, direction defaults to `asc`. Only sorting by a single field
+      is supported.
     pageSize: Optional. Requested page size. Server may return fewer items
       than requested. If unspecified, server will pick an appropriate default.
     pageToken: Optional. A token identifying a page of results the server

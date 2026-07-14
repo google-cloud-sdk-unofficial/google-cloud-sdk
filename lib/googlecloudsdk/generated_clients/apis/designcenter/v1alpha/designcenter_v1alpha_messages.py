@@ -13,12 +13,12 @@ package = 'designcenter'
 
 
 class AdcMetadata(_messages.Message):
-  r"""ADC specific information and metadata.
+  r"""Application Design Center specific information and metadata.
 
   Fields:
-    applicationTemplateUri: Output only. ADC ApplicationTemplate URI
-    applicationUri: Output only. ADC Application URI
-    spaceUri: Output only. ADC Space URI
+    applicationTemplateUri: Output only. ApplicationTemplate URI
+    applicationUri: Output only. Application URI
+    spaceUri: Output only. Space URI
   """
 
   applicationTemplateUri = _messages.StringField(1)
@@ -121,7 +121,7 @@ class Application(_messages.Message):
     apphubApplication: Output only. The App Hub App associated with the
       application.
     artifactLocation: Output only. Details of the location where the IaC for
-      this Application was last successfully exported.
+      this application was last successfully exported.
     attributes: Optional. Attributes of the application.
     componentParameters: Optional. A list of component parameters to associate
       with the application.
@@ -293,8 +293,7 @@ class ApplicationTemplate(_messages.Message):
   Enums:
     CompositionTypeValueValuesEnum: Optional. Immutable. The composition type
       of the applicationTemplate: STANDARD OR COMPOSITE. This is a create time
-      only param. In future, we may support conversion from STANDARD to
-      COMPOSITE.
+      only param.
     IacFormatValueValuesEnum: Output only. The IaC format of the application
       template.
 
@@ -305,7 +304,7 @@ class ApplicationTemplate(_messages.Message):
       this ApplicationTemplate was last successfully exported.
     compositionType: Optional. Immutable. The composition type of the
       applicationTemplate: STANDARD OR COMPOSITE. This is a create time only
-      param. In future, we may support conversion from STANDARD to COMPOSITE.
+      param.
     createTime: Output only. Application template creation timestamp.
     description: Optional. Application template description.
     displayName: Optional. Application template display name.
@@ -328,8 +327,7 @@ class ApplicationTemplate(_messages.Message):
 
   class CompositionTypeValueValuesEnum(_messages.Enum):
     r"""Optional. Immutable. The composition type of the applicationTemplate:
-    STANDARD OR COMPOSITE. This is a create time only param. In future, we may
-    support conversion from STANDARD to COMPOSITE.
+    STANDARD OR COMPOSITE. This is a create time only param.
 
     Values:
       APPLICATION_COMPOSITION_TYPE_UNSPECIFIED: ApplicationCompositionType is
@@ -454,8 +452,8 @@ class ApplicationTemplateSystemRevision(_messages.Message):
 
 
 class ApplyCondition(_messages.Message):
-  r"""Condition for applying the policy. Condition accepts AppTemplate
-  parameters like criticality, environment only.
+  r"""Condition for applying the policy. Accepts the `criticality` and
+  `environment` parameters from the application template.
 
   Fields:
     conditionKey: Required. The key of the parameter for the condition.
@@ -509,7 +507,8 @@ class AssessmentFinding(_messages.Message):
     SeverityValueValuesEnum: Optional. The severity of the finding.
 
   Fields:
-    adcMetadata: Output only. Metadata related to the ADC with the finding.
+    adcMetadata: Output only. Metadata related to the Application Design
+      Center with the finding.
     additionalNotes: Optional. A description of the additional details about
       finding.
     assessedAsset: Required. Details of the Cloud Asset Inventory asset that
@@ -533,8 +532,8 @@ class AssessmentFinding(_messages.Message):
 
     Values:
       TYPE_UNSPECIFIED: Default value. This value is unused.
-      WARNING: Warning finding. ADC Deployment will not be blocked.
-      ERROR: Error finding. ADC Deployment will be blocked on ERROR.
+      WARNING: Warning finding. Deployment will not be blocked.
+      ERROR: Error finding. Deployment will be blocked on ERROR.
     """
     TYPE_UNSPECIFIED = 0
     WARNING = 1
@@ -574,10 +573,10 @@ class AssessmentReport(_messages.Message):
   r"""Aggregated assessment report from all domains.
 
   Fields:
-    adcApplicationTemplateUri: Output only. ADC Application Template URI.
-    adcApplicationUri: Output only. ADC Application URI.
-    adcCatalogTemplateUri: Output only. ADC Catalog Template URI.
-    adcSpaceUri: Output only. ADC Space URI.
+    adcApplicationTemplateUri: Output only. Application Template URI.
+    adcApplicationUri: Output only. Application URI.
+    adcCatalogTemplateUri: Output only. Catalog Template URI.
+    adcSpaceUri: Output only. Space URI.
     createTime: Output only. The time at which the report was created.
     domainAssessmentReports: Output only. Generated best practice reports.
     skippedDomains: Output only. Skipped domains.
@@ -794,7 +793,7 @@ class Catalog(_messages.Message):
     description: Optional. The catalog description.
     displayName: Optional. The catalog display name.
     name: Identifier. The catalog name in the following format:
-      projects/$project/locations/$location/spaces/$space/catalogs/$catalog
+      `projects/$project/locations/$location/spaces/$space/catalogs/$catalog`
     updateTime: Output only. The catalog update timestamp.
   """
 
@@ -809,9 +808,9 @@ class CatalogTemplate(_messages.Message):
   r"""A template inside a catalog.
 
   Enums:
-    TemplateCategoryValueValuesEnum: Required. The category of the ADC
-      template.
-    TypeValueValuesEnum: Optional. The Application Design Center assembly
+    TemplateCategoryValueValuesEnum: Required. The category of the Application
+      Design Center application template.
+    TypeValueValuesEnum: Optional. The Application Design Center application
       template type.
 
   Fields:
@@ -819,25 +818,27 @@ class CatalogTemplate(_messages.Message):
     description: Optional. The catalog template description.
     displayName: Optional. The display name of a catalog template.
     latestRevisionId: Output only. Latest revision of the template.
-    name: Identifier. The catalog template name in following format: projects/
-      $project/locations/$location/spaces/$space/catalogs/$catalog/templates/$
-      template
-    templateCategory: Required. The category of the ADC template.
-    type: Optional. The Application Design Center assembly template type.
+    name: Identifier. The catalog template name in following format: `projects
+      /$project/locations/$location/spaces/$space/catalogs/$catalog/templates/
+      $template`
+    templateCategory: Required. The category of the Application Design Center
+      application template.
+    type: Optional. The Application Design Center application template type.
     updateTime: Output only. The catalog template update timestamp.
     uuid: Output only. The template revisions UUID.
   """
 
   class TemplateCategoryValueValuesEnum(_messages.Enum):
-    r"""Required. The category of the ADC template.
+    r"""Required. The category of the Application Design Center application
+    template.
 
     Values:
       TEMPLATE_CATEGORY_UNSPECIFIED: Unspecified category.
-      COMPONENT_TEMPLATE: ADC component template.
-      APPLICATION_TEMPLATE: ADC application template.
+      COMPONENT_TEMPLATE: Component template.
+      APPLICATION_TEMPLATE: Application template.
       COMPOSITE_SOLUTION_TEMPLATE: Imported as a single, complex unit without
         disassembling into components.
-      INSTANCE_TEMPLATE: ADC application instance.
+      INSTANCE_TEMPLATE: Instance template.
     """
     TEMPLATE_CATEGORY_UNSPECIFIED = 0
     COMPONENT_TEMPLATE = 1
@@ -846,7 +847,7 @@ class CatalogTemplate(_messages.Message):
     INSTANCE_TEMPLATE = 4
 
   class TypeValueValuesEnum(_messages.Enum):
-    r"""Optional. The Application Design Center assembly template type.
+    r"""Optional. The Application Design Center application template type.
 
     Values:
       TEMPLATE_TYPE_UNSPECIFIED: Default.
@@ -892,9 +893,9 @@ class CatalogTemplateRevision(_messages.Message):
   Enums:
     StateValueValuesEnum: Output only. The template state
       (validating/ready/invalid).
-    TemplateCategoryValueValuesEnum: Output only. The category of the ADC
+    TemplateCategoryValueValuesEnum: Output only. The category of the
       template.
-    TypeValueValuesEnum: Optional. The Application Design Center assembly
+    TypeValueValuesEnum: Optional. The Application Design Center application
       template type.
 
   Messages:
@@ -923,18 +924,18 @@ class CatalogTemplateRevision(_messages.Message):
     logicalProducts: Output only. The Product Main logical product type
       information.
     metadataInput: Optional. Metadata input.
-    name: Identifier. The catalog template revision name. projects/$project/lo
-      cations/$location/spaces/$space/catalogs/$catalog/templates/$template/re
-      visions/$revision
+    name: Identifier. The catalog template revision name. `projects/$project/l
+      ocations/$location/spaces/$space/catalogs/$catalog/templates/$template/r
+      evisions/$revision`
     ociRepo: Optional. The Open Container Initiative (OCI) repo source that
       contains helm charts.
     resourceTypes: Output only. The resource types present in the template
       revision.
     state: Output only. The template state (validating/ready/invalid).
-    templateCategory: Output only. The category of the ADC template.
+    templateCategory: Output only. The category of the template.
     templateMetadata: Output only. Template metadata related to Terraform
       input and output.
-    type: Optional. The Application Design Center assembly template type.
+    type: Optional. The Application Design Center application template type.
     updateTime: Output only. The catalog template update timestamp.
     uuid: Output only. UUID of the template revision.
   """
@@ -954,15 +955,15 @@ class CatalogTemplateRevision(_messages.Message):
     INVALID = 3
 
   class TemplateCategoryValueValuesEnum(_messages.Enum):
-    r"""Output only. The category of the ADC template.
+    r"""Output only. The category of the template.
 
     Values:
       TEMPLATE_CATEGORY_UNSPECIFIED: Unspecified category.
-      COMPONENT_TEMPLATE: ADC component template.
-      APPLICATION_TEMPLATE: ADC application template.
+      COMPONENT_TEMPLATE: Component template.
+      APPLICATION_TEMPLATE: Application template.
       COMPOSITE_SOLUTION_TEMPLATE: Imported as a single, complex unit without
         disassembling into components.
-      INSTANCE_TEMPLATE: ADC application instance.
+      INSTANCE_TEMPLATE: Instance template.
     """
     TEMPLATE_CATEGORY_UNSPECIFIED = 0
     COMPONENT_TEMPLATE = 1
@@ -971,7 +972,7 @@ class CatalogTemplateRevision(_messages.Message):
     INSTANCE_TEMPLATE = 4
 
   class TypeValueValuesEnum(_messages.Enum):
-    r"""Optional. The Application Design Center assembly template type.
+    r"""Optional. The Application Design Center application template type.
 
     Values:
       TEMPLATE_TYPE_UNSPECIFIED: Default.
@@ -1810,32 +1811,33 @@ class DeploymentUnitProgress(_messages.Message):
 
 class DesignCenterPolicy(_messages.Message):
   r"""A Policy is a resource within an Application Template that refers to a
-  Policy that is authored and managed outside of the ADC and attached to an
-  Application Template.
+  Policy that you author outside of Application Design Center and attach to an
+  application template.
 
   Enums:
-    PolicyTypeValueValuesEnum: Required. The policy type. Policy type will be
-      used to determine the domain of the policy.
+    PolicyTypeValueValuesEnum: Required. The policy type. Policy type is used
+      to determine the domain of the policy.
 
   Fields:
     applyConditions: Optional. Conditions for applying the policy. Condition
-      accepts AppTemplate parameters like criticality, environment only.
+      accepts the `criticality` and `environment` parameters from the
+      application template.
     createTime: Output only. The policy creation timestamp.
     description: Optional. The policy description.
     displayName: Optional. The policy display name.
-    name: Identifier. The policy name in the following format: projects/$proje
-      ct/locations/$location/spaces/$space/applicationTemplates/$applicationTe
-      mplate/policies/$policy
+    name: Identifier. The policy name in the following format: `projects/$proj
+      ect/locations/$location/spaces/$space/applicationTemplates/$applicationT
+      emplate/policies/$policy`
     policyRevisionUri: Optional. URI of the policy revision.
-    policyType: Required. The policy type. Policy type will be used to
-      determine the domain of the policy.
+    policyType: Required. The policy type. Policy type is used to determine
+      the domain of the policy.
     policyUri: Optional. URI of the policy.
     updateTime: Output only. The policy update timestamp.
   """
 
   class PolicyTypeValueValuesEnum(_messages.Enum):
-    r"""Required. The policy type. Policy type will be used to determine the
-    domain of the policy.
+    r"""Required. The policy type. Policy type is used to determine the domain
+    of the policy.
 
     Values:
       POLICY_TYPE_UNSPECIFIED: Default.
@@ -2202,9 +2204,9 @@ class DesigncenterProjectsLocationsSpacesApplicationTemplatesGenerateAssessmentR
     generateApplicationTemplateAssessmentReportRequest: A
       GenerateApplicationTemplateAssessmentReportRequest resource to be passed
       as the request body.
-    name: Required. The application template name in the following format: pro
-      jects/$project/locations/$location/spaces/$space/applicationTemplates/$a
-      pplicationTemplate
+    name: Required. The application template name in the following format: `pr
+      ojects/$project/locations/$location/spaces/$space/applicationTemplates/$
+      applicationTemplate`
   """
 
   generateApplicationTemplateAssessmentReportRequest = _messages.MessageField('GenerateApplicationTemplateAssessmentReportRequest', 1)
@@ -2320,8 +2322,8 @@ class DesigncenterProjectsLocationsSpacesApplicationTemplatesPoliciesCreateReque
     designCenterPolicy: A DesignCenterPolicy resource to be passed as the
       request body.
     parent: Required. The parent resource in which to create the policy in the
-      following format: projects/$project/locations/$location/spaces/$space/ap
-      plicationTemplates/$applicationTemplate
+      following format: `projects/$project/locations/$location/spaces/$space/a
+      pplicationTemplates/$applicationTemplate`
     policyId: Required. The ID of the policy to create.
   """
 
@@ -2336,9 +2338,9 @@ class DesigncenterProjectsLocationsSpacesApplicationTemplatesPoliciesDeleteReque
   object.
 
   Fields:
-    name: Required. The policy name in the following format: projects/$project
-      /locations/$location/spaces/$space/applicationTemplates/$applicationTemp
-      late/policies/$policy
+    name: Required. The policy name in the following format: `projects/$projec
+      t/locations/$location/spaces/$space/applicationTemplates/$applicationTem
+      plate/policies/$policy`
   """
 
   name = _messages.StringField(1, required=True)
@@ -2350,9 +2352,9 @@ class DesigncenterProjectsLocationsSpacesApplicationTemplatesPoliciesGetRequest(
   object.
 
   Fields:
-    name: Required. The policy name in the following format: projects/$project
-      /locations/$location/spaces/$space/applicationTemplates/$applicationTemp
-      late/policies/$policy
+    name: Required. The policy name in the following format: `projects/$projec
+      t/locations/$location/spaces/$space/applicationTemplates/$applicationTem
+      plate/policies/$policy`
   """
 
   name = _messages.StringField(1, required=True)
@@ -2374,8 +2376,8 @@ class DesigncenterProjectsLocationsSpacesApplicationTemplatesPoliciesListRequest
       nextPageToken from the previous response. The values of other method
       parameters should be identical to those in the previous call.
     parent: Required. The parent application template from which policies are
-      listed in the following format: projects/$project/locations/$location/sp
-      aces/$space/applicationTemplates/$applicationTemplate
+      listed in the following format: `projects/$project/locations/$location/s
+      paces/$space/applicationTemplates/$applicationTemplate`
   """
 
   filter = _messages.StringField(1)
@@ -2393,9 +2395,9 @@ class DesigncenterProjectsLocationsSpacesApplicationTemplatesPoliciesPatchReques
   Fields:
     designCenterPolicy: A DesignCenterPolicy resource to be passed as the
       request body.
-    name: Identifier. The policy name in the following format: projects/$proje
-      ct/locations/$location/spaces/$space/applicationTemplates/$applicationTe
-      mplate/policies/$policy
+    name: Identifier. The policy name in the following format: `projects/$proj
+      ect/locations/$location/spaces/$space/applicationTemplates/$applicationT
+      emplate/policies/$policy`
     updateMask: Optional. The fields to overwrite in the policy update. The
       fields specified in the update_mask are relative to the resource, not
       the full request. A field will be overwritten if it is in the mask. If
@@ -2535,7 +2537,7 @@ class DesigncenterProjectsLocationsSpacesApplicationsCreateRequest(_messages.Mes
     application: A Application resource to be passed as the request body.
     applicationId: Required. The ID of the application to create.
     parent: Required. The parent resource in which to create the application.
-      Format: projects/$project/locations/$location/spaces/$space
+      Format: `projects/$project/locations/$location/spaces/$space`
   """
 
   application = _messages.MessageField('Application', 1)
@@ -2550,8 +2552,8 @@ class DesigncenterProjectsLocationsSpacesApplicationsDeleteRequest(_messages.Mes
     force: Optional. If set to true, the application's children are also
       deleted. If false, the application is only deleted if it has no
       children.
-    name: Required. The application name. Format: projects/$project/locations/
-      $location/spaces/$space/applications/$application
+    name: Required. The application name. Format: `projects/$project/locations
+      /$location/spaces/$space/applications/$application`
   """
 
   force = _messages.BooleanField(1)
@@ -2564,8 +2566,8 @@ class DesigncenterProjectsLocationsSpacesApplicationsDeployRequest(_messages.Mes
   Fields:
     deployApplicationRequest: A DeployApplicationRequest resource to be passed
       as the request body.
-    name: Required. The application name. Format: projects/$project/locations/
-      $location/spaces/$space/applications/$application
+    name: Required. The application name. Format: `projects/$project/locations
+      /$location/spaces/$space/applications/$application`
   """
 
   deployApplicationRequest = _messages.MessageField('DeployApplicationRequest', 1)
@@ -2578,8 +2580,8 @@ class DesigncenterProjectsLocationsSpacesApplicationsFetchAssessmentReportReques
   object.
 
   Fields:
-    name: Required. The application name in the following format: projects/$pr
-      oject/locations/$location/spaces/$space/applications/$application
+    name: Required. The application name in the following format: `projects/$p
+      roject/locations/$location/spaces/$space/applications/$application`
   """
 
   name = _messages.StringField(1, required=True)
@@ -2593,8 +2595,8 @@ class DesigncenterProjectsLocationsSpacesApplicationsGenerateAssessmentReportReq
     generateApplicationAssessmentReportRequest: A
       GenerateApplicationAssessmentReportRequest resource to be passed as the
       request body.
-    name: Required. The application name in the following format: projects/$pr
-      oject/locations/$location/spaces/$space/applications/$application
+    name: Required. The application name in the following format: `projects/$p
+      roject/locations/$location/spaces/$space/applications/$application`
   """
 
   generateApplicationAssessmentReportRequest = _messages.MessageField('GenerateApplicationAssessmentReportRequest', 1)
@@ -2618,8 +2620,8 @@ class DesigncenterProjectsLocationsSpacesApplicationsGetRequest(_messages.Messag
   r"""A DesigncenterProjectsLocationsSpacesApplicationsGetRequest object.
 
   Fields:
-    name: Required. The application name. Format: projects/$project/locations/
-      $location/spaces/$space/applications/$application
+    name: Required. The application name. Format: `projects/$project/locations
+      /$location/spaces/$space/applications/$application`
   """
 
   name = _messages.StringField(1, required=True)
@@ -2683,8 +2685,8 @@ class DesigncenterProjectsLocationsSpacesApplicationsPreviewRequest(_messages.Me
   r"""A DesigncenterProjectsLocationsSpacesApplicationsPreviewRequest object.
 
   Fields:
-    name: Required. The application name in the following format: projects/$pr
-      oject/locations/$location/spaces/$space/applications/$application
+    name: Required. The application name in the following format: `projects/$p
+      roject/locations/$location/spaces/$space/applications/$application`
     previewApplicationRequest: A PreviewApplicationRequest resource to be
       passed as the request body.
   """
@@ -2714,7 +2716,7 @@ class DesigncenterProjectsLocationsSpacesCatalogsCreateRequest(_messages.Message
     catalog: A Catalog resource to be passed as the request body.
     catalogId: Required. The ID of the catalog to create.
     parent: Required. The parent space in which a catalog is created in the
-      following format: projects/$project/locations/$location/spaces/$space
+      following format: `projects/$project/locations/$location/spaces/$space`
   """
 
   catalog = _messages.MessageField('Catalog', 1)
@@ -2729,7 +2731,7 @@ class DesigncenterProjectsLocationsSpacesCatalogsDeleteRequest(_messages.Message
     force: Optional. If set to true, the catalog's children are also deleted.
       If false, the catalog is only deleted if it has no children.
     name: Required. The catalog name in the following format:
-      projects/$project/locations/$location/spaces/$space/catalogs/$catalog
+      `projects/$project/locations/$location/spaces/$space/catalogs/$catalog`
   """
 
   force = _messages.BooleanField(1)
@@ -2741,7 +2743,7 @@ class DesigncenterProjectsLocationsSpacesCatalogsGetRequest(_messages.Message):
 
   Fields:
     name: Required. The catalog name in the following format:
-      projects/$project/locations/$location/spaces/$space/catalogs/$catalog
+      `projects/$project/locations/$location/spaces/$space/catalogs/$catalog`
   """
 
   name = _messages.StringField(1, required=True)
@@ -2761,7 +2763,7 @@ class DesigncenterProjectsLocationsSpacesCatalogsListRequest(_messages.Message):
       nextPageToken from the previous response. The values of other method
       parameters should be identical to those in the previous call.
     parent: Required. The parent space from which catalogs are listed. Format:
-      projects/$project/locations/$location/spaces/$space
+      `projects/$project/locations/$location/spaces/$space`
   """
 
   filter = _messages.StringField(1)
@@ -2777,7 +2779,7 @@ class DesigncenterProjectsLocationsSpacesCatalogsPatchRequest(_messages.Message)
   Fields:
     catalog: A Catalog resource to be passed as the request body.
     name: Identifier. The catalog name in the following format:
-      projects/$project/locations/$location/spaces/$space/catalogs/$catalog
+      `projects/$project/locations/$location/spaces/$space/catalogs/$catalog`
     updateMask: Optional. The fields to overwrite in the catalog update. If
       you don't provide a mask, all fields are overwritten.
   """
@@ -2805,8 +2807,8 @@ class DesigncenterProjectsLocationsSpacesCatalogsSharesDeleteRequest(_messages.M
   r"""A DesigncenterProjectsLocationsSpacesCatalogsSharesDeleteRequest object.
 
   Fields:
-    name: Required. The share name in the following format: projects/$project/
-      locations/$location/spaces/$space/catalogs/$catalog/shares/$share
+    name: Required. The share name in the following format: `projects/$project
+      /locations/$location/spaces/$space/catalogs/$catalog/shares/$share`
   """
 
   name = _messages.StringField(1, required=True)
@@ -2816,8 +2818,8 @@ class DesigncenterProjectsLocationsSpacesCatalogsSharesGetRequest(_messages.Mess
   r"""A DesigncenterProjectsLocationsSpacesCatalogsSharesGetRequest object.
 
   Fields:
-    name: Required. The share name in the following format: projects/$project/
-      locations/$location/spaces/$space/catalogs/$catalog/shares/$share
+    name: Required. The share name in the following format: `projects/$project
+      /locations/$location/spaces/$space/catalogs/$catalog/shares/$share`
   """
 
   name = _messages.StringField(1, required=True)
@@ -2849,8 +2851,8 @@ class DesigncenterProjectsLocationsSpacesCatalogsSharesSyncRequest(_messages.Mes
   r"""A DesigncenterProjectsLocationsSpacesCatalogsSharesSyncRequest object.
 
   Fields:
-    name: Required. The share name in the following format: projects/$project/
-      locations/$location/spaces/$space/catalogs/$catalog/shares/$share
+    name: Required. The share name in the following format: `projects/$project
+      /locations/$location/spaces/$space/catalogs/$catalog/shares/$share`
     syncShareRequest: A SyncShareRequest resource to be passed as the request
       body.
   """
@@ -2885,8 +2887,8 @@ class DesigncenterProjectsLocationsSpacesCatalogsTemplatesDeleteRequest(_message
     force: Optional. If set to true, the catalog template's children are also
       deleted. If false, the catalog template is only deleted if it has no
       children.
-    name: Required. The catalog template name. Format: projects/$project/locat
-      ions/$location/spaces/$space/catalogs/$catalog/templates/$template
+    name: Required. The catalog template name. Format: `projects/$project/loca
+      tions/$location/spaces/$space/catalogs/$catalog/templates/$template`
   """
 
   force = _messages.BooleanField(1)
@@ -2897,9 +2899,9 @@ class DesigncenterProjectsLocationsSpacesCatalogsTemplatesGetRequest(_messages.M
   r"""A DesigncenterProjectsLocationsSpacesCatalogsTemplatesGetRequest object.
 
   Fields:
-    name: Required. The catalog template name in the following format: project
-      s/$project/locations/$location/spaces/$space/catalogs/$catalog/templates
-      /$template
+    name: Required. The catalog template name in the following format: `projec
+      ts/$project/locations/$location/spaces/$space/catalogs/$catalog/template
+      s/$template`
   """
 
   name = _messages.StringField(1, required=True)
@@ -2921,7 +2923,7 @@ class DesigncenterProjectsLocationsSpacesCatalogsTemplatesListRequest(_messages.
       parameters should be identical to those in the previous call.
     parent: Required. The parent from which the catalog templates are listed
       in the following format:
-      projects/$project/locations/$location/spaces/$space/catalogs/$catalog
+      `projects/$project/locations/$location/spaces/$space/catalogs/$catalog`
   """
 
   filter = _messages.StringField(1)
@@ -2938,9 +2940,9 @@ class DesigncenterProjectsLocationsSpacesCatalogsTemplatesPatchRequest(_messages
   Fields:
     catalogTemplate: A CatalogTemplate resource to be passed as the request
       body.
-    name: Identifier. The catalog template name in following format: projects/
-      $project/locations/$location/spaces/$space/catalogs/$catalog/templates/$
-      template
+    name: Identifier. The catalog template name in following format: `projects
+      /$project/locations/$location/spaces/$space/catalogs/$catalog/templates/
+      $template`
     updateMask: Optional. The fields to overwrite in the catalog template
       update. The fields specified in the update_mask are relative to the
       resource, not the full request. A field will be overwritten if it is in
@@ -2963,8 +2965,8 @@ class DesigncenterProjectsLocationsSpacesCatalogsTemplatesRevisionsCreateRequest
     catalogTemplateRevisionId: Required. The ID of the template revision to
       create.
     parent: Required. The parent in which the catalog template revisions
-      request is created in following format:
-      projects/$project/locations/$location/spaces/$space/templates/$template
+      request is created in following format: `projects/$project/locations/$lo
+      cation/spaces/$space/templates/$template`
   """
 
   catalogTemplateRevision = _messages.MessageField('CatalogTemplateRevision', 1)
@@ -3059,11 +3061,27 @@ class DesigncenterProjectsLocationsSpacesGenerateAssessmentReportRequest(_messag
       resource to be passed as the request body.
     spaceName: Required. The name of the space at which Generate Assessment
       Report is called. Format:
-      projects/$project/locations/$location/spaces/$space
+      `projects/$project/locations/$location/spaces/$space`
   """
 
   generateAssessmentReportRequest = _messages.MessageField('GenerateAssessmentReportRequest', 1)
   spaceName = _messages.StringField(2, required=True)
+
+
+class DesigncenterProjectsLocationsSpacesGenerateTerraformPlanAssessmentReportRequest(_messages.Message):
+  r"""A DesigncenterProjectsLocationsSpacesGenerateTerraformPlanAssessmentRepo
+  rtRequest object.
+
+  Fields:
+    generateTerraformPlanAssessmentReportRequest: A
+      GenerateTerraformPlanAssessmentReportRequest resource to be passed as
+      the request body.
+    name: Required. The parent resource in which to generate the assessment
+      report. Format: projects/$project/locations/$location/spaces/$space
+  """
+
+  generateTerraformPlanAssessmentReportRequest = _messages.MessageField('GenerateTerraformPlanAssessmentReportRequest', 1)
+  name = _messages.StringField(2, required=True)
 
 
 class DesigncenterProjectsLocationsSpacesGetIamPolicyRequest(_messages.Message):
@@ -3221,8 +3239,8 @@ class DesigncenterProjectsLocationsSpacesSharedTemplatesGetRequest(_messages.Mes
   r"""A DesigncenterProjectsLocationsSpacesSharedTemplatesGetRequest object.
 
   Fields:
-    name: Required. The shared template name. Format: projects/$project/locati
-      ons/$location/spaces/$space/sharedTemplates/$sharedTemplate
+    name: Required. The shared template name. Format: `projects/$project/locat
+      ions/$location/spaces/$space/sharedTemplates/$sharedTemplate`
   """
 
   name = _messages.StringField(1, required=True)
@@ -3243,7 +3261,7 @@ class DesigncenterProjectsLocationsSpacesSharedTemplatesListRequest(_messages.Me
       parameters should be identical to those in the previous call.
     parent: Required. The parent space for which shared templates are listed
       in the following format:
-      projects/$project/locations/$location/spaces/$space
+      `projects/$project/locations/$location/spaces/$space`
   """
 
   filter = _messages.StringField(1)
@@ -3259,8 +3277,8 @@ class DesigncenterProjectsLocationsSpacesSharedTemplatesRevisionsGetRequest(_mes
 
   Fields:
     name: Required. The shared template revision name, in the following
-      format: projects/$project/locations/$location/spaces/$space/sharedTempla
-      tes/$sharedTemplate/revisions/$revision
+      format: `projects/$project/locations/$location/spaces/$space/sharedTempl
+      ates/$sharedTemplate/revisions/$revision`
   """
 
   name = _messages.StringField(1, required=True)
@@ -3282,8 +3300,8 @@ class DesigncenterProjectsLocationsSpacesSharedTemplatesRevisionsListRequest(_me
       nextPageToken from the previous response. The values of other method
       parameters should be identical to those in the previous call.
     parent: Required. The parent resource from which to list shared template
-      revisions, in the following format: projects/$project/locations/$locatio
-      n/spaces/$space/sharedTemplates/$sharedTemplate
+      revisions, in the following format: `projects/$project/locations/$locati
+      on/spaces/$space/sharedTemplates/$sharedTemplate`
   """
 
   filter = _messages.StringField(1)
@@ -3326,8 +3344,8 @@ class DeveloperConnectExportConfig(_messages.Message):
 
   Fields:
     branch: Optional. The branch in repo to which the content such as
-      Infrastructure as Code (IaC) should be written to. If empty, ADC will
-      create a branch and push the changes.
+      Infrastructure as Code (IaC) should be written to. If empty, Application
+      Design Center will create a branch and push the changes.
     commitSha: Output only. The SHA of the Git commit that contains the
       exported content such as Infrastructure as Code (IaC).
     developerConnectRepoUri: Required. The Developer Connect Git repository
@@ -3500,14 +3518,14 @@ class DomainAssessmentReport(_messages.Message):
     StatusValueValuesEnum: Optional. Status of assessment report.
 
   Fields:
-    adcMetadata: Output only. ADC specific information and metadata.
+    adcMetadata: Output only. Specific information and metadata.
     additionalInfo: Optional. Additional information about the report.
     assessedFrameworks: Required. List of frameworks assessed and their
       findings.
     createTime: Output only. The time at which the report was created.
     domainId: Output only. The ID of the domain.
     domainRedirectInfo: Optional. Information on how to redirect to domain.
-    reportName: Optional. The report name as per ADC.
+    reportName: Optional. The report name as per Application Design Center.
     reportScore: Output only. Score card associated with the report.
     skippedAssetTypes: Optional. List of asset types skipped during
       assessment.
@@ -3715,10 +3733,10 @@ class FetchFrameworksResponse(_messages.Message):
 
 
 class FindingADCMetadata(_messages.Message):
-  r"""Metadata related to the ADC with the finding.
+  r"""Metadata related to the Application Design Center with the finding.
 
   Fields:
-    componentName: Output only. ADC component the finding belongs to.
+    componentName: Output only. Component the finding belongs to.
   """
 
   componentName = _messages.StringField(1)
@@ -3981,6 +3999,22 @@ class GenerateAssessmentReportRequest(_messages.Message):
       against. If empty, run against default frameworks. Frameworks refers to
       the policies.
     terraformPlan: Required. Terraform plan bytes.
+  """
+
+  additionalFrameworks = _messages.StringField(1, repeated=True)
+  terraformPlan = _messages.BytesField(2)
+
+
+class GenerateTerraformPlanAssessmentReportRequest(_messages.Message):
+  r"""Message for the request to generate a best practice report for a given
+  Terraform plan at the collection level.
+
+  Fields:
+    additionalFrameworks: Optional. Additional Frameworks to run assessment
+      against. If empty, run against default frameworks. Frameworks refers to
+      the policies.
+    terraformPlan: Required. The raw JSON representation of the generated
+      Terraform plan, provided as bytes.
   """
 
   additionalFrameworks = _messages.StringField(1, repeated=True)
@@ -5159,8 +5193,9 @@ class RegisterAppHubApplicationResourcesRequest(_messages.Message):
       'tfstate_signed_gcs_uri' field instead.
     tfstateSignedGcsUri: Optional. A securely signed Cloud Storage URI
       pointing to the tfstate file. The URI must be signed to grant the
-      service temporary read access to the state file. ADC imposes a limit on
-      the maximum size of the state file accessed via this URI.
+      service temporary read access to the state file. Application Design
+      Center imposes a limit on the maximum size of the state file accessed
+      via this URI.
   """
 
   apphubApplication = _messages.StringField(1)
@@ -5172,7 +5207,7 @@ class RegisterApphubResourcesRequest(_messages.Message):
   r"""Request message for RegisterApphubResources method.
 
   Fields:
-    adcApplicationUri: The resource uri of the ADC Application. Used for
+    adcApplicationUri: The resource uri of the Application. Used for
       registering resources of an application. Format: projects/{project}/loca
       tions/{location}/spaces/{space}/applications/{application}
     apphubApplicationUri: The resource uri of the App Hub application. Used
@@ -5201,8 +5236,8 @@ class RegisterDeployedApplicationRequest(_messages.Message):
       instead.
     tfstateSignedGcsUri: A securely signed Cloud Storage URI pointing to the
       tfstate file. The URI must be signed to grant the service temporary read
-      access to the state file. ADC imposes a limit on the maximum size of the
-      state file accessed via this URI.
+      access to the state file. Application Design Center imposes a limit on
+      the maximum size of the state file accessed via this URI.
   """
 
   serviceAccount = _messages.StringField(1)
@@ -5226,8 +5261,8 @@ class RegisterDeployedResourcesRequest(_messages.Message):
       instead.
     tfstateSignedGcsUri: A securely signed Cloud Storage URI pointing to the
       tfstate file. The URI must be signed to grant the service temporary read
-      access to the state file. ADC imposes a limit on the maximum size of the
-      state file accessed via this URI.
+      access to the state file. Application Design Center imposes a limit on
+      the maximum size of the state file accessed via this URI.
   """
 
   apphubApplication = _messages.StringField(1)
@@ -5322,10 +5357,10 @@ class RootModule(_messages.Message):
   r"""Metadata for a root module.
 
   Fields:
-    components: List of ADC component names associated with this root module.
-      For standard app template type components, this list will have a single
-      element. For service / workload / asset components, this list will
-      contain all such component names.
+    components: List of Application Design Center component names associated
+      with this root module. For standard app template type components, this
+      list will have a single element. For service / workload / asset
+      components, this list will contain all such component names.
     dependencies: Dependencies of this root module. The dependency graph of
       root modules must be acyclic.
     id: Identifier of the root module. This is the directory name of the root
@@ -5638,8 +5673,8 @@ class Share(_messages.Message):
     destinationSpace: Required. The space resource path to which the catalog
       is shared. Format is
       `projects/$project/locations/$location/spaces/$space`
-    name: Identifier. The share name in the following format: projects/$projec
-      t/locations/$location/spaces/$space/catalogs/$catalog/shares/$share
+    name: Identifier. The share name in the following format: `projects/$proje
+      ct/locations/$location/spaces/$space/catalogs/$catalog/shares/$share`
     state: Output only. The state of the share.
   """
 
@@ -5665,8 +5700,7 @@ class SharedTemplate(_messages.Message):
   r"""A read-only template that is shared with a space.
 
   Enums:
-    TemplateCategoryValueValuesEnum: Required. The category of the ADC
-      template.
+    TemplateCategoryValueValuesEnum: Required. The category of the template.
     TypeValueValuesEnum: Optional. The Application Design Center assembly
       template type.
 
@@ -5675,24 +5709,24 @@ class SharedTemplate(_messages.Message):
     description: Optional. The shared template description.
     displayName: Optional. The shared template display name.
     latestRevisionId: Output only. Latest revision of the shared template.
-    name: Identifier. The shared template name. projects/$project/locations/$l
-      ocation/spaces/$space/sharedTemplates/$sharedTemplate
+    name: Identifier. The shared template name. `projects/$project/locations/$
+      location/spaces/$space/sharedTemplates/$sharedTemplate`
     originTemplate: Output only. The origin template of the shared template.
-    templateCategory: Required. The category of the ADC template.
+    templateCategory: Required. The category of the template.
     type: Optional. The Application Design Center assembly template type.
     updateTime: Output only. The shared template update timestamp.
   """
 
   class TemplateCategoryValueValuesEnum(_messages.Enum):
-    r"""Required. The category of the ADC template.
+    r"""Required. The category of the template.
 
     Values:
       TEMPLATE_CATEGORY_UNSPECIFIED: Unspecified category.
-      COMPONENT_TEMPLATE: ADC component template.
-      APPLICATION_TEMPLATE: ADC application template.
+      COMPONENT_TEMPLATE: Component template.
+      APPLICATION_TEMPLATE: Application template.
       COMPOSITE_SOLUTION_TEMPLATE: Imported as a single, complex unit without
         disassembling into components.
-      INSTANCE_TEMPLATE: ADC application instance.
+      INSTANCE_TEMPLATE: Instance template.
     """
     TEMPLATE_CATEGORY_UNSPECIFIED = 0
     COMPONENT_TEMPLATE = 1
@@ -5745,7 +5779,7 @@ class SharedTemplateRevision(_messages.Message):
   r"""A read-only template revision that is shared with a space.
 
   Enums:
-    TemplateCategoryValueValuesEnum: Output only. The category of the ADC
+    TemplateCategoryValueValuesEnum: Output only. The category of the
       template.
     TypeValueValuesEnum: Optional. The Application Design Center assembly
       template type.
@@ -5775,8 +5809,8 @@ class SharedTemplateRevision(_messages.Message):
     logicalProducts: Output only. The Product Main logical product type
       information.
     name: Identifier. The shared template revision name. $sharedTemplate is a
-      server-generated UUID. projects/$project/locations/$location/spaces/$spa
-      ce/sharedTemplates/$sharedTemplate/revisions/$revision
+      server-generated UUID. `projects/$project/locations/$location/spaces/$sp
+      ace/sharedTemplates/$sharedTemplate/revisions/$revision`
     ociRepo: Optional. The Open Container Initiative (OCI) repo source that
       contains helm charts.
     originTemplateRevision: Output only. The shared template revision refers
@@ -5784,20 +5818,20 @@ class SharedTemplateRevision(_messages.Message):
     resourceTypes: Output only. The resource types present in the template
       revision.
     sharedTemplateMetadata: Output only. The shared template metadata.
-    templateCategory: Output only. The category of the ADC template.
+    templateCategory: Output only. The category of the template.
     type: Optional. The Application Design Center assembly template type.
   """
 
   class TemplateCategoryValueValuesEnum(_messages.Enum):
-    r"""Output only. The category of the ADC template.
+    r"""Output only. The category of the template.
 
     Values:
       TEMPLATE_CATEGORY_UNSPECIFIED: Unspecified category.
-      COMPONENT_TEMPLATE: ADC component template.
-      APPLICATION_TEMPLATE: ADC application template.
+      COMPONENT_TEMPLATE: Component template.
+      APPLICATION_TEMPLATE: Application template.
       COMPOSITE_SOLUTION_TEMPLATE: Imported as a single, complex unit without
         disassembling into components.
-      INSTANCE_TEMPLATE: ADC application instance.
+      INSTANCE_TEMPLATE: Instance template.
     """
     TEMPLATE_CATEGORY_UNSPECIFIED = 0
     COMPONENT_TEMPLATE = 1
@@ -5929,11 +5963,11 @@ class Space(_messages.Message):
     enableGcpSharedTemplates: Optional. Flag to enable Google opinionated
       shared templates.
     gcsBucket: Optional. An existing Google Cloud Storage bucket that you want
-      to use instead of creating a new bucket during ADC setup. If not
-      provided, a default bucket is created during setup. The bucket must
-      exist in the same project as the space. If the bucket name does not
-      exist in the same project as the space, the request fails with an
-      INVALID_ARGUMENT error. If you do not have access to the bucket, the
+      to use instead of creating a new bucket during Application Design Center
+      setup. If not provided, a default bucket is created during setup. The
+      bucket must exist in the same project as the space. If the bucket name
+      does not exist in the same project as the space, the request fails with
+      an INVALID_ARGUMENT error. If you do not have access to the bucket, the
       request fails with a PERMISSION_DENIED error. Format: {$bucket_name} For
       example, if the Cloud Storage bucket URI is gs:\/\/{$bucket_name}, the
       format is {$bucket_name}.

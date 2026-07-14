@@ -194,9 +194,18 @@ def AddBetaArgs(parser):
   flags.AddEnablePscAutoConnectionPolicy(parser, hidden=True)
 
 
-def AddAlphaArgs(unused_parser):
+def AddAlphaArgs(parser):
   """Declare alpha flags for this command parser."""
-  pass
+  parser.add_argument(
+      '--enable-confidential-storage',
+      action='store_true',
+      default=None,
+      hidden=True,
+      help='Whether to enable confidential mode for the instance.',
+  )
+  flags.AddMsdtcEnabled(parser, hidden=True)
+  flags.AddMsdtcRpcAuthMode(parser, hidden=True)
+  flags.AddMsdtcHostMappings(parser, hidden=True)
 
 
 def RunBaseCreateCommand(args, release_track):

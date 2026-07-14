@@ -96,6 +96,7 @@ class ComputeBeta(base_api.BaseApiClient):
     self.organizationSecurityPolicies = self.OrganizationSecurityPoliciesService(self)
     self.packetMirrorings = self.PacketMirroringsService(self)
     self.previewFeatures = self.PreviewFeaturesService(self)
+    self.projectViews = self.ProjectViewsService(self)
     self.projects = self.ProjectsService(self)
     self.publicAdvertisedPrefixes = self.PublicAdvertisedPrefixesService(self)
     self.publicDelegatedPrefixes = self.PublicDelegatedPrefixesService(self)
@@ -15223,6 +15224,43 @@ a PreviewFeature.
         request_field='previewFeatureResource',
         request_type_name='ComputePreviewFeaturesUpdateRequest',
         response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class ProjectViewsService(base_api.BaseApiService):
+    """Service class for the projectViews resource."""
+
+    _NAME = 'projectViews'
+
+    def __init__(self, client):
+      super(ComputeBeta.ProjectViewsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Returns the specified global ProjectViews resource, with a regional.
+context.
+
+      Args:
+        request: (ComputeProjectViewsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ProjectView) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.projectViews.get',
+        ordered_params=['project', 'region'],
+        path_params=['project', 'region'],
+        query_params=[],
+        relative_path='projects/{project}/regions/{region}/projectViews',
+        request_field='',
+        request_type_name='ComputeProjectViewsGetRequest',
+        response_type_name='ProjectView',
         supports_download=False,
     )
 

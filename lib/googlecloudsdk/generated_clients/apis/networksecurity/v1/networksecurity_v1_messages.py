@@ -1080,14 +1080,37 @@ class CustomMirroringProfile(_messages.Message):
   r"""CustomMirroringProfile defines out-of-band integration behavior
   (mirroring). It is used by mirroring rules with a MIRROR action.
 
+  Enums:
+    MirroringEndpointGroupTypeValueValuesEnum: Output only.
+
   Fields:
+    mirroringDeploymentGroups: Optional. The target downstream
+      MirroringDeploymentGroups. This field is used for Packet Broker
+      mirroring endpoint groups to specify the deployment groups that the
+      packet should be mirrored to by the broker.
     mirroringEndpointGroup: Required. Immutable. The target
       MirroringEndpointGroup. When a mirroring rule with this security profile
       attached matches a packet, a replica will be mirrored to the location-
       local target in this group.
+    mirroringEndpointGroupType: Output only.
   """
 
-  mirroringEndpointGroup = _messages.StringField(1)
+  class MirroringEndpointGroupTypeValueValuesEnum(_messages.Enum):
+    r"""Output only.
+
+    Values:
+      MIRRORING_ENDPOINT_GROUP_TYPE_UNSPECIFIED: Default value. This value is
+        unused.
+      DIRECT: The endpoint group is a direct endpoint group.
+      BROKER: The endpoint group is a broker endpoint group.
+    """
+    MIRRORING_ENDPOINT_GROUP_TYPE_UNSPECIFIED = 0
+    DIRECT = 1
+    BROKER = 2
+
+  mirroringDeploymentGroups = _messages.StringField(1, repeated=True)
+  mirroringEndpointGroup = _messages.StringField(2)
+  mirroringEndpointGroupType = _messages.EnumField('MirroringEndpointGroupTypeValueValuesEnum', 3)
 
 
 class Destination(_messages.Message):
@@ -2724,7 +2747,8 @@ class ListMirroringDeploymentsResponse(_messages.Message):
     nextPageToken: A token that can be sent as `page_token` to retrieve the
       next page. If this field is omitted, there are no subsequent pages. See
       https://google.aip.dev/158 for more details.
-    unreachable: Locations that could not be reached.
+    unreachable: Unordered list. Locations that could not be reached. See
+      https://google.aip.dev/217 for more details.
   """
 
   mirroringDeployments = _messages.MessageField('MirroringDeployment', 1, repeated=True)
@@ -2759,6 +2783,22 @@ class ListMirroringEndpointGroupsResponse(_messages.Message):
 
   mirroringEndpointGroups = _messages.MessageField('MirroringEndpointGroup', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
+
+
+class ListMirroringEndpointsResponse(_messages.Message):
+  r"""Message for response to listing mirroring endpoints.
+
+  Fields:
+    mirroringEndpoints: The list of mirroring endpoints.
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    unreachable: Unordered list. Locations that could not be reached. See
+      https://google.aip.dev/217 for more details.
+  """
+
+  mirroringEndpoints = _messages.MessageField('MirroringEndpoint', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
 
 
 class ListOperationsResponse(_messages.Message):
@@ -3286,6 +3326,103 @@ class MirroringDeploymentGroupDeployment(_messages.Message):
   state = _messages.EnumField('StateValueValuesEnum', 2)
 
 
+class MirroringEndpoint(_messages.Message):
+  r"""An endpoint is a managed mirroring collector that provides enhanced
+  packet enrichment capabilities and support for multiple replica
+  destinations. Endpoints are always part of a global endpoint group which
+  represents a global "mirroring broker" service.
+
+  Enums:
+    StateValueValuesEnum: Output only. The current state of the endpoint. See
+      https://google.aip.dev/216.
+
+  Messages:
+    LabelsValue: Optional. Labels are key/value pairs that help to organize
+      and filter resources.
+
+  Fields:
+    createTime: Output only. The timestamp when the resource was created. See
+      https://google.aip.dev/148#timestamps.
+    description: Optional. User-provided description of the endpoint. Used as
+      additional context for the endpoint.
+    labels: Optional. Labels are key/value pairs that help to organize and
+      filter resources.
+    mirroringEndpointGroup: Required. Immutable. The endpoint group that this
+      endpoint belongs to. Format is: `projects/{project}/locations/{location}
+      /mirroringEndpointGroups/{mirroringEndpointGroup}`
+    name: Immutable. Identifier. The resource name of this endpoint, for
+      example: `projects/123456789/locations/us-
+      central1-a/mirroringEndpoints/my-endpoint`. See
+      https://google.aip.dev/122 for more details.
+    reconciling: Output only. The current state of the resource does not match
+      the user's intended state, and the system is working to reconcile them.
+      This part of the normal operation (e.g. linking a new association to the
+      parent group). See https://google.aip.dev/128.
+    state: Output only. The current state of the endpoint. See
+      https://google.aip.dev/216.
+    updateTime: Output only. The timestamp when the resource was most recently
+      updated. See https://google.aip.dev/148#timestamps.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current state of the endpoint. See
+    https://google.aip.dev/216.
+
+    Values:
+      STATE_UNSPECIFIED: State not set (this is not a valid state).
+      CREATING: The endpoint is being created.
+      ACTIVE: The endpoint is ready and in sync with the parent group.
+      DELETING: The endpoint is being deleted.
+      DELETE_FAILED: An attempt to delete the endpoint has failed. This is a
+        terminal state and the endpoint is not expected to be usable as some
+        of its resources have been deleted. The only permitted operation is to
+        retry deleting the endpoint.
+      OUT_OF_SYNC: The underlying data plane is out of sync with the endpoint.
+        The endpoint is not expected to be usable. This state can result in
+        undefined behavior.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+    DELETING = 3
+    DELETE_FAILED = 4
+    OUT_OF_SYNC = 5
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels are key/value pairs that help to organize and filter
+    resources.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  labels = _messages.MessageField('LabelsValue', 3)
+  mirroringEndpointGroup = _messages.StringField(4)
+  name = _messages.StringField(5)
+  reconciling = _messages.BooleanField(6)
+  state = _messages.EnumField('StateValueValuesEnum', 7)
+  updateTime = _messages.StringField(8)
+
+
 class MirroringEndpointGroup(_messages.Message):
   r"""An endpoint group is a consumer frontend for a deployment group
   (backend). In order to configure mirroring for a network, consumers must
@@ -3311,10 +3448,15 @@ class MirroringEndpointGroup(_messages.Message):
       https://google.aip.dev/148#timestamps.
     description: Optional. User-provided description of the endpoint group.
       Used as additional context for the endpoint group.
+    endpoints: Output only. List of endpoints of this endpoint group.
     labels: Optional. Labels are key/value pairs that help to organize and
       filter resources.
     mirroringDeploymentGroup: Immutable. The deployment group that this DIRECT
       endpoint group is connected to, for example:
+      `projects/123456789/locations/global/mirroringDeploymentGroups/my-dg`.
+      See https://google.aip.dev/124.
+    mirroringDeploymentGroups: Immutable. A list of the deployment groups that
+      this BROKER endpoint group is connected to, for example:
       `projects/123456789/locations/global/mirroringDeploymentGroups/my-dg`.
       See https://google.aip.dev/124.
     name: Immutable. Identifier. The resource name of this endpoint group, for
@@ -3371,9 +3513,12 @@ class MirroringEndpointGroup(_messages.Message):
       TYPE_UNSPECIFIED: Not set.
       DIRECT: An endpoint group that sends packets to a single deployment
         group.
+      BROKER: An endpoint group that serves as a packet broker and may send
+        packets to multiple deployment groups.
     """
     TYPE_UNSPECIFIED = 0
     DIRECT = 1
+    BROKER = 2
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
@@ -3404,13 +3549,15 @@ class MirroringEndpointGroup(_messages.Message):
   connectedDeploymentGroups = _messages.MessageField('MirroringEndpointGroupConnectedDeploymentGroup', 2, repeated=True)
   createTime = _messages.StringField(3)
   description = _messages.StringField(4)
-  labels = _messages.MessageField('LabelsValue', 5)
-  mirroringDeploymentGroup = _messages.StringField(6)
-  name = _messages.StringField(7)
-  reconciling = _messages.BooleanField(8)
-  state = _messages.EnumField('StateValueValuesEnum', 9)
-  type = _messages.EnumField('TypeValueValuesEnum', 10)
-  updateTime = _messages.StringField(11)
+  endpoints = _messages.MessageField('MirroringEndpointGroupEndpoint', 5, repeated=True)
+  labels = _messages.MessageField('LabelsValue', 6)
+  mirroringDeploymentGroup = _messages.StringField(7)
+  mirroringDeploymentGroups = _messages.StringField(8, repeated=True)
+  name = _messages.StringField(9)
+  reconciling = _messages.BooleanField(10)
+  state = _messages.EnumField('StateValueValuesEnum', 11)
+  type = _messages.EnumField('TypeValueValuesEnum', 12)
+  updateTime = _messages.StringField(13)
 
 
 class MirroringEndpointGroupAssociation(_messages.Message):
@@ -3625,6 +3772,47 @@ class MirroringEndpointGroupConnectedDeploymentGroup(_messages.Message):
 
   locations = _messages.MessageField('MirroringLocation', 1, repeated=True)
   name = _messages.StringField(2)
+
+
+class MirroringEndpointGroupEndpoint(_messages.Message):
+  r"""The endpoint group's view of an endpoint.
+
+  Enums:
+    StateValueValuesEnum: Output only. Most recent known state of the
+      endpoint.
+
+  Fields:
+    name: Output only. The endpoint's resource name, for example:
+      `projects/123456789/locations/us-central1-a/mirroringEndpoints/my-
+      endpoint`. See https://google.aip.dev/124.
+    state: Output only. Most recent known state of the endpoint.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. Most recent known state of the endpoint.
+
+    Values:
+      STATE_UNSPECIFIED: State not set (this is not a valid state).
+      CREATING: The endpoint is being created.
+      ACTIVE: The endpoint is ready and in sync with the parent group.
+      DELETING: The endpoint is being deleted.
+      DELETE_FAILED: An attempt to delete the endpoint has failed. This is a
+        terminal state and the endpoint is not expected to be usable as some
+        of its resources have been deleted. The only permitted operation is to
+        retry deleting the endpoint.
+      OUT_OF_SYNC: The underlying data plane is out of sync with the endpoint.
+        The endpoint is not expected to be usable. This state can result in
+        undefined behavior.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+    DELETING = 3
+    DELETE_FAILED = 4
+    OUT_OF_SYNC = 5
+
+  name = _messages.StringField(1)
+  state = _messages.EnumField('StateValueValuesEnum', 2)
 
 
 class MirroringLocation(_messages.Message):
@@ -6441,6 +6629,127 @@ class NetworksecurityProjectsLocationsMirroringEndpointGroupsPatchRequest(_messa
   """
 
   mirroringEndpointGroup = _messages.MessageField('MirroringEndpointGroup', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
+
+
+class NetworksecurityProjectsLocationsMirroringEndpointsCreateRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsMirroringEndpointsCreateRequest
+  object.
+
+  Fields:
+    mirroringEndpoint: A MirroringEndpoint resource to be passed as the
+      request body.
+    mirroringEndpointId: Required. ID for the new endpoint.
+    parent: Required. The parent resource name, in the format
+      `/projects/{project}/locations/{location}`.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  mirroringEndpoint = _messages.MessageField('MirroringEndpoint', 1)
+  mirroringEndpointId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class NetworksecurityProjectsLocationsMirroringEndpointsDeleteRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsMirroringEndpointsDeleteRequest
+  object.
+
+  Fields:
+    name: Required. The name of the endpoint.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class NetworksecurityProjectsLocationsMirroringEndpointsGetRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsMirroringEndpointsGetRequest object.
+
+  Fields:
+    name: Required. The name of the endpoint.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityProjectsLocationsMirroringEndpointsListRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsMirroringEndpointsListRequest object.
+
+  Fields:
+    filter: Optional. A filter to apply to the results in the format defined
+      in [AIP-160: Filtering](https://google.aip.dev/160).
+    orderBy: Optional. A hint specifying how the results should be sorted. If
+      not specified, the results will be sorted in the default order.
+    pageSize: Optional. The maximum number of results to return. If not
+      specified, a default number will be used. Note that a fewer results may
+      be returned.
+    pageToken: Optional. A pagination token returned from a previous request
+      to list endpoints. Provide this token to retrieve the next page of
+      results.
+    parent: Required. The parent resource name, in the format
+      `/projects/{project}/locations/{location}`.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class NetworksecurityProjectsLocationsMirroringEndpointsPatchRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsMirroringEndpointsPatchRequest object.
+
+  Fields:
+    mirroringEndpoint: A MirroringEndpoint resource to be passed as the
+      request body.
+    name: Immutable. Identifier. The resource name of this endpoint, for
+      example: `projects/123456789/locations/us-
+      central1-a/mirroringEndpoints/my-endpoint`. See
+      https://google.aip.dev/122 for more details.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    updateMask: Required. Field mask is used to specify the fields to be
+      overwritten in the MirroringEndpoint resource by the update. The fields
+      specified in the update_mask are relative to the resource, not the full
+      request. A field will be overwritten if it is in the mask. If the user
+      does not provide a mask then all fields will be overwritten.
+  """
+
+  mirroringEndpoint = _messages.MessageField('MirroringEndpoint', 1)
   name = _messages.StringField(2, required=True)
   requestId = _messages.StringField(3)
   updateMask = _messages.StringField(4)

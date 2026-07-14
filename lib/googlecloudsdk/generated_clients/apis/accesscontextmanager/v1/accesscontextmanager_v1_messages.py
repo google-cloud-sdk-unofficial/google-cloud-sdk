@@ -1477,7 +1477,6 @@ class Empty(_messages.Message):
   """
 
 
-
 class Expr(_messages.Message):
   r"""Represents a textual expression in the Common Expression Language (CEL)
   syntax. CEL is a C-like expression language. The syntax and semantics of CEL
@@ -2090,10 +2089,18 @@ class Policy(_messages.Message):
 
 class Principal(_messages.Message):
   r"""The comprehensive identity container supporting identities including
+
   groups, service accounts and federated identities. Only one of them can be
   set to create an access binding.
 
   Fields:
+    federatedPrincipal: Immutable. IAM federated principal name to assign
+      policies to workforce/workload federated identities. Can be principal
+      set or single principal, here are some examples: Single principal: princ
+      ipal://iam.googleapis.com/projects/{project_number}/locations/global/wor
+      kloadIdentityPools/{pool_id}/subject/{subject_attribute_value}
+      PrincipalSet: principalSet://iam.googleapis.com/projects/{project_number
+      }/locations/global/workloadIdentityPools/{pool_id}/*
     serviceAccount: Immutable. Service account email used to assign policies
       to a specific service account. If a service account is subject to
       multiple policies (e.g., if there is a policy for all service accounts
@@ -2104,8 +2111,9 @@ class Principal(_messages.Message):
       assign policies to all service accounts owned by the project.
   """
 
-  serviceAccount = _messages.StringField(1)
-  serviceAccountProjectNumber = _messages.StringField(2)
+  federatedPrincipal = _messages.StringField(1)
+  serviceAccount = _messages.StringField(2)
+  serviceAccountProjectNumber = _messages.StringField(3)
 
 
 class Project(_messages.Message):

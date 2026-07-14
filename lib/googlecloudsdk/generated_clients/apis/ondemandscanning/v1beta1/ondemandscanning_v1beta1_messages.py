@@ -16,14 +16,29 @@ class AISkillAnalysisOccurrence(_messages.Message):
   r"""AISkillAnalysisOccurrence provides the results of an AI-based skill
   analysis.
 
+  Enums:
+    MaxSeverityValueValuesEnum: Maximum severity found among findings.
+
   Fields:
     findings: Findings produced by the analysis.
     maxSeverity: Maximum severity found among findings.
     skillName: Name of the skill that produced this analysis.
   """
 
+  class MaxSeverityValueValuesEnum(_messages.Enum):
+    r"""Maximum severity found among findings.
+
+    Values:
+      SEVERITY_UNSPECIFIED: Unspecified severity.
+      CRITICAL: Critical severity.
+      HIGH: High severity.
+    """
+    SEVERITY_UNSPECIFIED = 0
+    CRITICAL = 1
+    HIGH = 2
+
   findings = _messages.MessageField('Finding', 1, repeated=True)
-  maxSeverity = _messages.StringField(2)
+  maxSeverity = _messages.EnumField('MaxSeverityValueValuesEnum', 2)
   skillName = _messages.StringField(3)
 
 
@@ -1147,18 +1162,50 @@ class Finding(_messages.Message):
   r"""Finding provides details for a single finding within an
   AISkillAnalysisOccurrence.
 
+  Enums:
+    ScannerValueValuesEnum: Scanner determines which engine (e.g. static, llm)
+      emitted the finding.
+    SeverityValueValuesEnum: Severity of the finding.
+
   Fields:
     category: Category of the finding.
+    details: Description of the finding category.
     location: Location (path and line) where the finding was detected.
     scanner: Scanner determines which engine (e.g. static, llm) emitted the
       finding.
     severity: Severity of the finding.
   """
 
+  class ScannerValueValuesEnum(_messages.Enum):
+    r"""Scanner determines which engine (e.g. static, llm) emitted the
+    finding.
+
+    Values:
+      SCANNER_UNSPECIFIED: Unspecified scanner.
+      STATIC: Static scanner.
+      LLM: LLM scanner.
+    """
+    SCANNER_UNSPECIFIED = 0
+    STATIC = 1
+    LLM = 2
+
+  class SeverityValueValuesEnum(_messages.Enum):
+    r"""Severity of the finding.
+
+    Values:
+      SEVERITY_UNSPECIFIED: Unspecified severity.
+      CRITICAL: Critical severity.
+      HIGH: High severity.
+    """
+    SEVERITY_UNSPECIFIED = 0
+    CRITICAL = 1
+    HIGH = 2
+
   category = _messages.StringField(1)
-  location = _messages.MessageField('FindingLocation', 2)
-  scanner = _messages.StringField(3)
-  severity = _messages.StringField(4)
+  details = _messages.StringField(2)
+  location = _messages.MessageField('FindingLocation', 3)
+  scanner = _messages.EnumField('ScannerValueValuesEnum', 4)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 5)
 
 
 class FindingLocation(_messages.Message):
@@ -3651,6 +3698,7 @@ class VulnerabilityOccurrence(_messages.Message):
       is on a scale of 0 - 10 where 0 indicates low severity and 10 indicates
       high severity.
     cvssV2: The cvss v2 score for the vulnerability.
+    cvssV4: The cvss v4 score for the vulnerability.
     cvssVersion: Output only. CVSS version used to populate cvss_score and
       severity.
     cvssv3: The cvss v3 score for the vulnerability.
@@ -3742,19 +3790,20 @@ class VulnerabilityOccurrence(_messages.Message):
 
   cvssScore = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
   cvssV2 = _messages.MessageField('CVSS', 2)
-  cvssVersion = _messages.EnumField('CvssVersionValueValuesEnum', 3)
-  cvssv3 = _messages.MessageField('CVSS', 4)
-  effectiveSeverity = _messages.EnumField('EffectiveSeverityValueValuesEnum', 5)
-  extraDetails = _messages.StringField(6)
-  fixAvailable = _messages.BooleanField(7)
-  longDescription = _messages.StringField(8)
-  packageIssue = _messages.MessageField('PackageIssue', 9, repeated=True)
-  relatedUrls = _messages.MessageField('RelatedUrl', 10, repeated=True)
-  risk = _messages.MessageField('Risk', 11)
-  severity = _messages.EnumField('SeverityValueValuesEnum', 12)
-  shortDescription = _messages.StringField(13)
-  type = _messages.StringField(14)
-  vexAssessment = _messages.MessageField('VexAssessment', 15)
+  cvssV4 = _messages.MessageField('CVSS', 3)
+  cvssVersion = _messages.EnumField('CvssVersionValueValuesEnum', 4)
+  cvssv3 = _messages.MessageField('CVSS', 5)
+  effectiveSeverity = _messages.EnumField('EffectiveSeverityValueValuesEnum', 6)
+  extraDetails = _messages.StringField(7)
+  fixAvailable = _messages.BooleanField(8)
+  longDescription = _messages.StringField(9)
+  packageIssue = _messages.MessageField('PackageIssue', 10, repeated=True)
+  relatedUrls = _messages.MessageField('RelatedUrl', 11, repeated=True)
+  risk = _messages.MessageField('Risk', 12)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 13)
+  shortDescription = _messages.StringField(14)
+  type = _messages.StringField(15)
+  vexAssessment = _messages.MessageField('VexAssessment', 16)
 
 
 class WindowsUpdate(_messages.Message):

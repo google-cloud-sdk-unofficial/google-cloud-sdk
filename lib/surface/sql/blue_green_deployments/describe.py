@@ -15,7 +15,6 @@
 """Retrieves information about a Cloud SQL blue-green deployment."""
 
 import argparse
-import textwrap
 from typing import Any
 
 from apitools.base.py import exceptions as apitools_exceptions
@@ -47,37 +46,6 @@ class Describe(base.DescribeCommand):
     sql_flags.AddDeploymentId(parser)
     sql_flags.AddRegion(parser, required=False, specify_default_region=False)
     sql_flags.AddShowConfigDiff(parser)
-    parser.display_info.AddFormat(textwrap.dedent("""
-        :(
-            name,
-            description,
-            createTime,
-            state,
-            sourceInstance,
-            switchoverTargetInstance,
-            errorDetail,
-            deploymentMappings[].source.instance,
-            deploymentMappings[].source.connection,
-            deploymentMappings[].source.dns,
-            deploymentMappings[].source.ipMappings[].ipAddress,
-            deploymentMappings[].source.ipMappings[].type,
-            deploymentMappings[].target.instance,
-            deploymentMappings[].target.connection,
-            deploymentMappings[].target.dns,
-            deploymentMappings[].target.ipMappings[].ipAddress,
-            deploymentMappings[].target.ipMappings[].type,
-            deploymentMappings[].state,
-            deploymentMappings[].diffs[].field,
-            deploymentMappings[].diffs[].sourceValue,
-            deploymentMappings[].diffs[].targetValue,
-            deploymentTasks.task[].type,
-            deploymentTasks.task[].state,
-            deploymentTasks.task[].startTime,
-            deploymentTasks.task[].endTime,
-            deploymentTasks.task[].errorMessage,
-            requestedConfig.databaseVersion
-        ) default
-    """).strip())
 
   def Run(self, args: argparse.Namespace) -> Any:
     """Retrieves information about a Cloud SQL blue-green deployment.

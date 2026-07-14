@@ -405,9 +405,8 @@ class WorkloadidentityFoldersLocationsListRequest(_messages.Message):
   r"""A WorkloadidentityFoldersLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -482,8 +481,9 @@ class WorkloadidentityFoldersLocationsOperationsListRequest(_messages.Message):
   returnPartialSuccess = _messages.BooleanField(5)
 
 
-class WorkloadidentityLocationsServiceProducersGenerateServiceAgentsRequest(_messages.Message):
-  r"""A WorkloadidentityLocationsServiceProducersGenerateServiceAgentsRequest
+class WorkloadidentityFoldersLocationsServiceProducersGenerateServiceAgentsRequest(_messages.Message):
+  r"""A
+  WorkloadidentityFoldersLocationsServiceProducersGenerateServiceAgentsRequest
   object.
 
   Fields:
@@ -514,9 +514,8 @@ class WorkloadidentityOrganizationsLocationsListRequest(_messages.Message):
   r"""A WorkloadidentityOrganizationsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -591,6 +590,24 @@ class WorkloadidentityOrganizationsLocationsOperationsListRequest(_messages.Mess
   returnPartialSuccess = _messages.BooleanField(5)
 
 
+class WorkloadidentityOrganizationsLocationsServiceProducersGenerateServiceAgentsRequest(_messages.Message):
+  r"""A WorkloadidentityOrganizationsLocationsServiceProducersGenerateServiceA
+  gentsRequest object.
+
+  Fields:
+    generateServiceAgentsRequest: A GenerateServiceAgentsRequest resource to
+      be passed as the request body.
+    parent: Required. The parent resource.
+      projects/1234/locations/global/serviceProducers/bigquery.googleapis.com
+      folders/1234/locations/global/serviceProducers/storageinsights.googleapi
+      s.com organizations/2344/locations/global/serviceProducers/vertexai.goog
+      leapis.com
+  """
+
+  generateServiceAgentsRequest = _messages.MessageField('GenerateServiceAgentsRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
 class WorkloadidentityProjectsLocationsGetRequest(_messages.Message):
   r"""A WorkloadidentityProjectsLocationsGetRequest object.
 
@@ -605,9 +622,8 @@ class WorkloadidentityProjectsLocationsListRequest(_messages.Message):
   r"""A WorkloadidentityProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like `"displayName=tokyo"`, and is
       documented in more detail in [AIP-160](https://google.aip.dev/160).
@@ -680,6 +696,24 @@ class WorkloadidentityProjectsLocationsOperationsListRequest(_messages.Message):
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   returnPartialSuccess = _messages.BooleanField(5)
+
+
+class WorkloadidentityProjectsLocationsServiceProducersGenerateServiceAgentsRequest(_messages.Message):
+  r"""A WorkloadidentityProjectsLocationsServiceProducersGenerateServiceAgents
+  Request object.
+
+  Fields:
+    generateServiceAgentsRequest: A GenerateServiceAgentsRequest resource to
+      be passed as the request body.
+    parent: Required. The parent resource.
+      projects/1234/locations/global/serviceProducers/bigquery.googleapis.com
+      folders/1234/locations/global/serviceProducers/storageinsights.googleapi
+      s.com organizations/2344/locations/global/serviceProducers/vertexai.goog
+      leapis.com
+  """
+
+  generateServiceAgentsRequest = _messages.MessageField('GenerateServiceAgentsRequest', 1)
+  parent = _messages.StringField(2, required=True)
 
 
 encoding.AddCustomJsonFieldMapping(

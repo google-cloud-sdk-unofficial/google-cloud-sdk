@@ -1079,6 +1079,8 @@ class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPoin
       GCE_VM: Monitoring Point that runs as a startup script in a Compute
         Engine VM.
       AZURE_VM: Monitoring Point that runs as a startup script in an Azure VM.
+      AWS_EC2: Monitoring Point that runs as a startup script in an AWS EC2
+        instance.
     """
     MONITORING_POINT_TYPE_UNSPECIFIED = 0
     CONTAINER = 1
@@ -1087,6 +1089,7 @@ class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPoin
     HELM = 4
     GCE_VM = 5
     AZURE_VM = 6
+    AWS_EC2 = 7
 
   _password = _messages.StringField(1)
   hostname = _messages.StringField(2)

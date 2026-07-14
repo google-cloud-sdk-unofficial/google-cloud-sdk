@@ -73,7 +73,7 @@
       repeated: false
       help_text: |-
         An existing Google Cloud Storage bucket that you want to use instead of
-        creating a new bucket during ADC setup.
+        creating a new bucket during Application Design Center setup.
         If not provided, a default bucket is created during setup.
         The bucket must exist in the same project as the space.
         If the bucket name does not exist in the same project as the space, the

@@ -1131,7 +1131,7 @@ def AddProtocol(parser, default='HTTP', include_external_passthrough=False):
   ilb_protocols = 'TCP, UDP, UNSPECIFIED'
   td_protocols = 'HTTP, HTTPS, HTTP2, GRPC, H2C'
   netlb_protocols = 'TCP, UDP, UNSPECIFIED'
-  help_text = f"""
+  help_text = f"""\
       Protocol for incoming requests.
 
       If the `load-balancing-scheme` is `INTERNAL` (Internal passthrough
@@ -1169,11 +1169,11 @@ def AddProtocol(parser, default='HTTP', include_external_passthrough=False):
       """
 
   if include_external_passthrough:
-    help_text += f"""
+    help_text += """\
 
-    If the `load-balancing-scheme` is `EXTERNAL_PASSTHROUGH`
-    (Global external passthrough Network Load Balancer), the protocol must be
-    one of: {netlb_protocols}.
+      If the `load-balancing-scheme` is `EXTERNAL_PASSTHROUGH`
+      (Global external passthrough Network Load Balancer), the protocol
+      must be only UNSPECIFIED.
     """
 
   parser.add_argument(
@@ -1512,5 +1512,37 @@ def AddResourceManagerTags(parser):
       help="""\
       A comma-separated list of Resource Manager tags
       to apply to the backend service.
+      """,
+  )
+
+
+def AddHaPolicyCreateFlags(parser, hidden=True):
+  """Adds HA policy create-only flags to the given parser."""
+  parser.add_argument(
+      '--ha-policy-fast-ip-move',
+      choices=['GARP_RA', 'DISABLED'],
+      type=arg_utils.ChoiceToEnumName,
+      hidden=hidden,
+      help="""\
+      Fast IP move policy for high availability (HA).
+      """,
+  )
+
+
+def AddHaPolicyLeaderFlags(parser, hidden=True):
+  """Adds HA policy leader flags to the given parser."""
+  parser.add_argument(
+      '--ha-policy-leader-backend-group',
+      hidden=hidden,
+      help="""\
+      A fully-qualified URL of the zonal Network Endpoint Group (NEG) with
+      GCE_VM_IP endpoints that the leader is attached to.
+      """,
+  )
+  parser.add_argument(
+      '--ha-policy-leader-instance',
+      hidden=hidden,
+      help="""\
+      The name of the VM instance of the leader network endpoint.
       """,
   )

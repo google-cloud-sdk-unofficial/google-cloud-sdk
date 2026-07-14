@@ -23,15 +23,14 @@ from typing import Dict, List
 # 3.12 is complete
 # pylint: disable=g-importing-member, g-import-not-at-top, g-bad-import-order
 # pyformat: disable
+import enum
 import sys
 if sys.version_info >= (3, 11):
-  from enum import StrEnum
+  StrEnum = enum.StrEnum
 else:
   # in 3.11+, using the below class in an f-string would put the enum
   # name instead of its value
-  from enum import Enum
-
-  class StrEnum(str, Enum):
+  class StrEnum(str, enum.Enum):
     pass
 # pyformat: enable
 # pylint: enable=g-importing-member, g-import-not-at-top, g-bad-import-order
@@ -123,6 +122,7 @@ SUPPORTED_SERVICES = (
     SecurityCenterService('web-security-scanner', abbreviation='wss'),
     SecurityCenterService('vm-threat-detection-aws', abbreviation='vmtd-aws'),
     SecurityCenterService('cloud-run-threat-detection', abbreviation='crtd'),
+    SecurityCenterService('external-exposure', abbreviation='ee'),
     SecurityCenterService('vm-manager', abbreviation='vmm'),
     SecurityCenterService(
         'ec2-vulnerability-assessment', abbreviation='ec2-va'

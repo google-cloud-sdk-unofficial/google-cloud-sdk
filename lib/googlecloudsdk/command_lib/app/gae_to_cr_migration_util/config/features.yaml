@@ -21,10 +21,11 @@ unsupported:
   severity: major
   reason: Cloud Run does not support GAE Bundled Services.
 - path:
-    admin_api: buildEnvVariables
-    app_yaml: build_env_variables
-  severity: major
-  reason: No support for passing environment vars to configure buildpacks.
+    admin_api: resources.diskGb
+    app_yaml: resources.disk_size_gb
+  severity: minor
+  reason: 'App Engine Flex defaults file writes to disk, whereas Cloud Run defaults to an in-memory file system (RAM). If your app needs to write to files without consuming memory, explicitly configure an ephemeral volume mount in Cloud Run to avoid Out-of-Memory (OOM) crashes in production. See: https://cloud.google.com/run/docs/configuring/services/ephemeral-disk'
+
 range_limited:
 - path:
     admin_api: resources.cpu

@@ -53,7 +53,10 @@ DETAILED_HELP = {
         """,
 }
 
-_PACKET_BROKER_SUPPORTED = (base.ReleaseTrack.ALPHA,)
+_PACKET_BROKER_SUPPORTED = (
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+)
 
 
 @base.DefaultUniverseOnly

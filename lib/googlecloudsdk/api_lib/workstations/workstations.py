@@ -135,6 +135,63 @@ class Workstations:
     )
     log.status.Print('Stopped workstation [{}].'.format(workstation_id))
 
+  def Update(self, args):
+    """Update a workstation."""
+    workstation_name = args.CONCEPTS.workstation.Parse().RelativeName()
+    workstation_id = arg_utils.GetFromNamespace(
+        args, 'workstation', use_defaults=True
+    )
+    workstation = self.messages.Workstation()
+    update_mask = []
+
+    if args.IsSpecified('pd_disk_size'):
+      update_mask.append('persistent_directories')
+      pd = self.messages.WorkstationPersistentDirectory()
+
+      pd.mountPath = '/home'
+      pd.sizeGb = args.pd_disk_size
+      workstation.persistentDirectories = [pd]
+
+    if not update_mask:
+      log.status.Print('No updates requested.')
+      return
+
+    update_req = self.messages.WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWorkstationsPatchRequest(
+        name=workstation_name,
+        updateMask=','.join(update_mask),
+        workstation=workstation,
+        allowMissing=True,
+    )
+
+    op_ref = self._service.Patch(update_req)
+
+    log.status.Print('Updating workstation: [{}]'.format(workstation_id))
+
+    if getattr(args, 'async_', False):
+      log.status.Print('Check operation [{}] for status.'.format(op_ref.name))
+      return op_ref
+
+    op_resource = resources.REGISTRY.ParseRelativeName(
+        op_ref.name,
+        collection='workstations.projects.locations.operations',
+        api_version=self.api_version,
+    )
+    poller = waiter.CloudOperationPoller(
+        self._service, self.client.projects_locations_operations
+    )
+
+    waiter.WaitFor(
+        poller,
+        op_resource,
+        'Waiting for operation [{}] to complete'.format(op_ref.name),
+    )
+    log.status.Print('Updated workstation [{}].'.format(workstation_id))
+    return self._service.Get(
+        self.messages.WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWorkstationsGetRequest(
+            name=workstation_name
+        )
+    )
+
   def StartTcpTunnel(self, args, threaded=False):
     """Start a TCP tunnel to a workstation."""
     config_name = args.CONCEPTS.workstation.Parse().Parent().RelativeName()

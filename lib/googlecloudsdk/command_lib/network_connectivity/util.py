@@ -20,6 +20,7 @@ from typing import Any
 
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
+import googlecloudsdk.generated_clients.apis.networkconnectivity.v1.networkconnectivity_v1_messages as v1
 import googlecloudsdk.generated_clients.apis.networkconnectivity.v1beta.networkconnectivity_v1beta_messages as v1beta
 
 
@@ -259,9 +260,26 @@ def SetGatewayAdvertisedRouteRecipient(unused_ref, args, request):
     The request with the `recipient` field set.
   """
   if args.advertise_to_hub:
-    request.googleCloudNetworkconnectivityV1betaGatewayAdvertisedRoute.recipient = (
-        v1beta.GoogleCloudNetworkconnectivityV1betaGatewayAdvertisedRoute.RecipientValueValuesEnum.ADVERTISE_TO_HUB
-    )
+    if (
+        hasattr(request, "gatewayAdvertisedRoute")
+        and request.gatewayAdvertisedRoute
+    ):
+      request.gatewayAdvertisedRoute.recipient = (
+          v1.GatewayAdvertisedRoute.RecipientValueValuesEnum.ADVERTISE_TO_HUB
+      )
+    elif (
+        hasattr(
+            request,
+            "googleCloudNetworkconnectivityV1betaGatewayAdvertisedRoute",
+        )
+        and request.googleCloudNetworkconnectivityV1betaGatewayAdvertisedRoute
+    ):
+      route = request.googleCloudNetworkconnectivityV1betaGatewayAdvertisedRoute
+      enum_cls = (
+          v1beta.GoogleCloudNetworkconnectivityV1betaGatewayAdvertisedRoute
+          .RecipientValueValuesEnum
+      )
+      route.recipient = enum_cls.ADVERTISE_TO_HUB
   return request
 
 

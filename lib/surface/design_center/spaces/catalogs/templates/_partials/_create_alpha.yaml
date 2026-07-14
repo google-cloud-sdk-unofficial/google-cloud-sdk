@@ -37,7 +37,7 @@
     params:
     - help_text: |-
         Identifier. The catalog template name in following format:
-        projects/$project/locations/$location/spaces/$space/catalogs/$catalog/templates/$template
+        `projects/$project/locations/$location/spaces/$space/catalogs/$catalog/templates/$template`
       is_positional: true
       is_primary_resource: true
       request_id_field: catalogTemplateId
@@ -59,16 +59,16 @@
       api_field: catalogTemplate.templateCategory
       required: true
       help_text: |-
-        The category of the ADC template.
+        The category of the Application Design Center application template.
       choices:
       - arg_value: component-template
         enum_value: COMPONENT_TEMPLATE
         help_text: |-
-          ADC component template.
+          Component template.
       - arg_value: application-template
         enum_value: APPLICATION_TEMPLATE
         help_text: |-
-          ADC application template.
+          Application template.
       - arg_value: composite-solution-template
         enum_value: COMPOSITE_SOLUTION_TEMPLATE
         help_text: |-
@@ -76,12 +76,12 @@
       - arg_value: instance-template
         enum_value: INSTANCE_TEMPLATE
         help_text: |-
-          ADC application instance.
+          Instance template.
     - arg_name: type
       api_field: catalogTemplate.type
       required: false
       help_text: |-
-        The Application Design Center assembly template type.
+        The Application Design Center application template type.
       choices:
       - arg_value: service
         enum_value: SERVICE

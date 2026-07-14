@@ -4865,7 +4865,7 @@ class GooglePrivacyDlpV2ConversationMessage(_messages.Message):
   Fields:
     content: The contents of this message.
     messageType: The type of message.
-    participantId: Optional. The identifier of the participant. For example
+    participantId: Optional. The identifier of the participant, for example
       'test-user' or 'gemini'. The participant ID can contain lowercase
       letters, numbers, and hyphens; that is, it must match the regular
       expression: `^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$`. The maximum length is

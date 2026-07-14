@@ -793,18 +793,20 @@ class FederatedCatalogOptions(_messages.Message):
     refresh_options: Optional. Refresh configuration.
     refresh_status: Output only. The status of the background refresh
       operations.
-    secret_name: Required. The secret resource name in Secret Manager, in the
+    secret_name: Optional. The secret resource name in Secret Manager, in the
       format `projects/{project_id}/locations/{location}/secrets/{secret_id}`
       or `projects/{project_id}/locations/{location}/secrets/{secret_id}/versi
       ons/{version_id}`. The project ID must match the catalog's project and
       location must match the catalog's location. If the version is not
-      specified, the latest version will be used.
+      specified, the latest version will be used. This field is not used when
+      `service_principal_application_id` is set.
     service_directory_name: Optional. The service directory resource name for
       routing traffic over a private network connection through Cross-Cloud
       Interconnect, in the format `projects/{project_id}/locations/{location_i
       d}/namespaces/{namespace_id}/services/{service_id}`.
     unity_catalog_info: Optional. Info specific to a Unity Catalog by
       Databricks.
+    workday_catalog_info: Optional. Info specific to a Workday Catalog.
   """
 
   glue_catalog_info = _messages.MessageField('GlueCatalogInfo', 1)
@@ -813,6 +815,7 @@ class FederatedCatalogOptions(_messages.Message):
   secret_name = _messages.StringField(4)
   service_directory_name = _messages.StringField(5)
   unity_catalog_info = _messages.MessageField('UnityCatalogInfo', 6)
+  workday_catalog_info = _messages.MessageField('WorkdayCatalogInfo', 7)
 
 
 class GlueCatalogInfo(_messages.Message):
@@ -820,17 +823,19 @@ class GlueCatalogInfo(_messages.Message):
   catalog and S3 Table Buckets.
 
   Fields:
-    aws_region: Required. The AWS region of the Glue catalog to connect to.
-      The region should be in the same geographical region and jurisdiction as
-      the federated catalog. Must be non-empty.
+    aws_region: Required. Immutable. The AWS region of the Glue catalog to
+      connect to. The region should be in the same geographical region and
+      jurisdiction as the federated catalog. Must be non-empty and is
+      immutable.
     aws_role_arn: Required. The AWS role ARN of the Glue catalog that the
-      federated catalog will assume to access the catalog.
-    warehouse: Required. The warehouse to connect to a regional AWS Glue
-      Iceberg REST Catalog. Must be non-empty. For top level access, use the
-      AWS account ID (e.g. 111222333444). For an S3 table bucket, the
-      warehouse is of the form: 111222333444:s3tablescatalog/. The URL to
-      access catalog will be https://glue.{aws_region}.amazonaws.com/iceberg/v
-      1?warehouse={warehouse}.
+      federated catalog will assume to access the catalog. Must be non-empty.
+      Can be updated.
+    warehouse: Required. Immutable. The warehouse to connect to a regional AWS
+      Glue Iceberg REST Catalog. For top level access, use the AWS account ID
+      (e.g. 111222333444). For an S3 table bucket, the warehouse is of the
+      form: 111222333444:s3tablescatalog/. The URL to access catalog will be h
+      ttps://glue.{aws_region}.amazonaws.com/iceberg/v1?warehouse={warehouse}.
+      Must be non-empty and is immutable.
   """
 
   aws_region = _messages.StringField(1)
@@ -1683,6 +1688,24 @@ class UpdateIcebergTableRequest(_messages.Message):
   httpBody = _messages.MessageField('HttpBody', 1)
 
 
+class WorkdayCatalogInfo(_messages.Message):
+  r"""Workday Catalog info.
+
+  Fields:
+    base_url: Required. Specifies the base URL of the Workday Iceberg REST
+      Catalog endpoint. The format for connecting to Workday Data Lake is: -
+      For IMPL (Nonprod): `https://impl-services1.{dc}.myworkday.com/datalake`
+      - For PROD: `https://services1.{dc}.myworkday.com/datalake` For example,
+      for a tenant in nonprod data center `wd12`, the base URL is:
+      `https://impl-services1.wd12.myworkday.com/datalake`.
+    realm: Required. Specifies the Apache Polaris realm used when connecting
+      to the endpoint. This is equal to the Workday tenant (1:1 mapping).
+  """
+
+  base_url = _messages.StringField(1)
+  realm = _messages.StringField(2)
+
+
 encoding.AddCustomJsonFieldMapping(
     FederatedCatalogOptions, 'glue_catalog_info', 'glue-catalog-info')
 encoding.AddCustomJsonFieldMapping(
@@ -1695,6 +1718,8 @@ encoding.AddCustomJsonFieldMapping(
     FederatedCatalogOptions, 'service_directory_name', 'service-directory-name')
 encoding.AddCustomJsonFieldMapping(
     FederatedCatalogOptions, 'unity_catalog_info', 'unity-catalog-info')
+encoding.AddCustomJsonFieldMapping(
+    FederatedCatalogOptions, 'workday_catalog_info', 'workday-catalog-info')
 encoding.AddCustomJsonFieldMapping(
     GlueCatalogInfo, 'aws_region', 'aws-region')
 encoding.AddCustomJsonFieldMapping(
@@ -1753,6 +1778,8 @@ encoding.AddCustomJsonFieldMapping(
     UnityCatalogInfo, 'instance_name', 'instance-name')
 encoding.AddCustomJsonFieldMapping(
     UnityCatalogInfo, 'service_principal_application_id', 'service-principal-application-id')
+encoding.AddCustomJsonFieldMapping(
+    WorkdayCatalogInfo, 'base_url', 'base-url')
 encoding.AddCustomJsonFieldMapping(
     StandardQueryParameters, 'f__xgafv', '$.xgafv')
 encoding.AddCustomJsonEnumMapping(

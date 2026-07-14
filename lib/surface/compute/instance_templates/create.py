@@ -77,6 +77,8 @@ def _CommonArgs(
     support_enable_vpc_scoped_dns=False,
     support_workload_identity_config=False,
     support_alias_ipv6_ranges=False,
+    support_dns64_eligible=False,
+    support_nat64_eligible=False,
 ):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -104,6 +106,8 @@ def _CommonArgs(
       support_igmp_query=support_igmp_query,
       support_enable_vpc_scoped_dns=support_enable_vpc_scoped_dns,
       support_alias_ipv6_ranges=support_alias_ipv6_ranges,
+      support_dns64_eligible=support_dns64_eligible,
+      support_nat64_eligible=support_nat64_eligible,
   )
   instances_flags.AddAcceleratorArgs(parser)
   instances_flags.AddMachineTypeArgs(parser)
@@ -595,6 +599,8 @@ def _RunCreate(
     support_enable_vpc_scoped_dns=False,
     support_workload_identity_config=False,
     support_alias_ipv6_ranges=False,
+    support_dns64_eligible=False,
+    support_nat64_eligible=False,
 ):
   """Common routine for creating instance template.
 
@@ -658,6 +664,8 @@ def _RunCreate(
       support_workload_identity_config: Indicate whether workload identity
         config is supported.
       support_alias_ipv6_ranges: Indicate whether alias ipv6 range is supported.
+    support_dns64_eligible: Indicate whether dns64 is supported.
+    support_nat64_eligible: Indicate whether nat64 is supported.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -716,6 +724,8 @@ def _RunCreate(
         subnet_region=subnet_region,
         support_enable_vpc_scoped_dns=support_enable_vpc_scoped_dns,
         support_alias_ipv6_ranges=support_alias_ipv6_ranges,
+        support_dns64_eligible=support_dns64_eligible,
+        support_nat64_eligible=support_nat64_eligible,
     )
   else:
     network_tier = getattr(args, 'network_tier', None)
@@ -1229,6 +1239,8 @@ class Create(base.CreateCommand):
   _support_enable_vpc_scoped_dns = False
   _support_workload_identity_config = False
   _support_alias_ipv6_ranges = False
+  _support_dns64_eligible = False
+  _support_nat64_eligible = False
 
   @classmethod
   def Args(cls, parser):
@@ -1264,6 +1276,8 @@ class Create(base.CreateCommand):
         support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
         support_workload_identity_config=cls._support_workload_identity_config,
         support_alias_ipv6_ranges=cls._support_alias_ipv6_ranges,
+        support_dns64_eligible=cls._support_dns64_eligible,
+        support_nat64_eligible=cls._support_nat64_eligible,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1376,6 +1390,8 @@ class CreateBeta(Create):
   _support_enable_vpc_scoped_dns = False
   _support_workload_identity_config = False
   _support_alias_ipv6_ranges = True
+  _support_dns64_eligible = False
+  _support_nat64_eligible = False
 
   @classmethod
   def Args(cls, parser):
@@ -1411,6 +1427,8 @@ class CreateBeta(Create):
         support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
         support_workload_identity_config=cls._support_workload_identity_config,
         support_alias_ipv6_ranges=cls._support_alias_ipv6_ranges,
+        support_dns64_eligible=cls._support_dns64_eligible,
+        support_nat64_eligible=cls._support_nat64_eligible,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1471,6 +1489,8 @@ class CreateBeta(Create):
         support_enable_vpc_scoped_dns=self._support_enable_vpc_scoped_dns,
         support_workload_identity_config=self._support_workload_identity_config,
         support_alias_ipv6_ranges=self._support_alias_ipv6_ranges,
+        support_dns64_eligible=True,
+        support_nat64_eligible=True,
     )
 
 
@@ -1526,6 +1546,8 @@ class CreateAlpha(Create):
   _support_enable_vpc_scoped_dns = True
   _support_workload_identity_config = True
   _support_alias_ipv6_ranges = True
+  _support_dns64_eligible = True
+  _support_nat64_eligible = True
 
   @classmethod
   def Args(cls, parser):
@@ -1562,6 +1584,8 @@ class CreateAlpha(Create):
         support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
         support_workload_identity_config=cls._support_workload_identity_config,
         support_alias_ipv6_ranges=cls._support_alias_ipv6_ranges,
+        support_dns64_eligible=cls._support_dns64_eligible,
+        support_nat64_eligible=cls._support_nat64_eligible,
     )
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
@@ -1625,6 +1649,8 @@ class CreateAlpha(Create):
         support_enable_vpc_scoped_dns=self._support_enable_vpc_scoped_dns,
         support_workload_identity_config=self._support_workload_identity_config,
         support_alias_ipv6_ranges=self._support_alias_ipv6_ranges,
+        support_dns64_eligible=True,
+        support_nat64_eligible=True,
     )
 
 

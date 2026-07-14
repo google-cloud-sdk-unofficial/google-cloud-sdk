@@ -153,6 +153,46 @@ class Deprovision(_messages.Message):
 
 
 
+class DeprovisionUnitGroup(_messages.Message):
+  r"""DeprovisionUnitGroup is the unit group operation that deprovisions the
+  underlying resources represented by a UnitGroup.
+  """
+
+
+
+class DetachUnitGroup(_messages.Message):
+  r"""DetachUnitGroup is the unit group operation that detaches a provisioned
+  UnitGroup.
+  """
+
+
+
+class DynamicAllocation(_messages.Message):
+  r"""Allocation to be dynamically updated by a Rollout. This is the
+  name/template of the allocation.
+
+  Fields:
+    description: Optional. Description of the dynamic allocation. Max length:
+      500 bytes.
+    finalVariant: Required. The name of the target variant of the launch - the
+      one that should be at 100%.
+    id: Required. Allocation ID. Max length: 128 bytes.
+    initialVariant: Required. The name of the "starting" variant during the
+      launch - the one at 0%.
+    randomizedOn: Required. The attribute used for randomization.
+    salt: Optional. Salt for the dynamic allocation. By default, the user
+      should not provide the salt - the system should provide a default salt
+      when allocation is created.
+  """
+
+  description = _messages.StringField(1)
+  finalVariant = _messages.StringField(2)
+  id = _messages.StringField(3)
+  initialVariant = _messages.StringField(4)
+  randomizedOn = _messages.StringField(5)
+  salt = _messages.StringField(6)
+
+
 class Empty(_messages.Message):
   r"""A generic empty message that you can re-use to avoid defining duplicated
   empty messages in your APIs. A typical example is to use it as the request
@@ -211,9 +251,12 @@ class EvaluationSpec(_messages.Message):
       evaluation rules and allocations.
     defaultAllocation: Optional. The ID of an allocation to use as the
       default.
+    defaultDynamicAllocation: Optional. The ID of a dynamic allocation to use
+      as the default.
     defaultTarget: Optional. Deprecated: Use `base_target` instead. Default
       variant or allocation of the flag.
     defaultVariant: Optional. The name of a variant to use as the default.
+    dynamicAllocations: Optional. A list of dynamic allocations.
     rules: Optional. Evaluation rules define the logic for evaluating the flag
       against a given context. The rules are evaluated sequentially in their
       specified order.
@@ -223,10 +266,12 @@ class EvaluationSpec(_messages.Message):
   allocations = _messages.MessageField('Allocation', 1, repeated=True)
   attributes = _messages.StringField(2, repeated=True)
   defaultAllocation = _messages.StringField(3)
-  defaultTarget = _messages.StringField(4)
-  defaultVariant = _messages.StringField(5)
-  rules = _messages.MessageField('EvaluationRule', 6, repeated=True)
-  variants = _messages.MessageField('Variant', 7, repeated=True)
+  defaultDynamicAllocation = _messages.StringField(4)
+  defaultTarget = _messages.StringField(5)
+  defaultVariant = _messages.StringField(6)
+  dynamicAllocations = _messages.MessageField('DynamicAllocation', 7, repeated=True)
+  rules = _messages.MessageField('EvaluationRule', 8, repeated=True)
+  variants = _messages.MessageField('Variant', 9, repeated=True)
 
 
 class Flag(_messages.Message):
@@ -1070,6 +1115,22 @@ class ListRolloutsResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class ListSaasReleasesResponse(_messages.Message):
+  r"""The response structure for the ListSaasReleases method.
+
+  Fields:
+    nextPageToken: If present, the next page token can be provided to a
+      subsequent ListSaasReleases call to list the next page. If empty, there
+      are no more pages.
+    saasReleases: The resulting saas releases.
+    unreachable: Locations that could not be reached.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  saasReleases = _messages.MessageField('SaasRelease', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListSaasResponse(_messages.Message):
   r"""The response structure for the ListSaas method.
 
@@ -1099,6 +1160,38 @@ class ListTenantsResponse(_messages.Message):
 
   nextPageToken = _messages.StringField(1)
   tenants = _messages.MessageField('Tenant', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListUnitGroupOperationsResponse(_messages.Message):
+  r"""The response structure for the ListUnitGroupOperations method.
+
+  Fields:
+    nextPageToken: If present, the next page token can be provided to a
+      subsequent ListUnitGroupOperations call to list the next page. If empty,
+      there are no more pages.
+    unitGroupOperations: The resulting unit group operations.
+    unreachable: Locations that could not be reached.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  unitGroupOperations = _messages.MessageField('UnitGroupOperation', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListUnitGroupsResponse(_messages.Message):
+  r"""The response structure for the ListUnitGroups method.
+
+  Fields:
+    nextPageToken: If present, the next page token can be provided to a
+      subsequent ListUnitGroups call to list the next page. If empty, there
+      are no more pages.
+    unitGroups: The resulting unit groups.
+    unreachable: Locations that could not be reached.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  unitGroups = _messages.MessageField('UnitGroup', 2, repeated=True)
   unreachable = _messages.StringField(3, repeated=True)
 
 
@@ -1189,6 +1282,13 @@ class Provision(_messages.Message):
 
   inputVariables = _messages.MessageField('UnitVariable', 1, repeated=True)
   release = _messages.StringField(2)
+
+
+class ProvisionUnitGroup(_messages.Message):
+  r"""ProvisionUnitGroup is the unit group operation that provisions the
+  underlying resources represented by a UnitGroup.
+  """
+
 
 
 class Release(_messages.Message):
@@ -1937,6 +2037,114 @@ class SaasCondition(_messages.Message):
   reason = _messages.StringField(3)
   status = _messages.EnumField('StatusValueValuesEnum', 4)
   type = _messages.EnumField('TypeValueValuesEnum', 5)
+
+
+class SaasRelease(_messages.Message):
+  r"""SaasRelease is a collection of Releases that are assigned to a
+  UnitGroup. It allows provisioning and updates of UnitGroup, which contains
+  multiple Units of different UnitKinds.
+
+  Messages:
+    AnnotationsValue: Optional. Annotations is an unstructured key-value map
+      stored with a resource that may be set by external tools to store and
+      retrieve arbitrary metadata. They are not queryable and should be
+      preserved when modifying objects. More info:
+      https://kubernetes.io/docs/user-guide/annotations
+    LabelsValue: Optional. The labels on the resource, which can be used for
+      categorization. similar to Kubernetes resource labels.
+
+  Fields:
+    annotations: Optional. Annotations is an unstructured key-value map stored
+      with a resource that may be set by external tools to store and retrieve
+      arbitrary metadata. They are not queryable and should be preserved when
+      modifying objects. More info: https://kubernetes.io/docs/user-
+      guide/annotations
+    createTime: Output only. The timestamp when the resource was created.
+    etag: Output only. An opaque value that uniquely identifies a version or
+      generation of a resource. It can be used to confirm that the client and
+      server agree on the ordering of a resource being written.
+    labels: Optional. The labels on the resource, which can be used for
+      categorization. similar to Kubernetes resource labels.
+    name: Identifier. The resource name (full URI of the resource) following
+      the standard naming scheme:
+      "projects/{project}/locations/{location}/saasReleases/{saasRelease}"
+    releases: Required. The Releases that are assigned to this SaasRelease.
+    tierMappings: Required. A mapping between Tiers and UnitKinds that are
+      part of this SaasRelease. While Tiers are defined as top-level
+      resources, the mapping between Tiers and Unit Kinds is defined per
+      SaasRelease.
+    uid: Output only. The unique identifier of the resource. UID is unique in
+      the time and space for this resource within the scope of the service. It
+      is typically generated by the server on successful creation of a
+      resource and must not be changed. UID is used to uniquely identify
+      resources with resource name reuses. This should be a UUID4.
+    updateTime: Output only. The timestamp when the resource was last updated.
+      Any change to the resource made by users must refresh this value.
+      Changes to a resource made by the service should refresh this value.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AnnotationsValue(_messages.Message):
+    r"""Optional. Annotations is an unstructured key-value map stored with a
+    resource that may be set by external tools to store and retrieve arbitrary
+    metadata. They are not queryable and should be preserved when modifying
+    objects. More info: https://kubernetes.io/docs/user-guide/annotations
+
+    Messages:
+      AdditionalProperty: An additional property for a AnnotationsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type AnnotationsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AnnotationsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. The labels on the resource, which can be used for
+    categorization. similar to Kubernetes resource labels.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  annotations = _messages.MessageField('AnnotationsValue', 1)
+  createTime = _messages.StringField(2)
+  etag = _messages.StringField(3)
+  labels = _messages.MessageField('LabelsValue', 4)
+  name = _messages.StringField(5)
+  releases = _messages.StringField(6, repeated=True)
+  tierMappings = _messages.MessageField('TierMapping', 7, repeated=True)
+  uid = _messages.StringField(8)
+  updateTime = _messages.StringField(9)
 
 
 class SaasservicemgmtProjectsLocationsFlagAttributesCreateRequest(_messages.Message):
@@ -3004,6 +3212,96 @@ class SaasservicemgmtProjectsLocationsSaasPatchRequest(_messages.Message):
   validateOnly = _messages.BooleanField(5)
 
 
+class SaasservicemgmtProjectsLocationsSaasReleasesCreateRequest(_messages.Message):
+  r"""A SaasservicemgmtProjectsLocationsSaasReleasesCreateRequest object.
+
+  Fields:
+    parent: Required. The parent of the saas release.
+    requestId: An optional request ID to identify requests.
+    saasRelease: A SaasRelease resource to be passed as the request body.
+    saasReleaseId: Required. The ID value for the new saas release.
+    validateOnly: If "validate_only" is set to true, the service will try to
+      validate that this request would succeed, but will not actually make
+      changes.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  saasRelease = _messages.MessageField('SaasRelease', 3)
+  saasReleaseId = _messages.StringField(4)
+  validateOnly = _messages.BooleanField(5)
+
+
+class SaasservicemgmtProjectsLocationsSaasReleasesDeleteRequest(_messages.Message):
+  r"""A SaasservicemgmtProjectsLocationsSaasReleasesDeleteRequest object.
+
+  Fields:
+    etag: The etag known to the client for the expected state of the saas
+      release.
+    name: Required. The resource name of the resource within a service.
+    requestId: An optional request ID to identify requests.
+    validateOnly: If "validate_only" is set to true, the service will try to
+      validate that this request would succeed, but will not actually make
+      changes.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  validateOnly = _messages.BooleanField(4)
+
+
+class SaasservicemgmtProjectsLocationsSaasReleasesGetRequest(_messages.Message):
+  r"""A SaasservicemgmtProjectsLocationsSaasReleasesGetRequest object.
+
+  Fields:
+    name: Required. The resource name of the resource within a service.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class SaasservicemgmtProjectsLocationsSaasReleasesListRequest(_messages.Message):
+  r"""A SaasservicemgmtProjectsLocationsSaasReleasesListRequest object.
+
+  Fields:
+    filter: Filter the list as specified in https://google.aip.dev/160.
+    orderBy: Order results as specified in https://google.aip.dev/132.
+    pageSize: The maximum number of saas releases to send per page.
+    pageToken: The page token: If the next_page_token from a previous response
+      is provided, this request will send the subsequent page.
+    parent: Required. The parent of the saas releases.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class SaasservicemgmtProjectsLocationsSaasReleasesPatchRequest(_messages.Message):
+  r"""A SaasservicemgmtProjectsLocationsSaasReleasesPatchRequest object.
+
+  Fields:
+    name: Identifier. The resource name (full URI of the resource) following
+      the standard naming scheme:
+      "projects/{project}/locations/{location}/saasReleases/{saasRelease}"
+    requestId: An optional request ID to identify requests.
+    saasRelease: A SaasRelease resource to be passed as the request body.
+    updateMask: Field mask is used to specify the fields to be overwritten.
+    validateOnly: If "validate_only" is set to true, the service will try to
+      validate that this request would succeed, but will not actually make
+      changes.
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  saasRelease = _messages.MessageField('SaasRelease', 3)
+  updateMask = _messages.StringField(4)
+  validateOnly = _messages.BooleanField(5)
+
+
 class SaasservicemgmtProjectsLocationsTenantsCreateRequest(_messages.Message):
   r"""A SaasservicemgmtProjectsLocationsTenantsCreateRequest object.
 
@@ -3129,6 +3427,232 @@ class SaasservicemgmtProjectsLocationsTenantsPatchRequest(_messages.Message):
   name = _messages.StringField(1, required=True)
   requestId = _messages.StringField(2)
   tenant = _messages.MessageField('Tenant', 3)
+  updateMask = _messages.StringField(4)
+  validateOnly = _messages.BooleanField(5)
+
+
+class SaasservicemgmtProjectsLocationsUnitGroupOperationsCreateRequest(_messages.Message):
+  r"""A SaasservicemgmtProjectsLocationsUnitGroupOperationsCreateRequest
+  object.
+
+  Fields:
+    parent: Required. The parent of the unit group operation.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    unitGroupOperation: A UnitGroupOperation resource to be passed as the
+      request body.
+    unitGroupOperationId: Required. The ID value for the new unit group
+      operation.
+    validateOnly: Optional. If "validate_only" is set to true, the service
+      will try to validate that this request would succeed, but will not
+      actually make changes.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  unitGroupOperation = _messages.MessageField('UnitGroupOperation', 3)
+  unitGroupOperationId = _messages.StringField(4)
+  validateOnly = _messages.BooleanField(5)
+
+
+class SaasservicemgmtProjectsLocationsUnitGroupOperationsDeleteRequest(_messages.Message):
+  r"""A SaasservicemgmtProjectsLocationsUnitGroupOperationsDeleteRequest
+  object.
+
+  Fields:
+    etag: Optional. The etag known to the client for the expected state of the
+      unit group operation. This is used with state-changing methods to
+      prevent accidental overwrites when multiple user agents might be acting
+      in parallel on the same resource. An etag wildcard provide optimistic
+      concurrency based on the expected existence of the unit group operation.
+      The Any wildcard (`*`) requires that the resource must already exists,
+      and the Not Any wildcard (`!*`) requires that it must not.
+    name: Required. The resource name of the resource within a service.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    validateOnly: Optional. If "validate_only" is set to true, the service
+      will try to validate that this request would succeed, but will not
+      actually make changes.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  validateOnly = _messages.BooleanField(4)
+
+
+class SaasservicemgmtProjectsLocationsUnitGroupOperationsGetRequest(_messages.Message):
+  r"""A SaasservicemgmtProjectsLocationsUnitGroupOperationsGetRequest object.
+
+  Fields:
+    name: Required. The resource name of the resource within a service.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class SaasservicemgmtProjectsLocationsUnitGroupOperationsListRequest(_messages.Message):
+  r"""A SaasservicemgmtProjectsLocationsUnitGroupOperationsListRequest object.
+
+  Fields:
+    filter: Filter the list as specified in https://google.aip.dev/160.
+    orderBy: Order results as specified in https://google.aip.dev/132.
+    pageSize: The maximum number of unit group operations to send per page.
+    pageToken: The page token: If the next_page_token from a previous response
+      is provided, this request will send the subsequent page.
+    parent: Required. The parent of the unit group operation.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class SaasservicemgmtProjectsLocationsUnitGroupOperationsPatchRequest(_messages.Message):
+  r"""A SaasservicemgmtProjectsLocationsUnitGroupOperationsPatchRequest
+  object.
+
+  Fields:
+    name: Identifier. The resource name (full URI of the resource) following
+      the standard naming scheme: "projects/{project}/locations/{location}/uni
+      tGroupOperations/{unitGroupOperation}"
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    unitGroupOperation: A UnitGroupOperation resource to be passed as the
+      request body.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the UnitGroupOperation resource by the update. The fields
+      specified in the update_mask are relative to the resource, not the full
+      request. A field will be overwritten if it is in the mask. If the user
+      does not provide a mask then all fields in the UnitGroupOperation will
+      be overwritten.
+    validateOnly: Optional. If "validate_only" is set to true, the service
+      will try to validate that this request would succeed, but will not
+      actually make changes.
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  unitGroupOperation = _messages.MessageField('UnitGroupOperation', 3)
+  updateMask = _messages.StringField(4)
+  validateOnly = _messages.BooleanField(5)
+
+
+class SaasservicemgmtProjectsLocationsUnitGroupsCreateRequest(_messages.Message):
+  r"""A SaasservicemgmtProjectsLocationsUnitGroupsCreateRequest object.
+
+  Fields:
+    parent: Required. The parent of the unit group.
+    requestId: An optional request ID to identify requests.
+    unitGroup: A UnitGroup resource to be passed as the request body.
+    unitGroupId: Required. The ID value for the new unit group.
+    validateOnly: If "validate_only" is set to true, the service will try to
+      validate that this request would succeed, but will not actually make
+      changes.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  unitGroup = _messages.MessageField('UnitGroup', 3)
+  unitGroupId = _messages.StringField(4)
+  validateOnly = _messages.BooleanField(5)
+
+
+class SaasservicemgmtProjectsLocationsUnitGroupsDeleteRequest(_messages.Message):
+  r"""A SaasservicemgmtProjectsLocationsUnitGroupsDeleteRequest object.
+
+  Fields:
+    etag: The etag known to the client for the expected state of the unit
+      group.
+    name: Required. The resource name of the resource within a service.
+    requestId: An optional request ID to identify requests.
+    validateOnly: If "validate_only" is set to true, the service will try to
+      validate that this request would succeed, but will not actually make
+      changes.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  validateOnly = _messages.BooleanField(4)
+
+
+class SaasservicemgmtProjectsLocationsUnitGroupsGetRequest(_messages.Message):
+  r"""A SaasservicemgmtProjectsLocationsUnitGroupsGetRequest object.
+
+  Fields:
+    name: Required. The resource name of the resource within a service.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class SaasservicemgmtProjectsLocationsUnitGroupsListRequest(_messages.Message):
+  r"""A SaasservicemgmtProjectsLocationsUnitGroupsListRequest object.
+
+  Fields:
+    filter: Filter the list as specified in https://google.aip.dev/160.
+    orderBy: Order results as specified in https://google.aip.dev/132.
+    pageSize: The maximum number of unit groups to send per page.
+    pageToken: The page token: If the next_page_token from a previous response
+      is provided, this request will send the subsequent page.
+    parent: Required. The parent of the unit group.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class SaasservicemgmtProjectsLocationsUnitGroupsPatchRequest(_messages.Message):
+  r"""A SaasservicemgmtProjectsLocationsUnitGroupsPatchRequest object.
+
+  Fields:
+    name: Identifier. The resource name (full URI of the resource) following
+      the standard naming scheme:
+      "projects/{project}/locations/{location}/unitGroups/{unitGroup}"
+    requestId: An optional request ID to identify requests.
+    unitGroup: A UnitGroup resource to be passed as the request body.
+    updateMask: Field mask is used to specify the fields to be overwritten.
+    validateOnly: If "validate_only" is set to true, the service will try to
+      validate that this request would succeed, but will not actually make
+      changes.
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  unitGroup = _messages.MessageField('UnitGroup', 3)
   updateMask = _messages.StringField(4)
   validateOnly = _messages.BooleanField(5)
 
@@ -3784,6 +4308,31 @@ class Tenant(_messages.Message):
   updateTime = _messages.StringField(9)
 
 
+class TierMapping(_messages.Message):
+  r"""TierMapping describes the mapping between a Tier and its associated
+  UnitKinds.
+
+  Fields:
+    tier: Required. The tier.
+    unitKinds: A TierUnitKind attribute.
+  """
+
+  tier = _messages.StringField(1)
+  unitKinds = _messages.MessageField('TierUnitKind', 2, repeated=True)
+
+
+class TierUnitKind(_messages.Message):
+  r"""A description of a single Unit Kind that is part of a Tier.
+
+  Fields:
+    inputVariables: Optional. Output only. Input variables for the UnitKind.
+    unitKind: Required. Immutable. The unique identifier of the UnitKind.
+  """
+
+  inputVariables = _messages.MessageField('UnitVariable', 1, repeated=True)
+  unitKind = _messages.StringField(2)
+
+
 class ToMapping(_messages.Message):
   r"""Input variables whose values will be passed on to dependencies
 
@@ -4109,6 +4658,247 @@ class UnitDependency(_messages.Message):
 
   alias = _messages.StringField(1)
   unit = _messages.StringField(2)
+
+
+class UnitGroup(_messages.Message):
+  r"""UnitGroup represents a set of Units to be used by a Tenant. In pooling
+  scenarios, the UnitGroup may be created and provisioned before the Tenant is
+  created.
+
+  Enums:
+    StateValueValuesEnum: Optional. Output only. State of the UnitGroup.
+
+  Messages:
+    AnnotationsValue: Optional. Annotations is an unstructured key-value map
+      stored with a resource that may be set by external tools to store and
+      retrieve arbitrary metadata. They are not queryable and should be
+      preserved when modifying objects. More info:
+      https://kubernetes.io/docs/user-guide/annotations
+    LabelsValue: Optional. The labels on the resource, which can be used for
+      categorization. similar to Kubernetes resource labels.
+
+  Fields:
+    annotations: Optional. Annotations is an unstructured key-value map stored
+      with a resource that may be set by external tools to store and retrieve
+      arbitrary metadata. They are not queryable and should be preserved when
+      modifying objects. More info: https://kubernetes.io/docs/user-
+      guide/annotations
+    createTime: Output only. The timestamp when the resource was created.
+    etag: Output only. An opaque value that uniquely identifies a version or
+      generation of a resource. It can be used to confirm that the client and
+      server agree on the ordering of a resource being written.
+    labels: Optional. The labels on the resource, which can be used for
+      categorization. similar to Kubernetes resource labels.
+    name: Identifier. The resource name (full URI of the resource) following
+      the standard naming scheme:
+      "projects/{project}/locations/{location}/unitGroups/{unitGroup}"
+    saas: Required. Immutable. The SaaS that this UnitGroup is created for.
+    saasRelease: Required. Immutable. Current SaasRelease that the UnitGroup
+      is provisioned with.
+    state: Optional. Output only. State of the UnitGroup.
+    uid: Output only. The unique identifier of the resource. UID is unique in
+      the time and space for this resource within the scope of the service. It
+      is typically generated by the server on successful creation of a
+      resource and must not be changed. UID is used to uniquely identify
+      resources with resource name reuses. This should be a UUID4.
+    updateTime: Output only. The timestamp when the resource was last updated.
+      Any change to the resource made by users must refresh this value.
+      Changes to a resource made by the service should refresh this value.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Optional. Output only. State of the UnitGroup.
+
+    Values:
+      UNIT_GROUP_STATE_UNSPECIFIED: Unspecified state.
+      UNIT_GROUP_STATE_NOT_PROVISIONED: UnitGroup is not provisioned.
+      UNIT_GROUP_STATE_PROVISIONING: UnitGroup is being provisioned.
+      UNIT_GROUP_STATE_UPDATING: UnitGroup is being updated.
+      UNIT_GROUP_STATE_DEPROVISIONING: UnitGroup is being deprovisioned.
+      UNIT_GROUP_STATE_READY: UnitGroup has been provisioned and is ready for
+        use.
+      UNIT_GROUP_STATE_ERROR: UnitGroup has an error.
+    """
+    UNIT_GROUP_STATE_UNSPECIFIED = 0
+    UNIT_GROUP_STATE_NOT_PROVISIONED = 1
+    UNIT_GROUP_STATE_PROVISIONING = 2
+    UNIT_GROUP_STATE_UPDATING = 3
+    UNIT_GROUP_STATE_DEPROVISIONING = 4
+    UNIT_GROUP_STATE_READY = 5
+    UNIT_GROUP_STATE_ERROR = 6
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AnnotationsValue(_messages.Message):
+    r"""Optional. Annotations is an unstructured key-value map stored with a
+    resource that may be set by external tools to store and retrieve arbitrary
+    metadata. They are not queryable and should be preserved when modifying
+    objects. More info: https://kubernetes.io/docs/user-guide/annotations
+
+    Messages:
+      AdditionalProperty: An additional property for a AnnotationsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type AnnotationsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AnnotationsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. The labels on the resource, which can be used for
+    categorization. similar to Kubernetes resource labels.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  annotations = _messages.MessageField('AnnotationsValue', 1)
+  createTime = _messages.StringField(2)
+  etag = _messages.StringField(3)
+  labels = _messages.MessageField('LabelsValue', 4)
+  name = _messages.StringField(5)
+  saas = _messages.StringField(6)
+  saasRelease = _messages.StringField(7)
+  state = _messages.EnumField('StateValueValuesEnum', 8)
+  uid = _messages.StringField(9)
+  updateTime = _messages.StringField(10)
+
+
+class UnitGroupOperation(_messages.Message):
+  r"""UnitGroupOperation represents an operation on a UnitGroup.
+
+  Messages:
+    AnnotationsValue: Optional. Annotations is an unstructured key-value map
+      stored with a resource that may be set by external tools to store and
+      retrieve arbitrary metadata. They are not queryable and should be
+      preserved when modifying objects. More info:
+      https://kubernetes.io/docs/user-guide/annotations
+    LabelsValue: Optional. The labels on the resource, which can be used for
+      categorization. similar to Kubernetes resource labels.
+
+  Fields:
+    annotations: Optional. Annotations is an unstructured key-value map stored
+      with a resource that may be set by external tools to store and retrieve
+      arbitrary metadata. They are not queryable and should be preserved when
+      modifying objects. More info: https://kubernetes.io/docs/user-
+      guide/annotations
+    createTime: Output only. The timestamp when the resource was created.
+    deprovisionUnitGroup: Optional. Represents a deprovision operation on a
+      UnitGroup.
+    detachUnitGroup: Optional. Represents a detach operation on a UnitGroup.
+    etag: Output only. An opaque value that uniquely identifies a version or
+      generation of a resource. It can be used to confirm that the client and
+      server agree on the ordering of a resource being written.
+    labels: Optional. The labels on the resource, which can be used for
+      categorization. similar to Kubernetes resource labels.
+    name: Identifier. The resource name (full URI of the resource) following
+      the standard naming scheme: "projects/{project}/locations/{location}/uni
+      tGroupOperations/{unitGroupOperation}"
+    provisionUnitGroup: Optional. Represents a provision operation on a
+      UnitGroup.
+    tier: Optional. Tier represents the tier level of the UnitGroupOperation.
+    uid: Output only. The unique identifier of the resource. UID is unique in
+      the time and space for this resource within the scope of the service. It
+      is typically generated by the server on successful creation of a
+      resource and must not be changed. UID is used to uniquely identify
+      resources with resource name reuses. This should be a UUID4.
+    updateTime: Output only. The timestamp when the resource was last updated.
+      Any change to the resource made by users must refresh this value.
+      Changes to a resource made by the service should refresh this value.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AnnotationsValue(_messages.Message):
+    r"""Optional. Annotations is an unstructured key-value map stored with a
+    resource that may be set by external tools to store and retrieve arbitrary
+    metadata. They are not queryable and should be preserved when modifying
+    objects. More info: https://kubernetes.io/docs/user-guide/annotations
+
+    Messages:
+      AdditionalProperty: An additional property for a AnnotationsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type AnnotationsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AnnotationsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. The labels on the resource, which can be used for
+    categorization. similar to Kubernetes resource labels.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  annotations = _messages.MessageField('AnnotationsValue', 1)
+  createTime = _messages.StringField(2)
+  deprovisionUnitGroup = _messages.MessageField('DeprovisionUnitGroup', 3)
+  detachUnitGroup = _messages.MessageField('DetachUnitGroup', 4)
+  etag = _messages.StringField(5)
+  labels = _messages.MessageField('LabelsValue', 6)
+  name = _messages.StringField(7)
+  provisionUnitGroup = _messages.MessageField('ProvisionUnitGroup', 8)
+  tier = _messages.StringField(9)
+  uid = _messages.StringField(10)
+  updateTime = _messages.StringField(11)
 
 
 class UnitKind(_messages.Message):

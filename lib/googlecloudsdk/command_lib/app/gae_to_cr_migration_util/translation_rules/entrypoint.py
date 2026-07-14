@@ -16,7 +16,7 @@
 """Translation rule for entrypoint."""
 
 import logging
-from typing import Sequence
+from typing import Any, Mapping, Sequence
 
 
 _DEFAULT_PYTHON_ENTRYPOINT = 'gunicorn -b :$PORT main:app'
@@ -43,3 +43,20 @@ def translate_entrypoint_features(
     logging.info(warning_text)
     return []
   return ['--set-build-env-vars=GOOGLE_ENTRYPOINT=' + command]
+
+
+def update_service_yaml_with_entrypoint(
+    service_yaml: dict[str, Any],
+    input_flatten_as_appyaml: Mapping[str, Any],
+) -> None:
+  """Updates the service_yaml dict with entrypoint settings."""
+  derived_entrypoint = input_flatten_as_appyaml.get(
+      'entrypoint'
+  ) or input_flatten_as_appyaml.get('entrypoint.shell')
+  if derived_entrypoint:
+    spec = service_yaml.setdefault('spec', {})
+    template = spec.setdefault('template', {})
+    template_spec = template.setdefault('spec', {})
+    containers = template_spec.setdefault('containers', [{}])
+    container = containers[0]
+    container['args'] = ['/bin/sh', '-c', derived_entrypoint]

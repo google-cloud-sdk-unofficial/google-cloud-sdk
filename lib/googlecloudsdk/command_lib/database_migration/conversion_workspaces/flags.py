@@ -255,7 +255,7 @@ def AddFetchViewFlag(
   parser.add_argument(
       '--view',
       help='The view to fetch.',
-      choices=['FULL', 'FULL_WITH_DEPENDENCIES'],
+      choices=['FULL', 'FULL_WITH_DEPENDENCIES', 'SUMMARY'],
       required=required,
       default=default_value,
   )
@@ -282,6 +282,18 @@ def AddCommitIdFlag(parser: argparse.ArgumentParser) -> None:
         Request a specific commit id.
         If not specified, the entities from the latest commit are returned.
        """,
+  )
+
+
+def AddDryRunFlag(parser: argparse.ArgumentParser) -> None:
+  """Adds a --dry-run flag to the given parser."""
+  parser.add_argument(
+      '--dry-run',
+      action='store_true',
+      help="""\
+        Only validates the apply process, but doesn't change the destination
+        database. Only works for PostgreSQL destination connection profile.
+      """,
   )
 
 

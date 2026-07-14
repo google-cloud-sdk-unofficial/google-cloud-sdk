@@ -281,6 +281,7 @@ def CreateSchedulingMessage(
     discard_local_ssds_at_termination_timestamp=None,
     skip_guest_os_shutdown=None,
     preemption_notice_duration=None,
+    current_cpus=None,
 ):
   """Create scheduling message for VM."""
   # Note: We always specify automaticRestart=False for preemptible VMs. This
@@ -356,6 +357,9 @@ def CreateSchedulingMessage(
 
   if availability_domain:
     scheduling.availabilityDomain = availability_domain
+
+  if current_cpus:
+    scheduling.currentCpus = current_cpus
 
   if discard_local_ssds_at_termination_timestamp is not None:
     scheduling.onInstanceStopAction = messages.SchedulingOnInstanceStopAction(
@@ -842,6 +846,12 @@ def GetScheduling(
   ):
     preemption_notice_duration = args.preemption_notice_duration
 
+  current_cpus = None
+  if args.IsKnownAndSpecified('current_cpus') and hasattr(
+      args, 'current_cpus'
+  ):
+    current_cpus = args.current_cpus
+
   if (
       skip_defaults
       and not IsAnySpecified(
@@ -885,6 +895,7 @@ def GetScheduling(
       discard_local_ssds_at_termination_timestamp=discard_local_ssds_at_termination_timestamp,
       skip_guest_os_shutdown=skip_guest_os_shutdown,
       preemption_notice_duration=preemption_notice_duration,
+      current_cpus=current_cpus,
   )
 
 

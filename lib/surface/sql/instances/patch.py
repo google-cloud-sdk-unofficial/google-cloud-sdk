@@ -395,9 +395,11 @@ def AddBetaArgs(parser):
   flags.AddEnablePscAutoConnectionPolicy(parser, hidden=True)
 
 
-def AddAlphaArgs(unused_parser):
+def AddAlphaArgs(parser):
   """Adds alpha args and flags to the parser."""
-  pass
+  flags.AddMsdtcEnabled(parser, hidden=True)
+  flags.AddMsdtcRpcAuthMode(parser, hidden=True)
+  flags.AddMsdtcHostMappings(parser, hidden=True)
 
 
 def RunBasePatchCommand(args, release_track):

@@ -49,6 +49,7 @@ from googlecloudsdk.core import config
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import encoding
 from googlecloudsdk.core.util import files
@@ -195,6 +196,14 @@ _POST_CMEK_KEY_REVOCATION_ACTION_TYPE_CHOICES = {
     'prevent-new': (
         'No new instances will be started after CMEK key revocation.'
     ),
+}
+
+_RESTART_POLICY_CHOICES = {
+    'always': 'Always restart the container when it exits.',
+    'on-failure': (
+        'Restart the container only when it exits with a non-zero exit code.'
+    ),
+    'never': 'Never restart the container.',
 }
 
 _CONTAINER_NAME_TYPE = arg_parsers.RegexpValidator(
@@ -2127,6 +2136,20 @@ def AddMaxRetriesFlag(parser):
   )
 
 
+def AddRestartPolicyFlag(parser):
+  """Add instance restart policy flag."""
+  parser.add_argument(
+      '--restart-policy',
+      choices=_RESTART_POLICY_CHOICES,
+      metavar='POLICY',
+      type=str.lower,
+      help="""\
+      Set the restart policy for the instance. If not specified, the default is
+      `on-failure`.
+      """,
+  )
+
+
 def AddWaitForCompletionFlag(parser, implies_execute_now=False):
   """Add job flag to poll until completion on create."""
   help_text = (
@@ -3725,6 +3748,12 @@ def GetInstanceConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
     changes.append(
         config_changes.DefaultUrlChange(default_url=args.default_url)
     )
+  if FlagIsExplicitlySet(args, 'restart_policy'):
+    changes.append(
+        config_changes.RestartPolicyChange(
+            restart_policy=args.restart_policy
+        )
+    )
 
   _PrependClientNameAndVersionChange(args, changes)
 
@@ -3796,10 +3825,130 @@ def PromptForRegion(parsed_args=None, release_track=None):
   Returns:
     The region specified by the user, str
   """
-  if console_io.CanPrompt():
-    client = global_methods.GetServerlessClientInstance()
-    all_regions = global_methods.ListRegions(client)
+  client = None
+  all_regions = []
 
+  if release_track == base.ReleaseTrack.ALPHA:
+    # Check if resource with this name exists in any region
+    service_name = getattr(parsed_args, 'SERVICE', None)
+    job_name = getattr(parsed_args, 'JOB', None)
+    worker_pool_name = getattr(parsed_args, 'WORKER_POOL', None)
+    instance_name = getattr(parsed_args, 'INSTANCE', None)
+
+    if service_name or job_name or worker_pool_name or instance_name:
+      if not client:
+        client = global_methods.GetServerlessClientInstance()
+
+    if service_name:
+      services = global_methods.ListServices(
+          client, field_selector='metadata.name={}'.format(service_name)
+      )
+      for s in services:
+        if s.name == service_name:
+          if console_io.CanPrompt():
+            if console_io.PromptContinue(
+                message='A service named [{}] was found in region {}.'.format(
+                    s.name, s.region
+                ),
+                prompt_string='Use region {}?'.format(s.region),
+                default=True,
+            ):
+              return s.region
+          else:
+            raise serverless_exceptions.ArgumentError(
+                'You must specify a region. Either use the `--region` flag '
+                'or set the run/region property. A service named [{}] was '
+                'found in region {}, run the command again with --region {}'
+                .format(s.name, s.region, s.region)
+            )
+          break
+
+    elif job_name:
+      namespace_ref = resources.REGISTRY.Parse(
+          properties.VALUES.core.project.Get(required=True),
+          collection='run.namespaces',
+      )
+      jobs = global_methods.ListJobs(client, namespace_ref)
+      for j in jobs:
+        if j.name == job_name:
+          if console_io.CanPrompt():
+            if console_io.PromptContinue(
+                message='A job named [{}] was found in region {}.'.format(
+                    j.name, j.region
+                ),
+                prompt_string='Use region {}?'.format(j.region),
+                default=True,
+            ):
+              return j.region
+          else:
+            raise serverless_exceptions.ArgumentError(
+                'You must specify a region. Either use the `--region` flag '
+                'or set the run/region property. A job named [{}] was '
+                'found in region {}, run the command again with --region {}'
+                .format(j.name, j.region, j.region)
+            )
+          break
+
+    elif worker_pool_name:
+      namespace_ref = resources.REGISTRY.Parse(
+          properties.VALUES.core.project.Get(required=True),
+          collection='run.namespaces',
+      )
+      worker_pools = global_methods.ListWorkerPools(client, namespace_ref)
+      for w in worker_pools:
+        if w.name == worker_pool_name:
+          if console_io.CanPrompt():
+            if console_io.PromptContinue(
+                message=(
+                    'A worker pool named [{}] was found in region {}.'.format(
+                        w.name, w.region
+                    )
+                ),
+                prompt_string='Use region {}?'.format(w.region),
+                default=True,
+            ):
+              return w.region
+          else:
+            raise serverless_exceptions.ArgumentError(
+                'You must specify a region. Either use the `--region` flag '
+                'or set the run/region property. A worker pool named [{}] was '
+                'found in region {}, run the command again with --region {}'
+                .format(w.name, w.region, w.region)
+            )
+          break
+
+    elif instance_name:
+      namespace_ref = resources.REGISTRY.Parse(
+          properties.VALUES.core.project.Get(required=True),
+          collection='run.namespaces',
+      )
+      instances = global_methods.ListInstances(client, namespace_ref)
+      for i in instances:
+        if i.name == instance_name:
+          if console_io.CanPrompt():
+            if console_io.PromptContinue(
+                message=(
+                    'An instance named [{}] was found in region {}.'.format(
+                        i.name, i.region
+                    )
+                ),
+                prompt_string='Use region {}?'.format(i.region),
+                default=True,
+            ):
+              return i.region
+          else:
+            raise serverless_exceptions.ArgumentError(
+                'You must specify a region. Either use the `--region` flag '
+                'or set the run/region property. An instance named [{}] was '
+                'found in region {}, run the command again with --region {}'
+                .format(i.name, i.region, i.region)
+            )
+          break
+
+  if console_io.CanPrompt():
+    if not client:
+      client = global_methods.GetServerlessClientInstance()
+    all_regions = global_methods.ListRegions(client)
     image = getattr(parsed_args, 'image', None)
     if release_track != base.ReleaseTrack.GA and image:
       inferred_region, _ = resource_args.ParseArImage(image)

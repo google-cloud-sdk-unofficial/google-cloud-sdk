@@ -32,6 +32,8 @@ class BackfillAllStrategy(_messages.Message):
     oracleExcludedObjects: Oracle data source objects to avoid backfilling.
     postgresqlExcludedObjects: PostgreSQL data source objects to avoid
       backfilling.
+    saasExcludedObjects: Source catalog data source objects to avoid
+      backfilling. This is mainly used to represent SaaS applications objects.
     salesforceExcludedObjects: Salesforce data source objects to avoid
       backfilling
     spannerExcludedObjects: Spanner data source objects to avoid backfilling.
@@ -43,9 +45,10 @@ class BackfillAllStrategy(_messages.Message):
   mysqlExcludedObjects = _messages.MessageField('MysqlRdbms', 2)
   oracleExcludedObjects = _messages.MessageField('OracleRdbms', 3)
   postgresqlExcludedObjects = _messages.MessageField('PostgresqlRdbms', 4)
-  salesforceExcludedObjects = _messages.MessageField('SalesforceOrg', 5)
-  spannerExcludedObjects = _messages.MessageField('SpannerDatabase', 6)
-  sqlServerExcludedObjects = _messages.MessageField('SqlServerRdbms', 7)
+  saasExcludedObjects = _messages.MessageField('SourceCatalog', 5)
+  salesforceExcludedObjects = _messages.MessageField('SalesforceOrg', 6)
+  spannerExcludedObjects = _messages.MessageField('SpannerDatabase', 7)
+  sqlServerExcludedObjects = _messages.MessageField('SqlServerRdbms', 8)
 
 
 class BackfillJob(_messages.Message):
@@ -282,6 +285,7 @@ class ConnectionProfile(_messages.Message):
   Fields:
     bigqueryProfile: Profile for connecting to a BigQuery destination.
     createTime: Output only. The create time of the resource.
+    dataverseProfile: Profile for connecting to a Dataverse source.
     displayName: Required. Display name.
     forwardSshConnectivity: Forward SSH tunnel connectivity.
     gcsProfile: Profile for connecting to a Cloud Storage destination.
@@ -292,9 +296,12 @@ class ConnectionProfile(_messages.Message):
     oracleProfile: Profile for connecting to an Oracle source.
     postgresqlProfile: Profile for connecting to a PostgreSQL source.
     privateConnectivity: Private connectivity.
+    salesforceMarketingCloudProfile: Profile for connecting to a Salesforce
+      Marketing Cloud source.
     salesforceProfile: Profile for connecting to a Salesforce source.
     satisfiesPzi: Output only. Reserved for future use.
     satisfiesPzs: Output only. Reserved for future use.
+    serviceNowProfile: Profile for connecting to a ServiceNow source.
     spannerProfile: Profile for connecting to a Spanner source.
     sqlServerProfile: Profile for connecting to a SQLServer source.
     staticServiceIpConnectivity: Static Service IP connectivity.
@@ -327,23 +334,26 @@ class ConnectionProfile(_messages.Message):
 
   bigqueryProfile = _messages.MessageField('BigQueryProfile', 1)
   createTime = _messages.StringField(2)
-  displayName = _messages.StringField(3)
-  forwardSshConnectivity = _messages.MessageField('ForwardSshTunnelConnectivity', 4)
-  gcsProfile = _messages.MessageField('GcsProfile', 5)
-  labels = _messages.MessageField('LabelsValue', 6)
-  mongodbProfile = _messages.MessageField('MongodbProfile', 7)
-  mysqlProfile = _messages.MessageField('MysqlProfile', 8)
-  name = _messages.StringField(9)
-  oracleProfile = _messages.MessageField('OracleProfile', 10)
-  postgresqlProfile = _messages.MessageField('PostgresqlProfile', 11)
-  privateConnectivity = _messages.MessageField('PrivateConnectivity', 12)
-  salesforceProfile = _messages.MessageField('SalesforceProfile', 13)
-  satisfiesPzi = _messages.BooleanField(14)
-  satisfiesPzs = _messages.BooleanField(15)
-  spannerProfile = _messages.MessageField('SpannerProfile', 16)
-  sqlServerProfile = _messages.MessageField('SqlServerProfile', 17)
-  staticServiceIpConnectivity = _messages.MessageField('StaticServiceIpConnectivity', 18)
-  updateTime = _messages.StringField(19)
+  dataverseProfile = _messages.MessageField('DataverseProfile', 3)
+  displayName = _messages.StringField(4)
+  forwardSshConnectivity = _messages.MessageField('ForwardSshTunnelConnectivity', 5)
+  gcsProfile = _messages.MessageField('GcsProfile', 6)
+  labels = _messages.MessageField('LabelsValue', 7)
+  mongodbProfile = _messages.MessageField('MongodbProfile', 8)
+  mysqlProfile = _messages.MessageField('MysqlProfile', 9)
+  name = _messages.StringField(10)
+  oracleProfile = _messages.MessageField('OracleProfile', 11)
+  postgresqlProfile = _messages.MessageField('PostgresqlProfile', 12)
+  privateConnectivity = _messages.MessageField('PrivateConnectivity', 13)
+  salesforceMarketingCloudProfile = _messages.MessageField('SalesforceMarketingCloudProfile', 14)
+  salesforceProfile = _messages.MessageField('SalesforceProfile', 15)
+  satisfiesPzi = _messages.BooleanField(16)
+  satisfiesPzs = _messages.BooleanField(17)
+  serviceNowProfile = _messages.MessageField('ServiceNowProfile', 18)
+  spannerProfile = _messages.MessageField('SpannerProfile', 19)
+  sqlServerProfile = _messages.MessageField('SqlServerProfile', 20)
+  staticServiceIpConnectivity = _messages.MessageField('StaticServiceIpConnectivity', 21)
+  updateTime = _messages.StringField(22)
 
 
 class CustomizationRule(_messages.Message):
@@ -1015,6 +1025,38 @@ class DatastreamProjectsLocationsStreamsRunRequest(_messages.Message):
   runStreamRequest = _messages.MessageField('RunStreamRequest', 2)
 
 
+class DataverseProfile(_messages.Message):
+  r"""Profile for connecting to a Dataverse source.
+
+  Fields:
+    environmentUrl: Required. Environment URL of the Microsoft Dataverse
+      instance. Example: `.crm.dynamics.com`
+    oauthClientCredentials: Required. Credentials for authenticating with the
+      Dataverse API.
+    tenantId: Required. Tenant id of the Microsoft Dataverse instance.
+  """
+
+  environmentUrl = _messages.StringField(1)
+  oauthClientCredentials = _messages.MessageField('OauthClientCredentials', 2)
+  tenantId = _messages.StringField(3)
+
+
+class DataverseSourceConfig(_messages.Message):
+  r"""Configuration for syncing data from a Dataverse source.
+
+  Fields:
+    excludeObjects: Optional. The objects to exclude from the stream.
+    includeObjects: Optional. The objects to retrieve from the source.
+    pollingInterval: Required. Incremental sync polling interval for all
+      objects. If not set, a default value of `5 minutes` is used. The
+      duration must be from `5 minutes` to `24 hours`, inclusive.
+  """
+
+  excludeObjects = _messages.MessageField('SourceCatalog', 1)
+  includeObjects = _messages.MessageField('SourceCatalog', 2)
+  pollingInterval = _messages.StringField(3)
+
+
 class DebugInfo(_messages.Message):
   r"""Describes additional debugging info.
 
@@ -1065,6 +1107,8 @@ class DiscoverConnectionProfileRequest(_messages.Message):
       objects and metadata.
     salesforceOrg: Optional. Salesforce organization to enrich with child data
       objects and metadata.
+    sourceCatalog: Optional. Source catalog to enrich with child data objects
+      and metadata. This is mainly used to represent SaaS sources databases.
     spannerDatabase: Optional. Spanner database to enrich with child data
       objects and metadata.
     sqlServerRdbms: Optional. SQLServer RDBMS to enrich with child data
@@ -1080,8 +1124,9 @@ class DiscoverConnectionProfileRequest(_messages.Message):
   oracleRdbms = _messages.MessageField('OracleRdbms', 7)
   postgresqlRdbms = _messages.MessageField('PostgresqlRdbms', 8)
   salesforceOrg = _messages.MessageField('SalesforceOrg', 9)
-  spannerDatabase = _messages.MessageField('SpannerDatabase', 10)
-  sqlServerRdbms = _messages.MessageField('SqlServerRdbms', 11)
+  sourceCatalog = _messages.MessageField('SourceCatalog', 10)
+  spannerDatabase = _messages.MessageField('SpannerDatabase', 11)
+  sqlServerRdbms = _messages.MessageField('SqlServerRdbms', 12)
 
 
 class DiscoverConnectionProfileResponse(_messages.Message):
@@ -1093,6 +1138,8 @@ class DiscoverConnectionProfileResponse(_messages.Message):
     oracleRdbms: Enriched Oracle RDBMS object.
     postgresqlRdbms: Enriched PostgreSQL RDBMS object.
     salesforceOrg: Enriched Salesforce organization.
+    sourceCatalog: Enriched source catalog. This is mainly used to represent
+      SaaS sources databases.
     spannerDatabase: Enriched Spanner database.
     sqlServerRdbms: Enriched SQLServer RDBMS object.
   """
@@ -1102,8 +1149,9 @@ class DiscoverConnectionProfileResponse(_messages.Message):
   oracleRdbms = _messages.MessageField('OracleRdbms', 3)
   postgresqlRdbms = _messages.MessageField('PostgresqlRdbms', 4)
   salesforceOrg = _messages.MessageField('SalesforceOrg', 5)
-  spannerDatabase = _messages.MessageField('SpannerDatabase', 6)
-  sqlServerRdbms = _messages.MessageField('SqlServerRdbms', 7)
+  sourceCatalog = _messages.MessageField('SourceCatalog', 6)
+  spannerDatabase = _messages.MessageField('SpannerDatabase', 7)
+  sqlServerRdbms = _messages.MessageField('SqlServerRdbms', 8)
 
 
 class DropLargeObjects(_messages.Message):
@@ -2173,6 +2221,18 @@ class Oauth2ClientCredentials(_messages.Message):
   secretManagerStoredClientSecret = _messages.StringField(3)
 
 
+class OauthClientCredentials(_messages.Message):
+  r"""OAuth Client Credentials.
+
+  Fields:
+    clientId: Required. Client ID for OAuth Client Credentials.
+    clientSecret: Required. Client secret for OAuth Client Credentials.
+  """
+
+  clientId = _messages.StringField(1)
+  clientSecret = _messages.MessageField('Secret', 2)
+
+
 class ObjectFilter(_messages.Message):
   r"""Object filter to apply the rules to.
 
@@ -3125,6 +3185,45 @@ class SalesforceField(_messages.Message):
   nillable = _messages.BooleanField(3)
 
 
+class SalesforceMarketingCloudProfile(_messages.Message):
+  r"""Profile for connecting to a Salesforce Marketing Cloud source.
+
+  Fields:
+    oauthClientCredentials: Required. Input only. Credentials for
+      authenticating with the Salesforce Marketing Cloud API.
+    subdomain: Required. Subdomain for the Salesforce Marketing Cloud
+      connection. Example: if your specific endpoint is `https://{your-
+      specific-subdomain}.rest.marketingcloudapis.com/`, the subdomain is
+      `{your-specific-subdomain}`. Must be 1-63 characters, start and end with
+      an alphanumeric character, and contain only lowercase letters, numbers,
+      and hyphens (-).
+  """
+
+  oauthClientCredentials = _messages.MessageField('OauthClientCredentials', 1)
+  subdomain = _messages.StringField(2)
+
+
+class SalesforceMarketingCloudSourceConfig(_messages.Message):
+  r"""Configuration for syncing data from a Salesforce Marketing Cloud source.
+
+  Fields:
+    excludeObjects: Optional. The objects to exclude from the stream.
+    fullRefreshPollingInterval: Required. Specifies the polling interval for a
+      full refresh of objects that do not support incremental sync. If not
+      set, a default value of 24 hours is used. The duration must be between 1
+      and 24 hours, inclusive.
+    includeObjects: Optional. The objects to retrieve from the source.
+    pollingInterval: Required. Incremental sync polling interval for all
+      objects. If not set, a default value of `5 minutes` is used. The
+      duration must be from `5 minutes` to `24 hours`, inclusive.
+  """
+
+  excludeObjects = _messages.MessageField('SourceCatalog', 1)
+  fullRefreshPollingInterval = _messages.StringField(2)
+  includeObjects = _messages.MessageField('SourceCatalog', 3)
+  pollingInterval = _messages.StringField(4)
+
+
 class SalesforceObject(_messages.Message):
   r"""Salesforce object.
 
@@ -3189,6 +3288,24 @@ class SalesforceSourceConfig(_messages.Message):
   pollingInterval = _messages.StringField(3)
 
 
+class Secret(_messages.Message):
+  r"""A confidential piece of information where the actual value is either
+  directly specified in the message as a raw string or stored in GCP secret
+  manager.
+
+  Fields:
+    rawValue: Optional. Input only. The actual raw value of the secret as
+      plain text.
+    secretVersion: Optional. A Secret Manager resource name storing the actual
+      value of the secret. Supported formats: * projects/{project}/locations/{
+      location}/secrets/{secret}/versions/{version} *
+      projects/{project}/secrets/{secret}/versions/{version}
+  """
+
+  rawValue = _messages.StringField(1)
+  secretVersion = _messages.StringField(2)
+
+
 class ServerAndClientVerification(_messages.Message):
   r"""Message represents the option where Datastream will enforce the
   encryption and authenticate the server identity as well as the client
@@ -3236,6 +3353,38 @@ class ServerVerification(_messages.Message):
   serverCertificateHostname = _messages.StringField(2)
 
 
+class ServiceNowProfile(_messages.Message):
+  r"""Profile for connecting to a ServiceNow source.
+
+  Fields:
+    instance: Required. The instance of the ServiceNow account. This is the ``
+      part of the URL `https://.service-now.com`.
+    oauthClientCredentials: Credentials for authenticating with the ServiceNow
+      API.
+    userPasswordCredentials: User-password authentication.
+  """
+
+  instance = _messages.StringField(1)
+  oauthClientCredentials = _messages.MessageField('OauthClientCredentials', 2)
+  userPasswordCredentials = _messages.MessageField('UserPasswordCredentials', 3)
+
+
+class ServiceNowSourceConfig(_messages.Message):
+  r"""Configuration for syncing data from a ServiceNow source.
+
+  Fields:
+    excludeObjects: Optional. The objects to exclude from the stream.
+    includeObjects: Optional. The objects to retrieve from the source.
+    pollingInterval: Required. Incremental sync polling interval for all
+      objects. If not set, a default value of `5 minutes` is used. The
+      duration must be from `5 minutes` to `24 hours`, inclusive.
+  """
+
+  excludeObjects = _messages.MessageField('SourceCatalog', 1)
+  includeObjects = _messages.MessageField('SourceCatalog', 2)
+  pollingInterval = _messages.StringField(3)
+
+
 class SingleTargetDataset(_messages.Message):
   r"""A single target dataset to which all data will be streamed.
 
@@ -3248,15 +3397,29 @@ class SingleTargetDataset(_messages.Message):
   datasetId = _messages.StringField(1)
 
 
+class SourceCatalog(_messages.Message):
+  r"""Source catalog.
+
+  Fields:
+    objects: Optional. Source objects in the catalog.
+  """
+
+  objects = _messages.MessageField('SourceObject', 1, repeated=True)
+
+
 class SourceConfig(_messages.Message):
   r"""The configuration of the stream source.
 
   Fields:
+    dataverseSourceConfig: Dataverse data source configuration.
     mongodbSourceConfig: MongoDB data source configuration.
     mysqlSourceConfig: MySQL data source configuration.
     oracleSourceConfig: Oracle data source configuration.
     postgresqlSourceConfig: PostgreSQL data source configuration.
+    salesforceMarketingCloudSourceConfig: Salesforce Marketing Cloud data
+      source configuration.
     salesforceSourceConfig: Salesforce data source configuration.
+    serviceNowSourceConfig: ServiceNow data source configuration.
     sourceConnectionProfile: Required. Source connection profile resource.
       Format:
       `projects/{project}/locations/{location}/connectionProfiles/{name}`
@@ -3264,14 +3427,17 @@ class SourceConfig(_messages.Message):
     sqlServerSourceConfig: SQLServer data source configuration.
   """
 
-  mongodbSourceConfig = _messages.MessageField('MongodbSourceConfig', 1)
-  mysqlSourceConfig = _messages.MessageField('MysqlSourceConfig', 2)
-  oracleSourceConfig = _messages.MessageField('OracleSourceConfig', 3)
-  postgresqlSourceConfig = _messages.MessageField('PostgresqlSourceConfig', 4)
-  salesforceSourceConfig = _messages.MessageField('SalesforceSourceConfig', 5)
-  sourceConnectionProfile = _messages.StringField(6)
-  spannerSourceConfig = _messages.MessageField('SpannerSourceConfig', 7)
-  sqlServerSourceConfig = _messages.MessageField('SqlServerSourceConfig', 8)
+  dataverseSourceConfig = _messages.MessageField('DataverseSourceConfig', 1)
+  mongodbSourceConfig = _messages.MessageField('MongodbSourceConfig', 2)
+  mysqlSourceConfig = _messages.MessageField('MysqlSourceConfig', 3)
+  oracleSourceConfig = _messages.MessageField('OracleSourceConfig', 4)
+  postgresqlSourceConfig = _messages.MessageField('PostgresqlSourceConfig', 5)
+  salesforceMarketingCloudSourceConfig = _messages.MessageField('SalesforceMarketingCloudSourceConfig', 6)
+  salesforceSourceConfig = _messages.MessageField('SalesforceSourceConfig', 7)
+  serviceNowSourceConfig = _messages.MessageField('ServiceNowSourceConfig', 8)
+  sourceConnectionProfile = _messages.StringField(9)
+  spannerSourceConfig = _messages.MessageField('SpannerSourceConfig', 10)
+  sqlServerSourceConfig = _messages.MessageField('SqlServerSourceConfig', 11)
 
 
 class SourceHierarchyDatasets(_messages.Message):
@@ -3286,6 +3452,20 @@ class SourceHierarchyDatasets(_messages.Message):
 
   datasetTemplate = _messages.MessageField('DatasetTemplate', 1)
   projectId = _messages.StringField(2)
+
+
+class SourceObject(_messages.Message):
+  r"""Source object.
+
+  Fields:
+    objectName: Required. The object name.
+    properties: Optional. Source properties. When unspecified as part of
+      include objects, includes everything, when unspecified as part of
+      exclude objects, excludes nothing.
+  """
+
+  objectName = _messages.StringField(1)
+  properties = _messages.MessageField('SourceProperty', 2, repeated=True)
 
 
 class SourceObjectIdentifier(_messages.Message):
@@ -3308,6 +3488,23 @@ class SourceObjectIdentifier(_messages.Message):
   salesforceIdentifier = _messages.MessageField('SalesforceObjectIdentifier', 5)
   spannerIdentifier = _messages.MessageField('SpannerObjectIdentifier', 6)
   sqlServerIdentifier = _messages.MessageField('SqlServerObjectIdentifier', 7)
+
+
+class SourceProperty(_messages.Message):
+  r"""Source property.
+
+  Fields:
+    primaryKey: Optional. Whether or not the property is a primary key.
+    properties: Optional. Source properties. When specified, it means that the
+      current property contains nested properties of its own. When unspecified
+      as part of include objects, includes everything, when unspecified as
+      part of exclude objects, excludes nothing.
+    propertyName: Required. The property name.
+  """
+
+  primaryKey = _messages.BooleanField(1)
+  properties = _messages.MessageField('SourceProperty', 2, repeated=True)
+  propertyName = _messages.StringField(3)
 
 
 class SpannerChangeStreamPosition(_messages.Message):
@@ -3997,6 +4194,18 @@ class UserCredentials(_messages.Message):
   secretManagerStoredSecurityToken = _messages.StringField(3)
   securityToken = _messages.StringField(4)
   username = _messages.StringField(5)
+
+
+class UserPasswordCredentials(_messages.Message):
+  r"""User-password credentials.
+
+  Fields:
+    password: Required. Password for the connection.
+    username: Required. Username for the connection.
+  """
+
+  password = _messages.MessageField('Secret', 1)
+  username = _messages.StringField(2)
 
 
 class Validation(_messages.Message):

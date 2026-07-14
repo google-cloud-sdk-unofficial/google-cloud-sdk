@@ -184,7 +184,7 @@ def update_service_yaml_with_supported_features(
       container['env'] = []
 
     for k, v in env_variables_dict.items():
-      container['env'].append({'name': k, 'value': v})
+      container['env'].append({'name': k, 'value': str(v)})
 
   input_has_service_account_key = util.get_feature_key_from_input(
       input_data, [_ALLOW_SERVICE_ACCOUNT_KEY]

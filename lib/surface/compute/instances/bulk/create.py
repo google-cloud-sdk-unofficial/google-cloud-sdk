@@ -162,6 +162,7 @@ class Create(base.Command):
   _support_preemption_notice_duration = False
   _support_instance_flexibility_policy = True
   _support_workload_identity_config = False
+  _support_instance_selection_min_cpu_platform = False
 
   _log_async = False
 
@@ -184,6 +185,7 @@ class Create(base.Command):
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
         support_instance_flexibility_policy=cls._support_instance_flexibility_policy,
         support_workload_identity_config=cls._support_workload_identity_config,
+        support_instance_selection_min_cpu_platform=cls._support_instance_selection_min_cpu_platform,
     )
     cls.AddSourceInstanceTemplate(parser)
 
@@ -230,6 +232,7 @@ class Create(base.Command):
         self._support_preemption_notice_duration,
         self._support_instance_flexibility_policy,
         self._support_workload_identity_config,
+        self._support_instance_selection_min_cpu_platform,
     )
     bulk_instance_resource = bulk_util.CreateBulkInsertInstanceResource(
         args,
@@ -379,6 +382,7 @@ class CreateBeta(Create):
   _support_preemption_notice_duration = True
   _support_instance_flexibility_policy = True
   _support_workload_identity_config = False
+  _support_instance_selection_min_cpu_platform = False
 
   @classmethod
   def Args(cls, parser):
@@ -401,6 +405,7 @@ class CreateBeta(Create):
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
         support_instance_flexibility_policy=cls._support_instance_flexibility_policy,
         support_workload_identity_config=cls._support_workload_identity_config,
+        support_instance_selection_min_cpu_platform=cls._support_instance_selection_min_cpu_platform,
     )
     cls.AddSourceInstanceTemplate(parser)
 
@@ -431,6 +436,7 @@ class CreateAlpha(Create):
   _support_preemption_notice_duration = True
   _support_instance_flexibility_policy = True
   _support_workload_identity_config = True
+  _support_instance_selection_min_cpu_platform = True
 
   @classmethod
   def Args(cls, parser):
@@ -453,6 +459,7 @@ class CreateAlpha(Create):
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
         support_instance_flexibility_policy=cls._support_instance_flexibility_policy,
         support_workload_identity_config=cls._support_workload_identity_config,
+        support_instance_selection_min_cpu_platform=cls._support_instance_selection_min_cpu_platform,
     )
 
     cls.AddSourceInstanceTemplate(parser)

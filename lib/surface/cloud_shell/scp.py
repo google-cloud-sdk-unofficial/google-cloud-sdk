@@ -18,6 +18,7 @@
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.cloud_shell import util
+from googlecloudsdk.command_lib.cloud_shell.tunnel import CloudShellTunnel
 from googlecloudsdk.command_lib.util.ssh import ssh
 from googlecloudsdk.core import log
 
@@ -32,11 +33,13 @@ def ToFileReference(path, remote):
   elif path.startswith('localhost:'):
     return ssh.FileReference.FromPath(path.replace('localhost:', '', 1))
   else:
-    raise Exception('invalid path: ' + path)
+    raise ValueError('invalid path: ' + path)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
+@base.UniverseCompatible
 class Scp(base.Command):
   """Copies files between Cloud Shell and the local machine."""
 
@@ -102,19 +105,36 @@ cloudshell:~/REMOTE-DIR
 
   def Run(self, args):
     connection_info = util.PrepareEnvironment(args)
-    remote = ssh.Remote(host=connection_info.host, user=connection_info.user)
+    if not connection_info.web_host:
+      raise FileNotFoundError(
+          'Failed to get Cloud Shell web host. Environment might not be fully'
+          ' initialized.'
+      )
+    jwt = util.GenerateAccessToken()
+    tunnel = CloudShellTunnel(host=connection_info.web_host, jwt=jwt)
+    tunnel.Start()
+    remote = ssh.Remote(host='localhost', user=connection_info.user)
     command = ssh.SCPCommand(
         sources=[ToFileReference(src, remote) for src in args.sources],
         destination=ToFileReference(args.destination, remote),
         recursive=args.recurse,
         compress=False,
-        port=str(connection_info.port),
+        port=str(tunnel.local_port),
         identity_file=connection_info.key,
         extra_flags=args.scp_flag,
         options={'StrictHostKeyChecking': 'no'},
     )
-
-    if args.dry_run:
-      log.Print(' '.join(command.Build(connection_info.ssh_env)))
-    else:
-      command.Run(connection_info.ssh_env)
+    # TODO(b/513021781): Cleanup AddPublicKey 410 fallback and direct SSH once
+    # passwordless SSH is fully enforced.
+    try:
+      if args.dry_run:
+        log.Print(' '.join(command.Build(connection_info.ssh_env)))
+      else:
+        try:
+          command.Run(connection_info.ssh_env)
+        except ssh.CommandError as exc:
+          if connection_info.add_public_key_error:
+            raise connection_info.add_public_key_error from exc
+          raise
+    finally:
+      tunnel.Stop()

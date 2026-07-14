@@ -189,6 +189,8 @@ class CreateEnvironmentFlags:
       the environment.
     cloud_run_functions_routing: str or None, the routing method for cloud run
       functions. Can be DIRECT or VIA_NETWORK_ATTACHMENT.
+    enable_development_mode: bool or None, whether to enable the development
+      mode.
   """
 
   # TODO(b/154131605): This a type that is an immutable data object. Can't use
@@ -279,6 +281,7 @@ class CreateEnvironmentFlags:
       disable_private_builds_only=None,
       storage_bucket=None,
       cloud_run_functions_routing=None,
+      enable_development_mode=None,
   ):
     self.node_count = node_count
     self.environment_size = environment_size
@@ -365,6 +368,7 @@ class CreateEnvironmentFlags:
     self.disable_private_builds_only = disable_private_builds_only
     self.storage_bucket = storage_bucket
     self.cloud_run_functions_routing = cloud_run_functions_routing
+    self.enable_development_mode = enable_development_mode
 
 
 def _CreateNodeConfig(messages, flags):
@@ -761,6 +765,11 @@ def Create(environment_ref, flags, is_composer_v1):
     environment.storageConfig = messages.StorageConfig(
         bucket=flags.storage_bucket
     )
+
+  if flags.enable_development_mode:
+    mode_enum = getattr(messages.Environment, 'ModeValueValuesEnum', None)
+    if mode_enum:
+      environment.mode = mode_enum.DEVELOPMENT
 
   try:
     return GetService(release_track=flags.release_track).Create(
