@@ -3419,15 +3419,16 @@ class StretchedClusterConfig(_messages.Message):
 
   Fields:
     preferredLocation: Required. Zone that will remain operational when
-      connection between the two zones is lost. Specify the resource name of a
-      zone that belongs to the region of the private cloud. For example:
-      `projects/{project}/locations/europe-west3-a` where `{project}` can
-      either be a project number or a project ID.
+      connection between the two zones is lost. Specify the resource name or
+      ID of a zone that belongs to the region of the private cloud. For
+      example: `projects/{project}/locations/europe-west3-a` or `europe-
+      west3-a`, where `{project}` can either be a project number or a project
+      ID.
     secondaryLocation: Required. Additional zone for a higher level of
-      availability and load balancing. Specify the resource name of a zone
-      that belongs to the region of the private cloud. For example:
-      `projects/{project}/locations/europe-west3-b` where `{project}` can
-      either be a project number or a project ID.
+      availability and load balancing. Specify the resource name or ID of a
+      zone that belongs to the region of the private cloud. For example:
+      `projects/{project}/locations/europe-west3-b` or `europe-west3-b`, where
+      `{project}` can either be a project number or a project ID.
   """
 
   preferredLocation = _messages.StringField(1)
@@ -6349,7 +6350,8 @@ class VmwareengineProjectsLocationsPrivateCloudsPatchRequest(_messages.Message):
       overwritten in the `PrivateCloud` resource by the update. The fields
       specified in `updateMask` are relative to the resource, not the full
       request. A field will be overwritten if it is in the mask. If the user
-      does not provide a mask then all fields will be overwritten.
+      does not provide a mask then only the description field will be
+      overwritten.
     validateOnly: Optional. If set to `true`, only validates the request but
       doesn't execute the request. If set to `false`, validates and executes
       the request.

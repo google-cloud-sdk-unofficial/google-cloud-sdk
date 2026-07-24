@@ -16,6 +16,7 @@
 
 from googlecloudsdk.api_lib.run import ssh as run_ssh
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import container_parser
 from googlecloudsdk.command_lib.run import deletion
@@ -35,7 +36,7 @@ from googlecloudsdk.core.console import console_io
 
 
 def ContainerArgGroup(release_track=base.ReleaseTrack.GA):
-  """Returns an argument group with all container deploy & sync args."""
+  """Returns an argument group with all container deploy args."""
 
   help_text = """
 Container Flags
@@ -43,14 +44,47 @@ Container Flags
   The following flags apply to the container.
 """
   group = base.ArgumentGroup(help=help_text)
-  group.AddArgument(
-      flags.SourceAndImageFlags(
-          mutex=False, no_build_enabled=True, release_track=release_track
-      )
-  )
+  group.AddArgument(flags.SourceArg())
   group.AddArgument(flags.PortArg())
   group.AddArgument(flags.MutexBuildEnvVarsFlags())
+  group.AddArgument(flags.MutexEnvVarsFlags(release_track=release_track))
+  group.AddArgument(flags.MemoryFlag())
+  group.AddArgument(flags.CpuFlag())
+  group.AddArgument(flags.ArgsFlag())
+  group.AddArgument(flags.SecretsFlags())
+  group.AddArgument(flags.CommandFlag())
+  group.AddArgument(flags.DependsOnFlag())
+  group.AddArgument(flags.AddVolumeMountFlag())
+  group.AddArgument(flags.RemoveVolumeMountFlag())
+  group.AddArgument(flags.ClearVolumeMountsFlag())
+  group.AddArgument(flags.StartupProbeFlag())
+  group.AddArgument(flags.SandboxLauncherFlag(hidden=True))
   return group
+
+
+def NecessaryChangesForInstancesDevSync(args):
+  """Adds necessary changes for instances used by dev sync, if not specified by flags.
+
+  1. Set SSH Enabled for the new Instance
+  2. Set port to 8080
+
+  Args:
+    args: The command-line arguments.
+
+  Returns:
+    A list of Config Changes objects to apply to the Instances for Dev Sync.
+  """
+  changes = [
+      # TODO(b/535075776): Add SSH Enabled annotation once the annotation is
+      # available.
+      # config_changes.SetAnnotationChange(
+      #     service.SERVICE_SSH_ENABLED_ANNOTATION, 'true'
+      # ),
+  ]
+  if getattr(args, 'port', None) is None:
+    changes.append(config_changes.ContainerPortChange(port='8080'))
+
+  return changes
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -95,9 +129,26 @@ class Sync(base.Command):
         required=True,
         prefixes=False,
     )
+    flags.AddLabelsFlag(parser)
     flags.AddServiceAccountFlag(parser)
+    flags.AddSetCloudSQLFlag(parser)
+    flags.AddVpcNetworkGroupFlagsForCreate(parser, resource_kind='instance')
+    flags.AddEgressSettingsFlag(parser)
+    flags.AddClientNameAndVersionFlags(parser)
+    flags.AddBinAuthzPolicyFlags(parser, with_clear=False)
+    flags.AddBinAuthzBreakglassFlag(parser)
+    flags.AddCmekKeyFlag(parser, with_clear=False)
+    flags.AddGeneralAnnotationFlags(parser)
+    flags.AddVolumesFlags(parser, cls.ReleaseTrack())
     flags.AddIngressFlag(parser)
     flags.AddInvokerIamCheckFlag(parser)
+    flags.AddPublicFlag(parser)
+    flags.AddRestartPolicyFlag(parser)
+    flags.AddDefaultUrlFlag(parser, resource_kind='instance')
+
+    polling_group = parser.add_mutually_exclusive_group()
+    flags.AddAsyncFlag(polling_group)
+
     concept_parsers.ConceptParser([instance_presentation]).AddToParser(parser)
 
   @classmethod
@@ -127,6 +178,8 @@ class Sync(base.Command):
       return client.GetInstance(instance_ref)
 
   def Run(self, args):
+    flags.ValidatePublicFlags(args)
+
     instance_ref = args.CONCEPTS.instance.Parse()
     flags.ValidateResource(instance_ref)
     args.release_track = self.ReleaseTrack()
@@ -165,7 +218,7 @@ class Sync(base.Command):
             ' Instance.'
         )
     else:
-      changes = sync_util.NecessaryChangesForInstancesDevSync(args)
+      changes = NecessaryChangesForInstancesDevSync(args)
       deploy_util.DeployInstanceFromSource(
           instance_ref=instance_ref,
           source=args.source,

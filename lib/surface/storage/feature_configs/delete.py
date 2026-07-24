@@ -54,4 +54,4 @@ class Delete(base.Command):
     name = (
         f'projects/{project}/locations/global/featureConfigs/{args.CONFIG_ID}'
     )
-    return client.delete_feature_config(name)
+    return client.delete_feature_config(name, is_async=args.async_)

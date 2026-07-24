@@ -1,4 +1,3 @@
-#!/usr/bin/python3 -u
 #
 # dulwich - Simple command-line interface to Dulwich
 # Copyright (C) 2008-2011 Jelmer Vernooij <jelmer@jelmer.uk>
@@ -21,28 +20,29 @@
 # License, Version 2.0.
 #
 
-"""Simple command-line interface to Dulwich>
+"""Simple command-line interface to Dulwich>.
 
 This is a very simple command-line wrapper for Dulwich. It is by
 no means intended to be a full-blown Git command-line interface but just
 a way to test Dulwich.
 """
 
-import os
-import sys
-from getopt import getopt
 import argparse
 import optparse
+import os
 import signal
-from typing import Dict, Type, Optional
+import sys
+from getopt import getopt
+from typing import ClassVar, Dict, Optional, Type
 
 from dulwich import porcelain
-from dulwich.client import get_transport_and_path, GitProtocolError
-from dulwich.errors import ApplyDeltaError
-from dulwich.index import Index
-from dulwich.objectspec import parse_commit
-from dulwich.pack import Pack, sha_to_hex
-from dulwich.repo import Repo
+
+from .client import GitProtocolError, get_transport_and_path
+from .errors import ApplyDeltaError
+from .index import Index
+from .objectspec import parse_commit
+from .pack import Pack, sha_to_hex
+from .repo import Repo
 
 
 def signal_int(signal, frame):
@@ -71,7 +71,7 @@ class cmd_archive(Command):
             type=str,
             help="Retrieve archive from specified remote repo",
         )
-        parser.add_argument('committish', type=str, nargs='?')
+        parser.add_argument("committish", type=str, nargs="?")
         args = parser.parse_args(args)
         if args.remote:
             client, path = get_transport_and_path(args.remote)
@@ -83,8 +83,7 @@ class cmd_archive(Command):
             )
         else:
             porcelain.archive(
-                ".", args.committish, outstream=sys.stdout.buffer,
-                errstream=sys.stderr
+                ".", args.committish, outstream=sys.stdout.buffer, errstream=sys.stderr
             )
 
 
@@ -107,8 +106,8 @@ class cmd_rm(Command):
 class cmd_fetch_pack(Command):
     def run(self, argv):
         parser = argparse.ArgumentParser()
-        parser.add_argument('--all', action='store_true')
-        parser.add_argument('location', nargs='?', type=str)
+        parser.add_argument("--all", action="store_true")
+        parser.add_argument("location", nargs="?", type=str)
         args = parser.parse_args(argv)
         client, path = get_transport_and_path(args.location)
         r = Repo(".")
@@ -131,15 +130,24 @@ class cmd_fetch(Command):
         refs = client.fetch(path, r, progress=sys.stdout.write)
         print("Remote refs:")
         for item in refs.items():
-            print("%s -> %s" % item)
+            print("{} -> {}".format(*item))
+
+
+class cmd_for_each_ref(Command):
+    def run(self, args):
+        parser = argparse.ArgumentParser()
+        parser.add_argument("pattern", type=str, nargs="?")
+        args = parser.parse_args(args)
+        for sha, object_type, ref in porcelain.for_each_ref(".", args.pattern):
+            print(f"{sha.decode()} {object_type.decode()}\t{ref.decode()}")
 
 
 class cmd_fsck(Command):
     def run(self, args):
         opts, args = getopt(args, "", [])
         opts = dict(opts)
-        for (obj, msg) in porcelain.fsck("."):
-            print("{}: {}".format(obj, msg))
+        for obj, msg in porcelain.fsck("."):
+            print(f"{obj}: {msg}")
 
 
 class cmd_log(Command):
@@ -174,13 +182,14 @@ class cmd_diff(Command):
 
         r = Repo(".")
         if args == []:
-            commit_id = b'HEAD'
+            commit_id = b"HEAD"
         else:
             commit_id = args[0]
         commit = parse_commit(r, commit_id)
         parent_commit = r[commit.parents[0]]
         porcelain.diff_tree(
-            r, parent_commit.tree, commit.tree, outstream=sys.stdout.buffer)
+            r, parent_commit.tree, commit.tree, outstream=sys.stdout.buffer
+        )
 
 
 class cmd_dump_pack(Command):
@@ -202,9 +211,9 @@ class cmd_dump_pack(Command):
             try:
                 print("\t%s" % x[name])
             except KeyError as k:
-                print("\t{}: Unable to resolve base {}".format(name, k))
+                print(f"\t{name}: Unable to resolve base {k}")
             except ApplyDeltaError as e:
-                print("\t{}: Unable to apply delta: {!r}".format(name, e))
+                print(f"\t{name}: Unable to apply delta: {e!r}")
 
 
 class cmd_dump_index(Command):
@@ -248,9 +257,12 @@ class cmd_clone(Command):
             "--depth", dest="depth", type=int, help="Depth at which to fetch"
         )
         parser.add_option(
-            "-b", "--branch", dest="branch", type=str,
-            help=("Check out branch instead of branch pointed to by remote "
-                  "HEAD"))
+            "-b",
+            "--branch",
+            dest="branch",
+            type=str,
+            help=("Check out branch instead of branch pointed to by remote " "HEAD"),
+        )
         options, args = parser.parse_args(args)
 
         if args == []:
@@ -264,8 +276,13 @@ class cmd_clone(Command):
             target = None
 
         try:
-            porcelain.clone(source, target, bare=options.bare, depth=options.depth,
-                            branch=options.branch)
+            porcelain.clone(
+                source,
+                target,
+                bare=options.bare,
+                depth=options.depth,
+                branch=options.branch,
+            )
         except GitProtocolError as e:
             print("%s" % e)
 
@@ -306,9 +323,9 @@ class cmd_symbolic_ref(Command):
 class cmd_pack_refs(Command):
     def run(self, argv):
         parser = argparse.ArgumentParser()
-        parser.add_argument('--all', action='store_true')
+        parser.add_argument("--all", action="store_true")
         # ignored, we never prune
-        parser.add_argument('--no-prune', action='store_true')
+        parser.add_argument("--no-prune", action="store_true")
 
         args = parser.parse_args(argv)
 
@@ -318,7 +335,7 @@ class cmd_pack_refs(Command):
 class cmd_show(Command):
     def run(self, argv):
         parser = argparse.ArgumentParser()
-        parser.add_argument('objectish', type=str, nargs='*')
+        parser.add_argument("objectish", type=str, nargs="*")
         args = parser.parse_args(argv)
         porcelain.show(".", args.objectish or None)
 
@@ -383,7 +400,8 @@ class cmd_reset(Command):
 class cmd_daemon(Command):
     def run(self, args):
         from dulwich import log_utils
-        from dulwich.protocol import TCP_GIT_PORT
+
+        from .protocol import TCP_GIT_PORT
 
         parser = optparse.OptionParser()
         parser.add_option(
@@ -486,7 +504,7 @@ class cmd_status(Command):
             for kind, names in status.staged.items():
                 for name in names:
                     sys.stdout.write(
-                        "\t{}: {}\n".format(kind, name.decode(sys.getfilesystemencoding()))
+                        f"\t{kind}: {name.decode(sys.getfilesystemencoding())}\n"
                     )
             sys.stdout.write("\n")
         if status.unstaged:
@@ -509,7 +527,7 @@ class cmd_ls_remote(Command):
             sys.exit(1)
         refs = porcelain.ls_remote(args[0])
         for ref in sorted(refs):
-            sys.stdout.write("{}\t{}\n".format(ref, refs[ref]))
+            sys.stdout.write(f"{ref}\t{refs[ref]}\n")
 
 
 class cmd_ls_tree(Command):
@@ -560,12 +578,8 @@ class cmd_pack_objects(Command):
             idxf = open(basename + ".idx", "wb")
             close = [packf, idxf]
         porcelain.pack_objects(
-            ".",
-            object_ids,
-            packf,
-            idxf,
-            deltify=deltify,
-            reuse_deltas=reuse_deltas)
+            ".", object_ids, packf, idxf, deltify=deltify, reuse_deltas=reuse_deltas
+        )
         for f in close:
             f.close()
 
@@ -582,17 +596,18 @@ class cmd_pull(Command):
 
 
 class cmd_push(Command):
-
     def run(self, argv):
         parser = argparse.ArgumentParser()
-        parser.add_argument('-f', '--force', action='store_true', help='Force')
-        parser.add_argument('to_location', type=str)
-        parser.add_argument('refspec', type=str, nargs='*')
+        parser.add_argument("-f", "--force", action="store_true", help="Force")
+        parser.add_argument("to_location", type=str)
+        parser.add_argument("refspec", type=str, nargs="*")
         args = parser.parse_args(argv)
         try:
-            porcelain.push('.', args.to_location, args.refspec or None, force=args.force)
+            porcelain.push(
+                ".", args.to_location, args.refspec or None, force=args.force
+            )
         except porcelain.DivergedBranches:
-            sys.stderr.write('Diverged branches; specify --force to override')
+            sys.stderr.write("Diverged branches; specify --force to override")
             return 1
 
 
@@ -604,9 +619,8 @@ class cmd_remote_add(Command):
 
 
 class SuperCommand(Command):
-
-    subcommands: Dict[str, Type[Command]] = {}
-    default_command: Optional[Type[Command]] = None
+    subcommands: ClassVar[Dict[str, Type[Command]]] = {}
+    default_command: ClassVar[Optional[Type[Command]]] = None
 
     def run(self, args):
         if not args and not self.default_command:
@@ -622,8 +636,7 @@ class SuperCommand(Command):
 
 
 class cmd_remote(SuperCommand):
-
-    subcommands = {
+    subcommands: ClassVar[Dict[str, Type[Command]]] = {
         "add": cmd_remote_add,
     }
 
@@ -633,7 +646,7 @@ class cmd_submodule_list(Command):
         parser = argparse.ArgumentParser()
         parser.parse_args(argv)
         for path, sha in porcelain.submodule_list("."):
-            sys.stdout.write(' {} {}\n'.format(sha, path))
+            sys.stdout.write(f" {sha} {path}\n")
 
 
 class cmd_submodule_init(Command):
@@ -644,8 +657,7 @@ class cmd_submodule_init(Command):
 
 
 class cmd_submodule(SuperCommand):
-
-    subcommands = {
+    subcommands: ClassVar[Dict[str, Type[Command]]] = {
         "init": cmd_submodule_init,
     }
 
@@ -697,8 +709,7 @@ class cmd_stash_pop(Command):
 
 
 class cmd_stash(SuperCommand):
-
-    subcommands = {
+    subcommands: ClassVar[Dict[str, Type[Command]]] = {
         "list": cmd_stash_list,
         "pop": cmd_stash_pop,
         "push": cmd_stash_push,
@@ -763,6 +774,7 @@ commands = {
     "dump-index": cmd_dump_index,
     "fetch-pack": cmd_fetch_pack,
     "fetch": cmd_fetch,
+    "for-each-ref": cmd_for_each_ref,
     "fsck": cmd_fsck,
     "help": cmd_help,
     "init": cmd_init,

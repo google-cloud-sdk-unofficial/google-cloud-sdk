@@ -688,6 +688,35 @@ resources.
         supports_download=False,
     )
 
+    def CalendarModeExtension(self, request, global_params=None):
+      r"""Advise on whether extending an existing Future Reservation is possible.
+based on the desired extension end time. If capacity is not available for
+the entire requested duration, the method will recommend the longest
+possible extension.
+
+      Args:
+        request: (ComputeAdviceCalendarModeExtensionRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (CalendarModeExtensionAdviceResponse) The response message.
+      """
+      config = self.GetMethodConfig('CalendarModeExtension')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    CalendarModeExtension.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.advice.calendarModeExtension',
+        ordered_params=['project', 'region'],
+        path_params=['project', 'region'],
+        query_params=[],
+        relative_path='projects/{project}/regions/{region}/advice/calendarModeExtension',
+        request_field='calendarModeExtensionAdviceRequest',
+        request_type_name='ComputeAdviceCalendarModeExtensionRequest',
+        response_type_name='CalendarModeExtensionAdviceResponse',
+        supports_download=False,
+    )
+
     def Capacity(self, request, global_params=None):
       r"""Advice on making real-time decisions (such as choosing zone or.
 machine types) during deployment to maximize your chances of obtaining

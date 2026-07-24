@@ -4725,6 +4725,8 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceHealthSignalData(_mes
         maintenance downtime.
       SIGNAL_TYPE_LOW_CACHE_HIT_AND_MAINTENANCE_DOWNTIME: Indicates both a low
         cache hit rate and a risk of maintenance downtime.
+      SIGNAL_TYPE_MISSING_ENHANCED_PROTECTION: Indicates that the resource is
+        missing enhanced protection.
     """
     SIGNAL_TYPE_UNSPECIFIED = 0
     SIGNAL_TYPE_NOT_PROTECTED_BY_AUTOMATIC_FAILOVER = 1
@@ -4835,6 +4837,7 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceHealthSignalData(_mes
     SIGNAL_TYPE_VERSION_NEARING_END_OF_LIFE = 106
     SIGNAL_TYPE_HIGH_MAINTENANCE_DOWNTIME_RISK = 107
     SIGNAL_TYPE_LOW_CACHE_HIT_AND_MAINTENANCE_DOWNTIME = 108
+    SIGNAL_TYPE_MISSING_ENHANCED_PROTECTION = 109
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Required. The state of the signal, such as if it's ACTIVE or RESOLVED.
@@ -5557,6 +5560,8 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceRecommendationSignalD
         maintenance downtime.
       SIGNAL_TYPE_LOW_CACHE_HIT_AND_MAINTENANCE_DOWNTIME: Indicates both a low
         cache hit rate and a risk of maintenance downtime.
+      SIGNAL_TYPE_MISSING_ENHANCED_PROTECTION: Indicates that the resource is
+        missing enhanced protection.
     """
     SIGNAL_TYPE_UNSPECIFIED = 0
     SIGNAL_TYPE_NOT_PROTECTED_BY_AUTOMATIC_FAILOVER = 1
@@ -5667,6 +5672,7 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceRecommendationSignalD
     SIGNAL_TYPE_VERSION_NEARING_END_OF_LIFE = 106
     SIGNAL_TYPE_HIGH_MAINTENANCE_DOWNTIME_RISK = 107
     SIGNAL_TYPE_LOW_CACHE_HIT_AND_MAINTENANCE_DOWNTIME = 108
+    SIGNAL_TYPE_MISSING_ENHANCED_PROTECTION = 109
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AdditionalMetadataValue(_messages.Message):
@@ -6485,9 +6491,11 @@ class StringRestrictions(_messages.Message):
   Fields:
     allowedValues: The list of allowed values, if bounded. This field will be
       empty if there is a unbounded number of allowed values.
+    caseAgnostic: Output only. Whether the allowed values are case agnostic.
   """
 
   allowedValues = _messages.StringField(1, repeated=True)
+  caseAgnostic = _messages.BooleanField(2)
 
 
 class SupportedDatabaseFlag(_messages.Message):

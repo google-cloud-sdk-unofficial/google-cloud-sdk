@@ -28,7 +28,6 @@ from googlecloudsdk.core.util import files
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class DownloadNamedSet(base.DescribeCommand):
   """Download a named set from a Compute Engine router.
 
@@ -94,3 +93,16 @@ class DownloadNamedSet(base.DescribeCommand):
           print_format=file_format,
           out=export_file,
       )
+
+
+DownloadNamedSet.detailed_help = {
+    'DESCRIPTION': """\
+          *{command}* downloads a named set from a Compute Engine router.
+  """,
+    'EXAMPLES': """\
+          To download named set `my-set` on router `my-router` in region `us-central1` to YAML file `my-set.yaml`, run:
+
+              $ {command} my-router --region=us-central1 --set-name=my-set --file-name=my-set.yaml
+
+          """,
+}

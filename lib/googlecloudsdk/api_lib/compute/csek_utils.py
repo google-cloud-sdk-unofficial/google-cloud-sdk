@@ -21,6 +21,7 @@ import json
 import re
 
 from googlecloudsdk.api_lib.compute import exceptions
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 import six
@@ -222,6 +223,10 @@ def AddCsekKeyArgs(parser, flags_about_creation=True, resource_type='resource'):
   """Adds arguments related to csek keys."""
   parser.add_argument(
       '--csek-key-file',
+      action=actions.DeprecationAction(
+          '--csek-key-file',
+          warn='The {flag_name} flag is deprecated.',
+          removed=False),
       metavar='FILE',
       help="""\
       Path to a Customer-Supplied Encryption Key (CSEK) key file that maps
@@ -235,7 +240,11 @@ def AddCsekKeyArgs(parser, flags_about_creation=True, resource_type='resource'):
   if flags_about_creation:
     parser.add_argument(
         '--require-csek-key-create',
-        action='store_true',
+        action=actions.DeprecationAction(
+            '--require-csek-key-create',
+            warn='The {flag_name} flag is deprecated.',
+            removed=False,
+            action='store_true'),
         default=True,
         help="""\
         Refuse to create {resource}s not protected by a user managed key in

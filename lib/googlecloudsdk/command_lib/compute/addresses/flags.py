@@ -254,9 +254,11 @@ def IpCollectionArgument(required=False):
       region_hidden=True,
       short_help='Resource reference to a public delegated prefix.',
       detailed_help=(
-          'If specified, the public delegated prefix (PDP) from which to '
-          'allocate the BYOIP IP address. The PDP must support enhanced IPv4 '
-          'allocations. If not specified, the address will be allocated from '
-          'the Google-owned IP pool.'
+          'If specified, the public delegated prefix (PDP) from which to'
+          ' allocate the BYOIP IP address. If an IPv4 PDP is used, the PDP must'
+          ' support enhanced IPv4 allocations. If an IPv6 PDP is used, the PDP'
+          ' must be in EXTERNAL_IPV6_FORWARDING_RULE_CREATION mode. If not'
+          ' specified, the address will be allocated from the Google-owned IP'
+          ' pool.'
       ),
   )

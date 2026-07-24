@@ -93,6 +93,9 @@ class CommonParams(object):
     self.is_run_from_shell_script = console_io.IsRunFromShellScript()
     self.term_identifier = console_attr.GetConsoleAttr().GetTermIdentifier()
     self.agent_name = agents.DetectAIAgent()
+    self.parent_execution_id = encoding.GetEncodedValue(
+        os.environ, 'CLOUDSDK_METRICS_EXECUTION_ID'
+    )
 
 
 def GetTimeMillis(time_secs=None):
@@ -191,6 +194,7 @@ class _ClearcutMetricsReporter(object):
     }
 
     event_metadata = [
+        ('telemetry_source', 'python'),
         ('release_channel', common_params.release_channel),
         ('install_type', common_params.install_type),
         ('environment', common_params.metrics_environment),
@@ -203,6 +207,10 @@ class _ClearcutMetricsReporter(object):
 
     if common_params.agent_name:
       event_metadata.append(('agent_name', common_params.agent_name))
+    if common_params.parent_execution_id:
+      event_metadata.append(
+          ('parent_execution_id', common_params.parent_execution_id)
+      )
 
     self._clearcut_concord_event_metadata = [{
         'key': param[0], 'value': six.text_type(param[1])
@@ -491,9 +499,48 @@ class _MetricsCollector(object):
     """
     self._metrics.append((url, method, body, headers))
 
+  def _WriteGoTelemetryFile(self):
+    """Writes the collected metrics to a JSON file for the Go wrapper."""
+    config_dir = config.Paths().global_config_dir
+    telemetry_dir = os.path.join(config_dir, 'telemetry')
+    if not os.path.exists(telemetry_dir):
+      try:
+        os.makedirs(telemetry_dir, 0o700)
+      except OSError:
+        if not os.path.isdir(telemetry_dir):
+          raise
+    execution_id = encoding.GetEncodedValue(
+        os.environ, 'CLOUDSDK_METRICS_EXECUTION_ID'
+    )
+    if not execution_id or execution_id == 'unknown':
+      self._metrics = []
+      return
+    filename = 'telemetry_{}.json'.format(execution_id)
+    filepath = os.path.join(telemetry_dir, filename)
+    payloads = []
+    for _, _, body, _ in self._metrics:
+      try:
+        payloads.append(json.loads(body))
+      except Exception:  # pylint: disable=broad-except
+        pass
+    if payloads:
+      flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+      try:
+        fd = os.open(filepath, flags, 0o600)
+        with os.fdopen(fd, 'w') as f:
+          for payload in payloads:
+            f.write(json.dumps(payload) + '\n')
+      except Exception as e:  # pylint: disable=broad-except
+        log.debug('Failed to write telemetry file: %s', e)
+    self._metrics = []
+
   def ReportMetrics(self, wait_for_report=False):
     """Reports the collected metrics using a separate async process."""
     if not self._metrics:
+      return
+
+    if encoding.GetEncodedValue(os.environ, 'CLOUDSDK_FROM_GOCLOUD') == '1':
+      self._WriteGoTelemetryFile()
       return
 
     temp_metrics_file = tempfile.NamedTemporaryFile(delete=False)

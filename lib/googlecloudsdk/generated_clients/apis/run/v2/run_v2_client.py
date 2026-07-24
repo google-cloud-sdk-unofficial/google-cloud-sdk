@@ -260,6 +260,33 @@ class RunV2(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Restart(self, request, global_params=None):
+      r"""Restarts an Instance.
+
+      Args:
+        request: (RunProjectsLocationsInstancesRestartRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Restart')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Restart.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}:restart',
+        http_method='POST',
+        method_id='run.projects.locations.instances.restart',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v2/{+name}:restart',
+        request_field='googleCloudRunV2RestartInstanceRequest',
+        request_type_name='RunProjectsLocationsInstancesRestartRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
     def SetIamPolicy(self, request, global_params=None):
       r"""Sets the IAM Access control policy for the specified Instance. Overwrites any existing policy.
 

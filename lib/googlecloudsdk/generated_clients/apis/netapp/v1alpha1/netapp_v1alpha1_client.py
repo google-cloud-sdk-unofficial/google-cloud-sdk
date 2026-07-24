@@ -1661,56 +1661,56 @@ class NetappV1alpha1(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
-    def End(self, request, global_params=None):
+    def EndTrial(self, request, global_params=None):
       r"""EndTrial ends a Trial.
 
       Args:
-        request: (NetappProjectsLocationsTrialEndRequest) input message
+        request: (NetappProjectsLocationsTrialEndTrialRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
       Returns:
         (Operation) The response message.
       """
-      config = self.GetMethodConfig('End')
+      config = self.GetMethodConfig('EndTrial')
       return self._RunMethod(
           config, request, global_params=global_params)
 
-    End.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/trial:end',
+    EndTrial.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/trial:endTrial',
         http_method='POST',
-        method_id='netapp.projects.locations.trial.end',
+        method_id='netapp.projects.locations.trial.endTrial',
         ordered_params=['name'],
         path_params=['name'],
         query_params=[],
-        relative_path='v1alpha1/{+name}:end',
+        relative_path='v1alpha1/{+name}:endTrial',
         request_field='endTrialRequest',
-        request_type_name='NetappProjectsLocationsTrialEndRequest',
+        request_type_name='NetappProjectsLocationsTrialEndTrialRequest',
         response_type_name='Operation',
         supports_download=False,
     )
 
-    def Subscribe(self, request, global_params=None):
+    def SubscribeTrial(self, request, global_params=None):
       r"""SubscribeTrial subscribes a Trial.
 
       Args:
-        request: (NetappProjectsLocationsTrialSubscribeRequest) input message
+        request: (NetappProjectsLocationsTrialSubscribeTrialRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
       Returns:
         (Operation) The response message.
       """
-      config = self.GetMethodConfig('Subscribe')
+      config = self.GetMethodConfig('SubscribeTrial')
       return self._RunMethod(
           config, request, global_params=global_params)
 
-    Subscribe.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/trial:subscribe',
+    SubscribeTrial.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/trial:subscribeTrial',
         http_method='POST',
-        method_id='netapp.projects.locations.trial.subscribe',
+        method_id='netapp.projects.locations.trial.subscribeTrial',
         ordered_params=['parent'],
         path_params=['parent'],
         query_params=[],
-        relative_path='v1alpha1/{+parent}/trial:subscribe',
+        relative_path='v1alpha1/{+parent}:subscribeTrial',
         request_field='subscribeTrialRequest',
-        request_type_name='NetappProjectsLocationsTrialSubscribeRequest',
+        request_type_name='NetappProjectsLocationsTrialSubscribeTrialRequest',
         response_type_name='Operation',
         supports_download=False,
     )

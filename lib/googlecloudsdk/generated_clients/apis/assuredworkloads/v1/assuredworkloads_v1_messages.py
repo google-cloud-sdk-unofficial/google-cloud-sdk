@@ -33,6 +33,117 @@ class AssuredworkloadsFoldersLocationsDbFindingSummariesListRequest(_messages.Me
   parent = _messages.StringField(4, required=True)
 
 
+class AssuredworkloadsFoldersLocationsDbFrameworkComplianceReportsAggregateRequest(_messages.Message):
+  r"""A
+  AssuredworkloadsFoldersLocationsDbFrameworkComplianceReportsAggregateRequest
+  object.
+
+  Fields:
+    filter: Optional. The filtering results.
+    interval_endTime: Optional. Exclusive end of the interval. If specified, a
+      Timestamp matching this interval will have to be before the end.
+    interval_startTime: Optional. Inclusive start of the interval. If
+      specified, a Timestamp matching this interval will have to be the same
+      or after the start.
+    name: Required. The name of the aggregated compliance report over time to
+      retrieve. Format: `organizations/{organization_id}/locations/{location}/
+      dbFrameworkComplianceReports/{db_framework_compliance_report}`
+  """
+
+  filter = _messages.StringField(1)
+  interval_endTime = _messages.StringField(2)
+  interval_startTime = _messages.StringField(3)
+  name = _messages.StringField(4, required=True)
+
+
+class AssuredworkloadsFoldersLocationsDbFrameworkComplianceReportsDbControlComplianceSummariesListRequest(_messages.Message):
+  r"""A AssuredworkloadsFoldersLocationsDbFrameworkComplianceReportsDbControlC
+  omplianceSummariesListRequest object.
+
+  Fields:
+    filter: Optional. The filtering results.
+    pageSize: Optional. The requested page size. The server might return fewer
+      items than requested. If unspecified, the default page size is 50. The
+      maximum value is 1000.
+    pageToken: Optional. A token that identifies the page of results that the
+      server should return.
+    parent: Required. The parent scope for the framework overview page.
+      Format: organizations/{organization}/locations/{location}/dbFrameworkCom
+      plianceReports/{db_framework_compliance_report} folders/{folder}/locatio
+      ns/{location}/dbFrameworkComplianceReports/{db_framework_compliance_repo
+      rt} projects/{project}/locations/{location}/dbFrameworkComplianceReports
+      /{db_framework_compliance_report}
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+
+
+class AssuredworkloadsFoldersLocationsDbFrameworkComplianceReportsFetchRequest(_messages.Message):
+  r"""A
+  AssuredworkloadsFoldersLocationsDbFrameworkComplianceReportsFetchRequest
+  object.
+
+  Fields:
+    endTime: Optional. The end time of the report.
+    filter: Optional. The filtering results.
+    name: Required. The name of the framework compliance report to retrieve.
+  """
+
+  endTime = _messages.StringField(1)
+  filter = _messages.StringField(2)
+  name = _messages.StringField(3, required=True)
+
+
+class AssuredworkloadsFoldersLocationsDbFrameworkComplianceSummariesListRequest(_messages.Message):
+  r"""A
+  AssuredworkloadsFoldersLocationsDbFrameworkComplianceSummariesListRequest
+  object.
+
+  Enums:
+    ViewValueValuesEnum: Optional. Specifies the level of detail to return in
+      the response.
+
+  Fields:
+    filter: Optional. The filtering results.
+    pageSize: Optional. The requested page size. The server might return fewer
+      items than requested. If unspecified, the default page size is 50. The
+      maximum value is 1000.
+    pageToken: Optional. A token that identifies the page of results that the
+      server should return. Pass the next_page_token value from a previous
+      result.
+    parent: Required. The parent scope for the framework compliance summary.
+      Format: organizations/{organization}/locations/{location}
+      folders/{folder}/locations/{location}
+      projects/{project}/locations/{location}
+    view: Optional. Specifies the level of detail to return in the response.
+  """
+
+  class ViewValueValuesEnum(_messages.Enum):
+    r"""Optional. Specifies the level of detail to return in the response.
+
+    Values:
+      FRAMEWORK_COMPLIANCE_SUMMARY_VIEW_UNSPECIFIED: The default / unset
+        value. The API will default to the BASIC view.
+      FRAMEWORK_COMPLIANCE_SUMMARY_VIEW_BASIC: Includes basic compliance
+        metadata, but omits trend data.
+      FRAMEWORK_COMPLIANCE_SUMMARY_VIEW_FULL: Includes all information,
+        including finding_count and controls_passing_trend. Trend data is
+        provided for the last 30 days.
+    """
+    FRAMEWORK_COMPLIANCE_SUMMARY_VIEW_UNSPECIFIED = 0
+    FRAMEWORK_COMPLIANCE_SUMMARY_VIEW_BASIC = 1
+    FRAMEWORK_COMPLIANCE_SUMMARY_VIEW_FULL = 2
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+  view = _messages.EnumField('ViewValueValuesEnum', 5)
+
+
 class AssuredworkloadsOrganizationsLocationsDbFindingSummariesListRequest(_messages.Message):
   r"""A AssuredworkloadsOrganizationsLocationsDbFindingSummariesListRequest
   object.
@@ -54,6 +165,114 @@ class AssuredworkloadsOrganizationsLocationsDbFindingSummariesListRequest(_messa
   pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(3)
   parent = _messages.StringField(4, required=True)
+
+
+class AssuredworkloadsOrganizationsLocationsDbFrameworkComplianceReportsAggregateRequest(_messages.Message):
+  r"""A AssuredworkloadsOrganizationsLocationsDbFrameworkComplianceReportsAggr
+  egateRequest object.
+
+  Fields:
+    filter: Optional. The filtering results.
+    interval_endTime: Optional. Exclusive end of the interval. If specified, a
+      Timestamp matching this interval will have to be before the end.
+    interval_startTime: Optional. Inclusive start of the interval. If
+      specified, a Timestamp matching this interval will have to be the same
+      or after the start.
+    name: Required. The name of the aggregated compliance report over time to
+      retrieve. Format: `organizations/{organization_id}/locations/{location}/
+      dbFrameworkComplianceReports/{db_framework_compliance_report}`
+  """
+
+  filter = _messages.StringField(1)
+  interval_endTime = _messages.StringField(2)
+  interval_startTime = _messages.StringField(3)
+  name = _messages.StringField(4, required=True)
+
+
+class AssuredworkloadsOrganizationsLocationsDbFrameworkComplianceReportsDbControlComplianceSummariesListRequest(_messages.Message):
+  r"""A AssuredworkloadsOrganizationsLocationsDbFrameworkComplianceReportsDbCo
+  ntrolComplianceSummariesListRequest object.
+
+  Fields:
+    filter: Optional. The filtering results.
+    pageSize: Optional. The requested page size. The server might return fewer
+      items than requested. If unspecified, the default page size is 50. The
+      maximum value is 1000.
+    pageToken: Optional. A token that identifies the page of results that the
+      server should return.
+    parent: Required. The parent scope for the framework overview page.
+      Format: organizations/{organization}/locations/{location}/dbFrameworkCom
+      plianceReports/{db_framework_compliance_report} folders/{folder}/locatio
+      ns/{location}/dbFrameworkComplianceReports/{db_framework_compliance_repo
+      rt} projects/{project}/locations/{location}/dbFrameworkComplianceReports
+      /{db_framework_compliance_report}
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+
+
+class AssuredworkloadsOrganizationsLocationsDbFrameworkComplianceReportsFetchRequest(_messages.Message):
+  r"""A AssuredworkloadsOrganizationsLocationsDbFrameworkComplianceReportsFetc
+  hRequest object.
+
+  Fields:
+    endTime: Optional. The end time of the report.
+    filter: Optional. The filtering results.
+    name: Required. The name of the framework compliance report to retrieve.
+  """
+
+  endTime = _messages.StringField(1)
+  filter = _messages.StringField(2)
+  name = _messages.StringField(3, required=True)
+
+
+class AssuredworkloadsOrganizationsLocationsDbFrameworkComplianceSummariesListRequest(_messages.Message):
+  r"""A AssuredworkloadsOrganizationsLocationsDbFrameworkComplianceSummariesLi
+  stRequest object.
+
+  Enums:
+    ViewValueValuesEnum: Optional. Specifies the level of detail to return in
+      the response.
+
+  Fields:
+    filter: Optional. The filtering results.
+    pageSize: Optional. The requested page size. The server might return fewer
+      items than requested. If unspecified, the default page size is 50. The
+      maximum value is 1000.
+    pageToken: Optional. A token that identifies the page of results that the
+      server should return. Pass the next_page_token value from a previous
+      result.
+    parent: Required. The parent scope for the framework compliance summary.
+      Format: organizations/{organization}/locations/{location}
+      folders/{folder}/locations/{location}
+      projects/{project}/locations/{location}
+    view: Optional. Specifies the level of detail to return in the response.
+  """
+
+  class ViewValueValuesEnum(_messages.Enum):
+    r"""Optional. Specifies the level of detail to return in the response.
+
+    Values:
+      FRAMEWORK_COMPLIANCE_SUMMARY_VIEW_UNSPECIFIED: The default / unset
+        value. The API will default to the BASIC view.
+      FRAMEWORK_COMPLIANCE_SUMMARY_VIEW_BASIC: Includes basic compliance
+        metadata, but omits trend data.
+      FRAMEWORK_COMPLIANCE_SUMMARY_VIEW_FULL: Includes all information,
+        including finding_count and controls_passing_trend. Trend data is
+        provided for the last 30 days.
+    """
+    FRAMEWORK_COMPLIANCE_SUMMARY_VIEW_UNSPECIFIED = 0
+    FRAMEWORK_COMPLIANCE_SUMMARY_VIEW_BASIC = 1
+    FRAMEWORK_COMPLIANCE_SUMMARY_VIEW_FULL = 2
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+  view = _messages.EnumField('ViewValueValuesEnum', 5)
 
 
 class AssuredworkloadsOrganizationsLocationsOperationsGetRequest(_messages.Message):
@@ -398,6 +617,116 @@ class AssuredworkloadsProjectsLocationsDbFindingSummariesListRequest(_messages.M
   parent = _messages.StringField(4, required=True)
 
 
+class AssuredworkloadsProjectsLocationsDbFrameworkComplianceReportsAggregateRequest(_messages.Message):
+  r"""A AssuredworkloadsProjectsLocationsDbFrameworkComplianceReportsAggregate
+  Request object.
+
+  Fields:
+    filter: Optional. The filtering results.
+    interval_endTime: Optional. Exclusive end of the interval. If specified, a
+      Timestamp matching this interval will have to be before the end.
+    interval_startTime: Optional. Inclusive start of the interval. If
+      specified, a Timestamp matching this interval will have to be the same
+      or after the start.
+    name: Required. The name of the aggregated compliance report over time to
+      retrieve. Format: `organizations/{organization_id}/locations/{location}/
+      dbFrameworkComplianceReports/{db_framework_compliance_report}`
+  """
+
+  filter = _messages.StringField(1)
+  interval_endTime = _messages.StringField(2)
+  interval_startTime = _messages.StringField(3)
+  name = _messages.StringField(4, required=True)
+
+
+class AssuredworkloadsProjectsLocationsDbFrameworkComplianceReportsDbControlComplianceSummariesListRequest(_messages.Message):
+  r"""A AssuredworkloadsProjectsLocationsDbFrameworkComplianceReportsDbControl
+  ComplianceSummariesListRequest object.
+
+  Fields:
+    filter: Optional. The filtering results.
+    pageSize: Optional. The requested page size. The server might return fewer
+      items than requested. If unspecified, the default page size is 50. The
+      maximum value is 1000.
+    pageToken: Optional. A token that identifies the page of results that the
+      server should return.
+    parent: Required. The parent scope for the framework overview page.
+      Format: organizations/{organization}/locations/{location}/dbFrameworkCom
+      plianceReports/{db_framework_compliance_report} folders/{folder}/locatio
+      ns/{location}/dbFrameworkComplianceReports/{db_framework_compliance_repo
+      rt} projects/{project}/locations/{location}/dbFrameworkComplianceReports
+      /{db_framework_compliance_report}
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+
+
+class AssuredworkloadsProjectsLocationsDbFrameworkComplianceReportsFetchRequest(_messages.Message):
+  r"""A
+  AssuredworkloadsProjectsLocationsDbFrameworkComplianceReportsFetchRequest
+  object.
+
+  Fields:
+    endTime: Optional. The end time of the report.
+    filter: Optional. The filtering results.
+    name: Required. The name of the framework compliance report to retrieve.
+  """
+
+  endTime = _messages.StringField(1)
+  filter = _messages.StringField(2)
+  name = _messages.StringField(3, required=True)
+
+
+class AssuredworkloadsProjectsLocationsDbFrameworkComplianceSummariesListRequest(_messages.Message):
+  r"""A
+  AssuredworkloadsProjectsLocationsDbFrameworkComplianceSummariesListRequest
+  object.
+
+  Enums:
+    ViewValueValuesEnum: Optional. Specifies the level of detail to return in
+      the response.
+
+  Fields:
+    filter: Optional. The filtering results.
+    pageSize: Optional. The requested page size. The server might return fewer
+      items than requested. If unspecified, the default page size is 50. The
+      maximum value is 1000.
+    pageToken: Optional. A token that identifies the page of results that the
+      server should return. Pass the next_page_token value from a previous
+      result.
+    parent: Required. The parent scope for the framework compliance summary.
+      Format: organizations/{organization}/locations/{location}
+      folders/{folder}/locations/{location}
+      projects/{project}/locations/{location}
+    view: Optional. Specifies the level of detail to return in the response.
+  """
+
+  class ViewValueValuesEnum(_messages.Enum):
+    r"""Optional. Specifies the level of detail to return in the response.
+
+    Values:
+      FRAMEWORK_COMPLIANCE_SUMMARY_VIEW_UNSPECIFIED: The default / unset
+        value. The API will default to the BASIC view.
+      FRAMEWORK_COMPLIANCE_SUMMARY_VIEW_BASIC: Includes basic compliance
+        metadata, but omits trend data.
+      FRAMEWORK_COMPLIANCE_SUMMARY_VIEW_FULL: Includes all information,
+        including finding_count and controls_passing_trend. Trend data is
+        provided for the last 30 days.
+    """
+    FRAMEWORK_COMPLIANCE_SUMMARY_VIEW_UNSPECIFIED = 0
+    FRAMEWORK_COMPLIANCE_SUMMARY_VIEW_BASIC = 1
+    FRAMEWORK_COMPLIANCE_SUMMARY_VIEW_FULL = 2
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+  view = _messages.EnumField('ViewValueValuesEnum', 5)
+
+
 class GoogleCloudAssuredworkloadsV1AcknowledgeViolationRequest(_messages.Message):
   r"""Request for acknowledging the violation
 
@@ -437,6 +766,28 @@ class GoogleCloudAssuredworkloadsV1AcknowledgeViolationRequest(_messages.Message
 
 class GoogleCloudAssuredworkloadsV1AcknowledgeViolationResponse(_messages.Message):
   r"""Response for violation acknowledgement"""
+
+
+class GoogleCloudAssuredworkloadsV1AggregateDbFrameworkComplianceReportResponse(_messages.Message):
+  r"""The response message for AggregateDbFrameworkComplianceReport.
+
+  Fields:
+    aggregatedComplianceReports: The list of aggregated compliance reports.
+  """
+
+  aggregatedComplianceReports = _messages.MessageField('GoogleCloudAssuredworkloadsV1AggregatedComplianceReport', 1, repeated=True)
+
+
+class GoogleCloudAssuredworkloadsV1AggregatedComplianceReport(_messages.Message):
+  r"""The aggregated compliance report.
+
+  Fields:
+    controlAssessmentDetails: The control assessment details of the framework.
+    reportTime: The report time of the aggregated compliance report.
+  """
+
+  controlAssessmentDetails = _messages.MessageField('GoogleCloudAssuredworkloadsV1ControlAssessmentDetails', 1)
+  reportTime = _messages.StringField(2)
 
 
 class GoogleCloudAssuredworkloadsV1AnalyzeWorkloadMoveResponse(_messages.Message):
@@ -609,6 +960,201 @@ class GoogleCloudAssuredworkloadsV1BatchAcknowledgeViolationsResponse(_messages.
   """
 
   acknowledgedViolationsCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+
+
+class GoogleCloudAssuredworkloadsV1CELExpression(_messages.Message):
+  r"""A Common Expression Language (CEL) expression that's used to create a
+  rule.
+
+  Fields:
+    expression: Required. The logical expression in CEL. The maximum length of
+      the condition is 1000 characters. For more information, see [CEL
+      expression](https://cloud.google.com/security-command-
+      center/docs/compliance-manager-write-cel-expressions).
+    resourceTypesValues: The resource instance types on which this expression
+      is defined. The format is `/`. For example:
+      `compute.googleapis.com/Instance`
+  """
+
+  expression = _messages.StringField(1)
+  resourceTypesValues = _messages.MessageField('GoogleCloudAssuredworkloadsV1StringList', 2)
+
+
+class GoogleCloudAssuredworkloadsV1CloudControlAssessmentDetails(_messages.Message):
+  r"""The cloud control assessment details for non-manual cloud controls.
+
+  Enums:
+    EvaluationStateValueValuesEnum: Output only. The evaluation status of the
+      cloud control.
+
+  Fields:
+    evaluationState: Output only. The evaluation status of the cloud control.
+    findingsCount: The number of findings for the cloud control.
+  """
+
+  class EvaluationStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The evaluation status of the cloud control.
+
+    Values:
+      EVALUATION_STATE_UNSPECIFIED: Default value. This value is unused.
+      EVALUATION_STATE_PASSED: The control is passing.
+      EVALUATION_STATE_FAILED: The control is failing.
+      EVALUATION_STATE_NOT_ASSESSED: The control is not assessed.
+    """
+    EVALUATION_STATE_UNSPECIFIED = 0
+    EVALUATION_STATE_PASSED = 1
+    EVALUATION_STATE_FAILED = 2
+    EVALUATION_STATE_NOT_ASSESSED = 3
+
+  evaluationState = _messages.EnumField('EvaluationStateValueValuesEnum', 1)
+  findingsCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+
+
+class GoogleCloudAssuredworkloadsV1CloudControlReport(_messages.Message):
+  r"""The cloud control report.
+
+  Enums:
+    CloudControlTypeValueValuesEnum: The type of the cloud control.
+    EnforcementModeValueValuesEnum: The enforcement mode of the cloud control.
+    FindingSeverityValueValuesEnum: The severity of the finding.
+
+  Fields:
+    categories: The list of categories for the cloud control.
+    cloudControl: The name of the cloud control.
+    cloudControlAssessmentDetails: The details of a cloud control assessment.
+    cloudControlDeployment: The name of the cloud control deployment.
+    cloudControlType: The type of the cloud control.
+    description: The description of the cloud control.
+    displayName: The display name of the cloud control.
+    enforcementMode: The enforcement mode of the cloud control.
+    findingCategory: The category of the finding.
+    findingSeverity: The severity of the finding.
+    frameworkMajorRevisionIds: The major revision IDs of the frameworks that
+      the cloud control belongs to.
+    majorRevisionId: The major revision ID of the cloud control.
+    manualCloudControlAssessmentDetails: The details of a manual cloud control
+      assessment.
+    minorRevisionId: The minor revision ID of the cloud control.
+    rules: The list of rules that correspond to the cloud control.
+    similarControls: The list of similar controls.
+  """
+
+  class CloudControlTypeValueValuesEnum(_messages.Enum):
+    r"""The type of the cloud control.
+
+    Values:
+      TYPE_UNSPECIFIED: Default value. This value is unused.
+      CUSTOM: A cloud control that's created and managed by you.
+      BUILT_IN: A cloud control that's provided and managed by Google.
+    """
+    TYPE_UNSPECIFIED = 0
+    CUSTOM = 1
+    BUILT_IN = 2
+
+  class EnforcementModeValueValuesEnum(_messages.Enum):
+    r"""The enforcement mode of the cloud control.
+
+    Values:
+      ENFORCEMENT_MODE_UNSPECIFIED: Default value. This value is unused.
+      PREVENTIVE: The cloud control is enforced to prevent non-compliance.
+      DETECTIVE: The cloud control is enforced to detect non-compliance.
+      AUDIT: The cloud control is enforced to audit for non-compliance.
+    """
+    ENFORCEMENT_MODE_UNSPECIFIED = 0
+    PREVENTIVE = 1
+    DETECTIVE = 2
+    AUDIT = 3
+
+  class FindingSeverityValueValuesEnum(_messages.Enum):
+    r"""The severity of the finding.
+
+    Values:
+      SEVERITY_UNSPECIFIED: Default value. This value is unused.
+      CRITICAL: A critical vulnerability is easily discoverable by an external
+        actor, exploitable, and results in the direct ability to execute
+        arbitrary code, exfiltrate data, and otherwise gain additional access
+        and privileges to cloud resources and workloads. Examples include
+        publicly accessible unprotected user data and public SSH access with
+        weak or no passwords. A critical threat is a threat that can access,
+        modify, or delete data or execute unauthorized code within existing
+        resources.
+      HIGH: A high-risk vulnerability can be easily discovered and exploited
+        in combination with other vulnerabilities to gain direct access and
+        the ability to execute arbitrary code, exfiltrate data, and otherwise
+        gain additional access and privileges to cloud resources and
+        workloads. An example is a database with weak or no passwords that is
+        only accessible internally. This database could easily be compromised
+        by an actor that had access to the internal network. A high-risk
+        threat is a threat that can create new computational resources in an
+        environment but can't access data or execute code in existing
+        resources.
+      MEDIUM: A medium-risk vulnerability can be used by an actor to gain
+        access to resources or privileges that enable them to eventually
+        (through multiple steps or a complex exploit) gain access and the
+        ability to execute arbitrary code or exfiltrate data. An example is a
+        service account with access to more projects than it should have. If
+        an actor gains access to the service account, they could potentially
+        use that access to manipulate a project the service account was not
+        intended to. A medium-risk threat can cause operational impact but
+        might not access data or execute unauthorized code.
+      LOW: A low-risk vulnerability hampers a security organization's ability
+        to detect vulnerabilities or active threats in their deployment, or
+        prevents the root cause investigation of security issues. An example
+        is monitoring and logs being disabled for resource configurations and
+        access. A low-risk threat is a threat that has obtained minimal access
+        to an environment but can't access data, execute code, or create
+        resources.
+    """
+    SEVERITY_UNSPECIFIED = 0
+    CRITICAL = 1
+    HIGH = 2
+    MEDIUM = 3
+    LOW = 4
+
+  categories = _messages.StringField(1, repeated=True)
+  cloudControl = _messages.StringField(2)
+  cloudControlAssessmentDetails = _messages.MessageField('GoogleCloudAssuredworkloadsV1CloudControlAssessmentDetails', 3)
+  cloudControlDeployment = _messages.StringField(4)
+  cloudControlType = _messages.EnumField('CloudControlTypeValueValuesEnum', 5)
+  description = _messages.StringField(6)
+  displayName = _messages.StringField(7)
+  enforcementMode = _messages.EnumField('EnforcementModeValueValuesEnum', 8)
+  findingCategory = _messages.StringField(9)
+  findingSeverity = _messages.EnumField('FindingSeverityValueValuesEnum', 10)
+  frameworkMajorRevisionIds = _messages.IntegerField(11, repeated=True)
+  majorRevisionId = _messages.IntegerField(12)
+  manualCloudControlAssessmentDetails = _messages.MessageField('GoogleCloudAssuredworkloadsV1ManualCloudControlAssessmentDetails', 13)
+  minorRevisionId = _messages.IntegerField(14)
+  rules = _messages.MessageField('GoogleCloudAssuredworkloadsV1Rule', 15, repeated=True)
+  similarControls = _messages.MessageField('GoogleCloudAssuredworkloadsV1SimilarControls', 16, repeated=True)
+
+
+class GoogleCloudAssuredworkloadsV1ControlAssessmentDetails(_messages.Message):
+  r"""The details for a control assessment.
+
+  Fields:
+    assessedPassingControlIds: The list of controls that were assessed and are
+      passing.
+    assessedPassingControls: The number of controls that were assessed and are
+      passing.
+    failingControlIds: The list of controls that are failing.
+    failingControls: The number of controls that are failing.
+    notAssessedControlIds: The list of controls that aren't assessed because
+      they require manual review.
+    notAssessedControls: The number of controls that aren't assessed because
+      they require manual review.
+    passingControlIds: The list of controls that are passing or not assessed.
+    passingControls: The number of controls that are passing or not assessed.
+  """
+
+  assessedPassingControlIds = _messages.StringField(1, repeated=True)
+  assessedPassingControls = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  failingControlIds = _messages.StringField(3, repeated=True)
+  failingControls = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  notAssessedControlIds = _messages.StringField(5, repeated=True)
+  notAssessedControls = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  passingControlIds = _messages.StringField(7, repeated=True)
+  passingControls = _messages.IntegerField(8, variant=_messages.Variant.INT32)
 
 
 class GoogleCloudAssuredworkloadsV1CreateWorkloadOperationMetadata(_messages.Message):
@@ -798,6 +1344,75 @@ class GoogleCloudAssuredworkloadsV1CreateWorkloadOperationMetadata(_messages.Mes
   parent = _messages.StringField(4)
 
 
+class GoogleCloudAssuredworkloadsV1DbControlComplianceSummary(_messages.Message):
+  r"""The details for control compliance.
+
+  Enums:
+    ControlResponsibilityTypeValueValuesEnum: The responsibility type for the
+      control.
+    OverallEvaluationStateValueValuesEnum: Output only. The overall evaluation
+      status of the control.
+
+  Fields:
+    cloudControlReports: The list of cloud control reports.
+    complianceFrameworks: The list of compliance frameworks that the control
+      belongs to.
+    control: The name of the control.
+    controlResponsibilityType: The responsibility type for the control.
+    description: The description of the control.
+    displayName: The display name of the control.
+    isFakeControl: Whether the control is a fake control. Fake controls are
+      created and mapped to cloud controls that don't belong to a control
+      group.
+    name: Identifier. The name of the control compliance summary.
+    overallEvaluationState: Output only. The overall evaluation status of the
+      control.
+    similarControls: The list of similar controls.
+    totalFindingsCount: The total number of findings for the control.
+  """
+
+  class ControlResponsibilityTypeValueValuesEnum(_messages.Enum):
+    r"""The responsibility type for the control.
+
+    Values:
+      REGULATORY_CONTROL_RESPONSIBILITY_TYPE_UNSPECIFIED: Default value. This
+        value is unused.
+      GOOGLE: Google's responsibility.
+      CUSTOMER: Your responsibility.
+      SHARED: Shared responsibility.
+    """
+    REGULATORY_CONTROL_RESPONSIBILITY_TYPE_UNSPECIFIED = 0
+    GOOGLE = 1
+    CUSTOMER = 2
+    SHARED = 3
+
+  class OverallEvaluationStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The overall evaluation status of the control.
+
+    Values:
+      EVALUATION_STATE_UNSPECIFIED: Default value. This value is unused.
+      EVALUATION_STATE_PASSED: The control is passing.
+      EVALUATION_STATE_FAILED: The control is failing.
+      EVALUATION_STATE_NOT_ASSESSED: The control is not assessed.
+    """
+    EVALUATION_STATE_UNSPECIFIED = 0
+    EVALUATION_STATE_PASSED = 1
+    EVALUATION_STATE_FAILED = 2
+    EVALUATION_STATE_NOT_ASSESSED = 3
+
+  cloudControlReports = _messages.MessageField('GoogleCloudAssuredworkloadsV1CloudControlReport', 1, repeated=True)
+  complianceFrameworks = _messages.StringField(2, repeated=True)
+  control = _messages.StringField(3)
+  controlResponsibilityType = _messages.EnumField('ControlResponsibilityTypeValueValuesEnum', 4)
+  description = _messages.StringField(5)
+  displayName = _messages.StringField(6)
+  isFakeControl = _messages.BooleanField(7)
+  name = _messages.StringField(8)
+  overallEvaluationState = _messages.EnumField('OverallEvaluationStateValueValuesEnum', 9)
+  similarControls = _messages.MessageField('GoogleCloudAssuredworkloadsV1SimilarControls', 10, repeated=True)
+  totalFindingsCount = _messages.IntegerField(11, variant=_messages.Variant.INT32)
+
+
 class GoogleCloudAssuredworkloadsV1DbFindingSummary(_messages.Message):
   r"""The details for a finding.
 
@@ -904,12 +1519,193 @@ class GoogleCloudAssuredworkloadsV1DbFindingSummary(_messages.Message):
   updateTime = _messages.StringField(7)
 
 
+class GoogleCloudAssuredworkloadsV1DbFrameworkComplianceSummary(_messages.Message):
+  r"""The details for a framework compliance summary.
+
+  Enums:
+    FrameworkCategoriesValueListEntryValuesEnum:
+    FrameworkTypeValueValuesEnum: The type of framework.
+    SupportedCloudProvidersValueListEntryValuesEnum:
+
+  Fields:
+    controlAssessmentDetails: The control assessment details of the framework.
+    controlsPassingTrend: Output only. The trend of controls that are passing
+      for the given duration.
+    findingCount: Output only. The count of the findings generated against the
+      framework.
+    framework: The name of the framework.
+    frameworkCategories: The list of framework categories supported by the
+      framework.
+    frameworkDisplayName: Optional. The display name for the framework.
+    frameworkType: The type of framework.
+    majorRevisionId: The major revision ID of the framework.
+    minorRevisionId: The minor revision ID of the framework.
+    name: Identifier. The name of the framework compliance summary.
+    supportedCloudProviders: The list of cloud providers supported by the
+      framework.
+    targetResourceDetails: The target resource details for the framework.
+  """
+
+  class FrameworkCategoriesValueListEntryValuesEnum(_messages.Enum):
+    r"""FrameworkCategoriesValueListEntryValuesEnum enum type.
+
+    Values:
+      FRAMEWORK_CATEGORY_UNSPECIFIED: Default value. This value is unused.
+      INDUSTRY_DEFINED_STANDARD: An industry-defined framework.
+      ASSURED_WORKLOADS: An Assured Workloads framework.
+      DATA_SECURITY: A data security posture framework.
+      GOOGLE_BEST_PRACTICES: A Google's best practices framework.
+      CUSTOM_FRAMEWORK: A user-created framework.
+    """
+    FRAMEWORK_CATEGORY_UNSPECIFIED = 0
+    INDUSTRY_DEFINED_STANDARD = 1
+    ASSURED_WORKLOADS = 2
+    DATA_SECURITY = 3
+    GOOGLE_BEST_PRACTICES = 4
+    CUSTOM_FRAMEWORK = 5
+
+  class FrameworkTypeValueValuesEnum(_messages.Enum):
+    r"""The type of framework.
+
+    Values:
+      FRAMEWORK_TYPE_UNSPECIFIED: Default value. This value is unused.
+      BUILT_IN: A framework that's provided and managed by Google.
+      CUSTOM: A framework that's created and managed by you.
+    """
+    FRAMEWORK_TYPE_UNSPECIFIED = 0
+    BUILT_IN = 1
+    CUSTOM = 2
+
+  class SupportedCloudProvidersValueListEntryValuesEnum(_messages.Enum):
+    r"""SupportedCloudProvidersValueListEntryValuesEnum enum type.
+
+    Values:
+      CLOUD_PROVIDER_UNSPECIFIED: Default value. This value is unused.
+      AWS: Amazon Web Services (AWS).
+      AZURE: Microsoft Azure.
+      GCP: Google Cloud.
+    """
+    CLOUD_PROVIDER_UNSPECIFIED = 0
+    AWS = 1
+    AZURE = 2
+    GCP = 3
+
+  controlAssessmentDetails = _messages.MessageField('GoogleCloudAssuredworkloadsV1ControlAssessmentDetails', 1)
+  controlsPassingTrend = _messages.MessageField('GoogleCloudAssuredworkloadsV1Trend', 2)
+  findingCount = _messages.IntegerField(3)
+  framework = _messages.StringField(4)
+  frameworkCategories = _messages.EnumField('FrameworkCategoriesValueListEntryValuesEnum', 5, repeated=True)
+  frameworkDisplayName = _messages.StringField(6)
+  frameworkType = _messages.EnumField('FrameworkTypeValueValuesEnum', 7)
+  majorRevisionId = _messages.IntegerField(8)
+  minorRevisionId = _messages.IntegerField(9)
+  name = _messages.StringField(10)
+  supportedCloudProviders = _messages.EnumField('SupportedCloudProvidersValueListEntryValuesEnum', 11, repeated=True)
+  targetResourceDetails = _messages.MessageField('GoogleCloudAssuredworkloadsV1TargetResourceDetails', 12, repeated=True)
+
+
 class GoogleCloudAssuredworkloadsV1EnableComplianceUpdatesResponse(_messages.Message):
   r"""Response for EnableComplianceUpdates endpoint."""
 
 
 class GoogleCloudAssuredworkloadsV1EnableResourceMonitoringResponse(_messages.Message):
   r"""Response for EnableResourceMonitoring endpoint."""
+
+
+class GoogleCloudAssuredworkloadsV1FetchDbFrameworkComplianceReportResponse(_messages.Message):
+  r"""The response message for FetchDbFrameworkComplianceReport.
+
+  Enums:
+    FrameworkCategoriesValueListEntryValuesEnum:
+    FrameworkTypeValueValuesEnum: The type of the framework.
+    SupportedCloudProvidersValueListEntryValuesEnum:
+
+  Fields:
+    controlAssessmentDetails: The control assessment details of the framework.
+    framework: The name of the framework.
+    frameworkCategories: The list of framework categories supported.
+    frameworkDescription: The description of the framework.
+    frameworkDisplayName: Optional. The display name for the framework.
+    frameworkType: The type of the framework.
+    majorRevisionId: The latest major revision ID of the framework.
+    minorRevisionId: The latest minor revision ID of the latest major revision
+      of the framework.
+    name: The name of the framework compliance report.
+    supportedCloudProviders: The list of cloud providers that are supported by
+      the framework.
+    targetResourceDetails: The target resource details of the framework.
+    updateTime: Output only. The last updated time of the report.
+  """
+
+  class FrameworkCategoriesValueListEntryValuesEnum(_messages.Enum):
+    r"""FrameworkCategoriesValueListEntryValuesEnum enum type.
+
+    Values:
+      FRAMEWORK_CATEGORY_UNSPECIFIED: Default value. This value is unused.
+      INDUSTRY_DEFINED_STANDARD: An industry-defined framework.
+      ASSURED_WORKLOADS: An Assured Workloads framework.
+      DATA_SECURITY: A data security posture framework.
+      GOOGLE_BEST_PRACTICES: A Google's best practices framework.
+      CUSTOM_FRAMEWORK: A user-created framework.
+    """
+    FRAMEWORK_CATEGORY_UNSPECIFIED = 0
+    INDUSTRY_DEFINED_STANDARD = 1
+    ASSURED_WORKLOADS = 2
+    DATA_SECURITY = 3
+    GOOGLE_BEST_PRACTICES = 4
+    CUSTOM_FRAMEWORK = 5
+
+  class FrameworkTypeValueValuesEnum(_messages.Enum):
+    r"""The type of the framework.
+
+    Values:
+      FRAMEWORK_TYPE_UNSPECIFIED: Default value. This value is unused.
+      BUILT_IN: A framework that's provided and managed by Google.
+      CUSTOM: A framework that's created and managed by you.
+    """
+    FRAMEWORK_TYPE_UNSPECIFIED = 0
+    BUILT_IN = 1
+    CUSTOM = 2
+
+  class SupportedCloudProvidersValueListEntryValuesEnum(_messages.Enum):
+    r"""SupportedCloudProvidersValueListEntryValuesEnum enum type.
+
+    Values:
+      CLOUD_PROVIDER_UNSPECIFIED: Default value. This value is unused.
+      AWS: Amazon Web Services (AWS).
+      AZURE: Microsoft Azure.
+      GCP: Google Cloud.
+    """
+    CLOUD_PROVIDER_UNSPECIFIED = 0
+    AWS = 1
+    AZURE = 2
+    GCP = 3
+
+  controlAssessmentDetails = _messages.MessageField('GoogleCloudAssuredworkloadsV1ControlAssessmentDetails', 1)
+  framework = _messages.StringField(2)
+  frameworkCategories = _messages.EnumField('FrameworkCategoriesValueListEntryValuesEnum', 3, repeated=True)
+  frameworkDescription = _messages.StringField(4)
+  frameworkDisplayName = _messages.StringField(5)
+  frameworkType = _messages.EnumField('FrameworkTypeValueValuesEnum', 6)
+  majorRevisionId = _messages.IntegerField(7)
+  minorRevisionId = _messages.IntegerField(8)
+  name = _messages.StringField(9)
+  supportedCloudProviders = _messages.EnumField('SupportedCloudProvidersValueListEntryValuesEnum', 10, repeated=True)
+  targetResourceDetails = _messages.MessageField('GoogleCloudAssuredworkloadsV1TargetResourceDetails', 11, repeated=True)
+  updateTime = _messages.StringField(12)
+
+
+class GoogleCloudAssuredworkloadsV1ListDbControlComplianceSummariesResponse(_messages.Message):
+  r"""The response message for ListDBControlComplianceSummaries.
+
+  Fields:
+    dbControlComplianceSummaries: The list of control compliance details.
+    nextPageToken: Output only. The token to retrieve the next page of
+      results.
+  """
+
+  dbControlComplianceSummaries = _messages.MessageField('GoogleCloudAssuredworkloadsV1DbControlComplianceSummary', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
 
 
 class GoogleCloudAssuredworkloadsV1ListDbFindingSummariesResponse(_messages.Message):
@@ -922,6 +1718,20 @@ class GoogleCloudAssuredworkloadsV1ListDbFindingSummariesResponse(_messages.Mess
   """
 
   dbFindingSummaries = _messages.MessageField('GoogleCloudAssuredworkloadsV1DbFindingSummary', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
+class GoogleCloudAssuredworkloadsV1ListDbFrameworkComplianceSummariesResponse(_messages.Message):
+  r"""The response message for ListDbFrameworkComplianceSummariesResponse.
+
+  Fields:
+    dbFrameworkComplianceSummaries: The list of framework compliance
+      summaries.
+    nextPageToken: Output only. The token to retrieve the next page of
+      results.
+  """
+
+  dbFrameworkComplianceSummaries = _messages.MessageField('GoogleCloudAssuredworkloadsV1DbFrameworkComplianceSummary', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
 
 
@@ -962,6 +1772,16 @@ class GoogleCloudAssuredworkloadsV1ListWorkloadsResponse(_messages.Message):
 
   nextPageToken = _messages.StringField(1)
   workloads = _messages.MessageField('GoogleCloudAssuredworkloadsV1Workload', 2, repeated=True)
+
+
+class GoogleCloudAssuredworkloadsV1ManualCloudControlAssessmentDetails(_messages.Message):
+  r"""The details for a manual cloud control assessment.
+
+  Fields:
+    manualCloudControlGuide: The guide for assessing a cloud control manually.
+  """
+
+  manualCloudControlGuide = _messages.StringField(1, repeated=True)
 
 
 class GoogleCloudAssuredworkloadsV1MoveAnalysisGroup(_messages.Message):
@@ -1170,6 +1990,105 @@ class GoogleCloudAssuredworkloadsV1RevertArchivedResourceEventsResponse(_message
   """
 
   movedEventsCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+
+
+class GoogleCloudAssuredworkloadsV1Rule(_messages.Message):
+  r"""A rule in the cloud control.
+
+  Enums:
+    RuleActionTypesValueListEntryValuesEnum:
+
+  Fields:
+    celExpression: The rule's logic expression in Common Expression Language
+      (CEL).
+    description: Optional. The rule description. The maximum length is 2000
+      characters.
+    ruleActionTypes: Required. The functionality that's enabled by the rule.
+  """
+
+  class RuleActionTypesValueListEntryValuesEnum(_messages.Enum):
+    r"""RuleActionTypesValueListEntryValuesEnum enum type.
+
+    Values:
+      RULE_ACTION_TYPE_UNSPECIFIED: Default value. This value is unused.
+      RULE_ACTION_TYPE_PREVENTIVE: The rule is intended to prevent non-
+        compliance.
+      RULE_ACTION_TYPE_DETECTIVE: The rule is intended to detect non-
+        compliance.
+      RULE_ACTION_TYPE_AUDIT: The rule is intended to audit non-compliance.
+    """
+    RULE_ACTION_TYPE_UNSPECIFIED = 0
+    RULE_ACTION_TYPE_PREVENTIVE = 1
+    RULE_ACTION_TYPE_DETECTIVE = 2
+    RULE_ACTION_TYPE_AUDIT = 3
+
+  celExpression = _messages.MessageField('GoogleCloudAssuredworkloadsV1CELExpression', 1)
+  description = _messages.StringField(2)
+  ruleActionTypes = _messages.EnumField('RuleActionTypesValueListEntryValuesEnum', 3, repeated=True)
+
+
+class GoogleCloudAssuredworkloadsV1SimilarControls(_messages.Message):
+  r"""The similar controls.
+
+  Fields:
+    controlId: The ID of the control.
+    framework: The name of the framework.
+  """
+
+  controlId = _messages.StringField(1)
+  framework = _messages.StringField(2)
+
+
+class GoogleCloudAssuredworkloadsV1StringList(_messages.Message):
+  r"""A list of strings for the parameter value.
+
+  Fields:
+    values: Required. The strings in the list.
+  """
+
+  values = _messages.StringField(1, repeated=True)
+
+
+class GoogleCloudAssuredworkloadsV1TargetResourceDetails(_messages.Message):
+  r"""The details for a target resource.
+
+  Fields:
+    createTime: The create time of the target resource.
+    frameworkDeployment: The framework deployment name for the target
+      resource. For example, `organizations/{organization_id}/locations/{locat
+      ion}/frameworkDeployments/{framework_deployment_id}`
+    majorRevisionId: The major revision ID of the framework for the target
+      resource.
+    minorRevisionId: The minor revision ID of the framework for the target
+      resource.
+    targetResource: The target resource. For example,
+      `organizations/1234567890`, `projects/1234567890`, or
+      `folders/1234567890`.
+    targetResourceDisplayName: The display name of the target resource. For
+      example, `google.com`, `staging-project`, or `development-folder`.
+    updateTime: The update time of the target resource.
+  """
+
+  createTime = _messages.StringField(1)
+  frameworkDeployment = _messages.StringField(2)
+  majorRevisionId = _messages.IntegerField(3)
+  minorRevisionId = _messages.IntegerField(4)
+  targetResource = _messages.StringField(5)
+  targetResourceDisplayName = _messages.StringField(6)
+  updateTime = _messages.StringField(7)
+
+
+class GoogleCloudAssuredworkloadsV1Trend(_messages.Message):
+  r"""The trend of a compliance metric.
+
+  Fields:
+    duration: Output only. The duration for the trend.
+    valuePercent: Output only. The trend value as a percentage. The value can
+      be positive or negative.
+  """
+
+  duration = _messages.StringField(1)
+  valuePercent = _messages.FloatField(2)
 
 
 class GoogleCloudAssuredworkloadsV1UpdateDetails(_messages.Message):
@@ -2321,6 +3240,18 @@ encoding.AddCustomJsonEnumMapping(
 encoding.AddCustomJsonEnumMapping(
     StandardQueryParameters.FXgafvValueValuesEnum, '_2', '2')
 encoding.AddCustomJsonFieldMapping(
+    AssuredworkloadsFoldersLocationsDbFrameworkComplianceReportsAggregateRequest, 'interval_endTime', 'interval.endTime')
+encoding.AddCustomJsonFieldMapping(
+    AssuredworkloadsFoldersLocationsDbFrameworkComplianceReportsAggregateRequest, 'interval_startTime', 'interval.startTime')
+encoding.AddCustomJsonFieldMapping(
+    AssuredworkloadsOrganizationsLocationsDbFrameworkComplianceReportsAggregateRequest, 'interval_endTime', 'interval.endTime')
+encoding.AddCustomJsonFieldMapping(
+    AssuredworkloadsOrganizationsLocationsDbFrameworkComplianceReportsAggregateRequest, 'interval_startTime', 'interval.startTime')
+encoding.AddCustomJsonFieldMapping(
     AssuredworkloadsOrganizationsLocationsWorkloadsViolationsListRequest, 'interval_endTime', 'interval.endTime')
 encoding.AddCustomJsonFieldMapping(
     AssuredworkloadsOrganizationsLocationsWorkloadsViolationsListRequest, 'interval_startTime', 'interval.startTime')
+encoding.AddCustomJsonFieldMapping(
+    AssuredworkloadsProjectsLocationsDbFrameworkComplianceReportsAggregateRequest, 'interval_endTime', 'interval.endTime')
+encoding.AddCustomJsonFieldMapping(
+    AssuredworkloadsProjectsLocationsDbFrameworkComplianceReportsAggregateRequest, 'interval_startTime', 'interval.startTime')

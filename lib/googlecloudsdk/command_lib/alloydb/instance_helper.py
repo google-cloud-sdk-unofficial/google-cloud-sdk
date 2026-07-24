@@ -936,8 +936,6 @@ def ParseAutoScalingConfig(alloydb_messages, instance_ref, release_track, args):
   Returns:
     A fully-constructed alloydb_messages.AutoScalingConfig object.
   """
-  if args.enable_autoscaler is not None and not args.enable_autoscaler:
-    return None
   auto_scaling_config = alloydb_messages.AutoScalingConfig()
   if instance_ref and release_track:
     client = api_util.AlloyDBClient(release_track)
@@ -971,9 +969,7 @@ def ParseAutoScalingConfig(alloydb_messages, instance_ref, release_track, args):
         args.autoscaler_target_cpu_usage
     )
   if args.enable_autoscaler is not None:
-    auto_scaling_config.policy.enabled = (
-        args.enable_autoscaler or auto_scaling_config.policy.enabled
-    )
+    auto_scaling_config.policy.enabled = args.enable_autoscaler
   if instance_ref:
     # Deleting, disabling, and enabling schedules are only for the update
     # command.

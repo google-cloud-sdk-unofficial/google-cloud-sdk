@@ -2452,6 +2452,15 @@ class GoogleCloudPolicysimulatorV1alphaIamV3PrincipalAccessBoundaryPolicyRule(_m
       policy rule. Must be less than or equal to 256 characters.
     effect: Required. The access relationship of principals to the resources
       in this rule.
+    excludedResources: Optional. A list of Resource Manager resources. If a
+      resource is listed in the rule, then the rule does not apply for that
+      resource and its descendants. The number of excluded resources in this
+      field is limited to 500 across all rules in the policy. The following
+      resource types are supported: * Organizations, such as
+      `//cloudresourcemanager.googleapis.com/organizations/123`. * Folders,
+      such as `//cloudresourcemanager.googleapis.com/folders/123`. * Projects,
+      such as `//cloudresourcemanager.googleapis.com/projects/123` or
+      `//cloudresourcemanager.googleapis.com/projects/my-project-id`.
     resources: Required. A list of Resource Manager resources. If a resource
       is listed in the rule, then the rule applies for that resource and its
       descendants. The number of resources in a policy is limited to 500
@@ -2470,13 +2479,16 @@ class GoogleCloudPolicysimulatorV1alphaIamV3PrincipalAccessBoundaryPolicyRule(_m
     Values:
       EFFECT_UNSPECIFIED: Effect unspecified.
       ALLOW: Allows access to the resources in this rule.
+      DENY: Denies access to the resources in this rule.
     """
     EFFECT_UNSPECIFIED = 0
     ALLOW = 1
+    DENY = 2
 
   description = _messages.StringField(1)
   effect = _messages.EnumField('EffectValueValuesEnum', 2)
-  resources = _messages.StringField(3, repeated=True)
+  excludedResources = _messages.StringField(3, repeated=True)
+  resources = _messages.StringField(4, repeated=True)
 
 
 class GoogleCloudPolicysimulatorV1alphaIamV3RegionalAccessBoundaryPolicy(_messages.Message):

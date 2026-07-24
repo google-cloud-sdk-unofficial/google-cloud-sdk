@@ -38,8 +38,10 @@ def _RunUpdateV2(cmd, args):
     args: the args passed to the command
   """
 
-  is_fleet_update = args.fleet_default_member_config or getattr(
-      args, 'modernization_compatibility', None
+  is_fleet_update = (
+      args.fleet_default_member_config
+      or getattr(args, 'modernization_compatibility', None)
+      or getattr(args, 'modernization_strategy', None)
   )
   memberships = []
   resource = False
@@ -159,6 +161,18 @@ def _RunUpdateV2(cmd, args):
       spec.modernizationCompatibility = mod_compat_enum.VALIDATION_DISABLED
     f.spec = cmd.messages.CommonFeatureSpec(mesh=spec)
     update_mask.append('spec.mesh.modernizationCompatibility')
+  elif getattr(args, 'modernization_strategy', None):
+    spec = cmd.messages.ServiceMeshFeatureSpec()
+    mod_strat_enum = (
+        cmd.messages.ServiceMeshFeatureSpec.ModernizationStrategyValueValuesEnum
+    )
+    match args.modernization_strategy:
+      case 'automatic':
+        spec.modernizationStrategy = mod_strat_enum.AUTOMATIC
+      case 'deferred':
+        spec.modernizationStrategy = mod_strat_enum.DEFERRED
+    f.spec = cmd.messages.CommonFeatureSpec(mesh=spec)
+    update_mask.append('spec.mesh.modernizationStrategy')
 
   if update_mask:
     cmd.Update(update_mask, f)
@@ -174,8 +188,10 @@ def _RunUpdate(cmd, args):
     args: the args passed to the command
   """
 
-  is_fleet_update = args.fleet_default_member_config or getattr(
-      args, 'modernization_compatibility', None
+  is_fleet_update = (
+      args.fleet_default_member_config
+      or getattr(args, 'modernization_compatibility', None)
+      or getattr(args, 'modernization_strategy', None)
   )
   memberships = []
   resource = False
@@ -306,6 +322,18 @@ def _RunUpdate(cmd, args):
       spec.modernizationCompatibility = mod_compat_enum.VALIDATION_DISABLED
     f.spec = cmd.messages.CommonFeatureSpec(mesh=spec)
     update_mask.append('spec.mesh.modernizationCompatibility')
+  elif getattr(args, 'modernization_strategy', None):
+    spec = cmd.messages.ServiceMeshFeatureSpec()
+    mod_strat_enum = (
+        cmd.messages.ServiceMeshFeatureSpec.ModernizationStrategyValueValuesEnum
+    )
+    match args.modernization_strategy:
+      case 'automatic':
+        spec.modernizationStrategy = mod_strat_enum.AUTOMATIC
+      case 'deferred':
+        spec.modernizationStrategy = mod_strat_enum.DEFERRED
+    f.spec = cmd.messages.CommonFeatureSpec(mesh=spec)
+    update_mask.append('spec.mesh.modernizationStrategy')
 
   cmd.Update(update_mask, f)
 # LINT.ThenChange(:update_v2)
@@ -352,6 +380,15 @@ class UpdateAlpha(features_base.UpdateCommand, mf_base.UpdateCommand):
         To set the modernization compatibility of the mesh, run:
 
           $ {command} --modernization-compatibility=validation-enabled""",
+    )
+    args_group.add_argument(
+        '--modernization-strategy',
+        choices=['automatic', 'deferred'],
+        help="""The modernization strategy of the mesh.
+
+        To set the modernization strategy of the mesh, run:
+
+          $ {command} --modernization-strategy=automatic""",
     )
 
     membership_group = args_group.add_group(

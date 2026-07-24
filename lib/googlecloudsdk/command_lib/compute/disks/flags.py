@@ -18,6 +18,7 @@
 
 import argparse
 from googlecloudsdk.calliope import actions
+from googlecloudsdk.calliope import arg_parsers as calliope_arg_parsers
 from googlecloudsdk.command_lib.compute import completers as compute_completers
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
@@ -274,6 +275,19 @@ def AddBulkCreateArgs(parser):
                             compute_flags.REGION_PROPERTY_EXPLANATION))
 
 
+def _ParseSnapshotGroupReplicaZones(value):
+  """Parses and validates the replica-zones list in snapshot-group-params."""
+  try:
+    return calliope_arg_parsers.ArgList(min_length=2, max_length=2)(value)
+  except calliope_arg_parsers.ArgumentTypeError as e:
+    if str(e) in ('not enough args', 'too many args'):
+      raise calliope_arg_parsers.ArgumentTypeError(
+          'replica-zones must specify exactly 2 zones (e.g.,'
+          ' replica-zones=ZONE1,ZONE2).'
+      )
+    raise
+
+
 def AddBulkCreateArgsAlpha(parser):
   """Adds bulk create specific arguments to parser."""
   parser.add_argument(
@@ -285,6 +299,20 @@ def AddBulkCreateArgsAlpha(parser):
       # This argument is optional because we now support bulk insert from
       # multiple source types.
       required=False)
+
+  parser.add_argument(
+      '--snapshot-group-params',
+      type=calliope_arg_parsers.ArgDict(
+          spec={
+              'type': str,
+              'replica-zones': _ParseSnapshotGroupReplicaZones,
+          }
+      ),
+      help="""\
+      Parameters of the Snapshot Group to restore from. Allows specifying
+      the disk type and/or replica zones for the restored disks.
+      """,
+  )
 
   help_text = """Target {0} of the created disks, which currently must be the same as the source {0}. {1}"""
   scope_parser = parser.add_mutually_exclusive_group(required=True)

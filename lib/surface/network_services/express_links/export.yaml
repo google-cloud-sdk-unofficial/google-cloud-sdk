@@ -1,0 +1,24 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    Export an express link.
+  description: |
+    Export an express link to a YAML file.
+  examples: |
+      To export an express link named "my-express-link" to a YAML file, run:
+
+        $ {command} my-express-link --destination=my-express-link.yaml --location=global
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:expressLink
+    help_text: |
+      Name of the express link to export.
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  collection: networkservices.projects.locations.expressLinks

@@ -24,22 +24,17 @@
 import collections
 import heapq
 from itertools import chain
-from typing import List, Tuple, Set, Deque, Optional
+from typing import Deque, Dict, List, Optional, Set, Tuple
 
-from dulwich.diff_tree import (
+from .diff_tree import (
     RENAME_CHANGE_TYPES,
+    RenameDetector,
+    TreeChange,
     tree_changes,
     tree_changes_for_merge,
-    RenameDetector,
 )
-from dulwich.errors import (
-    MissingCommitError,
-)
-from dulwich.objects import (
-    Commit,
-    Tag,
-    ObjectID,
-)
+from .errors import MissingCommitError
+from .objects import Commit, ObjectID, Tag
 
 ORDER_DATE = "date"
 ORDER_TOPO = "topo"
@@ -53,11 +48,11 @@ _MAX_EXTRA_COMMITS = 5
 class WalkEntry:
     """Object encapsulating a single result from a walk."""
 
-    def __init__(self, walker, commit):
+    def __init__(self, walker, commit) -> None:
         self.commit = commit
         self._store = walker.store
         self._get_parents = walker.get_parents
-        self._changes = {}
+        self._changes: Dict[str, List[TreeChange]] = {}
         self._rename_detector = walker.rename_detector
 
     def changes(self, path_prefix=None):
@@ -121,17 +116,14 @@ class WalkEntry:
             self._changes[path_prefix] = cached
         return self._changes[path_prefix]
 
-    def __repr__(self):
-        return "<WalkEntry commit={}, changes={!r}>".format(
-            self.commit.id,
-            self.changes(),
-        )
+    def __repr__(self) -> str:
+        return f"<WalkEntry commit={self.commit.id}, changes={self.changes()!r}>"
 
 
 class _CommitTimeQueue:
     """Priority queue of WalkEntry objects by commit time."""
 
-    def __init__(self, walker: "Walker"):
+    def __init__(self, walker: "Walker") -> None:
         self._walker = walker
         self._store = walker.store
         self._get_parents = walker.get_parents
@@ -244,7 +236,7 @@ class Walker:
         store,
         include: List[bytes],
         exclude: Optional[List[bytes]] = None,
-        order: str = 'date',
+        order: str = "date",
         reverse: bool = False,
         max_entries: Optional[int] = None,
         paths: Optional[List[bytes]] = None,
@@ -254,7 +246,7 @@ class Walker:
         until: Optional[int] = None,
         get_parents=lambda commit: commit.parents,
         queue_cls=_CommitTimeQueue,
-    ):
+    ) -> None:
         """Constructor.
 
         Args:

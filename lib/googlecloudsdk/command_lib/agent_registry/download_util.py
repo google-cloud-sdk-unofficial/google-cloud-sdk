@@ -76,7 +76,7 @@ def Download(
     )
     sys.exit(1)
 
-  download_url = f'{client.url}v1alpha/{revision_res_name}?alt=media'
+  download_url = f'{client.url}download/v1alpha/{revision_res_name}?alt=media'
 
   if file_res.sizeBytes < parallelism:
     parallelism = 1

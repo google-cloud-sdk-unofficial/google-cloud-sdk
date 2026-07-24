@@ -1,0 +1,32 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    Update an express link.
+  description: |
+    Update an express link with the given name.
+  examples: |
+    Update an express link with the name "my-express-link" and location "global".
+
+      $ {command} my-express-link --location=global
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:expressLink
+    help_text: |
+      Name of the express link to be updated.
+  params:
+  - arg_name: description
+    api_field: expressLink.description
+    help_text: The description for the express link.
+
+async:
+  collection: networkservices.projects.locations.operations
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  collection: networkservices.projects.locations.expressLinks
+  method: patch

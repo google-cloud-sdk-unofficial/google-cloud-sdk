@@ -50,13 +50,27 @@ Container Flags
   The following flags apply to the container.
 """
   group = base.ArgumentGroup(help=help_text)
-  group.AddArgument(
-      flags.SourceAndImageFlags(
-          mutex=False, no_build_enabled=True, release_track=release_track
-      )
-  )
+  group.AddArgument(flags.SourceArg())
   group.AddArgument(flags.PortArg())
   group.AddArgument(flags.MutexBuildEnvVarsFlags())
+  group.AddArgument(flags.MutexEnvVarsFlags(release_track=release_track))
+  group.AddArgument(flags.MemoryFlag())
+  group.AddArgument(flags.CpuFlag())
+  group.AddArgument(flags.ArgsFlag())
+  group.AddArgument(flags.SecretsFlags())
+  group.AddArgument(flags.AddCommandAndFunctionFlag())
+  group.AddArgument(flags.DependsOnFlag())
+  group.AddArgument(flags.AddVolumeMountFlag())
+  group.AddArgument(flags.RemoveVolumeMountFlag())
+  group.AddArgument(flags.ClearVolumeMountsFlag())
+  group.AddArgument(flags.StartupProbeFlag())
+  group.AddArgument(flags.SandboxLauncherFlag(hidden=True))
+  group.AddArgument(flags.Http2Flag())
+  group.AddArgument(flags.WorkdirFlag())
+  group.AddArgument(flags.BuildServiceAccountMutexGroup())
+  group.AddArgument(flags.LivenessProbeFlag())
+  group.AddArgument(flags.ReadinessProbeFlag())
+  group.AddArgument(flags.GpuFlag())
   return group
 
 
@@ -77,7 +91,7 @@ def NecessaryChangesForServicesDevSync(
   """
   changes = [
       config_changes.SetAnnotationChange(
-          'run.googleapis.com/ssh-enabled', 'true'
+          service.SERVICE_SSH_ENABLED_ANNOTATION, 'true'
       ),
   ]
   if getattr(args, 'execution_environment', None) is None:
@@ -133,7 +147,39 @@ class Sync(base.Command):
         ),
     )
 
+    flags.AddAllowUnauthenticatedFlag(parser)
+    flags.AddAllowUnencryptedBuildFlag(parser)
+    flags.AddBinAuthzPolicyFlags(parser)
+    flags.AddBinAuthzBreakglassFlag(parser)
+    flags.AddCloudSQLFlags(parser)
+    flags.AddCmekKeyFlag(parser)
+    flags.AddCmekKeyRevocationActionTypeFlag(parser)
+    flags.AddCpuThrottlingFlag(parser)
+    flags.AddCustomAudiencesFlag(parser)
+    flags.AddDefaultUrlFlag(parser)
+    flags.AddDeployHealthCheckFlag(parser)
+    flags.AddDescriptionFlag(parser)
+    flags.AddEgressSettingsFlag(parser)
+    flags.AddEncryptionKeyShutdownHoursFlag(parser)
+    flags.AddGpuTypeFlag(parser)
+    flags.GpuZonalRedundancyFlag(parser)
+    flags.AddRevisionSuffixArg(parser)
+    flags.AddSandboxArg(parser)
+    flags.AddSessionAffinityFlag(parser)
+    flags.AddStartupCpuBoostFlag(parser)
+    flags.AddVpcConnectorArgs(parser)
+    flags.AddVpcNetworkGroupFlagsForUpdate(parser)
+    flags.RemoveContainersFlag().AddToParser(parser)
+    flags.AddVolumesFlags(parser, cls.ReleaseTrack())
+    flags.AddServiceMinMaxInstancesFlag(parser)
+    flags.AddInvokerIamCheckFlag(parser)
+    flags.AddScalingFlag(parser, release_track=cls.ReleaseTrack())
+
+    # Flags specific to connecting to a cluster
+    flags.AddEndpointVisibilityEnum(parser)
     flags.CONFIG_MAP_FLAGS.AddToParser(parser)
+
+    # Flags not specific to any platform
     service_presentation = presentation_specs.ResourcePresentationSpec(
         'SERVICE',
         resource_args.GetServiceResourceSpec(prompt=True),
@@ -141,9 +187,22 @@ class Sync(base.Command):
         required=True,
         prefixes=False,
     )
+    if cls.ReleaseTrack() != base.ReleaseTrack.GA:
+      flags.AddDryRunFlag(parser)
+    flags.AddConcurrencyFlag(parser)
+    flags.AddTimeoutFlag(parser)
+    flags.AddAsyncFlag(parser)
+    flags.AddLabelsFlags(parser)
+    flags.AddGeneralAnnotationFlags(parser)
+    flags.AddMinInstancesFlag(parser)
+    flags.AddMaxInstancesFlag(parser)
+    flags.AddNoTrafficFlag(parser)
+    flags.AddDeployTagFlag(parser)
     flags.AddServiceAccountFlag(parser)
+    flags.AddClientNameAndVersionFlags(parser)
     flags.AddIngressFlag(parser)
-    flags.AddInvokerIamCheckFlag(parser)
+    flags.AddRegionsArg(parser)
+    flags.AddIapFlag(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
 
   @classmethod
@@ -185,6 +244,8 @@ class Sync(base.Command):
       return client.GetService(service_ref)
 
   def Run(self, args):
+    flags.ValidatePublicFlags(args)
+
     service_ref = args.CONCEPTS.service.Parse()
     flags.ValidateResource(service_ref)
     args.release_track = self.ReleaseTrack()

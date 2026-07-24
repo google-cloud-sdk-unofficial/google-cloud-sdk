@@ -17437,6 +17437,36 @@ class GoogleCloudDialogflowV2Participant(_messages.Message):
   sipRecordingMediaLabel = _messages.StringField(6)
 
 
+class GoogleCloudDialogflowV2ProbeDetails(_messages.Message):
+  r"""The probe details of Sip Trunk peer hostname.
+
+  Enums:
+    ProbeStatusValueValuesEnum: Output only. Result of the probe.
+
+  Fields:
+    initTime: Output only. When the options probe was started.
+    optionsLatency: Output only. Duration between OPTIONS send and OPTIONS 200
+      received.
+    probeStatus: Output only. Result of the probe.
+  """
+
+  class ProbeStatusValueValuesEnum(_messages.Enum):
+    r"""Output only. Result of the probe.
+
+    Values:
+      PROBE_STATUS_UNSPECIFIED: Peer hostname ping state is not specified.
+      PROBE_STATUS_SUCCESS: Peer hostname ping succeeded.
+      PROBE_STATUS_FAILED: Peer hostname ping failed.
+    """
+    PROBE_STATUS_UNSPECIFIED = 0
+    PROBE_STATUS_SUCCESS = 1
+    PROBE_STATUS_FAILED = 2
+
+  initTime = _messages.StringField(1)
+  optionsLatency = _messages.StringField(2)
+  probeStatus = _messages.EnumField('ProbeStatusValueValuesEnum', 3)
+
+
 class GoogleCloudDialogflowV2QueryInput(_messages.Message):
   r"""Represents the query input. It can contain either: 1. An audio config
   which instructs the speech recognizer how to process the speech audio. 2. A
@@ -18640,23 +18670,130 @@ class GoogleCloudDialogflowV2SipConfig(_messages.Message):
   maxAudioRecordingDuration = _messages.StringField(7)
 
 
+class GoogleCloudDialogflowV2SipHostname(_messages.Message):
+  r"""Represents a peer hostname for SIP Trunk.
+
+  Enums:
+    ConnectionStateValueValuesEnum: Output only. State of the connection.
+
+  Fields:
+    connectionState: Output only. State of the connection.
+    enabledSipPing: Output only. Peer hostname enabled for SIP ping.
+    errorDetails: Output only. The error details for the connection. Only
+      populated when authentication errors occur.
+    peerHostname: Required. Peer hostname name.
+    peerSocketAddress: Output only. The peer_socket address of the partner SBC
+      pinged.
+    pingInterval: Output only. How often the sip ping should occur.
+    probeDetails: Output only. The details from the options probe.
+  """
+
+  class ConnectionStateValueValuesEnum(_messages.Enum):
+    r"""Output only. State of the connection.
+
+    Values:
+      CONNECTION_STATE_UNSPECIFIED: SBC hostname connection state is Not
+        specified.
+      CONNECTED: SBC hostname connection is connected.
+      DISCONNECTED: SBC hostname connection is disconnected.
+      AUTHENTICATION_FAILED: SBC hostname connection has authentication error.
+      KEEPALIVE: SBC hostname connection is keepalive.
+    """
+    CONNECTION_STATE_UNSPECIFIED = 0
+    CONNECTED = 1
+    DISCONNECTED = 2
+    AUTHENTICATION_FAILED = 3
+    KEEPALIVE = 4
+
+  connectionState = _messages.EnumField('ConnectionStateValueValuesEnum', 1)
+  enabledSipPing = _messages.BooleanField(2)
+  errorDetails = _messages.MessageField('GoogleCloudDialogflowV2SipHostnameHostnameErrorDetails', 3)
+  peerHostname = _messages.StringField(4)
+  peerSocketAddress = _messages.StringField(5)
+  pingInterval = _messages.StringField(6)
+  probeDetails = _messages.MessageField('GoogleCloudDialogflowV2ProbeDetails', 7)
+
+
+class GoogleCloudDialogflowV2SipHostnameHostnameErrorDetails(_messages.Message):
+  r"""The error details of Sip Trunk hostnameconnection authentication.
+
+  Enums:
+    CertificateStateValueValuesEnum: Output only. The status of the
+      certificate authentication.
+
+  Fields:
+    certificateState: Output only. The status of the certificate
+      authentication.
+    errorMessage: Output only. The error message provided from SIP trunking
+      auth service
+  """
+
+  class CertificateStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The status of the certificate authentication.
+
+    Values:
+      HOSTNAME_CERTIFICATE_STATE_UNSPECIFIED: Certificate state is not
+        specified.
+      VALID: Certificate is valid.
+      INVALID: Catch all for any error not specified.
+      EXPIRED: Certificate leaf node has expired.
+      HOSTNAME_NOT_FOUND: There is no hostname defined to authenticate in
+        SipTrunkingServer.
+      UNAUTHENTICATED: No path found from the leaf certificate to any root.
+      TRUST_STORE_NOT_FOUND: Trust store does not exist.
+      HOSTNAME_INVALID_FORMAT: Hostname has invalid format.
+      QUOTA_EXCEEDED: Certificate has exhausted its quota.
+    """
+    HOSTNAME_CERTIFICATE_STATE_UNSPECIFIED = 0
+    VALID = 1
+    INVALID = 2
+    EXPIRED = 3
+    HOSTNAME_NOT_FOUND = 4
+    UNAUTHENTICATED = 5
+    TRUST_STORE_NOT_FOUND = 6
+    HOSTNAME_INVALID_FORMAT = 7
+    QUOTA_EXCEEDED = 8
+
+  certificateState = _messages.EnumField('CertificateStateValueValuesEnum', 1)
+  errorMessage = _messages.StringField(2)
+
+
 class GoogleCloudDialogflowV2SipTrunk(_messages.Message):
   r"""SipTrunk is the resource that represents a SIP trunk to connect to
   Google Telephony platform SIP trunking service.
+
+  Enums:
+    GoogleRootCertFileValueValuesEnum: Optional. The root certificate file to
+      use for this SIP trunk.
 
   Fields:
     connections: Output only. Connections of the SIP trunk.
     displayName: Optional. Human readable alias for this trunk.
     expectedHostname: Required. The expected hostnames in the peer certificate
       from partner that is used for TLS authentication.
+    googleRootCertFile: Optional. The root certificate file to use for this
+      SIP trunk.
     name: Identifier. The unique identifier of the SIP trunk. Format:
       `projects//locations//sipTrunks/`.
+    peerHostnames: Required. Peer hostnames of the SIP trunk.
   """
+
+  class GoogleRootCertFileValueValuesEnum(_messages.Enum):
+    r"""Optional. The root certificate file to use for this SIP trunk.
+
+    Values:
+      CERT_FILE_UNSPECIFIED: Unspecified root certificate file.
+      EXTERNAL_PRIVATE_CA: Use external private CA.
+    """
+    CERT_FILE_UNSPECIFIED = 0
+    EXTERNAL_PRIVATE_CA = 1
 
   connections = _messages.MessageField('GoogleCloudDialogflowV2Connection', 1, repeated=True)
   displayName = _messages.StringField(2)
   expectedHostname = _messages.StringField(3, repeated=True)
-  name = _messages.StringField(4)
+  googleRootCertFile = _messages.EnumField('GoogleRootCertFileValueValuesEnum', 4)
+  name = _messages.StringField(5)
+  peerHostnames = _messages.MessageField('GoogleCloudDialogflowV2SipHostname', 6, repeated=True)
 
 
 class GoogleCloudDialogflowV2SmartReplyAnswer(_messages.Message):

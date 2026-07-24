@@ -18,27 +18,28 @@
 # License, Version 2.0.
 #
 
-"""Bundle format support.
-"""
+"""Bundle format support."""
 
-from typing import Dict, List, Tuple, Optional, Union, Sequence
+from typing import Dict, List, Optional, Sequence, Tuple, Union
+
 from .pack import PackData, write_pack_data
 
 
 class Bundle:
+    version: Optional[int]
 
-    version: Optional[int] = None
+    capabilities: Dict[str, str]
+    prerequisites: List[Tuple[bytes, str]]
+    references: Dict[str, bytes]
+    pack_data: Union[PackData, Sequence[bytes]]
 
-    capabilities: Dict[str, str] = {}
-    prerequisites: List[Tuple[bytes, str]] = []
-    references: Dict[str, bytes] = {}
-    pack_data: Union[PackData, Sequence[bytes]] = []
-
-    def __repr__(self):
-        return (f"<{type(self).__name__}(version={self.version}, "
-                f"capabilities={self.capabilities}, "
-                f"prerequisites={self.prerequisites}, "
-                f"references={self.references})>")
+    def __repr__(self) -> str:
+        return (
+            f"<{type(self).__name__}(version={self.version}, "
+            f"capabilities={self.capabilities}, "
+            f"prerequisites={self.prerequisites}, "
+            f"references={self.references})>"
+        )
 
     def __eq__(self, other):
         if not isinstance(other, type(self)):
@@ -120,9 +121,13 @@ def write_bundle(f, bundle):
             if value is not None:
                 f.write(b"=" + value.encode("utf-8"))
             f.write(b"\n")
-    for (obj_id, comment) in bundle.prerequisites:
+    for obj_id, comment in bundle.prerequisites:
         f.write(b"-%s %s\n" % (obj_id, comment.encode("utf-8")))
     for ref, obj_id in bundle.references.items():
         f.write(b"%s %s\n" % (obj_id, ref))
     f.write(b"\n")
-    write_pack_data(f.write, num_records=len(bundle.pack_data), records=bundle.pack_data.iter_unpacked())
+    write_pack_data(
+        f.write,
+        num_records=len(bundle.pack_data),
+        records=bundle.pack_data.iter_unpacked(),
+    )

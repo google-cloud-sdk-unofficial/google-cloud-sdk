@@ -32,7 +32,7 @@ import binascii
 class ChecksumMismatch(Exception):
     """A checksum didn't match the expected contents."""
 
-    def __init__(self, expected, got, extra=None):
+    def __init__(self, expected, got, extra=None) -> None:
         if len(expected) == 20:
             expected = binascii.hexlify(expected)
         if len(got) == 20:
@@ -43,12 +43,12 @@ class ChecksumMismatch(Exception):
         if self.extra is None:
             Exception.__init__(
                 self,
-                "Checksum mismatch: Expected {}, got {}".format(expected, got),
+                f"Checksum mismatch: Expected {expected}, got {got}",
             )
         else:
             Exception.__init__(
                 self,
-                "Checksum mismatch: Expected {}, got {}; {}".format(expected, got, extra),
+                f"Checksum mismatch: Expected {expected}, got {got}; {extra}",
             )
 
 
@@ -63,8 +63,8 @@ class WrongObjectException(Exception):
 
     type_name: str
 
-    def __init__(self, sha, *args, **kwargs):
-        Exception.__init__(self, "{} is not a {}".format(sha, self.type_name))
+    def __init__(self, sha, *args, **kwargs) -> None:
+        Exception.__init__(self, f"{sha} is not a {self.type_name}")
 
 
 class NotCommitError(WrongObjectException):
@@ -92,9 +92,9 @@ class NotBlobError(WrongObjectException):
 
 
 class MissingCommitError(Exception):
-    """Indicates that a commit was not found in the repository"""
+    """Indicates that a commit was not found in the repository."""
 
-    def __init__(self, sha, *args, **kwargs):
+    def __init__(self, sha, *args, **kwargs) -> None:
         self.sha = sha
         Exception.__init__(self, "%s is not in the revision store" % sha)
 
@@ -102,28 +102,28 @@ class MissingCommitError(Exception):
 class ObjectMissing(Exception):
     """Indicates that a requested object is missing."""
 
-    def __init__(self, sha, *args, **kwargs):
+    def __init__(self, sha, *args, **kwargs) -> None:
         Exception.__init__(self, "%s is not in the pack" % sha)
 
 
 class ApplyDeltaError(Exception):
     """Indicates that applying a delta failed."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         Exception.__init__(self, *args, **kwargs)
 
 
 class NotGitRepository(Exception):
     """Indicates that no Git repository was found."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         Exception.__init__(self, *args, **kwargs)
 
 
 class GitProtocolError(Exception):
     """Git protocol exception."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         Exception.__init__(self, *args, **kwargs)
 
     def __eq__(self, other):
@@ -134,21 +134,10 @@ class SendPackError(GitProtocolError):
     """An error occurred during send_pack."""
 
 
-# N.B.: UpdateRefsError is no longer used and will be result in
-# Dulwich 0.21.
-# remove: >= 0.21
-class UpdateRefsError(GitProtocolError):
-    """The server reported errors updating refs."""
-
-    def __init__(self, *args, **kwargs):
-        self.ref_status = kwargs.pop("ref_status")
-        super().__init__(*args, **kwargs)
-
-
 class HangupException(GitProtocolError):
     """Hangup exception."""
 
-    def __init__(self, stderr_lines=None):
+    def __init__(self, stderr_lines=None) -> None:
         if stderr_lines:
             super().__init__(
                 "\n".join(
@@ -156,9 +145,7 @@ class HangupException(GitProtocolError):
                 )
             )
         else:
-            super().__init__(
-                "The remote server unexpectedly closed the connection."
-            )
+            super().__init__("The remote server unexpectedly closed the connection.")
         self.stderr_lines = stderr_lines
 
     def __eq__(self, other):
@@ -168,14 +155,12 @@ class HangupException(GitProtocolError):
 class UnexpectedCommandError(GitProtocolError):
     """Unexpected command received in a proto line."""
 
-    def __init__(self, command):
+    def __init__(self, command) -> None:
         if command is None:
             command = "flush-pkt"
         else:
             command = "command %s" % command
-        super().__init__(
-            "Protocol got unexpected %s" % command
-        )
+        super().__init__("Protocol got unexpected %s" % command)
 
 
 class FileFormatException(Exception):

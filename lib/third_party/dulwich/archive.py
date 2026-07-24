@@ -19,17 +19,15 @@
 # License, Version 2.0.
 #
 
-"""Generates tarballs for Git trees.
-
-"""
+"""Generates tarballs for Git trees."""
 
 import posixpath
 import stat
-import tarfile
 import struct
-from os import SEEK_END
-from io import BytesIO
+import tarfile
 from contextlib import closing
+from io import BytesIO
+from os import SEEK_END
 
 
 class ChunkedBytesIO:
@@ -43,7 +41,7 @@ class ChunkedBytesIO:
             list_of_bytestrings)
     """
 
-    def __init__(self, contents):
+    def __init__(self, contents) -> None:
         self.contents = contents
         self.pos = (0, 0)
 
@@ -110,7 +108,7 @@ def tar_stream(store, tree, mtime, prefix=b"", format=""):
 
             info = tarfile.TarInfo()
             # tarfile only works with ascii.
-            info.name = entry_abspath.decode('utf-8', 'surrogateescape')
+            info.name = entry_abspath.decode("utf-8", "surrogateescape")
             info.size = blob.raw_length()
             info.mode = entry.mode
             info.mtime = mtime

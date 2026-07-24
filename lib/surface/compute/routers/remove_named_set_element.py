@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.compute.routers import route_policy_utils
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class RemoveNamedSetElement(base.UpdateCommand):
   """Remove an element from a named set of a Compute Engine router."""
 
@@ -81,3 +80,16 @@ class RemoveNamedSetElement(base.UpdateCommand):
     with client.apitools_client.IncludeFields(cleared_fields):
       result = client.MakeRequests([request])
     return result
+
+
+RemoveNamedSetElement.detailed_help = {
+    'DESCRIPTION': """\
+          *{command}* removes an element from a named set of a Compute Engine router.
+  """,
+    'EXAMPLES': """\
+          To remove element `'10.0.0.0/8'` from named set `my-set` on router `my-router` in region `us-central1`, run:
+
+              $ {command} my-router --region=us-central1 --set-name=my-set --set-element='10.0.0.0/8'
+
+          """,
+}

@@ -31,7 +31,6 @@ from googlecloudsdk.core.util import files
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class UploadNamedSet(base.SilentCommand):
   """Upload a named set into a Compute Engine router.
 
@@ -132,3 +131,16 @@ class UploadNamedSet(base.SilentCommand):
           ' because {1}'.format(input_file, exp)
       )
       raise exceptions.BadFileException(msg)
+
+
+UploadNamedSet.detailed_help = {
+    'DESCRIPTION': """\
+          *{command}* uploads a named set into a Compute Engine router.
+  """,
+    'EXAMPLES': """\
+          To upload named set configuration from YAML file `my-set.yaml` to router `my-router` in region `us-central1`, run:
+
+              $ {command} my-router --region=us-central1 --file-name=my-set.yaml
+
+          """,
+}

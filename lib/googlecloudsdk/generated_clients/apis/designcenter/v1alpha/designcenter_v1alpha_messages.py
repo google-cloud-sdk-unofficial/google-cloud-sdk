@@ -2304,20 +2304,6 @@ class DesigncenterProjectsLocationsSpacesApplicationTemplatesDeleteRequest(_mess
   name = _messages.StringField(2, required=True)
 
 
-class DesigncenterProjectsLocationsSpacesApplicationTemplatesExportRequest(_messages.Message):
-  r"""A DesigncenterProjectsLocationsSpacesApplicationTemplatesExportRequest
-  object.
-
-  Fields:
-    exportApplicationTemplateIaCRequest: A ExportApplicationTemplateIaCRequest
-      resource to be passed as the request body.
-    name: Required. The name of the application template.
-  """
-
-  exportApplicationTemplateIaCRequest = _messages.MessageField('ExportApplicationTemplateIaCRequest', 1)
-  name = _messages.StringField(2, required=True)
-
-
 class DesigncenterProjectsLocationsSpacesApplicationTemplatesGenerateAssessmentReportRequest(_messages.Message):
   r"""A DesigncenterProjectsLocationsSpacesApplicationTemplatesGenerateAssessm
   entReportRequest object.
@@ -2387,21 +2373,6 @@ class DesigncenterProjectsLocationsSpacesApplicationTemplatesImportRequest(_mess
   """
 
   importApplicationTemplateRequest = _messages.MessageField('ImportApplicationTemplateRequest', 1)
-  name = _messages.StringField(2, required=True)
-
-
-class DesigncenterProjectsLocationsSpacesApplicationTemplatesIngestIaCRequest(_messages.Message):
-  r"""A
-  DesigncenterProjectsLocationsSpacesApplicationTemplatesIngestIaCRequest
-  object.
-
-  Fields:
-    ingestApplicationTemplateIaCRequest: A IngestApplicationTemplateIaCRequest
-      resource to be passed as the request body.
-    name: Required. The name of the application template.
-  """
-
-  ingestApplicationTemplateIaCRequest = _messages.MessageField('IngestApplicationTemplateIaCRequest', 1)
   name = _messages.StringField(2, required=True)
 
 
@@ -2557,21 +2528,6 @@ class DesigncenterProjectsLocationsSpacesApplicationTemplatesRevisionsDeleteRequ
   name = _messages.StringField(1, required=True)
 
 
-class DesigncenterProjectsLocationsSpacesApplicationTemplatesRevisionsExportRequest(_messages.Message):
-  r"""A DesigncenterProjectsLocationsSpacesApplicationTemplatesRevisionsExport
-  Request object.
-
-  Fields:
-    exportApplicationTemplateRevisionIaCRequest: A
-      ExportApplicationTemplateRevisionIaCRequest resource to be passed as the
-      request body.
-    name: Required. The name of the application template revision.
-  """
-
-  exportApplicationTemplateRevisionIaCRequest = _messages.MessageField('ExportApplicationTemplateRevisionIaCRequest', 1)
-  name = _messages.StringField(2, required=True)
-
-
 class DesigncenterProjectsLocationsSpacesApplicationTemplatesRevisionsGenerateRequest(_messages.Message):
   r"""A DesigncenterProjectsLocationsSpacesApplicationTemplatesRevisionsGenera
   teRequest object.
@@ -2722,19 +2678,6 @@ class DesigncenterProjectsLocationsSpacesApplicationsDeployRequest(_messages.Mes
   """
 
   deployApplicationRequest = _messages.MessageField('DeployApplicationRequest', 1)
-  name = _messages.StringField(2, required=True)
-
-
-class DesigncenterProjectsLocationsSpacesApplicationsExportRequest(_messages.Message):
-  r"""A DesigncenterProjectsLocationsSpacesApplicationsExportRequest object.
-
-  Fields:
-    exportApplicationIaCRequest: A ExportApplicationIaCRequest resource to be
-      passed as the request body.
-    name: Required. The name of the application.
-  """
-
-  exportApplicationIaCRequest = _messages.MessageField('ExportApplicationIaCRequest', 1)
   name = _messages.StringField(2, required=True)
 
 
@@ -3806,91 +3749,6 @@ class Environment(_messages.Message):
   type = _messages.EnumField('TypeValueValuesEnum', 2)
 
 
-class ExportApplicationIaCRequest(_messages.Message):
-  r"""Request message for ExportApplicationIaC method.
-
-  Enums:
-    IacFormatValueValuesEnum: Optional. The IaC format to generate.
-
-  Fields:
-    artifactLocation: Optional. Specifies the destination for the generated
-      IaC, which can be Cloud Storage or a Developer Connect repository.
-    iacFormat: Optional. The IaC format to generate.
-  """
-
-  class IacFormatValueValuesEnum(_messages.Enum):
-    r"""Optional. The IaC format to generate.
-
-    Values:
-      IAC_FORMAT_UNSPECIFIED: IaC format is unspecified.
-      TERRAFORM: IaC format is Terraform.
-      HELM: IaC format is HELM.
-    """
-    IAC_FORMAT_UNSPECIFIED = 0
-    TERRAFORM = 1
-    HELM = 2
-
-  artifactLocation = _messages.MessageField('ArtifactLocation', 1)
-  iacFormat = _messages.EnumField('IacFormatValueValuesEnum', 2)
-
-
-class ExportApplicationTemplateIaCRequest(_messages.Message):
-  r"""Request message for ExportApplicationTemplateIaC method.
-
-  Fields:
-    artifactLocation: Optional. Specifies the destination for the generated
-      IaC, which can be Cloud Storage or a Developer Connect repository.
-      Default is Google Cloud Storage.
-    exportIacConfig: Optional. Configuration for exporting IaC.
-  """
-
-  artifactLocation = _messages.MessageField('ArtifactLocation', 1)
-  exportIacConfig = _messages.MessageField('ExportIaCConfig', 2)
-
-
-class ExportApplicationTemplateRevisionIaCRequest(_messages.Message):
-  r"""Request message for ExportApplicationTemplateRevisionIaC method.
-
-  Fields:
-    artifactLocation: Optional. Specifies the destination for the generated
-      IaC, which can be Cloud Storage or a Developer Connect repository.
-      Default is Google Cloud Storage.
-    exportIacConfig: Optional. Configuration for exporting IaC.
-  """
-
-  artifactLocation = _messages.MessageField('ArtifactLocation', 1)
-  exportIacConfig = _messages.MessageField('ExportIaCConfig', 2)
-
-
-class ExportIaCConfig(_messages.Message):
-  r"""Configuration for exporting a resource as IAC.
-
-  Enums:
-    IacFormatValueValuesEnum: Optional. IaC format of the export. Default is
-      [IACFormat.TERRAFORM].
-
-  Fields:
-    iacFormat: Optional. IaC format of the export. Default is
-      [IACFormat.TERRAFORM].
-    tfConfig: Optional. Configuration on how to handle terraform IaC export.
-  """
-
-  class IacFormatValueValuesEnum(_messages.Enum):
-    r"""Optional. IaC format of the export. Default is [IACFormat.TERRAFORM].
-
-    Values:
-      IAC_FORMAT_UNSPECIFIED: IaC format is unspecified.
-      TERRAFORM: IaC format is Terraform.
-      HELM: IaC format is HELM.
-    """
-    IAC_FORMAT_UNSPECIFIED = 0
-    TERRAFORM = 1
-    HELM = 2
-
-  iacFormat = _messages.EnumField('IacFormatValueValuesEnum', 1)
-  tfConfig = _messages.MessageField('TerraformConfig', 2)
-
-
 class Expr(_messages.Message):
   r"""Represents a textual expression in the Common Expression Language (CEL)
   syntax. CEL is a C-like expression language. The syntax and semantics of CEL
@@ -4661,30 +4519,6 @@ class InferredMetadata(_messages.Message):
   description = _messages.StringField(2)
   templateMetadata = _messages.MessageField('TFBlueprintMetadata', 3)
   updateTime = _messages.StringField(4)
-
-
-class IngestApplicationTemplateIaCRequest(_messages.Message):
-  r"""Request message for IngestApplicationTemplateIaC method.
-
-  Fields:
-    devconnectSourceConfig: Optional. Configuration for fetching content from
-      source code repository such as GitHub or Bitbucket through Developer
-      Connect.
-    gcsUri: Optional. The Cloud Storage URI of the terraform code.
-    gitSource: Optional. The git source.
-    iacModule: Optional. The IaC configuration to import.
-    rawTerraformImportEnabled: Optional. If set to true, imports the IaC as
-      raw terraform and does not attempt SAT conversion.
-    validateCatalogCompatibility: Optional. If set to true, validates if the
-      imported IaC is compatible with the catalog.
-  """
-
-  devconnectSourceConfig = _messages.MessageField('DeveloperConnectSourceConfig', 1)
-  gcsUri = _messages.StringField(2)
-  gitSource = _messages.MessageField('GitSource', 3)
-  iacModule = _messages.MessageField('IaCModule', 4)
-  rawTerraformImportEnabled = _messages.BooleanField(5)
-  validateCatalogCompatibility = _messages.BooleanField(6)
 
 
 class ListApplicationTemplateRevisionsResponse(_messages.Message):
@@ -6699,17 +6533,6 @@ class TerraformBlueprintUiMetadata(_messages.Message):
   terraformUiOutput = _messages.MessageField('TerraformUiOutput', 2)
 
 
-class TerraformConfig(_messages.Message):
-  r"""Configuration for exporting a resource as Terraform IAC.
-
-  Fields:
-    tfModuleConfig: Optional. Configuration on how terraform module should be
-      handled during export.
-  """
-
-  tfModuleConfig = _messages.MessageField('TerraformModuleConfig', 1)
-
-
 class TerraformError(_messages.Message):
   r"""Errors encountered during actuation using Terraform
 
@@ -6769,21 +6592,6 @@ class TerraformInputConnections(_messages.Message):
   cftTemplateVersion = _messages.StringField(2)
   inputPath = _messages.StringField(3)
   outputVar = _messages.StringField(4)
-
-
-class TerraformModuleConfig(_messages.Message):
-  r"""Configuration on how terraform module should be handled during export.
-
-  Fields:
-    gitProxyEnabled: Optional. This is typically only valid for 3P components
-      if ingested via devconnect URI. Typically, for 1P components, since they
-      are sourced from public git repos, this field is not applicable.
-    localReferencesEnabled: Optional. If set, all the dependent modules will
-      be downloaded from the target repository and referenced locally.
-  """
-
-  gitProxyEnabled = _messages.BooleanField(1)
-  localReferencesEnabled = _messages.BooleanField(2)
 
 
 class TerraformOutput(_messages.Message):

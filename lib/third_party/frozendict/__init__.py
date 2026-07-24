@@ -3,7 +3,7 @@ import operator
 import sys
 
 import six
-from six.moves import reload_module
+from six.moves import reload_module  # pyrefly: ignore[missing-source-for-stubs]
 # pylint: disable=g-import-not-at-top
 if six.PY2:
     import collections as collections_abc

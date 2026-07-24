@@ -3751,7 +3751,7 @@ class ErrorInfo(_messages.Message):
       "100/request"}`, should be returned as, `{"instanceLimitPerRequest":
       "100"}`, if the client exceeds the number of instances that can be
       created in a single (batch) request.
-    reason: The reason of the error. This is a constant value that identifies
+    reason: The reason for the error. This is a constant value that identifies
       the proximate cause of the error. Error reasons are unique within a
       particular domain of errors. This should be at most 63 characters and
       match a regular expression of `A-Z+[A-Z0-9]`, which represents
@@ -3911,8 +3911,8 @@ class FieldViolation(_messages.Message):
       in the third `emailAddresses` message.
     localizedMessage: Provides a localized error message for field-level
       errors that is safe to return to the API consumer.
-    reason: The reason of the field-level error. This is a constant value that
-      identifies the proximate cause of the field-level error. It should
+    reason: The reason for the field-level error. This is a constant value
+      that identifies the proximate cause of the field-level error. It should
       uniquely identify the type of the FieldViolation within the scope of the
       google.rpc.ErrorInfo.domain. This should be at most 63 characters and
       match a regular expression of `A-Z+[A-Z0-9]`, which represents
@@ -5028,7 +5028,8 @@ class MappingRule(_messages.Message):
       rules are applied before higher value rules so they may end up being
       overridden.
     ruleScope: Required. The rule scope
-    setTablePrimaryKey: Optional. Rule to specify the primary key for a table
+    setTablePrimaryKey: Optional. Deprecated: This rule is no longer
+      supported.
     singleColumnChange: Optional. Rule to specify how a single column is
       converted.
     singleEntityRename: Optional. Rule to specify how a single entity should
@@ -7001,10 +7002,10 @@ class SetIamPolicyRequest(_messages.Message):
 
 
 class SetTablePrimaryKey(_messages.Message):
-  r"""Options to configure rule type SetTablePrimaryKey. The rule is used to
-  specify the columns and name to configure/alter the primary key of a table.
-  The rule filter field can refer to one entity. The rule scope can be one of:
-  Table.
+  r"""Deprecated: Options to configure rule type SetTablePrimaryKey. The rule
+  is used to specify the columns and name to configure/alter the primary key
+  of a table. The rule filter field can refer to one entity. The rule scope
+  can be one of: Table.
 
   Fields:
     primaryKey: Optional. Name for the primary key

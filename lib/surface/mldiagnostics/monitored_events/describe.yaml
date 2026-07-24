@@ -26,21 +26,21 @@
           Sample output:
           ```
             {
-              "analyzerInsightFound": true,
               "analyzerReports": [
                 {
-                  "analyzer": "TPU Duty Cycle Analyzer",
+                  "analyzer": "ICI Link Analyzer",
                   "detectionState": "DETECTED",
-                  "details": "TPU duty cycle dropped by 20% below average.",
+                  "details": "ICI Link issues detected in <instance_ids>: This indicates networking issues on ICI links connected between TPU processors.",
                   "recommendedActions": [
                     {
-                      "description": "Investigate node health and running processes.",
+                      "description": "Contact Google team for further diagnosis. Potential action could be to Outkast affected nodes, but there could be other causes that need further investigation.",
                       "documentationUrl": "https://docs.cloud.google.com/tpu/docs/ml-diagnostics/workload-monitoring"
                     }
                   ]
                 }
               ],
-              "displayName": "performance-degradation-event",
+              "displayName": "Performance degradation - 2026-05-01T12:00:00Z",
+              "endTime": "2026-05-01T12:10:00Z",
               "name": "projects/PROJECT_ID/locations/us-central1/machineLearningRuns/my-run-123/monitoredEvents/abc-123-def-456",
               "startTime": "2026-05-01T12:00:00Z",
               "type": "PERFORMANCE_DEGRADATION"

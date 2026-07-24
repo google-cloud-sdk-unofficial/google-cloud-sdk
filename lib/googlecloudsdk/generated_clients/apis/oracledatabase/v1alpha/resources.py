@@ -139,6 +139,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_DATABASECONNECTIONS = (
+      'projects.locations.databaseConnections',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'databaseConnections/{databaseConnectionsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_DATABASES = (
       'projects.locations.databases',
       '{+name}',
@@ -234,6 +245,17 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/'
               'exascaleDbStorageVaults/{exascaleDbStorageVaultsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_FLEXCOMPONENTS = (
+      'projects.locations.flexComponents',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/flexComponents/'
+              '{flexComponentsId}',
       },
       ['name'],
       True

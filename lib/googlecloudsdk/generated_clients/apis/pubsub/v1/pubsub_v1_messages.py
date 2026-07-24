@@ -289,11 +289,14 @@ class BigQueryConfig(_messages.Message):
       whether or not the subscription can receive messages.
 
   Fields:
-    dropUnknownFields: Optional. When true and use_topic_schema is true, any
-      fields that are a part of the topic schema that are not part of the
-      BigQuery table schema are dropped when writing to BigQuery. Otherwise,
-      the schemas must be kept in sync and any messages with extra fields are
-      not written and remain in the subscription's backlog.
+    dropUnknownFields: Optional. If true and `use_topic_schema` is true, drops
+      any fields that are part of the topic schema that are not part of the
+      BigQuery table schema when writing to BigQuery. Otherwise, the schemas
+      must be kept in sync and any messages with extra fields are not written
+      and remain in the subscription's backlog. If true and `use_table_schema`
+      is true, drops any fields in the message that are not part of the
+      BigQuery table schema when writing to BigQuery. Otherwise, the write to
+      BigQuery will fail.
     serviceAccountEmail: Optional. The service account to use to write to
       BigQuery. The subscription creator or updater that specifies this field
       must have `iam.serviceAccounts.actAs` permission on the service account.
@@ -724,6 +727,18 @@ class CommitSchemaRequest(_messages.Message):
   """
 
   schema = _messages.MessageField('Schema', 1)
+
+
+class CompiledProtoSchema(_messages.Message):
+  r"""Configuration specific to compiled Protocol Buffer schemas.
+
+  Fields:
+    compiledBytes: Required. The compiled FileDescriptorSet binary.
+    rootMessage: Required. The name of the root message type in the schema.
+  """
+
+  compiledBytes = _messages.BytesField(1)
+  rootMessage = _messages.StringField(2)
 
 
 class Compression(_messages.Message):
@@ -2683,6 +2698,8 @@ class Schema(_messages.Message):
       with Pub/Sub resources.
 
   Fields:
+    compiledProtoSchema: Optional. Configuration for a schema provided as a
+      pre-compiled Protocol Buffer FileDescriptorSet.
     definition: The definition of the schema. This should contain a string
       representing the full definition of the schema that is a valid schema
       definition of the type specified in `type`.
@@ -2739,12 +2756,13 @@ class Schema(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  definition = _messages.StringField(1)
-  name = _messages.StringField(2)
-  revisionCreateTime = _messages.StringField(3)
-  revisionId = _messages.StringField(4)
-  tags = _messages.MessageField('TagsValue', 5)
-  type = _messages.EnumField('TypeValueValuesEnum', 6)
+  compiledProtoSchema = _messages.MessageField('CompiledProtoSchema', 1)
+  definition = _messages.StringField(2)
+  name = _messages.StringField(3)
+  revisionCreateTime = _messages.StringField(4)
+  revisionId = _messages.StringField(5)
+  tags = _messages.MessageField('TagsValue', 6)
+  type = _messages.EnumField('TypeValueValuesEnum', 7)
 
 
 class SchemaEncoding(_messages.Message):

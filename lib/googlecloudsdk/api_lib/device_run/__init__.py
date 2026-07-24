@@ -183,6 +183,35 @@ class LocationsClient(DeviceRunClient):
     )
 
 
+class DevicesClient(DeviceRunClient):
+  """Client for the Devices service under Device Run API."""
+
+  def __init__(self, api_version='v1alpha'):
+    super(DevicesClient, self).__init__(api_version)
+    self._service = self.client.projects_locations_devices
+
+  def Get(self, device_ref):
+    """Gets information about a specific device."""
+    request = self.messages.DevicerunProjectsLocationsDevicesGetRequest(
+        name=device_ref.RelativeName()
+    )
+    return self._service.Get(request)
+
+  def List(self, location_ref, limit=None, page_size=100):
+    """Lists devices."""
+    request = self.messages.DevicerunProjectsLocationsDevicesListRequest(
+        parent=location_ref.RelativeName(),
+    )
+    return list_pager.YieldFromList(
+        self._service,
+        request,
+        batch_size=page_size,
+        limit=limit,
+        field='devices',
+        batch_size_attribute='pageSize',
+    )
+
+
 class DeviceRunOperationPoller(waiter.OperationPoller):
   """Implementation of OperationPoller for Device Run LRO Operations."""
 

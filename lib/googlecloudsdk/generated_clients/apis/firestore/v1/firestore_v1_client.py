@@ -38,6 +38,7 @@ class FirestoreV1(base_api.BaseApiClient):
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
     self.projects_databases_backupSchedules = self.ProjectsDatabasesBackupSchedulesService(self)
+    self.projects_databases_changeStreams = self.ProjectsDatabasesChangeStreamsService(self)
     self.projects_databases_collectionGroups_fields = self.ProjectsDatabasesCollectionGroupsFieldsService(self)
     self.projects_databases_collectionGroups_indexes = self.ProjectsDatabasesCollectionGroupsIndexesService(self)
     self.projects_databases_collectionGroups = self.ProjectsDatabasesCollectionGroupsService(self)
@@ -191,6 +192,124 @@ class FirestoreV1(base_api.BaseApiClient):
         request_field='googleFirestoreAdminV1BackupSchedule',
         request_type_name='FirestoreProjectsDatabasesBackupSchedulesPatchRequest',
         response_type_name='GoogleFirestoreAdminV1BackupSchedule',
+        supports_download=False,
+    )
+
+  class ProjectsDatabasesChangeStreamsService(base_api.BaseApiService):
+    """Service class for the projects_databases_changeStreams resource."""
+
+    _NAME = 'projects_databases_changeStreams'
+
+    def __init__(self, client):
+      super(FirestoreV1.ProjectsDatabasesChangeStreamsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new change stream for the database.
+
+      Args:
+        request: (FirestoreProjectsDatabasesChangeStreamsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleFirestoreAdminV1ChangeStream) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/databases/{databasesId}/changeStreams',
+        http_method='POST',
+        method_id='firestore.projects.databases.changeStreams.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['changeStreamId'],
+        relative_path='v1/{+parent}/changeStreams',
+        request_field='googleFirestoreAdminV1ChangeStream',
+        request_type_name='FirestoreProjectsDatabasesChangeStreamsCreateRequest',
+        response_type_name='GoogleFirestoreAdminV1ChangeStream',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a change stream.
+
+      Args:
+        request: (FirestoreProjectsDatabasesChangeStreamsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/databases/{databasesId}/changeStreams/{changeStreamsId}',
+        http_method='DELETE',
+        method_id='firestore.projects.databases.changeStreams.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['etag'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='FirestoreProjectsDatabasesChangeStreamsDeleteRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets information about a change stream.
+
+      Args:
+        request: (FirestoreProjectsDatabasesChangeStreamsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleFirestoreAdminV1ChangeStream) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/databases/{databasesId}/changeStreams/{changeStreamsId}',
+        http_method='GET',
+        method_id='firestore.projects.databases.changeStreams.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='FirestoreProjectsDatabasesChangeStreamsGetRequest',
+        response_type_name='GoogleFirestoreAdminV1ChangeStream',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists all change streams in a database.
+
+      Args:
+        request: (FirestoreProjectsDatabasesChangeStreamsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleFirestoreAdminV1ListChangeStreamsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/databases/{databasesId}/changeStreams',
+        http_method='GET',
+        method_id='firestore.projects.databases.changeStreams.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1/{+parent}/changeStreams',
+        request_field='',
+        request_type_name='FirestoreProjectsDatabasesChangeStreamsListRequest',
+        response_type_name='GoogleFirestoreAdminV1ListChangeStreamsResponse',
         supports_download=False,
     )
 

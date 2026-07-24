@@ -10786,8 +10786,6 @@ class GoogleCloudDataplexV1LookupContextRequest(_messages.Message):
       the list of schema fields is truncated. Default is false.
 
   Fields:
-    context: Optional. The text representing contextual information for which
-      metadata context is being requested.
     options: Optional. Allows to configure the context.Supported options:
       format - The format of the context (one of yaml, xml, json, default is
       yaml). context_budget - If provided, the output will be intelligently
@@ -10833,9 +10831,8 @@ class GoogleCloudDataplexV1LookupContextRequest(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  context = _messages.StringField(1)
-  options = _messages.MessageField('OptionsValue', 2)
-  resources = _messages.StringField(3, repeated=True)
+  options = _messages.MessageField('OptionsValue', 1)
+  resources = _messages.StringField(2, repeated=True)
 
 
 class GoogleCloudDataplexV1LookupContextResponse(_messages.Message):
@@ -11484,8 +11481,9 @@ class GoogleCloudDataplexV1QueryCatalogRequest(_messages.Message):
   r"""Request message for QueryCatalog.
 
   Fields:
-    pageSize: Optional. Max number of results in a single row. Defaults to 10,
-      max 1000.
+    maxResults: Optional. The maximum number of rows of data to return per
+      page of results. Defaults to 1000. In addition to this limit, responses
+      are also limited to 10 MB.
     pageToken: Optional. If provided, subsequent page is returned.
     query: GoogleSQL query to execute.
     referenceId: Reference to a query executed beforehand. Results can only be
@@ -11498,7 +11496,7 @@ class GoogleCloudDataplexV1QueryCatalogRequest(_messages.Message):
       call with the referenceId provided.Default 10s, max 30s.
   """
 
-  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  maxResults = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(2)
   query = _messages.StringField(3)
   referenceId = _messages.StringField(4)

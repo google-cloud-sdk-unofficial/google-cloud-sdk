@@ -624,7 +624,7 @@ class ExecutePipelineRequest(_messages.Message):
 
 
 class ExecutePipelineResponse(_messages.Message):
-  r"""The response for Firestore.Execute.
+  r"""The response for Firestore.ExecutePipeline.
 
   Fields:
     executionTime: The time at which the results are valid. This is a (not

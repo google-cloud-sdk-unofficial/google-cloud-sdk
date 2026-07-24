@@ -4857,12 +4857,15 @@ class NetworksecurityOrganizationsLocationsFirewallEndpointsCreateRequest(_messa
       This prevents clients from accidentally creating duplicate commitments.
       The request ID must be a valid UUID with the exception that zero UUID is
       not supported (00000000-0000-0000-0000-000000000000).
+    validateOnly: Optional. If set, validate the request and preview the
+      endpoint, but do not actually create it.
   """
 
   firewallEndpoint = _messages.MessageField('FirewallEndpoint', 1)
   firewallEndpointId = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
   requestId = _messages.StringField(4)
+  validateOnly = _messages.BooleanField(5)
 
 
 class NetworksecurityOrganizationsLocationsFirewallEndpointsDeleteRequest(_messages.Message):
@@ -6451,12 +6454,15 @@ class NetworksecurityProjectsLocationsFirewallEndpointsCreateRequest(_messages.M
       This prevents clients from accidentally creating duplicate commitments.
       The request ID must be a valid UUID with the exception that zero UUID is
       not supported (00000000-0000-0000-0000-000000000000).
+    validateOnly: Optional. If set, validate the request and preview the
+      endpoint, but do not actually create it.
   """
 
   firewallEndpoint = _messages.MessageField('FirewallEndpoint', 1)
   firewallEndpointId = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
   requestId = _messages.StringField(4)
+  validateOnly = _messages.BooleanField(5)
 
 
 class NetworksecurityProjectsLocationsFirewallEndpointsDeleteRequest(_messages.Message):

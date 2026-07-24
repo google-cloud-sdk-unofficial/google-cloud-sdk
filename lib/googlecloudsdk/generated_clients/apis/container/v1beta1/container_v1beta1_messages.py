@@ -424,6 +424,7 @@ class AddonsConfig(_messages.Message):
       add-on.
     slurmOperatorConfig: Configuration for the Slurm Operator.
     statefulHaConfig: Optional. Configuration for the StatefulHA add-on.
+    wizSensorConfig: Optional. Configuration for the Wiz Sensor add-on.
   """
 
   agentSandboxConfig = _messages.MessageField('AgentSandboxConfig', 1)
@@ -451,6 +452,7 @@ class AddonsConfig(_messages.Message):
   sliceControllerConfig = _messages.MessageField('SliceControllerConfig', 23)
   slurmOperatorConfig = _messages.MessageField('SlurmOperatorConfig', 24)
   statefulHaConfig = _messages.MessageField('StatefulHAConfig', 25)
+  wizSensorConfig = _messages.MessageField('WizSensorConfig', 26)
 
 
 class AdvancedDatapathObservabilityConfig(_messages.Message):
@@ -5191,6 +5193,18 @@ class KernelOverrides(_messages.Message):
   lruGen = _messages.MessageField('LRUGen', 2)
 
 
+class KubeletCertInfo(_messages.Message):
+  r"""Contains expiry information about the kubelet certificate.
+
+  Fields:
+    nonTpmBootstrapCertExpireTime: Output only.
+    tpmBootstrapCertExpireTime: Output only.
+  """
+
+  nonTpmBootstrapCertExpireTime = _messages.StringField(1)
+  tpmBootstrapCertExpireTime = _messages.StringField(2)
+
+
 class KubernetesDashboard(_messages.Message):
   r"""Configuration for the Kubernetes Dashboard.
 
@@ -6654,6 +6668,9 @@ class NodeConfig(_messages.Message):
       based on the cluster creation version.
     LocalSsdEncryptionModeValueValuesEnum: Specifies which method should be
       used for encrypting the Local SSDs attached to the node.
+    UbuntuKernelTrackValueValuesEnum: Optional. Specifies the Ubuntu kernel
+      track to use. Only applicable when image_type is UBUNTU or
+      UBUNTU_CONTAINERD.
 
   Messages:
     LabelsValue: The Kubernetes labels (key/value pairs) to apply to each
@@ -6847,6 +6864,8 @@ class NodeConfig(_messages.Message):
     taints: List of kubernetes taints to be applied to each node. For more
       information, including usage and the valid values, see:
       https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    ubuntuKernelTrack: Optional. Specifies the Ubuntu kernel track to use.
+      Only applicable when image_type is UBUNTU or UBUNTU_CONTAINERD.
     windowsNodeConfig: Parameters that can be configured on Windows nodes.
     workloadMetadataConfig: The workload metadata configuration for this node.
   """
@@ -6888,6 +6907,22 @@ class NodeConfig(_messages.Message):
     LOCAL_SSD_ENCRYPTION_MODE_UNSPECIFIED = 0
     STANDARD_ENCRYPTION = 1
     EPHEMERAL_KEY_ENCRYPTION = 2
+
+  class UbuntuKernelTrackValueValuesEnum(_messages.Enum):
+    r"""Optional. Specifies the Ubuntu kernel track to use. Only applicable
+    when image_type is UBUNTU or UBUNTU_CONTAINERD.
+
+    Values:
+      UBUNTU_KERNEL_TRACK_UNSPECIFIED: Default value. Represents the standard
+        GA kernel track if using UBUNTU_CONTAINERD
+      UBUNTU_KERNEL_TRACK_GA: General Availability (GA) kernel track with
+        pinned minor version.
+      UBUNTU_KERNEL_TRACK_HWE: Hardware Enablement (HWE) kernel track with
+        rolling updates.
+    """
+    UBUNTU_KERNEL_TRACK_UNSPECIFIED = 0
+    UBUNTU_KERNEL_TRACK_GA = 1
+    UBUNTU_KERNEL_TRACK_HWE = 2
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
@@ -7042,8 +7077,9 @@ class NodeConfig(_messages.Message):
   tags = _messages.StringField(52, repeated=True)
   taintConfig = _messages.MessageField('TaintConfig', 53)
   taints = _messages.MessageField('NodeTaint', 54, repeated=True)
-  windowsNodeConfig = _messages.MessageField('WindowsNodeConfig', 55)
-  workloadMetadataConfig = _messages.MessageField('WorkloadMetadataConfig', 56)
+  ubuntuKernelTrack = _messages.EnumField('UbuntuKernelTrackValueValuesEnum', 55)
+  windowsNodeConfig = _messages.MessageField('WindowsNodeConfig', 56)
+  workloadMetadataConfig = _messages.MessageField('WorkloadMetadataConfig', 57)
 
 
 class NodeConfigDefaults(_messages.Message):
@@ -7273,6 +7309,11 @@ class NodeKubeletConfig(_messages.Message):
       https://kubernetes.io/docs/concepts/policy/pid-limiting/#pod-pid-limits
       Controls the maximum number of processes allowed to run in a pod. The
       value must be greater than or equal to 1024 and less than 4194304.
+    reservedResourcesConfig: Optional. Controls the reserved resources on the
+      node. Only included if any fields are specified.
+    reservedSystemCpus: Optional. The reserved_system_cpus option specifies
+      the CPU list reserved for the host system services. Format: a list of
+      CPU IDs (e.g. "0-3", "0,1") that can be parsed as a cpuset.
     shutdownGracePeriodCriticalPodsSeconds: Optional.
       shutdown_grace_period_critical_pods_seconds is the maximum allowed grace
       period (in seconds) used to terminate critical pods during a node
@@ -7318,10 +7359,12 @@ class NodeKubeletConfig(_messages.Message):
   memoryManager = _messages.MessageField('MemoryManager', 19)
   nodeSwapSizeGib = _messages.IntegerField(20)
   podPidsLimit = _messages.IntegerField(21)
-  shutdownGracePeriodCriticalPodsSeconds = _messages.IntegerField(22, variant=_messages.Variant.INT32)
-  shutdownGracePeriodSeconds = _messages.IntegerField(23, variant=_messages.Variant.INT32)
-  singleProcessOomKill = _messages.BooleanField(24)
-  topologyManager = _messages.MessageField('TopologyManager', 25)
+  reservedResourcesConfig = _messages.MessageField('ReservedResourcesConfig', 22)
+  reservedSystemCpus = _messages.StringField(23)
+  shutdownGracePeriodCriticalPodsSeconds = _messages.IntegerField(24, variant=_messages.Variant.INT32)
+  shutdownGracePeriodSeconds = _messages.IntegerField(25, variant=_messages.Variant.INT32)
+  singleProcessOomKill = _messages.BooleanField(26)
+  topologyManager = _messages.MessageField('TopologyManager', 27)
 
 
 class NodeLabels(_messages.Message):
@@ -7541,6 +7584,8 @@ class NodePool(_messages.Message):
       groups-of-managed-instances) associated with this node pool. During the
       node pool blue-green upgrade operation, the URLs contain both blue and
       green resources.
+    kubeletCertInfo: Output only. Contains expiry information about the
+      kubelet certificate.
     locations: The list of Google Compute Engine
       [zones](https://cloud.google.com/compute/docs/zones#available) in which
       the NodePool's nodes should be located. If this value is unspecified
@@ -7614,22 +7659,23 @@ class NodePool(_messages.Message):
   etag = _messages.StringField(6)
   initialNodeCount = _messages.IntegerField(7, variant=_messages.Variant.INT32)
   instanceGroupUrls = _messages.StringField(8, repeated=True)
-  locations = _messages.StringField(9, repeated=True)
-  maintenancePolicy = _messages.MessageField('NodePoolMaintenancePolicy', 10)
-  management = _messages.MessageField('NodeManagement', 11)
-  maxPodsConstraint = _messages.MessageField('MaxPodsConstraint', 12)
-  name = _messages.StringField(13)
-  networkConfig = _messages.MessageField('NodeNetworkConfig', 14)
-  nodeDrainConfig = _messages.MessageField('NodeDrainConfig', 15)
-  placementPolicy = _messages.MessageField('PlacementPolicy', 16)
-  podIpv4CidrSize = _messages.IntegerField(17, variant=_messages.Variant.INT32)
-  queuedProvisioning = _messages.MessageField('QueuedProvisioning', 18)
-  selfLink = _messages.StringField(19)
-  status = _messages.EnumField('StatusValueValuesEnum', 20)
-  statusMessage = _messages.StringField(21)
-  updateInfo = _messages.MessageField('UpdateInfo', 22)
-  upgradeSettings = _messages.MessageField('UpgradeSettings', 23)
-  version = _messages.StringField(24)
+  kubeletCertInfo = _messages.MessageField('KubeletCertInfo', 9)
+  locations = _messages.StringField(10, repeated=True)
+  maintenancePolicy = _messages.MessageField('NodePoolMaintenancePolicy', 11)
+  management = _messages.MessageField('NodeManagement', 12)
+  maxPodsConstraint = _messages.MessageField('MaxPodsConstraint', 13)
+  name = _messages.StringField(14)
+  networkConfig = _messages.MessageField('NodeNetworkConfig', 15)
+  nodeDrainConfig = _messages.MessageField('NodeDrainConfig', 16)
+  placementPolicy = _messages.MessageField('PlacementPolicy', 17)
+  podIpv4CidrSize = _messages.IntegerField(18, variant=_messages.Variant.INT32)
+  queuedProvisioning = _messages.MessageField('QueuedProvisioning', 19)
+  selfLink = _messages.StringField(20)
+  status = _messages.EnumField('StatusValueValuesEnum', 21)
+  statusMessage = _messages.StringField(22)
+  updateInfo = _messages.MessageField('UpdateInfo', 23)
+  upgradeSettings = _messages.MessageField('UpgradeSettings', 24)
+  version = _messages.StringField(25)
 
 
 class NodePoolAutoConfig(_messages.Message):
@@ -8850,6 +8896,23 @@ class ReservationAffinity(_messages.Message):
   consumeReservationType = _messages.EnumField('ConsumeReservationTypeValueValuesEnum', 1)
   key = _messages.StringField(2)
   values = _messages.StringField(3, repeated=True)
+
+
+class ReservedResourcesConfig(_messages.Message):
+  r"""ReservedResourcesConfig contains the configuration for the reserved
+  resources on the node.
+
+  Fields:
+    cpuReservedMillicore: Optional. The amount of CPU to reserve for system
+      daemons. This is a user-specified value. If unspecified, GKE decides the
+      default based on node version using different formula.
+    memoryReservedMib: Optional. The amount of memory to reserve for system
+      daemons (in MiB). This is a user-specified value. If unspecified, GKE
+      decides the default based on node version using different formula.
+  """
+
+  cpuReservedMillicore = _messages.IntegerField(1)
+  memoryReservedMib = _messages.IntegerField(2)
 
 
 class ResolvedConfEntry(_messages.Message):
@@ -11240,6 +11303,23 @@ class WindowsVersions(_messages.Message):
   """
 
   windowsVersions = _messages.MessageField('WindowsVersion', 1, repeated=True)
+
+
+class WizSensorConfig(_messages.Message):
+  r"""Configuration for the Wiz Sensor add-on.
+
+  Fields:
+    configSecretUri: Optional. The GCP Secret Manager URI for the Wiz config
+      secret.
+    enabled: Optional. Whether the Wiz Sensor add-on is enabled for this
+      cluster.
+    registrySecretUri: Optional. The GCP Secret Manager URI for the Wiz
+      registry secret.
+  """
+
+  configSecretUri = _messages.StringField(1)
+  enabled = _messages.BooleanField(2)
+  registrySecretUri = _messages.StringField(3)
 
 
 class WorkloadALTSConfig(_messages.Message):

@@ -82,6 +82,77 @@ def node_aspect(
   return make_aspect(ctx.aspect_fqn('dbt-node'), data)
 
 
+def base_aspects(
+    ctx: naming.Context,
+    unique_id: str,
+    node: dict[str, Any],
+    resource_type: str,
+    primary_name: str,
+    primary_data: dict[str, Any],
+) -> dict[str, Any]:
+  """The dbt-node aspect plus a resource's primary aspect, keyed for the map.
+
+  Args:
+    ctx: the naming.Context holding the naming coordinates for this run.
+    unique_id: the dbt unique_id, stored as the node aspect's ``id`` field.
+    node: the dbt resource dict passed to ``node_aspect``.
+    resource_type: the dbt resource type (e.g. 'seed', 'snapshot').
+    primary_name: the resource-specific aspect name (e.g. 'dbt-seed').
+    primary_data: the resource-specific aspect data.
+
+  Returns:
+    An aspect map holding the dbt-node and primary aspects.
+  """
+  return {
+      ctx.aspect_key('dbt-node'): node_aspect(
+          ctx, unique_id, node, resource_type
+      ),
+      ctx.aspect_key(primary_name): make_aspect(
+          ctx.aspect_fqn(primary_name), primary_data
+      ),
+  }
+
+
+def contacts_aspect(
+    ctx: naming.Context, identities: list[dict[str, str]]
+) -> dict[str, Any]:
+  """Builds the core `contacts` aspect from a list of identities.
+
+  Args:
+    ctx: the naming.Context holding the naming coordinates for this run.
+    identities: the contact identities (see ``owner_identities``).
+
+  Returns:
+    A contacts aspect record.
+  """
+  return make_aspect(ctx.contacts_fqn(), {'identities': identities})
+
+
+def owner_identities(owner: dict[str, Any] | None) -> list[dict[str, str]]:
+  """Builds the contacts ``identities`` list from a dbt ``owner`` block.
+
+  dbt records an owner as ``{'email': ..., 'name': ...}`` (either field may be
+  absent). Per the dbt-core schema ``owner.email`` may be a single string or a
+  list of strings, so a list yields one ``owner`` identity per email. We prefer
+  the email(s), falling back to the name. Shared by the group and exposure
+  builders.
+
+  Args:
+    owner: the dbt resource's ``owner`` mapping (or None).
+
+  Returns:
+    One ``owner`` identity per email (or a single one for the name when no email
+    is set), or [] when neither field is present.
+  """
+  owner = owner or {}
+  email = owner.get('email')
+  emails = email if isinstance(email, (list, tuple)) else [email]
+  names = [str(e) for e in emails if e]
+  if not names and owner.get('name'):
+    names = [str(owner['name'])]
+  return [{'name': name, 'role': 'owner'} for name in names]
+
+
 def stat_int(stats: dict[str, Any], key: str) -> int | None:
   """Returns a catalog stat as int, or None if absent / not included.
 
@@ -141,3 +212,38 @@ def schema_aspect_from_columns(
       for col_name, col_data in columns.items()
   ]
   return make_aspect(ctx.aspect_fqn('dbt-schema'), {'columns': fields})
+
+
+def model_contracts_aspect(
+    ctx: naming.Context, node: dict[str, Any], enforced: bool
+) -> dict[str, Any] | None:
+  """Optional dbt-model-contracts aspect (only when a contract is enforced)."""
+  if not enforced:
+    return None
+  model_constraints = [
+      {
+          'type': c.get('type') or '',
+          'name': c.get('name') or '',
+          'columns': c.get('columns') or [],
+      }
+      for c in node.get('constraints') or []
+  ]
+  column_contracts = []
+  for col_name, col in (node.get('columns') or {}).items():
+    column_contracts.append({
+        'name': col.get('name', col_name),
+        'dataType': col.get('data_type') or '',
+        'constraints': [
+            c.get('type')
+            for c in col.get('constraints') or []
+            if c.get('type')
+        ],
+    })
+  return make_aspect(
+      ctx.aspect_fqn('dbt-model-contracts'),
+      {
+          'contractEnforced': enforced,
+          'modelConstraints': model_constraints,
+          'columnContracts': column_contracts,
+      },
+  )

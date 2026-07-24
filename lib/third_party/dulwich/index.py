@@ -20,63 +20,42 @@
 
 """Parser for the git index file format."""
 
-import collections
 import os
 import stat
 import struct
 import sys
+from dataclasses import dataclass
+from enum import Enum
 from typing import (
     Any,
     BinaryIO,
     Callable,
     Dict,
-    List,
-    Optional,
     Iterable,
     Iterator,
+    List,
+    Optional,
     Tuple,
     Union,
 )
 
-from dulwich.file import GitFile
-from dulwich.objects import (
-    Blob,
+from .file import GitFile
+from .object_store import iter_tree_contents
+from .objects import (
     S_IFGITLINK,
     S_ISGITLINK,
+    Blob,
+    ObjectID,
     Tree,
     hex_to_sha,
     sha_to_hex,
-    ObjectID,
 )
-from dulwich.object_store import iter_tree_contents
-from dulwich.pack import (
-    SHA1Reader,
-    SHA1Writer,
-    ObjectContainer,
-)
-
-
-# TODO(user): Switch to dataclass?
-IndexEntry = collections.namedtuple(
-    "IndexEntry",
-    [
-        "ctime",
-        "mtime",
-        "dev",
-        "ino",
-        "mode",
-        "uid",
-        "gid",
-        "size",
-        "sha",
-        "flags",
-        "extended_flags",
-    ],
-)
-
+from .pack import ObjectContainer, SHA1Reader, SHA1Writer
 
 # 2-bit stage (during merge)
 FLAG_STAGEMASK = 0x3000
+FLAG_STAGESHIFT = 12
+FLAG_NAMEMASK = 0x0FFF
 
 # assume-valid
 FLAG_VALID = 0x8000
@@ -84,15 +63,104 @@ FLAG_VALID = 0x8000
 # extended flag (must be zero in version 2)
 FLAG_EXTENDED = 0x4000
 
-
 # used by sparse checkout
 EXTENDED_FLAG_SKIP_WORKTREE = 0x4000
 
 # used by "git add -N"
 EXTENDED_FLAG_INTEND_TO_ADD = 0x2000
 
-
 DEFAULT_VERSION = 2
+
+
+class Stage(Enum):
+    NORMAL = 0
+    MERGE_CONFLICT_ANCESTOR = 1
+    MERGE_CONFLICT_THIS = 2
+    MERGE_CONFLICT_OTHER = 3
+
+
+@dataclass
+class SerializedIndexEntry:
+    name: bytes
+    ctime: Union[int, float, Tuple[int, int]]
+    mtime: Union[int, float, Tuple[int, int]]
+    dev: int
+    ino: int
+    mode: int
+    uid: int
+    gid: int
+    size: int
+    sha: bytes
+    flags: int
+    extended_flags: int
+
+    def stage(self) -> Stage:
+        return Stage((self.flags & FLAG_STAGEMASK) >> FLAG_STAGESHIFT)
+
+
+@dataclass
+class IndexEntry:
+    ctime: Union[int, float, Tuple[int, int]]
+    mtime: Union[int, float, Tuple[int, int]]
+    dev: int
+    ino: int
+    mode: int
+    uid: int
+    gid: int
+    size: int
+    sha: bytes
+
+    @classmethod
+    def from_serialized(cls, serialized: SerializedIndexEntry) -> "IndexEntry":
+        return cls(
+            ctime=serialized.ctime,
+            mtime=serialized.mtime,
+            dev=serialized.dev,
+            ino=serialized.ino,
+            mode=serialized.mode,
+            uid=serialized.uid,
+            gid=serialized.gid,
+            size=serialized.size,
+            sha=serialized.sha,
+        )
+
+    def serialize(self, name: bytes, stage: Stage) -> SerializedIndexEntry:
+        return SerializedIndexEntry(
+            name=name,
+            ctime=self.ctime,
+            mtime=self.mtime,
+            dev=self.dev,
+            ino=self.ino,
+            mode=self.mode,
+            uid=self.uid,
+            gid=self.gid,
+            size=self.size,
+            sha=self.sha,
+            flags=stage.value << FLAG_STAGESHIFT,
+            extended_flags=0,
+        )
+
+
+class ConflictedIndexEntry:
+    """Index entry that represents a conflict."""
+
+    ancestor: Optional[IndexEntry]
+    this: Optional[IndexEntry]
+    other: Optional[IndexEntry]
+
+    def __init__(
+        self,
+        ancestor: Optional[IndexEntry] = None,
+        this: Optional[IndexEntry] = None,
+        other: Optional[IndexEntry] = None,
+    ) -> None:
+        self.ancestor = ancestor
+        self.this = this
+        self.other = other
+
+
+class UnmergedEntries(Exception):
+    """Unmerged entries exist in the index."""
 
 
 def pathsplit(path: bytes) -> Tuple[bytes, bytes]:
@@ -100,6 +168,7 @@ def pathsplit(path: bytes) -> Tuple[bytes, bytes]:
 
     Args:
       path: The path to split.
+
     Returns:
       Tuple with directory name and basename
     """
@@ -144,13 +213,11 @@ def write_cache_time(f, t):
     f.write(struct.pack(">LL", *t))
 
 
-def read_cache_entry(f, version: int) -> Tuple[str, IndexEntry]:
+def read_cache_entry(f, version: int) -> SerializedIndexEntry:
     """Read an entry from a cache file.
 
     Args:
       f: File-like object to read from
-    Returns:
-      tuple with: name, IndexEntry
     """
     beginoffset = f.tell()
     ctime = read_cache_time(f)
@@ -167,34 +234,32 @@ def read_cache_entry(f, version: int) -> Tuple[str, IndexEntry]:
     ) = struct.unpack(">LLLLLL20sH", f.read(20 + 4 * 6 + 2))
     if flags & FLAG_EXTENDED:
         if version < 3:
-            raise AssertionError(
-                'extended flag set in index with version < 3')
-        (extended_flags, ) = struct.unpack(">H", f.read(2))
+            raise AssertionError("extended flag set in index with version < 3")
+        (extended_flags,) = struct.unpack(">H", f.read(2))
     else:
         extended_flags = 0
-    name = f.read(flags & 0x0FFF)
+    name = f.read(flags & FLAG_NAMEMASK)
     # Padding:
     if version < 4:
         real_size = (f.tell() - beginoffset + 8) & ~7
         f.read((beginoffset + real_size) - f.tell())
-    return (
+    return SerializedIndexEntry(
         name,
-        IndexEntry(
-            ctime,
-            mtime,
-            dev,
-            ino,
-            mode,
-            uid,
-            gid,
-            size,
-            sha_to_hex(sha),
-            flags & ~0x0FFF,
-            extended_flags,
-        ))
+        ctime,
+        mtime,
+        dev,
+        ino,
+        mode,
+        uid,
+        gid,
+        size,
+        sha_to_hex(sha),
+        flags & ~FLAG_NAMEMASK,
+        extended_flags,
+    )
 
 
-def write_cache_entry(f, name: bytes, entry: IndexEntry, version: int) -> None:
+def write_cache_entry(f, entry: SerializedIndexEntry, version: int) -> None:
     """Write an index entry to a file.
 
     Args:
@@ -204,11 +269,11 @@ def write_cache_entry(f, name: bytes, entry: IndexEntry, version: int) -> None:
     beginoffset = f.tell()
     write_cache_time(f, entry.ctime)
     write_cache_time(f, entry.mtime)
-    flags = len(name) | (entry.flags & ~0x0FFF)
+    flags = len(entry.name) | (entry.flags & ~FLAG_NAMEMASK)
     if entry.extended_flags:
         flags |= FLAG_EXTENDED
     if flags & FLAG_EXTENDED and version is not None and version < 3:
-        raise AssertionError('unable to use extended flags in version < 3')
+        raise AssertionError("unable to use extended flags in version < 3")
     f.write(
         struct.pack(
             b">LLLLLL20sH",
@@ -224,7 +289,7 @@ def write_cache_entry(f, name: bytes, entry: IndexEntry, version: int) -> None:
     )
     if flags & FLAG_EXTENDED:
         f.write(struct.pack(b">H", entry.extended_flags))
-    f.write(name)
+    f.write(entry.name)
     if version < 4:
         real_size = (f.tell() - beginoffset + 8) & ~7
         f.write(b"\0" * ((beginoffset + real_size) - f.tell()))
@@ -233,11 +298,11 @@ def write_cache_entry(f, name: bytes, entry: IndexEntry, version: int) -> None:
 class UnsupportedIndexFormat(Exception):
     """An unsupported index format was encountered."""
 
-    def __init__(self, version):
+    def __init__(self, version) -> None:
         self.index_format_version = version
 
 
-def read_index(f: BinaryIO):
+def read_index(f: BinaryIO) -> Iterator[SerializedIndexEntry]:
     """Read an index file, yielding the individual entries."""
     header = f.read(4)
     if header != b"DIRC":
@@ -249,19 +314,34 @@ def read_index(f: BinaryIO):
         yield read_cache_entry(f, version)
 
 
-def read_index_dict(f) -> Dict[bytes, IndexEntry]:
+def read_index_dict(f) -> Dict[bytes, Union[IndexEntry, ConflictedIndexEntry]]:
     """Read an index file and return it as a dictionary.
-
+       Dict Key is tuple of path and stage number, as
+            path alone is not unique
     Args:
-      f: File object to read from
+      f: File object to read fromls.
     """
-    ret = {}
-    for name, entry in read_index(f):
-        ret[name] = entry
+    ret: Dict[bytes, Union[IndexEntry, ConflictedIndexEntry]] = {}
+    for entry in read_index(f):
+        stage = entry.stage()
+        if stage == Stage.NORMAL:
+            ret[entry.name] = IndexEntry.from_serialized(entry)
+        else:
+            existing = ret.setdefault(entry.name, ConflictedIndexEntry())
+            if isinstance(existing, IndexEntry):
+                raise AssertionError("Non-conflicted entry for %r exists" % entry.name)
+            if stage == Stage.MERGE_CONFLICT_ANCESTOR:
+                existing.ancestor = IndexEntry.from_serialized(entry)
+            elif stage == Stage.MERGE_CONFLICT_THIS:
+                existing.this = IndexEntry.from_serialized(entry)
+            elif stage == Stage.MERGE_CONFLICT_OTHER:
+                existing.other = IndexEntry.from_serialized(entry)
     return ret
 
 
-def write_index(f: BinaryIO, entries: List[Tuple[bytes, IndexEntry]], version: Optional[int] = None):
+def write_index(
+    f: BinaryIO, entries: List[SerializedIndexEntry], version: Optional[int] = None
+):
     """Write an index file.
 
     Args:
@@ -273,19 +353,36 @@ def write_index(f: BinaryIO, entries: List[Tuple[bytes, IndexEntry]], version: O
         version = DEFAULT_VERSION
     f.write(b"DIRC")
     f.write(struct.pack(b">LL", version, len(entries)))
-    for name, entry in entries:
-        write_cache_entry(f, name, entry, version)
+    for entry in entries:
+        write_cache_entry(f, entry, version)
 
 
 def write_index_dict(
     f: BinaryIO,
-    entries: Dict[bytes, IndexEntry],
+    entries: Dict[bytes, Union[IndexEntry, ConflictedIndexEntry]],
     version: Optional[int] = None,
 ) -> None:
-    """Write an index file based on the contents of a dictionary."""
+    """Write an index file based on the contents of a dictionary.
+    being careful to sort by path and then by stage.
+    """
     entries_list = []
-    for name in sorted(entries):
-        entries_list.append((name, entries[name]))
+    for key in sorted(entries):
+        value = entries[key]
+        if isinstance(value, ConflictedIndexEntry):
+            if value.ancestor is not None:
+                entries_list.append(
+                    value.ancestor.serialize(key, Stage.MERGE_CONFLICT_ANCESTOR)
+                )
+            if value.this is not None:
+                entries_list.append(
+                    value.this.serialize(key, Stage.MERGE_CONFLICT_THIS)
+                )
+            if value.other is not None:
+                entries_list.append(
+                    value.other.serialize(key, Stage.MERGE_CONFLICT_OTHER)
+                )
+        else:
+            entries_list.append(value.serialize(key, Stage.NORMAL))
     write_index(f, entries_list, version=version)
 
 
@@ -296,6 +393,7 @@ def cleanup_mode(mode: int) -> int:
 
     Args:
       mode: Mode to clean up.
+
     Returns:
       mode
     """
@@ -314,7 +412,9 @@ def cleanup_mode(mode: int) -> int:
 class Index:
     """A Git Index file."""
 
-    def __init__(self, filename: Union[bytes, str], read=True):
+    _byname: Dict[bytes, Union[IndexEntry, ConflictedIndexEntry]]
+
+    def __init__(self, filename: Union[bytes, str], read=True) -> None:
         """Create an index object associated with the given filename.
 
         Args:
@@ -332,8 +432,8 @@ class Index:
     def path(self):
         return self._filename
 
-    def __repr__(self):
-        return "{}({!r})".format(self.__class__.__name__, self._filename)
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}({self._filename!r})"
 
     def write(self) -> None:
         """Write current contents of index to disk."""
@@ -351,8 +451,7 @@ class Index:
         f = GitFile(self._filename, "rb")
         try:
             f = SHA1Reader(f)
-            for name, entry in read_index(f):
-                self[name] = entry
+            self.update(read_index_dict(f))
             # FIXME: Additional data?
             f.read(os.path.getsize(self._filename) - f.tell() - 20)
             f.check_sha()
@@ -363,58 +462,80 @@ class Index:
         """Number of entries in this index file."""
         return len(self._byname)
 
-    def __getitem__(self, name: bytes) -> IndexEntry:
-        """Retrieve entry by relative path.
+    def __getitem__(self, key: bytes) -> Union[IndexEntry, ConflictedIndexEntry]:
+        """Retrieve entry by relative path and stage.
 
-        Returns: tuple with (ctime, mtime, dev, ino, mode, uid, gid, size, sha,
-            flags)
+        Returns: Either a IndexEntry or a ConflictedIndexEntry
+        Raises KeyError: if the entry does not exist
         """
-        return self._byname[name]
+        return self._byname[key]
 
     def __iter__(self) -> Iterator[bytes]:
-        """Iterate over the paths in this index."""
+        """Iterate over the paths and stages in this index."""
         return iter(self._byname)
+
+    def __contains__(self, key):
+        return key in self._byname
 
     def get_sha1(self, path: bytes) -> bytes:
         """Return the (git object) SHA1 for the object at a path."""
-        return self[path].sha
+        value = self[path]
+        if isinstance(value, ConflictedIndexEntry):
+            raise UnmergedEntries
+        return value.sha
 
     def get_mode(self, path: bytes) -> int:
         """Return the POSIX file mode for the object at a path."""
-        return self[path].mode
+        value = self[path]
+        if isinstance(value, ConflictedIndexEntry):
+            raise UnmergedEntries
+        return value.mode
 
     def iterobjects(self) -> Iterable[Tuple[bytes, bytes, int]]:
         """Iterate over path, sha, mode tuples for use with commit_tree."""
         for path in self:
             entry = self[path]
+            if isinstance(entry, ConflictedIndexEntry):
+                raise UnmergedEntries
             yield path, entry.sha, cleanup_mode(entry.mode)
+
+    def has_conflicts(self) -> bool:
+        for value in self._byname.values():
+            if isinstance(value, ConflictedIndexEntry):
+                return True
+        return False
 
     def clear(self):
         """Remove all contents from this index."""
         self._byname = {}
 
-    def __setitem__(self, name: bytes, x: IndexEntry):
+    def __setitem__(
+        self, name: bytes, value: Union[IndexEntry, ConflictedIndexEntry]
+    ) -> None:
         assert isinstance(name, bytes)
-        assert len(x) == len(IndexEntry._fields)
-        # Remove the old entry if any
-        self._byname[name] = IndexEntry(*x)
+        self._byname[name] = value
 
-    def __delitem__(self, name: bytes):
-        assert isinstance(name, bytes)
+    def __delitem__(self, name: bytes) -> None:
         del self._byname[name]
 
-    def iteritems(self) -> Iterator[Tuple[bytes, IndexEntry]]:
-        return self._byname.items()
+    def iteritems(
+        self
+    ) -> Iterator[Tuple[bytes, Union[IndexEntry, ConflictedIndexEntry]]]:
+        return iter(self._byname.items())
 
-    def items(self) -> Iterator[Tuple[bytes, IndexEntry]]:
-        return self._byname.items()
+    def items(self) -> Iterator[Tuple[bytes, Union[IndexEntry, ConflictedIndexEntry]]]:
+        return iter(self._byname.items())
 
-    def update(self, entries: Dict[bytes, IndexEntry]):
-        for name, value in entries.items():
-            self[name] = value
+    def update(self, entries: Dict[bytes, Union[IndexEntry, ConflictedIndexEntry]]):
+        for key, value in entries.items():
+            self[key] = value
+
+    def paths(self):
+        yield from self._byname.keys()
 
     def changes_from_tree(
-            self, object_store, tree: ObjectID, want_unchanged: bool = False):
+        self, object_store, tree: ObjectID, want_unchanged: bool = False
+    ):
         """Find the differences between the contents of this index and a tree.
 
         Args:
@@ -430,7 +551,7 @@ class Index:
             return entry.sha, cleanup_mode(entry.mode)
 
         yield from changes_from_tree(
-            self._byname.keys(),
+            self.paths(),
             lookup_entry,
             object_store,
             tree,
@@ -533,7 +654,7 @@ def changes_from_tree(
     other_names = set(names)
 
     if tree is not None:
-        for (name, mode, sha) in iter_tree_contents(object_store, tree):
+        for name, mode, sha in iter_tree_contents(object_store, tree):
             try:
                 (other_sha, other_mode) = lookup_entry(name)
             except KeyError:
@@ -555,15 +676,15 @@ def changes_from_tree(
 
 
 def index_entry_from_stat(
-    stat_val, hex_sha: bytes, flags: int, mode: Optional[int] = None,
-    extended_flags: Optional[int] = None
+    stat_val,
+    hex_sha: bytes,
+    mode: Optional[int] = None,
 ):
     """Create a new index entry from a stat value.
 
     Args:
       stat_val: POSIX stat_result instance
       hex_sha: Hex sha of the object
-      flags: Index flags
     """
     if mode is None:
         mode = cleanup_mode(stat_val.st_mode)
@@ -578,12 +699,10 @@ def index_entry_from_stat(
         stat_val.st_gid,
         stat_val.st_size,
         hex_sha,
-        flags,
-        extended_flags
     )
 
 
-if sys.platform == 'win32':
+if sys.platform == "win32":
     # On Windows, creating symlinks either requires administrator privileges
     # or developer mode. Raise a more helpful error when we're unable to
     # create symlinks
@@ -591,28 +710,33 @@ if sys.platform == 'win32':
     # https://github.com/jelmer/dulwich/issues/1005
 
     class WindowsSymlinkPermissionError(PermissionError):
-
-        def __init__(self, errno, msg, filename):
+        def __init__(self, errno, msg, filename) -> None:
             super(PermissionError, self).__init__(
-                errno, "Unable to create symlink; "
+                errno,
+                "Unable to create symlink; "
                 "do you have developer mode enabled? %s" % msg,
-                filename)
+                filename,
+            )
 
     def symlink(src, dst, target_is_directory=False, *, dir_fd=None):
         try:
             return os.symlink(
-                src, dst, target_is_directory=target_is_directory,
-                dir_fd=dir_fd)
+                src, dst, target_is_directory=target_is_directory, dir_fd=dir_fd
+            )
         except PermissionError as e:
-            raise WindowsSymlinkPermissionError(
-                e.errno, e.strerror, e.filename) from e
+            raise WindowsSymlinkPermissionError(e.errno, e.strerror, e.filename) from e
 else:
     symlink = os.symlink
 
 
 def build_file_from_blob(
-        blob: Blob, mode: int, target_path: bytes, *, honor_filemode=True,
-        tree_encoding="utf-8", symlink_fn=None
+    blob: Blob,
+    mode: int,
+    target_path: bytes,
+    *,
+    honor_filemode=True,
+    tree_encoding="utf-8",
+    symlink_fn=None,
 ):
     """Build a file or symlink on disk based on a Git object.
 
@@ -670,8 +794,7 @@ def validate_path_element_ntfs(element: bytes) -> bool:
     return True
 
 
-def validate_path(path: bytes,
-                  element_validator=validate_path_element_default) -> bool:
+def validate_path(path: bytes, element_validator=validate_path_element_default) -> bool:
     """Default path validator that just checks for .git/."""
     parts = path.split(b"/")
     for p in parts:
@@ -688,9 +811,9 @@ def build_index_from_tree(
     tree_id: bytes,
     honor_filemode: bool = True,
     validate_path_element=validate_path_element_default,
-    symlink_fn=None
+    symlink_fn=None,
 ):
-    """Generate and materialize index from a tree
+    """Generate and materialize index from a tree.
 
     Args:
       tree_id: Tree to materialize
@@ -727,7 +850,9 @@ def build_index_from_tree(
             obj = object_store[entry.sha]
             assert isinstance(obj, Blob)
             st = build_file_from_blob(
-                obj, entry.mode, full_path,
+                obj,
+                entry.mode,
+                full_path,
                 honor_filemode=honor_filemode,
                 symlink_fn=symlink_fn,
             )
@@ -750,13 +875,14 @@ def build_index_from_tree(
                 st.st_ctime,
             )
             st = st.__class__(st_tuple)
-        index[entry.path] = index_entry_from_stat(st, entry.sha, 0)
+            # default to a stage 0 index entry (normal)
+            # when reading from the filesystem
+        index[entry.path] = index_entry_from_stat(st, entry.sha)
 
     index.write()
 
 
-def blob_from_path_and_mode(fs_path: bytes, mode: int,
-                            tree_encoding="utf-8"):
+def blob_from_path_and_mode(fs_path: bytes, mode: int, tree_encoding="utf-8"):
     """Create a blob from a path and a stat object.
 
     Args:
@@ -796,8 +922,8 @@ def read_submodule_head(path: Union[str, bytes]) -> Optional[bytes]:
       path: path to the submodule
     Returns: HEAD sha, None if not a valid head/repository
     """
-    from dulwich.errors import NotGitRepository
-    from dulwich.repo import Repo
+    from .errors import NotGitRepository
+    from .repo import Repo
 
     # Repo currently expects a "str", so decode if necessary.
     # TODO(user): Perhaps move this into Repo() ?
@@ -839,8 +965,8 @@ def _has_directory_changed(tree_path: bytes, entry):
 
 
 def get_unstaged_changes(
-        index: Index, root_path: Union[str, bytes],
-        filter_blob_callback=None):
+    index: Index, root_path: Union[str, bytes], filter_blob_callback=None
+):
     """Walk through an index and check for differences against working tree.
 
     Args:
@@ -854,6 +980,11 @@ def get_unstaged_changes(
 
     for tree_path, entry in index.iteritems():
         full_path = _tree_to_fs_path(root_path, tree_path)
+        if isinstance(entry, ConflictedIndexEntry):
+            # Conflicted files are always unstaged
+            yield tree_path
+            continue
+
         try:
             st = os.lstat(full_path)
             if stat.S_ISDIR(st.st_mode):
@@ -921,12 +1052,12 @@ def index_entry_from_directory(st, path: bytes) -> Optional[IndexEntry]:
         head = read_submodule_head(path)
         if head is None:
             return None
-        return index_entry_from_stat(st, head, 0, mode=S_IFGITLINK)
+        return index_entry_from_stat(st, head, mode=S_IFGITLINK)
     return None
 
 
 def index_entry_from_path(
-        path: bytes, object_store: Optional[ObjectContainer] = None
+    path: bytes, object_store: Optional[ObjectContainer] = None
 ) -> Optional[IndexEntry]:
     """Create an index from a filesystem path.
 
@@ -949,14 +1080,15 @@ def index_entry_from_path(
         blob = blob_from_path_and_stat(path, st)
         if object_store is not None:
             object_store.add_object(blob)
-        return index_entry_from_stat(st, blob.id, 0)
+        return index_entry_from_stat(st, blob.id)
 
     return None
 
 
 def iter_fresh_entries(
-    paths: Iterable[bytes], root_path: bytes,
-    object_store: Optional[ObjectContainer] = None
+    paths: Iterable[bytes],
+    root_path: bytes,
+    object_store: Optional[ObjectContainer] = None,
 ) -> Iterator[Tuple[bytes, Optional[IndexEntry]]]:
     """Iterate over current versions of index entries on disk.
 
@@ -976,9 +1108,8 @@ def iter_fresh_entries(
 
 
 def iter_fresh_objects(
-        paths: Iterable[bytes], root_path: bytes, include_deleted=False,
-        object_store=None) -> Iterator[
-            Tuple[bytes, Optional[bytes], Optional[int]]]:
+    paths: Iterable[bytes], root_path: bytes, include_deleted=False, object_store=None
+) -> Iterator[Tuple[bytes, Optional[bytes], Optional[int]]]:
     """Iterate over versions of objects on disk referenced by index.
 
     Args:
@@ -988,13 +1119,11 @@ def iter_fresh_objects(
       object_store: Optional object store to report new items to
     Returns: Iterator over path, sha, mode
     """
-    for path, entry in iter_fresh_entries(
-            paths, root_path, object_store=object_store):
+    for path, entry in iter_fresh_entries(paths, root_path, object_store=object_store):
         if entry is None:
             if include_deleted:
                 yield path, None, None
         else:
-            entry = IndexEntry(*entry)
             yield path, entry.sha, cleanup_mode(entry.mode)
 
 
@@ -1017,7 +1146,8 @@ class locked_index:
 
     Works as a context manager.
     """
-    def __init__(self, path: Union[bytes, str]):
+
+    def __init__(self, path: Union[bytes, str]) -> None:
         self._path = path
 
     def __enter__(self):

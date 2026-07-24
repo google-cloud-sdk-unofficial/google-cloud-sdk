@@ -41,6 +41,13 @@ def OperationAttributeConfig():
   )
 
 
+def DeviceAttributeConfig():
+  return concepts.ResourceParameterAttributeConfig(
+      name='device',
+      help_text='The device ID.',
+  )
+
+
 def GetLocationResourceSpec():
   return concepts.ResourceSpec(
       'devicerun.projects.locations',
@@ -70,6 +77,16 @@ def GetOperationResourceSpec():
   )
 
 
+def GetDeviceResourceSpec():
+  return concepts.ResourceSpec(
+      'devicerun.projects.locations.devices',
+      resource_name='device',
+      projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
+      locationsId=LocationAttributeConfig(),
+      devicesId=DeviceAttributeConfig(),
+  )
+
+
 def AddLocationResourceArg(parser, verb):
   concept_parsers.ConceptParser.ForResource(
       '--location',
@@ -95,3 +112,13 @@ def AddOperationResourceArg(parser, verb, positional=True):
       'Operation to {}.'.format(verb),
       required=True,
   ).AddToParser(parser)
+
+
+def AddDeviceResourceArg(parser, verb, positional=True):
+  concept_parsers.ConceptParser.ForResource(
+      'device' if positional else '--device',
+      GetDeviceResourceSpec(),
+      'Device to {}.'.format(verb),
+      required=True,
+  ).AddToParser(parser)
+

@@ -72,6 +72,7 @@ def ValidateNoAutomaticUpdatesForContainers(
 
 
 def ValidateSourceDeployContainer(deploy_from_source):
+  """Validates container configurations for source deployments."""
   if len(deploy_from_source) > 1:
     needs_image = [
         name
@@ -83,6 +84,14 @@ def ValidateSourceDeployContainer(deploy_from_source):
     raise c_exceptions.InvalidArgumentException(
         '--container', 'At most one container can be deployed from source.'
     )
+  if len(deploy_from_source) == 1:
+    container = next(iter(deploy_from_source.values()))
+    if getattr(container, 'no_build', False) and getattr(
+        container, 'local_build', False
+    ):
+      raise c_exceptions.ConflictingArgumentsException(
+          '--no-build', '--local-build'
+      )
 
 
 def ValidateContainerImageOrPromptForSource(deploy_from_source):
@@ -178,6 +187,18 @@ def IsNoBuildFromSource(release_track, build_from_source):
     return False
   container = next(iter(build_from_source.items()))[1]
   return container.IsSpecified('no_build')
+
+
+def IsLocalBuildFromSource(release_track, build_from_source):
+  """Checks if this is a local build source deployment."""
+  if release_track != base.ReleaseTrack.ALPHA:
+    return False
+  if not build_from_source:
+    return False
+  return any(
+      hasattr(container, 'local_build') and container.IsSpecified('local_build')
+      for container in build_from_source.values()
+  )
 
 
 def ValidateServiceNameFromImage(image_uri, service_id):

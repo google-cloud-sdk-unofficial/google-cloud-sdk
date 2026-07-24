@@ -27,7 +27,14 @@ types), which live in an environment-specific connector-types project at the
 (autopush). The dbt ENTRIES live in the caller's own entry group (their project,
 a regional location); the entryType, aspectType and aspect-map keys reference
 the connector-types project (the aspect key uses the connector project ID, e.g.
-``dataplex-staging-3p-types.global.dbt-node``).
+``dataplex-staging-3p-types.global.dbt-node``). The ``contacts`` aspect type and
+the entry link types are core 1P types in a separate system project
+(``dataplex-types`` / ``dataplex-staging-types`` / ``dataplex-autopush-types``).
+
+EntryLink emission (lineage / semantic edges between entries) is implemented in
+``entry_links`` but OFF by default. ``GenerateImportFile`` only emits links when
+``include_entry_links=True``. See ``entry_links`` and ``entry_builders`` for the
+per-resource and per-edge construction detail.
 """
 
 from __future__ import annotations
@@ -38,8 +45,8 @@ import re
 from typing import Any
 
 from googlecloudsdk.command_lib.dataplex.dbt import entry_builders
+from googlecloudsdk.command_lib.dataplex.dbt import entry_links
 from googlecloudsdk.command_lib.dataplex.dbt import naming
-from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 
@@ -60,13 +67,15 @@ OPTIONAL_ARTIFACTS = (CATALOG_FILE, RUN_RESULTS_FILE, SOURCES_FILE)
 # shape is easier to diagnose. See metadata.dbt_schema_version in manifest.json.
 SUPPORTED_MANIFEST_SCHEMA_VERSIONS = frozenset(['v10', 'v11', 'v12'])
 
+# Re-exported so callers importing this module reach the entry link type FQNs
+# (used to scope the import job) without importing entry_links directly.
+LinkTypeFqns = entry_links.LinkTypeFqns  # pylint: disable=invalid-name
 
-class TransformError(core_exceptions.Error):
-  """Raised when dbt artifacts are missing or malformed.
 
-  Extends core.exceptions.Error so gcloud reports it as a clean `ERROR:`
-  message rather than an unexpected-crash traceback.
-  """
+# Re-exported so callers keep raising/catching ``transform.TransformError``.
+# The class lives in ``naming`` so lower-level modules (e.g. ``entry_builders``)
+# can raise it without importing this module, which imports them.
+TransformError = naming.TransformError  # pylint: disable=invalid-name
 
 
 def _load_json(path: str, required: bool) -> dict[str, Any]:
@@ -149,7 +158,9 @@ def GenerateImportFile(  # pylint: disable=invalid-name
     eg_location: str,
     entry_group: str,
     connector_types_project: str,
+    system_types_project: str,
     types_location: str = 'global',
+    include_entry_links: bool = False,
 ) -> dict[str, Any]:
   """Transforms dbt artifacts at artifacts_path into a JSONL import file.
 
@@ -163,13 +174,18 @@ def GenerateImportFile(  # pylint: disable=invalid-name
     connector_types_project: project hosting the dbt aspect/entry types (e.g.
       dataplex-connector-types / dataplex-staging-3p-types); used for entryType,
       aspectType and dbt aspect keys.
+    system_types_project: project hosting `contacts` + entry link types (e.g.
+      dataplex-types / dataplex-staging-types).
     types_location: location of the system types (always `global`).
+    include_entry_links: when True, also emit EntryLink records. OFF by default.
 
   Returns:
-    A dict summary: {'entries': int, 'output': str}.
+    A dict summary: {'entries': int, 'entry_links': int, 'output': str}.
 
   Raises:
-    TransformError: if a required artifact is missing or malformed.
+    TransformError: if a required artifact is missing or malformed, or if an
+      entry or aspect exceeds the Dataplex size limits (fails before writing the
+      import file, so nothing is uploaded to GCS or handed to an import job).
   """
   # Tolerate being pointed at the project root or the target/ dir directly.
   base = artifacts_path
@@ -181,22 +197,35 @@ def GenerateImportFile(  # pylint: disable=invalid-name
   manifest = _load_json(os.path.join(base, MANIFEST_FILE), required=True)
   _warn_on_unsupported_manifest(manifest)
   catalog = _load_json(os.path.join(base, CATALOG_FILE), required=False)
+  run_results = _load_json(os.path.join(base, RUN_RESULTS_FILE), required=False)
+  sources = _load_json(os.path.join(base, SOURCES_FILE), required=False)
 
   ctx = naming.Context(
       eg_project=eg_project,
       eg_location=eg_location,
       entry_group=entry_group,
       connector_project=connector_types_project,
+      system_project=system_types_project,
       types_location=types_location,
   )
 
-  entries, _ = entry_builders.build_entries(ctx, manifest, catalog)
+  entries, known_ids = entry_builders.build_entries(
+      ctx, manifest, catalog, run_results, sources
+  )
+  links = (
+      entry_links.build_entry_links(ctx, manifest, known_ids)
+      if include_entry_links
+      else []
+  )
 
   with files.FileWriter(output_path) as f:
     for item in entries:
       f.write(json.dumps(item) + '\n')
+    for item in links:
+      f.write(json.dumps(item) + '\n')
 
   return {
       'entries': len(entries),
+      'entry_links': len(links),
       'output': output_path,
   }

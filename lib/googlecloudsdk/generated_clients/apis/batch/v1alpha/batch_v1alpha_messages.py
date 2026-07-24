@@ -70,8 +70,7 @@ class AllocationPolicy(_messages.Message):
     instance: Deprecated: please use instances[0].policy instead.
     instanceFlexibilityPolicy: Optional. The instance flexibility policy for
       the job. This configuration overrides the `instances` configuration.
-      Only allowed in job and node pool level. Not allowed in task group
-      level.
+      Only allowed in job level. Not allowed in task group level.
     instanceTemplates: Deprecated: please use instances[0].template instead.
     instances: Describe instances that can be created by this
       AllocationPolicy. Only instances[0] is supported now.

@@ -2050,8 +2050,7 @@ class TemplateMetadata(_messages.Message):
     filterVersionSelector: Optional. Specifies the configuration for the
       Filter version to be used. If this field is populated, it takes
       precedence over any values set in the deprecated `filter_version` fields
-      within `RaiFilterSettings`, `PiAndJailbreakFilterSettings`, and
-      `TopicalityFilterSettings`.
+      within `RaiFilterSettings`, `PiAndJailbreakFilterSettings`.
     ignorePartialInvocationFailures: Optional. If true, partial detector
       failures should be ignored.
     logSanitizeOperations: Optional. If true, log sanitize operations.

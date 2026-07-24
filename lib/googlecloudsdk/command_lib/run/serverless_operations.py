@@ -288,12 +288,19 @@ class ServerlessOperations(object):
         log.error('Still waiting: {}'.format(msg))
       raise err
 
-  def ListServices(self, namespace_ref):
-    """Returns all services in the namespace."""
+  def ListServices(self, namespace_ref, label_selector=None):
+    """Returns services in the namespace.
+
+    Args:
+      namespace_ref: Resource, namespace to list services in.
+      label_selector: Optional[str], label selector query to filter services.
+    """
     messages = self.messages_module
     request = messages.RunNamespacesServicesListRequest(
         parent=namespace_ref.RelativeName()
     )
+    if label_selector is not None:
+      request.labelSelector = label_selector
     try:
       with metrics.RecordDuration(metric_names.LIST_SERVICES):
         response = self._client.namespaces_services.List(request)

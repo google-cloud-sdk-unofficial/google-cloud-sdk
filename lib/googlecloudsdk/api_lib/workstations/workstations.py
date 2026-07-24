@@ -135,6 +135,49 @@ class Workstations:
     )
     log.status.Print('Stopped workstation [{}].'.format(workstation_id))
 
+  def Suspend(self, args):
+    """Suspend a workstation.
+
+    This keeps the assignment to the existing VM but suspends it, rather than
+    stopping the workstation which unassigns the VM.
+
+    Args:
+      args: argparse.Namespace, The arguments passed to the command.
+
+    Returns:
+      An Operation reference if --async is specified, otherwise None.
+    """
+    workstation_name = args.CONCEPTS.workstation.Parse().RelativeName()
+    workstation_id = arg_utils.GetFromNamespace(
+        args, 'workstation', use_defaults=True
+    )
+    suspend_req = self.messages.WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWorkstationsSuspendRequest(
+        name=workstation_name
+    )
+    op_ref = self._service.Suspend(suspend_req)
+
+    log.status.Print('Suspending workstation: [{}]'.format(workstation_id))
+
+    if getattr(args, 'async_', False):
+      log.status.Print('Check operation [{}] for status.'.format(op_ref.name))
+      return op_ref
+
+    op_resource = resources.REGISTRY.ParseRelativeName(
+        op_ref.name,
+        collection='workstations.projects.locations.operations',
+        api_version=self.api_version,
+    )
+    poller = waiter.CloudOperationPoller(
+        self._service, self.client.projects_locations_operations
+    )
+
+    waiter.WaitFor(
+        poller,
+        op_resource,
+        'Waiting for operation [{}] to complete'.format(op_ref.name),
+    )
+    log.status.Print('Suspended workstation [{}].'.format(workstation_id))
+
   def Update(self, args):
     """Update a workstation."""
     workstation_name = args.CONCEPTS.workstation.Parse().RelativeName()

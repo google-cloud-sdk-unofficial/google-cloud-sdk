@@ -4001,8 +4001,10 @@ class GoogleIdentityAccesscontextmanagerV1EgressSource(_messages.Message):
       origins within the perimeter. Example:
       `accessPolicies/MY_POLICY/accessLevels/MY_LEVEL`. If a single `*` is
       specified for `access_level`, then all EgressSources will be allowed.
-    pscEndpoint: Requests from this PSC will be allowed from access perimeter
-      data.
+    pscEndpoint: A PrivateServiceConnectEndpoint that is allowed to access
+      data outside the perimeter. The Private Service Connect endpoint may be
+      in any organization, not just the organization that the perimeter is
+      defined in.
     resource: A Google Cloud resource from the service perimeter that you want
       to allow to access data outside the perimeter. This field supports only
       projects. The project format is `projects/{project_number}`. You can't
@@ -4137,8 +4139,10 @@ class GoogleIdentityAccesscontextmanagerV1IngressSource(_messages.Message):
       Cloud calls with request origins within the perimeter. Example:
       `accessPolicies/MY_POLICY/accessLevels/MY_LEVEL`. If a single `*` is
       specified for `access_level`, then all IngressSources will be allowed.
-    pscEndpoint: Requests from this PSC will be allowed to access perimeter
-      data.
+    pscEndpoint: A PrivateServiceConnectEndpoint that is allowed to access the
+      perimeter. The Private Service Connect endpoint may be in any
+      organization, not just the organization that the perimeter is defined
+      in.
     resource: A Google Cloud resource that is allowed to ingress the
       perimeter. Requests from these resources will be allowed to access
       perimeter data. Currently only projects and VPCs are allowed. Project
@@ -4247,12 +4251,14 @@ class GoogleIdentityAccesscontextmanagerV1OsConstraint(_messages.Message):
 
 
 class GoogleIdentityAccesscontextmanagerV1PrivateServiceConnectEndpoint(_messages.Message):
-  r"""Specifies the PSC an API call refers to.
+  r"""Specifies the Private Service Connect endpoint that an API call refers
+  to.
 
   Fields:
-    forwardingRule: The global forwarding rule identifier. Forwarding rule
-      format: `//compute.googleapis.com/projects/{PROJECT_ID}/global/forwardin
-      gRules/{FORWARDING_RULE_ID}`.
+    forwardingRule: The full resource name of the global forwarding rule that
+      identifies a Private Service Connect endpoint. Forwarding rule format: `
+      //compute.googleapis.com/projects/{PROJECT_ID}/global/forwardingRules/{F
+      ORWARDING_RULE_ID}`.
   """
 
   forwardingRule = _messages.StringField(1)

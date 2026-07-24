@@ -3030,8 +3030,11 @@ class PublicClusterConfig(_messages.Message):
 
   Fields:
     allowedSourceIpRanges: Required. The list of IPv4 ranges in CIDR notation
-      that are allowed to connect to the public Kafka broker endpoints. This
-      field is required if PublicClusterConfig is specified.
+      that are allowed to connect to the public Kafka broker endpoints. The
+      Kafka cluster should only be exposed to trusted external ranges. A
+      maximum of 500 IP ranges can be specified and no single range can be
+      larger than a `/16`. This field is required if PublicClusterConfig is
+      specified.
   """
 
   allowedSourceIpRanges = _messages.StringField(1, repeated=True)

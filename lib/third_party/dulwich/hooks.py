@@ -23,16 +23,14 @@
 import os
 import subprocess
 
-from dulwich.errors import (
-    HookError,
-)
+from .errors import HookError
 
 
 class Hook:
     """Generic hook object."""
 
     def execute(self, *args):
-        """Execute the hook with the given args
+        """Execute the hook with the given args.
 
         Args:
           args: argument list to hook
@@ -45,7 +43,7 @@ class Hook:
 
 
 class ShellHook(Hook):
-    """Hook by executable file
+    """Hook by executable file.
 
     Implements standard githooks(5) [0]:
 
@@ -60,8 +58,8 @@ class ShellHook(Hook):
         pre_exec_callback=None,
         post_exec_callback=None,
         cwd=None,
-    ):
-        """Setup shell hook definition
+    ) -> None:
+        """Setup shell hook definition.
 
         Args:
           name: name of hook for error messages
@@ -87,8 +85,7 @@ class ShellHook(Hook):
         self.cwd = cwd
 
     def execute(self, *args):
-        """Execute the hook with given args"""
-
+        """Execute the hook with given args."""
         if len(args) != self.numparam:
             raise HookError(
                 "Hook %s executed with wrong number of args. \
@@ -101,8 +98,8 @@ class ShellHook(Hook):
 
         try:
             ret = subprocess.call(
-                [os.path.relpath(self.filepath, self.cwd)] + list(args),
-                cwd=self.cwd)
+                [os.path.relpath(self.filepath, self.cwd), *list(args)], cwd=self.cwd
+            )
             if ret != 0:
                 if self.post_exec_callback is not None:
                     self.post_exec_callback(0, *args)
@@ -117,28 +114,27 @@ class ShellHook(Hook):
 
 
 class PreCommitShellHook(ShellHook):
-    """pre-commit shell hook"""
+    """pre-commit shell hook."""
 
-    def __init__(self, cwd, controldir):
+    def __init__(self, cwd, controldir) -> None:
         filepath = os.path.join(controldir, "hooks", "pre-commit")
 
         ShellHook.__init__(self, "pre-commit", filepath, 0, cwd=cwd)
 
 
 class PostCommitShellHook(ShellHook):
-    """post-commit shell hook"""
+    """post-commit shell hook."""
 
-    def __init__(self, controldir):
+    def __init__(self, controldir) -> None:
         filepath = os.path.join(controldir, "hooks", "post-commit")
 
         ShellHook.__init__(self, "post-commit", filepath, 0, cwd=controldir)
 
 
 class CommitMsgShellHook(ShellHook):
-    """commit-msg shell hook
-    """
+    """commit-msg shell hook."""
 
-    def __init__(self, controldir):
+    def __init__(self, controldir) -> None:
         filepath = os.path.join(controldir, "hooks", "commit-msg")
 
         def prepare_msg(*args):
@@ -165,9 +161,9 @@ class CommitMsgShellHook(ShellHook):
 
 
 class PostReceiveShellHook(ShellHook):
-    """post-receive shell hook"""
+    """post-receive shell hook."""
 
-    def __init__(self, controldir):
+    def __init__(self, controldir) -> None:
         self.controldir = controldir
         filepath = os.path.join(controldir, "hooks", "post-receive")
         ShellHook.__init__(self, "post-receive", path=filepath, numparam=0)
@@ -197,7 +193,7 @@ class PostReceiveShellHook(ShellHook):
             if (p.returncode != 0) or err_data:
                 err_fmt = b"post-receive exit code: %d\n" + b"stdout:\n%s\nstderr:\n%s"
                 err_msg = err_fmt % (p.returncode, out_data, err_data)
-                raise HookError(err_msg.decode('utf-8', 'backslashreplace'))
+                raise HookError(err_msg.decode("utf-8", "backslashreplace"))
             return out_data
         except OSError as err:
             raise HookError(repr(err)) from err

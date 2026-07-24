@@ -28,7 +28,7 @@
   arguments:
     params:
     - help_text: |-
-        Redis ACL Policy resource name using the form:
+        Memorystore ACL policy resource name using the form:
             `projects/{project}/locations/{location}/aclPolicies/{acl_policy_id}`
         where `location` refers to a GCP region.
       is_positional: true

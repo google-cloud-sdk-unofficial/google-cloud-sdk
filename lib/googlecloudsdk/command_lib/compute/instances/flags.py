@@ -333,6 +333,10 @@ def AddMachineImageArg():
 def AddSourceMachineImageEncryptionKey(parser):
   parser.add_argument(
       '--source-machine-image-csek-key-file',
+      action=actions.DeprecationAction(
+          '--source-machine-image-csek-key-file',
+          warn='The {flag_name} flag is deprecated.',
+          removed=False),
       metavar='FILE',
       help="""\
       Path to a Customer-Supplied Encryption Key (CSEK) key file, mapping resources to user managed keys which were used to encrypt the source machine-image.
@@ -2295,6 +2299,19 @@ def AddLocalSsdRecoveryTimeoutArgs(parser):
       between 0 and 168 hours with hour granularity and the default value being 1
       hour.
     """)
+
+
+def AddLocalSsdEncryptionModeArgs(parser):
+  parser.add_argument(
+      '--local-ssd-encryption-mode',
+      choices=['STANDARD_ENCRYPTION', 'EPHEMERAL_KEY_ENCRYPTION'],
+      hidden_choices=['EPHEMERAL_KEY_ENCRYPTION'],
+      help="""
+      Specifies which method should be used for encrypting the Local SSDs
+      attached to the VM. STANDARD_ENCRYPTION will use
+      Google managed keys.
+      """,
+  )
 
 
 def AddInstanceTerminationActionVmArgs(parser, is_update=False):

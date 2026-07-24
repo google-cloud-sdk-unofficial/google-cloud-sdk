@@ -13,7 +13,7 @@ class SaasservicemgmtV1(base_api.BaseApiClient):
   MTLS_BASE_URL = 'https://saasservicemgmt.mtls.googleapis.com/'
 
   _PACKAGE = 'saasservicemgmt'
-  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform']
+  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/saasservicemgmt.read-write', 'https://www.googleapis.com/auth/saasservicemgmt.readonly']
   _VERSION = 'v1'
   _CLIENT_ID = 'CLIENT_ID'
   _CLIENT_SECRET = 'CLIENT_SECRET'

@@ -306,6 +306,7 @@ class ConnectionProfile(_messages.Message):
     sqlServerProfile: Profile for connecting to a SQLServer source.
     staticServiceIpConnectivity: Static Service IP connectivity.
     updateTime: Output only. The update time of the resource.
+    workdayProfile: Optional. Profile for connecting to a Workday source.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -354,6 +355,7 @@ class ConnectionProfile(_messages.Message):
   sqlServerProfile = _messages.MessageField('SqlServerProfile', 20)
   staticServiceIpConnectivity = _messages.MessageField('StaticServiceIpConnectivity', 21)
   updateTime = _messages.StringField(22)
+  workdayProfile = _messages.MessageField('WorkdayProfile', 23)
 
 
 class CustomizationRule(_messages.Message):
@@ -1279,7 +1281,7 @@ class ErrorInfo(_messages.Message):
       "100/request"}`, should be returned as, `{"instanceLimitPerRequest":
       "100"}`, if the client exceeds the number of instances that can be
       created in a single (batch) request.
-    reason: The reason of the error. This is a constant value that identifies
+    reason: The reason for the error. This is a constant value that identifies
       the proximate cause of the error. Error reasons are unique within a
       particular domain of errors. This should be at most 63 characters and
       match a regular expression of `A-Z+[A-Z0-9]`, which represents
@@ -1370,8 +1372,8 @@ class FieldViolation(_messages.Message):
       in the third `emailAddresses` message.
     localizedMessage: Provides a localized error message for field-level
       errors that is safe to return to the API consumer.
-    reason: The reason of the field-level error. This is a constant value that
-      identifies the proximate cause of the field-level error. It should
+    reason: The reason for the field-level error. This is a constant value
+      that identifies the proximate cause of the field-level error. It should
       uniquely identify the type of the FieldViolation within the scope of the
       google.rpc.ErrorInfo.domain. This should be at most 63 characters and
       match a regular expression of `A-Z+[A-Z0-9]`, which represents
@@ -2231,6 +2233,18 @@ class OauthClientCredentials(_messages.Message):
 
   clientId = _messages.StringField(1)
   clientSecret = _messages.MessageField('Secret', 2)
+
+
+class OauthRefreshTokenCredentials(_messages.Message):
+  r"""OAuth Refresh Token Credentials.
+
+  Fields:
+    oauthClientCredentials: Required. Specifies the OAuth Client Credentials.
+    refreshToken: Required. Specifies the OAuth Refresh Token.
+  """
+
+  oauthClientCredentials = _messages.MessageField('OauthClientCredentials', 1)
+  refreshToken = _messages.MessageField('Secret', 2)
 
 
 class ObjectFilter(_messages.Message):
@@ -3426,6 +3440,7 @@ class SourceConfig(_messages.Message):
       `projects/{project}/locations/{location}/connectionProfiles/{name}`
     spannerSourceConfig: Spanner data source configuration.
     sqlServerSourceConfig: SQLServer data source configuration.
+    workdaySourceConfig: Optional. Workday data source configuration.
   """
 
   dataverseSourceConfig = _messages.MessageField('DataverseSourceConfig', 1)
@@ -3439,6 +3454,7 @@ class SourceConfig(_messages.Message):
   sourceConnectionProfile = _messages.StringField(9)
   spannerSourceConfig = _messages.MessageField('SpannerSourceConfig', 10)
   sqlServerSourceConfig = _messages.MessageField('SqlServerSourceConfig', 11)
+  workdaySourceConfig = _messages.MessageField('WorkdaySourceConfig', 12)
 
 
 class SourceHierarchyDatasets(_messages.Message):
@@ -4326,6 +4342,39 @@ class VpcPeeringConfig(_messages.Message):
 
   subnet = _messages.StringField(1)
   vpc = _messages.StringField(2)
+
+
+class WorkdayProfile(_messages.Message):
+  r"""Profile for connecting to a Workday source.
+
+  Fields:
+    host: Required. Host for the Workday connection. Must be a valid hostname
+      (e.g., `wd3-impl-services1.workday.com`).
+    oauthRefreshTokenCredentials: Required. Credentials for authenticating
+      with the Workday API. OAuth Refresh Token credentials for authenticating
+      with the Workday API.
+    tenant: Required. Tenant for the Workday connection (e.g., `google12`).
+  """
+
+  host = _messages.StringField(1)
+  oauthRefreshTokenCredentials = _messages.MessageField('OauthRefreshTokenCredentials', 2)
+  tenant = _messages.StringField(3)
+
+
+class WorkdaySourceConfig(_messages.Message):
+  r"""Configuration for syncing data from a Workday source.
+
+  Fields:
+    excludeObjects: Optional. The objects to exclude from the stream.
+    includeObjects: Optional. The objects to retrieve from the source.
+    pollingInterval: Required. Incremental sync polling interval for all
+      objects. If not set, a default value of `5 minutes` is used. The
+      duration must be from `5 minutes` to `24 hours`, inclusive.
+  """
+
+  excludeObjects = _messages.MessageField('SourceCatalog', 1)
+  includeObjects = _messages.MessageField('SourceCatalog', 2)
+  pollingInterval = _messages.StringField(3)
 
 
 encoding.AddCustomJsonFieldMapping(

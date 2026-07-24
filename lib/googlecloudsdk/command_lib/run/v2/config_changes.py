@@ -1268,6 +1268,8 @@ class WorkerPoolInstancesChange(config_changes.NonTemplateConfigChanger):
       worker_pool_resource.scaling.max_instance_count = None
       # Clear CPU scaling
       worker_pool_resource.scaling.cpu_scaling = None
+      # Clear Pub/Sub scaling
+      worker_pool_resource.scaling.pubsub_scalings = []
       worker_pool_resource.scaling.scaling_mode = (
           vendor_settings.WorkerPoolScaling.ScalingMode.MANUAL
       )
@@ -1305,6 +1307,125 @@ class WorkerPoolCpuScalingChange(config_changes.NonTemplateConfigChanger):
       )
       # Clear manual instance count when autoscaling is enabled
       resource.scaling.manual_instance_count = None
+    return resource
+
+
+def _QualifySubscription(subscription: str, project: str) -> str:
+  """Qualifies a subscription name to a full resource name."""
+  if subscription.startswith('projects/'):
+    parts = subscription.split('/')
+    if (
+        len(parts) == 4
+        and parts[0] == 'projects'
+        and parts[2] == 'subscriptions'
+    ):
+      sub_project = parts[1]
+      if sub_project != project:
+        raise exceptions.ConfigurationError(
+            f'Subscription [{subscription}] must be in the same project as the'
+            f' worker pool [{project}].'
+        )
+      return subscription
+    else:
+      raise exceptions.ConfigurationError(
+          f'Invalid subscription format [{subscription}]. Must be in the form'
+          ' projects/{project}/subscriptions/{id}'
+      )
+  else:
+    return f'projects/{project}/subscriptions/{subscription}'
+
+
+@dataclasses.dataclass(frozen=True, kw_only=True)
+class PubSubScalingSpec:
+  subscription: str | None = None
+  target_value: int | None = None
+
+
+@dataclasses.dataclass(frozen=True, kw_only=True)
+class WorkerPoolPubSubScalingChange(config_changes.NonTemplateConfigChanger):
+  """Represents the user intent to adjust worker pool Pub/Sub scaling."""
+
+  subscription: str | None = None
+  target_value: int | None = None
+  pubsub_scalings: Sequence[PubSubScalingSpec] = ()
+
+  def Adjust(
+      self, resource: worker_pool_objects.WorkerPool
+  ) -> worker_pool_objects.WorkerPool:
+    """Adjusts the worker pool resource with the specified Pub/Sub scaling settings.
+
+    If multiple pubsub_scalings specs are provided (from grouped flag parsing),
+    they are applied directly. Otherwise, if individual subscription and/or
+    target_value flags are specified, they are merged with any existing
+    Pub/Sub scaling specification on the resource.
+
+    Args:
+      resource: The worker pool resource to adjust.
+
+    Returns:
+      The adjusted worker pool resource.
+    """
+    specs = list(self.pubsub_scalings)
+    # Check if single flat flags (--scaling-pubsub-subscription or
+    # --scaling-pubsub-target) were provided when grouped scaling specs are not
+    # present. If so, construct a new spec merging with existing scaling config.
+    if not specs and (
+        self.subscription is not None or self.target_value is not None
+    ):
+      existing_scaling = None
+      if resource.scaling.pubsub_scalings:
+        existing_scaling = resource.scaling.pubsub_scalings[0]
+
+      sub = self.subscription
+      if not sub and existing_scaling:
+        sub = existing_scaling.subscription
+
+      target = self.target_value
+      if not target and existing_scaling:
+        target = existing_scaling.target_value
+
+      specs.append(
+          PubSubScalingSpec(subscription=sub, target_value=target)
+      )
+
+    if not specs:
+      return resource
+
+    project, _, _, _ = resource_name_conversion.GetInfoFromFullName(
+        resource.name
+    )
+
+    new_scalings = []
+    for spec in specs:
+      sub = spec.subscription
+      target = spec.target_value
+
+      if not sub:
+        raise exceptions.ConfigurationError(
+            'Subscription must be specified when enabling Pub/Sub scaling.'
+        )
+      if not target:
+        raise exceptions.ConfigurationError(
+            'Target value must be specified when enabling Pub/Sub scaling.'
+        )
+
+      qualified_subscription = _QualifySubscription(sub, project)
+      scaling = vendor_settings.PubSubScaling(
+          subscription=qualified_subscription,
+          target_value=target,
+          metric_name=(
+              vendor_settings.PubSubScaling.PubSubMetric.NUM_UNACKED_MESSAGES
+          ),
+      )
+      new_scalings.append(scaling)
+
+    resource.scaling.pubsub_scalings = new_scalings
+    resource.scaling.scaling_mode = (
+        vendor_settings.WorkerPoolScaling.ScalingMode.AUTOMATIC
+    )
+    # Clear manual instance count when autoscaling is enabled
+    resource.scaling.manual_instance_count = None
+
     return resource
 
 

@@ -26,8 +26,8 @@
           Sample output:
           ```
             ---
-            analyzerInsightFound: true
-            displayName: performance-degradation-event
+            displayName: Performance degradation - 2026-05-01T12:00:00Z
+            endTime: '2026-05-01T12:10:00Z'
             name: projects/PROJECT_ID/locations/us-central1/machineLearningRuns/my-run-123/monitoredEvents/abc-123-def-456
             startTime: '2026-05-01T12:00:00Z'
             type: PERFORMANCE_DEGRADATION

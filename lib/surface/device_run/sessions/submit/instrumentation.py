@@ -26,6 +26,7 @@ from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.command_lib.device_run import reports
 from googlecloudsdk.command_lib.device_run import resource_args
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
@@ -276,7 +277,7 @@ targets in the module will be run.
         ),
     )
     parser.add_argument(
-        '--uniform-shard-count',
+        '--uniform-sharding-count',
         type=int,
         help=(
             'Specifies the total number of shards to create for uniform'
@@ -374,9 +375,12 @@ targets in the module will be run.
             'Use --test-targets instead.',
         )
 
-    if args.sharding_option == 'uniform' and args.uniform_shard_count is None:
+    if (
+        args.sharding_option == 'uniform'
+        and args.uniform_sharding_count is None
+    ):
       raise calliope_exceptions.RequiredArgumentException(
-          '--uniform-shard-count',
+          '--uniform-sharding-count',
           'Required when sharding-option is uniform.',
       )
     if (
@@ -554,7 +558,7 @@ targets in the module will be run.
     smart_sharding = None
     if args.sharding_option == 'uniform':
       uniform_sharding = messages.UniformSharding(
-          shardCount=args.uniform_shard_count
+          shardCount=args.uniform_sharding_count
       )
     elif args.sharding_option == 'smart':
       record_path = (
@@ -630,7 +634,10 @@ targets in the module will be run.
     )
 
     session = messages.Session(sessionConfig=session_config)
-    operation = client.Create(location_ref, session=session)
+    request_id = str(uuid.uuid4())
+    operation = client.Create(
+        location_ref, session=session, request_id=request_id
+    )
     operation_id = operation.name.split('/')[-1]
 
     # Print a blank line for spacing.
@@ -656,7 +663,7 @@ targets in the module will be run.
 
     log.status.Print(
         f'Result files will be stored at'
-        f' [gs://{bucket_name}/automation/sessions/{session_id}/].'
+        f' [https://console.cloud.google.com/storage/browser/{bucket_name}/automation/sessions/{session_id}/].'
     )
 
     if args.async_:
@@ -687,31 +694,7 @@ targets in the module will be run.
         if session.sessionReport and session.sessionReport.result
         else None
     )
-
-    rows = []
-    if session.sessionReport and session.sessionReport.jobReports:
-      for job_report in session.sessionReport.jobReports:
-        job_name = job_report.displayName
-        if job_report.executionReports:
-          for exec_report in job_report.executionReports:
-            exec_name = exec_report.displayName
-            result = str(exec_report.result.resultType)
-            rows.append({
-                'job_name': job_name,
-                'execution_name': exec_name,
-                'result': result,
-            })
-        else:
-          result = (
-              str(job_report.result.resultType)
-              if job_report.result and job_report.result.resultType
-              else ''
-          )
-          rows.append({
-              'job_name': job_name,
-              'execution_name': '',
-              'result': result,
-          })
+    rows = reports.ExtractSessionReportRows(session.sessionReport)
 
     # Print a blank line for spacing.
     log.status.Print()

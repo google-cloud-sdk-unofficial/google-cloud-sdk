@@ -1605,7 +1605,7 @@ class Realm(_messages.Message):
 
   Enums:
     IpVersionValueValuesEnum: Optional. IP version of the Realm.
-    ManagementTypeValueValuesEnum: Required. Management type of the Realm.
+    ManagementTypeValueValuesEnum: Optional. Management type of the Realm.
     TrafficTypeValueValuesEnum: Required. Traffic type of the Realm.
 
   Messages:
@@ -1618,7 +1618,7 @@ class Realm(_messages.Message):
     discoveryMetadata: Output only. Discovery metadata of the Realm.
     ipVersion: Optional. IP version of the Realm.
     labels: Optional. User-defined labels.
-    managementType: Required. Management type of the Realm.
+    managementType: Optional. Management type of the Realm.
     name: Required. Identifier. The resource name of the Realm.
     registryBook: Required. Name of the RegistryBook that claims the Realm.
     trafficType: Required. Traffic type of the Realm.
@@ -1638,7 +1638,7 @@ class Realm(_messages.Message):
     IPV6 = 2
 
   class ManagementTypeValueValuesEnum(_messages.Enum):
-    r"""Required. Management type of the Realm.
+    r"""Optional. Management type of the Realm.
 
     Values:
       MANAGEMENT_TYPE_UNSPECIFIED: Unspecified management type.

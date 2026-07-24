@@ -45,6 +45,42 @@ class AirflowMetadataRetentionPolicyConfig(_messages.Message):
   retentionMode = _messages.EnumField('RetentionModeValueValuesEnum', 2)
 
 
+class AirflowRbacBinding(_messages.Message):
+  r"""A binding for identities (prefixed users/groups emails) to a specific
+  Airflow role.
+
+  Fields:
+    members: Required. Specifies the identities (prefixed user/group emails)
+      to which the role is granted. An identity must be prefixed with `user:`
+      or `group:`.
+    role: Required. Specifies the name of the Airflow role.
+  """
+
+  members = _messages.StringField(1, repeated=True)
+  role = _messages.StringField(2)
+
+
+class AirflowRbacConfig(_messages.Message):
+  r"""Declarative configuration for Airflow RBAC. The following example: ``` {
+  "baseGroup":"managed-airflow-rbac-groups@example.com" "bindings": [ {
+  "role":"Admin", "members": ["group:example-group@example.com"] }, {
+  "role":"Viewer", "members": ["user:example-user@example.com",
+  "group:example-group@example.com"] } ] } ``` would define an Airflow RBAC
+  configuration with 2 bindings.
+
+  Fields:
+    baseGroup: Optional. Specifies the base group email. Base group is a group
+      of groups, which means every group specified in the bindings needs to be
+      a child (direct or indirect) of the base group. Should start with
+      managed-airflow-rbac-groups@ prefix.
+    bindings: Required. Binds the identities (prefixed users/groups emails) to
+      the Airflow roles.
+  """
+
+  baseGroup = _messages.StringField(1)
+  bindings = _messages.MessageField('AirflowRbacBinding', 2, repeated=True)
+
+
 class AllowedIpRange(_messages.Message):
   r"""Allowed IP range with user-provided description.
 
@@ -2666,9 +2702,20 @@ class ScheduledHibernationConfig(_messages.Message):
   Fields:
     enabled: Optional. Whether hibernating and resuming the environment on a
       schedule is enabled.
+    hibernationSchedules: Optional. The cron expressions representing the
+      times when the environment will automatically hibernate, entering the
+      HIBERNATED state.
+    resumptionSchedules: Optional. The cron expressions representing the times
+      when the environment will automatically resume, entering the RUNNING
+      state.
+    timeZone: Optional. Time zone that sets the context to interpret the
+      schedule expressions. Expected format is "UTC+05", "UTC-03", etc.
   """
 
   enabled = _messages.BooleanField(1)
+  hibernationSchedules = _messages.StringField(2, repeated=True)
+  resumptionSchedules = _messages.StringField(3, repeated=True)
+  timeZone = _messages.StringField(4)
 
 
 class ScheduledSnapshotsConfig(_messages.Message):
@@ -2682,7 +2729,7 @@ class ScheduledSnapshotsConfig(_messages.Message):
     snapshotLocation: Optional. The Cloud Storage location for storing
       automatically created snapshots.
     timeZone: Optional. Time zone that sets the context to interpret
-      snapshot_creation_schedule.
+      snapshot_creation_schedule. Expected format is "UTC+05", "UTC-03", etc.
   """
 
   enabled = _messages.BooleanField(1)
@@ -2776,6 +2823,8 @@ class SoftwareConfig(_messages.Message):
       tps://airflow.apache.org/code.html?highlight=executor#executors) by
       which task instances are run on Airflow. If this field is unspecified,
       the `airflowExecutorType` defaults to `celery`.
+    airflowRbacConfig: Optional. The Airflow Role-Based Access Control (RBAC)
+      configuration.
     auditLogsReplicationMode: Optional. The selected mode of audit logs
       replication. This field is supported for Cloud Composer environments in
       versions composer-3-airflow-*.*.*-build.* and newer.
@@ -2983,14 +3032,15 @@ class SoftwareConfig(_messages.Message):
 
   airflowConfigOverrides = _messages.MessageField('AirflowConfigOverridesValue', 1)
   airflowExecutorType = _messages.EnumField('AirflowExecutorTypeValueValuesEnum', 2)
-  auditLogsReplicationMode = _messages.EnumField('AuditLogsReplicationModeValueValuesEnum', 3)
-  cloudDataLineageIntegration = _messages.MessageField('CloudDataLineageIntegration', 4)
-  envVariables = _messages.MessageField('EnvVariablesValue', 5)
-  imageVersion = _messages.StringField(6)
-  pypiPackages = _messages.MessageField('PypiPackagesValue', 7)
-  pythonVersion = _messages.StringField(8)
-  schedulerCount = _messages.IntegerField(9, variant=_messages.Variant.INT32)
-  webServerPluginsMode = _messages.EnumField('WebServerPluginsModeValueValuesEnum', 10)
+  airflowRbacConfig = _messages.MessageField('AirflowRbacConfig', 3)
+  auditLogsReplicationMode = _messages.EnumField('AuditLogsReplicationModeValueValuesEnum', 4)
+  cloudDataLineageIntegration = _messages.MessageField('CloudDataLineageIntegration', 5)
+  envVariables = _messages.MessageField('EnvVariablesValue', 6)
+  imageVersion = _messages.StringField(7)
+  pypiPackages = _messages.MessageField('PypiPackagesValue', 8)
+  pythonVersion = _messages.StringField(9)
+  schedulerCount = _messages.IntegerField(10, variant=_messages.Variant.INT32)
+  webServerPluginsMode = _messages.EnumField('WebServerPluginsModeValueValuesEnum', 11)
 
 
 class SourceCode(_messages.Message):

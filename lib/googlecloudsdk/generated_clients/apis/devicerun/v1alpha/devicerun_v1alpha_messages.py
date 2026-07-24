@@ -23,6 +23,29 @@ class AllocationConfig(_messages.Message):
   deviceConfigs = _messages.MessageField('DeviceConfig', 1, repeated=True)
 
 
+class AndroidBugreportDeviceAction(_messages.Message):
+  r"""Captures a bugreport from the device. The bugreport will not be captured
+  when the test result is pass. The output will be written to a file named
+  `bugreport.zip` in the execution output directory.
+  """
+
+
+
+class AndroidDeviceDetails(_messages.Message):
+  r"""Android-specific device attributes.
+
+  Fields:
+    buildType: Output only. Mirrors the AOSP `ro.build.type` property, e.g.
+      "user", "userdebug", "eng". Empty if unknown.
+    supportedAbis: Output only. Lists ABIs supported by the device
+      (android.os.Build.SUPPORTED_ABIS), most preferred first, e.g.
+      "arm64-v8a".
+  """
+
+  buildType = _messages.StringField(1)
+  supportedAbis = _messages.StringField(2, repeated=True)
+
+
 class AndroidInstallPackagesDeviceAction(_messages.Message):
   r"""Installs Android packages on the device.
 
@@ -296,6 +319,10 @@ class AndroidSwitchLocaleDeviceAction(_messages.Message):
   localeCode = _messages.StringField(1)
 
 
+class AutomationSupport(_messages.Message):
+  r"""Per-product metadata for the Automation (DeviceRun) product."""
+
+
 class CancelSessionRequest(_messages.Message):
   r"""Request to cancel a session."""
 
@@ -327,10 +354,166 @@ class CancelSessionResponse(_messages.Message):
   cancelResult = _messages.EnumField('CancelResultValueValuesEnum', 1)
 
 
+class Date(_messages.Message):
+  r"""Represents a whole or partial calendar date, such as a birthday. The
+  time of day and time zone are either specified elsewhere or are
+  insignificant. The date is relative to the Gregorian Calendar. This can
+  represent one of the following: * A full date, with non-zero year, month,
+  and day values. * A month and day, with a zero year (for example, an
+  anniversary). * A year on its own, with a zero month and a zero day. * A
+  year and month, with a zero day (for example, a credit card expiration
+  date). Related types: * google.type.TimeOfDay * google.type.DateTime *
+  google.protobuf.Timestamp
+
+  Fields:
+    day: Day of a month. Must be from 1 to 31 and valid for the year and
+      month, or 0 to specify a year by itself or a year and month where the
+      day isn't significant.
+    month: Month of a year. Must be from 1 to 12, or 0 to specify a year
+      without a month and day.
+    year: Year of the date. Must be from 1 to 9999, or 0 to specify a date
+      without a year.
+  """
+
+  day = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  month = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  year = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+
+
+class Device(_messages.Message):
+  r"""A single routable device configuration in the catalog.
+
+  Enums:
+    FormFactorValueValuesEnum: Output only. Specifies the form factor of the
+      device.
+    HardwareTypeValueValuesEnum: Output only. Indicates whether the device is
+      physical or virtual.
+    PlatformValueValuesEnum: Output only. Specifies the platform of the
+      device.
+
+  Messages:
+    LabelsValue: Output only. Additional information. Informational only. May
+      change over the lifecycle of a device.
+
+  Fields:
+    androidDetails: Output only. Contains Android-specific attributes (set
+      when platform == ANDROID).
+    availability: Output only. Reports the current fleet availability for this
+      device configuration.
+    displayName: Output only. Provides a human-readable display name, e.g.
+      "Pixel 5".
+    formFactor: Output only. Specifies the form factor of the device.
+    hardwareType: Output only. Indicates whether the device is physical or
+      virtual.
+    iosDetails: Output only. Contains iOS-specific attributes (set when
+      platform == IOS).
+    labels: Output only. Additional information. Informational only. May
+      change over the lifecycle of a device.
+    lifecycle: Output only. The device lifecycle (maturity stage and removal
+      date).
+    manufacturer: Output only. Specifies the hardware manufacturer of the
+      device.
+    name: Identifier. Identifies the device resource. Format:
+      `projects/{project}/locations/{location}/devices/{device}`. The {device}
+      segment is an opaque, stable string. Clients must not parse it to derive
+      or assume device-specific details.
+    osVersion: Output only. Specifies the OS version, e.g. "30" (Android API
+      level) or "17.4" (iOS).
+    platform: Output only. Specifies the platform of the device.
+    primaryScreen: Output only. Measurements of the primary device screen.
+      Informational only. Unset for devices without a screen (e.g. some
+      wearables).
+    supportedProducts: Output only. Products/Services supported by this
+      device.
+  """
+
+  class FormFactorValueValuesEnum(_messages.Enum):
+    r"""Output only. Specifies the form factor of the device.
+
+    Values:
+      FORM_FACTOR_UNSPECIFIED: Form factor not specified.
+      PHONE: Phone.
+      TABLET: Tablet.
+      WEARABLE: Wearable (e.g. watch).
+      TV: TV.
+    """
+    FORM_FACTOR_UNSPECIFIED = 0
+    PHONE = 1
+    TABLET = 2
+    WEARABLE = 3
+    TV = 4
+
+  class HardwareTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. Indicates whether the device is physical or virtual.
+
+    Values:
+      HARDWARE_TYPE_UNSPECIFIED: Hardware type not specified.
+      PHYSICAL: Physical hardware device.
+      VIRTUAL: Virtual device (emulator / simulator).
+    """
+    HARDWARE_TYPE_UNSPECIFIED = 0
+    PHYSICAL = 1
+    VIRTUAL = 2
+
+  class PlatformValueValuesEnum(_messages.Enum):
+    r"""Output only. Specifies the platform of the device.
+
+    Values:
+      PLATFORM_UNSPECIFIED: Platform not specified.
+      ANDROID: Android.
+      IOS: iOS.
+    """
+    PLATFORM_UNSPECIFIED = 0
+    ANDROID = 1
+    IOS = 2
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Output only. Additional information. Informational only. May change
+    over the lifecycle of a device.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  androidDetails = _messages.MessageField('AndroidDeviceDetails', 1)
+  availability = _messages.MessageField('DeviceAvailability', 2)
+  displayName = _messages.StringField(3)
+  formFactor = _messages.EnumField('FormFactorValueValuesEnum', 4)
+  hardwareType = _messages.EnumField('HardwareTypeValueValuesEnum', 5)
+  iosDetails = _messages.MessageField('IosDeviceDetails', 6)
+  labels = _messages.MessageField('LabelsValue', 7)
+  lifecycle = _messages.MessageField('Lifecycle', 8)
+  manufacturer = _messages.StringField(9)
+  name = _messages.StringField(10)
+  osVersion = _messages.StringField(11)
+  platform = _messages.EnumField('PlatformValueValuesEnum', 12)
+  primaryScreen = _messages.MessageField('ScreenMetrics', 13)
+  supportedProducts = _messages.MessageField('SupportedProduct', 14, repeated=True)
+
+
 class DeviceAction(_messages.Message):
   r"""The action to be performed on a device.
 
   Fields:
+    androidBugreport: Captures a bugreport from the device unless the test
+      result is pass.
     androidInstallPackages: Installs Android packages on the device.
     androidLogcat: Collects logcat output from the device.
     androidOrientation: Sets the orientation of the device.
@@ -342,13 +525,64 @@ class DeviceAction(_messages.Message):
       device.
   """
 
-  androidInstallPackages = _messages.MessageField('AndroidInstallPackagesDeviceAction', 1)
-  androidLogcat = _messages.MessageField('AndroidLogcatDeviceAction', 2)
-  androidOrientation = _messages.MessageField('AndroidOrientationDeviceAction', 3)
-  androidPullFiles = _messages.MessageField('AndroidPullFilesDeviceAction', 4)
-  androidPushFiles = _messages.MessageField('AndroidPushFilesDeviceAction', 5)
-  androidRecordVideo = _messages.MessageField('AndroidRecordVideoDeviceAction', 6)
-  androidSwitchLocale = _messages.MessageField('AndroidSwitchLocaleDeviceAction', 7)
+  androidBugreport = _messages.MessageField('AndroidBugreportDeviceAction', 1)
+  androidInstallPackages = _messages.MessageField('AndroidInstallPackagesDeviceAction', 2)
+  androidLogcat = _messages.MessageField('AndroidLogcatDeviceAction', 3)
+  androidOrientation = _messages.MessageField('AndroidOrientationDeviceAction', 4)
+  androidPullFiles = _messages.MessageField('AndroidPullFilesDeviceAction', 5)
+  androidPushFiles = _messages.MessageField('AndroidPushFilesDeviceAction', 6)
+  androidRecordVideo = _messages.MessageField('AndroidRecordVideoDeviceAction', 7)
+  androidSwitchLocale = _messages.MessageField('AndroidSwitchLocaleDeviceAction', 8)
+
+
+class DeviceAvailability(_messages.Message):
+  r"""Fleet availability for a device configuration.
+
+  Enums:
+    CapacityValueValuesEnum: Output only. Specifies the current capacity
+      bucket for this device configuration.
+
+  Fields:
+    capacity: Output only. Specifies the current capacity bucket for this
+      device configuration.
+  """
+
+  class CapacityValueValuesEnum(_messages.Enum):
+    r"""Output only. Specifies the current capacity bucket for this device
+    configuration.
+
+    Values:
+      CAPACITY_UNSPECIFIED: The value of device capacity is unknown or unset.
+      NONE: No online devices of this configuration. These devices are
+        unavailable either temporarily or permanently and should not be
+        requested. If the device is also marked as deprecated, this state is
+        very likely permanent.
+      LOW: Devices that are low in capacity (the lab has a small number of
+        these devices). These devices may be used if users need to test on
+        this specific device model and version. Please note that due to low
+        capacity, the tests may take much longer to finish, especially if a
+        large number of tests are invoked at once. These devices are not
+        suitable for test sharding.
+      MEDIUM: Devices that are medium in capacity (the lab has a decent number
+        of these devices, though not as many as high capacity devices). These
+        devices are suitable for fewer test runs (e.g. fewer than 100 tests)
+        and only for low shard counts (e.g. less than 10 shards).
+      HIGH: Devices that are high in capacity (the lab has a large number of
+        these devices). These devices are generally suggested for running a
+        large number of simultaneous tests (e.g. more than 100 tests). Please
+        note that high capacity devices do not guarantee short wait times due
+        to several factors: 1. Traffic (how heavily they are used at any given
+        moment). 2. High capacity devices are prioritized for certain usages,
+        which may cause user tests to be slower than selecting other similar
+        device types.
+    """
+    CAPACITY_UNSPECIFIED = 0
+    NONE = 1
+    LOW = 2
+    MEDIUM = 3
+    HIGH = 4
+
+  capacity = _messages.EnumField('CapacityValueValuesEnum', 1)
 
 
 class DeviceConfig(_messages.Message):
@@ -356,7 +590,8 @@ class DeviceConfig(_messages.Message):
 
   Fields:
     actions: Optional. The actions to be performed on the device. Actions will
-      be executed in the order they are specified in the list.
+      be executed in the order they are specified in the list. Each action
+      type can at most have 1 instance in the list.
     requirement: Required. The requirement of the device.
   """
 
@@ -376,6 +611,50 @@ class DeviceRequirement(_messages.Message):
 
   androidPhysicalDeviceRequirement = _messages.MessageField('AndroidPhysicalDeviceRequirement', 1)
   deviceId = _messages.StringField(2)
+
+
+class DeviceStreamingSupport(_messages.Message):
+  r"""Per-product metadata for the DeviceStreaming product.
+
+  Fields:
+    minimumAndroidStudioVersion: Output only. Specifies the minimum Android
+      Studio version that supports this device. Optional; only set when the
+      device is known to work only at or above a certain Android Studio
+      version. Expected format "major.minor.micro.patch", e.g.
+      "5921.22.2211.8881706".
+  """
+
+  minimumAndroidStudioVersion = _messages.StringField(1)
+
+
+class DevicerunProjectsLocationsDevicesGetRequest(_messages.Message):
+  r"""A DevicerunProjectsLocationsDevicesGetRequest object.
+
+  Fields:
+    name: Required. The name of the device. Format:
+      `projects/{project}/locations/global/devices/{device}`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class DevicerunProjectsLocationsDevicesListRequest(_messages.Message):
+  r"""A DevicerunProjectsLocationsDevicesListRequest object.
+
+  Fields:
+    pageSize: Optional. The maximum number of devices to return. The server
+      may return fewer items than this value.
+    pageToken: Optional. A page token, received from a previous `ListDevices`
+      call. Provide this to receive the subsequent page. When paginating, all
+      other parameters provided to `ListDevices` must match the call that
+      provided the page token.
+    parent: Required. The parent of the collection of devices. Format:
+      `projects/{project}/locations/global`.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
 
 
 class DevicerunProjectsLocationsGetRequest(_messages.Message):
@@ -906,6 +1185,31 @@ class IntRequirement(_messages.Message):
   range = _messages.MessageField('IntRangeRequirement', 2)
 
 
+class IosDeviceDetails(_messages.Message):
+  r"""iOS-specific device attributes. Reserved for future iOS-only fields."""
+
+
+class IosXcTest(_messages.Message):
+  r"""The configuration of an iOS XCTest.
+
+  Fields:
+    testsZip: Required. The .zip containing the .xctestrun file and the
+      contents of the DerivedData/Build/Products directory.
+    xcTestTimeout: Optional. The timeout of the test. Default value: 5 min.
+      Range: [1 min, 60 min].
+    xcodeVersion: Optional. The Xcode version that should be used for the
+      test. If not set, a system-default Xcode version is used. The available
+      Xcode versions can be retrieved from the catalog service.
+    xctestrun: Optional. An .xctestrun file that will override the .xctestrun
+      file in the tests zip.
+  """
+
+  testsZip = _messages.MessageField('InputFile', 1)
+  xcTestTimeout = _messages.StringField(2)
+  xcodeVersion = _messages.StringField(3)
+  xctestrun = _messages.MessageField('InputFile', 4)
+
+
 class IssueSummary(_messages.Message):
   r"""Describes the summary of an issue (error or warning) with structured
   details.
@@ -948,10 +1252,12 @@ class JobAction(_messages.Message):
   Fields:
     androidInstrumentationTest: Android instrumentation test.
     androidNativeBinary: Android native binary execution.
+    iosXcTest: iOS XCTest.
   """
 
   androidInstrumentationTest = _messages.MessageField('AndroidInstrumentationTest', 1)
   androidNativeBinary = _messages.MessageField('AndroidNativeBinary', 2)
+  iosXcTest = _messages.MessageField('IosXcTest', 3)
 
 
 class JobConfig(_messages.Message):
@@ -1081,6 +1387,51 @@ class JobSettings(_messages.Message):
   """
 
   retrySettings = _messages.MessageField('RetrySettings', 1)
+
+
+class Lifecycle(_messages.Message):
+  r"""Device lifecycle: maturity state plus key lifecycle dates.
+
+  Enums:
+    StateValueValuesEnum: Output only. Specifies the current maturity state of
+      the device.
+
+  Fields:
+    removalDate: Output only. Specifies the date the device is scheduled to be
+      removed from the catalog. Only set when `state == DEPRECATED`.
+    state: Output only. Specifies the current maturity state of the device.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. Specifies the current maturity state of the device.
+
+    Values:
+      STATE_UNSPECIFIED: State not specified.
+      PREVIEW: Early access device. This device may have reduced stability and
+        availability.
+      ACTIVE: Generally available.
+      DEPRECATED: Still usable, but scheduled for removal.
+    """
+    STATE_UNSPECIFIED = 0
+    PREVIEW = 1
+    ACTIVE = 2
+    DEPRECATED = 3
+
+  removalDate = _messages.MessageField('Date', 1)
+  state = _messages.EnumField('StateValueValuesEnum', 2)
+
+
+class ListDevicesResponse(_messages.Message):
+  r"""Response including listed devices.
+
+  Fields:
+    devices: The list of devices.
+    nextPageToken: Token to receive the next page of devices. This will be
+      absent if the end of the response list has been reached.
+  """
+
+  devices = _messages.MessageField('Device', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
 
 
 class ListLocationsResponse(_messages.Message):
@@ -1288,6 +1639,20 @@ class RetrySettings(_messages.Message):
   flakyTestRetryStrategy = _messages.MessageField('FlakyTestRetryStrategy', 1)
 
 
+class ScreenMetrics(_messages.Message):
+  r"""Screen measurements of a device.
+
+  Fields:
+    densityDpi: Output only. Pixel density in dots per inch (dpi).
+    heightPx: Output only. Height in pixels.
+    widthPx: Output only. Width in pixels.
+  """
+
+  densityDpi = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  heightPx = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  widthPx = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+
+
 class Session(_messages.Message):
   r"""A session resource in the AutomationSession API. At a high level,
   `Session` describes the configuration of one or multiple jobs, the state
@@ -1372,6 +1737,11 @@ class SmartSharding(_messages.Message):
   on the test methods and their recorded execution time.
 
   Fields:
+    maxShardCount: Optional. The maximum number of shards to create. If unset
+      or less than 1, system-defined max limits are used. This limit takes
+      precedence if the targeted_shard_duration cannot be satisfied. Limits: -
+      For physical devices, the number of shards must be <= 20. - For virtual
+      devices, the number of shards must be <= 200.
     targetedShardDuration: Required. The targeted duration of each shard.
       Limits: - Must be at least 2 minutes. - Must be at most 60 minutes.
       Shard duration is not guaranteed because smart sharding uses test case
@@ -1391,8 +1761,9 @@ class SmartSharding(_messages.Message):
       completed.
   """
 
-  targetedShardDuration = _messages.StringField(1)
-  timingRecord = _messages.MessageField('InputFile', 2)
+  maxShardCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  targetedShardDuration = _messages.StringField(2)
+  timingRecord = _messages.MessageField('InputFile', 3)
 
 
 class StandardQueryParameters(_messages.Message):
@@ -1514,6 +1885,23 @@ class StringSetRequirement(_messages.Message):
   """
 
   values = _messages.StringField(1, repeated=True)
+
+
+class SupportedProduct(_messages.Message):
+  r"""Declares that a device supports a given Device Cloud product, with
+  optional per-product metadata. Discriminated by which product-specific
+  message is set; adding a new product = new oneof arm + new per-product
+  message.
+
+  Fields:
+    automation: Output only. Represents Automation, which is DeviceRun-backed
+      automated test execution.
+    deviceStreaming: Output only. Represents DeviceStreaming, which is
+      interactive remote device streaming.
+  """
+
+  automation = _messages.MessageField('AutomationSupport', 1)
+  deviceStreaming = _messages.MessageField('DeviceStreamingSupport', 2)
 
 
 class UniformSharding(_messages.Message):

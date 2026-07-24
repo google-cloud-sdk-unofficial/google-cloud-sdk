@@ -80,6 +80,16 @@ properties:
       format: `projects/{project}/locations/{location}/authzPolicies/{authz_
       policy}`.
     type: string
+  networkRules:
+    description: |-
+      A list of authorization network rules to match against the incoming request.
+      A policy match occurs when at least one network rule matches the request.
+      At least one network rule is required for Allow or Deny Action if no HTTP
+      rules are provided. Network rules are mutually exclusive with HTTP rules.
+      Limited to 5 rules.
+    type: array
+    items:
+      $ref: AuthzPolicyAuthzRule.yaml
   policyProfile:
     description: |-
       Optional. Immutable. Defines the type of authorization being performed. If

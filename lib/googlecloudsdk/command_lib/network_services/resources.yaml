@@ -187,6 +187,18 @@ serviceBinding:
     attribute_name: service_binding
     help: Id of the service binding.
 
+expressLink:
+  name: express link
+  collection: networkservices.projects.locations.expressLinks
+  request_id_field: expressLinkId
+  attributes:
+  - *project
+  - *location
+  - &expressLink
+    parameter_name: expressLinksId
+    attribute_name: express_link
+    help: Id of the express link.
+
 serviceLbPolicy:
   name: service lb policy
   collection: networkservices.projects.locations.serviceLbPolicies

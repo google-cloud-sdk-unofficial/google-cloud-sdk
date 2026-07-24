@@ -53,6 +53,16 @@ enum PipelineRunner {
   airflow = 1;
 }
 
+enum TriggerRule {
+  trigger_rule_undefined = 0;
+  all_success = 1;
+  all_failed = 2;
+  all_done = 3;
+  one_failed = 4;
+  one_success = 5;
+  always = 6;
+}
+
 message Defaults {
   string project_id = 1 [(pipeline_models.validation.is_required) = true];
   string location = 2 [(pipeline_models.validation.is_required) = true];
@@ -81,7 +91,10 @@ message ScheduleTrigger {
     (pipeline_models.validation.is_required) = true,
     (pipeline_models.validation.is_cron_expression) = true
   ];
-  string start_time = 2 [(pipeline_models.validation.is_required) = true, (pipeline_models.validation.is_iso8601_timestamp) = true];
+  string start_time = 2 [
+    (pipeline_models.validation.is_required) = true,
+    (pipeline_models.validation.is_iso8601_timestamp) = true
+  ];
   // Cross-field validation (e.g. end_time > start_time) should be handled
   // in custom validation logic.
   string end_time = 3 [(pipeline_models.validation.is_iso8601_timestamp) = true];
@@ -98,8 +111,7 @@ message Trigger {
 /////////////////////////
 // Engines
 ////////////////////////
-message LocalEngine {
-}
+message LocalEngine {}
 
 message BigQueryEngine {
   string location = 1;
@@ -133,21 +145,21 @@ message DataprocEphemeralConfiguration {
 
 message DataprocClusterResourceProfile {
   message InlineConfig {
-      oneof config_alias {
-        // A Dataproc cluster config.
-        // See: https://docs.cloud.google.com/dataproc/docs/reference/rest/v1/ClusterConfig
-        google.protobuf.Struct cluster_config = 1 [deprecated = true];
+    oneof config_alias {
+      // A Dataproc cluster config.
+      // See: https://docs.cloud.google.com/dataproc/docs/reference/rest/v1/ClusterConfig
+      google.protobuf.Struct cluster_config = 1 [deprecated = true];
 
-        // A Dataproc cluster config.
-        // See: https://docs.cloud.google.com/dataproc/docs/reference/rest/v1/ClusterConfig
-        google.protobuf.Struct config = 2;
-      }
+      // A Dataproc cluster config.
+      // See: https://docs.cloud.google.com/dataproc/docs/reference/rest/v1/ClusterConfig
+      google.protobuf.Struct config = 2;
+    }
   }
   oneof config {
-      InlineConfig inline = 1;
-      string path = 2;
-      string external_config_path = 3;
-   }
+    InlineConfig inline = 1;
+    string path = 2;
+    string external_config_path = 3;
+  }
   // Overrides are applied with deep merge onto the provided config. Works with inline, path and external config path.
   InlineConfig overrides = 4;
 }
@@ -176,7 +188,6 @@ message DataprocServerlessBatchEngine {
   repeated string impersonation_chain = 3;
 }
 
-
 /////////////////////////
 // Actions
 ////////////////////////
@@ -188,6 +199,7 @@ message Action {
     SqlAction sql = 4;
     PipelineAction pipeline = 5;
     DataIngestionAction data_ingestion = 6;
+    OrchestrationPipelineAction orchestration_pipeline = 7;
   }
 }
 
@@ -208,6 +220,7 @@ message PythonAction {
   google.protobuf.Struct op_kwargs = 6;
   PythonEnvironment environment = 7;
   PythonEngine engine = 8 [(pipeline_models.validation.is_required) = true];
+  TriggerRule trigger_rule = 9; // Default: all_success.
 }
 
 message PythonEnvironment {
@@ -231,7 +244,6 @@ message PythonEngine {
   }
 }
 
-
 /////////////////////////
 // PySpark Action
 ////////////////////////
@@ -250,6 +262,12 @@ message PysparkAction {
   string staging_bucket = 7;
   repeated string py_files = 8;
   PysparkEnvironment environment = 9;
+  TriggerRule trigger_rule = 10; // Default: all_success.
+  map<string, string> params = 11 [
+    (pipeline_models.validation.map_key_regex) = "^[a-zA-Z0-9_-]+$",
+    (pipeline_models.validation.map_value_regex) = "^[^';|`&]+$"
+  ];
+  map<string, string> labels = 12;
 }
 
 message PysparkEngine {
@@ -260,9 +278,13 @@ message PysparkEngine {
 }
 
 message PysparkEnvironment {
+  message InlineRequirements {
+    repeated string list = 1;
+  }
   message Requirements {
     oneof requirements {
       string path = 1;
+      InlineRequirements inline = 2;
     }
   }
   Requirements requirements = 1;
@@ -285,6 +307,12 @@ message NotebookAction {
   repeated string archive_uris = 6;
   string staging_bucket = 7;
   NotebookEnvironment environment = 8;
+  TriggerRule trigger_rule = 9; // Default: all_success.
+  map<string, string> params = 10 [
+    (pipeline_models.validation.map_key_regex) = "^[a-zA-Z0-9_-]+$",
+    (pipeline_models.validation.map_value_regex) = "^[^';|`&]+$"
+  ];
+  map<string, string> labels = 11;
 }
 
 message NotebookEngine {
@@ -295,9 +323,13 @@ message NotebookEngine {
 }
 
 message NotebookEnvironment {
+  message InlineRequirements {
+    repeated string list = 1;
+  }
   message Requirements {
     oneof requirements {
       string path = 1;
+      InlineRequirements inline = 2;
     }
   }
   Requirements requirements = 1;
@@ -317,13 +349,19 @@ message SqlAction {
   string execution_timeout = 3 [(pipeline_models.validation.is_iso8601_duration) = true];
   SqlEngine engine = 4 [(pipeline_models.validation.is_required) = true];
   Query query = 5 [(pipeline_models.validation.is_required) = true];
+  TriggerRule trigger_rule = 6; // Default: all_success.
+  map<string, string> params = 7 [
+    (pipeline_models.validation.map_key_regex) = "^[a-zA-Z0-9_-]+$",
+    (pipeline_models.validation.map_value_regex) = "^[^';|`&]+$"
+  ];
+  map<string, string> labels = 8;
 }
 
 message Query {
   oneof query {
     string inline = 1;
     string path = 2;
-   }
+  }
 }
 
 message SqlEngine {
@@ -333,7 +371,6 @@ message SqlEngine {
     DataprocOnGceEngine dataproc_on_gce = 3;
   }
 }
-
 
 /////////////////////////
 // Pipeline
@@ -348,6 +385,15 @@ message PipelineAction {
   repeated string depends_on = 2;
   string execution_timeout = 3 [(pipeline_models.validation.is_iso8601_duration) = true];
   PipelineFramework framework = 4 [(pipeline_models.validation.is_required) = true];
+  TriggerRule trigger_rule = 5; // Default: all_success.
+
+  // Note: 'params' is currently not supported when executing Dataform using Dataform Service.
+  map<string, string> params = 6 [
+    (pipeline_models.validation.map_key_regex) = "^[a-zA-Z0-9_-]+$",
+    (pipeline_models.validation.map_value_regex) = "^[^';|`&]+$"
+  ];
+  // Note: 'labels' is currently not supported when executing DBT or Dataform using Dataform Service.
+  map<string, string> labels = 7;
 }
 
 message PipelineFramework {
@@ -413,15 +459,50 @@ message DataIngestionAction {
   oneof config {
     BigQueryDtsSpec bigquery_dts = 4;
   }
+  TriggerRule trigger_rule = 5; // Default: all_success.
 }
 
 message BigQueryDtsSpec {
   oneof transfer_config {
     string transfer_config_id = 1 [(pipeline_models.validation.is_required) = true];
   }
+  google.protobuf.Struct runtime_params = 2 [deprecated = true];
 
-  google.protobuf.Struct runtime_params = 2;
+  message TimeRange {
+    string start_time = 1 [(pipeline_models.validation.is_iso8601_timestamp) = true];
+    string end_time = 2 [(pipeline_models.validation.is_iso8601_timestamp) = true];
+  }
+  oneof time {
+    // See: https://docs.cloud.google.com/bigquery/docs/reference/datatransfer/rpc/google.cloud.bigquery.datatransfer.v1#timerange
+    TimeRange requested_time_range = 6;
+    string requested_run_time = 7 [(pipeline_models.validation.is_iso8601_timestamp) = true];
+  }
+
   repeated string impersonation_chain = 3;
   string project_id = 4;
   string location = 5;
+}
+
+/////////////////////////////////////
+// Orchestration Pipeline Action
+////////////////////////////////////
+message OrchestrationPipelineAction {
+  string name = 1 [
+    (pipeline_models.validation.is_required) = true,
+    (pipeline_models.validation.regex) = "^[a-zA-Z0-9_.-]+$",
+    (pipeline_models.validation.min_len) = 1,
+    (pipeline_models.validation.max_len) = 64
+  ];
+  repeated string depends_on = 2;
+  string execution_timeout = 3 [(pipeline_models.validation.is_iso8601_duration) = true];
+
+  string pipeline_id = 4 [
+    (pipeline_models.validation.is_required) = true,
+    (pipeline_models.validation.regex) = "^[a-zA-Z0-9_-]+$",
+    (pipeline_models.validation.min_len) = 1,
+    (pipeline_models.validation.max_len) = 64
+  ];
+  string bundle_id = 5; // Default: current bundle.
+  bool wait_for_completion = 6; // Default: false.
+  TriggerRule trigger_rule = 7; // Default: all_success.
 }

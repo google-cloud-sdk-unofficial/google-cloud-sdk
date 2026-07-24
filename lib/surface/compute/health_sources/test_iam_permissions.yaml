@@ -1,0 +1,32 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: Test IAM permissions for a health source.
+    description: Returns permissions that a caller has on the specified health source.
+    examples: |
+      To test if the caller has 'compute.regionHealthSources.getIamPolicy' permission on a health source, run:
+
+        $ {command} my-health-source --region=us-east1 --permissions=compute.regionHealthSources.getIamPolicy
+
+  request:
+    ALPHA:
+      api_version: alpha
+    BETA:
+      api_version: beta
+    GA:
+      api_version: v1
+
+    collection: compute.regionHealthSources
+    use_relative_name: false
+    method: testIamPermissions
+
+  arguments:
+    resource:
+      help_text: Health source you want to test the IAM permissions of.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:health_source
+    params:
+    - arg_name: permissions
+      api_field: testPermissionsRequest.permissions
+      required: true
+      repeated: true
+      help_text: |-
+        Permissions to be tested.

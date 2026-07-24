@@ -1327,6 +1327,7 @@ class Backup(_messages.Message):
       POSTGRES_16: The database version is Postgres 16.
       POSTGRES_17: The database version is Postgres 17.
       POSTGRES_18: The database version is Postgres 18.
+      POSTGRES_19: The database version is Postgres 19.
     """
     DATABASE_VERSION_UNSPECIFIED = 0
     POSTGRES_13 = 1
@@ -1335,6 +1336,7 @@ class Backup(_messages.Message):
     POSTGRES_16 = 4
     POSTGRES_17 = 5
     POSTGRES_18 = 6
+    POSTGRES_19 = 7
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. The current state of the backup.
@@ -1800,6 +1802,7 @@ class Cluster(_messages.Message):
       POSTGRES_16: The database version is Postgres 16.
       POSTGRES_17: The database version is Postgres 17.
       POSTGRES_18: The database version is Postgres 18.
+      POSTGRES_19: The database version is Postgres 19.
     """
     DATABASE_VERSION_UNSPECIFIED = 0
     POSTGRES_13 = 1
@@ -1808,6 +1811,7 @@ class Cluster(_messages.Message):
     POSTGRES_16 = 4
     POSTGRES_17 = 5
     POSTGRES_18 = 6
+    POSTGRES_19 = 7
 
   class MaintenanceVersionSelectionPolicyValueValuesEnum(_messages.Enum):
     r"""Input only. Policy to use to automatically select the maintenance
@@ -2046,6 +2050,7 @@ class ClusterUpgradeDetails(_messages.Message):
       POSTGRES_16: The database version is Postgres 16.
       POSTGRES_17: The database version is Postgres 17.
       POSTGRES_18: The database version is Postgres 18.
+      POSTGRES_19: The database version is Postgres 19.
     """
     DATABASE_VERSION_UNSPECIFIED = 0
     POSTGRES_13 = 1
@@ -2054,6 +2059,7 @@ class ClusterUpgradeDetails(_messages.Message):
     POSTGRES_16 = 4
     POSTGRES_17 = 5
     POSTGRES_18 = 6
+    POSTGRES_19 = 7
 
   class UpgradeStatusValueValuesEnum(_messages.Enum):
     r"""Upgrade status of the cluster.
@@ -4142,12 +4148,16 @@ class PscInstanceConfig(_messages.Message):
   level.
 
   Enums:
+    PscAutoConnectionPolicyStateValueValuesEnum: Optional. Status of the PSC
+      auto connection policy for the instance.
     PscAutoDnsStateValueValuesEnum: Optional. Configuration for setting up PSC
       auto DNS for the instance.
 
   Fields:
     allowedConsumerProjects: Optional. List of consumer projects that are
       allowed to create PSC endpoints to service-attachments to this instance.
+    pscAutoConnectionPolicyState: Optional. Status of the PSC auto connection
+      policy for the instance.
     pscAutoConnections: Optional. Configurations for setting up PSC service
       automation.
     pscAutoDnsState: Optional. Configuration for setting up PSC auto DNS for
@@ -4163,6 +4173,18 @@ class PscInstanceConfig(_messages.Message):
       the resource will be in the format of
       `projects//regions//serviceAttachments/`
   """
+
+  class PscAutoConnectionPolicyStateValueValuesEnum(_messages.Enum):
+    r"""Optional. Status of the PSC auto connection policy for the instance.
+
+    Values:
+      PSC_AUTO_CONNECTION_POLICY_STATE_UNSPECIFIED: State is unspecified.
+      ENABLED: PSC auto connection policy is enabled.
+      DISABLED: PSC auto connection policy is disabled.
+    """
+    PSC_AUTO_CONNECTION_POLICY_STATE_UNSPECIFIED = 0
+    ENABLED = 1
+    DISABLED = 2
 
   class PscAutoDnsStateValueValuesEnum(_messages.Enum):
     r"""Optional. Configuration for setting up PSC auto DNS for the instance.
@@ -4181,11 +4203,12 @@ class PscInstanceConfig(_messages.Message):
     PSC_AUTO_DNS_STATE_DISABLED = 2
 
   allowedConsumerProjects = _messages.StringField(1, repeated=True)
-  pscAutoConnections = _messages.MessageField('PscAutoConnectionConfig', 2, repeated=True)
-  pscAutoDnsState = _messages.EnumField('PscAutoDnsStateValueValuesEnum', 3)
-  pscDnsName = _messages.StringField(4)
-  pscInterfaceConfigs = _messages.MessageField('PscInterfaceConfig', 5, repeated=True)
-  serviceAttachmentLink = _messages.StringField(6)
+  pscAutoConnectionPolicyState = _messages.EnumField('PscAutoConnectionPolicyStateValueValuesEnum', 2)
+  pscAutoConnections = _messages.MessageField('PscAutoConnectionConfig', 3, repeated=True)
+  pscAutoDnsState = _messages.EnumField('PscAutoDnsStateValueValuesEnum', 4)
+  pscDnsName = _messages.StringField(5)
+  pscInterfaceConfigs = _messages.MessageField('PscInterfaceConfig', 6, repeated=True)
+  serviceAttachmentLink = _messages.StringField(7)
 
 
 class PscInterfaceConfig(_messages.Message):
@@ -5445,6 +5468,8 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceHealthSignalData(_mes
         maintenance downtime.
       SIGNAL_TYPE_LOW_CACHE_HIT_AND_MAINTENANCE_DOWNTIME: Indicates both a low
         cache hit rate and a risk of maintenance downtime.
+      SIGNAL_TYPE_MISSING_ENHANCED_PROTECTION: Indicates that the resource is
+        missing enhanced protection.
     """
     SIGNAL_TYPE_UNSPECIFIED = 0
     SIGNAL_TYPE_NOT_PROTECTED_BY_AUTOMATIC_FAILOVER = 1
@@ -5555,6 +5580,7 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceHealthSignalData(_mes
     SIGNAL_TYPE_VERSION_NEARING_END_OF_LIFE = 106
     SIGNAL_TYPE_HIGH_MAINTENANCE_DOWNTIME_RISK = 107
     SIGNAL_TYPE_LOW_CACHE_HIT_AND_MAINTENANCE_DOWNTIME = 108
+    SIGNAL_TYPE_MISSING_ENHANCED_PROTECTION = 109
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Required. The state of the signal, such as if it's ACTIVE or RESOLVED.
@@ -6277,6 +6303,8 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceRecommendationSignalD
         maintenance downtime.
       SIGNAL_TYPE_LOW_CACHE_HIT_AND_MAINTENANCE_DOWNTIME: Indicates both a low
         cache hit rate and a risk of maintenance downtime.
+      SIGNAL_TYPE_MISSING_ENHANCED_PROTECTION: Indicates that the resource is
+        missing enhanced protection.
     """
     SIGNAL_TYPE_UNSPECIFIED = 0
     SIGNAL_TYPE_NOT_PROTECTED_BY_AUTOMATIC_FAILOVER = 1
@@ -6387,6 +6415,7 @@ class StorageDatabasecenterPartnerapiV1mainDatabaseResourceRecommendationSignalD
     SIGNAL_TYPE_VERSION_NEARING_END_OF_LIFE = 106
     SIGNAL_TYPE_HIGH_MAINTENANCE_DOWNTIME_RISK = 107
     SIGNAL_TYPE_LOW_CACHE_HIT_AND_MAINTENANCE_DOWNTIME = 108
+    SIGNAL_TYPE_MISSING_ENHANCED_PROTECTION = 109
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AdditionalMetadataValue(_messages.Message):
@@ -7205,9 +7234,11 @@ class StringRestrictions(_messages.Message):
   Fields:
     allowedValues: The list of allowed values, if bounded. This field will be
       empty if there is a unbounded number of allowed values.
+    caseAgnostic: Output only. Whether the allowed values are case agnostic.
   """
 
   allowedValues = _messages.StringField(1, repeated=True)
+  caseAgnostic = _messages.BooleanField(2)
 
 
 class SupportedDatabaseFlag(_messages.Message):
@@ -7268,6 +7299,7 @@ class SupportedDatabaseFlag(_messages.Message):
       POSTGRES_16: The database version is Postgres 16.
       POSTGRES_17: The database version is Postgres 17.
       POSTGRES_18: The database version is Postgres 18.
+      POSTGRES_19: The database version is Postgres 19.
     """
     DATABASE_VERSION_UNSPECIFIED = 0
     POSTGRES_13 = 1
@@ -7276,6 +7308,7 @@ class SupportedDatabaseFlag(_messages.Message):
     POSTGRES_16 = 4
     POSTGRES_17 = 5
     POSTGRES_18 = 6
+    POSTGRES_19 = 7
 
   class ValueTypeValueValuesEnum(_messages.Enum):
     r"""ValueTypeValueValuesEnum enum type.
@@ -7549,6 +7582,7 @@ class UpgradeClusterRequest(_messages.Message):
       POSTGRES_16: The database version is Postgres 16.
       POSTGRES_17: The database version is Postgres 17.
       POSTGRES_18: The database version is Postgres 18.
+      POSTGRES_19: The database version is Postgres 19.
     """
     DATABASE_VERSION_UNSPECIFIED = 0
     POSTGRES_13 = 1
@@ -7557,6 +7591,7 @@ class UpgradeClusterRequest(_messages.Message):
     POSTGRES_16 = 4
     POSTGRES_17 = 5
     POSTGRES_18 = 6
+    POSTGRES_19 = 7
 
   etag = _messages.StringField(1)
   requestId = _messages.StringField(2)
@@ -7639,6 +7674,7 @@ class UpgradeClusterStatus(_messages.Message):
       POSTGRES_16: The database version is Postgres 16.
       POSTGRES_17: The database version is Postgres 17.
       POSTGRES_18: The database version is Postgres 18.
+      POSTGRES_19: The database version is Postgres 19.
     """
     DATABASE_VERSION_UNSPECIFIED = 0
     POSTGRES_13 = 1
@@ -7647,6 +7683,7 @@ class UpgradeClusterStatus(_messages.Message):
     POSTGRES_16 = 4
     POSTGRES_17 = 5
     POSTGRES_18 = 6
+    POSTGRES_19 = 7
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Cluster Major Version Upgrade state.
@@ -7681,6 +7718,7 @@ class UpgradeClusterStatus(_messages.Message):
       POSTGRES_16: The database version is Postgres 16.
       POSTGRES_17: The database version is Postgres 17.
       POSTGRES_18: The database version is Postgres 18.
+      POSTGRES_19: The database version is Postgres 19.
     """
     DATABASE_VERSION_UNSPECIFIED = 0
     POSTGRES_13 = 1
@@ -7689,6 +7727,7 @@ class UpgradeClusterStatus(_messages.Message):
     POSTGRES_16 = 4
     POSTGRES_17 = 5
     POSTGRES_18 = 6
+    POSTGRES_19 = 7
 
   cancellable = _messages.BooleanField(1)
   instanceDowntimeStatuses = _messages.MessageField('InstanceDowntimeStatus', 2, repeated=True)

@@ -96,4 +96,5 @@ class Update(base.Command):
         exclude_locations=exclude_locations,
         include_bucket_id_regexes=include_bucket_id_regexes,
         exclude_bucket_id_regexes=exclude_bucket_id_regexes,
+        is_async=args.async_,
     )

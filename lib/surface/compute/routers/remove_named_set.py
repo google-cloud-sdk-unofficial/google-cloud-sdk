@@ -23,7 +23,6 @@ from googlecloudsdk.command_lib.compute.routers import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class RemoveNamedSet(base.DeleteCommand):
   """Remove a named set from a Compute Engine router.
 
@@ -62,3 +61,16 @@ class RemoveNamedSet(base.DeleteCommand):
     )
 
     return client.MakeRequests([request])[0]
+
+
+RemoveNamedSet.detailed_help = {
+    'DESCRIPTION': """\
+          *{command}* removes a named set from a Compute Engine router.
+  """,
+    'EXAMPLES': """\
+          To remove named set `my-set` from router `my-router` in region `us-central1`, run:
+
+              $ {command} my-router --region=us-central1 --set-name=my-set
+
+          """,
+}

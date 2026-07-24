@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, BETA, GA]
+  hints:
+    read_only: true
   help_text:
     brief: List the custom target types.
     description: List the custom target types for a specified region.

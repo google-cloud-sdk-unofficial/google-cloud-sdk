@@ -853,6 +853,7 @@ class BackupRuleDetail(_messages.Message):
       of the month."
     retentionDays: Backup Retention in Days.
     ruleName: Backup Rule Name.
+    storageTier: The storage tier of the BackupRule.
   """
 
   backupWindow = _messages.StringField(1)
@@ -861,6 +862,7 @@ class BackupRuleDetail(_messages.Message):
   recurrenceSchedule = _messages.StringField(4)
   retentionDays = _messages.IntegerField(5, variant=_messages.Variant.INT32)
   ruleName = _messages.StringField(6)
+  storageTier = _messages.StringField(7)
 
 
 class Binding(_messages.Message):

@@ -5,6 +5,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import json
 import time
 from typing import Optional
 
@@ -712,8 +713,20 @@ class Make(bigquery_command.BigqueryCmd):
         'Connection configuration for connector in JSON format.',
         flag_values=fv,
     )
+    # TODO(b/532772672): Use absl.flags validators to ensure
+    # connection-specific flags (e.g. iam_role_id,
+    # s3_service_directory_service, tenant_id) are only set when
+    # connection_type matches.
     flags.DEFINE_string(
         'iam_role_id', None, '[Experimental] IAM role id.', flag_values=fv
+    )
+    flags.DEFINE_string(
+        's3_service_directory_service',
+        None,
+        '[Experimental] Service directory resource name for routing traffic'
+        ' over a private network connection through Cross-Cloud Interconnect'
+        ' for AWS connections.',
+        flag_values=fv,
     )
     # TODO(b/231712311): look into cleaning up this flag now that only federated
     # aws connections are supported.
@@ -1269,26 +1282,41 @@ class Make(bigquery_command.BigqueryCmd):
         )
         raise app.UsageError(error)
 
-      if self.connection_type == 'AWS' and self.iam_role_id:
-        self.properties = bq_processor_utils.MakeAccessRolePropertiesJson(
-            self.iam_role_id
-        )
+      props_dict = {}
+      if self.properties:
+        props_dict = json.loads(self.properties)
+
+      if self.connection_type == 'AWS':
+        if self.iam_role_id:
+          props_dict.update(
+              bq_processor_utils.MakeAccessRoleProperties(self.iam_role_id)
+          )
+        if self.s3_service_directory_service:
+          props_dict['s3ServiceDirectoryService'] = (
+              self.s3_service_directory_service
+          )
         if not self.federated_aws:
           raise app.UsageError('Non-federated AWS connections are deprecated.')
-      if self.connection_type == 'Azure' and self.tenant_id:
+      elif self.connection_type == 'Azure' and self.tenant_id:
         if self.federated_azure:
           if not self.federated_app_client_id:
             raise app.UsageError(
                 'Must specify --federated_app_client_id for federated Azure '
                 'connections.'
             )
-          self.properties = bq_processor_utils.MakeAzureFederatedAppClientAndTenantIdPropertiesJson(
-              self.tenant_id, self.federated_app_client_id
+          props_dict.update(
+              bq_processor_utils.MakeAzureFederatedAppClientAndTenantIdProperties(
+                  self.tenant_id, self.federated_app_client_id
+              )
           )
         else:
-          self.properties = bq_processor_utils.MakeTenantIdPropertiesJson(
-              self.tenant_id
+          props_dict.update(
+              bq_processor_utils.MakeTenantIdProperties(self.tenant_id)
           )
+
+      self.properties = (
+          json.dumps(props_dict) if props_dict else self.properties
+      )
 
       param_properties = self.properties
       # All connection types require properties, except CLOUD_RESOURCE as

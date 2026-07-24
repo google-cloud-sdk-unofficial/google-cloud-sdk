@@ -14,12 +14,23 @@
 #
 """This file defines utility functions for the orchestration pipelines models."""
 
-import pytz
 import re
 
+import pytz
+
 _MONTHS = [
-    "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT",
-    "NOV", "DEC"
+    "JAN",
+    "FEB",
+    "MAR",
+    "APR",
+    "MAY",
+    "JUN",
+    "JUL",
+    "AUG",
+    "SEP",
+    "OCT",
+    "NOV",
+    "DEC",
 ]
 _DAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
 
@@ -78,8 +89,8 @@ def is_valid_field(field_str, min_val, max_val, mapping):
     if not _FIELD_PATTERN.match(field_str):
         return False
     return all(
-        _check_part(p, min_val, max_val, mapping)
-        for p in field_str.split(","))
+        _check_part(p, min_val, max_val, mapping) for p in field_str.split(",")
+    )
 
 
 def check_cron_expression(value):
@@ -87,8 +98,13 @@ def check_cron_expression(value):
         raise ValueError("CRON expression must be a non-empty string.")
 
     aliases = [
-        "@yearly", "@annually", "@monthly", "@weekly", "@daily", "@midnight",
-        "@hourly"
+        "@yearly",
+        "@annually",
+        "@monthly",
+        "@weekly",
+        "@daily",
+        "@midnight",
+        "@hourly",
     ]
     if value.strip().lower() in aliases:
         return
@@ -96,7 +112,8 @@ def check_cron_expression(value):
     parts = value.strip().split()
     if len(parts) != 5:
         raise ValueError(
-            f"Invalid CRON expression (must have 5 fields): '{value}'")
+            f"Invalid CRON expression (must have 5 fields): '{value}'"
+        )
 
     for (name, min_val, max_val, mapping), part in zip(_CRON_FIELDS, parts):
         if not is_valid_field(part, min_val, max_val, mapping):
@@ -111,8 +128,7 @@ def check_timezone(value):
 
 
 def check_duration(value):
-    """
-    Validates that a string is a valid time duration (e.g., '30s', '5m', '2h').
+    """Validates that a string is a valid time duration (e.g., '30s', '5m', '2h').
     Allowed units: s (seconds), m (minutes), h (hours), d (days), w (weeks).
     """
     pattern = r"^(\s*\d+[smhdw]\s*)+$"
@@ -126,4 +142,5 @@ def check_duration(value):
         raise ValueError(
             f"Invalid duration format: '{value}'. "
             "Expected format: <number><unit> (e.g., '1h 30m', '30s'). "
-            "Valid units are: s, m, h, d, w.")
+            "Valid units are: s, m, h, d, w."
+        )

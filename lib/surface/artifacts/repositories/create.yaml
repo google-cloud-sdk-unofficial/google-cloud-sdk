@@ -75,7 +75,6 @@
       - arg_value: CONNECTOR-REPOSITORY
         enum_value: REMOTE_REPOSITORY  # Internally this is still a remote repository
         help_text: Connector repository mode - fetches data from upstream without caching.
-        hidden: true
     - arg_name: remote-repo-config-desc
       api_field: repository.remoteRepositoryConfig.description
       help_text: |

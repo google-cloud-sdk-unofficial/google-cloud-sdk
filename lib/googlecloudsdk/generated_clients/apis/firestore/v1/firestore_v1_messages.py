@@ -624,7 +624,7 @@ class ExecutePipelineRequest(_messages.Message):
 
 
 class ExecutePipelineResponse(_messages.Message):
-  r"""The response for Firestore.Execute.
+  r"""The response for Firestore.ExecutePipeline.
 
   Fields:
     executionTime: The time at which the results are valid. This is a (not
@@ -1128,6 +1128,62 @@ class FirestoreProjectsDatabasesBulkDeleteDocumentsRequest(_messages.Message):
 
   googleFirestoreAdminV1BulkDeleteDocumentsRequest = _messages.MessageField('GoogleFirestoreAdminV1BulkDeleteDocumentsRequest', 1)
   name = _messages.StringField(2, required=True)
+
+
+class FirestoreProjectsDatabasesChangeStreamsCreateRequest(_messages.Message):
+  r"""A FirestoreProjectsDatabasesChangeStreamsCreateRequest object.
+
+  Fields:
+    changeStreamId: Required. The ID to use for the change stream, which will
+      become the final component of the change stream's resource name. This
+      value should be 4-63 characters. Valid characters are lowercase letters,
+      numbers, and hyphens. The first character must be a letter, and the last
+      character must be a letter or a number.
+    googleFirestoreAdminV1ChangeStream: A GoogleFirestoreAdminV1ChangeStream
+      resource to be passed as the request body.
+    parent: Required. The parent database to create the change stream for.
+      Format is `projects/{project}/databases/{database}`.
+  """
+
+  changeStreamId = _messages.StringField(1)
+  googleFirestoreAdminV1ChangeStream = _messages.MessageField('GoogleFirestoreAdminV1ChangeStream', 2)
+  parent = _messages.StringField(3, required=True)
+
+
+class FirestoreProjectsDatabasesChangeStreamsDeleteRequest(_messages.Message):
+  r"""A FirestoreProjectsDatabasesChangeStreamsDeleteRequest object.
+
+  Fields:
+    etag: Optional. The etag of the change stream to delete. If this is not
+      the current etag of the change stream, the deletion will fail.
+    name: Required. The name of the change stream to delete. Format is
+      `projects/{project}/databases/{database}/changeStreams/{change_stream}`.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+
+
+class FirestoreProjectsDatabasesChangeStreamsGetRequest(_messages.Message):
+  r"""A FirestoreProjectsDatabasesChangeStreamsGetRequest object.
+
+  Fields:
+    name: Required. The name of the change stream to retrieve. Format is
+      `projects/{project}/databases/{database}/changeStreams/{change_stream}`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class FirestoreProjectsDatabasesChangeStreamsListRequest(_messages.Message):
+  r"""A FirestoreProjectsDatabasesChangeStreamsListRequest object.
+
+  Fields:
+    parent: Required. The parent database to list change streams from. Format
+      is `projects/{project}/databases/{database}`.
+  """
+
+  parent = _messages.StringField(1, required=True)
 
 
 class FirestoreProjectsDatabasesCloneRequest(_messages.Message):
@@ -2239,6 +2295,38 @@ class GoogleFirestoreAdminV1BulkDeleteDocumentsRequest(_messages.Message):
   namespaceIds = _messages.StringField(2, repeated=True)
 
 
+class GoogleFirestoreAdminV1ChangeStream(_messages.Message):
+  r"""A Change Stream is a resource that allows users to receive change
+  notifications from a Firestore database.
+
+  Fields:
+    collectionGroupScope: If set, the change stream is scoped to a collection
+      group.
+    createTime: Output only. The time the Change Stream was created.
+    databaseScope: If set, the change stream is scoped to the entire database.
+    etag: Optional. An etag used to determine which version of the
+      configuration is being edited.
+    name: Identifier. The external resource name of the change stream. Format
+      `projects/{project}/databases/{database}/changeStreams/{change_stream}`
+    retentionPeriod: Required. The retention period of the change stream. This
+      is the amount of time a change event is available on the change stream.
+      Must be from 1 to 7 days, inclusive. The retention_period must be in day
+      granularity, i.e. it must be a multiple of 24 hours.
+    startTime: Output only. The time the Change Stream started recording
+      events.
+    updateTime: Output only. The time the Change Stream was last updated.
+  """
+
+  collectionGroupScope = _messages.MessageField('GoogleFirestoreAdminV1CollectionGroupScope', 1)
+  createTime = _messages.StringField(2)
+  databaseScope = _messages.MessageField('GoogleFirestoreAdminV1DatabaseScope', 3)
+  etag = _messages.StringField(4)
+  name = _messages.StringField(5)
+  retentionPeriod = _messages.StringField(6)
+  startTime = _messages.StringField(7)
+  updateTime = _messages.StringField(8)
+
+
 class GoogleFirestoreAdminV1CloneDatabaseMetadata(_messages.Message):
   r"""Metadata for the long-running operation from the CloneDatabase request.
 
@@ -2371,6 +2459,18 @@ class GoogleFirestoreAdminV1CmekConfig(_messages.Message):
 
   activeKeyVersion = _messages.StringField(1, repeated=True)
   kmsKeyName = _messages.StringField(2)
+
+
+class GoogleFirestoreAdminV1CollectionGroupScope(_messages.Message):
+  r"""The change stream is scoped to a collection group. Only events
+  associated with the given collection group are visible to the Change Stream.
+  Only a single change stream can be enabled per collection group.
+
+  Fields:
+    collectionGroupId: Required. The collection group name.
+  """
+
+  collectionGroupId = _messages.StringField(1)
 
 
 class GoogleFirestoreAdminV1CreateDatabaseMetadata(_messages.Message):
@@ -2727,6 +2827,14 @@ class GoogleFirestoreAdminV1Database(_messages.Message):
   uid = _messages.StringField(22)
   updateTime = _messages.StringField(23)
   versionRetentionPeriod = _messages.StringField(24)
+
+
+class GoogleFirestoreAdminV1DatabaseScope(_messages.Message):
+  r"""The change stream is scoped to the entire database. All events in the
+  database are visible to the Change Stream. One Database scope Change Stream
+  is allowed per database.
+  """
+
 
 
 class GoogleFirestoreAdminV1DeleteDatabaseMetadata(_messages.Message):
@@ -3389,6 +3497,16 @@ class GoogleFirestoreAdminV1ListBackupsResponse(_messages.Message):
 
   backups = _messages.MessageField('GoogleFirestoreAdminV1Backup', 1, repeated=True)
   unreachable = _messages.StringField(2, repeated=True)
+
+
+class GoogleFirestoreAdminV1ListChangeStreamsResponse(_messages.Message):
+  r"""Response to FirestoreAdmin.ListChangeStreams.
+
+  Fields:
+    changeStreams: The list of change streams.
+  """
+
+  changeStreams = _messages.MessageField('GoogleFirestoreAdminV1ChangeStream', 1, repeated=True)
 
 
 class GoogleFirestoreAdminV1ListDatabasesResponse(_messages.Message):

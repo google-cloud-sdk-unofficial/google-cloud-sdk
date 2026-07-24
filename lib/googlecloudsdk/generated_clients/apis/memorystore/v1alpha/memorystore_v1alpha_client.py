@@ -37,6 +37,7 @@ class MemorystoreV1alpha(base_api.BaseApiClient):
         default_global_params=default_global_params,
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
+    self.projects_locations_aclPolicies_revisions = self.ProjectsLocationsAclPoliciesRevisionsService(self)
     self.projects_locations_aclPolicies = self.ProjectsLocationsAclPoliciesService(self)
     self.projects_locations_backupCollections_backups = self.ProjectsLocationsBackupCollectionsBackupsService(self)
     self.projects_locations_backupCollections = self.ProjectsLocationsBackupCollectionsService(self)
@@ -46,6 +47,70 @@ class MemorystoreV1alpha(base_api.BaseApiClient):
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects = self.ProjectsService(self)
+
+  class ProjectsLocationsAclPoliciesRevisionsService(base_api.BaseApiService):
+    """Service class for the projects_locations_aclPolicies_revisions resource."""
+
+    _NAME = 'projects_locations_aclPolicies_revisions'
+
+    def __init__(self, client):
+      super(MemorystoreV1alpha.ProjectsLocationsAclPoliciesRevisionsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a specific ACL policy revision.
+
+      Args:
+        request: (MemorystoreProjectsLocationsAclPoliciesRevisionsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AclPolicyRevision) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/aclPolicies/{aclPoliciesId}/revisions/{revisionsId}',
+        http_method='GET',
+        method_id='memorystore.projects.locations.aclPolicies.revisions.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='MemorystoreProjectsLocationsAclPoliciesRevisionsGetRequest',
+        response_type_name='AclPolicyRevision',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists all ACL policy revisions in a given ACL policy.
+
+      Args:
+        request: (MemorystoreProjectsLocationsAclPoliciesRevisionsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListAclPolicyRevisionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/aclPolicies/{aclPoliciesId}/revisions',
+        http_method='GET',
+        method_id='memorystore.projects.locations.aclPolicies.revisions.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/revisions',
+        request_field='',
+        request_type_name='MemorystoreProjectsLocationsAclPoliciesRevisionsListRequest',
+        response_type_name='ListAclPolicyRevisionsResponse',
+        supports_download=False,
+    )
 
   class ProjectsLocationsAclPoliciesService(base_api.BaseApiService):
     """Service class for the projects_locations_aclPolicies resource."""

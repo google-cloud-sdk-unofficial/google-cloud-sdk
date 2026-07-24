@@ -74,6 +74,17 @@ NODEPOOLS_FORMAT = """
      )
 """
 
+ACCELERATOR_NETWORK_PROFILES_FORMAT = """
+    table(
+        name.basename():label=NAME,
+        name.segment(-3):label=LOCATION,
+        cluster,
+        maxNodeCount,
+        lifecycleState:label=STATE
+    )
+"""
+
+
 HTTP_ERROR_FORMAT = (
     'ResponseError: code={status_code}, message={status_message}'
 )

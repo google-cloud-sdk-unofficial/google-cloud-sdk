@@ -18,16 +18,11 @@
 # License, Version 2.0.
 #
 
-"""Utilities for reading and generating reflogs.
-"""
+"""Utilities for reading and generating reflogs."""
 
 import collections
 
-from dulwich.objects import (
-    format_timezone,
-    parse_timezone,
-    ZERO_SHA,
-)
+from .objects import ZERO_SHA, format_timezone, parse_timezone
 
 Entry = collections.namedtuple(
     "Entry",

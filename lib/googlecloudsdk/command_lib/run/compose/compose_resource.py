@@ -71,7 +71,7 @@ _RUN_COMPOSE_MANAGED_BY_VALUE = 'runcompose'
 _RUN_COMPOSE_PROJECT_LABEL = 'run-compose-project'
 
 
-def _generate_gcs_bucket_name(compose_project_name: str, region: str) -> str:
+def generate_gcs_bucket_name(compose_project_name: str, region: str) -> str:
   """Generates a unique bucket name for the compose project.
 
   The bucket name is derived from the project number, a sanitized version of
@@ -610,7 +610,7 @@ class ResourcesConfig:
 
     if self.volumes.bind_mount or self.volumes.named_volume or self.configs:
       log.debug('Initializing GCS handler for volumes and/or configs.')
-      bucket_name = _generate_gcs_bucket_name(self.project, region)
+      bucket_name = generate_gcs_bucket_name(self.project, region)
       if self.volumes.bind_mount or self.volumes.named_volume:
         tracker.StartStage(
             compose_tracker.StagedProgressTrackerStage.VOLUMES.get_key()

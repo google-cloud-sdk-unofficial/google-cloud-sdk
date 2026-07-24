@@ -58,7 +58,6 @@ def GetSkillRevisionResourceSpec():
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 @base.UniverseCompatible
 class Download(base.Command):
   """Download the payload of a Skill Revision.

@@ -22,6 +22,8 @@
 
 import os
 import sys
+import warnings
+from typing import ClassVar, Set
 
 
 def ensure_dir_exists(dirname):
@@ -33,7 +35,7 @@ def ensure_dir_exists(dirname):
 
 
 def _fancy_rename(oldname, newname):
-    """Rename file with temporary backup file to rollback if rename fails"""
+    """Rename file with temporary backup file to rollback if rename fails."""
     if not os.path.exists(newname):
         try:
             os.rename(oldname, newname)
@@ -96,7 +98,7 @@ def GitFile(filename, mode="rb", bufsize=-1, mask=0o644):
 class FileLocked(Exception):
     """File is already locked."""
 
-    def __init__(self, filename, lockfilename):
+    def __init__(self, filename, lockfilename) -> None:
         self.filename = filename
         self.lockfilename = lockfilename
         super().__init__(filename, lockfilename)
@@ -113,7 +115,7 @@ class _GitFile:
         released. Typically this will happen in a finally block.
     """
 
-    PROXY_PROPERTIES = {
+    PROXY_PROPERTIES: ClassVar[Set[str]] = {
         "closed",
         "encoding",
         "errors",
@@ -122,7 +124,7 @@ class _GitFile:
         "newlines",
         "softspace",
     }
-    PROXY_METHODS = (
+    PROXY_METHODS: ClassVar[Set[str]] = {
         "__iter__",
         "flush",
         "fileno",
@@ -135,9 +137,9 @@ class _GitFile:
         "truncate",
         "write",
         "writelines",
-    )
+    }
 
-    def __init__(self, filename, mode, bufsize, mask):
+    def __init__(self, filename, mode, bufsize, mask) -> None:
         self._filename = filename
         if isinstance(self._filename, bytes):
             self._lockfilename = self._filename + b".lock"
@@ -179,6 +181,7 @@ class _GitFile:
             However, it is not guaranteed to do so (e.g. if a filesystem
             becomes suddenly read-only), which will prevent future writes to
             this file until the lockfile is removed manually.
+
         Raises:
           OSError: if the original file could not be overwritten. The
             lock file is still closed, so further attempts to write to the same
@@ -200,6 +203,11 @@ class _GitFile:
                     # renames
                     _fancy_rename(self._lockfilename, self._filename)
         finally:
+            self.abort()
+
+    def __del__(self) -> None:
+        if not getattr(self, "_closed", True):
+            warnings.warn("unclosed %r" % self, ResourceWarning, stacklevel=2)
             self.abort()
 
     def __enter__(self):

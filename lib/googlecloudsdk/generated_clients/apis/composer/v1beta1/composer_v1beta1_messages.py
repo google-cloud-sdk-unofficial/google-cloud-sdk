@@ -45,6 +45,42 @@ class AirflowMetadataRetentionPolicyConfig(_messages.Message):
   retentionMode = _messages.EnumField('RetentionModeValueValuesEnum', 2)
 
 
+class AirflowRbacBinding(_messages.Message):
+  r"""A binding for identities (prefixed users/groups emails) to a specific
+  Airflow role.
+
+  Fields:
+    members: Required. Specifies the identities (prefixed user/group emails)
+      to which the role is granted. An identity must be prefixed with `user:`
+      or `group:`.
+    role: Required. Specifies the name of the Airflow role.
+  """
+
+  members = _messages.StringField(1, repeated=True)
+  role = _messages.StringField(2)
+
+
+class AirflowRbacConfig(_messages.Message):
+  r"""Declarative configuration for Airflow RBAC. The following example: ``` {
+  "baseGroup":"managed-airflow-rbac-groups@example.com" "bindings": [ {
+  "role":"Admin", "members": ["group:example-group@example.com"] }, {
+  "role":"Viewer", "members": ["user:example-user@example.com",
+  "group:example-group@example.com"] } ] } ``` would define an Airflow RBAC
+  configuration with 2 bindings.
+
+  Fields:
+    baseGroup: Optional. Specifies the base group email. Base group is a group
+      of groups, which means every group specified in the bindings needs to be
+      a child (direct or indirect) of the base group. Should start with
+      managed-airflow-rbac-groups@ prefix.
+    bindings: Required. Binds the identities (prefixed users/groups emails) to
+      the Airflow roles.
+  """
+
+  baseGroup = _messages.StringField(1)
+  bindings = _messages.MessageField('AirflowRbacBinding', 2, repeated=True)
+
+
 class AllowedIpRange(_messages.Message):
   r"""Allowed IP range with user-provided description.
 
@@ -2662,6 +2698,8 @@ class SoftwareConfig(_messages.Message):
       format. Certain Apache Airflow configuration property values are
       [blocked](/composer/docs/concepts/airflow-configurations), and cannot be
       overridden.
+    airflowRbacConfig: Optional. The Airflow Role-Based Access Control (RBAC)
+      configuration.
     auditLogsReplicationMode: Optional. The selected mode of audit logs
       replication. This field is supported for Cloud Composer environments in
       versions composer-3-airflow-*.*.*-build.* and newer.
@@ -2852,14 +2890,15 @@ class SoftwareConfig(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   airflowConfigOverrides = _messages.MessageField('AirflowConfigOverridesValue', 1)
-  auditLogsReplicationMode = _messages.EnumField('AuditLogsReplicationModeValueValuesEnum', 2)
-  cloudDataLineageIntegration = _messages.MessageField('CloudDataLineageIntegration', 3)
-  envVariables = _messages.MessageField('EnvVariablesValue', 4)
-  imageVersion = _messages.StringField(5)
-  pypiPackages = _messages.MessageField('PypiPackagesValue', 6)
-  pythonVersion = _messages.StringField(7)
-  schedulerCount = _messages.IntegerField(8, variant=_messages.Variant.INT32)
-  webServerPluginsMode = _messages.EnumField('WebServerPluginsModeValueValuesEnum', 9)
+  airflowRbacConfig = _messages.MessageField('AirflowRbacConfig', 2)
+  auditLogsReplicationMode = _messages.EnumField('AuditLogsReplicationModeValueValuesEnum', 3)
+  cloudDataLineageIntegration = _messages.MessageField('CloudDataLineageIntegration', 4)
+  envVariables = _messages.MessageField('EnvVariablesValue', 5)
+  imageVersion = _messages.StringField(6)
+  pypiPackages = _messages.MessageField('PypiPackagesValue', 7)
+  pythonVersion = _messages.StringField(8)
+  schedulerCount = _messages.IntegerField(9, variant=_messages.Variant.INT32)
+  webServerPluginsMode = _messages.EnumField('WebServerPluginsModeValueValuesEnum', 10)
 
 
 class SourceCode(_messages.Message):

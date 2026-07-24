@@ -1396,12 +1396,16 @@ class NFS(_messages.Message):
 class NetworkInterface(_messages.Message):
   r"""A network interface.
 
+  Enums:
+    NicTypeValueValuesEnum: Optional. The NIC type of the network interface.
+
   Fields:
     network: The URL of an existing network resource. You can specify the
       network as a full or partial URL. For example, the following are all
       valid URLs: * https://www.googleapis.com/compute/v1/projects/{project}/g
       lobal/networks/{network} * projects/{project}/global/networks/{network}
       * global/networks/{network}
+    nicType: Optional. The NIC type of the network interface.
     noExternalIpAddress: Default is false (with an external IP address).
       Required if no external public IP address is attached to the VM. If no
       external public IP address, additional configuration is required to
@@ -1417,9 +1421,24 @@ class NetworkInterface(_messages.Message):
       regions/{region}/subnetworks/{subnetwork}
   """
 
+  class NicTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The NIC type of the network interface.
+
+    Values:
+      NIC_TYPE_UNSPECIFIED: No type specified.
+      GVNIC: GVNIC
+      IRDMA: IRDMA
+      MRDMA: MRDMA
+    """
+    NIC_TYPE_UNSPECIFIED = 0
+    GVNIC = 1
+    IRDMA = 2
+    MRDMA = 3
+
   network = _messages.StringField(1)
-  noExternalIpAddress = _messages.BooleanField(2)
-  subnetwork = _messages.StringField(3)
+  nicType = _messages.EnumField('NicTypeValueValuesEnum', 2)
+  noExternalIpAddress = _messages.BooleanField(3)
+  subnetwork = _messages.StringField(4)
 
 
 class NetworkPolicy(_messages.Message):

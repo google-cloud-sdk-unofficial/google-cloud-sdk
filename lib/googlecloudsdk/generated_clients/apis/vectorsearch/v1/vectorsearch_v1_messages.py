@@ -967,9 +967,11 @@ class GoogleCloudVectorsearchV1Ranker(_messages.Message):
 
   Fields:
     rrf: Reciprocal Rank Fusion ranking.
+    vertexRanker: Optional. Vertex AI ranking.
   """
 
   rrf = _messages.MessageField('GoogleCloudVectorsearchV1ReciprocalRankFusion', 1)
+  vertexRanker = _messages.MessageField('GoogleCloudVectorsearchV1VertexRanker', 2)
 
 
 class GoogleCloudVectorsearchV1ReciprocalRankFusion(_messages.Message):
@@ -1398,6 +1400,41 @@ class GoogleCloudVectorsearchV1VertexEmbeddingConfig(_messages.Message):
   modelId = _messages.StringField(1)
   taskType = _messages.EnumField('TaskTypeValueValuesEnum', 2)
   textTemplate = _messages.StringField(3)
+
+
+class GoogleCloudVectorsearchV1VertexRanker(_messages.Message):
+  r"""Defines a ranker using the Vertex AI ranking service. See
+  https://cloud.google.com/generative-ai-app-builder/docs/ranking for details.
+
+  Fields:
+    model: Required. The model used for ranking documents. The list of
+      available models is described in
+      https://docs.cloud.google.com/generative-ai-app-
+      builder/docs/ranking#models. Currently, only `semantic-ranker-
+      fast@latest` is supported.
+    textRecordSpec: The record spec for text search.
+    topN: Required. The number of documents to be processed for ranking.
+  """
+
+  model = _messages.StringField(1)
+  textRecordSpec = _messages.MessageField('GoogleCloudVectorsearchV1VertexRankerTextRecordSpec', 2)
+  topN = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+
+
+class GoogleCloudVectorsearchV1VertexRankerTextRecordSpec(_messages.Message):
+  r"""The record spec for text search.
+
+  Fields:
+    contentTemplate: Optional. The template used to generate the record's
+      content.
+    query: Required. The query against which the records are ranked and
+      scored.
+    titleTemplate: Optional. The template used to generate the record's title.
+  """
+
+  contentTemplate = _messages.StringField(1)
+  query = _messages.StringField(2)
+  titleTemplate = _messages.StringField(3)
 
 
 class GoogleLongrunningCancelOperationRequest(_messages.Message):

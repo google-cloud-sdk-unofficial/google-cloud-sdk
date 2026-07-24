@@ -347,6 +347,8 @@ def ArgsForExecutableTool(executable_path, *args):
 # in classic par and stub files.
 def ArgsForGcloud():
   """Constructs an argument list to run gcloud."""
+  if encoding.GetEncodedValue(os.environ, 'CLOUDSDK_FROM_GOCLOUD'):
+    return ArgsForExecutableTool(sys.executable)
   if not sys.executable:
     # In hermetic par/stub files sys.executable is None. In regular installs,
     # and in classic par/stub files it is a non-empty string.

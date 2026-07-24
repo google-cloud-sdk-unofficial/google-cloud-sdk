@@ -1,0 +1,30 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: Test IAM permissions for a Compute Engine target pool.
+  description: |
+    Returns permissions that a caller has on the specified target pool.
+
+  examples: |
+    To test if the caller has 'compute.targetPools.get' permission on a target pool `my-target-pool` in region `us-central1`, run:
+
+      $ {command} my-target-pool --region=us-central1 --permissions=compute.targetPools.get
+
+request:
+  collection: compute.targetPools
+  api_version: alpha
+  method: testIamPermissions
+  use_relative_name: false
+
+command_type: GENERIC
+
+arguments:
+  resource:
+    help_text: The target pool for which to test permissions.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:target_pool
+  params:
+  - arg_name: permissions
+    api_field: testPermissionsRequest.permissions
+    required: true
+    repeated: true
+    help_text: |-
+      The permissions to test.

@@ -23,7 +23,6 @@ from googlecloudsdk.command_lib.compute.routers import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class GetNamedSet(base.DescribeCommand):
   """Get a named set from a Compute Engine router.
 
@@ -62,3 +61,16 @@ class GetNamedSet(base.DescribeCommand):
     )
 
     return client.MakeRequests([request])[0]
+
+
+GetNamedSet.detailed_help = {
+    'DESCRIPTION': """\
+          *{command}* gets a named set from a Compute Engine router.
+  """,
+    'EXAMPLES': """\
+          To get named set `my-set` on router `my-router` in region `us-central1`, run:
+
+              $ {command} my-router --region=us-central1 --set-name=my-set
+
+          """,
+}

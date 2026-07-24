@@ -27,10 +27,14 @@ import websocket._exceptions as websocket_exceptions
 class CloudShellTunnel:
   """Tunnels TCP traffic over a Cloud Shell WebSocket connection."""
 
-  def __init__(self, host, jwt, local_port=0):
+  def __init__(
+      self, host, jwt, remote_port=22, local_port=0, log_errors_as_debug=False
+  ):
     self.host = host
     self.jwt = jwt
+    self.remote_port = remote_port
     self.local_port = local_port
+    self.log_errors_as_debug = log_errors_as_debug
     self.socket = None
     self.tcp_tunnel_open = False
 
@@ -83,7 +87,7 @@ class CloudShellTunnel:
       ca_certs = custom_ca_certs
 
     # URL for Cloud Shell SSH WebSocket
-    url = f'wss://{self.host}/_cloudshell/tcp/22'
+    url = f'wss://{self.host}/_cloudshell/tcp/{self.remote_port}'
 
     server = websocket.WebSocketApp(
         url,
@@ -128,7 +132,6 @@ class CloudShellTunnel:
 
   def _ForwardClientToServer(self, client, server):
     """Forwards data from the client to the server."""
-    del self
 
     def Forward():
       while True:
@@ -138,10 +141,10 @@ class CloudShellTunnel:
             break
           server.send(data)
         except websocket_exceptions.WebSocketConnectionClosedException:
-          log.error('Connection to Cloud Shell lost.')
+          self._LogError('Connection to Cloud Shell lost.')
           break
         except (socket.error, websocket_exceptions.WebSocketException) as e:
-          log.error('Error forwarding data: %s', e, exc_info=True)
+          self._LogError('Error forwarding data: %s', e, exc_info=True)
           break
       client.close()
 
@@ -150,9 +153,16 @@ class CloudShellTunnel:
 
   def _OnWebsocketError(self, client, error):
     """Handles WebSocket errors."""
-    del self
     if not isinstance(
         error, websocket_exceptions.WebSocketConnectionClosedException
     ):
-      log.error('Error connecting to Cloud Shell: %s', error, exc_info=True)
+      self._LogError(
+          'Error connecting to Cloud Shell: %s', error, exc_info=True
+      )
     client.close()
+
+  def _LogError(self, msg, *args, **kwargs):
+    if self.log_errors_as_debug:
+      log.debug(msg, *args, **kwargs)
+    else:
+      log.error(msg, *args, **kwargs)

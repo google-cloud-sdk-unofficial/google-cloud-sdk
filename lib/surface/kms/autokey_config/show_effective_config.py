@@ -18,45 +18,14 @@
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kms import flags
-from googlecloudsdk.command_lib.kms import resource_args
 from googlecloudsdk.core import properties
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class ShowEffectiveConfig(base.Command):
-  r"""Gets the effective Cloud KMS AutokeyConfig for a given project.
-
-  {command} can be used to get the effective Cloud KMS AutokeyConfig for a given
-  project.
-
-  ## EXAMPLES
-
-  The following command retrieves the effective Cloud KMS AutokeyConfig for a
-  given project `my-project`:
-
-  $ {command} --project=my-project
-
-  If --project flag is not provided, then the current project will be used.
-  """
-
-  @staticmethod
-  def Args(parser):
-    resource_args.AddKmsProjectResourceArgForKMS(parser, True, 'project')
-
-  def Run(self, args):
-    client = cloudkms_base.GetClientInstance()
-    messages = cloudkms_base.GetMessagesModule()
-    project_ref = args.CONCEPTS.project.Parse()
-
-    return client.projects.ShowEffectiveAutokeyConfig(
-        messages.CloudkmsProjectsShowEffectiveAutokeyConfigRequest(
-            parent=project_ref.RelativeName()))
-
-
-@base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class ShowEffectiveConfigAlphaBeta(base.Command):
   r"""Get the effective Cloud KMS AutokeyConfig for a given folder or project.
 
   {command} can be used to get the effective Cloud KMS AutokeyConfig for a given

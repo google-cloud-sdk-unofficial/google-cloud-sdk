@@ -12,29 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections.abc import MutableMapping
 import re
 import warnings
 from datetime import datetime
+
+from cloudsdk.google.protobuf.descriptor import Descriptor, FieldDescriptor
 from cloudsdk.google.protobuf.message import Message
-from cloudsdk.google.protobuf.descriptor import FieldDescriptor
 
 # This assumes that the compiled protobuf files (e.g., validation_pb2.py)
 # are available in your Python path. You might need to adjust the import
 # path based on your project structure.
-from orchestration_pipelines_models.pipeline_v1_model.protos import validation_pb2
+from orchestration_pipelines_models.pipeline_v1_model.protos import (
+    validation_pb2,
+)
 from orchestration_pipelines_models.utils import time_utils
 
 
 class PipelineValidator:
-    """
-    Performs validation on pipeline protobuf messages based on custom field
+    """Performs validation on pipeline protobuf messages based on custom field
     options defined in validation.proto.
     """
 
     @classmethod
     def validate(cls, message: Message):
-        """
-        Validates a protobuf message.
+        """Validates a protobuf message.
 
         This method performs two stages of validation:
         1.  Recursively validates all fields and nested messages against the
@@ -50,7 +52,10 @@ class PipelineValidator:
         """
         cls._validate_message(message, "")
 
-        if message.DESCRIPTOR.full_name == "pipeline_models.OrchestrationPipeline":
+        if (
+            message.DESCRIPTOR.full_name
+            == "pipeline_models.OrchestrationPipeline"
+        ):
             cls._validate_pipeline_level_rules(message)
 
     @classmethod
@@ -68,12 +73,14 @@ class PipelineValidator:
         # the field has its default value (e.g., 0, empty list) and thus
         # wouldn't be in `ListFields()`.
         for field in descriptor.fields:
-            current_field_path = (f"{path_prefix}.{field.name}"
-                                  if path_prefix else field.name)
+            current_field_path = (
+                f"{path_prefix}.{field.name}" if path_prefix else field.name
+            )
             options = field.GetOptions()
-            if options.HasExtension(
-                    validation_pb2.is_required) and options.Extensions[
-                        validation_pb2.is_required]:
+            if (
+                options.HasExtension(validation_pb2.is_required)
+                and options.Extensions[validation_pb2.is_required]
+            ):
                 cls._validate_is_required(message, field, current_field_path)
 
             value = getattr(message, field.name)
@@ -84,10 +91,13 @@ class PipelineValidator:
                     options.Extensions[validation_pb2.min_items],
                     current_field_path,
                 )
-            if (options.HasExtension(validation_pb2.disallow_zero_enum)
-                    and options.Extensions[validation_pb2.disallow_zero_enum]):
-                cls._validate_disallow_zero_enum(field, value,
-                                                 current_field_path)
+            if (
+                options.HasExtension(validation_pb2.disallow_zero_enum)
+                and options.Extensions[validation_pb2.disallow_zero_enum]
+            ):
+                cls._validate_disallow_zero_enum(
+                    field, value, current_field_path
+                )
             if options.HasExtension(validation_pb2.min_value):
                 cls._validate_min_value(
                     field,
@@ -105,14 +115,16 @@ class PipelineValidator:
 
         # 2. Validate the values of all fields that are actually set (non-default).
         for field, value in message.ListFields():
-            current_field_path = (f"{path_prefix}.{field.name}"
-                                  if path_prefix else field.name)
+            current_field_path = (
+                f"{path_prefix}.{field.name}" if path_prefix else field.name
+            )
             cls._validate_field_value(field, value, current_field_path)
 
             # 3. Recurse into nested messages.
             try:
                 is_repeated = (
-                    field.cardinality == FieldDescriptor.CARDINALITY_REPEATED)
+                    field.cardinality == FieldDescriptor.CARDINALITY_REPEATED
+                )
             except AttributeError:
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore", DeprecationWarning)
@@ -126,8 +138,9 @@ class PipelineValidator:
                     if field.message_type.GetOptions().map_entry:
                         continue
                     for i, item in enumerate(value):
-                        cls._validate_message(item,
-                                              f"{current_field_path}[{i}]")
+                        cls._validate_message(
+                            item, f"{current_field_path}[{i}]"
+                        )
                 else:
                     cls._validate_message(value, current_field_path)
 
@@ -150,163 +163,215 @@ class PipelineValidator:
         # Checks for min_items, min_value, min_len and disallow_zero_enum are
         # handled in _validate_message as they need to run on default values.
         if options.HasExtension(validation_pb2.regex):
-            cls._validate_regex(field, value,
-                                options.Extensions[validation_pb2.regex], path)
+            cls._validate_regex(
+                field, value, options.Extensions[validation_pb2.regex], path
+            )
+
+        if options.HasExtension(validation_pb2.map_key_regex):
+            pattern = options.Extensions[validation_pb2.map_key_regex]
+            cls._validate_map_key_regex(field, value, pattern, path)
+
+        if options.HasExtension(validation_pb2.map_value_regex):
+            pattern = options.Extensions[validation_pb2.map_value_regex]
+            cls._validate_map_value_regex(field, value, pattern, path)
 
         if options.HasExtension(validation_pb2.max_len):
-            cls._validate_max_len(field, value,
-                                  options.Extensions[validation_pb2.max_len],
-                                  path)
+            cls._validate_max_len(
+                field, value, options.Extensions[validation_pb2.max_len], path
+            )
 
-        if options.HasExtension(
-                validation_pb2.is_cron_expression) and options.Extensions[
-                    validation_pb2.is_cron_expression]:
+        if (
+            options.HasExtension(validation_pb2.is_cron_expression)
+            and options.Extensions[validation_pb2.is_cron_expression]
+        ):
             cls._validate_is_cron_expression(field, value, path)
 
-        if options.HasExtension(
-                validation_pb2.is_iso8601_timestamp) and options.Extensions[
-                    validation_pb2.is_iso8601_timestamp]:
+        if (
+            options.HasExtension(validation_pb2.is_iso8601_timestamp)
+            and options.Extensions[validation_pb2.is_iso8601_timestamp]
+        ):
             cls._validate_is_iso8601_timestamp(field, value, path)
 
-        if options.HasExtension(
-                validation_pb2.is_iso8601_duration) and options.Extensions[
-                    validation_pb2.is_iso8601_duration]:
+        if (
+            options.HasExtension(validation_pb2.is_iso8601_duration)
+            and options.Extensions[validation_pb2.is_iso8601_duration]
+        ):
             cls._validate_is_iso8601_duration(field, value, path)
 
-        if options.HasExtension(
-                validation_pb2.is_iana_timezone) and options.Extensions[
-                    validation_pb2.is_iana_timezone]:
+        if (
+            options.HasExtension(validation_pb2.is_iana_timezone)
+            and options.Extensions[validation_pb2.is_iana_timezone]
+        ):
             cls._validate_is_iana_timezone(field, value, path)
 
     @classmethod
-    def _validate_is_required(cls, message: Message, field: FieldDescriptor,
-                              path: str):
+    def _validate_is_required(
+        cls, message: Message, field: FieldDescriptor, path: str
+    ):
         """Validates that a required field is set."""
-
         is_repeated = cls._is_field_repeated(field)
         if is_repeated:
             if not getattr(message, field.name):
                 raise ValueError(
                     f"Error for field '{path}': field is required and cannot "
-                    "be empty.")
+                    "be empty."
+                )
         elif field.type == FieldDescriptor.TYPE_MESSAGE:
             if not message.HasField(field.name):
                 raise ValueError(
-                    f"Error for field '{path}': field is required.")
+                    f"Error for field '{path}': field is required."
+                )
         elif field.cpp_type == FieldDescriptor.CPPTYPE_STRING:
             if not getattr(message, field.name):
                 raise ValueError(
                     f"Error for field '{path}': field is required and cannot "
-                    "be an empty string.")
+                    "be an empty string."
+                )
 
     @classmethod
-    def _validate_regex(cls, field: FieldDescriptor, value, pattern: str,
-                        path: str):
+    def _validate_regex(
+        cls, field: FieldDescriptor, value, pattern: str, path: str
+    ):
         """Validates that a string field matches a regex pattern."""
         if field.cpp_type == FieldDescriptor.CPPTYPE_STRING and pattern:
-            if not re.match(pattern, value):
-                raise ValueError(
-                    f"Error for field '{path}': value '{value}' does not match "
-                    f"regex pattern '{pattern}'.")
+            cls._validate_string_regex(value, pattern, path)
+
+    @staticmethod
+    def _validate_string_regex(value: str, pattern: str, path: str):
+        """Validates that a string matches given regex pattern."""
+        if not re.match(pattern, value):
+            raise ValueError(
+                f"Error for field '{path}': value '{value}' does not match "
+                f"regex pattern '{pattern}'."
+            )
 
     @classmethod
-    def _validate_min_value(cls, field: FieldDescriptor, value, min_val: float,
-                            path: str):
+    def _validate_min_value(
+        cls, field: FieldDescriptor, value, min_val: float, path: str
+    ):
         """Validates that a numeric field is above a minimum value."""
         if field.cpp_type in (
-                FieldDescriptor.CPPTYPE_INT32,
-                FieldDescriptor.CPPTYPE_INT64,
-                FieldDescriptor.CPPTYPE_UINT32,
-                FieldDescriptor.CPPTYPE_UINT64,
-                FieldDescriptor.CPPTYPE_DOUBLE,
-                FieldDescriptor.CPPTYPE_FLOAT,
+            FieldDescriptor.CPPTYPE_INT32,
+            FieldDescriptor.CPPTYPE_INT64,
+            FieldDescriptor.CPPTYPE_UINT32,
+            FieldDescriptor.CPPTYPE_UINT64,
+            FieldDescriptor.CPPTYPE_DOUBLE,
+            FieldDescriptor.CPPTYPE_FLOAT,
         ):
             if value < min_val:
                 raise ValueError(
                     f"Error for field '{path}': value {value} must be at "
-                    f"least {min_val}.")
+                    f"least {min_val}."
+                )
 
     @classmethod
-    def _validate_min_items(cls, field: FieldDescriptor, value, min_i: int,
-                            path: str):
+    def _validate_min_items(
+        cls, field: FieldDescriptor, value, min_i: int, path: str
+    ):
         """Validates that a repeated field has a minimum number of items."""
         is_repeated = cls._is_field_repeated(field)
         if is_repeated:
             if len(value) < min_i:
                 raise ValueError(
                     f"Error for field '{path}': must have at least {min_i} "
-                    f"items, but has {len(value)}.")
+                    f"items, but has {len(value)}."
+                )
 
     @classmethod
-    def _validate_disallow_zero_enum(cls, field: FieldDescriptor, value,
-                                     path: str):
+    def _validate_disallow_zero_enum(
+        cls, field: FieldDescriptor, value, path: str
+    ):
         """Validates that an enum field is not its default zero value."""
         if field.type == FieldDescriptor.TYPE_ENUM:
             if value == 0:
                 raise ValueError(
                     f"Error for field '{path}': must not be the default enum "
-                    "value (0).")
+                    "value (0)."
+                )
 
     @classmethod
-    def _validate_min_len(cls, field: FieldDescriptor, value, min_l: int,
-                          path: str):
+    def _validate_min_len(
+        cls, field: FieldDescriptor, value, min_l: int, path: str
+    ):
         """Validates that a string field has a minimum length."""
         if field.cpp_type == FieldDescriptor.CPPTYPE_STRING:
             if len(value) < min_l:
                 raise ValueError(
                     f"Error for field '{path}': length must be at least "
-                    f"{min_l}, but is {len(value)}.")
+                    f"{min_l}, but is {len(value)}."
+                )
 
     @classmethod
-    def _validate_max_len(cls, field: FieldDescriptor, value, max_l: int,
-                          path: str):
+    def _validate_max_len(
+        cls, field: FieldDescriptor, value, max_l: int, path: str
+    ):
         """Validates that a string field has a maximum length."""
         if field.cpp_type == FieldDescriptor.CPPTYPE_STRING:
             if len(value) > max_l:
                 raise ValueError(
                     f"Error for field '{path}': length must be at most "
-                    f"{max_l}, but is {len(value)}.")
+                    f"{max_l}, but is {len(value)}."
+                )
 
     @classmethod
-    def _validate_is_cron_expression(cls, field: FieldDescriptor, value,
-                                     path: str):
+    def _validate_is_cron_expression(
+        cls, field: FieldDescriptor, value, path: str
+    ):
         """Validates that a string field is a valid cron expression."""
         if field.cpp_type == FieldDescriptor.CPPTYPE_STRING and value:
             try:
+                cls._check_quote_issues(value)
                 time_utils.check_cron_expression(value)
             except ValueError as e:
                 raise ValueError(f"Error for field '{path}': {e}") from e
 
     @classmethod
-    def _validate_is_iso8601_timestamp(cls, field: FieldDescriptor, value,
-                                       path: str):
+    def _check_quote_issues(cls, value: str):
+        """Detects if a value contains quotes, which are invalid for these fields."""
+        if '"' in value or "'" in value:
+            # Check if it looks like a quoting error (starts or ends with a quote)
+            if value.startswith(('"', "'")) or value.endswith(('"', "'")):
+                if len(value) < 2 or value[0] != value[-1]:
+                    raise ValueError("mismatched quote boundaries.")
+                raise ValueError("value should not be wrapped in literal quotes.")
+
+            # General error for quotes anywhere else
+            raise ValueError("field contains invalid quote characters.")
+
+    @classmethod
+    def _validate_is_iso8601_timestamp(
+        cls, field: FieldDescriptor, value, path: str
+    ):
         """Validates that a string field is a valid ISO 8601 timestamp."""
         if field.cpp_type == FieldDescriptor.CPPTYPE_STRING and value:
             try:
+                cls._check_quote_issues(value)
                 # Replacing 'Z' with '+00:00' for broader Python version
                 # compatibility with fromisoformat().
                 datetime.fromisoformat(value.replace("Z", "+00:00"))
             except ValueError as e:
-                raise ValueError(
-                    f"Error for field '{path}': value '{value}' is not a "
-                    "valid ISO 8601 timestamp.") from e
+                raise ValueError(f"Error for field '{path}': {e}") from e
 
     @classmethod
-    def _validate_is_iso8601_duration(cls, field: FieldDescriptor, value,
-                                      path: str):
+    def _validate_is_iso8601_duration(
+        cls, field: FieldDescriptor, value, path: str
+    ):
         """Validates that a string field is a valid duration string."""
         if field.cpp_type == FieldDescriptor.CPPTYPE_STRING and value:
             try:
+                cls._check_quote_issues(value)
                 time_utils.check_duration(value)
             except (ValueError, TypeError) as e:
                 raise ValueError(f"Error for field '{path}': {e}") from e
 
     @classmethod
-    def _validate_is_iana_timezone(cls, field: FieldDescriptor, value,
-                                   path: str):
+    def _validate_is_iana_timezone(
+        cls, field: FieldDescriptor, value, path: str
+    ):
         """Validates that a string field is a valid IANA timezone."""
         if field.cpp_type == FieldDescriptor.CPPTYPE_STRING and value:
             try:
+                cls._check_quote_issues(value)
                 time_utils.check_timezone(value)
             except ValueError as e:
                 raise ValueError(f"Error for field '{path}': {e}") from e
@@ -318,9 +383,7 @@ class PipelineValidator:
             return
 
         action_name_map = {}  # Maps action name to its index in the pipeline.
-        all_dependencies = (
-            []
-        )  # Stores tuples of (dependency_name, action_index, action_type, action_name).
+        all_dependencies = []  # Stores tuples of (dependency_name, action_index, action_type, action_name).
 
         for i, action_wrapper in enumerate(pipeline.actions):
             action_type = action_wrapper.WhichOneof("action")
@@ -334,7 +397,8 @@ class PipelineValidator:
             if action_name in action_name_map:
                 raise ValueError(
                     f"Error for field 'actions[{i}].{action_type}.name': "
-                    f"Duplicate action name '{action_name}' found.")
+                    f"Duplicate action name '{action_name}' found."
+                )
             action_name_map[action_name] = i
 
             # Collect all dependencies to check them after all action names are known.
@@ -344,9 +408,74 @@ class PipelineValidator:
 
         # 2. Check for undefined dependencies
         action_names_set = set(action_name_map.keys())
-        for dep_name, action_index, action_type, action_name in all_dependencies:
+        for (
+            dep_name,
+            action_index,
+            action_type,
+            action_name,
+        ) in all_dependencies:
             if dep_name not in action_names_set:
                 raise ValueError(
                     f"Error for field 'actions[{action_index}].{action_type}.depends_on': "
                     f"Action '{action_name}' depends on undefined action '{dep_name}'."
                 )
+
+    @staticmethod
+    def _is_map_field(field: FieldDescriptor) -> bool:
+        """Checks if the FieldDescriptor represents a Protobuf map field."""
+        return (
+            field.cpp_type == FieldDescriptor.CPPTYPE_MESSAGE
+            and isinstance(field.message_type, Descriptor)
+            and field.message_type.GetOptions().map_entry
+        )
+
+    @classmethod
+    def _validate_map_key_regex(
+        cls, field: FieldDescriptor, value, pattern: str, path: str
+    ):
+        """Validates the keys of a Protobuf map against a regex pattern."""
+        if not cls._is_map_field(field):
+            raise RuntimeError(
+                f"Internal Error: Map key regex validation called on field "
+                f"'{path}' which is not defined as a Protobuf map."
+            )
+
+        if not isinstance(value, MutableMapping):
+            raise TypeError(
+                f"Field '{path}' expected a map-like object, "
+                f"got '{type(value).__name__}'."
+            )
+
+        for key in value.keys():
+            if not isinstance(key, str):
+                raise TypeError(
+                    f"Map key at '{path}' expected type 'str', "
+                    f"got '{type(key).__name__}'."
+                )
+
+            cls._validate_string_regex(key, pattern, f"{path}.<{key}>")
+
+    @classmethod
+    def _validate_map_value_regex(
+        cls, field: FieldDescriptor, value, pattern: str, path: str
+    ):
+        if not cls._is_map_field(field):
+            raise RuntimeError(
+                f"Internal Error: Map value regex validation called on field "
+                f"'{path}' which is not defined as a Protobuf map."
+            )
+
+        if not isinstance(value, MutableMapping):
+            raise TypeError(
+                f"Field '{path}' expected a map-like object, "
+                f"got '{type(value).__name__}'."
+            )
+
+        for key, val in value.items():
+            if not isinstance(val, str):
+                raise TypeError(
+                    f"Map value at '{path}'['{key}'] expected type 'str', "
+                    f"got '{type(val).__name__}'."
+                )
+
+            cls._validate_string_regex(val, pattern, f"{path}['{key}']")

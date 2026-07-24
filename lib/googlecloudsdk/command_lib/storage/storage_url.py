@@ -670,8 +670,10 @@ def storage_url_from_string(url_string, is_bucket_gen_parsing_allowed=False):
   if scheme == ProviderPrefix.HDFS:
     return HdfsUrl(url_string)
   if scheme in VALID_HTTP_SCHEMES:
-    # Azure's scheme breaks from other clouds.
-    return AzureUrl.from_url_string(url_string)
+    if AZURE_DOMAIN in url_string:
+      # Azure's scheme breaks from other clouds.
+      return AzureUrl.from_url_string(url_string)
+    raise errors.InvalidUrlError('Invalid URL: "{}"'.format(url_string))
   if scheme in VALID_CLOUD_SCHEMES:
     return CloudUrl.from_url_string(
         url_string, is_bucket_gen_parsing_allowed=is_bucket_gen_parsing_allowed

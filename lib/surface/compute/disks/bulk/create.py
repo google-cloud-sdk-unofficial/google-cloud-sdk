@@ -17,7 +17,9 @@
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import filter_rewrite
+from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 from googlecloudsdk.core import log
@@ -178,9 +180,63 @@ class BulkCreate(base.Command):
                 compute_holder.resources,
             )
             if ssg_ref is not None:
-              ssg_params = client.messages.SnapshotGroupParameters(
-                  sourceSnapshotGroup=ssg_ref.SelfLink(),
-              )
+              ssg_dict = {
+                  'sourceSnapshotGroup': ssg_ref.SelfLink(),
+              }
+              if (
+                  hasattr(args, 'snapshot_group_params')
+                  and args.IsSpecified('snapshot_group_params')
+              ):
+                sg_params = args.snapshot_group_params
+                if 'type' in sg_params:
+                  if args.IsSpecified('zone'):
+                    disk_type_ref = compute_holder.resources.Parse(
+                        sg_params['type'],
+                        collection='compute.diskTypes',
+                        params={
+                            'project': project,
+                            'zone': args.zone
+                        })
+                  else:
+                    disk_type_ref = compute_holder.resources.Parse(
+                        sg_params['type'],
+                        collection='compute.regionDiskTypes',
+                        params={
+                            'project': project,
+                            'region': args.region
+                        })
+                  ssg_dict['type'] = disk_type_ref.SelfLink()
+                if 'replica-zones' in sg_params:
+                  if args.IsSpecified('zone'):
+                    raise exceptions.InvalidArgumentException(
+                        '--snapshot-group-params',
+                        'Replica zones cannot be specified for zonal disks.',
+                    )
+                  replica_zones = sg_params['replica-zones']
+                  if len(set(replica_zones)) != len(replica_zones):
+                    raise exceptions.InvalidArgumentException(
+                        '--snapshot-group-params',
+                        'Replica zones cannot be the same.',
+                    )
+                  if args.IsSpecified('region'):
+                    region = args.region
+                    for zone in replica_zones:
+                      if utils.ZoneNameToRegionName(zone) != region:
+                        raise exceptions.InvalidArgumentException(
+                            '--snapshot-group-params',
+                            'Replica zone [{}] is not in region [{}].'.format(
+                                zone, region
+                            ),
+                        )
+                  replica_zones_urls = []
+                  for zone in replica_zones:
+                    zone_ref = compute_holder.resources.Parse(
+                        zone,
+                        collection='compute.zones',
+                        params={'project': project})
+                    replica_zones_urls.append(zone_ref.SelfLink())
+                  ssg_dict['replicaZones'] = replica_zones_urls
+              ssg_params = client.messages.SnapshotGroupParameters(**ssg_dict)
       if args.IsSpecified('zone'):
         request = client.messages.ComputeDisksBulkInsertRequest(
             project=project,

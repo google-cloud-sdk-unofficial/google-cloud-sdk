@@ -340,17 +340,54 @@ class ComputeEngineOrchestrator(_messages.Message):
   using Compute Engine.
 
   Messages:
+    ExistingInstancesValue: Optional. Existing instances that will be governed
+      by the orchestrator. Keys must conform to
+      [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034) (lower-case,
+      alphanumeric, and at most 63 characters).
     ManagedInstanceGroupsValue: Optional. Managed instance groups that should
       be created by the orchestrator. Keys must conform to
       [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034) (lower-case,
       alphanumeric, and at most 63 characters).
 
   Fields:
+    existingInstances: Optional. Existing instances that will be governed by
+      the orchestrator. Keys must conform to
+      [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034) (lower-case,
+      alphanumeric, and at most 63 characters).
     managedInstanceGroups: Optional. Managed instance groups that should be
       created by the orchestrator. Keys must conform to
       [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034) (lower-case,
       alphanumeric, and at most 63 characters).
   """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ExistingInstancesValue(_messages.Message):
+    r"""Optional. Existing instances that will be governed by the
+    orchestrator. Keys must conform to
+    [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034) (lower-case,
+    alphanumeric, and at most 63 characters).
+
+    Messages:
+      AdditionalProperty: An additional property for a ExistingInstancesValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        ExistingInstancesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ExistingInstancesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A ExistingInstances attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('ExistingInstances', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class ManagedInstanceGroupsValue(_messages.Message):
@@ -381,7 +418,8 @@ class ComputeEngineOrchestrator(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  managedInstanceGroups = _messages.MessageField('ManagedInstanceGroupsValue', 1)
+  existingInstances = _messages.MessageField('ExistingInstancesValue', 1)
+  managedInstanceGroups = _messages.MessageField('ManagedInstanceGroupsValue', 2)
 
 
 class ComputeInstance(_messages.Message):
@@ -466,8 +504,8 @@ class ComputeResourceConfig(_messages.Message):
   r"""Describes how a compute resource should be created at runtime.
 
   Fields:
-    existingInstances: Optional. Immutable. If set, indicates that this
-      resource should use existing VMs.
+    existingInstances: Optional. Immutable. Deprecated: No longer supported.
+      If set, indicates that this resource should use existing VMs.
     newFlexStartInstances: Optional. Immutable. If set, indicates that this
       resource should use flex-start VMs.
     newOnDemandInstances: Optional. Immutable. If set, indicates that this
@@ -1043,9 +1081,76 @@ class ExistingFilestoreConfig(_messages.Message):
   filestore = _messages.StringField(1)
 
 
+class ExistingInstances(_messages.Message):
+  r"""ExistingInstances defines a list of existing VM instances to include in
+  the cluster.
+
+  Messages:
+    LabelsValue: Optional. Immutable. Labels specifying the instances to
+      include. Instances from the source will be included only if they contain
+      each of these labels. If no labels are specified, all instances from the
+      source will be included. Example: {"env": "prod", "app": "worker"}
+
+  Fields:
+    instanceGroupManager: Optional. Immutable. Managed instance group
+      containing the instances, in the format `projects/{project}/zones/{zone}
+      /instanceGroupManagers/{instanceGroupManager}`.
+    labels: Optional. Immutable. Labels specifying the instances to include.
+      Instances from the source will be included only if they contain each of
+      these labels. If no labels are specified, all instances from the source
+      will be included. Example: {"env": "prod", "app": "worker"}
+    regionInstanceGroupManager: Optional. Immutable. Regional managed instance
+      group containing the instances, in the format `projects/{project}/region
+      s/{region}/instanceGroupManagers/{instanceGroupManager}`.
+    reservation: Optional. Immutable. Reservation containing the instances, in
+      the format `projects/{project}/zones/{zone}/reservations/{reservation}`.
+    reservationBlock: Optional. Immutable. Reservation block containing the
+      instances, in the format `projects/{project}/zones/{zone}/reservations/{
+      reservation}/reservationBlocks/{reservationBlock}`.
+    reservationSubBlock: Optional. Immutable. Reservation sub block containing
+      the instances, in the format `projects/{project}/zones/{zone}/reservatio
+      ns/{reservation}/reservationBlocks/{reservationBlock}/reservationSubBloc
+      ks/{reservationSubBlock}`.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Immutable. Labels specifying the instances to include.
+    Instances from the source will be included only if they contain each of
+    these labels. If no labels are specified, all instances from the source
+    will be included. Example: {"env": "prod", "app": "worker"}
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  instanceGroupManager = _messages.StringField(1)
+  labels = _messages.MessageField('LabelsValue', 2)
+  regionInstanceGroupManager = _messages.StringField(3)
+  reservation = _messages.StringField(4)
+  reservationBlock = _messages.StringField(5)
+  reservationSubBlock = _messages.StringField(6)
+
+
 class ExistingInstancesConfig(_messages.Message):
-  r"""When set in a ComputeResourceConfig, indicates that VM instances should
-  be imported from an existing source.
+  r"""Deprecated: No longer supported. When set in a ComputeResourceConfig,
+  indicates that VM instances should be imported from an existing source.
 
   Messages:
     LabelsValue: Optional. Immutable. Labels specifying the instances to
@@ -2356,6 +2461,8 @@ class ManagedInstanceGroup(_messages.Message):
       in this group.
     resourcePolicyConfig: Optional. Resource policy configuration for this
       managed instance group.
+    startupScript: Optional. Startup script to be run on each VM instance in
+      the nodeset.
     storageConfigs: Optional. How storage resources should be mounted on each
       instance in this managed instance group.
     targetSize: Optional. Target number of running instances for this managed
@@ -2367,8 +2474,9 @@ class ManagedInstanceGroup(_messages.Message):
   instanceGroupManager = _messages.StringField(3)
   instanceTemplate = _messages.StringField(4)
   resourcePolicyConfig = _messages.MessageField('ResourcePolicyConfig', 5)
-  storageConfigs = _messages.MessageField('StorageConfig', 6, repeated=True)
-  targetSize = _messages.IntegerField(7)
+  startupScript = _messages.StringField(6)
+  storageConfigs = _messages.MessageField('StorageConfig', 7, repeated=True)
+  targetSize = _messages.IntegerField(8)
 
 
 class Metrics(_messages.Message):
@@ -3304,6 +3412,8 @@ class ProfilerSession(_messages.Message):
       Example: `gs://my-bucket/my-run-directory/session-1`.
     targetSessions: Optional. Map of target session data for each target. Key
       is the target name from `profiler_targets` field.
+    xprofServerPort: Optional. Xprof server port If not set, the default port
+      is 9999.
   """
 
   class DeviceTracerLevelValueValuesEnum(_messages.Enum):
@@ -3428,6 +3538,7 @@ class ProfilerSession(_messages.Message):
   status = _messages.MessageField('Status', 15)
   storageFolderUri = _messages.StringField(16)
   targetSessions = _messages.MessageField('TargetSessionsValue', 17)
+  xprofServerPort = _messages.IntegerField(18, variant=_messages.Variant.INT32)
 
 
 class ProfilerTarget(_messages.Message):

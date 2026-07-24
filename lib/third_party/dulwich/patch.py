@@ -24,17 +24,13 @@ These patches are basically unified diffs with some extra metadata tacked
 on.
 """
 
-from difflib import SequenceMatcher
 import email.parser
 import time
-from typing import Union, TextIO, BinaryIO, Optional
+from difflib import SequenceMatcher
+from typing import BinaryIO, Optional, TextIO, Union
 
-from dulwich.objects import (
-    Blob,
-    Commit,
-    S_ISGITLINK,
-)
-from dulwich.pack import ObjectContainer
+from .objects import S_ISGITLINK, Blob, Commit
+from .pack import ObjectContainer
 
 FIRST_FEW_BYTES = 8000
 
@@ -45,6 +41,7 @@ def write_commit_patch(f, commit, contents, progress, version=None, encoding=Non
     Args:
       commit: Commit object
       progress: Tuple with current patch number and total.
+
     Returns:
       tuple with filename and contents
     """
@@ -105,7 +102,7 @@ def get_summary(commit):
 
 #  Unified Diff
 def _format_range_unified(start, stop):
-    'Convert range to the "ed" format'
+    """Convert range to the "ed" format."""
     # Per the diff spec at http://www.unix.org/single_unix_specification/
     beginning = start + 1  # lines start numbering with one
     length = stop - start
@@ -139,19 +136,17 @@ def unified_diff(
             started = True
             fromdate = f"\t{fromfiledate}" if fromfiledate else ""
             todate = f"\t{tofiledate}" if tofiledate else ""
-            yield "--- {}{}{}".format(
-                fromfile.decode(tree_encoding), fromdate, lineterm
-            ).encode(output_encoding)
-            yield "+++ {}{}{}".format(
-                tofile.decode(tree_encoding), todate, lineterm
-            ).encode(output_encoding)
+            yield f"--- {fromfile.decode(tree_encoding)}{fromdate}{lineterm}".encode(
+                output_encoding
+            )
+            yield f"+++ {tofile.decode(tree_encoding)}{todate}{lineterm}".encode(
+                output_encoding
+            )
 
         first, last = group[0], group[-1]
         file1_range = _format_range_unified(first[1], last[2])
         file2_range = _format_range_unified(first[3], last[4])
-        yield f"@@ -{file1_range} +{file2_range} @@{lineterm}".encode(
-            output_encoding
-        )
+        yield f"@@ -{file1_range} +{file2_range} @@{lineterm}".encode(output_encoding)
 
         for tag, i1, i2, j1, j2 in group:
             if tag == "equal":

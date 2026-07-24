@@ -6192,7 +6192,8 @@ class ApigeeOrganizationsUpdateControlPlaneAccessRequest(_messages.Message):
     name: Identifier. The resource name of the ControlPlaneAccess. Format:
       "organizations/{org}/controlPlaneAccess"
     updateMask: List of fields to be updated. Fields that can be updated:
-      synchronizer_identities, publisher_identities.
+      synchronizer_identities, analytics_publisher_identities,
+      watcher_identities.
   """
 
   googleCloudApigeeV1ControlPlaneAccess = _messages.MessageField('GoogleCloudApigeeV1ControlPlaneAccess', 1)
@@ -12923,6 +12924,7 @@ class GoogleCloudApigeeV1RuntimeAddonsConfig(_messages.Message):
     name: Name of the addons config in the format:
       `organizations/{org}/environments/{env}/addonsConfig`
     revisionId: Revision number used by the runtime to detect config changes.
+    specGenerationConfig: Runtime configuration for Spec Generation add-on.
     uid: UID is to detect if config is recreated after deletion. The add-on
       config will only be deleted when the environment itself gets deleted,
       thus it will always be the same as the UID of EnvironmentConfig.
@@ -12932,7 +12934,8 @@ class GoogleCloudApigeeV1RuntimeAddonsConfig(_messages.Message):
   apiSecurityConfig = _messages.MessageField('GoogleCloudApigeeV1RuntimeApiSecurityConfig', 2)
   name = _messages.StringField(3)
   revisionId = _messages.StringField(4)
-  uid = _messages.StringField(5)
+  specGenerationConfig = _messages.MessageField('GoogleCloudApigeeV1RuntimeSpecGenerationAddonConfig', 5)
+  uid = _messages.StringField(6)
 
 
 class GoogleCloudApigeeV1RuntimeAnalyticsConfig(_messages.Message):
@@ -12980,6 +12983,44 @@ class GoogleCloudApigeeV1RuntimeConfig(_messages.Message):
   name = _messages.StringField(2)
   tenantProjectId = _messages.StringField(3)
   traceBucket = _messages.StringField(4)
+
+
+class GoogleCloudApigeeV1RuntimeSpecGenerationAddonConfig(_messages.Message):
+  r"""Runtime configuration for the Spec Generation add-on. All fields are
+  proto3 primitives (bool, string, double) rather than google.protobuf.*Value
+  wrappers because the runtime consumer deserializes the JSON via Gson field
+  reflection with no registered type adapters. Wrapper types would serialize
+  as JSON objects/null that Gson cannot bind to Java primitive fields.
+
+  Fields:
+    apiObservationsPubsubTopic: Full Pub/Sub topic path in the Apigee Runtime
+      Tenant Project where the Schema Inferring Engine publishes inferred
+      ApiObservation messages. Format: projects/{project}/topics/{topic}. Same
+      sentinel semantics as raw_observations_pubsub_topic. Default: empty
+      string.
+    enabled: Whether the Spec Generation add-on is active for this
+      environment. Default: false.
+    enabledUntil: ISO-8601 timestamp until which Spec Generation remains
+      active (e.g. "2026-12-31T23:59:59Z"). Empty string is the canonical "not
+      configured" sentinel and MUST be treated by the consumer as "expired"
+      (short-circuit before parsing). Default: empty string.
+    rawObservationsPubsubTopic: Full Pub/Sub topic path in the Apigee Runtime
+      Tenant Project where the message processor publishes captured
+      RawObservation messages. Format: projects/{project}/topics/{topic}.
+      Empty string is the "not configured" sentinel; the consumer short-
+      circuits publishing when empty. Default: empty string.
+    samplingRate: Fraction of eligible transactions to capture, in [0.0, 1.0].
+      The consumer enforces an internal upper-bound clamp independently of
+      this field. Default: 0.0 (omitted from JSON per proto3 default-scalar-
+      omission; the consumer's field initializer supplies the effective 0.01
+      fallback).
+  """
+
+  apiObservationsPubsubTopic = _messages.StringField(1)
+  enabled = _messages.BooleanField(2)
+  enabledUntil = _messages.StringField(3)
+  rawObservationsPubsubTopic = _messages.StringField(4)
+  samplingRate = _messages.FloatField(5)
 
 
 class GoogleCloudApigeeV1RuntimeTraceConfig(_messages.Message):

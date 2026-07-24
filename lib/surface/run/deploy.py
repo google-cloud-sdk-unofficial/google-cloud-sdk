@@ -18,6 +18,7 @@ import copy
 import enum
 import json
 import logging
+import os
 import os.path
 import re
 
@@ -38,6 +39,7 @@ from googlecloudsdk.command_lib.run import domain_mapping_util
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import iap_util
+from googlecloudsdk.command_lib.run import local_build
 from googlecloudsdk.command_lib.run import messages_util
 from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.command_lib.run import pretty_print
@@ -95,7 +97,10 @@ they will apply to the primary ingress container.
   group.AddArgument(flags.MutexBuildEnvVarsFlags())
   group.AddArgument(
       flags.SourceAndImageFlags(
-          mutex=False, no_build_enabled=True, release_track=release_track
+          mutex=False,
+          no_build_enabled=True,
+          local_build_enabled=(release_track == base.ReleaseTrack.ALPHA),
+          release_track=release_track,
       )
   )
   group.AddArgument(flags.StartupProbeFlag())
@@ -693,8 +698,11 @@ class Deploy(base.Command):
       has_latest,
       iap,
       skip_build,
+      include_local_build=False,
   ):
-    requires_build = bool(build_from_source) and not skip_build
+    requires_build = (
+        bool(build_from_source) and not skip_build and not include_local_build
+    )
 
     deployment_stages = stages.ServiceStages(
         include_iam_policy_set=allow_unauth is not None,
@@ -708,6 +716,7 @@ class Deploy(base.Command):
         include_iap=(iap or (iap is not None and service is not None)),
         include_domain_mapping=getattr(args, 'domain', None) is not None,
         regions_list=self._GetRegionsForMultiRegion(),
+        include_local_build=include_local_build,
     )
     dry_run = getattr(args, 'dry_run', False)
     if dry_run:
@@ -740,11 +749,17 @@ class Deploy(base.Command):
         suppress_output=args.async_ or dry_run,
     )
 
-  def _GetRequiredApis(self, deploy_from_source, is_no_build_from_source):
+  def _GetRequiredApis(
+      self, deploy_from_source, is_no_build_from_source, is_local_build=False
+  ):
     apis = []
     if self.ReleaseTrack() == base.ReleaseTrack.GA:
       apis.append(api_enabler.get_run_api())
-    if deploy_from_source and not is_no_build_from_source:
+    if (
+        deploy_from_source
+        and not is_no_build_from_source
+        and not is_local_build
+    ):
       apis.append('artifactregistry.googleapis.com')
       apis.append('cloudbuild.googleapis.com')
     return apis
@@ -849,9 +864,16 @@ class Deploy(base.Command):
 
     containers = self._ValidateAndGetContainers(args)
     deploy_from_source = self._ValidateAndGetDeployFromSource(containers)
+    is_local_build = validators.IsLocalBuildFromSource(
+        self.ReleaseTrack(), deploy_from_source
+    )
     is_no_build_from_source = validators.IsNoBuildFromSource(
         self.ReleaseTrack(), deploy_from_source
     )
+
+    local_build_changes = []
+    local_build_base_image = None
+    local_build_dir = None
 
     service_ref = args.CONCEPTS.service.Parse()
     flags.ValidateResource(service_ref)
@@ -876,7 +898,7 @@ class Deploy(base.Command):
     project_id = properties.VALUES.core.project.Get(required=True)
 
     required_apis = self._GetRequiredApis(
-        deploy_from_source, is_no_build_from_source
+        deploy_from_source, is_no_build_from_source, is_local_build
     )
 
     skip_activation_prompt = False
@@ -891,7 +913,9 @@ class Deploy(base.Command):
     pack = None
     source = None
     operation_message = 'Deploying container to'
-    if is_no_build_from_source:
+    if is_local_build:
+      operation_message = 'Deploying locally-built source to'
+    elif is_no_build_from_source:
       operation_message = 'Deploying sources to'
     repo_to_create = None
     is_function = False
@@ -917,8 +941,36 @@ class Deploy(base.Command):
         conn_context, skip_activation_prompt
     ) as operations:
       service = operations.GetService(service_ref)
+      if is_local_build:
+        container_name, container_args = next(
+            (name, c)
+            for name, c in deploy_from_source.items()
+            if getattr(c, 'local_build', False)
+        )
+        local_build.ValidateLocalBuildSource(container_args.source)
+        with progress_tracker.StagedProgressTracker(
+            'Building application locally...',
+            [stages._LocalBuildStage()],  # pylint: disable=protected-access
+            failure_message='Local build failed',
+            suppress_output=args.async_,
+        ) as local_tracker:
+          local_tracker.StartStage(stages.LOCAL_BUILD_STAGE_KEY)
+          try:
+            local_build_changes, local_build_base_image, local_build_dir = (
+                local_build.PerformLocalBuild(
+                    container_name, container_args, tracker=local_tracker
+                )
+            )
+            base_image = local_build_base_image
+            if not local_tracker.IsComplete(stages.LOCAL_BUILD_STAGE_KEY):
+              local_tracker.CompleteStage(stages.LOCAL_BUILD_STAGE_KEY)
+          except Exception as e:
+            if not local_tracker.IsComplete(stages.LOCAL_BUILD_STAGE_KEY):
+              local_tracker.FailStage(stages.LOCAL_BUILD_STAGE_KEY, e)
+            raise e
+
       # Build an image from source if source specified
-      if is_no_build_from_source:
+      if is_no_build_from_source or is_local_build:
         image = 'scratch'
         skip_build = True
         deploy_from_source_container_name, container_args = next(
@@ -929,7 +981,11 @@ class Deploy(base.Command):
           deploy_from_source_container_name = (
               service.template.container.name or ''
           )
-        source = container_args.source
+        if is_local_build and local_build_dir is not None:
+          source = local_build_dir.name
+          build_changes.extend(local_build_changes)
+        else:
+          source = container_args.source
         source_bucket = self._GetSourceBucketFromZipDeploySourceLocation(
             service
         )
@@ -967,7 +1023,25 @@ class Deploy(base.Command):
             build_service_account=build_service_account,
         )
       # Deploy a container with an image
+      saved_cmd, saved_args_val = None, None
+      if is_local_build and deploy_from_source:
+        _, container_args = next(iter(deploy_from_source.items()))
+        if not flags.FlagIsExplicitlySet(container_args, 'command'):
+          saved_cmd = getattr(container_args, 'command', None)
+          container_args.command = None
+        if not flags.FlagIsExplicitlySet(container_args, 'args'):
+          saved_args_val = getattr(container_args, 'args', None)
+          container_args.args = None
+
       changes = self._GetBaseChanges(args)
+
+      if is_local_build and deploy_from_source:
+        _, container_args = next(iter(deploy_from_source.items()))
+        if saved_cmd is not None:
+          container_args.command = saved_cmd
+        if saved_args_val is not None:
+          container_args.args = saved_args_val
+
       changes.extend(build_changes)
       allow_unauth = self.GetAllowUnauth(args, operations, service_ref, service)
       resource_change_validators.ValidateClearVpcConnector(service, args)
@@ -1020,6 +1094,7 @@ class Deploy(base.Command):
             has_latest,
             iap,
             skip_build,
+            include_local_build=False,
         ) as tracker:
           released_service = operations.ReleaseService(
               service_ref,
@@ -1079,22 +1154,29 @@ class Deploy(base.Command):
           return released_service, records
 
       try:
-        service, records = _ReleaseService(changes)
-      except exceptions.HttpError as e:
-        if flags.ShouldRetryNoZonalRedundancy(args, str(e)):
-          changes.append(
-              config_changes.GpuZonalRedundancyChange(
-                  gpu_zonal_redundancy=False
-              )
-          )
+        try:
           service, records = _ReleaseService(changes)
-        else:
-          raise e
+        except exceptions.HttpError as e:
+          if flags.ShouldRetryNoZonalRedundancy(args, str(e)):
+            changes.append(
+                config_changes.GpuZonalRedundancyChange(
+                    gpu_zonal_redundancy=False
+                )
+            )
+            service, records = _ReleaseService(changes)
+          else:
+            raise e
 
-      self._DisplaySuccessMessage(
-          service, args, allow_unauth, operations, service_ref, records
-      )
-      return service
+        self._DisplaySuccessMessage(
+            service, args, allow_unauth, operations, service_ref, records
+        )
+        return service
+      finally:
+        if local_build_dir is not None:
+          try:
+            local_build_dir.cleanup()
+          except Exception:  # pylint: disable=broad-exception-caught
+            pass
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -1142,9 +1224,9 @@ class AlphaDeploy(BetaDeploy):
     flags.AddPublicFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.IDENTITY_FLAG.AddToParser(parser)
-    flags.IDENTITY_CERTIFICATE_FLAG.AddToParser(parser)
-    flags.IDENTITY_TYPE_FLAG.AddToParser(parser)
-    flags.FUNCTIONAL_TYPE_FLAG.AddToParser(parser)
+    flags.IdentityCertificateFlag().AddToParser(parser)
+    flags.IdentityTypeFlag().AddToParser(parser)
+    flags.FunctionalTypeFlag().AddToParser(parser)
     flags.MESH_DATAPLANE_FLAG.AddToParser(parser)
     flags.AMBIENT_NETWORKING_FLAG.AddToParser(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())

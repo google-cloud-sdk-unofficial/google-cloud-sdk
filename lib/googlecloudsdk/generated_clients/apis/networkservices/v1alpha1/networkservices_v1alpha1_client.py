@@ -42,6 +42,7 @@ class NetworkservicesV1alpha1(base_api.BaseApiClient):
     self.projects_locations_edgeCacheKeysets = self.ProjectsLocationsEdgeCacheKeysetsService(self)
     self.projects_locations_edgeCacheOrigins = self.ProjectsLocationsEdgeCacheOriginsService(self)
     self.projects_locations_edgeCacheServices = self.ProjectsLocationsEdgeCacheServicesService(self)
+    self.projects_locations_egressRoutings = self.ProjectsLocationsEgressRoutingsService(self)
     self.projects_locations_endpointPolicies = self.ProjectsLocationsEndpointPoliciesService(self)
     self.projects_locations_expressLinks = self.ProjectsLocationsExpressLinksService(self)
     self.projects_locations_extensionBindings = self.ProjectsLocationsExtensionBindingsService(self)
@@ -72,6 +73,7 @@ class NetworkservicesV1alpha1(base_api.BaseApiClient):
     self.projects_locations_multicastProducerAssociations = self.ProjectsLocationsMulticastProducerAssociationsService(self)
     self.projects_locations_observabilityPolicies = self.ProjectsLocationsObservabilityPoliciesService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
+    self.projects_locations_producerExtensions = self.ProjectsLocationsProducerExtensionsService(self)
     self.projects_locations_regionalMulticastConsumerAssociations = self.ProjectsLocationsRegionalMulticastConsumerAssociationsService(self)
     self.projects_locations_regionalMulticastDomainActivations = self.ProjectsLocationsRegionalMulticastDomainActivationsService(self)
     self.projects_locations_regionalMulticastGroupConsumerActivations = self.ProjectsLocationsRegionalMulticastGroupConsumerActivationsService(self)
@@ -1082,6 +1084,151 @@ class NetworkservicesV1alpha1(base_api.BaseApiClient):
         request_field='testIamPermissionsRequest',
         request_type_name='NetworkservicesProjectsLocationsEdgeCacheServicesTestIamPermissionsRequest',
         response_type_name='TestIamPermissionsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsEgressRoutingsService(base_api.BaseApiService):
+    """Service class for the projects_locations_egressRoutings resource."""
+
+    _NAME = 'projects_locations_egressRoutings'
+
+    def __init__(self, client):
+      super(NetworkservicesV1alpha1.ProjectsLocationsEgressRoutingsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new EgressRouting in a given project and location.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsEgressRoutingsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/egressRoutings',
+        http_method='POST',
+        method_id='networkservices.projects.locations.egressRoutings.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['egressRoutingId'],
+        relative_path='v1alpha1/{+parent}/egressRoutings',
+        request_field='egressRouting',
+        request_type_name='NetworkservicesProjectsLocationsEgressRoutingsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single EgressRouting.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsEgressRoutingsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/egressRoutings/{egressRoutingsId}',
+        http_method='DELETE',
+        method_id='networkservices.projects.locations.egressRoutings.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['etag'],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsEgressRoutingsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single EgressRouting.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsEgressRoutingsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (EgressRouting) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/egressRoutings/{egressRoutingsId}',
+        http_method='GET',
+        method_id='networkservices.projects.locations.egressRoutings.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsEgressRoutingsGetRequest',
+        response_type_name='EgressRouting',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists EgressRoutings in a given project and location.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsEgressRoutingsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListEgressRoutingsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/egressRoutings',
+        http_method='GET',
+        method_id='networkservices.projects.locations.egressRoutings.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken', 'returnPartialSuccess'],
+        relative_path='v1alpha1/{+parent}/egressRoutings',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsEgressRoutingsListRequest',
+        response_type_name='ListEgressRoutingsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single EgressRouting.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsEgressRoutingsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/egressRoutings/{egressRoutingsId}',
+        http_method='PATCH',
+        method_id='networkservices.projects.locations.egressRoutings.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1alpha1/{+name}',
+        request_field='egressRouting',
+        request_type_name='NetworkservicesProjectsLocationsEgressRoutingsPatchRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 
@@ -5162,6 +5309,124 @@ class NetworkservicesV1alpha1(base_api.BaseApiClient):
         request_field='',
         request_type_name='NetworkservicesProjectsLocationsOperationsListRequest',
         response_type_name='ListOperationsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsProducerExtensionsService(base_api.BaseApiService):
+    """Service class for the projects_locations_producerExtensions resource."""
+
+    _NAME = 'projects_locations_producerExtensions'
+
+    def __init__(self, client):
+      super(NetworkservicesV1alpha1.ProjectsLocationsProducerExtensionsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new `ProducerExtension` resource in a given project and location.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsProducerExtensionsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/producerExtensions',
+        http_method='POST',
+        method_id='networkservices.projects.locations.producerExtensions.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['producerExtensionId'],
+        relative_path='v1alpha1/{+parent}/producerExtensions',
+        request_field='producerExtension',
+        request_type_name='NetworkservicesProjectsLocationsProducerExtensionsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes the specified `ProducerExtension` resource.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsProducerExtensionsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/producerExtensions/{producerExtensionsId}',
+        http_method='DELETE',
+        method_id='networkservices.projects.locations.producerExtensions.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['etag'],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsProducerExtensionsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of the specified `ProducerExtension` resource.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsProducerExtensionsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ProducerExtension) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/producerExtensions/{producerExtensionsId}',
+        http_method='GET',
+        method_id='networkservices.projects.locations.producerExtensions.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsProducerExtensionsGetRequest',
+        response_type_name='ProducerExtension',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists `ProducerExtension` resources in a given project and location.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsProducerExtensionsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListProducerExtensionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/producerExtensions',
+        http_method='GET',
+        method_id='networkservices.projects.locations.producerExtensions.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1alpha1/{+parent}/producerExtensions',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsProducerExtensionsListRequest',
+        response_type_name='ListProducerExtensionsResponse',
         supports_download=False,
     )
 

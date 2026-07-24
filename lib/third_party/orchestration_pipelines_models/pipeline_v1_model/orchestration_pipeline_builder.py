@@ -17,10 +17,13 @@
 from typing import Any, Dict
 
 from cloudsdk.google.protobuf import json_format
-from orchestration_pipelines_models.pipeline_v1_model.protos.orchestration_pipeline_pb2 import (
-    OrchestrationPipeline, )
+
 from orchestration_pipelines_models.pipeline_v1_model.pipeline_validation import (
-    PipelineValidator, )
+    PipelineValidator,
+)
+from orchestration_pipelines_models.pipeline_v1_model.protos.orchestration_pipeline_pb2 import (
+    OrchestrationPipeline,
+)
 
 
 class OrchestrationPipelineBuilder:
@@ -30,8 +33,8 @@ class OrchestrationPipelineBuilder:
     def build(cls, pipeline_def: Dict[str, Any]) -> OrchestrationPipeline:
         """Maps a dictionary to an OrchestrationPipeline object."""
         pipeline = OrchestrationPipeline()
-        json_format.ParseDict(js_dict=pipeline_def,
-                              message=pipeline,
-                              ignore_unknown_fields=False)
+        json_format.ParseDict(
+            js_dict=pipeline_def, message=pipeline, ignore_unknown_fields=False
+        )
         PipelineValidator.validate(pipeline)
         return pipeline

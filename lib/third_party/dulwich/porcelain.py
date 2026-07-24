@@ -25,7 +25,7 @@ Currently implemented:
  * add
  * branch{_create,_delete,_list}
  * check-ignore
- * checkout
+ * checkout_branch
  * clone
  * commit
  * commit-tree
@@ -33,6 +33,7 @@ Currently implemented:
  * describe
  * diff-tree
  * fetch
+ * for-each-ref
  * init
  * ls-files
  * ls-remote
@@ -63,98 +64,74 @@ to the repository root.
 Functions should generally accept both unicode strings and bytestrings
 """
 
-from collections import namedtuple
-from contextlib import (
-    closing,
-    contextmanager,
-)
-from io import BytesIO, RawIOBase
 import datetime
+import fnmatch
 import os
-from pathlib import Path
 import posixpath
 import stat
 import sys
 import time
-from typing import (
-    Optional,
-    Tuple,
-    Union,
-)
+from collections import namedtuple
+from contextlib import closing, contextmanager
+from io import BytesIO, RawIOBase
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple, Union
 
-from dulwich.archive import (
-    tar_stream,
-)
-from dulwich.client import (
-    get_transport_and_path,
-)
-from dulwich.config import (
-    Config,
-    ConfigFile,
-    StackedConfig,
-    read_submodules,
-)
-from dulwich.diff_tree import (
+from .archive import tar_stream
+from .client import get_transport_and_path
+from .config import Config, ConfigFile, StackedConfig, read_submodules
+from .diff_tree import (
     CHANGE_ADD,
+    CHANGE_COPY,
     CHANGE_DELETE,
     CHANGE_MODIFY,
     CHANGE_RENAME,
-    CHANGE_COPY,
     RENAME_CHANGE_TYPES,
 )
-from dulwich.errors import (
-    SendPackError,
-)
-from dulwich.graph import (
-    can_fast_forward,
-)
-from dulwich.ignore import IgnoreFilterManager
-from dulwich.index import (
-    blob_from_path_and_stat,
-    get_unstaged_changes,
-    build_file_from_blob,
+from .errors import SendPackError
+from .file import ensure_dir_exists
+from .graph import can_fast_forward
+from .ignore import IgnoreFilterManager
+from .index import (
     _fs_to_tree_path,
+    blob_from_path_and_stat,
+    build_file_from_blob,
+    get_unstaged_changes,
+    index_entry_from_stat,
 )
-from dulwich.object_store import (
-    tree_lookup_path,
-)
-from dulwich.objects import (
+from .object_store import iter_tree_contents, tree_lookup_path
+from .objects import (
     Commit,
     Tag,
     format_timezone,
     parse_timezone,
     pretty_format_tree_entry,
 )
-from dulwich.objectspec import (
+from .objectspec import (
     parse_commit,
     parse_object,
     parse_ref,
     parse_reftuples,
     parse_tree,
+    to_bytes,
 )
-from dulwich.pack import (
-    write_pack_index,
-    write_pack_from_container,
-)
-from dulwich.patch import write_tree_diff
-from dulwich.protocol import (
-    Protocol,
-    ZERO_SHA,
-)
-from dulwich.refs import (
+from .pack import write_pack_from_container, write_pack_index
+from .patch import write_tree_diff
+from .protocol import ZERO_SHA, Protocol
+from .refs import (
     LOCAL_BRANCH_PREFIX,
+    LOCAL_REMOTE_PREFIX,
     LOCAL_TAG_PREFIX,
     _import_remote_refs,
 )
-from dulwich.repo import BaseRepo, Repo
-from dulwich.server import (
+from .repo import BaseRepo, Repo
+from .server import (
     FileSystemBackend,
-    TCPGitServer,
     ReceivePackHandler,
+    TCPGitServer,
     UploadPackHandler,
-    update_server_info as server_update_server_info,
 )
-
+from .server import update_server_info as server_update_server_info
 
 # Module level tuple definition for status output
 GitStatus = namedtuple("GitStatus", "staged unstaged untracked")
@@ -184,9 +161,9 @@ DEFAULT_ENCODING = "utf-8"
 
 
 class Error(Exception):
-    """Porcelain-based error. """
+    """Porcelain-based error."""
 
-    def __init__(self, msg):
+    def __init__(self, msg) -> None:
         super().__init__(msg)
 
 
@@ -196,6 +173,10 @@ class RemoteExists(Error):
 
 class TimezoneFormatError(Error):
     """Raised when the timezone cannot be determined from a given string."""
+
+
+class CheckoutError(Error):
+    """Indicates that a checkout cannot be performed."""
 
 
 def parse_timezone_format(tz_str):
@@ -212,7 +193,7 @@ def parse_timezone_format(tz_str):
     Returns: Timezone offset as integer
     Raises:
       TimezoneFormatError: if timezone information cannot be extracted
-   """
+    """
     import re
 
     # Git internal format
@@ -226,6 +207,7 @@ def parse_timezone_format(tz_str):
 
     # RFC 2822
     import email.utils
+
     rfc_2822 = email.utils.parsedate_tz(tz_str)
     if rfc_2822:
         return rfc_2822[9]
@@ -234,7 +216,9 @@ def parse_timezone_format(tz_str):
 
     # Supported offsets:
     # sHHMM, sHH:MM, sHH
-    iso_8601_pattern = re.compile("[0-9] ?([+-])([0-9]{2})(?::(?=[0-9]{2}))?([0-9]{2})?$")
+    iso_8601_pattern = re.compile(
+        "[0-9] ?([+-])([0-9]{2})(?::(?=[0-9]{2}))?([0-9]{2})?$"
+    )
     match = re.search(iso_8601_pattern, tz_str)
     total_secs = 0
     if match:
@@ -253,7 +237,7 @@ def parse_timezone_format(tz_str):
 def get_user_timezones():
     """Retrieve local timezone as described in
     https://raw.githubusercontent.com/git/git/v2.3.0/Documentation/date-formats.txt
-    Returns: A tuple containing author timezone, committer timezone
+    Returns: A tuple containing author timezone, committer timezone.
     """
     local_timezone = time.localtime().tm_gmtoff
 
@@ -336,7 +320,7 @@ def path_to_tree_path(repopath, path, tree_encoding=DEFAULT_ENCODING):
 class DivergedBranches(Error):
     """Branches have diverged and fast-forward is not possible."""
 
-    def __init__(self, current_sha, new_sha):
+    def __init__(self, current_sha, new_sha) -> None:
         self.current_sha = current_sha
         self.new_sha = new_sha
 
@@ -371,7 +355,6 @@ def archive(
       outstream: Output stream (defaults to stdout)
       errstream: Error stream (defaults to stderr)
     """
-
     if committish is None:
         committish = "HEAD"
     with open_repo_closing(repo) as repo_obj:
@@ -485,12 +468,13 @@ def commit_tree(repo, tree, message=None, author=None, committer=None):
         )
 
 
-def init(path=".", bare=False):
+def init(path=".", *, bare=False, symlinks: Optional[bool] = None):
     """Create a new git repository.
 
     Args:
       path: Path to repository.
       bare: Whether to create a bare repository.
+      symlinks: Whether to create actual symlinks (defaults to autodetect)
     Returns: A Repo instance
     """
     if not os.path.exists(path):
@@ -499,7 +483,7 @@ def init(path=".", bare=False):
     if bare:
         return Repo.init_bare(path)
     else:
-        return Repo.init(path)
+        return Repo.init(path, symlinks=symlinks)
 
 
 def clone(
@@ -513,7 +497,7 @@ def clone(
     depth: Optional[int] = None,
     branch: Optional[Union[str, bytes]] = None,
     config: Optional[Config] = None,
-    **kwargs
+    **kwargs,
 ):
     """Clone a local or remote git repository.
 
@@ -557,8 +541,7 @@ def clone(
 
     mkdir = not os.path.exists(target)
 
-    (client, path) = get_transport_and_path(
-        source, config=config, **kwargs)
+    (client, path) = get_transport_and_path(source, config=config, **kwargs)
 
     return client.clone(
         path,
@@ -615,7 +598,7 @@ def add(repo=".", paths=None):
 
 
 def _is_subdir(subdir, parentdir):
-    """Check whether subdir is parentdir or a subdir of parentdir
+    """Check whether subdir is parentdir or a subdir of parentdir.
 
     If parentdir or subdir is a relative path, it will be disamgibuated
     relative to the pwd.
@@ -627,7 +610,7 @@ def _is_subdir(subdir, parentdir):
 
 # TODO: option to remove ignored files also, in line with `git clean -fdx`
 def clean(repo=".", target_dir=None):
-    """Remove any untracked files from the target directory recursively
+    """Remove any untracked files from the target directory recursively.
 
     Equivalent to running ``git clean -fd`` in target_dir.
 
@@ -643,9 +626,7 @@ def clean(repo=".", target_dir=None):
             raise Error("target_dir must be in the repo's working dir")
 
         config = r.get_config_stack()
-        require_force = config.get_boolean(  # noqa: F841
-            (b"clean",), b"requireForce", True
-        )
+        config.get_boolean((b"clean",), b"requireForce", True)
 
         # TODO(user): if require_force is set, then make sure that -f, -i or
         # -n is specified.
@@ -979,8 +960,8 @@ def rev_list(repo, commits, outstream=sys.stdout):
 
 
 def _canonical_part(url: str) -> str:
-    name = url.rsplit('/', 1)[-1]
-    if name.endswith('.git'):
+    name = url.rsplit("/", 1)[-1]
+    if name.endswith(".git"):
         name = name[:-4]
     return name
 
@@ -1019,10 +1000,10 @@ def submodule_init(repo):
     """
     with open_repo_closing(repo) as r:
         config = r.get_config()
-        gitmodules_path = os.path.join(r.path, '.gitmodules')
+        gitmodules_path = os.path.join(r.path, ".gitmodules")
         for path, url, name in read_submodules(gitmodules_path):
-            config.set((b'submodule', name), b'active', True)
-            config.set((b'submodule', name), b'url', url)
+            config.set((b"submodule", name), b"active", True)
+            config.set((b"submodule", name), b"url", url)
         config.write_to_path()
 
 
@@ -1033,6 +1014,7 @@ def submodule_list(repo):
       repo: Path to repository
     """
     from .submodule import iter_cached_submodules
+
     with open_repo_closing(repo) as r:
         for path, sha in iter_cached_submodules(r.object_store, r[r.head()].tree):
             yield path, sha.decode(DEFAULT_ENCODING)
@@ -1048,9 +1030,9 @@ def tag_create(
     tag_time=None,
     tag_timezone=None,
     sign=False,
-    encoding=DEFAULT_ENCODING
+    encoding=DEFAULT_ENCODING,
 ):
-    """Creates a tag in git via dulwich calls:
+    """Creates a tag in git via dulwich calls.
 
     Args:
       repo: Path to repository
@@ -1065,7 +1047,6 @@ def tag_create(
         pass True to use default GPG key,
         pass a str containing Key ID to use a specific GPG key)
     """
-
     with open_repo_closing(repo) as r:
         object = parse_object(r, objectish)
 
@@ -1136,7 +1117,6 @@ def reset(repo, mode, treeish="HEAD"):
       mode: Mode ("hard", "soft", "mixed")
       treeish: Treeish to reset to
     """
-
     if mode != "hard":
         raise Error("hard is the only mode currently supported")
 
@@ -1176,9 +1156,9 @@ def push(
     outstream=default_bytes_out_stream,
     errstream=default_bytes_err_stream,
     force=False,
-    **kwargs
+    **kwargs,
 ):
-    """Remote push with dulwich via dulwich.client
+    """Remote push with dulwich via dulwich.client.
 
     Args:
       repo: Path to repository
@@ -1188,7 +1168,6 @@ def push(
       errstream: A stream file to write errors
       force: Force overwriting refs
     """
-
     # Open the repo
     with open_repo_closing(repo) as r:
         if refspecs is None:
@@ -1207,7 +1186,7 @@ def push(
             selected_refs.extend(parse_reftuples(r.refs, refs, refspecs, force=force))
             new_refs = {}
             # TODO: Handle selected_refs == {None: None}
-            for (lh, rh, force_ref) in selected_refs:
+            for lh, rh, force_ref in selected_refs:
                 if lh is None:
                     new_refs[rh] = ZERO_SHA
                     remote_changed_refs[rh] = None
@@ -1215,9 +1194,7 @@ def push(
                     try:
                         localsha = r.refs[lh]
                     except KeyError as exc:
-                        raise Error(
-                            "No valid ref %s in local repository" % lh
-                        ) from exc
+                        raise Error("No valid ref %s in local repository" % lh) from exc
                     if not force_ref and rh in refs:
                         check_diverged(r, refs[rh], localsha)
                     new_refs[rh] = localsha
@@ -1262,9 +1239,9 @@ def pull(
     errstream=default_bytes_err_stream,
     fast_forward=True,
     force=False,
-    **kwargs
+    **kwargs,
 ):
-    """Pull from remote via dulwich.client
+    """Pull from remote via dulwich.client.
 
     Args:
       repo: Path to repository
@@ -1297,7 +1274,7 @@ def pull(
         fetch_result = client.fetch(
             path, r, progress=errstream.write, determine_wants=determine_wants
         )
-        for (lh, rh, force_ref) in selected_refs:
+        for lh, rh, force_ref in selected_refs:
             if not force_ref and rh in r.refs:
                 try:
                     check_diverged(r, r.refs.follow(rh)[1], fetch_result.refs[lh])
@@ -1305,8 +1282,7 @@ def pull(
                     if fast_forward:
                         raise
                     else:
-                        raise NotImplementedError(
-                            "merge is not yet supported") from exc
+                        raise NotImplementedError("merge is not yet supported") from exc
             r.refs[rh] = fetch_result.refs[lh]
         if selected_refs:
             r[b"HEAD"] = fetch_result.refs[selected_refs[0][1]]
@@ -1364,7 +1340,7 @@ def status(repo=".", ignored=False, untracked_files="all"):
 
 
 def _walk_working_dir_paths(frompath, basepath, prune_dirnames=None):
-    """Get path, is_dir for files in working dir from frompath
+    """Get path, is_dir for files in working dir from frompath.
 
     Args:
       frompath: Path to begin walk
@@ -1511,11 +1487,11 @@ def web_daemon(path=".", address=None, port=None):
       address: Optional address to listen on (defaults to ::)
       port: Optional port to listen on (defaults to 80)
     """
-    from dulwich.web import (
-        make_wsgi_chain,
-        make_server,
+    from .web import (
         WSGIRequestHandlerLogger,
         WSGIServerLogger,
+        make_server,
+        make_wsgi_chain,
     )
 
     backend = FileSystemBackend(path)
@@ -1690,7 +1666,7 @@ def fetch(
     prune=False,
     prune_tags=False,
     force=False,
-    **kwargs
+    **kwargs,
 ):
     """Fetch objects from a remote server.
 
@@ -1726,6 +1702,60 @@ def fetch(
     return fetch_result
 
 
+def for_each_ref(
+    repo: Union[Repo, str] = ".",
+    pattern: Optional[Union[str, bytes]] = None,
+) -> List[Tuple[bytes, bytes, bytes]]:
+    """Iterate over all refs that match the (optional) pattern.
+
+    Args:
+      repo: Path to the repository
+      pattern: Optional glob (7) patterns to filter the refs with
+    Returns:
+      List of bytes tuples with: (sha, object_type, ref_name)
+    """
+    if isinstance(pattern, str):
+        pattern = os.fsencode(pattern)
+
+    with open_repo_closing(repo) as r:
+        refs = r.get_refs()
+
+    if pattern:
+        matching_refs: Dict[bytes, bytes] = {}
+        pattern_parts = pattern.split(b"/")
+        for ref, sha in refs.items():
+            matches = False
+
+            # git for-each-ref uses glob (7) style patterns, but fnmatch
+            # is greedy and also matches slashes, unlike glob.glob.
+            # We have to check parts of the pattern individually.
+            # See https://github.com/python/cpython/issues/72904
+            ref_parts = ref.split(b"/")
+            if len(ref_parts) > len(pattern_parts):
+                continue
+
+            for pat, ref_part in zip(pattern_parts, ref_parts):
+                matches = fnmatch.fnmatchcase(ref_part, pat)
+                if not matches:
+                    break
+
+            if matches:
+                matching_refs[ref] = sha
+
+        refs = matching_refs
+
+    ret: List[Tuple[bytes, bytes, bytes]] = [
+        (sha, r.get_object(sha).type_name, ref)
+        for ref, sha in sorted(
+            refs.items(),
+            key=lambda ref_sha: ref_sha[0],
+        )
+        if ref != b"HEAD"
+    ]
+
+    return ret
+
+
 def ls_remote(remote, config: Optional[Config] = None, **kwargs):
     """List the refs in a remote.
 
@@ -1753,7 +1783,15 @@ def repack(repo):
         r.object_store.pack_loose_objects()
 
 
-def pack_objects(repo, object_ids, packf, idxf, delta_window_size=None, deltify=None, reuse_deltas=True):
+def pack_objects(
+    repo,
+    object_ids,
+    packf,
+    idxf,
+    delta_window_size=None,
+    deltify=None,
+    reuse_deltas=True,
+):
     """Pack objects into a file.
 
     Args:
@@ -1798,7 +1836,7 @@ def ls_tree(
     """
 
     def list_tree(store, treeid, base):
-        for (name, mode, sha) in store[treeid].iteritems():
+        for name, mode, sha in store[treeid].iteritems():
             if base:
                 name = posixpath.join(base, name)
             if name_only:
@@ -1835,7 +1873,7 @@ def remote_add(repo: Repo, name: Union[bytes, str], url: Union[bytes, str]):
 
 
 def remote_remove(repo: Repo, name: Union[bytes, str]):
-    """Remove a remote
+    """Remove a remote.
 
     Args:
       repo: Path to the repository
@@ -1899,8 +1937,7 @@ def update_head(repo, target, detached=False, new_branch=None):
             r.refs.set_symbolic_ref(b"HEAD", to_set)
 
 
-def reset_file(repo, file_path: str, target: bytes = b'HEAD',
-               symlink_fn=None):
+def reset_file(repo, file_path: str, target: bytes = b"HEAD", symlink_fn=None):
     """Reset the file to specific commit or branch.
 
     Args:
@@ -1918,6 +1955,119 @@ def reset_file(repo, file_path: str, target: bytes = b'HEAD',
     build_file_from_blob(blob, mode, full_path, symlink_fn=symlink_fn)
 
 
+def _update_head_during_checkout_branch(repo, target):
+    checkout_target = None
+    if target == b"HEAD":  # Do not update head while trying to checkout to HEAD.
+        pass
+    elif target in repo.refs.keys(base=LOCAL_BRANCH_PREFIX):
+        update_head(repo, target)
+    else:
+        # If checking out a remote branch, create a local one without the remote name prefix.
+        config = repo.get_config()
+        name = target.split(b"/")[0]
+        section = (b"remote", name)
+        if config.has_section(section):
+            checkout_target = target.replace(name + b"/", b"")
+            try:
+                branch_create(
+                    repo, checkout_target, (LOCAL_REMOTE_PREFIX + target).decode()
+                )
+            except Error:
+                pass
+            update_head(repo, LOCAL_BRANCH_PREFIX + checkout_target)
+        else:
+            update_head(repo, target, detached=True)
+
+    return checkout_target
+
+
+def checkout_branch(repo, target: Union[bytes, str], force: bool = False):
+    """Switch branches or restore working tree files.
+
+    The implementation of this function will probably not scale well
+    for branches with lots of local changes.
+    This is due to the analysis of a diff between branches before any
+    changes are applied.
+
+    Args:
+      repo: dulwich Repo object
+      target: branch name or commit sha to checkout
+      force: true or not to force checkout
+    """
+    target = to_bytes(target)
+
+    current_tree = parse_tree(repo, repo.head())
+    target_tree = parse_tree(repo, target)
+
+    if force:
+        repo.reset_index(target_tree.id)
+        _update_head_during_checkout_branch(repo, target)
+    else:
+        status_report = status(repo)
+        changes = list(
+            set(
+                status_report[0]["add"]
+                + status_report[0]["delete"]
+                + status_report[0]["modify"]
+                + status_report[1]
+            )
+        )
+        index = 0
+        while index < len(changes):
+            change = changes[index]
+            try:
+                current_tree.lookup_path(repo.object_store.__getitem__, change)
+                try:
+                    target_tree.lookup_path(repo.object_store.__getitem__, change)
+                    index += 1
+                except KeyError:
+                    raise CheckoutError(
+                        "Your local changes to the following files would be overwritten by checkout: "
+                        + change.decode()
+                    )
+            except KeyError:
+                changes.pop(index)
+
+        # Update head.
+        checkout_target = _update_head_during_checkout_branch(repo, target)
+        if checkout_target is not None:
+            target_tree = parse_tree(repo, checkout_target)
+
+        dealt_with = set()
+        repo_index = repo.open_index()
+        for entry in iter_tree_contents(repo.object_store, target_tree.id):
+            dealt_with.add(entry.path)
+            if entry.path in changes:
+                continue
+            full_path = os.path.join(os.fsencode(repo.path), entry.path)
+            blob = repo.object_store[entry.sha]
+            ensure_dir_exists(os.path.dirname(full_path))
+            st = build_file_from_blob(blob, entry.mode, full_path)
+            repo_index[entry.path] = index_entry_from_stat(st, entry.sha)
+
+        repo_index.write()
+
+        for entry in iter_tree_contents(repo.object_store, current_tree.id):
+            if entry.path not in dealt_with:
+                repo.unstage([entry.path])
+
+    # Remove the untracked files which are in the current_file_set.
+    repo_index = repo.open_index()
+    for change in repo_index.changes_from_tree(repo.object_store, current_tree.id):
+        path_change = change[0]
+        if path_change[1] is None:
+            file_name = path_change[0]
+            full_path = os.path.join(repo.path, file_name.decode())
+            if os.path.isfile(full_path):
+                os.remove(full_path)
+            dir_path = os.path.dirname(full_path)
+            while dir_path != repo.path:
+                is_empty = len(os.listdir(dir_path)) == 0
+                if is_empty:
+                    os.rmdir(dir_path)
+                dir_path = os.path.dirname(dir_path)
+
+
 def check_mailmap(repo, contact):
     """Check canonical name and email of contact.
 
@@ -1927,7 +2077,7 @@ def check_mailmap(repo, contact):
     Returns: Canonical contact data
     """
     with open_repo_closing(repo) as r:
-        from dulwich.mailmap import Mailmap
+        from .mailmap import Mailmap
 
         try:
             mailmap = Mailmap.from_path(os.path.join(r.path, ".mailmap"))
@@ -1958,7 +2108,7 @@ def fsck(repo):
 def stash_list(repo):
     """List all stashes in a repository."""
     with open_repo_closing(repo) as r:
-        from dulwich.stash import Stash
+        from .stash import Stash
 
         stash = Stash.from_repo(r)
         return enumerate(list(stash.stashes()))
@@ -1967,7 +2117,7 @@ def stash_list(repo):
 def stash_push(repo):
     """Push a new stash onto the stack."""
     with open_repo_closing(repo) as r:
-        from dulwich.stash import Stash
+        from .stash import Stash
 
         stash = Stash.from_repo(r)
         stash.push()
@@ -1976,7 +2126,7 @@ def stash_push(repo):
 def stash_pop(repo, index):
     """Pop a stash from the stack."""
     with open_repo_closing(repo) as r:
-        from dulwich.stash import Stash
+        from .stash import Stash
 
         stash = Stash.from_repo(r)
         stash.pop(index)
@@ -1985,7 +2135,7 @@ def stash_pop(repo, index):
 def stash_drop(repo, index):
     """Drop a stash from the stack."""
     with open_repo_closing(repo) as r:
-        from dulwich.stash import Stash
+        from .stash import Stash
 
         stash = Stash.from_repo(r)
         stash.drop(index)

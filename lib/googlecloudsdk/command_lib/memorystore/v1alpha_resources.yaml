@@ -41,7 +41,7 @@ projects_locations_acl_policies:
     parameter_name: aclPoliciesId
     attribute_name: acl_policy
     help: The aclPolicy id of the {resource} resource.
-  disable_auto_completers: false
+  disable_auto_completers: true
 projects_locations_backup_collections:
   name: backupCollection
   plural_name: backupCollections
@@ -116,6 +116,19 @@ projects_regions_service_attachments:
     attribute_name: service_attachment
     help: The serviceAttachment id of the {resource} resource.
   disable_auto_completers: true
+projects_locations_acl_policies_revisions:
+  name: revision
+  plural_name: revisions
+  collection: memorystore.projects.locations.aclPolicies.revisions
+  attributes:
+  - *project
+  - *location
+  - *aclPolicy
+  - &revision
+    parameter_name: revisionsId
+    attribute_name: revision
+    help: The revision id of the {resource} resource.
+  disable_auto_completers: false
 projects_locations_backup_collections_backups:
   name: backup
   plural_name: backups

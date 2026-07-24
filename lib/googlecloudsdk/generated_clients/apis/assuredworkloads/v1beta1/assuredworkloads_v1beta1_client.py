@@ -38,6 +38,16 @@ class AssuredworkloadsV1beta1(base_api.BaseApiClient):
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
     self.assuredworkloads = self.AssuredworkloadsService(self)
+    self.folders_locations_dbFindingSummaries = self.FoldersLocationsDbFindingSummariesService(self)
+    self.folders_locations_dbFrameworkComplianceReports_dbControlComplianceSummaries = self.FoldersLocationsDbFrameworkComplianceReportsDbControlComplianceSummariesService(self)
+    self.folders_locations_dbFrameworkComplianceReports = self.FoldersLocationsDbFrameworkComplianceReportsService(self)
+    self.folders_locations_dbFrameworkComplianceSummaries = self.FoldersLocationsDbFrameworkComplianceSummariesService(self)
+    self.folders_locations = self.FoldersLocationsService(self)
+    self.folders = self.FoldersService(self)
+    self.organizations_locations_dbFindingSummaries = self.OrganizationsLocationsDbFindingSummariesService(self)
+    self.organizations_locations_dbFrameworkComplianceReports_dbControlComplianceSummaries = self.OrganizationsLocationsDbFrameworkComplianceReportsDbControlComplianceSummariesService(self)
+    self.organizations_locations_dbFrameworkComplianceReports = self.OrganizationsLocationsDbFrameworkComplianceReportsService(self)
+    self.organizations_locations_dbFrameworkComplianceSummaries = self.OrganizationsLocationsDbFrameworkComplianceSummariesService(self)
     self.organizations_locations_operations = self.OrganizationsLocationsOperationsService(self)
     self.organizations_locations_violations = self.OrganizationsLocationsViolationsService(self)
     self.organizations_locations_workloads_updates = self.OrganizationsLocationsWorkloadsUpdatesService(self)
@@ -46,6 +56,12 @@ class AssuredworkloadsV1beta1(base_api.BaseApiClient):
     self.organizations_locations = self.OrganizationsLocationsService(self)
     self.organizations_violations = self.OrganizationsViolationsService(self)
     self.organizations = self.OrganizationsService(self)
+    self.projects_locations_dbFindingSummaries = self.ProjectsLocationsDbFindingSummariesService(self)
+    self.projects_locations_dbFrameworkComplianceReports_dbControlComplianceSummaries = self.ProjectsLocationsDbFrameworkComplianceReportsDbControlComplianceSummariesService(self)
+    self.projects_locations_dbFrameworkComplianceReports = self.ProjectsLocationsDbFrameworkComplianceReportsService(self)
+    self.projects_locations_dbFrameworkComplianceSummaries = self.ProjectsLocationsDbFrameworkComplianceSummariesService(self)
+    self.projects_locations = self.ProjectsLocationsService(self)
+    self.projects = self.ProjectsService(self)
 
   class AssuredworkloadsService(base_api.BaseApiService):
     """Service class for the assuredworkloads resource."""
@@ -106,6 +122,376 @@ class AssuredworkloadsV1beta1(base_api.BaseApiClient):
         request_field='<request>',
         request_type_name='GoogleCloudAssuredworkloadsV1beta1RevertArchivedResourceEventsRequest',
         response_type_name='GoogleCloudAssuredworkloadsV1beta1RevertArchivedResourceEventsResponse',
+        supports_download=False,
+    )
+
+  class FoldersLocationsDbFindingSummariesService(base_api.BaseApiService):
+    """Service class for the folders_locations_dbFindingSummaries resource."""
+
+    _NAME = 'folders_locations_dbFindingSummaries'
+
+    def __init__(self, client):
+      super(AssuredworkloadsV1beta1.FoldersLocationsDbFindingSummariesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def List(self, request, global_params=None):
+      r"""Lists the finding summary by category for a given scope.
+
+      Args:
+        request: (AssuredworkloadsFoldersLocationsDbFindingSummariesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAssuredworkloadsV1beta1ListDbFindingSummariesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/folders/{foldersId}/locations/{locationsId}/dbFindingSummaries',
+        http_method='GET',
+        method_id='assuredworkloads.folders.locations.dbFindingSummaries.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1beta1/{+parent}/dbFindingSummaries',
+        request_field='',
+        request_type_name='AssuredworkloadsFoldersLocationsDbFindingSummariesListRequest',
+        response_type_name='GoogleCloudAssuredworkloadsV1beta1ListDbFindingSummariesResponse',
+        supports_download=False,
+    )
+
+  class FoldersLocationsDbFrameworkComplianceReportsDbControlComplianceSummariesService(base_api.BaseApiService):
+    """Service class for the folders_locations_dbFrameworkComplianceReports_dbControlComplianceSummaries resource."""
+
+    _NAME = 'folders_locations_dbFrameworkComplianceReports_dbControlComplianceSummaries'
+
+    def __init__(self, client):
+      super(AssuredworkloadsV1beta1.FoldersLocationsDbFrameworkComplianceReportsDbControlComplianceSummariesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def List(self, request, global_params=None):
+      r"""Lists the control compliance summary for a given scope.
+
+      Args:
+        request: (AssuredworkloadsFoldersLocationsDbFrameworkComplianceReportsDbControlComplianceSummariesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAssuredworkloadsV1beta1ListDbControlComplianceSummariesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/folders/{foldersId}/locations/{locationsId}/dbFrameworkComplianceReports/{dbFrameworkComplianceReportsId}/dbControlComplianceSummaries',
+        http_method='GET',
+        method_id='assuredworkloads.folders.locations.dbFrameworkComplianceReports.dbControlComplianceSummaries.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1beta1/{+parent}/dbControlComplianceSummaries',
+        request_field='',
+        request_type_name='AssuredworkloadsFoldersLocationsDbFrameworkComplianceReportsDbControlComplianceSummariesListRequest',
+        response_type_name='GoogleCloudAssuredworkloadsV1beta1ListDbControlComplianceSummariesResponse',
+        supports_download=False,
+    )
+
+  class FoldersLocationsDbFrameworkComplianceReportsService(base_api.BaseApiService):
+    """Service class for the folders_locations_dbFrameworkComplianceReports resource."""
+
+    _NAME = 'folders_locations_dbFrameworkComplianceReports'
+
+    def __init__(self, client):
+      super(AssuredworkloadsV1beta1.FoldersLocationsDbFrameworkComplianceReportsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Aggregate(self, request, global_params=None):
+      r"""Gets the aggregated compliance report over time for a given scope.
+
+      Args:
+        request: (AssuredworkloadsFoldersLocationsDbFrameworkComplianceReportsAggregateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAssuredworkloadsV1beta1AggregateDbFrameworkComplianceReportResponse) The response message.
+      """
+      config = self.GetMethodConfig('Aggregate')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Aggregate.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/folders/{foldersId}/locations/{locationsId}/dbFrameworkComplianceReports/{dbFrameworkComplianceReportsId}:aggregate',
+        http_method='GET',
+        method_id='assuredworkloads.folders.locations.dbFrameworkComplianceReports.aggregate',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['filter', 'interval_endTime', 'interval_startTime'],
+        relative_path='v1beta1/{+name}:aggregate',
+        request_field='',
+        request_type_name='AssuredworkloadsFoldersLocationsDbFrameworkComplianceReportsAggregateRequest',
+        response_type_name='GoogleCloudAssuredworkloadsV1beta1AggregateDbFrameworkComplianceReportResponse',
+        supports_download=False,
+    )
+
+    def Fetch(self, request, global_params=None):
+      r"""Fetches the framework compliance report for a given scope.
+
+      Args:
+        request: (AssuredworkloadsFoldersLocationsDbFrameworkComplianceReportsFetchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAssuredworkloadsV1beta1FetchDbFrameworkComplianceReportResponse) The response message.
+      """
+      config = self.GetMethodConfig('Fetch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Fetch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/folders/{foldersId}/locations/{locationsId}/dbFrameworkComplianceReports/{dbFrameworkComplianceReportsId}:fetch',
+        http_method='GET',
+        method_id='assuredworkloads.folders.locations.dbFrameworkComplianceReports.fetch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['endTime', 'filter'],
+        relative_path='v1beta1/{+name}:fetch',
+        request_field='',
+        request_type_name='AssuredworkloadsFoldersLocationsDbFrameworkComplianceReportsFetchRequest',
+        response_type_name='GoogleCloudAssuredworkloadsV1beta1FetchDbFrameworkComplianceReportResponse',
+        supports_download=False,
+    )
+
+  class FoldersLocationsDbFrameworkComplianceSummariesService(base_api.BaseApiService):
+    """Service class for the folders_locations_dbFrameworkComplianceSummaries resource."""
+
+    _NAME = 'folders_locations_dbFrameworkComplianceSummaries'
+
+    def __init__(self, client):
+      super(AssuredworkloadsV1beta1.FoldersLocationsDbFrameworkComplianceSummariesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def List(self, request, global_params=None):
+      r"""Lists the framework compliance summary for a given scope.
+
+      Args:
+        request: (AssuredworkloadsFoldersLocationsDbFrameworkComplianceSummariesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAssuredworkloadsV1beta1ListDbFrameworkComplianceSummariesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/folders/{foldersId}/locations/{locationsId}/dbFrameworkComplianceSummaries',
+        http_method='GET',
+        method_id='assuredworkloads.folders.locations.dbFrameworkComplianceSummaries.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken', 'view'],
+        relative_path='v1beta1/{+parent}/dbFrameworkComplianceSummaries',
+        request_field='',
+        request_type_name='AssuredworkloadsFoldersLocationsDbFrameworkComplianceSummariesListRequest',
+        response_type_name='GoogleCloudAssuredworkloadsV1beta1ListDbFrameworkComplianceSummariesResponse',
+        supports_download=False,
+    )
+
+  class FoldersLocationsService(base_api.BaseApiService):
+    """Service class for the folders_locations resource."""
+
+    _NAME = 'folders_locations'
+
+    def __init__(self, client):
+      super(AssuredworkloadsV1beta1.FoldersLocationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class FoldersService(base_api.BaseApiService):
+    """Service class for the folders resource."""
+
+    _NAME = 'folders'
+
+    def __init__(self, client):
+      super(AssuredworkloadsV1beta1.FoldersService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class OrganizationsLocationsDbFindingSummariesService(base_api.BaseApiService):
+    """Service class for the organizations_locations_dbFindingSummaries resource."""
+
+    _NAME = 'organizations_locations_dbFindingSummaries'
+
+    def __init__(self, client):
+      super(AssuredworkloadsV1beta1.OrganizationsLocationsDbFindingSummariesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def List(self, request, global_params=None):
+      r"""Lists the finding summary by category for a given scope.
+
+      Args:
+        request: (AssuredworkloadsOrganizationsLocationsDbFindingSummariesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAssuredworkloadsV1beta1ListDbFindingSummariesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/organizations/{organizationsId}/locations/{locationsId}/dbFindingSummaries',
+        http_method='GET',
+        method_id='assuredworkloads.organizations.locations.dbFindingSummaries.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1beta1/{+parent}/dbFindingSummaries',
+        request_field='',
+        request_type_name='AssuredworkloadsOrganizationsLocationsDbFindingSummariesListRequest',
+        response_type_name='GoogleCloudAssuredworkloadsV1beta1ListDbFindingSummariesResponse',
+        supports_download=False,
+    )
+
+  class OrganizationsLocationsDbFrameworkComplianceReportsDbControlComplianceSummariesService(base_api.BaseApiService):
+    """Service class for the organizations_locations_dbFrameworkComplianceReports_dbControlComplianceSummaries resource."""
+
+    _NAME = 'organizations_locations_dbFrameworkComplianceReports_dbControlComplianceSummaries'
+
+    def __init__(self, client):
+      super(AssuredworkloadsV1beta1.OrganizationsLocationsDbFrameworkComplianceReportsDbControlComplianceSummariesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def List(self, request, global_params=None):
+      r"""Lists the control compliance summary for a given scope.
+
+      Args:
+        request: (AssuredworkloadsOrganizationsLocationsDbFrameworkComplianceReportsDbControlComplianceSummariesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAssuredworkloadsV1beta1ListDbControlComplianceSummariesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/organizations/{organizationsId}/locations/{locationsId}/dbFrameworkComplianceReports/{dbFrameworkComplianceReportsId}/dbControlComplianceSummaries',
+        http_method='GET',
+        method_id='assuredworkloads.organizations.locations.dbFrameworkComplianceReports.dbControlComplianceSummaries.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1beta1/{+parent}/dbControlComplianceSummaries',
+        request_field='',
+        request_type_name='AssuredworkloadsOrganizationsLocationsDbFrameworkComplianceReportsDbControlComplianceSummariesListRequest',
+        response_type_name='GoogleCloudAssuredworkloadsV1beta1ListDbControlComplianceSummariesResponse',
+        supports_download=False,
+    )
+
+  class OrganizationsLocationsDbFrameworkComplianceReportsService(base_api.BaseApiService):
+    """Service class for the organizations_locations_dbFrameworkComplianceReports resource."""
+
+    _NAME = 'organizations_locations_dbFrameworkComplianceReports'
+
+    def __init__(self, client):
+      super(AssuredworkloadsV1beta1.OrganizationsLocationsDbFrameworkComplianceReportsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Aggregate(self, request, global_params=None):
+      r"""Gets the aggregated compliance report over time for a given scope.
+
+      Args:
+        request: (AssuredworkloadsOrganizationsLocationsDbFrameworkComplianceReportsAggregateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAssuredworkloadsV1beta1AggregateDbFrameworkComplianceReportResponse) The response message.
+      """
+      config = self.GetMethodConfig('Aggregate')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Aggregate.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/organizations/{organizationsId}/locations/{locationsId}/dbFrameworkComplianceReports/{dbFrameworkComplianceReportsId}:aggregate',
+        http_method='GET',
+        method_id='assuredworkloads.organizations.locations.dbFrameworkComplianceReports.aggregate',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['filter', 'interval_endTime', 'interval_startTime'],
+        relative_path='v1beta1/{+name}:aggregate',
+        request_field='',
+        request_type_name='AssuredworkloadsOrganizationsLocationsDbFrameworkComplianceReportsAggregateRequest',
+        response_type_name='GoogleCloudAssuredworkloadsV1beta1AggregateDbFrameworkComplianceReportResponse',
+        supports_download=False,
+    )
+
+    def Fetch(self, request, global_params=None):
+      r"""Fetches the framework compliance report for a given scope.
+
+      Args:
+        request: (AssuredworkloadsOrganizationsLocationsDbFrameworkComplianceReportsFetchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAssuredworkloadsV1beta1FetchDbFrameworkComplianceReportResponse) The response message.
+      """
+      config = self.GetMethodConfig('Fetch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Fetch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/organizations/{organizationsId}/locations/{locationsId}/dbFrameworkComplianceReports/{dbFrameworkComplianceReportsId}:fetch',
+        http_method='GET',
+        method_id='assuredworkloads.organizations.locations.dbFrameworkComplianceReports.fetch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['endTime', 'filter'],
+        relative_path='v1beta1/{+name}:fetch',
+        request_field='',
+        request_type_name='AssuredworkloadsOrganizationsLocationsDbFrameworkComplianceReportsFetchRequest',
+        response_type_name='GoogleCloudAssuredworkloadsV1beta1FetchDbFrameworkComplianceReportResponse',
+        supports_download=False,
+    )
+
+  class OrganizationsLocationsDbFrameworkComplianceSummariesService(base_api.BaseApiService):
+    """Service class for the organizations_locations_dbFrameworkComplianceSummaries resource."""
+
+    _NAME = 'organizations_locations_dbFrameworkComplianceSummaries'
+
+    def __init__(self, client):
+      super(AssuredworkloadsV1beta1.OrganizationsLocationsDbFrameworkComplianceSummariesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def List(self, request, global_params=None):
+      r"""Lists the framework compliance summary for a given scope.
+
+      Args:
+        request: (AssuredworkloadsOrganizationsLocationsDbFrameworkComplianceSummariesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAssuredworkloadsV1beta1ListDbFrameworkComplianceSummariesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/organizations/{organizationsId}/locations/{locationsId}/dbFrameworkComplianceSummaries',
+        http_method='GET',
+        method_id='assuredworkloads.organizations.locations.dbFrameworkComplianceSummaries.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken', 'view'],
+        relative_path='v1beta1/{+parent}/dbFrameworkComplianceSummaries',
+        request_field='',
+        request_type_name='AssuredworkloadsOrganizationsLocationsDbFrameworkComplianceSummariesListRequest',
+        response_type_name='GoogleCloudAssuredworkloadsV1beta1ListDbFrameworkComplianceSummariesResponse',
         supports_download=False,
     )
 
@@ -699,5 +1085,200 @@ class AssuredworkloadsV1beta1(base_api.BaseApiClient):
 
     def __init__(self, client):
       super(AssuredworkloadsV1beta1.OrganizationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class ProjectsLocationsDbFindingSummariesService(base_api.BaseApiService):
+    """Service class for the projects_locations_dbFindingSummaries resource."""
+
+    _NAME = 'projects_locations_dbFindingSummaries'
+
+    def __init__(self, client):
+      super(AssuredworkloadsV1beta1.ProjectsLocationsDbFindingSummariesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def List(self, request, global_params=None):
+      r"""Lists the finding summary by category for a given scope.
+
+      Args:
+        request: (AssuredworkloadsProjectsLocationsDbFindingSummariesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAssuredworkloadsV1beta1ListDbFindingSummariesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/dbFindingSummaries',
+        http_method='GET',
+        method_id='assuredworkloads.projects.locations.dbFindingSummaries.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1beta1/{+parent}/dbFindingSummaries',
+        request_field='',
+        request_type_name='AssuredworkloadsProjectsLocationsDbFindingSummariesListRequest',
+        response_type_name='GoogleCloudAssuredworkloadsV1beta1ListDbFindingSummariesResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsDbFrameworkComplianceReportsDbControlComplianceSummariesService(base_api.BaseApiService):
+    """Service class for the projects_locations_dbFrameworkComplianceReports_dbControlComplianceSummaries resource."""
+
+    _NAME = 'projects_locations_dbFrameworkComplianceReports_dbControlComplianceSummaries'
+
+    def __init__(self, client):
+      super(AssuredworkloadsV1beta1.ProjectsLocationsDbFrameworkComplianceReportsDbControlComplianceSummariesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def List(self, request, global_params=None):
+      r"""Lists the control compliance summary for a given scope.
+
+      Args:
+        request: (AssuredworkloadsProjectsLocationsDbFrameworkComplianceReportsDbControlComplianceSummariesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAssuredworkloadsV1beta1ListDbControlComplianceSummariesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/dbFrameworkComplianceReports/{dbFrameworkComplianceReportsId}/dbControlComplianceSummaries',
+        http_method='GET',
+        method_id='assuredworkloads.projects.locations.dbFrameworkComplianceReports.dbControlComplianceSummaries.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1beta1/{+parent}/dbControlComplianceSummaries',
+        request_field='',
+        request_type_name='AssuredworkloadsProjectsLocationsDbFrameworkComplianceReportsDbControlComplianceSummariesListRequest',
+        response_type_name='GoogleCloudAssuredworkloadsV1beta1ListDbControlComplianceSummariesResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsDbFrameworkComplianceReportsService(base_api.BaseApiService):
+    """Service class for the projects_locations_dbFrameworkComplianceReports resource."""
+
+    _NAME = 'projects_locations_dbFrameworkComplianceReports'
+
+    def __init__(self, client):
+      super(AssuredworkloadsV1beta1.ProjectsLocationsDbFrameworkComplianceReportsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Aggregate(self, request, global_params=None):
+      r"""Gets the aggregated compliance report over time for a given scope.
+
+      Args:
+        request: (AssuredworkloadsProjectsLocationsDbFrameworkComplianceReportsAggregateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAssuredworkloadsV1beta1AggregateDbFrameworkComplianceReportResponse) The response message.
+      """
+      config = self.GetMethodConfig('Aggregate')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Aggregate.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/dbFrameworkComplianceReports/{dbFrameworkComplianceReportsId}:aggregate',
+        http_method='GET',
+        method_id='assuredworkloads.projects.locations.dbFrameworkComplianceReports.aggregate',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['filter', 'interval_endTime', 'interval_startTime'],
+        relative_path='v1beta1/{+name}:aggregate',
+        request_field='',
+        request_type_name='AssuredworkloadsProjectsLocationsDbFrameworkComplianceReportsAggregateRequest',
+        response_type_name='GoogleCloudAssuredworkloadsV1beta1AggregateDbFrameworkComplianceReportResponse',
+        supports_download=False,
+    )
+
+    def Fetch(self, request, global_params=None):
+      r"""Fetches the framework compliance report for a given scope.
+
+      Args:
+        request: (AssuredworkloadsProjectsLocationsDbFrameworkComplianceReportsFetchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAssuredworkloadsV1beta1FetchDbFrameworkComplianceReportResponse) The response message.
+      """
+      config = self.GetMethodConfig('Fetch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Fetch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/dbFrameworkComplianceReports/{dbFrameworkComplianceReportsId}:fetch',
+        http_method='GET',
+        method_id='assuredworkloads.projects.locations.dbFrameworkComplianceReports.fetch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['endTime', 'filter'],
+        relative_path='v1beta1/{+name}:fetch',
+        request_field='',
+        request_type_name='AssuredworkloadsProjectsLocationsDbFrameworkComplianceReportsFetchRequest',
+        response_type_name='GoogleCloudAssuredworkloadsV1beta1FetchDbFrameworkComplianceReportResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsDbFrameworkComplianceSummariesService(base_api.BaseApiService):
+    """Service class for the projects_locations_dbFrameworkComplianceSummaries resource."""
+
+    _NAME = 'projects_locations_dbFrameworkComplianceSummaries'
+
+    def __init__(self, client):
+      super(AssuredworkloadsV1beta1.ProjectsLocationsDbFrameworkComplianceSummariesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def List(self, request, global_params=None):
+      r"""Lists the framework compliance summary for a given scope.
+
+      Args:
+        request: (AssuredworkloadsProjectsLocationsDbFrameworkComplianceSummariesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAssuredworkloadsV1beta1ListDbFrameworkComplianceSummariesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/dbFrameworkComplianceSummaries',
+        http_method='GET',
+        method_id='assuredworkloads.projects.locations.dbFrameworkComplianceSummaries.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken', 'view'],
+        relative_path='v1beta1/{+parent}/dbFrameworkComplianceSummaries',
+        request_field='',
+        request_type_name='AssuredworkloadsProjectsLocationsDbFrameworkComplianceSummariesListRequest',
+        response_type_name='GoogleCloudAssuredworkloadsV1beta1ListDbFrameworkComplianceSummariesResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsService(base_api.BaseApiService):
+    """Service class for the projects_locations resource."""
+
+    _NAME = 'projects_locations'
+
+    def __init__(self, client):
+      super(AssuredworkloadsV1beta1.ProjectsLocationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class ProjectsService(base_api.BaseApiService):
+    """Service class for the projects resource."""
+
+    _NAME = 'projects'
+
+    def __init__(self, client):
+      super(AssuredworkloadsV1beta1.ProjectsService, self).__init__(client)
       self._upload_configs = {
           }

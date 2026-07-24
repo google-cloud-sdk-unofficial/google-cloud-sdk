@@ -255,6 +255,9 @@ class AlphaUpdate(BetaUpdate):
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser)
+    flags.IdentityCertificateFlag(hidden=True).AddToParser(parser)
+    flags.IdentityTypeFlag(hidden=True).AddToParser(parser)
+    flags.FunctionalTypeFlag(hidden=True).AddToParser(parser)
     container_args = ContainerArgGroup(release_track=base.ReleaseTrack.ALPHA)
     container_parser.AddContainerFlags(
         parser, container_args, cls.ReleaseTrack()

@@ -15,6 +15,7 @@
 """Flags and helpers for the compute snapshots commands."""
 
 
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.command_lib.compute import completers as compute_completers
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
@@ -82,6 +83,10 @@ def AddChainArg(parser):
 def AddSourceDiskCsekKey(parser):
   parser.add_argument(
       '--source-disk-key-file',
+      action=actions.DeprecationAction(
+          '--source-disk-key-file',
+          warn='The {flag_name} flag is deprecated.',
+          removed=False),
       metavar='FILE',
       help="""
       Path to the customer-supplied encryption key of the source disk.
@@ -94,6 +99,10 @@ def AddSourceDiskCsekKey(parser):
 def AddSourceInstantSnapshotCsekKey(parser):
   parser.add_argument(
       '--source-instant-snapshot-key-file',
+      action=actions.DeprecationAction(
+          '--source-instant-snapshot-key-file',
+          warn='The {flag_name} flag is deprecated.',
+          removed=False),
       metavar='FILE',
       help="""
       Path to the customer-supplied encryption key of the source instant snapshot.

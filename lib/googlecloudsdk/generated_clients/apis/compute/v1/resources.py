@@ -173,6 +173,13 @@ class Collections(enum.Enum):
       ['project', 'healthCheck'],
       True
   )
+  HOSTS = (
+      'hosts',
+      'projects/{project}/zones/{zone}/{association}/hosts/{host}',
+      {},
+      ['project', 'zone', 'association', 'host'],
+      True
+  )
   HTTPHEALTHCHECKS = (
       'httpHealthChecks',
       'projects/{project}/global/httpHealthChecks/{httpHealthCheck}',

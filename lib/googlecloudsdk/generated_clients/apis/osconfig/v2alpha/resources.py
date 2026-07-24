@@ -133,17 +133,6 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
-  PROJECTS_LOCATIONS_AGENTPOLICYASSIGNMENTS = (
-      'projects.locations.agentPolicyAssignments',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'agentPolicyAssignments/{agentPolicyAssignmentsId}',
-      },
-      ['name'],
-      True
-  )
   PROJECTS_LOCATIONS_GLOBAL = (
       'projects.locations.global',
       'projects/{projectsId}/locations/global',

@@ -1215,15 +1215,18 @@ class BackupSelectionConfig(_messages.Message):
   r"""Configuration for selecting a backup.
 
   Enums:
-    SelectionCriteriaValueValuesEnum: Required. The backup selection criteria.
+    SelectionCriteriaValueValuesEnum: Optional. The backup selection criteria.
+      Defaults to LATEST when unspecified.
 
   Fields:
-    selectionCriteria: Required. The backup selection criteria.
+    selectionCriteria: Optional. The backup selection criteria. Defaults to
+      LATEST when unspecified.
     source: Required. Immutable. The fully qualified URI of the source.
   """
 
   class SelectionCriteriaValueValuesEnum(_messages.Enum):
-    r"""Required. The backup selection criteria.
+    r"""Optional. The backup selection criteria. Defaults to LATEST when
+    unspecified.
 
     Values:
       BACKUP_SELECTION_CRITERIA_UNSPECIFIED: Selection criteria not specified.
@@ -1240,10 +1243,10 @@ class BackupVault(_messages.Message):
   r"""Message describing a BackupVault object.
 
   Enums:
-    AccessRestrictionValueValuesEnum: Optional. Note: This field is added for
-      future use case and will not be supported in the current release. Access
-      restriction for the backup vault. Default value is WITHIN_ORGANIZATION
-      if not provided during creation.
+    AccessRestrictionValueValuesEnum: Optional. Restricts access to certain
+      sources and destinations for data being sent into, or restored from, the
+      backup vault. Defaults to WITHIN_ORGANIZATION if not provided during
+      creation.
     BackupRetentionInheritanceValueValuesEnum: Optional. Setting for how a
       backup's enforced retention end time is inherited.
     EncryptionModeValueValuesEnum: Optional. Deprecated: The encryption mode
@@ -1259,10 +1262,9 @@ class BackupVault(_messages.Message):
       metadata. No labels currently defined:
 
   Fields:
-    accessRestriction: Optional. Note: This field is added for future use case
-      and will not be supported in the current release. Access restriction for
-      the backup vault. Default value is WITHIN_ORGANIZATION if not provided
-      during creation.
+    accessRestriction: Optional. Restricts access to certain sources and
+      destinations for data being sent into, or restored from, the backup
+      vault. Defaults to WITHIN_ORGANIZATION if not provided during creation.
     annotations: Optional. User annotations. See
       https://google.aip.dev/128#annotations Stores small amounts of arbitrary
       data.
@@ -1309,10 +1311,9 @@ class BackupVault(_messages.Message):
   """
 
   class AccessRestrictionValueValuesEnum(_messages.Enum):
-    r"""Optional. Note: This field is added for future use case and will not
-    be supported in the current release. Access restriction for the backup
-    vault. Default value is WITHIN_ORGANIZATION if not provided during
-    creation.
+    r"""Optional. Restricts access to certain sources and destinations for
+    data being sent into, or restored from, the backup vault. Defaults to
+    WITHIN_ORGANIZATION if not provided during creation.
 
     Values:
       ACCESS_RESTRICTION_UNSPECIFIED: Access restriction not set. If user does
@@ -2927,6 +2928,76 @@ class BackupdrProjectsLocationsRestoreTemplatesCreateRequest(_messages.Message):
   restoreTemplateId = _messages.StringField(4)
 
 
+class BackupdrProjectsLocationsRestoreTemplatesDeleteRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsRestoreTemplatesDeleteRequest object.
+
+  Fields:
+    force: Optional. If set to true, any child RestoreTemplateExecutions will
+      also be deleted. If false and the RestoreTemplate has any child
+      executions, the request will fail.
+    name: Required. The name of the restore template to delete. Format: 'proje
+      cts/{project_id}/locations/{location}/restoreTemplates/{restore_template
+      _id}'
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      request ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  force = _messages.BooleanField(1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+
+
+class BackupdrProjectsLocationsRestoreTemplatesExecutionsGetRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsRestoreTemplatesExecutionsGetRequest object.
+
+  Fields:
+    name: Required. The name of the restore template execution to retrieve.
+      Format: 'projects/{project_id}/locations/{location}/restoreTemplates/{re
+      store_template_id}/executions/{execution_id}'
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class BackupdrProjectsLocationsRestoreTemplatesExecutionsListRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsRestoreTemplatesExecutionsListRequest object.
+
+  Fields:
+    filter: Optional. Filtering results.
+    orderBy: Optional. Hint for how to order the results.
+    pageSize: Optional. Requested page size.
+    pageToken: Optional. A token identifying a page of results.
+    parent: Required. The project, location, and restore template for which to
+      retrieve executions information. Format: `projects/{project}/locations/{
+      location}/restoreTemplates/{restore_template}`.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class BackupdrProjectsLocationsRestoreTemplatesExecutionsTriggerRestoreCleanupRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsRestoreTemplatesExecutionsTriggerRestoreClean
+  upRequest object.
+
+  Fields:
+    name: Required. Name of the restore template execution. Format: 'projects/
+      {project_id}/locations/{location}/restoreTemplates/{restore_template_id}
+      /executions/{execution_id}'
+    triggerRestoreCleanupRequest: A TriggerRestoreCleanupRequest resource to
+      be passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  triggerRestoreCleanupRequest = _messages.MessageField('TriggerRestoreCleanupRequest', 2)
+
+
 class BackupdrProjectsLocationsRestoreTemplatesGetRequest(_messages.Message):
   r"""A BackupdrProjectsLocationsRestoreTemplatesGetRequest object.
 
@@ -2937,6 +3008,69 @@ class BackupdrProjectsLocationsRestoreTemplatesGetRequest(_messages.Message):
   """
 
   name = _messages.StringField(1, required=True)
+
+
+class BackupdrProjectsLocationsRestoreTemplatesListRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsRestoreTemplatesListRequest object.
+
+  Fields:
+    filter: Optional. Field match expression used to filter the results.
+    orderBy: Optional. Field by which to sort the results.
+    pageSize: Optional. The maximum number of items to return.
+    pageToken: Optional. A page token, received from a previous
+      `ListRestoreTemplates` call.
+    parent: Required. The project and location from which to list the restore
+      templates. Format: `projects/{project}/locations/{location}`.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class BackupdrProjectsLocationsRestoreTemplatesPatchRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsRestoreTemplatesPatchRequest object.
+
+  Fields:
+    name: Identifier. The resource name of the RestoreTemplate.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      request ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+    restoreTemplate: A RestoreTemplate resource to be passed as the request
+      body.
+    updateMask: Optional. The list of fields to update. Field mask is used to
+      specify the fields to be overwritten in the RestoreTemplate resource by
+      the update. The fields specified in the update_mask are relative to the
+      resource, not the full request. A field will be overwritten if it is in
+      the mask.
+    validateOnly: Optional. Only validate the request, but do not perform
+      mutations. The default is 'false'.
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  restoreTemplate = _messages.MessageField('RestoreTemplate', 3)
+  updateMask = _messages.StringField(4)
+  validateOnly = _messages.BooleanField(5)
+
+
+class BackupdrProjectsLocationsRestoreTemplatesRunRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsRestoreTemplatesRunRequest object.
+
+  Fields:
+    name: Required. The name of the restore template to run. Format: 'projects
+      /{project_id}/locations/{location}/restoreTemplates/{restore_template_id
+      }'
+    runRestoreTemplateRequest: A RunRestoreTemplateRequest resource to be
+      passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  runRestoreTemplateRequest = _messages.MessageField('RunRestoreTemplateRequest', 2)
 
 
 class BackupdrProjectsLocationsServiceConfigInitializeRequest(_messages.Message):
@@ -3072,6 +3206,68 @@ class Binding(_messages.Message):
 
 class CancelOperationRequest(_messages.Message):
   r"""The request message for Operations.CancelOperation."""
+
+
+class CleanupPhaseInfo(_messages.Message):
+  r"""Info for Cleanup phase execution.
+
+  Enums:
+    PhaseStateValueValuesEnum: Output only. The state of this phase.
+
+  Fields:
+    cleanupDuration: Output only. Time taken to perform the cleanup of
+      restored resource.
+    endTime: Output only. End time of the phase.
+    error: Output only. Error details if the phase failed.
+    failureCleanupRule: Output only. Snapshot of cleanup rule provided for
+      this execution when execution is failed.
+    phaseState: Output only. The state of this phase.
+    startTime: Output only. Start time of the phase.
+    successCleanupRule: Output only. Snapshot of cleanup rule provided for
+      this execution when execution is successful.
+  """
+
+  class PhaseStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of this phase.
+
+    Values:
+      PHASE_STATE_UNSPECIFIED: Phase state is not set.
+      NOT_STARTED: This phase has not started yet.
+      RUNNING: The phase is actively executing.
+      SUCCEEDED: The phase completed successfully.
+      FAILED: The phase encountered an error and failed.
+      TIMED_OUT: The phase timed out.
+      SKIPPED: The phase was skipped.
+    """
+    PHASE_STATE_UNSPECIFIED = 0
+    NOT_STARTED = 1
+    RUNNING = 2
+    SUCCEEDED = 3
+    FAILED = 4
+    TIMED_OUT = 5
+    SKIPPED = 6
+
+  cleanupDuration = _messages.StringField(1)
+  endTime = _messages.StringField(2)
+  error = _messages.MessageField('Status', 3)
+  failureCleanupRule = _messages.MessageField('CleanupRule', 4)
+  phaseState = _messages.EnumField('PhaseStateValueValuesEnum', 5)
+  startTime = _messages.StringField(6)
+  successCleanupRule = _messages.MessageField('CleanupRule', 7)
+
+
+class CleanupRule(_messages.Message):
+  r"""`CleanupRule` defines the specific cleanup action.
+
+  Fields:
+    cleanupDelay: Optional. Duration after restore finishes when cleanup
+      triggers. Delay must be at most 30 days (2592000 seconds).
+    skipCleanup: Optional. If set to true, the restored resource will not be
+      cleaned up.
+  """
+
+  cleanupDelay = _messages.StringField(1)
+  skipCleanup = _messages.BooleanField(2)
 
 
 class CloudSqlInstanceBackupPlanAssociationProperties(_messages.Message):
@@ -3615,14 +3811,12 @@ class DataSource(_messages.Message):
       ACTIVE: The data source has been created and is fully usable.
       DELETING: The data source is being deleted.
       ERROR: The data source is experiencing an issue and might be unusable.
-      PAUSED: The data source has been created but backups are paused.
     """
     STATE_UNSPECIFIED = 0
     CREATING = 1
     ACTIVE = 2
     DELETING = 3
     ERROR = 4
-    PAUSED = 5
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
@@ -5053,6 +5247,35 @@ class ListResourceBackupConfigsResponse(_messages.Message):
   resourceBackupConfigs = _messages.MessageField('ResourceBackupConfig', 2, repeated=True)
 
 
+class ListRestoreTemplateExecutionsResponse(_messages.Message):
+  r"""Response message for listing RestoreTemplateExecutions.
+
+  Fields:
+    nextPageToken: A token identifying a page of results.
+    restoreTemplateExecutions: The list of RestoreTemplateExecution instances.
+    unreachable: Locations that could not be reached.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  restoreTemplateExecutions = _messages.MessageField('RestoreTemplateExecution', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListRestoreTemplatesResponse(_messages.Message):
+  r"""Response message for listing RestoreTemplates.
+
+  Fields:
+    nextPageToken: A token which may be sent as `page_token` in a subsequent
+      `ListRestoreTemplates` call.
+    restoreTemplates: The list of RestoreTemplates.
+    unreachable: Locations that could not be reached.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  restoreTemplates = _messages.MessageField('RestoreTemplate', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class Location(_messages.Message):
   r"""A resource that represents a Google Cloud location.
 
@@ -5699,6 +5922,47 @@ class OperationMetadata(_messages.Message):
   verb = _messages.StringField(8)
 
 
+class PendingCleanupPhaseInfo(_messages.Message):
+  r"""Info for Pending Cleanup phase execution.
+
+  Enums:
+    PhaseStateValueValuesEnum: Output only. The state of this phase.
+
+  Fields:
+    cleanupTime: Output only. The time when the resources will be cleaned up.
+    endTime: Output only. End time of the phase.
+    error: Output only. Error details if the phase failed.
+    phaseState: Output only. The state of this phase.
+    startTime: Output only. Start time of the phase.
+  """
+
+  class PhaseStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of this phase.
+
+    Values:
+      PHASE_STATE_UNSPECIFIED: Phase state is not set.
+      NOT_STARTED: This phase has not started yet.
+      RUNNING: The phase is actively executing.
+      SUCCEEDED: The phase completed successfully.
+      FAILED: The phase encountered an error and failed.
+      TIMED_OUT: The phase timed out.
+      SKIPPED: The phase was skipped.
+    """
+    PHASE_STATE_UNSPECIFIED = 0
+    NOT_STARTED = 1
+    RUNNING = 2
+    SUCCEEDED = 3
+    FAILED = 4
+    TIMED_OUT = 5
+    SKIPPED = 6
+
+  cleanupTime = _messages.StringField(1)
+  endTime = _messages.StringField(2)
+  error = _messages.MessageField('Status', 3)
+  phaseState = _messages.EnumField('PhaseStateValueValuesEnum', 4)
+  startTime = _messages.StringField(5)
+
+
 class PitrSettings(_messages.Message):
   r"""Point in time recovery settings of the backup configuration resource.
 
@@ -5814,6 +6078,51 @@ class PostRestoreConfig(_messages.Message):
   timeout = _messages.StringField(2)
 
 
+class PostRestorePhaseInfo(_messages.Message):
+  r"""Info for Post-Restore phase execution.
+
+  Enums:
+    PhaseStateValueValuesEnum: Output only. The state of this phase.
+
+  Fields:
+    cloudRunExecution: Output only. The fully qualified URI of the Cloud Run
+      Execution triggered for post-restore actions.
+    endTime: Output only. End time of the phase.
+    error: Output only. Error details if the phase failed.
+    phaseState: Output only. The state of this phase.
+    postRestoreConfig: Output only. Snapshot of config that will be executed
+      after successful restore operation.
+    startTime: Output only. Start time of the phase.
+  """
+
+  class PhaseStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of this phase.
+
+    Values:
+      PHASE_STATE_UNSPECIFIED: Phase state is not set.
+      NOT_STARTED: This phase has not started yet.
+      RUNNING: The phase is actively executing.
+      SUCCEEDED: The phase completed successfully.
+      FAILED: The phase encountered an error and failed.
+      TIMED_OUT: The phase timed out.
+      SKIPPED: The phase was skipped.
+    """
+    PHASE_STATE_UNSPECIFIED = 0
+    NOT_STARTED = 1
+    RUNNING = 2
+    SUCCEEDED = 3
+    FAILED = 4
+    TIMED_OUT = 5
+    SKIPPED = 6
+
+  cloudRunExecution = _messages.StringField(1)
+  endTime = _messages.StringField(2)
+  error = _messages.MessageField('Status', 3)
+  phaseState = _messages.EnumField('PhaseStateValueValuesEnum', 4)
+  postRestoreConfig = _messages.MessageField('PostRestoreConfig', 5)
+  startTime = _messages.StringField(6)
+
+
 class PreRestoreConfig(_messages.Message):
   r"""Configuration for Pre-Restore.
 
@@ -5825,6 +6134,101 @@ class PreRestoreConfig(_messages.Message):
 
   cloudRunJob = _messages.StringField(1)
   timeout = _messages.StringField(2)
+
+
+class PreRestorePhaseInfo(_messages.Message):
+  r"""Info for Pre-Restore phase execution.
+
+  Enums:
+    PhaseStateValueValuesEnum: Output only. The state of this phase.
+
+  Fields:
+    cloudRunExecution: Output only. The fully qualified URI of the Cloud Run
+      Execution triggered for pre-restore actions.
+    endTime: Output only. End time of the phase.
+    error: Output only. Error details if the phase failed.
+    phaseState: Output only. The state of this phase.
+    preRestoreConfig: Output only. Snapshot of config that will be executed
+      before restore operation.
+    startTime: Output only. Start time of the phase.
+  """
+
+  class PhaseStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of this phase.
+
+    Values:
+      PHASE_STATE_UNSPECIFIED: Phase state is not set.
+      NOT_STARTED: This phase has not started yet.
+      RUNNING: The phase is actively executing.
+      SUCCEEDED: The phase completed successfully.
+      FAILED: The phase encountered an error and failed.
+      TIMED_OUT: The phase timed out.
+      SKIPPED: The phase was skipped.
+    """
+    PHASE_STATE_UNSPECIFIED = 0
+    NOT_STARTED = 1
+    RUNNING = 2
+    SUCCEEDED = 3
+    FAILED = 4
+    TIMED_OUT = 5
+    SKIPPED = 6
+
+  cloudRunExecution = _messages.StringField(1)
+  endTime = _messages.StringField(2)
+  error = _messages.MessageField('Status', 3)
+  phaseState = _messages.EnumField('PhaseStateValueValuesEnum', 4)
+  preRestoreConfig = _messages.MessageField('PreRestoreConfig', 5)
+  startTime = _messages.StringField(6)
+
+
+class PreparePhaseInfo(_messages.Message):
+  r"""Info for Prepare phase execution.
+
+  Enums:
+    PhaseStateValueValuesEnum: Output only. The state of this phase.
+
+  Fields:
+    backupSelectionConfig: Output only. Snapshot of config used in this
+      execution.
+    endTime: Output only. End time of the phase.
+    error: Output only. Error details if the phase failed.
+    isBackupExplicitlyPassed: Output only. Indicates whether the backup was
+      explicitly passed in the request.
+    phaseState: Output only. The state of this phase.
+    restoreVerificationPlanAssociation: Output only. The restore verification
+      plan association associated with the execution.
+    sourceBackup: Output only. The source backup used for the restore.
+    startTime: Output only. Start time of the phase.
+  """
+
+  class PhaseStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of this phase.
+
+    Values:
+      PHASE_STATE_UNSPECIFIED: Phase state is not set.
+      NOT_STARTED: This phase has not started yet.
+      RUNNING: The phase is actively executing.
+      SUCCEEDED: The phase completed successfully.
+      FAILED: The phase encountered an error and failed.
+      TIMED_OUT: The phase timed out.
+      SKIPPED: The phase was skipped.
+    """
+    PHASE_STATE_UNSPECIFIED = 0
+    NOT_STARTED = 1
+    RUNNING = 2
+    SUCCEEDED = 3
+    FAILED = 4
+    TIMED_OUT = 5
+    SKIPPED = 6
+
+  backupSelectionConfig = _messages.MessageField('BackupSelectionConfig', 1)
+  endTime = _messages.StringField(2)
+  error = _messages.MessageField('Status', 3)
+  isBackupExplicitlyPassed = _messages.BooleanField(4)
+  phaseState = _messages.EnumField('PhaseStateValueValuesEnum', 5)
+  restoreVerificationPlanAssociation = _messages.StringField(6)
+  sourceBackup = _messages.StringField(7)
+  startTime = _messages.StringField(8)
 
 
 class ReconciliationOperationMetadata(_messages.Message):
@@ -6045,6 +6449,114 @@ class RestoreDiskFromInstanceOptions(_messages.Message):
   sourceDeviceName = _messages.StringField(2)
 
 
+class RestorePhaseInfo(_messages.Message):
+  r"""Info for Restore phase execution.
+
+  Enums:
+    PhaseStateValueValuesEnum: Output only. The state of this phase.
+
+  Messages:
+    RestorePropertiesValue: Output only. Snapshot of environment config used
+      during restore of this RestoreTemplateExecution.
+    RestoreResourcePropertiesValue: Output only. Properties of the restored
+      resource.
+
+  Fields:
+    endTime: Output only. End time of the phase.
+    error: Output only. Error details if the phase failed.
+    phaseState: Output only. The state of this phase.
+    restoreDuration: Output only. Time taken to restore the resource.
+    restoreProperties: Output only. Snapshot of environment config used during
+      restore of this RestoreTemplateExecution.
+    restoreResource: Output only. The resource created or restored by this
+      execution.
+    restoreResourceProperties: Output only. Properties of the restored
+      resource.
+    startTime: Output only. Start time of the phase.
+  """
+
+  class PhaseStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of this phase.
+
+    Values:
+      PHASE_STATE_UNSPECIFIED: Phase state is not set.
+      NOT_STARTED: This phase has not started yet.
+      RUNNING: The phase is actively executing.
+      SUCCEEDED: The phase completed successfully.
+      FAILED: The phase encountered an error and failed.
+      TIMED_OUT: The phase timed out.
+      SKIPPED: The phase was skipped.
+    """
+    PHASE_STATE_UNSPECIFIED = 0
+    NOT_STARTED = 1
+    RUNNING = 2
+    SUCCEEDED = 3
+    FAILED = 4
+    TIMED_OUT = 5
+    SKIPPED = 6
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class RestorePropertiesValue(_messages.Message):
+    r"""Output only. Snapshot of environment config used during restore of
+    this RestoreTemplateExecution.
+
+    Messages:
+      AdditionalProperty: An additional property for a RestorePropertiesValue
+        object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a RestorePropertiesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class RestoreResourcePropertiesValue(_messages.Message):
+    r"""Output only. Properties of the restored resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        RestoreResourcePropertiesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        RestoreResourcePropertiesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a RestoreResourcePropertiesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  endTime = _messages.StringField(1)
+  error = _messages.MessageField('Status', 2)
+  phaseState = _messages.EnumField('PhaseStateValueValuesEnum', 3)
+  restoreDuration = _messages.StringField(4)
+  restoreProperties = _messages.MessageField('RestorePropertiesValue', 5)
+  restoreResource = _messages.StringField(6)
+  restoreResourceProperties = _messages.MessageField('RestoreResourcePropertiesValue', 7)
+  startTime = _messages.StringField(8)
+
+
 class RestoreTemplate(_messages.Message):
   r"""A `RestoreTemplate` encapsulates DR readiness configurations for
   validating backups.
@@ -6160,6 +6672,102 @@ class RestoreTemplate(_messages.Message):
   verificationConfig = _messages.MessageField('VerificationConfig', 14)
 
 
+class RestoreTemplateExecution(_messages.Message):
+  r"""A `RestoreTemplateExecution` represents a single historical or active
+  execution run.
+
+  Enums:
+    PhaseValueValuesEnum: Output only. The current active phase.
+    StateValueValuesEnum: Output only. State of the execution.
+    TypeValueValuesEnum: Output only. The type of the execution.
+
+  Fields:
+    cleanupPhaseInfo: Output only. Info for the cleanup phase.
+    createTime: Output only. Create time of the execution.
+    name: Identifier. Resource name of the execution.
+    pendingCleanupPhaseInfo: Output only. Info for the pending cleanup phase.
+    phase: Output only. The current active phase.
+    postRestorePhaseInfo: Output only. Info for the post-restore phase.
+    preRestorePhaseInfo: Output only. Info for the pre-restore phase.
+    preparePhaseInfo: Output only. Info for the prepare phase.
+    resourceType: Output only. The workload resource type being restored. The
+      format is "{service_name}/{resource_kind}", for example,
+      "compute.googleapis.com/Instance".
+    restorePhaseInfo: Output only. Info for the restore phase.
+    state: Output only. State of the execution.
+    type: Output only. The type of the execution.
+    updateTime: Output only. Update time of the execution.
+    verificationPhaseInfo: Output only. Info for the verification phase.
+  """
+
+  class PhaseValueValuesEnum(_messages.Enum):
+    r"""Output only. The current active phase.
+
+    Values:
+      EXECUTION_PHASE_UNSPECIFIED: Execution phase not specified.
+      PREPARING: Preparing for execution.
+      EXECUTING_PRE_RESTORE_ACTION: Executing pre-restore action.
+      RESTORING: Restoring the resource.
+      EXECUTING_POST_RESTORE_ACTION: Executing post-restore action.
+      VERIFYING: Verifying the restored resource.
+      CLEANUP_PENDING: Cleanup is pending.
+      CLEANING_UP: Cleaning up resources.
+      FINISHED: Execution finished.
+    """
+    EXECUTION_PHASE_UNSPECIFIED = 0
+    PREPARING = 1
+    EXECUTING_PRE_RESTORE_ACTION = 2
+    RESTORING = 3
+    EXECUTING_POST_RESTORE_ACTION = 4
+    VERIFYING = 5
+    CLEANUP_PENDING = 6
+    CLEANING_UP = 7
+    FINISHED = 8
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. State of the execution.
+
+    Values:
+      EXECUTION_STATE_UNSPECIFIED: State not set.
+      RUNNING: Execution is running.
+      SUCCEEDED: Execution succeeded.
+      FAILED: Execution failed.
+      DELETING: Resources are being deleted (cleanup).
+    """
+    EXECUTION_STATE_UNSPECIFIED = 0
+    RUNNING = 1
+    SUCCEEDED = 2
+    FAILED = 3
+    DELETING = 4
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The type of the execution.
+
+    Values:
+      EXECUTION_TYPE_UNSPECIFIED: Execution type not specified.
+      SCHEDULED: Scheduled execution.
+      ON_DEMAND: On-demand execution.
+    """
+    EXECUTION_TYPE_UNSPECIFIED = 0
+    SCHEDULED = 1
+    ON_DEMAND = 2
+
+  cleanupPhaseInfo = _messages.MessageField('CleanupPhaseInfo', 1)
+  createTime = _messages.StringField(2)
+  name = _messages.StringField(3)
+  pendingCleanupPhaseInfo = _messages.MessageField('PendingCleanupPhaseInfo', 4)
+  phase = _messages.EnumField('PhaseValueValuesEnum', 5)
+  postRestorePhaseInfo = _messages.MessageField('PostRestorePhaseInfo', 6)
+  preRestorePhaseInfo = _messages.MessageField('PreRestorePhaseInfo', 7)
+  preparePhaseInfo = _messages.MessageField('PreparePhaseInfo', 8)
+  resourceType = _messages.StringField(9)
+  restorePhaseInfo = _messages.MessageField('RestorePhaseInfo', 10)
+  state = _messages.EnumField('StateValueValuesEnum', 11)
+  type = _messages.EnumField('TypeValueValuesEnum', 12)
+  updateTime = _messages.StringField(13)
+  verificationPhaseInfo = _messages.MessageField('VerificationPhaseInfo', 14)
+
+
 class RuleConfigInfo(_messages.Message):
   r"""Message for rules config info.
 
@@ -6197,6 +6805,26 @@ class RuleConfigInfo(_messages.Message):
   lastBackupState = _messages.EnumField('LastBackupStateValueValuesEnum', 2)
   lastSuccessfulBackupConsistencyTime = _messages.StringField(3)
   ruleId = _messages.StringField(4)
+
+
+class RunRestoreTemplateRequest(_messages.Message):
+  r"""Request message for running a RestoreTemplate.
+
+  Fields:
+    backup: Optional. The resource name of the Backup to restore from. If not
+      specified, the latest backup matching the backup selection configuration
+      in the RestoreTemplate will be used. Format: 'projects/{project}/locatio
+      ns/{location}/backupVaults/{backup_vault}/dataSources/{data_source}/back
+      ups/{backup}'
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      request ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  backup = _messages.StringField(1)
+  requestId = _messages.StringField(2)
 
 
 class Scheduling(_messages.Message):
@@ -6785,6 +7413,21 @@ class TriggerBackupRequest(_messages.Message):
   ruleId = _messages.StringField(4)
 
 
+class TriggerRestoreCleanupRequest(_messages.Message):
+  r"""Request message for triggering a restore cleanup.
+
+  Fields:
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. The request ID must be a valid UUID with the exception that
+      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  requestId = _messages.StringField(1)
+
+
 class VerificationConfig(_messages.Message):
   r"""Configuration for Verification.
 
@@ -6796,6 +7439,51 @@ class VerificationConfig(_messages.Message):
 
   cloudRunJob = _messages.StringField(1)
   timeout = _messages.StringField(2)
+
+
+class VerificationPhaseInfo(_messages.Message):
+  r"""Info for Verification phase execution.
+
+  Enums:
+    PhaseStateValueValuesEnum: Output only. The state of this phase.
+
+  Fields:
+    cloudRunExecution: Output only. The fully qualified URI of the Cloud Run
+      Execution triggered for verification.
+    endTime: Output only. End time of the phase.
+    error: Output only. Error details if the phase failed.
+    phaseState: Output only. The state of this phase.
+    startTime: Output only. Start time of the phase.
+    verificationConfig: Output only. Snapshot of config that will be executed
+      after successful post restore validation.
+  """
+
+  class PhaseStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of this phase.
+
+    Values:
+      PHASE_STATE_UNSPECIFIED: Phase state is not set.
+      NOT_STARTED: This phase has not started yet.
+      RUNNING: The phase is actively executing.
+      SUCCEEDED: The phase completed successfully.
+      FAILED: The phase encountered an error and failed.
+      TIMED_OUT: The phase timed out.
+      SKIPPED: The phase was skipped.
+    """
+    PHASE_STATE_UNSPECIFIED = 0
+    NOT_STARTED = 1
+    RUNNING = 2
+    SUCCEEDED = 3
+    FAILED = 4
+    TIMED_OUT = 5
+    SKIPPED = 6
+
+  cloudRunExecution = _messages.StringField(1)
+  endTime = _messages.StringField(2)
+  error = _messages.MessageField('Status', 3)
+  phaseState = _messages.EnumField('PhaseStateValueValuesEnum', 4)
+  startTime = _messages.StringField(5)
+  verificationConfig = _messages.MessageField('VerificationConfig', 6)
 
 
 class WeekDayOfMonth(_messages.Message):

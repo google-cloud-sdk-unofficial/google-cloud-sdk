@@ -268,6 +268,8 @@ class BigqueryCmd(NewCmd):
     """
     if bq_auth_flags.USE_GOOGLE_AUTH.value:
       return False
+    if bq_auth_flags.OAUTH_ACCESS_TOKEN.value:
+      return False
     return not _UseServiceAccount() and not (
         os.path.exists(bq_utils.GetBigqueryRcFilename())  # pyrefly: ignore[bad-argument-type]
         or os.path.exists(FLAGS.credential_file)

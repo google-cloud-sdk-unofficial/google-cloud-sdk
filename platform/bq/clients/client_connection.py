@@ -219,6 +219,8 @@ def UpdateConnection(
           'iamRoleId'
       ):
         update_mask.append('aws.access_role.iam_role_id')
+      if aws_properties.get('s3ServiceDirectoryService'):
+        update_mask.append('aws.s3_service_directory_service')
     else:
       connection['aws'] = {}
 

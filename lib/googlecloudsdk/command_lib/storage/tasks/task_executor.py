@@ -116,9 +116,21 @@ def execute_tasks(task_iterator,
   task_util.require_python_3_5()
   plurality_checkable_task_iterator = (
       plurality_checkable_iterator.PluralityCheckableIterator(task_iterator))
+
+  first_task = plurality_checkable_task_iterator.peek()
+  is_bidi_workload = False
+  if properties.VALUES.storage.use_mrd_bidi_downloads.GetBool():
+    is_bidi_workload = getattr(first_task, 'is_bidi_download', False)
+
   optimize_parameters_util.detect_and_set_best_config(
       is_estimated_multi_file_workload=(
-          plurality_checkable_task_iterator.is_plural()))
+          plurality_checkable_task_iterator.is_plural()
+      ),
+      is_bidi_workload=is_bidi_workload,
+  )
+
+  if not is_bidi_workload:
+    properties.VALUES.storage.use_nic_isolation.Set(False)
 
   # Some tasks operate under the assumption that they will only be executed when
   # parallelizable is True, and use should_use_parallelism to determine how they

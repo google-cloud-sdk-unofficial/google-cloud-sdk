@@ -1274,9 +1274,10 @@ class ConfigManagementSpec(_messages.Message):
   Intended to parallel the ConfigManagement CR.
 
   Enums:
-    ManagementValueValuesEnum: Optional. Deprecated: From version 1.21.0,
-      automatic Feature management is unavailable, and Config Sync only
-      supports manual upgrades.
+    ManagementValueValuesEnum: Optional. Deprecated: In Preview, automatic
+      Feature management is unavailable from version 1.21.0 onwards, and
+      Config Sync only supports manual upgrades. If set to manual upgrades,
+      clear this field instead, which is behaviorally equivalent.
 
   Fields:
     binauthz: Optional. Deprecated: Binauthz configuration will be ignored and
@@ -1294,9 +1295,10 @@ class ConfigManagementSpec(_messages.Message):
       cluster. Deprecated: Configuring Hierarchy Controller through the
       configmanagement feature is no longer recommended. Use
       https://github.com/kubernetes-sigs/hierarchical-namespaces instead.
-    management: Optional. Deprecated: From version 1.21.0, automatic Feature
-      management is unavailable, and Config Sync only supports manual
-      upgrades.
+    management: Optional. Deprecated: In Preview, automatic Feature management
+      is unavailable from version 1.21.0 onwards, and Config Sync only
+      supports manual upgrades. If set to manual upgrades, clear this field
+      instead, which is behaviorally equivalent.
     policyController: Optional. Policy Controller configuration for the
       cluster. Deprecated: Configuring Policy Controller through the
       configmanagement feature is no longer recommended. Use the
@@ -1308,8 +1310,10 @@ class ConfigManagementSpec(_messages.Message):
   """
 
   class ManagementValueValuesEnum(_messages.Enum):
-    r"""Optional. Deprecated: From version 1.21.0, automatic Feature
-    management is unavailable, and Config Sync only supports manual upgrades.
+    r"""Optional. Deprecated: In Preview, automatic Feature management is
+    unavailable from version 1.21.0 onwards, and Config Sync only supports
+    manual upgrades. If set to manual upgrades, clear this field instead,
+    which is behaviorally equivalent.
 
     Values:
       MANAGEMENT_UNSPECIFIED: Unspecified

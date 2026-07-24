@@ -815,6 +815,10 @@ def ApplyLogConfigArgs(
       or args.IsSpecified('logging_sample_rate')
       or args.IsSpecified('logging_optional')
       or args.IsSpecified('logging_optional_fields')
+      or args.IsKnownAndSpecified('logging_http_request_headers')
+      or args.IsKnownAndSpecified('logging_http_response_headers')
+      or args.IsKnownAndSpecified('no_logging_http_request_headers')
+      or args.IsKnownAndSpecified('no_logging_http_response_headers')
   )
   valid_protocols = [
       messages.BackendService.ProtocolValueValuesEnum.HTTP,
@@ -832,8 +836,9 @@ def ApplyLogConfigArgs(
         '--protocol',
         (
             'can only specify --enable-logging, --logging-sample-rate,'
-            ' --logging-optional or --logging-optional-fields if the'
-            ' protocol is HTTP/HTTPS/HTTP2/H2C/TCP/SSL/UDP/UNSPECIFIED.'
+            ' --logging-optional, --logging-optional-fields,'
+            ' --logging-http-request-headers or --logging-http-response-headers'
+            ' if the protocol is HTTP/HTTPS/HTTP2/H2C/TCP/SSL/UDP/UNSPECIFIED.'
         ),
     )
 
@@ -856,6 +861,27 @@ def ApplyLogConfigArgs(
       log_config.optionalFields = args.logging_optional_fields
       if not args.logging_optional_fields and cleared_fields is not None:
         cleared_fields.append('logConfig.optionalFields')
+
+    if args.logging_http_request_headers is not None:
+      log_config.loggingHttpRequestHeaders = [
+          messages.BackendServiceLogConfigLoggingHttpHeader(headerName=h)
+          for h in args.logging_http_request_headers
+      ]
+    elif args.IsKnownAndSpecified('no_logging_http_request_headers'):
+      log_config.loggingHttpRequestHeaders = []
+      if cleared_fields is not None:
+        cleared_fields.append('logConfig.loggingHttpRequestHeaders')
+
+    if args.logging_http_response_headers is not None:
+      log_config.loggingHttpResponseHeaders = [
+          messages.BackendServiceLogConfigLoggingHttpHeader(headerName=h)
+          for h in args.logging_http_response_headers
+      ]
+    elif args.IsKnownAndSpecified('no_logging_http_response_headers'):
+      log_config.loggingHttpResponseHeaders = []
+      if cleared_fields is not None:
+        cleared_fields.append('logConfig.loggingHttpResponseHeaders')
+
     backend_service.logConfig = log_config
 
 

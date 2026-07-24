@@ -2139,9 +2139,7 @@ class Project(_messages.Message):
     name: The GCP project resource name. Format: "projects/{project_number}"
       (Only the numeric project name variation is supported). Example:
       "projects/1234567890"
-    projectNumber: Deprecated: Use name instead. See https://docs.google.com/d
-      ocument/d/1HFTsbfc6G5bI84wKZaO1Md9pOoUX7Thc6rWKGlYAHek/edit?tab=t.0#head
-      ing=h.4dd7ysci2jas for context.
+    projectNumber: Deprecated: Use name instead.
   """
 
   name = _messages.StringField(1)

@@ -38,52 +38,52 @@ CONNECTION_PROPERTY_TO_TYPE_MAP = {
 CONNECTION_TYPES = CONNECTION_TYPE_TO_PROPERTY_MAP.keys()
 
 
-def MakeAccessRolePropertiesJson(iam_role_id: str) -> str:
+def MakeAccessRoleProperties(iam_role_id: str) -> Dict[str, Any]:
   """Returns properties for a connection with IAM role id.
 
   Args:
     iam_role_id: IAM role id.
 
   Returns:
-    JSON string with properties to create a connection with IAM role id.
+    Dict with properties to create a connection with IAM role id.
   """
 
-  return '{"accessRole": {"iamRoleId": "%s"}}' % iam_role_id
+  return {'accessRole': {'iamRoleId': iam_role_id}}
 
 
-def MakeTenantIdPropertiesJson(tenant_id: str) -> str:
+def MakeTenantIdProperties(tenant_id: str) -> Dict[str, Any]:
   """Returns properties for a connection with tenant id.
 
   Args:
     tenant_id: tenant id.
 
   Returns:
-    JSON string with properties to create a connection with customer's tenant
+    Dict with properties to create a connection with customer's tenant
     id.
   """
 
-  return '{"customerTenantId": "%s"}' % tenant_id
+  return {'customerTenantId': tenant_id}
 
 
-def MakeAzureFederatedAppClientIdPropertiesJson(
+def MakeAzureFederatedAppClientIdProperties(
     federated_app_client_id: str,
-) -> str:
+) -> Dict[str, Any]:
   """Returns properties for a connection with a federated app (client) id.
 
   Args:
     federated_app_client_id: federated application (client) id.
 
   Returns:
-    JSON string with properties to create a connection with customer's federated
+    Dict with properties to create a connection with customer's federated
     application (client) id.
   """
 
-  return '{"federatedApplicationClientId": "%s"}' % federated_app_client_id
+  return {'federatedApplicationClientId': federated_app_client_id}
 
 
-def MakeAzureFederatedAppClientAndTenantIdPropertiesJson(
+def MakeAzureFederatedAppClientAndTenantIdProperties(
     tenant_id: str, federated_app_client_id: str
-) -> str:
+) -> Dict[str, Any]:
   """Returns properties for a connection with tenant and federated app ids.
 
   Args:
@@ -91,14 +91,14 @@ def MakeAzureFederatedAppClientAndTenantIdPropertiesJson(
     federated_app_client_id: federated application (client) id.
 
   Returns:
-    JSON string with properties to create a connection with customer's tenant
+    Dict with properties to create a connection with customer's tenant
     and federated application (client) ids.
   """
 
-  return '{"customerTenantId": "%s", "federatedApplicationClientId" : "%s"}' % (
-      tenant_id,
-      federated_app_client_id,
-  )
+  return {
+      'customerTenantId': tenant_id,
+      'federatedApplicationClientId': federated_app_client_id,
+  }
 
 
 

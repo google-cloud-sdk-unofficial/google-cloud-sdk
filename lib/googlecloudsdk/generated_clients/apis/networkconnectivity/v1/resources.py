@@ -165,6 +165,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_PSCAUTHORIZATIONPOLICIES = (
+      'projects.locations.pscAuthorizationPolicies',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'pscAuthorizationPolicies/{pscAuthorizationPoliciesId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_REGIONALENDPOINTS = (
       'projects.locations.regionalEndpoints',
       '{+name}',

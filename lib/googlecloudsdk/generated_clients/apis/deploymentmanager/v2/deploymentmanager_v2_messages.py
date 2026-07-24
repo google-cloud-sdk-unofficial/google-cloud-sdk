@@ -1139,11 +1139,12 @@ class Expr(_messages.Message):
 
 
 class FirewallPolicyRuleOperationMetadata(_messages.Message):
-  r"""A FirewallPolicyRuleOperationMetadata object.
+  r"""Metadata for FirewallPolicyRule operations.
 
   Fields:
-    allocatedPriority: The priority allocated for the firewall policy rule if
-      query parameters specified minPriority/maxPriority.
+    allocatedPriority: Output only. [Output Only] The priority allocated for
+      the firewall policy rule if query parameters specified
+      minPriority/maxPriority.
   """
 
   allocatedPriority = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -1431,8 +1432,11 @@ class Operation(_messages.Message):
       value is in RFC3339 text format.
     error: [Output Only] If errors are generated during processing of the
       operation, this field will be populated.
-    firewallPolicyRuleOperationMetadata: A FirewallPolicyRuleOperationMetadata
-      attribute.
+    firewallPolicyRuleOperationMetadata: Output only. [Output Only] Metadata
+      containing the allocated priority from the
+      networkFirewallPolicies.addRule and
+      regionNetworkFirewallPolicies.addRule methods if not explicitly provided
+      by the user.
     getVersionOperationMetadata: A GetVersionOperationMetadata attribute.
     httpErrorMessage: [Output Only] If the operation fails, this field
       contains the HTTP error message that was returned, such as `NOT FOUND`.
@@ -1493,9 +1497,10 @@ class Operation(_messages.Message):
     following: `PENDING`, `RUNNING`, or `DONE`.
 
     Values:
-      PENDING: <no description>
-      RUNNING: <no description>
-      DONE: <no description>
+      PENDING: The operation is waiting to be processed.
+      RUNNING: The operation is actively being processed.
+      DONE: The operation has completed processing successfully or with an
+        error.
     """
     PENDING = 0
     RUNNING = 1
@@ -1506,7 +1511,8 @@ class Operation(_messages.Message):
     operation, this field will be populated.
 
     Messages:
-      ErrorsValueListEntry: A ErrorsValueListEntry object.
+      ErrorsValueListEntry: Represents a single error encountered during the
+        processing of an operation.
 
     Fields:
       errors: [Output Only] The array of errors encountered while processing
@@ -1514,10 +1520,12 @@ class Operation(_messages.Message):
     """
 
     class ErrorsValueListEntry(_messages.Message):
-      r"""A ErrorsValueListEntry object.
+      r"""Represents a single error encountered during the processing of an
+      operation.
 
       Messages:
-        ErrorDetailsValueListEntry: A ErrorDetailsValueListEntry object.
+        ErrorDetailsValueListEntry: Container for structured error details
+          providing additional context specific to the encountered error code.
 
       Fields:
         arguments: Output only. [Output Only] Optional error details WARNING:
@@ -1526,7 +1534,8 @@ class Operation(_messages.Message):
           exposure it is strongly recommended to follow pattern of:
           https://aip.dev/193 and expose as details field.
         code: [Output Only] The error type identifier for this error.
-        debugInfo: A DebugInfo attribute.
+        debugInfo: Output only. [Output Only] Advanced debugging information
+          with stack traces and other diagnostic details for the error.
         errorDetails: [Output Only] An optional list of messages that contain
           the error details. There is a set of defined message types to use
           for providing details.The syntax depends on the error code. For
@@ -1538,13 +1547,17 @@ class Operation(_messages.Message):
       """
 
       class ErrorDetailsValueListEntry(_messages.Message):
-        r"""A ErrorDetailsValueListEntry object.
+        r"""Container for structured error details providing additional
+        context specific to the encountered error code.
 
         Fields:
-          errorInfo: A ErrorInfo attribute.
-          help: A Help attribute.
-          localizedMessage: A LocalizedMessage attribute.
-          quotaInfo: A QuotaExceededInfo attribute.
+          errorInfo: Error information containing structured domain, reason,
+            and metadata.
+          help: Links and information to help the user resolve the error.
+          localizedMessage: A localized human-readable error message intended
+            for end users.
+          quotaInfo: Details about quota limits and metrics when a quota is
+            exceeded.
         """
 
         errorInfo = _messages.MessageField('ErrorInfo', 1)
@@ -2254,7 +2267,8 @@ class ResourceUpdate(_messages.Message):
     this field will be populated.
 
     Messages:
-      ErrorsValueListEntry: A ErrorsValueListEntry object.
+      ErrorsValueListEntry: Represents a single error encountered during the
+        processing of an operation.
 
     Fields:
       errors: [Output Only] The array of errors encountered while processing
@@ -2262,10 +2276,12 @@ class ResourceUpdate(_messages.Message):
     """
 
     class ErrorsValueListEntry(_messages.Message):
-      r"""A ErrorsValueListEntry object.
+      r"""Represents a single error encountered during the processing of an
+      operation.
 
       Messages:
-        ErrorDetailsValueListEntry: A ErrorDetailsValueListEntry object.
+        ErrorDetailsValueListEntry: Container for structured error details
+          providing additional context specific to the encountered error code.
 
       Fields:
         arguments: Output only. [Output Only] Optional error details WARNING:
@@ -2274,7 +2290,8 @@ class ResourceUpdate(_messages.Message):
           exposure it is strongly recommended to follow pattern of:
           https://aip.dev/193 and expose as details field.
         code: [Output Only] The error type identifier for this error.
-        debugInfo: A DebugInfo attribute.
+        debugInfo: Output only. [Output Only] Advanced debugging information
+          with stack traces and other diagnostic details for the error.
         errorDetails: [Output Only] An optional list of messages that contain
           the error details. There is a set of defined message types to use
           for providing details.The syntax depends on the error code. For
@@ -2286,13 +2303,17 @@ class ResourceUpdate(_messages.Message):
       """
 
       class ErrorDetailsValueListEntry(_messages.Message):
-        r"""A ErrorDetailsValueListEntry object.
+        r"""Container for structured error details providing additional
+        context specific to the encountered error code.
 
         Fields:
-          errorInfo: A ErrorInfo attribute.
-          help: A Help attribute.
-          localizedMessage: A LocalizedMessage attribute.
-          quotaInfo: A QuotaExceededInfo attribute.
+          errorInfo: Error information containing structured domain, reason,
+            and metadata.
+          help: Links and information to help the user resolve the error.
+          localizedMessage: A localized human-readable error message intended
+            for end users.
+          quotaInfo: Details about quota limits and metrics when a quota is
+            exceeded.
         """
 
         errorInfo = _messages.MessageField('ErrorInfo', 1)

@@ -3125,9 +3125,10 @@ class MembershipConfig(_messages.Message):
   ConfigManagement CR.
 
   Enums:
-    ManagementValueValuesEnum: Optional. Deprecated: From version 1.21.0,
-      automatic Feature management is unavailable, and Config Sync only
-      supports manual upgrades.
+    ManagementValueValuesEnum: Optional. Deprecated: In Preview, automatic
+      Feature management is unavailable from version 1.21.0 onwards, and
+      Config Sync only supports manual upgrades. If set to manual upgrades,
+      clear this field instead, which is behaviorally equivalent.
 
   Fields:
     binauthz: Deprecated: Binauthz configuration will be ignored and should
@@ -3145,9 +3146,10 @@ class MembershipConfig(_messages.Message):
       Deprecated: Configuring Hierarchy Controller through the
       configmanagement feature is no longer recommended. Use
       https://github.com/kubernetes-sigs/hierarchical-namespaces instead.
-    management: Optional. Deprecated: From version 1.21.0, automatic Feature
-      management is unavailable, and Config Sync only supports manual
-      upgrades.
+    management: Optional. Deprecated: In Preview, automatic Feature management
+      is unavailable from version 1.21.0 onwards, and Config Sync only
+      supports manual upgrades. If set to manual upgrades, clear this field
+      instead, which is behaviorally equivalent.
     policyController: Policy Controller configuration for the cluster.
       Deprecated: Configuring Policy Controller through the configmanagement
       feature is no longer recommended. Use the policycontroller feature
@@ -3159,8 +3161,10 @@ class MembershipConfig(_messages.Message):
   """
 
   class ManagementValueValuesEnum(_messages.Enum):
-    r"""Optional. Deprecated: From version 1.21.0, automatic Feature
-    management is unavailable, and Config Sync only supports manual upgrades.
+    r"""Optional. Deprecated: In Preview, automatic Feature management is
+    unavailable from version 1.21.0 onwards, and Config Sync only supports
+    manual upgrades. If set to manual upgrades, clear this field instead,
+    which is behaviorally equivalent.
 
     Values:
       MANAGEMENT_UNSPECIFIED: Unspecified

@@ -13,7 +13,7 @@ class BackupdrV1beta(base_api.BaseApiClient):
   MTLS_BASE_URL = 'https://backupdr.mtls.googleapis.com/'
 
   _PACKAGE = 'backupdr'
-  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform']
+  _SCOPES = ['https://www.googleapis.com/auth/cloud-backupdr', 'https://www.googleapis.com/auth/cloud-platform']
   _VERSION = 'v1beta'
   _CLIENT_ID = 'CLIENT_ID'
   _CLIENT_SECRET = 'CLIENT_SECRET'

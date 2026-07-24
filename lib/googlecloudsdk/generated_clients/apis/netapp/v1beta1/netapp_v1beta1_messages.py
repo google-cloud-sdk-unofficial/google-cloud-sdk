@@ -2896,8 +2896,8 @@ class NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsPatchRequest(_me
   volumePerformanceGroup = _messages.MessageField('VolumePerformanceGroup', 3)
 
 
-class NetappProjectsLocationsTrialEndRequest(_messages.Message):
-  r"""A NetappProjectsLocationsTrialEndRequest object.
+class NetappProjectsLocationsTrialEndTrialRequest(_messages.Message):
+  r"""A NetappProjectsLocationsTrialEndTrialRequest object.
 
   Fields:
     endTrialRequest: A EndTrialRequest resource to be passed as the request
@@ -2912,8 +2912,8 @@ class NetappProjectsLocationsTrialEndRequest(_messages.Message):
   name = _messages.StringField(2, required=True)
 
 
-class NetappProjectsLocationsTrialSubscribeRequest(_messages.Message):
-  r"""A NetappProjectsLocationsTrialSubscribeRequest object.
+class NetappProjectsLocationsTrialSubscribeTrialRequest(_messages.Message):
+  r"""A NetappProjectsLocationsTrialSubscribeTrialRequest object.
 
   Fields:
     parent: Required. Parent value.

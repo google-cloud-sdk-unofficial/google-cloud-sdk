@@ -1570,6 +1570,18 @@
         "parentGroup": {
           "description": "Optional. The parent reservation group of the reservation group. Format: `projects\/*\/locations\/*\/reservationGroups\/team1-prod` for non-root reservation groups, or `projects\/*\/locations\/*` for root reservation groups.",
           "type": "string"
+        },
+        "creationTime": {
+          "description": "Output only. Creation time of the reservation group.",
+          "readOnly": true,
+          "type": "string",
+          "format": "google-datetime"
+        },
+        "updateTime": {
+          "description": "Output only. Last update time of the reservation group.",
+          "readOnly": true,
+          "type": "string",
+          "format": "google-datetime"
         }
       }
     },

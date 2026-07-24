@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, BETA, GA]
+  hints:
+    read_only: true
   help_text:
     brief: List the job runs.
     description: |

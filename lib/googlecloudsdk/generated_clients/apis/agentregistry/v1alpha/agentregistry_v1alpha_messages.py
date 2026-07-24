@@ -1218,11 +1218,11 @@ class Frontmatter(_messages.Message):
 
   Fields:
     compatibility: Optional. Environmental dependencies or local sidecars.
-    description: Optional. Functional description.
+    description: Required. Functional description.
+    license: Optional. License.
     metadata: Optional. Extensible flattened map mapping custom tags, authors,
       and version parameters.
-    packageId: Optional. Portable package ID declared in YAML frontmatter
-      (e.g. "@acme/finance/sql-expert").
+    name: Required. The name of the skill.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -1252,8 +1252,9 @@ class Frontmatter(_messages.Message):
 
   compatibility = _messages.StringField(1)
   description = _messages.StringField(2)
-  metadata = _messages.MessageField('MetadataValue', 3)
-  packageId = _messages.StringField(4)
+  license = _messages.StringField(3)
+  metadata = _messages.MessageField('MetadataValue', 4)
+  name = _messages.StringField(5)
 
 
 class GcsSource(_messages.Message):
@@ -2199,6 +2200,8 @@ class SkillRevision(_messages.Message):
     sizeBytes: Output only. Size of the compiled zip payload in bytes (assists
       client download progress).
     state: Output only. The system-managed lifecycle state of this revision.
+    uid: Output only. Universally unique identifier (UUID4) for the skill
+      revision.
   """
 
   class StateValueValuesEnum(_messages.Enum):
@@ -2225,6 +2228,7 @@ class SkillRevision(_messages.Message):
   sha256Hash = _messages.StringField(6)
   sizeBytes = _messages.IntegerField(7)
   state = _messages.EnumField('StateValueValuesEnum', 8)
+  uid = _messages.StringField(9)
 
 
 class Source(_messages.Message):

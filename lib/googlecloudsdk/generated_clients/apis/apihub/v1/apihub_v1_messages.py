@@ -5353,6 +5353,7 @@ class GoogleCloudApihubV1Plugin(_messages.Message):
       CLOUD_ENDPOINTS: The gateway type is Cloud Endpoints.
       API_DISCOVERY: The gateway type is API Discovery.
       OTHERS: The gateway type for any other types of gateways.
+      AWS_API_GATEWAY: The gateway type is AWS API Gateway.
     """
     GATEWAY_TYPE_UNSPECIFIED = 0
     APIGEE_X_AND_HYBRID = 1
@@ -5362,6 +5363,7 @@ class GoogleCloudApihubV1Plugin(_messages.Message):
     CLOUD_ENDPOINTS = 5
     API_DISCOVERY = 6
     OTHERS = 7
+    AWS_API_GATEWAY = 8
 
   class OwnershipTypeValueValuesEnum(_messages.Enum):
     r"""Output only. The type of the plugin, indicating whether it is

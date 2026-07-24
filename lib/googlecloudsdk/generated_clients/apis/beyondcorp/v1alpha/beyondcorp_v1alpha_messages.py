@@ -3893,6 +3893,9 @@ class GoogleCloudBeyondcorpSaasplatformSubscriptionsV1alphaSubscription(_message
     name: Identifier. Unique resource name of the Subscription. The name is
       ignored when creating a subscription.
     seatCount: Optional. Number of seats in the subscription.
+    signupSource: Optional. Input only. The source from which the subscription
+      was initiated, for example "admin_console_browser_overview" or
+      "admin_console_security_insights".
     sku: Required. SKU of subscription.
     startTime: Optional. Start time of the subscription.
     state: Output only. The current state of the subscription.
@@ -3963,11 +3966,12 @@ class GoogleCloudBeyondcorpSaasplatformSubscriptionsV1alphaSubscription(_message
   endTime = _messages.StringField(5)
   name = _messages.StringField(6)
   seatCount = _messages.IntegerField(7)
-  sku = _messages.EnumField('SkuValueValuesEnum', 8)
-  startTime = _messages.StringField(9)
-  state = _messages.EnumField('StateValueValuesEnum', 10)
-  subscriberType = _messages.EnumField('SubscriberTypeValueValuesEnum', 11)
-  type = _messages.EnumField('TypeValueValuesEnum', 12)
+  signupSource = _messages.StringField(8)
+  sku = _messages.EnumField('SkuValueValuesEnum', 9)
+  startTime = _messages.StringField(10)
+  state = _messages.EnumField('StateValueValuesEnum', 11)
+  subscriberType = _messages.EnumField('SubscriberTypeValueValuesEnum', 12)
+  type = _messages.EnumField('TypeValueValuesEnum', 13)
 
 
 class GoogleCloudBeyondcorpSecuritygatewaysV1SecurityGatewayOperationMetadata(_messages.Message):

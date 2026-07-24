@@ -154,7 +154,6 @@ def AddFederatedCatalogArgs(
   hidden_choices = []
   if support_snowflake:
     choices.append('snowflake')
-    hidden_choices.append('snowflake')
   if support_workday:
     choices.append('workday')
     hidden_choices.append('workday')
@@ -301,7 +300,6 @@ def AddSnowflakeRoleArg(parser):
   """Adds Snowflake role argument."""
   parser.add_argument(
       '--snowflake-role',
-      hidden=True,
       help='The specific role to request for the Snowflake catalog.',
   )
 
@@ -310,12 +308,10 @@ def AddSnowflakeCatalogArgs(parser):
   """Adds arguments for Snowflake catalogs."""
   parser.add_argument(
       '--snowflake-warehouse',
-      hidden=True,
       help='The warehouse to connect to in Snowflake.',
   )
   parser.add_argument(
       '--snowflake-account-identifier',
-      hidden=True,
       help='The account identifier of the Snowflake catalog to connect to.',
   )
   AddSnowflakeRoleArg(parser)

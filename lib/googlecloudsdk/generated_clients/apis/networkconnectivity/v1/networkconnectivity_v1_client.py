@@ -49,6 +49,7 @@ class NetworkconnectivityV1(base_api.BaseApiClient):
     self.projects_locations_multicloudDataTransferConfigs = self.ProjectsLocationsMulticloudDataTransferConfigsService(self)
     self.projects_locations_multicloudDataTransferSupportedServices = self.ProjectsLocationsMulticloudDataTransferSupportedServicesService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
+    self.projects_locations_pscAuthorizationPolicies = self.ProjectsLocationsPscAuthorizationPoliciesService(self)
     self.projects_locations_regionalEndpoints = self.ProjectsLocationsRegionalEndpointsService(self)
     self.projects_locations_remoteTransportProfiles = self.ProjectsLocationsRemoteTransportProfilesService(self)
     self.projects_locations_serviceClasses = self.ProjectsLocationsServiceClassesService(self)
@@ -1771,6 +1772,124 @@ class NetworkconnectivityV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='NetworkconnectivityProjectsLocationsOperationsListRequest',
         response_type_name='GoogleLongrunningListOperationsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsPscAuthorizationPoliciesService(base_api.BaseApiService):
+    """Service class for the projects_locations_pscAuthorizationPolicies resource."""
+
+    _NAME = 'projects_locations_pscAuthorizationPolicies'
+
+    def __init__(self, client):
+      super(NetworkconnectivityV1.ProjectsLocationsPscAuthorizationPoliciesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new PscAuthorizationPolicy in a given project and location.
+
+      Args:
+        request: (NetworkconnectivityProjectsLocationsPscAuthorizationPoliciesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/pscAuthorizationPolicies',
+        http_method='POST',
+        method_id='networkconnectivity.projects.locations.pscAuthorizationPolicies.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pscAuthorizationPolicyId', 'requestId'],
+        relative_path='v1/{+parent}/pscAuthorizationPolicies',
+        request_field='pscAuthorizationPolicy',
+        request_type_name='NetworkconnectivityProjectsLocationsPscAuthorizationPoliciesCreateRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single PscAuthorizationPolicy.
+
+      Args:
+        request: (NetworkconnectivityProjectsLocationsPscAuthorizationPoliciesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/pscAuthorizationPolicies/{pscAuthorizationPoliciesId}',
+        http_method='DELETE',
+        method_id='networkconnectivity.projects.locations.pscAuthorizationPolicies.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['etag', 'requestId'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='NetworkconnectivityProjectsLocationsPscAuthorizationPoliciesDeleteRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single PscAuthorizationPolicy.
+
+      Args:
+        request: (NetworkconnectivityProjectsLocationsPscAuthorizationPoliciesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (PscAuthorizationPolicy) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/pscAuthorizationPolicies/{pscAuthorizationPoliciesId}',
+        http_method='GET',
+        method_id='networkconnectivity.projects.locations.pscAuthorizationPolicies.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='NetworkconnectivityProjectsLocationsPscAuthorizationPoliciesGetRequest',
+        response_type_name='PscAuthorizationPolicy',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists PscAuthorizationPolicies in a given project and location.
+
+      Args:
+        request: (NetworkconnectivityProjectsLocationsPscAuthorizationPoliciesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListPscAuthorizationPoliciesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/pscAuthorizationPolicies',
+        http_method='GET',
+        method_id='networkconnectivity.projects.locations.pscAuthorizationPolicies.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/pscAuthorizationPolicies',
+        request_field='',
+        request_type_name='NetworkconnectivityProjectsLocationsPscAuthorizationPoliciesListRequest',
+        response_type_name='ListPscAuthorizationPoliciesResponse',
         supports_download=False,
     )
 

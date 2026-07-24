@@ -1507,7 +1507,7 @@ class GoogleRpcErrorInfo(_messages.Message):
       "100/request"}`, should be returned as, `{"instanceLimitPerRequest":
       "100"}`, if the client exceeds the number of instances that can be
       created in a single (batch) request.
-    reason: The reason of the error. This is a constant value that identifies
+    reason: The reason for the error. This is a constant value that identifies
       the proximate cause of the error. Error reasons are unique within a
       particular domain of errors. This should be at most 63 characters and
       match a regular expression of `A-Z+[A-Z0-9]`, which represents
@@ -2485,6 +2485,21 @@ class ListPolicyBasedRoutesResponse(_messages.Message):
 
   nextPageToken = _messages.StringField(1)
   policyBasedRoutes = _messages.MessageField('PolicyBasedRoute', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListPscAuthorizationPoliciesResponse(_messages.Message):
+  r"""Response for ListPscAuthorizationPolicies.
+
+  Fields:
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page.
+    pscAuthorizationPolicies: The list of PscAuthorizationPolicies.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  pscAuthorizationPolicies = _messages.MessageField('PscAuthorizationPolicy', 2, repeated=True)
   unreachable = _messages.StringField(3, repeated=True)
 
 
@@ -4252,6 +4267,78 @@ class NetworkconnectivityProjectsLocationsOperationsListRequest(_messages.Messag
   returnPartialSuccess = _messages.BooleanField(5)
 
 
+class NetworkconnectivityProjectsLocationsPscAuthorizationPoliciesCreateRequest(_messages.Message):
+  r"""A
+  NetworkconnectivityProjectsLocationsPscAuthorizationPoliciesCreateRequest
+  object.
+
+  Fields:
+    parent: Required. The parent resource's name of the
+      PscAuthorizationPolicy.
+    pscAuthorizationPolicy: A PscAuthorizationPolicy resource to be passed as
+      the request body.
+    pscAuthorizationPolicyId: Required. Resource ID of the
+      PscAuthorizationPolicy.
+    requestId: Optional. An optional request ID to identify requests.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  pscAuthorizationPolicy = _messages.MessageField('PscAuthorizationPolicy', 2)
+  pscAuthorizationPolicyId = _messages.StringField(3)
+  requestId = _messages.StringField(4)
+
+
+class NetworkconnectivityProjectsLocationsPscAuthorizationPoliciesDeleteRequest(_messages.Message):
+  r"""A
+  NetworkconnectivityProjectsLocationsPscAuthorizationPoliciesDeleteRequest
+  object.
+
+  Fields:
+    etag: Optional. The etag of the PscAuthorizationPolicy to delete.
+    name: Required. The name of the PscAuthorizationPolicy to delete.
+    requestId: Optional. An optional request ID to identify requests.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+
+
+class NetworkconnectivityProjectsLocationsPscAuthorizationPoliciesGetRequest(_messages.Message):
+  r"""A NetworkconnectivityProjectsLocationsPscAuthorizationPoliciesGetRequest
+  object.
+
+  Fields:
+    name: Required. Name of the PscAuthorizationPolicy to get.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworkconnectivityProjectsLocationsPscAuthorizationPoliciesListRequest(_messages.Message):
+  r"""A
+  NetworkconnectivityProjectsLocationsPscAuthorizationPoliciesListRequest
+  object.
+
+  Fields:
+    filter: Optional. Filter expression to restrict the results.
+    orderBy: Optional. Sort order of the results.
+    pageSize: Optional. The maximum number of PscAuthorizationPolicies to
+      return in a single page. The service may return fewer than this value.
+      If unspecified, at most 50 PscAuthorizationPolicies will be returned.
+      The maximum value is 1000; values above 1000 will be coerced to 1000.
+    pageToken: Optional. A page token, received from a previous
+      `ListPscAuthorizationPolicies` call.
+    parent: Required. The parent resource's name.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
 class NetworkconnectivityProjectsLocationsRegionalEndpointsCreateRequest(_messages.Message):
   r"""A NetworkconnectivityProjectsLocationsRegionalEndpointsCreateRequest
   object.
@@ -5625,6 +5712,86 @@ class ProducerPscConfig(_messages.Message):
 
   automatedDnsCreationSpec = _messages.MessageField('AutomatedDnsCreationSpec', 1)
   serviceAttachmentUri = _messages.StringField(2)
+
+
+class PscAuthorizationPolicy(_messages.Message):
+  r"""Represents a PSC Authorization Policy.
+
+  Enums:
+    AuthorizationModeValueValuesEnum: Required. The authorization mode.
+
+  Messages:
+    LabelsValue: Optional. User-defined labels.
+
+  Fields:
+    authorizationMode: Required. The authorization mode.
+    authorizedClientResources: Required. List of authorized consumer resources
+      allowed to connect. Supported values are: 1. Project resource name
+      (e.g., `projects/{project_id}`) 2. Wildcard `"*"` (grants global ingress
+      authorization to the target).
+    createTime: Output only. The time when the PscAuthorizationPolicy was
+      created.
+    description: Optional. A description of this resource.
+    etag: Output only. The etag of the PscAuthorizationPolicy.
+    labels: Optional. User-defined labels.
+    name: Identifier. The name of the PscAuthorizationPolicy. Format: projects
+      /{project}/locations/{location}/pscAuthorizationPolicies/{psc_authorizat
+      ion_policy}
+    targetResourceUri: Required. The full absolute URI of the targeted
+      resource governed by this policy. For example, for an AgentRegistry
+      resource, the format is:
+      `//agentregistry.googleapis.com/projects/{project}/locations/{location}`
+    uid: Output only. The unique identifier of the PscAuthorizationPolicy.
+    updateTime: Output only. The time when the PscAuthorizationPolicy was
+      updated.
+  """
+
+  class AuthorizationModeValueValuesEnum(_messages.Enum):
+    r"""Required. The authorization mode.
+
+    Values:
+      AUTHORIZATION_MODE_UNSPECIFIED: Default value.
+      AUTHORIZATION_MODE_TRANSITIVE_TO_SERVICE_ATTACHMENT: In this mode,
+        authorization is determined by the permissions on the underlying
+        Service Attachment.
+    """
+    AUTHORIZATION_MODE_UNSPECIFIED = 0
+    AUTHORIZATION_MODE_TRANSITIVE_TO_SERVICE_ATTACHMENT = 1
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. User-defined labels.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  authorizationMode = _messages.EnumField('AuthorizationModeValueValuesEnum', 1)
+  authorizedClientResources = _messages.StringField(2, repeated=True)
+  createTime = _messages.StringField(3)
+  description = _messages.StringField(4)
+  etag = _messages.StringField(5)
+  labels = _messages.MessageField('LabelsValue', 6)
+  name = _messages.StringField(7)
+  targetResourceUri = _messages.StringField(8)
+  uid = _messages.StringField(9)
+  updateTime = _messages.StringField(10)
 
 
 class PscConfig(_messages.Message):

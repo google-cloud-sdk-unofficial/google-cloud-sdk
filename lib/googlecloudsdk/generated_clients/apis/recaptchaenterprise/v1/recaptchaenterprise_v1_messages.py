@@ -130,10 +130,16 @@ class GoogleCloudRecaptchaenterpriseV1AccountDefenderAssessmentAccountTrustReaso
       ACCOUNT_HISTORY_REPUTABLE: The account's historical activity is
         reputable. It is unlikely that the account has been compromised in the
         past.
+      IDENTITY_GLOBAL_ACTIVITY_REPUTABLE: The identity shows a global pattern
+        of reputable activity based on `userInfo` and associated identifiers.
+      IDENTITY_HISTORY_REPUTABLE: The identity shows a long-standing history
+        of reputable activity based on `userInfo` and associated identifiers.
     """
     TRUST_REASON_UNSPECIFIED = 0
     PROFILE_MATCH = 1
     ACCOUNT_HISTORY_REPUTABLE = 2
+    IDENTITY_GLOBAL_ACTIVITY_REPUTABLE = 3
+    IDENTITY_HISTORY_REPUTABLE = 4
 
   reason = _messages.EnumField('ReasonValueValuesEnum', 1)
 
@@ -406,6 +412,8 @@ class GoogleCloudRecaptchaenterpriseV1Assessment(_messages.Message):
     phoneFraudAssessment: Output only. Assessment returned when a site key, a
       token, and a phone number as `user_id` are provided. SMS defense needs
       to be enabled.
+    policyEvaluation: Output only. Provides information about the policy
+      evaluation for this assessment.
     privatePasswordLeakVerification: Optional. The private password leak
       verification field contains the parameters that are used to to check for
       leaks privately without sharing user credentials.
@@ -423,9 +431,10 @@ class GoogleCloudRecaptchaenterpriseV1Assessment(_messages.Message):
   fraudSignals = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1FraudSignals', 7)
   name = _messages.StringField(8)
   phoneFraudAssessment = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1PhoneFraudAssessment', 9)
-  privatePasswordLeakVerification = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1PrivatePasswordLeakVerification', 10)
-  riskAnalysis = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1RiskAnalysis', 11)
-  tokenProperties = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1TokenProperties', 12)
+  policyEvaluation = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1PolicyEvaluation', 10)
+  privatePasswordLeakVerification = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1PrivatePasswordLeakVerification', 11)
+  riskAnalysis = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1RiskAnalysis', 12)
+  tokenProperties = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1TokenProperties', 13)
 
 
 class GoogleCloudRecaptchaenterpriseV1AssessmentEnvironment(_messages.Message):
@@ -456,11 +465,16 @@ class GoogleCloudRecaptchaenterpriseV1Bot(_messages.Message):
     botType: Optional. Enumerated field representing the type of bot.
     name: Optional. Enumerated string value that indicates the identity of the
       bot, formatted in kebab-case. Current example values include the
-      following: * google-agent * browser-base * chat-gpt * aws-bedrock *
-      cybaa-bot * cloudflare * payhawk Ensure that your applications can
-      handle identifier values not explicitly listed here. Deprecated values
-      might take some time to stop showing up in responses. New values can be
-      pushed so this list should be taken as non exhaustive.
+      following: * google-agent - AI_AGENT * browser-base - AI_AGENT * chat-
+      gpt - AI_AGENT * aws-bedrock - AI_AGENT * cybaa-bot - AI_AGENT *
+      cloudflare - AI_AGENT * payhawk - AI_AGENT * duck-duck-go -
+      SEARCH_INDEXER * mediaboard - CONTENT_SCRAPER * marker-io - AI_AGENT *
+      broadcom - AI_AGENT * anchor-browser - AI_AGENT * shopify - AI_AGENT *
+      stackscope - CONTENT_SCRAPER * manus - AI_AGENT * kernel-sh - AI_AGENT *
+      zvelo - SEARCH_INDEXER Ensure that your applications can handle
+      identifier values not explicitly listed here. Deprecated values might
+      take some time to stop showing up in responses. New values can be pushed
+      so this list should be taken as non exhaustive.
   """
 
   class BotTypeValueValuesEnum(_messages.Enum):
@@ -512,12 +526,15 @@ class GoogleCloudRecaptchaenterpriseV1ChallengeRule(_messages.Message):
   presenting a challenge.
 
   Fields:
-    challenge: Optional. Present a challenge to the user.
+    challenge: Present a challenge to the user.
     condition: Optional. A CEL condition that must be met for this rule to
-      apply. Examples: * `score < 0.5` * `user_ip == "123.456.789.000"` *
-      `user_agent.contains("Chrome")` * `score < 0.5 && user_ip ==
-      "123.456.789.000"`
-    noChallenge: Optional. Do not present a challenge to the user.
+      apply. If unspecified, the rule applies unconditionally. The following
+      fields can be referenced in the condition: * `score` * `user_ip_address`
+      * `user_asn` * `user_agent` * `verified_bots.name` *
+      `verified_bots.bot_type` Examples: * `score < 0.5` * `user_ip_address ==
+      "123.45.67.89"` * `user_agent.contains("Chrome")` * `score < 0.5 &&
+      user_ip_address == "123.45.67.89"`
+    noChallenge: Do not present a challenge to the user.
   """
 
   challenge = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1ChallengeRuleChallengeOutcome', 1)
@@ -531,20 +548,16 @@ class GoogleCloudRecaptchaenterpriseV1ChallengeRuleChallengeOutcome(_messages.Me
 
   Enums:
     DifficultyValueValuesEnum: Optional. The difficulty of the challenge to
-      present to the user. If not specified, the
-      `challenge_security_preference` of the key is used, or `BALANCE` if not
-      set.
+      present to the user. If unspecified, `BALANCE` is used.
 
   Fields:
     difficulty: Optional. The difficulty of the challenge to present to the
-      user. If not specified, the `challenge_security_preference` of the key
-      is used, or `BALANCE` if not set.
+      user. If unspecified, `BALANCE` is used.
   """
 
   class DifficultyValueValuesEnum(_messages.Enum):
     r"""Optional. The difficulty of the challenge to present to the user. If
-    not specified, the `challenge_security_preference` of the key is used, or
-    `BALANCE` if not set.
+    unspecified, `BALANCE` is used.
 
     Values:
       CHALLENGE_SECURITY_PREFERENCE_UNSPECIFIED: Default type that indicates
@@ -562,6 +575,10 @@ class GoogleCloudRecaptchaenterpriseV1ChallengeRuleChallengeOutcome(_messages.Me
   difficulty = _messages.EnumField('DifficultyValueValuesEnum', 1)
 
 
+class GoogleCloudRecaptchaenterpriseV1ChallengeRuleEvaluation(_messages.Message):
+  r"""Information about the evaluation of a `ChallengeRule`."""
+
+
 class GoogleCloudRecaptchaenterpriseV1ChallengeRuleGroup(_messages.Message):
   r"""A collection of challenge rules that applies to one or more actions.
 
@@ -571,9 +588,9 @@ class GoogleCloudRecaptchaenterpriseV1ChallengeRuleGroup(_messages.Message):
       slashes, and underscores. If "*" is provided, the rule group applies to
       all actions. If multiple actions are provided, the rule group is applied
       to all of them. This field is required.
-    challengeRules: Required. A list of rules that configure how reCAPTCHA
-      presents a challenge. reCAPTCHA evaluates these rules in order and
-      applies the first one that matches.
+    challengeRules: Required. A list of rules that configure when and how
+      reCAPTCHA presents a challenge. reCAPTCHA evaluates these rules in order
+      and applies the first one that matches.
   """
 
   actions = _messages.StringField(1, repeated=True)
@@ -641,7 +658,8 @@ class GoogleCloudRecaptchaenterpriseV1Event(_messages.Message):
   Fields:
     expectedAction: Optional. The expected action for this type of event. This
       should be the same action provided at token generation time on client-
-      side platforms already integrated with recaptcha enterprise.
+      side platforms already integrated with recaptcha enterprise. Required
+      for Universal keys.
     express: Optional. Flag for a reCAPTCHA express request for an assessment
       without a token. If enabled, `site_key` must reference an Express site
       key.
@@ -1094,7 +1112,8 @@ class GoogleCloudRecaptchaenterpriseV1Key(_messages.Message):
     name: Identifier. The resource name for the Key in the format
       `projects/{project}/keys/{key}`.
     testingOptions: Optional. Options for user acceptance testing.
-    universalSettings: Settings for keys that are configured via their Policy.
+    universalSettings: Settings for keys that are configured through their
+      Policy.
     wafSettings: Optional. Settings for Web Application Firewall (WAF).
     webSettings: Settings for keys that can be used by websites.
   """
@@ -1271,11 +1290,11 @@ class GoogleCloudRecaptchaenterpriseV1Policy(_messages.Message):
 
   Fields:
     challengeRuleGroups: Optional. Rules to configure the behavior of
-      reCAPTCHA for showing a challenge. Rule groups are evaluated in top down
-      sequence. Evaluation stops when the first matching rule group is found.
-    clientSettings: Optional. Configuration for clients protected by this
+      reCAPTCHA for showing a challenge. Rule groups are evaluated in order.
+      Evaluation stops when the first matching rule group is found.
+    clientSettings: Required. Configuration for clients protected by this
       policy.
-    name: Identifier. Resource name/identifier for this policy. Format:
+    name: Identifier. Resource name for this policy. Format:
       "projects/{project}/keys/{key}/policy" for a policy under a key.
     protectedEndpointGroup: Optional. Deprecated: use
       `client_settings.protected_endpoint_group` instead
@@ -1285,6 +1304,19 @@ class GoogleCloudRecaptchaenterpriseV1Policy(_messages.Message):
   clientSettings = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1ClientSettings', 2)
   name = _messages.StringField(3)
   protectedEndpointGroup = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1ProtectedEndpointGroup', 4)
+
+
+class GoogleCloudRecaptchaenterpriseV1PolicyEvaluation(_messages.Message):
+  r"""Information about the policy evaluation.
+
+  Fields:
+    challengeRuleEvaluation: Output only. Populated if one or more Challenge
+      rules were matched. Its presence in the assessment indicates that at
+      least one challenge rule was matched and determined whether a challenge
+      was presented to the user.
+  """
+
+  challengeRuleEvaluation = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1ChallengeRuleEvaluation', 1)
 
 
 class GoogleCloudRecaptchaenterpriseV1PrivatePasswordLeakVerification(_messages.Message):
@@ -1317,15 +1349,18 @@ class GoogleCloudRecaptchaenterpriseV1ProtectedEndpoint(_messages.Message):
 
   Fields:
     action: Required. Action name to be used for token generation for this
-      endpoint. The action name is not case-sensitive and can only contain
-      alphanumeric characters, slashes, and underscores.
-    path: Required. URI path of the API endpoint to protect. Supports glob
-      characters * to match any path segment and ** to match any path
-      including multiple segments. This will be matched against the path only,
-      and will not be matched against the domain, scheme, or query parameters.
-      For example, `/login` matches `/login`, `https://example.com/login`,
-      /login?query=1` but not `/login/step1`. `/products/*` matches
-      `/products/123` but not `/products/123/456`. `/content/**` matches
+      endpoint. The action name can only contain alphanumeric characters,
+      slashes, and underscores.
+    path: Required. URI path of the API endpoint to protect. Must start with
+      '/'. Supports glob characters '*' to match a single path segment and
+      '**' to match multiple path segments. Standalone root catch-alls ('/*'
+      and '/**') are invalid because it can negatively impact performance to
+      trigger reCAPTCHA on every single request to your backend. Matching is
+      evaluated against the URL path only (domain, scheme, and query
+      parameters are ignored). Examples: - `/login` matches `/login`,
+      `https://example.com/login`, and `/login?query=1`, but not
+      `/login/step1`. - `/products/*` matches `/products/123`, but not
+      `/products/123/456`. - `/content/**` matches
       `/content/articles/2024/01/01`.
   """
 
@@ -1334,14 +1369,15 @@ class GoogleCloudRecaptchaenterpriseV1ProtectedEndpoint(_messages.Message):
 
 
 class GoogleCloudRecaptchaenterpriseV1ProtectedEndpointGroup(_messages.Message):
-  r"""Configuration for all API endpoints to protect with reCAPTCHA.
+  r"""Configuration for API endpoints to protect with reCAPTCHA.
 
   Fields:
     protectedEndpoints: Optional. List of API endpoints to automatically
       protect with reCAPTCHA. If any of these endpoints is invoked from a page
-      where reCAPTCHA is installed, a reCAPTCHA token will be automatically
-      generated and attached to the request. If multiple protected endpoints
-      match a given API endpoint, the first one in the list is used.
+      where a key bound to this policy is installed, a reCAPTCHA token is
+      automatically generated and attached to the request. If multiple
+      protected endpoints match a given API endpoint, the first one in the
+      list is used.
   """
 
   protectedEndpoints = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1ProtectedEndpoint', 1, repeated=True)
@@ -1429,16 +1465,23 @@ class GoogleCloudRecaptchaenterpriseV1RiskAnalysis(_messages.Message):
 
   Enums:
     ChallengeValueValuesEnum: Output only. Challenge information for
-      POLICY_BASED_CHALLENGE and INVISIBLE keys.
+      Universal, `POLICY_BASED_CHALLENGE` and `INVISIBLE` keys.
+    LastChallengeTypeValueValuesEnum: Output only. Type of the last challenge
+      presented to the user for Universal, `POLICY_BASED_CHALLENGE` and
+      `INVISIBLE` keys. The field is only set when a challenge was presented
+      to the user.
     ReasonsValueListEntryValuesEnum:
 
   Fields:
-    challenge: Output only. Challenge information for POLICY_BASED_CHALLENGE
-      and INVISIBLE keys.
+    challenge: Output only. Challenge information for Universal,
+      `POLICY_BASED_CHALLENGE` and `INVISIBLE` keys.
     extendedVerdictReasons: Output only. Additional reasons contributing to
       the risk analysis verdict. These reasons are available to Enterprise
       tier projects only. Contact sales for more information. The set of
       reasons is subject to change.
+    lastChallengeType: Output only. Type of the last challenge presented to
+      the user for Universal, `POLICY_BASED_CHALLENGE` and `INVISIBLE` keys.
+      The field is only set when a challenge was presented to the user.
     reasons: Output only. Reasons contributing to the risk analysis verdict.
     score: Output only. Legitimate event score from 0.0 to 1.0. (1.0 means
       very likely legitimate traffic while 0.0 means very likely non-
@@ -1448,8 +1491,8 @@ class GoogleCloudRecaptchaenterpriseV1RiskAnalysis(_messages.Message):
   """
 
   class ChallengeValueValuesEnum(_messages.Enum):
-    r"""Output only. Challenge information for POLICY_BASED_CHALLENGE and
-    INVISIBLE keys.
+    r"""Output only. Challenge information for Universal,
+    `POLICY_BASED_CHALLENGE` and `INVISIBLE` keys.
 
     Values:
       CHALLENGE_UNSPECIFIED: Default unspecified type.
@@ -1462,6 +1505,20 @@ class GoogleCloudRecaptchaenterpriseV1RiskAnalysis(_messages.Message):
     NOCAPTCHA = 1
     PASSED = 2
     FAILED = 3
+
+  class LastChallengeTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. Type of the last challenge presented to the user for
+    Universal, `POLICY_BASED_CHALLENGE` and `INVISIBLE` keys. The field is
+    only set when a challenge was presented to the user.
+
+    Values:
+      CHALLENGE_TYPE_UNSPECIFIED: Default unspecified type.
+      CHALLENGE_TYPE_VISUAL: A visual challenge.
+      CHALLENGE_TYPE_AUDIO: An audio challenge.
+    """
+    CHALLENGE_TYPE_UNSPECIFIED = 0
+    CHALLENGE_TYPE_VISUAL = 1
+    CHALLENGE_TYPE_AUDIO = 2
 
   class ReasonsValueListEntryValuesEnum(_messages.Enum):
     r"""ReasonsValueListEntryValuesEnum enum type.
@@ -1495,9 +1552,10 @@ class GoogleCloudRecaptchaenterpriseV1RiskAnalysis(_messages.Message):
 
   challenge = _messages.EnumField('ChallengeValueValuesEnum', 1)
   extendedVerdictReasons = _messages.StringField(2, repeated=True)
-  reasons = _messages.EnumField('ReasonsValueListEntryValuesEnum', 3, repeated=True)
-  score = _messages.FloatField(4, variant=_messages.Variant.FLOAT)
-  verifiedBots = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1Bot', 5, repeated=True)
+  lastChallengeType = _messages.EnumField('LastChallengeTypeValueValuesEnum', 3)
+  reasons = _messages.EnumField('ReasonsValueListEntryValuesEnum', 4, repeated=True)
+  score = _messages.FloatField(5, variant=_messages.Variant.FLOAT)
+  verifiedBots = _messages.MessageField('GoogleCloudRecaptchaenterpriseV1Bot', 6, repeated=True)
 
 
 class GoogleCloudRecaptchaenterpriseV1ScoreDistribution(_messages.Message):
@@ -2016,7 +2074,7 @@ class GoogleCloudRecaptchaenterpriseV1TransactionEvent(_messages.Message):
 
 
 class GoogleCloudRecaptchaenterpriseV1UniversalKeySettings(_messages.Message):
-  r"""Settings for keys that are configured via their Policy."""
+  r"""Settings for keys that are configured through their Policy."""
 
 
 class GoogleCloudRecaptchaenterpriseV1UserId(_messages.Message):
@@ -2615,7 +2673,7 @@ class RecaptchaenterpriseProjectsKeysUpdatePolicyRequest(_messages.Message):
     googleCloudRecaptchaenterpriseV1Policy: A
       GoogleCloudRecaptchaenterpriseV1Policy resource to be passed as the
       request body.
-    name: Identifier. Resource name/identifier for this policy. Format:
+    name: Identifier. Resource name for this policy. Format:
       "projects/{project}/keys/{key}/policy" for a policy under a key.
     updateMask: Optional. The mask to control which fields of the policy get
       updated. If the mask is not present, all fields are updated.

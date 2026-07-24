@@ -128,6 +128,7 @@ def _CommonArgs(
     support_nat64_eligible=False,
     support_vsock_mode=False,
     support_standard_tier=False,
+    support_local_ssd_encryption_mode=False,
 ):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
@@ -267,6 +268,9 @@ def _CommonArgs(
   if support_local_ssd_recovery_timeout:
     instances_flags.AddLocalSsdRecoveryTimeoutArgs(parser)
 
+  if support_local_ssd_encryption_mode:
+    instances_flags.AddLocalSsdEncryptionModeArgs(parser)
+
   if support_instance_kms:
     instances_flags.AddInstanceKmsArgs(parser)
 
@@ -328,6 +332,7 @@ class Create(base.CreateCommand):
   _support_confidential_compute_type_tdx = True
   _support_snp_svsm = False
   _support_local_ssd_recovery_timeout = True
+  _support_local_ssd_encryption_mode = True
   _support_internal_ipv6_reservation = True
   _support_local_ssd_size = True
   _support_vlan_nic = True
@@ -388,6 +393,7 @@ class Create(base.CreateCommand):
         support_dns64_eligible=cls._support_dns64_eligible,
         support_nat64_eligible=cls._support_nat64_eligible,
         support_vsock_mode=cls._support_vsock_mode,
+        support_local_ssd_encryption_mode=cls._support_local_ssd_encryption_mode,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()
@@ -642,6 +648,16 @@ class Create(base.CreateCommand):
           args.IsKnownAndSpecified('request_valid_for_duration')
       ):
         instance.params = instance_utils.CreateParams(args, compute_client)
+
+      if self._support_local_ssd_encryption_mode and getattr(
+          args, 'local_ssd_encryption_mode', None
+      ):
+        enum_class = (
+            compute_client.messages.Instance.LocalSsdEncryptionModeValueValuesEnum
+        )
+        instance.localSsdEncryptionMode = enum_class(
+            args.local_ssd_encryption_mode
+        )
 
       if args.private_ipv6_google_access_type is not None:
         instance.privateIpv6GoogleAccess = (
@@ -954,6 +970,7 @@ class CreateBeta(Create):
         support_dns64_eligible=cls._support_dns64_eligible,
         support_nat64_eligible=cls._support_nat64_eligible,
         support_vsock_mode=cls._support_vsock_mode,
+        support_local_ssd_encryption_mode=cls._support_local_ssd_encryption_mode,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()
@@ -1080,6 +1097,7 @@ class CreateAlpha(CreateBeta):
         support_dns64_eligible=cls._support_dns64_eligible,
         support_nat64_eligible=cls._support_nat64_eligible,
         support_vsock_mode=cls._support_vsock_mode,
+        support_local_ssd_encryption_mode=cls._support_local_ssd_encryption_mode,
         support_standard_tier=True,
     )
 

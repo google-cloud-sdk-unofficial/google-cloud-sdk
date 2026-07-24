@@ -26,15 +26,38 @@ class Action(_messages.Message):
   type = _messages.StringField(2)
 
 
+class ApplyFeaturePermissionsRequest(_messages.Message):
+  r"""Helps the user update the permissions on buckets that match a feature
+  config/any feature configs.
+
+  Fields:
+    requestId: Optional. A unique identifier for this request. UUID is the
+      recommended format, but other formats are still accepted. This request
+      is only idempotent if a `request_id` is provided.
+  """
+
+  requestId = _messages.StringField(1)
+
+
 class AutoAnnotateConfig(_messages.Message):
   r"""Configuration for AutoAnnotate.
 
   Fields:
     models: Required. The list of unique models selected. Each model is
       uniquely identified by its `name` string.
+    processingLocation: Optional. Specifies the geographic location (case-
+      sensitive) where data is processed. Must be a supported location.
+      Currently, only multi-regional locations such as `us`, `eu`, or `asia`
+      are supported. To avoid duplicate billing, it is highly recommended to
+      configure exactly one processing location per bucket and model
+      combination. If you configure multiple processing locations for the same
+      bucket and model across different configurations, the system triggers
+      separate annotation runs in each location, and you will be billed for
+      every resulting annotation.
   """
 
   models = _messages.MessageField('Model', 1, repeated=True)
+  processingLocation = _messages.StringField(2)
 
 
 class Autoclass(_messages.Message):
@@ -79,6 +102,24 @@ class BandwidthQuotaNearLimit(_messages.Message):
   topBuckets = _messages.MessageField('IntelligenceFindingBandwidthQuotaNearLimitBucketContribution', 2, repeated=True)
   topLocations = _messages.MessageField('LocationalContribution', 3, repeated=True)
   totalBandwidthConsumptionBytes = _messages.IntegerField(4)
+
+
+class BatchApplyFeaturePermissionsRequest(_messages.Message):
+  r"""Helps the user update the permissions on buckets that match a feature
+  config/any feature configs.
+
+  Fields:
+    filter: Required. The filter to apply, in accordance with AIP-160
+      (go/ccfe-aip-160). Filtering by type is supported and required: e.g.
+      filter=type="AUTO_ANNOTATE" Currently, this API is only supported for
+      AUTO_ANNOTATE features.
+    requestId: Optional. A unique identifier for this request. UUID is the
+      recommended format, but other formats are still accepted. This request
+      is only idempotent if a `request_id` is provided.
+  """
+
+  filter = _messages.StringField(1)
+  requestId = _messages.StringField(2)
 
 
 class Billing(_messages.Message):
@@ -306,6 +347,28 @@ class BucketAccessControl(_messages.Message):
   id = _messages.StringField(7)
   projectTeam = _messages.MessageField('ProjectTeam', 8)
   role = _messages.StringField(9)
+
+
+class BucketSecurityControlViolation(_messages.Message):
+  r"""Details about a security control violation on a bucket.
+
+  Fields:
+    bucket: Output only. The name of the bucket.
+    evaluationErrorsCount: Output only. The total count of objects whose
+      policy evaluation resulted in error across the bucket.
+    evaluationErrorsPercentage: Output only. The percentage of objects with
+      evaluation errors.
+    policyViolationsCount: Output only. The total count of objects which have
+      policy violations across the bucket.
+    policyViolationsPercentage: Output only. The percentage of objects with
+      policy violations.
+  """
+
+  bucket = _messages.StringField(1)
+  evaluationErrorsCount = _messages.IntegerField(2)
+  evaluationErrorsPercentage = _messages.IntegerField(3)
+  policyViolationsCount = _messages.IntegerField(4)
+  policyViolationsPercentage = _messages.IntegerField(5)
 
 
 class BucketSourceSpec(_messages.Message):
@@ -615,6 +678,26 @@ class CustomerSuppliedEncryptionEnforcementConfig(_messages.Message):
   restrictionMode = _messages.StringField(2)
 
 
+class DataDeletionControlViolation(_messages.Message):
+  r"""Detail message for Data Deletion Control Violation.
+
+  Fields:
+    bucketViolationDetails: Output only. Bucket level violation details.
+  """
+
+  bucketViolationDetails = _messages.MessageField('BucketSecurityControlViolation', 1)
+
+
+class DataRetentionControlViolation(_messages.Message):
+  r"""Detail message for Data Retention Control Violation.
+
+  Fields:
+    bucketViolationDetails: Output only. Bucket level violation details.
+  """
+
+  bucketViolationDetails = _messages.MessageField('BucketSecurityControlViolation', 1)
+
+
 class Date(_messages.Message):
   r"""Represents a whole or partial calendar date, such as a birthday. The
   time of day and time zone are either specified elsewhere or are
@@ -774,6 +857,16 @@ class Encryption(_messages.Message):
   googleManagedEncryptionEnforcementConfig = _messages.MessageField('GoogleManagedEncryptionEnforcementConfig', 4)
 
 
+class EncryptionControlViolation(_messages.Message):
+  r"""Detail message for Encryption Control Violation.
+
+  Fields:
+    bucketViolationDetails: Output only. Bucket level violation details.
+  """
+
+  bucketViolationDetails = _messages.MessageField('BucketSecurityControlViolation', 1)
+
+
 class FailedFolderRequest(_messages.Message):
   r"""A single folder that failed to be deleted.
 
@@ -896,10 +989,12 @@ class FindingSummary(_messages.Message):
       FINDING_CATEGORY_UNSPECIFIED: Category is unspecified.
       FINDING_CATEGORY_DATA_MANAGEMENT: Category is 'Data Management'.
       FINDING_CATEGORY_PERFORMANCE: Category is 'Performance'.
+      FINDING_CATEGORY_SECURITY: Category is 'Security'.
     """
     FINDING_CATEGORY_UNSPECIFIED = 0
     FINDING_CATEGORY_DATA_MANAGEMENT = 1
     FINDING_CATEGORY_PERFORMANCE = 2
+    FINDING_CATEGORY_SECURITY = 3
 
   class SeverityValueValuesEnum(_messages.Enum):
     r"""Severity of the finding.
@@ -927,6 +1022,14 @@ class FindingSummary(_messages.Message):
         storage above the expected trend.
       FINDING_TYPE_BANDWIDTH_QUOTA_NEAR_LIMIT: Finding is about bandwidth
         consumption approaching the quota limit.
+      FINDING_TYPE_PUBLIC_ACCESS_CONTROL_VIOLATION: Finding is about objects
+        within the bucket violating Public Access Control.
+      FINDING_TYPE_ENCRYPTION_CONTROL_VIOLATION: Finding is about objects
+        within the bucket violating Encryption Control.
+      FINDING_TYPE_DATA_RETENTION_CONTROL_VIOLATION: Finding is about objects
+        within the bucket violating Data Retention Control.
+      FINDING_TYPE_DATA_DELETION_CONTROL_VIOLATION: Finding is about objects
+        within the bucket violating Data Deletion Control.
     """
     FINDING_TYPE_UNSPECIFIED = 0
     FINDING_TYPE_COLDLINE_AND_ARCHIVAL_STORAGE_OPERATIONS_SPIKE = 1
@@ -934,6 +1037,10 @@ class FindingSummary(_messages.Message):
     FINDING_TYPE_CROSS_REGION_EGRESS_SPIKE = 3
     FINDING_TYPE_STORAGE_GROWTH_ABOVE_TREND = 4
     FINDING_TYPE_BANDWIDTH_QUOTA_NEAR_LIMIT = 5
+    FINDING_TYPE_PUBLIC_ACCESS_CONTROL_VIOLATION = 6
+    FINDING_TYPE_ENCRYPTION_CONTROL_VIOLATION = 7
+    FINDING_TYPE_DATA_RETENTION_CONTROL_VIOLATION = 8
+    FINDING_TYPE_DATA_DELETION_CONTROL_VIOLATION = 9
 
   category = _messages.EnumField('CategoryValueValuesEnum', 1)
   createTime = _messages.StringField(2)
@@ -1222,12 +1329,20 @@ class IntelligenceFinding(_messages.Message):
     createTime: Output only. The time at which the finding was created.
     crossRegionEgressSpike: Output only. `IntelligenceFinding` about a spike
       in cross-region egress.
+    dataDeletionControlViolation: Output only. `IntelligenceFinding` about
+      objects violating Data Deletion Control.
+    dataRetentionControlViolation: Output only. `IntelligenceFinding` about
+      objects violating Data Retention Control.
     description: Output only. A short description about the finding.
+    encryptionControlViolation: Output only. `IntelligenceFinding` about
+      objects violating Encryption Control.
     name: Identifier. The resource name of `IntelligenceFinding`. Format: `pro
       jects/{project}/locations/{location}/intelligenceFindings/{intelligence_
       finding}`
     observationPeriod: Output only. The time interval during which the
       underlying data was used to generate this `IntelligenceFinding`.
+    publicAccessControlViolation: Output only. `IntelligenceFinding` about
+      objects violating Public Access Control.
     severity: Output only. Severity of the finding.
     storageGrowthAboveTrend: Output only. `IntelligenceFinding` about growth
       in storage above the expected trend.
@@ -1248,10 +1363,12 @@ class IntelligenceFinding(_messages.Message):
       FINDING_CATEGORY_UNSPECIFIED: Category is unspecified.
       FINDING_CATEGORY_DATA_MANAGEMENT: Category is 'Data Management'.
       FINDING_CATEGORY_PERFORMANCE: Category is 'Performance'.
+      FINDING_CATEGORY_SECURITY: Category is 'Security'.
     """
     FINDING_CATEGORY_UNSPECIFIED = 0
     FINDING_CATEGORY_DATA_MANAGEMENT = 1
     FINDING_CATEGORY_PERFORMANCE = 2
+    FINDING_CATEGORY_SECURITY = 3
 
   class SeverityValueValuesEnum(_messages.Enum):
     r"""Output only. Severity of the finding.
@@ -1279,6 +1396,14 @@ class IntelligenceFinding(_messages.Message):
         storage above the expected trend.
       FINDING_TYPE_BANDWIDTH_QUOTA_NEAR_LIMIT: Finding is about bandwidth
         consumption approaching the quota limit.
+      FINDING_TYPE_PUBLIC_ACCESS_CONTROL_VIOLATION: Finding is about objects
+        within the bucket violating Public Access Control.
+      FINDING_TYPE_ENCRYPTION_CONTROL_VIOLATION: Finding is about objects
+        within the bucket violating Encryption Control.
+      FINDING_TYPE_DATA_RETENTION_CONTROL_VIOLATION: Finding is about objects
+        within the bucket violating Data Retention Control.
+      FINDING_TYPE_DATA_DELETION_CONTROL_VIOLATION: Finding is about objects
+        within the bucket violating Data Deletion Control.
     """
     FINDING_TYPE_UNSPECIFIED = 0
     FINDING_TYPE_COLDLINE_AND_ARCHIVAL_STORAGE_OPERATIONS_SPIKE = 1
@@ -1286,6 +1411,10 @@ class IntelligenceFinding(_messages.Message):
     FINDING_TYPE_CROSS_REGION_EGRESS_SPIKE = 3
     FINDING_TYPE_STORAGE_GROWTH_ABOVE_TREND = 4
     FINDING_TYPE_BANDWIDTH_QUOTA_NEAR_LIMIT = 5
+    FINDING_TYPE_PUBLIC_ACCESS_CONTROL_VIOLATION = 6
+    FINDING_TYPE_ENCRYPTION_CONTROL_VIOLATION = 7
+    FINDING_TYPE_DATA_RETENTION_CONTROL_VIOLATION = 8
+    FINDING_TYPE_DATA_DELETION_CONTROL_VIOLATION = 9
 
   associatedResources = _messages.StringField(1, repeated=True)
   bandwidthQuotaNearLimit = _messages.MessageField('BandwidthQuotaNearLimit', 2)
@@ -1293,15 +1422,19 @@ class IntelligenceFinding(_messages.Message):
   coldlineAndArchivalStorageOperationsSpike = _messages.MessageField('ColdlineAndArchivalStorageOperationsSpike', 4)
   createTime = _messages.StringField(5)
   crossRegionEgressSpike = _messages.MessageField('CrossRegionEgressSpike', 6)
-  description = _messages.StringField(7)
-  name = _messages.StringField(8)
-  observationPeriod = _messages.MessageField('Interval', 9)
-  severity = _messages.EnumField('SeverityValueValuesEnum', 10)
-  storageGrowthAboveTrend = _messages.MessageField('StorageGrowthAboveTrend', 11)
-  targetResource = _messages.StringField(12)
-  throttledRequestsSpike = _messages.MessageField('ThrottledRequestSpike', 13)
-  type = _messages.EnumField('TypeValueValuesEnum', 14)
-  updateTime = _messages.StringField(15)
+  dataDeletionControlViolation = _messages.MessageField('DataDeletionControlViolation', 7)
+  dataRetentionControlViolation = _messages.MessageField('DataRetentionControlViolation', 8)
+  description = _messages.StringField(9)
+  encryptionControlViolation = _messages.MessageField('EncryptionControlViolation', 10)
+  name = _messages.StringField(11)
+  observationPeriod = _messages.MessageField('Interval', 12)
+  publicAccessControlViolation = _messages.MessageField('PublicAccessControlViolation', 13)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 14)
+  storageGrowthAboveTrend = _messages.MessageField('StorageGrowthAboveTrend', 15)
+  targetResource = _messages.StringField(16)
+  throttledRequestsSpike = _messages.MessageField('ThrottledRequestSpike', 17)
+  type = _messages.EnumField('TypeValueValuesEnum', 18)
+  updateTime = _messages.StringField(19)
 
 
 class IntelligenceFindingBandwidthQuotaNearLimitBucketContribution(_messages.Message):
@@ -1790,10 +1923,17 @@ class ListIntelligenceFindingsResponse(_messages.Message):
       specified project.
     nextPageToken: A token to retrieve the next page of results. Pass this
       value in the `page_token` field in the subsequent call.
+    permissionErrors: This will be populated if the caller does not have
+      permission to view any of the `IntelligenceFinding` resources for the
+      given parent.
+    unreachable: Unordered list. This will contain the list of locations which
+      are unreachable for the given list call.
   """
 
   intelligenceFindings = _messages.MessageField('IntelligenceFinding', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
+  permissionErrors = _messages.MessageField('PermissionErrors', 3)
+  unreachable = _messages.StringField(4, repeated=True)
 
 
 class ListObjectIndexesResponse(_messages.Message):
@@ -2409,6 +2549,18 @@ class PendingRenameInfo(_messages.Message):
   operation = _messages.StringField(1)
 
 
+class PermissionErrors(_messages.Message):
+  r"""The wrapper containing error details for the permission errors
+  encountered associated with this response.
+
+  Fields:
+    errorMessage: Output only. The error message for the `IntelligenceFinding`
+      resources that could not be fetched.
+  """
+
+  errorMessage = _messages.StringField(1)
+
+
 class ProjectTeam(_messages.Message):
   r"""Represents the Viewers, Editors, or Owners of a given project.
 
@@ -2419,6 +2571,16 @@ class ProjectTeam(_messages.Message):
 
   projectNumber = _messages.StringField(1)
   team = _messages.StringField(2)
+
+
+class PublicAccessControlViolation(_messages.Message):
+  r"""Detail message for Public Access Control Violation.
+
+  Fields:
+    bucketViolationDetails: Output only. Bucket level violation details.
+  """
+
+  bucketViolationDetails = _messages.MessageField('BucketSecurityControlViolation', 1)
 
 
 class PublicNetworkSource(_messages.Message):
@@ -2902,6 +3064,70 @@ class StorageFoldersLocationsIntelligenceFindingsSummarizeRequest(_messages.Mess
   resourceScope = _messages.EnumField('ResourceScopeValueValuesEnum', 5)
 
 
+class StorageFoldersLocationsIntelligenceFindingsSummarizeSecurityIntelligenceFindingsRequest(_messages.Message):
+  r"""A StorageFoldersLocationsIntelligenceFindingsSummarizeSecurityIntelligen
+  ceFindingsRequest object.
+
+  Enums:
+    ResourceScopeValueValuesEnum: Optional. Determines the granularity of the
+      findings when the `parent` is an organization or folder. - `PARENT` (or
+      not set): A single summary is returned for each insight type, aggregated
+      across the entire `parent` scope. - `PROJECT`: A separate summary is
+      returned for each insight type for every project within the `parent`
+      scope. The only supported values are `PARENT` and `PROJECT`. If no value
+      is specified, the API behaviour defaults to the `PARENT`.
+
+  Fields:
+    filter: Optional. The filter expression, following AIP-160. Supports
+      filtering by FindingType.
+    pageSize: Optional. The maximum number of findings to return. The maximum
+      value is `100`; values above `100` will be coerced to `100`. The default
+      value is `100`.
+    pageToken: Optional. A page token, received from a previous
+      `SummarizeSecurityIntelligenceFindings` call. Provide this to retrieve
+      the subsequent page. When paginating, all other parameters provided to
+      `SummarizeSecurityIntelligenceFindings` must match the call that
+      provided the page token.
+    parent: Required. The scope to summarize the findings for. Format: -
+      `organizations/{organization}/locations/{location}` -
+      `folders/{folder}/locations/{location}` -
+      `projects/{project}/locations/{location}`
+    resourceScope: Optional. Determines the granularity of the findings when
+      the `parent` is an organization or folder. - `PARENT` (or not set): A
+      single summary is returned for each insight type, aggregated across the
+      entire `parent` scope. - `PROJECT`: A separate summary is returned for
+      each insight type for every project within the `parent` scope. The only
+      supported values are `PARENT` and `PROJECT`. If no value is specified,
+      the API behaviour defaults to the `PARENT`.
+  """
+
+  class ResourceScopeValueValuesEnum(_messages.Enum):
+    r"""Optional. Determines the granularity of the findings when the `parent`
+    is an organization or folder. - `PARENT` (or not set): A single summary is
+    returned for each insight type, aggregated across the entire `parent`
+    scope. - `PROJECT`: A separate summary is returned for each insight type
+    for every project within the `parent` scope. The only supported values are
+    `PARENT` and `PROJECT`. If no value is specified, the API behaviour
+    defaults to the `PARENT`.
+
+    Values:
+      RESOURCE_SCOPE_UNSPECIFIED: The default behavior. Falls back to PARENT
+        behavior
+      PARENT: Summaries are aggregated at the level of the `parent` resource.
+      PROJECT: Summaries are broken down by each project within the `parent`
+        scope.
+    """
+    RESOURCE_SCOPE_UNSPECIFIED = 0
+    PARENT = 1
+    PROJECT = 2
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+  resourceScope = _messages.EnumField('ResourceScopeValueValuesEnum', 5)
+
+
 class StorageFoldersLocationsUpdateIntelligenceConfigRequest(_messages.Message):
   r"""A StorageFoldersLocationsUpdateIntelligenceConfigRequest object.
 
@@ -3080,6 +3306,70 @@ class StorageOrganizationsLocationsIntelligenceFindingsSummarizeRequest(_message
     Values:
       RESOURCE_SCOPE_UNSPECIFIED: The default behavior. Falls back to PARENT
         behaviour
+      PARENT: Summaries are aggregated at the level of the `parent` resource.
+      PROJECT: Summaries are broken down by each project within the `parent`
+        scope.
+    """
+    RESOURCE_SCOPE_UNSPECIFIED = 0
+    PARENT = 1
+    PROJECT = 2
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+  resourceScope = _messages.EnumField('ResourceScopeValueValuesEnum', 5)
+
+
+class StorageOrganizationsLocationsIntelligenceFindingsSummarizeSecurityIntelligenceFindingsRequest(_messages.Message):
+  r"""A StorageOrganizationsLocationsIntelligenceFindingsSummarizeSecurityInte
+  lligenceFindingsRequest object.
+
+  Enums:
+    ResourceScopeValueValuesEnum: Optional. Determines the granularity of the
+      findings when the `parent` is an organization or folder. - `PARENT` (or
+      not set): A single summary is returned for each insight type, aggregated
+      across the entire `parent` scope. - `PROJECT`: A separate summary is
+      returned for each insight type for every project within the `parent`
+      scope. The only supported values are `PARENT` and `PROJECT`. If no value
+      is specified, the API behaviour defaults to the `PARENT`.
+
+  Fields:
+    filter: Optional. The filter expression, following AIP-160. Supports
+      filtering by FindingType.
+    pageSize: Optional. The maximum number of findings to return. The maximum
+      value is `100`; values above `100` will be coerced to `100`. The default
+      value is `100`.
+    pageToken: Optional. A page token, received from a previous
+      `SummarizeSecurityIntelligenceFindings` call. Provide this to retrieve
+      the subsequent page. When paginating, all other parameters provided to
+      `SummarizeSecurityIntelligenceFindings` must match the call that
+      provided the page token.
+    parent: Required. The scope to summarize the findings for. Format: -
+      `organizations/{organization}/locations/{location}` -
+      `folders/{folder}/locations/{location}` -
+      `projects/{project}/locations/{location}`
+    resourceScope: Optional. Determines the granularity of the findings when
+      the `parent` is an organization or folder. - `PARENT` (or not set): A
+      single summary is returned for each insight type, aggregated across the
+      entire `parent` scope. - `PROJECT`: A separate summary is returned for
+      each insight type for every project within the `parent` scope. The only
+      supported values are `PARENT` and `PROJECT`. If no value is specified,
+      the API behaviour defaults to the `PARENT`.
+  """
+
+  class ResourceScopeValueValuesEnum(_messages.Enum):
+    r"""Optional. Determines the granularity of the findings when the `parent`
+    is an organization or folder. - `PARENT` (or not set): A single summary is
+    returned for each insight type, aggregated across the entire `parent`
+    scope. - `PROJECT`: A separate summary is returned for each insight type
+    for every project within the `parent` scope. The only supported values are
+    `PARENT` and `PROJECT`. If no value is specified, the API behaviour
+    defaults to the `PARENT`.
+
+    Values:
+      RESOURCE_SCOPE_UNSPECIFIED: The default behavior. Falls back to PARENT
+        behavior
       PARENT: Summaries are aggregated at the level of the `parent` resource.
       PROJECT: Summaries are broken down by each project within the `parent`
         scope.
@@ -3486,6 +3776,43 @@ class StorageProjectsBucketsSnapshotsPatchRequest(_messages.Message):
   updateMask = _messages.StringField(4)
 
 
+class StorageProjectsLocationsFeatureConfigsApplyFeaturePermissionsRequest(_messages.Message):
+  r"""A StorageProjectsLocationsFeatureConfigsApplyFeaturePermissionsRequest
+  object.
+
+  Fields:
+    applyFeaturePermissionsRequest: A ApplyFeaturePermissionsRequest resource
+      to be passed as the request body.
+    name: Required. The name of the `FeatureConfig` resource that will be used
+      to determine which buckets to update permissions for. Format: `projects/
+      {project}/locations/{location}/featureConfigs/{feature_config}` `organiz
+      ations/{organization}/locations/{location}/featureConfigs/{feature_confi
+      g}`
+      `folders/{folder}/locations/{location}/featureConfigs/{feature_config}`
+  """
+
+  applyFeaturePermissionsRequest = _messages.MessageField('ApplyFeaturePermissionsRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class StorageProjectsLocationsFeatureConfigsBatchApplyFeaturePermissionsRequest(_messages.Message):
+  r"""A
+  StorageProjectsLocationsFeatureConfigsBatchApplyFeaturePermissionsRequest
+  object.
+
+  Fields:
+    batchApplyFeaturePermissionsRequest: A BatchApplyFeaturePermissionsRequest
+      resource to be passed as the request body.
+    parent: Required. The resource that the feature config(s) are associated
+      with. Format may be one of the following: -
+      `projects/{project}/locations/{location}` (only project is currently
+      supported)
+  """
+
+  batchApplyFeaturePermissionsRequest = _messages.MessageField('BatchApplyFeaturePermissionsRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
 class StorageProjectsLocationsFeatureConfigsCreateRequest(_messages.Message):
   r"""A StorageProjectsLocationsFeatureConfigsCreateRequest object.
 
@@ -3748,6 +4075,70 @@ class StorageProjectsLocationsIntelligenceFindingsSummarizeRequest(_messages.Mes
   resourceScope = _messages.EnumField('ResourceScopeValueValuesEnum', 5)
 
 
+class StorageProjectsLocationsIntelligenceFindingsSummarizeSecurityIntelligenceFindingsRequest(_messages.Message):
+  r"""A StorageProjectsLocationsIntelligenceFindingsSummarizeSecurityIntellige
+  nceFindingsRequest object.
+
+  Enums:
+    ResourceScopeValueValuesEnum: Optional. Determines the granularity of the
+      findings when the `parent` is an organization or folder. - `PARENT` (or
+      not set): A single summary is returned for each insight type, aggregated
+      across the entire `parent` scope. - `PROJECT`: A separate summary is
+      returned for each insight type for every project within the `parent`
+      scope. The only supported values are `PARENT` and `PROJECT`. If no value
+      is specified, the API behaviour defaults to the `PARENT`.
+
+  Fields:
+    filter: Optional. The filter expression, following AIP-160. Supports
+      filtering by FindingType.
+    pageSize: Optional. The maximum number of findings to return. The maximum
+      value is `100`; values above `100` will be coerced to `100`. The default
+      value is `100`.
+    pageToken: Optional. A page token, received from a previous
+      `SummarizeSecurityIntelligenceFindings` call. Provide this to retrieve
+      the subsequent page. When paginating, all other parameters provided to
+      `SummarizeSecurityIntelligenceFindings` must match the call that
+      provided the page token.
+    parent: Required. The scope to summarize the findings for. Format: -
+      `organizations/{organization}/locations/{location}` -
+      `folders/{folder}/locations/{location}` -
+      `projects/{project}/locations/{location}`
+    resourceScope: Optional. Determines the granularity of the findings when
+      the `parent` is an organization or folder. - `PARENT` (or not set): A
+      single summary is returned for each insight type, aggregated across the
+      entire `parent` scope. - `PROJECT`: A separate summary is returned for
+      each insight type for every project within the `parent` scope. The only
+      supported values are `PARENT` and `PROJECT`. If no value is specified,
+      the API behaviour defaults to the `PARENT`.
+  """
+
+  class ResourceScopeValueValuesEnum(_messages.Enum):
+    r"""Optional. Determines the granularity of the findings when the `parent`
+    is an organization or folder. - `PARENT` (or not set): A single summary is
+    returned for each insight type, aggregated across the entire `parent`
+    scope. - `PROJECT`: A separate summary is returned for each insight type
+    for every project within the `parent` scope. The only supported values are
+    `PARENT` and `PROJECT`. If no value is specified, the API behaviour
+    defaults to the `PARENT`.
+
+    Values:
+      RESOURCE_SCOPE_UNSPECIFIED: The default behavior. Falls back to PARENT
+        behavior
+      PARENT: Summaries are aggregated at the level of the `parent` resource.
+      PROJECT: Summaries are broken down by each project within the `parent`
+        scope.
+    """
+    RESOURCE_SCOPE_UNSPECIFIED = 0
+    PARENT = 1
+    PROJECT = 2
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+  resourceScope = _messages.EnumField('ResourceScopeValueValuesEnum', 5)
+
+
 class StorageProjectsLocationsObjectIndexesCreateRequest(_messages.Message):
   r"""A StorageProjectsLocationsObjectIndexesCreateRequest object.
 
@@ -3979,13 +4370,29 @@ class StorageProjectsLocationsUpdateManagementHubRequest(_messages.Message):
 
 class SummarizeIntelligenceFindingsResponse(_messages.Message):
   r"""Response message to summarize the intelligence findings for a specified
-  scope(org, folder or project).
+  scope (organization, folder or project).
 
   Fields:
     findingSummaries: The list of `FindingSummary` summaries.
     nextPageToken: A token to retrieve the next page of results. Pass this
       value in the `page_token` field in the subsequent call to
       `SummarizeIntelligenceFindings` to retrieve the next page of results.
+  """
+
+  findingSummaries = _messages.MessageField('FindingSummary', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
+class SummarizeSecurityIntelligenceFindingsResponse(_messages.Message):
+  r"""Response message to summarize the intelligence findings for a specified
+  scope (organization, folder or project).
+
+  Fields:
+    findingSummaries: The list of `FindingSummary` summaries.
+    nextPageToken: A token to retrieve the next page of results. Pass this
+      value in the `page_token` field in the subsequent call to
+      `SummarizeSecurityIntelligenceFindings` to retrieve the next page of
+      results.
   """
 
   findingSummaries = _messages.MessageField('FindingSummary', 1, repeated=True)
@@ -4015,10 +4422,12 @@ class SummaryDetails(_messages.Message):
       RESOURCE_TYPE_UNSPECIFIED: Resource type is unspecified.
       PROJECT: Resource type is project.
       BUCKET: Resource type is bucket.
+      OBJECT: Resource type is object.
     """
     RESOURCE_TYPE_UNSPECIFIED = 0
     PROJECT = 1
     BUCKET = 2
+    OBJECT = 3
 
   count = _messages.IntegerField(1)
   description = _messages.StringField(2)

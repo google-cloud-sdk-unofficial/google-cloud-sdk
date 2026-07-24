@@ -2443,7 +2443,7 @@ class CryptoKeyVersion(_messages.Message):
         Digital Signature Algorithm, at security level 5. Randomized version
         supporting externally-computed message representatives.
       AES_256_KWP: AES key wrap with zero padding algorithm (RFC 5649). Can
-        only be used
+        only be used by keys with purpose AES_WRAPPING.
     """
     CRYPTO_KEY_VERSION_ALGORITHM_UNSPECIFIED = 0
     GOOGLE_SYMMETRIC_ENCRYPTION = 1
@@ -2699,7 +2699,7 @@ class CryptoKeyVersionTemplate(_messages.Message):
         Digital Signature Algorithm, at security level 5. Randomized version
         supporting externally-computed message representatives.
       AES_256_KWP: AES key wrap with zero padding algorithm (RFC 5649). Can
-        only be used
+        only be used by keys with purpose AES_WRAPPING.
     """
     CRYPTO_KEY_VERSION_ALGORITHM_UNSPECIFIED = 0
     GOOGLE_SYMMETRIC_ENCRYPTION = 1
@@ -3290,15 +3290,21 @@ class ExternalProtectionLevelOptions(_messages.Message):
   level and EXTERNAL_VPC protection levels.
 
   Fields:
-    ekmConnectionKeyPath: The path to the external key material on the EKM
-      when using EkmConnection e.g., "v0/my/key". Set this field instead of
-      external_key_uri when using an EkmConnection.
-    externalKeyUri: The URI for an external resource that this
+    ekmConnectionBackendOverride: Optional. The resource name of the backend
+      environment where the key material of CryptoKeyVersions is associated
+      with. Setting this field overrides the CryptoKeyBackend. This field may
+      be set when CryptoKeyVersions is set to EXTERNAL_VPC. Format:
+      `projects/*/locations/*/ekmConnections/*`.
+    ekmConnectionKeyPath: Optional. The path to the external key material on
+      the EKM when using EkmConnection e.g., "v0/my/key". Set this field
+      instead of external_key_uri when using an EkmConnection.
+    externalKeyUri: Optional. The URI for an external resource that this
       CryptoKeyVersion represents.
   """
 
-  ekmConnectionKeyPath = _messages.StringField(1)
-  externalKeyUri = _messages.StringField(2)
+  ekmConnectionBackendOverride = _messages.StringField(1)
+  ekmConnectionKeyPath = _messages.StringField(2)
+  externalKeyUri = _messages.StringField(3)
 
 
 class GenerateRandomBytesRequest(_messages.Message):
@@ -3500,7 +3506,7 @@ class ImportCryptoKeyVersionRequest(_messages.Message):
         Digital Signature Algorithm, at security level 5. Randomized version
         supporting externally-computed message representatives.
       AES_256_KWP: AES key wrap with zero padding algorithm (RFC 5649). Can
-        only be used
+        only be used by keys with purpose AES_WRAPPING.
     """
     CRYPTO_KEY_VERSION_ALGORITHM_UNSPECIFIED = 0
     GOOGLE_SYMMETRIC_ENCRYPTION = 1
@@ -3907,7 +3913,7 @@ class ImportTrustedKeyWrappedCryptoKeyVersionRequest(_messages.Message):
         Digital Signature Algorithm, at security level 5. Randomized version
         supporting externally-computed message representatives.
       AES_256_KWP: AES key wrap with zero padding algorithm (RFC 5649). Can
-        only be used
+        only be used by keys with purpose AES_WRAPPING.
     """
     CRYPTO_KEY_VERSION_ALGORITHM_UNSPECIFIED = 0
     GOOGLE_SYMMETRIC_ENCRYPTION = 1
@@ -4925,7 +4931,7 @@ class PublicKey(_messages.Message):
         Digital Signature Algorithm, at security level 5. Randomized version
         supporting externally-computed message representatives.
       AES_256_KWP: AES key wrap with zero padding algorithm (RFC 5649). Can
-        only be used
+        only be used by keys with purpose AES_WRAPPING.
     """
     CRYPTO_KEY_VERSION_ALGORITHM_UNSPECIFIED = 0
     GOOGLE_SYMMETRIC_ENCRYPTION = 1
@@ -5656,8 +5662,7 @@ class SingleTenantHsmInstance(_messages.Message):
       SingleTenantHsmInstance will become disabled.
     keyPortabilityEnabled: Optional. Immutable. Indicates whether key
       portability is enabled for the SingleTenantHsmInstance. This can only be
-      set at creation time. Key portability features are disabled by default
-      and not yet available in GA.
+      set at creation time. Key portability features are disabled by default.
     name: Identifier. The resource name for this SingleTenantHsmInstance in
       the format `projects/*/locations/*/singleTenantHsmInstances/*`.
     quorumAuth: Required. The quorum auth configuration for the

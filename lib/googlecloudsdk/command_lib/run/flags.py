@@ -76,12 +76,15 @@ IDENTITY_FLAG = base.Argument(
     hidden=True,
 )
 
-IDENTITY_CERTIFICATE_FLAG = base.Argument(
-    '--identity-certificate',
-    help='Enables workload certificates using managed workload identity.',
-    action=arg_parsers.StoreTrueFalseAction,
-    hidden=True,
-)
+
+def IdentityCertificateFlag(hidden=False):
+  return base.Argument(
+      '--identity-certificate',
+      help='Enables workload certificates using managed workload identity.',
+      action=arg_parsers.StoreTrueFalseAction,
+      hidden=hidden,
+  )
+
 
 _IDENTITY_TYPE_CHOICES = {
     'SERVICE-ACCOUNT': 'Use a service account.',
@@ -89,14 +92,18 @@ _IDENTITY_TYPE_CHOICES = {
     'AGENT-IDENTITY': 'Use an agent identity.',
 }
 
-IDENTITY_TYPE_FLAG = base.ChoiceArgument(
-    '--identity-type',
-    choices=[x.lower() for x in _IDENTITY_TYPE_CHOICES],
-    help_str=(
-        'Configures the type of identity to be used by the resource. Allowed'
-        ' values: service-account, workload-identity, agent-identity.'
-    ),
-)
+
+def IdentityTypeFlag(hidden=False):
+  return base.ChoiceArgument(
+      '--identity-type',
+      choices=[x.lower() for x in _IDENTITY_TYPE_CHOICES],
+      help_str=(
+          'Configures the type of identity to be used by the resource. Allowed'
+          ' values: service-account, workload-identity, agent-identity.'
+      ),
+      hidden=hidden,
+  )
+
 
 _AMBIENT_NETWORKING_CHOICES = {
     'disable': 'Disable ambient networking.',
@@ -122,14 +129,18 @@ _FUNCTIONAL_TYPE_CHOICES = {
     'MCP-SERVER': 'Use a MCP server.',
 }
 
-FUNCTIONAL_TYPE_FLAG = base.ChoiceArgument(
-    '--functional-type',
-    choices=[x.lower() for x in _FUNCTIONAL_TYPE_CHOICES],
-    help_str=(
-        'Specifies the function of the workload for Agent Registry. Allowed'
-        ' values: agent, mcp-server.'
-    ),
-)
+
+def FunctionalTypeFlag(hidden=False):
+  return base.ChoiceArgument(
+      '--functional-type',
+      choices=[x.lower() for x in _FUNCTIONAL_TYPE_CHOICES],
+      help_str=(
+          'Specifies the function of the workload for Agent Registry. Allowed'
+          ' values: agent, mcp-server.'
+      ),
+      hidden=hidden,
+  )
+
 
 MESH_DATAPLANE_FLAG = base.Argument(
     '--mesh-dataplane',
@@ -2444,6 +2455,42 @@ def AddCpuUtilizationFlag(
   )
 
 
+def PubsubSubscriptionFlag() -> base.Argument:
+  """Returns flag to specify Pub/Sub subscription for scaling."""
+  return base.Argument(
+      '--scaling-pubsub-subscription',
+      hidden=True,
+      help=(
+          'The Pub/Sub subscription to monitor for scaling. '
+          'Must be in the same project as the worker pool. '
+          'Format: projects/{project}/subscriptions/{sub} or just {sub}.'
+      ),
+  )
+
+
+def AddPubsubSubscriptionFlag(parser) -> None:
+  """Add flag to specify Pub/Sub subscription for scaling."""
+  PubsubSubscriptionFlag().AddToParser(parser)
+
+
+def PubsubTargetFlag() -> base.Argument:
+  """Returns flag to specify Pub/Sub target value for scaling."""
+  return base.Argument(
+      '--scaling-pubsub-target',
+      hidden=True,
+      type=arg_parsers.BoundedInt(lower_bound=1),
+      help=(
+          'The target value for the Pub/Sub subscription backlog metric '
+          'to scale on. Must be a positive integer.'
+      ),
+  )
+
+
+def AddPubsubTargetFlag(parser) -> None:
+  """Add flag to specify Pub/Sub target value for scaling."""
+  PubsubTargetFlag().AddToParser(parser)
+
+
 def AddConcurrencyUtilizationFlag(parser):
   """Add flag to modify scaling concurrency utilization."""
   parser.add_argument(
@@ -3372,6 +3419,14 @@ def _GetConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
     changes.append(
         config_changes.RemovePresetsChange(clear_presets=args.clear_presets)
     )
+  if FlagIsExplicitlySet(args, 'functional_type'):
+    _MaybePrintFunctionalTypeWarning(args.functional_type)
+    changes.append(
+        config_changes.SetAnnotationChange(
+            service.FUNCTIONAL_TYPE_ANNOTATION,
+            args.functional_type,
+        )
+    )
   return changes
 
 
@@ -3686,14 +3741,6 @@ def GetServiceConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
   if FlagIsExplicitlySet(args, 'domain'):
     changes.append(
         config_changes.MultiRegionDomainNameChange(domain_name=args.domain)
-    )
-  if FlagIsExplicitlySet(args, 'functional_type'):
-    _MaybePrintFunctionalTypeWarning(args.functional_type)
-    changes.append(
-        config_changes.SetAnnotationChange(
-            service.FUNCTIONAL_TYPE_ANNOTATION,
-            args.functional_type,
-        )
     )
 
   changes.extend(_GetIapChanges(args))
@@ -5195,10 +5242,29 @@ def RunUploadFlag():
   )
 
 
+def LocalBuildArg():
+  return base.Argument(
+      '--local-build',
+      action='store_true',
+      default=False,
+      help=(
+          'When set, the application dependencies are installed and runtime '
+          'configurations (like base-image, cmd, args) are prepared locally '
+          'on your machine using your local development environment, and the '
+          'resulting packaged source archive is deployed directly to Cloud Run '
+          'without building a container image.\n\n'
+          'Note: Required development tools (e.g., required language '
+          'runtimes like node, python, etc. and package managers like npm, '
+          'pip, uv, etc.) must be pre-installed on your local machine.'
+      ),
+  )
+
+
 def SourceAndImageFlags(
     image='us-docker.pkg.dev/cloudrun/container/hello:latest',
     mutex=True,
     no_build_enabled=False,
+    local_build_enabled=False,
     release_track=base.ReleaseTrack.GA,
 ):
   """Returns a group of flags for deploy source, an image or source code."""
@@ -5208,6 +5274,8 @@ def SourceAndImageFlags(
   if no_build_enabled:
     if release_track != base.ReleaseTrack.GA:
       group.AddArgument(NoBuildArg())
+    if local_build_enabled and release_track == base.ReleaseTrack.ALPHA:
+      group.AddArgument(LocalBuildArg())
     if IsUploadLaunchStage(release_track):
       group.AddArgument(RunUploadFlag())
   return group

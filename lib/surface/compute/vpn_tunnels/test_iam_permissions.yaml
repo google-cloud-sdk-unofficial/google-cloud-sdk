@@ -1,0 +1,29 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Test IAM permissions for a Compute Engine VPN tunnel.
+    description: |
+      Returns permissions that a caller has on the specified VPN tunnel.
+    examples: |
+      To test if the caller has `compute.vpnTunnels.get` permission on a VPN tunnel, run:
+
+        $ {command} my-vpn-tunnel --region=``REGION'' --permissions=compute.vpnTunnels.get
+
+  request:
+    collection: compute.vpnTunnels
+    api_version: alpha
+    method: testIamPermissions
+    use_relative_name: false
+
+  command_type: GENERIC
+
+  arguments:
+    resource:
+      help_text: The VPN tunnel for which to test permissions.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:vpn_tunnel
+    params:
+    - arg_name: permissions
+      api_field: testPermissionsRequest.permissions
+      required: true
+      repeated: true
+      help_text: |-
+        Permissions to be tested.

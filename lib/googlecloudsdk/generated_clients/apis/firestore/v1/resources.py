@@ -52,6 +52,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_DATABASES_CHANGESTREAMS = (
+      'projects.databases.changeStreams',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/databases/{databasesId}/changeStreams/'
+              '{changeStreamsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_DATABASES_COLLECTIONGROUPS = (
       'projects.databases.collectionGroups',
       'projects/{projectsId}/databases/{databasesId}/collectionGroups/'

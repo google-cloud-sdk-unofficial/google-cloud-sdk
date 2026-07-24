@@ -54,9 +54,9 @@ class IcebergCatalogReference(_messages.Message):
     catalog: Required. The fully-qualified BigLake catalog path. Format:
       projects/{project}/catalogs/{catalog}
     description: Optional. The detailed description of the published share.
-    shortDescription: Optional. The short, concise description of the
+    shortDescription: Required. The short, concise description of the
       published share.
-    title: Optional. The title of the published share.
+    title: Required. The title of the published share.
   """
 
   catalog = _messages.StringField(1)

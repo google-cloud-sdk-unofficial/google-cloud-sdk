@@ -69,4 +69,5 @@ class Create(base.Command):
         exclude_locations=args.exclude_locations,
         include_bucket_id_regexes=args.include_bucket_id_regexes,
         exclude_bucket_id_regexes=args.exclude_bucket_id_regexes,
+        is_async=args.async_,
     )

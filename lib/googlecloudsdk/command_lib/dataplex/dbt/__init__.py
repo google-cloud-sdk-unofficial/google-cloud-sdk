@@ -14,10 +14,11 @@
 # limitations under the License.
 """dbt-core -> Dataplex metadata import transform.
 
-The public entry point lives in ``transform`` (``GenerateImportFile``). The
-transform is split across:
+The public entry points live in ``transform`` (``GenerateImportFile`` and
+``LinkTypeFqns``). The transform is split across:
 
 * ``naming``         -- resource-name construction (the ``Context``).
 * ``aspects``        -- shared aspect-record builders.
 * ``entry_builders`` -- one builder per dbt resource type + orchestration.
+* ``entry_links``    -- EntryLink (lineage / semantic edge) drafting, opt-in.
 """

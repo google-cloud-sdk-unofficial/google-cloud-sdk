@@ -40,6 +40,14 @@ SINGLE_FILE_LOW_CPU_SLICED_OBJECT_DOWNLOAD_MAX_COMPONENTS = 8
 SINGLE_FILE_HIGH_CPU_SLICED_OBJECT_DOWNLOAD_MAX_COMPONENTS = 16
 
 
+BIDI_COMPONENT_SIZE = '1GiB'
+BIDI_SLICED_OBJECT_DOWNLOAD_THRESHOLD = '1GiB'
+BIDI_THREAD_COUNT = 1
+BIDI_MULTI_FILE_MAX_COMPONENTS = 10
+BIDI_MAX_PROCESS_COUNT_MULTI_FILE = 48
+BIDI_MAX_PROCESS_COUNT_SINGLE_FILE = 16
+
+
 def _set_if_not_user_set(property_name, value):
   """Sets property to opitmized value if user did not set custom one."""
   storage_property = getattr(properties.VALUES.storage, property_name)
@@ -47,8 +55,42 @@ def _set_if_not_user_set(property_name, value):
     storage_property.Set(value)
 
 
-def detect_and_set_best_config(is_estimated_multi_file_workload):
+def detect_and_set_best_config(
+    is_estimated_multi_file_workload, is_bidi_workload=False
+):
   """Determines best app config based on system and workload."""
+  if (
+      is_bidi_workload
+      and properties.VALUES.storage.use_mrd_bidi_downloads.GetBool()
+  ):
+    cpu_count = multiprocessing.cpu_count()
+    _set_if_not_user_set('thread_count', BIDI_THREAD_COUNT)
+    _set_if_not_user_set(
+        'sliced_object_download_component_size', BIDI_COMPONENT_SIZE
+    )
+    _set_if_not_user_set(
+        'sliced_object_download_threshold',
+        BIDI_SLICED_OBJECT_DOWNLOAD_THRESHOLD,
+    )
+
+    if is_estimated_multi_file_workload:
+      _set_if_not_user_set(
+          'process_count', min(cpu_count, BIDI_MAX_PROCESS_COUNT_MULTI_FILE)
+      )
+      _set_if_not_user_set(
+          'sliced_object_download_max_components',
+          BIDI_MULTI_FILE_MAX_COMPONENTS,
+      )
+    else:
+      _set_if_not_user_set(
+          'process_count', min(cpu_count, BIDI_MAX_PROCESS_COUNT_SINGLE_FILE)
+      )
+      _set_if_not_user_set(
+          'sliced_object_download_max_components',
+          min(cpu_count, BIDI_MAX_PROCESS_COUNT_SINGLE_FILE),
+      )
+    return
+
   if is_estimated_multi_file_workload:
     _set_if_not_user_set('sliced_object_download_component_size',
                          COMPONENT_SIZE)

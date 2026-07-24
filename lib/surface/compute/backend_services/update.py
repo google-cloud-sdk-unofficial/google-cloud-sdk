@@ -142,6 +142,7 @@ class UpdateHelper(object):
     flags.AddLoggingSampleRate(parser)
     flags.AddLoggingOptional(parser)
     flags.AddLoggingOptionalFields(parser)
+    flags.AddLoggingHttpHeaders(parser, register_no_flags=True)
 
     AddIapFlag(parser)
     flags.AddCustomRequestHeaders(parser, remove_all_flag=True, default=None)
@@ -404,6 +405,10 @@ class UpdateHelper(object):
         args.IsSpecified('logging_sample_rate'),
         args.IsSpecified('logging_optional'),
         args.IsSpecified('logging_optional_fields'),
+        args.IsSpecified('logging_http_request_headers'),
+        args.IsSpecified('logging_http_response_headers'),
+        args.IsSpecified('no_logging_http_request_headers'),
+        args.IsSpecified('no_logging_http_response_headers'),
         args.IsSpecified('health_checks'),
         args.IsSpecified('https_health_checks'),
         args.IsSpecified('no_health_checks'),

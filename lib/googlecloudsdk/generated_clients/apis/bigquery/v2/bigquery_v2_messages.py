@@ -86,6 +86,7 @@ class Argument(_messages.Message):
       set for procedures only.
     name: Optional. The name of this argument. Can be absent for function
       return argument.
+    tableType: Optional. Set if argument_kind == FIXED_TABLE.
   """
 
   class ArgumentKindValueValuesEnum(_messages.Enum):
@@ -97,10 +98,15 @@ class Argument(_messages.Message):
         can be a struct or an array, but not a table.
       ANY_TYPE: The argument is any type, including struct or array, but not a
         table.
+      FIXED_TABLE: The argument is a table with fully specified column names
+        and types.
+      ANY_TABLE: The argument is any table type.
     """
     ARGUMENT_KIND_UNSPECIFIED = 0
     FIXED_TYPE = 1
     ANY_TYPE = 2
+    FIXED_TABLE = 3
+    ANY_TABLE = 4
 
   class ModeValueValuesEnum(_messages.Enum):
     r"""Optional. Specifies whether the argument is input or output. Can be
@@ -122,6 +128,7 @@ class Argument(_messages.Message):
   isAggregate = _messages.BooleanField(3)
   mode = _messages.EnumField('ModeValueValuesEnum', 4)
   name = _messages.StringField(5)
+  tableType = _messages.MessageField('StandardSqlTableType', 6)
 
 
 class ArimaCoefficients(_messages.Message):
@@ -4791,6 +4798,9 @@ class JobConfiguration(_messages.Message):
       reservation is determined based on the rules defined by the reservation
       assignments. The expected format is
       `projects/{project}/locations/{location}/reservations/{reservation}`.
+      Forces the query to use on-demand billing when set to `none`, which
+      requires the project or organization to have `reservation_override_mode`
+      set to `ALLOW_ANY_OVERRIDE`.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -7480,6 +7490,9 @@ class QueryRequest(_messages.Message):
       User can specify a reservation to execute the job.query. The expected
       format is
       `projects/{project}/locations/{location}/reservations/{reservation}`.
+      Forces the query to use on-demand billing when set to `none`. This
+      requires the project or organization to have `reservation_override_mode`
+      set to `ALLOW_ANY_OVERRIDE`.
     timeoutMs: Optional. Optional: Specifies the maximum amount of time, in
       milliseconds, that the client is willing to wait for the query to
       complete. By default, this limit is 10 seconds (10,000 milliseconds). If
@@ -7664,6 +7677,121 @@ class QueryResponse(_messages.Message):
     startTime: Output only. Start time of this query, in milliseconds since
       the epoch. This field will be present when the query job transitions
       from the PENDING state to either RUNNING or DONE.
+    statementType: Output only. The type of query statement, if valid.
+      Possible values: * `SELECT`:
+      [`SELECT`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/query-syntax#select_list) statement. * `ASSERT`:
+      [`ASSERT`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/debugging-statements#assert) statement. * `INSERT`:
+      [`INSERT`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/dml-syntax#insert_statement) statement. * `UPDATE`:
+      [`UPDATE`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/dml-syntax#update_statement) statement. * `DELETE`:
+      [`DELETE`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/data-manipulation-language) statement. * `MERGE`:
+      [`MERGE`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/data-manipulation-language) statement. * `CREATE_TABLE`: [`CREATE
+      TABLE`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/data-definition-language#create_table_statement) statement, without
+      `AS SELECT`. * `CREATE_TABLE_AS_SELECT`: [`CREATE TABLE AS
+      SELECT`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/data-definition-language#create_table_statement) statement. *
+      `CREATE_VIEW`: [`CREATE
+      VIEW`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/data-definition-language#create_view_statement) statement. *
+      `CREATE_MODEL`: [`CREATE MODEL`](https://cloud.google.com/bigquery-
+      ml/docs/reference/standard-sql/bigqueryml-syntax-
+      create#create_model_statement) statement. * `CREATE_MATERIALIZED_VIEW`:
+      [`CREATE MATERIALIZED
+      VIEW`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/data-definition-language#create_materialized_view_statement)
+      statement. * `CREATE_FUNCTION`: [`CREATE
+      FUNCTION`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/data-definition-language#create_function_statement) statement. *
+      `CREATE_TABLE_FUNCTION`: [`CREATE TABLE
+      FUNCTION`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/data-definition-language#create_table_function_statement) statement.
+      * `CREATE_PROCEDURE`: [`CREATE
+      PROCEDURE`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/data-definition-language#create_procedure) statement. *
+      `CREATE_ROW_ACCESS_POLICY`: [`CREATE ROW ACCESS
+      POLICY`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/data-definition-language#create_row_access_policy_statement)
+      statement. * `CREATE_SCHEMA`: [`CREATE
+      SCHEMA`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/data-definition-language#create_schema_statement) statement. *
+      `CREATE_SNAPSHOT_TABLE`: [`CREATE SNAPSHOT
+      TABLE`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/data-definition-language#create_snapshot_table_statement) statement.
+      * `CREATE_SEARCH_INDEX`: [`CREATE SEARCH
+      INDEX`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/data-definition-language#create_search_index_statement) statement. *
+      `DROP_TABLE`: [`DROP
+      TABLE`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/data-definition-language#drop_table_statement) statement. *
+      `DROP_EXTERNAL_TABLE`: [`DROP EXTERNAL
+      TABLE`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/data-definition-language#drop_external_table_statement) statement. *
+      `DROP_VIEW`: [`DROP
+      VIEW`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/data-definition-language#drop_view_statement) statement. *
+      `DROP_MODEL`: [`DROP MODEL`](https://cloud.google.com/bigquery-
+      ml/docs/reference/standard-sql/bigqueryml-syntax-drop-model) statement.
+      * `DROP_MATERIALIZED_VIEW`: [`DROP MATERIALIZED
+      VIEW`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/data-definition-language#drop_materialized_view_statement)
+      statement. * `DROP_FUNCTION` : [`DROP
+      FUNCTION`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/data-definition-language#drop_function_statement) statement. *
+      `DROP_TABLE_FUNCTION` : [`DROP TABLE
+      FUNCTION`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/data-definition-language#drop_table_function) statement. *
+      `DROP_PROCEDURE`: [`DROP
+      PROCEDURE`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/data-definition-language#drop_procedure_statement) statement. *
+      `DROP_SEARCH_INDEX`: [`DROP SEARCH
+      INDEX`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/data-definition-language#drop_search_index) statement. *
+      `DROP_SCHEMA`: [`DROP
+      SCHEMA`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/data-definition-language#drop_schema_statement) statement. *
+      `DROP_SNAPSHOT_TABLE`: [`DROP SNAPSHOT
+      TABLE`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/data-definition-language#drop_snapshot_table_statement) statement. *
+      `DROP_ROW_ACCESS_POLICY`: [`DROP [ALL] ROW ACCESS POLICY|POLICIES`](http
+      s://cloud.google.com/bigquery/docs/reference/standard-sql/data-
+      definition-language#drop_row_access_policy_statement) statement. *
+      `ALTER_TABLE`: [`ALTER
+      TABLE`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/data-definition-language#alter_table_set_options_statement)
+      statement. * `ALTER_VIEW`: [`ALTER
+      VIEW`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/data-definition-language#alter_view_set_options_statement)
+      statement. * `ALTER_MATERIALIZED_VIEW`: [`ALTER MATERIALIZED
+      VIEW`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/data-definition-
+      language#alter_materialized_view_set_options_statement) statement. *
+      `ALTER_SCHEMA`: [`ALTER
+      SCHEMA`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/data-definition-language#alter_schema_set_options_statement)
+      statement. * `SCRIPT`:
+      [`SCRIPT`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/procedural-language). * `TRUNCATE_TABLE`: [`TRUNCATE
+      TABLE`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/dml-syntax#truncate_table_statement) statement. *
+      `CREATE_EXTERNAL_TABLE`: [`CREATE EXTERNAL
+      TABLE`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/data-definition-language#create_external_table_statement) statement.
+      * `EXPORT_DATA`: [`EXPORT
+      DATA`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/other-statements#export_data_statement) statement. * `EXPORT_MODEL`:
+      [`EXPORT MODEL`](https://cloud.google.com/bigquery-
+      ml/docs/reference/standard-sql/bigqueryml-syntax-export-model)
+      statement. * `LOAD_DATA`: [`LOAD
+      DATA`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/other-statements#load_data_statement) statement. * `CALL`:
+      [`CALL`](https://cloud.google.com/bigquery/docs/reference/standard-
+      sql/procedural-language#call) statement.
     totalBytesBilled: Output only. If the project is configured to use on-
       demand pricing, then this field contains the total bytes billed for the
       job. If the project is configured to use flat-rate pricing, then you are
@@ -7698,10 +7826,11 @@ class QueryResponse(_messages.Message):
   schema = _messages.MessageField('TableSchema', 18)
   sessionInfo = _messages.MessageField('SessionInfo', 19)
   startTime = _messages.IntegerField(20)
-  totalBytesBilled = _messages.IntegerField(21)
-  totalBytesProcessed = _messages.IntegerField(22)
-  totalRows = _messages.IntegerField(23, variant=_messages.Variant.UINT64)
-  totalSlotMs = _messages.IntegerField(24)
+  statementType = _messages.StringField(21)
+  totalBytesBilled = _messages.IntegerField(22)
+  totalBytesProcessed = _messages.IntegerField(23)
+  totalRows = _messages.IntegerField(24, variant=_messages.Variant.UINT64)
+  totalSlotMs = _messages.IntegerField(25)
 
 
 class QueryTimelineSample(_messages.Message):
@@ -8536,10 +8665,19 @@ class SkewSource(_messages.Message):
   r"""Details about source stages which produce skewed data.
 
   Fields:
+    outputBytesMax: Output only. Max partition output size (in bytes) for this
+      stage.
+    outputBytesMedian: Output only. Median partition output size (in bytes)
+      for this stage.
+    outputBytesP95: Output only. 95-th percentile of partition output size (in
+      bytes) for this stage.
     stageId: Output only. Stage id of the skew source stage.
   """
 
-  stageId = _messages.IntegerField(1)
+  outputBytesMax = _messages.IntegerField(1)
+  outputBytesMedian = _messages.IntegerField(2)
+  outputBytesP95 = _messages.IntegerField(3)
+  stageId = _messages.IntegerField(4)
 
 
 class SnapshotDefinition(_messages.Message):

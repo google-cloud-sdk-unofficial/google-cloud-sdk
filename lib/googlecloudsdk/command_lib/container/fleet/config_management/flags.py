@@ -85,7 +85,8 @@ class Parser:
       flag = '--fleet-default-member-config' if is_fleet_default else '--config'
       raise exceptions.Error(
           f'{flag} does not support the following API schema fields:'
-          f' {legacy_fields}. See --help for more details'
+          f' {legacy_fields}. See'
+          ' https://docs.cloud.google.com/kubernetes-engine/config-sync/docs/reference/gcloud-configuration-field-behavior#unsupported_fields'
       )
     if cm_spec.configSync and cm_spec.configSync.enabled is None:
       cm_spec.configSync.enabled = True

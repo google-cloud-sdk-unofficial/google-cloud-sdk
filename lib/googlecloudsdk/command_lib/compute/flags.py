@@ -1081,7 +1081,11 @@ def AddSourceDiskCsekKeyArg(parser):
   parser.add_argument(
       '--source-disk-csek-key',
       type=arg_parsers.ArgDict(spec=spec),
-      action='append',
+      action=actions.DeprecationAction(
+          '--source-disk-csek-key',
+          warn='The {flag_name} flag is deprecated.',
+          removed=False,
+          action='append'),
       metavar='PROPERTY=VALUE',
       help="""
               Customer-supplied encryption key of the disk attached to the

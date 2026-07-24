@@ -23,13 +23,9 @@
 
 import os
 
-from dulwich.file import GitFile
-from dulwich.index import (
-    commit_tree,
-    iter_fresh_objects,
-)
-from dulwich.reflog import drop_reflog_entry, read_reflog
-
+from .file import GitFile
+from .index import commit_tree, iter_fresh_objects
+from .reflog import drop_reflog_entry, read_reflog
 
 DEFAULT_STASH_REF = b"refs/stash"
 
@@ -40,15 +36,13 @@ class Stash:
     Note that this doesn't currently update the working tree.
     """
 
-    def __init__(self, repo, ref=DEFAULT_STASH_REF):
+    def __init__(self, repo, ref=DEFAULT_STASH_REF) -> None:
         self._ref = ref
         self._repo = repo
 
     @property
     def _reflog_path(self):
-        return os.path.join(
-            self._repo.commondir(), "logs", os.fsdecode(self._ref)
-        )
+        return os.path.join(self._repo.commondir(), "logs", os.fsdecode(self._ref))
 
     def stashes(self):
         try:
@@ -99,7 +93,7 @@ class Stash:
             message=b"Index stash",
             merge_heads=[self._repo.head()],
             no_verify=True,
-            **commit_kwargs
+            **commit_kwargs,
         )
 
         # Then, the working tree one.
@@ -124,7 +118,7 @@ class Stash:
             message=message,
             merge_heads=[index_commit_id],
             no_verify=True,
-            **commit_kwargs
+            **commit_kwargs,
         )
 
         return cid
@@ -132,5 +126,5 @@ class Stash:
     def __getitem__(self, index):
         return list(self.stashes())[index]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(list(self.stashes()))

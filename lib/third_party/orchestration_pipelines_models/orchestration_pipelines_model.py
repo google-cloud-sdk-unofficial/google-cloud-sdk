@@ -15,23 +15,24 @@
 """Wrapper model for union of pipeline models."""
 
 from typing import Union
+
 from orchestration_pipelines_models.pipeline_v1_model.orchestration_pipeline_builder import (
-    OrchestrationPipelineBuilder, )
+    OrchestrationPipelineBuilder,
+)
 from orchestration_pipelines_models.pipeline_v1_model.protos.orchestration_pipeline_pb2 import (
-    OrchestrationPipeline, )
+    OrchestrationPipeline,
+)
 
 
 class OrchestrationPipelinesModel:
-    """
-    Wrapper class for orchestration pipelines models.
+    """Wrapper class for orchestration pipelines models.
     This class provides a `build` method to parse a dictionary
     and return the correct model version.
     """
 
     @classmethod
     def build(cls, pipeline_def: dict) -> Union[OrchestrationPipeline]:
-        """
-        Builds 1.0 pipeline model from a dictionary based on `modelVersion`.
+        """Builds 1.0 pipeline model from a dictionary based on `modelVersion`.
 
         Args:
             pipeline_def: A dictionary representing the pipeline model.
@@ -48,7 +49,8 @@ class OrchestrationPipelinesModel:
 
         # Support both camelCase ('modelVersion') and snake_case ('model_version').
         model_version = pipeline_def.get("modelVersion") or pipeline_def.get(
-            "model_version")
+            "model_version"
+        )
 
         # For backwards compatibility, map legacy "v2" to "1.0".
         builder_dict = pipeline_def.copy()
@@ -61,4 +63,5 @@ class OrchestrationPipelinesModel:
         else:
             raise ValueError(
                 f"Invalid or missing 'model_version'. Value: {model_version}. "
-                "Expected '1.0'.")
+                "Expected '1.0'."
+            )

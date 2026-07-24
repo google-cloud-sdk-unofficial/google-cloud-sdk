@@ -4191,6 +4191,21 @@ def AddServerCertificateRotationMode(parser, hidden=False):
   )
 
 
+# TODO(b/531563818): Mark the flag hidden=False once it is ready to be public.
+def AddDatabaseCenterIntegrationEnabled(parser, show_negated_in_help=True,
+                                        hidden=True):
+  """Adds '--[no-]database-center-integration-enabled' flag to the parser."""
+  kwargs = _GetKwargsForBoolFlag(show_negated_in_help)
+  parser.add_argument(
+      '--database-center-integration-enabled',
+      help=(
+          'Whether the instance is integrated with Database Center.'
+      ),
+      hidden=hidden,
+      **kwargs
+  )
+
+
 def GetInstanceClearOverrides(args: parser_extensions.Namespace) -> list[str]:
   """Returns a list of source instance settings that should be cleared when creating the new target instance.
 

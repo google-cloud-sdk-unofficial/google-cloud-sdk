@@ -277,15 +277,11 @@
               help_text: |
                 Creates a Key configured for Express assessments.
         - group:
-            # TODO b/501106150 - Unhide.
-            hidden: true
             help_text: |
               Options for the creation of a Universal site key.
             params:
             - arg_name: universal
               required: true
-              # TODO b/501106150 - Unhide.
-              hidden: true
               type: bool
               help_text: |
                 Creates a Universal site key.

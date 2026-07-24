@@ -1305,6 +1305,73 @@ def AddLoggingOptionalFields(parser):
   )
 
 
+def AddLoggingHttpHeaders(parser, register_no_flags=False):
+  """Adds logging HTTP headers flags to the argparse."""
+  if register_no_flags:
+    request_group = parser.add_mutually_exclusive_group()
+    request_group.add_argument(
+        '--logging-http-request-headers',
+        type=arg_parsers.ArgList(),
+        metavar='LOGGING_HTTP_REQUEST_HEADERS',
+        help="""\
+      This field can only be specified if logging is enabled for the backend
+      service. Contains a comma-separated list of HTTP request headers you want
+      to include in the logs.
+      """,
+    )
+    request_group.add_argument(
+        '--no-logging-http-request-headers',
+        action='store_true',
+        default=None,
+        help="""\
+        Remove all logging HTTP request headers for the backend service.
+        """,
+    )
+  else:
+    parser.add_argument(
+        '--logging-http-request-headers',
+        type=arg_parsers.ArgList(),
+        metavar='LOGGING_HTTP_REQUEST_HEADERS',
+        help="""\
+      This field can only be specified if logging is enabled for the backend
+      service. Contains a comma-separated list of HTTP request headers you want
+      to include in the logs.
+      """,
+    )
+
+  if register_no_flags:
+    response_group = parser.add_mutually_exclusive_group()
+    response_group.add_argument(
+        '--logging-http-response-headers',
+        type=arg_parsers.ArgList(),
+        metavar='LOGGING_HTTP_RESPONSE_HEADERS',
+        help="""\
+      This field can only be specified if logging is enabled for the backend
+      service. Contains a comma-separated list of HTTP response headers you want
+      to include in the logs.
+      """,
+    )
+    response_group.add_argument(
+        '--no-logging-http-response-headers',
+        action='store_true',
+        default=None,
+        help="""\
+        Remove all logging HTTP response headers for the backend service.
+        """,
+    )
+  else:
+    parser.add_argument(
+        '--logging-http-response-headers',
+        type=arg_parsers.ArgList(),
+        metavar='LOGGING_HTTP_RESPONSE_HEADERS',
+        help="""\
+      This field can only be specified if logging is enabled for the backend
+      service. Contains a comma-separated list of HTTP response headers you want
+      to include in the logs.
+      """,
+    )
+
+
 def AddInstanceGroupAndNetworkEndpointGroupArgs(
     parser,
     verb,

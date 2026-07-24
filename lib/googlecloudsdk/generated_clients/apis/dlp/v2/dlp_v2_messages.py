@@ -3660,12 +3660,12 @@ class GooglePrivacyDlpV2AnalyzeDataSourceRiskDetails(_messages.Message):
   r"""Result of a risk analysis operation request.
 
   Fields:
-    categoricalStatsResult: Categorical stats result
-    deltaPresenceEstimationResult: Delta-presence result
-    kAnonymityResult: K-anonymity result
-    kMapEstimationResult: K-map result
-    lDiversityResult: L-divesity result
-    numericalStatsResult: Numerical stats result
+    categoricalStatsResult: Output only. Categorical stats result
+    deltaPresenceEstimationResult: Output only. Delta-presence result
+    kAnonymityResult: Output only. K-anonymity result
+    kMapEstimationResult: Output only. K-map result
+    lDiversityResult: Output only. L-divesity result
+    numericalStatsResult: Output only. Numerical stats result
     requestedOptions: The configuration used for this job.
     requestedPrivacyMetric: Privacy metric to compute.
     requestedSourceTable: Input dataset to compute metrics over.
@@ -6597,9 +6597,9 @@ class GooglePrivacyDlpV2DiscoveryConfig(_messages.Message):
       data-protection/docs/data-profiles#data-residency.
     lastRunTime: Output only. The timestamp of the last time this config was
       executed.
-    name: Unique resource name for the DiscoveryConfig, assigned by the
-      service when the DiscoveryConfig is created, for example `projects/dlp-
-      test-project/locations/global/discoveryConfigs/53234423`.
+    name: Output only. Unique resource name for the DiscoveryConfig, assigned
+      by the service when the DiscoveryConfig is created, for example
+      `projects/dlp-test-project/locations/global/discoveryConfigs/53234423`.
     orgConfig: Only set when the parent is an org.
     otherCloudStartingLocation: Must be set only when scanning other clouds.
     processingLocation: Optional. Processing location configuration. Vertex AI
@@ -7044,7 +7044,8 @@ class GooglePrivacyDlpV2DlpJob(_messages.Message):
     TypeValueValuesEnum: The type of job.
 
   Fields:
-    actionDetails: Events that should occur after the job has completed.
+    actionDetails: Output only. Events that should occur after the job has
+      completed.
     createTime: Output only. Time when the job was created.
     endTime: Output only. Time when the job finished.
     errors: Output only. A stream of errors encountered running the job.
@@ -8603,10 +8604,14 @@ class GooglePrivacyDlpV2InfoTypeCondition(_messages.Message):
   Fields:
     anyInfoType: match any info types.
     infoTypes: match any of these info types.
+    minCount: Optional. The minimum total number of findings of all matching
+      info types required for this condition to evaluate to true. Defaults to
+      1 if unset.
   """
 
   anyInfoType = _messages.MessageField('GoogleProtobufEmpty', 1)
   infoTypes = _messages.MessageField('GooglePrivacyDlpV2InfoTypes', 2)
+  minCount = _messages.IntegerField(3)
 
 
 class GooglePrivacyDlpV2InfoTypeDescription(_messages.Message):
@@ -8937,7 +8942,7 @@ class GooglePrivacyDlpV2InspectDataSourceDetails(_messages.Message):
 
   Fields:
     requestedOptions: The configuration used for this job.
-    result: A summary of the outcome of this inspection job.
+    result: Output only. A summary of the outcome of this inspection job.
   """
 
   requestedOptions = _messages.MessageField('GooglePrivacyDlpV2RequestedOptions', 1)
@@ -9069,9 +9074,9 @@ class GooglePrivacyDlpV2JobTrigger(_messages.Message):
     inspectJob: For inspect jobs, a snapshot of the configuration.
     lastRunTime: Output only. The timestamp of the last time this trigger
       executed.
-    name: Unique resource name for the triggeredJob, assigned by the service
-      when the triggeredJob is created, for example `projects/dlp-test-
-      project/jobTriggers/53234423`.
+    name: Output only. Unique resource name for the triggeredJob, assigned by
+      the service when the triggeredJob is created, for example `projects/dlp-
+      test-project/jobTriggers/53234423`.
     status: Required. A status for this trigger.
     triggers: A list of triggers which will be OR'ed together. Only one in the
       list needs to trigger for a job to be started. The list may contain only
@@ -10888,8 +10893,8 @@ class GooglePrivacyDlpV2RequestedOptions(_messages.Message):
 
   Fields:
     jobConfig: Inspect config.
-    snapshotInspectTemplate: If run with an InspectTemplate, a snapshot of its
-      state at the time of this run.
+    snapshotInspectTemplate: Output only. If run with an InspectTemplate, a
+      snapshot of its state at the time of this run.
   """
 
   jobConfig = _messages.MessageField('GooglePrivacyDlpV2InspectJobConfig', 1)

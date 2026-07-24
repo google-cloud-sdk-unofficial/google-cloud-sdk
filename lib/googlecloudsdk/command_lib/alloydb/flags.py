@@ -2548,14 +2548,6 @@ def _AddAutoscalerFlags(group):
   )
 
   group.add_argument(
-      '--autoscaler-set-schedule',
-      required=False,
-      type=str,
-      default=None,
-      help='The name of the schedule to create or update for the autoscaler.',
-  )
-
-  group.add_argument(
       '--autoscaler-schedule-cron-exp',
       required=False,
       type=str,
@@ -2602,8 +2594,15 @@ def AddAutoscalerCreateFlags(parser):
   Args:
     parser: argparse.Parser: Parser object for command line inputs.
   """
-  group = parser.add_group(help='Autoscaler flags.', hidden=True)
+  group = parser.add_group(help='Autoscaler flags.')
   _AddAutoscalerFlags(group)
+  group.add_argument(
+      '--autoscaler-set-schedule',
+      required=False,
+      type=str,
+      default=None,
+      help='The name of the schedule to create for the autoscaler.',
+  )
 
 
 def AddAutoscalerUpdateFlags(parser):
@@ -2612,9 +2611,19 @@ def AddAutoscalerUpdateFlags(parser):
   Args:
     parser: argparse.Parser: Parser object for command line inputs.
   """
-  group = parser.add_group(help='Autoscaler flags.', hidden=True)
+  group = parser.add_group(help='Autoscaler flags.')
   _AddAutoscalerFlags(group)
-  group.add_argument(
+  schedule_group = group.add_group(
+      help='Autoscaler schedule flags.', mutex=True
+  )
+  schedule_group.add_argument(
+      '--autoscaler-set-schedule',
+      required=False,
+      type=str,
+      default=None,
+      help='The name of the schedule to create or update for the autoscaler.',
+  )
+  schedule_group.add_argument(
       '--autoscaler-delete-schedule',
       required=False,
       type=str,
@@ -2622,15 +2631,14 @@ def AddAutoscalerUpdateFlags(parser):
       help='The name of the schedule to delete for the autoscaler.',
   )
 
-  group.add_argument(
+  schedule_group.add_argument(
       '--autoscaler-disable-schedule',
       required=False,
       type=str,
       default=None,
       help='The name of the schedule to disable for the autoscaler.',
   )
-
-  group.add_argument(
+  schedule_group.add_argument(
       '--autoscaler-enable-schedule',
       required=False,
       type=str,

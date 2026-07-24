@@ -119,6 +119,10 @@ def _UpdateUserAgentInHeaders(headers: Dict[str, str]) -> None:
     parts.append(user_agent)
   if bq_component and bq_component.lower() not in user_agent.lower():
     parts.append(bq_component)
+  if agent_name := metrics.get('agent_name'):
+    agent_part = f'agent-name/{agent_name}'
+    if agent_part.lower() not in user_agent.lower():
+      parts.append(agent_part)
   if environment := metrics.get('environment'):
     env_part = f'environment/{environment}'
     if env_part.lower() not in user_agent.lower():

@@ -1624,6 +1624,33 @@ class SecuresourcemanagerV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def FetchRefs(self, request, global_params=None):
+      r"""Fetches git references from a repository.
+
+      Args:
+        request: (SecuresourcemanagerProjectsLocationsRepositoriesFetchRefsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (FetchRefsResponse) The response message.
+      """
+      config = self.GetMethodConfig('FetchRefs')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    FetchRefs.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/repositories/{repositoriesId}:fetchRefs',
+        http_method='GET',
+        method_id='securesourcemanager.projects.locations.repositories.fetchRefs',
+        ordered_params=['repository'],
+        path_params=['repository'],
+        query_params=['pageSize', 'pageToken', 'type'],
+        relative_path='v1/{+repository}:fetchRefs',
+        request_field='',
+        request_type_name='SecuresourcemanagerProjectsLocationsRepositoriesFetchRefsRequest',
+        response_type_name='FetchRefsResponse',
+        supports_download=False,
+    )
+
     def FetchTree(self, request, global_params=None):
       r"""Fetches a tree from a repository.
 

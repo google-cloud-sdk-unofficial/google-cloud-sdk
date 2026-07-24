@@ -96,6 +96,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_EGRESSROUTINGS = (
+      'projects.locations.egressRoutings',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/egressRoutings/'
+              '{egressRoutingsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_ENDPOINTPOLICIES = (
       'projects.locations.endpointPolicies',
       '{+name}',
@@ -416,6 +427,17 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/operations/'
               '{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_PRODUCEREXTENSIONS = (
+      'projects.locations.producerExtensions',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'producerExtensions/{producerExtensionsId}',
       },
       ['name'],
       True

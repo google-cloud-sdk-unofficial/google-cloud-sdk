@@ -65,14 +65,18 @@ class Common(base.FeatureCommand):
     # TODO(b/298461043): Scan for illegal fields by reading from
     # utils.APPLY_SPEC_VERSION_1. Access specific fields via constant variables
     # in utils.
-    return self.messages.ConfigManagementMembershipSpec(
+    cm_spec = self.messages.ConfigManagementMembershipSpec(
         configSync=self._parse_config_sync(config),
         policyController=self._parse_policy_controller(config),
         hierarchyController=self._parse_hierarchy_controller_config(config),
-        management=self._parse_upgrades(config),
         cluster=config.get('spec', {}).get('cluster', ''),
         version=config['spec'].get(utils.VERSION),
     )
+    # Do not populate management field by default to ease migration to update
+    # command.
+    if utils.UPGRADES in config['spec']:
+      cm_spec.management = self._parse_upgrades(config)
+    return cm_spec
 
   def _parse_config_sync(self, configmanagement):
     """Load ConfigSync configuration with the parsed configmanagement yaml.

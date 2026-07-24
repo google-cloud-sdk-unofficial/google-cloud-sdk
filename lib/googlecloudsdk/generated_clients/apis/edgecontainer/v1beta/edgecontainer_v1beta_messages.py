@@ -11,6 +11,108 @@ from apitools.base.py import extra_types
 package = 'edgecontainer'
 
 
+class ApiKey(_messages.Message):
+  r"""Represents the API key resource.
+
+  Enums:
+    StateValueValuesEnum: Output only. The state of the API key CR in the
+      cluster.
+
+  Messages:
+    LabelsValue: Optional. Labels associated with this resource.
+
+  Fields:
+    apiTargets: Optional. The API targets that the API key is restricted to.
+      If empty, all APIs are allowed.
+    createTime: Output only. The time when the API key was generated.
+    deleteTime: Output only. The time when the API key resource was deleted.
+    expireTime: Output only. Set based on key_generation_time and validity
+      duration
+    key: Output only. The apikey string from the APIKey CR status.
+    labels: Optional. Labels associated with this resource.
+    name: Identifier. The canonical resource name of the API key. E.g.
+      projects/{project}/locations/{location}/apiKeys/{api_key}
+    reason: Output only. The reason for the APIKey CR state.
+    serviceAccountName: Required. The canonical resource name of the service
+      account associated with the API key.
+    state: Output only. The state of the API key CR in the cluster.
+    updateTime: Output only. The time when the API key resource was last
+      updated.
+    validity: Optional. Input only. Duration for which the API key is valid.
+    zone: Required. The zone id of the zone on which the project service
+      account has to be created.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the API key CR in the cluster.
+
+    Values:
+      STATE_UNKNOWN: Unknown state if reconciliation has not run yet.
+      ACTIVE: The key is active and can be used to authenticate.
+      NOT_ACTIVE: The key is not active and cannot be used to authenticate.
+        This can happen if the key has expired or the service account is not
+        active or an internal error has occurred.
+      REPAIRING: The key is being repaired/reconciled.
+    """
+    STATE_UNKNOWN = 0
+    ACTIVE = 1
+    NOT_ACTIVE = 2
+    REPAIRING = 3
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels associated with this resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  apiTargets = _messages.MessageField('ApiTarget', 1, repeated=True)
+  createTime = _messages.StringField(2)
+  deleteTime = _messages.StringField(3)
+  expireTime = _messages.StringField(4)
+  key = _messages.StringField(5)
+  labels = _messages.MessageField('LabelsValue', 6)
+  name = _messages.StringField(7)
+  reason = _messages.StringField(8)
+  serviceAccountName = _messages.StringField(9)
+  state = _messages.EnumField('StateValueValuesEnum', 10)
+  updateTime = _messages.StringField(11)
+  validity = _messages.StringField(12)
+  zone = _messages.StringField(13)
+
+
+class ApiTarget(_messages.Message):
+  r"""Represents a restriction on the API key. This is provided by the user as
+  input.
+
+  Fields:
+    methods: Optional. Follows rules in gcp apitarget restrictions, supports
+      wildcards If empty, all methods are allowed.
+    service: Optional. The service's fqdn (checked against req.Host in API
+      calls).
+  """
+
+  methods = _messages.StringField(1, repeated=True)
+  service = _messages.StringField(2)
+
+
 class Authorization(_messages.Message):
   r"""RBAC policy that will be applied and managed by GEC.
 
@@ -22,6 +124,18 @@ class Authorization(_messages.Message):
   """
 
   adminUsers = _messages.MessageField('ClusterUser', 1)
+
+
+class Binding(_messages.Message):
+  r"""Binding represents a role binding in the IAM policy.
+
+  Fields:
+    members: Optional. The members to bind the role to.
+    role: Required. The role in the IAM policy to bind the members to.
+  """
+
+  members = _messages.MessageField('Principal', 1, repeated=True)
+  role = _messages.StringField(2)
 
 
 class CancelOperationRequest(_messages.Message):
@@ -450,6 +564,40 @@ class ControlPlaneEncryption(_messages.Message):
   resourceState = _messages.EnumField('ResourceStateValueValuesEnum', 5)
 
 
+class DNSServer(_messages.Message):
+  r"""Represents a DNS server for the zone.
+
+  Fields:
+    ipAddress: Output only. The IP address of the DNS server.
+    tld: Output only. The DNS server's top level domain.
+  """
+
+  ipAddress = _messages.StringField(1)
+  tld = _messages.StringField(2)
+
+
+class DescribeServiceAccountKeyRequest(_messages.Message):
+  r"""Request proto for DescribeServiceAccountKey API.
+
+  Fields:
+    keyId: Required. The key id to get.
+  """
+
+  keyId = _messages.StringField(1)
+
+
+class DescribeServiceAccountKeyResponse(_messages.Message):
+  r"""Response proto for DescribeServiceAccountKey API.
+
+  Fields:
+    key_id: Output only. The public key id.
+    valid_before: Output only. The expiry time of the key.
+  """
+
+  key_id = _messages.StringField(1)
+  valid_before = _messages.StringField(2)
+
+
 class Details(_messages.Message):
   r"""The created connection details.
 
@@ -481,6 +629,204 @@ class Details(_messages.Message):
   cloudVpns = _messages.MessageField('CloudVpn', 2, repeated=True)
   error = _messages.StringField(3)
   state = _messages.EnumField('StateValueValuesEnum', 4)
+
+
+class DisableServiceAccountKeyRequest(_messages.Message):
+  r"""Request proto for DisableServiceAccountKey API.
+
+  Fields:
+    keyId: Required. The key id to disable.
+  """
+
+  keyId = _messages.StringField(1)
+
+
+class DisableServiceAccountKeyResponse(_messages.Message):
+  r"""Response proto for DisableServiceAccountKey API.
+
+  Fields:
+    deleteTime: Output only. The timestamp when the key was disabled.
+    keyId: Output only. The disabled key id.
+  """
+
+  deleteTime = _messages.StringField(1)
+  keyId = _messages.StringField(2)
+
+
+class DisableZonalProjectRequest(_messages.Message):
+  r"""Disables a zonal project.
+
+  Fields:
+    requestId: Optional. A unique identifier for this request. Restricted to
+      36 ASCII characters. A random UUID is recommended. This request is only
+      idempotent if `request_id` is provided.
+  """
+
+  requestId = _messages.StringField(1)
+
+
+class DisableZonalServiceRequest(_messages.Message):
+  r"""Disable ZonalService Request. The API will remove access for the service
+  producers.
+
+  Fields:
+    requestId: Optional. Idempotent request UUID.
+  """
+
+  requestId = _messages.StringField(1)
+
+
+class EdgecontainerOrganizationsLocationsZonesGetRequest(_messages.Message):
+  r"""A EdgecontainerOrganizationsLocationsZonesGetRequest object.
+
+  Fields:
+    name: Required. The canonical resource name of the zone. E.g.
+      organizations/*/locations/*/zone/*
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class EdgecontainerOrganizationsLocationsZonesListRequest(_messages.Message):
+  r"""A EdgecontainerOrganizationsLocationsZonesListRequest object.
+
+  Fields:
+    filter: Optional. Only resources matching this filter will be listed.
+    orderBy: Optional. Specifies the order in which resources will be listed.
+    pageSize: Optional. The maximum number of items to return.
+    pageToken: Optional. The next_page_token value returned from a previous
+      List request, if any.
+    parent: Required. The parent organization and location.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class EdgecontainerOrganizationsLocationsZonesZonalProjectsDisableRequest(_messages.Message):
+  r"""A EdgecontainerOrganizationsLocationsZonesZonalProjectsDisableRequest
+  object.
+
+  Fields:
+    disableZonalProjectRequest: A DisableZonalProjectRequest resource to be
+      passed as the request body.
+    name: Required. The resource name of the zonal project to disable from a
+      zone.
+  """
+
+  disableZonalProjectRequest = _messages.MessageField('DisableZonalProjectRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class EdgecontainerOrganizationsLocationsZonesZonalProjectsEnableRequest(_messages.Message):
+  r"""A EdgecontainerOrganizationsLocationsZonesZonalProjectsEnableRequest
+  object.
+
+  Fields:
+    parent: Required. The parent zone where the project will be created
+    requestId: Optional. A unique identifier for this request. Restricted to
+      36 ASCII characters. A random UUID is recommended. This request is only
+      idempotent if `request_id` is provided.
+    zonalProject: A ZonalProject resource to be passed as the request body.
+    zonalProjectId: Required. Specified project_id of the consumer project to
+      be enabled.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  zonalProject = _messages.MessageField('ZonalProject', 3)
+  zonalProjectId = _messages.StringField(4)
+
+
+class EdgecontainerOrganizationsLocationsZonesZonalProjectsGetRequest(_messages.Message):
+  r"""A EdgecontainerOrganizationsLocationsZonesZonalProjectsGetRequest
+  object.
+
+  Fields:
+    name: Required. The canonical resource name of the zonal project. E.g.
+      organizations/*/locations/*/zonalProjects/*
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class EdgecontainerOrganizationsLocationsZonesZonalProjectsListRequest(_messages.Message):
+  r"""A EdgecontainerOrganizationsLocationsZonesZonalProjectsListRequest
+  object.
+
+  Fields:
+    filter: Optional. Only resources matching this filter will be listed.
+    orderBy: Optional. Specifies the order in which resources will be listed.
+      Order by fields for the result.
+    pageSize: Optional. The maximum number of resources to list.
+    pageToken: Optional. A page token received from previous list request.
+    parent: Required. The parent zone where the project will be created.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class EdgecontainerProjectsLocationsApiKeysCreateRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsApiKeysCreateRequest object.
+
+  Fields:
+    apiKey: A ApiKey resource to be passed as the request body.
+    apiKeyId: Required. The ID of the API key to create.
+    parent: Required. The parent resource where this key will be created.
+      Format: projects/{project}/locations/{location}
+    requestId: Optional. A unique identifier for this request. Restricted to
+      36 ASCII characters. A random UUID is recommended. This request is only
+      idempotent if `request_id` is provided.
+  """
+
+  apiKey = _messages.MessageField('ApiKey', 1)
+  apiKeyId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class EdgecontainerProjectsLocationsApiKeysDeleteRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsApiKeysDeleteRequest object.
+
+  Fields:
+    name: Required. The canonical resource name of the API key. E.g.
+      projects/{project}/locations/{location}/apiKeys/{api_key}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class EdgecontainerProjectsLocationsApiKeysGetRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsApiKeysGetRequest object.
+
+  Fields:
+    name: Required. The name of the API key to retrieve. Format:
+      projects/{project}/locations/{location}/apiKeys/{api_key}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class EdgecontainerProjectsLocationsApiKeysListRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsApiKeysListRequest object.
+
+  Fields:
+    pageSize: Optional. The maximum number of resources to list.
+    pageToken: Optional. A page token received from previous list request.
+    parent: Required. The parent resource where this key will be created.
+      Format: projects/{project}/locations/{location}
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
 
 
 class EdgecontainerProjectsLocationsClustersCreateRequest(_messages.Message):
@@ -822,6 +1168,133 @@ class EdgecontainerProjectsLocationsOperationsListRequest(_messages.Message):
   returnPartialSuccess = _messages.BooleanField(5)
 
 
+class EdgecontainerProjectsLocationsServiceAccountsCreateRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsServiceAccountsCreateRequest object.
+
+  Fields:
+    parent: Required. The resource name of the identity provider to configure.
+      e.g. project/{project}/locations/{location}
+    requestId: Optional. A unique identifier for this request. Restricted to
+      36 ASCII characters. A random UUID is recommended. This request is only
+      idempotent if `request_id` is provided.
+    serviceAccount: A ServiceAccount resource to be passed as the request
+      body.
+    serviceAccountId: Required. The service account id.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  serviceAccount = _messages.MessageField('ServiceAccount', 3)
+  serviceAccountId = _messages.StringField(4)
+
+
+class EdgecontainerProjectsLocationsServiceAccountsDeleteRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsServiceAccountsDeleteRequest object.
+
+  Fields:
+    name: Required. The canonical resource name of the project service
+      account. E.g. projects/{project}/locations/{location}/serviceAccounts/{s
+      ervice_account}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class EdgecontainerProjectsLocationsServiceAccountsDescribeKeyRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsServiceAccountsDescribeKeyRequest
+  object.
+
+  Fields:
+    describeServiceAccountKeyRequest: A DescribeServiceAccountKeyRequest
+      resource to be passed as the request body.
+    parent: Required. The canonical resource name of the project service
+      account. E.g. projects/{project}/locations/{location}/serviceAccounts/{s
+      ervice_account}
+  """
+
+  describeServiceAccountKeyRequest = _messages.MessageField('DescribeServiceAccountKeyRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
+class EdgecontainerProjectsLocationsServiceAccountsDisableKeyRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsServiceAccountsDisableKeyRequest object.
+
+  Fields:
+    disableServiceAccountKeyRequest: A DisableServiceAccountKeyRequest
+      resource to be passed as the request body.
+    parent: Required. The canonical resource name of the project service
+      account. E.g. projects/{project}/locations/{location}/serviceAccounts/{s
+      ervice_account}
+  """
+
+  disableServiceAccountKeyRequest = _messages.MessageField('DisableServiceAccountKeyRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
+class EdgecontainerProjectsLocationsServiceAccountsGenerateKeyRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsServiceAccountsGenerateKeyRequest
+  object.
+
+  Fields:
+    generateServiceAccountKeyRequest: A GenerateServiceAccountKeyRequest
+      resource to be passed as the request body.
+    name: Required. The canonical resource name of the project service
+      account. E.g. projects/{project}/locations/{location}/serviceAccounts/{s
+      ervice_account}
+  """
+
+  generateServiceAccountKeyRequest = _messages.MessageField('GenerateServiceAccountKeyRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class EdgecontainerProjectsLocationsServiceAccountsGetRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsServiceAccountsGetRequest object.
+
+  Fields:
+    name: Required. The canonical resource name of the project service
+      account. E.g. projects/{project}/locations/{location}/serviceAccounts/{s
+      ervice_account}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class EdgecontainerProjectsLocationsServiceAccountsListKeysRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsServiceAccountsListKeysRequest object.
+
+  Fields:
+    pageSize: Optional. The maximum number of resources to list.
+    pageToken: Optional. A page token received from previous list request.
+    parent: Required. The canonical resource name of the project service
+      account. E.g. projects/{project}/locations/{location}/serviceAccounts/{s
+      ervice_account}
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class EdgecontainerProjectsLocationsServiceAccountsListRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsServiceAccountsListRequest object.
+
+  Fields:
+    filter: Optional. Only resources matching this filter will be listed.
+    orderBy: Optional. Specifies the order in which resources will be listed.
+      Order by fields for the result.
+    pageSize: Optional. The maximum number of resources to list.
+    pageToken: Optional. A page token received from previous list request.
+    parent: Required. The parent location, which owns this collection of
+      project service accounts.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
 class EdgecontainerProjectsLocationsVpnConnectionsCreateRequest(_messages.Message):
   r"""A EdgecontainerProjectsLocationsVpnConnectionsCreateRequest object.
 
@@ -884,6 +1357,133 @@ class EdgecontainerProjectsLocationsVpnConnectionsListRequest(_messages.Message)
   parent = _messages.StringField(5, required=True)
 
 
+class EdgecontainerProjectsLocationsZonalServicesDisableRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsZonalServicesDisableRequest object.
+
+  Fields:
+    disableZonalServiceRequest: A DisableZonalServiceRequest resource to be
+      passed as the request body.
+    name: Required. The name of the service to disable.
+  """
+
+  disableZonalServiceRequest = _messages.MessageField('DisableZonalServiceRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class EdgecontainerProjectsLocationsZonalServicesEnableRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsZonalServicesEnableRequest object.
+
+  Fields:
+    enableZonalServiceRequest: A EnableZonalServiceRequest resource to be
+      passed as the request body.
+    parent: Required. The parent location, which owns this collection of
+      services.
+  """
+
+  enableZonalServiceRequest = _messages.MessageField('EnableZonalServiceRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
+class EdgecontainerProjectsLocationsZonalServicesGetRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsZonalServicesGetRequest object.
+
+  Fields:
+    name: Required. The resource name of the service.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class EdgecontainerProjectsLocationsZonalServicesListRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsZonalServicesListRequest object.
+
+  Fields:
+    filter: Optional. Only resources matching this filter will be listed.
+    orderBy: Optional. Specifies the order in which resources will be listed.
+      Order by fields for the result.
+    pageSize: Optional. The maximum number of resources to list.
+    pageToken: Optional. A page token received from previous list request.
+    parent: Required. The parent location, which owns this collection of
+      services.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class EdgecontainerProjectsLocationsZonesGetIamPolicyRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsZonesGetIamPolicyRequest object.
+
+  Fields:
+    name: Required. The canonical name of the zone from which the IamPolicy is
+      to be fetched. E.g. projects/*/locations/*/zones/*
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class EdgecontainerProjectsLocationsZonesGetRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsZonesGetRequest object.
+
+  Fields:
+    name: Required. The canonical resource name of the zone. E.g.
+      organizations/*/locations/*/zone/*
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class EdgecontainerProjectsLocationsZonesListRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsZonesListRequest object.
+
+  Fields:
+    filter: Optional. Only resources matching this filter will be listed.
+    orderBy: Optional. Specifies the order in which resources will be listed.
+    pageSize: Optional. The maximum number of items to return.
+    pageToken: Optional. The next_page_token value returned from a previous
+      List request, if any.
+    parent: Required. The parent organization and location.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class EdgecontainerProjectsLocationsZonesListRolesRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsZonesListRolesRequest object.
+
+  Fields:
+    pageSize: Optional. The maximum number of resources to list.
+    pageToken: Optional. A page token received from previous list request.
+    parent: Required. The canonical name of the zone from which the roles are
+      to be listed. E.g. projects/*/locations/*/zones/*
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class EdgecontainerProjectsLocationsZonesSetIamPolicyRequest(_messages.Message):
+  r"""A EdgecontainerProjectsLocationsZonesSetIamPolicyRequest object.
+
+  Fields:
+    name: Required. The canonical resource name of the zone.
+      projects/{project}/locations/{location}/zones/{zone}
+    setIamPolicyRequest: A SetIamPolicyRequest resource to be passed as the
+      request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  setIamPolicyRequest = _messages.MessageField('SetIamPolicyRequest', 2)
+
+
 class Empty(_messages.Message):
   r"""A generic empty message that you can re-use to avoid defining duplicated
   empty messages in your APIs. A typical example is to use it as the request
@@ -891,6 +1491,21 @@ class Empty(_messages.Message):
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
 
+
+
+class EnableZonalServiceRequest(_messages.Message):
+  r"""Enable ZonalService Request. The API will configure access for the
+  service producers on the cluster to create service resources.
+
+  Fields:
+    requestId: Optional. Idempotent request UUID.
+    zonalService: Required. The service to create.
+    zonalServiceId: Optional. Specified zonal_service_id.
+  """
+
+  requestId = _messages.StringField(1)
+  zonalService = _messages.MessageField('ZonalService', 2)
+  zonalServiceId = _messages.StringField(3)
 
 
 class ExternalLoadBalancerPool(_messages.Message):
@@ -966,6 +1581,43 @@ class GenerateOfflineCredentialResponse(_messages.Message):
   userId = _messages.StringField(4)
 
 
+class GenerateServiceAccountKeyRequest(_messages.Message):
+  r"""Request proto for GenerateServiceAccountKey API.
+
+  Fields:
+    caCertPath: Optional. The CA cert path.
+    validity: Optional. The lifetime of the key. If not specified, the default
+      lifetime is set to 14 days.
+  """
+
+  caCertPath = _messages.StringField(1)
+  validity = _messages.StringField(2)
+
+
+class GenerateServiceAccountKeyResponse(_messages.Message):
+  r"""Response proto for GenerateServiceAccountKey API.
+
+  Fields:
+    ca_cert_path: Output only. The CA cert path.
+    format_version: Output only. The format version.
+    name: Output only. The name of service identity.
+    private_key: Output only. The private key.
+    private_key_id: Output only. The private key id.
+    project: Output only. The project that the service account belongs to.
+    token_uri: Output only. The token URI.
+    type: The credential type.
+  """
+
+  ca_cert_path = _messages.StringField(1)
+  format_version = _messages.StringField(2)
+  name = _messages.StringField(3)
+  private_key = _messages.StringField(4)
+  private_key_id = _messages.StringField(5)
+  project = _messages.StringField(6)
+  token_uri = _messages.StringField(7)
+  type = _messages.StringField(8)
+
+
 class GoogleGroupAuthenticationConfig(_messages.Message):
   r"""Google Group authentication config of the cluster. go/gdc-google-group-
   authentication
@@ -976,6 +1628,18 @@ class GoogleGroupAuthenticationConfig(_messages.Message):
   """
 
   enable = _messages.BooleanField(1)
+
+
+class IamPolicy(_messages.Message):
+  r"""IamPolicy represents a IAM policy.
+
+  Fields:
+    bindings: Optional. The policy is a list of bindings.
+    etag: Optional. The etag of the IAM policy.
+  """
+
+  bindings = _messages.MessageField('Binding', 1, repeated=True)
+  etag = _messages.StringField(2)
 
 
 class Ingress(_messages.Message):
@@ -990,6 +1654,20 @@ class Ingress(_messages.Message):
 
   disabled = _messages.BooleanField(1)
   ipv4Vip = _messages.StringField(2)
+
+
+class ListApiKeysResponse(_messages.Message):
+  r"""Response proto to list API keys.
+
+  Fields:
+    apiKeys: The list of API keys.
+    nextPageToken: A token to retrieve next page of results.
+    unreachable: Locations that could not be reached.
+  """
+
+  apiKeys = _messages.MessageField('ApiKey', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
 
 
 class ListClustersResponse(_messages.Message):
@@ -1065,6 +1743,44 @@ class ListOperationsResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class ListRolesResponse(_messages.Message):
+  r"""Response proto to list the roles associated with a project in a zone.
+
+  Fields:
+    nextPageToken: A token to retrieve next page of results.
+    roles: A list of roles associated with a project in a zone.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  roles = _messages.MessageField('Role', 2, repeated=True)
+
+
+class ListServiceAccountKeysResponse(_messages.Message):
+  r"""Response proto for ListServiceAccountKeys API.
+
+  Fields:
+    nextPageToken: A token to retrieve next page of results.
+    serviceAccountKeys: The list of service account keys.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  serviceAccountKeys = _messages.MessageField('ServiceAccountKeyInfo', 2, repeated=True)
+
+
+class ListServiceAccountsResponse(_messages.Message):
+  r"""List ServiceAccounts Response.
+
+  Fields:
+    nextPageToken: A token to retrieve next page of results.
+    serviceAccounts: List of ServiceAccounts matching the request.
+    unreachable: Locations that could not be reached.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  serviceAccounts = _messages.MessageField('ServiceAccount', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListVpnConnectionsResponse(_messages.Message):
   r"""List of VPN connections in a location.
 
@@ -1077,6 +1793,48 @@ class ListVpnConnectionsResponse(_messages.Message):
   nextPageToken = _messages.StringField(1)
   unreachable = _messages.StringField(2, repeated=True)
   vpnConnections = _messages.MessageField('VpnConnection', 3, repeated=True)
+
+
+class ListZonalProjectsResponse(_messages.Message):
+  r"""List of consumer projects in a organization response.
+
+  Fields:
+    nextPageToken: A token to retrieve next page of results.
+    unreachable: zones that could not be reached.
+    zonalProjects: Clusters in the location.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  unreachable = _messages.StringField(2, repeated=True)
+  zonalProjects = _messages.MessageField('ZonalProject', 3, repeated=True)
+
+
+class ListZonalServicesResponse(_messages.Message):
+  r"""List ZonalServices Response.
+
+  Fields:
+    nextPageToken: A token to retrieve next page of results.
+    unreachable: Locations that could not be reached.
+    zonalServices: ZonalServices in the location.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  unreachable = _messages.StringField(2, repeated=True)
+  zonalServices = _messages.MessageField('ZonalService', 3, repeated=True)
+
+
+class ListZonesResponse(_messages.Message):
+  r"""Response message for listing zones.
+
+  Fields:
+    nextPageToken: A token to retrieve next page of results.
+    unreachable: Locations that could not be reached.
+    zones: A list of zones matching the request.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  unreachable = _messages.StringField(2, repeated=True)
+  zones = _messages.MessageField('Zone', 3, repeated=True)
 
 
 class Local(_messages.Message):
@@ -1837,6 +2595,20 @@ class OperationMetadata(_messages.Message):
   warnings = _messages.StringField(10, repeated=True)
 
 
+class Principal(_messages.Message):
+  r"""Principal represents a principal in the IAM policy.
+
+  Fields:
+    group: Optional. Represents a group in the IAM policy.
+    serviceAccount: Optional. Represents a service account in the IAM policy.
+    user: Optional. Represents a user in the IAM policy.
+  """
+
+  group = _messages.StringField(1)
+  serviceAccount = _messages.StringField(2)
+  user = _messages.StringField(3)
+
+
 class Quota(_messages.Message):
   r"""Represents quota for Edge Container resources.
 
@@ -1879,6 +2651,36 @@ class RobinCloudNativeStorage(_messages.Message):
   """
 
   enable = _messages.BooleanField(1)
+
+
+class Role(_messages.Message):
+  r"""Represents a GDC IAM role corresponding to a K8s role in the zone.
+
+  Enums:
+    StateValueValuesEnum: Output only. The state of the role in the zone.
+
+  Fields:
+    displayName: Optional. The display name of the role.
+    gdcRole: Required. The GDC IAM role name.
+    state: Output only. The state of the role in the zone.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the role in the zone.
+
+    Values:
+      STATE_UNKNOWN: The default value. This value is used if the state check
+        failed.
+      READY: The role is present in the zone.
+      NOT_READY: The role is not present in the zone.
+    """
+    STATE_UNKNOWN = 0
+    READY = 1
+    NOT_READY = 2
+
+  displayName = _messages.StringField(1)
+  gdcRole = _messages.StringField(2)
+  state = _messages.EnumField('StateValueValuesEnum', 3)
 
 
 class SdsOperator(_messages.Message):
@@ -1933,6 +2735,106 @@ class ServerConfig(_messages.Message):
   defaultVersion = _messages.StringField(2)
   versionRollouts = _messages.MessageField('VersionRollout', 3, repeated=True)
   versions = _messages.MessageField('Version', 4, repeated=True)
+
+
+class ServiceAccount(_messages.Message):
+  r"""Represents the service account resource.
+
+  Enums:
+    StateValueValuesEnum: Output only. The state of the service account.
+
+  Messages:
+    LabelsValue: Optional. Labels associated with this resource.
+
+  Fields:
+    createTime: Output only. The time when the project service account was
+      created.
+    labels: Optional. Labels associated with this resource.
+    name: Identifier. The canonical resource name of the project service
+      account. E.g. projects/{project}/locations/{location}/serviceAccounts/{s
+      ervice_account}
+    state: Output only. The state of the service account.
+    updateTime: Output only. The time when the project service account was
+      last updated.
+    zone: Required. The zone id of the zone on which the project service
+      account has to be created.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the service account.
+
+    Values:
+      STATE_UNSPECIFIED: Unspecified.
+      CREATING: The service account is in CREATING state.
+      RUNNING: The service account is in RUNNING state.
+      DELETING: The service account is in DELETING state.
+      ERROR: The service account is in ERROR state.
+      REPAIRING: The service account is in REPAIRING state.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    RUNNING = 2
+    DELETING = 3
+    ERROR = 4
+    REPAIRING = 5
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels associated with this resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  labels = _messages.MessageField('LabelsValue', 2)
+  name = _messages.StringField(3)
+  state = _messages.EnumField('StateValueValuesEnum', 4)
+  updateTime = _messages.StringField(5)
+  zone = _messages.StringField(6)
+
+
+class ServiceAccountKeyInfo(_messages.Message):
+  r"""ServiceAccountKeyInfo represents the information of a service account
+  key.
+
+  Fields:
+    key_id: Output only. The public key id.
+    valid_before: Output only. The expiry time of the key.
+  """
+
+  key_id = _messages.StringField(1)
+  valid_before = _messages.StringField(2)
+
+
+class SetIamPolicyRequest(_messages.Message):
+  r"""Request proto to set the IAM policy for a project in a zone.
+
+  Fields:
+    policy: Required. The IAM policy to be set.
+    requestId: Optional. A unique identifier for this request. Restricted to
+      36 ASCII characters. A random UUID is recommended. This request is only
+      idempotent if `request_id` is provided.
+  """
+
+  policy = _messages.MessageField('IamPolicy', 1)
+  requestId = _messages.StringField(2)
 
 
 class StandardQueryParameters(_messages.Message):
@@ -2283,6 +3185,243 @@ class VpnConnection(_messages.Message):
   updateTime = _messages.StringField(10)
   vpc = _messages.StringField(11)
   vpcProject = _messages.MessageField('VpcProject', 12)
+
+
+class ZonalProject(_messages.Message):
+  r"""Zonal project (corresponding to the cloud consumer project) which get
+  enabled on Zone(s).
+
+  Enums:
+    StateValueValuesEnum: Output only. The state of the project on the zone.
+
+  Messages:
+    LabelsValue: Optional. Labels associated with this resource.
+
+  Fields:
+    createTime: Output only. The time when the project was created.
+    labels: Optional. Labels associated with this resource.
+    name: Identifier. The resource name of the project.
+    state: Output only. The state of the project on the zone.
+    updateTime: Output only. The time when the project was last updated.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the project on the zone.
+
+    Values:
+      STATE_UNSPECIFIED: Unspecified.
+      STATE_ON: The project is enabled on the zone.
+      STATE_OFF: The project is disabled on the zone.
+      STATE_ENABLING: The project is being enabled on the zone.
+      STATE_REPAIRING: The project is being repaired.
+      STATE_ERROR: The project is being disabled on the zone.
+    """
+    STATE_UNSPECIFIED = 0
+    STATE_ON = 1
+    STATE_OFF = 2
+    STATE_ENABLING = 3
+    STATE_REPAIRING = 4
+    STATE_ERROR = 5
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels associated with this resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  labels = _messages.MessageField('LabelsValue', 2)
+  name = _messages.StringField(3)
+  state = _messages.EnumField('StateValueValuesEnum', 4)
+  updateTime = _messages.StringField(5)
+
+
+class ZonalService(_messages.Message):
+  r"""Service enabled on the project.
+
+  Enums:
+    ServiceSelectorValueValuesEnum: Optional. The service to enable/disable.
+      Only one of service_selector or service_name must be specified.
+    StateValueValuesEnum: Output only. The state of the service.
+
+  Messages:
+    LabelsValue: Optional. Labels associated with this resource.
+
+  Fields:
+    cluster: The fully qualified name of the cluster on which the service has
+      to be enabled/disabled.
+    createTime: Output only. The time when the service was enabled.
+    labels: Optional. Labels associated with this resource.
+    name: Identifier. The resource name of the service.
+    serviceName: Optional. The full service name, e.g.:
+      alloydb.googleapis.com. Only one of service_selector or service_name
+      must be specified. It will be used to enable/disable the service on the
+      project.
+    serviceSelector: Optional. The service to enable/disable. Only one of
+      service_selector or service_name must be specified.
+    state: Output only. The state of the service.
+    updateTime: Output only. The time when the service was last updated.
+    zone: The zone id of the zone on which the service has to be
+      enabled/disabled.
+  """
+
+  class ServiceSelectorValueValuesEnum(_messages.Enum):
+    r"""Optional. The service to enable/disable. Only one of service_selector
+    or service_name must be specified.
+
+    Values:
+      SERVICE_SELECTOR_UNSPECIFIED: Unspecified.
+      ALLOYDB: AlloyDB service, alloydb.googleapis.com.
+      VMM: VMM service, gdcvmmanager.googleapis.com.
+      BOOKSTORE: Bookstore service, bookstore.googleapis.com.
+      VERTEX: Vertex service, aiplatform.googleapis.com.
+      BOOKSTORE_AI: Bookstore.AI service, bookstore-ai.googleapis.com.
+    """
+    SERVICE_SELECTOR_UNSPECIFIED = 0
+    ALLOYDB = 1
+    VMM = 2
+    BOOKSTORE = 3
+    VERTEX = 4
+    BOOKSTORE_AI = 5
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the service.
+
+    Values:
+      STATE_UNSPECIFIED: Unspecified.
+      STATE_ENABLED: The service is enabled on the project.
+      STATE_DISABLED: The service is disabled on the project.
+      STATE_ENABLING: The service is being enabled on the project.
+      STATE_DISABLING: The service is being disabled on the project.
+      STATE_REPAIRING: The service is being repaired.
+      STATE_ERROR: The service is in ERROR state.
+    """
+    STATE_UNSPECIFIED = 0
+    STATE_ENABLED = 1
+    STATE_DISABLED = 2
+    STATE_ENABLING = 3
+    STATE_DISABLING = 4
+    STATE_REPAIRING = 5
+    STATE_ERROR = 6
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels associated with this resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  cluster = _messages.StringField(1)
+  createTime = _messages.StringField(2)
+  labels = _messages.MessageField('LabelsValue', 3)
+  name = _messages.StringField(4)
+  serviceName = _messages.StringField(5)
+  serviceSelector = _messages.EnumField('ServiceSelectorValueValuesEnum', 6)
+  state = _messages.EnumField('StateValueValuesEnum', 7)
+  updateTime = _messages.StringField(8)
+  zone = _messages.StringField(9)
+
+
+class Zone(_messages.Message):
+  r"""Represents a zone.
+
+  Enums:
+    StateValueValuesEnum: Output only. The state of the zone.
+
+  Messages:
+    LabelsValue: Optional. Labels associated with this resource.
+
+  Fields:
+    certificateAuthorities: Output only. The web CA certificate for the zone.
+    createTime: Output only. The time when the zone was created.
+    dnsServers: Output only. The DNS servers for the zone.
+    labels: Optional. Labels associated with this resource.
+    name: Identifier. The canonical resource name of the zone. E.g.
+      organizations/{organization}/locations/{location}/zones/{zone}
+    state: Output only. The state of the zone.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the zone.
+
+    Values:
+      STATE_UNSPECIFIED: Unspecified.
+      STATE_RUNNING: The zone is in RUNNING state.
+      STATE_ERROR: The zone is in ERROR state.
+      STATE_CREATING: The zone is in CREATING state.
+      STATE_REPAIRING: The zone is in REPAIRING state.
+    """
+    STATE_UNSPECIFIED = 0
+    STATE_RUNNING = 1
+    STATE_ERROR = 2
+    STATE_CREATING = 3
+    STATE_REPAIRING = 4
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels associated with this resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  certificateAuthorities = _messages.StringField(1, repeated=True)
+  createTime = _messages.StringField(2)
+  dnsServers = _messages.MessageField('DNSServer', 3, repeated=True)
+  labels = _messages.MessageField('LabelsValue', 4)
+  name = _messages.StringField(5)
+  state = _messages.EnumField('StateValueValuesEnum', 6)
 
 
 class ZoneMetadata(_messages.Message):

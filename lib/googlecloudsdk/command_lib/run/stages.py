@@ -82,6 +82,16 @@ def UpdateInstanceSplitStages():
 # Because some terminals cannot update multiple lines of output simultaneously,
 # the order of conditions in this dictionary should match the order in which we
 # expect cloud run resources to complete deployment.
+LOCAL_BUILD_STAGE_KEY = 'LocalBuild'
+
+
+def _LocalBuildStage():
+  return progress_tracker.Stage(
+      'Building application locally...',
+      key=LOCAL_BUILD_STAGE_KEY,
+  )
+
+
 def ServiceStages(
     include_iam_policy_set=False,
     include_route=True,
@@ -93,9 +103,12 @@ def ServiceStages(
     include_iap=False,
     include_domain_mapping=False,
     regions_list=None,
+    include_local_build=False,
 ):
   """Return the progress tracker Stages for conditions of a Service."""
   stages = []
+  if include_local_build:
+    stages.append(_LocalBuildStage())
   if include_create_repo:
     stages.append(_CreateRepoStage())
   if include_validate_service:

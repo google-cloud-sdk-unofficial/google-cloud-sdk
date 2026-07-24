@@ -20,6 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.workstations import flags as workstations_flags
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
@@ -30,7 +31,7 @@ class Start(base.Command):
 
   ## EXAMPLES
 
-    To start a workstation, run
+    To start (or resume) a workstation, run
 
       $ {command} WORKSTATION
   """

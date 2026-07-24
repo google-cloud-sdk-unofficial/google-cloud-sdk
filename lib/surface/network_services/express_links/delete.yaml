@@ -1,0 +1,27 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    Delete express link.
+  description: |
+    Delete the specified express link.
+  examples: |
+      To delete an express link called "my-express-link", run:
+
+        $ {command} my-express-link --location=global
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:expressLink
+    help_text: |
+      Name of the express link you want to delete.
+
+async:
+  collection: networkservices.projects.locations.operations
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  collection: networkservices.projects.locations.expressLinks

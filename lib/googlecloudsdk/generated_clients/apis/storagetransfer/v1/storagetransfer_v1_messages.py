@@ -993,6 +993,15 @@ class ObjectConditions(_messages.Message):
       another include-prefix. The max size of `include_prefixes` is 1000. For
       more information, see [Filtering objects from transfers](/storage-
       transfer/docs/filtering-objects-from-transfers).
+    includeStorageClasses: Optional. If specified, objects in the source
+      matching any of the storage classes in this field will be transferred.
+      Objects in storage classes not included in this field will be skipped.
+      If empty, the default behavior regarding the storage classes is applied.
+      This includes all storage classes except "GLACIER" as per default
+      behavior. Currently, this field only supports S3 data source. For the
+      list of valid Amazon S3 storage classnames, please refer to the AWS
+      documentation: https://docs.aws.amazon.com/AmazonS3/latest/userguide/sc-
+      howtoset.html
     lastModifiedBefore: If specified, only objects with a "last modification
       time" before this timestamp and objects that don't have a "last
       modification time" are transferred.
@@ -1026,11 +1035,12 @@ class ObjectConditions(_messages.Message):
 
   excludePrefixes = _messages.StringField(1, repeated=True)
   includePrefixes = _messages.StringField(2, repeated=True)
-  lastModifiedBefore = _messages.StringField(3)
-  lastModifiedSince = _messages.StringField(4)
-  matchGlob = _messages.StringField(5)
-  maxTimeElapsedSinceLastModification = _messages.StringField(6)
-  minTimeElapsedSinceLastModification = _messages.StringField(7)
+  includeStorageClasses = _messages.StringField(3, repeated=True)
+  lastModifiedBefore = _messages.StringField(4)
+  lastModifiedSince = _messages.StringField(5)
+  matchGlob = _messages.StringField(6)
+  maxTimeElapsedSinceLastModification = _messages.StringField(7)
+  minTimeElapsedSinceLastModification = _messages.StringField(8)
 
 
 class Operation(_messages.Message):

@@ -648,6 +648,7 @@ class AttachmentOperationMetadata(_messages.Message):
 
   Fields:
     attachment: Output only. Name of the attachment for the operation.
+    attachmentUuid: Output only. Attachment UUID for the operation.
     createTime: Output only. The time when the operation was created.
     description: Output only. Short description of the operation.
     doneTime: Output only. The time when the operation finished.
@@ -696,12 +697,13 @@ class AttachmentOperationMetadata(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   attachment = _messages.StringField(1)
-  createTime = _messages.StringField(2)
-  description = _messages.StringField(3)
-  doneTime = _messages.StringField(4)
-  labels = _messages.MessageField('LabelsValue', 5)
-  operationType = _messages.EnumField('OperationTypeValueValuesEnum', 6)
-  warnings = _messages.StringField(7, repeated=True)
+  attachmentUuid = _messages.StringField(2)
+  createTime = _messages.StringField(3)
+  description = _messages.StringField(4)
+  doneTime = _messages.StringField(5)
+  labels = _messages.MessageField('LabelsValue', 6)
+  operationType = _messages.EnumField('OperationTypeValueValuesEnum', 7)
+  warnings = _messages.StringField(8, repeated=True)
 
 
 class AuthenticationConfig(_messages.Message):

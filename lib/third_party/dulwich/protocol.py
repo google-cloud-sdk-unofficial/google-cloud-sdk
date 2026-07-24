@@ -22,15 +22,11 @@
 """Generic functions for talking the git smart server protocol."""
 
 from io import BytesIO
-from os import (
-    SEEK_END,
-)
+from os import SEEK_END
 
 import dulwich
-from dulwich.errors import (
-    HangupException,
-    GitProtocolError,
-)
+
+from .errors import GitProtocolError, HangupException
 
 TCP_GIT_PORT = 9418
 
@@ -81,8 +77,8 @@ COMMON_CAPABILITIES = [
     CAPABILITY_NO_PROGRESS,
 ]
 KNOWN_UPLOAD_CAPABILITIES = set(
-    COMMON_CAPABILITIES
-    + [
+    [
+        *COMMON_CAPABILITIES,
         CAPABILITY_THIN_PACK,
         CAPABILITY_MULTI_ACK,
         CAPABILITY_MULTI_ACK_DETAILED,
@@ -97,8 +93,8 @@ KNOWN_UPLOAD_CAPABILITIES = set(
     ]
 )
 KNOWN_RECEIVE_CAPABILITIES = set(
-    COMMON_CAPABILITIES
-    + [
+    [
+        *COMMON_CAPABILITIES,
         CAPABILITY_REPORT_STATUS,
         CAPABILITY_DELETE_REFS,
         CAPABILITY_QUIET,
@@ -112,7 +108,7 @@ NAK_LINE = b"NAK\n"
 
 
 def agent_string():
-    return ("dulwich/%d.%d.%d" % dulwich.__version__).encode("ascii")
+    return ("dulwich/" + ".".join(map(str, dulwich.__version__))).encode("ascii")
 
 
 def capability_agent():
@@ -182,7 +178,7 @@ class Protocol:
         Documentation/technical/protocol-common.txt
     """
 
-    def __init__(self, read, write, close=None, report_activity=None):
+    def __init__(self, read, write, close=None, report_activity=None) -> None:
         self.read = read
         self.write = write
         self._close = close
@@ -205,7 +201,7 @@ class Protocol:
         This method may read from the readahead buffer; see unread_pkt_line.
 
         Returns: The next string from the stream, without the length prefix, or
-            None for a flush-pkt ('0000').
+            None for a flush-pkt ('0000') or delim-pkt ('0001').
         """
         if self._readahead is None:
             read = self.read
@@ -216,9 +212,9 @@ class Protocol:
         try:
             sizestr = read(4)
             if not sizestr:
-                raise HangupException()
+                raise HangupException
             size = int(sizestr, 16)
-            if size == 0:
+            if size == 0 or size == 1:  # flush-pkt or delim-pkt
                 if self.report_activity:
                     self.report_activity(4, "read")
                 return None
@@ -226,14 +222,13 @@ class Protocol:
                 self.report_activity(size, "read")
             pkt_contents = read(size - 4)
         except ConnectionResetError as exc:
-            raise HangupException() from exc
+            raise HangupException from exc
         except OSError as exc:
-            raise GitProtocolError(exc) from exc
+            raise GitProtocolError(str(exc)) from exc
         else:
             if len(pkt_contents) + 4 != size:
                 raise GitProtocolError(
-                    "Length of pkt read %04x does not match length prefix %04x"
-                    % (len(pkt_contents) + 4, size)
+                    f"Length of pkt read {len(pkt_contents) + 4:04x} does not match length prefix {size:04x}"
                 )
             return pkt_contents
 
@@ -260,6 +255,7 @@ class Protocol:
 
         Args:
           data: The data to unread, without the length prefix.
+
         Raises:
           ValueError: If more than one pkt-line is unread.
         """
@@ -291,7 +287,7 @@ class Protocol:
             if self.report_activity:
                 self.report_activity(len(line), "write")
         except OSError as exc:
-            raise GitProtocolError(exc) from exc
+            raise GitProtocolError(str(exc)) from exc
 
     def write_sideband(self, channel, blob):
         """Write multiplexed data to the sideband.
@@ -319,7 +315,7 @@ class Protocol:
         self.write_pkt_line(format_cmd_pkt(cmd, *args))
 
     def read_cmd(self):
-        """Read a command and some arguments from the git client
+        """Read a command and some arguments from the git client.
 
         Only used for the TCP git protocol (git://).
 
@@ -346,10 +342,8 @@ class ReceivableProtocol(Protocol):
 
     def __init__(
         self, recv, write, close=None, report_activity=None, rbufsize=_RBUFSIZE
-    ):
-        super().__init__(
-            self.read, write, close=close, report_activity=report_activity
-        )
+    ) -> None:
+        super().__init__(self.read, write, close=close, report_activity=report_activity)
         self._recv = recv
         self._rbuf = BytesIO()
         self._rbufsize = rbufsize
@@ -487,7 +481,7 @@ class BufferedPktLineWriter:
     (including length prefix) reach the buffer size.
     """
 
-    def __init__(self, write, bufsize=65515):
+    def __init__(self, write, bufsize=65515) -> None:
         """Initialize the BufferedPktLineWriter.
 
         Args:
@@ -526,7 +520,7 @@ class BufferedPktLineWriter:
 class PktLineParser:
     """Packet line parser that hands completed packets off to a callback."""
 
-    def __init__(self, handle_pkt):
+    def __init__(self, handle_pkt) -> None:
         self.handle_pkt = handle_pkt
         self._readahead = BytesIO()
 
@@ -562,10 +556,7 @@ def format_ref_line(ref, sha, capabilities=None):
     if capabilities is None:
         return sha + b" " + ref + b"\n"
     else:
-        return (
-            sha + b" " + ref + b"\0"
-            + format_capability_line(capabilities)
-            + b"\n")
+        return sha + b" " + ref + b"\0" + format_capability_line(capabilities) + b"\n"
 
 
 def format_shallow_line(sha):

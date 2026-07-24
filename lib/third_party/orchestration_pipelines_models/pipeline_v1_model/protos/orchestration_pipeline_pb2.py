@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#      https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,323 +20,270 @@ from cloudsdk.google.protobuf.internal import builder as _builder
 from cloudsdk.google.protobuf import descriptor as _descriptor
 from cloudsdk.google.protobuf import descriptor_pool as _descriptor_pool
 from cloudsdk.google.protobuf import symbol_database as _symbol_database
-
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
 
 
 from cloudsdk.google.protobuf import struct_pb2 as google_dot_protobuf_dot_struct__pb2
-from orchestration_pipelines_models.pipeline_v1_model.protos import (
-    validation_pb2 as orchestration__pipelines__models_dot_pipeline__v1__model_dot_protos_dot_validation__pb2,
-)
+from orchestration_pipelines_models.pipeline_v1_model.protos import validation_pb2 as orchestration__pipelines__models_dot_pipeline__v1__model_dot_protos_dot_validation__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(
-    b'\nTorchestration_pipelines_models/pipeline_v1_model/protos/orchestration_pipeline.proto\x12\x0fpipeline_models\x1a\x1cgoogle/protobuf/struct.proto\x1aHorchestration_pipelines_models/pipeline_v1_model/protos/validation.proto\"\xbc\x03\n\x15OrchestrationPipeline\x12\x1b\n\rmodel_version\x18\x01 \x01(\tB\x04\x80\xb5\x18\x01\x12\x35\n\x0bpipeline_id\x18\x02 \x01(\tB \x80\xb5\x18\x01\x8a\xb5\x18\x10^[a-zA-Z0-9_-]+$\xa8\xb5\x18\x01\xb0\xb5\x18@\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x35\n\x06runner\x18\x04 \x01(\x0e\x32\x1f.pipeline_models.PipelineRunnerB\x04\xa0\xb5\x18\x01\x12\x30\n\x05owner\x18\x05 \x01(\tB!\x80\xb5\x18\x01\x8a\xb5\x18\x11^[a-zA-Z0-9_#-]+$\xa8\xb5\x18\x01\xb0\xb5\x18 \x12\x31\n\x08\x64\x65\x66\x61ults\x18\x06 \x01(\x0b\x32\x19.pipeline_models.DefaultsB\x04\x80\xb5\x18\x01\x12*\n\x08triggers\x18\x07 \x03(\x0b\x32\x18.pipeline_models.Trigger\x12.\n\x07\x61\x63tions\x18\x08 \x03(\x0b\x32\x17.pipeline_models.ActionB\x04\x98\xb5\x18\x01\x12\x0c\n\x04tags\x18\t \x03(\t\x12\x34\n\rnotifications\x18\n \x01(\x0b\x32\x1d.pipeline_models.Notification\"~\n\x08\x44\x65\x66\x61ults\x12\x18\n\nproject_id\x18\x01 \x01(\tB\x04\x80\xb5\x18\x01\x12\x16\n\x08location\x18\x02 \x01(\tB\x04\x80\xb5\x18\x01\x12@\n\x10\x65xecution_config\x18\x03 \x01(\x0b\x32 .pipeline_models.ExecutionConfigB\x04\x80\xb5\x18\x01\"/\n\x0f\x45xecutionConfig\x12\x1c\n\x07retries\x18\x01 \x01(\x05\x42\x0b\x91\xb5\x18\x00\x00\x00\x00\x00\x00\x00\x00\"\"\n\x11OnPipelineFailure\x12\r\n\x05\x65mail\x18\x01 \x03(\t\"O\n\x0cNotification\x12?\n\x13on_pipeline_failure\x18\x01 \x01(\x0b\x32\".pipeline_models.OnPipelineFailure\"\x8c\x01\n\x0fScheduleTrigger\x12\x1a\n\x08interval\x18\x01 \x01(\tB\x08\x80\xb5\x18\x01\xb8\xb5\x18\x01\x12\x1c\n\nstart_time\x18\x02 \x01(\tB\x08\x80\xb5\x18\x01\xc0\xb5\x18\x01\x12\x16\n\x08\x65nd_time\x18\x03 \x01(\tB\x04\xc0\xb5\x18\x01\x12\x0f\n\x07\x63\x61tchup\x18\x04 \x01(\x08\x12\x16\n\x08timezone\x18\x05 \x01(\tB\x04\xd0\xb5\x18\x01\"J\n\x07Trigger\x12\x34\n\x08schedule\x18\x01 \x01(\x0b\x32 .pipeline_models.ScheduleTriggerH\x00\x42\t\n\x07trigger\"\r\n\x0bLocalEngine\"Z\n\x0e\x42igQueryEngine\x12\x10\n\x08location\x18\x01 \x01(\t\x12\x19\n\x11\x64\x65stination_table\x18\x02 \x01(\t\x12\x1b\n\x13impersonation_chain\x18\x03 \x03(\t\"\xc0\x01\n\x13\x44\x61taprocOnGceEngine\x12Q\n\x10\x65xisting_cluster\x18\x01 \x01(\x0b\x32\x35.pipeline_models.DataprocExistingClusterConfigurationH\x00\x12L\n\x11\x65phemeral_cluster\x18\x02 \x01(\x0b\x32/.pipeline_models.DataprocEphemeralConfigurationH\x00\x42\x08\n\x06\x63onfig\"\x93\x02\n$DataprocExistingClusterConfiguration\x12\x1a\n\x0c\x63luster_name\x18\x01 \x01(\tB\x04\x80\xb5\x18\x01\x12\x10\n\x08location\x18\x02 \x01(\t\x12\x12\n\nproject_id\x18\x03 \x01(\t\x12\x1b\n\x13impersonation_chain\x18\x04 \x03(\t\x12Y\n\nproperties\x18\x05 \x03(\x0b\x32\x45.pipeline_models.DataprocExistingClusterConfiguration.PropertiesEntry\x1a\x31\n\x0fPropertiesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xd8\x02\n\x1e\x44\x61taprocEphemeralConfiguration\x12\x1a\n\x0c\x63luster_name\x18\x01 \x01(\tB\x04\x80\xb5\x18\x01\x12\x10\n\x08location\x18\x02 \x01(\t\x12\x12\n\nproject_id\x18\x03 \x01(\t\x12O\n\x10resource_profile\x18\x04 \x01(\x0b\x32/.pipeline_models.DataprocClusterResourceProfileB\x04\x80\xb5\x18\x01\x12S\n\nproperties\x18\x05 \x03(\x0b\x32?.pipeline_models.DataprocEphemeralConfiguration.PropertiesEntry\x12\x1b\n\x13impersonation_chain\x18\x06 \x03(\t\x1a\x31\n\x0fPropertiesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xfe\x02\n\x1e\x44\x61taprocClusterResourceProfile\x12N\n\x06inline\x18\x01 \x01(\x0b\x32<.pipeline_models.DataprocClusterResourceProfile.InlineConfigH\x00\x12\x0e\n\x04path\x18\x02 \x01(\tH\x00\x12\x1e\n\x14\x65xternal_config_path\x18\x03 \x01(\tH\x00\x12O\n\toverrides\x18\x04 \x01(\x0b\x32<.pipeline_models.DataprocClusterResourceProfile.InlineConfig\x1a\x80\x01\n\x0cInlineConfig\x12\x35\n\x0e\x63luster_config\x18\x01 \x01(\x0b\x32\x17.google.protobuf.StructB\x02\x18\x01H\x00\x12)\n\x06\x63onfig\x18\x02 \x01(\x0b\x32\x17.google.protobuf.StructH\x00\x42\x0e\n\x0c\x63onfig_aliasB\x08\n\x06\x63onfig\"\xeb\x02\n\x1c\x44\x61taprocBatchResourceProfile\x12L\n\x06inline\x18\x01 \x01(\x0b\x32:.pipeline_models.DataprocBatchResourceProfile.InlineConfigH\x00\x12\x0e\n\x04path\x18\x02 \x01(\tH\x00\x12\x1e\n\x14\x65xternal_config_path\x18\x03 \x01(\tH\x00\x12M\n\toverrides\x18\x04 \x01(\x0b\x32:.pipeline_models.DataprocBatchResourceProfile.InlineConfig\x1at\n\x0cInlineConfig\x12/\n\x0eruntime_config\x18\x01 \x01(\x0b\x32\x17.google.protobuf.Struct\x12\x33\n\x12\x65nvironment_config\x18\x02 \x01(\x0b\x32\x17.google.protobuf.StructB\x08\n\x06\x63onfig\"\x9d\x01\n\x1d\x44\x61taprocServerlessBatchEngine\x12\x10\n\x08location\x18\x01 \x01(\t\x12M\n\x10resource_profile\x18\x02 \x01(\x0b\x32-.pipeline_models.DataprocBatchResourceProfileB\x04\x80\xb5\x18\x01\x12\x1b\n\x13impersonation_chain\x18\x03 \x03(\t\"\xcb\x02\n\x06\x41\x63tion\x12/\n\x06python\x18\x01 \x01(\x0b\x32\x1d.pipeline_models.PythonActionH\x00\x12\x31\n\x07pyspark\x18\x02 \x01(\x0b\x32\x1e.pipeline_models.PysparkActionH\x00\x12\x33\n\x08notebook\x18\x03 \x01(\x0b\x32\x1f.pipeline_models.NotebookActionH\x00\x12)\n\x03sql\x18\x04 \x01(\x0b\x32\x1a.pipeline_models.SqlActionH\x00\x12\x33\n\x08pipeline\x18\x05 \x01(\x0b\x32\x1f.pipeline_models.PipelineActionH\x00\x12>\n\x0e\x64\x61ta_ingestion\x18\x06 \x01(\x0b\x32$.pipeline_models.DataIngestionActionH\x00\x42\x08\n\x06\x61\x63tion\"\xcb\x02\n\x0cPythonAction\x12/\n\x04name\x18\x01 \x01(\tB!\x80\xb5\x18\x01\x8a\xb5\x18\x11^[a-zA-Z0-9_.-]+$\xa8\xb5\x18\x01\xb0\xb5\x18@\x12\x12\n\ndepends_on\x18\x02 \x03(\t\x12\x1f\n\x11\x65xecution_timeout\x18\x03 \x01(\tB\x04\xc8\xb5\x18\x01\x12\x1c\n\x0emain_file_path\x18\x04 \x01(\tB\x04\x80\xb5\x18\x01\x12\x1d\n\x0fpython_callable\x18\x05 \x01(\tB\x04\x80\xb5\x18\x01\x12*\n\top_kwargs\x18\x06 \x01(\x0b\x32\x17.google.protobuf.Struct\x12\x37\n\x0b\x65nvironment\x18\x07 \x01(\x0b\x32\".pipeline_models.PythonEnvironment\x12\x33\n\x06\x65ngine\x18\x08 \x01(\x0b\x32\x1d.pipeline_models.PythonEngineB\x04\x80\xb5\x18\x01\"\x95\x02\n\x11PythonEnvironment\x12\x45\n\x0crequirements\x18\x01 \x01(\x0b\x32/.pipeline_models.PythonEnvironment.Requirements\x12\x1c\n\x14system_site_packages\x18\x02 \x01(\x08\x1a\"\n\x12InlineRequirements\x12\x0c\n\x04list\x18\x01 \x03(\t\x1aw\n\x0cRequirements\x12G\n\x06inline\x18\x01 \x01(\x0b\x32\x35.pipeline_models.PythonEnvironment.InlineRequirementsH\x00\x12\x0e\n\x04path\x18\x02 \x01(\tH\x00\x42\x0e\n\x0crequirements\"G\n\x0cPythonEngine\x12-\n\x05local\x18\x01 \x01(\x0b\x32\x1c.pipeline_models.LocalEngineH\x00\x42\x08\n\x06\x65ngine\"\xc3\x02\n\rPysparkAction\x12/\n\x04name\x18\x01 \x01(\tB!\x80\xb5\x18\x01\x8a\xb5\x18\x11^[a-zA-Z0-9_.-]+$\xa8\xb5\x18\x01\xb0\xb5\x18@\x12\x12\n\ndepends_on\x18\x02 \x03(\t\x12\x1f\n\x11\x65xecution_timeout\x18\x03 \x01(\tB\x04\xc8\xb5\x18\x01\x12\x34\n\x06\x65ngine\x18\x04 \x01(\x0b\x32\x1e.pipeline_models.PysparkEngineB\x04\x80\xb5\x18\x01\x12\x1c\n\x0emain_file_path\x18\x05 \x01(\tB\x04\x80\xb5\x18\x01\x12\x14\n\x0c\x61rchive_uris\x18\x06 \x03(\t\x12\x16\n\x0estaging_bucket\x18\x07 \x01(\t\x12\x10\n\x08py_files\x18\x08 \x03(\t\x12\x38\n\x0b\x65nvironment\x18\t \x01(\x0b\x32#.pipeline_models.PysparkEnvironment\"\xa9\x01\n\rPysparkEngine\x12?\n\x0f\x64\x61taproc_on_gce\x18\x01 \x01(\x0b\x32$.pipeline_models.DataprocOnGceEngineH\x00\x12M\n\x13\x64\x61taproc_serverless\x18\x02 \x01(\x0b\x32..pipeline_models.DataprocServerlessBatchEngineH\x00\x42\x08\n\x06\x65ngine\"\x8c\x01\n\x12PysparkEnvironment\x12\x46\n\x0crequirements\x18\x01 \x01(\x0b\x32\x30.pipeline_models.PysparkEnvironment.Requirements\x1a.\n\x0cRequirements\x12\x0e\n\x04path\x18\x01 \x01(\tH\x00\x42\x0e\n\x0crequirements\"\xb4\x02\n\x0eNotebookAction\x12/\n\x04name\x18\x01 \x01(\tB!\x80\xb5\x18\x01\x8a\xb5\x18\x11^[a-zA-Z0-9_.-]+$\xa8\xb5\x18\x01\xb0\xb5\x18@\x12\x12\n\ndepends_on\x18\x02 \x03(\t\x12\x1f\n\x11\x65xecution_timeout\x18\x03 \x01(\tB\x04\xc8\xb5\x18\x01\x12\x35\n\x06\x65ngine\x18\x04 \x01(\x0b\x32\x1f.pipeline_models.NotebookEngineB\x04\x80\xb5\x18\x01\x12\x1c\n\x0emain_file_path\x18\x05 \x01(\tB\x04\x80\xb5\x18\x01\x12\x14\n\x0c\x61rchive_uris\x18\x06 \x03(\t\x12\x16\n\x0estaging_bucket\x18\x07 \x01(\t\x12\x39\n\x0b\x65nvironment\x18\x08 \x01(\x0b\x32$.pipeline_models.NotebookEnvironment\"\xaa\x01\n\x0eNotebookEngine\x12?\n\x0f\x64\x61taproc_on_gce\x18\x01 \x01(\x0b\x32$.pipeline_models.DataprocOnGceEngineH\x00\x12M\n\x13\x64\x61taproc_serverless\x18\x02 \x01(\x0b\x32..pipeline_models.DataprocServerlessBatchEngineH\x00\x42\x08\n\x06\x65ngine\"\x8e\x01\n\x13NotebookEnvironment\x12G\n\x0crequirements\x18\x01 \x01(\x0b\x32\x31.pipeline_models.NotebookEnvironment.Requirements\x1a.\n\x0cRequirements\x12\x0e\n\x04path\x18\x01 \x01(\tH\x00\x42\x0e\n\x0crequirements\"\xd0\x01\n\tSqlAction\x12/\n\x04name\x18\x01 \x01(\tB!\x80\xb5\x18\x01\x8a\xb5\x18\x11^[a-zA-Z0-9_.-]+$\xa8\xb5\x18\x01\xb0\xb5\x18@\x12\x12\n\ndepends_on\x18\x02 \x03(\t\x12\x1f\n\x11\x65xecution_timeout\x18\x03 \x01(\tB\x04\xc8\xb5\x18\x01\x12\x30\n\x06\x65ngine\x18\x04 \x01(\x0b\x32\x1a.pipeline_models.SqlEngineB\x04\x80\xb5\x18\x01\x12+\n\x05query\x18\x05 \x01(\x0b\x32\x16.pipeline_models.QueryB\x04\x80\xb5\x18\x01\"2\n\x05Query\x12\x10\n\x06inline\x18\x01 \x01(\tH\x00\x12\x0e\n\x04path\x18\x02 \x01(\tH\x00\x42\x07\n\x05query\"\xda\x01\n\tSqlEngine\x12\x33\n\x08\x62igquery\x18\x01 \x01(\x0b\x32\x1f.pipeline_models.BigQueryEngineH\x00\x12M\n\x13\x64\x61taproc_serverless\x18\x02 \x01(\x0b\x32..pipeline_models.DataprocServerlessBatchEngineH\x00\x12?\n\x0f\x64\x61taproc_on_gce\x18\x03 \x01(\x0b\x32$.pipeline_models.DataprocOnGceEngineH\x00\x42\x08\n\x06\x65ngine\"\xb3\x01\n\x0ePipelineAction\x12/\n\x04name\x18\x01 \x01(\tB!\x80\xb5\x18\x01\x8a\xb5\x18\x11^[a-zA-Z0-9_.-]+$\xa8\xb5\x18\x01\xb0\xb5\x18@\x12\x12\n\ndepends_on\x18\x02 \x03(\t\x12\x1f\n\x11\x65xecution_timeout\x18\x03 \x01(\tB\x04\xc8\xb5\x18\x01\x12;\n\tframework\x18\x04 \x01(\x0b\x32\".pipeline_models.PipelineFrameworkB\x04\x80\xb5\x18\x01\"\x8e\x01\n\x11PipelineFramework\x12\x30\n\x03\x64\x62t\x18\x01 \x01(\x0b\x32!.pipeline_models.DbtFrameworkSpecH\x00\x12:\n\x08\x64\x61taform\x18\x02 \x01(\x0b\x32&.pipeline_models.DataformFrameworkSpecH\x00\x42\x0b\n\tframework\"_\n\x10\x44\x62tFrameworkSpec\x12>\n\x0e\x61irflow_worker\x18\x01 \x01(\x0b\x32$.pipeline_models.DbtAirflowExecutionH\x00\x42\x0b\n\texecution\"\xb0\x01\n\x15\x44\x61taformFrameworkSpec\x12\x45\n\x10\x64\x61taform_service\x18\x01 \x01(\x0b\x32).pipeline_models.DataformServiceExecutionH\x00\x12\x43\n\x0e\x61irflow_worker\x18\x02 \x01(\x0b\x32).pipeline_models.DataformAirflowExecutionH\x00\x42\x0b\n\texecution\"\x93\x01\n\x18\x44\x61taformServiceExecution\x12\x10\n\x08location\x18\x01 \x01(\t\x12\x12\n\nproject_id\x18\x02 \x01(\t\x12\x1b\n\rrepository_id\x18\x03 \x01(\tB\x04\x80\xb5\x18\x01\x12\x34\n\x13workflow_invocation\x18\x04 \x01(\x0b\x32\x17.google.protobuf.Struct\"`\n\x13\x44\x62tAirflowExecution\x12$\n\x16project_directory_path\x18\x01 \x01(\tB\x04\x80\xb5\x18\x01\x12\x15\n\rselect_models\x18\x02 \x03(\t\x12\x0c\n\x04tags\x18\x03 \x03(\t\"@\n\x18\x44\x61taformAirflowExecution\x12$\n\x16project_directory_path\x18\x01 \x01(\tB\x04\x80\xb5\x18\x01\"\xbf\x01\n\x13\x44\x61taIngestionAction\x12/\n\x04name\x18\x01 \x01(\tB!\x80\xb5\x18\x01\x8a\xb5\x18\x11^[a-zA-Z0-9_.-]+$\xa8\xb5\x18\x01\xb0\xb5\x18@\x12\x12\n\ndepends_on\x18\x02 \x03(\t\x12\x1f\n\x11\x65xecution_timeout\x18\x03 \x01(\tB\x04\xc8\xb5\x18\x01\x12\x38\n\x0c\x62igquery_dts\x18\x04 \x01(\x0b\x32 .pipeline_models.BigQueryDtsSpecH\x00\x42\x08\n\x06\x63onfig\"\xbc\x01\n\x0f\x42igQueryDtsSpec\x12\"\n\x12transfer_config_id\x18\x01 \x01(\tB\x04\x80\xb5\x18\x01H\x00\x12/\n\x0eruntime_params\x18\x02 \x01(\x0b\x32\x17.google.protobuf.Struct\x12\x1b\n\x13impersonation_chain\x18\x03 \x03(\t\x12\x12\n\nproject_id\x18\x04 \x01(\t\x12\x10\n\x08location\x18\x05 \x01(\tB\x11\n\x0ftransfer_config*<\n\x0ePipelineRunner\x12\x1d\n\x19pipeline_runner_undefined\x10\x00\x12\x0b\n\x07\x61irflow\x10\x01\x62\x06proto3'
-)
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\nTorchestration_pipelines_models/pipeline_v1_model/protos/orchestration_pipeline.proto\x12\x0fpipeline_models\x1a\x1cgoogle/protobuf/struct.proto\x1aHorchestration_pipelines_models/pipeline_v1_model/protos/validation.proto\"\xbc\x03\n\x15OrchestrationPipeline\x12\x1b\n\rmodel_version\x18\x01 \x01(\tB\x04\x80\xb5\x18\x01\x12\x35\n\x0bpipeline_id\x18\x02 \x01(\tB \x80\xb5\x18\x01\x8a\xb5\x18\x10^[a-zA-Z0-9_-]+$\xa8\xb5\x18\x01\xb0\xb5\x18@\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x35\n\x06runner\x18\x04 \x01(\x0e\x32\x1f.pipeline_models.PipelineRunnerB\x04\xa0\xb5\x18\x01\x12\x30\n\x05owner\x18\x05 \x01(\tB!\x80\xb5\x18\x01\x8a\xb5\x18\x11^[a-zA-Z0-9_#-]+$\xa8\xb5\x18\x01\xb0\xb5\x18 \x12\x31\n\x08\x64\x65\x66\x61ults\x18\x06 \x01(\x0b\x32\x19.pipeline_models.DefaultsB\x04\x80\xb5\x18\x01\x12*\n\x08triggers\x18\x07 \x03(\x0b\x32\x18.pipeline_models.Trigger\x12.\n\x07\x61\x63tions\x18\x08 \x03(\x0b\x32\x17.pipeline_models.ActionB\x04\x98\xb5\x18\x01\x12\x0c\n\x04tags\x18\t \x03(\t\x12\x34\n\rnotifications\x18\n \x01(\x0b\x32\x1d.pipeline_models.Notification\"~\n\x08\x44\x65\x66\x61ults\x12\x18\n\nproject_id\x18\x01 \x01(\tB\x04\x80\xb5\x18\x01\x12\x16\n\x08location\x18\x02 \x01(\tB\x04\x80\xb5\x18\x01\x12@\n\x10\x65xecution_config\x18\x03 \x01(\x0b\x32 .pipeline_models.ExecutionConfigB\x04\x80\xb5\x18\x01\"/\n\x0f\x45xecutionConfig\x12\x1c\n\x07retries\x18\x01 \x01(\x05\x42\x0b\x91\xb5\x18\x00\x00\x00\x00\x00\x00\x00\x00\"\"\n\x11OnPipelineFailure\x12\r\n\x05\x65mail\x18\x01 \x03(\t\"O\n\x0cNotification\x12?\n\x13on_pipeline_failure\x18\x01 \x01(\x0b\x32\".pipeline_models.OnPipelineFailure\"\x8c\x01\n\x0fScheduleTrigger\x12\x1a\n\x08interval\x18\x01 \x01(\tB\x08\x80\xb5\x18\x01\xb8\xb5\x18\x01\x12\x1c\n\nstart_time\x18\x02 \x01(\tB\x08\x80\xb5\x18\x01\xc0\xb5\x18\x01\x12\x16\n\x08\x65nd_time\x18\x03 \x01(\tB\x04\xc0\xb5\x18\x01\x12\x0f\n\x07\x63\x61tchup\x18\x04 \x01(\x08\x12\x16\n\x08timezone\x18\x05 \x01(\tB\x04\xd0\xb5\x18\x01\"J\n\x07Trigger\x12\x34\n\x08schedule\x18\x01 \x01(\x0b\x32 .pipeline_models.ScheduleTriggerH\x00\x42\t\n\x07trigger\"\r\n\x0bLocalEngine\"Z\n\x0e\x42igQueryEngine\x12\x10\n\x08location\x18\x01 \x01(\t\x12\x19\n\x11\x64\x65stination_table\x18\x02 \x01(\t\x12\x1b\n\x13impersonation_chain\x18\x03 \x03(\t\"\xc0\x01\n\x13\x44\x61taprocOnGceEngine\x12Q\n\x10\x65xisting_cluster\x18\x01 \x01(\x0b\x32\x35.pipeline_models.DataprocExistingClusterConfigurationH\x00\x12L\n\x11\x65phemeral_cluster\x18\x02 \x01(\x0b\x32/.pipeline_models.DataprocEphemeralConfigurationH\x00\x42\x08\n\x06\x63onfig\"\x93\x02\n$DataprocExistingClusterConfiguration\x12\x1a\n\x0c\x63luster_name\x18\x01 \x01(\tB\x04\x80\xb5\x18\x01\x12\x10\n\x08location\x18\x02 \x01(\t\x12\x12\n\nproject_id\x18\x03 \x01(\t\x12\x1b\n\x13impersonation_chain\x18\x04 \x03(\t\x12Y\n\nproperties\x18\x05 \x03(\x0b\x32\x45.pipeline_models.DataprocExistingClusterConfiguration.PropertiesEntry\x1a\x31\n\x0fPropertiesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xd8\x02\n\x1e\x44\x61taprocEphemeralConfiguration\x12\x1a\n\x0c\x63luster_name\x18\x01 \x01(\tB\x04\x80\xb5\x18\x01\x12\x10\n\x08location\x18\x02 \x01(\t\x12\x12\n\nproject_id\x18\x03 \x01(\t\x12O\n\x10resource_profile\x18\x04 \x01(\x0b\x32/.pipeline_models.DataprocClusterResourceProfileB\x04\x80\xb5\x18\x01\x12S\n\nproperties\x18\x05 \x03(\x0b\x32?.pipeline_models.DataprocEphemeralConfiguration.PropertiesEntry\x12\x1b\n\x13impersonation_chain\x18\x06 \x03(\t\x1a\x31\n\x0fPropertiesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xfe\x02\n\x1e\x44\x61taprocClusterResourceProfile\x12N\n\x06inline\x18\x01 \x01(\x0b\x32<.pipeline_models.DataprocClusterResourceProfile.InlineConfigH\x00\x12\x0e\n\x04path\x18\x02 \x01(\tH\x00\x12\x1e\n\x14\x65xternal_config_path\x18\x03 \x01(\tH\x00\x12O\n\toverrides\x18\x04 \x01(\x0b\x32<.pipeline_models.DataprocClusterResourceProfile.InlineConfig\x1a\x80\x01\n\x0cInlineConfig\x12\x35\n\x0e\x63luster_config\x18\x01 \x01(\x0b\x32\x17.google.protobuf.StructB\x02\x18\x01H\x00\x12)\n\x06\x63onfig\x18\x02 \x01(\x0b\x32\x17.google.protobuf.StructH\x00\x42\x0e\n\x0c\x63onfig_aliasB\x08\n\x06\x63onfig\"\xeb\x02\n\x1c\x44\x61taprocBatchResourceProfile\x12L\n\x06inline\x18\x01 \x01(\x0b\x32:.pipeline_models.DataprocBatchResourceProfile.InlineConfigH\x00\x12\x0e\n\x04path\x18\x02 \x01(\tH\x00\x12\x1e\n\x14\x65xternal_config_path\x18\x03 \x01(\tH\x00\x12M\n\toverrides\x18\x04 \x01(\x0b\x32:.pipeline_models.DataprocBatchResourceProfile.InlineConfig\x1at\n\x0cInlineConfig\x12/\n\x0eruntime_config\x18\x01 \x01(\x0b\x32\x17.google.protobuf.Struct\x12\x33\n\x12\x65nvironment_config\x18\x02 \x01(\x0b\x32\x17.google.protobuf.StructB\x08\n\x06\x63onfig\"\x9d\x01\n\x1d\x44\x61taprocServerlessBatchEngine\x12\x10\n\x08location\x18\x01 \x01(\t\x12M\n\x10resource_profile\x18\x02 \x01(\x0b\x32-.pipeline_models.DataprocBatchResourceProfileB\x04\x80\xb5\x18\x01\x12\x1b\n\x13impersonation_chain\x18\x03 \x03(\t\"\x9b\x03\n\x06\x41\x63tion\x12/\n\x06python\x18\x01 \x01(\x0b\x32\x1d.pipeline_models.PythonActionH\x00\x12\x31\n\x07pyspark\x18\x02 \x01(\x0b\x32\x1e.pipeline_models.PysparkActionH\x00\x12\x33\n\x08notebook\x18\x03 \x01(\x0b\x32\x1f.pipeline_models.NotebookActionH\x00\x12)\n\x03sql\x18\x04 \x01(\x0b\x32\x1a.pipeline_models.SqlActionH\x00\x12\x33\n\x08pipeline\x18\x05 \x01(\x0b\x32\x1f.pipeline_models.PipelineActionH\x00\x12>\n\x0e\x64\x61ta_ingestion\x18\x06 \x01(\x0b\x32$.pipeline_models.DataIngestionActionH\x00\x12N\n\x16orchestration_pipeline\x18\x07 \x01(\x0b\x32,.pipeline_models.OrchestrationPipelineActionH\x00\x42\x08\n\x06\x61\x63tion\"\xff\x02\n\x0cPythonAction\x12/\n\x04name\x18\x01 \x01(\tB!\x80\xb5\x18\x01\x8a\xb5\x18\x11^[a-zA-Z0-9_.-]+$\xa8\xb5\x18\x01\xb0\xb5\x18@\x12\x12\n\ndepends_on\x18\x02 \x03(\t\x12\x1f\n\x11\x65xecution_timeout\x18\x03 \x01(\tB\x04\xc8\xb5\x18\x01\x12\x1c\n\x0emain_file_path\x18\x04 \x01(\tB\x04\x80\xb5\x18\x01\x12\x1d\n\x0fpython_callable\x18\x05 \x01(\tB\x04\x80\xb5\x18\x01\x12*\n\top_kwargs\x18\x06 \x01(\x0b\x32\x17.google.protobuf.Struct\x12\x37\n\x0b\x65nvironment\x18\x07 \x01(\x0b\x32\".pipeline_models.PythonEnvironment\x12\x33\n\x06\x65ngine\x18\x08 \x01(\x0b\x32\x1d.pipeline_models.PythonEngineB\x04\x80\xb5\x18\x01\x12\x32\n\x0ctrigger_rule\x18\t \x01(\x0e\x32\x1c.pipeline_models.TriggerRule\"\x95\x02\n\x11PythonEnvironment\x12\x45\n\x0crequirements\x18\x01 \x01(\x0b\x32/.pipeline_models.PythonEnvironment.Requirements\x12\x1c\n\x14system_site_packages\x18\x02 \x01(\x08\x1a\"\n\x12InlineRequirements\x12\x0c\n\x04list\x18\x01 \x03(\t\x1aw\n\x0cRequirements\x12G\n\x06inline\x18\x01 \x01(\x0b\x32\x35.pipeline_models.PythonEnvironment.InlineRequirementsH\x00\x12\x0e\n\x04path\x18\x02 \x01(\tH\x00\x42\x0e\n\x0crequirements\"G\n\x0cPythonEngine\x12-\n\x05local\x18\x01 \x01(\x0b\x32\x1c.pipeline_models.LocalEngineH\x00\x42\x08\n\x06\x65ngine\"\xf2\x04\n\rPysparkAction\x12/\n\x04name\x18\x01 \x01(\tB!\x80\xb5\x18\x01\x8a\xb5\x18\x11^[a-zA-Z0-9_.-]+$\xa8\xb5\x18\x01\xb0\xb5\x18@\x12\x12\n\ndepends_on\x18\x02 \x03(\t\x12\x1f\n\x11\x65xecution_timeout\x18\x03 \x01(\tB\x04\xc8\xb5\x18\x01\x12\x34\n\x06\x65ngine\x18\x04 \x01(\x0b\x32\x1e.pipeline_models.PysparkEngineB\x04\x80\xb5\x18\x01\x12\x1c\n\x0emain_file_path\x18\x05 \x01(\tB\x04\x80\xb5\x18\x01\x12\x14\n\x0c\x61rchive_uris\x18\x06 \x03(\t\x12\x16\n\x0estaging_bucket\x18\x07 \x01(\t\x12\x10\n\x08py_files\x18\x08 \x03(\t\x12\x38\n\x0b\x65nvironment\x18\t \x01(\x0b\x32#.pipeline_models.PysparkEnvironment\x12\x32\n\x0ctrigger_rule\x18\n \x01(\x0e\x32\x1c.pipeline_models.TriggerRule\x12_\n\x06params\x18\x0b \x03(\x0b\x32*.pipeline_models.PysparkAction.ParamsEntryB#\xda\xb5\x18\x10^[a-zA-Z0-9_-]+$\xe2\xb5\x18\x0b^[^\';|`&]+$\x12:\n\x06labels\x18\x0c \x03(\x0b\x32*.pipeline_models.PysparkAction.LabelsEntry\x1a-\n\x0bParamsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a-\n\x0bLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xa9\x01\n\rPysparkEngine\x12?\n\x0f\x64\x61taproc_on_gce\x18\x01 \x01(\x0b\x32$.pipeline_models.DataprocOnGceEngineH\x00\x12M\n\x13\x64\x61taproc_serverless\x18\x02 \x01(\x0b\x32..pipeline_models.DataprocServerlessBatchEngineH\x00\x42\x08\n\x06\x65ngine\"\xfa\x01\n\x12PysparkEnvironment\x12\x46\n\x0crequirements\x18\x01 \x01(\x0b\x32\x30.pipeline_models.PysparkEnvironment.Requirements\x1a\"\n\x12InlineRequirements\x12\x0c\n\x04list\x18\x01 \x03(\t\x1ax\n\x0cRequirements\x12\x0e\n\x04path\x18\x01 \x01(\tH\x00\x12H\n\x06inline\x18\x02 \x01(\x0b\x32\x36.pipeline_models.PysparkEnvironment.InlineRequirementsH\x00\x42\x0e\n\x0crequirements\"\xe5\x04\n\x0eNotebookAction\x12/\n\x04name\x18\x01 \x01(\tB!\x80\xb5\x18\x01\x8a\xb5\x18\x11^[a-zA-Z0-9_.-]+$\xa8\xb5\x18\x01\xb0\xb5\x18@\x12\x12\n\ndepends_on\x18\x02 \x03(\t\x12\x1f\n\x11\x65xecution_timeout\x18\x03 \x01(\tB\x04\xc8\xb5\x18\x01\x12\x35\n\x06\x65ngine\x18\x04 \x01(\x0b\x32\x1f.pipeline_models.NotebookEngineB\x04\x80\xb5\x18\x01\x12\x1c\n\x0emain_file_path\x18\x05 \x01(\tB\x04\x80\xb5\x18\x01\x12\x14\n\x0c\x61rchive_uris\x18\x06 \x03(\t\x12\x16\n\x0estaging_bucket\x18\x07 \x01(\t\x12\x39\n\x0b\x65nvironment\x18\x08 \x01(\x0b\x32$.pipeline_models.NotebookEnvironment\x12\x32\n\x0ctrigger_rule\x18\t \x01(\x0e\x32\x1c.pipeline_models.TriggerRule\x12`\n\x06params\x18\n \x03(\x0b\x32+.pipeline_models.NotebookAction.ParamsEntryB#\xda\xb5\x18\x10^[a-zA-Z0-9_-]+$\xe2\xb5\x18\x0b^[^\';|`&]+$\x12;\n\x06labels\x18\x0b \x03(\x0b\x32+.pipeline_models.NotebookAction.LabelsEntry\x1a-\n\x0bParamsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a-\n\x0bLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xaa\x01\n\x0eNotebookEngine\x12?\n\x0f\x64\x61taproc_on_gce\x18\x01 \x01(\x0b\x32$.pipeline_models.DataprocOnGceEngineH\x00\x12M\n\x13\x64\x61taproc_serverless\x18\x02 \x01(\x0b\x32..pipeline_models.DataprocServerlessBatchEngineH\x00\x42\x08\n\x06\x65ngine\"\xfd\x01\n\x13NotebookEnvironment\x12G\n\x0crequirements\x18\x01 \x01(\x0b\x32\x31.pipeline_models.NotebookEnvironment.Requirements\x1a\"\n\x12InlineRequirements\x12\x0c\n\x04list\x18\x01 \x03(\t\x1ay\n\x0cRequirements\x12\x0e\n\x04path\x18\x01 \x01(\tH\x00\x12I\n\x06inline\x18\x02 \x01(\x0b\x32\x37.pipeline_models.NotebookEnvironment.InlineRequirementsH\x00\x42\x0e\n\x0crequirements\"\xf7\x03\n\tSqlAction\x12/\n\x04name\x18\x01 \x01(\tB!\x80\xb5\x18\x01\x8a\xb5\x18\x11^[a-zA-Z0-9_.-]+$\xa8\xb5\x18\x01\xb0\xb5\x18@\x12\x12\n\ndepends_on\x18\x02 \x03(\t\x12\x1f\n\x11\x65xecution_timeout\x18\x03 \x01(\tB\x04\xc8\xb5\x18\x01\x12\x30\n\x06\x65ngine\x18\x04 \x01(\x0b\x32\x1a.pipeline_models.SqlEngineB\x04\x80\xb5\x18\x01\x12+\n\x05query\x18\x05 \x01(\x0b\x32\x16.pipeline_models.QueryB\x04\x80\xb5\x18\x01\x12\x32\n\x0ctrigger_rule\x18\x06 \x01(\x0e\x32\x1c.pipeline_models.TriggerRule\x12[\n\x06params\x18\x07 \x03(\x0b\x32&.pipeline_models.SqlAction.ParamsEntryB#\xda\xb5\x18\x10^[a-zA-Z0-9_-]+$\xe2\xb5\x18\x0b^[^\';|`&]+$\x12\x36\n\x06labels\x18\x08 \x03(\x0b\x32&.pipeline_models.SqlAction.LabelsEntry\x1a-\n\x0bParamsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a-\n\x0bLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"2\n\x05Query\x12\x10\n\x06inline\x18\x01 \x01(\tH\x00\x12\x0e\n\x04path\x18\x02 \x01(\tH\x00\x42\x07\n\x05query\"\xda\x01\n\tSqlEngine\x12\x33\n\x08\x62igquery\x18\x01 \x01(\x0b\x32\x1f.pipeline_models.BigQueryEngineH\x00\x12M\n\x13\x64\x61taproc_serverless\x18\x02 \x01(\x0b\x32..pipeline_models.DataprocServerlessBatchEngineH\x00\x12?\n\x0f\x64\x61taproc_on_gce\x18\x03 \x01(\x0b\x32$.pipeline_models.DataprocOnGceEngineH\x00\x42\x08\n\x06\x65ngine\"\xe4\x03\n\x0ePipelineAction\x12/\n\x04name\x18\x01 \x01(\tB!\x80\xb5\x18\x01\x8a\xb5\x18\x11^[a-zA-Z0-9_.-]+$\xa8\xb5\x18\x01\xb0\xb5\x18@\x12\x12\n\ndepends_on\x18\x02 \x03(\t\x12\x1f\n\x11\x65xecution_timeout\x18\x03 \x01(\tB\x04\xc8\xb5\x18\x01\x12;\n\tframework\x18\x04 \x01(\x0b\x32\".pipeline_models.PipelineFrameworkB\x04\x80\xb5\x18\x01\x12\x32\n\x0ctrigger_rule\x18\x05 \x01(\x0e\x32\x1c.pipeline_models.TriggerRule\x12`\n\x06params\x18\x06 \x03(\x0b\x32+.pipeline_models.PipelineAction.ParamsEntryB#\xda\xb5\x18\x10^[a-zA-Z0-9_-]+$\xe2\xb5\x18\x0b^[^\';|`&]+$\x12;\n\x06labels\x18\x07 \x03(\x0b\x32+.pipeline_models.PipelineAction.LabelsEntry\x1a-\n\x0bParamsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a-\n\x0bLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x8e\x01\n\x11PipelineFramework\x12\x30\n\x03\x64\x62t\x18\x01 \x01(\x0b\x32!.pipeline_models.DbtFrameworkSpecH\x00\x12:\n\x08\x64\x61taform\x18\x02 \x01(\x0b\x32&.pipeline_models.DataformFrameworkSpecH\x00\x42\x0b\n\tframework\"_\n\x10\x44\x62tFrameworkSpec\x12>\n\x0e\x61irflow_worker\x18\x01 \x01(\x0b\x32$.pipeline_models.DbtAirflowExecutionH\x00\x42\x0b\n\texecution\"\xb0\x01\n\x15\x44\x61taformFrameworkSpec\x12\x45\n\x10\x64\x61taform_service\x18\x01 \x01(\x0b\x32).pipeline_models.DataformServiceExecutionH\x00\x12\x43\n\x0e\x61irflow_worker\x18\x02 \x01(\x0b\x32).pipeline_models.DataformAirflowExecutionH\x00\x42\x0b\n\texecution\"\x93\x01\n\x18\x44\x61taformServiceExecution\x12\x10\n\x08location\x18\x01 \x01(\t\x12\x12\n\nproject_id\x18\x02 \x01(\t\x12\x1b\n\rrepository_id\x18\x03 \x01(\tB\x04\x80\xb5\x18\x01\x12\x34\n\x13workflow_invocation\x18\x04 \x01(\x0b\x32\x17.google.protobuf.Struct\"`\n\x13\x44\x62tAirflowExecution\x12$\n\x16project_directory_path\x18\x01 \x01(\tB\x04\x80\xb5\x18\x01\x12\x15\n\rselect_models\x18\x02 \x03(\t\x12\x0c\n\x04tags\x18\x03 \x03(\t\"@\n\x18\x44\x61taformAirflowExecution\x12$\n\x16project_directory_path\x18\x01 \x01(\tB\x04\x80\xb5\x18\x01\"\xf3\x01\n\x13\x44\x61taIngestionAction\x12/\n\x04name\x18\x01 \x01(\tB!\x80\xb5\x18\x01\x8a\xb5\x18\x11^[a-zA-Z0-9_.-]+$\xa8\xb5\x18\x01\xb0\xb5\x18@\x12\x12\n\ndepends_on\x18\x02 \x03(\t\x12\x1f\n\x11\x65xecution_timeout\x18\x03 \x01(\tB\x04\xc8\xb5\x18\x01\x12\x38\n\x0c\x62igquery_dts\x18\x04 \x01(\x0b\x32 .pipeline_models.BigQueryDtsSpecH\x00\x12\x32\n\x0ctrigger_rule\x18\x05 \x01(\x0e\x32\x1c.pipeline_models.TriggerRuleB\x08\n\x06\x63onfig\"\xf7\x02\n\x0f\x42igQueryDtsSpec\x12\"\n\x12transfer_config_id\x18\x01 \x01(\tB\x04\x80\xb5\x18\x01H\x00\x12\x33\n\x0eruntime_params\x18\x02 \x01(\x0b\x32\x17.google.protobuf.StructB\x02\x18\x01\x12J\n\x14requested_time_range\x18\x06 \x01(\x0b\x32*.pipeline_models.BigQueryDtsSpec.TimeRangeH\x01\x12\"\n\x12requested_run_time\x18\x07 \x01(\tB\x04\xc0\xb5\x18\x01H\x01\x12\x1b\n\x13impersonation_chain\x18\x03 \x03(\t\x12\x12\n\nproject_id\x18\x04 \x01(\t\x12\x10\n\x08location\x18\x05 \x01(\t\x1a=\n\tTimeRange\x12\x18\n\nstart_time\x18\x01 \x01(\tB\x04\xc0\xb5\x18\x01\x12\x16\n\x08\x65nd_time\x18\x02 \x01(\tB\x04\xc0\xb5\x18\x01\x42\x11\n\x0ftransfer_configB\x06\n\x04time\"\x9e\x02\n\x1bOrchestrationPipelineAction\x12/\n\x04name\x18\x01 \x01(\tB!\x80\xb5\x18\x01\x8a\xb5\x18\x11^[a-zA-Z0-9_.-]+$\xa8\xb5\x18\x01\xb0\xb5\x18@\x12\x12\n\ndepends_on\x18\x02 \x03(\t\x12\x1f\n\x11\x65xecution_timeout\x18\x03 \x01(\tB\x04\xc8\xb5\x18\x01\x12\x35\n\x0bpipeline_id\x18\x04 \x01(\tB \x80\xb5\x18\x01\x8a\xb5\x18\x10^[a-zA-Z0-9_-]+$\xa8\xb5\x18\x01\xb0\xb5\x18@\x12\x11\n\tbundle_id\x18\x05 \x01(\t\x12\x1b\n\x13wait_for_completion\x18\x06 \x01(\x08\x12\x32\n\x0ctrigger_rule\x18\x07 \x01(\x0e\x32\x1c.pipeline_models.TriggerRule*<\n\x0ePipelineRunner\x12\x1d\n\x19pipeline_runner_undefined\x10\x00\x12\x0b\n\x07\x61irflow\x10\x01*\x85\x01\n\x0bTriggerRule\x12\x1a\n\x16trigger_rule_undefined\x10\x00\x12\x0f\n\x0b\x61ll_success\x10\x01\x12\x0e\n\nall_failed\x10\x02\x12\x0c\n\x08\x61ll_done\x10\x03\x12\x0e\n\none_failed\x10\x04\x12\x0f\n\x0bone_success\x10\x05\x12\n\n\x06\x61lways\x10\x06\x62\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
-_builder.BuildTopDescriptorsAndMessages(
-    DESCRIPTOR,
-    'orchestration_pipelines_models.pipeline_v1_model.protos.orchestration_pipeline_pb2',
-    globals(),
-)
+_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'orchestration_pipelines_models.pipeline_v1_model.protos.orchestration_pipeline_pb2', globals())
 if _descriptor._USE_C_DESCRIPTORS == False:
 
-    DESCRIPTOR._options = None
-    _ORCHESTRATIONPIPELINE.fields_by_name['model_version']._options = None
-    _ORCHESTRATIONPIPELINE.fields_by_name[
-        'model_version'
-    ]._serialized_options = b'\200\265\030\001'
-    _ORCHESTRATIONPIPELINE.fields_by_name['pipeline_id']._options = None
-    _ORCHESTRATIONPIPELINE.fields_by_name['pipeline_id']._serialized_options = (
-        b'\200\265\030\001\212\265\030\020^[a-zA-Z0-9_-]+$\250\265\030\001\260\265\030@'
-    )
-    _ORCHESTRATIONPIPELINE.fields_by_name['runner']._options = None
-    _ORCHESTRATIONPIPELINE.fields_by_name['runner']._serialized_options = (
-        b'\240\265\030\001'
-    )
-    _ORCHESTRATIONPIPELINE.fields_by_name['owner']._options = None
-    _ORCHESTRATIONPIPELINE.fields_by_name['owner']._serialized_options = (
-        b'\200\265\030\001\212\265\030\021^[a-zA-Z0-9_#-]+$\250\265\030\001\260\265\030 '
-    )
-    _ORCHESTRATIONPIPELINE.fields_by_name['defaults']._options = None
-    _ORCHESTRATIONPIPELINE.fields_by_name['defaults']._serialized_options = (
-        b'\200\265\030\001'
-    )
-    _ORCHESTRATIONPIPELINE.fields_by_name['actions']._options = None
-    _ORCHESTRATIONPIPELINE.fields_by_name['actions']._serialized_options = (
-        b'\230\265\030\001'
-    )
-    _DEFAULTS.fields_by_name['project_id']._options = None
-    _DEFAULTS.fields_by_name['project_id']._serialized_options = (
-        b'\200\265\030\001'
-    )
-    _DEFAULTS.fields_by_name['location']._options = None
-    _DEFAULTS.fields_by_name['location']._serialized_options = (
-        b'\200\265\030\001'
-    )
-    _DEFAULTS.fields_by_name['execution_config']._options = None
-    _DEFAULTS.fields_by_name['execution_config']._serialized_options = (
-        b'\200\265\030\001'
-    )
-    _EXECUTIONCONFIG.fields_by_name['retries']._options = None
-    _EXECUTIONCONFIG.fields_by_name['retries']._serialized_options = (
-        b'\221\265\030\000\000\000\000\000\000\000\000'
-    )
-    _SCHEDULETRIGGER.fields_by_name['interval']._options = None
-    _SCHEDULETRIGGER.fields_by_name['interval']._serialized_options = (
-        b'\200\265\030\001\270\265\030\001'
-    )
-    _SCHEDULETRIGGER.fields_by_name['start_time']._options = None
-    _SCHEDULETRIGGER.fields_by_name['start_time']._serialized_options = (
-        b'\200\265\030\001\300\265\030\001'
-    )
-    _SCHEDULETRIGGER.fields_by_name['end_time']._options = None
-    _SCHEDULETRIGGER.fields_by_name['end_time']._serialized_options = (
-        b'\300\265\030\001'
-    )
-    _SCHEDULETRIGGER.fields_by_name['timezone']._options = None
-    _SCHEDULETRIGGER.fields_by_name['timezone']._serialized_options = (
-        b'\320\265\030\001'
-    )
-    _DATAPROCEXISTINGCLUSTERCONFIGURATION_PROPERTIESENTRY._options = None
-    _DATAPROCEXISTINGCLUSTERCONFIGURATION_PROPERTIESENTRY._serialized_options = (
-        b'8\001'
-    )
-    _DATAPROCEXISTINGCLUSTERCONFIGURATION.fields_by_name[
-        'cluster_name'
-    ]._options = None
-    _DATAPROCEXISTINGCLUSTERCONFIGURATION.fields_by_name[
-        'cluster_name'
-    ]._serialized_options = b'\200\265\030\001'
-    _DATAPROCEPHEMERALCONFIGURATION_PROPERTIESENTRY._options = None
-    _DATAPROCEPHEMERALCONFIGURATION_PROPERTIESENTRY._serialized_options = (
-        b'8\001'
-    )
-    _DATAPROCEPHEMERALCONFIGURATION.fields_by_name['cluster_name']._options = (
-        None
-    )
-    _DATAPROCEPHEMERALCONFIGURATION.fields_by_name[
-        'cluster_name'
-    ]._serialized_options = b'\200\265\030\001'
-    _DATAPROCEPHEMERALCONFIGURATION.fields_by_name[
-        'resource_profile'
-    ]._options = None
-    _DATAPROCEPHEMERALCONFIGURATION.fields_by_name[
-        'resource_profile'
-    ]._serialized_options = b'\200\265\030\001'
-    _DATAPROCCLUSTERRESOURCEPROFILE_INLINECONFIG.fields_by_name[
-        'cluster_config'
-    ]._options = None
-    _DATAPROCCLUSTERRESOURCEPROFILE_INLINECONFIG.fields_by_name[
-        'cluster_config'
-    ]._serialized_options = b'\030\001'
-    _DATAPROCSERVERLESSBATCHENGINE.fields_by_name[
-        'resource_profile'
-    ]._options = None
-    _DATAPROCSERVERLESSBATCHENGINE.fields_by_name[
-        'resource_profile'
-    ]._serialized_options = b'\200\265\030\001'
-    _PYTHONACTION.fields_by_name['name']._options = None
-    _PYTHONACTION.fields_by_name['name']._serialized_options = (
-        b'\200\265\030\001\212\265\030\021^[a-zA-Z0-9_.-]+$\250\265\030\001\260\265\030@'
-    )
-    _PYTHONACTION.fields_by_name['execution_timeout']._options = None
-    _PYTHONACTION.fields_by_name['execution_timeout']._serialized_options = (
-        b'\310\265\030\001'
-    )
-    _PYTHONACTION.fields_by_name['main_file_path']._options = None
-    _PYTHONACTION.fields_by_name['main_file_path']._serialized_options = (
-        b'\200\265\030\001'
-    )
-    _PYTHONACTION.fields_by_name['python_callable']._options = None
-    _PYTHONACTION.fields_by_name['python_callable']._serialized_options = (
-        b'\200\265\030\001'
-    )
-    _PYTHONACTION.fields_by_name['engine']._options = None
-    _PYTHONACTION.fields_by_name['engine']._serialized_options = (
-        b'\200\265\030\001'
-    )
-    _PYSPARKACTION.fields_by_name['name']._options = None
-    _PYSPARKACTION.fields_by_name['name']._serialized_options = (
-        b'\200\265\030\001\212\265\030\021^[a-zA-Z0-9_.-]+$\250\265\030\001\260\265\030@'
-    )
-    _PYSPARKACTION.fields_by_name['execution_timeout']._options = None
-    _PYSPARKACTION.fields_by_name['execution_timeout']._serialized_options = (
-        b'\310\265\030\001'
-    )
-    _PYSPARKACTION.fields_by_name['engine']._options = None
-    _PYSPARKACTION.fields_by_name['engine']._serialized_options = (
-        b'\200\265\030\001'
-    )
-    _PYSPARKACTION.fields_by_name['main_file_path']._options = None
-    _PYSPARKACTION.fields_by_name['main_file_path']._serialized_options = (
-        b'\200\265\030\001'
-    )
-    _NOTEBOOKACTION.fields_by_name['name']._options = None
-    _NOTEBOOKACTION.fields_by_name['name']._serialized_options = (
-        b'\200\265\030\001\212\265\030\021^[a-zA-Z0-9_.-]+$\250\265\030\001\260\265\030@'
-    )
-    _NOTEBOOKACTION.fields_by_name['execution_timeout']._options = None
-    _NOTEBOOKACTION.fields_by_name['execution_timeout']._serialized_options = (
-        b'\310\265\030\001'
-    )
-    _NOTEBOOKACTION.fields_by_name['engine']._options = None
-    _NOTEBOOKACTION.fields_by_name['engine']._serialized_options = (
-        b'\200\265\030\001'
-    )
-    _NOTEBOOKACTION.fields_by_name['main_file_path']._options = None
-    _NOTEBOOKACTION.fields_by_name['main_file_path']._serialized_options = (
-        b'\200\265\030\001'
-    )
-    _SQLACTION.fields_by_name['name']._options = None
-    _SQLACTION.fields_by_name['name']._serialized_options = (
-        b'\200\265\030\001\212\265\030\021^[a-zA-Z0-9_.-]+$\250\265\030\001\260\265\030@'
-    )
-    _SQLACTION.fields_by_name['execution_timeout']._options = None
-    _SQLACTION.fields_by_name['execution_timeout']._serialized_options = (
-        b'\310\265\030\001'
-    )
-    _SQLACTION.fields_by_name['engine']._options = None
-    _SQLACTION.fields_by_name['engine']._serialized_options = (
-        b'\200\265\030\001'
-    )
-    _SQLACTION.fields_by_name['query']._options = None
-    _SQLACTION.fields_by_name['query']._serialized_options = b'\200\265\030\001'
-    _PIPELINEACTION.fields_by_name['name']._options = None
-    _PIPELINEACTION.fields_by_name['name']._serialized_options = (
-        b'\200\265\030\001\212\265\030\021^[a-zA-Z0-9_.-]+$\250\265\030\001\260\265\030@'
-    )
-    _PIPELINEACTION.fields_by_name['execution_timeout']._options = None
-    _PIPELINEACTION.fields_by_name['execution_timeout']._serialized_options = (
-        b'\310\265\030\001'
-    )
-    _PIPELINEACTION.fields_by_name['framework']._options = None
-    _PIPELINEACTION.fields_by_name['framework']._serialized_options = (
-        b'\200\265\030\001'
-    )
-    _DATAFORMSERVICEEXECUTION.fields_by_name['repository_id']._options = None
-    _DATAFORMSERVICEEXECUTION.fields_by_name[
-        'repository_id'
-    ]._serialized_options = b'\200\265\030\001'
-    _DBTAIRFLOWEXECUTION.fields_by_name['project_directory_path']._options = (
-        None
-    )
-    _DBTAIRFLOWEXECUTION.fields_by_name[
-        'project_directory_path'
-    ]._serialized_options = b'\200\265\030\001'
-    _DATAFORMAIRFLOWEXECUTION.fields_by_name[
-        'project_directory_path'
-    ]._options = None
-    _DATAFORMAIRFLOWEXECUTION.fields_by_name[
-        'project_directory_path'
-    ]._serialized_options = b'\200\265\030\001'
-    _DATAINGESTIONACTION.fields_by_name['name']._options = None
-    _DATAINGESTIONACTION.fields_by_name['name']._serialized_options = (
-        b'\200\265\030\001\212\265\030\021^[a-zA-Z0-9_.-]+$\250\265\030\001\260\265\030@'
-    )
-    _DATAINGESTIONACTION.fields_by_name['execution_timeout']._options = None
-    _DATAINGESTIONACTION.fields_by_name[
-        'execution_timeout'
-    ]._serialized_options = b'\310\265\030\001'
-    _BIGQUERYDTSSPEC.fields_by_name['transfer_config_id']._options = None
-    _BIGQUERYDTSSPEC.fields_by_name[
-        'transfer_config_id'
-    ]._serialized_options = b'\200\265\030\001'
-    _PIPELINERUNNER._serialized_start = 7084
-    _PIPELINERUNNER._serialized_end = 7144
-    _ORCHESTRATIONPIPELINE._serialized_start = 210
-    _ORCHESTRATIONPIPELINE._serialized_end = 654
-    _DEFAULTS._serialized_start = 656
-    _DEFAULTS._serialized_end = 782
-    _EXECUTIONCONFIG._serialized_start = 784
-    _EXECUTIONCONFIG._serialized_end = 831
-    _ONPIPELINEFAILURE._serialized_start = 833
-    _ONPIPELINEFAILURE._serialized_end = 867
-    _NOTIFICATION._serialized_start = 869
-    _NOTIFICATION._serialized_end = 948
-    _SCHEDULETRIGGER._serialized_start = 951
-    _SCHEDULETRIGGER._serialized_end = 1091
-    _TRIGGER._serialized_start = 1093
-    _TRIGGER._serialized_end = 1167
-    _LOCALENGINE._serialized_start = 1169
-    _LOCALENGINE._serialized_end = 1182
-    _BIGQUERYENGINE._serialized_start = 1184
-    _BIGQUERYENGINE._serialized_end = 1274
-    _DATAPROCONGCEENGINE._serialized_start = 1277
-    _DATAPROCONGCEENGINE._serialized_end = 1469
-    _DATAPROCEXISTINGCLUSTERCONFIGURATION._serialized_start = 1472
-    _DATAPROCEXISTINGCLUSTERCONFIGURATION._serialized_end = 1747
-    _DATAPROCEXISTINGCLUSTERCONFIGURATION_PROPERTIESENTRY._serialized_start = (
-        1698
-    )
-    _DATAPROCEXISTINGCLUSTERCONFIGURATION_PROPERTIESENTRY._serialized_end = 1747
-    _DATAPROCEPHEMERALCONFIGURATION._serialized_start = 1750
-    _DATAPROCEPHEMERALCONFIGURATION._serialized_end = 2094
-    _DATAPROCEPHEMERALCONFIGURATION_PROPERTIESENTRY._serialized_start = 1698
-    _DATAPROCEPHEMERALCONFIGURATION_PROPERTIESENTRY._serialized_end = 1747
-    _DATAPROCCLUSTERRESOURCEPROFILE._serialized_start = 2097
-    _DATAPROCCLUSTERRESOURCEPROFILE._serialized_end = 2479
-    _DATAPROCCLUSTERRESOURCEPROFILE_INLINECONFIG._serialized_start = 2341
-    _DATAPROCCLUSTERRESOURCEPROFILE_INLINECONFIG._serialized_end = 2469
-    _DATAPROCBATCHRESOURCEPROFILE._serialized_start = 2482
-    _DATAPROCBATCHRESOURCEPROFILE._serialized_end = 2845
-    _DATAPROCBATCHRESOURCEPROFILE_INLINECONFIG._serialized_start = 2719
-    _DATAPROCBATCHRESOURCEPROFILE_INLINECONFIG._serialized_end = 2835
-    _DATAPROCSERVERLESSBATCHENGINE._serialized_start = 2848
-    _DATAPROCSERVERLESSBATCHENGINE._serialized_end = 3005
-    _ACTION._serialized_start = 3008
-    _ACTION._serialized_end = 3339
-    _PYTHONACTION._serialized_start = 3342
-    _PYTHONACTION._serialized_end = 3673
-    _PYTHONENVIRONMENT._serialized_start = 3676
-    _PYTHONENVIRONMENT._serialized_end = 3953
-    _PYTHONENVIRONMENT_INLINEREQUIREMENTS._serialized_start = 3798
-    _PYTHONENVIRONMENT_INLINEREQUIREMENTS._serialized_end = 3832
-    _PYTHONENVIRONMENT_REQUIREMENTS._serialized_start = 3834
-    _PYTHONENVIRONMENT_REQUIREMENTS._serialized_end = 3953
-    _PYTHONENGINE._serialized_start = 3955
-    _PYTHONENGINE._serialized_end = 4026
-    _PYSPARKACTION._serialized_start = 4029
-    _PYSPARKACTION._serialized_end = 4352
-    _PYSPARKENGINE._serialized_start = 4355
-    _PYSPARKENGINE._serialized_end = 4524
-    _PYSPARKENVIRONMENT._serialized_start = 4527
-    _PYSPARKENVIRONMENT._serialized_end = 4667
-    _PYSPARKENVIRONMENT_REQUIREMENTS._serialized_start = 4621
-    _PYSPARKENVIRONMENT_REQUIREMENTS._serialized_end = 4667
-    _NOTEBOOKACTION._serialized_start = 4670
-    _NOTEBOOKACTION._serialized_end = 4978
-    _NOTEBOOKENGINE._serialized_start = 4981
-    _NOTEBOOKENGINE._serialized_end = 5151
-    _NOTEBOOKENVIRONMENT._serialized_start = 5154
-    _NOTEBOOKENVIRONMENT._serialized_end = 5296
-    _NOTEBOOKENVIRONMENT_REQUIREMENTS._serialized_start = 4621
-    _NOTEBOOKENVIRONMENT_REQUIREMENTS._serialized_end = 4667
-    _SQLACTION._serialized_start = 5299
-    _SQLACTION._serialized_end = 5507
-    _QUERY._serialized_start = 5509
-    _QUERY._serialized_end = 5559
-    _SQLENGINE._serialized_start = 5562
-    _SQLENGINE._serialized_end = 5780
-    _PIPELINEACTION._serialized_start = 5783
-    _PIPELINEACTION._serialized_end = 5962
-    _PIPELINEFRAMEWORK._serialized_start = 5965
-    _PIPELINEFRAMEWORK._serialized_end = 6107
-    _DBTFRAMEWORKSPEC._serialized_start = 6109
-    _DBTFRAMEWORKSPEC._serialized_end = 6204
-    _DATAFORMFRAMEWORKSPEC._serialized_start = 6207
-    _DATAFORMFRAMEWORKSPEC._serialized_end = 6383
-    _DATAFORMSERVICEEXECUTION._serialized_start = 6386
-    _DATAFORMSERVICEEXECUTION._serialized_end = 6533
-    _DBTAIRFLOWEXECUTION._serialized_start = 6535
-    _DBTAIRFLOWEXECUTION._serialized_end = 6631
-    _DATAFORMAIRFLOWEXECUTION._serialized_start = 6633
-    _DATAFORMAIRFLOWEXECUTION._serialized_end = 6697
-    _DATAINGESTIONACTION._serialized_start = 6700
-    _DATAINGESTIONACTION._serialized_end = 6891
-    _BIGQUERYDTSSPEC._serialized_start = 6894
-    _BIGQUERYDTSSPEC._serialized_end = 7082
+  DESCRIPTOR._options = None
+  _ORCHESTRATIONPIPELINE.fields_by_name['model_version']._options = None
+  _ORCHESTRATIONPIPELINE.fields_by_name['model_version']._serialized_options = b'\200\265\030\001'
+  _ORCHESTRATIONPIPELINE.fields_by_name['pipeline_id']._options = None
+  _ORCHESTRATIONPIPELINE.fields_by_name['pipeline_id']._serialized_options = b'\200\265\030\001\212\265\030\020^[a-zA-Z0-9_-]+$\250\265\030\001\260\265\030@'
+  _ORCHESTRATIONPIPELINE.fields_by_name['runner']._options = None
+  _ORCHESTRATIONPIPELINE.fields_by_name['runner']._serialized_options = b'\240\265\030\001'
+  _ORCHESTRATIONPIPELINE.fields_by_name['owner']._options = None
+  _ORCHESTRATIONPIPELINE.fields_by_name['owner']._serialized_options = b'\200\265\030\001\212\265\030\021^[a-zA-Z0-9_#-]+$\250\265\030\001\260\265\030 '
+  _ORCHESTRATIONPIPELINE.fields_by_name['defaults']._options = None
+  _ORCHESTRATIONPIPELINE.fields_by_name['defaults']._serialized_options = b'\200\265\030\001'
+  _ORCHESTRATIONPIPELINE.fields_by_name['actions']._options = None
+  _ORCHESTRATIONPIPELINE.fields_by_name['actions']._serialized_options = b'\230\265\030\001'
+  _DEFAULTS.fields_by_name['project_id']._options = None
+  _DEFAULTS.fields_by_name['project_id']._serialized_options = b'\200\265\030\001'
+  _DEFAULTS.fields_by_name['location']._options = None
+  _DEFAULTS.fields_by_name['location']._serialized_options = b'\200\265\030\001'
+  _DEFAULTS.fields_by_name['execution_config']._options = None
+  _DEFAULTS.fields_by_name['execution_config']._serialized_options = b'\200\265\030\001'
+  _EXECUTIONCONFIG.fields_by_name['retries']._options = None
+  _EXECUTIONCONFIG.fields_by_name['retries']._serialized_options = b'\221\265\030\000\000\000\000\000\000\000\000'
+  _SCHEDULETRIGGER.fields_by_name['interval']._options = None
+  _SCHEDULETRIGGER.fields_by_name['interval']._serialized_options = b'\200\265\030\001\270\265\030\001'
+  _SCHEDULETRIGGER.fields_by_name['start_time']._options = None
+  _SCHEDULETRIGGER.fields_by_name['start_time']._serialized_options = b'\200\265\030\001\300\265\030\001'
+  _SCHEDULETRIGGER.fields_by_name['end_time']._options = None
+  _SCHEDULETRIGGER.fields_by_name['end_time']._serialized_options = b'\300\265\030\001'
+  _SCHEDULETRIGGER.fields_by_name['timezone']._options = None
+  _SCHEDULETRIGGER.fields_by_name['timezone']._serialized_options = b'\320\265\030\001'
+  _DATAPROCEXISTINGCLUSTERCONFIGURATION_PROPERTIESENTRY._options = None
+  _DATAPROCEXISTINGCLUSTERCONFIGURATION_PROPERTIESENTRY._serialized_options = b'8\001'
+  _DATAPROCEXISTINGCLUSTERCONFIGURATION.fields_by_name['cluster_name']._options = None
+  _DATAPROCEXISTINGCLUSTERCONFIGURATION.fields_by_name['cluster_name']._serialized_options = b'\200\265\030\001'
+  _DATAPROCEPHEMERALCONFIGURATION_PROPERTIESENTRY._options = None
+  _DATAPROCEPHEMERALCONFIGURATION_PROPERTIESENTRY._serialized_options = b'8\001'
+  _DATAPROCEPHEMERALCONFIGURATION.fields_by_name['cluster_name']._options = None
+  _DATAPROCEPHEMERALCONFIGURATION.fields_by_name['cluster_name']._serialized_options = b'\200\265\030\001'
+  _DATAPROCEPHEMERALCONFIGURATION.fields_by_name['resource_profile']._options = None
+  _DATAPROCEPHEMERALCONFIGURATION.fields_by_name['resource_profile']._serialized_options = b'\200\265\030\001'
+  _DATAPROCCLUSTERRESOURCEPROFILE_INLINECONFIG.fields_by_name['cluster_config']._options = None
+  _DATAPROCCLUSTERRESOURCEPROFILE_INLINECONFIG.fields_by_name['cluster_config']._serialized_options = b'\030\001'
+  _DATAPROCSERVERLESSBATCHENGINE.fields_by_name['resource_profile']._options = None
+  _DATAPROCSERVERLESSBATCHENGINE.fields_by_name['resource_profile']._serialized_options = b'\200\265\030\001'
+  _PYTHONACTION.fields_by_name['name']._options = None
+  _PYTHONACTION.fields_by_name['name']._serialized_options = b'\200\265\030\001\212\265\030\021^[a-zA-Z0-9_.-]+$\250\265\030\001\260\265\030@'
+  _PYTHONACTION.fields_by_name['execution_timeout']._options = None
+  _PYTHONACTION.fields_by_name['execution_timeout']._serialized_options = b'\310\265\030\001'
+  _PYTHONACTION.fields_by_name['main_file_path']._options = None
+  _PYTHONACTION.fields_by_name['main_file_path']._serialized_options = b'\200\265\030\001'
+  _PYTHONACTION.fields_by_name['python_callable']._options = None
+  _PYTHONACTION.fields_by_name['python_callable']._serialized_options = b'\200\265\030\001'
+  _PYTHONACTION.fields_by_name['engine']._options = None
+  _PYTHONACTION.fields_by_name['engine']._serialized_options = b'\200\265\030\001'
+  _PYSPARKACTION_PARAMSENTRY._options = None
+  _PYSPARKACTION_PARAMSENTRY._serialized_options = b'8\001'
+  _PYSPARKACTION_LABELSENTRY._options = None
+  _PYSPARKACTION_LABELSENTRY._serialized_options = b'8\001'
+  _PYSPARKACTION.fields_by_name['name']._options = None
+  _PYSPARKACTION.fields_by_name['name']._serialized_options = b'\200\265\030\001\212\265\030\021^[a-zA-Z0-9_.-]+$\250\265\030\001\260\265\030@'
+  _PYSPARKACTION.fields_by_name['execution_timeout']._options = None
+  _PYSPARKACTION.fields_by_name['execution_timeout']._serialized_options = b'\310\265\030\001'
+  _PYSPARKACTION.fields_by_name['engine']._options = None
+  _PYSPARKACTION.fields_by_name['engine']._serialized_options = b'\200\265\030\001'
+  _PYSPARKACTION.fields_by_name['main_file_path']._options = None
+  _PYSPARKACTION.fields_by_name['main_file_path']._serialized_options = b'\200\265\030\001'
+  _PYSPARKACTION.fields_by_name['params']._options = None
+  _PYSPARKACTION.fields_by_name['params']._serialized_options = b'\332\265\030\020^[a-zA-Z0-9_-]+$\342\265\030\013^[^\';|`&]+$'
+  _NOTEBOOKACTION_PARAMSENTRY._options = None
+  _NOTEBOOKACTION_PARAMSENTRY._serialized_options = b'8\001'
+  _NOTEBOOKACTION_LABELSENTRY._options = None
+  _NOTEBOOKACTION_LABELSENTRY._serialized_options = b'8\001'
+  _NOTEBOOKACTION.fields_by_name['name']._options = None
+  _NOTEBOOKACTION.fields_by_name['name']._serialized_options = b'\200\265\030\001\212\265\030\021^[a-zA-Z0-9_.-]+$\250\265\030\001\260\265\030@'
+  _NOTEBOOKACTION.fields_by_name['execution_timeout']._options = None
+  _NOTEBOOKACTION.fields_by_name['execution_timeout']._serialized_options = b'\310\265\030\001'
+  _NOTEBOOKACTION.fields_by_name['engine']._options = None
+  _NOTEBOOKACTION.fields_by_name['engine']._serialized_options = b'\200\265\030\001'
+  _NOTEBOOKACTION.fields_by_name['main_file_path']._options = None
+  _NOTEBOOKACTION.fields_by_name['main_file_path']._serialized_options = b'\200\265\030\001'
+  _NOTEBOOKACTION.fields_by_name['params']._options = None
+  _NOTEBOOKACTION.fields_by_name['params']._serialized_options = b'\332\265\030\020^[a-zA-Z0-9_-]+$\342\265\030\013^[^\';|`&]+$'
+  _SQLACTION_PARAMSENTRY._options = None
+  _SQLACTION_PARAMSENTRY._serialized_options = b'8\001'
+  _SQLACTION_LABELSENTRY._options = None
+  _SQLACTION_LABELSENTRY._serialized_options = b'8\001'
+  _SQLACTION.fields_by_name['name']._options = None
+  _SQLACTION.fields_by_name['name']._serialized_options = b'\200\265\030\001\212\265\030\021^[a-zA-Z0-9_.-]+$\250\265\030\001\260\265\030@'
+  _SQLACTION.fields_by_name['execution_timeout']._options = None
+  _SQLACTION.fields_by_name['execution_timeout']._serialized_options = b'\310\265\030\001'
+  _SQLACTION.fields_by_name['engine']._options = None
+  _SQLACTION.fields_by_name['engine']._serialized_options = b'\200\265\030\001'
+  _SQLACTION.fields_by_name['query']._options = None
+  _SQLACTION.fields_by_name['query']._serialized_options = b'\200\265\030\001'
+  _SQLACTION.fields_by_name['params']._options = None
+  _SQLACTION.fields_by_name['params']._serialized_options = b'\332\265\030\020^[a-zA-Z0-9_-]+$\342\265\030\013^[^\';|`&]+$'
+  _PIPELINEACTION_PARAMSENTRY._options = None
+  _PIPELINEACTION_PARAMSENTRY._serialized_options = b'8\001'
+  _PIPELINEACTION_LABELSENTRY._options = None
+  _PIPELINEACTION_LABELSENTRY._serialized_options = b'8\001'
+  _PIPELINEACTION.fields_by_name['name']._options = None
+  _PIPELINEACTION.fields_by_name['name']._serialized_options = b'\200\265\030\001\212\265\030\021^[a-zA-Z0-9_.-]+$\250\265\030\001\260\265\030@'
+  _PIPELINEACTION.fields_by_name['execution_timeout']._options = None
+  _PIPELINEACTION.fields_by_name['execution_timeout']._serialized_options = b'\310\265\030\001'
+  _PIPELINEACTION.fields_by_name['framework']._options = None
+  _PIPELINEACTION.fields_by_name['framework']._serialized_options = b'\200\265\030\001'
+  _PIPELINEACTION.fields_by_name['params']._options = None
+  _PIPELINEACTION.fields_by_name['params']._serialized_options = b'\332\265\030\020^[a-zA-Z0-9_-]+$\342\265\030\013^[^\';|`&]+$'
+  _DATAFORMSERVICEEXECUTION.fields_by_name['repository_id']._options = None
+  _DATAFORMSERVICEEXECUTION.fields_by_name['repository_id']._serialized_options = b'\200\265\030\001'
+  _DBTAIRFLOWEXECUTION.fields_by_name['project_directory_path']._options = None
+  _DBTAIRFLOWEXECUTION.fields_by_name['project_directory_path']._serialized_options = b'\200\265\030\001'
+  _DATAFORMAIRFLOWEXECUTION.fields_by_name['project_directory_path']._options = None
+  _DATAFORMAIRFLOWEXECUTION.fields_by_name['project_directory_path']._serialized_options = b'\200\265\030\001'
+  _DATAINGESTIONACTION.fields_by_name['name']._options = None
+  _DATAINGESTIONACTION.fields_by_name['name']._serialized_options = b'\200\265\030\001\212\265\030\021^[a-zA-Z0-9_.-]+$\250\265\030\001\260\265\030@'
+  _DATAINGESTIONACTION.fields_by_name['execution_timeout']._options = None
+  _DATAINGESTIONACTION.fields_by_name['execution_timeout']._serialized_options = b'\310\265\030\001'
+  _BIGQUERYDTSSPEC_TIMERANGE.fields_by_name['start_time']._options = None
+  _BIGQUERYDTSSPEC_TIMERANGE.fields_by_name['start_time']._serialized_options = b'\300\265\030\001'
+  _BIGQUERYDTSSPEC_TIMERANGE.fields_by_name['end_time']._options = None
+  _BIGQUERYDTSSPEC_TIMERANGE.fields_by_name['end_time']._serialized_options = b'\300\265\030\001'
+  _BIGQUERYDTSSPEC.fields_by_name['transfer_config_id']._options = None
+  _BIGQUERYDTSSPEC.fields_by_name['transfer_config_id']._serialized_options = b'\200\265\030\001'
+  _BIGQUERYDTSSPEC.fields_by_name['runtime_params']._options = None
+  _BIGQUERYDTSSPEC.fields_by_name['runtime_params']._serialized_options = b'\030\001'
+  _BIGQUERYDTSSPEC.fields_by_name['requested_run_time']._options = None
+  _BIGQUERYDTSSPEC.fields_by_name['requested_run_time']._serialized_options = b'\300\265\030\001'
+  _ORCHESTRATIONPIPELINEACTION.fields_by_name['name']._options = None
+  _ORCHESTRATIONPIPELINEACTION.fields_by_name['name']._serialized_options = b'\200\265\030\001\212\265\030\021^[a-zA-Z0-9_.-]+$\250\265\030\001\260\265\030@'
+  _ORCHESTRATIONPIPELINEACTION.fields_by_name['execution_timeout']._options = None
+  _ORCHESTRATIONPIPELINEACTION.fields_by_name['execution_timeout']._serialized_options = b'\310\265\030\001'
+  _ORCHESTRATIONPIPELINEACTION.fields_by_name['pipeline_id']._options = None
+  _ORCHESTRATIONPIPELINEACTION.fields_by_name['pipeline_id']._serialized_options = b'\200\265\030\001\212\265\030\020^[a-zA-Z0-9_-]+$\250\265\030\001\260\265\030@'
+  _PIPELINERUNNER._serialized_start=9173
+  _PIPELINERUNNER._serialized_end=9233
+  _TRIGGERRULE._serialized_start=9236
+  _TRIGGERRULE._serialized_end=9369
+  _ORCHESTRATIONPIPELINE._serialized_start=210
+  _ORCHESTRATIONPIPELINE._serialized_end=654
+  _DEFAULTS._serialized_start=656
+  _DEFAULTS._serialized_end=782
+  _EXECUTIONCONFIG._serialized_start=784
+  _EXECUTIONCONFIG._serialized_end=831
+  _ONPIPELINEFAILURE._serialized_start=833
+  _ONPIPELINEFAILURE._serialized_end=867
+  _NOTIFICATION._serialized_start=869
+  _NOTIFICATION._serialized_end=948
+  _SCHEDULETRIGGER._serialized_start=951
+  _SCHEDULETRIGGER._serialized_end=1091
+  _TRIGGER._serialized_start=1093
+  _TRIGGER._serialized_end=1167
+  _LOCALENGINE._serialized_start=1169
+  _LOCALENGINE._serialized_end=1182
+  _BIGQUERYENGINE._serialized_start=1184
+  _BIGQUERYENGINE._serialized_end=1274
+  _DATAPROCONGCEENGINE._serialized_start=1277
+  _DATAPROCONGCEENGINE._serialized_end=1469
+  _DATAPROCEXISTINGCLUSTERCONFIGURATION._serialized_start=1472
+  _DATAPROCEXISTINGCLUSTERCONFIGURATION._serialized_end=1747
+  _DATAPROCEXISTINGCLUSTERCONFIGURATION_PROPERTIESENTRY._serialized_start=1698
+  _DATAPROCEXISTINGCLUSTERCONFIGURATION_PROPERTIESENTRY._serialized_end=1747
+  _DATAPROCEPHEMERALCONFIGURATION._serialized_start=1750
+  _DATAPROCEPHEMERALCONFIGURATION._serialized_end=2094
+  _DATAPROCEPHEMERALCONFIGURATION_PROPERTIESENTRY._serialized_start=1698
+  _DATAPROCEPHEMERALCONFIGURATION_PROPERTIESENTRY._serialized_end=1747
+  _DATAPROCCLUSTERRESOURCEPROFILE._serialized_start=2097
+  _DATAPROCCLUSTERRESOURCEPROFILE._serialized_end=2479
+  _DATAPROCCLUSTERRESOURCEPROFILE_INLINECONFIG._serialized_start=2341
+  _DATAPROCCLUSTERRESOURCEPROFILE_INLINECONFIG._serialized_end=2469
+  _DATAPROCBATCHRESOURCEPROFILE._serialized_start=2482
+  _DATAPROCBATCHRESOURCEPROFILE._serialized_end=2845
+  _DATAPROCBATCHRESOURCEPROFILE_INLINECONFIG._serialized_start=2719
+  _DATAPROCBATCHRESOURCEPROFILE_INLINECONFIG._serialized_end=2835
+  _DATAPROCSERVERLESSBATCHENGINE._serialized_start=2848
+  _DATAPROCSERVERLESSBATCHENGINE._serialized_end=3005
+  _ACTION._serialized_start=3008
+  _ACTION._serialized_end=3419
+  _PYTHONACTION._serialized_start=3422
+  _PYTHONACTION._serialized_end=3805
+  _PYTHONENVIRONMENT._serialized_start=3808
+  _PYTHONENVIRONMENT._serialized_end=4085
+  _PYTHONENVIRONMENT_INLINEREQUIREMENTS._serialized_start=3930
+  _PYTHONENVIRONMENT_INLINEREQUIREMENTS._serialized_end=3964
+  _PYTHONENVIRONMENT_REQUIREMENTS._serialized_start=3966
+  _PYTHONENVIRONMENT_REQUIREMENTS._serialized_end=4085
+  _PYTHONENGINE._serialized_start=4087
+  _PYTHONENGINE._serialized_end=4158
+  _PYSPARKACTION._serialized_start=4161
+  _PYSPARKACTION._serialized_end=4787
+  _PYSPARKACTION_PARAMSENTRY._serialized_start=4695
+  _PYSPARKACTION_PARAMSENTRY._serialized_end=4740
+  _PYSPARKACTION_LABELSENTRY._serialized_start=4742
+  _PYSPARKACTION_LABELSENTRY._serialized_end=4787
+  _PYSPARKENGINE._serialized_start=4790
+  _PYSPARKENGINE._serialized_end=4959
+  _PYSPARKENVIRONMENT._serialized_start=4962
+  _PYSPARKENVIRONMENT._serialized_end=5212
+  _PYSPARKENVIRONMENT_INLINEREQUIREMENTS._serialized_start=3930
+  _PYSPARKENVIRONMENT_INLINEREQUIREMENTS._serialized_end=3964
+  _PYSPARKENVIRONMENT_REQUIREMENTS._serialized_start=5092
+  _PYSPARKENVIRONMENT_REQUIREMENTS._serialized_end=5212
+  _NOTEBOOKACTION._serialized_start=5215
+  _NOTEBOOKACTION._serialized_end=5828
+  _NOTEBOOKACTION_PARAMSENTRY._serialized_start=4695
+  _NOTEBOOKACTION_PARAMSENTRY._serialized_end=4740
+  _NOTEBOOKACTION_LABELSENTRY._serialized_start=4742
+  _NOTEBOOKACTION_LABELSENTRY._serialized_end=4787
+  _NOTEBOOKENGINE._serialized_start=5831
+  _NOTEBOOKENGINE._serialized_end=6001
+  _NOTEBOOKENVIRONMENT._serialized_start=6004
+  _NOTEBOOKENVIRONMENT._serialized_end=6257
+  _NOTEBOOKENVIRONMENT_INLINEREQUIREMENTS._serialized_start=3930
+  _NOTEBOOKENVIRONMENT_INLINEREQUIREMENTS._serialized_end=3964
+  _NOTEBOOKENVIRONMENT_REQUIREMENTS._serialized_start=6136
+  _NOTEBOOKENVIRONMENT_REQUIREMENTS._serialized_end=6257
+  _SQLACTION._serialized_start=6260
+  _SQLACTION._serialized_end=6763
+  _SQLACTION_PARAMSENTRY._serialized_start=4695
+  _SQLACTION_PARAMSENTRY._serialized_end=4740
+  _SQLACTION_LABELSENTRY._serialized_start=4742
+  _SQLACTION_LABELSENTRY._serialized_end=4787
+  _QUERY._serialized_start=6765
+  _QUERY._serialized_end=6815
+  _SQLENGINE._serialized_start=6818
+  _SQLENGINE._serialized_end=7036
+  _PIPELINEACTION._serialized_start=7039
+  _PIPELINEACTION._serialized_end=7523
+  _PIPELINEACTION_PARAMSENTRY._serialized_start=4695
+  _PIPELINEACTION_PARAMSENTRY._serialized_end=4740
+  _PIPELINEACTION_LABELSENTRY._serialized_start=4742
+  _PIPELINEACTION_LABELSENTRY._serialized_end=4787
+  _PIPELINEFRAMEWORK._serialized_start=7526
+  _PIPELINEFRAMEWORK._serialized_end=7668
+  _DBTFRAMEWORKSPEC._serialized_start=7670
+  _DBTFRAMEWORKSPEC._serialized_end=7765
+  _DATAFORMFRAMEWORKSPEC._serialized_start=7768
+  _DATAFORMFRAMEWORKSPEC._serialized_end=7944
+  _DATAFORMSERVICEEXECUTION._serialized_start=7947
+  _DATAFORMSERVICEEXECUTION._serialized_end=8094
+  _DBTAIRFLOWEXECUTION._serialized_start=8096
+  _DBTAIRFLOWEXECUTION._serialized_end=8192
+  _DATAFORMAIRFLOWEXECUTION._serialized_start=8194
+  _DATAFORMAIRFLOWEXECUTION._serialized_end=8258
+  _DATAINGESTIONACTION._serialized_start=8261
+  _DATAINGESTIONACTION._serialized_end=8504
+  _BIGQUERYDTSSPEC._serialized_start=8507
+  _BIGQUERYDTSSPEC._serialized_end=8882
+  _BIGQUERYDTSSPEC_TIMERANGE._serialized_start=8794
+  _BIGQUERYDTSSPEC_TIMERANGE._serialized_end=8855
+  _ORCHESTRATIONPIPELINEACTION._serialized_start=8885
+  _ORCHESTRATIONPIPELINEACTION._serialized_end=9171
 # @@protoc_insertion_point(module_scope)

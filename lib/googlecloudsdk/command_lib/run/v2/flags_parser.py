@@ -553,7 +553,11 @@ def _HasWorkerPoolScalingChanges(
         'scaling_cpu_target',
         'min',
         'max',
+        'scaling_pubsub_target',
+        'scaling_pubsub_subscription',
     ]
+    if getattr(args, 'pubsub_scalings', None):
+      return True
   else:
     scaling_flags = [
         'instances',
@@ -572,6 +576,14 @@ def _GetWorkerPoolScalingChanges(
   has_cpu_scaling = flags.FlagIsExplicitlySet(args, 'scaling_cpu_target')
   has_min = flags.FlagIsExplicitlySet(args, 'min')
   has_max = flags.FlagIsExplicitlySet(args, 'max')
+  has_pubsub_target = flags.FlagIsExplicitlySet(args, 'scaling_pubsub_target')
+  has_pubsub_subscription = flags.FlagIsExplicitlySet(
+      args, 'scaling_pubsub_subscription'
+  )
+  pubsub_scalings_list = getattr(args, 'pubsub_scalings', None)
+  has_pubsub_scaling = (
+      has_pubsub_target or has_pubsub_subscription or bool(pubsub_scalings_list)
+  )
 
   if release_track == base.ReleaseTrack.ALPHA:
     if has_instances and has_scaling:
@@ -597,6 +609,23 @@ def _GetWorkerPoolScalingChanges(
       raise exceptions.ConfigurationError(
           'Cannot specify both --instances and --scaling-cpu-target.'
       )
+
+    def _CheckPubSubConflicts(flag_name, has_flag):
+      if not has_flag:
+        return
+      if has_pubsub_target:
+        raise exceptions.ConfigurationError(
+            f'Cannot specify both --{flag_name} and --scaling-pubsub-target.'
+        )
+      if has_pubsub_subscription or pubsub_scalings_list:
+        raise exceptions.ConfigurationError(
+            f'Cannot specify both --{flag_name} and'
+            ' --scaling-pubsub-subscription.'
+        )
+
+    _CheckPubSubConflicts('instances', has_instances)
+    _CheckPubSubConflicts('scaling', has_scaling_manual)
+
     if has_scaling_manual and has_cpu_scaling:
       raise exceptions.ConfigurationError(
           'Cannot specify both --scaling and --scaling-cpu-target.'
@@ -633,6 +662,34 @@ def _GetWorkerPoolScalingChanges(
           config_changes.WorkerPoolMinMaxScalingChange(
               min_instances=args.min if has_min else None,
               max_instances=args.max if has_max else None,
+          )
+      )
+
+    if has_pubsub_scaling:
+      specs = []
+      if pubsub_scalings_list:
+        for ps in pubsub_scalings_list:
+          sub = getattr(ps, 'scaling_pubsub_subscription', None)
+          target = getattr(ps, 'scaling_pubsub_target', None)
+          specs.append(
+              config_changes.PubSubScalingSpec(
+                  subscription=sub, target_value=target
+              )
+          )
+      else:
+        specs.append(
+            config_changes.PubSubScalingSpec(
+                subscription=args.scaling_pubsub_subscription
+                if has_pubsub_subscription
+                else None,
+                target_value=args.scaling_pubsub_target
+                if has_pubsub_target
+                else None,
+            )
+        )
+      changes.append(
+          config_changes.WorkerPoolPubSubScalingChange(
+              pubsub_scalings=specs
           )
       )
 

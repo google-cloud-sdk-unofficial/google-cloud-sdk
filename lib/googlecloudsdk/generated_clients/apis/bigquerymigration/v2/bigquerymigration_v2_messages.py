@@ -2463,7 +2463,7 @@ class GoogleRpcErrorInfo(_messages.Message):
       "100/request"}`, should be returned as, `{"instanceLimitPerRequest":
       "100"}`, if the client exceeds the number of instances that can be
       created in a single (batch) request.
-    reason: The reason of the error. This is a constant value that identifies
+    reason: The reason for the error. This is a constant value that identifies
       the proximate cause of the error. Error reasons are unique within a
       particular domain of errors. This should be at most 63 characters and
       match a regular expression of `A-Z+[A-Z0-9]`, which represents

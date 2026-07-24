@@ -92,6 +92,31 @@ def ServiceBindingMatchesHook(api_version='v1'):
   return ConstructMatches
 
 
+def ExpressLinkMatchesHook(api_version='v1'):
+  """Hook to transform matches-hostname flag to actual message.
+
+  This function is called during ExpressLink create/update command to
+  create the Match message. It returns a function which is called
+  with arguments passed in the gcloud command.
+
+  Args:
+    api_version: Version of the networkservices api
+
+  Returns:
+     Function to transform a list of hostnames to ExpressLinkMatch messages.
+  """
+  messages = apis.GetMessagesModule('networkservices', api_version)
+
+  def ConstructMatches(hostnames):
+    if not hostnames:
+      return []
+    if isinstance(hostnames, str):
+      hostnames = [hostnames]
+    return [messages.ExpressLinkMatch(hostname=h) for h in hostnames]
+
+  return ConstructMatches
+
+
 def ListRouteViews(track, name, page_size=100, limit=None):
   """Calls appropriate List method based on the name."""
   if 'meshes' in name:

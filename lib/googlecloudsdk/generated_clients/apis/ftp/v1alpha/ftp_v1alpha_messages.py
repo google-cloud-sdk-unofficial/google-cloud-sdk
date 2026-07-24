@@ -297,6 +297,34 @@ class FtpProjectsLocationsServersPatchRequest(_messages.Message):
   updateMask = _messages.StringField(4)
 
 
+class FtpProjectsLocationsServersStartRequest(_messages.Message):
+  r"""A FtpProjectsLocationsServersStartRequest object.
+
+  Fields:
+    name: Required. Name of the resource Format:
+      `projects/{project}/locations/{location}/servers/{server}`
+    startServerRequest: A StartServerRequest resource to be passed as the
+      request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  startServerRequest = _messages.MessageField('StartServerRequest', 2)
+
+
+class FtpProjectsLocationsServersStopRequest(_messages.Message):
+  r"""A FtpProjectsLocationsServersStopRequest object.
+
+  Fields:
+    name: Required. Name of the resource. Format:
+      `projects/{project}/locations/{location}/servers/{server}`
+    stopServerRequest: A StopServerRequest resource to be passed as the
+      request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  stopServerRequest = _messages.MessageField('StopServerRequest', 2)
+
+
 class FtpProjectsLocationsServersUsersCreateRequest(_messages.Message):
   r"""A FtpProjectsLocationsServersUsersCreateRequest object.
 
@@ -917,6 +945,10 @@ class StandardQueryParameters(_messages.Message):
   upload_protocol = _messages.StringField(12)
 
 
+class StartServerRequest(_messages.Message):
+  r"""Request message for starting a Server."""
+
+
 class Status(_messages.Message):
   r"""The `Status` type defines a logical error model that is suitable for
   different programming environments, including REST APIs and RPC APIs. It is
@@ -966,6 +998,10 @@ class Status(_messages.Message):
   code = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   details = _messages.MessageField('DetailsValueListEntry', 2, repeated=True)
   message = _messages.StringField(3)
+
+
+class StopServerRequest(_messages.Message):
+  r"""Request message for stopping a Server."""
 
 
 class StorageDirectoryMapping(_messages.Message):

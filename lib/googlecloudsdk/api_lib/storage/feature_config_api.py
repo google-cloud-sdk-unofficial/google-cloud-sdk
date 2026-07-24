@@ -16,9 +16,12 @@
 
 from collections.abc import Iterator
 
+from apitools.base.py import encoding
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.storage import errors
 from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.util import waiter
+from googlecloudsdk.core import resources
 from googlecloudsdk.generated_clients.apis.storage.v2 import storage_v2_messages
 
 API_NAME = 'storage'
@@ -38,6 +41,72 @@ class FeatureConfigApi:
     self.client = apis.GetClientInstance(API_NAME, API_VERSION)
     self.messages = apis.GetMessagesModule(API_NAME, API_VERSION)
     self._service = self.client.projects_locations_featureConfigs
+    self._operations_service = self.client.projects_locations_operations
+
+  def wait_for_operation(
+      self,
+      operation: 'storage_v2_messages.Operation',
+      message: str,
+      has_result: bool = True,
+  ):
+    """Waits for a FeatureConfig operation to complete.
+
+    Args:
+      operation: The Operation message.
+      message: Message to display while waiting.
+      has_result: If True, returns the target FeatureConfig resource. If False,
+        returns None (for Delete operations).
+
+    Returns:
+      FeatureConfig message or None.
+
+    Raises:
+      CloudApiError: If the operation failed or if no resource was returned when
+        has_result is True.
+    """
+    if operation.done:
+      if operation.error:
+        raise errors.CloudApiError(operation.error.message)
+      if has_result:
+        if operation.response:
+          response_dict = encoding.MessageToPyValue(operation.response)
+          if isinstance(response_dict, dict) and 'name' in response_dict:
+            return self._service.Get(
+                self.messages.StorageProjectsLocationsFeatureConfigsGetRequest(
+                    name=response_dict['name']
+                )
+            )
+        raise errors.CloudApiError(
+            f'Operation [{operation.name}] finished without returning a result.'
+        )
+      return None
+
+    operation_ref = resources.REGISTRY.Parse(
+        operation.name,
+        collection='storage.projects.locations.operations',
+        api_version='v2',
+    )
+    if has_result:
+      poller = waiter.CloudOperationPoller(
+          self._service,
+          self._operations_service,
+      )
+    else:
+      poller = waiter.CloudOperationPollerNoResources(self._operations_service)
+    try:
+      result = waiter.WaitFor(poller, operation_ref, message)
+    except (
+        waiter.OperationError,
+        waiter.TimeoutError,
+        waiter.AbortWaitError,
+    ) as e:
+      raise errors.CloudApiError(e)
+
+    if has_result and result is None:
+      raise errors.CloudApiError(
+          f'Operation [{operation.name}] finished without returning a result.'
+      )
+    return result
 
   def create_feature_config(
       self,
@@ -49,7 +118,10 @@ class FeatureConfigApi:
       exclude_locations: list[str] | None = None,
       include_bucket_id_regexes: list[str] | None = None,
       exclude_bucket_id_regexes: list[str] | None = None,
-  ) -> 'storage_v2_messages.Operation':
+      is_async: bool = False,
+  ) -> (
+      'storage_v2_messages.Operation | storage_v2_messages.FeatureConfig | None'
+  ):
     """Creates a feature configuration.
 
     Args:
@@ -62,9 +134,10 @@ class FeatureConfigApi:
       exclude_locations: List of locations to exclude.
       include_bucket_id_regexes: List of bucket ID regexes to include.
       exclude_bucket_id_regexes: List of bucket ID regexes to exclude.
+      is_async: Whether to return the long-running operation without waiting.
 
     Returns:
-      Operation message.
+      Operation message if is_async=True, otherwise FeatureConfig message.
     """
     feature_config = self.messages.FeatureConfig()
     if description is not None:
@@ -112,25 +185,41 @@ class FeatureConfigApi:
         featureConfigId=feature_config_id,
         featureConfig=feature_config,
     )
-    return self._service.Create(request)
+    operation = self._service.Create(request)
+    if is_async:
+      return operation
+    return self.wait_for_operation(
+        operation,
+        f'Waiting for feature config [{feature_config_id}] to be created',
+        has_result=True,
+    )
 
   def delete_feature_config(
       self,
       name: str,
-  ) -> 'storage_v2_messages.Operation':
+      is_async: bool = False,
+  ) -> 'storage_v2_messages.Operation | None':
     """Deletes a feature configuration.
 
     Args:
       name: The resource name of the feature configuration. Format:
         projects/{project}/locations/{location}/featureConfigs/{config}
+      is_async: Whether to return the long-running operation without waiting.
 
     Returns:
-      Operation message.
+      Operation message if is_async=True, otherwise None.
     """
     request = self.messages.StorageProjectsLocationsFeatureConfigsDeleteRequest(
         name=name
     )
-    return self._service.Delete(request)
+    operation = self._service.Delete(request)
+    if is_async:
+      return operation
+    return self.wait_for_operation(
+        operation,
+        f'Waiting for feature config [{name}] to be deleted',
+        has_result=False,
+    )
 
   def get_feature_config(
       self,
@@ -216,7 +305,10 @@ class FeatureConfigApi:
       exclude_locations: list[str] | None = None,
       include_bucket_id_regexes: list[str] | None = None,
       exclude_bucket_id_regexes: list[str] | None = None,
-  ) -> 'storage_v2_messages.Operation':
+      is_async: bool = False,
+  ) -> (
+      'storage_v2_messages.Operation | storage_v2_messages.FeatureConfig | None'
+  ):
     """Updates an existing feature configuration.
 
     Args:
@@ -228,9 +320,10 @@ class FeatureConfigApi:
       exclude_locations: List of locations to exclude.
       include_bucket_id_regexes: List of bucket ID regexes to include.
       exclude_bucket_id_regexes: List of bucket ID regexes to exclude.
+      is_async: Whether to return the long-running operation without waiting.
 
     Returns:
-      Operation message.
+      Operation message if is_async=True, otherwise FeatureConfig message.
     """
     update_mask = self._get_feature_config_update_mask(
         description=description,
@@ -302,4 +395,11 @@ class FeatureConfigApi:
         featureConfig=feature_config,
         updateMask=','.join(update_mask),
     )
-    return self._service.Patch(request)
+    operation = self._service.Patch(request)
+    if is_async:
+      return operation
+    return self.wait_for_operation(
+        operation,
+        f'Waiting for feature config [{name}] to be updated',
+        has_result=True,
+    )

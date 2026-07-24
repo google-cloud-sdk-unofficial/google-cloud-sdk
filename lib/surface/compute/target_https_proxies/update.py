@@ -30,6 +30,7 @@ from googlecloudsdk.command_lib.compute.target_https_proxies import flags
 from googlecloudsdk.command_lib.compute.target_https_proxies import target_https_proxies_utils
 from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
 from googlecloudsdk.command_lib.network_security import resource_args as ns_resource_args
+from googlecloudsdk.command_lib.network_services import flags as network_services_flags
 
 
 def _DetailedHelp():
@@ -66,7 +67,7 @@ def _DetailedHelp():
   }
 
 
-def _CheckMissingArgument(args):
+def _CheckMissingArgument(args, alpha=False):
   """Checks for missing argument."""
   tls_early_data_args = ['tls_early_data']
   all_args = [
@@ -100,6 +101,9 @@ def _CheckMissingArgument(args):
       '[--clear-server-tls-policy]',
       '[--server-tls-policy]',
   ] + (err_tls_early_data_args)
+  if alpha:
+    all_args.extend(['http_filters', 'clear_http_filters'])
+    err_msg_args.extend(['[--http-filters]', '[--clear-http-filters]'])
   if not sum(args.IsSpecified(arg) for arg in all_args):
     raise compute_exceptions.ArgumentError(
         'You must specify at least one of %s or %s.'
@@ -115,6 +119,7 @@ def _Run(
     url_map_arg,
     ssl_policy_arg,
     certificate_map_ref,
+    http_filters=None,
 ):
   """Issues requests necessary to update Target HTTPS Proxies."""
   client = holder.client
@@ -200,6 +205,12 @@ def _Run(
   elif args.IsKnownAndSpecified('clear_server_tls_policy'):
     new_resource.serverTlsPolicy = None
     cleared_fields.append('serverTlsPolicy')
+
+  if http_filters:
+    new_resource.httpFilters = [ref.SelfLink() for ref in http_filters]
+  elif args.IsKnownAndSpecified('clear_http_filters'):
+    new_resource.httpFilters = []
+    cleared_fields.append('httpFilters')
 
   if old_resource != new_resource:
     return _PatchTargetHttpsProxy(
@@ -365,6 +376,44 @@ class Update(base.UpdateCommand):
     )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
   pass
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
+  """Update a target HTTPS proxy."""
+
+  @classmethod
+  def Args(cls, parser):
+    super(UpdateAlpha, cls).Args(parser)
+    group = parser.add_mutually_exclusive_group()
+    network_services_flags.GetHttpFilterResourceArg(
+        'to attach',
+        name='http-filters',
+        required=False,
+        plural=True,
+        group=group,
+    ).AddToParser(group)
+    network_services_flags.GetClearHttpFiltersForHttpsProxy().AddToParser(group)
+
+  def Run(self, args):
+    _CheckMissingArgument(args, alpha=True)
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    certificate_map_ref = args.CONCEPTS.certificate_map.Parse()
+
+    http_filters = None
+    if args.IsKnownAndSpecified('http_filters'):
+      http_filters = args.CONCEPTS.http_filters.Parse()
+
+    return _Run(
+        args,
+        holder,
+        self.SSL_CERTIFICATES_ARG,
+        self.TARGET_HTTPS_PROXY_ARG,
+        self.URL_MAP_ARG,
+        self.SSL_POLICY_ARG,
+        certificate_map_ref,
+        http_filters=http_filters,
+    )

@@ -4595,71 +4595,75 @@ class APIAdapter(object):
       enable_secure_boot = None
       enable_integrity_monitoring = None
 
-    autoscaling.enableNodeAutoprovisioning = options.enable_autoprovisioning
-    if resource_limits is None:
-      resource_limits = []
-    autoscaling.resourceLimits = resource_limits
-    if scopes is None:
-      scopes = []
-    management = None
-    upgrade_settings = None
-    if (
-        max_surge_upgrade is not None
-        or max_unavailable_upgrade is not None
-        or options.enable_autoprovisioning_blue_green_upgrade
-        or options.enable_autoprovisioning_surge_upgrade
-        or options.autoprovisioning_standard_rollout_policy is not None
-        or options.autoprovisioning_node_pool_soak_duration is not None
-    ):
-      upgrade_settings = self.UpdateUpgradeSettingsForNAP(
-          options, max_surge_upgrade, max_unavailable_upgrade
-      )
-    if enable_autorepair is not None or enable_autoupgrade is not None:
-      management = self.messages.NodeManagement(
-          autoUpgrade=enable_autoupgrade, autoRepair=enable_autorepair
-      )
-    shielded_instance_config = None
-    if (
-        enable_secure_boot is not None
-        or enable_integrity_monitoring is not None
-    ):
-      shielded_instance_config = self.messages.ShieldedInstanceConfig()
-      shielded_instance_config.enableSecureBoot = enable_secure_boot
-      shielded_instance_config.enableIntegrityMonitoring = (
-          enable_integrity_monitoring
-      )
-    if for_update:
-      autoscaling.autoprovisioningNodePoolDefaults = (
-          self.messages.AutoprovisioningNodePoolDefaults(
-              serviceAccount=service_account,
-              oauthScopes=scopes,
-              upgradeSettings=upgrade_settings,
-              management=management,
-              minCpuPlatform=min_cpu_platform,
-              bootDiskKmsKey=boot_disk_kms_key,
-              diskSizeGb=disk_size_gb,
-              diskType=disk_type,
-              imageType=autoprovisioning_image_type,
-              shieldedInstanceConfig=shielded_instance_config,
-          )
-      )
-    else:
-      autoscaling.autoprovisioningNodePoolDefaults = (
-          self.messages.AutoprovisioningNodePoolDefaults(
-              serviceAccount=service_account,
-              oauthScopes=scopes,
-              upgradeSettings=upgrade_settings,
-              management=management,
-              minCpuPlatform=min_cpu_platform,
-              bootDiskKmsKey=boot_disk_kms_key,
-              diskSizeGb=disk_size_gb,
-              diskType=disk_type,
-              imageType=autoprovisioning_image_type,
-              shieldedInstanceConfig=shielded_instance_config,
-          )
-      )
-    if autoprovisioning_locations:
-      autoscaling.autoprovisioningLocations = sorted(autoprovisioning_locations)
+    if _NAPOptionsChanged(options):
+      if options.enable_autoprovisioning is not None:
+        autoscaling.enableNodeAutoprovisioning = options.enable_autoprovisioning
+      if resource_limits is None:
+        resource_limits = []
+      autoscaling.resourceLimits = resource_limits
+      if scopes is None:
+        scopes = []
+      management = None
+      upgrade_settings = None
+      if (
+          max_surge_upgrade is not None
+          or max_unavailable_upgrade is not None
+          or options.enable_autoprovisioning_blue_green_upgrade
+          or options.enable_autoprovisioning_surge_upgrade
+          or options.autoprovisioning_standard_rollout_policy is not None
+          or options.autoprovisioning_node_pool_soak_duration is not None
+      ):
+        upgrade_settings = self.UpdateUpgradeSettingsForNAP(
+            options, max_surge_upgrade, max_unavailable_upgrade
+        )
+      if enable_autorepair is not None or enable_autoupgrade is not None:
+        management = self.messages.NodeManagement(
+            autoUpgrade=enable_autoupgrade, autoRepair=enable_autorepair
+        )
+      shielded_instance_config = None
+      if (
+          enable_secure_boot is not None
+          or enable_integrity_monitoring is not None
+      ):
+        shielded_instance_config = self.messages.ShieldedInstanceConfig()
+        shielded_instance_config.enableSecureBoot = enable_secure_boot
+        shielded_instance_config.enableIntegrityMonitoring = (
+            enable_integrity_monitoring
+        )
+      if for_update:
+        autoscaling.autoprovisioningNodePoolDefaults = (
+            self.messages.AutoprovisioningNodePoolDefaults(
+                serviceAccount=service_account,
+                oauthScopes=scopes,
+                upgradeSettings=upgrade_settings,
+                management=management,
+                minCpuPlatform=min_cpu_platform,
+                bootDiskKmsKey=boot_disk_kms_key,
+                diskSizeGb=disk_size_gb,
+                diskType=disk_type,
+                imageType=autoprovisioning_image_type,
+                shieldedInstanceConfig=shielded_instance_config,
+            )
+        )
+      else:
+        autoscaling.autoprovisioningNodePoolDefaults = (
+            self.messages.AutoprovisioningNodePoolDefaults(
+                serviceAccount=service_account,
+                oauthScopes=scopes,
+                upgradeSettings=upgrade_settings,
+                management=management,
+                minCpuPlatform=min_cpu_platform,
+                bootDiskKmsKey=boot_disk_kms_key,
+                diskSizeGb=disk_size_gb,
+                diskType=disk_type,
+                imageType=autoprovisioning_image_type,
+                shieldedInstanceConfig=shielded_instance_config,
+            )
+        )
+      if autoprovisioning_locations:
+        autoscaling.autoprovisioningLocations = sorted(
+            autoprovisioning_locations
+        )
 
     if options.autoscaling_profile is not None:
       autoscaling.autoscalingProfile = self.CreateAutoscalingProfileCommon(
@@ -7256,6 +7260,21 @@ class APIAdapter(object):
         self.client.projects_locations_acceleratorNetworkProfiles.Delete(req)
     )
     return self.ParseOperation(operation.name, profile_ref.locationsId)
+
+  def ListAcceleratorNetworkProfiles(self, project, location):
+    """List Accelerator Network Profiles.
+
+    Args:
+      project: str, the project ID.
+      location: str, the location (zone or region).
+
+    Returns:
+      ListAcceleratorNetworkProfilesResponse.
+    """
+    req = self.messages.ContainerProjectsLocationsAcceleratorNetworkProfilesListRequest(
+        parent=ProjectLocation(project, location)
+    )
+    return self.client.projects_locations_acceleratorNetworkProfiles.List(req)
 
   def ListNodePools(self, cluster_ref):
     req = self.messages.ContainerProjectsLocationsClustersNodePoolsListRequest(
@@ -10736,69 +10755,73 @@ class V1Beta1Adapter(V1Adapter):
       enable_secure_boot = None
       enable_integrity_monitoring = None
 
-    autoscaling.enableNodeAutoprovisioning = options.enable_autoprovisioning
-    autoscaling.resourceLimits = resource_limits or []
-    if scopes is None:
-      scopes = []
-    management = None
-    upgrade_settings = None
-    if (
-        max_surge_upgrade is not None
-        or max_unavailable_upgrade is not None
-        or options.enable_autoprovisioning_blue_green_upgrade
-        or options.enable_autoprovisioning_surge_upgrade
-        or options.autoprovisioning_standard_rollout_policy is not None
-        or options.autoprovisioning_node_pool_soak_duration is not None
-    ):
-      upgrade_settings = self.UpdateUpgradeSettingsForNAP(
-          options, max_surge_upgrade, max_unavailable_upgrade
-      )
-    if enable_autorepair is not None or enable_autoupgrade is not None:
-      management = self.messages.NodeManagement(
-          autoUpgrade=enable_autoupgrade, autoRepair=enable_autorepair
-      )
-    shielded_instance_config = None
-    if (
-        enable_secure_boot is not None
-        or enable_integrity_monitoring is not None
-    ):
-      shielded_instance_config = self.messages.ShieldedInstanceConfig()
-      shielded_instance_config.enableSecureBoot = enable_secure_boot
-      shielded_instance_config.enableIntegrityMonitoring = (
-          enable_integrity_monitoring
-      )
-    if for_update:
-      autoscaling.autoprovisioningNodePoolDefaults = (
-          self.messages.AutoprovisioningNodePoolDefaults(
-              serviceAccount=service_account,
-              oauthScopes=scopes,
-              upgradeSettings=upgrade_settings,
-              management=management,
-              minCpuPlatform=min_cpu_platform,
-              bootDiskKmsKey=boot_disk_kms_key,
-              diskSizeGb=disk_size_gb,
-              diskType=disk_type,
-              imageType=autoprovisioning_image_type,
-              shieldedInstanceConfig=shielded_instance_config,
-          )
-      )
-    else:
-      autoscaling.autoprovisioningNodePoolDefaults = (
-          self.messages.AutoprovisioningNodePoolDefaults(
-              serviceAccount=service_account,
-              oauthScopes=scopes,
-              upgradeSettings=upgrade_settings,
-              management=management,
-              minCpuPlatform=min_cpu_platform,
-              bootDiskKmsKey=boot_disk_kms_key,
-              diskSizeGb=disk_size_gb,
-              diskType=disk_type,
-              imageType=autoprovisioning_image_type,
-              shieldedInstanceConfig=shielded_instance_config,
-          )
-      )
-    if autoprovisioning_locations:
-      autoscaling.autoprovisioningLocations = sorted(autoprovisioning_locations)
+    if _NAPOptionsChanged(options):
+      if options.enable_autoprovisioning is not None:
+        autoscaling.enableNodeAutoprovisioning = options.enable_autoprovisioning
+      autoscaling.resourceLimits = resource_limits or []
+      if scopes is None:
+        scopes = []
+      management = None
+      upgrade_settings = None
+      if (
+          max_surge_upgrade is not None
+          or max_unavailable_upgrade is not None
+          or options.enable_autoprovisioning_blue_green_upgrade
+          or options.enable_autoprovisioning_surge_upgrade
+          or options.autoprovisioning_standard_rollout_policy is not None
+          or options.autoprovisioning_node_pool_soak_duration is not None
+      ):
+        upgrade_settings = self.UpdateUpgradeSettingsForNAP(
+            options, max_surge_upgrade, max_unavailable_upgrade
+        )
+      if enable_autorepair is not None or enable_autoupgrade is not None:
+        management = self.messages.NodeManagement(
+            autoUpgrade=enable_autoupgrade, autoRepair=enable_autorepair
+        )
+      shielded_instance_config = None
+      if (
+          enable_secure_boot is not None
+          or enable_integrity_monitoring is not None
+      ):
+        shielded_instance_config = self.messages.ShieldedInstanceConfig()
+        shielded_instance_config.enableSecureBoot = enable_secure_boot
+        shielded_instance_config.enableIntegrityMonitoring = (
+            enable_integrity_monitoring
+        )
+      if for_update:
+        autoscaling.autoprovisioningNodePoolDefaults = (
+            self.messages.AutoprovisioningNodePoolDefaults(
+                serviceAccount=service_account,
+                oauthScopes=scopes,
+                upgradeSettings=upgrade_settings,
+                management=management,
+                minCpuPlatform=min_cpu_platform,
+                bootDiskKmsKey=boot_disk_kms_key,
+                diskSizeGb=disk_size_gb,
+                diskType=disk_type,
+                imageType=autoprovisioning_image_type,
+                shieldedInstanceConfig=shielded_instance_config,
+            )
+        )
+      else:
+        autoscaling.autoprovisioningNodePoolDefaults = (
+            self.messages.AutoprovisioningNodePoolDefaults(
+                serviceAccount=service_account,
+                oauthScopes=scopes,
+                upgradeSettings=upgrade_settings,
+                management=management,
+                minCpuPlatform=min_cpu_platform,
+                bootDiskKmsKey=boot_disk_kms_key,
+                diskSizeGb=disk_size_gb,
+                diskType=disk_type,
+                imageType=autoprovisioning_image_type,
+                shieldedInstanceConfig=shielded_instance_config,
+            )
+        )
+      if autoprovisioning_locations:
+        autoscaling.autoprovisioningLocations = sorted(
+            autoprovisioning_locations
+        )
 
     if options.autoscaling_profile is not None:
       autoscaling.autoscalingProfile = self.CreateAutoscalingProfileCommon(
@@ -11496,73 +11519,75 @@ class V1Alpha1Adapter(V1Beta1Adapter):
       enable_secure_boot = None
       enable_integrity_monitoring = None
 
-    autoscaling.enableNodeAutoprovisioning = options.enable_autoprovisioning
-    if resource_limits is None:
-      resource_limits = []
-    autoscaling.resourceLimits = resource_limits
-    if scopes is None:
-      scopes = []
-    management = None
-    upgrade_settings = None
-    if (
-        max_surge_upgrade is not None
-        or max_unavailable_upgrade is not None
-        or options.enable_autoprovisioning_blue_green_upgrade
-        or options.enable_autoprovisioning_surge_upgrade
-        or options.autoprovisioning_standard_rollout_policy is not None
-        or options.autoprovisioning_node_pool_soak_duration is not None
-    ):
-      upgrade_settings = self.UpdateUpgradeSettingsForNAP(
-          options, max_surge_upgrade, max_unavailable_upgrade
-      )
-    if enable_autorepair is not None or enable_autorepair is not None:
-      management = self.messages.NodeManagement(
-          autoUpgrade=enable_autoupgrade, autoRepair=enable_autorepair
-      )
-    shielded_instance_config = None
-    if (
-        enable_secure_boot is not None
-        or enable_integrity_monitoring is not None
-    ):
-      shielded_instance_config = self.messages.ShieldedInstanceConfig()
-      shielded_instance_config.enableSecureBoot = enable_secure_boot
-      shielded_instance_config.enableIntegrityMonitoring = (
-          enable_integrity_monitoring
-      )
-
-    if for_update:
-      autoscaling.autoprovisioningNodePoolDefaults = (
-          self.messages.AutoprovisioningNodePoolDefaults(
-              serviceAccount=service_account,
-              oauthScopes=scopes,
-              upgradeSettings=upgrade_settings,
-              management=management,
-              minCpuPlatform=min_cpu_platform,
-              bootDiskKmsKey=boot_disk_kms_key,
-              diskSizeGb=disk_size_gb,
-              diskType=disk_type,
-              imageType=autoprovisioning_image_type,
-              shieldedInstanceConfig=shielded_instance_config,
-          )
-      )
-    else:
-      autoscaling.autoprovisioningNodePoolDefaults = (
-          self.messages.AutoprovisioningNodePoolDefaults(
-              serviceAccount=service_account,
-              oauthScopes=scopes,
-              upgradeSettings=upgrade_settings,
-              management=management,
-              minCpuPlatform=min_cpu_platform,
-              bootDiskKmsKey=boot_disk_kms_key,
-              diskSizeGb=disk_size_gb,
-              diskType=disk_type,
-              imageType=autoprovisioning_image_type,
-              shieldedInstanceConfig=shielded_instance_config,
-          )
-      )
-
-    if autoprovisioning_locations:
-      autoscaling.autoprovisioningLocations = sorted(autoprovisioning_locations)
+    if _NAPOptionsChanged(options):
+      if options.enable_autoprovisioning is not None:
+        autoscaling.enableNodeAutoprovisioning = options.enable_autoprovisioning
+      if resource_limits is None:
+        resource_limits = []
+      autoscaling.resourceLimits = resource_limits
+      if scopes is None:
+        scopes = []
+      management = None
+      upgrade_settings = None
+      if (
+          max_surge_upgrade is not None
+          or max_unavailable_upgrade is not None
+          or options.enable_autoprovisioning_blue_green_upgrade
+          or options.enable_autoprovisioning_surge_upgrade
+          or options.autoprovisioning_standard_rollout_policy is not None
+          or options.autoprovisioning_node_pool_soak_duration is not None
+      ):
+        upgrade_settings = self.UpdateUpgradeSettingsForNAP(
+            options, max_surge_upgrade, max_unavailable_upgrade
+        )
+      if enable_autorepair is not None or enable_autoupgrade is not None:
+        management = self.messages.NodeManagement(
+            autoUpgrade=enable_autoupgrade, autoRepair=enable_autorepair
+        )
+      shielded_instance_config = None
+      if (
+          enable_secure_boot is not None
+          or enable_integrity_monitoring is not None
+      ):
+        shielded_instance_config = self.messages.ShieldedInstanceConfig()
+        shielded_instance_config.enableSecureBoot = enable_secure_boot
+        shielded_instance_config.enableIntegrityMonitoring = (
+            enable_integrity_monitoring
+        )
+      if for_update:
+        autoscaling.autoprovisioningNodePoolDefaults = (
+            self.messages.AutoprovisioningNodePoolDefaults(
+                serviceAccount=service_account,
+                oauthScopes=scopes,
+                upgradeSettings=upgrade_settings,
+                management=management,
+                minCpuPlatform=min_cpu_platform,
+                bootDiskKmsKey=boot_disk_kms_key,
+                diskSizeGb=disk_size_gb,
+                diskType=disk_type,
+                imageType=autoprovisioning_image_type,
+                shieldedInstanceConfig=shielded_instance_config,
+            )
+        )
+      else:
+        autoscaling.autoprovisioningNodePoolDefaults = (
+            self.messages.AutoprovisioningNodePoolDefaults(
+                serviceAccount=service_account,
+                oauthScopes=scopes,
+                upgradeSettings=upgrade_settings,
+                management=management,
+                minCpuPlatform=min_cpu_platform,
+                bootDiskKmsKey=boot_disk_kms_key,
+                diskSizeGb=disk_size_gb,
+                diskType=disk_type,
+                imageType=autoprovisioning_image_type,
+                shieldedInstanceConfig=shielded_instance_config,
+            )
+        )
+      if autoprovisioning_locations:
+        autoscaling.autoprovisioningLocations = sorted(
+            autoprovisioning_locations
+        )
 
     if options.autoscaling_profile is not None:
       autoscaling.autoscalingProfile = self.CreateAutoscalingProfileCommon(
@@ -12988,10 +13013,11 @@ def _GetNodePoolMaintenancePolicy(options, messages):
   return None
 
 
-def _ClusterAutoscalingOptionsChanged(options):
-  """Returns whether the cluster autoscaling options have changed."""
+def _NAPOptionsChanged(options):
+  """Returns whether the NAP options have changed."""
   return (
       options.enable_autoprovisioning is not None
+      or options.autoprovisioning_config_file is not None
       or options.max_cpu is not None
       or options.min_cpu is not None
       or options.max_memory is not None
@@ -13011,6 +13037,13 @@ def _ClusterAutoscalingOptionsChanged(options):
       or options.enable_autoprovisioning_autorepair is not None
       or options.autoprovisioning_locations is not None
       or options.autoprovisioning_min_cpu_platform is not None
+  )
+
+
+def _ClusterAutoscalingOptionsChanged(options):
+  """Returns whether the cluster autoscaling options have changed."""
+  return (
+      _NAPOptionsChanged(options)
       or options.autoscaling_profile is not None
       or options.enable_default_compute_class is not None
       or options.autopilot_general_profile is not None

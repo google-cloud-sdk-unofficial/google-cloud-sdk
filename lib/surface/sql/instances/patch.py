@@ -380,6 +380,9 @@ def AddBaseArgs(parser):
   flags.AddPerformanceCaptureConfig(parser)
   flags.AddEnablePscAutoConnectionPolicy(parser)
   flags.AddInstanceResizeLimit(parser)
+  flags.AddDatabaseCenterIntegrationEnabled(parser)
+  flags.AddEnablePscAutoDns(parser)
+  flags.AddEnablePscWriteEndpointDns(parser)
 
 
 def AddBetaArgs(parser):
@@ -391,8 +394,6 @@ def AddBetaArgs(parser):
   unc_mappings_group = parser.add_mutually_exclusive_group(hidden=True)
   flags.AddUncMappings(unc_mappings_group)
   flags.AddClearUncMappings(unc_mappings_group)
-  flags.AddEnablePscAutoDns(parser)
-  flags.AddEnablePscWriteEndpointDns(parser)
 
 
 def AddAlphaArgs(parser):

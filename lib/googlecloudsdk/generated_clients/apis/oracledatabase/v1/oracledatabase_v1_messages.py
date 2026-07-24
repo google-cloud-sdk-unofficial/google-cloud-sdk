@@ -2538,7 +2538,8 @@ class DbSystemProperties(_messages.Message):
     computeModel: Optional. The compute model of the DbSystem.
     dataCollectionOptions: Optional. Data collection options for diagnostics.
     dataStorageSizeGb: Optional. The data storage size in GB that is currently
-      available to DbSystems.
+      available to DbSystems. The value is same as
+      initial_data_storage_size_gb. This can be modified from OCI console.
     databaseEdition: Required. The database edition of the DbSystem.
     dbHome: Optional. Details for creating a Database Home.
     dbSystemOptions: Optional. The options for the DbSystem.
@@ -2548,11 +2549,15 @@ class DbSystemProperties(_messages.Message):
     initialDataStorageSizeGb: Required. The initial data storage size in GB.
     licenseModel: Required. The license model of the DbSystem.
     lifecycleState: Output only. State of the DbSystem.
-    memorySizeGb: Optional. The memory size in GB.
-    nodeCount: Optional. The number of nodes in the DbSystem.
+    memorySizeGb: Optional. The memory size in GB. This value can not be set
+      and is automatically calculated based on the number of ECPUs allocated
+      to the DbSystem.
+    nodeCount: Optional. The number of nodes to launch for a virtual machine
+      DbSystem. By default this will be set to 1.
     ocid: Output only. OCID of the DbSystem.
     privateIp: Optional. The private IP address of the DbSystem.
-    recoStorageSizeGb: Optional. The reco/redo storage size in GB.
+    recoStorageSizeGb: Optional. The reco/redo storage size in GB. The value
+      for recovery storage size is based on the available data storage size.
     shape: Required. Shape of DB System.
     sshPublicKeys: Required. SSH public keys to be stored with the DbSystem.
     timeZone: Optional. Time zone of the DbSystem.
@@ -2564,7 +2569,8 @@ class DbSystemProperties(_messages.Message):
     Values:
       COMPUTE_MODEL_UNSPECIFIED: The compute model is unspecified.
       ECPU: The compute model is virtual.
-      OCPU: The compute model is physical.
+      OCPU: Deprecated: This option is not supported. Please use ECPU instead.
+        The compute model is physical.
     """
     COMPUTE_MODEL_UNSPECIFIED = 0
     ECPU = 1

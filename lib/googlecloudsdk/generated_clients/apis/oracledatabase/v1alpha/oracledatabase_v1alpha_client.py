@@ -46,6 +46,7 @@ class OracledatabaseV1alpha(base_api.BaseApiClient):
     self.projects_locations_cloudVmClusters_dbNodes = self.ProjectsLocationsCloudVmClustersDbNodesService(self)
     self.projects_locations_cloudVmClusters = self.ProjectsLocationsCloudVmClustersService(self)
     self.projects_locations_databaseCharacterSets = self.ProjectsLocationsDatabaseCharacterSetsService(self)
+    self.projects_locations_databaseConnections = self.ProjectsLocationsDatabaseConnectionsService(self)
     self.projects_locations_databases = self.ProjectsLocationsDatabasesService(self)
     self.projects_locations_dbSystemInitialStorageSizes = self.ProjectsLocationsDbSystemInitialStorageSizesService(self)
     self.projects_locations_dbSystemShapes = self.ProjectsLocationsDbSystemShapesService(self)
@@ -55,6 +56,7 @@ class OracledatabaseV1alpha(base_api.BaseApiClient):
     self.projects_locations_exadbVmClusters_dbNodes = self.ProjectsLocationsExadbVmClustersDbNodesService(self)
     self.projects_locations_exadbVmClusters = self.ProjectsLocationsExadbVmClustersService(self)
     self.projects_locations_exascaleDbStorageVaults = self.ProjectsLocationsExascaleDbStorageVaultsService(self)
+    self.projects_locations_flexComponents = self.ProjectsLocationsFlexComponentsService(self)
     self.projects_locations_giVersions_minorVersions = self.ProjectsLocationsGiVersionsMinorVersionsService(self)
     self.projects_locations_giVersions = self.ProjectsLocationsGiVersionsService(self)
     self.projects_locations_goldengateConnectionAssignments = self.ProjectsLocationsGoldengateConnectionAssignmentsService(self)
@@ -1135,6 +1137,178 @@ class OracledatabaseV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsDatabaseConnectionsService(base_api.BaseApiService):
+    """Service class for the projects_locations_databaseConnections resource."""
+
+    _NAME = 'projects_locations_databaseConnections'
+
+    def __init__(self, client):
+      super(OracledatabaseV1alpha.ProjectsLocationsDatabaseConnectionsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new DatabaseConnection in a given project and location.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsDatabaseConnectionsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/databaseConnections',
+        http_method='POST',
+        method_id='oracledatabase.projects.locations.databaseConnections.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['databaseConnectionId', 'requestId'],
+        relative_path='v1alpha/{+parent}/databaseConnections',
+        request_field='databaseConnection',
+        request_type_name='OracledatabaseProjectsLocationsDatabaseConnectionsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single DatabaseConnection.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsDatabaseConnectionsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/databaseConnections/{databaseConnectionsId}',
+        http_method='DELETE',
+        method_id='oracledatabase.projects.locations.databaseConnections.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsDatabaseConnectionsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single DatabaseConnection.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsDatabaseConnectionsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (DatabaseConnection) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/databaseConnections/{databaseConnectionsId}',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.databaseConnections.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsDatabaseConnectionsGetRequest',
+        response_type_name='DatabaseConnection',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists DatabaseConnections in a given project and location.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsDatabaseConnectionsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListDatabaseConnectionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/databaseConnections',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.databaseConnections.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/databaseConnections',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsDatabaseConnectionsListRequest',
+        response_type_name='ListDatabaseConnectionsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single DatabaseConnection.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsDatabaseConnectionsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/databaseConnections/{databaseConnectionsId}',
+        http_method='PATCH',
+        method_id='oracledatabase.projects.locations.databaseConnections.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1alpha/{+name}',
+        request_field='databaseConnection',
+        request_type_name='OracledatabaseProjectsLocationsDatabaseConnectionsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def TestDatabaseConnection(self, request, global_params=None):
+      r"""Tests connectivity of a DatabaseConnection.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsDatabaseConnectionsTestDatabaseConnectionRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TestDatabaseConnectionResponse) The response message.
+      """
+      config = self.GetMethodConfig('TestDatabaseConnection')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    TestDatabaseConnection.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/databaseConnections/{databaseConnectionsId}:testDatabaseConnection',
+        http_method='POST',
+        method_id='oracledatabase.projects.locations.databaseConnections.testDatabaseConnection',
+        ordered_params=['databaseConnection'],
+        path_params=['databaseConnection'],
+        query_params=[],
+        relative_path='v1alpha/{+databaseConnection}:testDatabaseConnection',
+        request_field='testDatabaseConnectionRequest',
+        request_type_name='OracledatabaseProjectsLocationsDatabaseConnectionsTestDatabaseConnectionRequest',
+        response_type_name='TestDatabaseConnectionResponse',
+        supports_download=False,
+    )
+
   class ProjectsLocationsDatabasesService(base_api.BaseApiService):
     """Service class for the projects_locations_databases resource."""
 
@@ -1924,6 +2098,70 @@ class OracledatabaseV1alpha(base_api.BaseApiClient):
         request_field='',
         request_type_name='OracledatabaseProjectsLocationsExascaleDbStorageVaultsListRequest',
         response_type_name='ListExascaleDbStorageVaultsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsFlexComponentsService(base_api.BaseApiService):
+    """Service class for the projects_locations_flexComponents resource."""
+
+    _NAME = 'projects_locations_flexComponents'
+
+    def __init__(self, client):
+      super(OracledatabaseV1alpha.ProjectsLocationsFlexComponentsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single Flex Component.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsFlexComponentsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (FlexComponent) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/flexComponents/{flexComponentsId}',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.flexComponents.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsFlexComponentsGetRequest',
+        response_type_name='FlexComponent',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists Flex Components in a given project and location.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsFlexComponentsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListFlexComponentsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/flexComponents',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.flexComponents.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/flexComponents',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsFlexComponentsListRequest',
+        response_type_name='ListFlexComponentsResponse',
         supports_download=False,
     )
 

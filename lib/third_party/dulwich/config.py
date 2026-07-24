@@ -20,7 +20,7 @@
 
 """Reading and writing Git configuration files.
 
-TODO:
+Todo:
  * preserve formatting when updating configuration files
  * treat subsection names as case-insensitive for [branch.foo] style
    subsections
@@ -28,8 +28,11 @@ TODO:
 
 import os
 import sys
+from contextlib import suppress
 from typing import (
+    Any,
     BinaryIO,
+    Dict,
     Iterable,
     Iterator,
     KeysView,
@@ -41,8 +44,7 @@ from typing import (
     overload,
 )
 
-from dulwich.file import GitFile
-
+from .file import GitFile
 
 SENTINEL = object()
 
@@ -58,14 +60,12 @@ def lower_key(key):
 
 
 class CaseInsensitiveOrderedMultiDict(MutableMapping):
-
-    def __init__(self):
-        self._real = []
-        self._keyed = {}
+    def __init__(self) -> None:
+        self._real: List[Any] = []
+        self._keyed: Dict[Any, Any] = {}
 
     @classmethod
     def make(cls, dict_in=None):
-
         if isinstance(dict_in, cls):
             return dict_in
 
@@ -82,7 +82,7 @@ class CaseInsensitiveOrderedMultiDict(MutableMapping):
 
         return out
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._keyed)
 
     def keys(self) -> KeysView[Tuple[bytes, ...]]:
@@ -97,11 +97,11 @@ class CaseInsensitiveOrderedMultiDict(MutableMapping):
     def values(self):
         return self._keyed.values()
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key, value) -> None:
         self._real.append((key, value))
         self._keyed[lower_key(key)] = value
 
-    def __delitem__(self, key):
+    def __delitem__(self, key) -> None:
         key = lower_key(key)
         del self._keyed[key]
         for i, (actual, unused_value) in reversed(list(enumerate(self._real))):
@@ -191,6 +191,7 @@ class Config:
           section: Tuple with section name and optional subsection name
           name: Name of the setting, including section and possible
             subsection.
+
         Returns:
           Contents of the setting
         """
@@ -205,10 +206,7 @@ class Config:
         raise ValueError("not a valid boolean string: %r" % value)
 
     def set(
-        self,
-        section: SectionLike,
-        name: NameLike,
-        value: Union[ValueLike, bool]
+        self, section: SectionLike, name: NameLike, value: Union[ValueLike, bool]
     ) -> None:
         """Set a configuration value.
 
@@ -256,7 +254,7 @@ class ConfigDict(Config, MutableMapping[Section, MutableMapping[Name, Value]]):
         values: Union[
             MutableMapping[Section, MutableMapping[Name, Value]], None
         ] = None,
-        encoding: Union[str, None] = None
+        encoding: Union[str, None] = None,
     ) -> None:
         """Create a new ConfigDict."""
         if encoding is None:
@@ -265,7 +263,7 @@ class ConfigDict(Config, MutableMapping[Section, MutableMapping[Name, Value]]):
         self._values = CaseInsensitiveOrderedMultiDict.make(values)
 
     def __repr__(self) -> str:
-        return "{}({!r})".format(self.__class__.__name__, self._values)
+        return f"{self.__class__.__name__}({self._values!r})"
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, self.__class__) and other._values == self._values
@@ -273,11 +271,7 @@ class ConfigDict(Config, MutableMapping[Section, MutableMapping[Name, Value]]):
     def __getitem__(self, key: Section) -> MutableMapping[Name, Value]:
         return self._values.__getitem__(key)
 
-    def __setitem__(
-        self,
-        key: Section,
-        value: MutableMapping[Name, Value]
-    ) -> None:
+    def __setitem__(self, key: Section, value: MutableMapping[Name, Value]) -> None:
         return self._values.__setitem__(key, value)
 
     def __delitem__(self, key: Section) -> None:
@@ -298,9 +292,7 @@ class ConfigDict(Config, MutableMapping[Section, MutableMapping[Name, Value]]):
             return (parts[0], None, parts[1])
 
     def _check_section_and_name(
-        self,
-        section: SectionLike,
-        name: NameLike
+        self, section: SectionLike, name: NameLike
     ) -> Tuple[Section, Name]:
         if not isinstance(section, tuple):
             section = (section,)
@@ -319,11 +311,7 @@ class ConfigDict(Config, MutableMapping[Section, MutableMapping[Name, Value]]):
 
         return checked_section, name
 
-    def get_multivar(
-        self,
-        section: SectionLike,
-        name: NameLike
-    ) -> Iterator[Value]:
+    def get_multivar(self, section: SectionLike, name: NameLike) -> Iterator[Value]:
         section, name = self._check_section_and_name(section, name)
 
         if len(section) > 1:
@@ -366,8 +354,7 @@ class ConfigDict(Config, MutableMapping[Section, MutableMapping[Name, Value]]):
         self._values.setdefault(section)[name] = value
 
     def items(  # type: ignore[override]
-        self,
-        section: Section
+        self, section: Section
     ) -> Iterator[Tuple[Name, Value]]:
         return self._values.get(section).items()
 
@@ -377,11 +364,9 @@ class ConfigDict(Config, MutableMapping[Section, MutableMapping[Name, Value]]):
 
 def _format_string(value: bytes) -> bytes:
     if (
-        value.startswith(b" ")
-        or value.startswith(b"\t")
-        or value.endswith(b" ")
+        value.startswith((b" ", b"\t"))
+        or value.endswith((b" ", b"\t"))
         or b"#" in value
-        or value.endswith(b"\t")
     ):
         return b'"' + _escape_value(value) + b'"'
     else:
@@ -495,15 +480,15 @@ def _parse_section_header_line(line: bytes) -> Tuple[Section, bytes]:
             continue
         if c == ord(b'"'):
             in_quotes = not in_quotes
-        if c == ord(b'\\'):
+        if c == ord(b"\\"):
             escaped = True
-        if c == ord(b']') and not in_quotes:
+        if c == ord(b"]") and not in_quotes:
             last = i
             break
     else:
         raise ValueError("expected trailing ]")
     pts = line[1:last].split(b" ", 1)
-    line = line[last + 1:]
+    line = line[last + 1 :]
     section: Section
     if len(pts) == 2:
         if pts[1][:1] != b'"' or pts[1][-1:] != b'"':
@@ -532,20 +517,20 @@ class ConfigFile(ConfigDict):
         values: Union[
             MutableMapping[Section, MutableMapping[Name, Value]], None
         ] = None,
-        encoding: Union[str, None] = None
+        encoding: Union[str, None] = None,
     ) -> None:
         super().__init__(values=values, encoding=encoding)
         self.path: Optional[str] = None
 
-    @classmethod  # noqa: C901
-    def from_file(cls, f: BinaryIO) -> "ConfigFile":  # noqa: C901
+    @classmethod
+    def from_file(cls, f: BinaryIO) -> "ConfigFile":
         """Read configuration from a file-like object."""
         ret = cls()
         section: Optional[Section] = None
         setting = None
         continuation = None
         for lineno, line in enumerate(f.readlines()):
-            if lineno == 0 and line.startswith(b'\xef\xbb\xbf'):
+            if lineno == 0 and line.startswith(b"\xef\xbb\xbf"):
                 line = line[3:]
             line = line.lstrip()
             if setting is None:
@@ -630,9 +615,15 @@ def _find_git_in_win_path():
     for exe in ("git.exe", "git.cmd"):
         for path in os.environ.get("PATH", "").split(";"):
             if os.path.exists(os.path.join(path, exe)):
-                # exe path is .../Git/bin/git.exe or .../Git/cmd/git.exe
+                # in windows native shells (powershell/cmd) exe path is
+                # .../Git/bin/git.exe or .../Git/cmd/git.exe
+                #
+                # in git-bash exe path is .../Git/mingw64/bin/git.exe
                 git_dir, _bin_dir = os.path.split(path)
                 yield git_dir
+                parent_dir, basename = os.path.split(git_dir)
+                if basename == "mingw32" or basename == "mingw64":
+                    yield parent_dir
                 break
 
 
@@ -646,19 +637,14 @@ def _find_git_in_win_reg():
             "CurrentVersion\\Uninstall\\Git_is1"
         )
     else:
-        subkey = (
-            "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\"
-            "Uninstall\\Git_is1"
-        )
+        subkey = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\" "Uninstall\\Git_is1"
 
     for key in (winreg.HKEY_CURRENT_USER, winreg.HKEY_LOCAL_MACHINE):  # type: ignore
-        try:
+        with suppress(OSError):
             with winreg.OpenKey(key, subkey) as k:  # type: ignore
                 val, typ = winreg.QueryValueEx(k, "InstallLocation")  # type: ignore
                 if typ == winreg.REG_SZ:  # type: ignore
                     yield val
-        except OSError:
-            pass
 
 
 # There is no set standard for system config dirs on windows. We try the
@@ -682,12 +668,12 @@ class StackedConfig(Config):
 
     def __init__(
         self, backends: List[ConfigFile], writable: Optional[ConfigFile] = None
-    ):
+    ) -> None:
         self.backends = backends
         self.writable = writable
 
     def __repr__(self) -> str:
-        return "<{} for {!r}>".format(self.__class__.__name__, self.backends)
+        return f"<{self.__class__.__name__} for {self.backends!r}>"
 
     @classmethod
     def default(cls) -> "StackedConfig":
@@ -737,10 +723,7 @@ class StackedConfig(Config):
                 pass
 
     def set(
-        self,
-        section: SectionLike,
-        name: NameLike,
-        value: Union[ValueLike, bool]
+        self, section: SectionLike, name: NameLike, value: Union[ValueLike, bool]
     ) -> None:
         if self.writable is None:
             raise NotImplementedError(self.set)
@@ -756,7 +739,7 @@ class StackedConfig(Config):
 
 
 def read_submodules(path: str) -> Iterator[Tuple[bytes, bytes, bytes]]:
-    """read a .gitmodules file."""
+    """Read a .gitmodules file."""
     cfg = ConfigFile.from_path(path)
     return parse_submodules(cfg)
 
@@ -773,16 +756,21 @@ def parse_submodules(config: ConfigFile) -> Iterator[Tuple[bytes, bytes, bytes]]
     for section in config.keys():
         section_kind, section_name = section
         if section_kind == b"submodule":
-            sm_path = config.get(section, b"path")
-            sm_url = config.get(section, b"url")
-            yield (sm_path, sm_url, section_name)
+            try:
+                sm_path = config.get(section, b"path")
+                sm_url = config.get(section, b"url")
+                yield (sm_path, sm_url, section_name)
+            except KeyError:
+                # If either path or url is missing, just ignore this
+                # submodule entry and move on to the next one. This is
+                # how git itself handles malformed .gitmodule entries.
+                pass
 
 
 def iter_instead_of(config: Config, push: bool = False) -> Iterable[Tuple[str, str]]:
-    """Iterate over insteadOf / pushInsteadOf values.
-    """
+    """Iterate over insteadOf / pushInsteadOf values."""
     for section in config.sections():
-        if section[0] != b'url':
+        if section[0] != b"url":
             continue
         replacement = section[1]
         try:
@@ -796,12 +784,11 @@ def iter_instead_of(config: Config, push: bool = False) -> Iterable[Tuple[str, s
                 pass
         for needle in needles:
             assert isinstance(needle, bytes)
-            yield needle.decode('utf-8'), replacement.decode('utf-8')
+            yield needle.decode("utf-8"), replacement.decode("utf-8")
 
 
 def apply_instead_of(config: Config, orig_url: str, push: bool = False) -> str:
-    """Apply insteadOf / pushInsteadOf to a URL.
-    """
+    """Apply insteadOf / pushInsteadOf to a URL."""
     longest_needle = ""
     updated_url = orig_url
     for needle, replacement in iter_instead_of(config, push):
@@ -809,5 +796,5 @@ def apply_instead_of(config: Config, orig_url: str, push: bool = False) -> str:
             continue
         if len(longest_needle) < len(needle):
             longest_needle = needle
-            updated_url = replacement + orig_url[len(needle):]
+            updated_url = replacement + orig_url[len(needle) :]
     return updated_url

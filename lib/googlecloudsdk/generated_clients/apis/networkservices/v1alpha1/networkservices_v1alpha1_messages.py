@@ -206,9 +206,13 @@ class AgentGatewaySelfManaged(_messages.Message):
   Fields:
     resourceUri: Optional. A supported Google Cloud networking proxy in the
       Project and Location
+    resourceUris: Optional. List of supported Google Cloud networking proxies
+      in the Project and Location. resource_uris is mutually exclusive with
+      resource_uri.
   """
 
   resourceUri = _messages.StringField(1)
+  resourceUris = _messages.StringField(2, repeated=True)
 
 
 class AuditConfig(_messages.Message):
@@ -281,11 +285,11 @@ class AuthzExtension(_messages.Message):
   Enums:
     LoadBalancingSchemeValueValuesEnum: Optional. All backend services and
       forwarding rules referenced by this extension must share the same load
-      balancing scheme. Supported values: `INTERNAL_MANAGED`,
-      `EXTERNAL_MANAGED`. Can be omitted for AuthzExtensions that do not
-      reference a backend service. For more information, refer to [Backend
-      services overview](https://cloud.google.com/load-balancing/docs/backend-
-      service).
+      balancing scheme. The supported values are `INTERNAL_MANAGED` and
+      `EXTERNAL_MANAGED`. You can omit this field for `AuthzExtensions`
+      resources that don't reference a backend service. For more information,
+      see [Backend services overview](https://cloud.google.com/load-
+      balancing/docs/backend-service).
     WireFormatValueValuesEnum: Optional. The format of communication supported
       by the callout extension. This field is supported only for regional
       `AuthzExtension` resources. If not specified, the default value
@@ -308,7 +312,7 @@ class AuthzExtension(_messages.Message):
   Fields:
     authority: Optional. The `:authority` header in the gRPC request sent from
       Envoy to the extension service. It is required when the `service` field
-      points to a backend service or a wasm plugin.
+      points to a backend service.
     createTime: Output only. The timestamp when the resource was created.
     description: Optional. A human-readable description of the resource.
     failOpen: Optional. Determines how the proxy behaves if the call to the
@@ -338,9 +342,9 @@ class AuthzExtension(_messages.Message):
       resources.
     loadBalancingScheme: Optional. All backend services and forwarding rules
       referenced by this extension must share the same load balancing scheme.
-      Supported values: `INTERNAL_MANAGED`, `EXTERNAL_MANAGED`. Can be omitted
-      for AuthzExtensions that do not reference a backend service. For more
-      information, refer to [Backend services
+      The supported values are `INTERNAL_MANAGED` and `EXTERNAL_MANAGED`. You
+      can omit this field for `AuthzExtensions` resources that don't reference
+      a backend service. For more information, see [Backend services
       overview](https://cloud.google.com/load-balancing/docs/backend-service).
     metadata: Optional. The metadata provided here is included as part of the
       `metadata_context` (of type `google.protobuf.Struct`) in the
@@ -353,12 +357,20 @@ class AuthzExtension(_messages.Message):
       following format: `projects/{project}/locations/{location}/authzExtensio
       ns/{authz_extension}`.
     service: Required. The reference to the service that runs the extension.
-      To configure a callout extension, `service` must be a fully-qualified
-      reference to a [backend service](https://cloud.google.com/compute/docs/r
-      eference/rest/v1/backendServices) in the format: `https://www.googleapis
-      .com/compute/v1/projects/{project}/regions/{region}/backendServices/{bac
-      kendService}` or `https://www.googleapis.com/compute/v1/projects/{projec
-      t}/global/backendServices/{backendService}`.
+      To configure a callout extension: For global AuthzExtension, `service`
+      must be a fully-qualified reference to a [backend service](https://cloud
+      .google.com/compute/docs/reference/rest/v1/backendServices) in the
+      format: `https://www.googleapis.com/compute/v1/projects/{project}/global
+      /backendServices/{backendService}`. For regional AuthzExtension,
+      `service` must be a fully-qualified reference to one of the following: *
+      a [backend service](https://cloud.google.com/compute/docs/reference/rest
+      /v1/backendServices) in the format: `https://www.googleapis.com/compute/
+      v1/projects/{project}/regions/{region}/backendServices/{backendService}`
+      . * a fully qualified domain name that can be resolved by the Google
+      Cloud DNS. * `iap.googleapis.com` and it can only be referenced by an
+      AuthzPolicy with the policyProfile set to REQUEST_AUTHZ. *
+      `modelarmor..rep.googleapis.com` and it can only be referenced by an
+      AuthzPolicy with the policyProfile set to CONTENT_AUTHZ.
     timeout: Required. Specifies the timeout for each individual message on
       the stream. The timeout must be between 10-10000 milliseconds.
     updateTime: Output only. The timestamp when the resource was updated.
@@ -370,11 +382,11 @@ class AuthzExtension(_messages.Message):
 
   class LoadBalancingSchemeValueValuesEnum(_messages.Enum):
     r"""Optional. All backend services and forwarding rules referenced by this
-    extension must share the same load balancing scheme. Supported values:
-    `INTERNAL_MANAGED`, `EXTERNAL_MANAGED`. Can be omitted for AuthzExtensions
-    that do not reference a backend service. For more information, refer to
-    [Backend services overview](https://cloud.google.com/load-
-    balancing/docs/backend-service).
+    extension must share the same load balancing scheme. The supported values
+    are `INTERNAL_MANAGED` and `EXTERNAL_MANAGED`. You can omit this field for
+    `AuthzExtensions` resources that don't reference a backend service. For
+    more information, see [Backend services
+    overview](https://cloud.google.com/load-balancing/docs/backend-service).
 
     Values:
       LOAD_BALANCING_SCHEME_UNSPECIFIED: Default value. Do not use.
@@ -852,24 +864,23 @@ class CDNPolicyAddSignaturesOptions(_messages.Message):
       SIGNATURE_ACTION_UNSPECIFIED: It is an error to specify `UNSPECIFIED`.
       GENERATE_COOKIE: Generate a new signed request cookie and return the
         cookie in a Set-Cookie header of the response. This action cannot be
-        combined with the `PROPAGATE_TOKEN_HLS_COOKIELESS` action.
+        combined with either the `PROPAGATE_TOKEN_HLS_COOKIELESS` action or
+        the `PROPAGATE_TOKEN_DASH_COOKIELESS` action.
       GENERATE_TOKEN_HLS_COOKIELESS: Generate a new signed request
         authentication token and return the new token by manipulating URLs in
         an HTTP Live Stream (HLS) playlist. This action cannot be combined
-        with the `PROPAGATE_TOKEN_HLS_COOKIELESS` action.
-      PROPAGATE_TOKEN_HLS_COOKIELESS: Copy the authentication token used in
+        with either the `PROPAGATE_TOKEN_HLS_COOKIELESS` action or the
+        `PROPAGATE_TOKEN_DASH_COOKIELESS` action.
+      PROPAGATE_TOKEN_HLS_COOKIELESS: Copies the authentication token used in
         the request to the URLs in an HTTP Live Stream (HLS) playlist. This
-        action cannot be combined with either the `GENERATE_COOKIE` action or
-        the `GENERATE_TOKEN_HLS_COOKIELESS` action.
-      PROPAGATE_TOKEN_DASH_COOKIELESS: Copy the authentication token used in
-        the request to the URLs in a Dynamic Adaptive Streaming over HTTP
-        (DASH) manifest.
+        action cannot be combined with the `GENERATE_COOKIE` action, the
+        `GENERATE_TOKEN_HLS_COOKIELESS` action, or the
+        `PROPAGATE_TOKEN_DASH_COOKIELESS` action.
     """
     SIGNATURE_ACTION_UNSPECIFIED = 0
     GENERATE_COOKIE = 1
     GENERATE_TOKEN_HLS_COOKIELESS = 2
     PROPAGATE_TOKEN_HLS_COOKIELESS = 3
-    PROPAGATE_TOKEN_DASH_COOKIELESS = 4
 
   actions = _messages.EnumField('ActionsValueListEntryValuesEnum', 1, repeated=True)
   copiedParameters = _messages.StringField(2, repeated=True)
@@ -1409,6 +1420,88 @@ class EdgeCacheService(_messages.Message):
   updateTime = _messages.StringField(14)
 
 
+class EgressRouting(_messages.Message):
+  r"""Defines the configuration for egress traffic routing.
+
+  Messages:
+    LabelsValue: Optional. Set of label tags associated with the EgressRouting
+      resource.
+
+  Fields:
+    createTime: Output only. The timestamp when the resource was created.
+    description: Optional. A free-text description of the resource. Max length
+      1024 characters.
+    etag: Optional. Etag of the resource. If this is provided, it must match
+      the server's etag. If the provided etag does not match the server's
+      etag, the request will fail with a 409 ABORTED error.
+    gateway: Required. The resource URI of the Policy Enforcement Point (PEP)
+      where matched egress traffic must be redirected. Supported PEPs: Secure
+      Web Proxy (SWP), managed Agent Gateway, and SWP behind Service
+      Attachment (PSC-SA). Examples: "//networkservices.googleapis.com/project
+      s/{project_id}/locations/{location}/gateways/{gateway_id}" "//networkser
+      vices.googleapis.com/projects/{project_id}/locations/{location}/agentGat
+      eways/{agent_gateway_id}" "//compute.googleapis.com/projects/{project_id
+      }/regions/{region}/serviceAttachments/{service_attachment_id}"
+    labels: Optional. Set of label tags associated with the EgressRouting
+      resource.
+    name: Identifier. Name of the EgressRouting resource. It matches pattern
+      `projects/*/locations/*/egressRoutings/`.
+    sources: Required. Specifies the source workloads to which this
+      EgressRouting rule applies.
+    updateTime: Output only. The timestamp when the resource was last updated.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Set of label tags associated with the EgressRouting
+    resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  etag = _messages.StringField(3)
+  gateway = _messages.StringField(4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  name = _messages.StringField(6)
+  sources = _messages.MessageField('EgressRoutingSource', 7, repeated=True)
+  updateTime = _messages.StringField(8)
+
+
+class EgressRoutingSource(_messages.Message):
+  r"""Specifies the source workloads for the egress rule.
+
+  Fields:
+    workloadUri: Required. The resource URI representing the workload,
+      project, or location. Examples:
+      "//cloudresourcemanager.googleapis.com/projects/{project_id}" "//run.goo
+      gleapis.com/projects/{project_id}/locations/{location}/services/*" "//co
+      ntainer.googleapis.com/projects/{project_id}/locations/{location}/cluste
+      rs/{cluster_name}" "//container.googleapis.com/projects/{project_id}/loc
+      ations/{location}/clusters/{cluster_name}/k8s/namespaces/{namespace}"
+  """
+
+  workloadUri = _messages.StringField(1)
+
+
 class Empty(_messages.Message):
   r"""A generic empty message that you can re-use to avoid defining duplicated
   empty messages in your APIs. A typical example is to use it as the request
@@ -1450,15 +1543,16 @@ class EndpointPolicy(_messages.Message):
       inbound traffic at the matched endpoints. Refer to Authorization. If
       this field is not specified, authorization is disabled(no authz checks)
       for this endpoint.
-    clientTlsPolicy: Optional. A URL referring to a ClientTlsPolicy resource.
-      ClientTlsPolicy can be set to specify the authentication for traffic
-      from the proxy to the actual endpoints. More specifically, it is applied
-      to the outgoing traffic from the proxy to the endpoint. This is
-      typically used for sidecar model where the proxy identifies itself as
-      endpoint to the control plane, with the connection between sidecar and
-      endpoint requiring authentication. If this field is not set,
-      authentication is disabled(open). Applicable only when
-      EndpointPolicyType is SIDECAR_PROXY.
+    clientTlsPolicy: Optional. Deprecated: This field is not used and is a no-
+      op. A URL referring to a ClientTlsPolicy resource. ClientTlsPolicy can
+      be set to specify the authentication for traffic from the proxy to the
+      actual endpoints. More specifically, it is applied to the outgoing
+      traffic from the proxy to the endpoint. This is typically used for
+      sidecar model where the proxy identifies itself as endpoint to the
+      control plane, with the connection between sidecar and endpoint
+      requiring authentication. If this field is not set, authentication is
+      disabled(open). Applicable only when EndpointPolicyType is
+      SIDECAR_PROXY.
     createTime: Output only. The timestamp when the resource was created.
     description: Optional. A free-text description of the resource. Max length
       1024 characters.
@@ -1808,44 +1902,12 @@ class ExtensionBindingMatchCondition(_messages.Message):
   r"""Conditions to match against the incoming request.
 
   Fields:
-    from_: Optional. Describes properties of a source of a request. If
-      specified, the extension will only be invoked on requests from sources
-      that match the specified criteria.
     to: Optional. Describes properties of a destination of a request. If
       specified, the extension will only be invoked on requests to
       destinations that match the specified criteria.
   """
 
-  from_ = _messages.MessageField('ExtensionBindingMatchConditionFrom', 1)
-  to = _messages.MessageField('ExtensionBindingMatchConditionTo', 2)
-
-
-class ExtensionBindingMatchConditionFrom(_messages.Message):
-  r"""Describes properties of one or more sources of a request.
-
-  Fields:
-    notSource: Optional. Describes the negated properties of the request
-      source. Extension will not be invoked on requests that match the
-      criteria specified in this field. At least one of sources or not_source
-      must be specified.
-    source: Optional. Describes the properties of a request's sources. At
-      least one of sources or not_source must be specified.
-  """
-
-  notSource = _messages.MessageField('ExtensionBindingMatchConditionFromSource', 1)
-  source = _messages.MessageField('ExtensionBindingMatchConditionFromSource', 2)
-
-
-class ExtensionBindingMatchConditionFromSource(_messages.Message):
-  r"""Describes properties of a single source.
-
-  Fields:
-    principals: Optional. A list of non-empty strings whose value is matched
-      against the principal value. A match occurs if any of the principals
-      matches the principal value in the request.
-  """
-
-  principals = _messages.MessageField('ExtensionBindingMatchConditionStringMatch', 1, repeated=True)
+  to = _messages.MessageField('ExtensionBindingMatchConditionTo', 1)
 
 
 class ExtensionBindingMatchConditionHeaderMatch(_messages.Message):
@@ -4611,6 +4673,25 @@ class ListEdgeCacheServicesResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class ListEgressRoutingsResponse(_messages.Message):
+  r"""Response returned by the ListEgressRoutings method.
+
+  Fields:
+    egressRoutings: List of EgressRouting resources.
+    nextPageToken: If there might be more results than those appearing in this
+      response, then `next_page_token` is included. To get the next set of
+      results, call this method again using the value of `next_page_token` as
+      `page_token`.
+    unreachable: Unreachable resources. Populated when the request attempts to
+      list all resources across all supported locations, while some locations
+      are temporarily unavailable.
+  """
+
+  egressRoutings = _messages.MessageField('EgressRouting', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListEndpointPoliciesResponse(_messages.Message):
   r"""Response returned by the ListEndpointPolicies method.
 
@@ -5103,6 +5184,27 @@ class ListOperationsResponse(_messages.Message):
 
   nextPageToken = _messages.StringField(1)
   operations = _messages.MessageField('Operation', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListProducerExtensionsResponse(_messages.Message):
+  r"""Response returned by the `ListProducerExtensions` method.
+
+  Fields:
+    nextPageToken: If there might be more results than those appearing in this
+      response, then `next_page_token` is included. To get the next set of
+      results, call this method again using the value of `next_page_token` as
+      `page_token`.
+    producerExtensions: List of `ProducerExtension` resources.
+    unreachable: Unordered list. Unreachable resources. Populated when the
+      request attempts to list all resources across all supported locations,
+      while some locations are temporarily unavailable. The resource names are
+      in the format: `projects/{project}/locations/{location}/producerExtensio
+      ns/{producer_extension}`.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  producerExtensions = _messages.MessageField('ProducerExtension', 2, repeated=True)
   unreachable = _messages.StringField(3, repeated=True)
 
 
@@ -7348,6 +7450,90 @@ class NetworkservicesProjectsLocationsEdgeCacheServicesTestIamPermissionsRequest
 
   resource = _messages.StringField(1, required=True)
   testIamPermissionsRequest = _messages.MessageField('TestIamPermissionsRequest', 2)
+
+
+class NetworkservicesProjectsLocationsEgressRoutingsCreateRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsEgressRoutingsCreateRequest object.
+
+  Fields:
+    egressRouting: A EgressRouting resource to be passed as the request body.
+    egressRoutingId: Required. Short name of the EgressRouting resource to be
+      created.
+    parent: Required. The parent resource of the EgressRouting. Must be in the
+      format `projects/*/locations/*`.
+  """
+
+  egressRouting = _messages.MessageField('EgressRouting', 1)
+  egressRoutingId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class NetworkservicesProjectsLocationsEgressRoutingsDeleteRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsEgressRoutingsDeleteRequest object.
+
+  Fields:
+    etag: Optional. The etag of the EgressRouting to delete.
+    name: Required. A name of the EgressRouting to delete. Must be in the
+      format `projects/*/locations/*/egressRoutings/*`.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+
+
+class NetworkservicesProjectsLocationsEgressRoutingsGetRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsEgressRoutingsGetRequest object.
+
+  Fields:
+    name: Required. A name of the EgressRouting to get. Must be in the format
+      `projects/*/locations/*/egressRoutings/*`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworkservicesProjectsLocationsEgressRoutingsListRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsEgressRoutingsListRequest object.
+
+  Fields:
+    pageSize: Optional. The maximum number of EgressRoutings to return in a
+      single page. The server may return fewer than this value. If
+      unspecified, at most 50 EgressRoutings will be returned. The maximum
+      value is 1000; values above 1000 will be coerced to 1000.
+    pageToken: Optional. The value returned by the last
+      `ListEgressRoutingsResponse` Indicates that this is a continuation of a
+      prior `ListEgressRoutings` call, and that the system should return the
+      next page of data.
+    parent: Required. The project and location from which the EgressRoutings
+      should be listed, specified in the format `projects/*/locations/*`.
+    returnPartialSuccess: Optional. If true, allow partial responses for
+      multi-regional Aggregated List requests. Otherwise if one of the
+      locations is down or unreachable, the Aggregated List request will fail.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  returnPartialSuccess = _messages.BooleanField(4)
+
+
+class NetworkservicesProjectsLocationsEgressRoutingsPatchRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsEgressRoutingsPatchRequest object.
+
+  Fields:
+    egressRouting: A EgressRouting resource to be passed as the request body.
+    name: Identifier. Name of the EgressRouting resource. It matches pattern
+      `projects/*/locations/*/egressRoutings/`.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the EgressRouting resource by the update. The fields
+      specified in the update_mask are relative to the resource, not the full
+      request. A field will be overwritten if it is in the mask. If the user
+      does not provide a mask then all fields will be overwritten.
+  """
+
+  egressRouting = _messages.MessageField('EgressRouting', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
 
 
 class NetworkservicesProjectsLocationsEndpointPoliciesCreateRequest(_messages.Message):
@@ -10451,6 +10637,71 @@ class NetworkservicesProjectsLocationsOperationsListRequest(_messages.Message):
   returnPartialSuccess = _messages.BooleanField(5)
 
 
+class NetworkservicesProjectsLocationsProducerExtensionsCreateRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsProducerExtensionsCreateRequest
+  object.
+
+  Fields:
+    parent: Required. The parent resource of the `ProducerExtension` resource.
+      Must be in the format `projects/{project}/locations/{location}`.
+    producerExtension: A ProducerExtension resource to be passed as the
+      request body.
+    producerExtensionId: Required. Short name of the `ProducerExtension`
+      resource to be created.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  producerExtension = _messages.MessageField('ProducerExtension', 2)
+  producerExtensionId = _messages.StringField(3)
+
+
+class NetworkservicesProjectsLocationsProducerExtensionsDeleteRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsProducerExtensionsDeleteRequest
+  object.
+
+  Fields:
+    etag: Optional. The etag of the ProducerExtension to delete.
+    name: Required. A name of the `ProducerExtension` resource to delete. Must
+      be in the format `projects/{project}/locations/{location}/producerExtens
+      ions/{producer_extension}`.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+
+
+class NetworkservicesProjectsLocationsProducerExtensionsGetRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsProducerExtensionsGetRequest object.
+
+  Fields:
+    name: Required. A name of the `ProducerExtension` resource to get. Must be
+      in the format `projects/{project}/locations/{location}/producerExtension
+      s/{producer_extension}`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworkservicesProjectsLocationsProducerExtensionsListRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsProducerExtensionsListRequest object.
+
+  Fields:
+    pageSize: Optional. Maximum number of `ProducerExtension` resources to
+      return per call.
+    pageToken: Optional. The value returned by the last
+      `ListProducerExtensionsResponse` Indicates that this is a continuation
+      of a prior `ListProducerExtensions` call, and that the system should
+      return the next page of data.
+    parent: Required. The project and location from which the
+      `ProducerExtension` resources should be listed, specified in the format
+      `projects/{project}/locations/{location}`.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
 class NetworkservicesProjectsLocationsRegionalMulticastConsumerAssociationsCreateRequest(_messages.Message):
   r"""A NetworkservicesProjectsLocationsRegionalMulticastConsumerAssociationsC
   reateRequest object.
@@ -12486,6 +12737,138 @@ class Policy(_messages.Message):
   version = _messages.IntegerField(4, variant=_messages.Variant.INT32)
 
 
+class ProducerExtension(_messages.Message):
+  r"""`ProducerExtension` is a resource representing producer defined
+  configuration for their service extension.
+
+  Enums:
+    PhaseValueValuesEnum: Required. The phase in which this
+      `ProducerExtension` should execute.
+
+  Messages:
+    LabelsValue: Optional. Set of labels associated with the
+      `ProducerExtension` resource. The format must comply with [the following
+      requirements]((https://cloud.google.com/compute/docs/labeling-
+      resources#requirements).
+
+  Fields:
+    createTime: Output only. The timestamp when the resource was created.
+    description: Optional. A human-readable description of the resource.
+    etag: Optional. Etag of the resource. If this is provided, it must match
+      the server's etag. If the provided etag does not match the server's
+      etag, the request will fail with a 409 ABORTED error.
+    extensionSettings: Required. The configuration for the service that this
+      `ProducerExtension` offers.
+    labels: Optional. Set of labels associated with the `ProducerExtension`
+      resource. The format must comply with [the following
+      requirements]((https://cloud.google.com/compute/docs/labeling-
+      resources#requirements).
+    name: Identifier. Name of the `ProducerExtension` resource in the
+      following format: `projects/{project}/locations/{location}/producerExten
+      sions/{producer_extension}`.
+    phase: Required. The phase in which this `ProducerExtension` should
+      execute.
+    updateTime: Output only. The timestamp when the resource was updated.
+  """
+
+  class PhaseValueValuesEnum(_messages.Enum):
+    r"""Required. The phase in which this `ProducerExtension` should execute.
+
+    Values:
+      PHASE_UNSPECIFIED: Unspecified phase.
+      TRAFFIC: The `ProducerExtension` will be executed during the traffic
+        phase.
+      AUTHZ: The `ProducerExtension` will be executed during the authorization
+        phase.
+    """
+    PHASE_UNSPECIFIED = 0
+    TRAFFIC = 1
+    AUTHZ = 2
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Set of labels associated with the `ProducerExtension`
+    resource. The format must comply with [the following
+    requirements]((https://cloud.google.com/compute/docs/labeling-
+    resources#requirements).
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  etag = _messages.StringField(3)
+  extensionSettings = _messages.MessageField('ProducerExtensionExtensionSettings', 4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  name = _messages.StringField(6)
+  phase = _messages.EnumField('PhaseValueValuesEnum', 7)
+  updateTime = _messages.StringField(8)
+
+
+class ProducerExtensionExtensionSettings(_messages.Message):
+  r"""The configuration for the service that this `ProducerExtension` offers.
+
+  Enums:
+    SupportedEventsValueListEntryValuesEnum:
+
+  Fields:
+    authority: Optional. The `:authority` header in the request sent to the
+      extension service.
+    observabilityMode: Optional. Whether the extension should function in
+      observability mode.
+    service: Required. URI of the PSC attachment.
+    supportedEvents: Required. The event types supported by the extension.
+  """
+
+  class SupportedEventsValueListEntryValuesEnum(_messages.Enum):
+    r"""SupportedEventsValueListEntryValuesEnum enum type.
+
+    Values:
+      EVENT_TYPE_UNSPECIFIED: Unspecified value. Do not use.
+      REQUEST_HEADERS: If included in `supported_events`, the extension is
+        called when the HTTP request headers arrive.
+      REQUEST_BODY: If included in `supported_events`, the extension is called
+        when the HTTP request body arrives.
+      RESPONSE_HEADERS: If included in `supported_events`, the extension is
+        called when the HTTP response headers arrive.
+      RESPONSE_BODY: If included in `supported_events`, the extension is
+        called when the HTTP response body arrives.
+      REQUEST_TRAILERS: If included in `supported_events`, the extension is
+        called when the HTTP request trailers arrives.
+      RESPONSE_TRAILERS: If included in `supported_events`, the extension is
+        called when the HTTP response trailers arrives.
+    """
+    EVENT_TYPE_UNSPECIFIED = 0
+    REQUEST_HEADERS = 1
+    REQUEST_BODY = 2
+    RESPONSE_HEADERS = 3
+    RESPONSE_BODY = 4
+    REQUEST_TRAILERS = 5
+    RESPONSE_TRAILERS = 6
+
+  authority = _messages.StringField(1)
+  observabilityMode = _messages.BooleanField(2)
+  service = _messages.StringField(3)
+  supportedEvents = _messages.EnumField('SupportedEventsValueListEntryValuesEnum', 4, repeated=True)
+
+
 class PublicKey(_messages.Message):
   r"""An Ed25519 public key used for validating signed requests.
 
@@ -13883,7 +14266,9 @@ class TelemetryPolicy(_messages.Message):
     createTime: Output only. Indicates the timestamp when the resource was
       created.
     displayName: Optional. Provides a human-readable name for the policy.
-    etag: Provides a mechanism for optimistic concurrency control.
+    etag: Provides a mechanism for optimistic concurrency control. If this is
+      provided, it must match the server's etag. If the provided etag does not
+      match the server's etag, the request will fail with a 409 ABORTED error.
     labels: Optional. Set of label tags associated with the TelemetryPolicy
       resource.
     metricsConfiguration: Optional. Specifies the top-level configuration
@@ -14855,8 +15240,6 @@ class WasmPluginVersionDetails(_messages.Message):
   updateTime = _messages.StringField(9)
 
 
-encoding.AddCustomJsonFieldMapping(
-    ExtensionBindingMatchCondition, 'from_', 'from')
 encoding.AddCustomJsonFieldMapping(
     StandardQueryParameters, 'f__xgafv', '$.xgafv')
 encoding.AddCustomJsonEnumMapping(

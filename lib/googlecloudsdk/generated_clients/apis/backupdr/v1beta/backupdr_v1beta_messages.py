@@ -1213,10 +1213,10 @@ class BackupVault(_messages.Message):
   r"""Message describing a BackupVault object.
 
   Enums:
-    AccessRestrictionValueValuesEnum: Optional. Note: This field is added for
-      future use case and will not be supported in the current release. Access
-      restriction for the backup vault. Default value is WITHIN_ORGANIZATION
-      if not provided during creation.
+    AccessRestrictionValueValuesEnum: Optional. Restricts access to certain
+      sources and destinations for data being sent into, or restored from, the
+      backup vault. Defaults to WITHIN_ORGANIZATION if not provided during
+      creation.
     BackupRetentionInheritanceValueValuesEnum: Optional. Setting for how a
       backup's enforced retention end time is inherited.
     EncryptionModeValueValuesEnum: Optional. Deprecated: The encryption mode
@@ -1232,10 +1232,9 @@ class BackupVault(_messages.Message):
       metadata. No labels currently defined:
 
   Fields:
-    accessRestriction: Optional. Note: This field is added for future use case
-      and will not be supported in the current release. Access restriction for
-      the backup vault. Default value is WITHIN_ORGANIZATION if not provided
-      during creation.
+    accessRestriction: Optional. Restricts access to certain sources and
+      destinations for data being sent into, or restored from, the backup
+      vault. Defaults to WITHIN_ORGANIZATION if not provided during creation.
     annotations: Optional. User annotations. See
       https://google.aip.dev/128#annotations Stores small amounts of arbitrary
       data.
@@ -1282,10 +1281,9 @@ class BackupVault(_messages.Message):
   """
 
   class AccessRestrictionValueValuesEnum(_messages.Enum):
-    r"""Optional. Note: This field is added for future use case and will not
-    be supported in the current release. Access restriction for the backup
-    vault. Default value is WITHIN_ORGANIZATION if not provided during
-    creation.
+    r"""Optional. Restricts access to certain sources and destinations for
+    data being sent into, or restored from, the backup vault. Defaults to
+    WITHIN_ORGANIZATION if not provided during creation.
 
     Values:
       ACCESS_RESTRICTION_UNSPECIFIED: Access restriction not set. If user does

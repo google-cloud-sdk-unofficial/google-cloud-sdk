@@ -18,54 +18,12 @@ import argparse
 import contextlib
 import os
 
-from googlecloudsdk.api_lib.run import service
 from googlecloudsdk.api_lib.run import ssh as run_ssh
-from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import stages
 from googlecloudsdk.command_lib.run.sync import polling_watcher
 from googlecloudsdk.command_lib.run.sync import sync_rule_util
 from googlecloudsdk.command_lib.run.sync import syncer as syncer_lib
 from googlecloudsdk.core.console import progress_tracker
-
-
-def NecessaryChangesForInstancesDevSync(
-    args: argparse.Namespace,
-) -> list[config_changes.ConfigChanger]:
-  """Adds necessary changes for instances used by dev sync, if not specified by flags.
-
-  1. Set SSH Enabled for the new Instance
-  2. Set port to 8080
-  3. Disable invoker IAM check - keep until IAP support is added for Instances
-  4. Set ingress to allow all - to generate URL for instance
-
-  TODO: b/498806046 - Remove this function once instances don't require hacks
-    to work.
-
-  Args:
-    args: The command-line arguments.
-
-  Returns:
-    A list of Config Changes objects to apply to the Instances for Dev Sync.
-    A list of Config Changes objects to apply to the Instances for Dev Sync.
-  """
-  changes = [
-      config_changes.SetAnnotationChange(
-          'run.googleapis.com/ssh-enabled', 'true'
-      ),
-  ]
-  if getattr(args, 'port', None) is None:
-    changes.append(config_changes.ContainerPortChange(port='8080'))
-  if getattr(args, 'invoker_iam_check', None) is None:
-    changes.append(config_changes.InvokerIamChange(invoker_iam_check=False))
-
-  if getattr(args, 'ingress_settings', None) is None:
-    changes.append(
-        config_changes.SetAnnotationChange(
-            service.INGRESS_ANNOTATION, service.INGRESS_ALL
-        ),
-    )
-
-  return changes
 
 
 class Sync:

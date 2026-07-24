@@ -336,6 +336,8 @@ class GoogleCloudRunV2Condition(_messages.Message):
     BuildReasonValueValuesEnum: Output only. A reason for the build condition.
     ExecutionReasonValueValuesEnum: Output only. A reason for the execution
       condition.
+    InstanceReasonValueValuesEnum: Output only. A reason for the instance
+      condition.
     ReasonValueValuesEnum: Output only. A common (service-level) reason for
       this condition.
     RevisionReasonValueValuesEnum: Output only. A reason for the revision
@@ -347,6 +349,7 @@ class GoogleCloudRunV2Condition(_messages.Message):
   Fields:
     buildReason: Output only. A reason for the build condition.
     executionReason: Output only. A reason for the execution condition.
+    instanceReason: Output only. A reason for the instance condition.
     lastTransitionTime: Last time the condition transitioned from one status
       to another.
     message: Human readable message indicating details about the current
@@ -398,6 +401,22 @@ class GoogleCloudRunV2Condition(_messages.Message):
     CANCELLING = 4
     DELETED = 5
     DELAYED_START_PENDING = 6
+
+  class InstanceReasonValueValuesEnum(_messages.Enum):
+    r"""Output only. A reason for the instance condition.
+
+    Values:
+      INSTANCE_REASON_UNSPECIFIED: Default value.
+      INSTANCE_DELETED: Instance deleted.
+      INSTANCE_STOPPED: Instance stopped.
+      INSTANCE_STOPPING: Instance stopping.
+      INSTANCE_NON_ZERO_EXIT_CODE: Instance exited with a non-zero exit code.
+    """
+    INSTANCE_REASON_UNSPECIFIED = 0
+    INSTANCE_DELETED = 1
+    INSTANCE_STOPPED = 2
+    INSTANCE_STOPPING = 3
+    INSTANCE_NON_ZERO_EXIT_CODE = 4
 
   class ReasonValueValuesEnum(_messages.Enum):
     r"""Output only. A common (service-level) reason for this condition.
@@ -521,13 +540,14 @@ class GoogleCloudRunV2Condition(_messages.Message):
 
   buildReason = _messages.EnumField('BuildReasonValueValuesEnum', 1)
   executionReason = _messages.EnumField('ExecutionReasonValueValuesEnum', 2)
-  lastTransitionTime = _messages.StringField(3)
-  message = _messages.StringField(4)
-  reason = _messages.EnumField('ReasonValueValuesEnum', 5)
-  revisionReason = _messages.EnumField('RevisionReasonValueValuesEnum', 6)
-  severity = _messages.EnumField('SeverityValueValuesEnum', 7)
-  state = _messages.EnumField('StateValueValuesEnum', 8)
-  type = _messages.StringField(9)
+  instanceReason = _messages.EnumField('InstanceReasonValueValuesEnum', 3)
+  lastTransitionTime = _messages.StringField(4)
+  message = _messages.StringField(5)
+  reason = _messages.EnumField('ReasonValueValuesEnum', 6)
+  revisionReason = _messages.EnumField('RevisionReasonValueValuesEnum', 7)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 8)
+  state = _messages.EnumField('StateValueValuesEnum', 9)
+  type = _messages.StringField(10)
 
 
 class GoogleCloudRunV2Container(_messages.Message):
@@ -2323,6 +2343,21 @@ class GoogleCloudRunV2ResourceRequirements(_messages.Message):
   startupCpuBoost = _messages.BooleanField(3)
 
 
+class GoogleCloudRunV2RestartInstanceRequest(_messages.Message):
+  r"""Request message for restarting an Instance.
+
+  Fields:
+    etag: Optional. A system-generated fingerprint for this version of the
+      resource. This may be used to detect modification conflict during
+      updates.
+    validateOnly: Optional. Indicates that the request should be validated
+      without actually restarting any resources.
+  """
+
+  etag = _messages.StringField(1)
+  validateOnly = _messages.BooleanField(2)
+
+
 class GoogleCloudRunV2Revision(_messages.Message):
   r"""A Revision is an immutable snapshot of code and configuration. A
   Revision references a container image. Revisions are only created by updates
@@ -3078,6 +3113,7 @@ class GoogleCloudRunV2Service(_messages.Message):
       `terminal_condition` and `conditions`.
     satisfiesPzs: Output only. Reserved for future use.
     scaling: Optional. Specifies service-level scaling settings
+    sshEnabled: Optional. Enables SSH access to the Service.
     template: Required. The template used to create revisions for this
       Service.
     terminalCondition: Output only. The Condition of this Service, containing
@@ -3264,15 +3300,16 @@ class GoogleCloudRunV2Service(_messages.Message):
   reconciling = _messages.BooleanField(27)
   satisfiesPzs = _messages.BooleanField(28)
   scaling = _messages.MessageField('GoogleCloudRunV2ServiceScaling', 29)
-  template = _messages.MessageField('GoogleCloudRunV2RevisionTemplate', 30)
-  terminalCondition = _messages.MessageField('GoogleCloudRunV2Condition', 31)
-  threatDetectionEnabled = _messages.BooleanField(32)
-  traffic = _messages.MessageField('GoogleCloudRunV2TrafficTarget', 33, repeated=True)
-  trafficStatuses = _messages.MessageField('GoogleCloudRunV2TrafficTargetStatus', 34, repeated=True)
-  uid = _messages.StringField(35)
-  updateTime = _messages.StringField(36)
-  uri = _messages.StringField(37)
-  urls = _messages.StringField(38, repeated=True)
+  sshEnabled = _messages.BooleanField(30)
+  template = _messages.MessageField('GoogleCloudRunV2RevisionTemplate', 31)
+  terminalCondition = _messages.MessageField('GoogleCloudRunV2Condition', 32)
+  threatDetectionEnabled = _messages.BooleanField(33)
+  traffic = _messages.MessageField('GoogleCloudRunV2TrafficTarget', 34, repeated=True)
+  trafficStatuses = _messages.MessageField('GoogleCloudRunV2TrafficTargetStatus', 35, repeated=True)
+  uid = _messages.StringField(36)
+  updateTime = _messages.StringField(37)
+  uri = _messages.StringField(38)
+  urls = _messages.StringField(39, repeated=True)
 
 
 class GoogleCloudRunV2ServiceMesh(_messages.Message):
@@ -7099,6 +7136,20 @@ class RunProjectsLocationsInstancesPatchRequest(_messages.Message):
   name = _messages.StringField(3, required=True)
   updateMask = _messages.StringField(4)
   validateOnly = _messages.BooleanField(5)
+
+
+class RunProjectsLocationsInstancesRestartRequest(_messages.Message):
+  r"""A RunProjectsLocationsInstancesRestartRequest object.
+
+  Fields:
+    googleCloudRunV2RestartInstanceRequest: A
+      GoogleCloudRunV2RestartInstanceRequest resource to be passed as the
+      request body.
+    name: Required. The name of the Instance to restart.
+  """
+
+  googleCloudRunV2RestartInstanceRequest = _messages.MessageField('GoogleCloudRunV2RestartInstanceRequest', 1)
+  name = _messages.StringField(2, required=True)
 
 
 class RunProjectsLocationsInstancesSetIamPolicyRequest(_messages.Message):

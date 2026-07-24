@@ -231,6 +231,8 @@ class CodeCompilationConfig(_messages.Message):
     defaultNotebookRuntimeOptions: Optional. The default notebook runtime
       options.
     defaultSchema: Optional. The default schema (BigQuery dataset ID).
+    pipelineConfig: Optional. The pipeline options which defines the pipeline
+      type and path within the Git repository.
     schemaSuffix: Optional. The suffix that should be appended to all schema
       (BigQuery dataset ID) names.
     tablePrefix: Optional. The prefix that should be prepended to all table
@@ -271,9 +273,10 @@ class CodeCompilationConfig(_messages.Message):
   defaultLocation = _messages.StringField(5)
   defaultNotebookRuntimeOptions = _messages.MessageField('NotebookRuntimeOptions', 6)
   defaultSchema = _messages.StringField(7)
-  schemaSuffix = _messages.StringField(8)
-  tablePrefix = _messages.StringField(9)
-  vars = _messages.MessageField('VarsValue', 10)
+  pipelineConfig = _messages.MessageField('PipelineConfig', 8)
+  schemaSuffix = _messages.StringField(9)
+  tablePrefix = _messages.StringField(10)
+  vars = _messages.MessageField('VarsValue', 11)
 
 
 class ColumnDescriptor(_messages.Message):
@@ -2525,7 +2528,14 @@ class IncrementalTableConfig(_messages.Message):
 
 
 class InstallNpmPackagesRequest(_messages.Message):
-  r"""`InstallNpmPackages` request message."""
+  r"""`InstallNpmPackages` request message.
+
+  Fields:
+    pipelineConfig: Optional. The pipeline options which defines the pipeline
+      type and path within the Git repository.
+  """
+
+  pipelineConfig = _messages.MessageField('PipelineConfig', 1)
 
 
 class InstallNpmPackagesResponse(_messages.Message):
@@ -3100,6 +3110,38 @@ class Operations(_messages.Message):
   queries = _messages.StringField(4, repeated=True)
   relationDescriptor = _messages.MessageField('RelationDescriptor', 5)
   tags = _messages.StringField(6, repeated=True)
+
+
+class PipelineConfig(_messages.Message):
+  r"""Defines the pipeline type and path within the Git repository.
+
+  Enums:
+    PipelineTypeValueValuesEnum: Required. The type of the pipeline.
+
+  Fields:
+    path: Required. The relative path within the Git repository where the
+      pipeline is defined. For example, for a Dataform pipeline, it is a path
+      to the folder where `workflow_settings.yaml` or `dataform.json` is
+      located.
+    pipelineType: Required. The type of the pipeline.
+  """
+
+  class PipelineTypeValueValuesEnum(_messages.Enum):
+    r"""Required. The type of the pipeline.
+
+    Values:
+      PIPELINE_TYPE_UNSPECIFIED: Default value. This value is unused.
+      DATAFORM: Regular Dataform pipeline.
+      SQL: SQL single file asset.
+      NOTEBOOK: Notebook single file asset.
+    """
+    PIPELINE_TYPE_UNSPECIFIED = 0
+    DATAFORM = 1
+    SQL = 2
+    NOTEBOOK = 3
+
+  path = _messages.StringField(1)
+  pipelineType = _messages.EnumField('PipelineTypeValueValuesEnum', 2)
 
 
 class Policy(_messages.Message):
@@ -4188,6 +4230,8 @@ class WorkflowInvocation(_messages.Message):
       will be used.
     invocationTiming: Output only. This workflow invocation's timing details.
     name: Output only. The workflow invocation's name.
+    pipelineConfig: Output only. The pipeline options which defines the
+      pipeline type and path within the Git repository.
     privateResourceMetadata: Output only. Metadata indicating whether this
       resource is user-scoped. `WorkflowInvocation` resource is `user_scoped`
       only if it is sourced from a compilation result and the compilation
@@ -4226,10 +4270,11 @@ class WorkflowInvocation(_messages.Message):
   invocationConfig = _messages.MessageField('InvocationConfig', 4)
   invocationTiming = _messages.MessageField('Interval', 5)
   name = _messages.StringField(6)
-  privateResourceMetadata = _messages.MessageField('PrivateResourceMetadata', 7)
-  resolvedCompilationResult = _messages.StringField(8)
-  state = _messages.EnumField('StateValueValuesEnum', 9)
-  workflowConfig = _messages.StringField(10)
+  pipelineConfig = _messages.MessageField('PipelineConfig', 7)
+  privateResourceMetadata = _messages.MessageField('PrivateResourceMetadata', 8)
+  resolvedCompilationResult = _messages.StringField(9)
+  state = _messages.EnumField('StateValueValuesEnum', 10)
+  workflowConfig = _messages.StringField(11)
 
 
 class WorkflowInvocationAction(_messages.Message):

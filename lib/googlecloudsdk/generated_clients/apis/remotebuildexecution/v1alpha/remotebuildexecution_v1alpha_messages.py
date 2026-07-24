@@ -1326,7 +1326,13 @@ class GoogleDevtoolsRemotebuildbotCommandStatus(_messages.Message):
       BUILDGRAPH_GENERATION_ERROR: An error occurred during the generation of
         the buildgraph.
       BUILDGRAPH_UPLOAD_ERROR: An error occurred while uploading the generated
-        buildgraph. Next tag to use: 62.
+        buildgraph.
+      BOT_PROFILER_START_ERROR: An error occurred during the start of the bot
+        profiler.
+      BOT_PROFILER_GENERATION_ERROR: An error occurred during the generation
+        of the bot profiler trace.
+      BOT_PROFILER_UPLOAD_ERROR: An error occurred while uploading the
+        generated bot profiler trace. Next tag to use: 65.
     """
     OK = 0
     INVALID_ARGUMENT = 1
@@ -1390,6 +1396,9 @@ class GoogleDevtoolsRemotebuildbotCommandStatus(_messages.Message):
     BUILDGRAPH_START_ERROR = 59
     BUILDGRAPH_GENERATION_ERROR = 60
     BUILDGRAPH_UPLOAD_ERROR = 61
+    BOT_PROFILER_START_ERROR = 62
+    BOT_PROFILER_GENERATION_ERROR = 63
+    BOT_PROFILER_UPLOAD_ERROR = 64
 
   code = _messages.EnumField('CodeValueValuesEnum', 1)
   message = _messages.StringField(2)
@@ -1405,6 +1414,8 @@ class GoogleDevtoolsRemotebuildbotInputTreeStats(_messages.Message):
     totalNodes: Overall number of nodes in the tree.
     totalSize: Total size in bytes of all files in the tree.
     totalSymlinks: Overall number of symlinks in the tree.
+    totalUniqueFiles: Number of unique files in the tree.
+    totalUniqueSize: Total size in bytes of unique files in the tree.
   """
 
   maxDepth = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -1413,6 +1424,8 @@ class GoogleDevtoolsRemotebuildbotInputTreeStats(_messages.Message):
   totalNodes = _messages.IntegerField(4, variant=_messages.Variant.INT32)
   totalSize = _messages.IntegerField(5)
   totalSymlinks = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  totalUniqueFiles = _messages.IntegerField(7, variant=_messages.Variant.INT32)
+  totalUniqueSize = _messages.IntegerField(8)
 
 
 class GoogleDevtoolsRemotebuildbotResourceUsage(_messages.Message):
@@ -2220,12 +2233,20 @@ class GoogleDevtoolsRemotebuildexecutionAdminV1alphaInstance(_messages.Message):
     StateValueValuesEnum: Output only. State of the instance.
 
   Fields:
+    actionCacheInstance: Optional. The instance that this instance will use as
+      its Action Cache.
+    actionCachePermissions: Optional. Permissions for which instances are
+      allowed to use this instance as their Action Cache.
     backendProperties: Output only. Describes the instance's backend project
       configuration. Currently, this includes the list of user-managed IAM
       bindings applied to the backend project, which will always be empty for
       instances not in one of the ENABLE_BE_IAM_BINDING_* feature allowlists.
     bindings: Optional. The list of IAM bindings that should be applied to
       this instance.
+    casInstance: Optional. The instance that this instance will use as its
+      CAS.
+    casPermissions: Optional. Permissions for which instances are allowed to
+      use this instance as their CAS.
     casRelations: Specify parent or child instances of `this` instance.
       Configurations will be rejected if: -- If `this` instance is not
       allowlisted for `ENABLE_DATA_READS_FROM_PARENT` and this list specifies
@@ -2289,18 +2310,34 @@ class GoogleDevtoolsRemotebuildexecutionAdminV1alphaInstance(_messages.Message):
     RUNNING = 2
     INACTIVE = 3
 
-  backendProperties = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaBackendProperties', 1)
-  bindings = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaIAMBinding', 2, repeated=True)
-  casRelations = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaRelationship', 3, repeated=True)
-  featurePolicy = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaFeaturePolicy', 4)
-  githubEnterpriseAccess = _messages.EnumField('GithubEnterpriseAccessValueValuesEnum', 5)
-  location = _messages.StringField(6)
-  loggingEnabled = _messages.BooleanField(7)
-  name = _messages.StringField(8)
-  schedulerNotificationConfig = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaSchedulerNotificationConfig', 9)
-  state = _messages.EnumField('StateValueValuesEnum', 10)
-  storageSettings = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaStorageSettings', 11)
-  zoneDrains = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaZoneDrain', 12, repeated=True)
+  actionCacheInstance = _messages.StringField(1)
+  actionCachePermissions = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaInstancePermissions', 2)
+  backendProperties = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaBackendProperties', 3)
+  bindings = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaIAMBinding', 4, repeated=True)
+  casInstance = _messages.StringField(5)
+  casPermissions = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaInstancePermissions', 6)
+  casRelations = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaRelationship', 7, repeated=True)
+  featurePolicy = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaFeaturePolicy', 8)
+  githubEnterpriseAccess = _messages.EnumField('GithubEnterpriseAccessValueValuesEnum', 9)
+  location = _messages.StringField(10)
+  loggingEnabled = _messages.BooleanField(11)
+  name = _messages.StringField(12)
+  schedulerNotificationConfig = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaSchedulerNotificationConfig', 13)
+  state = _messages.EnumField('StateValueValuesEnum', 14)
+  storageSettings = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaStorageSettings', 15)
+  zoneDrains = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaZoneDrain', 16, repeated=True)
+
+
+class GoogleDevtoolsRemotebuildexecutionAdminV1alphaInstancePermissions(_messages.Message):
+  r"""Permissions configuration for sharing resources with other instances.
+
+  Fields:
+    allowAll: Allow all instances to access.
+    permittedInstances: Allow only specified instances to access.
+  """
+
+  allowAll = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaPermissionAllowAll', 1)
+  permittedInstances = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaPermittedInstances', 2)
 
 
 class GoogleDevtoolsRemotebuildexecutionAdminV1alphaListInstancesRequest(_messages.Message):
@@ -2364,6 +2401,21 @@ class GoogleDevtoolsRemotebuildexecutionAdminV1alphaListWorkerPoolsResponse(_mes
   """
 
   workerPools = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaWorkerPool', 1, repeated=True)
+
+
+class GoogleDevtoolsRemotebuildexecutionAdminV1alphaPermissionAllowAll(_messages.Message):
+  r"""Permission allowance that allows all instances."""
+
+
+class GoogleDevtoolsRemotebuildexecutionAdminV1alphaPermittedInstances(_messages.Message):
+  r"""List of permitted instances.
+
+  Fields:
+    instances: Required. The list of permitted instances names in the format
+      `projects/[PROJECT_ID]/instances/[INSTANCE_ID]`.
+  """
+
+  instances = _messages.StringField(1, repeated=True)
 
 
 class GoogleDevtoolsRemotebuildexecutionAdminV1alphaRelationship(_messages.Message):

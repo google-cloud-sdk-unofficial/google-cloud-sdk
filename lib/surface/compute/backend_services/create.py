@@ -150,6 +150,7 @@ class CreateHelper(object):
     flags.AddLoggingSampleRate(parser)
     flags.AddLoggingOptional(parser)
     flags.AddLoggingOptionalFields(parser)
+    flags.AddLoggingHttpHeaders(parser)
     flags.AddNetwork(parser)
     flags.AddLocalityLbPolicy(parser)
 

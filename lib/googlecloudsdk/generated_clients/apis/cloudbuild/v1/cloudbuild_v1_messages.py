@@ -5168,6 +5168,12 @@ class TimeSpan(_messages.Message):
 class TrustedPoolConfig(_messages.Message):
   r"""Defines the configuration specific for Trusted Pools for TBI only.
 
+  Enums:
+    GithubEnterpriseAccessValueValuesEnum: Optional. Controls access to TBI
+      GitHub Enterprise Server (GHES) instances. When enabled, authorizes
+      partner worker pools to perform both pull (source fetch) and push
+      (artifact/release upload) operations against internal GHES repos.
+
   Fields:
     buildSecurityPolicy: Optional. Build security policy sets the security
       requirements for the trusted pool.
@@ -5175,6 +5181,10 @@ class TrustedPoolConfig(_messages.Message):
       access resources while the build is running for example build step
       container images. This is a mandatory field. This cannot be the same as
       the resource_access_account.
+    githubEnterpriseAccess: Optional. Controls access to TBI GitHub Enterprise
+      Server (GHES) instances. When enabled, authorizes partner worker pools
+      to perform both pull (source fetch) and push (artifact/release upload)
+      operations against internal GHES repos.
     linuxPool: Linux pool sets the linux pool type.
     resourceAccessAccount: Required. This BYOSA is used for fetching
       sources/dependencies or pushing artifacts to output locations such as
@@ -5187,12 +5197,31 @@ class TrustedPoolConfig(_messages.Message):
       pool.
   """
 
+  class GithubEnterpriseAccessValueValuesEnum(_messages.Enum):
+    r"""Optional. Controls access to TBI GitHub Enterprise Server (GHES)
+    instances. When enabled, authorizes partner worker pools to perform both
+    pull (source fetch) and push (artifact/release upload) operations against
+    internal GHES repos.
+
+    Values:
+      GITHUB_ENTERPRISE_ACCESS_UNSPECIFIED: Default value. This value is
+        normally unused.
+      GITHUB_ENTERPRISE_ACCESS_DISABLED: GitHub Enterprise Server access is
+        disabled.
+      GITHUB_ENTERPRISE_ACCESS_ENABLED: GitHub Enterprise Server access is
+        enabled.
+    """
+    GITHUB_ENTERPRISE_ACCESS_UNSPECIFIED = 0
+    GITHUB_ENTERPRISE_ACCESS_DISABLED = 1
+    GITHUB_ENTERPRISE_ACCESS_ENABLED = 2
+
   buildSecurityPolicy = _messages.MessageField('BuildSecurityPolicy', 1)
   defaultWorkloadAccount = _messages.StringField(2)
-  linuxPool = _messages.MessageField('LinuxPool', 3)
-  resourceAccessAccount = _messages.StringField(4)
-  waitingForQuota = _messages.BooleanField(5)
-  workerCount = _messages.MessageField('WorkerCount', 6)
+  githubEnterpriseAccess = _messages.EnumField('GithubEnterpriseAccessValueValuesEnum', 3)
+  linuxPool = _messages.MessageField('LinuxPool', 4)
+  resourceAccessAccount = _messages.StringField(5)
+  waitingForQuota = _messages.BooleanField(6)
+  workerCount = _messages.MessageField('WorkerCount', 7)
 
 
 class TrustedPoolDiskConfig(_messages.Message):

@@ -215,6 +215,22 @@ class Binding(_messages.Message):
   role = _messages.StringField(3)
 
 
+class CloudSQLSingleUserCredentials(_messages.Message):
+  r"""These are the credentials required for Cloud SQL DB for Single user
+  Managed Rotation.
+
+  Fields:
+    instanceId: Required. Instance ID of the Cloud SQL instance.
+    password: Optional. Password of the Cloud SQL instance. If this is not
+      provided, a random password will be generated.
+    username: Required. Username of the Cloud SQL instance.
+  """
+
+  instanceId = _messages.StringField(1)
+  password = _messages.StringField(2)
+  username = _messages.StringField(3)
+
+
 class CustomerManagedEncryption(_messages.Message):
   r"""Configuration for encrypting secret payloads using customer-managed
   encryption keys (CMEK).
@@ -274,6 +290,17 @@ class Empty(_messages.Message):
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
 
+
+
+class EnableManagedRotationRequest(_messages.Message):
+  r"""Request message for SecretManagerService.EnableManagedRotation.
+
+  Fields:
+    cloudSqlSingleUserCredentials: Credentials required for Cloud SQL DB for
+      Single user Managed Rotation.
+  """
+
+  cloudSqlSingleUserCredentials = _messages.MessageField('CloudSQLSingleUserCredentials', 1)
 
 
 class EnableSecretVersionRequest(_messages.Message):
@@ -449,6 +476,39 @@ class Location(_messages.Message):
   locationId = _messages.StringField(3)
   metadata = _messages.MessageField('MetadataValue', 4)
   name = _messages.StringField(5)
+
+
+class ManagedRotationStatus(_messages.Message):
+  r"""Represents the status of a managed rotation. This is applicable only to
+  Typed Secrets. It indicates whether the rotation is active and any errors
+  that may have occurred during the asynchronous managed rotation.
+
+  Enums:
+    StateValueValuesEnum: Output only. Indicates whether the Managed Rotation
+      is active or not.
+
+  Fields:
+    error: Output only. Displays customer-facing issues that occurred during
+      an asynchronous managed rotation. For example, if there are some
+      permission errors.
+    state: Output only. Indicates whether the Managed Rotation is active or
+      not.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. Indicates whether the Managed Rotation is active or not.
+
+    Values:
+      STATE_UNSPECIFIED: Not specified. This value is unused and invalid.
+      ACTIVE: Indicates that the Managed rotation is ACTIVE.
+      INACTIVE: Indicates that the Managed rotation is INACTIVE.
+    """
+    STATE_UNSPECIFIED = 0
+    ACTIVE = 1
+    INACTIVE = 2
+
+  error = _messages.MessageField('Status', 1)
+  state = _messages.EnumField('StateValueValuesEnum', 2)
 
 
 class Operation(_messages.Message):
@@ -749,12 +809,42 @@ class ReplicationStatus(_messages.Message):
   userManaged = _messages.MessageField('UserManagedStatus', 2)
 
 
+class ResourcePolicyMember(_messages.Message):
+  r"""Output-only policy member strings of a Google Cloud resource's built-in
+  identity.
+
+  Fields:
+    iamPolicyNamePrincipal: Output only. IAM policy binding member referring
+      to a Google Cloud resource by user-assigned name
+      (https://google.aip.dev/122). If a resource is deleted and recreated
+      with the same name, the binding will be applicable to the new resource.
+      Example: `principal://parametermanager.googleapis.com/projects/12345/nam
+      e/locations/us-central1-a/parameters/my-parameter`
+    iamPolicyUidPrincipal: Output only. IAM policy binding member referring to
+      a Google Cloud resource by system-assigned unique identifier
+      (https://google.aip.dev/148#uid). If a resource is deleted and recreated
+      with the same name, the binding will not be applicable to the new
+      resource Example: `principal://parametermanager.googleapis.com/projects/
+      12345/uid/locations/us-central1-a/parameters/a918fed5`
+  """
+
+  iamPolicyNamePrincipal = _messages.StringField(1)
+  iamPolicyUidPrincipal = _messages.StringField(2)
+
+
+class RotateSecretRequest(_messages.Message):
+  r"""Request message for SecretManagerService.RotateSecret."""
+
+
 class Rotation(_messages.Message):
   r"""The rotation time and period for a Secret. At next_rotation_time, Secret
   Manager will send a Pub/Sub notification to the topics configured on the
   Secret. Secret.topics must be set to configure rotation.
 
   Fields:
+    managedRotationStatus: Output only. The current status of the managed
+      rotation. This field is only applicable to Typed Secrets. This field is
+      set by the service and cannot be set by the user.
     nextRotationTime: Optional. Timestamp in UTC at which the Secret is
       scheduled to rotate. Cannot be set to less than 300s (5 min) in the
       future and at most 3153600000s (100 years). next_rotation_time MUST be
@@ -766,14 +856,21 @@ class Rotation(_messages.Message):
       automatically sends rotation notifications.
   """
 
-  nextRotationTime = _messages.StringField(1)
-  rotationPeriod = _messages.StringField(2)
+  managedRotationStatus = _messages.MessageField('ManagedRotationStatus', 1)
+  nextRotationTime = _messages.StringField(2)
+  rotationPeriod = _messages.StringField(3)
 
 
 class Secret(_messages.Message):
   r"""A Secret is a logical secret whose value and versions can be accessed. A
   Secret is made up of zero or more SecretVersions that represent the secret
   data.
+
+  Enums:
+    SecretTypeValueValuesEnum: Optional. Immutable. This defines the type of
+      the secret. Enforces certain structural requirements on the
+      SecretVersions. For secret of type UNSPECIFIED, the SecretVersions can
+      be of any type.
 
   Messages:
     AnnotationsValue: Optional. Custom metadata about the secret. Annotations
@@ -833,11 +930,17 @@ class Secret(_messages.Message):
       more than 64 labels can be assigned to a given resource.
     name: Output only. The resource name of the Secret in the format
       `projects/*/secrets/*`.
+    policyMember: Output only. Defines the policy member for the secret. This
+      will be used to check if the caller has the permission to perform
+      certain operations on the typed secret.
     replication: Optional. Immutable. The replication policy of the secret
       data attached to the Secret. The replication policy cannot be changed
       after the Secret has been created.
     rotation: Optional. Rotation policy attached to the Secret. May be
       excluded if there is no rotation policy.
+    secretType: Optional. Immutable. This defines the type of the secret.
+      Enforces certain structural requirements on the SecretVersions. For
+      secret of type UNSPECIFIED, the SecretVersions can be of any type.
     tags: Optional. Input only. Immutable. Mapping of Tag keys/values directly
       bound to this resource. For example: "123/environment": "production",
       "123/costCenter": "marketing" Tags are used to organize and group
@@ -861,6 +964,32 @@ class Secret(_messages.Message):
       destroy instead the version goes to a disabled state and destruction
       happens after the TTL expires.
   """
+
+  class SecretTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. Immutable. This defines the type of the secret. Enforces
+    certain structural requirements on the SecretVersions. For secret of type
+    UNSPECIFIED, the SecretVersions can be of any type.
+
+    Values:
+      SECRET_TYPE_UNSPECIFIED: Applicable to all secrets which do not have any
+        restriction on the SecretVersions.
+      CLOUD_SQL_DB_CREDENTIALS: Applicable to secrets which are used for the
+        managed rotation feature for Cloud SQL Single User.
+      ACCESS_KEY: Applicable to secrets where the payload contains an access
+        key.
+      CERTIFICATE: Applicable to secrets where the payload contains a
+        certificate.
+      OTHER_DB_CREDENTIALS: Applicable to secrets where the payload contains
+        database credentials.
+      OTHER: Applicable to secrets whose type doesn't belong to any of the
+        above defined types.
+    """
+    SECRET_TYPE_UNSPECIFIED = 0
+    CLOUD_SQL_DB_CREDENTIALS = 1
+    ACCESS_KEY = 2
+    CERTIFICATE = 3
+    OTHER_DB_CREDENTIALS = 4
+    OTHER = 5
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AnnotationsValue(_messages.Message):
@@ -990,13 +1119,15 @@ class Secret(_messages.Message):
   expireTime = _messages.StringField(5)
   labels = _messages.MessageField('LabelsValue', 6)
   name = _messages.StringField(7)
-  replication = _messages.MessageField('Replication', 8)
-  rotation = _messages.MessageField('Rotation', 9)
-  tags = _messages.MessageField('TagsValue', 10)
-  topics = _messages.MessageField('Topic', 11, repeated=True)
-  ttl = _messages.StringField(12)
-  versionAliases = _messages.MessageField('VersionAliasesValue', 13)
-  versionDestroyTtl = _messages.StringField(14)
+  policyMember = _messages.MessageField('ResourcePolicyMember', 8)
+  replication = _messages.MessageField('Replication', 9)
+  rotation = _messages.MessageField('Rotation', 10)
+  secretType = _messages.EnumField('SecretTypeValueValuesEnum', 11)
+  tags = _messages.MessageField('TagsValue', 12)
+  topics = _messages.MessageField('Topic', 13, repeated=True)
+  ttl = _messages.StringField(14)
+  versionAliases = _messages.MessageField('VersionAliasesValue', 15)
+  versionDestroyTtl = _messages.StringField(16)
 
 
 class SecretPayload(_messages.Message):
@@ -1158,6 +1289,22 @@ class SecretmanagerProjectsLocationsSecretsDeleteRequest(_messages.Message):
   name = _messages.StringField(2, required=True)
 
 
+class SecretmanagerProjectsLocationsSecretsEnableManagedRotationRequest(_messages.Message):
+  r"""A SecretmanagerProjectsLocationsSecretsEnableManagedRotationRequest
+  object.
+
+  Fields:
+    enableManagedRotationRequest: A EnableManagedRotationRequest resource to
+      be passed as the request body.
+    parent: Required. The resource name of the Secret to associate with the
+      SecretVersion in the format `projects/*/secrets/*` or
+      `projects/*/locations/*/secrets/*`.
+  """
+
+  enableManagedRotationRequest = _messages.MessageField('EnableManagedRotationRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
 class SecretmanagerProjectsLocationsSecretsGetIamPolicyRequest(_messages.Message):
   r"""A SecretmanagerProjectsLocationsSecretsGetIamPolicyRequest object.
 
@@ -1231,6 +1378,21 @@ class SecretmanagerProjectsLocationsSecretsPatchRequest(_messages.Message):
   name = _messages.StringField(1, required=True)
   secret = _messages.MessageField('Secret', 2)
   updateMask = _messages.StringField(3)
+
+
+class SecretmanagerProjectsLocationsSecretsRotateSecretRequest(_messages.Message):
+  r"""A SecretmanagerProjectsLocationsSecretsRotateSecretRequest object.
+
+  Fields:
+    parent: Required. The resource name of the Secret to associate with the
+      SecretVersion in the format `projects/*/secrets/*` or
+      `projects/*/locations/*/secrets/*`.
+    rotateSecretRequest: A RotateSecretRequest resource to be passed as the
+      request body.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  rotateSecretRequest = _messages.MessageField('RotateSecretRequest', 2)
 
 
 class SecretmanagerProjectsLocationsSecretsSetIamPolicyRequest(_messages.Message):
@@ -1412,6 +1574,21 @@ class SecretmanagerProjectsSecretsDeleteRequest(_messages.Message):
   name = _messages.StringField(2, required=True)
 
 
+class SecretmanagerProjectsSecretsEnableManagedRotationRequest(_messages.Message):
+  r"""A SecretmanagerProjectsSecretsEnableManagedRotationRequest object.
+
+  Fields:
+    enableManagedRotationRequest: A EnableManagedRotationRequest resource to
+      be passed as the request body.
+    parent: Required. The resource name of the Secret to associate with the
+      SecretVersion in the format `projects/*/secrets/*` or
+      `projects/*/locations/*/secrets/*`.
+  """
+
+  enableManagedRotationRequest = _messages.MessageField('EnableManagedRotationRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
 class SecretmanagerProjectsSecretsGetIamPolicyRequest(_messages.Message):
   r"""A SecretmanagerProjectsSecretsGetIamPolicyRequest object.
 
@@ -1485,6 +1662,21 @@ class SecretmanagerProjectsSecretsPatchRequest(_messages.Message):
   name = _messages.StringField(1, required=True)
   secret = _messages.MessageField('Secret', 2)
   updateMask = _messages.StringField(3)
+
+
+class SecretmanagerProjectsSecretsRotateSecretRequest(_messages.Message):
+  r"""A SecretmanagerProjectsSecretsRotateSecretRequest object.
+
+  Fields:
+    parent: Required. The resource name of the Secret to associate with the
+      SecretVersion in the format `projects/*/secrets/*` or
+      `projects/*/locations/*/secrets/*`.
+    rotateSecretRequest: A RotateSecretRequest resource to be passed as the
+      request body.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  rotateSecretRequest = _messages.MessageField('RotateSecretRequest', 2)
 
 
 class SecretmanagerProjectsSecretsSetIamPolicyRequest(_messages.Message):

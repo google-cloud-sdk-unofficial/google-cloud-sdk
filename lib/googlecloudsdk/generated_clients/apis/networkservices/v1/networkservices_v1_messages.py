@@ -206,9 +206,13 @@ class AgentGatewaySelfManaged(_messages.Message):
   Fields:
     resourceUri: Optional. A supported Google Cloud networking proxy in the
       Project and Location
+    resourceUris: Optional. List of supported Google Cloud networking proxies
+      in the Project and Location. resource_uris is mutually exclusive with
+      resource_uri.
   """
 
   resourceUri = _messages.StringField(1)
+  resourceUris = _messages.StringField(2, repeated=True)
 
 
 class AuditConfig(_messages.Message):
@@ -281,11 +285,11 @@ class AuthzExtension(_messages.Message):
   Enums:
     LoadBalancingSchemeValueValuesEnum: Optional. All backend services and
       forwarding rules referenced by this extension must share the same load
-      balancing scheme. Supported values: `INTERNAL_MANAGED`,
-      `EXTERNAL_MANAGED`. Can be omitted for AuthzExtensions that do not
-      reference a backend service. For more information, refer to [Backend
-      services overview](https://cloud.google.com/load-balancing/docs/backend-
-      service).
+      balancing scheme. The supported values are `INTERNAL_MANAGED` and
+      `EXTERNAL_MANAGED`. You can omit this field for `AuthzExtensions`
+      resources that don't reference a backend service. For more information,
+      see [Backend services overview](https://cloud.google.com/load-
+      balancing/docs/backend-service).
     WireFormatValueValuesEnum: Optional. The format of communication supported
       by the callout extension. This field is supported only for regional
       `AuthzExtension` resources. If not specified, the default value
@@ -308,7 +312,7 @@ class AuthzExtension(_messages.Message):
   Fields:
     authority: Optional. The `:authority` header in the gRPC request sent from
       Envoy to the extension service. It is required when the `service` field
-      points to a backend service or a wasm plugin.
+      points to a backend service.
     createTime: Output only. The timestamp when the resource was created.
     description: Optional. A human-readable description of the resource.
     failOpen: Optional. Determines how the proxy behaves if the call to the
@@ -338,9 +342,9 @@ class AuthzExtension(_messages.Message):
       resources.
     loadBalancingScheme: Optional. All backend services and forwarding rules
       referenced by this extension must share the same load balancing scheme.
-      Supported values: `INTERNAL_MANAGED`, `EXTERNAL_MANAGED`. Can be omitted
-      for AuthzExtensions that do not reference a backend service. For more
-      information, refer to [Backend services
+      The supported values are `INTERNAL_MANAGED` and `EXTERNAL_MANAGED`. You
+      can omit this field for `AuthzExtensions` resources that don't reference
+      a backend service. For more information, see [Backend services
       overview](https://cloud.google.com/load-balancing/docs/backend-service).
     metadata: Optional. The metadata provided here is included as part of the
       `metadata_context` (of type `google.protobuf.Struct`) in the
@@ -353,12 +357,20 @@ class AuthzExtension(_messages.Message):
       following format: `projects/{project}/locations/{location}/authzExtensio
       ns/{authz_extension}`.
     service: Required. The reference to the service that runs the extension.
-      To configure a callout extension, `service` must be a fully-qualified
-      reference to a [backend service](https://cloud.google.com/compute/docs/r
-      eference/rest/v1/backendServices) in the format: `https://www.googleapis
-      .com/compute/v1/projects/{project}/regions/{region}/backendServices/{bac
-      kendService}` or `https://www.googleapis.com/compute/v1/projects/{projec
-      t}/global/backendServices/{backendService}`.
+      To configure a callout extension: For global AuthzExtension, `service`
+      must be a fully-qualified reference to a [backend service](https://cloud
+      .google.com/compute/docs/reference/rest/v1/backendServices) in the
+      format: `https://www.googleapis.com/compute/v1/projects/{project}/global
+      /backendServices/{backendService}`. For regional AuthzExtension,
+      `service` must be a fully-qualified reference to one of the following: *
+      a [backend service](https://cloud.google.com/compute/docs/reference/rest
+      /v1/backendServices) in the format: `https://www.googleapis.com/compute/
+      v1/projects/{project}/regions/{region}/backendServices/{backendService}`
+      . * a fully qualified domain name that can be resolved by the Google
+      Cloud DNS. * `iap.googleapis.com` and it can only be referenced by an
+      AuthzPolicy with the policyProfile set to REQUEST_AUTHZ. *
+      `modelarmor..rep.googleapis.com` and it can only be referenced by an
+      AuthzPolicy with the policyProfile set to CONTENT_AUTHZ.
     timeout: Required. Specifies the timeout for each individual message on
       the stream. The timeout must be between 10-10000 milliseconds.
     updateTime: Output only. The timestamp when the resource was updated.
@@ -370,11 +382,11 @@ class AuthzExtension(_messages.Message):
 
   class LoadBalancingSchemeValueValuesEnum(_messages.Enum):
     r"""Optional. All backend services and forwarding rules referenced by this
-    extension must share the same load balancing scheme. Supported values:
-    `INTERNAL_MANAGED`, `EXTERNAL_MANAGED`. Can be omitted for AuthzExtensions
-    that do not reference a backend service. For more information, refer to
-    [Backend services overview](https://cloud.google.com/load-
-    balancing/docs/backend-service).
+    extension must share the same load balancing scheme. The supported values
+    are `INTERNAL_MANAGED` and `EXTERNAL_MANAGED`. You can omit this field for
+    `AuthzExtensions` resources that don't reference a backend service. For
+    more information, see [Backend services
+    overview](https://cloud.google.com/load-balancing/docs/backend-service).
 
     Values:
       LOAD_BALANCING_SCHEME_UNSPECIFIED: Default value. Do not use.
@@ -852,24 +864,23 @@ class CDNPolicyAddSignaturesOptions(_messages.Message):
       SIGNATURE_ACTION_UNSPECIFIED: It is an error to specify `UNSPECIFIED`.
       GENERATE_COOKIE: Generate a new signed request cookie and return the
         cookie in a Set-Cookie header of the response. This action cannot be
-        combined with the `PROPAGATE_TOKEN_HLS_COOKIELESS` action.
+        combined with either the `PROPAGATE_TOKEN_HLS_COOKIELESS` action or
+        the `PROPAGATE_TOKEN_DASH_COOKIELESS` action.
       GENERATE_TOKEN_HLS_COOKIELESS: Generate a new signed request
         authentication token and return the new token by manipulating URLs in
         an HTTP Live Stream (HLS) playlist. This action cannot be combined
-        with the `PROPAGATE_TOKEN_HLS_COOKIELESS` action.
-      PROPAGATE_TOKEN_HLS_COOKIELESS: Copy the authentication token used in
+        with either the `PROPAGATE_TOKEN_HLS_COOKIELESS` action or the
+        `PROPAGATE_TOKEN_DASH_COOKIELESS` action.
+      PROPAGATE_TOKEN_HLS_COOKIELESS: Copies the authentication token used in
         the request to the URLs in an HTTP Live Stream (HLS) playlist. This
-        action cannot be combined with either the `GENERATE_COOKIE` action or
-        the `GENERATE_TOKEN_HLS_COOKIELESS` action.
-      PROPAGATE_TOKEN_DASH_COOKIELESS: Copy the authentication token used in
-        the request to the URLs in a Dynamic Adaptive Streaming over HTTP
-        (DASH) manifest.
+        action cannot be combined with the `GENERATE_COOKIE` action, the
+        `GENERATE_TOKEN_HLS_COOKIELESS` action, or the
+        `PROPAGATE_TOKEN_DASH_COOKIELESS` action.
     """
     SIGNATURE_ACTION_UNSPECIFIED = 0
     GENERATE_COOKIE = 1
     GENERATE_TOKEN_HLS_COOKIELESS = 2
     PROPAGATE_TOKEN_HLS_COOKIELESS = 3
-    PROPAGATE_TOKEN_DASH_COOKIELESS = 4
 
   actions = _messages.EnumField('ActionsValueListEntryValuesEnum', 1, repeated=True)
   copiedParameters = _messages.StringField(2, repeated=True)
@@ -1527,15 +1538,16 @@ class EndpointPolicy(_messages.Message):
       inbound traffic at the matched endpoints. Refer to Authorization. If
       this field is not specified, authorization is disabled(no authz checks)
       for this endpoint.
-    clientTlsPolicy: Optional. A URL referring to a ClientTlsPolicy resource.
-      ClientTlsPolicy can be set to specify the authentication for traffic
-      from the proxy to the actual endpoints. More specifically, it is applied
-      to the outgoing traffic from the proxy to the endpoint. This is
-      typically used for sidecar model where the proxy identifies itself as
-      endpoint to the control plane, with the connection between sidecar and
-      endpoint requiring authentication. If this field is not set,
-      authentication is disabled(open). Applicable only when
-      EndpointPolicyType is SIDECAR_PROXY.
+    clientTlsPolicy: Optional. Deprecated: This field is not used and is a no-
+      op. A URL referring to a ClientTlsPolicy resource. ClientTlsPolicy can
+      be set to specify the authentication for traffic from the proxy to the
+      actual endpoints. More specifically, it is applied to the outgoing
+      traffic from the proxy to the endpoint. This is typically used for
+      sidecar model where the proxy identifies itself as endpoint to the
+      control plane, with the connection between sidecar and endpoint
+      requiring authentication. If this field is not set, authentication is
+      disabled(open). Applicable only when EndpointPolicyType is
+      SIDECAR_PROXY.
     createTime: Output only. The timestamp when the resource was created.
     description: Optional. A free-text description of the resource. Max length
       1024 characters.

@@ -18,7 +18,6 @@
 - release_tracks:
   - ALPHA
   auto_generated: false
-  hidden: true
   help_text:
     brief: Update skills
     description: Update a skill

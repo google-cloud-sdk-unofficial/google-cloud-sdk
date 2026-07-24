@@ -1471,6 +1471,11 @@ class CloudVmClusterProperties(_messages.Message):
     StateValueValuesEnum: Output only. State of the cluster.
     StorageManagementTypeValueValuesEnum: Output only. The storage management
       type of the VM Cluster.
+    VmBackupStorageTypeValueValuesEnum: Optional. Specifies whether VM backups
+      are stored on local DB server storage or Exascale storage.
+    VmFileSystemStorageTypeValueValuesEnum: Optional. Specifies whether VM
+      file system storage / VM images are stored on local DB server storage or
+      Exascale storage.
 
   Fields:
     clusterName: Optional. OCI Cluster name.
@@ -1515,6 +1520,13 @@ class CloudVmClusterProperties(_messages.Message):
     systemVersion: Optional. Operating system version of the image.
     timeZone: Optional. Time zone of VM Cluster to set. Defaults to UTC if not
       specified.
+    vmBackupStorageSizeGb: Output only. Storage size allocated for VM backups
+      on Exascale.
+    vmBackupStorageType: Optional. Specifies whether VM backups are stored on
+      local DB server storage or Exascale storage.
+    vmFileSystemStorageType: Optional. Specifies whether VM file system
+      storage / VM images are stored on local DB server storage or Exascale
+      storage.
   """
 
   class ComputeModelValueValuesEnum(_messages.Enum):
@@ -1592,6 +1604,32 @@ class CloudVmClusterProperties(_messages.Message):
     ASM = 1
     EXASCALE = 2
 
+  class VmBackupStorageTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. Specifies whether VM backups are stored on local DB server
+    storage or Exascale storage.
+
+    Values:
+      VM_BACKUP_STORAGE_TYPE_UNSPECIFIED: Unspecified storage type.
+      VM_BACKUP_STORAGE_TYPE_LOCAL: Local DB server storage.
+      VM_BACKUP_STORAGE_TYPE_EXASCALE: Exascale storage.
+    """
+    VM_BACKUP_STORAGE_TYPE_UNSPECIFIED = 0
+    VM_BACKUP_STORAGE_TYPE_LOCAL = 1
+    VM_BACKUP_STORAGE_TYPE_EXASCALE = 2
+
+  class VmFileSystemStorageTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. Specifies whether VM file system storage / VM images are
+    stored on local DB server storage or Exascale storage.
+
+    Values:
+      VM_FILE_SYSTEM_STORAGE_TYPE_UNSPECIFIED: Unspecified storage type.
+      VM_FILE_SYSTEM_STORAGE_TYPE_LOCAL: Local DB server storage.
+      VM_FILE_SYSTEM_STORAGE_TYPE_EXASCALE: Exascale storage.
+    """
+    VM_FILE_SYSTEM_STORAGE_TYPE_UNSPECIFIED = 0
+    VM_FILE_SYSTEM_STORAGE_TYPE_LOCAL = 1
+    VM_FILE_SYSTEM_STORAGE_TYPE_EXASCALE = 2
+
   clusterName = _messages.StringField(1)
   compartmentId = _messages.StringField(2)
   computeModel = _messages.EnumField('ComputeModelValueValuesEnum', 3)
@@ -1626,6 +1664,9 @@ class CloudVmClusterProperties(_messages.Message):
   storageSizeGb = _messages.IntegerField(32, variant=_messages.Variant.INT32)
   systemVersion = _messages.StringField(33)
   timeZone = _messages.MessageField('TimeZone', 34)
+  vmBackupStorageSizeGb = _messages.IntegerField(35, variant=_messages.Variant.INT32)
+  vmBackupStorageType = _messages.EnumField('VmBackupStorageTypeValueValuesEnum', 36)
+  vmFileSystemStorageType = _messages.EnumField('VmFileSystemStorageTypeValueValuesEnum', 37)
 
 
 class ConfigureExascaleCloudExadataInfrastructureRequest(_messages.Message):
@@ -1635,10 +1676,13 @@ class ConfigureExascaleCloudExadataInfrastructureRequest(_messages.Message):
     requestId: Optional. An optional ID to identify the request.
     totalStorageSizeGb: Required. The total storage to be allocated to
       Exascale in GBs.
+    totalVmStorageSizeGb: Optional. Storage size needed for VM storage on
+      Exascale in GBs.
   """
 
   requestId = _messages.StringField(1)
   totalStorageSizeGb = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  totalVmStorageSizeGb = _messages.IntegerField(3, variant=_messages.Variant.INT32)
 
 
 class CustomerContact(_messages.Message):
@@ -1832,6 +1876,106 @@ class DatabaseCharacterSet(_messages.Message):
   characterSet = _messages.StringField(1)
   characterSetType = _messages.EnumField('CharacterSetTypeValueValuesEnum', 2)
   name = _messages.StringField(3)
+
+
+class DatabaseConnection(_messages.Message):
+  r"""Represents DatabaseConnection resource.
+
+  Enums:
+    StateValueValuesEnum: Output only. The current state of the connection.
+
+  Messages:
+    LabelsValue: Optional. Optional: Labels as key-value pairs to organize the
+      resource.
+
+  Fields:
+    connectionString: Required. Oracle Easy Connect or TNS connection string.
+      Example: "your-db-host.example.com:1521/YOUR_SERVICE_NAME"
+    createTime: Output only. The create time of the resource.
+    displayName: Optional. User-friendly display name for the connection.
+    knowledgeCatalogConfig: Optional. Optional: Configuration for Dataplex
+      Knowledge Catalog integration.
+    labels: Optional. Optional: Labels as key-value pairs to organize the
+      resource.
+    name: Identifier. The resource name of the DatabaseConnection. Format: pro
+      jects/{project}/locations/{location}/databaseConnections/{database_conne
+      ction}
+    network: Optional. The resource name of the customer's VPC network to peer
+      with. Format: projects/{project}/global/networks/{network} For Oracle
+      Database on Compute Engine VM.
+    odbNetwork: Optional. For Oracle Database@Google cloud resources. Format:
+      projects/{project}/locations/{location}/odbNetworks/{odbNetwork}
+    passwordSecretVersion: Optional. The resource name of the GCP Secret
+      Manager secret version containing the password for the specified
+      username. Format:
+      projects/{project}/secrets/{secret_id}/versions/{version_id} The
+      service's Per-Product Per-Project Service Account (P4SA) must have the
+      'secretmanager.secretAccessor' permission on this secret.
+    state: Output only. The current state of the connection.
+    updateTime: Output only. The update time of the resource.
+    username: Optional. The default database username to use for connections.
+    walletSecretVersion: Optional. Optional: The resource name of the GCP
+      Secret Manager secret version containing base64 encoded content of the
+      Oracle Wallet ZIP file required for mTLS/TLS connections. Format:
+      projects/{project}/secrets/{secret_id}/versions/{version_id} The
+      service's Per-Product Per-Project Service Account (P4SA) must have the
+      'secretmanager.secretAccessor' permission on this secret.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current state of the connection.
+
+    Values:
+      STATE_UNSPECIFIED: Default unspecified value.
+      CREATING: Indicates that the resource is in a creating state.
+      ACTIVE: Indicates that the resource is in an active state.
+      FAILED: Indicates that the resource is in a failed state.
+      DELETING: Indicates that the resource is in a deleting state.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+    FAILED = 3
+    DELETING = 4
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Optional: Labels as key-value pairs to organize the
+    resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  connectionString = _messages.StringField(1)
+  createTime = _messages.StringField(2)
+  displayName = _messages.StringField(3)
+  knowledgeCatalogConfig = _messages.MessageField('KnowledgeCatalogConfig', 4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  name = _messages.StringField(6)
+  network = _messages.StringField(7)
+  odbNetwork = _messages.StringField(8)
+  passwordSecretVersion = _messages.StringField(9)
+  state = _messages.EnumField('StateValueValuesEnum', 10)
+  updateTime = _messages.StringField(11)
+  username = _messages.StringField(12)
+  walletSecretVersion = _messages.StringField(13)
 
 
 class DatabaseConnectionStringProfile(_messages.Message):
@@ -2542,7 +2686,8 @@ class DbSystemProperties(_messages.Message):
     computeModel: Optional. The compute model of the DbSystem.
     dataCollectionOptions: Optional. Data collection options for diagnostics.
     dataStorageSizeGb: Optional. The data storage size in GB that is currently
-      available to DbSystems.
+      available to DbSystems. The value is same as
+      initial_data_storage_size_gb. This can be modified from OCI console.
     databaseEdition: Required. The database edition of the DbSystem.
     dbHome: Optional. Details for creating a Database Home.
     dbSystemOptions: Optional. The options for the DbSystem.
@@ -2552,11 +2697,15 @@ class DbSystemProperties(_messages.Message):
     initialDataStorageSizeGb: Required. The initial data storage size in GB.
     licenseModel: Required. The license model of the DbSystem.
     lifecycleState: Output only. State of the DbSystem.
-    memorySizeGb: Optional. The memory size in GB.
-    nodeCount: Optional. The number of nodes in the DbSystem.
+    memorySizeGb: Optional. The memory size in GB. This value can not be set
+      and is automatically calculated based on the number of ECPUs allocated
+      to the DbSystem.
+    nodeCount: Optional. The number of nodes to launch for a virtual machine
+      DbSystem. By default this will be set to 1.
     ocid: Output only. OCID of the DbSystem.
     privateIp: Optional. The private IP address of the DbSystem.
-    recoStorageSizeGb: Optional. The reco/redo storage size in GB.
+    recoStorageSizeGb: Optional. The reco/redo storage size in GB. The value
+      for recovery storage size is based on the available data storage size.
     shape: Required. Shape of DB System.
     sshPublicKeys: Required. SSH public keys to be stored with the DbSystem.
     timeZone: Optional. Time zone of the DbSystem.
@@ -2568,7 +2717,8 @@ class DbSystemProperties(_messages.Message):
     Values:
       COMPUTE_MODEL_UNSPECIFIED: The compute model is unspecified.
       ECPU: The compute model is virtual.
-      OCPU: The compute model is physical.
+      OCPU: Deprecated: This option is not supported. Please use ECPU instead.
+        The compute model is physical.
     """
     COMPUTE_MODEL_UNSPECIFIED = 0
     ECPU = 1
@@ -3113,12 +3263,18 @@ class ExascaleConfig(_messages.Message):
   Fields:
     availableStorageSizeGb: Output only. Available storage size for Exascale
       in GBs.
+    availableVmStorageSizeGb: Output only. Available storage size for VM
+      storage on Exascale in GBs.
     totalStorageSizeGb: Output only. Total storage size needed for Exascale in
       GBs.
+    totalVmStorageSizeGb: Output only. Storage size needed for VM storage on
+      Exascale in GBs.
   """
 
   availableStorageSizeGb = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  totalStorageSizeGb = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  availableVmStorageSizeGb = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  totalStorageSizeGb = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  totalVmStorageSizeGb = _messages.IntegerField(4, variant=_messages.Variant.INT32)
 
 
 class ExascaleDbStorageDetails(_messages.Message):
@@ -3299,6 +3455,95 @@ class FailoverAutonomousDatabaseRequest(_messages.Message):
   """
 
   peerAutonomousDatabase = _messages.StringField(1)
+
+
+class FlexComponent(_messages.Message):
+  r"""Details of the Flex Component resource.
+
+  Fields:
+    name: Identifier. Specifies the name of the Flex Component resource with
+      the format:
+      projects/{project}/locations/{region}/flexComponents/{flex_component}
+    properties: Output only. The properties of the Flex Component.
+  """
+
+  name = _messages.StringField(1)
+  properties = _messages.MessageField('FlexComponentProperties', 2)
+
+
+class FlexComponentProperties(_messages.Message):
+  r"""The properties of the Flex Component.
+
+  Enums:
+    ComputeModelValueValuesEnum: Output only. The compute model of the DB
+      Server for this Flex Component.
+    HardwareTypeValueValuesEnum: Output only. The hardware type of the DB
+      (Compute) or Storage (Cell) Server for this Flex Component.
+
+  Fields:
+    availableCoreCount: Output only. The maximum number of CPU cores that can
+      be enabled on the DB system for this shape.
+    availableDbNodeStoragePerNodeGb: Output only. The maximum storage that can
+      be enabled on the Storage Server for this Flex Component.
+    availableLocalStorageGb: Output only. The maximum local storage that can
+      be enabled on the DB Server for this Flex Component.
+    availableMemoryGb: Output only. The maximum memory size that can be
+      enabled on the DB Server for this Flex Component.
+    computeModel: Output only. The compute model of the DB Server for this
+      Flex Component.
+    descriptionSummary: Output only. The description summary for this Flex
+      Component.
+    hardwareType: Output only. The hardware type of the DB (Compute) or
+      Storage (Cell) Server for this Flex Component.
+    minimumCoreCount: Output only. The minimum number of CPU cores that can be
+      enabled on the DB Server for this Flex Component.
+    name: Output only. The name of the Flex Component used for the DB system.
+    runtimeMinimumCoreCount: Output only. The runtime minimum number of CPU
+      cores that can be enabled for this Flex Component.
+    shape: Output only. The name of the DB system shape for this Flex
+      Component.
+  """
+
+  class ComputeModelValueValuesEnum(_messages.Enum):
+    r"""Output only. The compute model of the DB Server for this Flex
+    Component.
+
+    Values:
+      COMPUTE_MODEL_UNSPECIFIED: Unspecified compute model.
+      COMPUTE_MODEL_ECPU: Abstract measure of compute resources. ECPUs are
+        based on the number of cores elastically allocated from a pool of
+        compute and storage servers.
+      COMPUTE_MODEL_OCPU: Physical measure of compute resources. OCPUs are
+        based on the physical core of a processor.
+    """
+    COMPUTE_MODEL_UNSPECIFIED = 0
+    COMPUTE_MODEL_ECPU = 1
+    COMPUTE_MODEL_OCPU = 2
+
+  class HardwareTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The hardware type of the DB (Compute) or Storage (Cell)
+    Server for this Flex Component.
+
+    Values:
+      HARDWARE_TYPE_UNSPECIFIED: Unspecified default
+      COMPUTE: COMPUTE
+      CELL: CELL
+    """
+    HARDWARE_TYPE_UNSPECIFIED = 0
+    COMPUTE = 1
+    CELL = 2
+
+  availableCoreCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  availableDbNodeStoragePerNodeGb = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  availableLocalStorageGb = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  availableMemoryGb = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  computeModel = _messages.EnumField('ComputeModelValueValuesEnum', 5)
+  descriptionSummary = _messages.StringField(6)
+  hardwareType = _messages.EnumField('HardwareTypeValueValuesEnum', 7)
+  minimumCoreCount = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+  name = _messages.StringField(9)
+  runtimeMinimumCoreCount = _messages.IntegerField(10, variant=_messages.Variant.INT32)
+  shape = _messages.StringField(11)
 
 
 class GenerateAutonomousDatabaseWalletRequest(_messages.Message):
@@ -6122,6 +6367,17 @@ class KafkaBootstrapServer(_messages.Message):
   privateIpAddress = _messages.StringField(3)
 
 
+class KnowledgeCatalogConfig(_messages.Message):
+  r"""Knowledge Catalog Configuration for the DatabaseConnection.
+
+  Fields:
+    enabled: Required. Whether periodic knowledge catalog extraction is
+      enabled.
+  """
+
+  enabled = _messages.BooleanField(1)
+
+
 class ListAutonomousDatabaseBackupsResponse(_messages.Message):
   r"""The response for `AutonomousDatabaseBackup.List`.
 
@@ -6219,6 +6475,22 @@ class ListDatabaseCharacterSetsResponse(_messages.Message):
 
   databaseCharacterSets = _messages.MessageField('DatabaseCharacterSet', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
+
+
+class ListDatabaseConnectionsResponse(_messages.Message):
+  r"""The response for `DatabaseConnection.List`.
+
+  Fields:
+    databaseConnections: The list of DatabaseConnections.
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    unreachable: Unreachable locations when listing resources across all
+      locations using wildcard location '-'.
+  """
+
+  databaseConnections = _messages.MessageField('DatabaseConnection', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
 
 
 class ListDatabasesResponse(_messages.Message):
@@ -6358,6 +6630,21 @@ class ListExascaleDbStorageVaultsResponse(_messages.Message):
   """
 
   exascaleDbStorageVaults = _messages.MessageField('ExascaleDbStorageVault', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListFlexComponentsResponse(_messages.Message):
+  r"""Message for response to listing FlexComponents
+
+  Fields:
+    flexComponents: The list of FlexComponent
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  flexComponents = _messages.MessageField('FlexComponent', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
   unreachable = _messages.StringField(3, repeated=True)
 
@@ -7029,6 +7316,8 @@ class OdbSubnet(_messages.Message):
     cidrRange: Required. The CIDR range of the subnet.
     createTime: Output only. The date and time that the OdbNetwork was
       created.
+    domainSuffix: Output only. The default domain name associated with the
+      client subnet.
     labels: Optional. Labels or tags associated with the resource.
     name: Identifier. The name of the OdbSubnet resource in the following
       format: projects/{project}/locations/{location}/odbNetworks/{odb_network
@@ -7091,10 +7380,11 @@ class OdbSubnet(_messages.Message):
 
   cidrRange = _messages.StringField(1)
   createTime = _messages.StringField(2)
-  labels = _messages.MessageField('LabelsValue', 3)
-  name = _messages.StringField(4)
-  purpose = _messages.EnumField('PurposeValueValuesEnum', 5)
-  state = _messages.EnumField('StateValueValuesEnum', 6)
+  domainSuffix = _messages.StringField(3)
+  labels = _messages.MessageField('LabelsValue', 4)
+  name = _messages.StringField(5)
+  purpose = _messages.EnumField('PurposeValueValuesEnum', 6)
+  state = _messages.EnumField('StateValueValuesEnum', 7)
 
 
 class Operation(_messages.Message):
@@ -7937,6 +8227,133 @@ class OracledatabaseProjectsLocationsDatabaseCharacterSetsListRequest(_messages.
   parent = _messages.StringField(4, required=True)
 
 
+class OracledatabaseProjectsLocationsDatabaseConnectionsCreateRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsDatabaseConnectionsCreateRequest
+  object.
+
+  Fields:
+    databaseConnection: A DatabaseConnection resource to be passed as the
+      request body.
+    databaseConnectionId: Required. The ID of the DatabaseConnection to
+      create. This value is restricted to (^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$)
+      and must be a maximum of 63 characters in length. The value must start
+      with a letter and end with a letter or a number.
+    parent: Required. The parent value for the DatabaseConnection in the
+      following format: projects/{project}/locations/{location}.
+    requestId: Optional. An optional ID to identify the request. This value is
+      used to identify duplicate requests. If you make a request with the same
+      request ID and the original request is still in progress or completed,
+      the server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+  """
+
+  databaseConnection = _messages.MessageField('DatabaseConnection', 1)
+  databaseConnectionId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class OracledatabaseProjectsLocationsDatabaseConnectionsDeleteRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsDatabaseConnectionsDeleteRequest
+  object.
+
+  Fields:
+    name: Required. The name of the resource in the following format: projects
+      /{project}/locations/{location}/databaseConnections/{database_connection
+      }.
+    requestId: Optional. An optional ID to identify the request. This value is
+      used to identify duplicate requests. If you make a request with the same
+      request ID and the original request is still in progress or completed,
+      the server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class OracledatabaseProjectsLocationsDatabaseConnectionsGetRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsDatabaseConnectionsGetRequest object.
+
+  Fields:
+    name: Required. The name of the DatabaseConnection in the following
+      format: projects/{project}/locations/{location}/databaseConnections/{dat
+      abase_connection}.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class OracledatabaseProjectsLocationsDatabaseConnectionsListRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsDatabaseConnectionsListRequest object.
+
+  Fields:
+    filter: Optional. An expression for filtering the results of the request.
+    orderBy: Optional. An expression for ordering the results of the request.
+    pageSize: Optional. The maximum number of items to return. If unspecified,
+      at most 50 DatabaseConnections will be returned. The maximum value is
+      1000; values above 1000 will be coerced to 1000.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. The parent value for the DatabaseConnection in the
+      following format: projects/{project}/locations/{location}.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class OracledatabaseProjectsLocationsDatabaseConnectionsPatchRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsDatabaseConnectionsPatchRequest object.
+
+  Fields:
+    databaseConnection: A DatabaseConnection resource to be passed as the
+      request body.
+    name: Identifier. The resource name of the DatabaseConnection. Format: pro
+      jects/{project}/locations/{location}/databaseConnections/{database_conne
+      ction}
+    requestId: Optional. An optional ID to identify the request. This value is
+      used to identify duplicate requests. If you make a request with the same
+      request ID and the original request is still in progress or completed,
+      the server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. A mask specifying which fields in the
+      DatabaseConnection should be updated. A field specified in the mask is
+      overwritten. If a mask isn't provided then all the fields in the
+      DatabaseConnection are overwritten.
+  """
+
+  databaseConnection = _messages.MessageField('DatabaseConnection', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
+
+
+class OracledatabaseProjectsLocationsDatabaseConnectionsTestDatabaseConnectionRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsDatabaseConnectionsTestDatabaseConnecti
+  onRequest object.
+
+  Fields:
+    databaseConnection: Required. The DatabaseConnection to test. Format: proj
+      ects/{project}/locations/{location}/databaseConnections/{database_connec
+      tion}
+    testDatabaseConnectionRequest: A TestDatabaseConnectionRequest resource to
+      be passed as the request body.
+  """
+
+  databaseConnection = _messages.StringField(1, required=True)
+  testDatabaseConnectionRequest = _messages.MessageField('TestDatabaseConnectionRequest', 2)
+
+
 class OracledatabaseProjectsLocationsDatabasesGetRequest(_messages.Message):
   r"""A OracledatabaseProjectsLocationsDatabasesGetRequest object.
 
@@ -8440,6 +8857,36 @@ class OracledatabaseProjectsLocationsExascaleDbStorageVaultsListRequest(_message
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   parent = _messages.StringField(5, required=True)
+
+
+class OracledatabaseProjectsLocationsFlexComponentsGetRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsFlexComponentsGetRequest object.
+
+  Fields:
+    name: Required. Name of the resource in the format:
+      projects/{project}/locations/{location}/flexComponents/{flex_component}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class OracledatabaseProjectsLocationsFlexComponentsListRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsFlexComponentsListRequest object.
+
+  Fields:
+    filter: Optional. An expression for filtering the results of the request.
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Parent value for ListFlexComponentsRequest Format:
+      projects/{project}/locations/{location}
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
 
 
 class OracledatabaseProjectsLocationsGetRequest(_messages.Message):
@@ -10111,6 +10558,22 @@ class TestConnectionAssignmentError(_messages.Message):
   code = _messages.StringField(2)
   issue = _messages.StringField(3)
   message = _messages.StringField(4)
+
+
+class TestDatabaseConnectionRequest(_messages.Message):
+  r"""Request message for `DatabaseConnection.TestDatabaseConnection`."""
+
+
+class TestDatabaseConnectionResponse(_messages.Message):
+  r"""Response message for `DatabaseConnection.TestDatabaseConnection`.
+
+  Fields:
+    errorMessage: Error message if the test connection failed.
+    success: Whether the test connection was successful.
+  """
+
+  errorMessage = _messages.StringField(1)
+  success = _messages.BooleanField(2)
 
 
 class TestGoldengateConnectionAssignmentRequest(_messages.Message):

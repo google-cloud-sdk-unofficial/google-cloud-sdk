@@ -23,6 +23,7 @@ from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import messages_util
 from googlecloudsdk.command_lib.run import pretty_print
+from googlecloudsdk.command_lib.run import pubsub_scaling_parser
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import resource_name_conversion
 from googlecloudsdk.command_lib.run import stages
@@ -291,6 +292,7 @@ class AlphaUpdate(BetaUpdate):
     flags.AddCpuUtilizationFlag(parser, hidden=True, resource_kind='workerPool')
     flags.AddWorkerPoolMinInstancesFlag(parser)
     flags.AddWorkerPoolMaxInstancesFlag(parser)
+    pubsub_scaling_parser.AddPubSubScalingFlags(parser, cls.ReleaseTrack())
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(
         parser, container_args, cls.ReleaseTrack()

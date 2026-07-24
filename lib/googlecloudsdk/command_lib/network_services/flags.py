@@ -136,3 +136,18 @@ def GetHttpFilterResourceArg(
       ),
   ])
 
+
+def GetClearHttpFiltersForHttpsProxy(name='clear-http-filters'):
+  """Returns the flag for clearing the Http filters.
+
+  Args:
+    name: str, the name of the flag; default: 'clear-http-filters'.
+  """
+
+  return base.Argument(
+      '--' + name,
+      action='store_true',
+      default=False,
+      required=False,
+      help='Removes any attached Http filters.',
+  )

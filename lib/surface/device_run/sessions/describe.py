@@ -16,6 +16,7 @@
 
 from googlecloudsdk.api_lib import device_run
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.device_run import reports
 from googlecloudsdk.command_lib.device_run import resource_args
 from googlecloudsdk.core import log
 
@@ -65,33 +66,28 @@ class Describe(base.DescribeCommand):
       return None
 
     result_type = session.sessionReport.result.resultType
+    rows = reports.ExtractSessionReportRows(session.sessionReport)
 
-    rows = []
-    if session.sessionReport and session.sessionReport.jobReports:
-      for job_report in session.sessionReport.jobReports:
-        job_name = job_report.displayName
-        if job_report.executionReports:
-          for exec_report in job_report.executionReports:
-            exec_name = exec_report.displayName
-            result = str(exec_report.result.resultType)
-            rows.append({
-                'job_name': job_name,
-                'execution_name': exec_name,
-                'result': result,
-            })
-        else:
-          result = str(job_report.result.resultType)
-          rows.append({
-              'job_name': job_name,
-              'execution_name': '',
-              'result': result,
-          })
-
-    # Print a blank line for spacing.
-    log.status.Print()
     log.status.Print(
         f'Session [{session_id}] finished with result [{result_type}].'
     )
+
+    if (
+        session.sessionConfig
+        and session.sessionConfig.outputDirectoryConfig
+        and session.sessionConfig.outputDirectoryConfig.gcsOutputDirectory
+        and session.sessionConfig.outputDirectoryConfig.gcsOutputDirectory.path
+    ):
+      gcs_path = (
+          session.sessionConfig.outputDirectoryConfig.gcsOutputDirectory.path
+      )
+      if gcs_path.startswith('gs://'):
+        gcs_path = gcs_path[5:]
+      gcs_path = gcs_path.rstrip('/')
+      log.status.Print(
+          f'Result files are stored at'
+          f' [https://console.cloud.google.com/storage/browser/{gcs_path}/{session_id}/].'
+      )
 
     return rows
 

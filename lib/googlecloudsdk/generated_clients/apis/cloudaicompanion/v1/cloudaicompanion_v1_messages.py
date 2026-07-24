@@ -2912,6 +2912,11 @@ class GeminiGcpEnablementSetting(_messages.Message):
     disableWebGrounding: Optional. Whether web grounding should be disabled.
       DEPRECATED: Use web_grounding_type instead.
     enableCustomerDataSharing: Optional. Not implemented.
+    gcsBucket: Optional. The Cloud Storage bucket name allocated for this
+      setting. Note: Please make sure the cloudaicompanion service agent
+      `service-@gcp-sa-cloudaicompanion.iam.gserviceaccount.com` has
+      `storage.objects.get` and `storage.objects.create` permission to the
+      Cloud Storage bucket.
     geminiEnterpriseProject: Optional. The Gemini enterprise project for this
       setting. Format: projects/{project} The `{project}` segment can be the
       project ID or project number.
@@ -2984,14 +2989,15 @@ class GeminiGcpEnablementSetting(_messages.Message):
   customInstructions = _messages.StringField(2)
   disableWebGrounding = _messages.BooleanField(3)
   enableCustomerDataSharing = _messages.BooleanField(4)
-  geminiEnterpriseProject = _messages.StringField(5)
-  labels = _messages.MessageField('LabelsValue', 6)
-  mutationsEnabled = _messages.BooleanField(7)
-  name = _messages.StringField(8)
-  proactiveAgentsEnabled = _messages.BooleanField(9)
-  releaseChannel = _messages.EnumField('ReleaseChannelValueValuesEnum', 10)
-  updateTime = _messages.StringField(11)
-  webGroundingType = _messages.EnumField('WebGroundingTypeValueValuesEnum', 12)
+  gcsBucket = _messages.StringField(5)
+  geminiEnterpriseProject = _messages.StringField(6)
+  labels = _messages.MessageField('LabelsValue', 7)
+  mutationsEnabled = _messages.BooleanField(8)
+  name = _messages.StringField(9)
+  proactiveAgentsEnabled = _messages.BooleanField(10)
+  releaseChannel = _messages.EnumField('ReleaseChannelValueValuesEnum', 11)
+  updateTime = _messages.StringField(12)
+  webGroundingType = _messages.EnumField('WebGroundingTypeValueValuesEnum', 13)
 
 
 class GeminiInBigQueryConversationalAnalyticsSetting(_messages.Message):

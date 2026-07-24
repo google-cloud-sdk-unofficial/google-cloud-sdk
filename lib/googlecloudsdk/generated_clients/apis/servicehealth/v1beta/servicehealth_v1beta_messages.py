@@ -932,8 +932,8 @@ class ServicehealthProjectsLocationsEventsListRequest(_messages.Message):
       parameters provided to `ListEvents` must match the call that provided
       the page token.
     parent: Required. Parent value using the form
-      `projects/{project_id}/locations/{location}/events`. `project_id` - ID
-      of the project for which to list service health events. `location` - The
+      `projects/{project_id}/locations/{location}`. `project_id` - ID of the
+      project for which to list service health events. `location` - The
       location to get service health events from. Set this field to `global`.
     view: Optional. Event fields to include in response.
   """

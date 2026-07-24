@@ -37,10 +37,75 @@ class DevicerunV1alpha(base_api.BaseApiClient):
         default_global_params=default_global_params,
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
+    self.projects_locations_devices = self.ProjectsLocationsDevicesService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
     self.projects_locations_sessions = self.ProjectsLocationsSessionsService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects = self.ProjectsService(self)
+
+  class ProjectsLocationsDevicesService(base_api.BaseApiService):
+    """Service class for the projects_locations_devices resource."""
+
+    _NAME = 'projects_locations_devices'
+
+    def __init__(self, client):
+      super(DevicerunV1alpha.ProjectsLocationsDevicesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Returns information about a specific device.
+
+      Args:
+        request: (DevicerunProjectsLocationsDevicesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Device) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/devices/{devicesId}',
+        http_method='GET',
+        method_id='devicerun.projects.locations.devices.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='DevicerunProjectsLocationsDevicesGetRequest',
+        response_type_name='Device',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists all devices.
+
+      Args:
+        request: (DevicerunProjectsLocationsDevicesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListDevicesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/devices',
+        http_method='GET',
+        method_id='devicerun.projects.locations.devices.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/devices',
+        request_field='',
+        request_type_name='DevicerunProjectsLocationsDevicesListRequest',
+        response_type_name='ListDevicesResponse',
+        supports_download=False,
+    )
 
   class ProjectsLocationsOperationsService(base_api.BaseApiService):
     """Service class for the projects_locations_operations resource."""

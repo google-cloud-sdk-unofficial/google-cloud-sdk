@@ -71,7 +71,70 @@ def AddSshArgFlag(parser):
           """,
       example="""\
         $ {command} -- -vvv
-      """)
+      """,
+  )
+
+
+def PrepareEnvironmentNoKey(args):
+  """Ensures that the user's environment is ready to accept SSH connections without using a key."""
+
+  # Load Cloud Shell API.
+  client = apis.GetClientInstance('cloudshell', 'v1')
+  messages = apis.GetMessagesModule('cloudshell', 'v1')
+  operations_client = apis.GetClientInstance('cloudshell', 'v1')
+
+  ssh_env = ssh.Environment.Current()
+  ssh_env.RequireSSH()
+
+  # Look up the Cloud Shell environment.
+  environment = client.users_environments.Get(
+      messages.CloudshellUsersEnvironmentsGetRequest(
+          name=DEFAULT_ENVIRONMENT_NAME
+      )
+  )
+
+  # If the environment isn't running, start it.
+  start_operation = None
+  if environment.state != messages.Environment.StateValueValuesEnum.RUNNING:
+    log.Print('Starting your Cloud Shell machine...')
+
+    access_token = None
+    if args.IsKnownAndSpecified('authorize_session') and args.authorize_session:
+      access_token = store.GetFreshAccessTokenIfEnabled(
+          min_expiry_duration=MIN_CREDS_EXPIRY_SECONDS
+      )
+
+    start_operation = client.users_environments.Start(
+        messages.CloudshellUsersEnvironmentsStartRequest(
+            name=DEFAULT_ENVIRONMENT_NAME,
+            startEnvironmentRequest=messages.StartEnvironmentRequest(
+                accessToken=access_token
+            ),
+        )
+    )
+
+    environment = waiter.WaitFor(
+        EnvironmentPoller(
+            client.users_environments, operations_client.operations
+        ),
+        start_operation,
+        'Waiting for your Cloud Shell machine to start',
+        sleep_ms=500,
+        max_wait_ms=None,
+    )
+
+  if not environment.sshHost:
+    _RaiseExceptionDueToStartOperationError(start_operation)
+
+  return ConnectionInfo(
+      ssh_env=ssh_env,
+      user=environment.sshUsername,
+      host=environment.sshHost,
+      port=environment.sshPort,
+      key=None,
+      web_host=environment.webHost,
+      add_public_key_error=None,
+  )
 
 
 def PrepareEnvironment(args):

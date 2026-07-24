@@ -21,26 +21,15 @@
 
 """Fast export/import functionality."""
 
-from dulwich.index import (
-    commit_tree,
-)
-from dulwich.objects import (
-    Blob,
-    Commit,
-    Tag,
-    ZERO_SHA,
-)
-from dulwich.object_store import (
-    iter_tree_contents,
-)
-from fastimport import (
-    commands,
-    errors as fastimport_errors,
-    parser,
-    processor,
-)
-
 import stat
+from typing import Dict, Tuple
+
+from fastimport import commands, parser, processor
+from fastimport import errors as fastimport_errors
+
+from .index import commit_tree
+from .object_store import iter_tree_contents
+from .objects import ZERO_SHA, Blob, Commit, Tag
 
 
 def split_email(text):
@@ -51,10 +40,10 @@ def split_email(text):
 class GitFastExporter:
     """Generate a fast-export output stream for Git objects."""
 
-    def __init__(self, outf, store):
+    def __init__(self, outf, store) -> None:
         self.outf = outf
         self.store = store
-        self.markers = {}
+        self.markers: Dict[bytes, bytes] = {}
         self._marker_idx = 0
 
     def print_cmd(self, cmd):
@@ -133,12 +122,12 @@ class GitImportProcessor(processor.ImportProcessor):
 
     # FIXME: Batch creation of objects?
 
-    def __init__(self, repo, params=None, verbose=False, outf=None):
+    def __init__(self, repo, params=None, verbose=False, outf=None) -> None:
         processor.ImportProcessor.__init__(self, params, verbose)
         self.repo = repo
         self.last_commit = ZERO_SHA
-        self.markers = {}
-        self._contents = {}
+        self.markers: Dict[bytes, bytes] = {}
+        self._contents: Dict[bytes, Tuple[int, bytes]] = {}
 
     def lookup_object(self, objectish):
         if objectish.startswith(b":"):
@@ -159,7 +148,6 @@ class GitImportProcessor(processor.ImportProcessor):
 
     def checkpoint_handler(self, cmd):
         """Process a CheckpointCommand."""
-        pass
 
     def commit_handler(self, cmd):
         """Process a CommitCommand."""
@@ -222,7 +210,6 @@ class GitImportProcessor(processor.ImportProcessor):
 
     def progress_handler(self, cmd):
         """Process a ProgressCommand."""
-        pass
 
     def _reset_base(self, commit_id):
         if self.last_commit == commit_id:

@@ -17,8 +17,7 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
-  auto_generated: true
-  hidden: true
+  auto_generated: false
   help_text:
     brief: Describe publishers
     description: Describe a publisher

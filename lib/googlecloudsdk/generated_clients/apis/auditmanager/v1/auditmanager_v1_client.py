@@ -13,7 +13,7 @@ class AuditmanagerV1(base_api.BaseApiClient):
   MTLS_BASE_URL = 'https://auditmanager.mtls.googleapis.com/'
 
   _PACKAGE = 'auditmanager'
-  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform']
+  _SCOPES = ['https://www.googleapis.com/auth/cloud-auditmanager', 'https://www.googleapis.com/auth/cloud-platform']
   _VERSION = 'v1'
   _CLIENT_ID = 'CLIENT_ID'
   _CLIENT_SECRET = 'CLIENT_SECRET'

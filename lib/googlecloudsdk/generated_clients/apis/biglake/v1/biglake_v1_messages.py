@@ -720,6 +720,7 @@ class Empty(_messages.Message):
   """
 
 
+
 class Expr(_messages.Message):
   r"""Represents a textual expression in the Common Expression Language (CEL)
   syntax. CEL is a C-like expression language. The syntax and semantics of CEL
@@ -1467,7 +1468,11 @@ class SnowflakeCatalogInfo(_messages.Message):
       https://.snowflakecomputing.com.
     snowflake_role: Optional. The specific Snowflake role name to request in
       the OAuth token scope (via session:role:$ROLE) for the Iceberg REST
-      Catalog session.
+      Catalog session. This role grants the GCP BigLake service account the
+      necessary permissions to interact with the Iceberg catalog, namespaces,
+      and tables. Note: The role provided here must be the DEFAULT_ROLE or be
+      granted to, the Snowflake service user mapped to the BigLake service
+      account.
     warehouse: Required. The warehouse to connect to in Snowflake REST
       Catalog. https://.snowflakecomputing.com/polaris/api/catalog/v1/config?w
       arehouse=. Must be non-empty.
@@ -1801,11 +1806,9 @@ encoding.AddCustomJsonFieldMapping(
 encoding.AddCustomJsonFieldMapping(
     SnowflakeCatalogInfo, 'account_identifier', 'account-identifier')
 encoding.AddCustomJsonFieldMapping(
-    SnowflakeCatalogInfo, 'snowflake_role', 'snowflake-role'
-)
+    SnowflakeCatalogInfo, 'snowflake_role', 'snowflake-role')
 encoding.AddCustomJsonFieldMapping(
-    UnityCatalogInfo, 'catalog_name', 'catalog-name'
-)
+    UnityCatalogInfo, 'catalog_name', 'catalog-name')
 encoding.AddCustomJsonFieldMapping(
     UnityCatalogInfo, 'instance_name', 'instance-name')
 encoding.AddCustomJsonFieldMapping(

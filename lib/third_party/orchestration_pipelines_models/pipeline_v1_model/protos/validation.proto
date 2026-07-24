@@ -57,4 +57,10 @@ extend google.protobuf.FieldOptions {
 
   // For string: specifies that the string must be a valid IANA timezone.
   bool is_iana_timezone = 50010;
+
+  // For map keys:
+  string map_key_regex = 50011;
+
+  // For map values:
+  string map_value_regex = 50012;
 }

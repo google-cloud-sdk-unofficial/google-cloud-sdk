@@ -621,6 +621,35 @@ class DaisyChainCopyTask(copy_util.ObjectCopyTaskWithExitHandler):
       return None
     return self._enriched_source_resource.md5_hash
 
+  def _get_crc32c_hash(
+      self, destination_client: cloud_api.CloudApi
+  ) -> str | None:
+    """Returns the CRC32C Hash if present and hash validation is requested.
+
+    Args:
+      destination_client: The client for the destination cloud provider.
+
+    Returns:
+      (str|None): The CRC32C hash of the source object if available and
+        applicable for validation, otherwise None.
+    """
+    if (
+        properties.VALUES.storage.check_hashes.Get()
+        == properties.CheckHashes.NEVER.value
+    ):
+      return None
+    if (
+        cloud_api.Capability.APPENDABLE_UPLOAD
+        in destination_client.capabilities
+    ):
+      return None
+    if (
+        self._enriched_source_resource.crc32c_hash
+        == resource_reference.NOT_SUPPORTED_DO_NOT_DISPLAY
+    ):
+      return None
+    return self._enriched_source_resource.crc32c_hash
+
   def _gapfill_request_config_field(self, resource_args,
                                     request_config_field_name,
                                     source_resource_field_name):
@@ -726,8 +755,10 @@ class DaisyChainCopyTask(copy_util.ObjectCopyTaskWithExitHandler):
         self._destination_resource.storage_url,
         content_type=content_type,
         md5_hash=self._get_md5_hash(destination_client),
+        crc32c_hash=self._get_crc32c_hash(destination_client),
         size=self._enriched_source_resource.size,
-        user_request_args=self._user_request_args)
+        user_request_args=self._user_request_args,
+    )
     # Request configs are designed to translate between providers.
     self._populate_request_config_with_resource_values(request_config)
 

@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class AddNamedSet(base.CreateCommand):
   """Add an empty named set to a Compute Engine router.
 
@@ -121,3 +120,16 @@ class AddNamedSet(base.CreateCommand):
       return 'NAMED_SET_TYPE_COMMUNITY'
     else:
       return set_type
+
+
+AddNamedSet.detailed_help = {
+    'DESCRIPTION': """\
+          *{command}* adds an empty named set to a Compute Engine router.
+  """,
+    'EXAMPLES': """\
+          To add a prefix named set `my-set` to a router `my-router` in region `us-central1`, run:
+
+              $ {command} my-router --region=us-central1 --set-name=my-set --set-type=PREFIX
+
+          """,
+}

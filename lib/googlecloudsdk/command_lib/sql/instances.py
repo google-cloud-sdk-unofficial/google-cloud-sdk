@@ -1196,6 +1196,11 @@ class _BaseInstances(object):
         sql_messages, args.database_version
     )
 
+    if args.IsKnownAndSpecified('database_center_integration_enabled'):
+      instance_resource.databaseCenterIntegrationEnabled = (
+          args.database_center_integration_enabled
+      )
+
     if args.IsKnownAndSpecified('master_instance_name'):
       instance_resource.masterInstanceName = args.master_instance_name
 
@@ -1372,6 +1377,11 @@ class _BaseInstances(object):
     instance_resource.settings = cls._ConstructPatchSettingsFromArgs(
         sql_messages, args, original, release_track
     )
+
+    if args.IsKnownAndSpecified('database_center_integration_enabled'):
+      instance_resource.databaseCenterIntegrationEnabled = (
+          args.database_center_integration_enabled
+      )
 
     if args.upgrade_sql_network_architecture:
       instance_resource.sqlNetworkArchitecture = (

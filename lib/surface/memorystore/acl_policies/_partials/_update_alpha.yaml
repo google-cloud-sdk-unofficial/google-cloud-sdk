@@ -44,12 +44,12 @@
       - api_field: username
         help_text: |-
           Specifies the IAM user or service account to be added to the ACL policy.
-          This username will be directly set on the Redis OSS.
+          This username will be directly set on the Valkey OSS.
       - api_field: rule
         help_text: |-
           The rule to be applied to the username. Ex: "on >password123 ~* +@all"
-          The format of the rule is defined by Redis OSS:
-          https://redis.io/docs/latest/operate/oss_and_stack/management/security/acl/
+          The format of the rule is defined by Valkey OSS:
+          https://valkey.io/topics/acl/
     - arg_name: request-id
       api_field: requestId
       required: false

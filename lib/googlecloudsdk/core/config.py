@@ -692,6 +692,7 @@ class Paths(object):
     """
     return os.path.join(self.global_config_dir, 'logs')
 
+  # LINT.IfChange(CID_Path)
   @property
   def cid_path(self):
     """Gets the path to the file to store the client ID.
@@ -700,6 +701,7 @@ class Paths(object):
       str, The path to the file.
     """
     return os.path.join(self.global_config_dir, '.metricsUUID')
+  # LINT.ThenChange(../../../gcloud_cli/external/gcloud/internal/telemetry/telemetry.go:CID_Logic)
 
   @property
   def update_check_cache_path(self):
@@ -911,6 +913,7 @@ class Paths(object):
     return os.path.join(self.global_config_dir, 'gce')
 
 
+# LINT.IfChange(CID_Generation)
 def _GenerateCID(uuid_path):
   cid = uuid.uuid4().hex  # A random UUID
   file_utils.MakeDir(os.path.dirname(uuid_path))
@@ -932,6 +935,7 @@ def GetCID():
   except file_utils.Error:
     pass
   return _GenerateCID(uuid_path)
+# LINT.ThenChange(../../../gcloud_cli/external/gcloud/internal/telemetry/telemetry.go:CID_Logic)
 
 
 def CertConfigDefaultFilePath():

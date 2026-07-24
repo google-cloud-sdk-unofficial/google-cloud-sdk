@@ -30,6 +30,7 @@ from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import module_util
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
+from googlecloudsdk.core.util import encoding
 
 
 @base.UniverseCompatible
@@ -108,6 +109,29 @@ class Test(base.Command):
         '--feature-flag',
         action='store_true',
         help='Print the value of a feature flag.')
+    scenarios.add_argument(
+        '--echo-argv',
+        action='store_true',
+        help=(
+            'Print sys.argv in EchoArgs format (Arg i is <arg>) to stdout '
+            'and exit.'
+        ),
+    )
+    scenarios.add_argument(
+        '--exec-gcloud',
+        action='store_true',
+        help=(
+            'Shell out to gcloud (running meta test --check-from-gocloud) using'
+            ' the command list returned by execution_utils.ArgsForGcloud().'
+        ),
+    )
+    scenarios.add_argument(
+        '--check-from-gocloud',
+        action='store_true',
+        help=(
+            'Print the value of the CLOUDSDK_FROM_GOCLOUD environment variable.'
+        ),
+    )
 
   def _RunArgDict(self, args):
     return args.arg_dict
@@ -157,6 +181,20 @@ class Test(base.Command):
 
   def _RunSleep(self, args):
     time.sleep(args.sleep)
+
+  def _RunEchoArgv(self, args):
+    for i, arg in enumerate(sys.argv):
+      print(f'Arg {i} is <{arg}>')
+
+  def _RunExecGcloud(self, args):
+    gcloud_args = execution_utils.ArgsForGcloud()
+    execution_utils.Exec(gcloud_args + ['meta', 'test', '--check-from-gocloud'])
+
+  def _RunCheckFromGocloud(self, args):
+    val = encoding.GetEncodedValue(
+        os.environ, 'CLOUDSDK_FROM_GOCLOUD', '(unset)'
+    )
+    print(f'CLOUDSDK_FROM_GOCLOUD: {val}')
 
   def _RunUncaughtException(self, args):
     raise ValueError('Catch me if you can.')
@@ -216,5 +254,14 @@ class Test(base.Command):
       r = self._RunUncaughtException(args)
     elif args.staged_progress_tracker:
       self._RunStagedProgressTracker(args)
+      r = None
+    elif args.echo_argv:
+      self._RunEchoArgv(args)
+      r = None
+    elif args.exec_gcloud:
+      self._RunExecGcloud(args)
+      r = None
+    elif args.check_from_gocloud:
+      self._RunCheckFromGocloud(args)
       r = None
     return r

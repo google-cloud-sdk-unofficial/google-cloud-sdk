@@ -866,6 +866,7 @@ class Application(_messages.Message):
     StateValueValuesEnum: Output only. Application state.
 
   Fields:
+    applicationType: Output only. Application type.
     attributes: Optional. Consumer provided attributes.
     createTime: Output only. Create time.
     description: Optional. User-defined description of an Application. Can
@@ -897,15 +898,39 @@ class Application(_messages.Message):
     ACTIVE = 2
     DELETING = 3
 
-  attributes = _messages.MessageField('Attributes', 1)
-  createTime = _messages.StringField(2)
-  description = _messages.StringField(3)
-  displayName = _messages.StringField(4)
-  name = _messages.StringField(5)
-  scope = _messages.MessageField('Scope', 6)
-  state = _messages.EnumField('StateValueValuesEnum', 7)
-  uid = _messages.StringField(8)
-  updateTime = _messages.StringField(9)
+  applicationType = _messages.MessageField('ApplicationType', 1)
+  attributes = _messages.MessageField('Attributes', 2)
+  createTime = _messages.StringField(3)
+  description = _messages.StringField(4)
+  displayName = _messages.StringField(5)
+  name = _messages.StringField(6)
+  scope = _messages.MessageField('Scope', 7)
+  state = _messages.EnumField('StateValueValuesEnum', 8)
+  uid = _messages.StringField(9)
+  updateTime = _messages.StringField(10)
+
+
+class ApplicationType(_messages.Message):
+  r"""Application type.
+
+  Enums:
+    TypeValueValuesEnum: The type of the application.
+
+  Fields:
+    type: The type of the application.
+  """
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""The type of the application.
+
+    Values:
+      TYPE_UNSPECIFIED: Unspecified type.
+      AI_APPLICATION: AI Application type.
+    """
+    TYPE_UNSPECIFIED = 0
+    AI_APPLICATION = 1
+
+  type = _messages.EnumField('TypeValueValuesEnum', 1)
 
 
 class Attributes(_messages.Message):

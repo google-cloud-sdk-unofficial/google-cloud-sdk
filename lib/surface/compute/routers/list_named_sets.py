@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.compute.routers import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ListNamedSets(base.ListCommand):
   """List named sets from a Compute Engine router.
 
@@ -65,3 +64,16 @@ class ListNamedSets(base.ListCommand):
         next_token_attribute='nextPageToken',
         batch_size_attribute='maxResults',
     )
+
+
+ListNamedSets.detailed_help = {
+    'DESCRIPTION': """\
+          *{command}* lists all named sets from a Compute Engine router.
+  """,
+    'EXAMPLES': """\
+          To list all named sets on router `my-router` in region `us-central1`, run:
+
+              $ {command} my-router --region=us-central1
+
+          """,
+}

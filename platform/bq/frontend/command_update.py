@@ -653,8 +653,20 @@ class Update(bigquery_command.BigqueryCmd):
         'Connection credential in JSON format.',
         flag_values=fv,
     )
+    # TODO(b/532772672): Use absl.flags validators to ensure
+    # connection-specific flags (e.g. iam_role_id,
+    # s3_service_directory_service, tenant_id) are only set when
+    # connection_type matches.
     flags.DEFINE_string(
         'iam_role_id', None, '[Experimental] IAM role id.', flag_values=fv
+    )
+    flags.DEFINE_string(
+        's3_service_directory_service',
+        None,
+        '[Experimental] Service directory resource name for routing traffic'
+        ' over a private network connection through Cross-Cloud Interconnect'
+        ' for AWS connections.',
+        flag_values=fv,
     )
     # TODO(b/231712311): look into cleaning up this flag now that only federated
     # aws connections are supported.
@@ -1065,25 +1077,39 @@ class Update(bigquery_command.BigqueryCmd):
           identifier=identifier,
           default_location=bq_flags.LOCATION.value,
       )
-      if self.connection_type == 'AWS' and self.iam_role_id:
-        self.properties = bq_processor_utils.MakeAccessRolePropertiesJson(
-            self.iam_role_id
-        )
-      if self.connection_type == 'Azure':
+      if self.connection_type == 'AWS':
+        aws_props = {}
+        if self.iam_role_id:
+          aws_props.update(
+              bq_processor_utils.MakeAccessRoleProperties(self.iam_role_id)
+          )
+        if self.s3_service_directory_service:
+          aws_props['s3ServiceDirectoryService'] = (
+              self.s3_service_directory_service
+          )
+        if aws_props:
+          self.properties = json.dumps(aws_props)
+      elif self.connection_type == 'Azure':
+        azure_props = {}
         if self.tenant_id and self.federated_app_client_id:
-          self.properties = bq_processor_utils.MakeAzureFederatedAppClientAndTenantIdPropertiesJson(
-              self.tenant_id, self.federated_app_client_id
+          azure_props.update(
+              bq_processor_utils.MakeAzureFederatedAppClientAndTenantIdProperties(
+                  self.tenant_id, self.federated_app_client_id
+              )
           )
         elif self.federated_app_client_id:
-          self.properties = (
-              bq_processor_utils.MakeAzureFederatedAppClientIdPropertiesJson(
+          azure_props.update(
+              bq_processor_utils.MakeAzureFederatedAppClientIdProperties(
                   self.federated_app_client_id
               )
           )
         elif self.tenant_id:
-          self.properties = bq_processor_utils.MakeTenantIdPropertiesJson(
-              self.tenant_id
+          azure_props.update(
+              bq_processor_utils.MakeTenantIdProperties(self.tenant_id)
           )
+        if azure_props:
+          self.properties = json.dumps(azure_props)
+
       if (
           self.properties
           or self.display_name

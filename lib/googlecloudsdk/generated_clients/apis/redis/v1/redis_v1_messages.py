@@ -79,6 +79,29 @@ class AclPolicy(_messages.Message):
   version = _messages.IntegerField(5)
 
 
+class AclPolicyRevision(_messages.Message):
+  r"""The ACL policy revision resource.
+
+  Fields:
+    attachedClusters: Output only. A list of clusters that are attached to
+      this ACL policy revision.
+    createTime: Output only. The timestamp that the revision was created.
+    name: Identifier. The name of the ACL policy revision. Format: "projects/{
+      project}/locations/{location}/aclPolicies/{acl_policy}/revisions/{revisi
+      on}"
+    revisionNumber: Output only. The revision number of the ACL policy
+      revision.
+    snapshot: Output only. The snapshot of the ACL policy at the time of
+      revision creation.
+  """
+
+  attachedClusters = _messages.StringField(1, repeated=True)
+  createTime = _messages.StringField(2)
+  name = _messages.StringField(3)
+  revisionNumber = _messages.IntegerField(4)
+  snapshot = _messages.MessageField('AclPolicy', 5)
+
+
 class AclRule(_messages.Message):
   r"""A single ACL rule which defines the policy for a user.
 
@@ -1507,6 +1530,8 @@ class DatabaseResourceHealthSignalData(_messages.Message):
         maintenance downtime.
       SIGNAL_TYPE_LOW_CACHE_HIT_AND_MAINTENANCE_DOWNTIME: Indicates both a low
         cache hit rate and a risk of maintenance downtime.
+      SIGNAL_TYPE_MISSING_ENHANCED_PROTECTION: Indicates that the resource is
+        missing enhanced protection.
     """
     SIGNAL_TYPE_UNSPECIFIED = 0
     SIGNAL_TYPE_NOT_PROTECTED_BY_AUTOMATIC_FAILOVER = 1
@@ -1617,6 +1642,7 @@ class DatabaseResourceHealthSignalData(_messages.Message):
     SIGNAL_TYPE_VERSION_NEARING_END_OF_LIFE = 106
     SIGNAL_TYPE_HIGH_MAINTENANCE_DOWNTIME_RISK = 107
     SIGNAL_TYPE_LOW_CACHE_HIT_AND_MAINTENANCE_DOWNTIME = 108
+    SIGNAL_TYPE_MISSING_ENHANCED_PROTECTION = 109
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Required. The state of the signal, such as if it's ACTIVE or RESOLVED.
@@ -2339,6 +2365,8 @@ class DatabaseResourceRecommendationSignalData(_messages.Message):
         maintenance downtime.
       SIGNAL_TYPE_LOW_CACHE_HIT_AND_MAINTENANCE_DOWNTIME: Indicates both a low
         cache hit rate and a risk of maintenance downtime.
+      SIGNAL_TYPE_MISSING_ENHANCED_PROTECTION: Indicates that the resource is
+        missing enhanced protection.
     """
     SIGNAL_TYPE_UNSPECIFIED = 0
     SIGNAL_TYPE_NOT_PROTECTED_BY_AUTOMATIC_FAILOVER = 1
@@ -2449,6 +2477,7 @@ class DatabaseResourceRecommendationSignalData(_messages.Message):
     SIGNAL_TYPE_VERSION_NEARING_END_OF_LIFE = 106
     SIGNAL_TYPE_HIGH_MAINTENANCE_DOWNTIME_RISK = 107
     SIGNAL_TYPE_LOW_CACHE_HIT_AND_MAINTENANCE_DOWNTIME = 108
+    SIGNAL_TYPE_MISSING_ENHANCED_PROTECTION = 109
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AdditionalMetadataValue(_messages.Message):
@@ -3377,6 +3406,21 @@ class ListAclPoliciesResponse(_messages.Message):
   """
 
   aclPolicies = _messages.MessageField('AclPolicy', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListAclPolicyRevisionsResponse(_messages.Message):
+  r"""Response for `ListAclPolicyRevisions`.
+
+  Fields:
+    aclPolicyRevisions: A list of ACL policy revisions.
+    nextPageToken: Token to retrieve the next page of results, or empty if
+      there are no more results in the list.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  aclPolicyRevisions = _messages.MessageField('AclPolicyRevision', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
   unreachable = _messages.StringField(3, repeated=True)
 
@@ -4547,6 +4591,35 @@ class RedisProjectsLocationsAclPoliciesPatchRequest(_messages.Message):
   name = _messages.StringField(2, required=True)
   requestId = _messages.StringField(3)
   updateMask = _messages.StringField(4)
+
+
+class RedisProjectsLocationsAclPoliciesRevisionsGetRequest(_messages.Message):
+  r"""A RedisProjectsLocationsAclPoliciesRevisionsGetRequest object.
+
+  Fields:
+    name: Required. Redis ACL policy revision resource name using the form: `p
+      rojects/{project_id}/locations/{location_id}/aclPolicies/{acl_policy_id}
+      /revisions/{revision_id}` where `location_id` refers to a GCP region.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class RedisProjectsLocationsAclPoliciesRevisionsListRequest(_messages.Message):
+  r"""A RedisProjectsLocationsAclPoliciesRevisionsListRequest object.
+
+  Fields:
+    pageSize: Optional. The maximum number of items to return.
+    pageToken: Optional. The `next_page_token` value returned from a previous
+      `ListAclPolicyRevisions` request, if any.
+    parent: Required. The name of the ACL policy to list revisions for.
+      Format: "projects/{project_id}/locations/{location_id}/aclPolicies/{acl_
+      policy_id}"
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
 
 
 class RedisProjectsLocationsBackupCollectionsBackupsDeleteRequest(_messages.Message):

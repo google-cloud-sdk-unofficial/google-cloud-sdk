@@ -66,7 +66,7 @@ class StorageV2(base_api.BaseApiClient):
           }
 
     def Summarize(self, request, global_params=None):
-      r"""Summarize the intelligence findings for the specified scope(org, folder or project).
+      r"""Summarizes the intelligence findings for the specified scope (organization, folder or project).
 
       Args:
         request: (StorageFoldersLocationsIntelligenceFindingsSummarizeRequest) input message
@@ -89,6 +89,33 @@ class StorageV2(base_api.BaseApiClient):
         request_field='',
         request_type_name='StorageFoldersLocationsIntelligenceFindingsSummarizeRequest',
         response_type_name='SummarizeIntelligenceFindingsResponse',
+        supports_download=False,
+    )
+
+    def SummarizeSecurityIntelligenceFindings(self, request, global_params=None):
+      r"""Summarizes the intelligence findings for the specified scope (organization, folder or project).
+
+      Args:
+        request: (StorageFoldersLocationsIntelligenceFindingsSummarizeSecurityIntelligenceFindingsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SummarizeSecurityIntelligenceFindingsResponse) The response message.
+      """
+      config = self.GetMethodConfig('SummarizeSecurityIntelligenceFindings')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SummarizeSecurityIntelligenceFindings.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/folders/{foldersId}/locations/{locationsId}/intelligenceFindings:summarizeSecurityIntelligenceFindings',
+        http_method='GET',
+        method_id='storage.folders.locations.intelligenceFindings.summarizeSecurityIntelligenceFindings',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken', 'resourceScope'],
+        relative_path='v2/{+parent}/intelligenceFindings:summarizeSecurityIntelligenceFindings',
+        request_field='',
+        request_type_name='StorageFoldersLocationsIntelligenceFindingsSummarizeSecurityIntelligenceFindingsRequest',
+        response_type_name='SummarizeSecurityIntelligenceFindingsResponse',
         supports_download=False,
     )
 
@@ -231,7 +258,7 @@ class StorageV2(base_api.BaseApiClient):
           }
 
     def Summarize(self, request, global_params=None):
-      r"""Summarize the intelligence findings for the specified scope(org, folder or project).
+      r"""Summarizes the intelligence findings for the specified scope (organization, folder or project).
 
       Args:
         request: (StorageOrganizationsLocationsIntelligenceFindingsSummarizeRequest) input message
@@ -254,6 +281,33 @@ class StorageV2(base_api.BaseApiClient):
         request_field='',
         request_type_name='StorageOrganizationsLocationsIntelligenceFindingsSummarizeRequest',
         response_type_name='SummarizeIntelligenceFindingsResponse',
+        supports_download=False,
+    )
+
+    def SummarizeSecurityIntelligenceFindings(self, request, global_params=None):
+      r"""Summarizes the intelligence findings for the specified scope (organization, folder or project).
+
+      Args:
+        request: (StorageOrganizationsLocationsIntelligenceFindingsSummarizeSecurityIntelligenceFindingsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SummarizeSecurityIntelligenceFindingsResponse) The response message.
+      """
+      config = self.GetMethodConfig('SummarizeSecurityIntelligenceFindings')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SummarizeSecurityIntelligenceFindings.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/organizations/{organizationsId}/locations/{locationsId}/intelligenceFindings:summarizeSecurityIntelligenceFindings',
+        http_method='GET',
+        method_id='storage.organizations.locations.intelligenceFindings.summarizeSecurityIntelligenceFindings',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken', 'resourceScope'],
+        relative_path='v2/{+parent}/intelligenceFindings:summarizeSecurityIntelligenceFindings',
+        request_field='',
+        request_type_name='StorageOrganizationsLocationsIntelligenceFindingsSummarizeSecurityIntelligenceFindingsRequest',
+        response_type_name='SummarizeSecurityIntelligenceFindingsResponse',
         supports_download=False,
     )
 
@@ -921,6 +975,60 @@ class StorageV2(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+    def ApplyFeaturePermissions(self, request, global_params=None):
+      r"""Updates the permissions on the project/buckets associated with the corresponding feature config.
+
+      Args:
+        request: (StorageProjectsLocationsFeatureConfigsApplyFeaturePermissionsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('ApplyFeaturePermissions')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ApplyFeaturePermissions.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/featureConfigs/{featureConfigsId}:applyFeaturePermissions',
+        http_method='POST',
+        method_id='storage.projects.locations.featureConfigs.applyFeaturePermissions',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v2/{+name}:applyFeaturePermissions',
+        request_field='applyFeaturePermissionsRequest',
+        request_type_name='StorageProjectsLocationsFeatureConfigsApplyFeaturePermissionsRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def BatchApplyFeaturePermissions(self, request, global_params=None):
+      r"""Updates the permissions on the project(s) and buckets applicable to all configs of the given feature type in the parent.
+
+      Args:
+        request: (StorageProjectsLocationsFeatureConfigsBatchApplyFeaturePermissionsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('BatchApplyFeaturePermissions')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    BatchApplyFeaturePermissions.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/featureConfigs:batchApplyFeaturePermissions',
+        http_method='POST',
+        method_id='storage.projects.locations.featureConfigs.batchApplyFeaturePermissions',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v2/{+parent}/featureConfigs:batchApplyFeaturePermissions',
+        request_field='batchApplyFeaturePermissionsRequest',
+        request_type_name='StorageProjectsLocationsFeatureConfigsBatchApplyFeaturePermissionsRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Create(self, request, global_params=None):
       r"""Creates a new `FeatureConfig` to configure and manage Smart Storage features within a given project.
 
@@ -1185,7 +1293,7 @@ class StorageV2(base_api.BaseApiClient):
     )
 
     def Summarize(self, request, global_params=None):
-      r"""Summarize the intelligence findings for the specified scope(org, folder or project).
+      r"""Summarizes the intelligence findings for the specified scope (organization, folder or project).
 
       Args:
         request: (StorageProjectsLocationsIntelligenceFindingsSummarizeRequest) input message
@@ -1208,6 +1316,33 @@ class StorageV2(base_api.BaseApiClient):
         request_field='',
         request_type_name='StorageProjectsLocationsIntelligenceFindingsSummarizeRequest',
         response_type_name='SummarizeIntelligenceFindingsResponse',
+        supports_download=False,
+    )
+
+    def SummarizeSecurityIntelligenceFindings(self, request, global_params=None):
+      r"""Summarizes the intelligence findings for the specified scope (organization, folder or project).
+
+      Args:
+        request: (StorageProjectsLocationsIntelligenceFindingsSummarizeSecurityIntelligenceFindingsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SummarizeSecurityIntelligenceFindingsResponse) The response message.
+      """
+      config = self.GetMethodConfig('SummarizeSecurityIntelligenceFindings')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SummarizeSecurityIntelligenceFindings.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/intelligenceFindings:summarizeSecurityIntelligenceFindings',
+        http_method='GET',
+        method_id='storage.projects.locations.intelligenceFindings.summarizeSecurityIntelligenceFindings',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken', 'resourceScope'],
+        relative_path='v2/{+parent}/intelligenceFindings:summarizeSecurityIntelligenceFindings',
+        request_field='',
+        request_type_name='StorageProjectsLocationsIntelligenceFindingsSummarizeSecurityIntelligenceFindingsRequest',
+        response_type_name='SummarizeSecurityIntelligenceFindingsResponse',
         supports_download=False,
     )
 

@@ -87,9 +87,12 @@ apis:
       discovery_doc: agenticapplications_v1alpha.json
       default: true
   agentidentity:
+    v1:
+      discovery_doc: agentidentity_v1.json
+      default: true
     v1alpha:
       discovery_doc: agentidentity_v1alpha.json
-      default: true
+      default: false
   aiplatform:
     v1beta1:
       default: true
@@ -120,6 +123,8 @@ apis:
         projects.locations.semanticGovernancePolicyEngine:
           path:
             projects/{projectsId}/locations/{locationsId}/semanticGovernancePolicyEngine
+      skip:
+        bug: b/535540947
     v1:
       discovery_doc: aiplatform_v1.json
       gcloud_gapic_library: google/cloud/aiplatform/v1:aiplatform_v1_py
@@ -300,6 +305,8 @@ apis:
     v1:
       discovery_doc: biglake_v1.json
       default: true
+      skip:
+        bug: b/533507184
     delta_v1:
       discovery_doc: biglake_delta_v1.json
       default: false
@@ -595,8 +602,12 @@ apis:
   cloudtasks:
     v2beta2:
       discovery_doc: cloudtasks_v2beta2.json
+      skip:
+        bug: b/534738395
     v2beta3:
       discovery_doc: cloudtasks_v2beta3.json
+      skip:
+        bug: b/534737618
     v2:
       discovery_doc: cloudtasks_v2.json
       default: true

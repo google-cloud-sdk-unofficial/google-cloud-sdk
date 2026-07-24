@@ -1,0 +1,34 @@
+- release_tracks: [ALPHA, BETA, GA, PREVIEW]
+
+  help_text:
+    brief: Test IAM permissions for a Compute Engine machine image.
+    description: |
+      Returns permissions that a caller has on the specified machine image.
+    examples: |
+      To test whether the caller has the 'compute.machineImages.getIamPolicy' permission on a machine image, run:
+
+        $ {command} my-machine-image --permissions=compute.machineImages.getIamPolicy
+
+  request:
+    collection: compute.machineImages
+    use_relative_name: false
+    method: testIamPermissions
+    api_version: v1
+    BETA:
+      api_version: beta
+    ALPHA:
+      api_version: alpha
+
+  command_type: GENERIC
+
+  arguments:
+    resource:
+      help_text: The ID of the machine image to test permissions for.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:machine_image
+    params:
+    - arg_name: permissions
+      api_field: testPermissionsRequest.permissions
+      required: true
+      repeated: true
+      help_text: |-
+        Permissions to be tested.

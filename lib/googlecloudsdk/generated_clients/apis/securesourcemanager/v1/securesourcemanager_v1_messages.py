@@ -442,6 +442,19 @@ class FetchBlobResponse(_messages.Message):
   sha = _messages.StringField(2)
 
 
+class FetchRefsResponse(_messages.Message):
+  r"""Response message containing a list of git references.
+
+  Fields:
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    refs: The list of git references.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  refs = _messages.MessageField('Ref', 2, repeated=True)
+
+
 class FetchTreeResponse(_messages.Message):
   r"""Response message containing a list of TreeEntry objects.
 
@@ -1482,6 +1495,36 @@ class PushOption(_messages.Message):
   branchFilter = _messages.StringField(1)
 
 
+class Ref(_messages.Message):
+  r"""Ref represents a git reference within a repository.
+
+  Enums:
+    TypeValueValuesEnum: Output only. The type of the reference.
+
+  Fields:
+    name: Identifier. Name of the git reference (e.g., 'refs/heads/foo' or
+      'refs/tags/v1.0').
+    target: Output only. The target of the reference, which is a commit SHA.
+    type: Output only. The type of the reference.
+  """
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The type of the reference.
+
+    Values:
+      REF_TYPE_UNSPECIFIED: Unspecified ref type.
+      REF_TYPE_BRANCH: Represents a branch.
+      REF_TYPE_TAG: Represents a tag.
+    """
+    REF_TYPE_UNSPECIFIED = 0
+    REF_TYPE_BRANCH = 1
+    REF_TYPE_TAG = 2
+
+  name = _messages.StringField(1)
+  target = _messages.StringField(2)
+  type = _messages.EnumField('TypeValueValuesEnum', 3)
+
+
 class Repository(_messages.Message):
   r"""Metadata of a Secure Source Manager repository.
 
@@ -2010,6 +2053,46 @@ class SecuresourcemanagerProjectsLocationsRepositoriesFetchBlobRequest(_messages
 
   repository = _messages.StringField(1, required=True)
   sha = _messages.StringField(2)
+
+
+class SecuresourcemanagerProjectsLocationsRepositoriesFetchRefsRequest(_messages.Message):
+  r"""A SecuresourcemanagerProjectsLocationsRepositoriesFetchRefsRequest
+  object.
+
+  Enums:
+    TypeValueValuesEnum: Optional. The type of reference to fetch (eg. branch,
+      tag). By default, all references are returned.
+
+  Fields:
+    pageSize: Optional. Requested page size. If unspecified, a default size of
+      30 will be used. The maximum value is 100; values above 100 will be
+      coerced to 100.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    repository: Required. The format is `projects/{project_number}/locations/{
+      location_id}/repositories/{repository_id}`. Specifies the repository to
+      fetch the references from.
+    type: Optional. The type of reference to fetch (eg. branch, tag). By
+      default, all references are returned.
+  """
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The type of reference to fetch (eg. branch, tag). By
+    default, all references are returned.
+
+    Values:
+      REF_TYPE_UNSPECIFIED: Unspecified ref type.
+      REF_TYPE_BRANCH: Represents a branch.
+      REF_TYPE_TAG: Represents a tag.
+    """
+    REF_TYPE_UNSPECIFIED = 0
+    REF_TYPE_BRANCH = 1
+    REF_TYPE_TAG = 2
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  repository = _messages.StringField(3, required=True)
+  type = _messages.EnumField('TypeValueValuesEnum', 4)
 
 
 class SecuresourcemanagerProjectsLocationsRepositoriesFetchTreeRequest(_messages.Message):

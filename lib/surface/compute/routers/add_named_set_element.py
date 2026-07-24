@@ -23,7 +23,6 @@ from googlecloudsdk.command_lib.compute.routers import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class AddNamedSetElement(base.UpdateCommand):
   """Adds an element to an existing named set of a Compute Engine router."""
 
@@ -71,3 +70,16 @@ class AddNamedSetElement(base.UpdateCommand):
         ),
     )
     return client.MakeRequests([request])[0]
+
+
+AddNamedSetElement.detailed_help = {
+    'DESCRIPTION': """\
+          *{command}* adds an element to an existing named set of a Compute Engine router.
+  """,
+    'EXAMPLES': """\
+          To add an element `'10.0.0.0/8'` to named set `my-set` on router `my-router` in region `us-central1`, run:
+
+              $ {command} my-router --region=us-central1 --set-name=my-set --new-set-element='10.0.0.0/8'
+
+          """,
+}

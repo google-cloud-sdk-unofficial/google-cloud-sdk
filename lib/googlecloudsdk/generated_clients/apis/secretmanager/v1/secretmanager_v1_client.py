@@ -307,6 +307,33 @@ class SecretmanagerV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def EnableManagedRotation(self, request, global_params=None):
+      r"""Enables the managed rotation feature for a Secret. This method can only be triggered once for a secret. In order to do further rotations, RotateSecret should be used. This method will add a secret version and update the password in Cloud SQL.
+
+      Args:
+        request: (SecretmanagerProjectsLocationsSecretsEnableManagedRotationRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SecretVersion) The response message.
+      """
+      config = self.GetMethodConfig('EnableManagedRotation')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    EnableManagedRotation.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/secrets/{secretsId}:enableManagedRotation',
+        http_method='POST',
+        method_id='secretmanager.projects.locations.secrets.enableManagedRotation',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1/{+parent}:enableManagedRotation',
+        request_field='enableManagedRotationRequest',
+        request_type_name='SecretmanagerProjectsLocationsSecretsEnableManagedRotationRequest',
+        response_type_name='SecretVersion',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Gets metadata for a given Secret.
 
@@ -412,6 +439,33 @@ class SecretmanagerV1(base_api.BaseApiClient):
         request_field='secret',
         request_type_name='SecretmanagerProjectsLocationsSecretsPatchRequest',
         response_type_name='Secret',
+        supports_download=False,
+    )
+
+    def RotateSecret(self, request, global_params=None):
+      r"""Do a managed rotation for a Secret. This can only be triggered after Managed rotation has been enabled. This method will add a secret version and update the password in Cloud SQL.
+
+      Args:
+        request: (SecretmanagerProjectsLocationsSecretsRotateSecretRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SecretVersion) The response message.
+      """
+      config = self.GetMethodConfig('RotateSecret')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    RotateSecret.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/secrets/{secretsId}:rotateSecret',
+        http_method='POST',
+        method_id='secretmanager.projects.locations.secrets.rotateSecret',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1/{+parent}:rotateSecret',
+        request_field='rotateSecretRequest',
+        request_type_name='SecretmanagerProjectsLocationsSecretsRotateSecretRequest',
+        response_type_name='SecretVersion',
         supports_download=False,
     )
 
@@ -796,6 +850,33 @@ class SecretmanagerV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def EnableManagedRotation(self, request, global_params=None):
+      r"""Enables the managed rotation feature for a Secret. This method can only be triggered once for a secret. In order to do further rotations, RotateSecret should be used. This method will add a secret version and update the password in Cloud SQL.
+
+      Args:
+        request: (SecretmanagerProjectsSecretsEnableManagedRotationRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SecretVersion) The response message.
+      """
+      config = self.GetMethodConfig('EnableManagedRotation')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    EnableManagedRotation.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/secrets/{secretsId}:enableManagedRotation',
+        http_method='POST',
+        method_id='secretmanager.projects.secrets.enableManagedRotation',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1/{+parent}:enableManagedRotation',
+        request_field='enableManagedRotationRequest',
+        request_type_name='SecretmanagerProjectsSecretsEnableManagedRotationRequest',
+        response_type_name='SecretVersion',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Gets metadata for a given Secret.
 
@@ -901,6 +982,33 @@ class SecretmanagerV1(base_api.BaseApiClient):
         request_field='secret',
         request_type_name='SecretmanagerProjectsSecretsPatchRequest',
         response_type_name='Secret',
+        supports_download=False,
+    )
+
+    def RotateSecret(self, request, global_params=None):
+      r"""Do a managed rotation for a Secret. This can only be triggered after Managed rotation has been enabled. This method will add a secret version and update the password in Cloud SQL.
+
+      Args:
+        request: (SecretmanagerProjectsSecretsRotateSecretRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SecretVersion) The response message.
+      """
+      config = self.GetMethodConfig('RotateSecret')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    RotateSecret.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/secrets/{secretsId}:rotateSecret',
+        http_method='POST',
+        method_id='secretmanager.projects.secrets.rotateSecret',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1/{+parent}:rotateSecret',
+        request_field='rotateSecretRequest',
+        request_type_name='SecretmanagerProjectsSecretsRotateSecretRequest',
+        response_type_name='SecretVersion',
         supports_download=False,
     )
 

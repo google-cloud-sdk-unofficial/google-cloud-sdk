@@ -43,55 +43,43 @@ Currently supported capabilities:
 """
 
 import collections
-from functools import partial
 import os
 import socket
 import sys
 import time
-from typing import List, Tuple, Dict, Optional, Iterable, Set
+from functools import partial
+from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 try:
     from typing import Protocol as TypingProtocol
 except ImportError:  # python < 3.8
     from typing_extensions import Protocol as TypingProtocol  # type: ignore
 
+import socketserver
 import zlib
 
-import socketserver
+from dulwich import log_utils
 
-from dulwich.archive import tar_stream
-from dulwich.errors import (
+from .archive import tar_stream
+from .errors import (
     ApplyDeltaError,
     ChecksumMismatch,
     GitProtocolError,
     HookError,
     NotGitRepository,
-    UnexpectedCommandError,
     ObjectFormatException,
+    UnexpectedCommandError,
 )
-from dulwich import log_utils
-from dulwich.objects import (
-    Commit,
-    ObjectID,
-    valid_hexsha,
-)
-from dulwich.object_store import (
-    peel_sha,
-)
-from dulwich.pack import (
-    write_pack_from_container,
-    ObjectContainer,
-    PackedObjectContainer,
-)
-from dulwich.protocol import (
-    BufferedPktLineWriter,
-    capability_agent,
+from .object_store import peel_sha
+from .objects import Commit, ObjectID, valid_hexsha
+from .pack import ObjectContainer, PackedObjectContainer, write_pack_from_container
+from .protocol import (
     CAPABILITIES_REF,
     CAPABILITY_AGENT,
     CAPABILITY_DELETE_REFS,
     CAPABILITY_INCLUDE_TAG,
-    CAPABILITY_MULTI_ACK_DETAILED,
     CAPABILITY_MULTI_ACK,
+    CAPABILITY_MULTI_ACK_DETAILED,
     CAPABILITY_NO_DONE,
     CAPABILITY_NO_PROGRESS,
     CAPABILITY_OFS_DELTA,
@@ -108,34 +96,28 @@ from dulwich.protocol import (
     COMMAND_WANT,
     MULTI_ACK,
     MULTI_ACK_DETAILED,
-    Protocol,
-    ReceivableProtocol,
+    NAK_LINE,
     SIDE_BAND_CHANNEL_DATA,
-    SIDE_BAND_CHANNEL_PROGRESS,
     SIDE_BAND_CHANNEL_FATAL,
+    SIDE_BAND_CHANNEL_PROGRESS,
     SINGLE_ACK,
     TCP_GIT_PORT,
     ZERO_SHA,
+    BufferedPktLineWriter,
+    Protocol,
+    ReceivableProtocol,
     ack_type,
+    capability_agent,
     extract_capabilities,
     extract_want_line_capabilities,
-    symref_capabilities,
+    format_ack_line,
     format_ref_line,
     format_shallow_line,
     format_unshallow_line,
-    format_ack_line,
-    NAK_LINE,
+    symref_capabilities,
 )
-from dulwich.refs import (
-    RefsContainer,
-    PEELED_TAG_SUFFIX,
-    write_info_refs,
-)
-from dulwich.repo import (
-    BaseRepo,
-    Repo,
-)
-
+from .refs import PEELED_TAG_SUFFIX, RefsContainer, write_info_refs
+from .repo import BaseRepo, Repo
 
 logger = log_utils.getLogger(__name__)
 
@@ -166,8 +148,7 @@ class BackendRepo(TypingProtocol):
     refs: RefsContainer
 
     def get_refs(self) -> Dict[bytes, bytes]:
-        """
-        Get all the refs in the repository
+        """Get all the refs in the repository.
 
         Returns: dict of name -> sha
         """
@@ -185,9 +166,10 @@ class BackendRepo(TypingProtocol):
         """
         return None
 
-    def find_missing_objects(self, determine_wants, graph_walker, progress, get_tagged=None):
-        """
-        Yield the objects required for a list of commits.
+    def find_missing_objects(
+        self, determine_wants, graph_walker, progress, get_tagged=None
+    ):
+        """Yield the objects required for a list of commits.
 
         Args:
           progress: is a callback to send progress messages to the client
@@ -200,7 +182,7 @@ class BackendRepo(TypingProtocol):
 class DictBackend(Backend):
     """Trivial backend that looks up Git repositories in a dictionary."""
 
-    def __init__(self, repos):
+    def __init__(self, repos) -> None:
         self.repos = repos
 
     def open_repository(self, path: str) -> BaseRepo:
@@ -209,14 +191,14 @@ class DictBackend(Backend):
             return self.repos[path]
         except KeyError as exc:
             raise NotGitRepository(
-                "No git repository was found at %(path)s" % dict(path=path)
+                "No git repository was found at {path}".format(**dict(path=path))
             ) from exc
 
 
 class FileSystemBackend(Backend):
     """Simple backend looking up Git repositories in the local file system."""
 
-    def __init__(self, root=os.sep):
+    def __init__(self, root=os.sep) -> None:
         super().__init__()
         self.root = (os.path.abspath(root) + os.sep).replace(os.sep * 2, os.sep)
 
@@ -226,14 +208,14 @@ class FileSystemBackend(Backend):
         normcase_abspath = os.path.normcase(abspath)
         normcase_root = os.path.normcase(self.root)
         if not normcase_abspath.startswith(normcase_root):
-            raise NotGitRepository("Path {!r} not inside root {!r}".format(path, self.root))
+            raise NotGitRepository(f"Path {path!r} not inside root {self.root!r}")
         return Repo(abspath)
 
 
 class Handler:
     """Smart protocol command handler base class."""
 
-    def __init__(self, backend, proto, stateless_rpc=False):
+    def __init__(self, backend, proto, stateless_rpc=False) -> None:
         self.backend = backend
         self.proto = proto
         self.stateless_rpc = stateless_rpc
@@ -245,9 +227,9 @@ class Handler:
 class PackHandler(Handler):
     """Protocol handler for packs."""
 
-    def __init__(self, backend, proto, stateless_rpc=False):
+    def __init__(self, backend, proto, stateless_rpc=False) -> None:
         super().__init__(backend, proto, stateless_rpc)
-        self._client_capabilities = None
+        self._client_capabilities: Optional[Set[bytes]] = None
         # Flags needed for the no-done capability
         self._done_received = False
 
@@ -302,10 +284,10 @@ class PackHandler(Handler):
 class UploadPackHandler(PackHandler):
     """Protocol handler for uploading a pack to the client."""
 
-    def __init__(self, backend, args, proto, stateless_rpc=False, advertise_refs=False):
-        super().__init__(
-            backend, proto, stateless_rpc=stateless_rpc
-        )
+    def __init__(
+        self, backend, args, proto, stateless_rpc=False, advertise_refs=False
+    ) -> None:
+        super().__init__(backend, proto, stateless_rpc=stateless_rpc)
         self.repo = backend.open_repository(args[0])
         self._graph_walker = None
         self.advertise_refs = advertise_refs
@@ -344,9 +326,13 @@ class UploadPackHandler(PackHandler):
             # The provided haves are processed, and it is safe to send side-
             # band data now.
             if not self.has_capability(CAPABILITY_NO_PROGRESS):
-                self.progress = partial(self.proto.write_sideband, SIDE_BAND_CHANNEL_PROGRESS)
+                self.progress = partial(
+                    self.proto.write_sideband, SIDE_BAND_CHANNEL_PROGRESS
+                )
 
-            self.write_pack_data = partial(self.proto.write_sideband, SIDE_BAND_CHANNEL_DATA)
+            self.write_pack_data = partial(
+                self.proto.write_sideband, SIDE_BAND_CHANNEL_DATA
+            )
         else:
             self.write_pack_data = self.proto.write
 
@@ -428,7 +414,9 @@ class UploadPackHandler(PackHandler):
             ("counting objects: %d, done.\n" % len(object_ids)).encode("ascii")
         )
 
-        write_pack_from_container(self.write_pack_data, self.repo.object_store, object_ids)
+        write_pack_from_container(
+            self.write_pack_data, self.repo.object_store, object_ids
+        )
         # we are done
         self.proto.write_pkt_line(None)
 
@@ -577,7 +565,9 @@ class _ProtocolGraphWalker:
     any calls to next() or ack() are made.
     """
 
-    def __init__(self, handler, object_store: ObjectContainer, get_peeled, get_symrefs):
+    def __init__(
+        self, handler, object_store: ObjectContainer, get_peeled, get_symrefs
+    ) -> None:
         self.handler = handler
         self.store: ObjectContainer = object_store
         self.get_peeled = get_peeled
@@ -624,18 +614,20 @@ class _ProtocolGraphWalker:
                     # logic.
                     continue
                 if i == 0:
-                    logger.info(
-                        "Sending capabilities: %s", self.handler.capabilities())
+                    logger.info("Sending capabilities: %s", self.handler.capabilities())
                     line = format_ref_line(
-                        ref, sha,
+                        ref,
+                        sha,
                         self.handler.capabilities()
-                        + symref_capabilities(symrefs.items()))
+                        + symref_capabilities(symrefs.items()),
+                    )
                 else:
                     line = format_ref_line(ref, sha)
                 self.proto.write_pkt_line(line)
                 if peeled_sha != sha:
                     self.proto.write_pkt_line(
-                        format_ref_line(ref + PEELED_TAG_SUFFIX, peeled_sha))
+                        format_ref_line(ref + PEELED_TAG_SUFFIX, peeled_sha)
+                    )
 
             # i'm done..
             self.proto.write_pkt_line(None)
@@ -709,6 +701,7 @@ class _ProtocolGraphWalker:
         Args:
           allowed: An iterable of command names that should be allowed.
         Returns: A tuple of (command, value); see _split_proto_line.
+
         Raises:
           UnexpectedCommandError: If an error occurred reading the line.
         """
@@ -780,9 +773,9 @@ _GRAPH_WALKER_COMMANDS = (COMMAND_HAVE, COMMAND_DONE, None)
 class SingleAckGraphWalkerImpl:
     """Graph walker implementation that speaks the single-ack protocol."""
 
-    def __init__(self, walker):
+    def __init__(self, walker) -> None:
         self.walker = walker
-        self._common = []
+        self._common: List[bytes] = []
 
     def ack(self, have_ref):
         if not self._common:
@@ -824,10 +817,10 @@ class SingleAckGraphWalkerImpl:
 class MultiAckGraphWalkerImpl:
     """Graph walker implementation that speaks the multi-ack protocol."""
 
-    def __init__(self, walker):
+    def __init__(self, walker) -> None:
         self.walker = walker
         self._found_base = False
-        self._common = []
+        self._common: List[bytes] = []
 
     def ack(self, have_ref):
         self._common.append(have_ref)
@@ -883,9 +876,9 @@ class MultiAckGraphWalkerImpl:
 class MultiAckDetailedGraphWalkerImpl:
     """Graph walker implementation speaking the multi-ack-detailed protocol."""
 
-    def __init__(self, walker):
+    def __init__(self, walker) -> None:
         self.walker = walker
-        self._common = []
+        self._common: List[bytes] = []
 
     def ack(self, have_ref):
         # Should only be called iff have_ref is common
@@ -948,10 +941,10 @@ class MultiAckDetailedGraphWalkerImpl:
 class ReceivePackHandler(PackHandler):
     """Protocol handler for downloading a pack from the client."""
 
-    def __init__(self, backend, args, proto, stateless_rpc=False, advertise_refs=False):
-        super().__init__(
-            backend, proto, stateless_rpc=stateless_rpc
-        )
+    def __init__(
+        self, backend, args, proto, stateless_rpc=False, advertise_refs=False
+    ) -> None:
+        super().__init__(backend, proto, stateless_rpc=stateless_rpc)
         self.repo = backend.open_repository(args[0])
         self.advertise_refs = advertise_refs
 
@@ -1062,7 +1055,7 @@ class ReceivePackHandler(PackHandler):
             if output:
                 self.proto.write_sideband(SIDE_BAND_CHANNEL_PROGRESS, output)
         except HookError as err:
-            self.proto.write_sideband(SIDE_BAND_CHANNEL_FATAL, str(err).encode('utf-8'))
+            self.proto.write_sideband(SIDE_BAND_CHANNEL_FATAL, str(err).encode("utf-8"))
 
     def handle(self) -> None:
         if self.advertise_refs or not self.stateless_rpc:
@@ -1071,12 +1064,14 @@ class ReceivePackHandler(PackHandler):
 
             if not refs:
                 refs = [(CAPABILITIES_REF, ZERO_SHA)]
-            logger.info(
-                "Sending capabilities: %s", self.capabilities())
+            logger.info("Sending capabilities: %s", self.capabilities())
             self.proto.write_pkt_line(
                 format_ref_line(
-                    refs[0][0], refs[0][1],
-                    self.capabilities() + symref_capabilities(symrefs)))
+                    refs[0][0],
+                    refs[0][1],
+                    self.capabilities() + symref_capabilities(symrefs),
+                )
+            )
             for i in range(1, len(refs)):
                 ref = refs[i]
                 self.proto.write_pkt_line(format_ref_line(ref[0], ref[1]))
@@ -1112,7 +1107,7 @@ class ReceivePackHandler(PackHandler):
 
 
 class UploadArchiveHandler(Handler):
-    def __init__(self, backend, args, proto, stateless_rpc=False):
+    def __init__(self, backend, args, proto, stateless_rpc=False) -> None:
         super().__init__(backend, proto, stateless_rpc)
         self.repo = backend.open_repository(args[0])
 
@@ -1160,7 +1155,7 @@ DEFAULT_HANDLERS = {
 
 
 class TCPGitRequestHandler(socketserver.StreamRequestHandler):
-    def __init__(self, handlers, *args, **kwargs):
+    def __init__(self, handlers, *args, **kwargs) -> None:
         self.handlers = handlers
         socketserver.StreamRequestHandler.__init__(self, *args, **kwargs)
 
@@ -1177,14 +1172,13 @@ class TCPGitRequestHandler(socketserver.StreamRequestHandler):
 
 
 class TCPGitServer(socketserver.TCPServer):
-
     allow_reuse_address = True
     serve = socketserver.TCPServer.serve_forever
 
     def _make_handler(self, *args, **kwargs):
         return TCPGitRequestHandler(self.handlers, *args, **kwargs)
 
-    def __init__(self, backend, listen_addr, port=TCP_GIT_PORT, handlers=None):
+    def __init__(self, backend, listen_addr, port=TCP_GIT_PORT, handlers=None) -> None:
         self.handlers = dict(DEFAULT_HANDLERS)
         if handlers is not None:
             self.handlers.update(handlers)

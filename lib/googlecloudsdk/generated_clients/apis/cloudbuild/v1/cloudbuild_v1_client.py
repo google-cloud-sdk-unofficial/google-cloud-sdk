@@ -443,7 +443,7 @@ class CloudbuildV1(base_api.BaseApiClient):
     )
 
     def Cancel(self, request, global_params=None):
-      r"""Cancels a build in progress. Note: This method only applies to global (non-regional) builds when using the legacy resource path `projects/{project_id}/builds/{id}:cancel`. To cancel regional builds, use the regional resource path: `projects/{project_id}/locations/{location}/builds/{id}:cancel`.
+      r"""Cancels a build in progress. Note: This method only cancels builds in the "global" region when using the legacy resource path projects/{project_id}/builds/{id}:cancel. For all regions, use the regional resource path: `projects/{project_id}/locations/{location}/builds/{id}:cancel`.
 
       Args:
         request: (CloudbuildProjectsBuildsCancelRequest) input message
@@ -469,7 +469,7 @@ class CloudbuildV1(base_api.BaseApiClient):
     )
 
     def Create(self, request, global_params=None):
-      r"""Starts a build with the specified configuration. This method returns a long-running `Operation`, which includes the build ID. Pass the build ID to `GetBuild` to determine the build status (such as `SUCCESS` or `FAILURE`). Note: This method only creates global (non-regional) builds when using the legacy resource path `projects/{project_id}/builds`. To create regional builds, use the regional resource path: `projects/{project_id}/locations/{location}/builds`.
+      r"""Starts a build with the specified configuration. This method returns a long-running `Operation`, which includes the build ID. Pass the build ID to `GetBuild` to determine the build status (such as `SUCCESS` or `FAILURE`). Note: This method only creates builds in the "global" region when using the legacy resource path projects/{project_id}/builds. For all regions, use the regional resource path: `projects/{project_id}/locations/{location}/builds`.
 
       Args:
         request: (CloudbuildProjectsBuildsCreateRequest) input message
@@ -495,7 +495,7 @@ class CloudbuildV1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Returns information about a previously requested build. The `Build` that is returned includes its status (such as `SUCCESS`, `FAILURE`, or `WORKING`), and timing information. Note: This method only applies to global (non-regional) builds when using the legacy resource path `projects/{project_id}/builds/{id}`. To fetch regional builds, use the regional resource path: `projects/{project_id}/locations/{location}/builds/{id}`.
+      r"""Returns information about a previously requested build. The `Build` that is returned includes its status (such as `SUCCESS`, `FAILURE`, or `WORKING`), and timing information. Note: This method only gets builds in the "global" region when using the legacy resource path projects/{project_id}/builds/{id}. For all regions, use the regional resource path: `projects/{project_id}/locations/{location}/builds/{id}`.
 
       Args:
         request: (CloudbuildProjectsBuildsGetRequest) input message
@@ -521,7 +521,7 @@ class CloudbuildV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists previously requested builds. Previously requested builds may still be in-progress, or may have finished successfully or unsuccessfully. Note: This method only lists global (non-regional) builds when using the legacy resource path `projects/{project_id}/builds`. To list regional builds, use the regional resource path: `projects/{project_id}/locations/{location}/builds`.
+      r"""Lists previously requested builds. Previously requested builds may still be in-progress, or may have finished successfully or unsuccessfully. Note: This method only lists builds in the "global" region when using the legacy resource path projects/{project_id}/builds. For all regions, use the regional resource path: `projects/{project_id}/locations/{location}/builds`.
 
       Args:
         request: (CloudbuildProjectsBuildsListRequest) input message
@@ -547,7 +547,7 @@ class CloudbuildV1(base_api.BaseApiClient):
     )
 
     def Retry(self, request, global_params=None):
-      r"""Creates a new build based on the specified build. Note: This method only applies to global (non-regional) builds when using the legacy resource path `projects/{project_id}/builds/{id}:retry`. To retry regional builds, use the regional resource path: `projects/{project_id}/locations/{location}/builds/{id}:retry`. This method creates a new build using the original build request, which may or may not result in an identical build. For triggered builds: * Triggered builds resolve to a precise revision; therefore a retry of a triggered build will result in a build that uses the same revision. For non-triggered builds that specify `RepoSource`: * If the original build built from the tip of a branch, the retried build will build from the tip of that branch, which may not be the same revision as the original build. * If the original build specified a commit sha or revision ID, the retried build will use the identical source. For builds that specify `StorageSource`: * If the original build pulled source from Cloud Storage without specifying the generation of the object, the new build will use the current object, which may be different from the original build source. * If the original build pulled source from Cloud Storage and specified the generation of the object, the new build will attempt to use the same object, which may or may not be available depending on the bucket's lifecycle management settings.
+      r"""Creates a new build based on the specified build. Note: This method only creates builds in the "global" region when using the legacy resource path projects/{project_id}/builds/{id}:retry. For all regions, use the regional resource path: `projects/{project_id}/locations/{location}/builds/{id}:retry`. This method creates a new build using the original build request, which may or may not result in an identical build. For triggered builds: * Triggered builds resolve to a precise revision; therefore a retry of a triggered build will result in a build that uses the same revision. For non-triggered builds that specify `RepoSource`: * If the original build built from the tip of a branch, the retried build will build from the tip of that branch, which may not be the same revision as the original build. * If the original build specified a commit sha or revision ID, the retried build will use the identical source. For builds that specify `StorageSource`: * If the original build pulled source from Cloud Storage without specifying the generation of the object, the new build will use the current object, which may be different from the original build source. * If the original build pulled source from Cloud Storage and specified the generation of the object, the new build will attempt to use the same object, which may or may not be available depending on the bucket's lifecycle management settings.
 
       Args:
         request: (RetryBuildRequest) input message
@@ -1266,7 +1266,7 @@ class CloudbuildV1(base_api.BaseApiClient):
     )
 
     def Cancel(self, request, global_params=None):
-      r"""Cancels a build in progress. Note: This method only applies to global (non-regional) builds when using the legacy resource path `projects/{project_id}/builds/{id}:cancel`. To cancel regional builds, use the regional resource path: `projects/{project_id}/locations/{location}/builds/{id}:cancel`.
+      r"""Cancels a build in progress. Note: This method only cancels builds in the "global" region when using the legacy resource path projects/{project_id}/builds/{id}:cancel. For all regions, use the regional resource path: `projects/{project_id}/locations/{location}/builds/{id}:cancel`.
 
       Args:
         request: (CancelBuildRequest) input message
@@ -1293,7 +1293,7 @@ class CloudbuildV1(base_api.BaseApiClient):
     )
 
     def Create(self, request, global_params=None):
-      r"""Starts a build with the specified configuration. This method returns a long-running `Operation`, which includes the build ID. Pass the build ID to `GetBuild` to determine the build status (such as `SUCCESS` or `FAILURE`). Note: This method only creates global (non-regional) builds when using the legacy resource path `projects/{project_id}/builds`. To create regional builds, use the regional resource path: `projects/{project_id}/locations/{location}/builds`.
+      r"""Starts a build with the specified configuration. This method returns a long-running `Operation`, which includes the build ID. Pass the build ID to `GetBuild` to determine the build status (such as `SUCCESS` or `FAILURE`). Note: This method only creates builds in the "global" region when using the legacy resource path projects/{project_id}/builds. For all regions, use the regional resource path: `projects/{project_id}/locations/{location}/builds`.
 
       Args:
         request: (CloudbuildProjectsLocationsBuildsCreateRequest) input message
@@ -1320,7 +1320,7 @@ class CloudbuildV1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Returns information about a previously requested build. The `Build` that is returned includes its status (such as `SUCCESS`, `FAILURE`, or `WORKING`), and timing information. Note: This method only applies to global (non-regional) builds when using the legacy resource path `projects/{project_id}/builds/{id}`. To fetch regional builds, use the regional resource path: `projects/{project_id}/locations/{location}/builds/{id}`.
+      r"""Returns information about a previously requested build. The `Build` that is returned includes its status (such as `SUCCESS`, `FAILURE`, or `WORKING`), and timing information. Note: This method only gets builds in the "global" region when using the legacy resource path projects/{project_id}/builds/{id}. For all regions, use the regional resource path: `projects/{project_id}/locations/{location}/builds/{id}`.
 
       Args:
         request: (CloudbuildProjectsLocationsBuildsGetRequest) input message
@@ -1347,7 +1347,7 @@ class CloudbuildV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists previously requested builds. Previously requested builds may still be in-progress, or may have finished successfully or unsuccessfully. Note: This method only lists global (non-regional) builds when using the legacy resource path `projects/{project_id}/builds`. To list regional builds, use the regional resource path: `projects/{project_id}/locations/{location}/builds`.
+      r"""Lists previously requested builds. Previously requested builds may still be in-progress, or may have finished successfully or unsuccessfully. Note: This method only lists builds in the "global" region when using the legacy resource path projects/{project_id}/builds. For all regions, use the regional resource path: `projects/{project_id}/locations/{location}/builds`.
 
       Args:
         request: (CloudbuildProjectsLocationsBuildsListRequest) input message
@@ -1374,7 +1374,7 @@ class CloudbuildV1(base_api.BaseApiClient):
     )
 
     def Retry(self, request, global_params=None):
-      r"""Creates a new build based on the specified build. Note: This method only applies to global (non-regional) builds when using the legacy resource path `projects/{project_id}/builds/{id}:retry`. To retry regional builds, use the regional resource path: `projects/{project_id}/locations/{location}/builds/{id}:retry`. This method creates a new build using the original build request, which may or may not result in an identical build. For triggered builds: * Triggered builds resolve to a precise revision; therefore a retry of a triggered build will result in a build that uses the same revision. For non-triggered builds that specify `RepoSource`: * If the original build built from the tip of a branch, the retried build will build from the tip of that branch, which may not be the same revision as the original build. * If the original build specified a commit sha or revision ID, the retried build will use the identical source. For builds that specify `StorageSource`: * If the original build pulled source from Cloud Storage without specifying the generation of the object, the new build will use the current object, which may be different from the original build source. * If the original build pulled source from Cloud Storage and specified the generation of the object, the new build will attempt to use the same object, which may or may not be available depending on the bucket's lifecycle management settings.
+      r"""Creates a new build based on the specified build. Note: This method only creates builds in the "global" region when using the legacy resource path projects/{project_id}/builds/{id}:retry. For all regions, use the regional resource path: `projects/{project_id}/locations/{location}/builds/{id}:retry`. This method creates a new build using the original build request, which may or may not result in an identical build. For triggered builds: * Triggered builds resolve to a precise revision; therefore a retry of a triggered build will result in a build that uses the same revision. For non-triggered builds that specify `RepoSource`: * If the original build built from the tip of a branch, the retried build will build from the tip of that branch, which may not be the same revision as the original build. * If the original build specified a commit sha or revision ID, the retried build will use the identical source. For builds that specify `StorageSource`: * If the original build pulled source from Cloud Storage without specifying the generation of the object, the new build will use the current object, which may be different from the original build source. * If the original build pulled source from Cloud Storage and specified the generation of the object, the new build will attempt to use the same object, which may or may not be available depending on the bucket's lifecycle management settings.
 
       Args:
         request: (RetryBuildRequest) input message

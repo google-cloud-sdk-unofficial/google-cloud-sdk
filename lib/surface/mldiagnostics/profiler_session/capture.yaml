@@ -77,6 +77,21 @@
         profilerSession.profilerTargets: '{__relative_name__}'
       required: true
       repeated: true
+    - arg_name: kind
+      api_field: profilerSession.kind
+      required: false
+      default: on-demand
+      help_text: |-
+        Profiler session kind.
+      choices:
+      - arg_value: on-demand
+        enum_value: KIND_ON_DEMAND
+        help_text: |-
+          Profiler session created via Command Line Interface / UI / API on demand request.
+      - arg_value: snapshot
+        enum_value: KIND_SNAPSHOT
+        help_text: |-
+          Profiler session is created via continuous profiling flow to capture a snapshot.
     - arg_name: host-tracer-level
       api_field: profilerSession.hostTracerLevel
       required: false

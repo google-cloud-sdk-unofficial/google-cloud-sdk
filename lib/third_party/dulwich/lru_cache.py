@@ -21,14 +21,13 @@
 
 """A simple least-recently-used (LRU) cache."""
 
-from typing import Generic, TypeVar, Optional, Callable, Dict, Iterable, Iterator
-
+from typing import Callable, Dict, Generic, Iterable, Iterator, Optional, TypeVar
 
 _null_key = object()
 
 
-K = TypeVar('K')
-V = TypeVar('V')
+K = TypeVar("K")
+V = TypeVar("V")
 
 
 class _LRUNode(Generic[K, V]):
@@ -40,7 +39,7 @@ class _LRUNode(Generic[K, V]):
     next_key: K
     size: Optional[int]
 
-    def __init__(self, key: K, value: V, cleanup=None):
+    def __init__(self, key: K, value: V, cleanup=None) -> None:
         self.prev = None
         self.next_key = _null_key  # type: ignore
         self.key = key
@@ -51,7 +50,7 @@ class _LRUNode(Generic[K, V]):
         #       actually costs us much of anything in normal usage
         self.size = None
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         if self.prev is None:
             prev_key = None
         else:
@@ -77,7 +76,9 @@ class LRUCache(Generic[K, V]):
     _least_recently_used: Optional[_LRUNode[K, V]]
     _most_recently_used: Optional[_LRUNode[K, V]]
 
-    def __init__(self, max_cache: int = 100, after_cleanup_count: Optional[int] = None) -> None:
+    def __init__(
+        self, max_cache: int = 100, after_cleanup_count: Optional[int] = None
+    ) -> None:
         self._cache: Dict[K, _LRUNode[K, V]] = {}
         # The "HEAD" of the lru linked list
         self._most_recently_used = None
@@ -132,36 +133,38 @@ class LRUCache(Generic[K, V]):
                 raise AssertionError(
                     "the _most_recently_used entry is not"
                     " supposed to have a previous entry"
-                    " %s" % (node,)
+                    f" {node}"
                 )
         while node is not None:
             if node.next_key is _null_key:
                 if node is not self._least_recently_used:
                     raise AssertionError(
-                        "only the last node should have" " no next value: %s" % (node,)
+                        "only the last node should have" f" no next value: {node}"
                     )
                 node_next = None
             else:
                 node_next = self._cache[node.next_key]
                 if node_next.prev is not node:
                     raise AssertionError(
-                        "inconsistency found, node.next.prev" " != node: %s" % (node,)
+                        "inconsistency found, node.next.prev" f" != node: {node}"
                     )
             if node.prev is None:
                 if node is not self._most_recently_used:
                     raise AssertionError(
                         "only the _most_recently_used should"
-                        " not have a previous node: %s" % (node,)
+                        f" not have a previous node: {node}"
                     )
             else:
                 if node.prev.next_key != node.key:
                     raise AssertionError(
-                        "inconsistency found, node.prev.next" " != node: %s" % (node,)
+                        "inconsistency found, node.prev.next" f" != node: {node}"
                     )
             yield node
             node = node_next
 
-    def add(self, key: K, value: V, cleanup: Optional[Callable[[K, V], None]] = None) -> None:
+    def add(
+        self, key: K, value: V, cleanup: Optional[Callable[[K, V], None]] = None
+    ) -> None:
         """Add a new value to the cache.
 
         Also, if the entry is ever removed from the cache, call
@@ -314,8 +317,10 @@ class LRUSizeCache(LRUCache[K, V]):
     _compute_size: Callable[[V], int]
 
     def __init__(
-            self, max_size: int = 1024 * 1024, after_cleanup_size: Optional[int] = None,
-            compute_size: Optional[Callable[[V], int]] = None
+        self,
+        max_size: int = 1024 * 1024,
+        after_cleanup_size: Optional[int] = None,
+        compute_size: Optional[Callable[[V], int]] = None,
     ) -> None:
         """Create a new LRUSizeCache.
 
@@ -339,7 +344,9 @@ class LRUSizeCache(LRUCache[K, V]):
         self._update_max_size(max_size, after_cleanup_size=after_cleanup_size)
         LRUCache.__init__(self, max_cache=max(int(max_size / 512), 1))
 
-    def add(self, key: K, value: V, cleanup: Optional[Callable[[K, V], None]] = None) -> None:
+    def add(
+        self, key: K, value: V, cleanup: Optional[Callable[[K, V], None]] = None
+    ) -> None:
         """Add a new value to the cache.
 
         Also, if the entry is ever removed from the cache, call
@@ -399,7 +406,9 @@ class LRUSizeCache(LRUCache[K, V]):
         max_cache = max(int(max_size / 512), 1)
         self._update_max_cache(max_cache)
 
-    def _update_max_size(self, max_size: int, after_cleanup_size: Optional[int] = None) -> None:
+    def _update_max_size(
+        self, max_size: int, after_cleanup_size: Optional[int] = None
+    ) -> None:
         self._max_size = max_size
         if after_cleanup_size is None:
             self._after_cleanup_size = self._max_size * 8 // 10
