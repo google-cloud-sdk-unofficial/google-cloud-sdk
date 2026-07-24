@@ -42,6 +42,7 @@ CPU_THROTTLE_ANNOTATION = 'run.googleapis.com/cpu-throttling'
 COLD_START_BOOST_ANNOTATION = 'run.googleapis.com/startup-cpu-boost'
 DISABLE_HEALTH_CHECK_ANNOTATION = 'run.googleapis.com/health-check-disabled'
 DISABLE_IAM_ANNOTATION = 'run.googleapis.com/invoker-iam-disabled'
+DISABLE_IAM_ANNOTATION_VALUE_DISABLED = 'true'
 DISABLE_URL_ANNOTATION = 'run.googleapis.com/default-url-disabled'
 
 EGRESS_SETTINGS_ANNOTATION = 'run.googleapis.com/vpc-access-egress'

@@ -231,6 +231,7 @@ class DataDiscovery(base.Command):
       'Status code: {status_code}. {status_message}.'
   )
   def Run(self, args):
+    setattr(args, 'scan_type', 'DISCOVERY')
     update_mask = datascan.GenerateUpdateMask(args)
     if len(update_mask) < 1:
       raise exceptions.HttpException(
@@ -240,7 +241,6 @@ class DataDiscovery(base.Command):
     datascan_ref = args.CONCEPTS.datascan.Parse()
     dataplex_client = dataplex_util.GetClientInstance()
     message = dataplex_util.GetMessageModule()
-    setattr(args, 'scan_type', 'DISCOVERY')
     update_req_op = dataplex_client.projects_locations_dataScans.Patch(
         message.DataplexProjectsLocationsDataScansPatchRequest(
             name=datascan_ref.RelativeName(),

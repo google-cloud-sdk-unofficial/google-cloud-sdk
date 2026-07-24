@@ -104,11 +104,12 @@ ssl-principal-mapping-rules:
     to apply the change. An empty string means that the default Kafka behavior is used.
     Example: "RULE:^CN=(.*?),OU=ServiceUsers.*$/$1@example.com/,DEFAULT"
 
-broker-disk-size-gib:
+broker-disk:
   api_field: cluster.brokerCapacityConfig.diskSizeGib
-  arg_name: broker-disk-size-gib
+  arg_name: broker-disk
+  type: googlecloudsdk.command_lib.managed_kafka.util:ParseBrokerDisk
   help_text: |
-    The amount of local disk to provision for each broker in Gibibytes. Minimum: 100 GiB.
+    The amount of local disk to provision for each broker. Can be specified as a plain integer (defaults to GiB) or with units (e.g., 500Gi, 500GiB, 1Ti, 1TiB). Minimum: 100 Gibibytes.
 
 # Trying to define this as a resouce causes test failures in yaml_command_schema_test so we define
 # it as a flag instead.

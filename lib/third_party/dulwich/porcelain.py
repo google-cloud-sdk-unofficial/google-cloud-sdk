@@ -43,6 +43,9 @@ Currently implemented:
  * remote{_add}
  * receive-pack
  * reset
+ * submodule_add
+ * submodule_init
+ * submodule_list
  * rev-list
  * tag{_create,_delete,_list}
  * upload-pack
@@ -52,6 +55,10 @@ Currently implemented:
 
 These functions are meant to behave similarly to the git subcommands.
 Differences in behaviour are considered bugs.
+
+Note: one of the consequences of this is that paths tend to be
+interpreted relative to the current working directory rather than relative
+to the repository root.
 
 Functions should generally accept both unicode strings and bytestrings
 """
@@ -66,12 +73,10 @@ import datetime
 import os
 from pathlib import Path
 import posixpath
-import shutil
 import stat
 import sys
 import time
 from typing import (
-    Dict,
     Optional,
     Tuple,
     Union,
@@ -84,7 +89,10 @@ from dulwich.client import (
     get_transport_and_path,
 )
 from dulwich.config import (
+    Config,
+    ConfigFile,
     StackedConfig,
+    read_submodules,
 )
 from dulwich.diff_tree import (
     CHANGE_ADD,
@@ -104,6 +112,8 @@ from dulwich.ignore import IgnoreFilterManager
 from dulwich.index import (
     blob_from_path_and_stat,
     get_unstaged_changes,
+    build_file_from_blob,
+    _fs_to_tree_path,
 )
 from dulwich.object_store import (
     tree_lookup_path,
@@ -124,7 +134,7 @@ from dulwich.objectspec import (
 )
 from dulwich.pack import (
     write_pack_index,
-    write_pack_objects,
+    write_pack_from_container,
 )
 from dulwich.patch import write_tree_diff
 from dulwich.protocol import (
@@ -132,10 +142,9 @@ from dulwich.protocol import (
     ZERO_SHA,
 )
 from dulwich.refs import (
-    ANNOTATED_TAG_SUFFIX,
     LOCAL_BRANCH_PREFIX,
-    strip_peeled_refs,
-    RefsContainer,
+    LOCAL_TAG_PREFIX,
+    _import_remote_refs,
 )
 from dulwich.repo import BaseRepo, Repo
 from dulwich.server import (
@@ -177,13 +186,87 @@ DEFAULT_ENCODING = "utf-8"
 class Error(Exception):
     """Porcelain-based error. """
 
-    def __init__(self, msg, inner=None):
-        super(Error, self).__init__(msg)
-        self.inner = inner
+    def __init__(self, msg):
+        super().__init__(msg)
 
 
 class RemoteExists(Error):
     """Raised when the remote already exists."""
+
+
+class TimezoneFormatError(Error):
+    """Raised when the timezone cannot be determined from a given string."""
+
+
+def parse_timezone_format(tz_str):
+    """Parse given string and attempt to return a timezone offset.
+
+    Different formats are considered in the following order:
+
+     - Git internal format: <unix timestamp> <timezone offset>
+     - RFC 2822: e.g. Mon, 20 Nov 1995 19:12:08 -0500
+     - ISO 8601: e.g. 1995-11-20T19:12:08-0500
+
+    Args:
+      tz_str: datetime string
+    Returns: Timezone offset as integer
+    Raises:
+      TimezoneFormatError: if timezone information cannot be extracted
+   """
+    import re
+
+    # Git internal format
+    internal_format_pattern = re.compile("^[0-9]+ [+-][0-9]{,4}$")
+    if re.match(internal_format_pattern, tz_str):
+        try:
+            tz_internal = parse_timezone(tz_str.split(" ")[1].encode(DEFAULT_ENCODING))
+            return tz_internal[0]
+        except ValueError:
+            pass
+
+    # RFC 2822
+    import email.utils
+    rfc_2822 = email.utils.parsedate_tz(tz_str)
+    if rfc_2822:
+        return rfc_2822[9]
+
+    # ISO 8601
+
+    # Supported offsets:
+    # sHHMM, sHH:MM, sHH
+    iso_8601_pattern = re.compile("[0-9] ?([+-])([0-9]{2})(?::(?=[0-9]{2}))?([0-9]{2})?$")
+    match = re.search(iso_8601_pattern, tz_str)
+    total_secs = 0
+    if match:
+        sign, hours, minutes = match.groups()
+        total_secs += int(hours) * 3600
+        if minutes:
+            total_secs += int(minutes) * 60
+        total_secs = -total_secs if sign == "-" else total_secs
+        return total_secs
+
+    # YYYY.MM.DD, MM/DD/YYYY, DD.MM.YYYY contain no timezone information
+
+    raise TimezoneFormatError(tz_str)
+
+
+def get_user_timezones():
+    """Retrieve local timezone as described in
+    https://raw.githubusercontent.com/git/git/v2.3.0/Documentation/date-formats.txt
+    Returns: A tuple containing author timezone, committer timezone
+    """
+    local_timezone = time.localtime().tm_gmtoff
+
+    if os.environ.get("GIT_AUTHOR_DATE"):
+        author_timezone = parse_timezone_format(os.environ["GIT_AUTHOR_DATE"])
+    else:
+        author_timezone = local_timezone
+    if os.environ.get("GIT_COMMITTER_DATE"):
+        commit_timezone = parse_timezone_format(os.environ["GIT_COMMITTER_DATE"])
+    else:
+        commit_timezone = local_timezone
+
+    return author_timezone, commit_timezone
 
 
 def open_repo(path_or_repo):
@@ -218,56 +301,44 @@ def path_to_tree_path(repopath, path, tree_encoding=DEFAULT_ENCODING):
       path: A path, absolute or relative to the cwd
     Returns: A path formatted for use in e.g. an index
     """
-    # Pathlib resolve before Python 3.6 could raises FileNotFoundError in case
-    # there is no file matching the path so we reuse the old implementation for
-    # Python 3.5
-    if sys.version_info < (3, 6):
-        if not isinstance(path, bytes):
-            path = os.fsencode(path)
-        if not isinstance(repopath, bytes):
-            repopath = os.fsencode(repopath)
-        treepath = os.path.relpath(path, repopath)
-        if treepath.startswith(b".."):
-            err_msg = "Path %r not in repo path (%r)" % (path, repopath)
-            raise ValueError(err_msg)
-        if os.path.sep != "/":
-            treepath = treepath.replace(os.path.sep.encode("ascii"), b"/")
-        return treepath
-    else:
-        # Resolve might returns a relative path on Windows
-        # https://bugs.python.org/issue38671
-        if sys.platform == "win32":
-            path = os.path.abspath(path)
+    # Resolve might returns a relative path on Windows
+    # https://bugs.python.org/issue38671
+    if sys.platform == "win32":
+        path = os.path.abspath(path)
 
-        path = Path(path)
-        resolved_path = path.resolve()
+    path = Path(path)
+    resolved_path = path.resolve()
 
-        # Resolve and abspath seems to behave differently regarding symlinks,
-        # as we are doing abspath on the file path, we need to do the same on
-        # the repo path or they might not match
-        if sys.platform == "win32":
-            repopath = os.path.abspath(repopath)
+    # Resolve and abspath seems to behave differently regarding symlinks,
+    # as we are doing abspath on the file path, we need to do the same on
+    # the repo path or they might not match
+    if sys.platform == "win32":
+        repopath = os.path.abspath(repopath)
 
-        repopath = Path(repopath).resolve()
+    repopath = Path(repopath).resolve()
 
-        try:
-            relpath = resolved_path.relative_to(repopath)
-        except ValueError:
-            # If path is a symlink that points to a file outside the repo, we
-            # want the relpath for the link itself, not the resolved target
-            if path.is_symlink():
-                parent = path.parent.resolve()
-                relpath = (parent / path.name).relative_to(repopath)
-            else:
-                raise
-        if sys.platform == "win32":
-            return str(relpath).replace(os.path.sep, "/").encode(tree_encoding)
+    try:
+        relpath = resolved_path.relative_to(repopath)
+    except ValueError:
+        # If path is a symlink that points to a file outside the repo, we
+        # want the relpath for the link itself, not the resolved target
+        if path.is_symlink():
+            parent = path.parent.resolve()
+            relpath = (parent / path.name).relative_to(repopath)
         else:
-            return bytes(relpath)
+            raise
+    if sys.platform == "win32":
+        return str(relpath).replace(os.path.sep, "/").encode(tree_encoding)
+    else:
+        return bytes(relpath)
 
 
 class DivergedBranches(Error):
     """Branches have diverged and fast-forward is not possible."""
+
+    def __init__(self, current_sha, new_sha):
+        self.current_sha = current_sha
+        self.new_sha = new_sha
 
 
 def check_diverged(repo, current_sha, new_sha):
@@ -336,13 +407,28 @@ def symbolic_ref(repo, ref_name, force=False):
         repo_obj.refs.set_symbolic_ref(b"HEAD", ref_path)
 
 
+def pack_refs(repo, all=False):
+    with open_repo_closing(repo) as repo_obj:
+        refs = repo_obj.refs
+        packed_refs = {
+            ref: refs[ref]
+            for ref in refs
+            if (all or ref.startswith(LOCAL_TAG_PREFIX)) and ref != b"HEAD"
+        }
+
+        refs.add_packed_refs(packed_refs)
+
+
 def commit(
     repo=".",
     message=None,
     author=None,
+    author_timezone=None,
     committer=None,
+    commit_timezone=None,
     encoding=None,
     no_verify=False,
+    signoff=False,
 ):
     """Create a new commit.
 
@@ -350,25 +436,37 @@ def commit(
       repo: Path to repository
       message: Optional commit message
       author: Optional author name and email
+      author_timezone: Author timestamp timezone
       committer: Optional committer name and email
+      commit_timezone: Commit timestamp timezone
       no_verify: Skip pre-commit and commit-msg hooks
+      signoff: GPG Sign the commit (bool, defaults to False,
+        pass True to use default GPG key,
+        pass a str containing Key ID to use a specific GPG key)
     Returns: SHA1 of the new commit
     """
     # FIXME: Support --all argument
-    # FIXME: Support --signoff argument
     if getattr(message, "encode", None):
         message = message.encode(encoding or DEFAULT_ENCODING)
     if getattr(author, "encode", None):
         author = author.encode(encoding or DEFAULT_ENCODING)
     if getattr(committer, "encode", None):
         committer = committer.encode(encoding or DEFAULT_ENCODING)
+    local_timezone = get_user_timezones()
+    if author_timezone is None:
+        author_timezone = local_timezone[0]
+    if commit_timezone is None:
+        commit_timezone = local_timezone[1]
     with open_repo_closing(repo) as r:
         return r.do_commit(
             message=message,
             author=author,
+            author_timezone=author_timezone,
             committer=committer,
+            commit_timezone=commit_timezone,
             encoding=encoding,
             no_verify=no_verify,
+            sign=signoff if isinstance(signoff, (str, bool)) else None,
         )
 
 
@@ -411,8 +509,10 @@ def clone(
     checkout=None,
     errstream=default_bytes_err_stream,
     outstream=None,
-    origin=b"origin",
-    depth=None,
+    origin: Optional[str] = "origin",
+    depth: Optional[int] = None,
+    branch: Optional[Union[str, bytes]] = None,
+    config: Optional[Config] = None,
     **kwargs
 ):
     """Clone a local or remote git repository.
@@ -426,9 +526,11 @@ def clone(
       outstream: Optional stream to write progress to (deprecated)
       origin: Name of remote from the repository used to clone
       depth: Depth to fetch at
+      branch: Optional branch or tag to be used as HEAD in the new repository
+        instead of the cloned repository's HEAD.
+      config: Configuration to use
     Returns: The new repository
     """
-    # TODO(user): This code overlaps quite a bit with Repo.clone
     if outstream is not None:
         import warnings
 
@@ -437,7 +539,10 @@ def clone(
             DeprecationWarning,
             stacklevel=3,
         )
-        errstream = outstream
+        # TODO(user): Capture logging output and stream to errstream
+
+    if config is None:
+        config = StackedConfig.default()
 
     if checkout is None:
         checkout = not bare
@@ -447,51 +552,25 @@ def clone(
     if target is None:
         target = source.split("/")[-1]
 
-    if not os.path.exists(target):
-        os.mkdir(target)
+    if isinstance(branch, str):
+        branch = branch.encode(DEFAULT_ENCODING)
 
-    if bare:
-        r = Repo.init_bare(target)
-    else:
-        r = Repo.init(target)
+    mkdir = not os.path.exists(target)
 
-    reflog_message = b"clone: from " + source.encode("utf-8")
-    try:
-        target_config = r.get_config()
-        if not isinstance(source, bytes):
-            source = source.encode(DEFAULT_ENCODING)
-        target_config.set((b"remote", origin), b"url", source)
-        target_config.set(
-            (b"remote", origin),
-            b"fetch",
-            b"+refs/heads/*:refs/remotes/" + origin + b"/*",
-        )
-        target_config.write_to_path()
-        fetch_result = fetch(
-            r,
-            origin,
-            errstream=errstream,
-            message=reflog_message,
-            depth=depth,
-            **kwargs
-        )
-        for key, target in fetch_result.symrefs.items():
-            r.refs.set_symbolic_ref(key, target)
-        try:
-            head = r[fetch_result.refs[b"HEAD"]]
-        except KeyError:
-            head = None
-        else:
-            r[b"HEAD"] = head.id
-        if checkout and not bare and head is not None:
-            errstream.write(b"Checking out " + head.id + b"\n")
-            r.reset_index(head.tree)
-    except BaseException:
-        shutil.rmtree(target)
-        r.close()
-        raise
+    (client, path) = get_transport_and_path(
+        source, config=config, **kwargs)
 
-    return r
+    return client.clone(
+        path,
+        target,
+        mkdir=mkdir,
+        bare=bare,
+        origin=origin,
+        checkout=checkout,
+        branch=branch,
+        progress=errstream.write,
+        depth=depth,
+    )
 
 
 def add(repo=".", paths=None):
@@ -501,6 +580,10 @@ def add(repo=".", paths=None):
       repo: Repository for the files
       paths: Paths to add.  No value passed stages all modified files.
     Returns: Tuple with set of added files and ignored files
+
+    If the repository contains ignored directories, the returned set will
+    contain the path to an ignored directory (with trailing slash). Individual
+    files within ignored directories will not be returned.
     """
     ignored = set()
     with open_repo_closing(repo) as r:
@@ -518,8 +601,11 @@ def add(repo=".", paths=None):
         if not isinstance(paths, list):
             paths = [paths]
         for p in paths:
-            relpath = str(Path(p).resolve().relative_to(repo_path))
-            # FIXME: Support patterns, directories.
+            path = Path(p)
+            relpath = str(path.resolve().relative_to(repo_path))
+            # FIXME: Support patterns
+            if path.is_dir():
+                relpath = os.path.join(relpath, "")
             if ignore_manager.is_ignored(relpath):
                 ignored.add(relpath)
                 continue
@@ -543,7 +629,7 @@ def _is_subdir(subdir, parentdir):
 def clean(repo=".", target_dir=None):
     """Remove any untracked files from the target directory recursively
 
-    Equivalent to running `git clean -fd` in target_dir.
+    Equivalent to running ``git clean -fd`` in target_dir.
 
     Args:
       repo: Repository where the files may be tracked
@@ -602,8 +688,8 @@ def remove(repo=".", paths=None, cached=False):
             tree_path = path_to_tree_path(r.path, p)
             try:
                 index_sha = index[tree_path].sha
-            except KeyError:
-                raise Error("%s did not match any files" % p)
+            except KeyError as exc:
+                raise Error("%s did not match any files" % p) from exc
 
             if not cached:
                 try:
@@ -613,7 +699,7 @@ def remove(repo=".", paths=None, cached=False):
                 else:
                     try:
                         blob = blob_from_path_and_stat(full_path, st)
-                    except IOError:
+                    except OSError:
                         pass
                     else:
                         try:
@@ -697,7 +783,7 @@ def print_tag(tag, decode, outstream=sys.stdout):
     timezone_str = format_timezone(tag.tag_timezone).decode("ascii")
     outstream.write("Date:   " + time_str + " " + timezone_str + "\n")
     outstream.write("\n")
-    outstream.write(decode(tag.message) + "\n")
+    outstream.write(decode(tag.message))
     outstream.write("\n")
 
 
@@ -866,7 +952,7 @@ def show(
             show_object(r, o, decode, outstream)
 
 
-def diff_tree(repo, old_tree, new_tree, outstream=sys.stdout):
+def diff_tree(repo, old_tree, new_tree, outstream=default_bytes_out_stream):
     """Compares the content and mode of blobs found via two tree objects.
 
     Args:
@@ -892,13 +978,64 @@ def rev_list(repo, commits, outstream=sys.stdout):
             outstream.write(entry.commit.id + b"\n")
 
 
-def tag(*args, **kwargs):
-    import warnings
+def _canonical_part(url: str) -> str:
+    name = url.rsplit('/', 1)[-1]
+    if name.endswith('.git'):
+        name = name[:-4]
+    return name
 
-    warnings.warn(
-        "tag has been deprecated in favour of tag_create.", DeprecationWarning
-    )
-    return tag_create(*args, **kwargs)
+
+def submodule_add(repo, url, path=None, name=None):
+    """Add a new submodule.
+
+    Args:
+      repo: Path to repository
+      url: URL of repository to add as submodule
+      path: Path where submodule should live
+    """
+    with open_repo_closing(repo) as r:
+        if path is None:
+            path = os.path.relpath(_canonical_part(url), r.path)
+        if name is None:
+            name = path
+
+        # TODO(user): Move this logic to dulwich.submodule
+        gitmodules_path = os.path.join(r.path, ".gitmodules")
+        try:
+            config = ConfigFile.from_path(gitmodules_path)
+        except FileNotFoundError:
+            config = ConfigFile()
+            config.path = gitmodules_path
+        config.set(("submodule", name), "url", url)
+        config.set(("submodule", name), "path", path)
+        config.write_to_path()
+
+
+def submodule_init(repo):
+    """Initialize submodules.
+
+    Args:
+      repo: Path to repository
+    """
+    with open_repo_closing(repo) as r:
+        config = r.get_config()
+        gitmodules_path = os.path.join(r.path, '.gitmodules')
+        for path, url, name in read_submodules(gitmodules_path):
+            config.set((b'submodule', name), b'active', True)
+            config.set((b'submodule', name), b'url', url)
+        config.write_to_path()
+
+
+def submodule_list(repo):
+    """List submodules.
+
+    Args:
+      repo: Path to repository
+    """
+    from .submodule import iter_cached_submodules
+    with open_repo_closing(repo) as r:
+        for path, sha in iter_cached_submodules(r.object_store, r[r.head()].tree):
+            yield path, sha.decode(DEFAULT_ENCODING)
 
 
 def tag_create(
@@ -911,6 +1048,7 @@ def tag_create(
     tag_time=None,
     tag_timezone=None,
     sign=False,
+    encoding=DEFAULT_ENCODING
 ):
     """Creates a tag in git via dulwich calls:
 
@@ -923,7 +1061,9 @@ def tag_create(
       objectish: object the tag should point at, defaults to HEAD
       tag_time: Optional time for annotated tag
       tag_timezone: Optional timezone for annotated tag
-      sign: GPG Sign the tag
+      sign: GPG Sign the tag (bool, defaults to False,
+        pass True to use default GPG key,
+        pass a str containing Key ID to use a specific GPG key)
     """
 
     with open_repo_closing(repo) as r:
@@ -936,39 +1076,26 @@ def tag_create(
                 # TODO(user): Don't use repo private method.
                 author = r._get_user_identity(r.get_config_stack())
             tag_obj.tagger = author
-            tag_obj.message = message
+            tag_obj.message = message + "\n".encode(encoding)
             tag_obj.name = tag
             tag_obj.object = (type(object), object.id)
             if tag_time is None:
                 tag_time = int(time.time())
             tag_obj.tag_time = tag_time
             if tag_timezone is None:
-                # TODO(user) Use current user timezone rather than UTC
-                tag_timezone = 0
+                tag_timezone = get_user_timezones()[1]
             elif isinstance(tag_timezone, str):
                 tag_timezone = parse_timezone(tag_timezone)
             tag_obj.tag_timezone = tag_timezone
             if sign:
-                import gpg
+                tag_obj.sign(sign if isinstance(sign, str) else None)
 
-                with gpg.Context(armor=True) as c:
-                    tag_obj.signature, unused_result = c.sign(tag_obj.as_raw_string())
             r.object_store.add_object(tag_obj)
             tag_id = tag_obj.id
         else:
             tag_id = object.id
 
         r.refs[_make_tag_ref(tag)] = tag_id
-
-
-def list_tags(*args, **kwargs):
-    import warnings
-
-    warnings.warn(
-        "list_tags has been deprecated in favour of tag_list.",
-        DeprecationWarning,
-    )
-    return tag_list(*args, **kwargs)
 
 
 def tag_list(repo, outstream=sys.stdout):
@@ -1031,12 +1158,11 @@ def get_remote_repo(
 
     section = (b"remote", encoded_location)
 
-    remote_name = None  # type: Optional[str]
+    remote_name: Optional[str] = None
 
     if config.has_section(section):
         remote_name = encoded_location.decode()
-        url = config.get(section, "url")
-        encoded_location = url
+        encoded_location = config.get(section, "url")
     else:
         remote_name = None
 
@@ -1088,8 +1214,10 @@ def push(
                 else:
                     try:
                         localsha = r.refs[lh]
-                    except KeyError:
-                        raise Error("No valid ref %s in local repository" % lh)
+                    except KeyError as exc:
+                        raise Error(
+                            "No valid ref %s in local repository" % lh
+                        ) from exc
                     if not force_ref and rh in refs:
                         check_diverged(r, refs[rh], localsha)
                     new_refs[rh] = localsha
@@ -1105,11 +1233,10 @@ def push(
                 generate_pack_data=r.generate_pack_data,
                 progress=errstream.write,
             )
-        except SendPackError as e:
+        except SendPackError as exc:
             raise Error(
-                "Push to " + remote_location + " failed -> " + e.args[0].decode(),
-                inner=e,
-            )
+                "Push to " + remote_location + " failed -> " + exc.args[0].decode(),
+            ) from exc
         else:
             errstream.write(
                 b"Push to " + remote_location.encode(err_encoding) + b" successful.\n"
@@ -1142,7 +1269,7 @@ def pull(
     Args:
       repo: Path to repository
       remote_location: Location of the remote
-      refspec: refspecs to fetch
+      refspecs: refspecs to fetch
       outstream: A stream file to write to output
       errstream: A stream file to write to errors
     """
@@ -1154,7 +1281,7 @@ def pull(
             refspecs = [b"HEAD"]
         selected_refs = []
 
-        def determine_wants(remote_refs):
+        def determine_wants(remote_refs, **kwargs):
             selected_refs.extend(
                 parse_reftuples(remote_refs, r.refs, refspecs, force=force)
             )
@@ -1171,13 +1298,15 @@ def pull(
             path, r, progress=errstream.write, determine_wants=determine_wants
         )
         for (lh, rh, force_ref) in selected_refs:
-            try:
-                check_diverged(r, r.refs[rh], fetch_result.refs[lh])
-            except DivergedBranches:
-                if fast_forward:
-                    raise
-                else:
-                    raise NotImplementedError("merge is not yet supported")
+            if not force_ref and rh in r.refs:
+                try:
+                    check_diverged(r, r.refs.follow(rh)[1], fetch_result.refs[lh])
+                except DivergedBranches as exc:
+                    if fast_forward:
+                        raise
+                    else:
+                        raise NotImplementedError(
+                            "merge is not yet supported") from exc
             r.refs[rh] = fetch_result.refs[lh]
         if selected_refs:
             r[b"HEAD"] = fetch_result.refs[selected_refs[0][1]]
@@ -1189,12 +1318,20 @@ def pull(
             _import_remote_refs(r.refs, remote_name, fetch_result.refs)
 
 
-def status(repo=".", ignored=False):
+def status(repo=".", ignored=False, untracked_files="all"):
     """Returns staged, unstaged, and untracked changes relative to the HEAD.
 
     Args:
       repo: Path to repository or repository object
-      ignored: Whether to include ignored files in `untracked`
+      ignored: Whether to include ignored files in untracked
+      untracked_files: How to handle untracked files, defaults to "all":
+          "no": do not return untracked files
+          "all": include all files in untracked directories
+        Using untracked_files="no" can be faster than "all" when the worktreee
+          contains many untracked files/directories.
+
+    Note: untracked_files="normal" (git's default) is not implemented.
+
     Returns: GitStatus tuple,
         staged -  dict with lists of staged paths (diff index/HEAD)
         unstaged -  list of unstaged paths (diff index/working-tree)
@@ -1210,19 +1347,30 @@ def status(repo=".", ignored=False):
         unstaged_changes = list(get_unstaged_changes(index, r.path, filter_callback))
 
         untracked_paths = get_untracked_paths(
-            r.path, r.path, index, exclude_ignored=not ignored
+            r.path,
+            r.path,
+            index,
+            exclude_ignored=not ignored,
+            untracked_files=untracked_files,
         )
-        untracked_changes = list(untracked_paths)
+        if sys.platform == "win32":
+            untracked_changes = [
+                path.replace(os.path.sep, "/") for path in untracked_paths
+            ]
+        else:
+            untracked_changes = list(untracked_paths)
 
         return GitStatus(tracked_changes, unstaged_changes, untracked_changes)
 
 
-def _walk_working_dir_paths(frompath, basepath):
+def _walk_working_dir_paths(frompath, basepath, prune_dirnames=None):
     """Get path, is_dir for files in working dir from frompath
 
     Args:
       frompath: Path to begin walk
       basepath: Path to compare to
+      prune_dirnames: Optional callback to prune dirnames during os.walk
+        dirnames will be set to result of prune_dirnames(dirpath, dirnames)
     """
     for dirpath, dirnames, filenames in os.walk(frompath):
         # Skip .git and below.
@@ -1230,6 +1378,7 @@ def _walk_working_dir_paths(frompath, basepath):
             dirnames.remove(".git")
             if dirpath != basepath:
                 continue
+
         if ".git" in filenames:
             filenames.remove(".git")
             if dirpath != basepath:
@@ -1242,8 +1391,13 @@ def _walk_working_dir_paths(frompath, basepath):
             filepath = os.path.join(dirpath, filename)
             yield filepath, False
 
+        if prune_dirnames:
+            dirnames[:] = prune_dirnames(dirpath, dirnames)
 
-def get_untracked_paths(frompath, basepath, index, exclude_ignored=False):
+
+def get_untracked_paths(
+    frompath, basepath, index, exclude_ignored=False, untracked_files="all"
+):
     """Get untracked paths.
 
     Args:
@@ -1251,22 +1405,53 @@ def get_untracked_paths(frompath, basepath, index, exclude_ignored=False):
       basepath: Path to compare to
       index: Index to check against
       exclude_ignored: Whether to exclude ignored paths
-    """
-    if exclude_ignored:
-        with open_repo_closing(frompath) as r:
-            ignore_manager = IgnoreFilterManager.from_repo(r)
-    else:
-        ignore_manager = None
+      untracked_files: How to handle untracked files:
+        - "no": return an empty list
+        - "all": return all files in untracked directories
+        - "normal": Not implemented
 
-    for ap, is_dir in _walk_working_dir_paths(frompath, basepath):
-        if ignore_manager is not None and ignore_manager.is_ignored(
-            os.path.relpath(ap, frompath)
-        ):
-            continue
+    Note: ignored directories will never be walked for performance reasons.
+      If exclude_ignored is False, only the path to an ignored directory will
+      be yielded, no files inside the directory will be returned
+    """
+    if untracked_files == "normal":
+        raise NotImplementedError("normal is not yet supported")
+
+    if untracked_files not in ("no", "all"):
+        raise ValueError("untracked_files must be one of (no, all)")
+
+    if untracked_files == "no":
+        return
+
+    with open_repo_closing(basepath) as r:
+        ignore_manager = IgnoreFilterManager.from_repo(r)
+
+    ignored_dirs = []
+
+    def prune_dirnames(dirpath, dirnames):
+        for i in range(len(dirnames) - 1, -1, -1):
+            path = os.path.join(dirpath, dirnames[i])
+            ip = os.path.join(os.path.relpath(path, basepath), "")
+            if ignore_manager.is_ignored(ip):
+                if not exclude_ignored:
+                    ignored_dirs.append(
+                        os.path.join(os.path.relpath(path, frompath), "")
+                    )
+                del dirnames[i]
+        return dirnames
+
+    for ap, is_dir in _walk_working_dir_paths(
+        frompath, basepath, prune_dirnames=prune_dirnames
+    ):
         if not is_dir:
             ip = path_to_tree_path(basepath, ap)
             if ip not in index:
-                yield os.path.relpath(ap, frompath)
+                if not exclude_ignored or not ignore_manager.is_ignored(
+                    os.path.relpath(ap, basepath)
+                ):
+                    yield os.path.relpath(ap, frompath)
+
+    yield from ignored_dirs
 
 
 def get_tree_changes(repo):
@@ -1406,7 +1591,7 @@ def _make_branch_ref(name):
 def _make_tag_ref(name):
     if getattr(name, "encode", None):
         name = name.encode(DEFAULT_ENCODING)
-    return b"refs/tags/" + name
+    return LOCAL_TAG_PREFIX + name
 
 
 def branch_delete(repo, name):
@@ -1439,7 +1624,7 @@ def branch_create(repo, name, objectish=None, force=False):
             objectish = "HEAD"
         object = parse_object(r, objectish)
         refname = _make_branch_ref(name)
-        ref_message = b"branch: Created from " + objectish.encode("utf-8")
+        ref_message = b"branch: Created from " + objectish.encode(DEFAULT_ENCODING)
         if force:
             r.refs.set_if_equals(refname, None, object.id, message=ref_message)
         else:
@@ -1495,34 +1680,6 @@ def get_branch_remote(repo):
     return remote_name
 
 
-def _import_remote_refs(
-    refs_container: RefsContainer,
-    remote_name: str,
-    refs: Dict[str, str],
-    message: Optional[bytes] = None,
-    prune: bool = False,
-    prune_tags: bool = False,
-):
-    stripped_refs = strip_peeled_refs(refs)
-    branches = {
-        n[len(LOCAL_BRANCH_PREFIX) :]: v
-        for (n, v) in stripped_refs.items()
-        if n.startswith(LOCAL_BRANCH_PREFIX)
-    }
-    refs_container.import_refs(
-        b"refs/remotes/" + remote_name.encode(),
-        branches,
-        message=message,
-        prune=prune,
-    )
-    tags = {
-        n[len(b"refs/tags/") :]: v
-        for (n, v) in stripped_refs.items()
-        if n.startswith(b"refs/tags/") and not n.endswith(ANNOTATED_TAG_SUFFIX)
-    }
-    refs_container.import_refs(b"refs/tags", tags, message=message, prune=prune_tags)
-
-
 def fetch(
     repo,
     remote_location=None,
@@ -1552,7 +1709,7 @@ def fetch(
     with open_repo_closing(repo) as r:
         (remote_name, remote_location) = get_remote_repo(r, remote_location)
         if message is None:
-            message = b"fetch: from " + remote_location.encode("utf-8")
+            message = b"fetch: from " + remote_location.encode(DEFAULT_ENCODING)
         client, path = get_transport_and_path(
             remote_location, config=r.get_config_stack(), **kwargs
         )
@@ -1569,7 +1726,7 @@ def fetch(
     return fetch_result
 
 
-def ls_remote(remote, config=None, **kwargs):
+def ls_remote(remote, config: Optional[Config] = None, **kwargs):
     """List the refs in a remote.
 
     Args:
@@ -1596,7 +1753,7 @@ def repack(repo):
         r.object_store.pack_loose_objects()
 
 
-def pack_objects(repo, object_ids, packf, idxf, delta_window_size=None):
+def pack_objects(repo, object_ids, packf, idxf, delta_window_size=None, deltify=None, reuse_deltas=True):
     """Pack objects into a file.
 
     Args:
@@ -1604,12 +1761,19 @@ def pack_objects(repo, object_ids, packf, idxf, delta_window_size=None):
       object_ids: List of object ids to write
       packf: File-like object to write to
       idxf: File-like object to write to (can be None)
+      delta_window_size: Sliding window size for searching for deltas;
+                         Set to None for default window size.
+      deltify: Whether to deltify objects
+      reuse_deltas: Allow reuse of existing deltas while deltifying
     """
     with open_repo_closing(repo) as r:
-        entries, data_sum = write_pack_objects(
-            packf,
-            r.object_store.iter_shas((oid, None) for oid in object_ids),
+        entries, data_sum = write_pack_from_container(
+            packf.write,
+            r.object_store,
+            [(oid, None) for oid in object_ids],
+            deltify=deltify,
             delta_window_size=delta_window_size,
+            reuse_deltas=reuse_deltas,
         )
     if idxf is not None:
         entries = sorted([(k, v[0], v[1]) for (k, v) in entries.items()])
@@ -1627,7 +1791,7 @@ def ls_tree(
 
     Args:
       repo: Path to the repository
-      tree_ish: Tree id to list
+      treeish: Tree id to list
       outstream: Output stream (defaults to stdout)
       recursive: Whether to recursively list files
       name_only: Only print item name
@@ -1649,7 +1813,7 @@ def ls_tree(
         list_tree(r.object_store, tree.id, "")
 
 
-def remote_add(repo, name, url):
+def remote_add(repo: Repo, name: Union[bytes, str], url: Union[bytes, str]):
     """Add a remote.
 
     Args:
@@ -1667,6 +1831,22 @@ def remote_add(repo, name, url):
         if c.has_section(section):
             raise RemoteExists(section)
         c.set(section, b"url", url)
+        c.write_to_path()
+
+
+def remote_remove(repo: Repo, name: Union[bytes, str]):
+    """Remove a remote
+
+    Args:
+      repo: Path to the repository
+      name: Remote name
+    """
+    if not isinstance(name, bytes):
+        name = name.encode(DEFAULT_ENCODING)
+    with open_repo_closing(repo) as r:
+        c = r.get_config()
+        section = (b"remote", name)
+        del c[section]
         c.write_to_path()
 
 
@@ -1698,7 +1878,7 @@ def update_head(repo, target, detached=False, new_branch=None):
 
     Args:
       repo: Path to the repository
-      detach: Create a detached head
+      detached: Create a detached head
       target: Branch or committish to switch to
       new_branch: New branch to create
     """
@@ -1717,6 +1897,25 @@ def update_head(repo, target, detached=False, new_branch=None):
             r.refs.set_symbolic_ref(to_set, parse_ref(r, target))
         if new_branch is not None:
             r.refs.set_symbolic_ref(b"HEAD", to_set)
+
+
+def reset_file(repo, file_path: str, target: bytes = b'HEAD',
+               symlink_fn=None):
+    """Reset the file to specific commit or branch.
+
+    Args:
+      repo: dulwich Repo object
+      file_path: file to reset, relative to the repository path
+      target: branch or commit or b'HEAD' to reset
+    """
+    tree = parse_tree(repo, treeish=target)
+    tree_path = _fs_to_tree_path(file_path)
+
+    file_entry = tree.lookup_path(repo.object_store.__getitem__, tree_path)
+    full_path = os.path.join(os.fsencode(repo.path), tree_path)
+    blob = repo.object_store[file_entry[1]]
+    mode = file_entry[0]
+    build_file_from_blob(blob, mode, full_path, symlink_fn=symlink_fn)
 
 
 def check_mailmap(repo, contact):
@@ -1774,13 +1973,22 @@ def stash_push(repo):
         stash.push()
 
 
-def stash_pop(repo):
-    """Pop a new stash from the stack."""
+def stash_pop(repo, index):
+    """Pop a stash from the stack."""
     with open_repo_closing(repo) as r:
         from dulwich.stash import Stash
 
         stash = Stash.from_repo(r)
-        stash.pop()
+        stash.pop(index)
+
+
+def stash_drop(repo, index):
+    """Drop a stash from the stack."""
+    with open_repo_closing(repo) as r:
+        from dulwich.stash import Stash
+
+        stash = Stash.from_repo(r)
+        stash.drop(index)
 
 
 def ls_files(repo):
@@ -1789,11 +1997,19 @@ def ls_files(repo):
         return sorted(r.open_index())
 
 
-def describe(repo):
+def find_unique_abbrev(object_store, object_id):
+    """For now, just return 7 characters."""
+    # TODO(user): Add some logic here to return a number of characters that
+    # scales relative with the size of the repository
+    return object_id.decode("ascii")[:7]
+
+
+def describe(repo, abbrev=7):
     """Describe the repository version.
 
     Args:
-      projdir: git repository root
+      repo: git repository
+      abbrev: number of characters of commit to take, default is 7
     Returns: a string description of the current git revision
 
     Examples: "gabcdefh", "v0.1" or "v0.1-5-gabcdefh".
@@ -1806,10 +2022,10 @@ def describe(repo):
         for key, value in refs.items():
             key = key.decode()
             obj = r.get_object(value)
-            if u"tags" not in key:
+            if "tags" not in key:
                 continue
 
-            _, tag = key.rsplit(u"/", 1)
+            _, tag = key.rsplit("/", 1)
 
             try:
                 commit = obj.object
@@ -1826,7 +2042,7 @@ def describe(repo):
 
         # If there are no tags, return the current commit
         if len(sorted_tags) == 0:
-            return "g{}".format(r[r.head()].id.decode("ascii")[:7])
+            return f"g{find_unique_abbrev(r.object_store, r[r.head()].id)}"
 
         # We're now 0 commits from the top
         commit_count = 0
@@ -1849,13 +2065,13 @@ def describe(repo):
                         return "{}-{}-g{}".format(
                             tag_name,
                             commit_count,
-                            latest_commit.id.decode("ascii")[:7],
+                            latest_commit.id.decode("ascii")[:abbrev],
                         )
 
             commit_count += 1
 
         # Return plain commit if no parent tag can be found
-        return "g{}".format(latest_commit.id.decode("ascii")[:7])
+        return "g{}".format(latest_commit.id.decode("ascii")[:abbrev])
 
 
 def get_object_by_path(repo, path, committish=None):

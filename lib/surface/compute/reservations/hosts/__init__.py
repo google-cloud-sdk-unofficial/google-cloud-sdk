@@ -17,7 +17,7 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class Hosts(base.Group):
   """Read Compute Engine reservation hosts."""

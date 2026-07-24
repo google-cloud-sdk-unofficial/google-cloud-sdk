@@ -110,7 +110,7 @@ class ApiClientHelper:
       super().__init__(**kwds)
 
     def GetProjectReference(self) -> 'ApiClientHelper.ProjectReference':
-      return ApiClientHelper.ProjectReference.Create(projectId=self.projectId)
+      return ApiClientHelper.ProjectReference.Create(projectId=self.projectId)  # pyrefly: ignore[bad-return]
 
   class ProjectReference(Reference):
     """A ProjectReference."""
@@ -128,14 +128,14 @@ class ApiClientHelper:
     def GetDatasetReference(
         self, dataset_id: str
     ) -> 'ApiClientHelper.DatasetReference':
-      return ApiClientHelper.DatasetReference.Create(
+      return ApiClientHelper.DatasetReference.Create(  # pyrefly: ignore[bad-return]
           projectId=self.projectId, datasetId=dataset_id
       )
 
     def GetTableReference(
         self, dataset_id: str, table_id: str
     ) -> 'ApiClientHelper.TableReference':
-      return ApiClientHelper.TableReference.Create(
+      return ApiClientHelper.TableReference.Create(  # pyrefly: ignore[bad-return]
           projectId=self.projectId, datasetId=dataset_id, tableId=table_id
       )
 
@@ -154,12 +154,12 @@ class ApiClientHelper:
       super().__init__(**kwds)
 
     def GetProjectReference(self) -> 'ApiClientHelper.ProjectReference':
-      return ApiClientHelper.ProjectReference.Create(projectId=self.projectId)
+      return ApiClientHelper.ProjectReference.Create(projectId=self.projectId)  # pyrefly: ignore[bad-return]
 
     def GetTableReference(
         self, table_id: str
     ) -> 'ApiClientHelper.TableReference':
-      return ApiClientHelper.TableReference.Create(
+      return ApiClientHelper.TableReference.Create(  # pyrefly: ignore[bad-return]
           projectId=self.projectId, datasetId=self.datasetId, tableId=table_id
       )
 
@@ -180,12 +180,12 @@ class ApiClientHelper:
       super().__init__(**kwds)
 
     def GetDatasetReference(self) -> 'ApiClientHelper.DatasetReference':
-      return ApiClientHelper.DatasetReference.Create(
+      return ApiClientHelper.DatasetReference.Create(  # pyrefly: ignore[bad-return]
           projectId=self.projectId, datasetId=self.datasetId
       )
 
     def GetProjectReference(self) -> 'ApiClientHelper.ProjectReference':
-      return ApiClientHelper.ProjectReference.Create(projectId=self.projectId)
+      return ApiClientHelper.ProjectReference.Create(projectId=self.projectId)  # pyrefly: ignore[bad-return]
 
   class ModelReference(Reference):
     _required_fields = frozenset(('projectId', 'datasetId', 'modelId'))

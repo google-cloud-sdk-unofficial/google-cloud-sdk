@@ -30,7 +30,6 @@ from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.run import stages
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
-from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import progress_tracker
 
@@ -66,6 +65,7 @@ def ContainerArgGroup(release_track=base.ReleaseTrack.ALPHA):
       flags.RemoveVolumeMountFlag(),
       flags.ClearVolumeMountsFlag(),
       flags.StartupProbeFlag(),
+      flags.SandboxLauncherFlag(hidden=True),
   ]
   for flag in flags_to_add:
     group.AddArgument(flag)
@@ -118,6 +118,7 @@ class AlphaUpdate(base.Command):
     flags.AddVolumesFlags(parser, cls.ReleaseTrack())
     flags.AddIngressFlag(parser)
     flags.AddInvokerIamCheckFlag(parser)
+    flags.AddPublicFlag(parser)
     flags.AddRestartPolicyFlag(parser)
     flags.AddSshFlag(parser)
     flags.AddDefaultUrlFlag(parser, resource_kind='instance')
@@ -138,6 +139,7 @@ class AlphaUpdate(base.Command):
 
   def Run(self, args):
     """Update an Instance on Cloud Run."""
+    flags.ValidatePublicFlags(args)
     if flags.FlagIsExplicitlySet(args, 'containers'):
       containers = args.containers
       if len(containers) > _MAX_CONTAINERS_PER_INSTANCE:
@@ -200,20 +202,8 @@ class AlphaUpdate(base.Command):
             getattr(conn_context, 'region', None)
             or properties.VALUES.run.region.Get()
         )
-        release_track = (
-            f' {self.ReleaseTrack().prefix}'
-            if self.ReleaseTrack().prefix
-            else ''
+        messages_util.LogInstancePostDeploymentMessages(
+            instance, region, self.ReleaseTrack()
         )
-        log.status.Print(
-            f'\nSee logs with:\ngcloud{release_track} run instances logs tail'
-            f' {instance.name} --region {region}'
-        )
-        log.status.Print(
-            f'\nSSH with:\ngcloud{release_track} run instances ssh'
-            f' {instance.name} --region {region}'
-        )
-        if instance.urls:
-          log.status.Print(f'\nURL: {instance.urls[0]}')
 
       return instance

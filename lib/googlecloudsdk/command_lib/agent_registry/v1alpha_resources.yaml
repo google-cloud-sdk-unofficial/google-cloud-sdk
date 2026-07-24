@@ -78,6 +78,18 @@ projects_locations_mcp_servers:
     attribute_name: mcp_server
     help: The mcpServer id of the {resource} resource.
   disable_auto_completers: false
+projects_locations_publishers:
+  name: publisher
+  plural_name: publishers
+  collection: agentregistry.projects.locations.publishers
+  attributes:
+  - *project
+  - *location
+  - &publisher
+    parameter_name: publishersId
+    attribute_name: publisher
+    help: The publisher id of the {resource} resource.
+  disable_auto_completers: false
 projects_locations_services:
   name: service
   plural_name: services
@@ -89,4 +101,29 @@ projects_locations_services:
     parameter_name: servicesId
     attribute_name: service
     help: The service id of the {resource} resource.
+  disable_auto_completers: false
+projects_locations_skills:
+  name: skill
+  plural_name: skills
+  collection: agentregistry.projects.locations.skills
+  attributes:
+  - *project
+  - *location
+  - &skill
+    parameter_name: skillsId
+    attribute_name: skill
+    help: The skill id of the {resource} resource.
+  disable_auto_completers: false
+projects_locations_skills_revisions:
+  name: revision
+  plural_name: revisions
+  collection: agentregistry.projects.locations.skills.revisions
+  attributes:
+  - *project
+  - *location
+  - *skill
+  - &revision
+    parameter_name: revisionsId
+    attribute_name: revision
+    help: The revision id of the {resource} resource.
   disable_auto_completers: false

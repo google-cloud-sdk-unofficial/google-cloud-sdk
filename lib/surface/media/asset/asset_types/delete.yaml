@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA]
+  hints:
+    read_only: false
   help_text:
     brief: Delete a Cloud Media Asset asset type.
     description: Delete a new Media Asset asset type.

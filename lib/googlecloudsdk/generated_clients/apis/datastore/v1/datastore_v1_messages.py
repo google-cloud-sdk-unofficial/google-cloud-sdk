@@ -155,10 +155,12 @@ class AllocateIdsRequest(_messages.Message):
       default database.
     keys: Required. A list of keys with incomplete key paths for which to
       allocate IDs. No key may be reserved/read-only.
+    requestOptions: Optional. The options for this request.
   """
 
   databaseId = _messages.StringField(1)
   keys = _messages.MessageField('Key', 2, repeated=True)
+  requestOptions = _messages.MessageField('RequestOptions', 3)
 
 
 class AllocateIdsResponse(_messages.Message):
@@ -205,11 +207,13 @@ class BeginTransactionRequest(_messages.Message):
     databaseId: The ID of the database against which to make the request.
       '(default)' is not allowed; please use empty string '' to refer the
       default database.
+    requestOptions: Optional. The options for this request.
     transactionOptions: Options for a new transaction.
   """
 
   databaseId = _messages.StringField(1)
-  transactionOptions = _messages.MessageField('TransactionOptions', 2)
+  requestOptions = _messages.MessageField('RequestOptions', 2)
+  transactionOptions = _messages.MessageField('TransactionOptions', 3)
 
 
 class BeginTransactionResponse(_messages.Message):
@@ -241,6 +245,7 @@ class CommitRequest(_messages.Message):
       followed by `insert` - `upsert` followed by `insert` - `delete` followed
       by `update` When mode is `NON_TRANSACTIONAL`, no two mutations may
       affect a single entity.
+    requestOptions: Optional. The options for this request.
     singleUseTransaction: Options for beginning a new transaction for this
       request. The transaction is committed when the request completes. If
       specified, TransactionOptions.mode must be TransactionOptions.ReadWrite.
@@ -267,8 +272,9 @@ class CommitRequest(_messages.Message):
   databaseId = _messages.StringField(1)
   mode = _messages.EnumField('ModeValueValuesEnum', 2)
   mutations = _messages.MessageField('Mutation', 3, repeated=True)
-  singleUseTransaction = _messages.MessageField('TransactionOptions', 4)
-  transaction = _messages.BytesField(5)
+  requestOptions = _messages.MessageField('RequestOptions', 4)
+  singleUseTransaction = _messages.MessageField('TransactionOptions', 5)
+  transaction = _messages.BytesField(6)
 
 
 class CommitResponse(_messages.Message):
@@ -1900,12 +1906,14 @@ class LookupRequest(_messages.Message):
       LookupResponse.found.entity.properties. The entity's key is always
       returned.
     readOptions: The options for this lookup request.
+    requestOptions: Optional. The options for this request.
   """
 
   databaseId = _messages.StringField(1)
   keys = _messages.MessageField('Key', 2, repeated=True)
   propertyMask = _messages.MessageField('PropertyMask', 3)
   readOptions = _messages.MessageField('ReadOptions', 4)
+  requestOptions = _messages.MessageField('RequestOptions', 5)
 
 
 class LookupResponse(_messages.Message):
@@ -2516,6 +2524,18 @@ class ReadWrite(_messages.Message):
   previousTransaction = _messages.BytesField(1)
 
 
+class RequestOptions(_messages.Message):
+  r"""Options for a request.
+
+  Fields:
+    requestTags: Optional. The request tags for the request. The tags are
+      processed as follows: - Truncated to 510 characters. - Filtered out if
+      empty. - Deduplicated. - Limited to 50 tags.
+  """
+
+  requestTags = _messages.StringField(1, repeated=True)
+
+
 class ReserveIdsRequest(_messages.Message):
   r"""The request for Datastore.ReserveIds.
 
@@ -2525,10 +2545,12 @@ class ReserveIdsRequest(_messages.Message):
       default database.
     keys: Required. A list of keys with complete key paths whose numeric IDs
       should not be auto-allocated.
+    requestOptions: Optional. The options for this request.
   """
 
   databaseId = _messages.StringField(1)
   keys = _messages.MessageField('Key', 2, repeated=True)
+  requestOptions = _messages.MessageField('RequestOptions', 3)
 
 
 class ReserveIdsResponse(_messages.Message):
@@ -2542,12 +2564,14 @@ class RollbackRequest(_messages.Message):
     databaseId: The ID of the database against which to make the request.
       '(default)' is not allowed; please use empty string '' to refer the
       default database.
+    requestOptions: Optional. The options for this request.
     transaction: Required. The transaction identifier, returned by a call to
       Datastore.BeginTransaction.
   """
 
   databaseId = _messages.StringField(1)
-  transaction = _messages.BytesField(2)
+  requestOptions = _messages.MessageField('RequestOptions', 2)
+  transaction = _messages.BytesField(3)
 
 
 class RollbackResponse(_messages.Message):
@@ -2570,6 +2594,7 @@ class RunAggregationQueryRequest(_messages.Message):
       partition ID. Queries are scoped to a single partition. This partition
       ID is normalized with the standard default context partition ID.
     readOptions: The options for this query.
+    requestOptions: Optional. The options for this request.
   """
 
   aggregationQuery = _messages.MessageField('AggregationQuery', 1)
@@ -2578,6 +2603,7 @@ class RunAggregationQueryRequest(_messages.Message):
   gqlQuery = _messages.MessageField('GqlQuery', 4)
   partitionId = _messages.MessageField('PartitionId', 5)
   readOptions = _messages.MessageField('ReadOptions', 6)
+  requestOptions = _messages.MessageField('RequestOptions', 7)
 
 
 class RunAggregationQueryResponse(_messages.Message):
@@ -2620,6 +2646,7 @@ class RunQueryRequest(_messages.Message):
       projection query. See LookupRequest.property_mask.
     query: The query to run.
     readOptions: The options for this query.
+    requestOptions: Optional. The options for this request.
   """
 
   databaseId = _messages.StringField(1)
@@ -2629,6 +2656,7 @@ class RunQueryRequest(_messages.Message):
   propertyMask = _messages.MessageField('PropertyMask', 5)
   query = _messages.MessageField('Query', 6)
   readOptions = _messages.MessageField('ReadOptions', 7)
+  requestOptions = _messages.MessageField('RequestOptions', 8)
 
 
 class RunQueryResponse(_messages.Message):

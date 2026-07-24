@@ -21,6 +21,8 @@ import httplib2
 import bq_flags
 import bq_utils
 from clients import utils as bq_client_utils
+from utils import bq_gcloud_utils
+
 
 _NUM_RETRIES_FOR_SERVER_SIDE_ERRORS = 3
 
@@ -108,6 +110,7 @@ def _UpdateUserAgentInHeaders(headers: Dict[str, str]) -> None:
   user_agent = headers.get('user-agent', '')
   bq_user_agent = bq_utils.GetUserAgent()
   bq_component = bq_utils.GetBqCliUserAgentComponent()
+  metrics = bq_gcloud_utils.load_metrics()
 
   parts = []
   if bq_user_agent.lower() not in user_agent.lower():
@@ -116,6 +119,14 @@ def _UpdateUserAgentInHeaders(headers: Dict[str, str]) -> None:
     parts.append(user_agent)
   if bq_component and bq_component.lower() not in user_agent.lower():
     parts.append(bq_component)
+  if environment := metrics.get('environment'):
+    env_part = f'environment/{environment}'
+    if env_part.lower() not in user_agent.lower():
+      parts.append(env_part)
+  if environment_version := metrics.get('environment_version'):
+    version_part = f'environment-version/{environment_version}'
+    if version_part.lower() not in user_agent.lower():
+      parts.append(version_part)
 
   headers['user-agent'] = ' '.join(parts)
 

@@ -27,6 +27,7 @@ from typing import Any
 from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.api_lib.storage import request_config_factory
+from googlecloudsdk.command_lib.storage import bucket_detection_util
 from googlecloudsdk.command_lib.storage import hash_util
 from googlecloudsdk.command_lib.storage import progress_callbacks
 from googlecloudsdk.command_lib.storage.resources import resource_reference
@@ -115,6 +116,13 @@ class StreamingDownloadTask(copy_util.ObjectCopyTask):
     self._show_url = show_url
     self._start_byte = start_byte
     self._end_byte = end_byte
+
+  @property
+  def is_bidi_download(self):
+    return bucket_detection_util.is_gcs_zonal_bucket(
+        provider=self._source_resource.storage_url.scheme,
+        bucket_name=self._source_resource.storage_url.bucket_name,
+    )
 
   def execute(self, task_status_queue=None):
     if self._show_url:

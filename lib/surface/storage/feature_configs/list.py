@@ -19,7 +19,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class List(base.ListCommand):

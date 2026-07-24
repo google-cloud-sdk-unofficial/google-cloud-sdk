@@ -27,6 +27,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 
 
+@base.DefaultUniverseOnly
 class Import(base.Command):
   r"""Import a version into an existing crypto key.
 
@@ -61,6 +62,7 @@ class Import(base.Command):
     flags.AddRequiredImportJobArgument(parser, 'to import from')
     flags.AddPublicKeyFileFlag(parser)
     flags.AddTargetKeyFileFlag(parser)
+    flags.AddHsmTrustedWrappingFlag(parser)
 
   def _ReadFile(self, path, max_bytes):
     data = files.ReadBinaryFileContents(path)
@@ -230,6 +232,11 @@ class Import(base.Command):
             args.algorithm),
         importJob=import_job_name,
         wrappedKey=wrapped_key_bytes)
+
+    if args.IsSpecified('hsm_trusted_wrapping'):
+      req.importCryptoKeyVersionRequest.trustedWrappingEnabled = (
+          args.hsm_trusted_wrapping
+      )
 
     if args.version:
       req.importCryptoKeyVersionRequest.cryptoKeyVersion = flags.ParseCryptoKeyVersionName(

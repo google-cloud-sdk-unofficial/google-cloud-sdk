@@ -94,7 +94,7 @@ class Init(bigquery_command.BigqueryCmd):
     print('Welcome to BigQuery! This script will walk you through the ')
     print('process of initializing your .bigqueryrc configuration file.')
     print()
-    if os.path.exists(bigqueryrc):
+    if os.path.exists(bigqueryrc):  # pyrefly: ignore[bad-argument-type]
       print(' **** NOTE! ****')
       print('An existing .bigqueryrc file was found at %s.' % (bigqueryrc,))
       print('Are you sure you want to continue and overwrite your existing ')
@@ -106,7 +106,7 @@ class Init(bigquery_command.BigqueryCmd):
         return 0
       print()
       try:
-        os.remove(bigqueryrc)
+        os.remove(bigqueryrc)  # pyrefly: ignore[bad-argument-type]
       except OSError as e:
         print('Error removing %s: %s' % (bigqueryrc, e))
         return 1
@@ -185,7 +185,7 @@ class Init(bigquery_command.BigqueryCmd):
             entries['project_id'] = project_reference.projectId
 
     try:
-      with open(bigqueryrc, 'w') as rcfile:
+      with open(bigqueryrc, 'w') as rcfile:  # pyrefly: ignore[no-matching-overload]
         for flag, value in entries.items():
           print('%s = %s' % (flag, value), file=rcfile)
     except IOError as e:

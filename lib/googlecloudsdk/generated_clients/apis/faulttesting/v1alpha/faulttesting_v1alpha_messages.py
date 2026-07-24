@@ -119,18 +119,21 @@ class Empty(_messages.Message):
 
 
 class ExclusionWindow(_messages.Message):
-  r"""A period during which experiments are not supposed to run.
+  r"""A time period during which new fault injection experiments are blocked
+  from starting.
 
   Fields:
-    description: Optional. Optional user-provided description. Min length 0.
-      Max length 2000.
-    duration: Required. How long the exclusion window lasts once started.
-    endTime: Output only. When the exclusion window ends, or empty if it has
-      not been started.
+    description: Optional. Description of the exclusion window's purpose (for
+      example, "Black Friday freeze"). Max length is 2000 characters.
+    duration: Required. The length of time the exclusion window remains active
+      once started. While active, new experiments are blocked in the region.
+      Specified as a duration (for example, "86400s" for 24 hours).
+    endTime: Output only. The timestamp when the exclusion window expires.
+      This field is empty if the window has not been started.
     name: Identifier. The resource name of the exclusion window. Format: `proj
       ects/{project}/locations/{location}/exclusionWindows/{exclusion_window}`
-    startTime: Output only. When the exclusion window started, or empty if it
-      has not been started.
+    startTime: Output only. The timestamp when the exclusion window was
+      started. This field is empty if the window has not been started.
   """
 
   description = _messages.StringField(1)
@@ -172,6 +175,8 @@ class Experiment(_messages.Message):
     name: Identifier. Unique identifier for the experiment. Format:
       `projects/{project_id}/locations/{location}/experiments/{experiment_id}`
       .
+    startOnCreateEnabled: Optional. If true, the experiment will be started
+      immediately after creation.
     startTime: Output only. The date and time when the fault injection
       actually began.
     state: Output only. The current state of the experiment. Example:
@@ -240,13 +245,14 @@ class Experiment(_messages.Message):
   endReason = _messages.EnumField('EndReasonValueValuesEnum', 6)
   experimentTemplate = _messages.StringField(7)
   name = _messages.StringField(8)
-  startTime = _messages.StringField(9)
-  state = _messages.EnumField('StateValueValuesEnum', 10)
-  stateUpdateTime = _messages.StringField(11)
-  stopTime = _messages.StringField(12)
-  templateDescription = _messages.StringField(13)
-  templateDisplayName = _messages.StringField(14)
-  templateDuration = _messages.StringField(15)
+  startOnCreateEnabled = _messages.BooleanField(9)
+  startTime = _messages.StringField(10)
+  state = _messages.EnumField('StateValueValuesEnum', 11)
+  stateUpdateTime = _messages.StringField(12)
+  stopTime = _messages.StringField(13)
+  templateDescription = _messages.StringField(14)
+  templateDisplayName = _messages.StringField(15)
+  templateDuration = _messages.StringField(16)
 
 
 class ExperimentTemplate(_messages.Message):

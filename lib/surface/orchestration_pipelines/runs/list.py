@@ -26,7 +26,7 @@ from googlecloudsdk.core import resources
 @calliope_base.DefaultUniverseOnly
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.BETA)
 class List(calliope_base.Command):
-  """List orchestration pipelines run history."""
+  """List orchestration pipeline run history."""
 
   @staticmethod
   def Args(parser):
@@ -40,7 +40,7 @@ class List(calliope_base.Command):
     )
     group.add_argument(
         "--runner",
-        help="The full resource name to list pipeline runs from.",
+        help="The full resource name of the runner to list pipeline runs from.",
     )
     parser.add_argument(
         "--bundle",

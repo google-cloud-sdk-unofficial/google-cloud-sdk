@@ -131,7 +131,7 @@ class Insert(bigquery_command.BigqueryCmd):
     def Flush():
       result = client_table.insert_table_rows(
           insert_client=client.GetInsertApiClient(),
-          table_dict=reference,
+          table_dict=reference,  # pyrefly: ignore[bad-argument-type]
           inserts=batch,
           skip_invalid_rows=skip_invalid_rows,
           ignore_unknown_values=ignore_unknown_values,

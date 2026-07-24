@@ -463,7 +463,7 @@
           "enumDescriptions": [
             "Invalid plan value. Requests with this value will be rejected with error code `google.rpc.Code.INVALID_ARGUMENT`.",
             "Capacity commitment is free of charge and can be removed at any point.",
-            "Flex commitments have committed period of 1 minute after becoming ACTIVE. After that, they are not in a committed period anymore and can be removed any time.",
+            "Deprecated: Flex commitments are deprecated. Please use Edition-based capacity commitments. Flex commitments have committed period of 1 minute after becoming ACTIVE. After that, they are not in a committed period anymore and can be removed any time.",
             "Same as FLEX, should only be used if flat-rate commitments are still available.",
             "Alias as FLEX_FLAT_RATE",
             "Trial commitments have a committed period of 182 days after becoming ACTIVE. After that, they are converted to a new commitment based on the `renewal_plan`. Default `renewal_plan` for Trial commitment is Flex so that it can be deleted right after committed period ends.",
@@ -479,7 +479,7 @@
           "enumDeprecated": [
             false,
             false,
-            false,
+            true,
             true,
             true,
             true,
@@ -553,7 +553,7 @@
           "enumDescriptions": [
             "Invalid plan value. Requests with this value will be rejected with error code `google.rpc.Code.INVALID_ARGUMENT`.",
             "Capacity commitment is free of charge and can be removed at any point.",
-            "Flex commitments have committed period of 1 minute after becoming ACTIVE. After that, they are not in a committed period anymore and can be removed any time.",
+            "Deprecated: Flex commitments are deprecated. Please use Edition-based capacity commitments. Flex commitments have committed period of 1 minute after becoming ACTIVE. After that, they are not in a committed period anymore and can be removed any time.",
             "Same as FLEX, should only be used if flat-rate commitments are still available.",
             "Alias as FLEX_FLAT_RATE",
             "Trial commitments have a committed period of 182 days after becoming ACTIVE. After that, they are converted to a new commitment based on the `renewal_plan`. Default `renewal_plan` for Trial commitment is Flex so that it can be deleted right after committed period ends.",
@@ -569,7 +569,7 @@
           "enumDeprecated": [
             false,
             false,
-            false,
+            true,
             true,
             true,
             true,
@@ -806,6 +806,33 @@
           "description": "Optional. Specifies the priority precedence for this assignment. Used to resolve ambiguity when multiple assignments match a single job. Higher numerical values represent higher priority (e.g., 20 is higher than 10). If unspecified, it defaults to 0. Multiple assignments can share the same precedence, but it is recommended to use unique precedence values for assignments within the same assignee scope.",
           "type": "string",
           "format": "int64"
+        },
+        "condition": {
+          "description": "Optional. Common Expression Language (CEL) condition that defines the matching criteria for this assignment. The condition must resolve to a boolean value. Supported variables will be added later.",
+          "$ref": "Expr"
+        }
+      }
+    },
+    "Expr": {
+      "id": "Expr",
+      "description": "Represents a textual expression in the Common Expression Language (CEL) syntax. CEL is a C-like expression language. The syntax and semantics of CEL are documented at https:\/\/github.com\/google\/cel-spec. Example (Comparison): title: \"Summary size limit\" description: \"Determines if a summary is less than 100 chars\" expression: \"document.summary.size() < 100\" Example (Equality): title: \"Requestor is owner\" description: \"Determines if requestor is the document owner\" expression: \"document.owner == request.auth.claims.email\" Example (Logic): title: \"Public documents\" description: \"Determine whether the document should be publicly visible\" expression: \"document.type != 'private' && document.type != 'internal'\" Example (Data Manipulation): title: \"Notification string\" description: \"Create a notification string with a timestamp.\" expression: \"'New message received at ' + string(document.create_time)\" The exact variables and functions that may be referenced within an expression are determined by the service that evaluates it. See the service documentation for additional information.",
+      "type": "object",
+      "properties": {
+        "expression": {
+          "description": "Textual representation of an expression in Common Expression Language syntax.",
+          "type": "string"
+        },
+        "title": {
+          "description": "Optional. Title for the expression, i.e. a short string describing its purpose. This can be used e.g. in UIs which allow to enter the expression.",
+          "type": "string"
+        },
+        "description": {
+          "description": "Optional. Description of the expression. This is a longer text which describes the expression, e.g. when hovered over it in a UI.",
+          "type": "string"
+        },
+        "location": {
+          "description": "Optional. String indicating the location of the expression for error reporting, e.g. a file name and a position in the file.",
+          "type": "string"
         }
       }
     },
@@ -935,22 +962,6 @@
       "description": "The request of UpgradeEdition. At least one reservation or capacity commitment should be specified.",
       "type": "object",
       "properties": {
-        "capacityCommitmentNames": {
-          "description": "This field should not be used and `capacity_commitments` should be used instead. If `capacity_commitments` is specified, this field will be ignored. Resource names of the capacity commitments to upgrade. These capacity commitments must exist under the specified parent. Commitment start\/end time won\u2019t be changed after updating.",
-          "deprecated": true,
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "reservationNames": {
-          "description": "This field should not be used and `reservations` should be used instead. If `reservations` is specified, this field will be ignored. Resource names of the reservations to upgrade. These reservations must exist under the specified parent.",
-          "deprecated": true,
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
         "targetEdition": {
           "description": "The edition to upgrade to.",
           "type": "string",
@@ -1079,29 +1090,6 @@
         },
         "pamBindingId": {
           "$ref": "PamBindingId"
-        }
-      }
-    },
-    "Expr": {
-      "id": "Expr",
-      "description": "Represents a textual expression in the Common Expression Language (CEL) syntax. CEL is a C-like expression language. The syntax and semantics of CEL are documented at https:\/\/github.com\/google\/cel-spec. Example (Comparison): title: \"Summary size limit\" description: \"Determines if a summary is less than 100 chars\" expression: \"document.summary.size() < 100\" Example (Equality): title: \"Requestor is owner\" description: \"Determines if requestor is the document owner\" expression: \"document.owner == request.auth.claims.email\" Example (Logic): title: \"Public documents\" description: \"Determine whether the document should be publicly visible\" expression: \"document.type != 'private' && document.type != 'internal'\" Example (Data Manipulation): title: \"Notification string\" description: \"Create a notification string with a timestamp.\" expression: \"'New message received at ' + string(document.create_time)\" The exact variables and functions that may be referenced within an expression are determined by the service that evaluates it. See the service documentation for additional information.",
-      "type": "object",
-      "properties": {
-        "expression": {
-          "description": "Textual representation of an expression in Common Expression Language syntax.",
-          "type": "string"
-        },
-        "title": {
-          "description": "Optional. Title for the expression, i.e. a short string describing its purpose. This can be used e.g. in UIs which allow to enter the expression.",
-          "type": "string"
-        },
-        "description": {
-          "description": "Optional. Description of the expression. This is a longer text which describes the expression, e.g. when hovered over it in a UI.",
-          "type": "string"
-        },
-        "location": {
-          "description": "Optional. String indicating the location of the expression for error reporting, e.g. a file name and a position in the file.",
-          "type": "string"
         }
       }
     },

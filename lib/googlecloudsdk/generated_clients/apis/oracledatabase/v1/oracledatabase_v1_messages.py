@@ -588,6 +588,9 @@ class AutonomousDatabaseProperties(_messages.Message):
       for the Autonomous Database.
     privateEndpointLabel: Optional. Immutable. The private endpoint label for
       the Autonomous Database.
+    refreshableClone: Optional. Indicates if the Autonomous Database is a
+      refreshable clone. This field is used in update flow to connect /
+      disconnect a refreshable clone from its source database.
     refreshableMode: Output only. The refresh mode of the cloned Autonomous
       Database.
     refreshableState: Output only. The refresh State of the clone.
@@ -932,18 +935,43 @@ class AutonomousDatabaseProperties(_messages.Message):
   privateEndpoint = _messages.StringField(51)
   privateEndpointIp = _messages.StringField(52)
   privateEndpointLabel = _messages.StringField(53)
-  refreshableMode = _messages.EnumField('RefreshableModeValueValuesEnum', 54)
-  refreshableState = _messages.EnumField('RefreshableStateValueValuesEnum', 55)
-  role = _messages.EnumField('RoleValueValuesEnum', 56)
-  scheduledOperationDetails = _messages.MessageField('ScheduledOperationDetails', 57, repeated=True)
-  secretId = _messages.StringField(58)
-  serviceAgentEmail = _messages.StringField(59)
-  sqlWebDeveloperUrl = _messages.StringField(60)
-  state = _messages.EnumField('StateValueValuesEnum', 61)
-  supportedCloneRegions = _messages.StringField(62, repeated=True)
-  totalAutoBackupStorageSizeGbs = _messages.FloatField(63, variant=_messages.Variant.FLOAT)
-  usedDataStorageSizeTbs = _messages.IntegerField(64, variant=_messages.Variant.INT32)
-  vaultId = _messages.StringField(65)
+  refreshableClone = _messages.BooleanField(54)
+  refreshableMode = _messages.EnumField('RefreshableModeValueValuesEnum', 55)
+  refreshableState = _messages.EnumField('RefreshableStateValueValuesEnum', 56)
+  role = _messages.EnumField('RoleValueValuesEnum', 57)
+  scheduledOperationDetails = _messages.MessageField('ScheduledOperationDetails', 58, repeated=True)
+  secretId = _messages.StringField(59)
+  serviceAgentEmail = _messages.StringField(60)
+  sqlWebDeveloperUrl = _messages.StringField(61)
+  state = _messages.EnumField('StateValueValuesEnum', 62)
+  supportedCloneRegions = _messages.StringField(63, repeated=True)
+  totalAutoBackupStorageSizeGbs = _messages.FloatField(64, variant=_messages.Variant.FLOAT)
+  usedDataStorageSizeTbs = _messages.IntegerField(65, variant=_messages.Variant.INT32)
+  vaultId = _messages.StringField(66)
+
+
+class AutonomousDatabaseRefreshableClone(_messages.Message):
+  r"""An Autonomous Database refreshable clone
+
+  Fields:
+    name: Output only. The GCP resource name of the Autonomous Database.
+    region: Output only. The Google Cloud region where the refreshable clone
+      exists.
+  """
+
+  name = _messages.StringField(1)
+  region = _messages.StringField(2)
+
+
+class AutonomousDatabaseRefreshableClones(_messages.Message):
+  r"""Response message for getting the Autonomous Database refreshable clones.
+
+  Fields:
+    autonomousDatabaseRefreshableClones: The list of Autonomous Database
+      refreshable clones.
+  """
+
+  autonomousDatabaseRefreshableClones = _messages.MessageField('AutonomousDatabaseRefreshableClone', 1, repeated=True)
 
 
 class AutonomousDatabaseStandbySummary(_messages.Message):
@@ -7236,6 +7264,19 @@ class OracledatabaseProjectsLocationsAutonomousDatabasesGenerateWalletRequest(_m
   name = _messages.StringField(2, required=True)
 
 
+class OracledatabaseProjectsLocationsAutonomousDatabasesGetRefreshableClonesRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsAutonomousDatabasesGetRefreshableClones
+  Request object.
+
+  Fields:
+    name: Required. The Autonomous Database resource whose refreshable clones
+      are to be listed. Format: projects/{project}/locations/{location}/autono
+      mousDatabases/{autonomous_database}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
 class OracledatabaseProjectsLocationsAutonomousDatabasesGetRequest(_messages.Message):
   r"""A OracledatabaseProjectsLocationsAutonomousDatabasesGetRequest object.
 
@@ -7297,6 +7338,22 @@ class OracledatabaseProjectsLocationsAutonomousDatabasesPatchRequest(_messages.M
   name = _messages.StringField(2, required=True)
   requestId = _messages.StringField(3)
   updateMask = _messages.StringField(4)
+
+
+class OracledatabaseProjectsLocationsAutonomousDatabasesRefreshRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsAutonomousDatabasesRefreshRequest
+  object.
+
+  Fields:
+    name: Required. The name of the AutonomousDatabase resource. Format: proje
+      cts/{project}/location/{location}/autonomousDatabases/{autonomous_databa
+      se}
+    refreshAutonomousDatabaseRequest: A RefreshAutonomousDatabaseRequest
+      resource to be passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  refreshAutonomousDatabaseRequest = _messages.MessageField('RefreshAutonomousDatabaseRequest', 2)
 
 
 class OracledatabaseProjectsLocationsAutonomousDatabasesRestartRequest(_messages.Message):
@@ -9145,6 +9202,18 @@ class PolarisIcebergCatalog(_messages.Message):
   uri = _messages.StringField(5)
 
 
+class RefreshAutonomousDatabaseRequest(_messages.Message):
+  r"""Request message for RefreshAutonomousDatabase method.
+
+  Fields:
+    refreshCutoffTime: Required. The timestamp to which the Autonomous
+      Database refreshable clone will be refreshed. Changes made in the
+      primary database after this timestamp are not part of the data refresh.
+  """
+
+  refreshCutoffTime = _messages.StringField(1)
+
+
 class RemoveVirtualMachineExadbVmClusterRequest(_messages.Message):
   r"""The request for `ExadbVmCluster.RemoveVirtualMachine`.
 
@@ -9234,15 +9303,105 @@ class ScheduledOperationDetails(_messages.Message):
 class SourceConfig(_messages.Message):
   r"""The source configuration for the standby Autonomous Database.
 
+  Enums:
+    CloneTypeValueValuesEnum: Optional. The clone type of the Autonomous
+      Database. This field is only applicable in case of cloning
+    RefreshableModeValueValuesEnum: Optional. The refresh mode of the clone.
+    SourceTypeValueValuesEnum: Optional. The source type of the Autonomous
+      Database.
+
   Fields:
+    autoRefreshFrequencySeconds: Optional. The frequency in seconds a
+      refreshable clone is refreshed after auto-refresh is enabled.
+    autoRefreshPointLagSeconds: Optional. The time, in seconds, the data of
+      the automatic refreshable clone lags the primary database at the point
+      of refresh.
+    autoRefreshStartTime: Optional. The date and time that auto-refreshing
+      will begin for an Autonomous Database refreshable clone. This value
+      controls only the start time for the first refresh operation.
     automaticBackupsReplicationEnabled: Optional. This field specifies if the
       replication of automatic backups is enabled when creating a Data Guard.
     autonomousDatabase: Optional. The name of the primary Autonomous Database
       that is used to create a Peer Autonomous Database from a source.
+    autonomousDatabaseBackup: Optional. The name of the Autonomous Database
+      Backup resource with the format: projects/{project}/locations/{region}/a
+      utonomousDatabaseBackups/{autonomous_database_backup} Required when
+      source_type is BACKUP_FROM_ID.
+    backupTime: Optional. The timestamp specified for the point-in-time clone
+      of the source Autonomous Database. This field is only applicable in case
+      of BACKUP_FROM_TIMESTAMP source type and when
+      use_latest_available_backup is false.
+    cloneType: Optional. The clone type of the Autonomous Database. This field
+      is only applicable in case of cloning
+    refreshableMode: Optional. The refresh mode of the clone.
+    sourceType: Optional. The source type of the Autonomous Database.
+    useLatestAvailableBackup: Optional. Clone from latest available backup
+      timestamp. This field is only applicable in case of
+      BACKUP_FROM_TIMESTAMP source type.
   """
 
-  automaticBackupsReplicationEnabled = _messages.BooleanField(1)
-  autonomousDatabase = _messages.StringField(2)
+  class CloneTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The clone type of the Autonomous Database. This field is
+    only applicable in case of cloning
+
+    Values:
+      CLONE_TYPE_UNSPECIFIED: Default unspecified value.
+      FULL: Creates a new database with the source database's data and
+        metadata.
+      METADATA: Creates a new database that includes all the source database
+        schema metadata, but none of the source database data.
+    """
+    CLONE_TYPE_UNSPECIFIED = 0
+    FULL = 1
+    METADATA = 2
+
+  class RefreshableModeValueValuesEnum(_messages.Enum):
+    r"""Optional. The refresh mode of the clone.
+
+    Values:
+      REFRESHABLE_MODE_UNSPECIFIED: Default unspecified value.
+      AUTOMATIC: Automatic refresh.
+      MANUAL: Manual refresh.
+    """
+    REFRESHABLE_MODE_UNSPECIFIED = 0
+    AUTOMATIC = 1
+    MANUAL = 2
+
+  class SourceTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The source type of the Autonomous Database.
+
+    Values:
+      SOURCE_TYPE_UNSPECIFIED: Default unspecified value.
+      CLONE_DATABASE: Clone database from an existing database specified in
+        autonomous_database field.
+      CROSS_REGION_DISASTER_RECOVERY: Create a cross-region disaster recovery
+        peer adb from an existing adb.
+      CLONE_TO_REFRESHABLE: Create a refreshable clone from an existing
+        database specified in autonomous_database field.
+      BACKUP_FROM_ID: Create clone from the backup resource.
+      BACKUP_FROM_TIMESTAMP: Create clone from backup specified by backup_time
+        field, or use latest available backup if use_latest_available_backup
+        is true. The autonomous_database field must specify the source
+        database to clone from.
+    """
+    SOURCE_TYPE_UNSPECIFIED = 0
+    CLONE_DATABASE = 1
+    CROSS_REGION_DISASTER_RECOVERY = 2
+    CLONE_TO_REFRESHABLE = 3
+    BACKUP_FROM_ID = 4
+    BACKUP_FROM_TIMESTAMP = 5
+
+  autoRefreshFrequencySeconds = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  autoRefreshPointLagSeconds = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  autoRefreshStartTime = _messages.StringField(3)
+  automaticBackupsReplicationEnabled = _messages.BooleanField(4)
+  autonomousDatabase = _messages.StringField(5)
+  autonomousDatabaseBackup = _messages.StringField(6)
+  backupTime = _messages.StringField(7)
+  cloneType = _messages.EnumField('CloneTypeValueValuesEnum', 8)
+  refreshableMode = _messages.EnumField('RefreshableModeValueValuesEnum', 9)
+  sourceType = _messages.EnumField('SourceTypeValueValuesEnum', 10)
+  useLatestAvailableBackup = _messages.BooleanField(11)
 
 
 class StandardQueryParameters(_messages.Message):

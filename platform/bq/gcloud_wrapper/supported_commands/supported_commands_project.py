@@ -46,6 +46,6 @@ SUPPORTED_COMMANDS_PROJECT: List[CommandMapping] = [
         flag_mapping_list=[FlagMapping('max_results', 'limit')],
         table_projection='projectId:label=projectId,name:label="friendlyName"',
         csv_projection='projectId:label=project_id,name:label=friendly_name',
-        json_mapping=project_json_mapping,
+        json_mapping=project_json_mapping,  # pyrefly: ignore[bad-argument-type]
     ),
 ]

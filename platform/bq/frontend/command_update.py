@@ -1131,13 +1131,13 @@ class Update(bigquery_command.BigqueryCmd):
 
     # Check for incompatible flags.
     reference_type = type(reference)
-    for flag_name in self.INCOMPATIBLE_FLAGS.get(reference_type, []):
+    for flag_name in self.INCOMPATIBLE_FLAGS.get(reference_type, []):  # pyrefly: ignore[no-matching-overload]
       if self.fv[flag_name].present:
         raise app.UsageError(
             'Cannot specify --%s with a %s.'
             % (
                 flag_name,
-                reference_type.typename.lower(),
+                reference_type.typename.lower(),  # pyrefly: ignore[missing-attribute]
             )
         )
 
@@ -1183,9 +1183,9 @@ class Update(bigquery_command.BigqueryCmd):
       if self.materialized_view:
         object_name = 'Materialized View'
       if schema:
-        schema = bq_client_utils.ReadSchema(schema)
+        schema = bq_client_utils.ReadSchema(schema)  # pyrefly: ignore[bad-assignment]
       else:
-        schema = None
+        schema = None  # pyrefly: ignore[bad-assignment]
       expiration = None
       if self.expiration is not None:
         if self.expiration == 0:
@@ -1258,7 +1258,7 @@ class Update(bigquery_command.BigqueryCmd):
           external_data_config=external_data_config,
           external_catalog_table_options=self.external_catalog_table_options,
           labels_to_set=labels_to_set,
-          label_keys_to_remove=label_keys_to_remove,
+          label_keys_to_remove=label_keys_to_remove,  # pyrefly: ignore[bad-argument-type]
           time_partitioning=time_partitioning,
           range_partitioning=range_partitioning,
           clustering=clustering,
@@ -1344,7 +1344,7 @@ class Update(bigquery_command.BigqueryCmd):
           description=self.description,
           expiration=expiration,
           labels_to_set=labels_to_set,
-          label_keys_to_remove=label_keys_to_remove,
+          label_keys_to_remove=label_keys_to_remove,  # pyrefly: ignore[bad-argument-type]
           vertex_ai_model_id=self.vertex_ai_model_id,
           etag=self.etag,
       )
@@ -1404,7 +1404,7 @@ def _UpdateDataset(
   Raises:
     UsageError: when incorrect usage or invalid args are used.
   """
-  description, acl = frontend_utils.ProcessSource(description, source)
+  description, acl = frontend_utils.ProcessSource(description, source)  # pyrefly: ignore[bad-argument-type]
   client_dataset.UpdateDataset(
       apiclient=client.apiclient,
       reference=reference,

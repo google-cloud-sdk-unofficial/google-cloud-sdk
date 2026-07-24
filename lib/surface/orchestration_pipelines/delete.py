@@ -45,7 +45,10 @@ class Delete(calliope_base.DeleteCommand):
     )
     group.add_argument(
         '--runner',
-        help='The full resource name to delete a pipeline from.',
+        help=(
+            'The full resource name of the runner to '
+            'delete a pipeline from.'
+        ),
     )
     parser.add_argument(
         '--bundle',

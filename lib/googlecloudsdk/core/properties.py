@@ -90,6 +90,32 @@ _VALID_ENDPOINT_OVERRIDE_REGEX = re.compile(
     r'$',
     re.IGNORECASE)
 
+_GRPC_DIRECTPATH = (
+    r'(?:(?:dns|google-c2p):///'
+    r'(?:(?:[A-Z0-9](?:[A-Z0-9-.])+)|'
+    r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|'
+    r'\[?[A-F0-9]*:[A-F0-9:]+\]?)'
+    r'(?::\d+)?(?:/|[/?]\S+/)?'
+    r')'
+)
+
+_PURE_GRPC = (
+    r'(?:'
+    r'(?:(?:[A-Z0-9](?:[A-Z0-9-.])+)|'
+    r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|'
+    r'\[?[A-F0-9]*:[A-F0-9:]+\]?)'
+    r'(?::\d+)'
+    r')'
+)
+
+_HTTP_PATTERN = _VALID_ENDPOINT_OVERRIDE_REGEX.pattern[1:-1]  # strip ^ and $
+
+_VALID_STORAGE_GRPC_ENDPOINT_OVERRIDE_REGEX = re.compile(
+    r'^(?:' + _HTTP_PATTERN + r'|' + _GRPC_DIRECTPATH + r'|'
+    + _PURE_GRPC + r')$',
+    re.IGNORECASE,
+)
+
 _PUBSUB_NOTICE_URL = (
     'https://cloud.google.com/functions/docs/writing/background#event_parameter'
 )
@@ -936,8 +962,6 @@ class _SectionApiEndpointOverrides(_Section):
     self.memcache = self._Add('memcache', command='gcloud memcache')
     self.memorystore = self._Add(
         'memorystore', command='gcloud memorystore', hidden=True)
-    self.messagestreams = self._Add(
-        'messagestreams', command='gcloud messagestreams', hidden=True)
     self.metastore = self._Add('metastore', command='gcloud metastore')
     self.ml = self._Add('ml', hidden=True)
     self.modelarmor = self._Add(
@@ -982,7 +1006,6 @@ class _SectionApiEndpointOverrides(_Section):
     self.remotebuildexecution = self._Add('remotebuildexecution', hidden=True)
     self.replicapoolupdater = self._Add('replicapoolupdater', hidden=True)
     self.run = self._Add('run', command='gcloud run')
-    self.runapps = self._Add('runapps', hidden=True)
     self.runtimeconfig = self._Add(
         'runtimeconfig', command='gcloud runtime-config')
     self.saasservicemgmt = self._Add(
@@ -1023,6 +1046,7 @@ class _SectionApiEndpointOverrides(_Section):
             'external callers.'
         ),
         hidden=True,
+        validator=self.StorageGrpcEndpointValidator,
     )
     self.storagebatchoperations = self._Add(
         'storagebatchoperations',
@@ -1054,6 +1078,18 @@ class _SectionApiEndpointOverrides(_Section):
         'workloadidentity', hidden=True)
     self.workstations = self._Add('workstations', command='gcloud workstations')
 
+  def StorageGrpcEndpointValidator(self, value):
+    """Checks to see if the gRPC endpoint override string is valid."""
+    if value is None:
+      return
+    if not _VALID_STORAGE_GRPC_ENDPOINT_OVERRIDE_REGEX.match(value):
+      raise InvalidValueError(
+          'The endpoint_overrides property must be an absolute URI (http:// '
+          "or https:// ending with '/'), a gRPC Target (dns:///, "
+          'google-c2p:///), or a valid hostname:port. '
+          '[{value}] is not a valid endpoint override.'.format(value=value)
+      )
+
   def EndpointValidator(self, value):
     """Checks to see if the endpoint override string is valid."""
     if value is None:
@@ -1062,9 +1098,12 @@ class _SectionApiEndpointOverrides(_Section):
       raise InvalidValueError(
           'The endpoint_overrides property must be an absolute URI beginning '
           'with http:// or https:// and ending with a trailing \'/\'. '
-          '[{value}] is not a valid endpoint override.'.format(value=value))
+          '[{value}] is not a valid endpoint override.'.format(value=value)
+      )
 
-  def _Add(self, name, help_text=None, hidden=False, command=None):
+  def _Add(
+      self, name, help_text=None, hidden=False, command=None, validator=None
+  ):
     if not help_text and command:
       help_text = (
           'Overrides API endpoint for `{}` command group.').format(command)
@@ -1077,7 +1116,7 @@ class _SectionApiEndpointOverrides(_Section):
         name,
         help_text=help_text,
         hidden=hidden,
-        validator=self.EndpointValidator)
+        validator=validator or self.EndpointValidator)
 
   def _UniversifyHelpTextEndpoint(self, address: str) -> str:
     """Update a URL based on the current universe domain."""
@@ -2738,6 +2777,15 @@ class _SectionMetrics(_Section):
     self.environment_version = self._Add('environment_version', hidden=True)
     self.command_name = self._Add('command_name', internal=True)
 
+    def GetAgentName():
+      from googlecloudsdk.core.util import agents  # pylint: disable=g-import-not-at-top
+
+      return agents.DetectAIAgent()
+
+    self.agent_name = self._Add(
+        'agent_name', hidden=True, callbacks=[GetAgentName]
+    )
+
 
 class _SectionMlEngine(_Section):
   """Contains the properties for the 'ml_engine' section."""
@@ -2992,24 +3040,6 @@ class _SectionRun(_Section):
         help_text='Enables using Cloud Run API to orchestrate builds.',)
 
 
-class _SectionRunApps(_Section):
-  """Contains the properties for the 'runapps' section."""
-
-  def __init__(self):
-    super(_SectionRunApps, self).__init__('runapps')
-    self.experimental_integrations = self._AddBool(
-        'experimental_integrations',
-        help_text='If enabled then the user will have access to integrations '
-        'that are currently experimental. These integrations will also not be'
-        'usable in the API for those who are not allowlisted.',
-        default=False,
-        hidden=True)
-    self.deployment_service_account = self._Add(
-        'deployment_service_account',
-        help_text='Service account to use when deploying integrations.',
-    )
-
-
 class _SectionScc(_Section):
   """Contains the properties for the 'scc' section."""
 
@@ -3173,6 +3203,16 @@ class _SectionStorage(_Section):
         choices=([setting.value for setting in CheckHashes]),
     )
 
+    self.enable_server_side_hash_validation = self._AddBool(
+        'enable_server_side_hash_validation',
+        default=False,
+        hidden=True,
+        help_text=(
+            'If True, hashes will be sent to the server in the last request for'
+            ' server-side hash validation during uploads.'
+        ),
+    )
+
     self.check_mv_early_deletion_fee = self._AddBool(
         'check_mv_early_deletion_fee',
         default=True,
@@ -3222,6 +3262,16 @@ class _SectionStorage(_Section):
         ),
     )
 
+    self.use_mrd_bidi_downloads = self._AddBool(
+        'use_mrd_bidi_downloads',
+        default=False,
+        hidden=True,
+        help_text=(
+            'If True, gcloud storage will use the MRD-based gRPC bidi'
+            ' downloads.'
+        ),
+    )
+
     self.attempt_grpc_direct_path = self._AddBool(
         'attempt_grpc_direct_path',
         default=True,
@@ -3232,6 +3282,27 @@ class _SectionStorage(_Section):
         ),
     )
 
+    self.use_nic_isolation = self._AddBool(
+        'use_nic_isolation',
+        default=False,
+        hidden=True,
+        help_text=(
+            'If True, gcloud storage will pin worker processes to specific'
+            ' CPUs to isolate them from NIC interrupts.'
+        ),
+    )
+
+    self.preallocate_disk_space = self._AddBool(
+        'preallocate_disk_space',
+        default=False,
+        hidden=True,
+        help_text=(
+            'If True, gcloud storage will reserve disk space for bidi '
+            'streaming downloads before downloading the data. This can '
+            'improve download speeds but may leave empty space if a '
+            'download crashes.'
+        ),
+    )
     self.use_move_object_api = self._AddBool(
         'use_move_object_api',
         default=True,
@@ -3455,12 +3526,12 @@ class _SectionStorage(_Section):
 
     self.delete_source_objects_in_compose = self._AddBool(
         'delete_source_objects_in_compose',
-        default=False,
+        default=True,
         hidden=True,
         help_text=(
             'If True, parallel composite uploads will use the delete source '
             'objects feature of the compose API to remove temporary '
-            'components, avoiding soft-delete costs.'
+            'components, avoiding soft-delete costs. Defaults to True.'
         ),
     )
 
@@ -4178,7 +4249,6 @@ class _Sections(object):
       'regional': '_SectionRegional',
       'resource_policy': '_SectionResourcePolicy',
       'run': '_SectionRun',
-      'runapps': '_SectionRunApps',
       'secrets': '_SectionSecrets',
       'servicehealth': '_SectionServiceHealth',
       'spanner': '_SectionSpanner',

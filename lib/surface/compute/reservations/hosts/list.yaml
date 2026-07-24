@@ -1,9 +1,12 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, BETA]
 help_text:
   brief: List Google Compute Engine hosts for a reservation.
   description: List Google Compute Engine hosts in a given project and zone, filtered by reservation.
 request:
-  api_version: alpha
+  ALPHA:
+    api_version: alpha
+  BETA:
+    api_version: beta
   collection: compute.hosts
   method: list
   modify_request_hooks:

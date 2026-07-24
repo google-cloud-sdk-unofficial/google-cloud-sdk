@@ -21,6 +21,10 @@ from .build import (
 from .condition import (
     Condition,
 )
+from .container_status import (
+    BuildStatus,
+    ContainerStatus,
+)
 from .execution import (
     CancelExecutionRequest,
     DeleteExecutionRequest,
@@ -31,6 +35,17 @@ from .execution import (
 )
 from .execution_template import (
     ExecutionTemplate,
+)
+from .instance import (
+    CreateInstanceRequest,
+    DeleteInstanceRequest,
+    GetInstanceRequest,
+    Instance,
+    ListInstancesRequest,
+    ListInstancesResponse,
+    StartInstanceRequest,
+    StopInstanceRequest,
+    UpdateInstanceRequest,
 )
 from .instance_split import (
     InstanceSplit,
@@ -47,17 +62,6 @@ from .job import (
     ListJobsResponse,
     RunJobRequest,
     UpdateJobRequest,
-)
-from .instance import (
-    CreateInstanceRequest,
-    DeleteInstanceRequest,
-    GetInstanceRequest,
-    Instance,
-    ListInstancesRequest,
-    ListInstancesResponse,
-    StartInstanceRequest,
-    StopInstanceRequest,
-    UpdateInstanceRequest,
 )
 from .k8s_min import (
     BuildConfiguration,
@@ -102,12 +106,12 @@ from .service import (
     Service,
     UpdateServiceRequest,
 )
-from .status import (
-    RevisionScalingStatus,
-)
 from .source_upload import (
     UploadSourceRequest,
     UploadSourceResponse,
+)
+from .status import (
+    RevisionScalingStatus,
 )
 from .task import (
     GetTaskRequest,
@@ -129,6 +133,7 @@ from .vendor_settings import (
     BuildConfig,
     CpuScaling,
     NodeSelector,
+    PubSubScaling,
     RevisionScaling,
     ServiceMesh,
     ServiceScaling,
@@ -156,6 +161,8 @@ __all__ = (
     'SubmitBuildRequest',
     'SubmitBuildResponse',
     'Condition',
+    'BuildStatus',
+    'ContainerStatus',
     'CancelExecutionRequest',
     'DeleteExecutionRequest',
     'Execution',
@@ -163,6 +170,15 @@ __all__ = (
     'ListExecutionsRequest',
     'ListExecutionsResponse',
     'ExecutionTemplate',
+    'CreateInstanceRequest',
+    'DeleteInstanceRequest',
+    'GetInstanceRequest',
+    'Instance',
+    'ListInstancesRequest',
+    'ListInstancesResponse',
+    'StartInstanceRequest',
+    'StopInstanceRequest',
+    'UpdateInstanceRequest',
     'InstanceSplit',
     'InstanceSplitStatus',
     'InstanceSplitAllocationType',
@@ -175,15 +191,6 @@ __all__ = (
     'ListJobsResponse',
     'RunJobRequest',
     'UpdateJobRequest',
-    'CreateInstanceRequest',
-    'DeleteInstanceRequest',
-    'GetInstanceRequest',
-    'Instance',
-    'ListInstancesRequest',
-    'ListInstancesResponse',
-    'StartInstanceRequest',
-    'StopInstanceRequest',
-    'UpdateInstanceRequest',
     'BuildConfiguration',
     'BuildInfo',
     'CloudSqlInstance',
@@ -219,9 +226,9 @@ __all__ = (
     'ListServicesResponse',
     'Service',
     'UpdateServiceRequest',
-    'RevisionScalingStatus',
     'UploadSourceRequest',
     'UploadSourceResponse',
+    'RevisionScalingStatus',
     'GetTaskRequest',
     'ListTasksRequest',
     'ListTasksResponse',
@@ -235,6 +242,7 @@ __all__ = (
     'BuildConfig',
     'CpuScaling',
     'NodeSelector',
+    'PubSubScaling',
     'RevisionScaling',
     'ServiceMesh',
     'ServiceScaling',

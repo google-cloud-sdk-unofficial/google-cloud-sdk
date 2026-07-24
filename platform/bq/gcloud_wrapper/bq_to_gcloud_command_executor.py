@@ -47,7 +47,7 @@ def run_bq_command_using_gcloud(
   return bq_to_gcloud_adapter.run_bq_command_using_gcloud(
       resource=resource,
       bq_command=bq_command,
-      bq_global_flags=bq_global_flags,
+      bq_global_flags=bq_global_flags,  # pyrefly: ignore[bad-argument-type]
       bq_command_flags=bq_command_flags,
       identifier=identifier,
       dry_run=dry_run,

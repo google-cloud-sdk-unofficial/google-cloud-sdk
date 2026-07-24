@@ -120,6 +120,10 @@ class WorkerPoolRevisionTemplate(proto.Message):
         client_version (str):
             Optional. Arbitrary version identifier for
             the API client.
+        termination_grace_period (google.protobuf.duration_pb2.Duration):
+            Optional. Configured graceful termination
+            period for this revision. This is the time
+            between SIGTERM and SIGKILL when shutting down.
     """
 
     revision: str = proto.Field(
@@ -191,6 +195,11 @@ class WorkerPoolRevisionTemplate(proto.Message):
     client_version: str = proto.Field(
         proto.STRING,
         number=18,
+    )
+    termination_grace_period: duration_pb2.Duration = proto.Field(
+        proto.MESSAGE,
+        number=21,
+        message=duration_pb2.Duration,
     )
 
 

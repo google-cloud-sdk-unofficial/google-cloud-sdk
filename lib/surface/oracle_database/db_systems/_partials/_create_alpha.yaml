@@ -33,6 +33,10 @@
       display-name `my db system`, run:
 
         $ {command} my-db-system --location=us-east4 --display-name="my db system" --properties-db-home-db-version=xx.0.0.0 --properties-db-system-initial-storage-size=1000 --properties-shape=VM.FOO
+
+      To create a DbSystem with pluggable database parameters specified, run:
+
+        $ {command} my-db-system --location=us-east4 --display-name="my db system" --properties-db-home-db-version=xx.0.0.0 --properties-db-system-initial-storage-size=1000 --properties-shape=VM.FOO --database-pluggable-id=my-pdb-id --database-pluggable-name=my_pdb_name
   arguments:
     params:
     - help_text: |-
@@ -613,7 +617,7 @@
       required: false
       repeated: false
       help_text: |-
-        The GCP Oracle zone where Oracle DbSystem is hosted.
+        The Google Cloud Oracle zone where Oracle DbSystem is hosted.
         Example: us-east4-b-r2.
         If not specified, the system will pick a zone based on availability.
     - arg_name: labels

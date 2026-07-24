@@ -300,7 +300,7 @@ def _EnsureComponentsInstalled(args):
   """Make sure the components needed later are installed."""
   if not config.Paths().sdk_root:
     # Not currently in a packaged build. Currently in a unit test or a
-    # gcloud_lite build.
+    # gcloud build.
     return
 
   components = ['skaffold']

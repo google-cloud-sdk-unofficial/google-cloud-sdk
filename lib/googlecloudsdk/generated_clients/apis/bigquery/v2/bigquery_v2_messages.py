@@ -5690,8 +5690,11 @@ class JobStatistics(_messages.Message):
     finalExecutionDurationMs: Output only. The duration in milliseconds of the
       execution of the final attempt of this job, as BigQuery may internally
       re-attempt to execute the job.
+    globalQueryRemoteRegions: Output only. Regions where the global query
+      accesses data.
     load: Output only. Statistics for a load job.
     numChildJobs: Output only. Number of child jobs executed.
+    parentGlobalQueryJob: Output only. The global query that created this job.
     parentJobId: Output only. If this is a child job, specifies the job ID of
       the parent.
     query: Output only. Statistics for a query job.
@@ -5763,21 +5766,23 @@ class JobStatistics(_messages.Message):
   endTime = _messages.IntegerField(6)
   extract = _messages.MessageField('JobStatistics4', 7)
   finalExecutionDurationMs = _messages.IntegerField(8)
-  load = _messages.MessageField('JobStatistics3', 9)
-  numChildJobs = _messages.IntegerField(10)
-  parentJobId = _messages.StringField(11)
-  query = _messages.MessageField('JobStatistics2', 12)
-  quotaDeferments = _messages.StringField(13, repeated=True)
-  reservationGroupPath = _messages.StringField(14, repeated=True)
-  reservationUsage = _messages.MessageField('ReservationUsageValueListEntry', 15, repeated=True)
-  reservation_id = _messages.StringField(16)
-  rowLevelSecurityStatistics = _messages.MessageField('RowLevelSecurityStatistics', 17)
-  scriptStatistics = _messages.MessageField('ScriptStatistics', 18)
-  sessionInfo = _messages.MessageField('SessionInfo', 19)
-  startTime = _messages.IntegerField(20)
-  totalBytesProcessed = _messages.IntegerField(21)
-  totalSlotMs = _messages.IntegerField(22)
-  transactionInfo = _messages.MessageField('TransactionInfo', 23)
+  globalQueryRemoteRegions = _messages.StringField(9, repeated=True)
+  load = _messages.MessageField('JobStatistics3', 10)
+  numChildJobs = _messages.IntegerField(11)
+  parentGlobalQueryJob = _messages.MessageField('JobReference', 12)
+  parentJobId = _messages.StringField(13)
+  query = _messages.MessageField('JobStatistics2', 14)
+  quotaDeferments = _messages.StringField(15, repeated=True)
+  reservationGroupPath = _messages.StringField(16, repeated=True)
+  reservationUsage = _messages.MessageField('ReservationUsageValueListEntry', 17, repeated=True)
+  reservation_id = _messages.StringField(18)
+  rowLevelSecurityStatistics = _messages.MessageField('RowLevelSecurityStatistics', 19)
+  scriptStatistics = _messages.MessageField('ScriptStatistics', 20)
+  sessionInfo = _messages.MessageField('SessionInfo', 21)
+  startTime = _messages.IntegerField(22)
+  totalBytesProcessed = _messages.IntegerField(23)
+  totalSlotMs = _messages.IntegerField(24)
+  transactionInfo = _messages.MessageField('TransactionInfo', 25)
 
 
 class JobStatistics2(_messages.Message):
@@ -5838,6 +5843,8 @@ class JobStatistics2(_messages.Message):
     modelTrainingExpectedTotalIteration: Deprecated.
     numDmlAffectedRows: Output only. The number of rows affected by a DML
       statement. Present only for DML statements INSERT, UPDATE or DELETE.
+    objectStorageStats: Output only. Storage and caching statistics per cloud
+      provider for queries over object storage.
     performanceInsights: Output only. Performance insights.
     queryInfo: Output only. Query optimization information for a QUERY job.
     queryPlan: Output only. Describes execution plan for the query.
@@ -6038,27 +6045,28 @@ class JobStatistics2(_messages.Message):
   modelTrainingCurrentIteration = _messages.IntegerField(25, variant=_messages.Variant.INT32)
   modelTrainingExpectedTotalIteration = _messages.IntegerField(26)
   numDmlAffectedRows = _messages.IntegerField(27)
-  performanceInsights = _messages.MessageField('PerformanceInsights', 28)
-  queryInfo = _messages.MessageField('QueryInfo', 29)
-  queryPlan = _messages.MessageField('ExplainQueryStage', 30, repeated=True)
-  referencedPropertyGraphs = _messages.MessageField('PropertyGraphReference', 31, repeated=True)
-  referencedRoutines = _messages.MessageField('RoutineReference', 32, repeated=True)
-  referencedTables = _messages.MessageField('TableReference', 33, repeated=True)
-  reservationUsage = _messages.MessageField('ReservationUsageValueListEntry', 34, repeated=True)
-  schema = _messages.MessageField('TableSchema', 35)
-  searchStatistics = _messages.MessageField('SearchStatistics', 36)
-  sparkStatistics = _messages.MessageField('SparkStatistics', 37)
-  statementType = _messages.StringField(38)
-  timeline = _messages.MessageField('QueryTimelineSample', 39, repeated=True)
-  totalBytesBilled = _messages.IntegerField(40)
-  totalBytesProcessed = _messages.IntegerField(41)
-  totalBytesProcessedAccuracy = _messages.StringField(42)
-  totalPartitionsProcessed = _messages.IntegerField(43)
-  totalServicesSkuSlotMs = _messages.IntegerField(44)
-  totalSlotMs = _messages.IntegerField(45)
-  transferredBytes = _messages.IntegerField(46)
-  undeclaredQueryParameters = _messages.MessageField('QueryParameter', 47, repeated=True)
-  vectorSearchStatistics = _messages.MessageField('VectorSearchStatistics', 48)
+  objectStorageStats = _messages.MessageField('ObjectStorageStats', 28, repeated=True)
+  performanceInsights = _messages.MessageField('PerformanceInsights', 29)
+  queryInfo = _messages.MessageField('QueryInfo', 30)
+  queryPlan = _messages.MessageField('ExplainQueryStage', 31, repeated=True)
+  referencedPropertyGraphs = _messages.MessageField('PropertyGraphReference', 32, repeated=True)
+  referencedRoutines = _messages.MessageField('RoutineReference', 33, repeated=True)
+  referencedTables = _messages.MessageField('TableReference', 34, repeated=True)
+  reservationUsage = _messages.MessageField('ReservationUsageValueListEntry', 35, repeated=True)
+  schema = _messages.MessageField('TableSchema', 36)
+  searchStatistics = _messages.MessageField('SearchStatistics', 37)
+  sparkStatistics = _messages.MessageField('SparkStatistics', 38)
+  statementType = _messages.StringField(39)
+  timeline = _messages.MessageField('QueryTimelineSample', 40, repeated=True)
+  totalBytesBilled = _messages.IntegerField(41)
+  totalBytesProcessed = _messages.IntegerField(42)
+  totalBytesProcessedAccuracy = _messages.StringField(43)
+  totalPartitionsProcessed = _messages.IntegerField(44)
+  totalServicesSkuSlotMs = _messages.IntegerField(45)
+  totalSlotMs = _messages.IntegerField(46)
+  transferredBytes = _messages.IntegerField(47)
+  undeclaredQueryParameters = _messages.MessageField('QueryParameter', 48, repeated=True)
+  vectorSearchStatistics = _messages.MessageField('VectorSearchStatistics', 49)
 
 
 class JobStatistics3(_messages.Message):
@@ -6113,10 +6121,13 @@ class JobStatistics5(_messages.Message):
     copiedLogicalBytes: Output only. Number of logical bytes copied to the
       destination table.
     copiedRows: Output only. Number of rows copied to the destination table.
+    remoteDestinationRegion: Output only. Destination region for a cross-
+      region copy job. Not set for in-region copy jobs.
   """
 
   copiedLogicalBytes = _messages.IntegerField(1)
   copiedRows = _messages.IntegerField(2)
+  remoteDestinationRegion = _messages.StringField(3)
 
 
 class JobStatus(_messages.Message):
@@ -6859,6 +6870,40 @@ class MultiClassClassificationMetrics(_messages.Message):
 
   aggregateClassificationMetrics = _messages.MessageField('AggregateClassificationMetrics', 1)
   confusionMatrixList = _messages.MessageField('ConfusionMatrix', 2, repeated=True)
+
+
+class ObjectStorageStats(_messages.Message):
+  r"""Storage and caching statistics for object storage.
+
+  Enums:
+    CloudProviderValueValuesEnum: The cloud provider for this block of
+      statistics.
+
+  Fields:
+    cacheBytesRead: Total bytes read from the GCP Lakehouse-internal cache,
+      avoiding an object storage read.
+    cloudProvider: The cloud provider for this block of statistics.
+    objectStorageBytesRead: Total bytes read directly from the cloud
+      provider's storage.
+  """
+
+  class CloudProviderValueValuesEnum(_messages.Enum):
+    r"""The cloud provider for this block of statistics.
+
+    Values:
+      CLOUD_PROVIDER_UNSPECIFIED: Unspecified cloud provider.
+      GCP: Google Cloud Platform.
+      AWS: Amazon Web Services.
+      AZURE: Microsoft Azure.
+    """
+    CLOUD_PROVIDER_UNSPECIFIED = 0
+    GCP = 1
+    AWS = 2
+    AZURE = 3
+
+  cacheBytesRead = _messages.IntegerField(1)
+  cloudProvider = _messages.EnumField('CloudProviderValueValuesEnum', 2)
+  objectStorageBytesRead = _messages.IntegerField(3)
 
 
 class ParquetOptions(_messages.Message):

@@ -15,8 +15,10 @@
 """Code for making shared messages between commands."""
 
 
+from googlecloudsdk.api_lib.run import container_resource
 from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
 def GetSuccessMessageForMultiRegionSynchronousDeploy(service, regions):
@@ -334,3 +336,36 @@ def MaybeLogDefaultGpuTypeMessageForV2Resource(args, resource):
         'No GPU type is provided, defaulting to nvidia-l4. To specify the'
         ' GPU type use --gpu-type.'
     )
+
+
+def LogInstancePostDeploymentMessages(instance, region, release_track):
+  """Logs post-deployment messages for an instance (logs tail, SSH, URL, proxy)."""
+  release_track_prefix = (
+      f' {release_track.prefix}' if release_track.prefix else ''
+  )
+  log.status.Print(
+      f'\nSee logs with:\ngcloud{release_track_prefix} run instances'
+      f' logs tail {instance.name} --region {region}'
+  )
+  if instance.annotations.get(k8s_object.SSH_ENABLED_ANNOTATION) == 'true':
+    log.status.Print(
+        f'\nSSH with:\ngcloud{release_track_prefix} run instances ssh'
+        f' {instance.name} --region {region}'
+    )
+  if instance.urls:
+    log.status.Print(f'\nURL: {instance.urls[0]}')
+    if (
+        instance.annotations.get(container_resource.DISABLE_IAM_ANNOTATION)
+        != container_resource.DISABLE_IAM_ANNOTATION_VALUE_DISABLED
+    ):
+      project = properties.VALUES.core.project.Get(required=True)
+      log.status.Print(
+          f'\nProxy locally with:\ngcloud{release_track_prefix} run'
+          f' instances proxy {instance.name} --region {region} --project'
+          f' {project}'
+      )
+      log.status.Print(
+          f'To make this URL public, use gcloud{release_track_prefix} run'
+          f' instances update {instance.name} --no-invoker-iam-check'
+          f' --region {region}'
+      )

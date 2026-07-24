@@ -81,7 +81,7 @@ def CreateHttp(
 ) -> httplib2.Http:
   """Returns the httplib2 Http to use."""
   if not proxy_info:
-    proxy_info = httplib2.proxy_info_from_environment
+    proxy_info = httplib2.proxy_info_from_environment  # pyrefly: ignore[bad-assignment]
     if flags.FLAGS.proxy_address and flags.FLAGS.proxy_port:
       try:
         port = int(flags.FLAGS.proxy_port)
@@ -109,7 +109,7 @@ def CreateHttp(
   )
 
   if hasattr(http, 'redirect_codes'):
-    http.redirect_codes = set(http.redirect_codes) - {308}
+    http.redirect_codes = set(http.redirect_codes) - {308}  # pyrefly: ignore[bad-assignment]
 
   return http
 
@@ -434,7 +434,7 @@ class BigqueryClient:
         else:
           response_metadata, discovery_document = http.request(discovery_url)
         discovery_document = discovery_document.decode('utf-8')
-        if int(response_metadata.get('status')) >= 400:
+        if int(response_metadata.get('status')) >= 400:  # pyrefly: ignore[bad-argument-type]
           msg = 'Got %s response from discovery url: %s' % (
               response_metadata.get('status'),
               discovery_url,
@@ -501,8 +501,8 @@ class BigqueryClient:
     bigquery_model = bigquery_http.BigqueryModel(
         trace=self.trace,
         quota_project_id=bq_utils.GetEffectiveQuotaProjectIDForHTTPHeader(
-            quota_project_id=self.quota_project_id,
-            project_id=self.project_id,
+            quota_project_id=self.quota_project_id,  # pyrefly: ignore[bad-argument-type]
+            project_id=self.project_id,  # pyrefly: ignore[bad-argument-type]
             use_google_auth=self.use_google_auth,
             credentials=self.credentials,
         ),
@@ -517,12 +517,12 @@ class BigqueryClient:
     # document retrieval, otherwise the discovery request would result in a
     # permission error seen in b/321286043.
     if self.use_google_auth and hasattr(self.credentials, '_quota_project_id'):
-      self.credentials._quota_project_id = None  # pylint: disable=protected-access
+      self.credentials._quota_project_id = None  # pylint: disable=protected-access  # pyrefly: ignore[missing-attribute]
 
     http = None
     if not http:
       http_client = self.GetHttp()
-      http = self.GetAuthorizedHttp(self.credentials, http_client)
+      http = self.GetAuthorizedHttp(self.credentials, http_client)  # pyrefly: ignore[bad-argument-type]
 
     discovery_document = None
     # First, trying to load the discovery document from the local package.
@@ -551,18 +551,18 @@ class BigqueryClient:
       discovery_document = self._LoadDiscoveryDocumentUrl(
           service=service,
           http=http,
-          discovery_url=discovery_url,
+          discovery_url=discovery_url,  # pyrefly: ignore[bad-argument-type]
       )
 
     discovery_document_to_build_client = self.OverrideEndpoint(
-        discovery_document=discovery_document,
+        discovery_document=discovery_document,  # pyrefly: ignore[bad-argument-type]
         service=service,
         discovery_root_url=discovery_root_url,
     )
 
     bq_logging.SaveStringToLogDirectoryIfAvailable(
         file_prefix='discovery_document',
-        content=discovery_document_to_build_client,
+        content=discovery_document_to_build_client,  # pyrefly: ignore[bad-argument-type]
         apilog=bq_flags.APILOG.value,
     )
 
@@ -737,31 +737,31 @@ class BigqueryClient:
     if discovery_document is None:
       return discovery_document
 
-    discovery_document = bq_api_utils.parse_discovery_doc(discovery_document)
+    discovery_document = bq_api_utils.parse_discovery_doc(discovery_document)  # pyrefly: ignore[bad-assignment]
 
     logging.info(
         'Discovery doc routing values being considered for updates: rootUrl:'
         ' (%s), basePath: (%s), baseUrl: (%s)',
-        discovery_document['rootUrl'],
-        discovery_document['basePath'],
-        discovery_document['baseUrl'],
+        discovery_document['rootUrl'],  # pyrefly: ignore[bad-index]
+        discovery_document['basePath'],  # pyrefly: ignore[bad-index]
+        discovery_document['baseUrl'],  # pyrefly: ignore[bad-index]
     )
 
-    discovery_document['rootUrl'] = bq_api_utils.get_tpc_root_url_from_flags(
+    discovery_document['rootUrl'] = bq_api_utils.get_tpc_root_url_from_flags(  # pyrefly: ignore[unsupported-operation]
         service=service, inputted_flags=bq_flags
     )
 
 
-    discovery_document['baseUrl'] = urllib.parse.urljoin(
-        discovery_document['rootUrl'], discovery_document['servicePath']
+    discovery_document['baseUrl'] = urllib.parse.urljoin(  # pyrefly: ignore[unsupported-operation]
+        discovery_document['rootUrl'], discovery_document['servicePath']  # pyrefly: ignore[bad-index]
     )
 
     logging.info(
         'Discovery doc routing values post updates: rootUrl: (%s), basePath:'
         ' (%s), baseUrl: (%s)',
-        discovery_document['rootUrl'],
-        discovery_document['basePath'],
-        discovery_document['baseUrl'],
+        discovery_document['rootUrl'],  # pyrefly: ignore[bad-index]
+        discovery_document['basePath'],  # pyrefly: ignore[bad-index]
+        discovery_document['baseUrl'],  # pyrefly: ignore[bad-index]
     )
 
     return json.dumps(discovery_document)

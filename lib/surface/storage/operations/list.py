@@ -16,6 +16,7 @@
 
 
 from googlecloudsdk.api_lib.storage import api_factory
+from googlecloudsdk.api_lib.storage.gcs_json import operations as operations_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import errors_util
 from googlecloudsdk.command_lib.storage import operations_util
@@ -72,6 +73,11 @@ class List(base.ListCommand):
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
+    if operations_util.is_location_parent_resource(args.parent_resource_name):
+      return operations_api.OperationsApi().list(
+          args.parent_resource_name, server_side_filter=args.server_filter
+      )
+
     url_object = storage_url.storage_url_from_string(args.parent_resource_name)
     if isinstance(url_object, storage_url.CloudUrl):
       errors_util.raise_error_if_not_gcs_bucket(args.command_path, url_object)

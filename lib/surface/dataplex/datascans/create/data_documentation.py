@@ -83,6 +83,15 @@ class DataDocumentation(base.Command):
             ' //bigquery.{universe_domain}/projects/{project_id_or_number}/datasets/{dataset_id}/tables/{table_id}.'
         ),
     )
+    data_spec_group = parser.add_group(
+        help='Data documentation scan settings.'
+    )
+    data_spec_group.add_argument(
+        '--enable-catalog-publishing',
+        action='store_true',
+        help='Publish data documentation results to Knowledge Catalog.',
+        default=False,
+    )
     execution_spec = parser.add_group(
         help='Data documentation scan execution settings.'
     )

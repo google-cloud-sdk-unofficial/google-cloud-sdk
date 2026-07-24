@@ -188,6 +188,11 @@ class Update(base.UpdateCommand):
         args, 'bigtable_service_account_email', None
     )
     bigtable_write_metadata = getattr(args, 'bigtable_write_metadata', None)
+    bigtable_use_row_key_schema = getattr(
+        args, 'bigtable_use_row_key_schema', None
+    )
+    bigtable_key_fields = getattr(args, 'bigtable_key_fields', None)
+    bigtable_delimiter = getattr(args, 'bigtable_delimiter', None)
 
     enable_exactly_once_delivery = getattr(
         args, 'enable_exactly_once_delivery', None
@@ -240,6 +245,9 @@ class Update(base.UpdateCommand):
           bigtable_app_profile_id=bigtable_app_profile_id,
           bigtable_service_account_email=bigtable_service_account_email,
           bigtable_write_metadata=bigtable_write_metadata,
+          bigtable_use_row_key_schema=bigtable_use_row_key_schema,
+          bigtable_key_fields=bigtable_key_fields,
+          bigtable_delimiter=bigtable_delimiter,
           clear_bigtable_config=clear_bigtable_config,
           message_transforms_file=message_transforms_file,
           clear_message_transforms=clear_message_transforms,

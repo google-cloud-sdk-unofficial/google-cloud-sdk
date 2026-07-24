@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: List Google Compute Engine hosts.
     description: List Google Compute Engine hosts in a given project and zone.
@@ -8,7 +8,10 @@
         $ {command} --zone=us-central1-a
 
   request:
-    api_version: alpha
+    ALPHA:
+      api_version: alpha
+    BETA:
+      api_version: beta
     collection: compute.hosts
     method: list
     modify_request_hooks:

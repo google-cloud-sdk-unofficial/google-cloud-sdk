@@ -17,6 +17,7 @@
 """
 
 
+from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import optimize_parameters_util
 from googlecloudsdk.command_lib.storage import plurality_checkable_iterator
@@ -128,11 +129,19 @@ def execute_tasks(task_iterator,
         max_process_count=properties.VALUES.storage.process_count.GetInt(),
         thread_count=properties.VALUES.storage.thread_count.GetInt(),
         task_status_queue=task_status_queue,
-        progress_manager_args=progress_manager_args).run()
+        progress_manager_args=progress_manager_args,
+        thread_exit_callback=api_factory.clear_thread_local_instances,
+    ).run()
   else:
-    with task_status.progress_manager(task_status_queue, progress_manager_args):
-      exit_code, _ = _execute_tasks_sequential(
-          plurality_checkable_task_iterator,
-          task_status_queue=task_status_queue,
-          continue_on_error=continue_on_error)
+    try:
+      with task_status.progress_manager(
+          task_status_queue, progress_manager_args
+      ):
+        exit_code, _ = _execute_tasks_sequential(
+            plurality_checkable_task_iterator,
+            task_status_queue=task_status_queue,
+            continue_on_error=continue_on_error,
+        )
+    finally:
+      api_factory.clear_thread_local_instances()
   return exit_code

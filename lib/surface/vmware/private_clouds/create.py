@@ -14,7 +14,8 @@
 # limitations under the License.
 """'vmware private-clouds create' command."""
 
-from googlecloudsdk.api_lib.vmware.privateclouds import PrivateCloudsClient
+import textwrap
+from googlecloudsdk.api_lib.vmware import privateclouds
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.vmware import flags
@@ -22,33 +23,35 @@ from googlecloudsdk.command_lib.vmware.clusters import util
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
-    'DESCRIPTION': (
-        """
-          Create a VMware Engine private cloud. Private cloud creation is considered finished when the private cloud is in READY state. Check the progress of a private cloud using `{parent_command} list`.
-        """
-    ),
-    'EXAMPLES': (
-        """
+    'DESCRIPTION': textwrap.dedent("""\
+          Create a VMware Engine private cloud. Private cloud creation is
+          considered finished when the private cloud is in READY state. Check
+          the progress of a private cloud using `{parent_command} list`.
+          """),
+    'EXAMPLES': textwrap.dedent("""\
           To create a private cloud in the `us-west2-a` zone using `standard-72` nodes that connects to the `my-network` VMware Engine network, run:
 
-
-          $ {command} my-private-cloud --location=us-west2-a --project=my-project --cluster=my-management-cluster --node-type-config=type=standard-72,count=3 --management-range=192.168.0.0/24 --vmware-engine-network=my-network
+              $ {command} my-private-cloud --location=us-west2-a --project=my-project --cluster=my-management-cluster --node-type-config=type=standard-72,count=3 --management-range=192.168.0.0/24 --vmware-engine-network=my-network
 
           Or:
 
-          $ {command} my-private-cloud --cluster=my-management-cluster --node-type-config=type=standard-72,count=3 --management-range=192.168.0.0/24 --vmware-engine-network=my-network
+              $ {command} my-private-cloud --cluster=my-management-cluster --node-type-config=type=standard-72,count=3 --management-range=192.168.0.0/24 --vmware-engine-network=my-network
 
           In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
 
+          To create a stretched private cloud in the `us-west2` region using `us-west2-a` zone as preferred and `us-west2-b` zone as secondary:
 
-          To create a stretched private cloud in the `us-west2` region using `us-west2-a` zone as preferred and `us-west2-b` zone as secondary
-
-          $ {command} my-private-cloud --project=sample-project --location=us-west2 --cluster=my-management-cluster --node-type-config=type=standard-72,count=6 --management-range=192.168.0.0/24 --vmware-engine-network=my-network --type=STRETCHED --preferred-zone=us-west2-a --secondary-zone=us-west2-b
+              $ {command} my-private-cloud --project=sample-project --location=us-west2 --cluster=my-management-cluster --node-type-config=type=standard-72,count=6 --management-range=192.168.0.0/24 --vmware-engine-network=my-network --type=STRETCHED --preferred-zone=projects/sample-project/locations/us-west2-a --secondary-zone=projects/sample-project/locations/us-west2-b
 
           The project is taken from gcloud properties core/project.
-    """
-    ),
+          """),
 }
+
+
+def _GetFullZoneName(project, zone):
+  if zone and not zone.startswith('projects/'):
+    return f'projects/{project}/locations/{zone}'
+  return zone
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -133,20 +136,22 @@ class Create(base.CreateCommand):
     parser.add_argument(
         '--preferred-zone',
         required=False,
-        help="""\
+        help=textwrap.dedent("""\
         Zone that will remain operational when connection between the two zones is
         lost. Specify the resource name of a zone that belongs to the region of the
-        private cloud.
-        """,
+        private cloud. For example: `projects/{project}/locations/us-west2-a`.
+        Using the full resource name is recommended for VPC Service Controls compliance.
+        """),
     )
     parser.add_argument(
         '--secondary-zone',
         required=False,
-        help="""\
+        help=textwrap.dedent("""\
         Additional zone for a higher level of availability and load balancing.
         Specify the resource name of a zone that belongs to the region of the
-        private cloud.
-        """,
+        private cloud. For example: `projects/{project}/locations/us-west2-b`.
+        Using the full resource name is recommended for VPC Service Controls compliance.
+        """),
     )
     parser.add_argument(
         '--service-subnet',
@@ -168,13 +173,26 @@ class Create(base.CreateCommand):
         Format: projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}
         """,
     )
+    parser.add_argument(
+        '--vsan-type',
+        required=False,
+        hidden=True,
+        choices=['osa', 'esa'],
+        help="""\
+        vSAN type of the private cloud. `esa` is supported for all VE2 node types (e.g., ve2-standard-128), while `osa` is the current default.
+        """,
+    )
     flags.AddAutoscalingSettingsFlagsToParser(parser)
     flags.AddNsxEdgeConfigFlagsToParser(parser)
 
   def Run(self, args):
     privatecloud = args.CONCEPTS.private_cloud.Parse()
-    client = PrivateCloudsClient()
+    client = privateclouds.PrivateCloudsClient()
     is_async = args.async_
+
+    project = privatecloud.Parent().Parent().Name()
+    preferred_zone = _GetFullZoneName(project, args.preferred_zone)
+    secondary_zone = _GetFullZoneName(project, args.secondary_zone)
 
     nodes_configs = util.ParseNodesConfigsParameters(args.node_type_config)
     autoscaling_settings = None
@@ -203,14 +221,15 @@ class Create(base.CreateCommand):
         vmware_engine_network_id=args.vmware_engine_network,
         description=args.description,
         private_cloud_type=args.type,
-        preferred_zone=args.preferred_zone,
-        secondary_zone=args.secondary_zone,
+        preferred_zone=preferred_zone,
+        secondary_zone=secondary_zone,
         autoscaling_settings=autoscaling_settings,
         service_subnet=args.service_subnet,
         kms_key=args.kms_key,
         nsx_edge_ha_mode=args.nsx_edge_ha_mode,
         nsx_edge_size=args.nsx_edge_size,
         nsx_edge_count=args.nsx_edge_count,
+        vsan_type=args.vsan_type,
     )
     if is_async:
       log.CreatedResource(operation.name, kind='private cloud', is_async=True)

@@ -35,27 +35,15 @@
       api_version: v1
 
   output:
-    ALPHA:
-      format: |
-        table(
-          name.basename():label=NAME:sort=2,
-          lookerUri:label=INSTANCE_URL,
-          lookerVersion:label=VERSION,
-          releaseChannel.yesno(no="No Channel").sub(RELEASE_CHANNEL_UNSPECIFIED,"No Channel").sub(RAPID,Rapid).sub(REGULAR,Regular).sub(STABLE,Stable):label=RELEASE_CHANNEL,
-          acceleratedSecurityPatchEnabled:label=ACCELERATED_SECURITY_PATCH_ENABLED,
-          platformEdition:label=EDITION,
-          state:label=STATUS,
-          createTime.date(),
-          updateTime.date()
-        )
-    GA:
-      format: |
-        table(
-          name.basename():label=NAME:sort=2,
-          lookerUri:label=INSTANCE_URL,
-          lookerVersion:label=VERSION,
-          platformEdition:label=EDITION,
-          state:label=STATUS,
-          createTime.date(),
-          updateTime.date()
-        )
+    format: |
+      table(
+        name.basename():label=NAME:sort=2,
+        lookerUri:label=INSTANCE_URL,
+        lookerVersion:label=VERSION,
+        releaseChannel.yesno(no="No Channel").sub(RELEASE_CHANNEL_UNSPECIFIED,"No Channel").sub(RAPID,Rapid).sub(REGULAR,Regular).sub(STABLE,Stable):label=RELEASE_CHANNEL,
+        acceleratedSecurityPatchEnabled:label=ACCELERATED_SECURITY_PATCH_ENABLED,
+        platformEdition:label=EDITION,
+        state:label=STATUS,
+        createTime.date(),
+        updateTime.date()
+      )

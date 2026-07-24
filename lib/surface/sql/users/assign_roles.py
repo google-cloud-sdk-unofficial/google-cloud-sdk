@@ -55,6 +55,8 @@ def AddBaseArgs(parser):
   flags.AddType(parser, required=True)
   flags.AddDatabaseRoles(parser)
   flags.AddRevokeExistingRoles(parser)
+  flags.AddServerRoles(parser)
+  flags.AddRevokeExistingServerRoles(parser)
   parser.display_info.AddCacheUpdater(None)
 
 
@@ -161,9 +163,14 @@ def RunBaseAssignRolesCommand(args):
               project=instance_ref.project,
               instance=args.instance,
               name=name,
-              type=user.type),
+              type=user.type,
+          ),
           databaseRoles=args.database_roles,
-          revokeExistingRoles=args.revoke_existing_roles))
+          revokeExistingRoles=args.revoke_existing_roles,
+          serverRoles=args.server_roles,
+          revokeExistingServerRoles=args.revoke_existing_server_roles,
+      )
+  )
   operation_ref = client.resource_parser.Create(
       'sql.operations',
       operation=result_operation.name,

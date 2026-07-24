@@ -109,7 +109,7 @@ def run_bq_command_using_gcloud(
     elif not command_mapping.print_resource:
       # If this command doesn't print the resource, then print the raw output.
       line_to_print = command_mapping.status_mapping(
-          output, identifier, bq_global_flags.get('project_id')
+          output, identifier, bq_global_flags.get('project_id')  # pyrefly: ignore[bad-argument-type]
       )
     elif 'json' in bq_format:
       # Collect all the lines before printing them as a single JSON object.

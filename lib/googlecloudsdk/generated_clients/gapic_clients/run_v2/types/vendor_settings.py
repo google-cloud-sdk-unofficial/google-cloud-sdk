@@ -32,6 +32,7 @@ __protobuf__ = proto.module(
         'ServiceMesh',
         'ServiceScaling',
         'CpuScaling',
+        'PubSubScaling',
         'WorkerPoolScaling',
         'NodeSelector',
         'BuildConfig',
@@ -395,6 +396,55 @@ class CpuScaling(proto.Message):
     )
 
 
+class PubSubScaling(proto.Message):
+    r"""Represents the Pub/Sub scaling settings.
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
+    Attributes:
+        subscription (str):
+            Required. Pub/Sub subscription id. Format:
+            ``projects/{project}/subscriptions/{id}``, where
+            ``{project}`` can be project id or number.
+        target_value (int):
+            Optional. The metric target value for Pub/Sub
+            scaling.
+
+            This field is a member of `oneof`_ ``_target_value``.
+        metric_name (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.PubSubScaling.PubSubMetric):
+            Optional. The metric for Pub/Sub scaling.
+
+            This field is a member of `oneof`_ ``_metric_name``.
+    """
+    class PubSubMetric(proto.Enum):
+        r"""Metrics available for Pub/Sub scaling.
+
+        Values:
+            PUB_SUB_METRIC_UNSPECIFIED (0):
+                Unspecified.
+            NUM_UNACKED_MESSAGES (1):
+                pubsub.googleapis.com/subscription_backlog_view/unacked_messages
+        """
+        PUB_SUB_METRIC_UNSPECIFIED = 0
+        NUM_UNACKED_MESSAGES = 1
+
+    subscription: str = proto.Field(
+        proto.STRING,
+        number=1,
+    )
+    target_value: int = proto.Field(
+        proto.INT32,
+        number=2,
+        optional=True,
+    )
+    metric_name: PubSubMetric = proto.Field(
+        proto.ENUM,
+        number=3,
+        optional=True,
+        enum=PubSubMetric,
+    )
+
+
 class WorkerPoolScaling(proto.Message):
     r"""Worker pool scaling settings.
 
@@ -435,6 +485,9 @@ class WorkerPoolScaling(proto.Message):
             manual scaling mode.
 
             This field is a member of `oneof`_ ``_manual_instance_count``.
+        pubsub_scalings (MutableSequence[googlecloudsdk.generated_clients.gapic_clients.run_v2.types.PubSubScaling]):
+            Optional. The Pub/Sub scaling settings for
+            the worker pool.
         cpu_scaling (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.CpuScaling):
             Optional. The CPU scaling settings for the
             worker pool.
@@ -481,6 +534,11 @@ class WorkerPoolScaling(proto.Message):
         proto.INT32,
         number=6,
         optional=True,
+    )
+    pubsub_scalings: MutableSequence['PubSubScaling'] = proto.RepeatedField(
+        proto.MESSAGE,
+        number=7,
+        message='PubSubScaling',
     )
     cpu_scaling: 'CpuScaling' = proto.Field(
         proto.MESSAGE,

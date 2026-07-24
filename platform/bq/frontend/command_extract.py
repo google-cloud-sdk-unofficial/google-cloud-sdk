@@ -110,6 +110,12 @@ class Extract(bigquery_command.BigqueryCmd):
     self.reservation_id_for_a_job_flag = (
         frontend_flags.define_reservation_id_for_a_job(flag_values=fv)
     )
+    flags.DEFINE_multi_string(
+        'label',
+        None,
+        'A label to set on the extract job. The format is "key:value"',
+        flag_values=fv,
+    )
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(
@@ -137,9 +143,11 @@ class Extract(bigquery_command.BigqueryCmd):
         'job_id': utils_flags.get_job_id_from_flags(),
     }
     if bq_flags.LOCATION.value:
-      kwds['location'] = bq_flags.LOCATION.value
+      kwds['location'] = bq_flags.LOCATION.value  # pyrefly: ignore[bad-assignment]
     if self.reservation_id_for_a_job_flag.present:
-      kwds['reservation_id'] = self.reservation_id_for_a_job_flag.value
+      kwds['reservation_id'] = self.reservation_id_for_a_job_flag.value  # pyrefly: ignore[bad-assignment]
+    if self.label is not None:
+      kwds['labels'] = frontend_utils.ParseLabels(self.label)  # pyrefly: ignore[bad-assignment]
 
     if self.m:
       reference = bq_client_utils.GetModelReference(
@@ -153,7 +161,7 @@ class Extract(bigquery_command.BigqueryCmd):
       )
     job = client_job.Extract(
         client,
-        reference,
+        reference,  # pyrefly: ignore[bad-argument-type]
         destination_uris,
         print_header=self.print_header,
         field_delimiter=frontend_utils.NormalizeFieldDelimiter(

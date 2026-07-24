@@ -15,6 +15,8 @@
 """Region Network Firewall Policy."""
 
 
+from googlecloudsdk.command_lib.iam import iam_util
+
 OP_COLLECTION_NAME = 'compute.regionOperations'
 API_COLLECTION_NAME = 'compute.regionNetworkFirewallPolicies'
 
@@ -173,6 +175,44 @@ class RegionNetworkFirewallPolicy(object):
         ),
     )
 
+  def _MakeGetIamPolicyRequestTuple(self):
+    """Make the request tuple for GetIamPolicy."""
+    request = (
+        self._messages
+        .ComputeRegionNetworkFirewallPoliciesGetIamPolicyRequest(
+            resource=self.ref.Name(),
+            region=self.ref.region,
+            project=self.ref.project,
+            # Explicitly request max supported IAM policy version (v3)
+            # to prevent the backend from truncating IAM Conditions.
+            optionsRequestedPolicyVersion=(
+                iam_util.MAX_LIBRARY_IAM_SUPPORTED_VERSION
+            ),
+        )
+    )
+    return (
+        self._client.regionNetworkFirewallPolicies,
+        'GetIamPolicy',
+        request,
+    )
+
+  def _MakeSetIamPolicyRequestTuple(self, policy):
+    set_policy_req = self._messages.RegionSetPolicyRequest(policy=policy)
+    request = (
+        self._messages
+        .ComputeRegionNetworkFirewallPoliciesSetIamPolicyRequest(
+            resource=self.ref.Name(),
+            region=self.ref.region,
+            project=self.ref.project,
+            regionSetPolicyRequest=set_policy_req,
+        )
+    )
+    return (
+        self._client.regionNetworkFirewallPolicies,
+        'SetIamPolicy',
+        request,
+    )
+
   def CloneRules(
       self, source_firewall_policy=None, only_generate_request=False
   ):
@@ -212,6 +252,20 @@ class RegionNetworkFirewallPolicy(object):
     requests = [self._MakeUpdateRequestTuple(firewall_policy)]
     if not only_generate_request:
       return self._compute_client.MakeRequests(requests)
+    return requests
+
+  def GetIamPolicy(self, only_generate_request=False):
+    """Sends request to get the IAM policy."""
+    requests = [self._MakeGetIamPolicyRequestTuple()]
+    if not only_generate_request:
+      return self._compute_client.MakeRequests(requests)[0]
+    return requests
+
+  def SetIamPolicy(self, policy, only_generate_request=False):
+    """Sends request to set the IAM policy."""
+    requests = [self._MakeSetIamPolicyRequestTuple(policy)]
+    if not only_generate_request:
+      return self._compute_client.MakeRequests(requests)[0]
     return requests
 
   def AddAssociation(

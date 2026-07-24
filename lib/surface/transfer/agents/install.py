@@ -25,6 +25,7 @@ import sys
 
 from googlecloudsdk.api_lib.transfer import agent_pools_util
 from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.transfer import agents_util
@@ -663,8 +664,19 @@ class Install(base.Command):
     parser.add_argument('--proxy', help=PROXY_FLAG_HELP_TEXT)
     parser.add_argument(
         '--s3-compatible-mode',
-        action='store_true',
-        help=S3_COMPATIBLE_HELP_TEXT)
+        action=actions.DeprecationAction(
+            '--s3-compatible-mode',
+            warn=(
+                'The {flag_name} flag is deprecated and no longer needed. The'
+                ' agent will automatically use S3-compatible mode if the'
+                ' transfer job is configured for it.'
+            ),
+            removed=False,
+            action='store_true',
+        ),
+        hidden=True,
+        help=S3_COMPATIBLE_HELP_TEXT,
+    )
 
     hdfs_group = parser.add_group(
         category='HDFS',

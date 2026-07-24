@@ -75,11 +75,22 @@ class Create(base.CreateCommand):
     )
     rr_flags.AddOutputFormat(parser, cls.ReleaseTrack())
     cls._AddArgsGaCommon(parser)
-    parser.add_argument(
+
+    resize_by_instances_group = parser.add_group(mutex=True, required=True)
+    resize_by_instances_group.add_argument(
         '--resize-by',
         type=int,
-        required=True,
-        help="""The number of VMs to resize managed instance group by.""",
+        help="""The number of instances to create with this resize request.
+        Instances have automatically-generated names. The group's target size
+        increases by this number.""",
+    )
+    resize_by_instances_group.add_argument(
+        '--instances',
+        type=arg_parsers.ArgList(min_length=1),
+        metavar='INSTANCE',
+        help="""A comma-separated list of instance names. The number of names
+        you provide determines the number of instances to create with this
+        resize request. The group's target size increases by this count.""",
     )
 
   def Run(self, args):
@@ -102,12 +113,30 @@ class Create(base.CreateCommand):
           seconds=args.requested_run_duration
       )
 
+    resize_by = None
+    instances = []
+    if args.IsKnownAndSpecified('resize_by'):
+      resize_by = args.resize_by
+    else:
+      instances = args.instances
+
     resize_request = holder.client.messages.InstanceGroupManagerResizeRequest(
         name=args.resize_request,
-        resizeBy=args.resize_by,
+        resizeBy=resize_by,
         requestedRunDuration=requested_run_duration,
     )
+    if instances:
+      resize_request.instances = self._CreatePerInstanceConfigList(
+          holder, instances
+      )
     return self._MakeRequest(holder.client, igm_ref, resize_request)
+
+  def _CreatePerInstanceConfigList(self, holder, instances):
+    """Creates a list of per instance configs for the given instances."""
+    return [
+        holder.client.messages.PerInstanceConfig(name=instance)
+        for instance in instances
+    ]
 
   def _GetIgmRef(self, args, holder, resource_arg):
     default_scope = compute_scope.ScopeEnum.ZONE

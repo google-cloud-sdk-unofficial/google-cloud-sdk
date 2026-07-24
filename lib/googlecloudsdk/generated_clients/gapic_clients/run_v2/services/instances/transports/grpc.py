@@ -390,7 +390,7 @@ class InstancesGrpcTransport(InstancesTransport):
             operations_pb2.Operation]:
         r"""Return a callable for the delete instance method over gRPC.
 
-        Deletes a Instance
+        Deletes an Instance
 
         Returns:
             Callable[[~.DeleteInstanceRequest],
@@ -416,7 +416,7 @@ class InstancesGrpcTransport(InstancesTransport):
             instance.Instance]:
         r"""Return a callable for the get instance method over gRPC.
 
-        Gets a Instance
+        Gets an Instance
 
         Returns:
             Callable[[~.GetInstanceRequest],

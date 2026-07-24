@@ -76,11 +76,9 @@ class UpdateGA(base.UpdateCommand):
     )
     autohealing_params_group = autohealing_group.add_group()
     auto_healing_utils.AddAutohealingArgs(autohealing_params_group)
-    instance_groups_flags.AddMigUpdateStatefulFlags(parser)
-    instance_groups_flags.AddMigUpdateStatefulFlagsIPs(parser)
+    instance_groups_flags.AddMigStatefulUpdateFlags(parser)
     instance_groups_flags.AddDescriptionFlag(parser, for_update=True)
-    managed_flags.AddMigInstanceRedistributionTypeFlag(parser)
-    managed_flags.AddMigDistributionPolicyTargetShapeFlag(parser)
+    managed_flags.AddMigDistributionPolicyFlags(parser)
     managed_flags.AddMigListManagedInstancesResultsFlag(parser)
     INSTANCE_TEMPLATE_ARG.AddArgument(parser)
     managed_flags.AddMigUpdatePolicyFlags(
@@ -100,6 +98,7 @@ class UpdateGA(base.UpdateCommand):
     managed_flags.AddWorkloadPolicyFlags(parser)
     if cls.support_multi_mig_flag:
       managed_flags.AddMultiMigFlags(parser)
+    managed_flags.AddOnRepairFlags(parser)
     # When adding RMIG-specific flag, update REGIONAL_FLAGS constant.
 
   def _GetUpdatedStatefulPolicyForDisks(
@@ -537,11 +536,6 @@ class UpdateBeta(UpdateGA):
   support_instance_selection_min_cpu_platform = True
   support_flex_policy_flag_with_mincpu_and_disks = True
 
-  @classmethod
-  def Args(cls, parser):
-    managed_flags.AddOnRepairFlags(parser)
-    super(UpdateBeta, cls).Args(parser)
-
   def _CreateInstanceGroupManagerPatch(
       self, args, igm_ref, igm_resource, client, holder
   ):
@@ -563,10 +557,6 @@ class UpdateAlpha(UpdateBeta):
   support_multi_mig_flag = True
   support_instance_selection_min_cpu_platform = True
   support_flex_policy_flag_with_mincpu_and_disks = True
-
-  @classmethod
-  def Args(cls, parser):
-    super(UpdateAlpha, cls).Args(parser)
 
   def _CreateInstanceGroupManagerPatch(
       self, args, igm_ref, igm_resource, client, holder

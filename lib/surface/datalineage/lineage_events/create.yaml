@@ -1,0 +1,78 @@
+# -*- coding: utf-8 -*- #
+# Copyright 2026 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Create a Data Lineage event.
+    description: Create a Data Lineage event.
+    examples: |
+      To create a lineage event with ID `my-event` under run `my-run` and process `my-process`, run:
+
+        $ {command} my-event --run=my-run --process=my-process --location=us-central1 --start-time="2026-06-19T10:00:00Z" --end-time="2026-06-19T10:30:00Z"
+
+      To record a lineage link with column-level details:
+
+        $ {command} my-event --run=my-run --process=my-process --location=us-central1 --start-time="2026-06-19T10:00:00Z" --links="source={fullyQualifiedName=my_source_fqn,field=[col1]},target={fullyQualifiedName=my_target_fqn,field=[col2]}"
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.datalineage.resources:lineage_event
+      help_text: The lineage event to create.
+
+    params:
+    - arg_name: start-time
+      api_field: googleCloudDatacatalogLineageV1LineageEvent.startTime
+      required: true
+      help_text: The start time of the lineage event.
+
+    - arg_name: end-time
+      api_field: googleCloudDatacatalogLineageV1LineageEvent.endTime
+      help_text: The end time of the lineage event.
+
+    - arg_name: links
+      api_field: googleCloudDatacatalogLineageV1LineageEvent.links
+      type: arg_object
+      repeated: true
+      help_text: |
+        A list of source-target links representing data lineage.
+      spec:
+      - api_field: source
+        required: true
+        help_text: The source entity.
+        spec:
+        - api_field: fullyQualifiedName
+          required: true
+          help_text: The fully qualified name of the source entity.
+        - api_field: field
+          help_text: The fields of the source entity.
+      - api_field: target
+        required: true
+        help_text: The target entity.
+        spec:
+        - api_field: fullyQualifiedName
+          required: true
+          help_text: The fully qualified name of the target entity.
+        - api_field: field
+          help_text: The fields of the target entity.
+
+  request:
+    collection: datalineage.projects.locations.processes.runs.lineageEvents
+    resource_method_params:
+      parent: 'projects/{projectsId}/locations/{locationsId}/processes/{processesId}/runs/{runsId}'
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.datalineage.hooks:SetLineageEventNameInBody
+
+  output:
+    format: yaml

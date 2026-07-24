@@ -69,6 +69,12 @@ class Load(bigquery_command.BigqueryCmd):
         'name[:type].',
         flag_values=fv,
     )
+    flags.DEFINE_multi_string(
+        'label',
+        None,
+        'A label to set on the load job. The format is "key:value"',
+        flag_values=fv,
+    )
     flags.DEFINE_boolean(
         'replace',
         False,
@@ -542,6 +548,8 @@ class Load(bigquery_command.BigqueryCmd):
         'source_format': self.source_format,
         'projection_fields': self.projection_fields,
     }
+    if self.label is not None:
+      opts['labels'] = frontend_utils.ParseLabels(self.label)
     if self.max_bad_records:
       opts['max_bad_records'] = self.max_bad_records
     if bq_flags.LOCATION.value:

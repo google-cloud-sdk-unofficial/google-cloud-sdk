@@ -226,13 +226,19 @@ def _GetClearedFieldsForFaultInjectionPolicy(fault_injection_policy,
   if not fault_injection_policy.delay:
     cleared_fields.append(field_prefix + 'delay')
   else:
-    cleared_fields = cleared_fields + _GetClearedFieldsForFaultDelay(
-        fault_injection_policy.delay, field_prefix + 'delay.')
+    cleared_fields.extend(
+        _GetClearedFieldsForFaultDelay(
+            fault_injection_policy.delay, field_prefix + 'delay.'
+        )
+    )
   if not fault_injection_policy.abort:
     cleared_fields.append(field_prefix + 'abort')
   else:
-    cleared_fields = cleared_fields + _GetClearedFieldsForFaultAbort(
-        fault_injection_policy.abort, field_prefix + 'abort.')
+    cleared_fields.extend(
+        _GetClearedFieldsForFaultAbort(
+            fault_injection_policy.abort, field_prefix + 'abort.'
+        )
+    )
   return cleared_fields
 
 
@@ -329,41 +335,62 @@ def _GetClearedFieldsForRoutAction(route_action, field_prefix):
   if not route_action.urlRewrite:
     cleared_fields.append(field_prefix + 'urlRewrite')
   else:
-    cleared_fields = cleared_fields + _GetClearedFieldsForUrlRewrite(
-        route_action.urlRewrite, field_prefix + 'urlRewrite.')
+    cleared_fields.extend(
+        _GetClearedFieldsForUrlRewrite(
+            route_action.urlRewrite, field_prefix + 'urlRewrite.'
+        )
+    )
   if not route_action.timeout:
     cleared_fields.append(field_prefix + 'timeout')
   else:
-    cleared_fields = cleared_fields + _GetClearedFieldsForDuration(
-        route_action.timeout, field_prefix + 'timeout.')
+    cleared_fields.extend(
+        _GetClearedFieldsForDuration(
+            route_action.timeout, field_prefix + 'timeout.'
+        )
+    )
   if not route_action.retryPolicy:
     cleared_fields.append(field_prefix + 'retryPolicy')
   else:
-    cleared_fields = cleared_fields + _GetClearedFieldsForRetryPolicy(
-        route_action.retryPolicy, field_prefix + 'retryPolicy.')
+    cleared_fields.extend(
+        _GetClearedFieldsForRetryPolicy(
+            route_action.retryPolicy, field_prefix + 'retryPolicy.'
+        )
+    )
   if not route_action.requestMirrorPolicy:
     cleared_fields.append(field_prefix + 'requestMirrorPolicy')
   else:
-    cleared_fields = cleared_fields + _GetClearedFieldsForRequestMirrorPolicy(
-        route_action.requestMirrorPolicy, field_prefix + 'requestMirrorPolicy.')
+    cleared_fields.extend(
+        _GetClearedFieldsForRequestMirrorPolicy(
+            route_action.requestMirrorPolicy,
+            field_prefix + 'requestMirrorPolicy.',
+        )
+    )
   if not route_action.corsPolicy:
     cleared_fields.append(field_prefix + 'corsPolicy')
   else:
-    cleared_fields = cleared_fields + _GetClearedFieldsForCorsPolicy(
-        route_action.corsPolicy, field_prefix + 'corsPolicy.')
+    cleared_fields.extend(
+        _GetClearedFieldsForCorsPolicy(
+            route_action.corsPolicy, field_prefix + 'corsPolicy.'
+        )
+    )
   if not route_action.faultInjectionPolicy:
     cleared_fields.append(field_prefix + 'faultInjectionPolicy')
   else:
-    cleared_fields = cleared_fields + _GetClearedFieldsForFaultInjectionPolicy(
-        route_action.faultInjectionPolicy,
-        field_prefix + 'faultInjectionPolicy.')
+    cleared_fields.extend(
+        _GetClearedFieldsForFaultInjectionPolicy(
+            route_action.faultInjectionPolicy,
+            field_prefix + 'faultInjectionPolicy.',
+        )
+    )
 
   if hasattr(route_action, 'cachePolicy'):
     if not route_action.cachePolicy:
       cleared_fields.append(field_prefix + 'cachePolicy')
     else:
-      cleared_fields = cleared_fields + _GetClearedFieldsForCachePolicy(
-          route_action.cachePolicy, field_prefix + 'cachePolicy.'
+      cleared_fields.extend(
+          _GetClearedFieldsForCachePolicy(
+              route_action.cachePolicy, field_prefix + 'cachePolicy.'
+          )
       )
 
   # imageOptimizationPolicy is currently Alpha and Beta only.
@@ -371,9 +398,8 @@ def _GetClearedFieldsForRoutAction(route_action, field_prefix):
     if not route_action.imageOptimizationPolicy:
       cleared_fields.append(field_prefix + 'imageOptimizationPolicy')
     else:
-      cleared_fields = (
-          cleared_fields
-          + _GetClearedFieldsForImageOptimizationPolicy(
+      cleared_fields.extend(
+          _GetClearedFieldsForImageOptimizationPolicy(
               route_action.imageOptimizationPolicy,
               field_prefix + 'imageOptimizationPolicy.',
           )
@@ -493,9 +519,8 @@ def _Run(args, holder, url_map_arg, release_track):
   if not url_map.defaultCustomErrorResponsePolicy:
     cleared_fields.append('defaultCustomErrorResponsePolicy')
   else:
-    cleared_fields = (
-        cleared_fields
-        + _GetClearedFieldsForCustomErrorResponsePolicy(
+    cleared_fields.extend(
+        _GetClearedFieldsForCustomErrorResponsePolicy(
             url_map.defaultCustomErrorResponsePolicy,
             'defaultCustomErrorResponsePolicy.',
         )
@@ -503,18 +528,25 @@ def _Run(args, holder, url_map_arg, release_track):
   if not url_map.defaultRouteAction:
     cleared_fields.append('defaultRouteAction')
   else:
-    cleared_fields = cleared_fields + _GetClearedFieldsForRoutAction(
-        url_map.defaultRouteAction, 'defaultRouteAction.')
+    cleared_fields.extend(
+        _GetClearedFieldsForRoutAction(
+            url_map.defaultRouteAction, 'defaultRouteAction.'
+        )
+    )
   if not url_map.defaultUrlRedirect:
     cleared_fields.append('defaultUrlRedirect')
   else:
-    cleared_fields = cleared_fields + _GetClearedFieldsForUrlRedirect(
-        url_map.defaultUrlRedirect, 'defaultUrlRedirect.')
+    cleared_fields.extend(
+        _GetClearedFieldsForUrlRedirect(
+            url_map.defaultUrlRedirect, 'defaultUrlRedirect.'
+        )
+    )
   if not url_map.headerAction:
     cleared_fields.append('headerAction')
   else:
-    cleared_fields = cleared_fields + _GetClearedFieldsForHeaderAction(
-        url_map.headerAction, 'headerAction.')
+    cleared_fields.extend(
+        _GetClearedFieldsForHeaderAction(url_map.headerAction, 'headerAction.')
+    )
 
   with client.apitools_client.IncludeFields(cleared_fields):
     return _SendPatchRequest(client, resources, url_map_ref, url_map)

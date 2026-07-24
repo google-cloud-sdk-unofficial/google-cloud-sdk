@@ -57,10 +57,10 @@
       help_text: |-
         Specifies a list of targets to which this policy applies.
       spec:
-      - api_field: gatewayResource
+      - api_field: resource
         help_text: |-
-          Reference to a Gateway resource on which this policy will
-          be applied.
+          Reference to a Gateway or Forwarding Rule resource on which this policy
+          will be applied.
     - arg_name: http-rules
       api_field: rateLimitPolicy.httpRules
       required: false
@@ -68,7 +68,6 @@
       help_text: |-
         Specifies a list of rate limit HTTP rules to match against the incoming
         request.
-        Limited to 5 HTTP rules per RateLimitPolicy.
       spec:
       - api_field: to
         help_text: |-
@@ -247,6 +246,89 @@
               OPTIONS). It only allows exact match and is always case sensitive.
               The match follows OR semantics which means that if any of the methods
               match, the operation is considered to be matched.
+          - api_field: mcp
+            help_text: |-
+              Specifies the MCP protocol attributes to match against. This field
+              is only valid if the targeted Gateway or Forwarding Rule has
+              an Agent Gateway attached to it.
+            spec:
+            - api_field: baseProtocolMethodsOption
+              help_text: |-
+                If specified, matches on the MCP protocol’s non-access
+                specific methods namely:
+                * initialize
+                * completion/
+                * logging/
+                * notifications/
+                * ping
+                Defaults to SKIP_BASE_PROTOCOL_METHODS if not specified.
+            - api_field: methods
+              help_text: |-
+                A list of MCP methods and associated parameter names to match on.
+                It is recommended to use this field to match on tools, prompts and
+                resource accesses while setting the baseProtocolMethodsOption to
+                MATCH_BASE_PROTOCOL_METHODS to match on all the other MCP
+                protocol methods.
+                Limited to 10 MCP methods per Rate Limit Policy.
+              spec:
+              - api_field: name
+                help_text: |-
+                  Specifies the MCP method to match against. Allowed values are as
+                  follows:
+                  1. `tools`, `prompts`, `resources` - these will match against all
+                     sub methods under the respective methods.
+                  2. `prompts/list`, `tools/list`, `resources/list`,
+                     `resources/templates/list`
+                  3. `prompts/get`, `tools/call`, `resources/subscribe`,
+                     `resources/unsubscribe`, `resources/read`
+                  Params cannot be specified for categories 1 and 2.
+              - api_field: params
+                help_text: |-
+                  Specifies a list of MCP method parameter names to match against.
+                  The match can be one of exact, prefix, suffix, or contains
+                  (substring match). Matches are always case sensitive unless the
+                  ignoreCase is set.
+                spec:
+                - api_field: exact
+                  one_of_index: 0
+                  help_text: |-
+                    Matches the input string exactly to the string specified here.
+
+                    Examples:
+
+                    * ``abc`` only matches the value ``abc``.
+                - api_field: prefix
+                  one_of_index: 0
+                  help_text: |-
+                    Checks if the input string has the prefix specified here.
+                    Note: empty prefix is not allowed, please use regex instead.
+
+                    Examples:
+
+                    * ``abc`` matches the value ``abc.xyz``
+                - api_field: suffix
+                  one_of_index: 0
+                  help_text: |-
+                    Checks if the input string has the suffix specified here.
+                    Note: empty suffix is not allowed, please use regex instead.
+
+                    Examples:
+
+                    * ``abc`` matches the value ``xyz.abc``
+                - api_field: contains
+                  one_of_index: 0
+                  help_text: |-
+                    Checks if the input string contains the substring specified here.
+                    Note: empty contains match is not allowed, please use regex instead.
+
+                    Examples:
+
+                    * ``abc`` matches the value ``xyz.abc.def``
+                - api_field: ignoreCase
+                  help_text: |-
+                    Indicates if the exact/prefix/suffix/contains matching should be
+                    case insensitive. For example, when true, the matcher ``data`` matches
+                    both input strings ``Data`` and ``data``.
         - api_field: notDestination
           help_text: |-
             Describes the negated properties of a request's destination.
@@ -419,6 +501,89 @@
               OPTIONS). It only allows exact match and is always case sensitive.
               The match follows OR semantics which means that if any of the methods
               match, the operation is considered to be matched.
+          - api_field: mcp
+            help_text: |-
+              Specifies the MCP protocol attributes to match against. This field
+              is only valid if the targeted Gateway or Forwarding Rule has
+              an Agent Gateway attached to it.
+            spec:
+            - api_field: baseProtocolMethodsOption
+              help_text: |-
+                If specified, matches on the MCP protocol’s non-access
+                specific methods namely:
+                * initialize
+                * completion/
+                * logging/
+                * notifications/
+                * ping
+                Defaults to SKIP_BASE_PROTOCOL_METHODS if not specified.
+            - api_field: methods
+              help_text: |-
+                A list of MCP methods and associated parameter names to match on.
+                It is recommended to use this field to match on tools, prompts and
+                resource accesses while setting the baseProtocolMethodsOption to
+                MATCH_BASE_PROTOCOL_METHODS to match on all the other MCP
+                protocol methods.
+                Limited to 10 MCP methods per Rate Limit Policy.
+              spec:
+              - api_field: name
+                help_text: |-
+                  Specifies the MCP method to match against. Allowed values are as
+                  follows:
+                  1. `tools`, `prompts`, `resources` - these will match against all
+                     sub methods under the respective methods.
+                  2. `prompts/list`, `tools/list`, `resources/list`,
+                     `resources/templates/list`
+                  3. `prompts/get`, `tools/call`, `resources/subscribe`,
+                     `resources/unsubscribe`, `resources/read`
+                  Params cannot be specified for categories 1 and 2.
+              - api_field: params
+                help_text: |-
+                  Specifies a list of MCP method parameter names to match against.
+                  The match can be one of exact, prefix, suffix, or contains
+                  (substring match). Matches are always case sensitive unless the
+                  ignoreCase is set.
+                spec:
+                - api_field: exact
+                  one_of_index: 0
+                  help_text: |-
+                    Matches the input string exactly to the string specified here.
+
+                    Examples:
+
+                    * ``abc`` only matches the value ``abc``.
+                - api_field: prefix
+                  one_of_index: 0
+                  help_text: |-
+                    Checks if the input string has the prefix specified here.
+                    Note: empty prefix is not allowed, please use regex instead.
+
+                    Examples:
+
+                    * ``abc`` matches the value ``abc.xyz``
+                - api_field: suffix
+                  one_of_index: 0
+                  help_text: |-
+                    Checks if the input string has the suffix specified here.
+                    Note: empty suffix is not allowed, please use regex instead.
+
+                    Examples:
+
+                    * ``abc`` matches the value ``xyz.abc``
+                - api_field: contains
+                  one_of_index: 0
+                  help_text: |-
+                    Checks if the input string contains the substring specified here.
+                    Note: empty contains match is not allowed, please use regex instead.
+
+                    Examples:
+
+                    * ``abc`` matches the value ``xyz.abc.def``
+                - api_field: ignoreCase
+                  help_text: |-
+                    Indicates if the exact/prefix/suffix/contains matching should be
+                    case insensitive. For example, when true, the matcher ``data`` matches
+                    both input strings ``Data`` and ``data``.
       - api_field: rateLimitActions
         help_text: |-
           Specifies the actions to take when this rule is matched.
@@ -454,16 +619,6 @@
         - api_field: principalType
           help_text: |-
             Specifies the principal type if key_type is PRINCIPAL.
-      - api_field: cost
-        help_text: |-
-          Specifies the cost of the request.
-        spec:
-        - api_field: number
-          help_text: |-
-            Specifies the fixed number cost if from is NUMBER.
-        - api_field: header
-          help_text: |-
-            Specifies the header name for cost if from is HEADER.
       - api_field: defaultLimit
         help_text: |-
           Specifies the default limit to apply for this rate limit bucket.
@@ -496,18 +651,38 @@
             help_text: |-
               Specifies the source IP if the rate limit bucket keys contain a key
               of type SOURCE_IP.
-          - api_field: httpHeader
+          - api_field: httpHeaders
             help_text: |-
-              Specifies the HTTP header if the rate limit bucket keys contain a key
-              of type HTTP_HEADER.
+              Specifies the HTTP headers if the rate limit bucket keys contain keys
+              of type HTTP_HEADER. Number of headers and header names must match
+              the rate limit bucket key.
+            spec:
+            - api_field: header
+              help_text: |-
+                Specifies the header name of the key.
+            - api_field: value
+              help_text: |-
+                Specifies the header value of the key.
           - api_field: httpPath
             help_text: |-
               Specifies the HTTP path if the rate limit bucket keys contain a key
               of type HTTP_PATH.
-          - api_field: principal
+          - api_field: principals
             help_text: |-
-              Specifies the principal if the rate limit bucket keys contain a key
-              of SOURCE_IP. PRINCIPAL.
+              Specifies the principals if the rate limit bucket keys contain keys
+              of PRINCIPAL. Number of principals and principal types must match
+              the rate limit bucket key.
+            spec:
+            - api_field: principalType
+              help_text: |-
+                Specifies the principal type of the key.
+            - api_field: principal
+              help_text: |-
+                Specifies the principal value of the key.
+          - api_field: mcpTool
+            help_text: |-
+              Specifies the MCP tool if the rate limit bucket keys contain a key
+              of type MCP_TOOL.
         - api_field: limit
           help_text: |-
             Specifies the limit to apply for this specific key.
@@ -528,6 +703,9 @@
             - api_field: intervalUnit
               help_text: |-
                 Specifies the unit of the interval. Defaults to MINUTES.
+      - api_field: dryRun
+        help_text: |-
+          Specifies whether the rate limit bucket is in dry-run mode.
     - arg_name: request-id
       api_field: requestId
       required: false

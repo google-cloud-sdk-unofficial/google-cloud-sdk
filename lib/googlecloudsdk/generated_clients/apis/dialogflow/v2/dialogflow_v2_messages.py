@@ -15269,6 +15269,9 @@ class GoogleCloudDialogflowV2InputAudioConfig(_messages.Message):
       Dialogflow agent.
     enableAutomaticPunctuation: Enable automatic punctuation option at the
       speech backend.
+    enableVoiceActivityEvents: Optional. If `true`, responses with voice
+      activity speech events will be returned as they are detected. Note: This
+      setting is relevant only for streaming methods.
     enableWordInfo: If `true`, Dialogflow returns SpeechWordInfo in
       StreamingRecognitionResult with information about the recognized speech
       words, e.g. start and end time offsets. If false or unspecified, Speech
@@ -15397,16 +15400,17 @@ class GoogleCloudDialogflowV2InputAudioConfig(_messages.Message):
   audioEncoding = _messages.EnumField('AudioEncodingValueValuesEnum', 1)
   disableNoSpeechRecognizedEvent = _messages.BooleanField(2)
   enableAutomaticPunctuation = _messages.BooleanField(3)
-  enableWordInfo = _messages.BooleanField(4)
-  languageCode = _messages.StringField(5)
-  model = _messages.StringField(6)
-  modelVariant = _messages.EnumField('ModelVariantValueValuesEnum', 7)
-  optOutConformerModelMigration = _messages.BooleanField(8)
-  phraseHints = _messages.StringField(9, repeated=True)
-  phraseSets = _messages.StringField(10, repeated=True)
-  sampleRateHertz = _messages.IntegerField(11, variant=_messages.Variant.INT32)
-  singleUtterance = _messages.BooleanField(12)
-  speechContexts = _messages.MessageField('GoogleCloudDialogflowV2SpeechContext', 13, repeated=True)
+  enableVoiceActivityEvents = _messages.BooleanField(4)
+  enableWordInfo = _messages.BooleanField(5)
+  languageCode = _messages.StringField(6)
+  model = _messages.StringField(7)
+  modelVariant = _messages.EnumField('ModelVariantValueValuesEnum', 8)
+  optOutConformerModelMigration = _messages.BooleanField(9)
+  phraseHints = _messages.StringField(10, repeated=True)
+  phraseSets = _messages.StringField(11, repeated=True)
+  sampleRateHertz = _messages.IntegerField(12, variant=_messages.Variant.INT32)
+  singleUtterance = _messages.BooleanField(13)
+  speechContexts = _messages.MessageField('GoogleCloudDialogflowV2SpeechContext', 14, repeated=True)
 
 
 class GoogleCloudDialogflowV2InputConfig(_messages.Message):
@@ -18994,6 +18998,7 @@ class GoogleCloudDialogflowV2StreamingRecognitionResult(_messages.Message):
     Values:
       MESSAGE_TYPE_UNSPECIFIED: Not specified. Should never be used.
       TRANSCRIPT: Message contains a (possibly partial) transcript.
+      DTMF_DIGITS: Message contains DTMF digits.
       END_OF_SINGLE_UTTERANCE: This event indicates that the server has
         detected the end of the user's speech utterance and expects no
         additional inputs. Therefore, the server will not process additional
@@ -19002,10 +19007,26 @@ class GoogleCloudDialogflowV2StreamingRecognitionResult(_messages.Message):
         connection, and wait for any additional results until the server
         closes the gRPC connection. This message is only sent if
         `single_utterance` was set to `true`, and is not used otherwise.
+      PARTIAL_DTMF_DIGITS: Message contains DTMF digits. Before a message with
+        DTMF_DIGITS is sent, a message with PARTIAL_DTMF_DIGITS may be sent
+        with DTMF digits collected up to the time of sending, which represents
+        an intermediate result.
+      SPEECH_ACTIVITY_BEGIN: This event indicates that the server has detected
+        the beginning of human voice activity in the stream. This event can be
+        returned multiple times if speech starts and stops repeatedly
+        throughout the stream.
+      SPEECH_ACTIVITY_END: This event indicates that the server has detected
+        the end of human voice activity in the stream. This event can be
+        returned multiple times if speech starts and stops repeatedly
+        throughout the stream.
     """
     MESSAGE_TYPE_UNSPECIFIED = 0
     TRANSCRIPT = 1
-    END_OF_SINGLE_UTTERANCE = 2
+    DTMF_DIGITS = 2
+    END_OF_SINGLE_UTTERANCE = 3
+    PARTIAL_DTMF_DIGITS = 4
+    SPEECH_ACTIVITY_BEGIN = 5
+    SPEECH_ACTIVITY_END = 6
 
   confidence = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
   isFinal = _messages.BooleanField(2)
@@ -24278,12 +24299,22 @@ class GoogleCloudDialogflowV2beta1StreamingRecognitionResult(_messages.Message):
         DTMF_DIGITS is sent, a message with PARTIAL_DTMF_DIGITS may be sent
         with DTMF digits collected up to the time of sending, which represents
         an intermediate result.
+      SPEECH_ACTIVITY_BEGIN: This event indicates that the server has detected
+        the beginning of human voice activity in the stream. This event can be
+        returned multiple times if speech starts and stops repeatedly
+        throughout the stream.
+      SPEECH_ACTIVITY_END: This event indicates that the server has detected
+        the end of human voice activity in the stream. This event can be
+        returned multiple times if speech starts and stops repeatedly
+        throughout the stream.
     """
     MESSAGE_TYPE_UNSPECIFIED = 0
     TRANSCRIPT = 1
     END_OF_SINGLE_UTTERANCE = 2
     DTMF_DIGITS = 3
     PARTIAL_DTMF_DIGITS = 4
+    SPEECH_ACTIVITY_BEGIN = 5
+    SPEECH_ACTIVITY_END = 6
 
   confidence = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
   dtmfDigits = _messages.MessageField('GoogleCloudDialogflowV2beta1TelephonyDtmfEvents', 2)

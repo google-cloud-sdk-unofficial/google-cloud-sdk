@@ -127,6 +127,18 @@ agentGateway:
     attribute_name: agent_gateway
     help: Id of the agent gateway.
 
+telemetryPolicy:
+  name: telemetry policy
+  collection: networkservices.projects.locations.telemetryPolicies
+  request_id_field: telemetryPolicyId
+  attributes:
+  - *project
+  - *location
+  - &telemetryPolicy
+    parameter_name: telemetryPoliciesId
+    attribute_name: telemetry_policy
+    help: Id of the telemetry policy.
+
 httpRoute:
   name: http route
   collection: networkservices.projects.locations.httpRoutes

@@ -140,10 +140,50 @@ class BackupPlansClient(util.BackupDrClientBase):
 
     compute_instance_props_message = None
     if compute_instance_properties:
+      boot_disk_only = compute_instance_properties.get('boot-disk-only')
+      disk_exclusion_labels = compute_instance_properties.get(
+          'disk-exclusion-labels'
+      )
+      if boot_disk_only is not None and disk_exclusion_labels is not None:
+        raise exceptions.InvalidArgumentException(
+            '--compute-instance-properties',
+            'boot-disk-only and disk-exclusion-labels are mutually exclusive'
+            ' properties.',
+        )
+
+      disk_exclusion_labels_message = None
+      if disk_exclusion_labels:
+        labels = []
+        if isinstance(disk_exclusion_labels, str):
+          for label_pair in disk_exclusion_labels.split(';'):
+            if not label_pair:
+              continue
+            if '=' in label_pair:
+              k, v = label_pair.split('=', 1)
+              labels.append(self.messages.LabelKeyValPair(key=k, value=v))
+            else:
+              raise exceptions.InvalidArgumentException(
+                  '--compute-instance-properties',
+                  'Disk exclusion labels must be in the format key=value. Got:'
+                  f' {label_pair}',
+              )
+        elif isinstance(disk_exclusion_labels, dict):
+          for k, v in disk_exclusion_labels.items():
+            labels.append(self.messages.LabelKeyValPair(key=k, value=v))
+        disk_exclusion_labels_message = self.messages.DiskExclusionLabels(
+            labels=labels
+        )
+
+      kwargs = {
+          'guestFlush': compute_instance_properties.get('guest-flush', False),
+      }
+      if boot_disk_only is not None:
+        kwargs['bootDiskOnly'] = boot_disk_only
+      if disk_exclusion_labels_message is not None:
+        kwargs['diskExclusionLabels'] = disk_exclusion_labels_message
+
       compute_instance_props_message = (
-          self.messages.ComputeInstanceBackupPlanProperties(
-              guestFlush=compute_instance_properties.get('guest-flush', False)
-          )
+          self.messages.ComputeInstanceBackupPlanProperties(**kwargs)
       )
 
     backup_plan = self.messages.BackupPlan(
@@ -317,10 +357,42 @@ class BackupPlansClient(util.BackupDrClientBase):
           )
       )
     if compute_instance_properties is not None:
+      boot_disk_only = compute_instance_properties.get('boot-disk-only')
+      disk_exclusion_labels = compute_instance_properties.get(
+          'disk-exclusion-labels'
+      )
+      if boot_disk_only is not None and disk_exclusion_labels is not None:
+        raise exceptions.InvalidArgumentException(
+            '--compute-instance-properties',
+            'boot-disk-only and disk-exclusion-labels are mutually exclusive'
+            ' properties.',
+        )
+
+      disk_exclusion_labels_message = None
+      if disk_exclusion_labels:
+        labels = []
+        if isinstance(disk_exclusion_labels, str):
+          for label_pair in disk_exclusion_labels.split(';'):
+            if '=' in label_pair:
+              k, v = label_pair.split('=', 1)
+              labels.append(self.messages.LabelKeyValPair(key=k, value=v))
+        elif isinstance(disk_exclusion_labels, dict):
+          for k, v in disk_exclusion_labels.items():
+            labels.append(self.messages.LabelKeyValPair(key=k, value=v))
+        disk_exclusion_labels_message = self.messages.DiskExclusionLabels(
+            labels=labels
+        )
+
+      kwargs = {
+          'guestFlush': compute_instance_properties.get('guest-flush'),
+      }
+      if boot_disk_only is not None:
+        kwargs['bootDiskOnly'] = boot_disk_only
+      if disk_exclusion_labels_message is not None:
+        kwargs['diskExclusionLabels'] = disk_exclusion_labels_message
+
       updated_backup_plan.computeInstanceBackupPlanProperties = (
-          self.messages.ComputeInstanceBackupPlanProperties(
-              guestFlush=compute_instance_properties.get('guest-flush')
-          )
+          self.messages.ComputeInstanceBackupPlanProperties(**kwargs)
       )
     return updated_backup_plan
 

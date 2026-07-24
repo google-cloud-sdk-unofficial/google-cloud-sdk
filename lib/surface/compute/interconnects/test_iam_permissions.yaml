@@ -1,0 +1,32 @@
+release_tracks: [ALPHA, BETA]
+help_text:
+  brief: Test IAM permissions for a Compute Engine interconnect.
+  description: |
+    Returns permissions that a caller has on the specified interconnect.
+
+  examples: |
+    To test if the caller has 'compute.interconnects.get' permission on an interconnect `my-interconnect`, run:
+
+      $ {command} my-interconnect --permissions=compute.interconnects.get
+
+request:
+  collection: compute.interconnects
+  api_version: beta
+  method: testIamPermissions
+  use_relative_name: false
+  ALPHA:
+    api_version: alpha
+
+command_type: GENERIC
+
+arguments:
+  resource:
+    help_text: The interconnect for which to test permissions.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:interconnect
+  params:
+  - arg_name: permissions
+    api_field: testPermissionsRequest.permissions
+    required: true
+    repeated: true
+    help_text: |-
+      The permissions to test.

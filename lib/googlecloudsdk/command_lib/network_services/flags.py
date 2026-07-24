@@ -14,6 +14,8 @@
 # limitations under the License.
 """Flag utils for networkservices commands."""
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope.concepts import concepts
+from googlecloudsdk.calliope.concepts import deps
 from googlecloudsdk.command_lib.network_services import util
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
@@ -75,3 +77,62 @@ def AddRouteViewFlags(parser):
           ),
       ],
   ).AddToParser(parser)
+
+
+def _HttpFilterAttributeConfig():
+  return concepts.ResourceParameterAttributeConfig(
+      name='http_filter',
+      help_text='ID of the http filter for {resource}.',
+  )
+
+
+def _LocationAttributeConfig(region_fallthrough):
+  fallthroughs = []
+  if region_fallthrough:
+    fallthroughs.append(deps.ArgFallthrough('--region'))
+  fallthroughs.append(
+      deps.Fallthrough(
+          lambda: 'global', 'default value of location is [global]'
+      )
+  )
+  return concepts.ResourceParameterAttributeConfig(
+      name='location',
+      help_text='The Cloud location for the {resource}.',
+      fallthroughs=fallthroughs,
+  )
+
+
+def _GetHttpFilterResourceSpec(region_fallthrough):
+  return concepts.ResourceSpec(
+      'networkservices.projects.locations.httpFilters',
+      resource_name='http filter',
+      api_version='v1alpha1',
+      httpFiltersId=_HttpFilterAttributeConfig(),
+      locationsId=_LocationAttributeConfig(region_fallthrough),
+      projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
+      disable_auto_completers=False,
+  )
+
+
+def GetHttpFilterResourceArg(
+    verb,
+    noun='The http filters',
+    name='http-filters',
+    required=False,
+    plural=True,
+    group=None,
+    region_fallthrough=True,
+):
+  """Creates a resource argument for Http filters."""
+  return concept_parsers.ConceptParser([
+      presentation_specs.ResourcePresentationSpec(
+          '--' + name,
+          _GetHttpFilterResourceSpec(region_fallthrough),
+          '{} {}.'.format(noun, verb),
+          required=required,
+          plural=plural,
+          group=group,
+          flag_name_overrides={'location': ''},
+      ),
+  ])
+

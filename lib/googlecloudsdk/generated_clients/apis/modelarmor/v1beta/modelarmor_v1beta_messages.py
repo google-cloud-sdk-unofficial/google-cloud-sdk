@@ -1372,7 +1372,7 @@ class SanitizationResult(_messages.Message):
   Messages:
     FilterResultsValue: Output only. Results for all filters where the key is
       the filter name - either of "csam", "malicious_uris", "rai",
-      "pi_and_jailbreak" ,"sdp".
+      "pi_and_jailbreak", "sdp".
 
   Fields:
     filterMatchState: Output only. Overall filter match state for
@@ -1383,7 +1383,7 @@ class SanitizationResult(_messages.Message):
       or more filters.
     filterResults: Output only. Results for all filters where the key is the
       filter name - either of "csam", "malicious_uris", "rai",
-      "pi_and_jailbreak" ,"sdp".
+      "pi_and_jailbreak", "sdp".
     invocationResult: Output only. A field indicating the outcome of the
       invocation, irrespective of match status. It can have the following
       three values: SUCCESS: All filters were executed successfully. PARTIAL:
@@ -1429,7 +1429,7 @@ class SanitizationResult(_messages.Message):
   @encoding.MapUnrecognizedFields('additionalProperties')
   class FilterResultsValue(_messages.Message):
     r"""Output only. Results for all filters where the key is the filter name
-    - either of "csam", "malicious_uris", "rai", "pi_and_jailbreak" ,"sdp".
+    - either of "csam", "malicious_uris", "rai", "pi_and_jailbreak", "sdp".
 
     Messages:
       AdditionalProperty: An additional property for a FilterResultsValue

@@ -983,13 +983,14 @@ class ServerlessOperations(object):
           source_path = build_source
         elif upload_through_run_api:
           tracker.UpdateHeaderMessage('Uploading sources through Run API..')
-          source_path = sources.UploadThroughCloudRun(
+          source_object = sources.UploadThroughCloudRun(
               source_to_upload=build_source,
               region=region,
               service_ref=service_ref,
               release_track=release_track,
               kms_key=kms_key,
           )
+          source_path = sources.GetGsutilUri(source_object)
         else:
           tracker.UpdateHeaderMessage('Uploading sources...')
           source = sources.Upload(
@@ -1049,6 +1050,7 @@ class ServerlessOperations(object):
             enable_automatic_updates,
             source_bucket,
             kms_key,
+            upload_through_run_api=upload_through_run_api,
         )
         if image_digest is None:
           return

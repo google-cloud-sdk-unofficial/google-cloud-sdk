@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.util import scaled_integer
 
 # Retrieve all message type for conversions from gcloud primitives to
 # apitool types.
@@ -41,6 +42,29 @@ def ValidateCPU(cpu):
   if cpu < 3:
     raise exceptions.BadArgumentException("--cpu", "CPU must be at least 3")
   return cpu
+
+
+def ParseBrokerDisk(value):
+  """Parses broker disk size and returns the size in GiB."""
+  if not value:
+    return None
+  value = value.strip()
+  try:
+    size_in_bytes = scaled_integer.ParseInteger(
+        value, default_unit="Gi", type_abbr="B"
+    )
+  except ValueError as e:
+    raise exceptions.InvalidArgumentException(
+        "--broker-disk",
+        "Invalid broker disk size value '{0}': {1}".format(value, str(e)),
+    )
+  gib_in_bytes = 1024**3
+  if size_in_bytes % gib_in_bytes != 0:
+    raise exceptions.InvalidArgumentException(
+        "--broker-disk",
+        "Broker disk size must be a multiple of 1 GiB (e.g., 100GiB).",
+    )
+  return size_in_bytes // gib_in_bytes
 
 
 def PrepareUpdateWithSubnets(_, args, request):

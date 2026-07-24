@@ -5,6 +5,177 @@ Copyright 2014-2026 Google Inc. All rights reserved.
 Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
 
 
+## 576.0.0 (2026-07-14)
+
+### Breaking Changes
+
+*   **(Cloud Storage)** Updated `gcloud storage rsync` to default decompresses downloaded gzip files to match the behavior of `gcloud storage cp`. To retain the previous behavior, use the new `--do-not-decompress` flag.
+
+
+### Google Cloud CLI
+
+* Updated Linux bundled Python for the `gcloud` CLI to 3.14.6 to resolve CVE-2026-34182.
+
+### Artifact Registry
+
+* Fixed a performance regression in `gcloud artifacts docker images list` when
+  listing a large number of image versions.
+
+### BigLake
+
+*   Promoted `gcloud biglake delta-sharing <catalogs|shares|schemas|tables>` to GA.
+*   Promoted `gcloud biglake data-product-sharing publish` to GA.
+*   Added `lakehouse` option to `--catalog=type` flag to `gcloud biglake iceberg catalogs`.
+*   Added `gcloud biglake hive tables update` to beta.
+
+### BigQuery
+
+* Added environment information to the user-agent HTTP header.
+* Added support for `--label` flag in `bq cp`, `bq extract`, and `bq load` commands to configure job-level labels.
+* Fixed 'bq show' command failures displaying timestamps without fractional seconds.
+
+### Cloud Data Lineage
+
+* Added `gcloud datalineage runs` command group to manage data lineage runs.
+* Added `gcloud datalineage lineage-events` command group to manage data lineage runs.
+
+### Cloud Dataplex
+
+* Added `--enable-catalog-publishing` flag to `gcloud dataplex datascans create data-documentation` and `gcloud dataplex datascans update data-documentation` commands.
+* Added `--mode` flag to `gcloud dataplex datascans create data-profile` and `gcloud dataplex datascans update data-profile` commands to support specifying profiling mode.
+
+### Cloud Dataproc
+
+* Promoted `gcloud dataproc batches submit pyspark-notebook` to GA.
+
+### Cloud Identity-Aware Proxy
+
+* Promoted support for `agent-registry` resource type in `gcloud iap web` IAM commands to GA.
+
+### Cloud Key Management Service
+
+* (Alpha, Beta) Added `--folder` flag to
+  `gcloud kms autokey-config show-effective-config` to retrieve the effective
+  Cloud KMS Autokey configuration for folders. The `--project` and `--folder`
+  flags are now optional, defaulting to the current project.
+* Added `--hsm-trusted-wrapping` flag to `gcloud kms keys create` and `gcloud kms keys versions import` to enable trusted wrapping capabilities.
+* Promoted `gcloud kms keys versions export-trusted-key-wrapped` and `gcloud kms keys versions import-trusted-key-wrapped` to GA.
+* Added `--crypto-key-version-name` and `--two-factor-public-key-pem` flags to `gcloud kms single-tenant-hsm proposal create` for `--operation-type=upgrade_key_trust`.
+
+### Cloud Managed Kafka
+
+* Added util function to validate and remove byte units from broker disk input.
+
+### Cloud Run
+
+* Modified `gcloud run services proxy` to fail immediately if the service has its default URL disabled.
+
+### Cloud SQL
+
+*   Upgraded `--storage-auto-increase-limit` flag for
+    `gcloud sql instances create` and `gcloud sql instances patch`
+    commands to GA.
+
+### Cloud Storage
+
+*   Updated `gcloud storage` [Parallel Composite Uploads](https://cloud.google.com/storage/docs/parallel-composite-uploads) to atomically clean up temporary parts, avoiding bucket soft-delete costs.
+
+### Cluster Director
+
+* Added support for Lustre dynamic tier in `gcloud cluster-director clusters` commands.
+
+### Compliance Manager
+
+* Updated `gcloud compliance-manager` commands to support project-level resources.
+
+### Compute Engine
+
+* Promoted `--nat-ips-per-endpoint` flag to GA in `gcloud compute service-attachments create` and `gcloud compute service-attachments update`.
+* Promoted `gcloud compute hosts` and `gcloud compute reservations hosts` to beta.
+* Added `gcloud compute sole-tenancy node-templates test-iam-permissions` command to test IAM permissions on a node template in beta, preview, and GA.
+* Added `gcloud compute instant-snapshots set-iam-policy` command to support setting IAM policy bindings for instant snapshots in alpha, beta, preview, and GA.
+* Added `gcloud compute network-attachments test-iam-permissions` command to test IAM permissions on a network attachment in beta, preview, and GA.
+* Added `gcloud beta compute instance-groups managed adopt-instances` to support adopting instances into regional managed instance groups.
+* Added `gcloud compute instant-snapshots test-iam-permissions` command to test
+  IAM permissions on an instant snapshot in beta, preview, and GA.
+* Added `get-iam-policy` and `set-iam-policy` commands to `gcloud compute firewall-policies` and `gcloud compute network-firewall-policies` to manage policy-level IAM policy.
+* Promote the `--location` flag of `gcloud compute interconnects update` to GA.
+* Added `gcloud compute backend-buckets test-iam-permissions` command to test IAM permissions on backend buckets.
+* Promoted `--on-repair-allow-changing-zone` flag to GA in `gcloud compute instance-groups managed create` and `gcloud compute instance-groups managed update`.
+* Added `gcloud compute interconnects test-iam-permissions` command to test IAM permissions on a Compute Engine interconnect in beta.
+* Added `gcloud compute instant-snapshot-groups test-iam-permissions` command.
+* Added `test-iam-permissions` command to `gcloud compute target-tcp-proxies`
+  to test IAM permissions on a target TCP proxy. Global proxies are
+  supported in all tracks, and regional proxies are supported in alpha and
+  beta tracks.
+* Added support for displaying dynamic field `GRACEFUL_SHUTDOWN_TIMESTAMP` to `gcloud compute instance-groups managed list-instances` in GA, beta and alpha.
+* Added `gcloud compute service-attachments set-iam-policy` command to set IAM policy on a service attachment in beta, preview, and GA.
+* Added `--async` flag to `gcloud compute instance-groups managed delete`.
+* Promoted `--load-balancing-scheme` flag to GA in `gcloud compute target-tcp-proxies create`.
+* Promoted `--instances` flag of `gcloud create instance-groups managed resize-requests create` to GA to support specific instance names.
+* Added `gcloud compute reservations sub-blocks test-iam-permissions` command to beta, preview and GA release tracks.
+* Added `on-update-action` enum class to `--create-disk` flag for an instance creation. And it is added to the following release tracks alpha, beta, preview, and GA.
+* Added `gcloud compute external-vpn-gateways test-iam-permissions` command to test IAM permissions on an external VPN gateway.
+* Added `gcloud compute sole-tenancy node-groups test-iam-permissions` command to test IAM permissions on a node group in alpha, beta, GA, and preview.
+* Promoted `--identity`, `--identity-certificate` and `--most-disruptive-allowed-action` flags to GA.
+* Added `gcloud compute disks bulk set-labels` command to alpha, beta, ga, and preview release tracks.
+
+### Developer Connect
+
+* Promoted `gcloud developer-connect insights-configs deployment-events list` and `describe` commands to GA.
+
+### Kubernetes Engine
+
+*   Added `KCP_VPA` option to `--logging` flag of `gcloud container clusters create` to enable VPA Decision Logs feature.
+*   Added `KCP_VPA` option to `--logging` flag of `gcloud container clusters create-auto` to enable VPA Decision Logs feature.
+*   Added `KCP_VPA` option to `--logging` flag of `gcloud container clusters update` to enable VPA Decision Logs feature.
+*   Added node config options `nodeVfioConfig` to
+`gcloud container clusters create`, `gcloud container node-pools create`, and
+`gcloud container node-pools update` command which contains VFIO-related
+configurations for this node.
+*   Added node config options `diskIoScheduler` to
+`gcloud container clusters create`, `gcloud container node-pools create`, and
+`gcloud container node-pools update` command which contains the configuration
+for the disk IO scheduler.
+*   Promoted Rollbackable Upgrades (Two-Step Upgrades) to GA. Added
+`--control-plane-soak-duration` flag to `gcloud container clusters upgrade`
+and promoted `gcloud container clusters complete-control-plane-upgrade` to GA.
+*   Promoted `--managed-otel-scope` flag to GA in `gcloud container clusters create` to enable Managed OpenTelemetry feature.
+*   Promoted `--managed-otel-scope` flag to GA in `gcloud container clusters create-auto` to enable Managed OpenTelemetry feature.
+*   Promoted `--managed-otel-scope` flag to GA in `gcloud container clusters update` to enable Managed OpenTelemetry feature.
+* Additional kubectl versions:
+  * kubectl.1.30 (1.30.14)
+  * kubectl.1.31 (1.31.14)
+  * kubectl.1.32 (1.32.13)
+  * kubectl.1.33 (1.33.13)
+  * kubectl.1.34 (1.34.9)
+  * kubectl.1.35 (1.35.6)
+  * kubectl.1.36 (1.36.2)
+
+### Looker
+
+*   Promoted `--release-channel` and `--accelerated-security-patch-enabled` flags to GA for `gcloud looker instances create` and `gcloud looker instances update`.
+*   Added `RELEASE_CHANNEL` and `ACCELERATED_SECURITY_PATCH_ENABLED` columns to `gcloud looker instances describe` output in GA track.
+
+### Network Security
+
+* Added support for project-level security profiles to `gcloud network-security security-profiles wildfire-analysis` commands in BETA.
+
+### Transfer
+
+*   Deprecated `--s3-compatible-mode` flag in `gcloud transfer agents install`. It is no longer needed as Transfer Service automatically detects S3-compatible job.
+
+### Vmware Engine
+
+*   Updated `gcloud vmware private-clouds create` command to use full resource
+    names for `--preferred-zone` and `--secondary-zone` flags when creating a
+    stretched private cloud. This update ensures compliance with VPC Service
+    Controls.
+
+
+Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
+
+
 ## 575.0.1 (2026-07-07)
 
 ### Google Cloud CLI

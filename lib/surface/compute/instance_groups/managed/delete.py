@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.core.util import text
@@ -43,6 +44,7 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGERS_ARG.AddArgument(
         parser, operation_type='delete')
+    base.ASYNC_FLAG.AddToParser(parser)
 
   def _GenerateAutoscalerDeleteRequests(self, holder, project, mig_requests):
     """Generates Delete requestes for autoscalers attached to instance groups.
@@ -167,6 +169,25 @@ class Delete(base.DeleteCommand):
 
     # Now delete instance group managers.
     errors = []
+    if args.async_:
+      responses = holder.client.AsyncRequests(requests, errors)
+      if errors:
+        utils.RaiseToolException(errors)
+      operation_refs = [
+          holder.resources.Parse(r.selfLink) for r in responses if r
+      ]
+      for igm_ref, operation_ref in zip(igm_refs, operation_refs):
+        log.DeletedResource(
+            igm_ref.Name(),
+            kind='instance group',
+            is_async=True,
+            details=(
+                'Use the operation ID {0} to track the progress of this'
+                ' operation.'.format(operation_ref.Name())
+            ),
+        )
+      return responses
+
     with progress_tracker.ProgressTracker(
         'Deleting ' + text.Pluralize(len(requests), 'Managed Instance Group'),
         autotick=False,

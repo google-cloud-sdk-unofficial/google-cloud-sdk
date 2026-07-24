@@ -18,7 +18,7 @@
 from googlecloudsdk.calliope import base
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class AuditManager(base.Group):
   """Enroll resources, audit workloads and generate reports."""
@@ -32,7 +32,7 @@ class AuditManager(base.Group):
     base.DisableUserProjectQuota()
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AuditManagerAlpha(AuditManager):
   """Enroll resources, audit workloads and generate reports."""

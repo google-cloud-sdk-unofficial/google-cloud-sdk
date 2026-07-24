@@ -14,6 +14,7 @@
 # limitations under the License.
 """Sources for Cloud Run Functions."""
 
+import dataclasses
 import enum
 import os
 import uuid
@@ -47,6 +48,14 @@ class ArchiveType(enum.Enum):
   TAR = 'Tar'
 
 
+@dataclasses.dataclass(frozen=True)
+class UploadedSource(object):
+  """Represents an uploaded source in GCS."""
+  bucket: str
+  name: str
+  generation: int
+
+
 def UploadThroughCloudRun(
     source_to_upload,
     region,
@@ -64,7 +73,7 @@ def UploadThroughCloudRun(
     kms_key: Optional. The KMS key to use for encryption.
 
   Returns:
-    The GCS object name.
+    UploadedSource, The uploaded source metadata.
   """
   parent = 'projects/{project}/locations/{region}'.format(
       project=properties.VALUES.core.project.Get(required=True), region=region
@@ -100,7 +109,7 @@ def UploadThroughCloudRun(
         request, upload=upload
     )
 
-  return 'gs://{}/{}#{}'.format(
+  return UploadedSource(
       response.cloudStorageSource.bucket,
       response.cloudStorageSource.object,
       response.cloudStorageSource.generation,

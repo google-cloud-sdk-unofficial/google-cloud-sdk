@@ -741,6 +741,9 @@ def AddMigSizeFlag(parser, required=False):
 
 def AddStandbyPolicyFlags(parser):
   """Add flags required for setting standby policy."""
+  group = parser.add_group(
+      required=False, mutex=False, help='Parameters for setting standby policy.'
+  )
   standby_policy_mode_choices = {
       'manual': (
           'MIG does not automatically resume or start VMs in the standby pool'
@@ -751,7 +754,7 @@ def AddStandbyPolicyFlags(parser):
           ' group scales out, and replenishes the standby pool afterwards.'
       ),
   }
-  parser.add_argument(
+  group.add_argument(
       '--standby-policy-mode',
       type=str,
       choices=standby_policy_mode_choices,
@@ -760,7 +763,7 @@ def AddStandbyPolicyFlags(parser):
           group scales out. The default mode is ``manual''.
       """),
   )
-  parser.add_argument(
+  group.add_argument(
       '--standby-policy-initial-delay',
       type=int,
       help=(
@@ -883,3 +886,14 @@ def AddMultiMigFlags(parser):
       """,
   )
   MULTI_MIG_ARG.AddArgument(multi_mig_group)
+
+
+def AddMigDistributionPolicyFlags(parser):
+  """Add flags required for setting distribution policy."""
+  group = parser.add_group(
+      required=False,
+      mutex=False,
+      help='Parameters for setting distribution policy.',
+  )
+  AddMigInstanceRedistributionTypeFlag(group)
+  AddMigDistributionPolicyTargetShapeFlag(group)

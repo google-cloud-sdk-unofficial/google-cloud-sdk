@@ -18,6 +18,7 @@
 import abc
 import copy
 import json
+import re
 
 from apitools.base.py import encoding_helper
 from apitools.base.py import transfer
@@ -36,6 +37,41 @@ from googlecloudsdk.core.util import scaled_integer
 import six
 
 
+class FinalHeadersTransportWrapper(object):
+  """Wraps an http client to inject headers in the final resumable upload request."""
+
+  def __init__(self, http_client, final_headers_callback):
+    self._http_client = http_client
+    self._final_headers_callback = final_headers_callback
+
+    def request(uri, method='GET', body=None, headers=None, **kwargs):
+      headers = headers or {}
+      content_range = headers.get('content-range') or headers.get(
+          'Content-Range'
+      )
+      if content_range:
+        match = re.match(r'bytes \d+-(\d+)/(\d+)', content_range)
+        if match:
+          end, total = map(int, match.groups())
+          if end + 1 == total:
+            if hasattr(body, 'read'):
+              body = body.read()
+            extra_headers = self._final_headers_callback()
+            if extra_headers:
+              headers = headers.copy()
+              headers.update(extra_headers)
+      return self._http_client.request(
+          uri, method=method, body=body, headers=headers, **kwargs
+      )
+
+    self.request = request
+    if hasattr(http_client.request, 'credentials'):
+      self.request.credentials = http_client.request.credentials
+
+  def __getattr__(self, name):
+    return getattr(self._http_client, name)
+
+
 class _Upload(six.with_metaclass(abc.ABCMeta, object)):
   """Base class shared by different upload strategies."""
 
@@ -49,6 +85,7 @@ class _Upload(six.with_metaclass(abc.ABCMeta, object)):
       request_config,
       posix_to_set=None,
       source_resource=None,
+      final_headers_callback=None,
   ):
     """Initializes an _Upload instance.
 
@@ -65,6 +102,8 @@ class _Upload(six.with_metaclass(abc.ABCMeta, object)):
       source_resource (FileObjectResource|ObjectResource|None): Contains the
         source StorageUrl and source object metadata for daisy chain transfers.
         Can be None if source is pure stream.
+      final_headers_callback (Callable[[], dict]|None): Called to get final
+        headers for resumable upload.
     """
     self._gcs_api = gcs_api
     self._http_client = http_client
@@ -75,6 +114,7 @@ class _Upload(six.with_metaclass(abc.ABCMeta, object)):
 
     self._posix_to_set = posix_to_set
     self._source_resource = source_resource
+    self._final_headers_callback = final_headers_callback
 
     self._messages = apis.GetMessagesModule('storage', 'v1')
 
@@ -242,7 +282,12 @@ class _BaseRecoverableUpload(_Upload):
   def run(self):
     """Uploads with in-flight retry logic and returns an Object message."""
     self._apitools_upload = self._get_upload()
-    self._apitools_upload.bytes_http = self._http_client
+    if self._final_headers_callback:
+      self._apitools_upload.bytes_http = FinalHeadersTransportWrapper(
+          self._http_client, self._final_headers_callback
+      )
+    else:
+      self._apitools_upload.bytes_http = self._http_client
     retry_util.set_retry_func(self._apitools_upload)
 
     self._initialize_upload()
@@ -285,6 +330,7 @@ class ResumableUpload(_BaseRecoverableUpload):
       serialization_data=None,
       source_resource=None,
       tracker_callback=None,
+      final_headers_callback=None,
   ):
     """Initializes a ResumableUpload instance.
 
@@ -294,6 +340,8 @@ class ResumableUpload(_BaseRecoverableUpload):
       serialization_data (dict): JSON used by apitools to resume an upload.
       tracker_callback (Callable[[dict]|None]): Function that writes a tracker
         file with serialization data.
+      final_headers_callback (Callable[[], dict]|None): Called to get final
+        headers for resumable upload.
     """
     # pylint: enable=g-doc-args
     super(ResumableUpload, self).__init__(
@@ -305,6 +353,7 @@ class ResumableUpload(_BaseRecoverableUpload):
         request_config,
         posix_to_set=posix_to_set,
         source_resource=source_resource,
+        final_headers_callback=final_headers_callback,
     )
     self._serialization_data = serialization_data
     self._tracker_callback = tracker_callback
@@ -334,8 +383,10 @@ class ResumableUpload(_BaseRecoverableUpload):
 
   def _call_appropriate_apitools_upload_strategy(self):
     """Calls StreamMedia, or StreamInChunks when the final size is unknown."""
-    if self._should_gzip_in_flight:
+    if self._should_gzip_in_flight or self._final_headers_callback:
       # We do not know the final size of the file, so we must use chunks.
+      # Or we need to inject final headers, so we chunk to avoid loading the
+      # entire file into memory at once.
       return self._apitools_upload.StreamInChunks()
     else:
       # We know the size of the file, so use a strategy that requires fewer

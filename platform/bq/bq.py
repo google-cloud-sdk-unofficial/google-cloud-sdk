@@ -25,7 +25,7 @@ if 'google' in sys.modules:
   import google
 
   try:
-    reload(google)
+    reload(google)  # pyrefly: ignore[unknown-name]
   except NameError:
     import importlib
 

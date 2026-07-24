@@ -43,6 +43,30 @@ def ValidateLustreCapacity(capacity_gb: int) -> None:
     )
 
 
+def ValidateLustreDynamicTierOptions(mode: Any, message_module: Any) -> None:
+  """Validates that Lustre dynamic tier options are DEFAULT_CACHE or DISABLED.
+
+  Args:
+    mode: The dynamic tier mode to validate.
+    message_module: The API message module.
+
+  Raises:
+    ClusterDirectorError: If the mode is not valid.
+  """
+  if mode is None:
+    return
+
+  valid_modes = [
+      message_module.DynamicTierOptions.ModeValueValuesEnum.DEFAULT_CACHE,
+      message_module.DynamicTierOptions.ModeValueValuesEnum.DISABLED,
+  ]
+  if str(mode) not in [m.name for m in valid_modes]:
+    raise ClusterDirectorError(
+        "Lustre dynamic tier options mode must be one of DEFAULT_CACHE or"
+        " DISABLED."
+    )
+
+
 def ValidateGcsBucketExclusiveOptions(
     has_storage_class: bool, has_autoclass: bool
 ) -> None:

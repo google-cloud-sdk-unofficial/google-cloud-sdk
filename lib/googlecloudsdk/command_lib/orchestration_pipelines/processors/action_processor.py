@@ -26,6 +26,7 @@ def get_action_processor(
     subprocess_mod,
     defaults,
     requirements_path=None,
+    requirements_list=None,
 ) -> base.ActionProcessor:
   """Returns the appropriate ActionProcessor for the given action."""
   engine = action.get("engine", {})
@@ -39,6 +40,7 @@ def get_action_processor(
         subprocess_mod,
         defaults,
         requirements_path,
+        requirements_list,
     )
   if engine_type == "dataprocOnGce":
     return dataproc_gce.DataprocGCEActionProcessor(
@@ -48,4 +50,5 @@ def get_action_processor(
         subprocess_mod,
         defaults,
         requirements_path,
+        requirements_list,
     )

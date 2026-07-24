@@ -104,6 +104,14 @@ class ServicePrinter(cp.CustomPrinterBase):
             ),
         ])
     )
+    labels.append(
+        cp.Labeled([
+            (
+                'SSH enabled',
+                record.annotations.get(service.SERVICE_SSH_ENABLED_ANNOTATION),
+            ),
+        ])
+    )
     return cp.Section(labels)
 
   def _GetPresetInfo(self, record):
@@ -143,7 +151,9 @@ class ServicePrinter(cp.CustomPrinterBase):
         service.SERVICE_SCALING_MODE_ANNOTATION, ''
     )
 
-    if scaling_mode == 'manual':
+    if scaling_mode == 'session':
+      return 'Session'
+    elif scaling_mode == 'manual':
       instance_count = record.annotations.get(
           service.MANUAL_INSTANCE_COUNT_ANNOTATION, ''
       )

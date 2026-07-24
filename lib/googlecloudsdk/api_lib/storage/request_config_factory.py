@@ -452,9 +452,10 @@ class _GcsObjectConfig(_ObjectConfig):
       object.
     custom_time (datetime|None): Custom time user can set.
     retain_until (datetime|None): Time to retain the object until.
-    retention_mode (flags.RetentionMode|None|CLEAR): The key that should
-      be used to set the retention mode policy in GCS or clear retention (the
-      string user_request_args_factory.CLEAR).
+    retention_mode (flags.RetentionMode|None|CLEAR): The key that should be used
+      to set the retention mode policy in GCS or clear retention (the string
+      user_request_args_factory.CLEAR).
+    crc32c_hash (str|None): CRC32C digest to use for validation.
     temporary_hold (bool|None): A temporary hold should be placed on an object.
   """
   # pylint:enable=g-missing-from-attributes
@@ -480,6 +481,7 @@ class _GcsObjectConfig(_ObjectConfig):
       encryption_key=None,
       event_based_hold=None,
       md5_hash=None,
+      crc32c_hash=None,
       retain_until=None,
       retention_mode=None,
       size=None,
@@ -508,17 +510,21 @@ class _GcsObjectConfig(_ObjectConfig):
     self.event_based_hold = event_based_hold
     self.retain_until = retain_until
     self.retention_mode = retention_mode
+    self.crc32c_hash = crc32c_hash
     self.temporary_hold = temporary_hold
 
   def __eq__(self, other):
     if not isinstance(other, type(self)):
       return NotImplemented
-    return (super(_GcsObjectConfig, self).__eq__(other) and
-            self.custom_time == other.custom_time and
-            self.event_based_hold == other.event_based_hold and
-            self.retain_until == other.retain_until and
-            self.retention_mode == other.retention_mode and
-            self.temporary_hold == other.temporary_hold)
+    return (
+        super(_GcsObjectConfig, self).__eq__(other)
+        and self.custom_time == other.custom_time
+        and self.event_based_hold == other.event_based_hold
+        and self.retain_until == other.retain_until
+        and self.retention_mode == other.retention_mode
+        and self.crc32c_hash == other.crc32c_hash
+        and self.temporary_hold == other.temporary_hold
+    )
 
 
 class _S3ObjectConfig(_ObjectConfig):
@@ -692,14 +698,17 @@ def _check_for_unsupported_s3_fields(user_request_args):
     )
 
 
-def _get_request_config_resource_args(url,
-                                      content_type=None,
-                                      decryption_key_hash_sha256=None,
-                                      encryption_key=None,
-                                      error_on_missing_key=True,
-                                      md5_hash=None,
-                                      size=None,
-                                      user_request_args=None):
+def _get_request_config_resource_args(
+    url,
+    content_type=None,
+    decryption_key_hash_sha256=None,
+    encryption_key=None,
+    error_on_missing_key=True,
+    md5_hash=None,
+    crc32c_hash=None,
+    size=None,
+    user_request_args=None,
+):
   """Generates metadata for API calls to storage buckets and objects."""
   if not isinstance(url, storage_url.CloudUrl):
     return None
@@ -812,6 +821,9 @@ def _get_request_config_resource_args(url,
       new_resource_args.decryption_key = encryption_util.get_decryption_key(
           decryption_key_hash_sha256, url if error_on_missing_key else None)
 
+    if isinstance(new_resource_args, _GcsObjectConfig):
+      new_resource_args.crc32c_hash = crc32c_hash
+
     if user_resource_args:
       # User args should override existing settings.
       if user_resource_args.content_type is not None:
@@ -873,13 +885,22 @@ def get_request_config(
     encryption_key=None,
     error_on_missing_key=True,
     md5_hash=None,
+    crc32c_hash=None,
     size=None,
     user_request_args=None,
 ):
   """Generates API-specific RequestConfig. See output classes for arg info."""
   resource_args = _get_request_config_resource_args(
-      url, content_type, decryption_key_hash_sha256, encryption_key,
-      error_on_missing_key, md5_hash, size, user_request_args)
+      url,
+      content_type,
+      decryption_key_hash_sha256,
+      encryption_key,
+      error_on_missing_key,
+      md5_hash,
+      crc32c_hash,
+      size,
+      user_request_args,
+  )
 
   if url.scheme == storage_url.ProviderPrefix.GCS:
     request_config = _GcsRequestConfig(resource_args=resource_args)

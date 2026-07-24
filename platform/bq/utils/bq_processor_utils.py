@@ -146,7 +146,7 @@ def ParseJson(
 ) -> Dict[str, Dict[str, Dict[str, Any]]]:
   """Wrapper for standard json parsing, may throw BigQueryClientError."""
   try:
-    return json.loads(json_string)
+    return json.loads(json_string)  # pyrefly: ignore[bad-argument-type]
   except ValueError as e:
     raise bq_error.BigqueryClientError(
         'Error decoding JSON from string %s: %s' % (json_string, e)
@@ -342,14 +342,14 @@ def PrepareTransferListRequest(
       parent=FormatProjectIdentifierForTransfers(reference, location)
   )
   if page_size is not None:
-    request['pageSize'] = page_size
+    request['pageSize'] = page_size  # pyrefly: ignore[bad-assignment]
   if page_token is not None:
     request['pageToken'] = page_token
   if data_source_ids is not None:
-    data_source_ids = data_source_ids.split(':')
-    if data_source_ids[0] == 'dataSourceIds':
-      data_source_ids = data_source_ids[1].split(',')
-      request['dataSourceIds'] = data_source_ids
+    data_source_ids = data_source_ids.split(':')  # pyrefly: ignore[bad-assignment]
+    if data_source_ids[0] == 'dataSourceIds':  # pyrefly: ignore[unsupported-operation]
+      data_source_ids = data_source_ids[1].split(',')  # pyrefly: ignore[bad-assignment, unsupported-operation]
+      request['dataSourceIds'] = data_source_ids  # pyrefly: ignore[bad-assignment]
     else:
       raise bq_error.BigqueryError(
           "Invalid filter flag values: '%s'. "
@@ -357,7 +357,7 @@ def PrepareTransferListRequest(
           % data_source_ids[0]
       )
 
-  return request
+  return request  # pyrefly: ignore[bad-return]
 
 
 def ParseStateFilterExpression(
@@ -401,13 +401,13 @@ def PrepareTransferRunListRequest(
 ):
   """Create and populate a transfer run list request."""
   request = dict(parent=reference)
-  request['runAttempt'] = run_attempt
+  request['runAttempt'] = run_attempt  # pyrefly: ignore[bad-assignment]
   if max_results is not None:
     if max_results > MAX_RESULTS:
       max_results = MAX_RESULTS
-    request['pageSize'] = max_results
+    request['pageSize'] = max_results  # pyrefly: ignore[bad-assignment]
   if states is not None:
-    request['states'] = ParseStateFilterExpression(states)
+    request['states'] = ParseStateFilterExpression(states)  # pyrefly: ignore[bad-assignment]
   if page_token is not None:
     request['pageToken'] = page_token
   return request
@@ -424,14 +424,14 @@ def PrepareListTransferLogRequest(
   if max_results is not None:
     if max_results > MAX_RESULTS:
       max_results = MAX_RESULTS
-    request['pageSize'] = max_results
+    request['pageSize'] = max_results  # pyrefly: ignore[bad-assignment]
   if page_token is not None:
     request['pageToken'] = page_token
   if message_type is not None:
     if 'messageTypes:' in message_type:
       try:
-        message_type = message_type.split(':')[1].split(',')
-        request['messageTypes'] = message_type
+        message_type = message_type.split(':')[1].split(',')  # pyrefly: ignore[bad-assignment]
+        request['messageTypes'] = message_type  # pyrefly: ignore[bad-assignment]
       except IndexError as e:
         raise bq_error.BigqueryError(
             'Invalid flag argument "' + message_type + '"'

@@ -46,6 +46,10 @@ class _CommonInstantSnapshot(six.with_metaclass(abc.ABCMeta, object)):
   def GetSetInstantSnapshotLabelsRequestMessage(self):
     raise NotImplementedError
 
+  @abc.abstractmethod
+  def GetSetIamPolicyRequestMessage(self, policy):
+    raise NotImplementedError
+
 
 class _InstantSnapshot(_CommonInstantSnapshot):
   """A wrapper for Compute Engine InstantSnapshotsService API client."""
@@ -77,6 +81,14 @@ class _InstantSnapshot(_CommonInstantSnapshot):
         zoneSetLabelsRequest=self._messages.ZoneSetLabelsRequest(
             labelFingerprint=ips.labelFingerprint, labels=labels))
 
+  def GetSetIamPolicyRequestMessage(self, policy):
+    req = self._messages.ComputeInstantSnapshotsSetIamPolicyRequest
+    return req(
+        project=self._ips_ref.project,
+        resource=self._ips_ref.instantSnapshot,
+        zone=self._ips_ref.zone,
+        zoneSetPolicyRequest=self._messages.ZoneSetPolicyRequest(policy=policy))
+
 
 class _RegionInstantSnapshot(_CommonInstantSnapshot):
   """A wrapper for Compute Engine RegionInstantSnapshotService API client."""
@@ -107,6 +119,17 @@ class _RegionInstantSnapshot(_CommonInstantSnapshot):
         region=self._ips_ref.region,
         regionSetLabelsRequest=self._messages.RegionSetLabelsRequest(
             labelFingerprint=ips.labelFingerprint, labels=labels))
+
+  def GetSetIamPolicyRequestMessage(self, policy):
+    req = self._messages.ComputeRegionInstantSnapshotsSetIamPolicyRequest
+    return req(
+        project=self._ips_ref.project,
+        resource=self._ips_ref.instantSnapshot,
+        region=self._ips_ref.region,
+        regionSetPolicyRequest=self._messages.RegionSetPolicyRequest(
+            policy=policy
+        ),
+    )
 
 
 def IsZonal(ips_ref):

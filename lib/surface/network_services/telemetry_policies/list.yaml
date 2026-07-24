@@ -1,0 +1,31 @@
+# Copyright 2026 Google LLC. All Rights Reserved.
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    List TelemetryPolicies.
+  description: |
+    List TelemetryPolicies in a project.
+  examples: |
+    To list TelemetryPolicies in 'us-central1', run:
+
+      $ {command} --location=us-central1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:location
+    help_text: Name of the location.
+
+request:
+  ALPHA:
+    api_version: v1alpha1
+  collection: networkservices.projects.locations.telemetryPolicies
+
+response:
+  id_field: name
+
+output:
+  format: |
+    table(
+        name.basename():label=NAME
+    )

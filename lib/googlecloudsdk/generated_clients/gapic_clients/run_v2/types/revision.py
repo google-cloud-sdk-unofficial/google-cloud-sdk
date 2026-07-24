@@ -233,6 +233,10 @@ class Revision(proto.Message):
         timeout (google.protobuf.duration_pb2.Duration):
             Max allowed time for an instance to respond
             to a request.
+        termination_grace_period (google.protobuf.duration_pb2.Duration):
+            Output only. Configured graceful termination
+            period for this revision. This is the time
+            between SIGTERM and SIGKILL when shutting down.
         service_account (str):
             Email address of the IAM service account
             associated with the revision of the service. The
@@ -377,6 +381,11 @@ class Revision(proto.Message):
     timeout: duration_pb2.Duration = proto.Field(
         proto.MESSAGE,
         number=15,
+        message=duration_pb2.Duration,
+    )
+    termination_grace_period: duration_pb2.Duration = proto.Field(
+        proto.MESSAGE,
+        number=57,
         message=duration_pb2.Duration,
     )
     service_account: str = proto.Field(

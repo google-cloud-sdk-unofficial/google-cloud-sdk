@@ -16,6 +16,7 @@
 
 import argparse
 import enum
+import functools
 import os
 import re
 
@@ -216,6 +217,8 @@ _CONTAINER_NAME_TYPE = arg_parsers.RegexpValidator(
 _SCALING_MODE_AUTOMATIC = 'automatic'
 
 _SCALING_MODE_MANUAL = 'manual'
+
+_SCALING_MODE_SESSION = 'session'
 
 
 def StripKeys(d):
@@ -1605,22 +1608,34 @@ class UtilizationValue:
 class ScalingValue:
   """Type for --scaling flag values.
 
-  Input values could be either 'auto' for automatic scaling or integer to
-  support manual scaling mode with the integer value as instance count.
+  Input values could be 'auto' for automatic scaling, 'session' for session
+  scaling, or an integer to support manual scaling mode with the integer value
+  as instance count.
   """
 
-  def __init__(self, value):
+  def __init__(self, value, allow_session=False):
     self.auto_scaling = value == 'auto'
-    if not self.auto_scaling:
+    self.session_scaling = value == 'session' and allow_session
+    if not self.auto_scaling and not self.session_scaling:
       try:
         self.instance_count = int(value)
-      except (TypeError, ValueError):
+      except (TypeError, ValueError) as exc:
+        if allow_session:
+          raise serverless_exceptions.ArgumentError(
+              "Input value '%s' for --scaling flag is not an integer nor 'auto'"
+              " nor 'session'." % value
+          ) from exc
         raise serverless_exceptions.ArgumentError(
             "Input value '%s' for --scaling flag is not an integer nor 'auto'."
             % value
-        )
+        ) from exc
 
       if self.instance_count < 0:
+        if allow_session:
+          raise serverless_exceptions.ArgumentError(
+              "Input value '%s' for --scaling flag should be a positive integer"
+              " or 'auto' or 'session'." % value
+          )
         raise serverless_exceptions.ArgumentError(
             "Input value '%s' for --scaling flag should be a positive integer"
             " or 'auto'." % value
@@ -1761,19 +1776,35 @@ def AddMaxInstancesFlag(parser, resource_kind='service'):
   )
 
 
-def AddScalingFlag(parser, resource_kind='service'):
+def AddScalingFlag(
+    parser, resource_kind='service', release_track=base.ReleaseTrack.GA
+):
   """Add scaling flag."""
+  allow_session = (
+      release_track == base.ReleaseTrack.ALPHA and resource_kind == 'service'
+  )
+  if allow_session:
+    help_text = (
+        'The scaling mode to use for this service. Flag value could be'
+        ' either "auto" for automatic scaling, "session" for session'
+        ' scaling, or a positive integer to configure manual scaling with'
+        ' the given integer as a fixed instance count.'
+    )
+    scaling_type = functools.partial(ScalingValue, allow_session=True)
+  else:
+    help_text = (
+        'The scaling mode to use for this service. Flag value could be'
+        ' either "auto" for automatic scaling, or a positive integer to'
+        ' configure manual scaling with the given integer as a fixed instance'
+        ' count.'
+    )
+    scaling_type = ScalingValue
   parser.add_argument(
       '--scaling',
-      type=ScalingValue,
+      type=scaling_type,
       # --instances should be used instead for worker pools.
       hidden=resource_kind == 'worker',
-      help=(
-          'The scaling mode to use for this service. Flag value could be'
-          ' either "auto" for automatic scaling, or a positive integer to'
-          ' configure manual scaling with the given integer as a fixed instance'
-          ' count.'
-      ),
+      help=help_text,
   )
 
 
@@ -1859,10 +1890,11 @@ def AddArgsFlag(parser, for_execution_overrides=False):
   ArgsFlag(for_execution_overrides=for_execution_overrides).AddToParser(parser)
 
 
-def SandboxLauncherFlag():
+def SandboxLauncherFlag(hidden=False):
   """Add the --sandbox-launcher flag."""
   return base.Argument(
       '--sandbox-launcher',
+      hidden=hidden,
       action=arg_parsers.StoreTrueFalseAction,
       help='Set the container as a sandbox supervisor to launch sandboxes.',
   )
@@ -2651,6 +2683,20 @@ def _GetServiceScalingChanges(args):
           config_changes.SetAnnotationChange(
               service.SERVICE_SCALING_MODE_ANNOTATION,
               _SCALING_MODE_AUTOMATIC,
+          )
+      )
+    # Session scaling mode
+    elif scaling_val.session_scaling:
+      # Remove manual instance count annotation
+      result.append(
+          config_changes.DeleteAnnotationChange(
+              service.MANUAL_INSTANCE_COUNT_ANNOTATION
+          )
+      )
+      result.append(
+          config_changes.SetAnnotationChange(
+              service.SERVICE_SCALING_MODE_ANNOTATION,
+              _SCALING_MODE_SESSION,
           )
       )
     # Manual scaling mode with flag value as an instance count.
@@ -3767,6 +3813,8 @@ def GetInstanceConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
             invoker_iam_check=args.invoker_iam_check
         )
     )
+  elif FlagIsExplicitlySet(args, 'public') and args.public:
+    changes.append(config_changes.InvokerIamChange(invoker_iam_check=False))
   if FlagIsExplicitlySet(args, 'default_url'):
     changes.append(
         config_changes.DefaultUrlChange(default_url=args.default_url)
@@ -3806,6 +3854,7 @@ def GetInstanceConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
           config_changes.ContainerDependenciesChange(dependency_changes)
       )
 
+  changes.extend(_GetIapChanges(args))
   return changes
 
 
@@ -5133,16 +5182,15 @@ def NoBuildArg():
   )
 
 
-def UploadFlag():
-  """Create the --upload flag."""
+def RunUploadFlag():
+  """Create the --run-upload flag."""
   return base.Argument(
-      '--upload',
+      '--run-upload',
       action='store_true',
       hidden=True,
       help=(
           'Specifies that the source should be uploaded via Cloud Run'
-          ' UploadSource API. This flag can only be used when `--no-build` is'
-          ' also specified.'
+          ' UploadSource API.'
       ),
   )
 
@@ -5161,7 +5209,7 @@ def SourceAndImageFlags(
     if release_track != base.ReleaseTrack.GA:
       group.AddArgument(NoBuildArg())
     if IsUploadLaunchStage(release_track):
-      group.AddArgument(UploadFlag())
+      group.AddArgument(RunUploadFlag())
   return group
 
 

@@ -161,7 +161,7 @@ class Create(base.Command):
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = False
   _support_instance_flexibility_policy = True
-  _support_workload_identity_config = False
+  _support_workload_identity_config = True
   _support_instance_selection_min_cpu_platform = False
   _support_vsock_mode = False
 
@@ -384,7 +384,7 @@ class CreateBeta(Create):
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = True
   _support_instance_flexibility_policy = True
-  _support_workload_identity_config = False
+  _support_workload_identity_config = True
   _support_instance_selection_min_cpu_platform = False
 
   @classmethod

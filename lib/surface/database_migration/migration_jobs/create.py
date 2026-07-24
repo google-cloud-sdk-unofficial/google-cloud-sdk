@@ -222,6 +222,7 @@ class CreateGA(_Create, base.Command):
     mj_flags.AddMigrationJobObjectsConfigFlagForCreateAndUpdate(parser)
     mj_flags.AddHeterogeneousMigrationConfigFlag(parser)
     mj_flags.AddPostgresHomogeneousConfigFlag(parser)
+    mj_flags.AddMySqlHomogeneousConfigFlag(parser)
 
 
 @base.DefaultUniverseOnly

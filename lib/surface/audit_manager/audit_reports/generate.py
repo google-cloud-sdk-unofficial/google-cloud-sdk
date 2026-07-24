@@ -36,7 +36,7 @@ _DETAILED_HELP = {
 }
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Generate(base.CreateCommand):
   """Generate Audit Report."""
@@ -104,7 +104,7 @@ class Generate(base.CreateCommand):
       core_exceptions.reraise(exc)
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class GenerateAlpha(Generate):
   """Generate Audit Report."""

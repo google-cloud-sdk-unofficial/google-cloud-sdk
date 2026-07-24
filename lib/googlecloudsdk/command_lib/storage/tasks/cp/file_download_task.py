@@ -25,6 +25,7 @@ import os
 
 from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.api_lib.storage import cloud_api
+from googlecloudsdk.command_lib.storage import bucket_detection_util
 from googlecloudsdk.command_lib.storage import fast_crc32c_util
 from googlecloudsdk.command_lib.storage import manifest_util
 from googlecloudsdk.command_lib.storage import posix_util
@@ -139,6 +140,13 @@ class FileDownloadTask(copy_util.ObjectCopyTaskWithExitHandler):
 
     self.parallel_processing_key = (
         self._destination_resource.storage_url.url_string)
+
+  @property
+  def is_bidi_download(self):
+    return bucket_detection_util.is_gcs_zonal_bucket(
+        provider=self._source_resource.storage_url.scheme,
+        bucket_name=self._source_resource.storage_url.bucket_name,
+    )
 
   def _get_temporary_destination_resource(self):
     temporary_resource = copy.deepcopy(self._destination_resource)

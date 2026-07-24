@@ -2462,13 +2462,6 @@ eventarc:
     supported_apis:
     - v1
     - v1beta1
-eventflow:
-  projects:
-    supported_apis:
-    - v1beta2
-  projects.flows:
-    supported_apis:
-    - v1beta2
 events:
   namespaces:
     supported_apis:

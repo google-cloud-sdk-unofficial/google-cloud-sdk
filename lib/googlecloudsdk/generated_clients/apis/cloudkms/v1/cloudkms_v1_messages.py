@@ -347,9 +347,11 @@ class AutokeyConfig(_messages.Message):
     are `DEDICATED_KEY_PROJECT`, `RESOURCE_PROJECT`, or `DISABLED`.
 
     Values:
-      KEY_PROJECT_RESOLUTION_MODE_UNSPECIFIED: Default value.
-        KeyProjectResolutionMode when not specified will act as
-        `DEDICATED_KEY_PROJECT`.
+      KEY_PROJECT_RESOLUTION_MODE_UNSPECIFIED: Default value. When
+        KeyProjectResolutionMode is set to
+        KEY_PROJECT_RESOLUTION_MODE_UNSPECIFIED for a folder and that folder
+        has a key_project set, the folder acts like its
+        KeyProjectResolutionMode is DEDICATED_KEY_PROJECT.
       DEDICATED_KEY_PROJECT: Keys are created in a dedicated project specified
         by `key_project`.
       RESOURCE_PROJECT: Keys are created in the same project as the resource
@@ -604,6 +606,19 @@ class CloudkmsFoldersGetKajPolicyConfigRequest(_messages.Message):
   """
 
   name = _messages.StringField(1, required=True)
+
+
+class CloudkmsFoldersShowEffectiveAutokeyConfigRequest(_messages.Message):
+  r"""A CloudkmsFoldersShowEffectiveAutokeyConfigRequest object.
+
+  Fields:
+    parent: Required. Name of the resource project or folder to show the
+      effective Cloud KMS Autokey configuration for. This may be helpful for
+      interrogating the effect of nested folder configurations on a given
+      resource project. Format: * projects/{project} * folders/{folder}
+  """
+
+  parent = _messages.StringField(1, required=True)
 
 
 class CloudkmsFoldersUpdateAutokeyConfigRequest(_messages.Message):
@@ -1003,12 +1018,18 @@ class CloudkmsProjectsLocationsKeyRingsCryptoKeysCreateRequest(_messages.Message
       CryptoKey without any CryptoKeyVersions. You must manually call
       CreateCryptoKeyVersion or ImportCryptoKeyVersion before you can use this
       CryptoKey.
+    trustedWrappingEnabled: Optional. Whether trusted wrapping will be enabled
+      on the first CryptoKeyVersions created for this CryptoKey. This field is
+      only supported for keys with CryptoKeyVersionTemplate.protection_level
+      HSM_SINGLE_TENANT. This field is supported for all CryptoKeyPurposes
+      except ENCRYPT_DECRYPT.
   """
 
   cryptoKey = _messages.MessageField('CryptoKey', 1)
   cryptoKeyId = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
   skipInitialVersionCreation = _messages.BooleanField(4)
+  trustedWrappingEnabled = _messages.BooleanField(5)
 
 
 class CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsAsymmetricDecryptRequest(_messages.Message):
@@ -1099,6 +1120,21 @@ class CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsDestroyRequest
   name = _messages.StringField(2, required=True)
 
 
+class CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsExportTrustedKeyWrappedCryptoKeyVersionRequest(_messages.Message):
+  r"""A CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsExportTrus
+  tedKeyWrappedCryptoKeyVersionRequest object.
+
+  Fields:
+    name: Required. The name of the CryptoKeyVersion to export. The
+      CryptoKeyVersion must have trusted_wrapping_enabled set to true.
+    wrappingKey: Required. The name of the CryptoKeyVersion to use as a
+      wrapping key. The CryptoKeyVersion must have hsm_trusted set to true.
+  """
+
+  name = _messages.StringField(1, required=True)
+  wrappingKey = _messages.StringField(2)
+
+
 class CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsGetPublicKeyRequest(_messages.Message):
   r"""A CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsGetPublicK
   eyRequest object.
@@ -1181,6 +1217,21 @@ class CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsImportRequest(
   """
 
   importCryptoKeyVersionRequest = _messages.MessageField('ImportCryptoKeyVersionRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
+class CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsImportTrustedKeyWrappedCryptoKeyVersionRequest(_messages.Message):
+  r"""A CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsImportTrus
+  tedKeyWrappedCryptoKeyVersionRequest object.
+
+  Fields:
+    importTrustedKeyWrappedCryptoKeyVersionRequest: A
+      ImportTrustedKeyWrappedCryptoKeyVersionRequest resource to be passed as
+      the request body.
+    parent: Required. The name of the CryptoKey to be imported into.
+  """
+
+  importTrustedKeyWrappedCryptoKeyVersionRequest = _messages.MessageField('ImportTrustedKeyWrappedCryptoKeyVersionRequest', 1)
   parent = _messages.StringField(2, required=True)
 
 
@@ -2028,9 +2079,10 @@ class CloudkmsProjectsShowEffectiveAutokeyConfigRequest(_messages.Message):
   r"""A CloudkmsProjectsShowEffectiveAutokeyConfigRequest object.
 
   Fields:
-    parent: Required. Name of the resource project to the show effective Cloud
-      KMS Autokey configuration for. This may be helpful for interrogating the
-      effect of nested folder configurations on a given resource project.
+    parent: Required. Name of the resource project or folder to show the
+      effective Cloud KMS Autokey configuration for. This may be helpful for
+      interrogating the effect of nested folder configurations on a given
+      resource project. Format: * projects/{project} * folders/{folder}
   """
 
   parent = _messages.StringField(1, required=True)
@@ -2187,6 +2239,7 @@ class CryptoKey(_messages.Message):
       MAC: CryptoKeys with this purpose may be used with MacSign.
       KEY_ENCAPSULATION: CryptoKeys with this purpose may be used with
         GetPublicKey and Decapsulate.
+      AES_WRAPPING: CryptoKeys with this purpose may be used for AES key
     """
     CRYPTO_KEY_PURPOSE_UNSPECIFIED = 0
     ENCRYPT_DECRYPT = 1
@@ -2195,6 +2248,7 @@ class CryptoKey(_messages.Message):
     RAW_ENCRYPT_DECRYPT = 4
     MAC = 5
     KEY_ENCAPSULATION = 6
+    AES_WRAPPING = 7
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
@@ -2275,6 +2329,9 @@ class CryptoKeyVersion(_messages.Message):
       was generated.
     generationFailureReason: Output only. The root cause of the most recent
       generation failure. Only present if state is GENERATION_FAILED.
+    hsmTrusted: Output only. Field indicating that the key wrapping key is
+      trusted. This field is only valid for key purpose AES_256_WRAPPING, and
+      protection level HSM_SINGLE_TENANT.
     importFailureReason: Output only. The root cause of the most recent import
       failure. Only present if state is IMPORT_FAILED.
     importJob: Output only. The name of the ImportJob used in the most recent
@@ -2291,6 +2348,11 @@ class CryptoKeyVersion(_messages.Message):
       for reimport, by being specified as a target in
       ImportCryptoKeyVersionRequest.crypto_key_version.
     state: The current state of the CryptoKeyVersion.
+    trustedWrappingEnabled: Immutable. Field indicating that the key may be
+      wrapped by a trusted key. This field can be set for all key purposes
+      except ENCRYPT_DECRYPT, and is only valid for keys with protection level
+      HSM_SINGLE_TENANT. This field can only be set at creation or import time
+      via CreateCryptoKeyVersion, or ImportCryptoKeyVersion.
   """
 
   class AlgorithmValueValuesEnum(_messages.Enum):
@@ -2380,6 +2442,8 @@ class CryptoKeyVersion(_messages.Message):
       PQ_SIGN_ML_DSA_87_EXTERNAL_MU: The post-quantum Module-Lattice-Based
         Digital Signature Algorithm, at security level 5. Randomized version
         supporting externally-computed message representatives.
+      AES_256_KWP: AES key wrap with zero padding algorithm (RFC 5649). Can
+        only be used
     """
     CRYPTO_KEY_VERSION_ALGORITHM_UNSPECIFIED = 0
     GOOGLE_SYMMETRIC_ENCRYPTION = 1
@@ -2428,6 +2492,7 @@ class CryptoKeyVersion(_messages.Message):
     PQ_SIGN_ML_DSA_44_EXTERNAL_MU = 44
     PQ_SIGN_ML_DSA_65_EXTERNAL_MU = 45
     PQ_SIGN_ML_DSA_87_EXTERNAL_MU = 46
+    AES_256_KWP = 47
 
   class ProtectionLevelValueValuesEnum(_messages.Enum):
     r"""Output only. The ProtectionLevel describing how crypto operations are
@@ -2510,13 +2575,15 @@ class CryptoKeyVersion(_messages.Message):
   externalProtectionLevelOptions = _messages.MessageField('ExternalProtectionLevelOptions', 7)
   generateTime = _messages.StringField(8)
   generationFailureReason = _messages.StringField(9)
-  importFailureReason = _messages.StringField(10)
-  importJob = _messages.StringField(11)
-  importTime = _messages.StringField(12)
-  name = _messages.StringField(13)
-  protectionLevel = _messages.EnumField('ProtectionLevelValueValuesEnum', 14)
-  reimportEligible = _messages.BooleanField(15)
-  state = _messages.EnumField('StateValueValuesEnum', 16)
+  hsmTrusted = _messages.BooleanField(10)
+  importFailureReason = _messages.StringField(11)
+  importJob = _messages.StringField(12)
+  importTime = _messages.StringField(13)
+  name = _messages.StringField(14)
+  protectionLevel = _messages.EnumField('ProtectionLevelValueValuesEnum', 15)
+  reimportEligible = _messages.BooleanField(16)
+  state = _messages.EnumField('StateValueValuesEnum', 17)
+  trustedWrappingEnabled = _messages.BooleanField(18)
 
 
 class CryptoKeyVersionTemplate(_messages.Message):
@@ -2631,6 +2698,8 @@ class CryptoKeyVersionTemplate(_messages.Message):
       PQ_SIGN_ML_DSA_87_EXTERNAL_MU: The post-quantum Module-Lattice-Based
         Digital Signature Algorithm, at security level 5. Randomized version
         supporting externally-computed message representatives.
+      AES_256_KWP: AES key wrap with zero padding algorithm (RFC 5649). Can
+        only be used
     """
     CRYPTO_KEY_VERSION_ALGORITHM_UNSPECIFIED = 0
     GOOGLE_SYMMETRIC_ENCRYPTION = 1
@@ -2679,6 +2748,7 @@ class CryptoKeyVersionTemplate(_messages.Message):
     PQ_SIGN_ML_DSA_44_EXTERNAL_MU = 44
     PQ_SIGN_ML_DSA_65_EXTERNAL_MU = 45
     PQ_SIGN_ML_DSA_87_EXTERNAL_MU = 46
+    AES_256_KWP = 47
 
   class ProtectionLevelValueValuesEnum(_messages.Enum):
     r"""ProtectionLevel to use when creating a CryptoKeyVersion based on this
@@ -3153,6 +3223,31 @@ class ExecuteSingleTenantHsmInstanceProposalRequest(_messages.Message):
 
 
 
+class ExportTrustedKeyWrappedCryptoKeyVersionResponse(_messages.Message):
+  r"""Response message for
+  KeyManagementService.ExportTrustedKeyWrappedCryptoKeyVersion.
+
+  Fields:
+    wrappedKey: The wrapped key material.
+    wrappedKeyCrc32c: Integrity verification field. A CRC32C checksum of the
+      returned ExportTrustedKeyWrappedCryptoKeyVersionResponse.wrapped_key. An
+      integrity check of
+      ExportTrustedKeyWrappedCryptoKeyVersionResponse.wrapped_key can be
+      performed by computing the CRC32C checksum of
+      ExportTrustedKeyWrappedCryptoKeyVersionResponse.wrapped_key and
+      comparing your results to this field. Discard the response in case of
+      non-matching checksum values, and perform a limited number of retries. A
+      persistent mismatch may indicate an issue in your computation of the
+      CRC32C checksum. Note: This field is defined as int64 for reasons of
+      compatibility across different languages. However, it is a non-negative
+      integer, which will never exceed 2^32-1, and can be safely downconverted
+      to uint32 in languages that support this type.
+  """
+
+  wrappedKey = _messages.BytesField(1)
+  wrappedKeyCrc32c = _messages.IntegerField(2)
+
+
 class Expr(_messages.Message):
   r"""Represents a textual expression in the Common Expression Language (CEL)
   syntax. CEL is a C-like expression language. The syntax and semantics of CEL
@@ -3294,6 +3389,11 @@ class ImportCryptoKeyVersionRequest(_messages.Message):
     rsaAesWrappedKey: Optional. This field has the same meaning as
       wrapped_key. Prefer to use that field in new work. Either that field or
       this field (but not both) must be specified.
+    trustedWrappingEnabled: Optional. Whether trusted wrapping will be enabled
+      on the imported [CryptoKeyVersion]. This field is only supported for
+      keys with CryptoKeyVersionTemplate.protection_level HSM_SINGLE_TENANT.
+      This field is supported for all CryptoKeyPurposes besides
+      ENCRYPT_DECRYPT.
     wrappedKey: Optional. The wrapped key material to import. Before wrapping,
       key material must be formatted. If importing symmetric key material, the
       expected key material format is plain bytes. If importing asymmetric key
@@ -3399,6 +3499,8 @@ class ImportCryptoKeyVersionRequest(_messages.Message):
       PQ_SIGN_ML_DSA_87_EXTERNAL_MU: The post-quantum Module-Lattice-Based
         Digital Signature Algorithm, at security level 5. Randomized version
         supporting externally-computed message representatives.
+      AES_256_KWP: AES key wrap with zero padding algorithm (RFC 5649). Can
+        only be used
     """
     CRYPTO_KEY_VERSION_ALGORITHM_UNSPECIFIED = 0
     GOOGLE_SYMMETRIC_ENCRYPTION = 1
@@ -3447,12 +3549,14 @@ class ImportCryptoKeyVersionRequest(_messages.Message):
     PQ_SIGN_ML_DSA_44_EXTERNAL_MU = 44
     PQ_SIGN_ML_DSA_65_EXTERNAL_MU = 45
     PQ_SIGN_ML_DSA_87_EXTERNAL_MU = 46
+    AES_256_KWP = 47
 
   algorithm = _messages.EnumField('AlgorithmValueValuesEnum', 1)
   cryptoKeyVersion = _messages.StringField(2)
   importJob = _messages.StringField(3)
   rsaAesWrappedKey = _messages.BytesField(4)
-  wrappedKey = _messages.BytesField(5)
+  trustedWrappingEnabled = _messages.BooleanField(5)
+  wrappedKey = _messages.BytesField(6)
 
 
 class ImportJob(_messages.Message):
@@ -3683,6 +3787,181 @@ class ImportJob(_messages.Message):
   publicKey = _messages.MessageField('WrappingPublicKey', 10)
   publicKeyFormat = _messages.EnumField('PublicKeyFormatValueValuesEnum', 11)
   state = _messages.EnumField('StateValueValuesEnum', 12)
+
+
+class ImportTrustedKeyWrappedCryptoKeyVersionRequest(_messages.Message):
+  r"""Request message for
+  KeyManagementService.ImportTrustedKeyWrappedCryptoKeyVersion.
+
+  Enums:
+    AlgorithmValueValuesEnum: Required. Required - The algorithm of the key
+      being imported. This does not need to match the version_template of the
+      CryptoKey this version imports into.
+
+  Fields:
+    algorithm: Required. Required - The algorithm of the key being imported.
+      This does not need to match the version_template of the CryptoKey this
+      version imports into.
+    cryptoKeyVersion: Optional. The optional name of an existing
+      CryptoKeyVersion to target for an import operation. If this field is not
+      present, a new CryptoKeyVersion containing the supplied key material is
+      created. If this field is present, the supplied key material is imported
+      into the existing CryptoKeyVersion. To import into an existing
+      CryptoKeyVersion, the CryptoKeyVersion must be a child of
+      ImportTrustedKeyWrappedCryptoKeyVersionRequest.parent, have been
+      previously created via ImportTrustedKeyWrappedCryptoKeyVersion, and be
+      in DESTROYED or IMPORT_FAILED state. The key material and algorithm must
+      match the previous CryptoKeyVersion exactly if the CryptoKeyVersion has
+      ever contained key material
+    importingKey: Required. Required - the CKV of the trusted key used to
+      import. This can be the name of a CryptoKeyVersion or a CryptoKey.
+    wrappedKey: Required. The target key pre-wrapped on premises.
+  """
+
+  class AlgorithmValueValuesEnum(_messages.Enum):
+    r"""Required. Required - The algorithm of the key being imported. This
+    does not need to match the version_template of the CryptoKey this version
+    imports into.
+
+    Values:
+      CRYPTO_KEY_VERSION_ALGORITHM_UNSPECIFIED: Not specified.
+      GOOGLE_SYMMETRIC_ENCRYPTION: Creates symmetric encryption keys.
+      AES_128_GCM: AES-GCM (Galois Counter Mode) using 128-bit keys.
+      AES_256_GCM: AES-GCM (Galois Counter Mode) using 256-bit keys.
+      AES_128_CBC: AES-CBC (Cipher Block Chaining Mode) using 128-bit keys.
+      AES_256_CBC: AES-CBC (Cipher Block Chaining Mode) using 256-bit keys.
+      AES_128_CTR: AES-CTR (Counter Mode) using 128-bit keys.
+      AES_256_CTR: AES-CTR (Counter Mode) using 256-bit keys.
+      RSA_SIGN_PSS_2048_SHA256: RSASSA-PSS 2048 bit key with a SHA256 digest.
+      RSA_SIGN_PSS_3072_SHA256: RSASSA-PSS 3072 bit key with a SHA256 digest.
+      RSA_SIGN_PSS_4096_SHA256: RSASSA-PSS 4096 bit key with a SHA256 digest.
+      RSA_SIGN_PSS_4096_SHA512: RSASSA-PSS 4096 bit key with a SHA512 digest.
+      RSA_SIGN_PKCS1_2048_SHA256: RSASSA-PKCS1-v1_5 with a 2048 bit key and a
+        SHA256 digest.
+      RSA_SIGN_PKCS1_3072_SHA256: RSASSA-PKCS1-v1_5 with a 3072 bit key and a
+        SHA256 digest.
+      RSA_SIGN_PKCS1_4096_SHA256: RSASSA-PKCS1-v1_5 with a 4096 bit key and a
+        SHA256 digest.
+      RSA_SIGN_PKCS1_4096_SHA512: RSASSA-PKCS1-v1_5 with a 4096 bit key and a
+        SHA512 digest.
+      RSA_SIGN_RAW_PKCS1_2048: RSASSA-PKCS1-v1_5 signing without encoding,
+        with a 2048 bit key.
+      RSA_SIGN_RAW_PKCS1_3072: RSASSA-PKCS1-v1_5 signing without encoding,
+        with a 3072 bit key.
+      RSA_SIGN_RAW_PKCS1_4096: RSASSA-PKCS1-v1_5 signing without encoding,
+        with a 4096 bit key.
+      RSA_DECRYPT_OAEP_2048_SHA256: RSAES-OAEP 2048 bit key with a SHA256
+        digest.
+      RSA_DECRYPT_OAEP_3072_SHA256: RSAES-OAEP 3072 bit key with a SHA256
+        digest.
+      RSA_DECRYPT_OAEP_4096_SHA256: RSAES-OAEP 4096 bit key with a SHA256
+        digest.
+      RSA_DECRYPT_OAEP_4096_SHA512: RSAES-OAEP 4096 bit key with a SHA512
+        digest.
+      RSA_DECRYPT_OAEP_2048_SHA1: RSAES-OAEP 2048 bit key with a SHA1 digest.
+      RSA_DECRYPT_OAEP_3072_SHA1: RSAES-OAEP 3072 bit key with a SHA1 digest.
+      RSA_DECRYPT_OAEP_4096_SHA1: RSAES-OAEP 4096 bit key with a SHA1 digest.
+      EC_SIGN_P256_SHA256: ECDSA on the NIST P-256 curve with a SHA256 digest.
+        Other hash functions can also be used:
+        https://cloud.google.com/kms/docs/create-validate-
+        signatures#ecdsa_support_for_other_hash_algorithms
+      EC_SIGN_P384_SHA384: ECDSA on the NIST P-384 curve with a SHA384 digest.
+        Other hash functions can also be used:
+        https://cloud.google.com/kms/docs/create-validate-
+        signatures#ecdsa_support_for_other_hash_algorithms
+      EC_SIGN_SECP256K1_SHA256: ECDSA on the non-NIST secp256k1 curve. This
+        curve is only supported for HSM protection level. Other hash functions
+        can also be used: https://cloud.google.com/kms/docs/create-validate-
+        signatures#ecdsa_support_for_other_hash_algorithms
+      EC_SIGN_ED25519: EdDSA on the Curve25519 in pure mode (taking data as
+        input).
+      HMAC_SHA256: HMAC-SHA256 signing with a 256 bit key.
+      HMAC_SHA1: HMAC-SHA1 signing with a 160 bit key.
+      HMAC_SHA384: HMAC-SHA384 signing with a 384 bit key.
+      HMAC_SHA512: HMAC-SHA512 signing with a 512 bit key.
+      HMAC_SHA224: HMAC-SHA224 signing with a 224 bit key.
+      EXTERNAL_SYMMETRIC_ENCRYPTION: Algorithm representing symmetric
+        encryption by an external key manager.
+      ML_KEM_768: ML-KEM-768 (FIPS 203)
+      ML_KEM_1024: ML-KEM-1024 (FIPS 203)
+      KEM_XWING: X-Wing hybrid KEM combining ML-KEM-768 with X25519 following
+        datatracker.ietf.org/doc/draft-connolly-cfrg-xwing-kem/.
+      PQ_SIGN_ML_DSA_44: The post-quantum Module-Lattice-Based Digital
+        Signature Algorithm, at security level 1. Randomized version.
+      PQ_SIGN_ML_DSA_65: The post-quantum Module-Lattice-Based Digital
+        Signature Algorithm, at security level 3. Randomized version.
+      PQ_SIGN_ML_DSA_87: The post-quantum Module-Lattice-Based Digital
+        Signature Algorithm, at security level 5. Randomized version.
+      PQ_SIGN_SLH_DSA_SHA2_128S: The post-quantum stateless hash-based digital
+        signature algorithm, at security level 1. Randomized version.
+      PQ_SIGN_HASH_SLH_DSA_SHA2_128S_SHA256: The post-quantum stateless hash-
+        based digital signature algorithm, at security level 1. Randomized
+        pre-hash version supporting SHA256 digests.
+      PQ_SIGN_ML_DSA_44_EXTERNAL_MU: The post-quantum Module-Lattice-Based
+        Digital Signature Algorithm, at security level 1. Randomized version
+        supporting externally-computed message representatives.
+      PQ_SIGN_ML_DSA_65_EXTERNAL_MU: The post-quantum Module-Lattice-Based
+        Digital Signature Algorithm, at security level 3. Randomized version
+        supporting externally-computed message representatives.
+      PQ_SIGN_ML_DSA_87_EXTERNAL_MU: The post-quantum Module-Lattice-Based
+        Digital Signature Algorithm, at security level 5. Randomized version
+        supporting externally-computed message representatives.
+      AES_256_KWP: AES key wrap with zero padding algorithm (RFC 5649). Can
+        only be used
+    """
+    CRYPTO_KEY_VERSION_ALGORITHM_UNSPECIFIED = 0
+    GOOGLE_SYMMETRIC_ENCRYPTION = 1
+    AES_128_GCM = 2
+    AES_256_GCM = 3
+    AES_128_CBC = 4
+    AES_256_CBC = 5
+    AES_128_CTR = 6
+    AES_256_CTR = 7
+    RSA_SIGN_PSS_2048_SHA256 = 8
+    RSA_SIGN_PSS_3072_SHA256 = 9
+    RSA_SIGN_PSS_4096_SHA256 = 10
+    RSA_SIGN_PSS_4096_SHA512 = 11
+    RSA_SIGN_PKCS1_2048_SHA256 = 12
+    RSA_SIGN_PKCS1_3072_SHA256 = 13
+    RSA_SIGN_PKCS1_4096_SHA256 = 14
+    RSA_SIGN_PKCS1_4096_SHA512 = 15
+    RSA_SIGN_RAW_PKCS1_2048 = 16
+    RSA_SIGN_RAW_PKCS1_3072 = 17
+    RSA_SIGN_RAW_PKCS1_4096 = 18
+    RSA_DECRYPT_OAEP_2048_SHA256 = 19
+    RSA_DECRYPT_OAEP_3072_SHA256 = 20
+    RSA_DECRYPT_OAEP_4096_SHA256 = 21
+    RSA_DECRYPT_OAEP_4096_SHA512 = 22
+    RSA_DECRYPT_OAEP_2048_SHA1 = 23
+    RSA_DECRYPT_OAEP_3072_SHA1 = 24
+    RSA_DECRYPT_OAEP_4096_SHA1 = 25
+    EC_SIGN_P256_SHA256 = 26
+    EC_SIGN_P384_SHA384 = 27
+    EC_SIGN_SECP256K1_SHA256 = 28
+    EC_SIGN_ED25519 = 29
+    HMAC_SHA256 = 30
+    HMAC_SHA1 = 31
+    HMAC_SHA384 = 32
+    HMAC_SHA512 = 33
+    HMAC_SHA224 = 34
+    EXTERNAL_SYMMETRIC_ENCRYPTION = 35
+    ML_KEM_768 = 36
+    ML_KEM_1024 = 37
+    KEM_XWING = 38
+    PQ_SIGN_ML_DSA_44 = 39
+    PQ_SIGN_ML_DSA_65 = 40
+    PQ_SIGN_ML_DSA_87 = 41
+    PQ_SIGN_SLH_DSA_SHA2_128S = 42
+    PQ_SIGN_HASH_SLH_DSA_SHA2_128S_SHA256 = 43
+    PQ_SIGN_ML_DSA_44_EXTERNAL_MU = 44
+    PQ_SIGN_ML_DSA_65_EXTERNAL_MU = 45
+    PQ_SIGN_ML_DSA_87_EXTERNAL_MU = 46
+    AES_256_KWP = 47
+
+  algorithm = _messages.EnumField('AlgorithmValueValuesEnum', 1)
+  cryptoKeyVersion = _messages.StringField(2)
+  importingKey = _messages.StringField(3)
+  wrappedKey = _messages.BytesField(4)
 
 
 class KeyAccessJustificationsEnrollmentConfig(_messages.Message):
@@ -4645,6 +4924,8 @@ class PublicKey(_messages.Message):
       PQ_SIGN_ML_DSA_87_EXTERNAL_MU: The post-quantum Module-Lattice-Based
         Digital Signature Algorithm, at security level 5. Randomized version
         supporting externally-computed message representatives.
+      AES_256_KWP: AES key wrap with zero padding algorithm (RFC 5649). Can
+        only be used
     """
     CRYPTO_KEY_VERSION_ALGORITHM_UNSPECIFIED = 0
     GOOGLE_SYMMETRIC_ENCRYPTION = 1
@@ -4693,6 +4974,7 @@ class PublicKey(_messages.Message):
     PQ_SIGN_ML_DSA_44_EXTERNAL_MU = 44
     PQ_SIGN_ML_DSA_65_EXTERNAL_MU = 45
     PQ_SIGN_ML_DSA_87_EXTERNAL_MU = 46
+    AES_256_KWP = 47
 
   class ProtectionLevelValueValuesEnum(_messages.Enum):
     r"""The ProtectionLevel of the CryptoKeyVersion public key.
@@ -5277,12 +5559,48 @@ class SetIamPolicyRequest(_messages.Message):
 class ShowEffectiveAutokeyConfigResponse(_messages.Message):
   r"""Response message for ShowEffectiveAutokeyConfig.
 
+  Enums:
+    KeyProjectResolutionModeValueValuesEnum: The KeyProjectResolutionMode for
+      the AutokeyConfig.
+
   Fields:
-    keyProject: Name of the key project configured in the resource project's
-      folder ancestry.
+    keyProject: Name of the key project configured in the ancestry of the
+      project or folder.
+    keyProjectResolutionMode: The KeyProjectResolutionMode for the
+      AutokeyConfig.
+    source: Source of the effective AutokeyConfig.
   """
 
+  class KeyProjectResolutionModeValueValuesEnum(_messages.Enum):
+    r"""The KeyProjectResolutionMode for the AutokeyConfig.
+
+    Values:
+      KEY_PROJECT_RESOLUTION_MODE_UNSPECIFIED: Default value. When
+        KeyProjectResolutionMode is set to
+        KEY_PROJECT_RESOLUTION_MODE_UNSPECIFIED for a folder and that folder
+        has a key_project set, the folder acts like its
+        KeyProjectResolutionMode is DEDICATED_KEY_PROJECT.
+      DEDICATED_KEY_PROJECT: Keys are created in a dedicated project specified
+        by `key_project`.
+      RESOURCE_PROJECT: Keys are created in the same project as the resource
+        requesting the key. The `key_project` must not be set when this mode
+        is used.
+      DISABLED: Disables the AutokeyConfig. When this mode is set, any
+        AutokeyConfig from higher levels in the resource hierarchy are ignored
+        for this resource and its descendants. This setting can be overridden
+        by a more specific configuration at a lower level. For example, if
+        Autokey is disabled on a folder, it can be re-enabled on a sub-folder
+        or project within that folder by setting a different mode (e.g.,
+        DEDICATED_KEY_PROJECT or RESOURCE_PROJECT).
+    """
+    KEY_PROJECT_RESOLUTION_MODE_UNSPECIFIED = 0
+    DEDICATED_KEY_PROJECT = 1
+    RESOURCE_PROJECT = 2
+    DISABLED = 3
+
   keyProject = _messages.StringField(1)
+  keyProjectResolutionMode = _messages.EnumField('KeyProjectResolutionModeValueValuesEnum', 2)
+  source = _messages.MessageField('Source', 3)
 
 
 class ShowEffectiveKeyAccessJustificationsEnrollmentConfigResponse(_messages.Message):
@@ -5451,6 +5769,9 @@ class SingleTenantHsmInstanceProposal(_messages.Message):
     state: Output only. The state of the SingleTenantHsmInstanceProposal.
     ttl: Input only. The TTL for the SingleTenantHsmInstanceProposal.
       Proposals will expire after this duration.
+    upgradeKeyTrust: Promotes a key with the AES_WRAPPING purpose to a trusted
+      wrapping key. The key must be in the ACTIVE state to perform this
+      operation.
   """
 
   class StateValueValuesEnum(_messages.Enum):
@@ -5494,6 +5815,19 @@ class SingleTenantHsmInstanceProposal(_messages.Message):
   requiredActionQuorumParameters = _messages.MessageField('RequiredActionQuorumParameters', 15)
   state = _messages.EnumField('StateValueValuesEnum', 16)
   ttl = _messages.StringField(17)
+  upgradeKeyTrust = _messages.MessageField('UpgradeKeyTrust', 18)
+
+
+class Source(_messages.Message):
+  r"""Source of the effective AutokeyConfig.
+
+  Fields:
+    name: Contains the resource name of the AutokeyConfig that is effective,
+      for example, `folders/{FOLDER_NUMBER}` or `projects/{PROJECT_NUMBER}` or
+      `organizations/{ORGANIZATION_NUMBER}`.
+  """
+
+  name = _messages.StringField(1)
 
 
 class StandardQueryParameters(_messages.Message):
@@ -5643,6 +5977,20 @@ class UpdateCryptoKeyPrimaryVersionRequest(_messages.Message):
   """
 
   cryptoKeyVersionId = _messages.StringField(1)
+
+
+class UpgradeKeyTrust(_messages.Message):
+  r"""Promotes a key with the AES_WRAPPING purpose to a trusted wrapping key.
+  The key must be in the ACTIVE state to perform this operation.
+
+  Fields:
+    name: Required. The name of the CryptoKeyVersion to promote.
+    twoFactorPublicKeyPem: Required. The public key associated with the 2FA
+      key that will sign the login nonce for this operation.
+  """
+
+  name = _messages.StringField(1)
+  twoFactorPublicKeyPem = _messages.StringField(2)
 
 
 class VerifyConnectivityResponse(_messages.Message):

@@ -37,7 +37,7 @@ POLL_JITTER_SECONDS = datetime.timedelta(seconds=0.5)
 @calliope_base.DefaultUniverseOnly
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.BETA)
 class Unpause(calliope_base.Command):
-  """A command that unpauses an orchestration pipeline."""
+  """Unpause an orchestration pipeline."""
 
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
@@ -55,7 +55,10 @@ class Unpause(calliope_base.Command):
     )
     group.add_argument(
         "--runner",
-        help="The full resource name to unpause a pipeline from.",
+        help=(
+            "The full resource name of the runner to "
+            "unpause a pipeline from."
+        ),
     )
     parser.add_argument(
         "--bundle",

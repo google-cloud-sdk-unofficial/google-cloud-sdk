@@ -504,6 +504,7 @@ class AccesscontextmanagerAccessPoliciesServicePerimetersListRequest(_messages.M
 
 class AccesscontextmanagerAccessPoliciesServicePerimetersPatchRequest(_messages.Message):
   r"""A AccesscontextmanagerAccessPoliciesServicePerimetersPatchRequest
+
   object.
 
   Fields:
@@ -1411,6 +1412,7 @@ class EgressPolicy(_messages.Message):
 
 class EgressSource(_messages.Message):
   r"""The source that EgressPolicy authorizes access from inside the
+
   ServicePerimeter to somewhere outside the ServicePerimeter boundaries.
 
   Fields:
@@ -1423,6 +1425,10 @@ class EgressSource(_messages.Message):
       origins within the perimeter. Example:
       `accessPolicies/MY_POLICY/accessLevels/MY_LEVEL`. If a single `*` is
       specified for `access_level`, then all EgressSources will be allowed.
+    pscEndpoint: A PrivateServiceConnectEndpoint that is allowed to access
+      data outside the perimeter. The Private Service Connect endpoint may be
+      in any organization, not just the organization that the
+      perimeter is defined in.
     resource: A Google Cloud resource from the service perimeter that you want
       to allow to access data outside the perimeter. This field supports only
       projects. The project format is `projects/{project_number}`. You can't
@@ -1430,7 +1436,8 @@ class EgressSource(_messages.Message):
   """
 
   accessLevel = _messages.StringField(1)
-  resource = _messages.StringField(2)
+  pscEndpoint = _messages.MessageField('PrivateServiceConnectEndpoint', 2)
+  resource = _messages.StringField(3)
 
 
 class EgressTo(_messages.Message):
@@ -1685,6 +1692,10 @@ class IngressSource(_messages.Message):
       Cloud calls with request origins within the perimeter. Example:
       `accessPolicies/MY_POLICY/accessLevels/MY_LEVEL`. If a single `*` is
       specified for `access_level`, then all IngressSources will be allowed.
+    pscEndpoint: A PrivateServiceConnectEndpoint that is allowed to access the
+      perimeter. The Private Service Connect endpoint may be in any
+      organization, not just the organization that the perimeter is
+      defined in.
     resource: A Google Cloud resource that is allowed to ingress the
       perimeter. Requests from these resources will be allowed to access
       perimeter data. Currently only projects and VPCs are allowed. Project
@@ -1696,7 +1707,8 @@ class IngressSource(_messages.Message):
   """
 
   accessLevel = _messages.StringField(1)
-  resource = _messages.StringField(2)
+  pscEndpoint = _messages.MessageField('PrivateServiceConnectEndpoint', 2)
+  resource = _messages.StringField(3)
 
 
 class IngressTo(_messages.Message):
@@ -2089,7 +2101,6 @@ class Policy(_messages.Message):
 
 class Principal(_messages.Message):
   r"""The comprehensive identity container supporting identities including
-
   groups, service accounts and federated identities. Only one of them can be
   set to create an access binding.
 
@@ -2114,6 +2125,21 @@ class Principal(_messages.Message):
   federatedPrincipal = _messages.StringField(1)
   serviceAccount = _messages.StringField(2)
   serviceAccountProjectNumber = _messages.StringField(3)
+
+
+class PrivateServiceConnectEndpoint(_messages.Message):
+  r"""Specifies the Private Service Connect endpoint that an API call refers
+
+  to.
+
+  Fields:
+    forwardingRule: The full resource name of the global forwarding rule that
+      identifies a Private Service Connect endpoint. Forwarding rule format: `
+      //compute.googleapis.com/projects/{PROJECT_ID}/global/forwardingRules/{F
+      ORWARDING_RULE_ID}`.
+  """
+
+  forwardingRule = _messages.StringField(1)
 
 
 class Project(_messages.Message):

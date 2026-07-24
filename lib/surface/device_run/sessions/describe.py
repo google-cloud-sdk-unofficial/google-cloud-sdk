@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib import device_run
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.device_run import resource_args
+from googlecloudsdk.core import log
 
 
 @base.UniverseCompatible
@@ -27,11 +28,72 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddSessionResourceArg(parser, 'describe')
+    parser.display_info.AddFormat(
+        'table(job_name:label="JOB NAME", '
+        'execution_name:label="EXECUTION NAME", '
+        'result:label="EXECUTION RESULT")'
+    )
+    parser.add_argument(
+        '--full',
+        action='store_true',
+        default=False,
+        help='Display full session details instead of the simplified summary.',
+    )
 
   def Run(self, args):
     session_ref = args.CONCEPTS.session.Parse()
     client = device_run.SessionsClient(api_version='v1alpha')
-    return client.Get(session_ref)
+    session = client.Get(session_ref)
+
+    session_id = session_ref.Name()
+    status_type = (
+        str(session.sessionReport.status.statusType)
+        if session.sessionReport and session.sessionReport.status
+        else 'UNKNOWN'
+    )
+
+    if args.full:
+      if not args.IsSpecified('format'):
+        args.format = 'yaml'
+      return session
+
+    if status_type != 'DONE':
+      log.status.Print(f'Session [{session_id}] status is [{status_type}].')
+
+      if status_type == 'RUNNING':
+        log.status.Print(session.sessionReport.status.progressMessages[0])
+      return None
+
+    result_type = session.sessionReport.result.resultType
+
+    rows = []
+    if session.sessionReport and session.sessionReport.jobReports:
+      for job_report in session.sessionReport.jobReports:
+        job_name = job_report.displayName
+        if job_report.executionReports:
+          for exec_report in job_report.executionReports:
+            exec_name = exec_report.displayName
+            result = str(exec_report.result.resultType)
+            rows.append({
+                'job_name': job_name,
+                'execution_name': exec_name,
+                'result': result,
+            })
+        else:
+          result = str(job_report.result.resultType)
+          rows.append({
+              'job_name': job_name,
+              'execution_name': '',
+              'result': result,
+          })
+
+    # Print a blank line for spacing.
+    log.status.Print()
+    log.status.Print(
+        f'Session [{session_id}] finished with result [{result_type}].'
+    )
+
+    return rows
 
 
 Describe.detailed_help = {
@@ -42,5 +104,10 @@ Describe.detailed_help = {
 To describe a session named `my-session` in location `us-central1`, run:
 
   $ {command} my-session --location=us-central1
+
+To display full details of a session, run:
+
+  $ {command} my-session --location=us-central1 --full
 """,
 }
+

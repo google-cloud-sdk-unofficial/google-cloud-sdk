@@ -36,6 +36,13 @@ DETAILED_HELP = {
         """,
 }
 
+_PROJECT_SCOPE_SUPPORTED_TRACKS = (
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+)
+
+
 FILE_TYPE_CHOICES = (
     'ANY_FILE',
     'APK',
@@ -60,7 +67,12 @@ class DeleteSubmissionRule(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    sp_flags.AddSecurityProfileResource(parser, cls.ReleaseTrack())
+    project_scope_supported = (
+        cls.ReleaseTrack() in _PROJECT_SCOPE_SUPPORTED_TRACKS
+    )
+    sp_flags.AddSecurityProfileResource(
+        parser, cls.ReleaseTrack(), project_scope_supported
+    )
     parser.add_argument(
         '--file-types',
         type=arg_parsers.ArgList(),
@@ -83,9 +95,14 @@ If ANY_FILE is specified, no other types can be specified.""".format(
     base.ASYNC_FLAG.SetDefault(parser, False)
 
   def Run(self, args):
-    client = wildfire_api.Client(self.ReleaseTrack())
     result = args.CONCEPTS.security_profile.Parse()
     security_profile = result.result
+
+    project_scoped = (
+        result.concept_type.name
+        == sp_flags.PROJECT_SECURITY_PROFILE_RESOURCE_COLLECTION
+    )
+    client = wildfire_api.Client(self.ReleaseTrack(), project_scoped)
     is_async = args.async_
 
     if args.location != 'global':

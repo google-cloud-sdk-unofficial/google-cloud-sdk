@@ -29200,6 +29200,7 @@ class GoogleCloudAiplatformV1beta1CandidateResult(_messages.Message):
     additionalResults: Optional. Additional results for the metric.
     candidate: Required. The candidate that is being evaluated. The value is
       the same as the candidate name in the EvaluationRequest.
+    error: Output only. Error while evaluating the candidate for the metric.
     explanation: Optional. The explanation for the metric.
     metric: Required. The metric that was evaluated.
     rubricVerdicts: Optional. The rubric verdicts for the metric.
@@ -29208,10 +29209,11 @@ class GoogleCloudAiplatformV1beta1CandidateResult(_messages.Message):
 
   additionalResults = _messages.MessageField('extra_types.JsonValue', 1)
   candidate = _messages.StringField(2)
-  explanation = _messages.StringField(3)
-  metric = _messages.StringField(4)
-  rubricVerdicts = _messages.MessageField('GoogleCloudAiplatformV1beta1RubricVerdict', 5, repeated=True)
-  score = _messages.FloatField(6, variant=_messages.Variant.FLOAT)
+  error = _messages.MessageField('GoogleRpcStatus', 3)
+  explanation = _messages.StringField(4)
+  metric = _messages.StringField(5)
+  rubricVerdicts = _messages.MessageField('GoogleCloudAiplatformV1beta1RubricVerdict', 6, repeated=True)
+  score = _messages.FloatField(7, variant=_messages.Variant.FLOAT)
 
 
 class GoogleCloudAiplatformV1beta1CheckPublisherModelEulaAcceptanceRequest(_messages.Message):
@@ -29372,6 +29374,78 @@ class GoogleCloudAiplatformV1beta1ClientConnectionConfig(_messages.Message):
   """
 
   inferenceTimeout = _messages.StringField(1)
+
+
+class GoogleCloudAiplatformV1beta1CloudLoggingConfig(_messages.Message):
+  r"""Specifies configuration for exporting evaluation results to Cloud
+  Logging.
+
+  Messages:
+    ResourceLabelsValue: Optional. MonitoredResource labels to associate the
+      log with. The backend will automatically inject project and location.
+
+  Fields:
+    project: Optional. Google Cloud project to write logs to. Defaults to the
+      request project.
+    resourceLabels: Optional. MonitoredResource labels to associate the log
+      with. The backend will automatically inject project and location.
+    resourceType: Optional. MonitoredResource type. Defaults to "global" if
+      unspecified.
+    tracingContext: Optional. Tracing context for the evaluation run.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ResourceLabelsValue(_messages.Message):
+    r"""Optional. MonitoredResource labels to associate the log with. The
+    backend will automatically inject project and location.
+
+    Messages:
+      AdditionalProperty: An additional property for a ResourceLabelsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type ResourceLabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ResourceLabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  project = _messages.StringField(1)
+  resourceLabels = _messages.MessageField('ResourceLabelsValue', 2)
+  resourceType = _messages.StringField(3)
+  tracingContext = _messages.MessageField('GoogleCloudAiplatformV1beta1CloudLoggingConfigTracingContext', 4)
+
+
+class GoogleCloudAiplatformV1beta1CloudLoggingConfigTracingContext(_messages.Message):
+  r"""Tracing context for Observability correlation.
+
+  Fields:
+    conversationId: Optional. Unique identifier for a conversation (session
+      thread), used to store and correlate messages within a conversation. The
+      value corresponds to the `gen_ai.conversation.id` field in the the
+      OpenTelemetry GenAI attributes.
+    spanId: Optional. ID of the Cloud Trace span associated with the current
+      operation in which the log is being written. e.g., `7a2190356c3fc94b`.
+      If a span is being evaluated, this field should be populated.
+    traceId: Optional. Trace ID being written to Cloud Trace in association
+      with this log entry. e.g., `12345`, the numeric ID from the resource
+      name. If a trace or span is being evaluated, this field should be
+      populated.
+  """
+
+  conversationId = _messages.StringField(1)
+  spanId = _messages.StringField(2)
+  traceId = _messages.StringField(3)
 
 
 class GoogleCloudAiplatformV1beta1CodeExecutionResult(_messages.Message):
@@ -34687,6 +34761,8 @@ class GoogleCloudAiplatformV1beta1EvaluationRunEvaluationConfig(_messages.Messag
 
   Fields:
     autoraterConfig: Optional. The autorater config for the evaluation run.
+    cloudLoggingConfig: Optional. Configuration for exporting evaluation
+      results to Cloud Logging.
     datasetCustomMetrics: Optional. Specifications for custom dataset-level
       aggregations.
     lossAnalysisConfig: Optional. Specifications for loss analysis. Each
@@ -34708,12 +34784,13 @@ class GoogleCloudAiplatformV1beta1EvaluationRunEvaluationConfig(_messages.Messag
   """
 
   autoraterConfig = _messages.MessageField('GoogleCloudAiplatformV1beta1EvaluationRunEvaluationConfigAutoraterConfig', 1)
-  datasetCustomMetrics = _messages.MessageField('GoogleCloudAiplatformV1beta1DatasetCustomMetric', 2, repeated=True)
-  lossAnalysisConfig = _messages.MessageField('GoogleCloudAiplatformV1beta1LossAnalysisConfig', 3, repeated=True)
-  metrics = _messages.MessageField('GoogleCloudAiplatformV1beta1EvaluationRunMetric', 4, repeated=True)
-  outputConfig = _messages.MessageField('GoogleCloudAiplatformV1beta1EvaluationRunEvaluationConfigOutputConfig', 5)
-  promptTemplate = _messages.MessageField('GoogleCloudAiplatformV1beta1EvaluationRunEvaluationConfigPromptTemplate', 6)
-  rubricConfigs = _messages.MessageField('GoogleCloudAiplatformV1beta1EvaluationRubricConfig', 7, repeated=True)
+  cloudLoggingConfig = _messages.MessageField('GoogleCloudAiplatformV1beta1CloudLoggingConfig', 2)
+  datasetCustomMetrics = _messages.MessageField('GoogleCloudAiplatformV1beta1DatasetCustomMetric', 3, repeated=True)
+  lossAnalysisConfig = _messages.MessageField('GoogleCloudAiplatformV1beta1LossAnalysisConfig', 4, repeated=True)
+  metrics = _messages.MessageField('GoogleCloudAiplatformV1beta1EvaluationRunMetric', 5, repeated=True)
+  outputConfig = _messages.MessageField('GoogleCloudAiplatformV1beta1EvaluationRunEvaluationConfigOutputConfig', 6)
+  promptTemplate = _messages.MessageField('GoogleCloudAiplatformV1beta1EvaluationRunEvaluationConfigPromptTemplate', 7)
+  rubricConfigs = _messages.MessageField('GoogleCloudAiplatformV1beta1EvaluationRubricConfig', 8, repeated=True)
 
 
 class GoogleCloudAiplatformV1beta1EvaluationRunEvaluationConfigAutoraterConfig(_messages.Message):
@@ -34796,6 +34873,10 @@ class GoogleCloudAiplatformV1beta1EvaluationRunInferenceConfig(_messages.Message
       `projects/{project}/locations/{location}/endpoints/{endpoint}`
     parallelism: Optional. The parallelism of the evaluation run for the
       inference step. If not specified, the default parallelism will be used.
+    promptTemplate: Optional. The prompt template used for inference. The
+      values for variables in the prompt template are defined in
+      EvaluationItem.EvaluationPrompt.PromptTemplateData.values. If not
+      specified, the prompt template in the EvaluationConfig will be used.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -34830,6 +34911,7 @@ class GoogleCloudAiplatformV1beta1EvaluationRunInferenceConfig(_messages.Message
   generationConfig = _messages.MessageField('GoogleCloudAiplatformV1beta1GenerationConfig', 4)
   model = _messages.StringField(5)
   parallelism = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  promptTemplate = _messages.MessageField('GoogleCloudAiplatformV1beta1EvaluationRunEvaluationConfigPromptTemplate', 7)
 
 
 class GoogleCloudAiplatformV1beta1EvaluationRunInferenceConfigAgentRunConfig(_messages.Message):
@@ -40999,14 +41081,18 @@ class GoogleCloudAiplatformV1beta1GenerateUserScenariosRequest(_messages.Message
   r"""Request message for DataFoundryService.GenerateUserScenarios.
 
   Messages:
-    AgentsValue: Required. A map containing the static configurations for each
+    AgentsValue: Optional. A map containing the static configurations for each
       agent in the system. Key: agent_id (matches the `author` field in
-      events). Value: The static configuration of the agent.
+      events). Value: The static configuration of the agent. Required unless
+      `gemini_agent_config` is set, in which case the agents map and
+      `root_agent_id` are derived from the referenced Gemini Agent.
 
   Fields:
-    agents: Required. A map containing the static configurations for each
+    agents: Optional. A map containing the static configurations for each
       agent in the system. Key: agent_id (matches the `author` field in
-      events). Value: The static configuration of the agent.
+      events). Value: The static configuration of the agent. Required unless
+      `gemini_agent_config` is set, in which case the agents map and
+      `root_agent_id` are derived from the referenced Gemini Agent.
     allowCrossRegionModel: Optional. Allows the scenario generation to use
       cross region models. When this flag is set, the service may route
       traffic to other regions if a model is unavailable in the current region
@@ -41014,16 +41100,20 @@ class GoogleCloudAiplatformV1beta1GenerateUserScenariosRequest(_messages.Message
       resource name with a different region than the request location is
       provided elsewhere in the request, this flag must be set to true or the
       request will fail.
-    rootAgentId: Required. The agent id to identify the root agent.
+    rootAgentId: Optional. The agent id to identify the root agent. Required
+      unless `gemini_agent_config` is set, in which case it is derived from
+      the referenced Gemini Agent.
     userScenarioGenerationConfig: Required. Configuration for generating user
       scenarios.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AgentsValue(_messages.Message):
-    r"""Required. A map containing the static configurations for each agent in
+    r"""Optional. A map containing the static configurations for each agent in
     the system. Key: agent_id (matches the `author` field in events). Value:
-    The static configuration of the agent.
+    The static configuration of the agent. Required unless
+    `gemini_agent_config` is set, in which case the agents map and
+    `root_agent_id` are derived from the referenced Gemini Agent.
 
     Messages:
       AdditionalProperty: An additional property for a AgentsValue object.
@@ -67408,7 +67498,13 @@ class GoogleCloudAiplatformV1beta1ToolParallelAiSearch(_messages.Message):
       "source_policy": { "include_domains": ["google.com", "wikipedia.org"],
       "exclude_domains": ["example.com"] }, "fetch_policy": {
       "max_age_seconds": 3600 } }
-    enableDataRetention: Optional. Instructs Vertex Grounding to use
+    enableDataRetention: Optional. Deprecated: Use
+      `enable_zero_data_retention` instead. Instructs Vertex Grounding to use
+      Parallel's Zero Data Retention Marketplace product. If this value is
+      "false" or omitted, the Parallel Web Search for Grounding standard
+      subscription will be used. If this value is "true", the Parallel Web
+      Search for Grounding - ZDR subscription will be used.
+    enableZeroDataRetention: Optional. Instructs Vertex Grounding to use
       Parallel's Zero Data Retention Marketplace product. If this value is
       "false" or omitted, the Parallel Web Search for Grounding standard
       subscription will be used. If this value is "true", the Parallel Web
@@ -67450,6 +67546,7 @@ class GoogleCloudAiplatformV1beta1ToolParallelAiSearch(_messages.Message):
   apiKey = _messages.StringField(1)
   customConfigs = _messages.MessageField('CustomConfigsValue', 2)
   enableDataRetention = _messages.BooleanField(3)
+  enableZeroDataRetention = _messages.BooleanField(4)
 
 
 class GoogleCloudAiplatformV1beta1ToolParameterKVMatchInput(_messages.Message):

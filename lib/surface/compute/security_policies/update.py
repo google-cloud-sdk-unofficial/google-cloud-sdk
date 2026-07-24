@@ -216,8 +216,8 @@ class UpdateBeta(UpdateGa):
     flags.AddAdvancedOptions(parser, enable_large_body_size=True)
     flags.AddRecaptchaOptions(parser)
     flags.AddDdosProtectionConfigWithAdvancedPreview(parser)
-    flags.AddNetworkDdosAdaptiveProtection(parser)
-    flags.AddNetworkDdosImpactedBaselineThreshold(parser)
+    flags.AddNetworkDdosAdaptiveProtection(parser, hidden=False)
+    flags.AddNetworkDdosImpactedBaselineThreshold(parser, hidden=False)
 
   def _ValidateArgs(self, args):
     """Validates that at least one field to update is specified.
@@ -402,8 +402,8 @@ class UpdateAlpha(UpdateBeta):
     flags.AddRecaptchaOptions(parser)
     flags.AddDdosProtectionConfigWithAdvancedPreview(parser)
     flags.AddDdosProtectionConfigOld(parser)
-    flags.AddNetworkDdosAdaptiveProtection(parser)
-    flags.AddNetworkDdosImpactedBaselineThreshold(parser)
+    flags.AddNetworkDdosAdaptiveProtection(parser, hidden=False)
+    flags.AddNetworkDdosImpactedBaselineThreshold(parser, hidden=False)
 
     parser.add_argument(
         '--enable-ml',

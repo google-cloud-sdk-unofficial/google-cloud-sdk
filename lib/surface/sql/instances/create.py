@@ -113,6 +113,7 @@ def AddBaseArgs(parser):
   flags.AddReplication(parser)
   flags.AddRequireSsl(parser)
   flags.AddRootPassword(parser)
+  flags.AddInstanceResizeLimit(parser)
   flags.AddStorageAutoIncrease(parser)
   flags.AddStorageSize(parser)
   flags.AddStorageType(parser)
@@ -183,7 +184,6 @@ def AddBaseArgs(parser):
 def AddBetaArgs(parser):
   """Declare beta flag and positional arguments for this command parser."""
   flags.AddExternalMasterGroup(parser)
-  flags.AddInstanceResizeLimit(parser)
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddCreateLabelsFlags(parser)
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
@@ -206,6 +206,8 @@ def AddAlphaArgs(parser):
   flags.AddMsdtcEnabled(parser, hidden=True)
   flags.AddMsdtcRpcAuthMode(parser, hidden=True)
   flags.AddMsdtcHostMappings(parser, hidden=True)
+  flags.AddBackendType(parser, hidden=True)
+  flags.AddSemiManagedSqlServer(parser, hidden=True)
 
 
 def RunBaseCreateCommand(args, release_track):

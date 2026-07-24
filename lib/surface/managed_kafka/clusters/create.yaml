@@ -41,7 +41,7 @@ arguments:
     default: true
   - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:mtls-ca-pools
   - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:ssl-principal-mapping-rules
-  - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:broker-disk-size-gib
+  - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:broker-disk
     release_tracks: [ALPHA]
   - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:public-cluster
     release_tracks: [ALPHA]

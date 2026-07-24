@@ -111,14 +111,14 @@ class Truncate(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstri
                   ),
               )
           )
-      for a_table in all_tables:
+      for a_table in all_tables:  # pyrefly: ignore[unbound-name]
         try:
           status.append(
-              self._TruncateTable(a_table, str(self.timestamp), False)
+              self._TruncateTable(a_table, str(self.timestamp), False)  # pyrefly: ignore[bad-argument-type]
           )
         except bq_error.BigqueryError as e:
           print(e)
-          status.append((self._formatOutputString(a_table, 'Failed')))
+          status.append((self._formatOutputString(a_table, 'Failed')))  # pyrefly: ignore[bad-argument-type]
           self.failed_table_count += 1
     else:
       if isinstance(reference, bq_id_utils.ApiClientHelper.TableReference):
@@ -127,8 +127,8 @@ class Truncate(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstri
         if isinstance(reference, bq_id_utils.ApiClientHelper.DatasetReference):
           all_table_infos = self._GetTableInfosFromDataset(reference)
       try:
-        recovery_timestamp = min(
-            list(map(self._GetRecoveryTimestamp, all_table_infos))
+        recovery_timestamp = min(  # pyrefly: ignore[bad-specialization]
+            list(map(self._GetRecoveryTimestamp, all_table_infos))  # pyrefly: ignore[unbound-name]
         )
       except (ValueError, bq_error.BigqueryTypeError):
         recovery_timestamp = None
@@ -155,14 +155,14 @@ class Truncate(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstri
           )
           status.append(
               self._TruncateTable(
-                  table_reference,
+                  table_reference,  # pyrefly: ignore[bad-argument-type]
                   str(recovery_timestamp),
                   a_table['fully_replicated'],
               )
           )
         except bq_error.BigqueryError as e:
           print(e)
-          status.append((self._formatOutputString(table_reference, 'Failed')))
+          status.append((self._formatOutputString(table_reference, 'Failed')))  # pyrefly: ignore[bad-argument-type, unbound-name]
           self.failed_table_count += 1
     print(
         '%s tables truncated, %s tables failed to truncate, %s tables skipped'
@@ -311,7 +311,7 @@ FROM (
       )
     if self.dry_run:
       return self._formatOutputString(
-          dest, 'will be Truncated@%s' % recovery_timestamp
+          dest, 'will be Truncated@%s' % recovery_timestamp  # pyrefly: ignore[bad-argument-type]
       )
     kwds = {
         'write_disposition': 'WRITE_TRUNCATE',
@@ -326,14 +326,14 @@ FROM (
     )
     job_ref = ' '
     try:
-      job = client_job.CopyTable(client, [source_table], dest, **kwds)
+      job = client_job.CopyTable(client, [source_table], dest, **kwds)  # pyrefly: ignore[bad-argument-type]
       if job is None:
         self.failed_table_count += 1
-        return self._formatOutputString(dest, 'Failed')
+        return self._formatOutputString(dest, 'Failed')  # pyrefly: ignore[bad-argument-type]
       job_ref = bq_processor_utils.ConstructObjectReference(job)
       self.truncated_table_count += 1
-      return self._formatOutputString(dest, 'Successful %s ' % job_ref)
+      return self._formatOutputString(dest, 'Successful %s ' % job_ref)  # pyrefly: ignore[bad-argument-type]
     except bq_error.BigqueryError as e:
       print(e)
       self.failed_table_count += 1
-      return self._formatOutputString(dest, 'Failed %s ' % job_ref)
+      return self._formatOutputString(dest, 'Failed %s ' % job_ref)  # pyrefly: ignore[bad-argument-type]

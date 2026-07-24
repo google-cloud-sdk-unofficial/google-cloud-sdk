@@ -18,7 +18,7 @@
 from googlecloudsdk.calliope import base
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Enrollments(base.Group):
   """Command group for Audit Manager Enrollments."""
@@ -26,7 +26,7 @@ class Enrollments(base.Group):
   category = base.SECURITY_CATEGORY
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class EnrollmentsAlpha(Enrollments):
   """Command group for Audit Manager Enrollments."""

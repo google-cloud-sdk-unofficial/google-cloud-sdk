@@ -475,8 +475,8 @@ class AuthzPolicyAuthzRuleFromRequestSource(_messages.Message):
       principal matches with the rule. Limited to 50 principals per
       Authorization Policy for regional internal Application Load Balancers,
       regional external Application Load Balancers, cross-region internal
-      Application Load Balancers, and Cloud Service Mesh. This field is not
-      supported for global external Application Load Balancers.
+      Application Load Balancers, and Cloud Service Mesh while 25 principals
+      per Authorization Policy for global external Application Load Balancers.
     resources: Optional. A list of resources to match against the resource of
       the source VM of a request. Limited to 10 resources per Authorization
       Policy.
@@ -553,10 +553,9 @@ class AuthzPolicyAuthzRulePrincipal(_messages.Message):
         Requests with multiple common names in the client certificate will be
         rejected if CLIENT_CERT_COMMON_NAME is set as the principal selector.
         A match happens when there is an exact common name value match. This
-        is only applicable for Application Load Balancers except for global
-        external Application Load Balancer and classic Application Load
-        Balancer. CLIENT_CERT_COMMON_NAME is not supported for
-        INTERNAL_SELF_MANAGED load balancing scheme.
+        is only applicable for Application Load Balancers and not for Classic
+        Application Load Balancer. CLIENT_CERT_COMMON_NAME is not supported
+        for INTERNAL_SELF_MANAGED load balancing scheme.
     """
     PRINCIPAL_SELECTOR_UNSPECIFIED = 0
     CLIENT_CERT_URI_SAN = 1

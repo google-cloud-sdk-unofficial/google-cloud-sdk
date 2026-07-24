@@ -35,6 +35,7 @@ class WrappedCredentials(oauth2client_4_0.client.OAuth2Credentials):
   def __init__(
       self,
       base_creds: (
+          # pyrefly: ignore[not-a-type]
           'external_account.Credentials | '
           'external_account_authorized_user.Credentials'
       ),
@@ -69,24 +70,24 @@ class WrappedCredentials(oauth2client_4_0.client.OAuth2Credentials):
       self.store.locked_put(self)
 
   @property
-  def access_token(self) -> str:
-    return self._base.token
+  def access_token(self) -> str:  # pyrefly: ignore[bad-override]
+    return self._base.token  # pyrefly: ignore[bad-return]
 
   @access_token.setter
   def access_token(self, value: str) -> None:
     self._base.token = value
 
   @property
-  def token_expiry(self) -> datetime.datetime:
-    return self._base.expiry
+  def token_expiry(self) -> datetime.datetime:  # pyrefly: ignore[bad-override]
+    return self._base.expiry  # pyrefly: ignore[bad-return]
 
   @token_expiry.setter
   def token_expiry(self, value: datetime.datetime):
     self._base.expiry = value
 
   @property
-  def scopes(self) -> List[str]:
-    return self._base._scopes  # pylint: disable=protected-access
+  def scopes(self) -> List[str]:  # pyrefly: ignore[bad-override]
+    return self._base._scopes  # pylint: disable=protected-access  # pyrefly: ignore[bad-return]
 
   @scopes.setter
   def scopes(self, value: List[str]) -> None:

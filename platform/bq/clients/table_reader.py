@@ -302,7 +302,7 @@ class QueryTableReader(_TableReader):
         total_rows is not None
         and result_rows is not None
         and start_row is not None
-        and len(result_rows) >= min(int(total_rows), start_row + max_rows)
+        and len(result_rows) >= min(int(total_rows), start_row + max_rows)  # pyrefly: ignore[unsupported-operation]
     ):
       page_token = self._results.get('pageToken', None)
       if len(result_rows) < int(total_rows) and page_token is None:

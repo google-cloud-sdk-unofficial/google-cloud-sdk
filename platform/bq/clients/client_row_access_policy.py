@@ -223,7 +223,7 @@ def _set_row_access_policy_grantees(
       )
   )
   iam_policy = get_row_access_policy_iam_policy(
-      bqclient=bqclient, reference=row_access_policy_ref
+      bqclient=bqclient, reference=row_access_policy_ref  # pyrefly: ignore[bad-argument-type]
   )
   grantees = _get_grantees_from_row_access_policy_iam_policy(iam_policy)
   row_access_policy['grantees'] = grantees

@@ -300,7 +300,7 @@
     # Group for Release Channel
     - group:
         required: false
-        release_tracks: [ALPHA]
+        release_tracks: [ALPHA, GA]
         help_text: |
           Release Channel - Looker (Google Cloud core) releases updates to your instance through
           release channels.
@@ -336,7 +336,7 @@
     # Group for Accelerated Security Patch
     - group:
         required: false
-        release_tracks: [ALPHA]
+        release_tracks: [ALPHA, GA]
         help_text: |
           Accelerated Security Patch - Looker (Google Cloud core) releases security patches to your instance.
         params:
@@ -358,5 +358,8 @@
       - googlecloudsdk.command_lib.looker.instances_util:ValidateReleaseChannelConfig
     GA:
       api_version: v1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.looker.instances_util:SetDefaultReleaseChannel
+      - googlecloudsdk.command_lib.looker.instances_util:ValidateReleaseChannelConfig
 
     collection: looker.projects.locations.instances

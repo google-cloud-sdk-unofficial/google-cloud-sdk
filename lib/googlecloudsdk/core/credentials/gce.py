@@ -15,6 +15,7 @@
 """Fetching GCE metadata."""
 
 
+import functools
 import threading
 
 from googlecloudsdk.core import log
@@ -114,6 +115,16 @@ class _GCEMetadata(object):
   def __init__(self, gce_cache_instance=None):
     self._gce_cache = gce_cache_instance
     self.connected = gce_cache.GetOnGCE(gce_cache_instance=self._gce_cache)
+
+  def ClearCachedValues(self):
+    """Clear cached metadata properties (for use in tests)."""
+    for attr in ['_universe_domain']:
+      try:
+        # Deleting the attribute is the recommended way to clear the cache per
+        # https://docs.python.org/3/library/functools.html#functools.cached_property.
+        delattr(self, attr)
+      except AttributeError:
+        pass
 
   @_HandleMissingMetadataServer()
   def DefaultAccount(self):
@@ -296,8 +307,9 @@ class _GCEMetadata(object):
             audience=audience, format=token_format, licenses=include_license),
         http_errors_to_ignore=(404,))
 
+  @functools.cached_property
   @_HandleMissingMetadataServer()
-  def UniverseDomain(self):
+  def _universe_domain(self):
     """Get the universe domain of the current GCE instance.
 
     If the GCE metadata server universe domain endpoint is not found, or the
@@ -325,6 +337,10 @@ class _GCEMetadata(object):
     if not universe_domain:
       return properties.VALUES.core.universe_domain.default
     return universe_domain
+
+  def UniverseDomain(self):
+    """Get the universe domain of the current GCE instance."""
+    return self._universe_domain
 
 
 _metadata = None

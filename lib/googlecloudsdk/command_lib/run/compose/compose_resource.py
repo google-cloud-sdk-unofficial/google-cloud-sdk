@@ -65,6 +65,11 @@ from googlecloudsdk.core.util import files
 _MAX_BUCKET_NAME_LENGTH = 63
 _RUN_COMPOSE_BUILD_METRIC = 'run_compose_build'
 
+# Label keys and values for resources managed by run compose.
+_MANAGED_BY_LABEL = 'managed-by'
+_RUN_COMPOSE_MANAGED_BY_VALUE = 'runcompose'
+_RUN_COMPOSE_PROJECT_LABEL = 'run-compose-project'
+
 
 def _generate_gcs_bucket_name(compose_project_name: str, region: str) -> str:
   """Generates a unique bucket name for the compose project.
@@ -103,6 +108,26 @@ def _generate_gcs_bucket_name(compose_project_name: str, region: str) -> str:
     return bucket_name_candidate
 
 
+def sanitize_label_value(value: str) -> str:
+  """Sanitizes a string to be a valid GCP label value.
+
+  Label values must be:
+  - <= 63 characters.
+  - Contain only lowercase letters, numbers, underscores, and dashes.
+
+  Args:
+    value: The string to sanitize.
+
+  Returns:
+    A valid GCP label value string.
+  """
+  if not value:
+    return ''
+  sanitized = value.lower()
+  sanitized = re.sub(r'[^a-z0-9_-]', '-', sanitized)
+  return sanitized[:63]
+
+
 class SecretConfig:
   """Represents the secret configuration for a service."""
 
@@ -128,14 +153,17 @@ class SecretConfig:
     config.secret_version = data.get('secret_version')
     return config
 
-  def handle(self) -> None:
+  def handle(self, project_name: str) -> None:
     """Creates the secret in Google Secret Manager and adds a version.
 
     This method calls the internal function _create_secret_and_add_version
     to perform the actual resource creation and versioning.
+
+    Args:
+      project_name: The name of the Docker Compose project.
     """
     log.debug('Handling secret: %s', self.name)
-    _create_secret_and_add_version(self)
+    _create_secret_and_add_version(self, project_name)
 
   # TODO(b/442334111): Rename secret version field to the version.
   def to_dict(self) -> Dict[str, Any]:
@@ -172,7 +200,7 @@ class Config:
     config.bucket_name = data.get('bucket_name')
     return config
 
-  def handle(self, bucket_name: str, region: str) -> None:
+  def handle(self, bucket_name: str, region: str, project_name: str) -> None:
     """Handles the creation of resources for the config."""
     if not self.name:
       raise compose_exceptions.GcloudResourcesError(
@@ -180,7 +208,7 @@ class Config:
           exit_codes.CONFIG_INVALID,
       )
     log.debug('Handling config: %s', self.name)
-    gcs_handler = GcsHandler(bucket_name, region)
+    gcs_handler = GcsHandler(bucket_name, region, project_name)
     gcs_handler.ensure_bucket()
     self.bucket_name = bucket_name
     source = self.file
@@ -291,7 +319,7 @@ class NamedVolumeConfig:
 class GcsHandler:
   """Handles GCS operations for compose resources."""
 
-  def __init__(self, bucket_name: str, region: str):
+  def __init__(self, bucket_name: str, region: str, project_name: str):
     log.debug(
         'Initializing GcsHandler for bucket %s in region %s',
         bucket_name,
@@ -299,6 +327,7 @@ class GcsHandler:
     )
     self.bucket_name = bucket_name
     self.region = region
+    self.project_name = project_name
     self._gcs_client = storage_api.StorageClient()
     self._bucket_ensured = False
 
@@ -312,7 +341,14 @@ class GcsHandler:
     """Creates the GCS bucket if it doesn't exist and sets IAM policy."""
     try:
       self._gcs_client.CreateBucketIfNotExists(
-          bucket_name, location=self.region
+          bucket_name,
+          location=self.region,
+          labels={
+              _MANAGED_BY_LABEL: _RUN_COMPOSE_MANAGED_BY_VALUE,
+              _RUN_COMPOSE_PROJECT_LABEL: sanitize_label_value(
+                  self.project_name
+              ),
+          },
       )
       log.debug(
           f"Ensured bucket '{bucket_name}' exists in region '{self.region}'."
@@ -411,14 +447,14 @@ class VolumeConfig:
     }
     return cls(bind_mount=bind_mount, named_volume=named_volume)
 
-  def handle(self, bucket_name: str, region: str) -> None:
+  def handle(self, bucket_name: str, region: str, project_name: str) -> None:
     """Handles all volume configurations."""
     if not self.bind_mount and not self.named_volume:
       log.debug('No volumes to handle.')
       return
 
     log.debug('Handling volume configurations.')
-    gcs_handler = GcsHandler(bucket_name, region)
+    gcs_handler = GcsHandler(bucket_name, region, project_name)
     gcs_handler.ensure_bucket()
     self.bucket_name = bucket_name
 
@@ -567,7 +603,7 @@ class ResourcesConfig:
       )
       for name, secret_config in self.secrets.items():
         log.debug(f'Handling secret: {name}')
-        secret_config.handle()
+        secret_config.handle(self.project)
       tracker.CompleteStage(
           compose_tracker.StagedProgressTrackerStage.SECRETS.get_key()
       )
@@ -579,7 +615,7 @@ class ResourcesConfig:
         tracker.StartStage(
             compose_tracker.StagedProgressTrackerStage.VOLUMES.get_key()
         )
-        self.volumes.handle(bucket_name, region)
+        self.volumes.handle(bucket_name, region, self.project)
         tracker.CompleteStage(
             compose_tracker.StagedProgressTrackerStage.VOLUMES.get_key()
         )
@@ -589,7 +625,7 @@ class ResourcesConfig:
         )
         for config in self.configs:
           log.debug('Handling config: %s', config.name)
-          config.handle(bucket_name, region)
+          config.handle(bucket_name, region, self.project)
         tracker.CompleteStage(
             compose_tracker.StagedProgressTrackerStage.CONFIGS.get_key()
         )
@@ -656,7 +692,8 @@ class TranslateResult:
 
 
 def _create_secret_and_add_version(
-    config: SecretConfig
+    config: SecretConfig,
+    project_name: str,
 ) -> None:
   """Creates a secret if it doesn't exist and adds a version from a file."""
   if not config.name or not config.file or not config.mount:
@@ -687,11 +724,22 @@ def _create_secret_and_add_version(
     log.debug(f"Creating secret '{config.name}' in project '{project}'.")
     try:
       # Default replication policy is automatic
+      messages = secrets_client.messages
+      labels_dict = {
+          _MANAGED_BY_LABEL: _RUN_COMPOSE_MANAGED_BY_VALUE,
+          _RUN_COMPOSE_PROJECT_LABEL: sanitize_label_value(project_name),
+      }
+      labels_value = messages.Secret.LabelsValue(
+          additionalProperties=[
+              messages.Secret.LabelsValue.AdditionalProperty(key=k, value=v)
+              for k, v in sorted(labels_dict.items())
+          ]
+      )
       secrets_client.Create(
           secret_ref,
           policy='automatic',
           locations=None,
-          labels=None,
+          labels=labels_value,
           tags=None,
       )
       log.debug(f"Secret '{config.name}' created.")

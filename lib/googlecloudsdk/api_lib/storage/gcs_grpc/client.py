@@ -440,8 +440,10 @@ class GrpcClientWithJsonFallback(gcs_json_client.JsonClient):
       serialization_data=None,
       tracker_callback=None,
       upload_strategy=cloud_api.UploadStrategy.SIMPLE,
+      final_headers_callback=None,
   ):
     """See super class."""
+    del final_headers_callback  # Unused.
 
     client = self._get_gapic_client(
         redact_request_body_reason=(

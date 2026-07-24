@@ -28,13 +28,17 @@ from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
+)
 class Create(base.CreateCommand):
   """Create a target TCP proxy."""
 
   BACKEND_SERVICE_ARG = None
   TARGET_TCP_PROXY_ARG = None
-  enable_load_balancing_scheme = False
 
   @classmethod
   def Args(cls, parser):
@@ -50,6 +54,7 @@ class Create(base.CreateCommand):
     cls.TARGET_TCP_PROXY_ARG.AddArgument(parser, operation_type='create')
 
     flags.AddProxyBind(parser)
+    flags.AddLoadBalancingScheme(parser)
 
     parser.add_argument(
         '--description',
@@ -58,20 +63,14 @@ class Create(base.CreateCommand):
     parser.display_info.AddCacheUpdater(flags.TargetTcpProxiesCompleter)
 
   def Run(self, args):
-    if self.enable_load_balancing_scheme:
-      if not args.backend_service and not args.IsSpecified(
-          'load_balancing_scheme'
-      ):
-        raise exceptions.MinimumArgumentException(
-            ['--backend-service', '--load-balancing-scheme'],
-            'Either [--backend-service] or [--load-balancing-scheme] must be'
-            ' specified',
-        )
-    else:
-      if not args.backend_service:
-        raise exceptions.RequiredArgumentException(
-            '--backend-service', 'Must be specified.'
-        )
+    if not args.backend_service and not args.IsSpecified(
+        'load_balancing_scheme'
+    ):
+      raise exceptions.MinimumArgumentException(
+          ['--backend-service', '--load-balancing-scheme'],
+          'Either [--backend-service] or [--load-balancing-scheme] must be'
+          ' specified',
+      )
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
 
     if not (args.backend_service_region or args.global_backend_service):
@@ -154,19 +153,6 @@ class Create(base.CreateCommand):
     if errors:
       utils.RaiseToolException(errors)
     return resources
-
-
-@base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class CreateAlphaBeta(Create):
-  """Create a target TCP proxy."""
-
-  enable_load_balancing_scheme = True
-
-  @classmethod
-  def Args(cls, parser):
-    super(CreateAlphaBeta, cls).Args(parser)
-    flags.AddLoadBalancingScheme(parser)
 
 
 Create.detailed_help = {

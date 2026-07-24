@@ -17,6 +17,7 @@
 
 
 from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.kms import get_digest
 from googlecloudsdk.command_lib.kms import maps
 
@@ -26,6 +27,12 @@ API_NAME = 'cloudkms'
 
 V1 = 'v1'
 DEFAULT_VERSION = V1
+
+# Digest type placeholder for pure keys which use raw data signing.
+DIGEST_RAW = 'raw'
+
+# Digest type placeholder for external-mu keys.
+DIGEST_EXTERNAL_MU = 'external-mu'
 
 
 class Client(object):
@@ -66,8 +73,10 @@ class Client(object):
     Args:
       key_ref_name: The CryptoKeyVersion relative resource name to sign with.
       digest_algorithm: The name of the digest algorithm to use in the signing
-          operation. May be one of 'sha256', 'sha384', 'sha512', 'external-mu'.
-          Note that 'external-mu' requires 'key_version_ref' to be provided.
+          operation. May be one of 'sha256', 'sha384', 'sha512', 'external-mu',
+          'raw'. Note that 'external-mu' requires 'key_version_ref' to be
+          provided. 'raw' indicates pure signing which uses raw data
+          instead of digest.
       plaintext: The plaintext bytes to sign.
       key_version_ref: Optional CryptoKeyVersion resource reference. Required
           if 'digest_algorithm' is 'external-mu'.
@@ -75,12 +84,26 @@ class Client(object):
     Returns:
       An AsymmetricSignResponse.
     """
-    digest = get_digest.GetDigestOfFile(
-        digest_algorithm, six.BytesIO(plaintext), key_version_ref)
+    if digest_algorithm == DIGEST_RAW:
+      asymmetric_sign_request = self.messages.AsymmetricSignRequest(
+          data=plaintext,
+      )
+    elif digest_algorithm:
+      digest = get_digest.GetDigestOfFile(
+          digest_algorithm, six.BytesIO(plaintext), key_version_ref,
+      )
+      asymmetric_sign_request = self.messages.AsymmetricSignRequest(
+          digest=digest,
+      )
+    else:
+      raise exceptions.InvalidArgumentException(
+          'digest_algorithm', 'Unknown digest algorithm for key.'
+      )
+
     req = self.messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsAsymmetricSignRequest(
         name=key_ref_name,
-        asymmetricSignRequest=self.messages.AsymmetricSignRequest(
-            digest=digest))
+        asymmetricSignRequest=asymmetric_sign_request,
+    )
     return (
         self.client.projects_locations_keyRings_cryptoKeys_cryptoKeyVersions.
         AsymmetricSign(req))
@@ -107,11 +130,15 @@ def GetAlgorithmDigestType(key_algorithm):
     key_algorithm: The CryptoKeyVersion algorithm to get the digest name for.
 
   Returns:
-    The digest name string (e.g. 'sha256') or None if no match is found.
+    The digest name string (e.g. 'sha256', 'external-mu', 'raw') or None if
+    no match is found.
   """
   algo_name = key_algorithm.name.lower()
-  if 'ml_dsa' in algo_name or 'external_mu' in algo_name:
-    return 'external-mu'
   for digest_name in maps.DIGESTS:
     if digest_name in algo_name:
       return digest_name
+  if 'external_mu' in algo_name:
+    return DIGEST_EXTERNAL_MU
+  if 'ml_dsa' in algo_name:
+    return DIGEST_RAW
+  return None

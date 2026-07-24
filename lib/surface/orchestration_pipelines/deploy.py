@@ -673,27 +673,12 @@ class Deploy(calliope_base.Command):
               for p in deployed_pipelines
           }
 
-      success_states = ["SUCCESS", "SKIPPED"]
       has_error = False
 
       if status["pipeline_deployment"] == "FAILED":
         log.error(
             "Deployment failed: One or more pipelines are in an UNHEALTHY "
             "state. Check Airflow logs for parsing errors."
-        )
-        has_error = True
-      elif (
-          status["resource_deployment"] not in success_states
-          and status["pipeline_deployment"] not in success_states
-      ):
-        log.error(
-            "Failed to deploy. Searched recursively in %s, "
-            "but found no valid bundles containing both a pipeline YAML "
-            "(with pipelineId) and a %s for environment "
-            "'%s'.",
-            work_dir,
-            DEPLOYMENT_FILE,
-            args.environment,
         )
         has_error = True
 
@@ -1033,12 +1018,18 @@ class Deploy(calliope_base.Command):
         composer_data_paths_to_upload.add(clean_path)
 
       reqs_path_str = None
+      reqs_list = None
       if action_type in ["pyspark", "notebook"]:
         env = action.get("environment")
         if isinstance(env, dict):
           reqs = env.get("requirements")
           if isinstance(reqs, dict):
             reqs_path_str = reqs.get("path")
+            inline_reqs = reqs.get("inline")
+            if isinstance(inline_reqs, dict) and isinstance(
+                inline_reqs.get("list"), list
+            ):
+              reqs_list = inline_reqs.get("list")
 
       resolved_reqs_path = None
       if reqs_path_str:
@@ -1074,10 +1065,13 @@ class Deploy(calliope_base.Command):
             self._subprocess,
             defaults,
             requirements_path=resolved_reqs_path,
+            requirements_list=reqs_list,
         )
         if processor:
           dp_gce_config = engine_dict.get("dataprocOnGce")
-          if isinstance(dp_gce_config, dict) and resolved_reqs_path:
+          if isinstance(dp_gce_config, dict) and (
+              resolved_reqs_path or reqs_list
+          ):
             existing_cluster = dp_gce_config.get("existingCluster")
             if isinstance(existing_cluster, dict):
               self._InjectExistingClusterImageVersion(

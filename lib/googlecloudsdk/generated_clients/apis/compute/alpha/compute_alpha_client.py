@@ -45,6 +45,7 @@ class ComputeAlpha(base_api.BaseApiClient):
     self.backendBuckets = self.BackendBucketsService(self)
     self.backendServices = self.BackendServicesService(self)
     self.crossSiteNetworks = self.CrossSiteNetworksService(self)
+    self.dhcpOptionsConfigs = self.DhcpOptionsConfigsService(self)
     self.diskSettings = self.DiskSettingsService(self)
     self.diskTypes = self.DiskTypesService(self)
     self.disks = self.DisksService(self)
@@ -89,6 +90,7 @@ class ComputeAlpha(base_api.BaseApiClient):
     self.licenses = self.LicensesService(self)
     self.machineImages = self.MachineImagesService(self)
     self.machineTypes = self.MachineTypesService(self)
+    self.managedRulesets = self.ManagedRulesetsService(self)
     self.networkAttachments = self.NetworkAttachmentsService(self)
     self.networkEdgeSecurityServices = self.NetworkEdgeSecurityServicesService(self)
     self.networkEndpointGroups = self.NetworkEndpointGroupsService(self)
@@ -152,6 +154,7 @@ class ComputeAlpha(base_api.BaseApiClient):
     self.regions = self.RegionsService(self)
     self.reliabilityRisks = self.ReliabilityRisksService(self)
     self.reservationBlocks = self.ReservationBlocksService(self)
+    self.reservationConsumedInstances = self.ReservationConsumedInstancesService(self)
     self.reservationSlots = self.ReservationSlotsService(self)
     self.reservationSubBlocks = self.ReservationSubBlocksService(self)
     self.reservations = self.ReservationsService(self)
@@ -1976,6 +1979,176 @@ patch format and processing rules.
         request_field='crossSiteNetworkResource',
         request_type_name='ComputeCrossSiteNetworksPatchRequest',
         response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class DhcpOptionsConfigsService(base_api.BaseApiService):
+    """Service class for the dhcpOptionsConfigs resource."""
+
+    _NAME = 'dhcpOptionsConfigs'
+
+    def __init__(self, client):
+      super(ComputeAlpha.DhcpOptionsConfigsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes the specified DhcpOptionsConfig in the given location.
+
+      Args:
+        request: (ComputeDhcpOptionsConfigsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='DELETE',
+        method_id='compute.dhcpOptionsConfigs.delete',
+        ordered_params=['project', 'region', 'dhcpOptionsConfig'],
+        path_params=['dhcpOptionsConfig', 'project', 'region'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/regions/{region}/dhcpOptionsConfigs/{dhcpOptionsConfig}',
+        request_field='',
+        request_type_name='ComputeDhcpOptionsConfigsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Returns the specified DhcpOptionsConfig resource in the given location.
+
+      Args:
+        request: (ComputeDhcpOptionsConfigsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (DhcpOptionsConfig) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.dhcpOptionsConfigs.get',
+        ordered_params=['project', 'region', 'dhcpOptionsConfig'],
+        path_params=['dhcpOptionsConfig', 'project', 'region'],
+        query_params=[],
+        relative_path='projects/{project}/regions/{region}/dhcpOptionsConfigs/{dhcpOptionsConfig}',
+        request_field='',
+        request_type_name='ComputeDhcpOptionsConfigsGetRequest',
+        response_type_name='DhcpOptionsConfig',
+        supports_download=False,
+    )
+
+    def Insert(self, request, global_params=None):
+      r"""Creates a DhcpOptionsConfig in the specified project in the given location.
+using the parameters that are included in the request.
+
+      Args:
+        request: (ComputeDhcpOptionsConfigsInsertRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Insert')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Insert.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.dhcpOptionsConfigs.insert',
+        ordered_params=['project', 'region'],
+        path_params=['project', 'region'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/regions/{region}/dhcpOptionsConfigs',
+        request_field='dhcpOptionsConfig',
+        request_type_name='ComputeDhcpOptionsConfigsInsertRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists the DhcpOptionsConfigs for a project in the given location.
+
+      Args:
+        request: (ComputeDhcpOptionsConfigsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (DhcpOptionsConfigList) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.dhcpOptionsConfigs.list',
+        ordered_params=['project', 'region'],
+        path_params=['project', 'region'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess'],
+        relative_path='projects/{project}/regions/{region}/dhcpOptionsConfigs',
+        request_field='',
+        request_type_name='ComputeDhcpOptionsConfigsListRequest',
+        response_type_name='DhcpOptionsConfigList',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Patches the specified DhcpOptionsConfig resource with the data included in.
+the request. This method supports PATCH
+semantics and usesJSON merge
+patch format and processing rules.
+
+      Args:
+        request: (ComputeDhcpOptionsConfigsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='PATCH',
+        method_id='compute.dhcpOptionsConfigs.patch',
+        ordered_params=['project', 'region', 'dhcpOptionsConfig'],
+        path_params=['dhcpOptionsConfig', 'project', 'region'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='projects/{project}/regions/{region}/dhcpOptionsConfigs/{dhcpOptionsConfig}',
+        request_field='dhcpOptionsConfigResource',
+        request_type_name='ComputeDhcpOptionsConfigsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def TestIamPermissions(self, request, global_params=None):
+      r"""Returns permissions that a caller has on the specified resource.
+
+      Args:
+        request: (ComputeDhcpOptionsConfigsTestIamPermissionsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TestPermissionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('TestIamPermissions')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.dhcpOptionsConfigs.testIamPermissions',
+        ordered_params=['project', 'region', 'resource'],
+        path_params=['project', 'region', 'resource'],
+        query_params=[],
+        relative_path='projects/{project}/regions/{region}/dhcpOptionsConfigs/{resource}/testIamPermissions',
+        request_field='testPermissionsRequest',
+        request_type_name='ComputeDhcpOptionsConfigsTestIamPermissionsRequest',
+        response_type_name='TestPermissionsResponse',
         supports_download=False,
     )
 
@@ -12377,6 +12550,32 @@ Resources documentation.
         supports_download=False,
     )
 
+    def SetName(self, request, global_params=None):
+      r"""Sets name of an interconnect.
+
+      Args:
+        request: (ComputeInterconnectsSetNameRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('SetName')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SetName.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.interconnects.setName',
+        ordered_params=['project', 'interconnect'],
+        path_params=['interconnect', 'project'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/global/interconnects/{interconnect}/setName',
+        request_field='interconnectsSetNameRequest',
+        request_type_name='ComputeInterconnectsSetNameRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def TestIamPermissions(self, request, global_params=None):
       r"""Returns permissions that a caller has on the specified resource.
 
@@ -13097,6 +13296,68 @@ project.
         request_field='',
         request_type_name='ComputeMachineTypesListRequest',
         response_type_name='MachineTypeList',
+        supports_download=False,
+    )
+
+  class ManagedRulesetsService(base_api.BaseApiService):
+    """Service class for the managedRulesets resource."""
+
+    _NAME = 'managedRulesets'
+
+    def __init__(self, client):
+      super(ComputeAlpha.ManagedRulesetsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Gets the details for the specified managed ruleset name.
+
+      Args:
+        request: (ComputeManagedRulesetsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ManagedRuleset) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.managedRulesets.get',
+        ordered_params=['project', 'managedRuleset'],
+        path_params=['managedRuleset', 'project'],
+        query_params=[],
+        relative_path='projects/{project}/global/managedRulesets/{managedRuleset}',
+        request_field='',
+        request_type_name='ComputeManagedRulesetsGetRequest',
+        response_type_name='ManagedRuleset',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Retrieves the list of all the managed rulesets available.
+
+      Args:
+        request: (ComputeManagedRulesetsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ManagedRulesetList) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.managedRulesets.list',
+        ordered_params=['project'],
+        path_params=['project'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess'],
+        relative_path='projects/{project}/global/managedRulesets',
+        request_field='',
+        request_type_name='ComputeManagedRulesetsListRequest',
+        response_type_name='ManagedRulesetList',
         supports_download=False,
     )
 
@@ -26657,6 +26918,43 @@ behaviour for this method.
         request_field='reservationsBlocksPerformMaintenanceRequest',
         request_type_name='ComputeReservationBlocksPerformMaintenanceRequest',
         response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class ReservationConsumedInstancesService(base_api.BaseApiService):
+    """Service class for the reservationConsumedInstances resource."""
+
+    _NAME = 'reservationConsumedInstances'
+
+    def __init__(self, client):
+      super(ComputeAlpha.ReservationConsumedInstancesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def List(self, request, global_params=None):
+      r"""Lists the instances consuming capacity from a specific reservation.
+
+      Args:
+        request: (ComputeReservationConsumedInstancesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ReservationConsumedInstancesListResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationConsumedInstances',
+        http_method='GET',
+        method_id='compute.reservationConsumedInstances.list',
+        ordered_params=['project', 'zone', 'reservation'],
+        path_params=['project', 'reservation', 'zone'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess'],
+        relative_path='projects/{project}/zones/{zone}/{+reservation}/reservationConsumedInstances',
+        request_field='',
+        request_type_name='ComputeReservationConsumedInstancesListRequest',
+        response_type_name='ReservationConsumedInstancesListResponse',
         supports_download=False,
     )
 

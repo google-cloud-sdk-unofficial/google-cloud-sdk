@@ -74,8 +74,13 @@ def _storage_address_override(address: str) -> str:
   grpc_override = properties.VALUES.api_endpoint_overrides.storage_grpc.Get()
   if not grpc_override:
     return address
-  parsed_url = urlparse(grpc_override)
-  return parsed_url.netloc
+  lower_override = grpc_override.lower()
+  if lower_override.startswith('http://') or lower_override.startswith(
+      'https://'
+  ):
+    parsed_url = urlparse(grpc_override)
+    return parsed_url.netloc
+  return grpc_override
 
 
 class GcsGrpcBidiStreamingClient(cloud_api.CloudApi):
@@ -282,8 +287,11 @@ class GcsGrpcBidiStreamingClient(cloud_api.CloudApi):
       source_resource=None,
       tracker_callback=None,
       upload_strategy=cloud_api.UploadStrategy.SIMPLE,
+      final_headers_callback=None,
   ):
     """See super class."""
+    del final_headers_callback  # Unused.
+
     _log_transfer(
         'upload',
         source_stream,

@@ -586,6 +586,16 @@ def AddRemoveKeyAccessJustificationsPolicyFlag(parser):
   )
 
 
+def AddHsmTrustedWrappingFlag(parser):
+  parser.add_argument(
+      '--hsm-trusted-wrapping',
+      default=None,
+      action='store_true',
+      dest='hsm_trusted_wrapping',
+      help='Enable HSM trusted wrapping capabilities for the key.',
+  )
+
+
 def AddPublicKeyFormatFlag(parser):
   parser.add_argument(
       '--public-key-format',
@@ -784,9 +794,11 @@ def AddFolderIdFlag(parser, required=False):
   )
 
 
-def AddAutokeyConfigResourceFlags(parser: ArgumentParser) -> None:
+def AddAutokeyConfigResourceFlags(
+    parser: ArgumentParser, required: bool = True
+) -> None:
   """Adds resource flags for AutokeyConfig."""
-  group = parser.add_group(mutex=True, required=True)
+  group = parser.add_group(mutex=True, required=required)
   group.add_argument(
       '--folder',
       help='The folder id in which the AutokeyConfig resource exists.',

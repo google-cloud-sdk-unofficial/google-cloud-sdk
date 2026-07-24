@@ -20,6 +20,7 @@ import types
 from typing import Any, Dict
 from urllib import parse
 
+from apitools.base.py import encoding
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -120,9 +121,17 @@ def GetParentName():
 
 
 def GetCatalogTypeEnumMapper(release_track):
+  """Get the catalog type enum mapper for create catalog command.
+
+  Args:
+    release_track: The release track of the command.
+
+  Returns:
+    The catalog type enum mapper.
+  """
   messages = GetMessagesModule(release_track)
   catalog_type_enum = messages.IcebergCatalog.CatalogTypeValueValuesEnum
-  return arg_utils.ChoiceEnumMapper(
+  mapper = arg_utils.ChoiceEnumMapper(
       '--catalog-type',
       catalog_type_enum,
       hidden_choices=['federated']
@@ -141,6 +150,7 @@ def GetCatalogTypeEnumMapper(release_track):
                   'BigLake Iceberg catalog. Catalog type which allows'
                   ' namespaces and tables within a catalog to be mapped to'
                   " locations beyond the catalog's designated default."
+                  ' Note: biglake and lakehouse catalog types are the same.'
               ),
           ),
           'CATALOG_TYPE_FEDERATED': (
@@ -149,18 +159,29 @@ def GetCatalogTypeEnumMapper(release_track):
           ),
       },
   )
+  mapper.choice_mappings['lakehouse'] = catalog_type_enum.CATALOG_TYPE_BIGLAKE
+  mapper.choices['lakehouse'] = mapper.choices['biglake']
+  return mapper
 
 
 def GetUpdateCatalogTypeEnumMapper(release_track):
+  """Get the catalog type enum mapper for update catalog command.
+
+  Args:
+    release_track: The release track of the command.
+
+  Returns:
+    The catalog type enum mapper.
+  """
   messages = GetMessagesModule(release_track)
   catalog_type_enum = messages.IcebergCatalog.CatalogTypeValueValuesEnum
-  return arg_utils.ChoiceEnumMapper(
+  mapper = arg_utils.ChoiceEnumMapper(
       '--catalog-type',
       catalog_type_enum,
       required=False,
       help_str=(
           'Catalog type to update the catalog with. Currently only updating to '
-          'a BigLake catalog type is supported.'
+          'a BigLake or Lakehouse catalog type is supported.'
       ),
       custom_mappings={
           'CATALOG_TYPE_BIGLAKE': (
@@ -169,10 +190,14 @@ def GetUpdateCatalogTypeEnumMapper(release_track):
                   'BigLake Iceberg catalog. Catalog type which allows'
                   ' namespaces and tables within a catalog to be mapped to'
                   " locations beyond the catalog's designated default."
+                  ' Note: biglake and lakehouse catalog types are the same.'
               ),
           ),
       },
   )
+  mapper.choice_mappings['lakehouse'] = catalog_type_enum.CATALOG_TYPE_BIGLAKE
+  mapper.choices['lakehouse'] = mapper.choices['biglake']
+  return mapper
 
 
 def GetCredentialModeEnumMapper(release_track):
@@ -216,17 +241,19 @@ def CheckValidArgCombinations(args):
   Raises:
     arg_parsers.ArgumentTypeError: If an invalid argument combination is found.
   """
-  if args.catalog_type == 'biglake' and not args.IsSpecified(
+  if args.catalog_type in ('biglake', 'lakehouse') and not args.IsSpecified(
       'default_location'
   ):
     raise arg_parsers.ArgumentTypeError(
         '--default-location must be specified when catalog type is BigLake.'
     )
-  elif args.catalog_type != 'biglake' and args.IsSpecified('default_location'):
+  elif args.catalog_type not in ('biglake', 'lakehouse') and args.IsSpecified(
+      'default_location'
+  ):
     raise arg_parsers.ArgumentTypeError(
         '--default-location is only supported for BigLake catalogs.'
     )
-  elif args.catalog_type != 'biglake' and args.IsSpecified(
+  elif args.catalog_type not in ('biglake', 'lakehouse') and args.IsSpecified(
       'restricted_locations'
   ):
     raise arg_parsers.ArgumentTypeError(
@@ -288,6 +315,10 @@ def CheckValidUnityArgCombinations(args):
         '--snowflake-account-identifier is not supported for Unity federated'
         ' catalogs.'
     )
+  if args.IsKnownAndSpecified('snowflake_role'):
+    raise arg_parsers.ArgumentTypeError(
+        '--snowflake-role is not supported for Unity federated catalogs.'
+    )
   if args.IsKnownAndSpecified('workday_base_url'):
     raise arg_parsers.ArgumentTypeError(
         '--workday-base-url is not supported for Unity federated catalogs.'
@@ -348,6 +379,10 @@ def CheckValidGlueArgCombinations(args):
         '--snowflake-account-identifier is not supported for Glue federated'
         ' catalogs.'
     )
+  if args.IsKnownAndSpecified('snowflake_role'):
+    raise arg_parsers.ArgumentTypeError(
+        '--snowflake-role is not supported for Glue federated catalogs.'
+    )
   if args.IsKnownAndSpecified('workday_base_url'):
     raise arg_parsers.ArgumentTypeError(
         '--workday-base-url is not supported for Glue federated catalogs.'
@@ -377,10 +412,10 @@ def CheckValidSnowflakeArgCombinations(args):
         '--snowflake-account-identifier must be specified when federated'
         ' catalog type is snowflake.'
     )
-  if not args.IsSpecified('secret_name'):
+  if not (args.IsSpecified('secret_name') ^ args.IsSpecified('snowflake_role')):
     raise arg_parsers.ArgumentTypeError(
-        '--secret-name must be specified when federated catalog type is'
-        ' snowflake.'
+        'Exactly one of --secret-name or --snowflake-role must be specified'
+        ' when federated catalog type is snowflake.'
     )
   if args.IsSpecified('unity_instance_name'):
     raise arg_parsers.ArgumentTypeError(
@@ -477,6 +512,10 @@ def CheckValidWorkdayArgCombinations(args):
         '--snowflake-account-identifier is not supported for Workday federated'
         ' catalogs.'
     )
+  if args.IsKnownAndSpecified('snowflake_role'):
+    raise arg_parsers.ArgumentTypeError(
+        '--snowflake-role is not supported for Workday federated catalogs.'
+    )
 
 
 def CheckValidFederatedArgCombinations(args):
@@ -504,6 +543,7 @@ def CheckValidFederatedArgCombinations(args):
       'glue_aws_role_arn',
       'snowflake_warehouse',
       'snowflake_account_identifier',
+      'snowflake_role',
       'workday_base_url',
       'workday_tenant',
   ]
@@ -670,6 +710,9 @@ def _BuildSnowflakeCatalogInfo(
       'warehouse': getattr(snowflake_catalog_info_option, 'warehouse', None),
       'account-identifier': getattr(
           snowflake_catalog_info_option, 'account_identifier', None
+      ),
+      'snowflake-role': getattr(
+          snowflake_catalog_info_option, 'snowflake_role', None
       ),
   }
   return {k: v for k, v in snowflake_catalog_info.items() if v}
@@ -886,3 +929,17 @@ def UpdateTable(catalog_id, namespace_id, table_id, table_data):
         'HTTP request failed. Response: ' + response.text
     )
   return response.text
+
+
+def ParseHiveTableColumns(columns_data, messages):
+  """Parses a list of column dicts into FieldSchema messages."""
+  columns = []
+  for i, col_data in enumerate(columns_data):
+    try:
+      col = encoding.PyValueToMessage(messages.FieldSchema, col_data)
+      columns.append(col)
+    except Exception as e:
+      raise core_exceptions.Error(
+          'Failed to parse column at index {}: {}'.format(i, e)
+      )
+  return columns

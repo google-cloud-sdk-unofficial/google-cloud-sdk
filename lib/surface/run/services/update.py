@@ -125,7 +125,7 @@ class Update(base.Command):
     flags.AddVolumesFlags(parser, cls.ReleaseTrack())
     flags.AddServiceMinMaxInstancesFlag(parser)
     flags.AddInvokerIamCheckFlag(parser)
-    flags.AddScalingFlag(parser)
+    flags.AddScalingFlag(parser, release_track=cls.ReleaseTrack())
     # Flags specific to connecting to a cluster
     flags.AddEndpointVisibilityEnum(parser)
     flags.CONFIG_MAP_FLAGS.AddToParser(parser)
@@ -210,6 +210,8 @@ class Update(base.Command):
   def _GetIap(self, args):
     if flags.FlagIsExplicitlySet(args, 'iap'):
       return args.iap
+    elif flags.FlagIsExplicitlySet(args, 'public') and args.public:
+      return False
     return None
 
   def Run(self, args):
@@ -224,7 +226,7 @@ class Update(base.Command):
     Returns:
       googlecloudsdk.api_lib.run.Service, the updated service
     """
-
+    flags.ValidatePublicFlags(args)
     conn_context = self._ConnectionContext(args)
     service_ref = args.CONCEPTS.service.Parse()
     flags.ValidateResource(service_ref)
@@ -402,7 +404,7 @@ class AlphaUpdate(BetaUpdate):
 
   input_flags = (
       '`--update-env-vars`, `--memory`, `--concurrency`, `--timeout`,'
-      ' `--connectivity`, `--image`, `--iap`, `--ssh`'
+      ' `--connectivity`, `--image`, `--iap`, `--ssh`, `--public`'
   )
 
   @classmethod
@@ -411,6 +413,7 @@ class AlphaUpdate(BetaUpdate):
 
     # Flags specific to managed CR
     flags.AddRuntimeFlag(parser)
+    flags.AddPublicFlag(parser)
     flags.AddDescriptionFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.IDENTITY_FLAG.AddToParser(parser)

@@ -159,7 +159,7 @@ class Upgrade(base.Command):
   @staticmethod
   def Args(parser):
     _Args(parser)
-    flags.AddControlPlaneSoakDurationFlag(parser, hidden=True)
+    flags.AddControlPlaneSoakDurationFlag(parser, hidden=False)
 
   def ParseUpgradeOptions(self, args):
     return ParseUpgradeOptionsBase(args)

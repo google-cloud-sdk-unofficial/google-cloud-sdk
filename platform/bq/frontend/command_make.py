@@ -1308,7 +1308,7 @@ class Make(bigquery_command.BigqueryCmd):
       created_connection = client_connection.CreateConnection(
           client=client.GetConnectionV1ApiClient(),
           project_id=bq_flags.PROJECT_ID.value,
-          location=bq_flags.LOCATION.value,
+          location=bq_flags.LOCATION.value,  # pyrefly: ignore[bad-argument-type]
           connection_type=self.connection_type,
           properties=param_properties,
           connection_credential=self.connection_credential,
@@ -1324,7 +1324,7 @@ class Make(bigquery_command.BigqueryCmd):
         )
         print('Connection %s successfully created' % reference)
         utils_formatting.maybe_print_manual_instructions_for_connection(
-            created_connection, flag_format=bq_flags.FORMAT.value
+            created_connection, flag_format=bq_flags.FORMAT.value  # pyrefly: ignore[bad-argument-type]
         )
     elif self.migration_workflow:
       if not bq_flags.LOCATION.value:
@@ -1340,7 +1340,7 @@ class Make(bigquery_command.BigqueryCmd):
           'migration_workflows',
           'mk',
           identifier,
-          command_flags_for_this_resource={
+          command_flags_for_this_resource={  # pyrefly: ignore[bad-argument-type]
               'location': bq_flags.LOCATION.value,
               'config_file': self.config_file,
               'sync': bq_flags.SYNCHRONOUS_MODE.value,
@@ -1459,7 +1459,7 @@ class Make(bigquery_command.BigqueryCmd):
           storage_billing_model=self.storage_billing_model,
           resource_tags=resource_tags,
       )
-      self.printSuccessMessage('Dataset', reference)
+      self.printSuccessMessage('Dataset', reference)  # pyrefly: ignore[bad-argument-type]
     elif isinstance(reference, bq_id_utils.ApiClientHelper.TableReference):
       if self.source_dataset:
         raise app.UsageError('Cannot specify --source_dataset for a table.')
@@ -1484,9 +1484,9 @@ class Make(bigquery_command.BigqueryCmd):
           print(message)
           return
       if schema:
-        schema = bq_client_utils.ReadSchema(schema)
+        schema = bq_client_utils.ReadSchema(schema)  # pyrefly: ignore[bad-assignment]
       else:
-        schema = None
+        schema = None  # pyrefly: ignore[bad-assignment]
       expiration = None
       labels = None
       if self.label is not None:
@@ -1618,4 +1618,4 @@ class Make(bigquery_command.BigqueryCmd):
           table_constraints=table_constraints,
           resource_tags=resource_tags,
       )
-      self.printSuccessMessage(object_name, reference)
+      self.printSuccessMessage(object_name, reference)  # pyrefly: ignore[bad-argument-type]

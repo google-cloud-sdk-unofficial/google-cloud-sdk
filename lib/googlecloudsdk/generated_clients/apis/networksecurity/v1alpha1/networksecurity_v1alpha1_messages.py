@@ -672,8 +672,8 @@ class AuthzPolicyAuthzRuleFromRequestSource(_messages.Message):
       principal matches with the rule. Limited to 50 principals per
       Authorization Policy for regional internal Application Load Balancers,
       regional external Application Load Balancers, cross-region internal
-      Application Load Balancers, and Cloud Service Mesh. This field is not
-      supported for global external Application Load Balancers.
+      Application Load Balancers, and Cloud Service Mesh while 25 principals
+      per Authorization Policy for global external Application Load Balancers.
     resources: Optional. A list of resources to match against the resource of
       the source VM of a request. Limited to 10 resources per Authorization
       Policy.
@@ -750,10 +750,9 @@ class AuthzPolicyAuthzRulePrincipal(_messages.Message):
         Requests with multiple common names in the client certificate will be
         rejected if CLIENT_CERT_COMMON_NAME is set as the principal selector.
         A match happens when there is an exact common name value match. This
-        is only applicable for Application Load Balancers except for global
-        external Application Load Balancer and classic Application Load
-        Balancer. CLIENT_CERT_COMMON_NAME is not supported for
-        INTERNAL_SELF_MANAGED load balancing scheme.
+        is only applicable for Application Load Balancers and not for Classic
+        Application Load Balancer. CLIENT_CERT_COMMON_NAME is not supported
+        for INTERNAL_SELF_MANAGED load balancing scheme.
     """
     PRINCIPAL_SELECTOR_UNSPECIFIED = 0
     CLIENT_CERT_URI_SAN = 1
@@ -9836,8 +9835,7 @@ class RateLimitPolicy(_messages.Message):
     description: Optional. Provides a human-readable description of the
       resource.
     httpRules: Optional. Specifies a list of rate limit HTTP rules to match
-      against the incoming request. Limited to 5 HTTP rules per
-      RateLimitPolicy.
+      against the incoming request.
     labels: Optional. Stores labels as key value pairs.
     name: Identifier. Specifies the name of the `RateLimitPolicy` resource.
     rateLimitBuckets: Optional. Specifies a list of rate limit buckets to be
@@ -9886,9 +9884,10 @@ class RateLimitPolicyRateLimitBucket(_messages.Message):
   r"""Describes properties of a rate limit bucket.
 
   Fields:
-    cost: Required. Specifies the cost of the request.
     defaultLimit: Required. Specifies the default limit to apply for this rate
       limit bucket.
+    dryRun: Optional. Specifies whether the rate limit bucket is in dry-run
+      mode.
     keys: Required. Specifies the keys to use for rate limiting. At least one
       key is required. If multiple keys are specified, the keys will be
       combined and used as a single key.
@@ -9898,43 +9897,11 @@ class RateLimitPolicyRateLimitBucket(_messages.Message):
       the rate limit bucket.
   """
 
-  cost = _messages.MessageField('RateLimitPolicyRateLimitBucketCost', 1)
-  defaultLimit = _messages.MessageField('RateLimitPolicyRateLimitBucketLimit', 2)
+  defaultLimit = _messages.MessageField('RateLimitPolicyRateLimitBucketLimit', 1)
+  dryRun = _messages.BooleanField(2)
   keys = _messages.MessageField('RateLimitPolicyRateLimitBucketKey', 3, repeated=True)
   name = _messages.StringField(4)
   userOverrides = _messages.MessageField('RateLimitPolicyRateLimitBucketUserOverride', 5, repeated=True)
-
-
-class RateLimitPolicyRateLimitBucketCost(_messages.Message):
-  r"""Describes properties of the cost of a request.
-
-  Enums:
-    FromValueValuesEnum: Required. Specifies the source of the cost.
-
-  Fields:
-    from_: Required. Specifies the source of the cost.
-    header: Optional. Specifies the header name for cost if from is HEADER.
-    number: Optional. Specifies the fixed number cost if from is NUMBER.
-  """
-
-  class FromValueValuesEnum(_messages.Enum):
-    r"""Required. Specifies the source of the cost.
-
-    Values:
-      FROM_UNSPECIFIED: Represents an unspecified cost source. Defaults to
-        NUMBER.
-      NUMBER: Uses a fixed number as cost per request. The number must be
-        specified below.
-      HEADER: Uses the number specified in the header as the cost. The header
-        name must be specified below.
-    """
-    FROM_UNSPECIFIED = 0
-    NUMBER = 1
-    HEADER = 2
-
-  from_ = _messages.EnumField('FromValueValuesEnum', 1)
-  header = _messages.StringField(2)
-  number = _messages.IntegerField(3)
 
 
 class RateLimitPolicyRateLimitBucketCountLimit(_messages.Message):
@@ -10005,6 +9972,7 @@ class RateLimitPolicyRateLimitBucketKey(_messages.Message):
       HTTP_PATH: Uses the HTTP path of the request as the key.
       PRINCIPAL: Uses the principal of the request as the key. The principal
         type must be specified below.
+      MCP_TOOL: Uses MCP tool as the key.
     """
     KEY_TYPE_UNSPECIFIED = 0
     ALL = 1
@@ -10012,6 +9980,7 @@ class RateLimitPolicyRateLimitBucketKey(_messages.Message):
     HTTP_HEADER = 3
     HTTP_PATH = 4
     PRINCIPAL = 5
+    MCP_TOOL = 6
 
   class PrincipalTypeValueValuesEnum(_messages.Enum):
     r"""Optional. Specifies the principal type if key_type is PRINCIPAL.
@@ -10058,20 +10027,66 @@ class RateLimitPolicyRateLimitBucketUserOverrideOverrideKey(_messages.Message):
   specified in the rate limit bucket. Key type ALL does not support overrides.
 
   Fields:
-    httpHeader: Optional. Specifies the HTTP header if the rate limit bucket
-      keys contain a key of type HTTP_HEADER.
+    httpHeaders: Optional. Specifies the HTTP headers if the rate limit bucket
+      keys contain keys of type HTTP_HEADER. Number of headers and header
+      names must match the rate limit bucket key.
     httpPath: Optional. Specifies the HTTP path if the rate limit bucket keys
       contain a key of type HTTP_PATH.
-    principal: Optional. Specifies the principal if the rate limit bucket keys
-      contain a key of SOURCE_IP. PRINCIPAL.
+    mcpTool: Optional. Specifies the MCP tool if the rate limit bucket keys
+      contain a key of type MCP_TOOL.
+    principals: Optional. Specifies the principals if the rate limit bucket
+      keys contain keys of PRINCIPAL. Number of principals and principal types
+      must match the rate limit bucket key.
     sourceIp: Optional. Specifies the source IP if the rate limit bucket keys
       contain a key of type SOURCE_IP.
   """
 
-  httpHeader = _messages.StringField(1)
+  httpHeaders = _messages.MessageField('RateLimitPolicyRateLimitBucketUserOverrideOverrideKeyHttpHeader', 1, repeated=True)
   httpPath = _messages.StringField(2)
-  principal = _messages.StringField(3)
-  sourceIp = _messages.StringField(4)
+  mcpTool = _messages.StringField(3)
+  principals = _messages.MessageField('RateLimitPolicyRateLimitBucketUserOverrideOverrideKeyPrincipal', 4, repeated=True)
+  sourceIp = _messages.StringField(5)
+
+
+class RateLimitPolicyRateLimitBucketUserOverrideOverrideKeyHttpHeader(_messages.Message):
+  r"""Specifies the key in the type HTTP header to override.
+
+  Fields:
+    header: Required. Specifies the header name of the key.
+    value: Required. Specifies the header value of the key.
+  """
+
+  header = _messages.StringField(1)
+  value = _messages.StringField(2)
+
+
+class RateLimitPolicyRateLimitBucketUserOverrideOverrideKeyPrincipal(_messages.Message):
+  r"""Specifies the key in the type PRINCIPAL to override.
+
+  Enums:
+    PrincipalTypeValueValuesEnum: Required. Specifies the principal type of
+      the key.
+
+  Fields:
+    principal: Required. Specifies the principal value of the key.
+    principalType: Required. Specifies the principal type of the key.
+  """
+
+  class PrincipalTypeValueValuesEnum(_messages.Enum):
+    r"""Required. Specifies the principal type of the key.
+
+    Values:
+      PRINCIPAL_TYPE_UNSPECIFIED: Represents an unspecified principal type.
+        Defaults to CLIENT_CERT_COMMON_NAME.
+      CLIENT_CERT_COMMON_NAME: Uses the common name in the client's
+        certificate. Using common name as key while multiple common names are
+        present in the client certificate is not supported.
+    """
+    PRINCIPAL_TYPE_UNSPECIFIED = 0
+    CLIENT_CERT_COMMON_NAME = 1
+
+  principal = _messages.StringField(1)
+  principalType = _messages.EnumField('PrincipalTypeValueValuesEnum', 2)
 
 
 class RateLimitPolicyRateLimitRule(_messages.Message):
@@ -10246,6 +10261,9 @@ class RateLimitPolicyRateLimitRuleToDestination(_messages.Message):
       match). Matches are always case sensitive unless the ignoreCase is set.
       The match follows OR semantics which means that if any of the hosts
       match, the operation is considered to be matched.
+    mcp: Optional. Specifies the MCP protocol attributes to match against.
+      This field is only valid if the targeted Gateway or Forwarding Rule has
+      an Agent Gateway attached to it.
     methods: Optional. Specifies a list of HTTP methods to match against. Each
       entry must be a valid HTTP method name (GET, PUT, POST, HEAD, PATCH,
       DELETE, OPTIONS). It only allows exact match and is always case
@@ -10262,8 +10280,9 @@ class RateLimitPolicyRateLimitRuleToDestination(_messages.Message):
 
   headerSet = _messages.MessageField('RateLimitPolicyRateLimitRuleToDestinationHeaderSet', 1)
   hosts = _messages.MessageField('RateLimitPolicyRateLimitRuleStringMatch', 2, repeated=True)
-  methods = _messages.StringField(3, repeated=True)
-  paths = _messages.MessageField('RateLimitPolicyRateLimitRuleStringMatch', 4, repeated=True)
+  mcp = _messages.MessageField('RateLimitPolicyRateLimitRuleToDestinationMCP', 3)
+  methods = _messages.StringField(4, repeated=True)
+  paths = _messages.MessageField('RateLimitPolicyRateLimitRuleStringMatch', 5, repeated=True)
 
 
 class RateLimitPolicyRateLimitRuleToDestinationHeaderSet(_messages.Message):
@@ -10280,15 +10299,82 @@ class RateLimitPolicyRateLimitRuleToDestinationHeaderSet(_messages.Message):
   headers = _messages.MessageField('RateLimitPolicyRateLimitRuleHeaderMatch', 1, repeated=True)
 
 
+class RateLimitPolicyRateLimitRuleToDestinationMCP(_messages.Message):
+  r"""Describes a set of MCP protocol attributes to match against for a given
+  MCP request. This field is only valid if the targeted Gateway or Forwarding
+  Rule has an Agent Gateway attached to it.
+
+  Enums:
+    BaseProtocolMethodsOptionValueValuesEnum: Optional. If specified, matches
+      on the MCP protocol's non-access specific methods namely: * initialize *
+      completion/ * logging/ * notifications/ * ping Defaults to
+      SKIP_BASE_PROTOCOL_METHODS if not specified.
+
+  Fields:
+    baseProtocolMethodsOption: Optional. If specified, matches on the MCP
+      protocol's non-access specific methods namely: * initialize *
+      completion/ * logging/ * notifications/ * ping Defaults to
+      SKIP_BASE_PROTOCOL_METHODS if not specified.
+    methods: Optional. A list of MCP methods and associated parameter names to
+      match on. It is recommended to use this field to match on tools, prompts
+      and resource accesses while setting the baseProtocolMethodsOption to
+      MATCH_BASE_PROTOCOL_METHODS to match on all the other MCP protocol
+      methods. Limited to 10 MCP methods per Rate Limit Policy.
+  """
+
+  class BaseProtocolMethodsOptionValueValuesEnum(_messages.Enum):
+    r"""Optional. If specified, matches on the MCP protocol's non-access
+    specific methods namely: * initialize * completion/ * logging/ *
+    notifications/ * ping Defaults to SKIP_BASE_PROTOCOL_METHODS if not
+    specified.
+
+    Values:
+      BASE_PROTOCOL_METHODS_OPTION_UNSPECIFIED: Unspecified option. Defaults
+        to SKIP_BASE_PROTOCOL_METHODS.
+      SKIP_BASE_PROTOCOL_METHODS: Skip matching on the base MCP protocol
+        methods.
+      MATCH_BASE_PROTOCOL_METHODS: Match on the base MCP protocol methods.
+    """
+    BASE_PROTOCOL_METHODS_OPTION_UNSPECIFIED = 0
+    SKIP_BASE_PROTOCOL_METHODS = 1
+    MATCH_BASE_PROTOCOL_METHODS = 2
+
+  baseProtocolMethodsOption = _messages.EnumField('BaseProtocolMethodsOptionValueValuesEnum', 1)
+  methods = _messages.MessageField('RateLimitPolicyRateLimitRuleToDestinationMCPMethod', 2, repeated=True)
+
+
+class RateLimitPolicyRateLimitRuleToDestinationMCPMethod(_messages.Message):
+  r"""Describes a set of MCP methods to match against. This field is only
+  valid if the targeted Gateway or Forwarding Rule has an Agent Gateway
+  attached to it.
+
+  Fields:
+    name: Required. Specifies the MCP method to match against. Allowed values
+      are as follows: 1. `tools`, `prompts`, `resources` - these will match
+      against all sub methods under the respective methods. 2. `prompts/list`,
+      `tools/list`, `resources/list`, `resources/templates/list` 3.
+      `prompts/get`, `tools/call`, `resources/subscribe`,
+      `resources/unsubscribe`, `resources/read` Params cannot be specified for
+      categories 1 and 2.
+    params: Optional. Specifies a list of MCP method parameter names to match
+      against. The match can be one of exact, prefix, suffix, or contains
+      (substring match). Matches are always case sensitive unless the
+      ignoreCase is set.
+  """
+
+  name = _messages.StringField(1)
+  params = _messages.MessageField('RateLimitPolicyRateLimitRuleStringMatch', 2, repeated=True)
+
+
 class RateLimitPolicyTarget(_messages.Message):
   r"""Specifies the target to which this policy applies.
 
   Fields:
-    gatewayResource: Required. Reference to a Gateway resource on which this
-      policy will be applied.
+    resource: Required. Reference to a Gateway or Forwarding Rule resource on
+      which this policy will be applied.
   """
 
-  gatewayResource = _messages.StringField(1)
+  resource = _messages.StringField(1)
 
 
 class RemoveAddressGroupItemsRequest(_messages.Message):
@@ -10753,7 +10839,7 @@ class SecurityProfileGroup(_messages.Message):
     customMirroringProfile: Optional. Reference to a SecurityProfile with the
       CustomMirroring configuration.
     dataPathId: Output only. Identifier used by the data-path. Unique within
-      \{container, location\}.
+      `{container, location}`.
     description: Optional. An optional description of the profile group. Max
       length 2048 characters.
     etag: Output only. This checksum is computed by the server based on the
@@ -12274,8 +12360,6 @@ class WildfireVerdictChangeRequest(_messages.Message):
 
 encoding.AddCustomJsonFieldMapping(
     AuthzPolicyAuthzRule, 'from_', 'from')
-encoding.AddCustomJsonFieldMapping(
-    RateLimitPolicyRateLimitBucketCost, 'from_', 'from')
 encoding.AddCustomJsonFieldMapping(
     RateLimitPolicyRateLimitRule, 'from_', 'from')
 encoding.AddCustomJsonFieldMapping(

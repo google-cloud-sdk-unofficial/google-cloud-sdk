@@ -19,11 +19,10 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA
-)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class PublishDataProduct(base.Command):
   """Publish a Knowledge Catalog Data Product or BigLake tables to external partners."""
@@ -107,7 +106,7 @@ class PublishDataProduct(base.Command):
       data_product_ref = messages.DataProductReference(
           dataProduct=args.data_product
       )
-    return client.dataproductsharing_v1alpha_projects_catalogs.PublishDataProduct(
+    response = client.dataproductsharing_v1alpha_projects_catalogs.PublishDataProduct(
         messages.BiglakeDataproductsharingV1alphaProjectsCatalogsPublishDataProductRequest(
             connectionCatalog=args.CONCEPTS.connection_catalog.Parse().RelativeName(),
             publishDataProductRequest=messages.PublishDataProductRequest(
@@ -118,3 +117,5 @@ class PublishDataProduct(base.Command):
             ),
         )
     )
+    log.status.Print('Successfully published share [{0}].'.format(args.share))
+    return response

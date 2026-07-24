@@ -131,15 +131,10 @@ def ValidateUploadThroughRunApi(deploy_from_source, release_track):
   if not deploy_from_source or len(deploy_from_source) != 1:
     return False
   container = next(iter(deploy_from_source.items()))[1]
-  if not flags.IsUploadLaunchStage(
-      release_track
-  ) or not container.IsSpecified('upload'):
+  if not flags.IsUploadLaunchStage(release_track) or not container.IsSpecified(
+      'run_upload'
+  ):
     return
-  if not IsNoBuildFromSource(release_track, deploy_from_source):
-    raise c_exceptions.InvalidArgumentException(
-        '--upload',
-        'Upload through Run API is only supported when --no-build is set.',
-    )
 
 
 def ValidateNoBuildFromSource(deploy_from_source, release_track):
@@ -198,5 +193,3 @@ def ValidateServiceNameFromImage(image_uri, service_id):
         'The service name found in the Artifact Registry repository path, '
         f'{image_uri}, does not match the service name, {service_id}.',
     )
-
-

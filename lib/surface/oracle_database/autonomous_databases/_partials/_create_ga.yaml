@@ -126,6 +126,21 @@
               help_text: |-
                 This field indicates the maximum data loss limit for an Autonomous
                 Database, in seconds.
+        - group:
+            mutex: true
+            help_text: |-
+              Arguments for the  refreshable clone.
+            params:
+            - arg_name: properties-refreshable-clone
+              api_field: autonomousDatabase.properties.refreshableClone
+              action: store_true
+              required: false
+              type: bool
+              help_text: |-
+                Indicates if the Autonomous Database is a refreshable clone. This field is
+                used in update flow to connect / disconnect a refreshable clone from its
+                source database.
+              default: null
         - arg_name: properties-compute-count
           api_field: autonomousDatabase.properties.computeCount
           required: false
@@ -401,6 +416,19 @@
         help_text: |-
           The source configuration for the standby Autonomous Database.
         params:
+        - group:
+            mutex: true
+            help_text: |-
+              Arguments for the  auto refresh point lag seconds.
+            params:
+            - arg_name: source-config-auto-refresh-point-lag-seconds
+              api_field: autonomousDatabase.sourceConfig.autoRefreshPointLagSeconds
+              required: false
+              repeated: false
+              type: int
+              help_text: |-
+                The time, in seconds, the data of the automatic refreshable clone lags the
+                primary database at the point of refresh.
         - arg_name: source-config-autonomous-database
           help_text: |-
             The name of the primary Autonomous Database that is used to create a Peer
@@ -419,6 +447,116 @@
           help_text: |-
             This field specifies if the replication of automatic backups is enabled
             when creating a Data Guard.
+          default: null
+        - arg_name: source-config-type
+          api_field: autonomousDatabase.sourceConfig.sourceType
+          required: false
+          help_text: |-
+            The source type of the Autonomous Database.
+          choices:
+          - arg_value: clone-database
+            enum_value: CLONE_DATABASE
+            help_text: |-
+              Clone database from an existing database specified in
+              autonomous_database field.
+          - arg_value: cross-region-disaster-recovery
+            enum_value: CROSS_REGION_DISASTER_RECOVERY
+            help_text: |-
+              Create a cross-region disaster recovery peer adb from an existing adb.
+          - arg_value: clone-to-refreshable
+            enum_value: CLONE_TO_REFRESHABLE
+            help_text: |-
+              Create a refreshable clone from an existing database specified in
+              autonomous_database field.
+          - arg_value: backup-from-id
+            enum_value: BACKUP_FROM_ID
+            help_text: |-
+              Create clone from the backup resource.
+          - arg_value: backup-from-timestamp
+            enum_value: BACKUP_FROM_TIMESTAMP
+            help_text: |-
+              Create clone from backup specified by backup_time
+              field, or use latest available backup if use_latest_available_backup is
+              true. The autonomous_database field must specify the source database
+              to clone from.
+        - arg_name: source-config-clone-type
+          api_field: autonomousDatabase.sourceConfig.cloneType
+          required: false
+          help_text: |-
+            The clone type of the Autonomous Database. This field is only applicable
+            in case of cloning
+          choices:
+          - arg_value: full
+            enum_value: FULL
+            help_text: |-
+              Creates a new database with the source database's data and metadata.
+          - arg_value: metadata
+            enum_value: METADATA
+            help_text: |-
+              Creates a new database that includes all the source database schema
+              metadata, but none of the source database data.
+        - arg_name: source-config-refreshable-mode
+          api_field: autonomousDatabase.sourceConfig.refreshableMode
+          required: false
+          help_text: |-
+            The refresh mode of the clone.
+          choices:
+          - arg_value: automatic
+            enum_value: AUTOMATIC
+            help_text: |-
+              Automatic refresh.
+          - arg_value: manual
+            enum_value: MANUAL
+            help_text: |-
+              Manual refresh.
+        - arg_name: source-config-auto-refresh-frequency-seconds
+          api_field: autonomousDatabase.sourceConfig.autoRefreshFrequencySeconds
+          required: false
+          repeated: false
+          type: int
+          help_text: |-
+            The frequency in seconds a refreshable clone is refreshed after
+            auto-refresh is enabled.
+        - arg_name: source-config-auto-refresh-start-time
+          api_field: autonomousDatabase.sourceConfig.autoRefreshStartTime
+          required: false
+          repeated: false
+          type: googlecloudsdk.core.util.times:ParseDateTime
+          processor: googlecloudsdk.core.util.times:FormatDateTime
+          help_text: |-
+            The date and time that auto-refreshing will begin for an Autonomous
+            Database refreshable clone. This value controls only the start time for
+            the first refresh operation.
+        - arg_name: source-config-autonomous-database-backup
+          help_text: |-
+            The name of the Autonomous Database Backup resource with the format:
+            projects/{project}/locations/{region}/autonomousDatabaseBackups/{autonomous_database_backup}
+            Required when source_type is BACKUP_FROM_ID.
+          is_positional: false
+          is_primary_resource: false
+          resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_locations_autonomous_database_backups
+          resource_method_params:
+            autonomousDatabase.sourceConfig.autonomousDatabaseBackup: '{__relative_name__}'
+          required: false
+        - arg_name: source-config-backup-time
+          api_field: autonomousDatabase.sourceConfig.backupTime
+          required: false
+          repeated: false
+          type: googlecloudsdk.core.util.times:ParseDateTime
+          processor: googlecloudsdk.core.util.times:FormatDateTime
+          help_text: |-
+            The timestamp specified for the point-in-time clone of the source
+            Autonomous Database. This field is only applicable
+            in case of BACKUP_FROM_TIMESTAMP source type and when
+            use_latest_available_backup is false.
+        - arg_name: source-config-use-latest-available-backup
+          api_field: autonomousDatabase.sourceConfig.useLatestAvailableBackup
+          action: store_true
+          required: false
+          type: bool
+          help_text: |-
+            Clone from latest available backup timestamp. This field is only
+            applicable in case of BACKUP_FROM_TIMESTAMP source type.
           default: null
     - arg_name: request-id
       api_field: requestId

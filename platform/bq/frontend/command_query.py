@@ -417,6 +417,16 @@ class Query(bigquery_command.BigqueryCmd):
     """
     logging.debug('In _Query.RunWithArgs: %s', args)
     bq_utils.SetBqCliUserAgentResource('jobs', overwrite=True)
+    if (
+        self.job_creation_mode
+        == bigquery_client.BigqueryClient.JobCreationMode.JOB_CREATION_OPTIONAL
+        and not self.rpc
+    ):
+      logging.warning(
+          'Ignoring JOB_CREATION_OPTIONAL: job_creation_mode='
+          'JOB_CREATION_OPTIONAL requires the RPC-style query API. Please add'
+          ' the --rpc flag.'
+      )
     # Set up the params that are the same for rpc-style and jobs.insert()-style
     # queries.
     kwds = {
@@ -742,7 +752,7 @@ class Query(bigquery_command.BigqueryCmd):
     child_jobs = list(
         client_job.ListJobs(
             bqclient=client,
-            reference=bq_id_utils.ApiClientHelper.ProjectReference.Create(
+            reference=bq_id_utils.ApiClientHelper.ProjectReference.Create(  # pyrefly: ignore[bad-argument-type]
                 projectId=job['jobReference']['projectId']
             ),
             max_results=self.max_child_jobs + 1,

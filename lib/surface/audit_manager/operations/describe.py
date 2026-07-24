@@ -35,7 +35,7 @@ _DETAILED_HELP = {
 }
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe Audit operation."""
@@ -65,7 +65,7 @@ class Describe(base.DescribeCommand):
       core_exceptions.reraise(exc)
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DescribeAlpha(Describe):
   """Describe Audit operation."""

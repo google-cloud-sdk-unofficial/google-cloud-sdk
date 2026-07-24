@@ -149,7 +149,7 @@ class Client(object):
   @staticmethod
   def Create(
       config_logging: bool = True,
-      credentials: bigquery_client.LegacyAndGoogleAuthCredentialsUnionType = None,
+      credentials: bigquery_client.LegacyAndGoogleAuthCredentialsUnionType = None,  # pyrefly: ignore[bad-function-definition]
       **kwds,
   ) -> bigquery_client_extended.BigqueryClientExtended:
     """Build a new BigqueryClient configured from kwds and FLAGS.

@@ -55,19 +55,19 @@ def ReadSchemaAndJobRows(
   if max_rows is None:
     raise ValueError('max_rows is required')
   if not job_dict:
-    job_ref: bq_id_utils.ApiClientHelper.JobReference = None
+    job_ref: bq_id_utils.ApiClientHelper.JobReference = None  # pyrefly: ignore[bad-assignment]
   else:
-    job_ref = bq_id_utils.ApiClientHelper.JobReference.Create(**job_dict)
+    job_ref = bq_id_utils.ApiClientHelper.JobReference.Create(**job_dict)  # pyrefly: ignore[bad-assignment]
   if flags.FLAGS.jobs_query_use_results_from_response and result_first_page:
     reader = bq_table_reader.QueryTableReader(
         bqclient.apiclient,
-        bqclient.max_rows_per_request,
+        bqclient.max_rows_per_request,  # pyrefly: ignore[bad-argument-type]
         job_ref,
         result_first_page,
     )
   else:
     reader = bq_table_reader.JobTableReader(
-        bqclient.apiclient, bqclient.max_rows_per_request, job_ref
+        bqclient.apiclient, bqclient.max_rows_per_request, job_ref  # pyrefly: ignore[bad-argument-type]
     )
   return reader.ReadSchemaAndRows(
       start_row,
@@ -166,7 +166,7 @@ def ListJobsWithTokenAndUnreachable(
       'token': nextPageToken for the last page, if present.
   """
   reference = bq_client_utils.NormalizeProjectReference(
-      id_fallbacks=bqclient, reference=reference
+      id_fallbacks=bqclient, reference=reference  # pyrefly: ignore[bad-argument-type]
   )
   bq_id_utils.typecheck(
       reference,
@@ -225,6 +225,7 @@ def CopyTable(
     encryption_configuration=None,
     operation_type: Optional[str] = 'COPY',  # Actually an enum.
     destination_expiration_time: Optional[str] = None,
+    labels: Optional[Dict[str, str]] = None,
     **kwds,
 ):
   """Copies a table.
@@ -241,6 +242,7 @@ def CopyTable(
     encryption_configuration: Optional. Allows user to encrypt the table from
       the copy table command with Cloud KMS key. Passed as a dictionary in the
       following format: {'kmsKeyName': 'destination_kms_key'}
+    labels: Optional. Dict of labels to set on the job.
     **kwds: Passed on to ExecuteJob.
 
   Returns:
@@ -269,10 +271,10 @@ def CopyTable(
     copy_config['destinationEncryptionConfiguration'] = encryption_configuration
 
   if operation_type:
-    copy_config['operationType'] = operation_type
+    copy_config['operationType'] = operation_type  # pyrefly: ignore[bad-assignment]
 
   if destination_expiration_time:
-    copy_config['destinationExpirationTime'] = destination_expiration_time
+    copy_config['destinationExpirationTime'] = destination_expiration_time  # pyrefly: ignore[bad-assignment]
 
   bq_processor_utils.ApplyParameters(
       copy_config,
@@ -280,8 +282,11 @@ def CopyTable(
       write_disposition=write_disposition,
   )
 
+  configuration = {'copy': copy_config}
+  if labels is not None:
+    configuration['labels'] = labels  # pyrefly: ignore[bad-assignment]
   try:
-    return ExecuteJob(bqclient, {'copy': copy_config}, **kwds)
+    return ExecuteJob(bqclient, configuration, **kwds)
   except bq_error.BigqueryDuplicateError as e:
     if ignore_already_exists:
       return None
@@ -342,6 +347,7 @@ def StartJob(
     upload_file: Optional[str] = None,
     job_id: Optional[str] = None,
     location: Optional[str] = None,
+    labels: Optional[Dict[str, str]] = None,
 ):
   """Start a job with the given configuration.
 
@@ -356,6 +362,7 @@ def StartJob(
       will be generated from the job configuration. If None, a unique job_id
       will be created for this request.
     location: Optional. The geographic location where the job should run.
+    labels: Optional. Dict of labels to set on the job.
 
   Returns:
     The job resource returned from the insert job request. If there is an
@@ -373,13 +380,15 @@ def StartJob(
     )
   configuration = configuration.copy()
   if bqclient.job_property:
-    configuration['properties'] = dict(
+    configuration['properties'] = dict(  # pyrefly: ignore[no-matching-overload]
         prop.partition('=')[0::2] for prop in bqclient.job_property
     )
   job_request = {'configuration': configuration}
+  if labels:
+    job_request['labels'] = labels
 
   # Use the default job id generator if no job id was supplied.
-  job_id = job_id or bqclient.job_id_generator
+  job_id = job_id or bqclient.job_id_generator  # pyrefly: ignore[bad-assignment]
 
   if isinstance(job_id, bq_client_utils.JobIdGenerator):
     job_id = job_id.Generate(configuration)
@@ -404,7 +413,7 @@ def StartJob(
   request = bqclient.apiclient.jobs().insert(
       body=job_request, media_body=media_upload, projectId=project_id
   )
-  if upload_file and resumable:
+  if upload_file and resumable:  # pyrefly: ignore[unbound-name]
     result = wait_printer.execute_in_chunks_with_progress(request)
   else:
     result = request.execute()
@@ -509,7 +518,7 @@ def _StartQueryRpc(
   if udf_resources:
     request['userDefinedFunctionResources'] = udf_resources
   if bqclient.dataset_id:
-    request['defaultDataset'] = bq_client_utils.GetQueryDefaultDataset(
+    request['defaultDataset'] = bq_client_utils.GetQueryDefaultDataset(  # pyrefly: ignore[bad-assignment]
         bqclient.dataset_id
     )
 
@@ -618,6 +627,7 @@ def RunJobSynchronously(
     upload_file: Optional[str] = None,
     job_id: Optional[str] = None,
     location: Optional[str] = None,
+    labels: Optional[Dict[str, str]] = None,
 ):
   """Starts a job and waits for it to complete.
 
@@ -632,6 +642,7 @@ def RunJobSynchronously(
       will be generated from the job configuration. If None, a unique job_id
       will be created for this request.
     location: Optional. The geographic location where the job should run.
+    labels: Optional. Dict of labels to set on the job.
 
   Returns:
     job, if it did not fail.
@@ -646,6 +657,7 @@ def RunJobSynchronously(
       upload_file=upload_file,
       job_id=job_id,
       location=location,
+      labels=labels,
   )
   if result['status']['state'] != 'DONE':
     job_reference = bq_processor_utils.ConstructObjectReference(result)
@@ -661,6 +673,7 @@ def ExecuteJob(
     upload_file: Optional[str] = None,
     job_id: Optional[str] = None,
     location: Optional[str] = None,
+    labels: Optional[Dict[str, str]] = None,
 ):
   """Execute a job, possibly waiting for results."""
   if sync is None:
@@ -674,6 +687,7 @@ def ExecuteJob(
         upload_file=upload_file,
         job_id=job_id,
         location=location,
+        labels=labels,
     )
   else:
     job = StartJob(
@@ -683,6 +697,7 @@ def ExecuteJob(
         upload_file=upload_file,
         job_id=job_id,
         location=location,
+        labels=labels,
     )
     bq_client_utils.RaiseIfJobError(job)
   return job
@@ -769,7 +784,7 @@ def WaitJob(
   if wait_printer_factory:
     printer = wait_printer_factory()
   else:
-    printer = bqclient.wait_printer_factory()
+    printer = bqclient.wait_printer_factory()  # pyrefly: ignore[not-callable]
 
   # This is a first pass at wait logic: we ping at 1s intervals a few
   # times, then increase to max(3, max_wait), and then keep waiting
@@ -980,7 +995,7 @@ def RunQueryRpc(
   if wait_printer_factory:
     printer = wait_printer_factory()
   else:
-    printer = bqclient.wait_printer_factory()
+    printer = bqclient.wait_printer_factory()  # pyrefly: ignore[not-callable]
 
   start_time = time.time()
   elapsed_time = 0
@@ -1053,10 +1068,10 @@ def RunQueryRpc(
       else:
         # The query/getQueryResults methods do not return the job state,
         # so we just print 'RUNNING' while we are actively waiting.
-        printer.print(job_reference.jobId, elapsed_time, 'RUNNING')
+        printer.print(job_reference.jobId, elapsed_time, 'RUNNING')  # pyrefly: ignore[missing-attribute]
         result = GetQueryResults(
             bqclient,
-            job_reference.jobId,
+            job_reference.jobId,  # pyrefly: ignore[missing-attribute]
             max_results=max_results,
             timeout_ms=current_wait_ms,
             location=location,
@@ -1201,7 +1216,7 @@ def Query(
     raise bq_error.BigqueryClientError('No query string provided')
   query_config = {'query': query}
   if bqclient.dataset_id:
-    query_config['defaultDataset'] = bq_client_utils.GetQueryDefaultDataset(
+    query_config['defaultDataset'] = bq_client_utils.GetQueryDefaultDataset(  # pyrefly: ignore[bad-assignment]
         bqclient.dataset_id
     )
   if external_table_definitions_json:
@@ -1219,7 +1234,7 @@ def Query(
       raise bq_error.BigqueryError(
           'Invalid value %s for destination_table: %s' % (destination_table, e)
       )
-    query_config['destinationTable'] = dict(reference)
+    query_config['destinationTable'] = dict(reference)  # pyrefly: ignore[bad-assignment]
   if destination_encryption_configuration:
     query_config['destinationEncryptionConfiguration'] = (
         destination_encryption_configuration
@@ -1346,6 +1361,7 @@ def Load(
     copy_files_only: Optional[bool] = None,
     source_column_match: Optional[str] = None,
     timestamp_target_precision: Optional[list[int]] = None,
+    labels: Optional[Dict[str, str]] = None,
     **kwds,
 ):
   """Load the given data into BigQuery.
@@ -1458,6 +1474,7 @@ def Load(
       columns to the schema.
     timestamp_target_precision: Precision (maximum number of total digits in
       base 10) for second of TIMESTAMP type. Available for the formats: CSV.
+    labels: Optional. Dict of labels to set on the job.
     **kwds: Passed on to ExecuteJob.
 
   Returns:
@@ -1469,25 +1486,25 @@ def Load(
   load_config = {'destinationTable': dict(destination_table_reference)}
   sources = bq_processor_utils.ProcessSources(source)
   if sources[0].startswith(bq_processor_utils.GCS_SCHEME_PREFIX):
-    load_config['sourceUris'] = sources
+    load_config['sourceUris'] = sources  # pyrefly: ignore[bad-assignment]
     upload_file = None
   else:
     upload_file = sources[0]
   if schema is not None:
     load_config['schema'] = {'fields': bq_client_utils.ReadSchema(schema)}
   if use_avro_logical_types is not None:
-    load_config['useAvroLogicalTypes'] = use_avro_logical_types
+    load_config['useAvroLogicalTypes'] = use_avro_logical_types  # pyrefly: ignore[bad-assignment]
   if reference_file_schema_uri is not None:
     load_config['reference_file_schema_uri'] = reference_file_schema_uri
   if file_set_spec_type is not None:
     load_config['fileSetSpecType'] = file_set_spec_type
   if json_extension is not None:
-    load_config['jsonExtension'] = json_extension
+    load_config['jsonExtension'] = json_extension  # pyrefly: ignore[bad-assignment]
   if column_name_character_map is not None:
     load_config['columnNameCharacterMap'] = column_name_character_map
   if parquet_options is not None:
     load_config['parquetOptions'] = parquet_options
-  load_config['decimalTargetTypes'] = decimal_target_types
+  load_config['decimalTargetTypes'] = decimal_target_types  # pyrefly: ignore[bad-assignment]
   if destination_encryption_configuration:
     load_config['destinationEncryptionConfiguration'] = (
         destination_encryption_configuration
@@ -1505,9 +1522,9 @@ def Load(
     load_config['timestampFormat'] = timestamp_format
 
   if source_column_match is not None:
-    load_config['sourceColumnMatch'] = source_column_match
+    load_config['sourceColumnMatch'] = source_column_match  # pyrefly: ignore[bad-assignment]
   if timestamp_target_precision is not None:
-    load_config['timestampTargetPrecision'] = timestamp_target_precision
+    load_config['timestampTargetPrecision'] = timestamp_target_precision  # pyrefly: ignore[bad-assignment]
 
   bq_processor_utils.ApplyParameters(
       load_config,
@@ -1538,6 +1555,8 @@ def Load(
       parquet_options=parquet_options,
   )
   configuration = {'load': load_config}
+  if labels is not None:
+    configuration['labels'] = labels  # pyrefly: ignore[bad-assignment]
   if reservation_id is not None:
     reference = bq_client_utils.GetReservationReference(
         id_fallbacks=bqclient,
@@ -1545,7 +1564,7 @@ def Load(
         default_location=bq_flags.LOCATION.value,
         check_reservation_project=False,
     )
-    configuration['reservation'] = reference.path()
+    configuration['reservation'] = reference.path()  # pyrefly: ignore[bad-assignment]
   return ExecuteJob(
       bqclient, configuration=configuration, upload_file=upload_file, **kwds
   )
@@ -1565,6 +1584,7 @@ def Extract(
     compression: Optional[str] = None,  # Actually an enum.
     use_avro_logical_types: Optional[bool] = None,
     reservation_id: Optional[str] = None,
+    labels: Optional[Dict[str, str]] = None,
     **kwds,
 ):
   """Extract the given table from BigQuery.
@@ -1593,6 +1613,7 @@ def Extract(
       execute the job. Reservation should be in the format of
       "project_id:reservation_id", "project_id:location.reservation_id", or
       "reservation_id".
+    labels: Optional. Dict of labels to set on the job.
     **kwds: Passed on to ExecuteJob.
 
   Returns:
@@ -1640,12 +1661,14 @@ def Extract(
       use_avro_logical_types=use_avro_logical_types,
   )
   configuration = {'extract': extract_config}
+  if labels is not None:
+    configuration['labels'] = labels  # pyrefly: ignore[bad-assignment]
   if reservation_id is not None:
-    reference = bq_client_utils.GetReservationReference(
+    reference = bq_client_utils.GetReservationReference(  # pyrefly: ignore[bad-assignment]
         id_fallbacks=bqclient,
         identifier=reservation_id,
         default_location=bq_flags.LOCATION.value,
         check_reservation_project=False,
     )
-    configuration['reservation'] = reference.path()
+    configuration['reservation'] = reference.path()  # pyrefly: ignore[missing-attribute]
   return ExecuteJob(bqclient, configuration=configuration, **kwds)

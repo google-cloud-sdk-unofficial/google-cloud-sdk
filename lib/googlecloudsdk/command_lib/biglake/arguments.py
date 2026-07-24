@@ -297,6 +297,15 @@ def AddGlueAwsRoleArnArg(parser):
   )
 
 
+def AddSnowflakeRoleArg(parser):
+  """Adds Snowflake role argument."""
+  parser.add_argument(
+      '--snowflake-role',
+      hidden=True,
+      help='The specific role to request for the Snowflake catalog.',
+  )
+
+
 def AddSnowflakeCatalogArgs(parser):
   """Adds arguments for Snowflake catalogs."""
   parser.add_argument(
@@ -309,6 +318,7 @@ def AddSnowflakeCatalogArgs(parser):
       hidden=True,
       help='The account identifier of the Snowflake catalog to connect to.',
   )
+  AddSnowflakeRoleArg(parser)
 
 
 def AddWorkdayCatalogArgs(parser):
@@ -334,5 +344,50 @@ def AddHiveTableCreateArgs(parser):
           'Path to a JSON or YAML file containing the Hive table definition.'
           ' The format must follow the Hive Metastore API specification for'
           ' `HiveTable`. The field `storageDescriptor` must be specified.'
+      ),
+  )
+
+
+def ValidateColumnsList(data):
+  """Validates parsed columns list from a JSON or YAML file."""
+  if not isinstance(data, list):
+    raise arg_parsers.ArgumentTypeError(
+        'Columns file must contain a list of columns.'
+    )
+  for i, col_data in enumerate(data):
+    if not isinstance(col_data, dict):
+      raise arg_parsers.ArgumentTypeError(
+          'Column at index {} must be a dict.'.format(i)
+      )
+  return True
+
+
+def AddHiveTableUpdateArgs(parser):
+  """Adds arguments for updating Hive tables."""
+  parser.add_argument(
+      '--description',
+      help='Description of the Hive table.',
+  )
+  parser.add_argument(
+      '--parameters',
+      metavar='KEY=VALUE',
+      type=arg_parsers.ArgDict(),
+      help='Additional parameters associated with the table. Will replace'
+      ' existing parameters.',
+  )
+  parser.add_argument(
+      '--location-uri',
+      help=(
+          'The Cloud Storage location path where the table\'s data will be'
+          ' stored. Format: gs://bucket/path/to/table'
+      ),
+  )
+  parser.add_argument(
+      '--columns-from-file',
+      type=arg_parsers.YAMLFileContents(validator=ValidateColumnsList),
+      help=(
+          'Path to a JSON or YAML file containing the new columns list. '
+          'The format must follow the Hive Metastore specification for '
+          '`FieldSchema` list. The list will replace the existing columns.'
       ),
   )

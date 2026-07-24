@@ -83,7 +83,7 @@ SUPPORTED_COMMANDS_DATASET: List[CommandMapping] = [
         ],
         table_projection='datasetReference.datasetId:label=datasetId',
         csv_projection='datasetReference.datasetId:label=dataset_id',
-        json_mapping=_json_mapping_list,
+        json_mapping=_json_mapping_list,  # pyrefly: ignore[bad-argument-type]
     ),
     CommandMapping(
         resource=_DATASETS,
@@ -98,7 +98,7 @@ SUPPORTED_COMMANDS_DATASET: List[CommandMapping] = [
             'type:label=Type,'
             'maxTimeTravelHours:label="Max time travel (Hours)"'
         ),
-        json_mapping=_json_mapping_show,
+        json_mapping=_json_mapping_show,  # pyrefly: ignore[bad-argument-type]
     ),
     CommandMapping(
         resource=_DATASETS,

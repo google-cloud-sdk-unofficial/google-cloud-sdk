@@ -26,7 +26,7 @@ def GetDataset(apiclient: discovery.Resource, reference, dataset_view=None):
 
 def ListDatasets(
     apiclient: discovery.Resource,
-    id_fallbacks: NamedTuple(
+    id_fallbacks: NamedTuple(  # pyrefly: ignore[invalid-annotation]
         'IDS',
         [
             ('project_id', Optional[str]),
@@ -52,7 +52,7 @@ def ListDatasets(
 
 def ListDatasetsWithTokenAndUnreachable(
     apiclient: discovery.Resource,
-    id_fallbacks: NamedTuple(
+    id_fallbacks: NamedTuple(  # pyrefly: ignore[invalid-annotation]
         'IDS',
         [
             ('project_id', Optional[str]),
@@ -66,7 +66,7 @@ def ListDatasetsWithTokenAndUnreachable(
 ):
   """List the datasets associated with this reference."""
   reference = bq_client_utils.NormalizeProjectReference(
-      id_fallbacks=id_fallbacks, reference=reference
+      id_fallbacks=id_fallbacks, reference=reference  # pyrefly: ignore[bad-argument-type]
   )
   bq_id_utils.typecheck(
       reference,
@@ -434,7 +434,7 @@ def UpdateDataset(
     for tag in tags_to_remove or []:
       resource_tags[tag] = None
   for tag in tags_to_attach or {}:
-    resource_tags[tag] = tags_to_attach[tag]
+    resource_tags[tag] = tags_to_attach[tag]  # pyrefly: ignore[unsupported-operation]
   # resourceTags is used to add a new tag binding, update value of existing
   # tag and also to remove a tag binding
   dataset['resourceTags'] = resource_tags

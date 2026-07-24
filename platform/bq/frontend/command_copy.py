@@ -105,6 +105,12 @@ class Copy(bigquery_command.BigqueryCmd):
     flags.DEFINE_boolean(
         'clone', False, 'Create a clone of source table.', flag_values=fv
     )
+    flags.DEFINE_multi_string(
+        'label',
+        None,
+        'A label to set on the copy job. The format is "key:value"',
+        flag_values=fv,
+    )
     self._ProcessCommandRc(fv)
 
   def _CheckAllSourceDatasetsInSameRegionAndGetFirstSourceRegion(
@@ -183,7 +189,7 @@ class Copy(bigquery_command.BigqueryCmd):
           )
       )
       if destination_region is None:
-        destination_region = client_dataset.GetDatasetRegion(
+        destination_region = client_dataset.GetDatasetRegion(  # pyrefly: ignore[bad-assignment]
             apiclient=client.apiclient, reference=destination_dataset
         )
     except bq_error.BigqueryAccessDeniedError as err:
@@ -268,7 +274,7 @@ class Copy(bigquery_command.BigqueryCmd):
         source_references,
         source_references_str,
         dest_reference,
-        destination_region,
+        destination_region,  # pyrefly: ignore[bad-argument-type]
     ):
       return 0
 
@@ -292,6 +298,8 @@ class Copy(bigquery_command.BigqueryCmd):
     }
     if bq_flags.LOCATION.value:
       kwds['location'] = bq_flags.LOCATION.value
+    if self.label is not None:
+      kwds['labels'] = frontend_utils.ParseLabels(self.label)
 
     if self.destination_kms_key:
       kwds['encryption_configuration'] = {

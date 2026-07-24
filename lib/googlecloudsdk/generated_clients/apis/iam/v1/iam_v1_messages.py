@@ -1393,6 +1393,18 @@ class IamLocationsWorkforcePoolsSubjectsUndeleteRequest(_messages.Message):
   undeleteWorkforcePoolSubjectRequest = _messages.MessageField('UndeleteWorkforcePoolSubjectRequest', 2)
 
 
+class IamLocationsWorkforcePoolsSuggestWorkspaceLinkAttributeMappingRequest(_messages.Message):
+  r"""A IamLocationsWorkforcePoolsSuggestWorkspaceLinkAttributeMappingRequest
+  object.
+
+  Fields:
+    name: Required. The name of the workforce pool. Format:
+      `locations/{location}/workforcePools/{workforce_pool_id}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
 class IamLocationsWorkforcePoolsTestIamPermissionsRequest(_messages.Message):
   r"""A IamLocationsWorkforcePoolsTestIamPermissionsRequest object.
 
@@ -5526,6 +5538,47 @@ class SuggestScimTenantClaimMappingResponse(_messages.Message):
   unmappedAttributes = _messages.StringField(2, repeated=True)
 
 
+class SuggestWorkspaceLinkAttributeMappingResponse(_messages.Message):
+  r"""Response message for SuggestWorkspaceLinkAttributeMapping.
+
+  Messages:
+    AttributeMappingValue: The suggested attribute mapping for the Workspace
+      Link provider.
+
+  Fields:
+    attributeMapping: The suggested attribute mapping for the Workspace Link
+      provider.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AttributeMappingValue(_messages.Message):
+    r"""The suggested attribute mapping for the Workspace Link provider.
+
+    Messages:
+      AdditionalProperty: An additional property for a AttributeMappingValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        AttributeMappingValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AttributeMappingValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  attributeMapping = _messages.MessageField('AttributeMappingValue', 1)
+
+
 class TestIamPermissionsRequest(_messages.Message):
   r"""Request message for `TestIamPermissions` method.
 
@@ -6856,20 +6909,20 @@ class WorkspaceLinkConfig(_messages.Message):
   Identity.
 
   Enums:
-    StateValueValuesEnum: Output only. Indicates the status of enabling
-      Workspace interopability for the workforce pool provider.
+    StateValueValuesEnum: Optional. Indicates the status of enabling Workspace
+      interopability for the workforce pool provider.
 
   Fields:
     customerId: Output only. The Dasher customer ID that users are restricted
       to.
     primaryProvider: Optional. The name of the provider for which interop is
       enabled. e.g. locations/global/workforcePools//providers/
-    state: Output only. Indicates the status of enabling Workspace
-      interopability for the workforce pool provider.
+    state: Optional. Indicates the status of enabling Workspace interopability
+      for the workforce pool provider.
   """
 
   class StateValueValuesEnum(_messages.Enum):
-    r"""Output only. Indicates the status of enabling Workspace interopability
+    r"""Optional. Indicates the status of enabling Workspace interopability
     for the workforce pool provider.
 
     Values:

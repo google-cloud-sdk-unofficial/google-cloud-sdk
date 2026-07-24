@@ -15,7 +15,7 @@
 """'vmware clusters create' command."""
 
 
-from googlecloudsdk.api_lib.vmware.clusters import ClustersClient
+from googlecloudsdk.api_lib.vmware import clusters
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.vmware import flags
@@ -43,6 +43,7 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class Create(base.CreateCommand):
   """Create a Google Cloud VMware Engine cluster."""
 
@@ -78,11 +79,20 @@ class Create(base.CreateCommand):
         run the gcloud vmware node-types describe command and reference the
         availableCustomCoreCounts field in the output.
         """)
+    parser.add_argument(
+        '--vsan-type',
+        required=False,
+        hidden=True,
+        choices=['osa', 'esa'],
+        help="""\
+        vSAN type of the cluster. `esa` is supported for all VE2 node types (e.g., ve2-standard-128), while `osa` is the current default.
+        """,
+    )
     flags.AddAutoscalingSettingsFlagsToParser(parser)
 
   def Run(self, args):
     cluster = args.CONCEPTS.cluster.Parse()
-    client = ClustersClient()
+    client = clusters.ClustersClient()
     is_async = args.async_
 
     nodes_configs = util.ParseNodesConfigsParameters(args.node_type_config)
@@ -103,7 +113,12 @@ class Create(base.CreateCommand):
           args.autoscaling_cool_down_period,
           args.autoscaling_policy,
       )
-    operation = client.Create(cluster, nodes_configs, autoscaling_settings)
+    operation = client.Create(
+        cluster,
+        nodes_configs,
+        autoscaling_settings,
+        vsan_type=args.vsan_type,
+    )
 
     if is_async:
       log.CreatedResource(operation.name, kind='cluster', is_async=True)

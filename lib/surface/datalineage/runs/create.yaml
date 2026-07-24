@@ -1,0 +1,68 @@
+# -*- coding: utf-8 -*- #
+# Copyright 2026 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+- release_tracks: [ALPHA, BETA, GA]
+
+  help_text:
+    brief: Create a data lineage run.
+    description: Create a data lineage run.
+    examples: |
+      To create a run with ID `my-run` under process `my-process`, run:
+
+        $ {command} my-run --process=my-process --location=us-central1 --state=started --start-time="2026-06-19T10:00:00Z"
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.datalineage.resources:run
+      help_text: The run to create.
+
+    params:
+    - arg_name: display-name
+      api_field: googleCloudDatacatalogLineageV1Run.displayName
+      help_text: The display name of the run.
+
+    - arg_name: state
+      api_field: googleCloudDatacatalogLineageV1Run.state
+      required: true
+      help_text: The state of the run.
+
+    - arg_name: start-time
+      api_field: googleCloudDatacatalogLineageV1Run.startTime
+      required: true
+      help_text: The start time of the run.
+
+    - arg_name: end-time
+      api_field: googleCloudDatacatalogLineageV1Run.endTime
+      help_text: The end time of the run.
+
+    - arg_name: attributes
+      api_field: googleCloudDatacatalogLineageV1Run.attributes.additionalProperties
+      help_text: Additional attributes for the run.
+      type:
+        arg_dict:
+          flatten: true
+          spec:
+          - api_field: key
+          - api_field: value
+            type: googlecloudsdk.command_lib.datalineage.hooks:ParseAttributeValue
+
+  request:
+    collection: datalineage.projects.locations.processes.runs
+    resource_method_params:
+      parent: 'projects/{projectsId}/locations/{locationsId}/processes/{processesId}'
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.datalineage.hooks:SetRunNameInBody
+
+  output:
+    format: yaml

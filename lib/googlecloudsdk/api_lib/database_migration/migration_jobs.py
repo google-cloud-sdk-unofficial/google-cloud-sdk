@@ -840,6 +840,26 @@ class MigrationJobsClient(object):
         )
       migration_job_obj.postgresHomogeneousConfig = postgres_homogeneous_config
 
+    if args.IsKnownAndSpecified('mysql_is_primary_destination'):
+      is_mysql = False
+      try:
+        cp_service = self.client.projects_locations_connectionProfiles
+        get_req = self.messages.DatamigrationProjectsLocationsConnectionProfilesGetRequest(
+            name=source_ref.RelativeName()
+        )
+        profile = cp_service.Get(get_req)
+        if profile.mysql:
+          is_mysql = True
+      except Exception:  # pylint: disable=broad-except
+        pass
+
+      if is_mysql:
+        migration_job_obj.mysqlHomogeneousConfig = (
+            self.messages.MySqlHomogeneousConfig(
+                isPrimaryDestination=args.mysql_is_primary_destination
+            )
+        )
+
     if args.IsKnownAndSpecified('databases_filter') or args.IsKnownAndSpecified(
         'all_databases'
     ):

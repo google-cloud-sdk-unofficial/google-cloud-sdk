@@ -513,7 +513,7 @@ def AddCreateLustres(
 
         Values for perUnitStorageThroughput: 125, 250, 500, 1000
       """),
-      type=flag_types.LUSTRES_OBJECT,
+      type=flag_types.FlagTypes(api_version).GetCreateLustresObject(),
       action=arg_parsers.FlattenAction(),
       hidden=hidden,
   )

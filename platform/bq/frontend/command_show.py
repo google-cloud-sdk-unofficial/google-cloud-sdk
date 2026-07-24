@@ -358,7 +358,7 @@ class Show(bigquery_command.BigqueryCmd):
       if search_all_projects:
         object_info = client_reservation.SearchAllReservationAssignments(
             client=client.GetReservationApiClient(),
-            location=bq_flags.LOCATION.value,
+            location=bq_flags.LOCATION.value,  # pyrefly: ignore[bad-argument-type]
             job_type=self.job_type,
             assignee_type=self.assignee_type,
             assignee_id=self.assignee_id,

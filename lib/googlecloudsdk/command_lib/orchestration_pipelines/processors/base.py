@@ -32,6 +32,7 @@ class ActionProcessor:
     LIBS_EXTRACT_DIR: The directory name where libraries are extracted.
     full_python_path: The full path to the Python site-packages.
     requirements_path: The path to the requirements file.
+    requirements_list: The list of requirements for the python environment.
     existing_cluster_image_version: The version of the existing cluster image,
       if applicable.
   """
@@ -46,6 +47,7 @@ class ActionProcessor:
       subprocess_mod: Any,
       defaults: MutableMapping[str, Any],
       requirements_path: pathlib.Path | None = None,
+      requirements_list: list[str] | None = None,
   ):
     self.action = action
     self._work_dir = work_dir
@@ -55,6 +57,7 @@ class ActionProcessor:
     self._defaults = defaults
     self.full_python_path = None
     self.requirements_path = requirements_path
+    self.requirements_list = requirements_list
     self.existing_cluster_image_version = None
 
   def process_action(self):
@@ -67,8 +70,14 @@ class ActionProcessor:
       if python_version:
         self.full_python_path = f"./{self.LIBS_EXTRACT_DIR}/lib/python{python_version}/site-packages"
 
-        with self.requirements_path.open("rb") as f:
-          reqs_hash = hashlib.md5(f.read()).hexdigest()
+        req_content = None
+        if self.requirements_list:
+          req_content = "\n".join(self.requirements_list).encode("utf-8")
+          reqs_hash = hashlib.md5(req_content).hexdigest()
+        else:
+          with self.requirements_path.open("rb") as f:
+            reqs_hash = hashlib.md5(f.read()).hexdigest()
+
         self._env_pack_file = (
             f"environment-{reqs_hash}-python{python_version}.tar.gz"
         )
@@ -76,14 +85,25 @@ class ActionProcessor:
 
         env_pack_path = self._work_dir / self._env_pack_file
         if not env_pack_path.exists():
-          log.debug(f"Creating environment pack at {env_pack_path}...")
-          python_environment.build_env_local(
-              self._subprocess_mod,
-              self._work_dir,
-              self.requirements_path,
-              env_pack_path,
-              python_version,
-          )
+          reqs_path = None
+          try:
+            if self.requirements_list:
+              reqs_path = self._work_dir / f"requirements-{reqs_hash}.txt"
+              reqs_path.write_bytes(req_content)
+            else:
+              reqs_path = self.requirements_path
+
+            log.debug(f"Creating environment pack at {env_pack_path}...")
+            python_environment.build_env_local(
+                self._subprocess_mod,
+                self._work_dir,
+                reqs_path,
+                env_pack_path,
+                python_version,
+            )
+          finally:
+            if self.requirements_list and reqs_path and reqs_path.exists():
+              reqs_path.unlink()
 
         if not env_pack_path.exists():
           raise exceptions.BadFileException(
@@ -184,15 +204,18 @@ class ActionProcessor:
     pass
 
   def _has_valid_requirements(self) -> bool:
-    """Checks if requirements file exists and has at least one non-comment line."""
-    if not self.requirements_path or not self.requirements_path.exists():
-      return False
+    """Checks if requirements exist and have at least one non-comment line."""
+    lines = []
+    if self.requirements_list:
+      lines = self.requirements_list
+    elif self.requirements_path and self.requirements_path.exists():
+      lines = self.requirements_path.read_text().splitlines()
 
-    with self.requirements_path.open("r") as f:
-      for line in f:
-        line = line.strip()
-        if line and not line.startswith("#"):
-          return True
+    for line in lines:
+      line = line.strip()
+      if line and not line.startswith("#"):
+        return True
+
     return False
 
   @staticmethod

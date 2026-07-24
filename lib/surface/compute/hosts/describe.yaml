@@ -1,4 +1,5 @@
-- help_text:
+- release_tracks: [ALPHA, BETA]
+  help_text:
     brief: Describe a Google Compute Engine host.
     description: Describe a Google Compute Engine host.
     examples: |
@@ -7,7 +8,10 @@
         $ {command} my-host --zone=us-central1-a
 
   request:
-    api_version: alpha
+    ALPHA:
+      api_version: alpha
+    BETA:
+      api_version: beta
     collection: compute.hosts
     method: get
     modify_request_hooks:

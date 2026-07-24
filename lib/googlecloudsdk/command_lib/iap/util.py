@@ -40,12 +40,6 @@ IAM_RESOURCE_TYPE_ENUM = (
     BACKEND_SERVICES_RESOURCE_TYPE,
     FORWARDING_RULE_RESOURCE_TYPE,
     CLOUD_RUN_RESOURCE_TYPE,
-)
-IAM_RESOURCE_TYPE_ENUM_WITH_AGENT_REGISTRY = (
-    APP_ENGINE_RESOURCE_TYPE,
-    BACKEND_SERVICES_RESOURCE_TYPE,
-    FORWARDING_RULE_RESOURCE_TYPE,
-    CLOUD_RUN_RESOURCE_TYPE,
     AGENT_REGISTRY_RESOURCE_TYPE,
 )
 SETTING_RESOURCE_TYPE_ENUM = (
@@ -145,28 +139,25 @@ def AddDestGroupListRegionArgs(parser):
 
 
 def AddIapIamResourceArgs(
-    parser, support_agent_registry=False
+    parser, support_instances=False
 ):
   """Adds flags for an IAP IAM resource.
 
   Args:
     parser: An argparse.ArgumentParser-like object. It is mocked out in order to
       capture some information, but behaves like an ArgumentParser.
-    support_agent_registry: bool, whether to support agent registry.
+    support_instances: bool, whether to support Cloud Run instances.
   """
   group = parser.add_group()
 
-  choices = (
-      IAM_RESOURCE_TYPE_ENUM_WITH_AGENT_REGISTRY
-      if support_agent_registry
-      else IAM_RESOURCE_TYPE_ENUM
-  )
   group.add_argument(
       '--resource-type',
-      choices=choices,
+      choices=IAM_RESOURCE_TYPE_ENUM,
       help='Resource type of the IAP resource.',
   )
   group.add_argument('--service', help='Service name.')
+  if support_instances:
+    group.add_argument('--instance', help='Instance ID.')
 
   group.add_argument(
       '--region',
@@ -185,26 +176,25 @@ def AddIapIamResourceArgs(
       ),
   )
 
-  if support_agent_registry:
-    agent_group = group.add_mutually_exclusive_group()
-    agent_group.add_argument(
-        '--agent',
-        help=(
-            'Agent ID for the agent-registry resource type.'
-        ),
-    )
-    agent_group.add_argument(
-        '--mcp-server',
-        help=(
-            'MCP server ID for the agent-registry resource type.'
-        ),
-    )
-    agent_group.add_argument(
-        '--endpoint',
-        help=(
-            'Endpoint ID for the agent-registry resource type.'
-        ),
-    )
+  agent_group = group.add_mutually_exclusive_group()
+  agent_group.add_argument(
+      '--agent',
+      help=(
+          'Agent ID for the agent-registry resource type.'
+      ),
+  )
+  agent_group.add_argument(
+      '--mcp-server',
+      help=(
+          'MCP server ID for the agent-registry resource type.'
+      ),
+  )
+  agent_group.add_argument(
+      '--endpoint',
+      help=(
+          'Endpoint ID for the agent-registry resource type.'
+      ),
+  )
 
 
 def AddIapResourceArgs(parser):
@@ -415,7 +405,7 @@ applicationSettings:
 def ParseIapIamResource(
     release_track,
     args,
-    support_agent_registry=False
+    support_instances=False
 ):
   """Parse an IAP IAM resource from the input arguments.
 
@@ -423,7 +413,7 @@ def ParseIapIamResource(
     release_track: base.ReleaseTrack, release track of command.
     args: an argparse namespace. All the arguments that were provided to this
       command invocation.
-    support_agent_registry: bool, whether to support agent registry.
+    support_instances: bool, whether to support Cloud Run instances.
 
   Raises:
     calliope_exc.InvalidArgumentException: if a provided argument does not apply
@@ -446,7 +436,7 @@ def ParseIapIamResource(
           '--version',
           '`--version` cannot be specified without `--resource-type`.',
       )
-    if support_agent_registry and args.region:
+    if args.region:
       return iap_api.IAPWebLocation(
           release_track, project, args.region
       )
@@ -510,14 +500,21 @@ def ParseIapIamResource(
           '`--region` must be specified for '
           '`--resource-type=cloud-run`.',
       )
+    if support_instances and args.service and args.instance:
+      raise calliope_exc.InvalidArgumentException(
+          '--service',
+          '`--service` and `--instance` cannot be specified together for '
+          '`--resource-type=cloud-run`.',
+      )
     if args.service:
       return iap_api.CloudRun(release_track, project, args.region, args.service)
+    elif support_instances and args.instance:
+      return iap_api.CloudRunInstance(
+          release_track, project, args.region, args.instance
+      )
     else:
       return iap_api.CloudRuns(release_track, project, args.region)
-  elif (
-      support_agent_registry
-      and args.resource_type == AGENT_REGISTRY_RESOURCE_TYPE
-  ):
+  elif args.resource_type == AGENT_REGISTRY_RESOURCE_TYPE:
     if args.version:
       raise calliope_exc.InvalidArgumentException(
           '--version',
@@ -634,7 +631,7 @@ def ParseIapSettingsResource(
           '`--project` should not be specified at organization level',
       )
     return iap_api.IapSettingsResource(
-        release_track, 'organizations/{0}'.format(args.organization)
+        release_track, f'organizations/{args.organization}'
     )
   if args.folder:
     if args.resource_type:
@@ -646,9 +643,7 @@ def ParseIapSettingsResource(
       raise calliope_exc.InvalidArgumentException(
           '--project', '`--project` should not be specified at folder level'
       )
-    return iap_api.IapSettingsResource(
-        release_track, 'folders/{0}'.format(args.folder)
-    )
+    return iap_api.IapSettingsResource(release_track, f'folders/{args.folder}')
   if args.project:
     if args.service and not args.resource_type:
       raise calliope_exc.InvalidArgumentException(
@@ -665,34 +660,29 @@ def ParseIapSettingsResource(
 
     if not args.resource_type:
       return iap_api.IapSettingsResource(
-          release_track, 'projects/{0}'.format(args.project)
+          release_track, f'projects/{args.project}'
       )
     else:
       if args.resource_type == WEB_RESOURCE_TYPE:
         return iap_api.IapSettingsResource(
-            release_track, 'projects/{0}/iap_web'.format(args.project)
+            release_track, f'projects/{args.project}/iap_web'
         )
       elif args.resource_type == APP_ENGINE_RESOURCE_TYPE:
         if not args.service:
           return iap_api.IapSettingsResource(
               release_track,
-              'projects/{0}/iap_web/appengine-{1}'.format(
-                  args.project, args.project
-              ),
+              f'projects/{args.project}/iap_web/appengine-{args.project}',
           )
         else:
           if args.version:
             return iap_api.IapSettingsResource(
                 release_track,
-                'projects/{0}/iap_web/appengine-{1}/services/{2}/versions/{3}'
-                .format(args.project, args.project, args.service, args.version),
+                f'projects/{args.project}/iap_web/appengine-{args.project}/services/{args.service}/versions/{args.version}',
             )
           else:
             return iap_api.IapSettingsResource(
                 release_track,
-                'projects/{0}/iap_web/appengine-{1}/services/{2}'.format(
-                    args.project, args.project, args.service
-                ),
+                f'projects/{args.project}/iap_web/appengine-{args.project}/services/{args.service}',
             )
       elif (
           args.resource_type == COMPUTE_RESOURCE_TYPE
@@ -700,7 +690,7 @@ def ParseIapSettingsResource(
       ):
         path = ['projects', args.project, 'iap_web']
         if args.region:
-          path.append('compute-{}'.format(args.region))
+          path.append(f'compute-{args.region}')
         else:
           path.append('compute')
         if args.service:
@@ -715,7 +705,7 @@ def ParseIapSettingsResource(
               '`--resource-type=forwarding-rule`.',
           )
         if args.region:
-          path.append('forwarding_rule-{}'.format(args.region))
+          path.append(f'forwarding_rule-{args.region}')
         else:
           path.append('forwarding_rule')
         if args.service:
@@ -735,7 +725,7 @@ def ParseIapSettingsResource(
               '`--region` must be specified for '
               '`--resource-type=cloud-run`.',
           )
-        path.append('cloud_run-{}'.format(args.region))
+        path.append(f'cloud_run-{args.region}')
         if args.service:
           path.extend(['services', args.service])
         return iap_api.IapSettingsResource(release_track, '/'.join(path))
@@ -797,8 +787,8 @@ def ParseIapTcpIamResource(release_track, args):
     flag = '--service' if args.service else '--instance'
     raise calliope_exc.InvalidArgumentException(
         '--region',
-        '`--region` must be specified for `--resource-type=cloud-run` with {}.'
-        .format(flag),
+        '`--region` must be specified for `--resource-type=cloud-run` with'
+        f' {flag}.',
     )
   return iap_api.IapTcpIamResource(
       release_track,
@@ -808,4 +798,3 @@ def ParseIapTcpIamResource(release_track, args):
       service=args.service,
       instance=args.instance,
   )
-

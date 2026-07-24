@@ -21,7 +21,6 @@ from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.core import properties
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class Create(base.Command):

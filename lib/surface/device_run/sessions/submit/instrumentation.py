@@ -18,15 +18,19 @@ import datetime
 import os
 import uuid
 
+from apitools.base.py import encoding
 from googlecloudsdk.api_lib import device_run
 from googlecloudsdk.api_lib.storage import storage_api
 from googlecloudsdk.api_lib.storage import storage_util
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.device_run import resource_args
+from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
 
 def _GetRunId():
@@ -48,6 +52,46 @@ def _UploadFileIfNeeded(path, bucket_name, storage_client, run_id):
   return target_gcs_path
 
 
+def _GetDefaultBucketName(project_id):
+  """Returns the default bucket name for the current project.
+
+  Args:
+    project_id: str, the Google Cloud project ID.
+
+  Returns:
+    GCS bucket name.
+  """
+  safe_project = (
+      project_id.replace(':', '-').replace('.', '-').replace('google', 'elgoog')
+  )
+
+  return safe_project + '-devicerun'
+
+
+def _ValidateAppPath(path):
+  """Validates that the path ends with an allowed application file extension."""
+  valid_extensions = ('.apk', '.aab', '.apks')
+  if not path.lower().endswith(valid_extensions):
+    raise arg_parsers.ArgumentTypeError(
+        f'App file [{path}] must have one of the following extensions:'
+        f' {", ".join(valid_extensions)}.'
+    )
+  return path
+
+
+def _ValidateTestPath(path):
+  """Validates that the path ends with .apk extension."""
+  if not path.lower().endswith('.apk'):
+    raise arg_parsers.ArgumentTypeError(
+        f'Test file [{path}] must have .apk extension.'
+    )
+  return path
+
+
+class SessionNameNotFoundError(exceptions.Error):
+  """Raised when the session name cannot be found."""
+
+
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Instrumentation(base.Command):
@@ -56,18 +100,30 @@ class Instrumentation(base.Command):
   @staticmethod
   def Args(parser):
     resource_args.AddLocationResourceArg(parser, 'submit session')
+    parser.display_info.AddFormat(
+        'table(job_name:label="JOB NAME", '
+        'execution_name:label="EXECUTION NAME", '
+        'result:label="EXECUTION RESULT")'
+    )
     parser.add_argument(
         '--device',
         required=True,
-        type=str,
-        help='Id of the device to run the test on.',
+        type=arg_parsers.ArgList(),
+        action=arg_parsers.FlattenAction(dedup=False),
+        metavar='DEVICE',
+        help=(
+            'Id of the device type to run the test on. Can be repeated to'
+            ' specify multiple device types. A job will be created for each'
+            ' specified device type.'
+        ),
     )
     parser.add_argument(
         '--test',
         required=True,
-        type=str,
+        type=_ValidateTestPath,
+        metavar='TEST_PATH',
         help=(
-            'The path to the binary file containing instrumentation tests.'
+            'The path to the APK file containing instrumentation tests.'
             ' Supports both Google Cloud Storage (`gs://...`) paths and local'
             ' filesystem paths. Any local file will be uploaded to Google Cloud'
             ' Storage prior to test execution.'
@@ -75,16 +131,16 @@ class Instrumentation(base.Command):
     )
     parser.add_argument(
         '--apps',
-        metavar='SOURCE_PATH',
-        type=arg_parsers.ArgList(),
+        metavar='APP_PATH',
+        type=arg_parsers.ArgList(element_type=_ValidateAppPath),
         default=[],
         help=(
-            'A list of application binary files to install before running the'
-            ' test. The order of the applications in the list determines their'
-            ' installation order on the device. Supports both Google Cloud'
-            ' Storage (`gs://...`) paths and local filesystem paths. Any local'
-            ' file will be uploaded to Google Cloud Storage prior to test'
-            ' execution.'
+            'A list of application binary files (.apk, .aab, or .apks) to'
+            ' install before running the test. The order of the applications in'
+            ' the list determines their installation order on the device.'
+            ' Supports both Google Cloud Storage (`gs://...`) paths and local'
+            ' filesystem paths. Any local file will be uploaded to Google Cloud'
+            ' Storage prior to test execution.'
         ),
     )
     parser.add_argument(
@@ -93,8 +149,8 @@ class Instrumentation(base.Command):
         help="""\
 The name of a Google Cloud Storage bucket to store test artifacts, including
 local input files, test output files, and smart sharding timing records. If
-not specified, a default bucket named `<project>-devicerun` will be used or
-created.
+not specified, a default bucket named ```gs://[PROJECT_ID]-devicerun``` will be
+used or created.
 
 The Google Cloud Storage bucket layout will be structured as follows:
 
@@ -228,11 +284,12 @@ targets in the module will be run.
         ),
     )
     parser.add_argument(
-        '--target-smart-shard-time',
-        type=int,
+        '--smart-sharding-target-duration',
+        type=arg_parsers.Duration(lower_bound='2m', upper_bound='1h'),
         help=(
-            'Specifies the targeted execution time (in seconds) per shard for'
-            ' smart sharding. Required when `--sharding-option=smart`.'
+            'Specifies the targeted execution time (e.g., `2m`, `10m`, `1h`)'
+            ' per shard for smart sharding. The valid range is `2m` to `1h`.'
+            ' Required when `--sharding-option=smart`.'
         ),
     )
     parser.add_argument(
@@ -249,7 +306,7 @@ targets in the module will be run.
         ),
     )
     parser.add_argument(
-        '--max-attempts',
+        '--flaky-test-attempts',
         type=int,
         help=(
             'Specifies the maximum number of execution attempts per test shard'
@@ -276,6 +333,28 @@ targets in the module will be run.
             ' is used.'
         ),
     )
+    parser.add_argument(
+        '--locale',
+        type=str,
+        help=(
+            'Specifies the locale (language and region) to switch the device to'
+            ' before running the test. The format is `language-region`, e.g.,'
+            ' `en-US` or `zh-CN`. The typical language value is a two- or'
+            ' three-letter language code as defined in ISO 639. The typical'
+            ' region value is a two-letter ISO 3166 code or a three-digit UN'
+            ' M.49 area code.'
+        ),
+    )
+    parser.add_argument(
+        '--orientation',
+        type=str,
+        choices=['portrait', 'landscape'],
+        help=(
+            'Specifies the orientation to set the device to before running the'
+            ' test. Accepted values are `portrait` or `landscape`.'
+        ),
+    )
+    base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
     if args.additional_test_options:
@@ -302,10 +381,10 @@ targets in the module will be run.
       )
     if (
         args.sharding_option == 'smart'
-        and args.target_smart_shard_time is None
+        and args.smart_sharding_target_duration is None
     ):
       raise calliope_exceptions.RequiredArgumentException(
-          '--target-smart-shard-time',
+          '--smart-sharding-target-duration',
           'Required when sharding-option is smart.',
       )
     if (
@@ -325,10 +404,10 @@ targets in the module will be run.
     bucket_name = args.bucket_name
     if not bucket_name:
       project = properties.VALUES.core.project.Get(required=True)
-      bucket_name = f'{project}-devicerun'
+      bucket_name = _GetDefaultBucketName(project)
       log.status.Print(
-          f'Creating default GCS bucket [gs://{bucket_name}] for input and'
-          ' result files.'
+          f'Using the default GCS bucket [gs://{bucket_name}] for input and'
+          ' result files. Will create the bucket if it does not exist.'
       )
       if location_ref.locationsId == 'global':
         # Creating STANDARD buckets with locationConstraint GLOBAL is not
@@ -393,6 +472,22 @@ targets in the module will be run.
       )
       device_actions.append(push_action)
 
+    if args.locale:
+      locale_action = messages.DeviceAction(
+          androidSwitchLocale=messages.AndroidSwitchLocaleDeviceAction(
+              localeCode=args.locale
+          )
+      )
+      device_actions.append(locale_action)
+
+    if args.orientation:
+      orientation_action = messages.DeviceAction(
+          androidOrientation=messages.AndroidOrientationDeviceAction(
+              orientation=args.orientation
+          )
+      )
+      device_actions.append(orientation_action)
+
     if args.paths_to_pull:
       pull_action = messages.DeviceAction(
           androidPullFiles=messages.AndroidPullFilesDeviceAction(
@@ -414,15 +509,6 @@ targets in the module will be run.
     )
     device_actions.append(logcat_action)
 
-    device_requirement = messages.DeviceRequirement(
-        deviceId=args.device
-    )
-    device_config = messages.DeviceConfig(
-        actions=device_actions,
-        requirement=device_requirement,
-    )
-    allocation_config = messages.AllocationConfig(deviceConfigs=[device_config])
-
     test_installable = messages.AndroidInstallable(
         files=[
             messages.InputFile(gcsInputFile=messages.GcsPath(path=test_gcs))
@@ -441,8 +527,7 @@ targets in the module will be run.
     additional_test_options = None
     if args.additional_test_options:
       add_prop_cls = (
-          messages.AndroidInstrumentationTest.AdditionalTestOptionsValue
-          .AdditionalProperty
+          messages.AndroidInstrumentationTest.AdditionalTestOptionsValue.AdditionalProperty
       )
       additional_test_options = (
           messages.AndroidInstrumentationTest.AdditionalTestOptionsValue(
@@ -477,7 +562,7 @@ targets in the module will be run.
           f'{args.smart_sharding_record_name}.yaml'
       )
       smart_sharding = messages.SmartSharding(
-          targetedShardDuration=f'{args.target_smart_shard_time}s',
+          targetedShardDuration=f'{args.smart_sharding_target_duration}s',
           timingRecord=messages.InputFile(
               gcsInputFile=messages.GcsPath(path=record_path)
           ),
@@ -501,32 +586,38 @@ targets in the module will be run.
     if args.labels:
       labels = messages.JobConfig.LabelsValue(
           additionalProperties=[
-              messages.JobConfig.LabelsValue.AdditionalProperty(
-                  key=k, value=v
-              )
+              messages.JobConfig.LabelsValue.AdditionalProperty(key=k, value=v)
               for k, v in sorted(args.labels.items())
           ]
       )
 
     settings = None
-    if args.max_attempts is not None:
+    if args.flaky_test_attempts is not None:
       settings = messages.JobSettings(
           retrySettings=messages.RetrySettings(
               flakyTestRetryStrategy=messages.FlakyTestRetryStrategy(
-                  flakyTestAttempts=args.max_attempts
+                  flakyTestAttempts=args.flaky_test_attempts
               )
           )
       )
 
-    job_config = messages.JobConfig(
-        displayName='instrumentation-job',
-        allocationConfig=allocation_config,
-        action=job_action,
-        labels=labels,
-        settings=settings,
-    )
-
-    # bucket_name and storage_client were initialized earlier in Run
+    job_configs = []
+    for device in args.device:
+      device_requirement = messages.DeviceRequirement(deviceId=device)
+      device_config = messages.DeviceConfig(
+          actions=device_actions,
+          requirement=device_requirement,
+      )
+      allocation_config = messages.AllocationConfig(
+          deviceConfigs=[device_config]
+      )
+      job_config = messages.JobConfig(
+          allocationConfig=allocation_config,
+          action=job_action,
+          labels=labels,
+          settings=settings,
+      )
+      job_configs.append(job_config)
 
     gcs_path = f'gs://{bucket_name}/automation/sessions'
     output_directory_config = messages.SessionOutputFileDirectoryConfig(
@@ -534,15 +625,101 @@ targets in the module will be run.
     )
     session_config = messages.SessionConfig(
         displayName='instrumentation-session',
-        jobConfigs=[job_config],
+        jobConfigs=job_configs,
         outputDirectoryConfig=output_directory_config,
     )
 
     session = messages.Session(sessionConfig=session_config)
+    operation = client.Create(location_ref, session=session)
+    operation_id = operation.name.split('/')[-1]
 
-    session_resp = client.Create(location_ref, session=session)
-    log.CreatedResource(session_resp.name, kind='session')
-    return session_resp
+    # Print a blank line for spacing.
+    log.status.Print()
+    log.status.Print(
+        f'Initiated long-running operation [{operation_id}] to create session.'
+    )
+
+    session_name = None
+    if getattr(operation, 'metadata'):
+      session_name = encoding.MessageToPyValue(operation.metadata).get('target')
+    if not session_name:
+      raise SessionNameNotFoundError(
+          'Could not obtain session name from operation.'
+      )
+
+    session_id = session_name.split('/')[-1]
+
+    log.status.Print(
+        f'Creating session [{session_id}] in location'
+        f' [{location_ref.locationsId}].'
+    )
+
+    log.status.Print(
+        f'Result files will be stored at'
+        f' [gs://{bucket_name}/automation/sessions/{session_id}/].'
+    )
+
+    if args.async_:
+      return
+
+    operation_ref = resources.REGISTRY.ParseRelativeName(
+        operation.name,
+        collection='devicerun.projects.locations.operations',
+    )
+    operations_client = device_run.OperationsClient(api_version='v1alpha')
+    poller = device_run.DeviceRunOperationPoller(
+        resource_service=client.service,
+        operations_service=operations_client.service,
+        resource_ref=None,
+    )
+    waiter.WaitFor(
+        poller,
+        operation_ref,
+        f'Waiting for session [{session_id}] to complete.',
+    )
+    session_ref = resources.REGISTRY.ParseRelativeName(
+        session_name,
+        collection='devicerun.projects.locations.sessions',
+    )
+    session = client.Get(session_ref)
+    result_type = (
+        session.sessionReport.result.resultType
+        if session.sessionReport and session.sessionReport.result
+        else None
+    )
+
+    rows = []
+    if session.sessionReport and session.sessionReport.jobReports:
+      for job_report in session.sessionReport.jobReports:
+        job_name = job_report.displayName
+        if job_report.executionReports:
+          for exec_report in job_report.executionReports:
+            exec_name = exec_report.displayName
+            result = str(exec_report.result.resultType)
+            rows.append({
+                'job_name': job_name,
+                'execution_name': exec_name,
+                'result': result,
+            })
+        else:
+          result = (
+              str(job_report.result.resultType)
+              if job_report.result and job_report.result.resultType
+              else ''
+          )
+          rows.append({
+              'job_name': job_name,
+              'execution_name': '',
+              'result': result,
+          })
+
+    # Print a blank line for spacing.
+    log.status.Print()
+    log.status.Print(
+        f'Session [{session_id}] finished with result [{result_type}].'
+    )
+
+    return rows
 
 
 Instrumentation.detailed_help = {
@@ -554,5 +731,10 @@ To submit an instrumentation session in location `us-central1` on a device
 with ID `my-device-id`, run:
 
   $ {command} --location=us-central1 --device=my-device-id --apps=gs://my-bucket/app.apk --test=gs://my-bucket/test.apk --bucket-name=my-bucket
+
+To submit an instrumentation session asynchronously without waiting for it to
+complete, run:
+
+  $ {command} --location=us-central1 --device=my-device-id --apps=gs://my-bucket/app.apk --test=gs://my-bucket/test.apk --bucket-name=my-bucket --async
 """,
 }

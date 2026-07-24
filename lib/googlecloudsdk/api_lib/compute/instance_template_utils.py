@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.api_lib.compute import kms_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.compute.instances.create import utils as create_utils
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.networks.subnets import flags as subnet_flags
 from googlecloudsdk.command_lib.util.args import labels_util
@@ -627,6 +628,26 @@ def CreatePersistentCreateDiskMessages(
         ]
 
         init_params.labels = labels_value
+
+    on_update_action = disk.get('on-update-action')
+    if on_update_action:
+      try:
+        init_params.onUpdateAction = (
+            messages.AttachedDiskInitializeParams.OnUpdateActionValueValuesEnum(
+                on_update_action
+            )
+        )
+      except TypeError as error:
+        enum_class = (
+            messages.AttachedDiskInitializeParams.OnUpdateActionValueValuesEnum
+        )
+        choices = ', '.join(sorted(enum_class.names()))
+
+        raise calliope_exceptions.InvalidArgumentException(
+            '--create-disk',
+            f'Invalid value for [on-update-action]: {on_update_action}. '
+            f'Valid choices are: {choices}.'
+        ) from error
 
     init_params.provisionedThroughput = disk.get('provisioned-throughput')
 

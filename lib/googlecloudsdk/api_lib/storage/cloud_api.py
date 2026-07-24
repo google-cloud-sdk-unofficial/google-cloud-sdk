@@ -874,6 +874,7 @@ class CloudApi(object):
       source_resource=None,
       tracker_callback=None,
       upload_strategy=UploadStrategy.SIMPLE,
+      final_headers_callback=None,
   ):
     """Uploads object data and metadata.
 
@@ -891,6 +892,8 @@ class CloudApi(object):
       tracker_callback (Callable[[dict]|None]): Function that writes a tracker
         file with serialization data. Only used with UploadStrategy.RESUMABLE.
       upload_strategy (UploadStrategy): Strategy to use for this upload.
+      final_headers_callback (function|None): Function that returns a dict of
+        headers to be added to the final request of the upload.
 
     Returns:
       resource_reference.ObjectResource with uploaded object's metadata.

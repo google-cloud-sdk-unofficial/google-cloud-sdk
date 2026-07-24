@@ -32,7 +32,6 @@ from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.run import stages
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
-from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
@@ -68,6 +67,7 @@ Container Flags
   group.AddArgument(flags.RemoveVolumeMountFlag())
   group.AddArgument(flags.ClearVolumeMountsFlag())
   group.AddArgument(flags.StartupProbeFlag())
+  group.AddArgument(flags.SandboxLauncherFlag(hidden=True))
 
   return group
 
@@ -149,6 +149,7 @@ class Create(base.Command):
     flags.AddVolumesFlags(parser, cls.ReleaseTrack())
     flags.AddIngressFlag(parser)
     flags.AddInvokerIamCheckFlag(parser)
+    flags.AddPublicFlag(parser)
     flags.AddRestartPolicyFlag(parser)
     flags.AddSshFlag(parser)
     flags.AddDefaultUrlFlag(parser, resource_kind='instance')
@@ -166,8 +167,9 @@ class Create(base.Command):
     container_args = ContainerArgGroup()
     container_parser.AddContainerFlags(parser, container_args)
 
-  def Run(self, args):
+  def Run(self, args: argparse.Namespace) -> messages.Instance:
     """Deploy an Instance to Cloud Run."""
+    flags.ValidatePublicFlags(args)
     if flags.FlagIsExplicitlySet(args, 'containers'):
       containers = args.containers
       if len(containers) > 10:
@@ -216,7 +218,7 @@ class Create(base.Command):
           changes,
           parent_ref,
           requested_instance_name,
-          args.async_,
+          args,
       )
     except (exceptions.HttpError, api_util_exceptions.HttpException) as e:
       available_regions = _GetAvailableRegions(e)
@@ -242,7 +244,7 @@ class Create(base.Command):
       changes: Sequence[config_changes.ConfigChanger],
       parent_ref: resources.Resource,
       requested_instance_name: str | None,
-      async_: bool,
+      args: argparse.Namespace,
   ) -> messages.Instance:
     """Execute the call to create a Cloud Run instance.
 
@@ -251,7 +253,7 @@ class Create(base.Command):
       changes: A list of configuration changes to apply to the instance.
       parent_ref: The parent reference (namespace).
       requested_instance_name: The name of the instance.
-      async_: whether to run asynchronously.
+      args: The command arguments.
 
     Returns:
       The created instance object.
@@ -259,6 +261,7 @@ class Create(base.Command):
     Raises:
       exceptions.HttpError: If an HTTP error occurs during the API call.
     """
+    async_ = args.async_
     with serverless_operations.Connect(conn_context) as operations:
       pretty_print.Info(
           messages_util.GetStartCreateInstanceMessage(
@@ -294,22 +297,9 @@ class Create(base.Command):
             getattr(conn_context, 'region', None)
             or properties.VALUES.run.region.Get()
         )
-        release_track = self.ReleaseTrack()
-        release_track_prefix = (
-            f' {release_track.prefix}'
-            if release_track.prefix is not None
-            else ''
+        messages_util.LogInstancePostDeploymentMessages(
+            instance, region, self.ReleaseTrack()
         )
-        log.status.Print(
-            f'\nSee logs with:\ngcloud{release_track_prefix} run instances'
-            f' logs tail {instance.name} --region {region}'
-        )
-        log.status.Print(
-            f'\nSSH with:\ngcloud{release_track_prefix} run instances ssh'
-            f' {instance.name} --region {region}'
-        )
-        if instance.urls:
-          log.status.Print(f'\nURL: {instance.urls[0]}')
       return instance
 
   def _PromptAndRetry(
@@ -362,6 +352,6 @@ class Create(base.Command):
           changes,
           parent_ref,
           requested_instance_name,
-          args.async_,
+          args,
       )
     raise e

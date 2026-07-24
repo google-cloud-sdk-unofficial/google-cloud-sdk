@@ -3235,13 +3235,6 @@ eventarc:
     - v1
     - v1beta1
 eventarcpublishing: {}
-eventflow:
-  projects:
-    supported_apis:
-    - v1beta2
-  projects.flows:
-    supported_apis:
-    - v1beta2
 events:
   namespaces:
     supported_apis:
@@ -4841,22 +4834,6 @@ run:
   projects.locations.services:
     supported_apis:
     - v1
-runapps:
-  projects:
-    supported_apis:
-    - v1alpha1
-  projects.locations:
-    supported_apis:
-    - v1alpha1
-  projects.locations.applications:
-    supported_apis:
-    - v1alpha1
-  projects.locations.applications.deployments:
-    supported_apis:
-    - v1alpha1
-  projects.locations.operations:
-    supported_apis:
-    - v1alpha1
 runtimeconfig:
   projects:
     supported_apis:

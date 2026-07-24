@@ -89,7 +89,7 @@ projects_locations_ull_mirroring_collectors:
     parameter_name: ullMirroringCollectorsId
     attribute_name: ull_mirroring_collector
     help: The ullMirroringCollector id of the {resource} resource.
-  disable_auto_completers: false
+  disable_auto_completers: true
 projects_locations_ull_mirroring_engines:
   name: ullMirroringEngine
   plural_name: ullMirroringEngines
@@ -126,15 +126,15 @@ projects_none_networks:
     help: The network id of the {resource} resource.
   disable_auto_completers: true
 projects_locations_ull_mirroring_collectors_rules:
-  name: rule
+  name: ullMirroringCollectorRule
   plural_name: rules
   collection: networksecurity.projects.locations.ullMirroringCollectors.rules
   attributes:
   - *project
   - *location
   - *ullMirroringCollector
-  - &rule
+  - &ullMirroringCollectorRule
     parameter_name: rulesId
-    attribute_name: rule
-    help: The rule id of the {resource} resource.
+    attribute_name: ull_mirroring_collector_rule
+    help: The ullMirroringCollectorRule id of the {resource} resource.
   disable_auto_completers: false

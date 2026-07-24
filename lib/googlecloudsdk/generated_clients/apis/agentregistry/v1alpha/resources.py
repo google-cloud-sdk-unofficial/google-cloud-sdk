@@ -96,6 +96,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_PUBLISHERS = (
+      'projects.locations.publishers',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/publishers/'
+              '{publishersId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_SERVICES = (
       'projects.locations.services',
       '{+name}',
@@ -109,17 +120,24 @@ class Collections(enum.Enum):
   )
   PROJECTS_LOCATIONS_SKILLS = (
       'projects.locations.skills',
-      'projects/{projectsId}/locations/{locationsId}/skills/{skillsId}',
-      {},
-      ['projectsId', 'locationsId', 'skillsId'],
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/skills/'
+              '{skillsId}',
+      },
+      ['name'],
       True
   )
   PROJECTS_LOCATIONS_SKILLS_REVISIONS = (
       'projects.locations.skills.revisions',
-      'projects/{projectsId}/locations/{locationsId}/skills/{skillsId}/'
-      'revisions/{revisionsId}',
-      {},
-      ['projectsId', 'locationsId', 'skillsId', 'revisionsId'],
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/skills/'
+              '{skillsId}/revisions/{revisionsId}',
+      },
+      ['name'],
       True
   )
 

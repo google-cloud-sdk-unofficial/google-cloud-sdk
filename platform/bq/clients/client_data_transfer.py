@@ -104,7 +104,7 @@ class TransferScheduleArgs:
     if self.end_time is not None:
       options['endTime'] = self._time_or_infitity(self.end_time)
 
-    options['disableAutoScheduling'] = self.disable_auto_scheduling
+    options['disableAutoScheduling'] = self.disable_auto_scheduling  # pyrefly: ignore[unsupported-operation]
 
     return options
 
@@ -123,7 +123,7 @@ class TransferScheduleArgs:
     )
     is_event_driven_schedule = self.event_driven_schedule is not None
     if (
-        sum([
+        sum([  # pyrefly: ignore[no-matching-overload]
             self.disable_auto_scheduling,
             is_time_based_schedule,
             is_event_driven_schedule,
@@ -208,7 +208,7 @@ def list_transfer_configs(
   """
   results = None
   bq_id_utils.typecheck(
-      reference,
+      reference,  # pyrefly: ignore[bad-argument-type]
       bq_id_utils.ApiClientHelper.ProjectReference,
       method='list_transfer_configs',
   )
@@ -216,7 +216,7 @@ def list_transfer_configs(
     if page_size > bq_processor_utils.MAX_RESULTS:
       page_size = bq_processor_utils.MAX_RESULTS
   request = bq_processor_utils.PrepareTransferListRequest(
-      reference, location, page_size, page_token, data_source_ids
+      reference, location, page_size, page_token, data_source_ids  # pyrefly: ignore[bad-argument-type]
   )
   if request:
     bq_processor_utils.ApplyParameters(request)
@@ -231,8 +231,8 @@ def list_transfer_configs(
     if page_size is not None:
       while 'nextPageToken' in result and len(results) < page_size:
         request = bq_processor_utils.PrepareTransferListRequest(
-            reference,
-            location,
+            reference,  # pyrefly: ignore[bad-argument-type]
+            location,  # pyrefly: ignore[bad-argument-type]
             page_size - len(results),
             result['nextPageToken'],
             data_source_ids,
@@ -280,13 +280,13 @@ def list_transfer_runs(
     A list of transfer runs.
   """
   bq_id_utils.typecheck(
-      reference,
+      reference,  # pyrefly: ignore[bad-argument-type]
       bq_id_utils.ApiClientHelper.TransferConfigReference,
       method='list_transfer_runs',
   )
-  reference = str(reference)
+  reference = str(reference)  # pyrefly: ignore[bad-assignment]
   request = bq_processor_utils.PrepareTransferRunListRequest(
-      reference, run_attempt, max_results, page_token, states
+      reference, run_attempt, max_results, page_token, states  # pyrefly: ignore[bad-argument-type]
   )
   response = (
       transfer_client.projects()
@@ -302,7 +302,7 @@ def list_transfer_runs(
       page_token = response.get('nextPageToken')
       max_results -= len(transfer_runs)
       request = bq_processor_utils.PrepareTransferRunListRequest(
-          reference, run_attempt, max_results, page_token, states
+          reference, run_attempt, max_results, page_token, states  # pyrefly: ignore[bad-argument-type]
       )
       response = (
           transfer_client.projects()
@@ -337,9 +337,9 @@ def list_transfer_logs(
   Returns:
     A list of transfer run logs.
   """
-  reference = str(reference)
+  reference = str(reference)  # pyrefly: ignore[bad-assignment]
   request = bq_processor_utils.PrepareListTransferLogRequest(
-      reference,
+      reference,  # pyrefly: ignore[bad-argument-type]
       max_results=max_results,
       page_token=page_token,
       message_type=message_type,
@@ -359,7 +359,7 @@ def list_transfer_logs(
       page_token = response['nextPageToken']
       max_results -= len(transfer_logs)
       request = bq_processor_utils.PrepareListTransferLogRequest(
-          reference,
+          reference,  # pyrefly: ignore[bad-argument-type]
           max_results=max_results,
           page_token=page_token,
           message_type=message_type,
@@ -458,7 +458,7 @@ def _fetch_data_source(
 
 def update_transfer_config(
     transfer_client: discovery.Resource,
-    id_fallbacks: NamedTuple(
+    id_fallbacks: NamedTuple(  # pyrefly: ignore[invalid-annotation]
         'IDS',
         [
             ('project_id', Optional[str]),

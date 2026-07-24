@@ -614,18 +614,17 @@ class CDNPolicy(_messages.Message):
       sent to the client.
     clientTtl: Optional. Specifies a separate client (such as browser client)
       TTL, separate from the TTL used by the edge caches. Leaving this empty
-      uses the same cache TTL for both the CDN and the client-facing response.
-      - The TTL must be >= `0s` and <= `86400s` (1 day) - The `client_ttl`
-      cannot be larger than the default_ttl (if set) - Fractions of a second
-      are not allowed. Omit this field to use the `default_ttl`, or the max-
-      age set by the origin, as the client-facing TTL. When the CacheMode is
-      set to USE_ORIGIN_HEADERS or BYPASS_CACHE, you must omit this field.
+      uses the `default_ttl`, or the `max-age` set by the origin, as the
+      client-facing TTL. - The TTL must be >= `0s` and <= `86400s` (1 day) -
+      The `client_ttl` cannot be larger than the `default_ttl` (if set) -
+      Fractions of a second are not allowed. When the CacheMode is set to
+      USE_ORIGIN_HEADERS or BYPASS_CACHE, you must omit this field.
     defaultTtl: Optional. Specifies the default TTL for cached content served
       by this origin for responses that do not have an existing valid TTL
       (max-age or s-maxage). Defaults to `3600s` (1 hour). - The TTL must be
       >= `0` and <= `31,536,000` seconds (1 year) - Setting a TTL of `0` means
       "always revalidate" (equivalent to must-revalidate) - The value of
-      `default_ttl` cannot be set to a value greater than that of max_ttl. -
+      `default_ttl` cannot be set to a value greater than that of `max_ttl`. -
       Fractions of a second are not allowed. - When the CacheMode is set to
       FORCE_CACHE_ALL, the `default_ttl` overwrites the TTL set in all
       responses. Infrequently accessed objects might be evicted from the cache
@@ -639,8 +638,8 @@ class CDNPolicy(_messages.Message):
       `max_ttl`, as if it were the value of an s-maxage Cache-Control
       directive. - The TTL must be >= `0` and <= `31,536,000` seconds (1 year)
       - Setting a TTL of `0` means "always revalidate" - The value of
-      `max_ttl` must be equal to or greater than default_ttl. - Fractions of a
-      second are not allowed. When CacheMode is set to USE_ORIGIN_HEADERS,
+      `max_ttl` must be equal to or greater than `default_ttl`. - Fractions of
+      a second are not allowed. When CacheMode is set to USE_ORIGIN_HEADERS,
       FORCE_CACHE_ALL, or BYPASS_CACHE, you must omit this field.
     negativeCaching: Optional. Negative caching allows setting per-status code
       TTLs, in order to apply fine-grained caching for common errors or

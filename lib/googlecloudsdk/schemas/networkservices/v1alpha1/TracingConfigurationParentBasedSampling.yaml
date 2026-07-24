@@ -1,0 +1,37 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1alpha1 TracingConfigurationParentBasedSampling export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  enabled:
+    description: |-
+      Provides a master switch to respect a sampled bit in incoming
+      traceparentID headers. Default is false.
+    type: boolean
+  samplingRate:
+    description: |-
+      Specifies the sampling rate to use when the sampled bit is set in the
+      incoming traceparentID header.
+    type: number

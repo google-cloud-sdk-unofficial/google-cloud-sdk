@@ -18,7 +18,7 @@
 from googlecloudsdk.calliope import base
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class AuditScopes(base.Group):
   """Command group for Audit Manager Audit Scopes."""
@@ -26,7 +26,7 @@ class AuditScopes(base.Group):
   category = base.SECURITY_CATEGORY
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AuditScopesAlpha(AuditScopes):
   """Command group for Audit Manager Audit Scopes."""

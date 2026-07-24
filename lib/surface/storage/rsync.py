@@ -282,6 +282,7 @@ def _perform_rsync(
       ),
       skip_unsupported=args.skip_unsupported,
       task_status_queue=task_status_queue,
+      do_not_decompress=args.do_not_decompress,
   )
   rsync_exit_code = task_executor.execute_tasks(
       operation_iterator,

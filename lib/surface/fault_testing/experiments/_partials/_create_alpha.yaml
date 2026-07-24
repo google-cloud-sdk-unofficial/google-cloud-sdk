@@ -28,6 +28,19 @@
       $ {command} test-experiment-id --experiment-template=test-template-id --location=asia-east1 --display-name=test-experiment
   arguments:
     params:
+    - group:
+        mutex: true
+        help_text: |-
+          Arguments for the  start on create enabled.
+        params:
+        - arg_name: start-on-create-enabled
+          api_field: experiment.startOnCreateEnabled
+          action: store_true
+          required: false
+          type: bool
+          help_text: |-
+            If true, the experiment will be started immediately after creation.
+          default: null
     - help_text: |-
         Identifier. Unique identifier for the experiment. Format:
         `projects/{project_id}/locations/{location}/experiments/{experiment_id}`.

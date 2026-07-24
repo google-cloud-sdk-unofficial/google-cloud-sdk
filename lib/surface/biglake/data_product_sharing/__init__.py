@@ -18,8 +18,7 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class DataProductSharing(base.Group):
   """Manage sharing of Knowledge Catalog Data Products or BigLake tables."""

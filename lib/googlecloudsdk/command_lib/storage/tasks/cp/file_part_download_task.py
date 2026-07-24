@@ -25,6 +25,7 @@ import threading
 from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.api_lib.storage import request_config_factory
+from googlecloudsdk.command_lib.storage import bucket_detection_util
 from googlecloudsdk.command_lib.storage import fast_crc32c_util
 from googlecloudsdk.command_lib.storage import hash_util
 from googlecloudsdk.command_lib.storage import progress_callbacks
@@ -117,6 +118,13 @@ class FilePartDownloadTask(file_part_task.FilePartTask):
     self._do_not_decompress_flag = do_not_decompress
     self._strategy = strategy
     self._user_request_args = user_request_args
+
+  @property
+  def is_bidi_download(self):
+    return bucket_detection_util.is_gcs_zonal_bucket(
+        provider=self._source_resource.storage_url.scheme,
+        bucket_name=self._source_resource.storage_url.bucket_name,
+    )
 
   def _calculate_deferred_hashes(self, digesters):
     """DeferredCrc32c does not hash on-the-fly and needs a summation call."""

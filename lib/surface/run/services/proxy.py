@@ -16,6 +16,7 @@
 
 import copy
 
+from googlecloudsdk.api_lib.run import container_resource
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.config import config_helper
 from googlecloudsdk.command_lib.run import connection_context
@@ -153,6 +154,13 @@ class Proxy(base.BinaryBackedCommand):
     if not serv.status:
       raise exceptions.ArgumentError(
           'Status of service [{}] is not ready'.format(serv_id)
+      )
+    if (
+        serv.annotations.get(container_resource.DISABLE_URL_ANNOTATION)
+        == 'true'
+    ):
+      raise exceptions.ArgumentError(
+          'Service [{}] has default URL disabled.'.format(serv_id)
       )
     if tag:
       for t in serv.status.traffic:

@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA]
+  hints:
+    read_only: true
   help_text:
     brief: List Cloud Media Asset asset types.
     description: List Media Asset asset types.

@@ -121,10 +121,8 @@ class CreateGA(base.CreateCommand):
     igm_arg = instance_groups_flags.GetInstanceGroupManagerArg(zones_flag=True)
     igm_arg.AddArgument(parser, operation_type='create')
     instance_groups_flags.AddZonesFlag(parser)
-    instance_groups_flags.AddMigCreateStatefulFlags(parser)
-    instance_groups_flags.AddMigCreateStatefulIPsFlags(parser)
-    managed_flags.AddMigInstanceRedistributionTypeFlag(parser)
-    managed_flags.AddMigDistributionPolicyTargetShapeFlag(parser)
+    instance_groups_flags.AddMigStatefulCreateFlags(parser)
+    managed_flags.AddMigDistributionPolicyFlags(parser)
     managed_flags.AddMigListManagedInstancesResultsFlag(parser)
     managed_flags.AddMigUpdatePolicyFlags(
         parser, support_min_ready_flag=cls.support_update_policy_min_ready_flag)
@@ -141,6 +139,7 @@ class CreateGA(base.CreateCommand):
     managed_flags.AddStandbyPolicyFlags(parser)
     managed_flags.AddWorkloadPolicyFlag(parser)
     managed_flags.AddTargetSizePolicyModeFlag(parser)
+    managed_flags.AddOnRepairFlags(parser)
     # When adding RMIG-specific flag, update REGIONAL_FLAGS constant.
 
   def _HandleStatefulArgs(self, instance_group_manager, args, client):
@@ -480,11 +479,6 @@ class CreateBeta(CreateGA):
   support_instance_selection_min_cpu_platform = True
   support_flex_policy_flag_with_mincpu_and_disks = True
 
-  @classmethod
-  def Args(cls, parser):
-    managed_flags.AddOnRepairFlags(parser)
-    super(CreateBeta, cls).Args(parser)
-
   def _CreateInstanceGroupManager(self, args, group_ref, template_ref, client,
                                   holder):
     instance_group_manager = super(CreateBeta,
@@ -504,10 +498,6 @@ class CreateAlpha(CreateBeta):
   support_resource_manager_tags = True
   support_instance_selection_min_cpu_platform = True
   support_flex_policy_flag_with_mincpu_and_disks = True
-
-  @classmethod
-  def Args(cls, parser):
-    super(CreateAlpha, cls).Args(parser)
 
   def _CreateInstanceGroupManager(
       self, args, group_ref, template_ref, client, holder

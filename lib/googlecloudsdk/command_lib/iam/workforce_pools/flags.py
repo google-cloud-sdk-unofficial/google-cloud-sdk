@@ -98,10 +98,11 @@ def ExtendedAttributesOAuth2ClientAttributesGroup(required=True):
       metavar='EXTENDED_ATTRIBUTES_CLIENT_ID',
       help=(
           'The OAuth 2.0 client ID for retrieving extended attributes from the'
-          ' identity provider. Required to get extended group memberships for'
-          ' a subset of Google Cloud products. The'
+          ' identity provider. Required to get extended group memberships for a'
+          ' subset of Google Cloud products. The'
           ' --extended-attributes-client-id flag is restricted. We suggest you'
-          ' use SCIM instead.'
+          ' use [SCIM](https://docs.cloud.google.com/iam/docs/configure-scim-oidc-saml)'
+          ' instead.'
       ),
   )
   extended_attributes_client_secret_value_arg = base.Argument(
@@ -115,7 +116,9 @@ def ExtendedAttributesOAuth2ClientAttributesGroup(required=True):
           ' the identity provider. Required to get extended group memberships'
           ' for a subset of Google Cloud products. The'
           ' --extended-attributes-client-secret-value flag is restricted. We'
-          ' suggest you use SCIM instead.'
+          ' suggest you use'
+          ' [SCIM](https://docs.cloud.google.com/iam/docs/configure-scim-oidc-saml)'
+          ' instead.'
       ),
   )
   extended_attributes_issuer_uri_arg = base.Argument(
@@ -125,10 +128,11 @@ def ExtendedAttributesOAuth2ClientAttributesGroup(required=True):
       required=required,
       metavar='EXTENDED_ATTRIBUTES_ISSUER_URI',
       help=(
-          "OIDC identity provider's issuer URI. Must be a valid URI using"
-          ' the `https` scheme. Required to get the OIDC discovery'
-          ' document. The --extended-attributes-issuer-uri flag is restricted.'
-          ' We suggest you use SCIM instead.'
+          "OIDC identity provider's issuer URI. Must be a valid URI using the"
+          ' `https` scheme. Required to get the OIDC discovery document. The'
+          ' --extended-attributes-issuer-uri flag is restricted. We suggest you'
+          ' use [SCIM](https://docs.cloud.google.com/iam/docs/configure-scim-oidc-saml)'
+          ' instead.'
       ),
   )
   # Adding this flag as a ArgList to hide `AZURE_AD_GROUPS_DISPLAY_NAME` from
@@ -147,9 +151,11 @@ def ExtendedAttributesOAuth2ClientAttributesGroup(required=True):
       required=required,
       metavar='EXTENDED_ATTRIBUTES_TYPE',
       help=(
-          'Represents the identity provider and type of claims that should'
-          ' be fetched. The --extended-attributes-type flag is restricted. We'
-          ' suggest you use SCIM instead.'
+          'Represents the identity provider and type of claims that should be'
+          ' fetched. The --extended-attributes-type flag is restricted. We'
+          ' suggest you use'
+          ' [SCIM](https://docs.cloud.google.com/iam/docs/configure-scim-oidc-saml)'
+          ' instead.'
       ),
   )
   extended_attributes_filter_arg = base.Argument(
@@ -162,20 +168,28 @@ def ExtendedAttributesOAuth2ClientAttributesGroup(required=True):
           'The filter used to request specific records from the IdP. By'
           ' default, all of the groups that are associated with a user are'
           ' fetched. For Microsoft Entra ID, you can add `$search` query'
-          ' parameters using [Keyword Query Language]'
-          ' (https://learn.microsoft.com/en-us/sharepoint/dev/general-development/keyword-query-language-kql-syntax-reference).'
-          ' To learn more about `$search` querying in Microsoft Entra ID, see'
-          ' [Use the `$search` query parameter]'
-          ' (https://learn.microsoft.com/en-us/graph/search-query-parameter).'
-          ' \n\nAdditionally, Workforce Identity Federation automatically adds'
-          ' the following [`$filter` query parameters]'
-          ' (https://learn.microsoft.com/en-us/graph/filter-query-parameter),'
-          ' based on the value of `attributes_type`. Values passed to `filter`'
-          ' are converted to `$search` query parameters. Additional `$filter`'
-          ' query parameters cannot be added using this field. \n\n*'
-          ' `AZURE_AD_GROUPS_ID`: `securityEnabled` filter is applied. The'
-          ' --extended-attributes-filter flag is restricted. We suggest you use'
-          ' SCIM instead.'
+          ' parameters using'
+          ' [Keyword Query Language]('
+          'https://learn.microsoft.com/en-us/sharepoint/dev/'
+          'general-development/'
+          'keyword-query-language-kql-syntax-reference).'
+          ' To learn more about `$search` querying in Microsoft'
+          ' Entra ID, see [Use the `$search` query parameter]('
+          'https://learn.microsoft.com/en-us/graph/search-query-parameter).'
+          ' \n\nAdditionally, Workforce Identity Federation automatically'
+          ' adds the following [`$filter` query parameters]('
+          'https://learn.microsoft.com/en-us/graph/filter-query-parameter),'
+          ' based on the value of `attributes_type`. Values passed to'
+          ' `filter` are converted to `$search` query parameters.'
+          ' Additional `$filter` query parameters cannot be added using'
+          ' this field. \n\n*'
+          ' `AZURE_AD_GROUPS_ID`: `securityEnabled` filter is applied. \n\n'
+          ' The --extended-attributes-filter flag is restricted.'
+          ' We suggest you use'
+          ' [SCIM]('
+          'https://docs.cloud.google.com/iam/docs/'
+          'configure-scim-oidc-saml)'
+          ' instead.'
       ),
   )
   create_extended_attributes_group = base.ArgumentGroup()

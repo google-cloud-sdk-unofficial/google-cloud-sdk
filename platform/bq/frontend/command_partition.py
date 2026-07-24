@@ -95,19 +95,19 @@ class Partition(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstr
     source_table_prefix = cast(
         bq_id_utils.ApiClientHelper.TableReference, source_table_prefix
     )
-    destination_table = bq_client_utils.GetReference(
+    destination_table = bq_client_utils.GetReference(  # pyrefly: ignore[bad-assignment]
         id_fallbacks=client,
         identifier=destination_table,
         allow_pcnt_identifier_format=True,
     )
     bq_id_utils.typecheck(
-        destination_table,
+        destination_table,  # pyrefly: ignore[bad-argument-type]
         bq_id_utils.ApiClientHelper.TableReference,
         'Cannot determine table associated with "%s"' % (destination_table,),
         is_usage_error=True,
     )
     # TODO(b/333595633): Fix typecheck so the response is cast.
-    destination_table = cast(
+    destination_table = cast(  # pyrefly: ignore[bad-assignment]
         bq_id_utils.ApiClientHelper.TableReference, destination_table
     )
 
@@ -121,7 +121,7 @@ class Partition(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstr
           [source_table_prefix, destination_table]
       )
 
-    destination_dataset = destination_table.GetDatasetReference()
+    destination_dataset = destination_table.GetDatasetReference()  # pyrefly: ignore[missing-attribute]
 
     utils_formatting.configure_formatter(
         formatter, bq_id_utils.ApiClientHelper.TableReference
@@ -169,7 +169,7 @@ class Partition(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstr
     # Check to see if we need to create the destination table.
     if not client_table.table_exists(
         apiclient=client.apiclient,
-        reference=destination_table,
+        reference=destination_table,  # pyrefly: ignore[bad-argument-type]
     ):
       source_table_id = representative_table['tableId']
       source_table_ref = source_dataset.GetTableReference(source_table_id)
@@ -192,14 +192,14 @@ class Partition(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstr
 
       client_table.create_table(
           apiclient=client.apiclient,
-          reference=destination_table,
+          reference=destination_table,  # pyrefly: ignore[bad-argument-type]
           schema=source_table_schema,
           time_partitioning=time_partitioning,
       )
       print('%s successfully created.' % (destination_table,))
 
     for partition_id in partition_ids:
-      destination_table_id = '%s$%s' % (destination_table.tableId, partition_id)
+      destination_table_id = '%s$%s' % (destination_table.tableId, partition_id)  # pyrefly: ignore[missing-attribute]
       source_table_id = '%s%s' % (source_id_prefix, partition_id)
       current_job_id = '%s%s' % (job_id_prefix, partition_id)
 

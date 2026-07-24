@@ -14,16 +14,35 @@
 # limitations under the License.
 """Describing Compute Engine commitments."""
 
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.commitments import flags
 
 
+@base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine commitment."""
   detailed_help = {
+      'DESCRIPTION': """\
+          *{command}* displays all data associated with a Compute Engine
+          resource-based commitment.
+
+          Note that the memory capacity returned by this command is
+          in MB (where 1 MB = 2^20 bytes, equivalent to MiB).
+
+          In contrast, the `gcloud compute commitments create` command and the
+          Web Console default to GB (where 1 GB = 2^30 bytes, equivalent to GiB).
+          If you plan to repurchase commitments for your resources by using the
+          Google Cloud console or the `gcloud compute commitments create`
+          command, then don't reuse the memory numbers directly from the output
+          of the `describe` command. Make sure to convert the memory amount to
+          GB first. Otherwise, you end up purchasing a commitment for 1024
+          times the intended amount.
+
+          Local SSD capacity, however, is consistently measured in GB across both
+          `describe` and `create` commands.
+      """,
       'EXAMPLES': '''
         To describe the commitment called ``commitment-1'' in the ``us-central1''
         region, run:

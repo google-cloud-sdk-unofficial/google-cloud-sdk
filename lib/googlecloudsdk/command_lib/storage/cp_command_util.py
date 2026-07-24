@@ -231,6 +231,10 @@ def add_cp_mv_rsync_flags(parser, release_track=base.ReleaseTrack.GA):
   flags.add_object_metadata_flags(parser, release_track=release_track)
   flags.add_precondition_flags(parser)
   parser.add_argument(
+      '--do-not-decompress',
+      action='store_true',
+      help='Do not automatically decompress downloaded gzip files.')
+  parser.add_argument(
       '--content-md5',
       metavar='MD5_DIGEST',
       help=('Manually specified MD5 hash digest for the contents of an uploaded'
@@ -268,10 +272,6 @@ def add_cp_and_mv_flags(parser, release_track=base.ReleaseTrack.GA):
   add_cp_mv_rsync_flags(parser, release_track=release_track)
   parser.add_argument(
       '-A', '--all-versions', action='store_true', help=_ALL_VERSIONS_HELP_TEXT)
-  parser.add_argument(
-      '--do-not-decompress',
-      action='store_true',
-      help='Do not automatically decompress downloaded gzip files.')
   parser.add_argument(
       '-D',
       '--daisy-chain',

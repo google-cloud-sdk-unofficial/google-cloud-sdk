@@ -27,6 +27,14 @@ def SetProcessNameInBody(ref, args, req):
   return req
 
 
+def SetRunNameInBody(ref, args, req):
+  """Set the run name in the request body."""
+  del args
+  if req.googleCloudDatacatalogLineageV1Run is not None:
+    req.googleCloudDatacatalogLineageV1Run.name = ref.RelativeName()
+  return req
+
+
 def ParseAttributeValue(value):
   """Parse attribute value as YAML/JSON and convert to JsonValue message."""
   try:
@@ -34,3 +42,11 @@ def ParseAttributeValue(value):
   except Exception:  # pylint: disable=broad-except
     parsed_python_value = value
   return encoding.PyValueToMessage(extra_types.JsonValue, parsed_python_value)
+
+
+def SetLineageEventNameInBody(ref, args, req):
+  """Set the lineage event name in the request body."""
+  del args
+  if req.googleCloudDatacatalogLineageV1LineageEvent is not None:
+    req.googleCloudDatacatalogLineageV1LineageEvent.name = ref.RelativeName()
+  return req

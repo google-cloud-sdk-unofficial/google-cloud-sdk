@@ -70,6 +70,8 @@ class Update(base.UpdateCommand):
     flags.AddShieldedInstanceIntegrityPolicyArgs(parser)
     flags.AddDisplayDeviceArg(parser, is_update=True)
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)
+    flags.AddWorkloadIdentityConfigArgs(parser)
+    flags.AddMostDisruptiveAllowedActionArgs(parser)
 
   def Run(self, args):
     return self._Run(args)
@@ -89,6 +91,8 @@ class Update(base.UpdateCommand):
     most_disruptive_allowed_action_choice = getattr(
         args, 'most_disruptive_allowed_action', 'REFRESH'
     )
+    if most_disruptive_allowed_action_choice is None:
+      most_disruptive_allowed_action_choice = 'REFRESH'
     most_disruptive_allowed_action = arg_utils.ChoiceToEnum(
         most_disruptive_allowed_action_choice,
         most_disruptive_allowed_action_enum,
@@ -557,6 +561,8 @@ class UpdateBeta(Update):
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)
     partner_metadata_utils.AddPartnerMetadataArgs(parser)
     flags.AddGracefulShutdownArgs(parser)
+    flags.AddWorkloadIdentityConfigArgs(parser)
+    flags.AddMostDisruptiveAllowedActionArgs(parser)
 
   def Run(self, args):
     return self._Run(args)

@@ -72,7 +72,7 @@ def _GetInvokerIamCheck(record):
   """Gets whether the invoker IAM check is enabled or disabled."""
   disabled = (
       record.annotations.get(container_resource.DISABLE_IAM_ANNOTATION)
-      == 'true'
+      == container_resource.DISABLE_IAM_ANNOTATION_VALUE_DISABLED
   )
   return 'disabled' if disabled else 'enabled'
 

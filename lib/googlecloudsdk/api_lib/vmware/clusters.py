@@ -31,14 +31,25 @@ class ClustersClient(util.VmwareClientBase):
         name=resource.RelativeName())
     return self.service.Get(request)
 
-  def Create(self, resource, nodes_configs, autoscaling_settings=None):
+  def Create(
+      self,
+      resource,
+      nodes_configs,
+      autoscaling_settings=None,
+      vsan_type=None,
+  ):
     parent = resource.Parent().RelativeName()
     cluster_id = resource.Name()
 
     node_type_configs = util.ConstructNodeParameterConfigMessage(
         self.messages.Cluster.NodeTypeConfigsValue,
-        self.messages.NodeTypeConfig, nodes_configs)
-    cluster = self.messages.Cluster(nodeTypeConfigs=node_type_configs)
+        self.messages.NodeTypeConfig,
+        nodes_configs,
+    )
+    cluster = self.messages.Cluster(
+        nodeTypeConfigs=node_type_configs,
+        vsanType=self.GetVsanType(vsan_type),
+    )
     cluster.autoscalingSettings = util.ConstructAutoscalingSettingsMessage(
         self.messages.AutoscalingSettings,
         self.messages.AutoscalingPolicy,
@@ -51,6 +62,17 @@ class ClustersClient(util.VmwareClientBase):
         clusterId=cluster_id)
 
     return self.service.Create(request)
+
+  def GetVsanType(self, vsan_type):
+    enum_class = self.messages.Cluster.VsanTypeValueValuesEnum
+    if not vsan_type:
+      return enum_class.VSAN_TYPE_UNSPECIFIED
+    vsan_type_upper = vsan_type.upper()
+    if vsan_type_upper == 'OSA':
+      return enum_class.VSAN_TYPE_OSA
+    elif vsan_type_upper == 'ESA':
+      return enum_class.VSAN_TYPE_ESA
+    return enum_class.VSAN_TYPE_UNSPECIFIED
 
   def Delete(self, resource):
     request = self.messages.VmwareengineProjectsLocationsPrivateCloudsClustersDeleteRequest(

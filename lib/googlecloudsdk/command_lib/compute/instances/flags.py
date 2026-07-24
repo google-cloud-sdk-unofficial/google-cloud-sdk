@@ -893,6 +893,13 @@ def AddCreateDiskArgs(
       of the following:
         * SCSI
         * NVME
+
+      *on-update-action*::: Specifies the action to take on instance update with
+      this disk. The default action is to use the existing disk. The value must
+      be one of the following:
+        * USE_EXISTING_DISK
+        * RECREATE_DISK
+        * RECREATE_DISK_IF_SOURCE_CHANGED
       """.format(
       disk_name=disk_name_extra_help,
       disk_mode=disk_mode_extra_help,
@@ -964,6 +971,7 @@ def AddCreateDiskArgs(
       'storage-pool': str,
       'labels': arg_parsers.ArgList(min_length=1, custom_delim_char=':'),
       'interface': str,
+      'on-update-action': str,
   }
 
   if include_name:

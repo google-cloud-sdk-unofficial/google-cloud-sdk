@@ -206,6 +206,10 @@ class Task(proto.Message):
             mark it failed and kill associated containers.
             This applies per attempt of a task, meaning each
             retry can run for the full timeout.
+        termination_grace_period (google.protobuf.duration_pb2.Duration):
+            Output only. Configured graceful termination
+            period for this task. This is the time between
+            SIGTERM and SIGKILL when shutting down.
         service_account (str):
             Email address of the IAM service account
             associated with the Task of a Job. The service
@@ -350,6 +354,11 @@ class Task(proto.Message):
     timeout: duration_pb2.Duration = proto.Field(
         proto.MESSAGE,
         number=17,
+        message=duration_pb2.Duration,
+    )
+    termination_grace_period: duration_pb2.Duration = proto.Field(
+        proto.MESSAGE,
+        number=41,
         message=duration_pb2.Duration,
     )
     service_account: str = proto.Field(

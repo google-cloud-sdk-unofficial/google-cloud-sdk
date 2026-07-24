@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA]
+  hints:
+    read_only: false
   help_text:
     brief: Update a Cloud Media Asset asset type.
     description: Update a Media Asset asset type.

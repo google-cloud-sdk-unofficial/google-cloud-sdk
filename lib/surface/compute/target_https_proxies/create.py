@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.compute.target_https_proxies import flags
 from googlecloudsdk.command_lib.compute.target_https_proxies import target_https_proxies_utils
 from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
 from googlecloudsdk.command_lib.network_security import resource_args as ns_resource_args
+from googlecloudsdk.command_lib.network_services import flags as network_services_flags
 
 
 def _DetailedHelp():
@@ -103,6 +104,7 @@ def _Run(
     traffic_director_security,
     certificate_map_ref,
     server_tls_policy_ref,
+    http_filters=None,
 ):
   """Issues requests necessary to create Target HTTPS Proxies."""
   client = holder.client
@@ -146,6 +148,9 @@ def _Run(
 
   if certificate_map_ref:
     target_https_proxy.certificateMap = certificate_map_ref.SelfLink()
+
+  if http_filters:
+    target_https_proxy.httpFilters = [ref.SelfLink() for ref in http_filters]
 
   if target_https_proxies_utils.IsRegionalTargetHttpsProxiesRef(proxy_ref):
     request = client.messages.ComputeRegionTargetHttpsProxiesInsertRequest(
@@ -273,4 +278,63 @@ class CreateBeta(Create):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
+  """Create a target HTTPS proxy."""
+
   _traffic_director_security = True
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateAlpha, cls).Args(parser)
+    network_services_flags.GetHttpFilterResourceArg(
+        'to attach', name='http-filters', required=False, plural=True
+    ).AddToParser(parser)
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    proxy_ref = self.TARGET_HTTPS_PROXY_ARG.ResolveAsResource(
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL
+    )
+    url_map_ref = target_https_proxies_utils.ResolveTargetHttpsProxyUrlMap(
+        args, self.URL_MAP_ARG, proxy_ref, holder.resources
+    )
+    ssl_certificates = target_https_proxies_utils.ResolveSslCertificates(
+        args, self.SSL_CERTIFICATES_ARG, proxy_ref, holder.resources
+    )
+    location = target_https_proxies_utils.GetLocation(proxy_ref)
+    if ssl_certificates:
+      ssl_certificates = [ref.SelfLink() for ref in ssl_certificates]
+    elif args.certificate_manager_certificates:
+      ssl_certificates = [
+          reference_utils.BuildCcmCertificateUrl(
+              proxy_ref.project, location, certificate_name
+          )
+          for certificate_name in args.certificate_manager_certificates
+      ]
+    if args.ssl_policy:
+      ssl_policy_ref = target_https_proxies_utils.ResolveSslPolicy(
+          args, self.SSL_POLICY_ARG, proxy_ref, holder.resources
+      )
+    else:
+      ssl_policy_ref = None
+    certificate_map_ref = args.CONCEPTS.certificate_map.Parse()
+
+    server_tls_policy_ref = None
+    if args.IsKnownAndSpecified('server_tls_policy'):
+      server_tls_policy_ref = args.CONCEPTS.server_tls_policy.Parse()
+
+    http_filters = None
+    if args.IsKnownAndSpecified('http_filters'):
+      http_filters = args.CONCEPTS.http_filters.Parse()
+
+    return _Run(
+        args,
+        holder,
+        proxy_ref,
+        url_map_ref,
+        ssl_certificates,
+        ssl_policy_ref,
+        self._traffic_director_security,
+        certificate_map_ref,
+        server_tls_policy_ref,
+        http_filters=http_filters,
+    )

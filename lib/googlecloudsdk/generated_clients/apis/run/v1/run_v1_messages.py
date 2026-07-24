@@ -2998,6 +2998,9 @@ class InstanceSpec(_messages.Message):
       identity of the running container, and determines what permissions the
       Instance has. If not provided, the Instance will use the project's
       default service account.
+    terminationGracePeriodSeconds: Optional. Configured graceful termination
+      period for this instance. This is the time between SIGTERM and SIGKILL
+      when shutting down.
     volumes: Optional. List of volumes that can be mounted by containers
       belonging to the Instance.
   """
@@ -3032,7 +3035,8 @@ class InstanceSpec(_messages.Message):
   nodeSelector = _messages.MessageField('NodeSelectorValue', 2)
   restartPolicy = _messages.StringField(3)
   serviceAccountName = _messages.StringField(4)
-  volumes = _messages.MessageField('Volume', 5, repeated=True)
+  terminationGracePeriodSeconds = _messages.IntegerField(5)
+  volumes = _messages.MessageField('Volume', 6, repeated=True)
 
 
 class InstanceSplit(_messages.Message):
@@ -3554,15 +3558,15 @@ class ObjectMeta(_messages.Message):
       `run.googleapis.com/launch-stage`: Service, Job. *
       `run.googleapis.com/minScale`: Service. * `run.googleapis.com/maxScale`:
       Service. * `run.googleapis.com/manualInstanceCount`: Service. *
-      `run.googleapis.com/network-interfaces`: Revision, Execution. *
-      `run.googleapis.com/post-key-revocation-action-type`: Revision.
+      `run.googleapis.com/network-interfaces`: Revision, Execution, Instance.
+      * `run.googleapis.com/post-key-revocation-action-type`: Revision.
       `run.googleapis.com/scalingMode`: Service. *
       `run.googleapis.com/secrets`: Revision, Execution. *
       `run.googleapis.com/secure-session-agent`: Revision. *
       `run.googleapis.com/sessionAffinity`: Revision. *
       `run.googleapis.com/startup-cpu-boost`: Revision. *
-      `run.googleapis.com/vpc-access-connector`: Revision, Execution . *
-      `run.googleapis.com/vpc-access-egress`: Revision, Execution.
+      `run.googleapis.com/vpc-access-connector`: Revision, Execution. *
+      `run.googleapis.com/vpc-access-egress`: Revision, Execution, Instance.
     LabelsValue: Map of string keys and values that can be used to organize
       and categorize (scope and select) objects. May match selectors of
       replication controllers and routes.
@@ -3606,15 +3610,15 @@ class ObjectMeta(_messages.Message):
       `run.googleapis.com/launch-stage`: Service, Job. *
       `run.googleapis.com/minScale`: Service. * `run.googleapis.com/maxScale`:
       Service. * `run.googleapis.com/manualInstanceCount`: Service. *
-      `run.googleapis.com/network-interfaces`: Revision, Execution. *
-      `run.googleapis.com/post-key-revocation-action-type`: Revision.
+      `run.googleapis.com/network-interfaces`: Revision, Execution, Instance.
+      * `run.googleapis.com/post-key-revocation-action-type`: Revision.
       `run.googleapis.com/scalingMode`: Service. *
       `run.googleapis.com/secrets`: Revision, Execution. *
       `run.googleapis.com/secure-session-agent`: Revision. *
       `run.googleapis.com/sessionAffinity`: Revision. *
       `run.googleapis.com/startup-cpu-boost`: Revision. *
-      `run.googleapis.com/vpc-access-connector`: Revision, Execution . *
-      `run.googleapis.com/vpc-access-egress`: Revision, Execution.
+      `run.googleapis.com/vpc-access-connector`: Revision, Execution. *
+      `run.googleapis.com/vpc-access-egress`: Revision, Execution, Instance.
     clusterName: Not supported by Cloud Run
     creationTimestamp: UTC timestamp representing the server time when this
       object was created.
@@ -3687,14 +3691,14 @@ class ObjectMeta(_messages.Message):
     `run.googleapis.com/launch-stage`: Service, Job. *
     `run.googleapis.com/minScale`: Service. * `run.googleapis.com/maxScale`:
     Service. * `run.googleapis.com/manualInstanceCount`: Service. *
-    `run.googleapis.com/network-interfaces`: Revision, Execution. *
+    `run.googleapis.com/network-interfaces`: Revision, Execution, Instance. *
     `run.googleapis.com/post-key-revocation-action-type`: Revision.
     `run.googleapis.com/scalingMode`: Service. * `run.googleapis.com/secrets`:
     Revision, Execution. * `run.googleapis.com/secure-session-agent`:
     Revision. * `run.googleapis.com/sessionAffinity`: Revision. *
     `run.googleapis.com/startup-cpu-boost`: Revision. *
-    `run.googleapis.com/vpc-access-connector`: Revision, Execution . *
-    `run.googleapis.com/vpc-access-egress`: Revision, Execution.
+    `run.googleapis.com/vpc-access-connector`: Revision, Execution. *
+    `run.googleapis.com/vpc-access-egress`: Revision, Execution, Instance.
 
     Messages:
       AdditionalProperty: An additional property for a AnnotationsValue
@@ -4097,6 +4101,9 @@ class RevisionSpec(_messages.Message):
       identity of the running revision, and determines what permissions the
       revision has. If not provided, the revision will use the project's
       default service account.
+    terminationGracePeriodSeconds: Optional. Configured graceful termination
+      period for instances of this revision. This is the time between SIGTERM
+      and SIGKILL when shutting down.
     timeoutSeconds: Optional. TimeoutSeconds holds the max duration the
       instance is allowed for responding to a request. Cloud Run: defaults to
       300 seconds (5 minutes). Maximum allowed value is 3600 seconds (1 hour).
@@ -4136,8 +4143,9 @@ class RevisionSpec(_messages.Message):
   nodeSelector = _messages.MessageField('NodeSelectorValue', 5)
   runtimeClassName = _messages.StringField(6)
   serviceAccountName = _messages.StringField(7)
-  timeoutSeconds = _messages.IntegerField(8, variant=_messages.Variant.INT32)
-  volumes = _messages.MessageField('Volume', 9, repeated=True)
+  terminationGracePeriodSeconds = _messages.IntegerField(8)
+  timeoutSeconds = _messages.IntegerField(9, variant=_messages.Variant.INT32)
+  volumes = _messages.MessageField('Volume', 10, repeated=True)
 
 
 class RevisionStatus(_messages.Message):
@@ -6318,6 +6326,9 @@ class TaskSpec(_messages.Message):
       represents the identity of the running task, and determines what
       permissions the task has. If not provided, the task will use the
       project's default service account.
+    terminationGracePeriodSeconds: Optional. Configured graceful termination
+      period for instances of this task. This is the time between SIGTERM and
+      SIGKILL when shutting down.
     timeoutSeconds: Optional. Duration in seconds the task may be active
       before the system will actively try to mark it failed and kill
       associated containers. This applies per attempt of a task, meaning each
@@ -6356,8 +6367,9 @@ class TaskSpec(_messages.Message):
   maxRetries = _messages.IntegerField(2, variant=_messages.Variant.INT32)
   nodeSelector = _messages.MessageField('NodeSelectorValue', 3)
   serviceAccountName = _messages.StringField(4)
-  timeoutSeconds = _messages.IntegerField(5)
-  volumes = _messages.MessageField('Volume', 6, repeated=True)
+  terminationGracePeriodSeconds = _messages.IntegerField(5)
+  timeoutSeconds = _messages.IntegerField(6)
+  volumes = _messages.MessageField('Volume', 7, repeated=True)
 
 
 class TaskStatus(_messages.Message):

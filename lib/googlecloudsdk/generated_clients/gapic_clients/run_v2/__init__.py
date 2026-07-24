@@ -41,6 +41,8 @@ from .types.build import StorageSource
 from .types.build import SubmitBuildRequest
 from .types.build import SubmitBuildResponse
 from .types.condition import Condition
+from .types.container_status import BuildStatus
+from .types.container_status import ContainerStatus
 from .types.execution import CancelExecutionRequest
 from .types.execution import DeleteExecutionRequest
 from .types.execution import Execution
@@ -120,6 +122,7 @@ from .types.vendor_settings import BinaryAuthorization
 from .types.vendor_settings import BuildConfig
 from .types.vendor_settings import CpuScaling
 from .types.vendor_settings import NodeSelector
+from .types.vendor_settings import PubSubScaling
 from .types.vendor_settings import RevisionScaling
 from .types.vendor_settings import ServiceMesh
 from .types.vendor_settings import ServiceScaling
@@ -151,12 +154,14 @@ __all__ = (
 'BuildConfig',
 'BuildConfiguration',
 'BuildInfo',
+'BuildStatus',
 'BuildsClient',
 'CancelExecutionRequest',
 'CloudSqlInstance',
 'Condition',
 'Container',
 'ContainerPort',
+'ContainerStatus',
 'CpuScaling',
 'CreateInstanceRequest',
 'CreateJobRequest',
@@ -190,10 +195,10 @@ __all__ = (
 'HTTPHeader',
 'IngressTraffic',
 'Instance',
-'InstancesClient',
 'InstanceSplit',
 'InstanceSplitAllocationType',
 'InstanceSplitStatus',
+'InstancesClient',
 'Job',
 'JobsClient',
 'ListExecutionsRequest',
@@ -213,6 +218,7 @@ __all__ = (
 'NFSVolumeSource',
 'NodeSelector',
 'Probe',
+'PubSubScaling',
 'ResourceRequirements',
 'Revision',
 'RevisionScaling',

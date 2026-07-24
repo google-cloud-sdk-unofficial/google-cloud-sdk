@@ -32,6 +32,13 @@ ALGORITHM_MAPPER_FOR_IMPORT = arg_utils.ChoiceEnumMapper(
     'algorithm_enum_for_import', ALGORITHM_ENUM_FOR_IMPORT
 )
 
+ALGORITHM_ENUM_FOR_TRUSTED_IMPORT = (
+    MESSAGES.ImportTrustedKeyWrappedCryptoKeyVersionRequest.AlgorithmValueValuesEnum
+)
+ALGORITHM_MAPPER_FOR_TRUSTED_IMPORT = arg_utils.ChoiceEnumMapper(
+    'algorithm_enum_for_trusted_import', ALGORITHM_ENUM_FOR_TRUSTED_IMPORT
+)
+
 IMPORT_METHOD_ENUM = MESSAGES.ImportJob.ImportMethodValueValuesEnum
 IMPORT_METHOD_MAPPER = arg_utils.ChoiceEnumMapper(
     'import_method_enum', IMPORT_METHOD_ENUM
@@ -45,6 +52,7 @@ PURPOSE_MAP = {
     'asymmetric-encryption': PURPOSE_ENUM.ASYMMETRIC_DECRYPT,
     'mac': PURPOSE_ENUM.MAC,
     'key-encapsulation': PURPOSE_ENUM.KEY_ENCAPSULATION,
+    'aes-wrapping': PURPOSE_ENUM.AES_WRAPPING,
 }
 
 PROTECTION_LEVEL_ENUM = (
@@ -117,6 +125,9 @@ VALID_ALGORITHMS_MAP = {
         'ml-kem-768',
         'ml-kem-1024',
         'kem-xwing',
+    ],
+    PURPOSE_ENUM.AES_WRAPPING: [
+        'aes-256-kwp',
     ],
 }
 

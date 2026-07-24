@@ -111,6 +111,18 @@ class DataProfile(base.Command):
         help='Publish data profile results to Dataplex catalog.',
         default=False,
     )
+    data_spec_arg.add_argument(
+        '--mode',
+        choices={
+            'STANDARD': (
+                'Profile your data with customizable scan settings.'
+            ),
+            'LIGHTWEIGHT': (
+                'Get quick insights with a low-latency, low-fidelity scan.'
+            ),
+        },
+        help='The execution mode for the profile scan.',
+    )
     execution_spec = parser.add_group(
         help='Data profile scan execution settings.'
     )
@@ -155,6 +167,23 @@ class DataProfile(base.Command):
       'Status code: {status_code}. {status_message}.'
   )
   def Run(self, args):
+    setattr(args, 'scan_type', 'PROFILE')
+    if (
+        args.IsKnownAndSpecified('mode')
+        and args.mode == 'LIGHTWEIGHT'
+        and (
+            args.IsKnownAndSpecified('sampling_percent')
+            or args.IsKnownAndSpecified('row_filter')
+            or args.IsKnownAndSpecified('include_field_names')
+            or args.IsKnownAndSpecified('exclude_field_names')
+        )
+    ):
+      raise exceptions.InvalidArgumentException(
+          '--mode',
+          'Cannot specify --sampling-percent, --row-filter, '
+          '--include-field-names, or --exclude-field-names '
+          'when --mode is LIGHTWEIGHT.'
+      )
     update_mask = datascan.GenerateUpdateMask(args)
     if len(update_mask) < 1:
       raise exceptions.HttpException(
@@ -164,7 +193,6 @@ class DataProfile(base.Command):
     datascan_ref = args.CONCEPTS.datascan.Parse()
     dataplex_client = dataplex_util.GetClientInstance()
     message = dataplex_util.GetMessageModule()
-    setattr(args, 'scan_type', 'PROFILE')
     update_req_op = dataplex_client.projects_locations_dataScans.Patch(
         message.DataplexProjectsLocationsDataScansPatchRequest(
             name=datascan_ref.RelativeName(),

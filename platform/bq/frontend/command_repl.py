@@ -77,7 +77,7 @@ class CommandLoop(cmd.Cmd):
   def postloop(self) -> None:
     print('Goodbye.')
 
-  def completedefault(
+  def completedefault(  # pyrefly: ignore[bad-override]
       self, unused_text, line: str, unused_begidx, unused_endidx
   ):
     if not line:

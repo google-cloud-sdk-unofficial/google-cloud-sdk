@@ -41,7 +41,10 @@ class Describe(calliope_base.Command):
     )
     group.add_argument(
         "--runner",
-        help="The full resource name to describe a pipeline from.",
+        help=(
+            "The full resource name of the runner to "
+            "describe a pipeline from."
+        ),
     )
     parser.add_argument(
         "--bundle",

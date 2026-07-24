@@ -139,6 +139,9 @@ class SubscriptionsClient(object):
       bigtable_app_profile_id=None,
       bigtable_service_account_email=None,
       bigtable_write_metadata=None,
+      bigtable_use_row_key_schema=None,
+      bigtable_key_fields=None,
+      bigtable_delimiter=None,
       message_transforms_file=None,
       tags=None,
   ):
@@ -210,6 +213,12 @@ class SubscriptionsClient(object):
         writing to Bigtable.
       bigtable_write_metadata (bool): Whether or not to write metadata fields
         when writing to Bigtable.
+      bigtable_use_row_key_schema (bool): Whether or not to use the row key
+        schema to parse the Pub/Sub message to write to Bigtable.
+      bigtable_key_fields (list[str]): The fields from the Pub/Sub message to
+        use as the row key when writing to Bigtable.
+      bigtable_delimiter (str): The delimiter to use for the row key when
+        writing to Bigtable.
       message_transforms_file (str): The file path to the JSON or YAML file
         containing the message transforms.
       tags (TagsValue): The tags Keys/Values to be bound to the subscription.
@@ -264,6 +273,9 @@ class SubscriptionsClient(object):
             bigtable_app_profile_id,
             bigtable_service_account_email,
             bigtable_write_metadata,
+            use_row_key_schema=bigtable_use_row_key_schema,
+            key_fields=bigtable_key_fields,
+            delimiter=bigtable_delimiter,
         ),
     )
     if message_transforms_file:
@@ -546,11 +558,11 @@ class SubscriptionsClient(object):
       )
       if output_format == 'text':
         cloud_storage_config.textConfig = self.messages.TextConfig()
-        # TODO(b/318394291) Propagate error should avro fields be populated.
+        # TODO: b/318394291 - Propagate error should avro fields be populated.
       elif output_format == 'avro':
         cloud_storage_config.avroConfig = self.messages.AvroConfig(
             writeMetadata=write_metadata if write_metadata else False,
-            # TODO(b/318394291) set use_topic_schema else False when promoting
+            # TODO: b/318394291 - set use_topic_schema else False when promoting
             # to GA.
             useTopicSchema=use_topic_schema if use_topic_schema else None,
         )
@@ -572,7 +584,14 @@ class SubscriptionsClient(object):
     return None
 
   def _BigtableConfig(
-      self, table, app_profile_id, service_account_email, write_metadata
+      self,
+      table,
+      app_profile_id,
+      service_account_email,
+      write_metadata,
+      use_row_key_schema=None,
+      key_fields=None,
+      delimiter=None,
   ):
     """Builds BigtableConfig message from argument values.
 
@@ -581,16 +600,46 @@ class SubscriptionsClient(object):
       app_profile_id (str): The app profile to use.
       service_account_email (str): The service account to use.
       write_metadata (bool): Whether or not to write metadata fields.
+      use_row_key_schema (bool): Whether or not to use the row key schema.
+      key_fields (list[str]): The key fields to use.
+      delimiter (str): The delimiter to use.
 
     Returns:
       BigtableConfig message or None
     """
     if table:
+      column_family_mapping = None
+      if use_row_key_schema and (key_fields or delimiter):
+        raise ValueError(
+            'Cannot set both row key schema and key fields or delimiter.'
+        )
+      elif use_row_key_schema:
+        column_family_mapping = self.messages.ColumnFamilyMapping(
+            rowKeySchema=self.messages.RowKeySchema()
+        )
+      elif not key_fields and delimiter:
+        raise ValueError('Cannot specify delimiter without key_fields.')
+      elif key_fields:
+        delimiter_bytes = None
+        if delimiter is not None:
+          delimiter_bytes = (
+              delimiter.encode('utf-8')
+              if isinstance(delimiter, str)
+              else delimiter
+          )
+        column_family_mapping = self.messages.ColumnFamilyMapping(
+            delimitedKey=self.messages.DelimitedKey(
+                keyFields=key_fields,
+                delimiter=delimiter_bytes,
+            )
+        )
+
       return self.messages.BigtableConfig(
           table=table,
           appProfileId=app_profile_id,
           serviceAccountEmail=service_account_email,
           writeMetadata=write_metadata,
+          columnFamilyMapping=column_family_mapping,
       )
     return None
 
@@ -670,6 +719,9 @@ class SubscriptionsClient(object):
       bigtable_app_profile_id=None,
       bigtable_service_account_email=None,
       bigtable_write_metadata=None,
+      bigtable_use_row_key_schema=None,
+      bigtable_key_fields=None,
+      bigtable_delimiter=None,
       clear_bigtable_config=False,
       message_transforms_file=None,
       clear_message_transforms=False,
@@ -749,6 +801,9 @@ class SubscriptionsClient(object):
         writing to Bigtable.
       bigtable_write_metadata (bool): Whether or not to write metadata fields
         when writing to Bigtable.
+      bigtable_use_row_key_schema (bool): Whether or not to use row key schema.
+      bigtable_key_fields (list[str]): The key fields to use.
+      bigtable_delimiter (str): The delimiter to use.
       clear_bigtable_config (bool): If set, clear the Bigtable config from the
         subscription.
       message_transforms_file (str): The file path to the JSON or YAML file
@@ -817,6 +872,9 @@ class SubscriptionsClient(object):
           bigtable_app_profile_id,
           bigtable_service_account_email,
           bigtable_write_metadata,
+          use_row_key_schema=bigtable_use_row_key_schema,
+          key_fields=bigtable_key_fields,
+          delimiter=bigtable_delimiter,
       )
 
     if clear_push_no_wrapper_config:

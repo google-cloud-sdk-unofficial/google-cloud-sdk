@@ -14,42 +14,13 @@ package = 'devicerun'
 class AllocationConfig(_messages.Message):
   r"""Allocation config.
 
-  Enums:
-    AllocationExitStrategyValueValuesEnum: Optional. The strategy to exit the
-      allocation. If not set, the default strategy is WAIT_UNTIL_SATISFIED.
-
   Fields:
-    allocationExitStrategy: Optional. The strategy to exit the allocation. If
-      not set, the default strategy is WAIT_UNTIL_SATISFIED.
     deviceConfigs: Required. At least one device config is required. If more
       than one device config is required, the multiple devices are allocated
-      to each shard of the OmniLab job, to running multi-device-interaction
-      tests.
-    maxAllocationWaitTime: Optional. Only valid when allocation_exit_strategy
-      is WAIT_UNTIL_SATISFIED.
+      to each shard of the OmniLab job to run multi-device-interaction tests.
   """
 
-  class AllocationExitStrategyValueValuesEnum(_messages.Enum):
-    r"""Optional. The strategy to exit the allocation. If not set, the default
-    strategy is WAIT_UNTIL_SATISFIED.
-
-    Values:
-      ALLOCATION_EXIT_STRATEGY_UNSPECIFIED: Unspecified allocation exit
-        strategy.
-      WAIT_UNTIL_SATISFIED: Wait until the allocation is satisfied or the
-        max_allocation_wait_time is reached.
-      FAIL_FAST_NO_MATCH: Fail the allocation if no device matches the
-        requirement.
-      FAIL_FAST_NO_IDLE: Fail the allocation if no device is idle.
-    """
-    ALLOCATION_EXIT_STRATEGY_UNSPECIFIED = 0
-    WAIT_UNTIL_SATISFIED = 1
-    FAIL_FAST_NO_MATCH = 2
-    FAIL_FAST_NO_IDLE = 3
-
-  allocationExitStrategy = _messages.EnumField('AllocationExitStrategyValueValuesEnum', 1)
-  deviceConfigs = _messages.MessageField('DeviceConfig', 2, repeated=True)
-  maxAllocationWaitTime = _messages.StringField(3)
+  deviceConfigs = _messages.MessageField('DeviceConfig', 1, repeated=True)
 
 
 class AndroidInstallPackagesDeviceAction(_messages.Message):
@@ -89,17 +60,17 @@ class AndroidInstrumentationTest(_messages.Message):
     AdditionalTestOptionsValue: Optional. Additional test options to pass to
       the test runner. Passed to `am instrument` command as `-e` options,
       which will be passed to the instrumentation test runner using its
-      `onCreate()` method. Formats supoorted in test_targets are not allowed
-      to be used here. Limits: - Maximum number of entries: 40. - Maximum key
-      length: 128 characters. - Maximum value length: 4096 characters.
+      `onCreate()` method. Formats supported in test_targets are not allowed
+      to be used here. Limits: - Maximum number of entries: 32. - Maximum key
+      size: 64 bytes (UTF-8). - Maximum value size: 1024 bytes (UTF-8).
 
   Fields:
     additionalTestOptions: Optional. Additional test options to pass to the
       test runner. Passed to `am instrument` command as `-e` options, which
       will be passed to the instrumentation test runner using its `onCreate()`
-      method. Formats supoorted in test_targets are not allowed to be used
-      here. Limits: - Maximum number of entries: 40. - Maximum key length: 128
-      characters. - Maximum value length: 4096 characters.
+      method. Formats supported in test_targets are not allowed to be used
+      here. Limits: - Maximum number of entries: 32. - Maximum key size: 64
+      bytes (UTF-8). - Maximum value size: 1024 bytes (UTF-8).
     enableCodeCoverage: Optional. Whether to enable code coverage collection
       for the test. A coverage file `coverage.ec` will be uploaded to the
       results folder. For this to work, your classes have to be instrumented
@@ -136,9 +107,9 @@ class AndroidInstrumentationTest(_messages.Message):
     r"""Optional. Additional test options to pass to the test runner. Passed
     to `am instrument` command as `-e` options, which will be passed to the
     instrumentation test runner using its `onCreate()` method. Formats
-    supoorted in test_targets are not allowed to be used here. Limits: -
-    Maximum number of entries: 40. - Maximum key length: 128 characters. -
-    Maximum value length: 4096 characters.
+    supported in test_targets are not allowed to be used here. Limits: -
+    Maximum number of entries: 32. - Maximum key size: 64 bytes (UTF-8). -
+    Maximum value size: 1024 bytes (UTF-8).
 
     Messages:
       AdditionalProperty: An additional property for a
@@ -202,7 +173,8 @@ class AndroidNativeBinary(_messages.Message):
       characters and must conform to POSIX standards. Each value is limited to
       2048 characters. The total size of all environment variables must not
       exceed 16 KiB.
-    executionTimeout: Required. The timeout of the execution.
+    executionTimeout: Optional. The timeout of the execution. Default value: 5
+      min. Range: [1 min, 60 min].
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -279,6 +251,7 @@ class AndroidPullFilesDeviceAction(_messages.Message):
 
   Fields:
     paths: Required. Absolute directory or file paths to pull from the device.
+      Limits: - A maximum of 10 paths are allowed.
   """
 
   paths = _messages.StringField(1, repeated=True)
@@ -290,7 +263,8 @@ class AndroidPushFilesDeviceAction(_messages.Message):
   device permissions allow.
 
   Fields:
-    fileConfigs: Required. Configs of pushing files to the device.
+    fileConfigs: Required. Configs of pushing files to the device. Limits: - A
+      maximum of 50 files are allowed.
   """
 
   fileConfigs = _messages.MessageField('FileConfig', 1, repeated=True)
@@ -308,10 +282,6 @@ class AndroidRecordVideoDeviceAction(_messages.Message):
   discardOnPass = _messages.BooleanField(1)
 
 
-class AndroidRoboTest(_messages.Message):
-  r"""Android specific Robo test message."""
-
-
 class AndroidSwitchLocaleDeviceAction(_messages.Message):
   r"""Switches the locale (language and region) of the device.
 
@@ -324,26 +294,6 @@ class AndroidSwitchLocaleDeviceAction(_messages.Message):
   """
 
   localeCode = _messages.StringField(1)
-
-
-class AttemptReport(_messages.Message):
-  r"""The report of the execution attempt.
-
-  Fields:
-    repeatIndex: Output only. The repeat index of this attempt.
-    retryIndex: Output only. The retry index of this attempt.
-    retryReason: Output only. The reason why this attempt is retried. Only
-      available when the attempt is retried.
-    shardIndex: Output only. The shard index of this attempt.
-    subDeviceIndex: Output only. The sub device index of this attempt. Only
-      available when the attempt is for multi-device-interaction tests.
-  """
-
-  repeatIndex = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  retryIndex = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  retryReason = _messages.StringField(3)
-  shardIndex = _messages.IntegerField(4, variant=_messages.Variant.INT32)
-  subDeviceIndex = _messages.IntegerField(5, variant=_messages.Variant.INT32)
 
 
 class CancelSessionRequest(_messages.Message):
@@ -405,7 +355,7 @@ class DeviceConfig(_messages.Message):
   r"""The configuration of a run on a device.
 
   Fields:
-    actions: Required. The actions to be performed on the device. Actions will
+    actions: Optional. The actions to be performed on the device. Actions will
       be executed in the order they are specified in the list.
     requirement: Required. The requirement of the device.
   """
@@ -549,8 +499,9 @@ class DevicerunProjectsLocationsSessionsCreateRequest(_messages.Message):
     session: A Session resource to be passed as the request body.
     sessionId: Optional. The ID to use for the session, which will become the
       final component of the resource name. If not provided, the server will
-      generate a value for this field. When provided, this value must be 4-63
-      characters, and valid characters are /[a-z0-9-]/.
+      generate a value for this field. When provided, this value must be
+      between 4 and 63 characters, and match the following regex:
+      ^a-z{2,61}[a-z0-9]$.
   """
 
   parent = _messages.StringField(1, required=True)
@@ -673,27 +624,27 @@ class Empty(_messages.Message):
 
 
 class ExecutionReport(_messages.Message):
-  r"""OUTPUT_ONLY. The runtime information and result report of an
-  sharding/retry attempt of a single allocation.
+  r"""The runtime information and result report of a single on-device
+  execution attempt.
 
   Fields:
-    attemptReport: Output only. The report of the execution attempt.
     displayName: Output only. The display_name set by users in the
       ExecutionConfig.
     endTime: Output only. The end time of the execution.
     genFiles: Output only. The output files of the execution.
     id: Output only. The unique identifier of the execution.
+    outputFiles: Output only. The output files of the execution.
     result: Output only. The result of the execution.
     startTime: Output only. The start time of the execution.
     status: Output only. The status of the execution.
     warnings: Output only. Non-fatal warnings collected during the execution.
   """
 
-  attemptReport = _messages.MessageField('AttemptReport', 1)
-  displayName = _messages.StringField(2)
-  endTime = _messages.StringField(3)
-  genFiles = _messages.MessageField('OutputFile', 4, repeated=True)
-  id = _messages.StringField(5)
+  displayName = _messages.StringField(1)
+  endTime = _messages.StringField(2)
+  genFiles = _messages.MessageField('OutputFile', 3, repeated=True)
+  id = _messages.StringField(4)
+  outputFiles = _messages.MessageField('OutputFile', 5, repeated=True)
   result = _messages.MessageField('Result', 6)
   startTime = _messages.StringField(7)
   status = _messages.MessageField('Status', 8)
@@ -714,13 +665,13 @@ class FileConfig(_messages.Message):
 
 class FlakyTestRetryStrategy(_messages.Message):
   r"""Default retry strategy. It will retry on test failures for up to
-  flaky_test_attempts(including the initial run). It also retries on infra
-  issues for up to 2 attempts(including the initial run). So in totally, an
+  flaky_test_attempts (including the initial run). It also retries on infra
+  issues for up to 2 attempts (including the initial run). So in total, an
   execution can run up to flaky_test_attempts * 2 times in the worst case.
 
   Fields:
-    flakyTestAttempts: Optional. The total attempts for flaky tests, including
-      the initial run. By default, it is 1 - no retry.
+    flakyTestAttempts: Required. The total attempts for flaky tests, including
+      the initial run. Default value: 1 (no retry). Range: [1, 5].
   """
 
   flakyTestAttempts = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -955,10 +906,6 @@ class IntRequirement(_messages.Message):
   range = _messages.MessageField('IntRangeRequirement', 2)
 
 
-class IosRoboTest(_messages.Message):
-  r"""iOS specific Robo test message."""
-
-
 class IssueSummary(_messages.Message):
   r"""Describes the summary of an issue (error or warning) with structured
   details.
@@ -1001,12 +948,10 @@ class JobAction(_messages.Message):
   Fields:
     androidInstrumentationTest: Android instrumentation test.
     androidNativeBinary: Android native binary execution.
-    roboTest: Robo test.
   """
 
   androidInstrumentationTest = _messages.MessageField('AndroidInstrumentationTest', 1)
   androidNativeBinary = _messages.MessageField('AndroidNativeBinary', 2)
-  roboTest = _messages.MessageField('RoboTest', 3)
 
 
 class JobConfig(_messages.Message):
@@ -1015,33 +960,32 @@ class JobConfig(_messages.Message):
   Messages:
     LabelsValue: Optional. User-defined metadata for tracking or
       categorization. These labels do not affect job execution and are
-      surfaced in the JobReport. The maximum number of labels is 64. Each
-      label key is limited to 128 characters and must conform to POSIX
-      standards. Each label value is limited to 1024 characters. The total
-      size of all labels must not exceed 16 KiB.
+      surfaced in the JobReport. Limits: - Maximum number of entries: 16. -
+      Maximum key size: 32 bytes (UTF-8). - Maximum value size: 1024 bytes
+      (UTF-8).
 
   Fields:
     action: Required. Job action.
     allocationConfig: Required. Allocation config.
-    displayName: Required. User-settable, human-readable name for the job. Up
-      to 63 characters.
+    displayName: Optional. User-settable, human-readable name for the job. If
+      set, it must be unique within the session. If not set, the display name
+      will default to `job-`, where `` is the 0-based index of the job in the
+      session formatted as three digits (e.g., job-000, job-001, ...). Maximum
+      size is 63 bytes when encoded as UTF-8. If set, must match regex:
+      `^A-Za-z0-9*$`.
     labels: Optional. User-defined metadata for tracking or categorization.
       These labels do not affect job execution and are surfaced in the
-      JobReport. The maximum number of labels is 64. Each label key is limited
-      to 128 characters and must conform to POSIX standards. Each label value
-      is limited to 1024 characters. The total size of all labels must not
-      exceed 16 KiB.
+      JobReport. Limits: - Maximum number of entries: 16. - Maximum key size:
+      32 bytes (UTF-8). - Maximum value size: 1024 bytes (UTF-8).
     settings: Optional. Job settings.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
     r"""Optional. User-defined metadata for tracking or categorization. These
-    labels do not affect job execution and are surfaced in the JobReport. The
-    maximum number of labels is 64. Each label key is limited to 128
-    characters and must conform to POSIX standards. Each label value is
-    limited to 1024 characters. The total size of all labels must not exceed
-    16 KiB.
+    labels do not affect job execution and are surfaced in the JobReport.
+    Limits: - Maximum number of entries: 16. - Maximum key size: 32 bytes
+    (UTF-8). - Maximum value size: 1024 bytes (UTF-8).
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.
@@ -1071,7 +1015,7 @@ class JobConfig(_messages.Message):
 
 
 class JobReport(_messages.Message):
-  r"""OUTPUT_ONLY. The runtime information and result report of a job.
+  r"""The runtime information and result report of a job.
 
   Messages:
     LabelsValue: Output only. The original labels provided by the user during
@@ -1134,11 +1078,9 @@ class JobSettings(_messages.Message):
 
   Fields:
     retrySettings: Optional. The retry settings of the job.
-    timeoutSettings: Optional. The timeout settings of the job.
   """
 
   retrySettings = _messages.MessageField('RetrySettings', 1)
-  timeoutSettings = _messages.MessageField('TimeoutSettings', 2)
 
 
 class ListLocationsResponse(_messages.Message):
@@ -1338,51 +1280,12 @@ class ResultCause(_messages.Message):
 class RetrySettings(_messages.Message):
   r"""Retry settings.
 
-  Enums:
-    RetryLevelValueValuesEnum: Optional. The retry level of the job. If not
-      set, the default retry level is ERROR.
-
   Fields:
     flakyTestRetryStrategy: Optional. The default retry strategy. Allows an
       Execution to retry on test failures and infrastructure errors.
-    maxAttempts: Optional. The maximum number of attempts for each shard.
-    retryLevel: Optional. The retry level of the job. If not set, the default
-      retry level is ERROR.
   """
-
-  class RetryLevelValueValuesEnum(_messages.Enum):
-    r"""Optional. The retry level of the job. If not set, the default retry
-    level is ERROR.
-
-    Values:
-      RETRY_LEVEL_UNSPECIFIED: Unspecified retry level.
-      ERROR: Retry on error.
-      FAIL: Retry on failure.
-    """
-    RETRY_LEVEL_UNSPECIFIED = 0
-    ERROR = 1
-    FAIL = 2
 
   flakyTestRetryStrategy = _messages.MessageField('FlakyTestRetryStrategy', 1)
-  maxAttempts = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  retryLevel = _messages.EnumField('RetryLevelValueValuesEnum', 3)
-
-
-class RoboTest(_messages.Message):
-  r"""The configuration of Robo test.
-
-  Fields:
-    androidRoboTest: Android Robo test.
-    iosRoboTest: iOS Robo test.
-    roboScripts: Optional. The file paths of the robo scripts.
-    targetApps: Required. The file paths of the apps under test. For iOS, only
-      one app is supported.
-  """
-
-  androidRoboTest = _messages.MessageField('AndroidRoboTest', 1)
-  iosRoboTest = _messages.MessageField('IosRoboTest', 2)
-  roboScripts = _messages.MessageField('InputFile', 3, repeated=True)
-  targetApps = _messages.MessageField('InputFile', 4, repeated=True)
 
 
 class Session(_messages.Message):
@@ -1408,7 +1311,8 @@ class SessionConfig(_messages.Message):
 
   Fields:
     displayName: Optional. User-settable, human-readable name for the session.
-      Up to 63 characters.
+      Maximum size is 63 bytes when encoded as UTF-8. If set, must match
+      regex: `^A-Za-z0-9*$`.
     jobConfigs: Required. Configs of the jobs in the session.
     notificationConfig: Optional. Notification config for the session.
     outputDirectoryConfig: Required. Output file directory config for the
@@ -1444,7 +1348,7 @@ class SessionOutputFileDirectoryConfig(_messages.Message):
 
 
 class SessionReport(_messages.Message):
-  r"""OUTPUT_ONLY. The runtime information and result report of a session.
+  r"""The runtime information and result report of a session.
 
   Fields:
     endTime: Output only. The end time of the session.
@@ -1465,12 +1369,23 @@ class SessionReport(_messages.Message):
 
 class SmartSharding(_messages.Message):
   r"""The smart sharding strategy to split the job into multiple shards based
-  on the test methods and their execution time.
+  on the test methods and their recorded execution time.
 
   Fields:
     targetedShardDuration: Required. The targeted duration of each shard.
+      Limits: - Must be at least 2 minutes. - Must be at most 60 minutes.
+      Shard duration is not guaranteed because smart sharding uses test case
+      history and default durations which may not be accurate. Durations are
+      calculated based on the following inputs: - Timing records from previous
+      runs of the same test case. - For new test cases, the average duration
+      of other known test cases. - A system-chosen, default duration if there
+      are no previous timing records available. Because the actual shard
+      duration can exceed the targeted shard duration, we recommend that you
+      set the targeted value at least 5 minutes less than the maximum allowed
+      instrumentation timeout. This approach avoids cancelling the shard
+      before all tests can finish.
     timingRecord: Required. The timing record file to use for smart sharding.
-      If the file is not existing, smart sharding will use default test time
+      If the file does not exist, smart sharding will use default test time
       (30s) for each test method to shard the job into multiple shards. This
       file will be overwritten with the latest timing record after the job is
       completed.
@@ -1601,18 +1516,6 @@ class StringSetRequirement(_messages.Message):
   values = _messages.StringField(1, repeated=True)
 
 
-class TimeoutSettings(_messages.Message):
-  r"""Timeout config.
-
-  Fields:
-    jobTimeout: Optional. The timeout of the job.
-    shardTimeout: Optional. The timeout of each shard.
-  """
-
-  jobTimeout = _messages.StringField(1)
-  shardTimeout = _messages.StringField(2)
-
-
 class UniformSharding(_messages.Message):
   r"""Uniformly shards test cases given a total number of shards. It will be
   translated to `-e numShard` and `-e shardIndex` AndroidJUnitRunner
@@ -1624,9 +1527,8 @@ class UniformSharding(_messages.Message):
   Fields:
     shardCount: Required. The total number of shards to create. This must
       always be a positive number that is no greater than the total number of
-      test cases. When you select one or more physical devices, the number of
-      shards must be <= 50. When you select one or more ARM virtual devices,
-      it must be <= 200.
+      test cases. Limits: - For physical devices, the number of shards must be
+      <= 20. - For virtual devices, the number of shards must be <= 200.
   """
 
   shardCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)

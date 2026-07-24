@@ -17,6 +17,7 @@
 
 import collections
 import datetime
+import io
 import os
 import stat
 
@@ -587,3 +588,25 @@ def run_if_setting_posix(
   if posix_to_set or (user_request_args and user_request_args.preserve_posix):
     return function(*args, **kwargs)
   return None
+
+
+def preallocate_disk_space(download_stream, start_byte, target_size):
+  """Preallocates disk space for a download stream to bypass VFS journal.
+
+  Args:
+    download_stream: The stream to write to.
+    start_byte: The starting byte offset.
+    target_size: The number of bytes to preallocate.
+  """
+  if not hasattr(os, 'posix_fallocate'):
+    log.debug('Metadata preallocation skipped: Not supported on this platform.')
+    return
+
+  if not target_size or not hasattr(download_stream, 'fileno'):
+    return
+
+  try:
+    fd = download_stream.fileno()
+    os.posix_fallocate(fd, start_byte, target_size)
+  except (io.UnsupportedOperation, AttributeError, OSError) as e:
+    log.debug('Metadata preallocation failed or skipped: %s', e)

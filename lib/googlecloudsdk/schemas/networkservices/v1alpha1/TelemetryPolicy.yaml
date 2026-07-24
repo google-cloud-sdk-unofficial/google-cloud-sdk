@@ -1,0 +1,60 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1alpha1 TelemetryPolicy export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- telemetryTarget
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  displayName:
+    description: Provides a human-readable name for the policy.
+    type: string
+  etag:
+    description: Provides a mechanism for optimistic concurrency control.
+    type: string
+  labels:
+    description: Set of label tags associated with the TelemetryPolicy resource.
+    $ref: LabelsValue.yaml
+  metricsConfiguration:
+    description: |-
+      Specifies the top-level configuration block within the telemetry policy
+      that contains all the settings for how metrics will be applied to the
+      target resources.
+    $ref: MetricsConfiguration.yaml
+  name:
+    description: |-
+      Identifier. Represents the resource name of the policy. Format: `pro
+      jects/{project}/locations/{location}/telemetryPolicies/{telemetry_policy
+      }`
+    type: string
+  telemetryTarget:
+    description: |-
+      Specifies the set of targets to which this telemetry policy applies.
+    $ref: TelemetryTarget.yaml
+  tracingConfiguration:
+    description: |-
+      Specifies the top-level configuration block within the telemetry policy
+      that contains all the settings for how tracing will be applied to the
+      target resources.
+    $ref: TracingConfiguration.yaml

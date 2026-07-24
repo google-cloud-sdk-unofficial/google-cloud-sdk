@@ -41,7 +41,8 @@
       required: false
       repeated: false
       help_text: |-
-        Optional user-provided description. Min length 0. Max length 2000.
+        Description of the exclusion window's purpose
+        (for example, "Black Friday freeze"). Max length is 2000 characters.
     - arg_name: duration
       api_field: exclusionWindow.duration
       required: true
@@ -49,7 +50,9 @@
       type: googlecloudsdk.core.util.times:ParseDuration
       processor: googlecloudsdk.core.util.times:FormatDurationForJson
       help_text: |-
-        How long the exclusion window lasts once started.
+        The length of time the exclusion window remains active once
+        started. While active, new experiments are blocked in the region.
+        Specified as a duration (for example, "86400s" for 24 hours).
   request:
     api_version: v1alpha
     collection:

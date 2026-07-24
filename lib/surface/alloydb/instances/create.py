@@ -15,8 +15,6 @@
 """Creates a new AlloyDB instance."""
 
 
-
-
 from googlecloudsdk.api_lib.alloydb import api_util
 from googlecloudsdk.api_lib.alloydb import instance_operations
 from googlecloudsdk.calliope import base
@@ -179,6 +177,7 @@ class CreateBeta(Create):
     )
 
     flags.AddAutoscalerCreateFlags(parser)
+    flags.AddEnablePscAutoDns(parser)
 
   def ConstructCreateRequestFromArgs(
       self, client, alloydb_messages, cluster_ref, args

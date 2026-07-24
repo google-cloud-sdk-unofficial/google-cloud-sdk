@@ -27,7 +27,7 @@
       with custom KMS encryption key
       `projects/project-id/locations/us-east4/keyRings/keyring/cryptoKeys/key`, run:
 
-        $ {command} my-autonomous-database --location=us-east4 --properties-encryption-key-provider=GOOGLE_MANAGED --properties-encryption-key-kms-key=projects/project-id/locations/us-east4/keyRings/keyring/cryptoKeys/key
+        $ {command} my-autonomous-database --location=us-east4 --encryption-key-provider=GOOGLE_MANAGED --encryption-key-kms=projects/project-id/locations/us-east4/keyRings/keyring/cryptoKeys/key
 
       To enable Local Data Guard on an AutonomousDatabase with id `my-instance` in the location `us-east4`
       and set the auto failover max data loss limit to 0, run:

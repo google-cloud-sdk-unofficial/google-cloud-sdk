@@ -771,6 +771,51 @@ def AddBigtableConfigFlags(parser, is_update):
           ' present) are added as entries in the attributes map.'
       ),
   )
+  column_family_mapping_group = (
+      # TODO(b/529405503): Make visible once ready for preview users.
+      bigtable_config_group.add_mutually_exclusive_group(hidden=True)
+  )
+  column_family_mapping_group.add_argument(
+      '--bigtable-use-row-key-schema',
+      action='store_true',
+      default=None,
+      # TODO(b/529405503): Make visible once ready for preview users.
+      hidden=True,
+      help=(
+          'Whether or not to write Bigtable row keys for each message based on'
+          ' the row key schema of the target table. Only one of'
+          ' --bigtable-use-row-key-schema or --bigtable-key-fields can be'
+          ' specified.'
+      ),
+  )
+  delimited_key_group = column_family_mapping_group.add_argument_group(
+      help='Bigtable Delimited Key Options.',
+      # TODO(b/529405503): Make visible once ready for preview users.
+      hidden=True,
+  )
+  delimited_key_group.add_argument(
+      '--bigtable-key-fields',
+      type=arg_parsers.ArgList(),
+      metavar='KEY_FIELD',
+      required=True,
+      # TODO(b/529405503): Make visible once ready for preview users.
+      hidden=True,
+      help=(
+          'The Pub/Sub message fields that will be joined for the Bigtable row'
+          ' key when writing to Bigtable. Only one of'
+          ' --bigtable-use-row-key-schema or --bigtable-key-fields can be'
+          ' specified.'
+      ),
+  )
+  delimited_key_group.add_argument(
+      '--bigtable-delimiter',
+      # TODO(b/529405503): Make visible once ready for preview users.
+      hidden=True,
+      help=(
+          'The delimiter to use when joining the Bigtable row key fields. Only'
+          ' allowed if --bigtable-key-fields is specified.'
+      ),
+  )
 
 
 def ParseSubscriptionRetentionDurationWithDefault(value):

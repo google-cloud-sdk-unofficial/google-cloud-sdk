@@ -40,7 +40,7 @@ _SCOPE_REPORT_CONTENTS = 'scopeReportContents'
 _FILE_EXTENSION = '.ods'
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Generate(base.CreateCommand):
   """Generate Audit Scope."""
@@ -113,7 +113,7 @@ class Generate(base.CreateCommand):
     files.WriteBinaryFileContents(file_path, content_bytes, overwrite=False)
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class GenerateAlpha(Generate):
   """Generate Audit Scope."""

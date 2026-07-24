@@ -45,6 +45,7 @@ def AddBaseArgs(parser):
   flags.AddPasswordPolicyEnableFailedAttemptsCheck(parser)
   flags.AddPasswordPolicyEnablePasswordVerification(parser)
   flags.AddDatabaseRoles(parser)
+  flags.AddServerRoles(parser)
 
 
 def AddBetaArgs(parser):
@@ -88,7 +89,9 @@ def RunBaseCreateCommand(args):
       password=args.password,
       passwordPolicy=password_policy,
       type=user_type,
-      databaseRoles=args.database_roles)
+      databaseRoles=args.database_roles,
+      serverRoles=args.server_roles,
+  )
 
   result_operation = sql_client.users.Insert(new_user)
   operation_ref = client.resource_parser.Create(

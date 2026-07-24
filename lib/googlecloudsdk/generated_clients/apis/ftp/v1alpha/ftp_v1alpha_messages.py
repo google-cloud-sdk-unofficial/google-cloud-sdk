@@ -203,15 +203,36 @@ class FtpProjectsLocationsServersDeleteRequest(_messages.Message):
 class FtpProjectsLocationsServersGetRequest(_messages.Message):
   r"""A FtpProjectsLocationsServersGetRequest object.
 
+  Enums:
+    ViewValueValuesEnum: Optional. The view of the Server resource to return.
+
   Fields:
     name: Required. Name of the resource
+    view: Optional. The view of the Server resource to return.
   """
 
+  class ViewValueValuesEnum(_messages.Enum):
+    r"""Optional. The view of the Server resource to return.
+
+    Values:
+      SERVER_VIEW_UNSPECIFIED: Default value. Equivalent to SERVER_VIEW_BASIC.
+      SERVER_VIEW_BASIC: Basic view. Excludes heavy configurations
+        (internal_config, external_config, google_managed_server_credential).
+      SERVER_VIEW_FULL: Full view. Includes all fields.
+    """
+    SERVER_VIEW_UNSPECIFIED = 0
+    SERVER_VIEW_BASIC = 1
+    SERVER_VIEW_FULL = 2
+
   name = _messages.StringField(1, required=True)
+  view = _messages.EnumField('ViewValueValuesEnum', 2)
 
 
 class FtpProjectsLocationsServersListRequest(_messages.Message):
   r"""A FtpProjectsLocationsServersListRequest object.
+
+  Enums:
+    ViewValueValuesEnum: Optional. The view of the Server resource to return.
 
   Fields:
     filter: Optional. Filtering results
@@ -221,13 +242,28 @@ class FtpProjectsLocationsServersListRequest(_messages.Message):
     pageToken: Optional. A token identifying a page of results the server
       should return.
     parent: Required. Parent value for ListServersRequest
+    view: Optional. The view of the Server resource to return.
   """
+
+  class ViewValueValuesEnum(_messages.Enum):
+    r"""Optional. The view of the Server resource to return.
+
+    Values:
+      SERVER_VIEW_UNSPECIFIED: Default value. Equivalent to SERVER_VIEW_BASIC.
+      SERVER_VIEW_BASIC: Basic view. Excludes heavy configurations
+        (internal_config, external_config, google_managed_server_credential).
+      SERVER_VIEW_FULL: Full view. Includes all fields.
+    """
+    SERVER_VIEW_UNSPECIFIED = 0
+    SERVER_VIEW_BASIC = 1
+    SERVER_VIEW_FULL = 2
 
   filter = _messages.StringField(1)
   orderBy = _messages.StringField(2)
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   parent = _messages.StringField(5, required=True)
+  view = _messages.EnumField('ViewValueValuesEnum', 6)
 
 
 class FtpProjectsLocationsServersPatchRequest(_messages.Message):
@@ -305,15 +341,36 @@ class FtpProjectsLocationsServersUsersDeleteRequest(_messages.Message):
 class FtpProjectsLocationsServersUsersGetRequest(_messages.Message):
   r"""A FtpProjectsLocationsServersUsersGetRequest object.
 
+  Enums:
+    ViewValueValuesEnum: Optional. The view of the User resource to return.
+
   Fields:
     name: Required. Name of the resource
+    view: Optional. The view of the User resource to return.
   """
 
+  class ViewValueValuesEnum(_messages.Enum):
+    r"""Optional. The view of the User resource to return.
+
+    Values:
+      USER_VIEW_UNSPECIFIED: Default value. Equivalent to USER_VIEW_BASIC.
+      USER_VIEW_BASIC: Basic view. Excludes heavy configurations
+        (user_credentials, storage_directory_mappings).
+      USER_VIEW_FULL: Full view. Includes all fields.
+    """
+    USER_VIEW_UNSPECIFIED = 0
+    USER_VIEW_BASIC = 1
+    USER_VIEW_FULL = 2
+
   name = _messages.StringField(1, required=True)
+  view = _messages.EnumField('ViewValueValuesEnum', 2)
 
 
 class FtpProjectsLocationsServersUsersListRequest(_messages.Message):
   r"""A FtpProjectsLocationsServersUsersListRequest object.
+
+  Enums:
+    ViewValueValuesEnum: Optional. The view of the User resource to return.
 
   Fields:
     filter: Optional. Filtering results
@@ -324,13 +381,28 @@ class FtpProjectsLocationsServersUsersListRequest(_messages.Message):
     pageToken: Optional. A token identifying a page of results the user should
       return.
     parent: Required. Parent value for ListUsersRequest
+    view: Optional. The view of the User resource to return.
   """
+
+  class ViewValueValuesEnum(_messages.Enum):
+    r"""Optional. The view of the User resource to return.
+
+    Values:
+      USER_VIEW_UNSPECIFIED: Default value. Equivalent to USER_VIEW_BASIC.
+      USER_VIEW_BASIC: Basic view. Excludes heavy configurations
+        (user_credentials, storage_directory_mappings).
+      USER_VIEW_FULL: Full view. Includes all fields.
+    """
+    USER_VIEW_UNSPECIFIED = 0
+    USER_VIEW_BASIC = 1
+    USER_VIEW_FULL = 2
 
   filter = _messages.StringField(1)
   orderBy = _messages.StringField(2)
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   parent = _messages.StringField(5, required=True)
+  view = _messages.EnumField('ViewValueValuesEnum', 6)
 
 
 class FtpProjectsLocationsServersUsersPatchRequest(_messages.Message):

@@ -361,7 +361,7 @@ def _GetUpdateMaskRecursively(
   for name in json_value:
     new_prefix = prefix + '.' + _EscapeIfRequired(prefix, name)
     new_json_value = json_value.get(name)
-    result.extend(_GetUpdateMaskRecursively(new_prefix, new_json_value))
+    result.extend(_GetUpdateMaskRecursively(new_prefix, new_json_value))  # pyrefly: ignore[bad-argument-type]
 
   return result
 

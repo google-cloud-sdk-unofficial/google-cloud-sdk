@@ -1,0 +1,33 @@
+- release_tracks: [ALPHA, BETA, GA, PREVIEW]
+  help_text:
+    brief: Test IAM permissions for a Compute Engine network attachment.
+    description: |
+      Returns permissions that a caller has on the specified network attachment.
+    examples: |
+      To test if the caller has 'compute.networkAttachments.get' permission on a network attachment, run:
+
+        $ {command} my-network-attachment --region=``REGION'' --permissions=compute.networkAttachments.get
+
+  request:
+    collection: compute.networkAttachments
+    api_version: v1
+    method: testIamPermissions
+    use_relative_name: false
+    BETA:
+      api_version: beta
+    ALPHA:
+      api_version: alpha
+
+  command_type: GENERIC
+
+  arguments:
+    resource:
+      help_text: The network attachment for which to test permissions.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:network_attachment
+    params:
+    - arg_name: permissions
+      api_field: testPermissionsRequest.permissions
+      required: true
+      repeated: true
+      help_text: |-
+        Permissions to be tested.

@@ -290,6 +290,33 @@ class OracledatabaseV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def GetRefreshableClones(self, request, global_params=None):
+      r"""Gets the refreshable clones for a given Autonomous Database.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsAutonomousDatabasesGetRefreshableClonesRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AutonomousDatabaseRefreshableClones) The response message.
+      """
+      config = self.GetMethodConfig('GetRefreshableClones')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetRefreshableClones.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/autonomousDatabases/{autonomousDatabasesId}:getRefreshableClones',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.autonomousDatabases.getRefreshableClones',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:getRefreshableClones',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsAutonomousDatabasesGetRefreshableClonesRequest',
+        response_type_name='AutonomousDatabaseRefreshableClones',
+        supports_download=False,
+    )
+
     def List(self, request, global_params=None):
       r"""Lists the Autonomous Databases in a given project and location.
 
@@ -340,6 +367,33 @@ class OracledatabaseV1(base_api.BaseApiClient):
         relative_path='v1/{+name}',
         request_field='autonomousDatabase',
         request_type_name='OracledatabaseProjectsLocationsAutonomousDatabasesPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Refresh(self, request, global_params=None):
+      r"""Refreshes the refreshable clone of an Autonomous Database.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsAutonomousDatabasesRefreshRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Refresh')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Refresh.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/autonomousDatabases/{autonomousDatabasesId}:refresh',
+        http_method='POST',
+        method_id='oracledatabase.projects.locations.autonomousDatabases.refresh',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:refresh',
+        request_field='refreshAutonomousDatabaseRequest',
+        request_type_name='OracledatabaseProjectsLocationsAutonomousDatabasesRefreshRequest',
         response_type_name='Operation',
         supports_download=False,
     )

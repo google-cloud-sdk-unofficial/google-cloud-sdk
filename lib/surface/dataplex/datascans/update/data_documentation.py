@@ -57,6 +57,15 @@ class DataDocumentation(base.UpdateCommand):
         required=False,
         help='Display name of the data documentation scan.',
     )
+    data_spec_group = parser.add_group(
+        help='Data documentation scan settings.'
+    )
+    data_spec_group.add_argument(
+        '--enable-catalog-publishing',
+        action='store_true',
+        help='Publish data documentation results to Knowledge Catalog.',
+        default=False,
+    )
     execution_spec = parser.add_group(
         help='Data documentation scan execution settings.'
     )
@@ -126,6 +135,7 @@ class DataDocumentation(base.UpdateCommand):
       'Status code: {status_code}. {status_message}.'
   )
   def Run(self, args):
+    setattr(args, 'scan_type', 'DOCUMENTATION')
     update_mask = datascan.GenerateUpdateMask(args)
     if len(update_mask) < 1:
       raise exceptions.HttpException(
@@ -135,7 +145,6 @@ class DataDocumentation(base.UpdateCommand):
     datascan_ref = args.CONCEPTS.datascan.Parse()
     dataplex_client = dataplex_util.GetClientInstance()
     message = dataplex_util.GetMessageModule()
-    setattr(args, 'scan_type', 'DOCUMENTATION')
     update_req_op = dataplex_client.projects_locations_dataScans.Patch(
         message.DataplexProjectsLocationsDataScansPatchRequest(
             name=datascan_ref.RelativeName(),

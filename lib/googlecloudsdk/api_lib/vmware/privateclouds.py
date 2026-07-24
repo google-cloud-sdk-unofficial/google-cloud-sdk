@@ -86,6 +86,7 @@ class PrivateCloudsClient(util.VmwareClientBase):
       nsx_edge_ha_mode=None,
       nsx_edge_size=None,
       nsx_edge_count=None,
+      vsan_type=None,
   ):
     parent = resource.Parent().RelativeName()
     project = resource.Parent().Parent().Name()
@@ -119,14 +120,15 @@ class PrivateCloudsClient(util.VmwareClientBase):
         nsxEdgeConfig=nsx_edge_config,
     )
 
-    management_cluster = self.messages.ManagementCluster(clusterId=cluster_id)
-    management_cluster.nodeTypeConfigs = (
-        util.ConstructNodeParameterConfigMessage(
+    mc_kwargs = {
+        'clusterId': cluster_id,
+        'nodeTypeConfigs': util.ConstructNodeParameterConfigMessage(
             self.messages.ManagementCluster.NodeTypeConfigsValue,
             self.messages.NodeTypeConfig,
             nodes_configs,
-        )
-    )
+        ),
+        'vsanType': self.GetVsanType(vsan_type),
+    }
     if (
         private_cloud.type
         is self.messages.PrivateCloud.TypeValueValuesEnum.STRETCHED
@@ -135,11 +137,14 @@ class PrivateCloudsClient(util.VmwareClientBase):
         raise PreferredZoneNotProvidedError()
       if not secondary_zone:
         raise SecondaryZoneNotProvidedError()
-      management_cluster.stretchedClusterConfig = (
+      mc_kwargs['stretchedClusterConfig'] = (
           self.messages.StretchedClusterConfig(
-              preferredLocation=preferred_zone, secondaryLocation=secondary_zone
+              preferredLocation=preferred_zone,
+              secondaryLocation=secondary_zone,
           )
       )
+
+    management_cluster = self.messages.ManagementCluster(**mc_kwargs)
     management_cluster.autoscalingSettings = (
         util.ConstructAutoscalingSettingsMessage(
             self.messages.AutoscalingSettings,
@@ -342,6 +347,19 @@ class PrivateCloudsClient(util.VmwareClientBase):
         message_enum=self.messages.NsxEdgeConfig.SizeValueValuesEnum,
         include_filter=lambda x: 'SIZE_UNSPECIFIED' not in x,
     ).GetEnumForChoice(arg_utils.EnumNameToChoice(size))
+
+  def GetVsanType(self, vsan_type):
+    enum_class = (
+        self.messages.ManagementCluster.VsanTypeValueValuesEnum
+    )
+    if not vsan_type:
+      return enum_class.VSAN_TYPE_UNSPECIFIED
+    vsan_type_upper = vsan_type.upper()
+    if vsan_type_upper == 'OSA':
+      return enum_class.VSAN_TYPE_OSA
+    elif vsan_type_upper == 'ESA':
+      return enum_class.VSAN_TYPE_ESA
+    return enum_class.VSAN_TYPE_UNSPECIFIED
 
   def GetManagementCluster(self, resource):
     for cluster in self.cluster_client.List(resource):

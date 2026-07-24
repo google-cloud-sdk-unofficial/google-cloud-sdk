@@ -340,6 +340,14 @@ def _GetContainerConfigurationChanges(
             non_ingress_type=non_ingress_type,
         )
     )
+  if flags.FlagIsExplicitlySet(container_args, 'sandbox_launcher'):
+    changes.append(
+        config_changes.ContainerSandboxLauncherChange(
+            sandbox_launcher=container_args.sandbox_launcher,
+            container_name=container_name,
+            non_ingress_type=non_ingress_type,
+        )
+    )
   if flags.FlagIsExplicitlySet(
       container_args, 'remove_volume_mount'
   ) or flags.FlagIsExplicitlySet(container_args, 'clear_volume_mounts'):
@@ -420,6 +428,13 @@ def _GetTemplateConfigurationChanges(
     changes.append(
         config_changes.ContainerWorkdirChange(
             args.workdir, non_ingress_type=non_ingress_type
+        )
+    )
+  if flags.FlagIsExplicitlySet(args, 'sandbox_launcher'):
+    changes.append(
+        config_changes.ContainerSandboxLauncherChange(
+            sandbox_launcher=args.sandbox_launcher,
+            non_ingress_type=non_ingress_type,
         )
     )
   if flags.HasEnvChanges(args):

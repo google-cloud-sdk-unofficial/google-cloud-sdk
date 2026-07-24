@@ -3745,6 +3745,44 @@ def AddInstanceType(parser):
   )
 
 
+def AddBackendType(
+    parser: parser_extensions.Namespace, hidden: bool = True
+) -> None:
+  """Adds --backend-type flag.
+
+  Args:
+    parser: The current argparse parser to add this to.
+    hidden: if the field needs to be hidden.
+  """
+  parser.add_argument(
+      '--backend-type',
+      choices={
+          'SEMI_MANAGED': 'A semi-managed SQL Server instance.',
+      },
+      required=False,
+      default=None,
+      help='The backend type of the instance.',
+      hidden=hidden,
+  )
+
+
+def AddSemiManagedSqlServer(
+    parser: parser_extensions.Namespace, hidden: bool = True
+) -> None:
+  """Adds the `--gce-instance` flag to the parser."""
+  parser.add_argument(
+      '--gce-instance',
+      required=False,
+      type=str,
+      hidden=hidden,
+      help=(
+          'The full resource name of the GCE instance that is to be onboarded'
+          ' to Cloud SQL.'
+          '`--gce-instance=projects/test-project/zones/us-central1/instances/my-gce-instance'
+      ),
+  )
+
+
 def AddNodeCount(parser):
   """Adds --node-count flag.
 
@@ -3924,6 +3962,28 @@ def AddDatabaseRoles(parser, required=False):
   )
 
 
+def AddServerRoles(parser, required=False, hidden=True):
+  """Add the flag to specify server roles for the user.
+
+  Args:
+    parser: The current argparse parser to add this to.
+    required: Whether the flag is required.
+    hidden: Whether the flag is hidden.
+  """
+  parser.add_argument(
+      '--server-roles',
+      required=required,
+      hidden=hidden,
+      default=[],
+      metavar='ROLE',
+      type=arg_parsers.ArgList(),
+      help="""\
+        A comma-separated list of server roles to be assigned to the user.
+        This option is only available for SQL Server instances.
+      """,
+  )
+
+
 def AddRevokeExistingRoles(parser):
   """Add the flag to revoke existing database roles for the user.
 
@@ -3937,6 +3997,25 @@ def AddRevokeExistingRoles(parser):
       help="""\
         A boolean flag for revoking existing database roles from the user.
         This option is only available for MySQL and PostgreSQL instances.
+      """,
+  )
+
+
+def AddRevokeExistingServerRoles(parser, hidden=True):
+  """Add the flag to revoke existing server roles for the user.
+
+  Args:
+    parser: The current argparse parser to add this to.
+    hidden: Whether the flag is hidden.
+  """
+  parser.add_argument(
+      '--revoke-existing-server-roles',
+      required=False,
+      hidden=hidden,
+      action='store_true',
+      help="""\
+        A boolean flag for revoking existing server roles from the user.
+        This option is only available for SQL Server instances.
       """,
   )
 

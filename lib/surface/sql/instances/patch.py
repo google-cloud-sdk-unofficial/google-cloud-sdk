@@ -379,11 +379,11 @@ def AddBaseArgs(parser):
   flags.AddClearEntraIdConfig(parser)
   flags.AddPerformanceCaptureConfig(parser)
   flags.AddEnablePscAutoConnectionPolicy(parser)
+  flags.AddInstanceResizeLimit(parser)
 
 
 def AddBetaArgs(parser):
   """Adds beta args and flags to the parser."""
-  flags.AddInstanceResizeLimit(parser)
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
   flags.AddReplicationLagMaxSecondsForRecreate(parser)

@@ -45,7 +45,7 @@ class BaseSshCommand(base.Command):
   ):
     """Common Run logic for SSH commands."""
     args.project = flags.GetProjectID(args)
-    args.region = flags.GetRegion(args, prompt=False)
+    args.region = flags.GetRegion(args, prompt=True)
     args.deployment_name = deployment_name
     args.instance = instance_id
     args.release_track = self.ReleaseTrack()

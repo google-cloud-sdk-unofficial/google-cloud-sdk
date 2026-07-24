@@ -1314,6 +1314,10 @@ class CloudSDKSubParsersAction(six.with_metaclass(abc.ABCMeta,
     """Load all the choices because we need to know the full set."""
     pass
 
+  @property
+  def hidden_choices(self):
+    return []
+
 
 class CommandGroupAction(CloudSDKSubParsersAction):
   """A subparser for loading calliope command groups on demand.
@@ -1340,6 +1344,19 @@ class CommandGroupAction(CloudSDKSubParsersAction):
 
   def LoadAllChoices(self):
     self._calliope_command.LoadAllSubElements()
+
+  @property
+  def hidden_choices(self):
+    if not self._calliope_command:
+      return []
+    self.LoadAllChoices()
+    hidden = []
+    for element in list(self._calliope_command.commands.values()) + list(
+        self._calliope_command.groups.values()
+    ):
+      if element.IsHidden():
+        hidden.append(element.cli_name)
+    return hidden
 
   def __call__(self, parser, namespace, values, option_string=None):
     # This is the name of the arg that is the sub element that needs to be

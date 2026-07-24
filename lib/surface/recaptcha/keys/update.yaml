@@ -40,7 +40,7 @@
         params:
         - group:
             help_text: |
-              Options for the creation of a site key for web.
+              Options for a web site key.
             params:
             - arg_name: web
               required: true
@@ -96,7 +96,7 @@
                   type: arg_object
         - group:
             help_text: |
-              Options for the creation of a site key for iOS.
+              Options for an iOS site key.
             params:
             - arg_name: ios
               required: true
@@ -144,7 +144,7 @@
                     used to build your application.
         - group:
             help_text: |
-              Options for the creation of a site key for Android.
+              Options for an Android site key.
             params:
             - arg_name: android
               required: true
@@ -168,7 +168,7 @@
                          'com.companyname.appname'
         - group:
             help_text: |
-              Options for the creation of a site key for Express.
+              Options for an Express site key.
             params:
             - arg_name: express
               required: true
@@ -179,7 +179,7 @@
             # TODO b/501106150 - Unhide.
             hidden: true
             help_text: |
-              Options for the creation of a Universal site key.
+              Options for a Universal site key.
             params:
             - arg_name: universal
               required: true

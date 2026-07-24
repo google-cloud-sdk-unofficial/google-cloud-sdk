@@ -15,6 +15,7 @@
 """Shared resource arguments for Device Run commands."""
 
 from googlecloudsdk.calliope.concepts import concepts
+from googlecloudsdk.calliope.concepts import deps
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
@@ -22,6 +23,7 @@ def LocationAttributeConfig():
   return concepts.ResourceParameterAttributeConfig(
       name='location',
       help_text='Cloud location for the {resource}.',
+      fallthroughs=[deps.ValueFallthrough('global')],
   )
 
 

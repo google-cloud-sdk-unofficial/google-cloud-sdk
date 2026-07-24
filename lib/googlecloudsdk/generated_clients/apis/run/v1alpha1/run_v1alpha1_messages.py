@@ -210,15 +210,15 @@ class ObjectMeta(_messages.Message):
       `run.googleapis.com/launch-stage`: Service, Job. *
       `run.googleapis.com/minScale`: Service. * `run.googleapis.com/maxScale`:
       Service. * `run.googleapis.com/manualInstanceCount`: Service. *
-      `run.googleapis.com/network-interfaces`: Revision, Execution. *
-      `run.googleapis.com/post-key-revocation-action-type`: Revision.
+      `run.googleapis.com/network-interfaces`: Revision, Execution, Instance.
+      * `run.googleapis.com/post-key-revocation-action-type`: Revision.
       `run.googleapis.com/scalingMode`: Service. *
       `run.googleapis.com/secrets`: Revision, Execution. *
       `run.googleapis.com/secure-session-agent`: Revision. *
       `run.googleapis.com/sessionAffinity`: Revision. *
       `run.googleapis.com/startup-cpu-boost`: Revision. *
-      `run.googleapis.com/vpc-access-connector`: Revision, Execution . *
-      `run.googleapis.com/vpc-access-egress`: Revision, Execution.
+      `run.googleapis.com/vpc-access-connector`: Revision, Execution. *
+      `run.googleapis.com/vpc-access-egress`: Revision, Execution, Instance.
     LabelsValue: Map of string keys and values that can be used to organize
       and categorize (scope and select) objects. May match selectors of
       replication controllers and routes.
@@ -262,15 +262,15 @@ class ObjectMeta(_messages.Message):
       `run.googleapis.com/launch-stage`: Service, Job. *
       `run.googleapis.com/minScale`: Service. * `run.googleapis.com/maxScale`:
       Service. * `run.googleapis.com/manualInstanceCount`: Service. *
-      `run.googleapis.com/network-interfaces`: Revision, Execution. *
-      `run.googleapis.com/post-key-revocation-action-type`: Revision.
+      `run.googleapis.com/network-interfaces`: Revision, Execution, Instance.
+      * `run.googleapis.com/post-key-revocation-action-type`: Revision.
       `run.googleapis.com/scalingMode`: Service. *
       `run.googleapis.com/secrets`: Revision, Execution. *
       `run.googleapis.com/secure-session-agent`: Revision. *
       `run.googleapis.com/sessionAffinity`: Revision. *
       `run.googleapis.com/startup-cpu-boost`: Revision. *
-      `run.googleapis.com/vpc-access-connector`: Revision, Execution . *
-      `run.googleapis.com/vpc-access-egress`: Revision, Execution.
+      `run.googleapis.com/vpc-access-connector`: Revision, Execution. *
+      `run.googleapis.com/vpc-access-egress`: Revision, Execution, Instance.
     clusterName: Not supported by Cloud Run
     creationTimestamp: UTC timestamp representing the server time when this
       object was created.
@@ -343,14 +343,14 @@ class ObjectMeta(_messages.Message):
     `run.googleapis.com/launch-stage`: Service, Job. *
     `run.googleapis.com/minScale`: Service. * `run.googleapis.com/maxScale`:
     Service. * `run.googleapis.com/manualInstanceCount`: Service. *
-    `run.googleapis.com/network-interfaces`: Revision, Execution. *
+    `run.googleapis.com/network-interfaces`: Revision, Execution, Instance. *
     `run.googleapis.com/post-key-revocation-action-type`: Revision.
     `run.googleapis.com/scalingMode`: Service. * `run.googleapis.com/secrets`:
     Revision, Execution. * `run.googleapis.com/secure-session-agent`:
     Revision. * `run.googleapis.com/sessionAffinity`: Revision. *
     `run.googleapis.com/startup-cpu-boost`: Revision. *
-    `run.googleapis.com/vpc-access-connector`: Revision, Execution . *
-    `run.googleapis.com/vpc-access-egress`: Revision, Execution.
+    `run.googleapis.com/vpc-access-connector`: Revision, Execution. *
+    `run.googleapis.com/vpc-access-egress`: Revision, Execution, Instance.
 
     Messages:
       AdditionalProperty: An additional property for a AnnotationsValue

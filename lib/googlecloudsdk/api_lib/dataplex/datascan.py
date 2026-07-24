@@ -97,12 +97,18 @@ def GenerateDataProfileSpec(
         if args.IsKnownAndSpecified('enable_catalog_publishing')
         else None
     )
+    mode = None
+    if args.IsKnownAndSpecified('mode'):
+      mode = module.GoogleCloudDataplexV1DataProfileSpec.ModeValueValuesEnum(
+          args.mode
+      )
     dataprofilespec = module.GoogleCloudDataplexV1DataProfileSpec(
         excludeFields=exclude_fields,
         includeFields=include_fields,
         samplingPercent=sampling_percent,
         rowFilter=row_filter,
         catalogPublishingEnabled=catalog_publishing_enabled,
+        mode=mode,
     )
     if args.IsKnownAndSpecified('export_results_table'):
       dataprofilespec.postScanActions = module.GoogleCloudDataplexV1DataProfileSpecPostScanActions(
@@ -191,10 +197,19 @@ def GenerateDataDiscoverySpec(args: parser_extensions.Namespace):
   return datadiscoveryspec
 
 
-def GenerateDataDocumentationSpec():
+def GenerateDataDocumentationSpec(
+    args: parser_extensions.Namespace,
+) -> dataplex_v1_messages.GoogleCloudDataplexV1DataDocumentationSpec:
   """Generate DataDocumentationSpec From Arguments."""
   module = dataplex_api.GetMessageModule()
-  return module.GoogleCloudDataplexV1DataDocumentationSpec()
+  catalog_publishing_enabled = (
+      args.enable_catalog_publishing
+      if args.IsKnownAndSpecified('enable_catalog_publishing')
+      else None
+  )
+  return module.GoogleCloudDataplexV1DataDocumentationSpec(
+      catalogPublishingEnabled=catalog_publishing_enabled
+  )
 
 
 def GenerateSchedule(args):
@@ -300,7 +315,7 @@ def GenerateUpdateMask(args: parser_extensions.Namespace):
       'sampling_percent': 'dataProfileSpec.samplingPercent',
       'include_field_names': 'dataProfileSpec.includeFields',
       'exclude_field_names': 'dataProfileSpec.excludeFields',
-      'enable_catalog_publishing': 'dataProfileSpec.catalogPublishingEnabled',
+      'mode': 'dataProfileSpec.mode',
       'bigquery_publishing_table_type': (
           'dataDiscoverySpec.bigqueryPublishingConfig.tableType'
       ),
@@ -341,6 +356,14 @@ def GenerateUpdateMask(args: parser_extensions.Namespace):
   for arg, val in args_to_mask_attr.items():
     if args.IsKnownAndSpecified(arg):
       update_mask.append(val)
+
+  if args.IsKnownAndSpecified('enable_catalog_publishing'):
+    if args.scan_type == 'DOCUMENTATION':
+      update_mask.append('dataDocumentationSpec.catalogPublishingEnabled')
+    elif args.scan_type == 'PROFILE':
+      update_mask.append('dataProfileSpec.catalogPublishingEnabled')
+    elif args.scan_type == 'QUALITY':
+      update_mask.append('dataQualitySpec.catalogPublishingEnabled')
   return update_mask
 
 
@@ -379,7 +402,7 @@ def GenerateDatascanForCreateRequest(args: parser_extensions.Namespace):
   elif args.scan_type == 'DISCOVERY':
     request.dataDiscoverySpec = GenerateDataDiscoverySpec(args)
   elif args.scan_type == 'DOCUMENTATION':
-    request.dataDocumentationSpec = GenerateDataDocumentationSpec()
+    request.dataDocumentationSpec = GenerateDataDocumentationSpec(args)
   return request
 
 
@@ -412,7 +435,7 @@ def GenerateDatascanForUpdateRequest(args: parser_extensions.Namespace):
   elif args.scan_type == 'DISCOVERY':
     request.dataDiscoverySpec = GenerateDataDiscoverySpec(args)
   elif args.scan_type == 'DOCUMENTATION':
-    request.dataDocumentationSpec = GenerateDataDocumentationSpec()
+    request.dataDocumentationSpec = GenerateDataDocumentationSpec(args)
   return request
 
 

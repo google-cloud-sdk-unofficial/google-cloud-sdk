@@ -18,7 +18,7 @@
 from googlecloudsdk.calliope import base
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Operations(base.Group):
   """Check audit operation status."""
@@ -26,7 +26,7 @@ class Operations(base.Group):
   category = base.SECURITY_CATEGORY
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class OperationsAlpha(Operations):
   """Check audit operation status."""

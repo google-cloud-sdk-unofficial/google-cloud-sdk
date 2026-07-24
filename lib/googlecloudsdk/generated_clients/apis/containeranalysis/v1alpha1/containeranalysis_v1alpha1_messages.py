@@ -4364,11 +4364,13 @@ class Finding(_messages.Message):
       STATIC: Static scanner.
       LLM: LLM scanner.
       WS_POLICY: WS_POLICY scanner.
+      GOOGLE_ANTIVIRUS: Google AntiVirus Service scanner.
     """
     SCANNER_UNSPECIFIED = 0
     STATIC = 1
     LLM = 2
     WS_POLICY = 3
+    GOOGLE_ANTIVIRUS = 4
 
   class SeverityValueValuesEnum(_messages.Enum):
     r"""Optional. Severity of the finding.

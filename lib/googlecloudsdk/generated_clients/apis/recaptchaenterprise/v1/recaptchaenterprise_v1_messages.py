@@ -14,7 +14,7 @@ package = 'recaptchaenterprise'
 
 
 class GoogleCloudRecaptchaenterpriseV1AccountDefenderAssessment(_messages.Message):
-  r"""Account defender risk assessment.
+  r"""Account defense risk assessment.
 
   Enums:
     LabelsValueListEntryValuesEnum:
@@ -53,7 +53,7 @@ class GoogleCloudRecaptchaenterpriseV1AccountDefenderAssessment(_messages.Messag
 
 
 class GoogleCloudRecaptchaenterpriseV1AccountDefenderAssessmentAccountRiskReason(_messages.Message):
-  r"""Risk explainability reasons for account defender.
+  r"""Risk explainability reasons for Account defense.
 
   Enums:
     ReasonValueValuesEnum: Output only. A risk reason associated with this
@@ -110,7 +110,7 @@ class GoogleCloudRecaptchaenterpriseV1AccountDefenderAssessmentAccountTakeoverVe
 
 
 class GoogleCloudRecaptchaenterpriseV1AccountDefenderAssessmentAccountTrustReason(_messages.Message):
-  r"""Trust explainability reasons for account defender.
+  r"""Trust explainability reasons for Account defense.
 
   Enums:
     ReasonValueValuesEnum: Output only. A trust reason associated with this
@@ -385,8 +385,8 @@ class GoogleCloudRecaptchaenterpriseV1Assessment(_messages.Message):
   r"""A reCAPTCHA Enterprise assessment resource.
 
   Fields:
-    accountDefenderAssessment: Output only. Assessment returned by account
-      defender when an account identifier is provided.
+    accountDefenderAssessment: Output only. Assessment returned by Account
+      defense when an account identifier is provided.
     accountVerification: Optional. Account verification information for
       identity verification. The assessment event must include a token and
       site key to use this feature.
@@ -404,8 +404,8 @@ class GoogleCloudRecaptchaenterpriseV1Assessment(_messages.Message):
     name: Output only. Identifier. The resource name for the Assessment in the
       format `projects/{project}/assessments/{assessment}`.
     phoneFraudAssessment: Output only. Assessment returned when a site key, a
-      token, and a phone number as `user_id` are provided. Account defender
-      and SMS toll fraud protection need to be enabled.
+      token, and a phone number as `user_id` are provided. SMS defense needs
+      to be enabled.
     privatePasswordLeakVerification: Optional. The private password leak
       verification field contains the parameters that are used to to check for
       leaks privately without sharing user credentials.
@@ -1881,7 +1881,7 @@ class GoogleCloudRecaptchaenterpriseV1TransactionDataUser(_messages.Message):
 
   Fields:
     accountId: Optional. Unique account identifier for this user. If using
-      account defender, this should match the hashed_account_id field.
+      Account defense, this should match the hashed_account_id field.
       Otherwise, a unique and persistent identifier for this account.
     creationMs: Optional. The epoch milliseconds of the user's account
       creation.

@@ -76,7 +76,13 @@ def _Args(parser, support_image_zone_flag=False):
       dest='preview_images',
       action='store_true',
       hidden=True,
-      help='THIS ARGUMENT NEEDS HELP TEXT.',
+      help=(
+          'When this flag is enabled, gcloud expands the scope of projects it '
+          'queries. '
+          'In addition to standard and user project images, it will '
+          "also include images hosted in Google Cloud's limited-preview image "
+          'projects.'
+      ),
   )
 
   parser.add_argument(

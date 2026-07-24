@@ -154,22 +154,30 @@ def MakeClusterStorages(
       if lustre.get("capacityGb") is not None:
         _validator.ValidateLustreCapacity(lustre.get("capacityGb"))
       storage_ids.add(storage_id)
+
+      new_lustre = message_module.NewLustreConfig(
+          lustre=_GetLustreName(cluster_ref, lustre.get("name")),
+          filesystem=lustre.get("filesystem"),
+          capacityGb=lustre.get("capacityGb"),
+          description=lustre.get("description"),
+          perUnitStorageThroughput=lustre.get("perUnitStorageThroughput"),
+      )
+      if hasattr(new_lustre, "dynamicTierOptions"):
+        dynamic_tier_mode = lustre.get("dynamicTierOptionsMode")
+        if dynamic_tier_mode is not None:
+          _validator.ValidateLustreDynamicTierOptions(
+              dynamic_tier_mode, message_module
+          )
+          new_lustre.dynamicTierOptions = message_module.DynamicTierOptions(
+              mode=dynamic_tier_mode
+          )
+
       storages.additionalProperties.append(
           message_module.Cluster.StorageResourcesValue.AdditionalProperty(
               key=storage_id,
               value=message_module.StorageResource(
                   config=message_module.StorageResourceConfig(
-                      newLustre=message_module.NewLustreConfig(
-                          lustre=_GetLustreName(
-                              cluster_ref, lustre.get("name")
-                          ),
-                          filesystem=lustre.get("filesystem"),
-                          capacityGb=lustre.get("capacityGb"),
-                          description=lustre.get("description"),
-                          perUnitStorageThroughput=lustre.get(
-                              "perUnitStorageThroughput"
-                          ),
-                      )
+                      newLustre=new_lustre
                   ),
               ),
           )
@@ -480,18 +488,25 @@ def MakeClusterStoragesPatch(
         ):
           raise ClusterDirectorError(f"Lustre {lustre_name} already exists.")
 
-      storages[storage_id] = message_module.StorageResource(
-          config=message_module.StorageResourceConfig(
-              newLustre=message_module.NewLustreConfig(
-                  lustre=_GetLustreName(cluster_ref, lustre.get("name")),
-                  filesystem=lustre.get("filesystem"),
-                  capacityGb=lustre.get("capacityGb"),
-                  description=lustre.get("description"),
-                  perUnitStorageThroughput=lustre.get(
-                      "perUnitStorageThroughput"
-                  ),
-              )
+      new_lustre = message_module.NewLustreConfig(
+          lustre=_GetLustreName(cluster_ref, lustre.get("name")),
+          filesystem=lustre.get("filesystem"),
+          capacityGb=lustre.get("capacityGb"),
+          description=lustre.get("description"),
+          perUnitStorageThroughput=lustre.get("perUnitStorageThroughput"),
+      )
+      if hasattr(new_lustre, "dynamicTierOptions"):
+        dynamic_tier_mode = lustre.get("dynamicTierOptionsMode")
+        if dynamic_tier_mode is not None:
+          _validator.ValidateLustreDynamicTierOptions(
+              dynamic_tier_mode, message_module
           )
+          new_lustre.dynamicTierOptions = message_module.DynamicTierOptions(
+              mode=dynamic_tier_mode
+          )
+
+      storages[storage_id] = message_module.StorageResource(
+          config=message_module.StorageResourceConfig(newLustre=new_lustre)
       )
     is_storage_updated = True
 

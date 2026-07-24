@@ -166,8 +166,8 @@ class Update(base.UpdateCommand):
         """,
   }
 
-  @staticmethod
-  def Args(parser: argparse.ArgumentParser):
+  @classmethod
+  def Args(cls, parser: argparse.ArgumentParser):
     """Specifies additional command flags.
 
     Args:
@@ -186,7 +186,7 @@ class Update(base.UpdateCommand):
     flags.AddRemoveBackupRule(parser)
     flags.AddBackupRulesFromFile(parser)
     flags.AddDiskBackupPlanProperties(parser)
-    flags.AddComputeInstanceBackupPlanProperties(parser)
+    flags.AddComputeInstanceBackupPlanProperties(parser, release_track=cls.ReleaseTrack())
 
     description_help = """\
         Provide a description of the backup plan, such as specific use cases and
@@ -286,9 +286,18 @@ class Update(base.UpdateCommand):
       if args.IsSpecified('disk_properties'):
         update_mask.append('disk_backup_plan_properties.guest_flush')
       if args.IsSpecified('compute_instance_properties'):
-        update_mask.append(
-            'compute_instance_backup_plan_properties.guest_flush'
-        )
+        if 'guest-flush' in compute_instance_properties:
+          update_mask.append(
+              'compute_instance_backup_plan_properties.guest_flush'
+          )
+        if 'boot-disk-only' in compute_instance_properties:
+          update_mask.append(
+              'compute_instance_backup_plan_properties.boot_disk_only'
+          )
+        if 'disk-exclusion-labels' in compute_instance_properties:
+          update_mask.append(
+              'compute_instance_backup_plan_properties.disk_exclusion_labels'
+          )
       if any([
           update_backup_rules,
           add_backup_rules,

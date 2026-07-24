@@ -23,17 +23,23 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
 
 DESCRIPTION = """\
-    Executes a statement on a Cloud SQL instance. It will use the
-    credentials of the specified Google Cloud account to connect to the
-    instance, so an IAM user with the same name must exist in the instance.
-    WARNING: The requests and responses might transit through intermediate
+    Executes a statement on a Cloud SQL instance. Before executing statements,
+    follow Cloud SQL Data API's instructions to configure your database user and
+    permissions.
+    Note: The requests and responses might transit through intermediate
     locations between your client and the location of the target instance.
     """
 
 EXAMPLES = """\
-    To execute a statement on a Cloud SQL instance, run:
+    To execute a statement on a Cloud SQL instance using IAM database
+    authentication, run:
 
     $ {command} my-instance-name --sql="ALTER TABLE employees RENAME TO personnel;" --database=my-db
+
+    To execute a statement on a Cloud SQL instance using password authentication,
+    run:
+
+    $ {command} my-instance-name --sql="ALTER TABLE employees RENAME TO personnel;" --database=my-db --user=my-user --password-secret-version=projects/my-project/locations/secret-location/secrets/my-secret/versions/latest
     """
 
 DETAILED_HELP = {
@@ -75,13 +81,13 @@ class ExecuteSql(base.Command):
         ),
     )
     parser.add_argument(
-        '--row_limit',
+        '--row-limit',
         type=int,
         required=False,
         help='Maximum number of rows to return. The default is unlimited.',
     )
     parser.add_argument(
-        '--partial_result_mode',
+        '--partial-result-mode',
         choices={
             'PARTIAL_RESULT_MODE_UNSPECIFIED': (
                 'Unspecified mode, effectively the same as'
@@ -118,7 +124,8 @@ class ExecuteSql(base.Command):
             ' using the regional endpoint and stored in the same region as'
             ' the Cloud SQL instance. The expected resource name format is'
             ' <code>projects/{project}/locations/{location}/secrets/{secret}/versions/{secret_version}</code>.'
-            ' Used together with <code>--user</code>.'
+            ' Used together with <code>--user</code>. If not specified, IAM'
+            ' database authentication is used.'
         ),
     )
     parser.add_argument(
@@ -126,7 +133,8 @@ class ExecuteSql(base.Command):
         required=False,
         help=(
             'The database user to authenticate as. Used together with'
-            ' <code>--password-secret-version</code>.'
+            ' <code>--password-secret-version</code>. If not specified, IAM'
+            ' database authentication is used.'
         ),
     )
 

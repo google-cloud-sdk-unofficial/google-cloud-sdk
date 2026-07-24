@@ -1452,6 +1452,9 @@ class GoogleCloudRunV2Instance(_messages.Message):
       its readiness status, and detailed error information in case it did not
       reach a serving state. See comments in `reconciling` for additional
       information on reconciliation process in Cloud Run.
+    terminationGracePeriod: Optional. Configured graceful termination period
+      for this instance. This is the time between SIGTERM and SIGKILL when
+      shutting down.
     uid: Output only. Server assigned unique identifier for the trigger. The
       value is a UUID4 string and guaranteed to remain unchanged until the
       resource is deleted.
@@ -1643,11 +1646,12 @@ class GoogleCloudRunV2Instance(_messages.Message):
   satisfiesPzs = _messages.BooleanField(32)
   serviceAccount = _messages.StringField(33)
   terminalCondition = _messages.MessageField('GoogleCloudRunV2Condition', 34)
-  uid = _messages.StringField(35)
-  updateTime = _messages.StringField(36)
-  urls = _messages.StringField(37, repeated=True)
-  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 38, repeated=True)
-  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 39)
+  terminationGracePeriod = _messages.StringField(35)
+  uid = _messages.StringField(36)
+  updateTime = _messages.StringField(37)
+  urls = _messages.StringField(38, repeated=True)
+  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 39, repeated=True)
+  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 40)
 
 
 class GoogleCloudRunV2InstanceSplit(_messages.Message):
@@ -2226,6 +2230,36 @@ class GoogleCloudRunV2Probe(_messages.Message):
   timeoutSeconds = _messages.IntegerField(7, variant=_messages.Variant.INT32)
 
 
+class GoogleCloudRunV2PubSubScaling(_messages.Message):
+  r"""Represents the Pub/Sub scaling settings.
+
+  Enums:
+    MetricNameValueValuesEnum: Optional. The metric for Pub/Sub scaling.
+
+  Fields:
+    metricName: Optional. The metric for Pub/Sub scaling.
+    subscription: Required. Pub/Sub subscription id. Format:
+      `projects/{project}/subscriptions/{id}`, where `{project}` can be
+      project id or number.
+    targetValue: Optional. The metric target value for Pub/Sub scaling.
+  """
+
+  class MetricNameValueValuesEnum(_messages.Enum):
+    r"""Optional. The metric for Pub/Sub scaling.
+
+    Values:
+      PUB_SUB_METRIC_UNSPECIFIED: Unspecified.
+      NUM_UNACKED_MESSAGES:
+        pubsub.googleapis.com/subscription_backlog_view/unacked_messages
+    """
+    PUB_SUB_METRIC_UNSPECIFIED = 0
+    NUM_UNACKED_MESSAGES = 1
+
+  metricName = _messages.EnumField('MetricNameValueValuesEnum', 1)
+  subscription = _messages.StringField(2)
+  targetValue = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+
+
 class GoogleCloudRunV2ResourceRequirements(_messages.Message):
   r"""ResourceRequirements describes the compute resource requirements.
 
@@ -2391,6 +2425,9 @@ class GoogleCloudRunV2Revision(_messages.Message):
       has.
     serviceMesh: Enables service mesh connectivity.
     sessionAffinity: Enable session affinity.
+    terminationGracePeriod: Output only. Configured graceful termination
+      period for this revision. This is the time between SIGTERM and SIGKILL
+      when shutting down.
     timeout: Max allowed time for an instance to respond to a request.
     uid: Output only. Server assigned unique identifier for the Revision. The
       value is a UUID4 string and guaranteed to remain unchanged until the
@@ -2564,11 +2601,12 @@ class GoogleCloudRunV2Revision(_messages.Message):
   serviceAccount = _messages.StringField(29)
   serviceMesh = _messages.MessageField('GoogleCloudRunV2ServiceMesh', 30)
   sessionAffinity = _messages.BooleanField(31)
-  timeout = _messages.StringField(32)
-  uid = _messages.StringField(33)
-  updateTime = _messages.StringField(34)
-  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 35, repeated=True)
-  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 36)
+  terminationGracePeriod = _messages.StringField(32)
+  timeout = _messages.StringField(33)
+  uid = _messages.StringField(34)
+  updateTime = _messages.StringField(35)
+  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 36, repeated=True)
+  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 37)
 
 
 class GoogleCloudRunV2RevisionScaling(_messages.Message):
@@ -2697,6 +2735,9 @@ class GoogleCloudRunV2RevisionTemplate(_messages.Message):
       project's default service account.
     serviceMesh: Optional. Enables service mesh connectivity.
     sessionAffinity: Optional. Enable session affinity.
+    terminationGracePeriod: Optional. Configured graceful termination period
+      for this revision. This is the time between SIGTERM and SIGKILL when
+      shutting down.
     timeout: Optional. Max allowed time for an instance to respond to a
       request.
     volumes: Optional. A list of Volumes to make available to containers.
@@ -2813,9 +2854,10 @@ class GoogleCloudRunV2RevisionTemplate(_messages.Message):
   serviceAccount = _messages.StringField(16)
   serviceMesh = _messages.MessageField('GoogleCloudRunV2ServiceMesh', 17)
   sessionAffinity = _messages.BooleanField(18)
-  timeout = _messages.StringField(19)
-  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 20, repeated=True)
-  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 21)
+  terminationGracePeriod = _messages.StringField(19)
+  timeout = _messages.StringField(20)
+  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 21, repeated=True)
+  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 22)
 
 
 class GoogleCloudRunV2RunJobRequest(_messages.Message):
@@ -3571,6 +3613,9 @@ class GoogleCloudRunV2Task(_messages.Message):
     startTime: Output only. Represents time when the task started to run. It
       is not guaranteed to be set in happens-before order across separate
       operations.
+    terminationGracePeriod: Output only. Configured graceful termination
+      period for this task. This is the time between SIGTERM and SIGKILL when
+      shutting down.
     timeout: Max allowed time duration the Task may be active before the
       system will actively try to mark it failed and kill associated
       containers. This applies per attempt of a task, meaning each retry can
@@ -3681,11 +3726,12 @@ class GoogleCloudRunV2Task(_messages.Message):
   scheduledTime = _messages.StringField(26)
   serviceAccount = _messages.StringField(27)
   startTime = _messages.StringField(28)
-  timeout = _messages.StringField(29)
-  uid = _messages.StringField(30)
-  updateTime = _messages.StringField(31)
-  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 32, repeated=True)
-  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 33)
+  terminationGracePeriod = _messages.StringField(29)
+  timeout = _messages.StringField(30)
+  uid = _messages.StringField(31)
+  updateTime = _messages.StringField(32)
+  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 33, repeated=True)
+  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 34)
 
 
 class GoogleCloudRunV2TaskAttemptResult(_messages.Message):
@@ -3734,6 +3780,9 @@ class GoogleCloudRunV2TaskTemplate(_messages.Message):
       identity of the running task, and determines what permissions the task
       has. If not provided, the task will use the project's default service
       account.
+    terminationGracePeriod: Optional. Configured graceful termination period
+      for this task. This is the time between SIGTERM and SIGKILL when
+      shutting down.
     timeout: Optional. Max allowed time duration the Task may be active before
       the system will actively try to mark it failed and kill associated
       containers. This applies per attempt of a task, meaning each retry can
@@ -3763,9 +3812,10 @@ class GoogleCloudRunV2TaskTemplate(_messages.Message):
   maxRetries = _messages.IntegerField(5, variant=_messages.Variant.INT32)
   nodeSelector = _messages.MessageField('GoogleCloudRunV2NodeSelector', 6)
   serviceAccount = _messages.StringField(7)
-  timeout = _messages.StringField(8)
-  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 9, repeated=True)
-  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 10)
+  terminationGracePeriod = _messages.StringField(8)
+  timeout = _messages.StringField(9)
+  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 10, repeated=True)
+  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 11)
 
 
 class GoogleCloudRunV2TrafficTarget(_messages.Message):
@@ -4365,6 +4415,9 @@ class GoogleCloudRunV2WorkerPoolRevisionTemplate(_messages.Message):
       permissions the revision has. If not provided, the revision will use the
       project's default service account.
     serviceMesh: Optional. Enables service mesh connectivity.
+    terminationGracePeriod: Optional. Configured graceful termination period
+      for this revision. This is the time between SIGTERM and SIGKILL when
+      shutting down.
     volumes: Optional. A list of Volumes to make available to containers.
     vpcAccess: Optional. VPC Access configuration to use for this Revision.
       For more information, visit
@@ -4462,8 +4515,9 @@ class GoogleCloudRunV2WorkerPoolRevisionTemplate(_messages.Message):
   revision = _messages.StringField(11)
   serviceAccount = _messages.StringField(12)
   serviceMesh = _messages.MessageField('GoogleCloudRunV2ServiceMesh', 13)
-  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 14, repeated=True)
-  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 15)
+  terminationGracePeriod = _messages.StringField(14)
+  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 15, repeated=True)
+  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 16)
 
 
 class GoogleCloudRunV2WorkerPoolScaling(_messages.Message):
@@ -4488,6 +4542,8 @@ class GoogleCloudRunV2WorkerPoolScaling(_messages.Message):
       but specifying how many extra instances can be brought up at a time.
     minInstanceCount: Optional. The minimum count of instances distributed
       among revisions based on the specified instance split percentages.
+    pubsubScalings: Optional. The Pub/Sub scaling settings for the worker
+      pool.
     scalingMode: Optional. The scaling mode for the worker pool.
   """
 
@@ -4508,7 +4564,8 @@ class GoogleCloudRunV2WorkerPoolScaling(_messages.Message):
   maxInstanceCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   maxSurge = _messages.IntegerField(4, variant=_messages.Variant.INT32)
   minInstanceCount = _messages.IntegerField(5, variant=_messages.Variant.INT32)
-  scalingMode = _messages.EnumField('ScalingModeValueValuesEnum', 6)
+  pubsubScalings = _messages.MessageField('GoogleCloudRunV2PubSubScaling', 6, repeated=True)
+  scalingMode = _messages.EnumField('ScalingModeValueValuesEnum', 7)
 
 
 class GoogleDevtoolsCloudbuildV1ApprovalConfig(_messages.Message):

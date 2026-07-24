@@ -79,21 +79,6 @@ EXISTING_LUSTRES_TYPE = arg_parsers.ArgObject(
     repeated=True,
 )
 
-LUSTRES_OBJECT = arg_parsers.ArgObject(
-    spec={
-        "id": str,
-        "name": str,
-        "filesystem": str,
-        "capacityGb": int,
-        "description": str,
-        "perUnitStorageThroughput": int,
-    },
-    required_keys=["id", "name", "capacityGb", "filesystem"],
-    repeated=True,
-    enable_shorthand=True,
-    disable_key_description=True,
-)
-
 
 SERVICE_ACCOUNT_TYPE = arg_parsers.ArgObject(
     spec={
@@ -182,6 +167,33 @@ class FlagTypes:
         required_keys=["id", "name", "tier", "capacityGb", "fileshare"],
         enable_shorthand=True,
         repeated=True,
+        disable_key_description=True,
+    )
+
+  def GetCreateLustresObject(self) -> arg_parsers.ArgObject:
+    """Returns an ArgObject for parsing Lustre configurations."""
+
+    spec = {
+        "id": str,
+        "name": str,
+        "filesystem": str,
+        "capacityGb": int,
+        "description": str,
+        "perUnitStorageThroughput": int,
+    }
+    if self.is_alpha:
+      spec["dynamicTierOptionsMode"] = arg_parsers.ArgObject(
+          value_type=self.messages.DynamicTierOptions.ModeValueValuesEnum,
+          help_text=(
+              "Sets dynamicTierOptionsMode value. "
+              "Allowed values: DISABLED, DEFAULT_CACHE."
+          ),
+      )
+    return arg_parsers.ArgObject(
+        spec=spec,
+        required_keys=["id", "name", "capacityGb", "filesystem"],
+        repeated=True,
+        enable_shorthand=True,
         disable_key_description=True,
     )
 
@@ -464,6 +476,16 @@ class FlagTypes:
           ),
           "storageClass": str,
       }
+      new_lustre_spec = LUSTRE_CONFIG_SPEC | {
+          "perUnitStorageThroughput": int,
+          "dynamicTierOptions": arg_parsers.ArgObject(
+              spec={
+                  "mode": (
+                      self.messages.DynamicTierOptions.ModeValueValuesEnum
+                  )
+              }
+          ),
+      }
       return {
           "computeResources": arg_parsers.ArgObject(
               key_type=str,
@@ -610,8 +632,7 @@ class FlagTypes:
                                   spec=FILESTORE_CONFIG_SPEC
                               ),
                               "newLustre": arg_parsers.ArgObject(
-                                  spec=LUSTRE_CONFIG_SPEC
-                                  | {"perUnitStorageThroughput": int}
+                                  spec=new_lustre_spec
                               ),
                           },
                       )

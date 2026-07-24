@@ -82,6 +82,10 @@ apis:
       resources:
         customer:
           path: customer/{customerId}
+  agenticapplications:
+    v1alpha:
+      discovery_doc: agenticapplications_v1alpha.json
+      default: true
   agentidentity:
     v1alpha:
       discovery_doc: agentidentity_v1alpha.json
@@ -1070,9 +1074,6 @@ apis:
     v1:
       discovery_doc: eventarcpublishing_v1.json
       default: true
-  eventflow:
-    v1beta2:
-      discovery_doc: eventflow_v1beta2.json
   externalexposure:
     v1alpha:
       discovery_doc: externalexposure_v1alpha.json
@@ -1789,9 +1790,6 @@ apis:
     v2:
       discovery_doc: run_v2.json
       gcloud_gapic_library: google/cloud/run/v2:run_v2_py
-  runapps:
-    v1alpha1:
-      discovery_doc: runapps_v1alpha1.json
   runtimeconfig:
     v1beta1:
       discovery_doc: runtimeconfig_v1beta1.json
@@ -2238,24 +2236,6 @@ apis:
     v1:
       discovery_doc: telcoautomation_v1.json
       default: true
-  messagestreams:
-    v1alpha:
-      discovery_doc: messagestreams_v1alpha.json
-      default: true
-      resources:
-        projects.serviceAccounts:
-          path: projects/{projectsId}/serviceAccounts/{serviceAccountsId}
-        projects.regions:
-          path: projects/{projectsId}/regions/{regionsId}
-        projects.regions.networkAttachments:
-          path:
-            projects/{projectsId}/regions/{regionsId}/networkAttachments/{networkAttachmentsId}
-        projects.locations.services:
-          path:
-            projects/{projectsId}/locations/{locationsId}/services/{servicesId}
-        projects.locations.functions:
-          path:
-            projects/{projectsId}/locations/{locationsId}/functions/{functionsId}
   agentregistry:
     v1alpha:
       discovery_doc: agentregistry_v1alpha.json
@@ -2781,10 +2761,6 @@ canonical_surfaces:
   memorystore:
     name: memorystore
     command: memorystore
-  messagestreams:
-    name: messagestreams
-    command: messagestreams
-    hidden: true
   metastore:
     name: metastore
     command: metastore
@@ -2889,9 +2865,6 @@ canonical_surfaces:
   run:
     name: run
     command: run
-  runapps:
-    name: runapps
-    hidden: true
   runtimeconfig:
     name: runtimeconfig
     command: runtime-config

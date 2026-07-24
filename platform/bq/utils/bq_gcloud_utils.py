@@ -13,6 +13,7 @@ from typing import Any, Dict, Optional
 
 from absl import flags
 
+import bq_auth_flags
 import bq_flags
 import bq_utils
 from gcloud_wrapper import gcloud_runner
@@ -266,16 +267,27 @@ def load_full_config() -> Dict[str, Any]:
 
   _config_cache = {}
 
+  # gcloud config-helper is not working if gcloud auth is not initialized.
+  # In GaaS environment, GaaS will pass --oauth_access_token flag directly, so
+  # auth information is not required. In order to prevent error messages,
+  # using gcloud config list instead.
+  use_gcloud_config_list = not bq_auth_flags.USE_GOOGLE_AUTH.value
+  gcloud_command = (
+      ['config', 'list', '--format=json']
+      if use_gcloud_config_list
+      else ['config', 'config-helper', '--format=json']
+  )
+
   try:
     process = gcloud_runner.run_gcloud_command(
-        ['config', 'config-helper', '--format=json'], stderr=subprocess.PIPE
+        gcloud_command, stderr=subprocess.PIPE
     )
     out, err = process.communicate()
 
     if process.returncode != 0:
       # Retry interactively to allow reauthentication prompts if needed.
       retry_process = gcloud_runner.run_gcloud_command(
-          ['config', 'config-helper', '--format=json'], stderr=None
+          gcloud_command, stderr=None
       )
       retry_out, retry_err = retry_process.communicate()
       if retry_process.returncode == 0:
@@ -304,6 +316,8 @@ def load_full_config() -> Dict[str, Any]:
 
   try:
     full_config = json.loads(out)
+    if use_gcloud_config_list:
+      full_config = {'credential': {}, 'configuration': full_config}
     _config_cache = full_config
     if bq_flags.USE_GCLOUD_CONFIG_CACHE.value:
       _save_cache(full_config)
@@ -326,3 +340,8 @@ def load_access_token() -> Optional[str]:
   """Loads the access token from gcloud."""
   full_config = load_full_config()
   return full_config.get('credential', {}).get('access_token')
+
+
+def load_metrics() -> Dict[str, str]:
+  """Loads the metrics configuration from gcloud."""
+  return load_config().get('metrics', {})

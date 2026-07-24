@@ -378,6 +378,9 @@ class Update(base.UpdateCommand):
     flags.AddAutoMonitoringScopeFlags(
         group_logging_monitoring_config, hidden=False
     )
+    flags.AddManagedOTelScopeFlags(
+        group_logging_monitoring_config, hidden=False
+    )
     flags.AddBinauthzFlags(group, release_track=base.ReleaseTrack.GA)
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddMaintenanceDisruptionBudgetFlagGroup(
@@ -660,6 +663,7 @@ class Update(base.UpdateCommand):
     opts.enable_default_compute_class = args.enable_default_compute_class
     opts.network_tier = args.network_tier
     opts.control_plane_egress_mode = args.control_plane_egress
+    opts.managed_otel_scope = args.managed_otel_scope
     opts.autopilot_privileged_admission = (
         args.autopilot_privileged_admission
     )

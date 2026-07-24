@@ -663,6 +663,24 @@ class ContainerWorkdirChange(ContainerConfigChanger):
     container.working_dir = self.workdir
 
 
+@dataclasses.dataclass(init=False, frozen=True)
+class ContainerSandboxLauncherChange(ContainerConfigChanger):
+  """Represents the user intent to change the 'sandbox_launcher' for the container.
+
+  Attributes:
+    sandbox_launcher: The sandbox launcher to set in the adjusted container.
+  """
+
+  sandbox_launcher: bool
+
+  def __init__(self, sandbox_launcher, **kwargs):
+    super().__init__(**kwargs)
+    object.__setattr__(self, 'sandbox_launcher', sandbox_launcher)
+
+  def AdjustContainer(self, container: k8s_min.Container):
+    container.sandbox_launcher = self.sandbox_launcher
+
+
 @dataclasses.dataclass(frozen=True)
 class EnvVarLiteralChanges(ContainerConfigChanger):
   """Represents the user intent to modify environment variables string literals.

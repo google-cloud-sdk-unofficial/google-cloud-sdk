@@ -874,6 +874,60 @@ class HypercomputeclusterV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def StartContinuousProfiling(self, request, global_params=None):
+      r"""Starts continuous profiling for a Machine Learning Run.
+
+      Args:
+        request: (HypercomputeclusterProjectsLocationsMachineLearningRunsStartContinuousProfilingRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('StartContinuousProfiling')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    StartContinuousProfiling.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/machineLearningRuns/{machineLearningRunsId}:startContinuousProfiling',
+        http_method='POST',
+        method_id='hypercomputecluster.projects.locations.machineLearningRuns.startContinuousProfiling',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:startContinuousProfiling',
+        request_field='startContinuousProfilingRequest',
+        request_type_name='HypercomputeclusterProjectsLocationsMachineLearningRunsStartContinuousProfilingRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def StopContinuousProfiling(self, request, global_params=None):
+      r"""Stops continuous profiling for a Machine Learning Run.
+
+      Args:
+        request: (HypercomputeclusterProjectsLocationsMachineLearningRunsStopContinuousProfilingRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('StopContinuousProfiling')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    StopContinuousProfiling.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/machineLearningRuns/{machineLearningRunsId}:stopContinuousProfiling',
+        http_method='POST',
+        method_id='hypercomputecluster.projects.locations.machineLearningRuns.stopContinuousProfiling',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:stopContinuousProfiling',
+        request_field='stopContinuousProfilingRequest',
+        request_type_name='HypercomputeclusterProjectsLocationsMachineLearningRunsStopContinuousProfilingRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class ProjectsLocationsOperationsService(base_api.BaseApiService):
     """Service class for the projects_locations_operations resource."""
 

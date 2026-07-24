@@ -117,6 +117,33 @@ class CloudkmsV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def ShowEffectiveAutokeyConfig(self, request, global_params=None):
+      r"""Returns the effective Cloud KMS Autokey configuration for a given project or folder.
+
+      Args:
+        request: (CloudkmsFoldersShowEffectiveAutokeyConfigRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ShowEffectiveAutokeyConfigResponse) The response message.
+      """
+      config = self.GetMethodConfig('ShowEffectiveAutokeyConfig')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ShowEffectiveAutokeyConfig.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/folders/{foldersId}:showEffectiveAutokeyConfig',
+        http_method='GET',
+        method_id='cloudkms.folders.showEffectiveAutokeyConfig',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1/{+parent}:showEffectiveAutokeyConfig',
+        request_field='',
+        request_type_name='CloudkmsFoldersShowEffectiveAutokeyConfigRequest',
+        response_type_name='ShowEffectiveAutokeyConfigResponse',
+        supports_download=False,
+    )
+
     def UpdateAutokeyConfig(self, request, global_params=None):
       r"""Updates the AutokeyConfig for a folder or a project. The caller must have both `cloudkms.autokeyConfigs.update` permission on the parent folder and `cloudkms.cryptoKeys.setIamPolicy` permission on the provided key project. A KeyHandle creation in the folder's descendant projects will use this configuration to determine where to create the resulting CryptoKey.
 
@@ -815,6 +842,33 @@ class CloudkmsV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def ExportTrustedKeyWrappedCryptoKeyVersion(self, request, global_params=None):
+      r"""Exports a CryptoKeyVersion with a trusted key. The CryptoKeyVersion must have trusted_wrapping_enabled set to true. The CryptoKeyVersion of the [wrapping_key] must have the AES_WRAPPING purpose. The [wrapping_key] must have the AES_256_KWP algorithm.
+
+      Args:
+        request: (CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsExportTrustedKeyWrappedCryptoKeyVersionRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ExportTrustedKeyWrappedCryptoKeyVersionResponse) The response message.
+      """
+      config = self.GetMethodConfig('ExportTrustedKeyWrappedCryptoKeyVersion')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ExportTrustedKeyWrappedCryptoKeyVersion.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/keyRings/{keyRingsId}/cryptoKeys/{cryptoKeysId}/cryptoKeyVersions/{cryptoKeyVersionsId}:exportTrustedKeyWrappedCryptoKeyVersion',
+        http_method='GET',
+        method_id='cloudkms.projects.locations.keyRings.cryptoKeys.cryptoKeyVersions.exportTrustedKeyWrappedCryptoKeyVersion',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['wrappingKey'],
+        relative_path='v1/{+name}:exportTrustedKeyWrappedCryptoKeyVersion',
+        request_field='',
+        request_type_name='CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsExportTrustedKeyWrappedCryptoKeyVersionRequest',
+        response_type_name='ExportTrustedKeyWrappedCryptoKeyVersionResponse',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Returns metadata for a given CryptoKeyVersion.
 
@@ -892,6 +946,33 @@ class CloudkmsV1(base_api.BaseApiClient):
         relative_path='v1/{+parent}/cryptoKeyVersions:import',
         request_field='importCryptoKeyVersionRequest',
         request_type_name='CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsImportRequest',
+        response_type_name='CryptoKeyVersion',
+        supports_download=False,
+    )
+
+    def ImportTrustedKeyWrappedCryptoKeyVersion(self, request, global_params=None):
+      r"""Import wrapped key material into a CryptoKeyVersion with a trusted key. All requests must specify a CryptoKey. If a CryptoKeyVersion is additionally specified in the request, key material will be reimported into that version. Otherwise, a new version will be created, and will be assigned the next sequential id within the CryptoKey. The CryptoKeyVersion will have trusted_wrapping_enabled set to true.
+
+      Args:
+        request: (CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsImportTrustedKeyWrappedCryptoKeyVersionRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (CryptoKeyVersion) The response message.
+      """
+      config = self.GetMethodConfig('ImportTrustedKeyWrappedCryptoKeyVersion')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ImportTrustedKeyWrappedCryptoKeyVersion.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/keyRings/{keyRingsId}/cryptoKeys/{cryptoKeysId}/cryptoKeyVersions:importTrustedKeyWrappedCryptoKeyVersion',
+        http_method='POST',
+        method_id='cloudkms.projects.locations.keyRings.cryptoKeys.cryptoKeyVersions.importTrustedKeyWrappedCryptoKeyVersion',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1/{+parent}/cryptoKeyVersions:importTrustedKeyWrappedCryptoKeyVersion',
+        request_field='importTrustedKeyWrappedCryptoKeyVersionRequest',
+        request_type_name='CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsImportTrustedKeyWrappedCryptoKeyVersionRequest',
         response_type_name='CryptoKeyVersion',
         supports_download=False,
     )
@@ -1114,7 +1195,7 @@ class CloudkmsV1(base_api.BaseApiClient):
         method_id='cloudkms.projects.locations.keyRings.cryptoKeys.create',
         ordered_params=['parent'],
         path_params=['parent'],
-        query_params=['cryptoKeyId', 'skipInitialVersionCreation'],
+        query_params=['cryptoKeyId', 'skipInitialVersionCreation', 'trustedWrappingEnabled'],
         relative_path='v1/{+parent}/cryptoKeys',
         request_field='cryptoKey',
         request_type_name='CloudkmsProjectsLocationsKeyRingsCryptoKeysCreateRequest',
@@ -2310,7 +2391,7 @@ class CloudkmsV1(base_api.BaseApiClient):
     )
 
     def ShowEffectiveAutokeyConfig(self, request, global_params=None):
-      r"""Returns the effective Cloud KMS Autokey configuration for a given project.
+      r"""Returns the effective Cloud KMS Autokey configuration for a given project or folder.
 
       Args:
         request: (CloudkmsProjectsShowEffectiveAutokeyConfigRequest) input message

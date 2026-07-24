@@ -44,6 +44,7 @@ PROJECTS_COLLECTION = 'iap.projects'
 IAP_WEB_COLLECTION = 'iap.projects.iap_web'
 IAP_WEB_SERVICES_COLLECTION = 'iap.projects.iap_web.services'
 IAP_WEB_SERVICES_VERSIONS_COLLECTION = 'iap.projects.iap_web.services.versions'
+IAP_WEB_INSTANCES_COLLECTION = 'iap.projects.iap_web.instances'
 IAP_TCP_DESTGROUP_COLLECTION = 'iap.projects.iap_tunnel.locations.destGroups'
 IAP_TCP_LOCATIONS_COLLECTION = 'iap.projects.iap_tunnel.locations'
 IAP_TCP_TUNNEL_TYPES_COLLECTION = 'iap.projects.iap_tunnel.tunnel_types'
@@ -587,6 +588,35 @@ class CloudRun(IapIamResource):
         collection=IAP_WEB_SERVICES_COLLECTION)
 
 
+class CloudRunInstance(IapIamResource):
+  """IAP IAM cloud run instance resource.
+  """
+
+  def __init__(self, release_track, project, region_id, instance_id):
+    super(CloudRunInstance, self).__init__(release_track, project)
+    self.region_id = region_id
+    self.instance_id = instance_id
+
+  def _Name(self):
+    return 'cloud run instance'
+
+  def _IapWebId(self):
+    return '%s-%s' % (CLOUD_RUN, self.region_id)
+
+  def _Parse(self):
+    project = _GetProject(self.project)
+    iap_web_id = self._IapWebId()
+    return self.registry.Parse(
+        None,
+        params={
+            'project': project.projectNumber,
+            'iapWebId': iap_web_id,
+            'instanceId': self.instance_id,
+        },
+        collection=IAP_WEB_INSTANCES_COLLECTION,
+    )
+
+
 AGENT_REGISTRY = 'agentRegistry'
 
 
@@ -1005,4 +1035,3 @@ class IapTcpIamResources(IapIamResource):
         },
         collection=IAP_TCP_TUNNEL_TYPES_COLLECTION,
     )
-

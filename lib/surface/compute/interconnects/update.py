@@ -61,7 +61,7 @@ class UpdateGA(base.UpdateCommand):
   """
 
   INTERCONNECT_ARG = None
-  _support_effective_location = False
+  _support_effective_location = True
   _support_labels = False
 
   @classmethod
@@ -121,7 +121,6 @@ class UpdateBeta(UpdateGA):
   *{command}* is used to update interconnects. An interconnect represents a
   single specific connection between Google and the customer.
   """
-  _support_effective_location = True
   _support_labels = True
 
 
@@ -133,4 +132,3 @@ class UpdateAlpha(UpdateBeta):
   *{command}* is used to update interconnects. An interconnect represents a
   single specific connection between Google and the customer.
   """
-  _support_effective_location = True

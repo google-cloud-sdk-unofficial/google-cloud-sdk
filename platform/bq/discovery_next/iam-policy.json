@@ -5,7 +5,7 @@
   "name": "bigquery",
   "canonicalName": "Bigquery",
   "version": "v2",
-  "revision": "20260617",
+  "revision": "20260708",
   "title": "BigQuery API",
   "description": "A data platform for customers to create, manage, share and query data.",
   "ownerDomain": "google.com",
@@ -3412,7 +3412,7 @@
           }
         },
         "reservation": {
-          "description": "Optional. The reservation that job would use. User can specify a reservation to execute the job. If reservation is not set, reservation is determined based on the rules defined by the reservation assignments. The expected format is `projects\/{project}\/locations\/{location}\/reservations\/{reservation}`.",
+          "description": "Optional. The reservation that job would use. User can specify a reservation to execute the job. If reservation is not set, reservation is determined based on the rules defined by the reservation assignments. The expected format is `projects\/{project}\/locations\/{location}\/reservations\/{reservation}`. Forces the query to use on-demand billing when set to `none`, which requires the project or organization to have `reservation_override_mode` set to `ALLOW_ANY_OVERRIDE`.",
           "type": "string"
         }
       }
@@ -3939,7 +3939,7 @@
       "type": "object",
       "properties": {
         "generationExpression": {
-          "description": "Optional. The generation expression (e.g. AI.EMBED(...)) used to generated the field.",
+          "description": "Optional. The generation expression (e.g. AI.EMBED(...)) used to generate the field.",
           "type": "string"
         },
         "asynchronous": {
@@ -5134,6 +5134,19 @@
           "items": {
             "type": "string"
           }
+        },
+        "globalQueryRemoteRegions": {
+          "description": "Output only. Regions where the global query accesses data.",
+          "readOnly": true,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "parentGlobalQueryJob": {
+          "description": "Output only. The global query that created this job.",
+          "readOnly": true,
+          "$ref": "JobReference"
         }
       }
     },
@@ -5413,6 +5426,14 @@
           "description": "Output only. Statistics related to GenAI usage in the query.",
           "readOnly": true,
           "$ref": "GenAiStats"
+        },
+        "objectStorageStats": {
+          "description": "Output only. Storage and caching statistics per cloud provider for queries over object storage.",
+          "readOnly": true,
+          "type": "array",
+          "items": {
+            "$ref": "ObjectStorageStats"
+          }
         }
       }
     },
@@ -6866,6 +6887,39 @@
         }
       }
     },
+    "ObjectStorageStats": {
+      "id": "ObjectStorageStats",
+      "description": "Storage and caching statistics for object storage.",
+      "type": "object",
+      "properties": {
+        "cloudProvider": {
+          "description": "The cloud provider for this block of statistics.",
+          "type": "string",
+          "enumDescriptions": [
+            "Unspecified cloud provider.",
+            "Google Cloud Platform.",
+            "Amazon Web Services.",
+            "Microsoft Azure."
+          ],
+          "enum": [
+            "CLOUD_PROVIDER_UNSPECIFIED",
+            "GCP",
+            "AWS",
+            "AZURE"
+          ]
+        },
+        "objectStorageBytesRead": {
+          "description": "Total bytes read directly from the cloud provider's storage.",
+          "type": "string",
+          "format": "int64"
+        },
+        "cacheBytesRead": {
+          "description": "Total bytes read from the GCP Lakehouse-internal cache, avoiding an object storage read.",
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
     "JobStatistics3": {
       "id": "JobStatistics3",
       "description": "Statistics for a load job.",
@@ -6957,6 +7011,11 @@
           "readOnly": true,
           "type": "string",
           "format": "int64"
+        },
+        "remoteDestinationRegion": {
+          "description": "Output only. Destination region for a cross-region copy job. Not set for in-region copy jobs.",
+          "readOnly": true,
+          "type": "string"
         }
       }
     },
@@ -7415,7 +7474,7 @@
           ]
         },
         "reservation": {
-          "description": "Optional. The reservation that jobs.query request would use. User can specify a reservation to execute the job.query. The expected format is `projects\/{project}\/locations\/{location}\/reservations\/{reservation}`.",
+          "description": "Optional. The reservation that jobs.query request would use. User can specify a reservation to execute the job.query. The expected format is `projects\/{project}\/locations\/{location}\/reservations\/{reservation}`. Forces the query to use on-demand billing when set to `none`. This requires the project or organization to have `reservation_override_mode` set to `ALLOW_ANY_OVERRIDE`.",
           "type": "string"
         },
         "writeIncrementalResults": {
@@ -7920,12 +7979,16 @@
           "enumDescriptions": [
             "Default value.",
             "The argument is a variable with fully specified type, which can be a struct or an array, but not a table.",
-            "The argument is any type, including struct or array, but not a table."
+            "The argument is any type, including struct or array, but not a table.",
+            "The argument is a table with fully specified column names and types.",
+            "The argument is any table type."
           ],
           "enum": [
             "ARGUMENT_KIND_UNSPECIFIED",
             "FIXED_TYPE",
-            "ANY_TYPE"
+            "ANY_TYPE",
+            "FIXED_TABLE",
+            "ANY_TABLE"
           ]
         },
         "mode": {
@@ -7947,6 +8010,10 @@
         "dataType": {
           "description": "Set if argument_kind == FIXED_TYPE.",
           "$ref": "StandardSqlDataType"
+        },
+        "tableType": {
+          "description": "Optional. Set if argument_kind == FIXED_TABLE.",
+          "$ref": "StandardSqlTableType"
         },
         "isAggregate": {
           "description": "Optional. Whether the argument is an aggregate function parameter. Must be Unset for routine types other than AGGREGATE_FUNCTION. For AGGREGATE_FUNCTION, if set to false, it is equivalent to adding \"NOT AGGREGATE\" clause in DDL; Otherwise, it is equivalent to omitting \"NOT AGGREGATE\" clause in DDL.",

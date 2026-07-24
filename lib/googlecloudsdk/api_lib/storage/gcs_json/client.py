@@ -34,6 +34,7 @@ from googlecloudsdk.api_lib.storage import headers_util
 from googlecloudsdk.api_lib.storage.gcs_json import download
 from googlecloudsdk.api_lib.storage.gcs_json import error_util
 from googlecloudsdk.api_lib.storage.gcs_json import metadata_util
+from googlecloudsdk.api_lib.storage.gcs_json import operations as operations_api
 from googlecloudsdk.api_lib.storage.gcs_json import patch_apitools_messages
 from googlecloudsdk.api_lib.storage.gcs_json import upload
 from googlecloudsdk.api_lib.util import apis as core_apis
@@ -253,6 +254,8 @@ class CloudStorageLroPoller(waiter.CloudOperationPollerNoResources):
 
   def Poll(self, operation_ref):
     """Overrides."""
+    if operations_util.is_location_operations_resource(operation_ref.name):
+      return operations_api.OperationsApi().get(operation_ref.name)
 
     try:
       bucket, operation_id = (
@@ -1392,8 +1395,14 @@ class JsonClient(cloud_api.CloudApi):
       serialization_data=None,
       tracker_callback=None,
       upload_strategy=cloud_api.UploadStrategy.SIMPLE,
+      final_headers_callback=None,
   ):
     """See CloudApi class for function doc strings."""
+
+    if (
+        not properties.VALUES.storage.enable_server_side_hash_validation.GetBool()
+    ):
+      final_headers_callback = None
 
     if self._upload_http_client is None:
       self._upload_http_client = transports.GetApitoolsTransport(
@@ -1432,6 +1441,7 @@ class JsonClient(cloud_api.CloudApi):
           serialization_data=serialization_data,
           source_resource=source_resource,
           tracker_callback=tracker_callback,
+          final_headers_callback=final_headers_callback,
       )
     elif upload_strategy == cloud_api.UploadStrategy.STREAMING:
       uploader = upload.StreamingUpload(
@@ -1443,6 +1453,7 @@ class JsonClient(cloud_api.CloudApi):
           request_config,
           posix_to_set=posix_to_set,
           source_resource=source_resource,
+          final_headers_callback=final_headers_callback,
       )
     else:
       raise command_errors.Error('Invalid upload strategy: {}.'.format(

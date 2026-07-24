@@ -531,6 +531,26 @@ def CreatePersistentCreateDiskMessages(
           )
       )
 
+    on_update_action = disk.get('on-update-action')
+    if on_update_action:
+      try:
+        initialize_params.onUpdateAction = (
+            messages.AttachedDiskInitializeParams.OnUpdateActionValueValuesEnum(
+                on_update_action
+            )
+        )
+      except TypeError as error:
+        enum_class = (
+            messages.AttachedDiskInitializeParams.OnUpdateActionValueValuesEnum
+        )
+        choices = ', '.join(sorted(enum_class.names()))
+
+        raise calliope_exceptions.InvalidArgumentException(
+            '--create-disk',
+            f'Invalid value for [on-update-action]: {on_update_action}. '
+            f'Valid choices are: {choices}.'
+        ) from error
+
     if support_disk_labels:
       dict_labels = labels_util.ValidateAndParseLabels(disk.get('labels'))
       if dict_labels:
@@ -591,6 +611,7 @@ def CreateDefaultBootAttachedDiskMessage(
     instant_snapshot_uri=None,
     support_source_instant_snapshot=False,
     disk_interface=None,
+    on_update_action=None,
 ):
   """Returns an AttachedDisk message for creating a new boot disk."""
   messages = compute_client.messages
@@ -659,6 +680,27 @@ def CreateDefaultBootAttachedDiskMessage(
       diskSizeGb=disk_size_gb,
       diskType=disk_type,
       **kwargs_init_parms)
+
+  if on_update_action:
+    try:
+
+      initialize_params.onUpdateAction = (
+          messages.AttachedDiskInitializeParams.OnUpdateActionValueValuesEnum(
+              on_update_action
+          )
+      )
+
+    except TypeError as error:
+      enum_class = (
+          messages.AttachedDiskInitializeParams.OnUpdateActionValueValuesEnum
+      )
+      choices = ', '.join(sorted(enum_class.names()))
+
+      raise calliope_exceptions.InvalidArgumentException(
+          '--create-disk',
+          f'Invalid value for [on-update-action]: {on_update_action}. '
+          f'Valid choices are: {choices}.'
+      ) from error
 
   if disk_provisioned_iops is not None:
     initialize_params.provisionedIops = disk_provisioned_iops

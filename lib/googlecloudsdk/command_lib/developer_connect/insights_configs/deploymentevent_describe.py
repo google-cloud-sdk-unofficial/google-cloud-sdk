@@ -280,7 +280,7 @@ def AddPreviousDiffToResponse(response, args):
   Returns:
     The event dictionary, potentially modified with diff information.
   """
-  if not args.show_previous_diff:
+  if not getattr(args, "show_previous_diff", False):
     return response
 
   event_dict = response

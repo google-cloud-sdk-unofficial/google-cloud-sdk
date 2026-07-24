@@ -396,7 +396,7 @@ def UpdateBiReservation(client, reference, reservation_size: str):
     is GB. The specified reservation size may only contain digits, optionally
     followed by G, g, GB, gb, gB, or Gb.""")
 
-  reservation_size = int(reservation_digits) * 1024 * 1024 * 1024
+  reservation_size = int(reservation_digits) * 1024 * 1024 * 1024  # pyrefly: ignore[bad-assignment]
 
   bi_reservation = {}
   update_mask = ''
@@ -866,8 +866,8 @@ def CreateReservationAssignment(
       reference,
       job_type,
       priority,
-      assignee_type,
-      assignee_id,
+      assignee_type,  # pyrefly: ignore[bad-argument-type]
+      assignee_id,  # pyrefly: ignore[bad-argument-type]
       scheduling_policy_max_slots,
       scheduling_policy_concurrency,
       principal,
@@ -905,7 +905,7 @@ def DeleteReservationAssignment(client, reference):
 
 def MoveReservationAssignment(
     client,
-    id_fallbacks: NamedTuple(
+    id_fallbacks: NamedTuple(  # pyrefly: ignore[invalid-annotation]
         'IDS',
         [
             ('project_id', Optional[str]),

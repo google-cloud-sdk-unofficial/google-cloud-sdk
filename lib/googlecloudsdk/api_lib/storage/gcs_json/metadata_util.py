@@ -1260,6 +1260,9 @@ def update_object_metadata_from_request_config(
       object_metadata, 'md5Hash', resource_args.md5_hash
   )
   process_value_or_clear_flag(
+      object_metadata, 'crc32c', getattr(resource_args, 'crc32c_hash', None)
+  )
+  process_value_or_clear_flag(
       object_metadata, 'storageClass', resource_args.storage_class
   )
 

@@ -311,7 +311,7 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
 
     if self.row_access_policies:
       bq_id_utils.typecheck(
-          reference,
+          reference,  # pyrefly: ignore[bad-argument-type]
           bq_id_utils.ApiClientHelper.TableReference,
           (
               'Invalid identifier "%s" for ls, cannot list row access '
@@ -332,7 +332,7 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
         except bq_error.BigqueryError:
           pass
       bq_id_utils.typecheck(
-          reference,
+          reference,  # pyrefly: ignore[bad-argument-type]
           (
               type(None),
               bq_id_utils.ApiClientHelper.ProjectReference,
@@ -618,7 +618,7 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
       list_connections_results = client_connection.ListConnections(
           client=client.GetConnectionV1ApiClient(),
           project_id=bq_flags.PROJECT_ID.value,
-          location=bq_flags.LOCATION.value,
+          location=bq_flags.LOCATION.value,  # pyrefly: ignore[bad-argument-type]
           max_results=self.max_results,
           page_token=self.page_token,
       )
@@ -632,7 +632,7 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
       object_type = bq_id_utils.ApiClientHelper.RowAccessPolicyReference
       response = client_row_access_policy.list_row_access_policies_with_grantees(
           bqclient=client,
-          table_reference=reference,
+          table_reference=reference,  # pyrefly: ignore[bad-argument-type]
           page_size=self.max_results,
           page_token=self.page_token,
       )
@@ -681,7 +681,7 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
     elif object_type is bq_id_utils.ApiClientHelper.TableReference:
       results = client_table.list_tables(
           apiclient=client.apiclient,
-          reference=reference,
+          reference=reference,  # pyrefly: ignore[bad-argument-type]
           max_results=self.max_results,
           page_token=page_token,
       )
@@ -690,7 +690,7 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
       objects_metadata = client_dataset.ListDatasetsWithTokenAndUnreachable(
           apiclient=client.apiclient,
           id_fallbacks=client,
-          reference=reference,
+          reference=reference,  # pyrefly: ignore[bad-argument-type]
           max_results=self.max_results,
           list_all=self.a,
           page_token=page_token,
@@ -701,7 +701,7 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
     if results or self.print_last_token or self.print_unreachable:
       assert object_type is not None
       frontend_utils.PrintObjectsArrayWithMetadata(
-          objects_list=results,
+          objects_list=results,  # pyrefly: ignore[bad-argument-type]
           objects_type=object_type,
           passed_flags=self,
           objects_metadata=objects_metadata,

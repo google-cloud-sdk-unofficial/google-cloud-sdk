@@ -269,6 +269,16 @@ MAP = _ApiDefMap({
             {},
         ),
     },
+    'agenticapplications': {
+        'v1alpha': (
+            ('googlecloudsdk.generated_clients.apis.agenticapplications.v1alpha', 'agenticapplications_v1alpha_client.AgenticapplicationsV1alpha', 'agenticapplications_v1alpha_messages', 'https://agenticapplications.googleapis.com/'),
+            None,
+            True,
+            True,
+            '',
+            {},
+        ),
+    },
     'agentidentity': {
         'v1alpha': (
             ('googlecloudsdk.generated_clients.apis.agentidentity.v1alpha', 'agentidentity_v1alpha_client.AgentidentityV1alpha', 'agentidentity_v1alpha_messages', 'https://agentidentity.googleapis.com/'),
@@ -1889,16 +1899,6 @@ MAP = _ApiDefMap({
             {'asia-south1': 'https://eventarcpublishing.asia-south1.rep.googleapis.com/', 'asia-southeast1': 'https://eventarcpublishing.asia-southeast1.rep.googleapis.com/', 'australia-southeast1': 'https://eventarcpublishing.australia-southeast1.rep.googleapis.com/', 'europe-north1': 'https://eventarcpublishing.europe-north1.rep.googleapis.com/', 'europe-west1': 'https://eventarcpublishing.europe-west1.rep.googleapis.com/', 'europe-west3': 'https://eventarcpublishing.europe-west3.rep.googleapis.com/', 'us-central1': 'https://eventarcpublishing.us-central1.rep.googleapis.com/', 'us-east4': 'https://eventarcpublishing.us-east4.rep.googleapis.com/'},
         ),
     },
-    'eventflow': {
-        'v1beta2': (
-            ('googlecloudsdk.generated_clients.apis.eventflow.v1beta2', 'eventflow_v1beta2_client.EventflowV1beta2', 'eventflow_v1beta2_messages', 'https://eventflow.googleapis.com/'),
-            None,
-            True,
-            True,
-            '',
-            {},
-        ),
-    },
     'externalexposure': {
         'v1alpha': (
             ('googlecloudsdk.generated_clients.apis.externalexposure.v1alpha', 'externalexposure_v1alpha_client.ExternalexposureV1alpha', 'externalexposure_v1alpha_messages', 'https://externalexposure.googleapis.com/'),
@@ -2541,16 +2541,6 @@ MAP = _ApiDefMap({
             True,
             '',
             {'africa-south1': 'https://memorystore.africa-south1.rep.googleapis.com/', 'asia-east1': 'https://memorystore.asia-east1.rep.googleapis.com/', 'asia-east2': 'https://memorystore.asia-east2.rep.googleapis.com/', 'asia-northeast1': 'https://memorystore.asia-northeast1.rep.googleapis.com/', 'asia-northeast2': 'https://memorystore.asia-northeast2.rep.googleapis.com/', 'asia-northeast3': 'https://memorystore.asia-northeast3.rep.googleapis.com/', 'asia-south1': 'https://memorystore.asia-south1.rep.googleapis.com/', 'asia-south2': 'https://memorystore.asia-south2.rep.googleapis.com/', 'asia-southeast1': 'https://memorystore.asia-southeast1.rep.googleapis.com/', 'asia-southeast2': 'https://memorystore.asia-southeast2.rep.googleapis.com/', 'asia-southeast3': 'https://memorystore.asia-southeast3.rep.googleapis.com/', 'australia-southeast1': 'https://memorystore.australia-southeast1.rep.googleapis.com/', 'australia-southeast2': 'https://memorystore.australia-southeast2.rep.googleapis.com/', 'europe-central2': 'https://memorystore.europe-central2.rep.googleapis.com/', 'europe-north1': 'https://memorystore.europe-north1.rep.googleapis.com/', 'europe-north2': 'https://memorystore.europe-north2.rep.googleapis.com/', 'europe-southwest1': 'https://memorystore.europe-southwest1.rep.googleapis.com/', 'europe-west1': 'https://memorystore.europe-west1.rep.googleapis.com/', 'europe-west10': 'https://memorystore.europe-west10.rep.googleapis.com/', 'europe-west12': 'https://memorystore.europe-west12.rep.googleapis.com/', 'europe-west15': 'https://memorystore.europe-west15.rep.googleapis.com/', 'europe-west2': 'https://memorystore.europe-west2.rep.googleapis.com/', 'europe-west3': 'https://memorystore.europe-west3.rep.googleapis.com/', 'europe-west4': 'https://memorystore.europe-west4.rep.googleapis.com/', 'europe-west6': 'https://memorystore.europe-west6.rep.googleapis.com/', 'europe-west8': 'https://memorystore.europe-west8.rep.googleapis.com/', 'europe-west9': 'https://memorystore.europe-west9.rep.googleapis.com/', 'me-central1': 'https://memorystore.me-central1.rep.googleapis.com/', 'me-central2': 'https://memorystore.me-central2.rep.googleapis.com/', 'me-west1': 'https://memorystore.me-west1.rep.googleapis.com/', 'northamerica-northeast1': 'https://memorystore.northamerica-northeast1.rep.googleapis.com/', 'northamerica-northeast2': 'https://memorystore.northamerica-northeast2.rep.googleapis.com/', 'northamerica-south1': 'https://memorystore.northamerica-south1.rep.googleapis.com/', 'southamerica-east1': 'https://memorystore.southamerica-east1.rep.googleapis.com/', 'southamerica-west1': 'https://memorystore.southamerica-west1.rep.googleapis.com/', 'us-central1': 'https://memorystore.us-central1.rep.googleapis.com/', 'us-central2': 'https://memorystore.us-central2.rep.googleapis.com/', 'us-east1': 'https://memorystore.us-east1.rep.googleapis.com/', 'us-east4': 'https://memorystore.us-east4.rep.googleapis.com/', 'us-east5': 'https://memorystore.us-east5.rep.googleapis.com/', 'us-east7': 'https://memorystore.us-east7.rep.googleapis.com/', 'us-south1': 'https://memorystore.us-south1.rep.googleapis.com/', 'us-west1': 'https://memorystore.us-west1.rep.googleapis.com/', 'us-west2': 'https://memorystore.us-west2.rep.googleapis.com/', 'us-west3': 'https://memorystore.us-west3.rep.googleapis.com/', 'us-west4': 'https://memorystore.us-west4.rep.googleapis.com/', 'us-west8': 'https://memorystore.us-west8.rep.googleapis.com/'},
-        ),
-    },
-    'messagestreams': {
-        'v1alpha': (
-            ('googlecloudsdk.generated_clients.apis.messagestreams.v1alpha', 'messagestreams_v1alpha_client.MessagestreamsV1alpha', 'messagestreams_v1alpha_messages', 'https://messagestreams.googleapis.com/'),
-            None,
-            True,
-            True,
-            '',
-            {},
         ),
     },
     'metastore': {
@@ -3249,16 +3239,6 @@ MAP = _ApiDefMap({
             True,
             '',
             {'africa-south1': 'https://run.africa-south1.rep.googleapis.com/', 'asia-east1': 'https://run.asia-east1.rep.googleapis.com/', 'asia-east2': 'https://run.asia-east2.rep.googleapis.com/', 'asia-northeast1': 'https://run.asia-northeast1.rep.googleapis.com/', 'asia-northeast2': 'https://run.asia-northeast2.rep.googleapis.com/', 'asia-northeast3': 'https://run.asia-northeast3.rep.googleapis.com/', 'asia-south1': 'https://run.asia-south1.rep.googleapis.com/', 'asia-south2': 'https://run.asia-south2.rep.googleapis.com/', 'asia-southeast1': 'https://run.asia-southeast1.rep.googleapis.com/', 'asia-southeast2': 'https://run.asia-southeast2.rep.googleapis.com/', 'asia-southeast3': 'https://run.asia-southeast3.rep.googleapis.com/', 'australia-southeast1': 'https://run.australia-southeast1.rep.googleapis.com/', 'australia-southeast2': 'https://run.australia-southeast2.rep.googleapis.com/', 'europe-central2': 'https://run.europe-central2.rep.googleapis.com/', 'europe-north1': 'https://run.europe-north1.rep.googleapis.com/', 'europe-north2': 'https://run.europe-north2.rep.googleapis.com/', 'europe-southwest1': 'https://run.europe-southwest1.rep.googleapis.com/', 'europe-west1': 'https://run.europe-west1.rep.googleapis.com/', 'europe-west10': 'https://run.europe-west10.rep.googleapis.com/', 'europe-west12': 'https://run.europe-west12.rep.googleapis.com/', 'europe-west15': 'https://run.europe-west15.rep.googleapis.com/', 'europe-west2': 'https://run.europe-west2.rep.googleapis.com/', 'europe-west3': 'https://run.europe-west3.rep.googleapis.com/', 'europe-west4': 'https://run.europe-west4.rep.googleapis.com/', 'europe-west6': 'https://run.europe-west6.rep.googleapis.com/', 'europe-west8': 'https://run.europe-west8.rep.googleapis.com/', 'europe-west9': 'https://run.europe-west9.rep.googleapis.com/', 'me-central1': 'https://run.me-central1.rep.googleapis.com/', 'me-central2': 'https://run.me-central2.rep.googleapis.com/', 'me-west1': 'https://run.me-west1.rep.googleapis.com/', 'northamerica-northeast1': 'https://run.northamerica-northeast1.rep.googleapis.com/', 'northamerica-northeast2': 'https://run.northamerica-northeast2.rep.googleapis.com/', 'northamerica-south1': 'https://run.northamerica-south1.rep.googleapis.com/', 'southamerica-east1': 'https://run.southamerica-east1.rep.googleapis.com/', 'southamerica-west1': 'https://run.southamerica-west1.rep.googleapis.com/', 'us-central1': 'https://run.us-central1.rep.googleapis.com/', 'us-central2': 'https://run.us-central2.rep.googleapis.com/', 'us-east1': 'https://run.us-east1.rep.googleapis.com/', 'us-east4': 'https://run.us-east4.rep.googleapis.com/', 'us-east5': 'https://run.us-east5.rep.googleapis.com/', 'us-east7': 'https://run.us-east7.rep.googleapis.com/', 'us-south1': 'https://run.us-south1.rep.googleapis.com/', 'us-west1': 'https://run.us-west1.rep.googleapis.com/', 'us-west2': 'https://run.us-west2.rep.googleapis.com/', 'us-west3': 'https://run.us-west3.rep.googleapis.com/', 'us-west4': 'https://run.us-west4.rep.googleapis.com/', 'us-west8': 'https://run.us-west8.rep.googleapis.com/'},
-        ),
-    },
-    'runapps': {
-        'v1alpha1': (
-            ('googlecloudsdk.generated_clients.apis.runapps.v1alpha1', 'runapps_v1alpha1_client.RunappsV1alpha1', 'runapps_v1alpha1_messages', 'https://runapps.googleapis.com/'),
-            None,
-            True,
-            True,
-            '',
-            {},
         ),
     },
     'runtimeconfig': {

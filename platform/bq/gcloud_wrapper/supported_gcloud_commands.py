@@ -44,10 +44,10 @@ def _bq_verbosity_to_gcloud_verbosity(verbosity: int) -> str:
 # is handled as part of the implementation.
 SUPPORTED_GLOBAL_FLAGS: List[FlagMapping] = [
     FlagMapping('project_id', 'project'),
-    FlagMapping('httplib2_debuglevel', 'log-http', lambda x: x > 0),
+    FlagMapping('httplib2_debuglevel', 'log-http', lambda x: x > 0),  # pyrefly: ignore[unsupported-operation]
     # TODO(b/355324165): Handle condition when both flags are used.
-    FlagMapping('apilog', 'verbosity', _bq_apilog_to_gcloud_verbosity),
-    FlagMapping('verbosity', 'verbosity', _bq_verbosity_to_gcloud_verbosity),
+    FlagMapping('apilog', 'verbosity', _bq_apilog_to_gcloud_verbosity),  # pyrefly: ignore[bad-argument-type]
+    FlagMapping('verbosity', 'verbosity', _bq_verbosity_to_gcloud_verbosity),  # pyrefly: ignore[bad-argument-type]
     # Unsupported flags.
     UnsupportedFlagMapping(
         'mtls',

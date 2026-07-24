@@ -13,7 +13,7 @@ class CloudassetV1(base_api.BaseApiClient):
   MTLS_BASE_URL = 'https://cloudasset.mtls.googleapis.com/'
 
   _PACKAGE = 'cloudasset'
-  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform']
+  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/cloudasset']
   _VERSION = 'v1'
   _CLIENT_ID = 'CLIENT_ID'
   _CLIENT_SECRET = 'CLIENT_SECRET'

@@ -61,20 +61,17 @@ class UpdateHelper(object):
       self,
       holder,
       support_endpoint_based_security_arg,
-      support_nat_ips_per_endpoint,
   ):
     self._holder = holder
     self._support_endpoint_based_security_arg = (
         support_endpoint_based_security_arg
     )
-    self._support_nat_ips_per_endpoint = support_nat_ips_per_endpoint
 
   @classmethod
   def Args(
       cls,
       parser,
       support_endpoint_based_security_arg,
-      support_nat_ips_per_endpoint,
   ):
     """Create a Google Compute Engine service attachment.
 
@@ -82,7 +79,6 @@ class UpdateHelper(object):
       parser: the parser that parses the input from the user.
       support_endpoint_based_security_arg: Whether to support endpoint based
         security.
-      support_nat_ips_per_endpoint: Whether to support nat ips per endpoint.
 
     cls: Hold onto the definition of a complex argument so it can be used later
       to process the user's input.
@@ -107,8 +103,7 @@ class UpdateHelper(object):
     else:
       flags.AddConsumerAcceptListOld(parser)
     flags.AddPropagatedConnectionLimit(parser)
-    if support_nat_ips_per_endpoint:
-      flags.AddNatIpsPerEndpoint(parser)
+    flags.AddNatIpsPerEndpoint(parser)
 
   def _GetConsumerAcceptList(self, args, holder):
     if self._support_endpoint_based_security_arg:
@@ -278,9 +273,7 @@ class UpdateHelper(object):
         replacement.propagatedConnectionLimit = args.propagated_connection_limit
         is_updated = True
 
-    if self._support_nat_ips_per_endpoint and args.IsSpecified(
-        'nat_ips_per_endpoint'
-    ):
+    if args.IsSpecified('nat_ips_per_endpoint'):
       if args.nat_ips_per_endpoint != old_resource.natIpsPerEndpoint:
         replacement.natIpsPerEndpoint = args.nat_ips_per_endpoint
         is_updated = True
@@ -316,7 +309,6 @@ class UpdateHelper(object):
 class Update(base.UpdateCommand):
   """Update a Google Compute Engine service attachment."""
   _support_endpoint_based_security_arg = True
-  _support_nat_ips_per_endpoint = False
   detailed_help = _DetailedHelp()
 
   @classmethod
@@ -324,7 +316,6 @@ class Update(base.UpdateCommand):
     UpdateHelper.Args(
         parser,
         cls._support_endpoint_based_security_arg,
-        cls._support_nat_ips_per_endpoint,
     )
 
   def Run(self, args):
@@ -333,7 +324,6 @@ class Update(base.UpdateCommand):
     return UpdateHelper(
         holder,
         self._support_endpoint_based_security_arg,
-        self._support_nat_ips_per_endpoint,
     ).Run(args)
 
 
@@ -341,5 +331,4 @@ class Update(base.UpdateCommand):
 class UpdateAlpha(Update):
   """Update a Google Compute Engine service attachment."""
 
-  _support_nat_ips_per_endpoint = True
   detailed_help = _DetailedHelp()

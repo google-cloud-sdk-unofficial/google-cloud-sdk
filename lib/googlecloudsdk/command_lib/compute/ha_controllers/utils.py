@@ -19,6 +19,7 @@ from apitools.base.py import encoding
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.calliope.concepts import concepts
+from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.apis import yaml_data
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
@@ -26,7 +27,7 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import yaml
-
+from googlecloudsdk.core.console import console_io
 
 _MESSAGES = apis.GetMessagesModule("compute", "alpha")
 
@@ -63,7 +64,16 @@ def MakeZoneConfiguration(
   zone_configs_parsed: list[
       _MESSAGES.HaController.ZoneConfigurationsValue.AdditionalProperty
   ] = []
-
+  if len(zone_config) == 1:
+    if console_io.CanPrompt() and not console_io.PromptContinue(
+        "Only one zone configuration was specified. Is it the primary zone? If"
+        " so, should the secondary zone and the reservation affinities"
+        " of the primary zone be inferred automatically?",
+        default=False,
+    ):
+      raise compute_exceptions.AbortedError(
+          "Please rerun the command with both zone configurations specified."
+      )
   for config in zone_config:
     if "zone" not in config:
       continue
@@ -219,7 +229,6 @@ def _GetNodeAffinities(config: dict[str, str]) -> list[
             values=[config["node-project"]],
         )
     )
-
   return node_affinities
 
 

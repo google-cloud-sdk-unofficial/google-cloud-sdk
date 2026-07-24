@@ -15,8 +15,6 @@
 """Updates an AlloyDB instance."""
 
 
-
-
 from googlecloudsdk.api_lib.alloydb import api_util
 from googlecloudsdk.api_lib.alloydb import instance_operations
 from googlecloudsdk.calliope import base
@@ -181,6 +179,7 @@ class UpdateBeta(Update):
     )
 
     flags.AddAutoscalerUpdateFlags(parser)
+    flags.AddEnablePscAutoDns(parser)
 
   def ConstructPatchRequestFromArgs(self, alloydb_messages, instance_ref, args):
     return instance_helper.ConstructPatchRequestFromArgsBeta(

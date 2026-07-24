@@ -1249,7 +1249,7 @@ class Create(base.CreateCommand):
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = False
   _support_enable_vpc_scoped_dns = False
-  _support_workload_identity_config = False
+  _support_workload_identity_config = True
   _support_alias_ipv6_ranges = False
   _support_dns64_eligible = False
   _support_nat64_eligible = False
@@ -1405,7 +1405,7 @@ class CreateBeta(Create):
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = True
   _support_enable_vpc_scoped_dns = False
-  _support_workload_identity_config = False
+  _support_workload_identity_config = True
   _support_alias_ipv6_ranges = True
   _support_dns64_eligible = True
   _support_nat64_eligible = True

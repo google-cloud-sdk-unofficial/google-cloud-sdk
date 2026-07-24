@@ -20,7 +20,6 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
-@base.Hidden
 class CompleteControlPlaneUpgrade(base.Command):
   """Complete the control plane upgrade for an existing cluster."""
 

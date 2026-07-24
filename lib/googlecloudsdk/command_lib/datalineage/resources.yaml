@@ -30,3 +30,28 @@ process:
     parameter_name: processesId
     attribute_name: process
     help: The name of the process.
+
+run:
+  name: run
+  collection: datalineage.projects.locations.processes.runs
+  attributes:
+  - *project
+  - *location
+  - *process
+  - &run
+    parameter_name: runsId
+    attribute_name: run
+    help: The name of the run.
+
+lineage_event:
+  name: lineage_event
+  collection: datalineage.projects.locations.processes.runs.lineageEvents
+  attributes:
+  - *project
+  - *location
+  - *process
+  - *run
+  - &lineage_event
+    parameter_name: lineageEventsId
+    attribute_name: lineage_event
+    help: The name of the lineage event.

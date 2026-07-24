@@ -31,6 +31,10 @@ help_text = textwrap.dedent("""\
     To create a catalog using a Cloud Storage bucket `my-catalog-bucket` with vended credentials, run:
 
       $ {command} my-catalog-bucket --catalog-type=gcs-bucket --credential-mode=vended-credentials
+
+    To create a catalog `my-lakehouse-catalog` with catalog type lakehouse, run:
+
+      $ {command} my-lakehouse-catalog --catalog-type=lakehouse --default-location=gs://my-bucket
     """)
 
 help_text_preview = textwrap.dedent("""\
@@ -70,6 +74,7 @@ def _BuildFederatedCatalogMessage(args, messages):
         snowflake_catalog_info=messages.SnowflakeCatalogInfo(
             warehouse=args.snowflake_warehouse,
             account_identifier=args.snowflake_account_identifier,
+            snowflake_role=args.snowflake_role,
         ),
     )
   elif args.federated_catalog_type == 'workday':

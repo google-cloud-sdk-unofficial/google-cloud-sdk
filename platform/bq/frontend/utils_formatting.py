@@ -213,9 +213,14 @@ def format_time(secs: float) -> str:
 
 def format_time_from_proto_timestamp_json_string(json_string: str) -> str:
   """Converts google.protobuf.Timestamp formatted string to BQ format."""
-  parsed_datetime = datetime.datetime.strptime(
-      json_string, '%Y-%m-%dT%H:%M:%S.%fZ'
-  )
+  try:
+    parsed_datetime = datetime.datetime.strptime(
+        json_string, '%Y-%m-%dT%H:%M:%S.%fZ'
+    )
+  except ValueError:
+    parsed_datetime = datetime.datetime.strptime(
+        json_string, '%Y-%m-%dT%H:%M:%SZ'
+    )
   seconds = (parsed_datetime - datetime.datetime(1970, 1, 1)).total_seconds()
   return format_time(seconds)
 
@@ -244,14 +249,14 @@ def format_acl(acl: DatasetAccess) -> str:
     routine = cast(Dict[str, str], entry.pop('routine', None))
     role = cast(str, entry.pop('role', None))
     if view:
-      acl_entries['VIEW', ()].append(
+      acl_entries['VIEW', ()].append(  # pyrefly: ignore[bad-index]
           '%s:%s.%s'
           % (view.get('projectId'), view.get('datasetId'), view.get('tableId'))
       )
     elif dataset:
       dataset_reference = cast(Dict[str, str], dataset.get('dataset'))
-      for target in dataset.get('targetTypes'):
-        acl_entries['All ' + target + ' in DATASET', ()].append(
+      for target in dataset.get('targetTypes'):  # pyrefly: ignore[not-iterable]
+        acl_entries['All ' + target + ' in DATASET', ()].append(  # pyrefly: ignore[bad-index]
             '%s:%s'
             % (
                 dataset_reference.get('projectId'),
@@ -263,9 +268,9 @@ def format_acl(acl: DatasetAccess) -> str:
           bq_id_utils.ApiClientHelper.RoutineReference(**routine)
       )
       if role:
-        acl_entries[role, ()].append('ROUTINE: %s' % routine_reference)
+        acl_entries[role, ()].append('ROUTINE: %s' % routine_reference)  # pyrefly: ignore[bad-index]
       else:
-        acl_entries['ROUTINE', ()].append(routine_reference)
+        acl_entries['ROUTINE', ()].append(routine_reference)  # pyrefly: ignore[bad-index]
     else:
       condition = cast(Dict[str, str], entry.pop('condition', None))
       if not role or len(list(entry.values())) != 1:
@@ -273,9 +278,9 @@ def format_acl(acl: DatasetAccess) -> str:
             'Invalid ACL returned by server: %s' % acl, {}, []
         )
       if condition:
-        acl_entries[(role, tuple(condition.items()))].extend(entry.values())
+        acl_entries[(role, tuple(condition.items()))].extend(entry.values())  # pyrefly: ignore[bad-argument-type, bad-index]
       else:
-        acl_entries[role, ()].extend(entry.values())
+        acl_entries[role, ()].extend(entry.values())  # pyrefly: ignore[bad-argument-type, bad-index]
   # Show a couple things first.
   original_roles = {
       'OWNER': 'Owners',
@@ -285,7 +290,7 @@ def format_acl(acl: DatasetAccess) -> str:
   }
   result_lines = []
   for role, name in original_roles.items():
-    members = acl_entries.pop((role, ()), None)
+    members = acl_entries.pop((role, ()), None)  # pyrefly: ignore[no-matching-overload]
     if members:
       result_lines.append('%s:' % name)
       result_lines.append(',\n'.join('  %s' % m for m in sorted(members)))
@@ -403,17 +408,17 @@ def configure_formatter(
           'ACLs',
       ))
       formatter.AddColumns(('Labels',))
-      add_tags = 'tags' in object_info
-      add_tags = add_tags or 'resource_tags' in object_info
+      add_tags = 'tags' in object_info  # pyrefly: ignore[not-iterable]
+      add_tags = add_tags or 'resource_tags' in object_info  # pyrefly: ignore[not-iterable]
       if add_tags:
         formatter.AddColumns(('Tags',))
-      if 'defaultEncryptionConfiguration' in object_info:
+      if 'defaultEncryptionConfiguration' in object_info:  # pyrefly: ignore[not-iterable]
         formatter.AddColumns(('kmsKeyName',))
-      if 'type' in object_info:
+      if 'type' in object_info:  # pyrefly: ignore[not-iterable]
         formatter.AddColumns(('Type',))
-      if 'linkedDatasetSource' in object_info:
+      if 'linkedDatasetSource' in object_info:  # pyrefly: ignore[not-iterable]
         formatter.AddColumns(('Source dataset',))
-      if 'maxTimeTravelHours' in object_info:
+      if 'maxTimeTravelHours' in object_info:  # pyrefly: ignore[not-iterable]
         formatter.AddColumns(('Max time travel (Hours)',))
   elif reference_type == bq_id_utils.ApiClientHelper.TransferConfigReference:
     if print_format == 'list':
@@ -422,7 +427,7 @@ def configure_formatter(
       formatter.AddColumns(('dataSourceId',))
       formatter.AddColumns(('state',))
     if print_format == 'show':
-      for key in object_info.keys():
+      for key in object_info.keys():  # pyrefly: ignore[missing-attribute]
         if key != 'name':
           formatter.AddColumns((key,))
   elif reference_type == bq_id_utils.ApiClientHelper.TransferRunReference:
@@ -456,7 +461,7 @@ def configure_formatter(
           'Creation Time',
           'Expiration Time',
       ))
-      if 'encryptionConfiguration' in object_info:
+      if 'encryptionConfiguration' in object_info:  # pyrefly: ignore[not-iterable]
         formatter.AddColumns(('kmsKeyName',))
   elif reference_type == bq_id_utils.ApiClientHelper.RoutineReference:
     if print_format == 'list':
@@ -478,13 +483,13 @@ def configure_formatter(
           'Creation Time',
           'Last Modified Time',
       ))
-      if 'remoteFunctionOptions' in object_info:
+      if 'remoteFunctionOptions' in object_info:  # pyrefly: ignore[not-iterable]
         formatter.AddColumns((
             'Remote Function Endpoint',
             'Connection',
             'User Defined Context',
         ))
-      if 'sparkOptions' in object_info:
+      if 'sparkOptions' in object_info:  # pyrefly: ignore[not-iterable]
         formatter.AddColumns((
             'Connection',
             'Runtime Version',
@@ -497,12 +502,12 @@ def configure_formatter(
             'File URIs',
             'Archive URIs',
         ))
-      if 'pythonOptions' in object_info:
+      if 'pythonOptions' in object_info:  # pyrefly: ignore[not-iterable]
         formatter.AddColumns((
             'Entry Point',
             'Packages',
         ))
-      if 'externalRuntimeOptions' in object_info:
+      if 'externalRuntimeOptions' in object_info:  # pyrefly: ignore[not-iterable]
         formatter.AddColumns((
             'Connection',
             'Runtime Version',
@@ -559,9 +564,9 @@ def configure_formatter(
             'Total Physical Bytes',
         ))
       formatter.AddColumns(('Labels',))
-      if 'encryptionConfiguration' in object_info:
+      if 'encryptionConfiguration' in object_info:  # pyrefly: ignore[not-iterable]
         formatter.AddColumns(('kmsKeyName',))
-      if 'resourceTags' in object_info:
+      if 'resourceTags' in object_info:  # pyrefly: ignore[not-iterable]
         formatter.AddColumns(('Tags',))
     if print_format == 'view':
       formatter.AddColumns(('Query',))
@@ -584,7 +589,7 @@ def configure_formatter(
           'Replication Error',
       ))
   elif reference_type == bq_id_utils.ApiClientHelper.EncryptionServiceAccount:
-    formatter.AddColumns(list(object_info.keys()))
+    formatter.AddColumns(list(object_info.keys()))  # pyrefly: ignore[missing-attribute]
   elif reference_type == bq_id_utils.ApiClientHelper.ReservationReference:
     shared_columns = (
         'name',
@@ -892,12 +897,12 @@ def format_routine_argument_info(routine_type, argument) -> str:
         and not argument['isAggregate']
     ):
       return '{}{} {} {}'.format(
-          argument_mode, argument['name'], display_type, 'NOT AGGREGATE'
+          argument_mode, argument['name'], display_type, 'NOT AGGREGATE'  # pyrefly: ignore[unbound-name]
       )
     else:
-      return '{}{} {}'.format(argument_mode, argument['name'], display_type)
+      return '{}{} {}'.format(argument_mode, argument['name'], display_type)  # pyrefly: ignore[unbound-name]
   else:
-    return display_type
+    return display_type  # pyrefly: ignore[unbound-name]
 
 
 def format_routine_info(routine_info):

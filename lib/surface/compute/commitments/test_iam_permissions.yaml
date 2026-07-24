@@ -1,0 +1,30 @@
+- release_tracks: [ALPHA]
+  universe_compatible: true
+  help_text:
+    brief: Test IAM permissions for a Compute Engine commitment.
+    description: |
+      Returns permissions that a caller has on the specified commitment.
+    examples: |
+      To test if the caller has 'compute.commitments.get' permission on a commitment, run:
+
+        $ {command} my-commitment --region=us-central1 --permissions=compute.commitments.get
+
+  request:
+    api_version: alpha
+    collection: compute.regionCommitments
+    method: testIamPermissions
+    use_relative_name: false
+
+  command_type: GENERIC
+
+  arguments:
+    resource:
+      help_text: The commitment for which to test permissions.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:commitment
+    params:
+    - arg_name: permissions
+      api_field: testPermissionsRequest.permissions
+      required: true
+      repeated: true
+      help_text: |-
+        The permissions to test.

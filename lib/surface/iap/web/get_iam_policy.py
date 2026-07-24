@@ -20,7 +20,9 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iap import util as iap_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.DefaultUniverseOnly
 class GetIamPolicy(base.ListCommand):
   """Get IAM policy for an IAP IAM resource.
@@ -86,8 +88,7 @@ class GetIamPolicy(base.ListCommand):
 
   """,
   }
-
-  _support_agent_registry = False
+  _support_instances = False
 
   @classmethod
   def Args(cls, parser):
@@ -99,7 +100,7 @@ class GetIamPolicy(base.ListCommand):
     """
     iap_util.AddIapIamResourceArgs(
         parser,
-        support_agent_registry=cls._support_agent_registry
+        support_instances=cls._support_instances,
     )
     base.URI_FLAG.RemoveFromParser(parser)
 
@@ -116,11 +117,12 @@ class GetIamPolicy(base.ListCommand):
     iap_iam_ref = iap_util.ParseIapIamResource(
         self.ReleaseTrack(),
         args,
-        self._support_agent_registry)
+        self._support_instances,
+    )
     return iap_iam_ref.GetIamPolicy()
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class GetIamPolicyAlpha(GetIamPolicy):
   """Get IAM policy for an IAP IAM resource.
 
@@ -132,4 +134,5 @@ class GetIamPolicyAlpha(GetIamPolicy):
   $ {parent_command} set-iam-policy for additional details.
   """
 
-  _support_agent_registry = True
+  _support_instances = True
+

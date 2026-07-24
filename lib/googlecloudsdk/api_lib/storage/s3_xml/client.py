@@ -794,9 +794,10 @@ class S3XmlClient(cloud_api.CloudApi):
       source_resource=None,
       tracker_callback=None,
       upload_strategy=cloud_api.UploadStrategy.SIMPLE,
+      final_headers_callback=None,
   ):
     """See super class."""
-    del serialization_data, tracker_callback  # Unused.
+    del serialization_data, tracker_callback, final_headers_callback  # Unused.
 
     if upload_strategy == cloud_api.UploadStrategy.RESUMABLE:
       raise command_errors.Error(

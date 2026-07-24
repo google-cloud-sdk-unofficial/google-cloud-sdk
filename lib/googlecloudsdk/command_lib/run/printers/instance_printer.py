@@ -39,6 +39,17 @@ def StatusColorFormat():
 INSTANCE_PRINTER_FORMAT = 'instance'
 
 
+def _GetRestartPolicy(record):
+  """Gets the restart policy of this instance."""
+  if (
+      record.spec
+      and hasattr(record.spec, 'restartPolicy')
+      and record.spec.restartPolicy
+  ):
+    return record.spec.restartPolicy
+  return 'OnFailure'
+
+
 class InstancePrinter(cp.CustomPrinterBase):
   """Prints the run Instance in a custom human-readable format.
 
@@ -72,7 +83,21 @@ class InstancePrinter(cp.CustomPrinterBase):
     ready_message = InstancePrinter.FormatReadyMessage(record)
     labels = k8s_util.GetLabels(record.labels)
     config = InstancePrinter.GetConfig(record)
-    route_fields = traffic_printer.TransformInstanceRouteFields(record)
+    route_fields_section = traffic_printer.TransformInstanceRouteFields(record)
+    # pylint: disable=protected-access
+    route_fields_list = (
+        list(route_fields_section._lines) if route_fields_section else []
+    )
+    restart_policy = _GetRestartPolicy(record)
+    if restart_policy:
+      route_fields_list.append(
+          cp.Labeled([('Restart Policy', restart_policy)])
+      )
+    route_fields = (
+        cp.Section(route_fields_list, max_column_width=60)
+        if route_fields_list
+        else None
+    )
     containers = container_util.GetContainers(record)
 
     if header:

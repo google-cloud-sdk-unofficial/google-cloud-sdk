@@ -223,8 +223,15 @@ NC_KERNEL_MODULE_LOADING_POLICY = 'policy'
 NC_CRASHLOOPBACKOFF = 'crashLoopBackOff'
 NC_CRASHLOOPBACKOFF_MAX_CONTAINER_RESTART_PERIOD = 'maxContainerRestartPeriod'
 
+NC_NODE_VFIO_CONFIG = 'nodeVfioConfig'
+NC_DMA_ENTRY_LIMIT = 'dmaEntryLimit'
+
 NC_ACCURATE_TIME_CONFIG = 'accurateTimeConfig'
 NC_ENABLE_PTP_KVM_TIME_SYNC = 'enablePtpKvmTimeSync'
+
+NC_DISK_IO_SCHEDULER = 'diskIoScheduler'
+NC_NODE_SYSTEM_IO_SCHEDULER = 'nodeSystemIoScheduler'
+NC_NODE_ATTACHED_DISK_IO_SCHEDULER = 'nodeAttachedDiskIoScheduler'
 
 
 class Error(core_exceptions.Error):
@@ -1113,6 +1120,8 @@ def LoadSystemConfigFromYAML(
             NC_CUSTOM_NODE_INIT: dict,
             NC_KERNEL_MODULE_LOADING: dict,
             NC_ACCURATE_TIME_CONFIG: dict,
+            NC_NODE_VFIO_CONFIG: dict,
+            NC_DISK_IO_SCHEDULER: dict,
         },
     )
     node_config.linuxNodeConfig = messages.LinuxNodeConfig()
@@ -1552,6 +1561,38 @@ def LoadSystemConfigFromYAML(
                 enablePtpKvmTimeSync=ptp_kvm_time_sync_enabled
             )
         )
+
+    node_vfio_config_opts = linux_config_opts.get(NC_NODE_VFIO_CONFIG)
+    if node_vfio_config_opts:
+      _CheckNodeConfigFields(
+          NC_NODE_VFIO_CONFIG,
+          node_vfio_config_opts,
+          {NC_DMA_ENTRY_LIMIT: int},
+      )
+      dma_entry_limit = node_vfio_config_opts.get(NC_DMA_ENTRY_LIMIT)
+      if dma_entry_limit is not None:
+        node_config.linuxNodeConfig.nodeVfioConfig = messages.NodeVfioConfig(
+            dmaEntryLimit=dma_entry_limit
+        )
+
+    disk_io_scheduler_opts = linux_config_opts.get(NC_DISK_IO_SCHEDULER)
+    if disk_io_scheduler_opts:
+      _CheckNodeConfigFields(
+          NC_DISK_IO_SCHEDULER,
+          disk_io_scheduler_opts,
+          {
+              NC_NODE_SYSTEM_IO_SCHEDULER: str,
+              NC_NODE_ATTACHED_DISK_IO_SCHEDULER: str,
+          },
+      )
+      node_config.linuxNodeConfig.diskIoScheduler = messages.DiskIoScheduler(
+          nodeSystemIoScheduler=disk_io_scheduler_opts.get(
+              NC_NODE_SYSTEM_IO_SCHEDULER
+          ),
+          nodeAttachedDiskIoScheduler=disk_io_scheduler_opts.get(
+              NC_NODE_ATTACHED_DISK_IO_SCHEDULER
+          ),
+      )
 
     kernel_module_loading_opts = linux_config_opts.get(NC_KERNEL_MODULE_LOADING)
     if kernel_module_loading_opts:

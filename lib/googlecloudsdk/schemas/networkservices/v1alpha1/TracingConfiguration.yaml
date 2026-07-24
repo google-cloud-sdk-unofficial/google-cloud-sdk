@@ -1,0 +1,44 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1alpha1 TracingConfiguration export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  customSpanAttributes:
+    description: |-
+      Provides key-value pairs for adding context to spans. Supports
+      literalValue (static) and fromHeaderValue (dynamic extraction).
+    type: array
+    items:
+      $ref: TracingConfigurationCustomSpanAttribute.yaml
+  parentBasedSampling:
+    description: |-
+      Configures honoring a sampled bit in downstream traceparentID headers.
+    $ref: TracingConfigurationParentBasedSampling.yaml
+  samplingRate:
+    description: |-
+      Specifies the tracing sampling rate. The sampling rate is a float
+      number in the interval [0, 1]. The sampling rate is applied to all
+      requests to the targeted resources. The default value is 0.0.
+    type: number

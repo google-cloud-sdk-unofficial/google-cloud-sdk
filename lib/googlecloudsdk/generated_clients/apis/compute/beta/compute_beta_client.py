@@ -139,6 +139,7 @@ class ComputeBeta(base_api.BaseApiClient):
     self.regionUrlMaps = self.RegionUrlMapsService(self)
     self.regionZones = self.RegionZonesService(self)
     self.regions = self.RegionsService(self)
+    self.reliabilityRisks = self.ReliabilityRisksService(self)
     self.reservationBlocks = self.ReservationBlocksService(self)
     self.reservationSlots = self.ReservationSlotsService(self)
     self.reservationSubBlocks = self.ReservationSubBlocksService(self)
@@ -24117,6 +24118,68 @@ behaviour for this method.
         request_field='',
         request_type_name='ComputeRegionsListRequest',
         response_type_name='RegionList',
+        supports_download=False,
+    )
+
+  class ReliabilityRisksService(base_api.BaseApiService):
+    """Service class for the reliabilityRisks resource."""
+
+    _NAME = 'reliabilityRisks'
+
+    def __init__(self, client):
+      super(ComputeBeta.ReliabilityRisksService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Returns the specified ReliabilityRisk resource.
+
+      Args:
+        request: (ComputeReliabilityRisksGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ReliabilityRisk) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.reliabilityRisks.get',
+        ordered_params=['project', 'reliabilityRisk'],
+        path_params=['project', 'reliabilityRisk'],
+        query_params=[],
+        relative_path='projects/{project}/global/reliabilityRisks/{reliabilityRisk}',
+        request_field='',
+        request_type_name='ComputeReliabilityRisksGetRequest',
+        response_type_name='ReliabilityRisk',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Retrieves the list of reliabilityRisks available in the specified project.
+
+      Args:
+        request: (ComputeReliabilityRisksListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ReliabilityRisksListResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.reliabilityRisks.list',
+        ordered_params=['project'],
+        path_params=['project'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess'],
+        relative_path='projects/{project}/global/reliabilityRisks',
+        request_field='',
+        request_type_name='ComputeReliabilityRisksListRequest',
+        response_type_name='ReliabilityRisksListResponse',
         supports_download=False,
     )
 

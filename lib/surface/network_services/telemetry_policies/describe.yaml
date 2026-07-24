@@ -1,0 +1,22 @@
+# Copyright 2026 Google LLC. All Rights Reserved.
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    Describe a TelemetryPolicy.
+  description: |
+    Describe the specified TelemetryPolicy.
+  examples: |
+    To describe a TelemetryPolicy named 'my-telemetry-policy', run:
+
+      $ {command} my-telemetry-policy --location=global
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:telemetryPolicy
+    help_text: Name of the telemetry policy to describe.
+
+request:
+  ALPHA:
+    api_version: v1alpha1
+  collection: networkservices.projects.locations.telemetryPolicies

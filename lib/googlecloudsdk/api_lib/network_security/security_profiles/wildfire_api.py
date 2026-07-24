@@ -185,7 +185,7 @@ class Client(sp_api.Client):
           **wf_profile_kwargs
       )
 
-    request = self.messages.NetworksecurityOrganizationsLocationsSecurityProfilesPatchRequest(
+    request = self._patch_request(
         name=name,
         securityProfile=profile,
         updateMask=','.join(update_mask),
@@ -306,7 +306,7 @@ class Client(sp_api.Client):
     else:
       update_mask = ''
 
-    patch_request = self.messages.NetworksecurityOrganizationsLocationsSecurityProfilesPatchRequest(
+    patch_request = self._patch_request(
         name=name,
         securityProfile=sp_to_update,
         updateMask=update_mask,
@@ -436,7 +436,7 @@ class Client(sp_api.Client):
     else:
       update_mask = ''
 
-    patch_request = self.messages.NetworksecurityOrganizationsLocationsSecurityProfilesPatchRequest(
+    patch_request = self._patch_request(
         name=name,
         securityProfile=sp_to_update,
         updateMask=update_mask,
@@ -521,7 +521,7 @@ class Client(sp_api.Client):
     else:
       update_mask = ''
 
-    patch_request = self.messages.NetworksecurityOrganizationsLocationsSecurityProfilesPatchRequest(
+    patch_request = self._patch_request(
         name=name,
         securityProfile=sp_to_update,
         updateMask=update_mask,
@@ -571,7 +571,7 @@ class Client(sp_api.Client):
     sp_to_update.wildfireAnalysisProfile.wildfireSubmissionRules.append(
         new_rule
     )
-    patch_request = self.messages.NetworksecurityOrganizationsLocationsSecurityProfilesPatchRequest(
+    patch_request = self._patch_request(
         name=name,
         securityProfile=sp_to_update,
         updateMask='wildfire_analysis_profile.wildfire_submission_rules',
@@ -628,7 +628,7 @@ class Client(sp_api.Client):
           f' direction [{direction}] not found in security profile [{name}]'
       )
 
-    patch_request = self.messages.NetworksecurityOrganizationsLocationsSecurityProfilesPatchRequest(
+    patch_request = self._patch_request(
         name=name,
         securityProfile=sp_to_update,
         updateMask='wildfire_analysis_profile.wildfire_submission_rules',
@@ -692,7 +692,7 @@ class Client(sp_api.Client):
     sp_to_update.wildfireAnalysisProfile.wildfireInlineCloudAnalysisRules.append(
         new_rule
     )
-    patch_request = self.messages.NetworksecurityOrganizationsLocationsSecurityProfilesPatchRequest(
+    patch_request = self._patch_request(
         name=name,
         securityProfile=sp_to_update,
         updateMask=(
@@ -776,7 +776,7 @@ class Client(sp_api.Client):
     sp_to_update.wildfireAnalysisProfile.wildfireInlineCloudAnalysisRules = (
         updated_rules
     )
-    patch_request = self.messages.NetworksecurityOrganizationsLocationsSecurityProfilesPatchRequest(
+    patch_request = self._patch_request(
         name=name,
         securityProfile=sp_to_update,
         updateMask=(
@@ -820,7 +820,7 @@ class Client(sp_api.Client):
     sp_to_update.wildfireAnalysisProfile.wildfireInlineMlSetting.fileExceptions.append(
         new_exception
     )
-    patch_request = self.messages.NetworksecurityOrganizationsLocationsSecurityProfilesPatchRequest(
+    patch_request = self._patch_request(
         name=name,
         securityProfile=sp_to_update,
         updateMask='wildfire_analysis_profile.wildfire_inline_ml_setting.file_exceptions',
@@ -896,7 +896,7 @@ class Client(sp_api.Client):
             ' filename.'
         )
 
-    patch_request = self.messages.NetworksecurityOrganizationsLocationsSecurityProfilesPatchRequest(
+    patch_request = self._patch_request(
         name=name,
         securityProfile=sp_to_update,
         updateMask='wildfire_analysis_profile.wildfire_inline_ml_setting.file_exceptions',

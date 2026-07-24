@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA]
+  hints:
+    read_only: false
   help_text:
     brief: Update a new Cloud Media Annotation.
     description: Update a new Media Annotation.

@@ -266,3 +266,37 @@ def SetIamPolicy(backend_bucket_ref, client, policy):
     result = client.MakeRequests([(service, 'SetIamPolicy', request)])[0]
   iam_util.LogSetIamPolicy(backend_bucket_ref.Name(), 'backend bucket')
   return result
+
+
+def TestIamPermissions(backend_bucket_ref, client, permissions):
+  """Tests the IAM policy permissions for a backend bucket.
+
+  Args:
+    backend_bucket_ref: The backend bucket reference.
+    client: The client.
+    permissions: The list of permissions to test.
+
+  Returns:
+    The response containing allowed permissions.
+  """
+  test_permissions_request = client.messages.TestPermissionsRequest(
+      permissions=permissions
+  )
+  if backend_bucket_ref.Collection() == 'compute.regionBackendBuckets':
+    service = client.apitools_client.regionBackendBuckets
+    request = (
+        client.messages.ComputeRegionBackendBucketsTestIamPermissionsRequest(
+            resource=backend_bucket_ref.Name(),
+            region=backend_bucket_ref.region,
+            project=backend_bucket_ref.project,
+            testPermissionsRequest=test_permissions_request,
+        )
+    )
+    return client.MakeRequests([(service, 'TestIamPermissions', request)])[0]
+  service = client.apitools_client.backendBuckets
+  request = client.messages.ComputeBackendBucketsTestIamPermissionsRequest(
+      resource=backend_bucket_ref.Name(),
+      project=backend_bucket_ref.project,
+      testPermissionsRequest=test_permissions_request,
+  )
+  return client.MakeRequests([(service, 'TestIamPermissions', request)])[0]

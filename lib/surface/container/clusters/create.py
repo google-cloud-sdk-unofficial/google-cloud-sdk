@@ -883,6 +883,9 @@ flags_to_add = {
         'enableK8sCertsViaDns': flags.AddEnableK8sCertsViaDnsFlag,
         'networkTier': flags.AddNetworkTierFlag,
         'controlPlaneEgress': flags.AddControlPlaneEgressFlag,
+        'managedOTelScope': lambda p: flags.AddManagedOTelScopeFlags(
+            p, hidden=False
+        ),
         'autopilotPrivilegedAdmission': (
             flags.AddAutopilotPrivilegedAdmissionFlag
         ),
@@ -1451,9 +1454,11 @@ class Create(base.CreateCommand):
 
   def ParseCreateOptions(self, args, location, project_id):
     get_default = lambda key: AttrValue(args, key, self.default_flag_values)
-    return ParseCreateOptionsBase(
+    ops = ParseCreateOptionsBase(
         args, self.autopilot, get_default, location, project_id
     )
+    ops.managed_otel_scope = get_default('managed_otel_scope')
+    return ops
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

@@ -49,11 +49,6 @@ _POSSIBLE_ERRORS_GCE_METADATA_CONNECTION = (
     SslCertificateError,
 )
 
-_DOMAIN_NAME_RESOLVE_ERROR_MSGS = (
-    'Name or service not known',  # Linux
-    'nodename nor servname provided',  # macOS
-)
-
 
 def _ShouldRetryMetadataServerConnection(exc_type, exc_value, exc_traceback,
                                          state):
@@ -61,15 +56,10 @@ def _ShouldRetryMetadataServerConnection(exc_type, exc_value, exc_traceback,
   del exc_type, exc_traceback, state
   if not isinstance(exc_value, _POSSIBLE_ERRORS_GCE_METADATA_CONNECTION):
     return False
-  # The domain name cannot be resolved, which happens when not on GCE.
-  if isinstance(exc_value, urllib.error.URLError) and any(
-      msg in str(exc_value) for msg in _DOMAIN_NAME_RESOLVE_ERROR_MSGS
+  if isinstance(exc_value, urllib.error.URLError) and isinstance(
+      exc_value.reason, socket.gaierror
   ):
     return False
-
-  if isinstance(exc_value, urllib.error.HTTPError):
-    if exc_value.code in [429, 503]:
-      time.sleep(0.5)
 
   return True
 
@@ -132,9 +122,23 @@ class _OnGCECache(object):
     return self.CheckServerRefreshAllCaches()
 
   def CheckServerRefreshAllCaches(self):
-    on_gce = self._CheckServerWithRetry()
-    log.debug('On GCE from server: %s', on_gce)
-    self._WriteDisk(on_gce)
+    """Checks the metadata server and refreshes all caches."""
+    try:
+      on_gce = self._CheckServer()
+      log.debug('On GCE from server: %s', on_gce)
+      self._WriteDisk(on_gce)
+    except _POSSIBLE_ERRORS_GCE_METADATA_CONNECTION as e:  # pylint: disable=catching-non-exception
+      log.debug('Failed to check metadata server: %s', e)
+      # Only write False to disk if the error is a definitive DNS failure
+      # (socket.gaierror).  Transient connection errors (e.g., refused/timeout)
+      # are not written to disk to prevent cache poisoning during startup races
+      # (see b/529362127).
+      if isinstance(e, urllib.error.URLError) and isinstance(
+          e.reason, socket.gaierror
+      ):
+        self._WriteDisk(False)
+      on_gce = False
+
     self._WriteMemory(on_gce, time.time() + _GCE_CACHE_MAX_AGE)
     return on_gce
 
@@ -177,15 +181,12 @@ class _OnGCECache(object):
         # exist.
         log.debug('Failed to write GCE cache file: %s', e)
 
-  def _CheckServerWithRetry(self):
-    try:
-      return self._CheckServer()
-    except _POSSIBLE_ERRORS_GCE_METADATA_CONNECTION as e:  # pylint: disable=catching-non-exception
-      log.debug('Failed to check metadata server: %s', e)
-      return False
-
   @retry.RetryOnException(
-      max_retrials=3, should_retry_if=_ShouldRetryMetadataServerConnection)
+      max_retrials=3,
+      should_retry_if=_ShouldRetryMetadataServerConnection,
+      sleep_ms=500,
+      exponential_sleep_multiplier=2,
+  )
   def _CheckServer(self):
     return gce_read.ReadNoProxy(
         gce_read.GOOGLE_GCE_METADATA_NUMERIC_PROJECT_URI,

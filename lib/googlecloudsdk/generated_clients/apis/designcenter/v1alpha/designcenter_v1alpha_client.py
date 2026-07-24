@@ -1070,6 +1070,33 @@ class DesigncenterV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def IngestIaC(self, request, global_params=None):
+      r"""Ingests IaC for an application template asynchronously.
+
+      Args:
+        request: (DesigncenterProjectsLocationsSpacesApplicationTemplatesIngestIaCRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('IngestIaC')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    IngestIaC.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/spaces/{spacesId}/applicationTemplates/{applicationTemplatesId}:ingestIaC',
+        http_method='POST',
+        method_id='designcenter.projects.locations.spaces.applicationTemplates.ingestIaC',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:ingestIaC',
+        request_field='ingestApplicationTemplateIaCRequest',
+        request_type_name='DesigncenterProjectsLocationsSpacesApplicationTemplatesIngestIaCRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def List(self, request, global_params=None):
       r"""Lists application templates in a given space.
 
@@ -1121,6 +1148,33 @@ class DesigncenterV1alpha(base_api.BaseApiClient):
         request_field='applicationTemplate',
         request_type_name='DesigncenterProjectsLocationsSpacesApplicationTemplatesPatchRequest',
         response_type_name='ApplicationTemplate',
+        supports_download=False,
+    )
+
+    def Snapshot(self, request, global_params=None):
+      r"""Snapshots an application template to create a new revision asynchronously.
+
+      Args:
+        request: (DesigncenterProjectsLocationsSpacesApplicationTemplatesSnapshotRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Snapshot')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Snapshot.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/spaces/{spacesId}/applicationTemplates/{applicationTemplatesId}:snapshot',
+        http_method='POST',
+        method_id='designcenter.projects.locations.spaces.applicationTemplates.snapshot',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:snapshot',
+        request_field='snapshotApplicationTemplateRequest',
+        request_type_name='DesigncenterProjectsLocationsSpacesApplicationTemplatesSnapshotRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 
@@ -1211,6 +1265,33 @@ class DesigncenterV1alpha(base_api.BaseApiClient):
         relative_path='v1alpha/{+name}:deploy',
         request_field='deployApplicationRequest',
         request_type_name='DesigncenterProjectsLocationsSpacesApplicationsDeployRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Export(self, request, global_params=None):
+      r"""Exports Terraform files for an application asynchronously.
+
+      Args:
+        request: (DesigncenterProjectsLocationsSpacesApplicationsExportRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Export')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Export.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/spaces/{spacesId}/applications/{applicationsId}:export',
+        http_method='POST',
+        method_id='designcenter.projects.locations.spaces.applications.export',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:export',
+        request_field='exportApplicationIaCRequest',
+        request_type_name='DesigncenterProjectsLocationsSpacesApplicationsExportRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -1667,6 +1748,33 @@ class DesigncenterV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def FetchAssessmentReport(self, request, global_params=None):
+      r"""Fetches the assessment report of a catalog template revision if present.
+
+      Args:
+        request: (DesigncenterProjectsLocationsSpacesCatalogsTemplatesRevisionsFetchAssessmentReportRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (FetchCatalogTemplateRevisionAssessmentReportResponse) The response message.
+      """
+      config = self.GetMethodConfig('FetchAssessmentReport')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    FetchAssessmentReport.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/spaces/{spacesId}/catalogs/{catalogsId}/templates/{templatesId}/revisions/{revisionsId}:fetchAssessmentReport',
+        http_method='GET',
+        method_id='designcenter.projects.locations.spaces.catalogs.templates.revisions.fetchAssessmentReport',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:fetchAssessmentReport',
+        request_field='',
+        request_type_name='DesigncenterProjectsLocationsSpacesCatalogsTemplatesRevisionsFetchAssessmentReportRequest',
+        response_type_name='FetchCatalogTemplateRevisionAssessmentReportResponse',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Gets details about a template revision.
 
@@ -2020,6 +2128,33 @@ class DesigncenterV1alpha(base_api.BaseApiClient):
       super(DesigncenterV1alpha.ProjectsLocationsSpacesSharedTemplatesRevisionsService, self).__init__(client)
       self._upload_configs = {
           }
+
+    def FetchAssessmentReport(self, request, global_params=None):
+      r"""Fetches the assessment report of a shared template revision if present.
+
+      Args:
+        request: (DesigncenterProjectsLocationsSpacesSharedTemplatesRevisionsFetchAssessmentReportRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (FetchSharedTemplateRevisionAssessmentReportResponse) The response message.
+      """
+      config = self.GetMethodConfig('FetchAssessmentReport')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    FetchAssessmentReport.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/spaces/{spacesId}/sharedTemplates/{sharedTemplatesId}/revisions/{revisionsId}:fetchAssessmentReport',
+        http_method='GET',
+        method_id='designcenter.projects.locations.spaces.sharedTemplates.revisions.fetchAssessmentReport',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:fetchAssessmentReport',
+        request_field='',
+        request_type_name='DesigncenterProjectsLocationsSpacesSharedTemplatesRevisionsFetchAssessmentReportRequest',
+        response_type_name='FetchSharedTemplateRevisionAssessmentReportResponse',
+        supports_download=False,
+    )
 
     def Get(self, request, global_params=None):
       r"""Gets details about a shared template revision.

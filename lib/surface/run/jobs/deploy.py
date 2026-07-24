@@ -75,6 +75,8 @@ Container Flags
   group.AddArgument(flags.RemoveVolumeMountFlag())
   group.AddArgument(flags.ClearVolumeMountsFlag())
   group.AddArgument(flags.StartupProbeFlag())
+  if release_track != base.ReleaseTrack.GA:
+    group.AddArgument(flags.SandboxLauncherFlag(hidden=True))
 
   return group
 

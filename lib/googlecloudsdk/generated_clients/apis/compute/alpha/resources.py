@@ -73,6 +73,14 @@ class Collections(enum.Enum):
       ['project', 'crossSiteNetwork'],
       True
   )
+  DHCPOPTIONSCONFIGS = (
+      'dhcpOptionsConfigs',
+      'projects/{project}/regions/{region}/dhcpOptionsConfigs/'
+      '{dhcpOptionsConfig}',
+      {},
+      ['project', 'region', 'dhcpOptionsConfig'],
+      True
+  )
   DISKSETTINGS = (
       'diskSettings',
       'projects/{project}/zones/{zone}/diskSettings',
@@ -409,6 +417,13 @@ class Collections(enum.Enum):
       'projects/{project}/zones/{zone}/machineTypes/{machineType}',
       {},
       ['project', 'zone', 'machineType'],
+      True
+  )
+  MANAGEDRULESETS = (
+      'managedRulesets',
+      'projects/{project}/global/managedRulesets/{managedRuleset}',
+      {},
+      ['project', 'managedRuleset'],
       True
   )
   NETWORKATTACHMENTS = (

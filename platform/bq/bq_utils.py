@@ -136,7 +136,7 @@ def _ProcessConfigSection(
     return dictionary
   try:
     with open(filename) as rcfile:
-      dictionary = _ProcessSingleConfigSection(rcfile, section_name)
+      dictionary = _ProcessSingleConfigSection(rcfile, section_name)  # pyrefly: ignore[bad-argument-type]
   except IOError:
     pass
   return dictionary
@@ -190,7 +190,7 @@ def ProcessBigqueryrcSection(section_name: Optional[str], flag_values) -> None:
 
   bigqueryrc = GetBigqueryRcFilename()
   dictionary = _ProcessConfigSection(
-      filename=bigqueryrc, section_name=section_name
+      filename=bigqueryrc, section_name=section_name  # pyrefly: ignore[bad-argument-type]
   )
   for flag, value in dictionary.items():
     # We want flags specified at the command line to override

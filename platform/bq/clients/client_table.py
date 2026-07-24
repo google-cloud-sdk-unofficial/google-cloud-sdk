@@ -96,7 +96,7 @@ def read_schema_and_rows(
   if max_rows is None:
     raise ValueError('max_rows is required')
   table_reader = bq_table_reader.TableTableReader(
-      apiclient, max_rows_per_request, table_ref
+      apiclient, max_rows_per_request, table_ref  # pyrefly: ignore[bad-argument-type]
   )
   return table_reader.ReadSchemaAndRows(
       start_row,
@@ -333,13 +333,13 @@ def create_table(
         view_args['userDefinedFunctionResources'] = view_udf_resources
       body['view'] = view_args
       if use_legacy_sql is not None:
-        view_args['useLegacySql'] = use_legacy_sql
+        view_args['useLegacySql'] = use_legacy_sql  # pyrefly: ignore[bad-assignment]
     if materialized_view_query is not None:
       materialized_view_args = {'query': materialized_view_query}
       if enable_refresh is not None:
-        materialized_view_args['enableRefresh'] = enable_refresh
+        materialized_view_args['enableRefresh'] = enable_refresh  # pyrefly: ignore[bad-assignment]
       if refresh_interval_ms is not None:
-        materialized_view_args['refreshIntervalMs'] = refresh_interval_ms
+        materialized_view_args['refreshIntervalMs'] = refresh_interval_ms  # pyrefly: ignore[bad-assignment]
       body['materializedView'] = materialized_view_args
     if external_data_config is not None:
       if max_staleness is not None:
@@ -496,7 +496,7 @@ def update_table(
     if view_udf_resources is not None:
       view_args['userDefinedFunctionResources'] = view_udf_resources
     if use_legacy_sql is not None:
-      view_args['useLegacySql'] = use_legacy_sql
+      view_args['useLegacySql'] = use_legacy_sql  # pyrefly: ignore[bad-assignment]
     table['view'] = view_args
   materialized_view_args = {}
   if materialized_view_query is not None:
@@ -546,7 +546,7 @@ def update_table(
     for tag in tags_to_remove or []:
       resource_tags[tag] = None
   for tag in tags_to_attach or {}:
-    resource_tags[tag] = tags_to_attach[tag]
+    resource_tags[tag] = tags_to_attach[tag]  # pyrefly: ignore[unsupported-operation]
   # resourceTags is used to add a new tag binding, update value of existing
   # tag and also to remove a tag binding
   # check go/bq-table-tags-api for details

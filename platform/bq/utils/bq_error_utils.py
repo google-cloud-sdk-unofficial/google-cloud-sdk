@@ -110,7 +110,7 @@ def process_error(
 
   if isinstance(err, SystemExit):
     logger.exception('An error has caused the tool to exit', exc_info=err)
-    return err.code  # sys.exit called somewhere, hopefully intentionally.
+    return err.code  # sys.exit called somewhere, hopefully intentionally.  # pyrefly: ignore[bad-return]
 
   response = []
   retcode = 1
@@ -273,8 +273,8 @@ def _generate_contact_us_message() -> str:
     gcloud_configs = bq_gcloud_utils.load_config()
     gcloud_core_properties = gcloud_configs.get('core')
     if (
-        'account' in gcloud_core_properties
-        and '@google.com' in gcloud_core_properties['account']
+        'account' in gcloud_core_properties  # pyrefly: ignore[not-iterable]
+        and '@google.com' in gcloud_core_properties['account']  # pyrefly: ignore[unsupported-operation]
     ):
       contact_us_msg = contact_us_msg.replace('public', 'internal').replace(
           'https://issuetracker.google.com/issues/new?component=187149&template=0',

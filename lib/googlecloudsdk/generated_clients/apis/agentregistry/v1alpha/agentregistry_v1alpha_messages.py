@@ -574,6 +574,32 @@ class AgentregistryProjectsLocationsOperationsListRequest(_messages.Message):
   returnPartialSuccess = _messages.BooleanField(5)
 
 
+class AgentregistryProjectsLocationsPublishersGetRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsPublishersGetRequest object.
+
+  Fields:
+    name: Required. Target publisher resource name. Format:
+      `projects/{project}/locations/{location}/publishers/{publisher}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class AgentregistryProjectsLocationsPublishersListRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsPublishersListRequest object.
+
+  Fields:
+    pageSize: Optional. Page limit size.
+    pageToken: Optional. Page offset token.
+    parent: Required. Parent location to query. Format:
+      `projects/{project}/locations/{location}`
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
 class AgentregistryProjectsLocationsServicesCreateRequest(_messages.Message):
   r"""A AgentregistryProjectsLocationsServicesCreateRequest object.
 
@@ -693,6 +719,187 @@ class AgentregistryProjectsLocationsServicesPatchRequest(_messages.Message):
   updateMask = _messages.StringField(4)
 
 
+class AgentregistryProjectsLocationsSkillsCreateRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsSkillsCreateRequest object.
+
+  Fields:
+    parent: Required. The project and location location to bootstrap.
+    requestId: Optional. Signed UUID request idempotency token.
+    skill: A Skill resource to be passed as the request body.
+    skillId: Required. Custom, user-defined unique container identifier. Must
+      be unique within the parent project and location. This value should be
+      4-63 characters, and valid characters are `/a-z-/`.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  skill = _messages.MessageField('Skill', 3)
+  skillId = _messages.StringField(4)
+
+
+class AgentregistryProjectsLocationsSkillsDeleteRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsSkillsDeleteRequest object.
+
+  Fields:
+    name: Required. Target Skill container name to remove.
+    requestId: Optional. Signed UUID request idempotency token.
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class AgentregistryProjectsLocationsSkillsGetRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsSkillsGetRequest object.
+
+  Fields:
+    name: Required. Target resource container name.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class AgentregistryProjectsLocationsSkillsListRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsSkillsListRequest object.
+
+  Fields:
+    filter: Optional. Filtering results
+    orderBy: Optional. Hint for how to order the results
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Parent value for ListSkillsRequest
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class AgentregistryProjectsLocationsSkillsPatchRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsSkillsPatchRequest object.
+
+  Fields:
+    name: Identifier. Resource name of the Skill. Format:
+      `projects/{project}/locations/{location}/skills/{skill}` The `{skill}`
+      segment acts as the resource ID. If the skill is associated with a
+      Publisher, this segment typically uses a hyphenated namespace prefix
+      corresponding to the publisher (e.g., `google-workspace-create-docs`).
+    requestId: Optional. Signed UUID request idempotency token.
+    skill: A Skill resource to be passed as the request body.
+    updateMask: Optional. Standard update target mask mapping relative fields.
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  skill = _messages.MessageField('Skill', 3)
+  updateMask = _messages.StringField(4)
+
+
+class AgentregistryProjectsLocationsSkillsRevisionsCreateRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsSkillsRevisionsCreateRequest object.
+
+  Fields:
+    parent: Required. Parent logical container name.
+    requestId: Optional. Signed UUID request idempotency token.
+    skillRevision: A SkillRevision resource to be passed as the request body.
+    skillRevisionId: Optional. Custom, user-defined unique revision
+      identifier. Format: 4-63 characters, matching regex
+      `^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$`
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  skillRevision = _messages.MessageField('SkillRevision', 3)
+  skillRevisionId = _messages.StringField(4)
+
+
+class AgentregistryProjectsLocationsSkillsRevisionsDeleteRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsSkillsRevisionsDeleteRequest object.
+
+  Fields:
+    name: Required. Target revision name to remove.
+    requestId: Optional. Signed UUID request idempotency token.
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class AgentregistryProjectsLocationsSkillsRevisionsGetRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsSkillsRevisionsGetRequest object.
+
+  Fields:
+    name: Required. Target revision name.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class AgentregistryProjectsLocationsSkillsRevisionsListRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsSkillsRevisionsListRequest object.
+
+  Fields:
+    pageSize: Optional. Page limit size.
+    pageToken: Optional. Page offset token.
+    parent: Required. Parent logical container name to query.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class AgentregistryProjectsLocationsSkillsSearchRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsSkillsSearchRequest object.
+
+  Enums:
+    SearchTypeValueValuesEnum: Optional. The type of search.
+
+  Fields:
+    filter: Optional. Use this field to specify additional filter criteria on
+      search results.
+    pageSize: Optional. The maximum number of search results to return per
+      page. The page size is capped at `100`, even if a larger value is
+      specified. A negative value will result in an `INVALID_ARGUMENT` error.
+      If unspecified or set to `0`, a default value of `20` will be used. The
+      server may return fewer results than requested.
+    pageToken: Optional. If present, retrieve the next batch of results from
+      the preceding call to this method. `page_token` must be the value of
+      `next_page_token` from the previous response. The values of all other
+      method parameters, must be identical to those in the previous call.
+    parent: Required. Parent value for SearchSkillsRequest. Format:
+      `projects/{project}/locations/{location}`.
+    searchString: Optional. Search criteria used to select the Skills to
+      return. If no search criteria is specified then all accessible Skills
+      will be returned.
+    searchType: Optional. The type of search.
+  """
+
+  class SearchTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The type of search.
+
+    Values:
+      SEARCH_TYPE_UNSPECIFIED: Invalid search type.
+      KEYWORD: Search for a keyword across all searchable fields.
+      SEMANTIC: Search based on the meaning and intent of a natural language
+        query.
+    """
+    SEARCH_TYPE_UNSPECIFIED = 0
+    KEYWORD = 1
+    SEMANTIC = 2
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+  searchString = _messages.StringField(5)
+  searchType = _messages.EnumField('SearchTypeValueValuesEnum', 6)
+
+
 class Annotations(_messages.Message):
   r"""Annotations describing the characteristics and behavior of a tool or
   operation.
@@ -720,6 +927,17 @@ class Annotations(_messages.Message):
   openWorldHint = _messages.BooleanField(3)
   readOnlyHint = _messages.BooleanField(4)
   title = _messages.StringField(5)
+
+
+class ArchiveUploadSource(_messages.Message):
+  r"""Direct write-only raw archive payload upload.
+
+  Fields:
+    archiveContent: Required. Input only. Write-only raw ZIP/TAR archive
+      payload bytes containing the skill package.
+  """
+
+  archiveContent = _messages.BytesField(1)
 
 
 class AuthProviderBinding(_messages.Message):
@@ -990,6 +1208,68 @@ class FetchAvailableBindingsResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
+class Frontmatter(_messages.Message):
+  r"""Structured metadata attributes extracted from the package's local
+  SKILL.md frontmatter.
+
+  Messages:
+    MetadataValue: Optional. Extensible flattened map mapping custom tags,
+      authors, and version parameters.
+
+  Fields:
+    compatibility: Optional. Environmental dependencies or local sidecars.
+    description: Optional. Functional description.
+    metadata: Optional. Extensible flattened map mapping custom tags, authors,
+      and version parameters.
+    packageId: Optional. Portable package ID declared in YAML frontmatter
+      (e.g. "@acme/finance/sql-expert").
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class MetadataValue(_messages.Message):
+    r"""Optional. Extensible flattened map mapping custom tags, authors, and
+    version parameters.
+
+    Messages:
+      AdditionalProperty: An additional property for a MetadataValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type MetadataValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a MetadataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  compatibility = _messages.StringField(1)
+  description = _messages.StringField(2)
+  metadata = _messages.MessageField('MetadataValue', 3)
+  packageId = _messages.StringField(4)
+
+
+class GcsSource(_messages.Message):
+  r"""Specifications for Cloud Storage objects.
+
+  Fields:
+    generation: Optional. Cloud Storage object generation ID. If not
+      specified, the latest generation is used.
+    uri: Required. Cloud Storage object URI. Format:
+      `gs://{bucket_name}/{object_name}`
+  """
+
+  generation = _messages.IntegerField(1)
+  uri = _messages.StringField(2)
+
+
 class Interface(_messages.Message):
   r"""Represents the connection details for an Agent or MCP Server.
 
@@ -1107,6 +1387,18 @@ class ListOperationsResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class ListPublishersResponse(_messages.Message):
+  r"""Response listing Publishers.
+
+  Fields:
+    nextPageToken: Page offset continuation token.
+    publishers: The returned list of Publishers.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  publishers = _messages.MessageField('Publisher', 2, repeated=True)
+
+
 class ListServicesResponse(_messages.Message):
   r"""Message for response to listing Services
 
@@ -1120,6 +1412,32 @@ class ListServicesResponse(_messages.Message):
 
   nextPageToken = _messages.StringField(1)
   services = _messages.MessageField('Service', 2, repeated=True)
+
+
+class ListSkillRevisionsResponse(_messages.Message):
+  r"""Response listing Revisions.
+
+  Fields:
+    nextPageToken: Page offset continuation token.
+    skillRevisions: Returned version snapshot list.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  skillRevisions = _messages.MessageField('SkillRevision', 2, repeated=True)
+
+
+class ListSkillsResponse(_messages.Message):
+  r"""Response structure listing logical Skills.
+
+  Fields:
+    nextPageToken: Page continuation continuation token.
+    skills: Returned container list.
+    unreachable: Unreachable locations or failures.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  skills = _messages.MessageField('Skill', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
 
 
 class Location(_messages.Message):
@@ -1527,6 +1845,50 @@ class Protocol(_messages.Message):
   type = _messages.EnumField('TypeValueValuesEnum', 3)
 
 
+class Publisher(_messages.Message):
+  r"""Represents a verified Publisher of Skills. Prepopulated publishers
+  include `publishers/cloud.google.com` and `publishers/workspace.google.com`.
+
+  Enums:
+    PublisherTierValueValuesEnum: Output only. The curation tier of the
+      publisher.
+
+  Fields:
+    displayName: Optional. Human readable display name of the publisher.
+    documentationUri: Optional. URI pointing to official publisher
+      documentation.
+    name: Identifier. Resource name of the publisher. Format:
+      `projects/{project}/locations/{location}/publishers/{publisher}`
+    publisherTier: Output only. The curation tier of the publisher.
+    supportUri: Optional. URI pointing to the support portal or email.
+    verifiedPrefix: Required. The verified prefix (e.g. "snowflake-",
+      "google-") associated with this publisher. The system uses this prefix
+      to enforce name-squatting rules during Skill registration. Must be
+      globally unique across all publishers.
+  """
+
+  class PublisherTierValueValuesEnum(_messages.Enum):
+    r"""Output only. The curation tier of the publisher.
+
+    Values:
+      PUBLISHER_TIER_UNSPECIFIED: Default value. Unspecified.
+      FIRST_PARTY: First-party Google-curated and verified global publishers.
+      THIRD_PARTY: Third-party verified enterprise partner publishers.
+      PRIVATE: Private publishers within the developer's workspace/project.
+    """
+    PUBLISHER_TIER_UNSPECIFIED = 0
+    FIRST_PARTY = 1
+    THIRD_PARTY = 2
+    PRIVATE = 3
+
+  displayName = _messages.StringField(1)
+  documentationUri = _messages.StringField(2)
+  name = _messages.StringField(3)
+  publisherTier = _messages.EnumField('PublisherTierValueValuesEnum', 4)
+  supportUri = _messages.StringField(5)
+  verifiedPrefix = _messages.StringField(6)
+
+
 class SearchAgentsRequest(_messages.Message):
   r"""Message for searching Agents
 
@@ -1643,6 +2005,18 @@ class SearchMcpServersResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
+class SearchSkillsResponse(_messages.Message):
+  r"""Response listing searched Skills.
+
+  Fields:
+    nextPageToken: Query page offset continuation token.
+    skills: Matched Skills list.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  skills = _messages.MessageField('Skill', 2, repeated=True)
+
+
 class Service(_messages.Message):
   r"""Represents a user-defined Service.
 
@@ -1679,6 +2053,178 @@ class Service(_messages.Message):
   name = _messages.StringField(8)
   registryResource = _messages.StringField(9)
   updateTime = _messages.StringField(10)
+
+
+class Skill(_messages.Message):
+  r"""Represents an Executable Agent Skill or a Composite Tool Suite (Bundle).
+  Sibling resource with Agent and McpServer under
+  agentregistry.googleapis.com.
+
+  Enums:
+    StateValueValuesEnum: Output only. The system-managed state of the skill.
+    TargetStateValueValuesEnum: Required. User-managed target state of the
+      skill.
+    TypeValueValuesEnum: Required. Structural deployment type (SIMPLE leaf vs
+      COMPOSITE bundle).
+
+  Fields:
+    createTime: Output only. Create time.
+    defaultRevision: Optional. The full resource name of the revision
+      currently served by default (floating track). Format: `projects/{project
+      }/locations/{location}/skills/{skill}/revisions/{revision}`
+    description: Optional. Brief summary describing the capabilities of the
+      skill. Maximum length is 2048 characters.
+    displayName: Required. Human-readable display name of the skill. Maximum
+      length is 128 characters.
+    frontmatter: Output only. Lightweight frontmatter metadata attributes
+      copied from the default revision.
+    initialRevision: Optional. Input only. Optional nested initial revision
+      payload to support standard one-shot creation. The server processes this
+      field on input during creation but must never return it in responses.
+    name: Identifier. Resource name of the Skill. Format:
+      `projects/{project}/locations/{location}/skills/{skill}` The `{skill}`
+      segment acts as the resource ID. If the skill is associated with a
+      Publisher, this segment typically uses a hyphenated namespace prefix
+      corresponding to the publisher (e.g., `google-workspace-create-docs`).
+    publisher: Optional. The publisher resource associated with this skill.
+      Format: `projects/{project}/locations/{location}/publishers/{publisher}`
+      The publisher dictates the allowed namespace prefixes for the skill's
+      name and logical `skill_id` (e.g., Publisher `google` authorizes the
+      `google-*` prefix).
+    skillId: Output only. A stable, globally unique logical identifier for the
+      skill. It is securely constructed by the backend by combining the
+      associated `publisher`'s verified namespace and the skill's resource ID
+      to enforce strict ownership. For example, the prefix `google-` is
+      reserved exclusively for first-party Google publishers to prevent
+      namespace squatting. Example: `urn:skill:google-workspace:create-docs`
+    state: Output only. The system-managed state of the skill.
+    targetState: Required. User-managed target state of the skill.
+    type: Required. Structural deployment type (SIMPLE leaf vs COMPOSITE
+      bundle).
+    uid: Output only. Universally unique identifier (UUID4) for the logical
+      container.
+    updateTime: Output only. Update time.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The system-managed state of the skill.
+
+    Values:
+      STATE_UNSPECIFIED: Default value. This value is unused.
+      STATE_CREATING: The skill is being created. It is not served.
+      STATE_DRAFT: The skill is in draft, or lacks a valid payload. It is not
+        served.
+      STATE_ACTIVE: The skill is active and is served.
+      STATE_DISABLED: The skill is disabled and is not served.
+      STATE_DEPRECATED: The skill is deprecated. It is served, but emits
+        warnings.
+      STATE_DECOMMISSIONED: The skill is decommissioned and is not served.
+      STATE_DELETING: The skill is being deleted. It is not served.
+    """
+    STATE_UNSPECIFIED = 0
+    STATE_CREATING = 1
+    STATE_DRAFT = 2
+    STATE_ACTIVE = 3
+    STATE_DISABLED = 4
+    STATE_DEPRECATED = 5
+    STATE_DECOMMISSIONED = 6
+    STATE_DELETING = 7
+
+  class TargetStateValueValuesEnum(_messages.Enum):
+    r"""Required. User-managed target state of the skill.
+
+    Values:
+      TARGET_STATE_UNSPECIFIED: Default value. This value is unused.
+      TARGET_STATE_DRAFT: The skill is in draft and cannot be served.
+      TARGET_STATE_ACTIVE: The skill is active and can be served.
+      TARGET_STATE_DISABLED: The skill is disabled and cannot be served.
+      TARGET_STATE_DEPRECATED: The skill is deprecated. It can still be
+        served, but emits warnings.
+      TARGET_STATE_DECOMMISSIONED: The skill is decommissioned and cannot be
+        served.
+    """
+    TARGET_STATE_UNSPECIFIED = 0
+    TARGET_STATE_DRAFT = 1
+    TARGET_STATE_ACTIVE = 2
+    TARGET_STATE_DISABLED = 3
+    TARGET_STATE_DEPRECATED = 4
+    TARGET_STATE_DECOMMISSIONED = 5
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""Required. Structural deployment type (SIMPLE leaf vs COMPOSITE
+    bundle).
+
+    Values:
+      TYPE_UNSPECIFIED: Default value. This value is unused.
+      SIMPLE: A standard, leaf executable skill containing natural language
+        and code.
+    """
+    TYPE_UNSPECIFIED = 0
+    SIMPLE = 1
+
+  createTime = _messages.StringField(1)
+  defaultRevision = _messages.StringField(2)
+  description = _messages.StringField(3)
+  displayName = _messages.StringField(4)
+  frontmatter = _messages.MessageField('Frontmatter', 5)
+  initialRevision = _messages.MessageField('SkillRevision', 6)
+  name = _messages.StringField(7)
+  publisher = _messages.StringField(8)
+  skillId = _messages.StringField(9)
+  state = _messages.EnumField('StateValueValuesEnum', 10)
+  targetState = _messages.EnumField('TargetStateValueValuesEnum', 11)
+  type = _messages.EnumField('TypeValueValuesEnum', 12)
+  uid = _messages.StringField(13)
+  updateTime = _messages.StringField(14)
+
+
+class SkillRevision(_messages.Message):
+  r"""Represents an immutable, versioned snapshot of a Skill package.
+
+  Enums:
+    StateValueValuesEnum: Output only. The system-managed lifecycle state of
+      this revision.
+
+  Fields:
+    archiveUploadSource: Optional. Immutable. Direct write-only raw archive
+      upload source.
+    createTime: Output only. Revision creation timestamp.
+    frontmatter: Output only. Extracted YAML frontmatter configuration
+      snapshot.
+    gcsSource: Optional. Immutable. Cloud Storage object generation URI.
+    name: Identifier. Resource name of the SkillRevision. Format: `projects/{p
+      roject}/locations/{location}/skills/{skill}/revisions/{revision}`
+    sha256Hash: Output only. Cryptographic SHA-256 integrity and deduplication
+      digest of the payload zip.
+    sizeBytes: Output only. Size of the compiled zip payload in bytes (assists
+      client download progress).
+    state: Output only. The system-managed lifecycle state of this revision.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The system-managed lifecycle state of this revision.
+
+    Values:
+      STATE_UNSPECIFIED: Default value. This value is unused.
+      CREATING: The revision is being created.
+      ACTIVE: The revision is active.
+      FAILED: The revision failed to compile or ingest.
+      DELETING: The revision is being deleted.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+    FAILED = 3
+    DELETING = 4
+
+  archiveUploadSource = _messages.MessageField('ArchiveUploadSource', 1)
+  createTime = _messages.StringField(2)
+  frontmatter = _messages.MessageField('Frontmatter', 3)
+  gcsSource = _messages.MessageField('GcsSource', 4)
+  name = _messages.StringField(5)
+  sha256Hash = _messages.StringField(6)
+  sizeBytes = _messages.IntegerField(7)
+  state = _messages.EnumField('StateValueValuesEnum', 8)
 
 
 class Source(_messages.Message):

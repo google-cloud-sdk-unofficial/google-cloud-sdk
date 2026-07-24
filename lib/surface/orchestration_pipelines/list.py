@@ -39,7 +39,10 @@ class List(calliope_base.Command):
     )
     group.add_argument(
         "--runner",
-        help="The full resource name to list pipelines from.",
+        help=(
+            "The full resource name of the runner to "
+            "list pipelines from."
+        ),
     )
     parser.add_argument(
         "--bundle",

@@ -192,7 +192,7 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
         )
         # The refresh_handler setter should be used to repopulate this.
         self._refresh_handler = None
-        self._refresh_worker = None
+        self._refresh_worker = None  # pyrefly: ignore[bad-assignment]
         self._use_non_blocking_refresh = d.get("_use_non_blocking_refresh", False)
         self._account = d.get("_account", "")
 

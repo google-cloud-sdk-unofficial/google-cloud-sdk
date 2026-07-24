@@ -1,10 +1,13 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, BETA]
 help_text:
   brief: Describe a Google Compute Engine host in a reservation.
   description: |
     Describe a Google Compute Engine host in a reservation.
 request:
-  api_version: alpha
+  ALPHA:
+    api_version: alpha
+  BETA:
+    api_version: beta
   collection: compute.hosts
   method: get
   modify_request_hooks:

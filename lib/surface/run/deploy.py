@@ -163,7 +163,7 @@ class Deploy(base.Command):
     flags.AddVolumesFlags(parser, cls.ReleaseTrack())
     flags.AddServiceMinMaxInstancesFlag(parser)
     flags.AddInvokerIamCheckFlag(parser)
-    flags.AddScalingFlag(parser)
+    flags.AddScalingFlag(parser, release_track=cls.ReleaseTrack())
 
     # Flags specific to connecting to a cluster
     flags.AddEndpointVisibilityEnum(parser)
@@ -774,7 +774,7 @@ class Deploy(base.Command):
       if platforms.GetPlatform() == platforms.PLATFORM_MANAGED and not (
           getattr(args, 'dry_run', False)
           or service.annotations.get(container_resource.DISABLE_IAM_ANNOTATION)
-          == 'true'
+          == container_resource.DISABLE_IAM_ANNOTATION_VALUE_DISABLED
           or service.annotations.get(service_lib.INGRESS_ANNOTATION)
           in [
               service_lib.INGRESS_INTERNAL,
@@ -907,6 +907,12 @@ class Deploy(base.Command):
     source_bucket = None
     skip_build = False
     upload_through_run_api = False
+    if deploy_from_source:
+      container_args = next(iter(deploy_from_source.values()))
+      upload_through_run_api = (
+          flags.IsUploadLaunchStage(self.ReleaseTrack())
+          and container_args.run_upload
+      )
     with serverless_operations.Connect(
         conn_context, skip_activation_prompt
     ) as operations:
@@ -927,10 +933,7 @@ class Deploy(base.Command):
         source_bucket = self._GetSourceBucketFromZipDeploySourceLocation(
             service
         )
-        upload_through_run_api = (
-            flags.IsUploadLaunchStage(self.ReleaseTrack())
-            and container_args.upload
-        )
+
         container_args.image = 'scratch'
       elif deploy_from_source:
         (

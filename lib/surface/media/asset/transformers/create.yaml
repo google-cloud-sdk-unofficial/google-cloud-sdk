@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA]
+  hints:
+    read_only: false
   help_text:
     brief: Create a new Cloud Media Asset transformer.
     description: Create a new Media Asset transformer.

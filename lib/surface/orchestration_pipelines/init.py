@@ -22,7 +22,7 @@ from googlecloudsdk.command_lib.orchestration_pipelines import scaffolding
 @calliope_base.DefaultUniverseOnly
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.BETA)
 class Init(calliope_base.Command):
-  """Initialize a orchestration pipeline."""
+  """Initialize an orchestration pipeline."""
 
   @staticmethod
   def Args(parser):
@@ -35,27 +35,27 @@ class Init(calliope_base.Command):
     parser.add_argument(
         '--environment',
         required=True,
-        help='Environment name (e.g. dev, staging, prod).',
+        help='The environment name (e.g., dev, staging, prod).',
     )
     parser.add_argument(
         '--project',
-        help='Google Cloud project ID.',
+        help='The Google Cloud project ID.',
     )
     parser.add_argument(
         '--region',
-        help='Google Cloud region.',
+        help='The Google Cloud region.',
     )
     parser.add_argument(
         '--composer-environment',
-        help='Cloud Composer environment.',
+        help='The Cloud Composer environment.',
     )
     parser.add_argument(
         '--artifacts-bucket',
-        help='Cloud Storage bucket for artifacts.',
+        help='The Cloud Storage bucket for artifacts.',
     )
     parser.add_argument(
         '--service-account',
-        help='Service account to use for Composer environment.',
+        help='The service account to use for the Composer environment.',
     )
 
   def Run(self, args):

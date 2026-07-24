@@ -27,7 +27,7 @@ from googlecloudsdk.core import resources
 @calliope_base.DefaultUniverseOnly
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.BETA)
 class Describe(calliope_base.Command):
-  """Describe an orchestration pipeline run details."""
+  """Describe an orchestration pipeline run."""
 
   @staticmethod
   def Args(parser):
@@ -41,7 +41,10 @@ class Describe(calliope_base.Command):
     )
     group.add_argument(
         "--runner",
-        help="The full resource name to describe a pipeline run from.",
+        help=(
+            "The full resource name of the runner to describe a pipeline run"
+            " from."
+        ),
     )
     parser.add_argument(
         "--bundle",
@@ -51,7 +54,7 @@ class Describe(calliope_base.Command):
     parser.add_argument(
         "--pipeline",
         required=True,
-        help="The ID of the pipeline to describe.",
+        help="The ID of the pipeline the run belongs to.",
     )
     parser.add_argument(
         "--run-id",

@@ -59,6 +59,106 @@ KERNEL_PANIC_MESSAGE = (
     'panic" error in your serial console logs.\n')
 
 
+# /etc/fstab: a device/filesystem entry could not be mounted -> emergency mode.
+FSTAB_PATTERNS = [
+    r'UUID=[\w-]+ does not exist',
+    r'Timed out waiting for device.*/dev/',
+    r'special device .* does not exist',
+    r'Dependency failed for .*\.mount',
+]
+FSTAB_MESSAGE = (
+    'The VM dropped into emergency mode because a device or filesystem listed '
+    'in /etc/fstab could not be mounted. Identify the failing device (often a '
+    'wrong or stale UUID) in the serial console logs, then comment out or fix '
+    'the entry in /etc/fstab from a rescue environment. For instructions on '
+    'setting up a rescue environment, see: '
+    'https://cloud.google.com/compute/docs/troubleshooting/rescue-vm\n')
+
+GRUB_PATTERNS = [
+    r'error:.*(?:grub\.cfg|vmlinuz|initrd|initramfs).* not found',
+    r'error:.*no such (?:partition|device)',
+    r'error:.*unknown filesystem',
+    r'error:.*(?:invalid magic number|invalid arch-independent ELF magic)',
+    r'error:.*you need to load the kernel first',
+    r'grub rescue>',
+]
+GRUB_MESSAGE = (
+    'The GRUB bootloader could not find or load its configuration or the '
+    'kernel image (for example a missing /boot/grub/grub.cfg or vmlinuz) and '
+    'stopped at the GRUB shell. Reinstall GRUB and regenerate its config from '
+    'a rescue environment (grub-install + update-grub, or grub2-mkconfig on '
+    'RHEL-family images). For instructions on setting up a rescue environment, '
+    'see: https://cloud.google.com/compute/docs/troubleshooting/rescue-vm\n')
+
+INITRAMFS_PATTERNS = [
+    r'dracut-initqueue\[\d+\]:.*timeout',
+    r'Failed to mount /sysroot',
+    r'Dependency failed for /sysroot',
+    r'ALERT!.*does not exist.*Dropping to a shell',
+    r'Gave up waiting for root (?:file system|device)',
+    r'dracut: FATAL:',
+]
+INITRAMFS_MESSAGE = (
+    'The initramfs could not mount the root filesystem (for example a dracut '
+    'timeout waiting for the root device, a /sysroot mount failure, or a drop '
+    'to the initramfs shell). Verify the root= kernel parameter and root '
+    'device UUID, and rebuild the initramfs from a rescue environment '
+    '(update-initramfs -u on Debian-family, dracut -f on RHEL-family). For '
+    'instructions on setting up a rescue environment, see: '
+    'https://cloud.google.com/compute/docs/troubleshooting/rescue-vm\n')
+
+FILESYSTEM_PATTERNS = [
+    r'Bad magic number in super-block',
+    r'EXT4-fs error \(device',
+    r'XFS \([\w-]+\): ' +
+    r'(?:Metadata corruption detected|Metadata CRC error detected|Corruption)',
+    r'BTRFS (?:error|critical) \(device',
+    r'open_ctree failed',
+]
+FILESYSTEM_MESSAGE = (
+    'A filesystem on the VM is corrupt (for example a bad superblock or '
+    'ext4/XFS/Btrfs corruption). Run a filesystem check on the unmounted disk '
+    'from a rescue environment (fsck for ext, xfs_repair for XFS). If the disk '
+    'is unrecoverable, restore it from a snapshot. For instructions on '
+    'setting up a rescue environment, see: '
+    'https://cloud.google.com/compute/docs/troubleshooting/rescue-vm\n')
+
+SELINUX_PATTERNS = [
+    r'Failed to load SELinux policy',
+    r'Unable to load SELinux policy',
+]
+SELINUX_MESSAGE = (
+    'The VM failed to boot because SELinux could not load its policy and init '
+    'froze. From a rescue environment, trigger a relabel (touch /.autorelabel) '
+    'or temporarily disable SELinux (add selinux=0 to the kernel command '
+    'line), then investigate /etc/selinux. For instructions on '
+    'setting up a rescue environment, see: '
+    'https://cloud.google.com/compute/docs/troubleshooting/rescue-vm\n')
+
+SWITCHROOT_PATTERNS = [
+    r'Failed to switch root',
+    r'Target filesystem doesn.t have requested /sbin/init',
+    r'No working init found',
+    r'run-init: [^\n]*: No such file or directory',
+]
+SWITCHROOT_MESSAGE = (
+    'The VM mounted its root filesystem but could not hand off to init '
+    '(missing or broken /sbin/init, or a failed switch_root). From a rescue '
+    'environment, verify /sbin/init exists and its shared libraries are '
+    'intact, and reinstall systemd if it is broken. For instructions on '
+    'setting up a rescue environment, see: '
+    'https://cloud.google.com/compute/docs/troubleshooting/rescue-vm\n')
+
+_BOOT_CAUSE_CHECKS = [
+    (FSTAB_PATTERNS, 'fstab_issue', FSTAB_MESSAGE),
+    (GRUB_PATTERNS, 'grub_issue', GRUB_MESSAGE),
+    (INITRAMFS_PATTERNS, 'initramfs_issue', INITRAMFS_MESSAGE),
+    (FILESYSTEM_PATTERNS, 'filesystem_issue', FILESYSTEM_MESSAGE),
+    (SELINUX_PATTERNS, 'selinux_issue', SELINUX_MESSAGE),
+    (SWITCHROOT_PATTERNS, 'switchroot_issue', SWITCHROOT_MESSAGE),
+]
+
+
 class VMBootTroubleshooter(ssh_troubleshooter.SshTroubleshooter):
   """Check VM boot and kernel panic issues.
 
@@ -89,13 +189,23 @@ class VMBootTroubleshooter(ssh_troubleshooter.SshTroubleshooter):
     sc_log = ssh_troubleshooter_utils.GetSerialConsoleLog(
         self.compute_client, self.compute_message, self.instance.name,
         self.project.name, self.zone)
-    if ssh_troubleshooter_utils.SearchPatternErrorInLog(VM_BOOT_PATTERNS,
-                                                        sc_log):
-      self.issues['boot_issue'] = VM_BOOT_MESSAGE
-    if ssh_troubleshooter_utils.SearchPatternErrorInLog(KERNEL_PANIC_PATTERNS,
-                                                        sc_log):
+
+    # Cause-specific boot failures first, so we report the real root cause
+    # and a targeted fix instead of a generic "check your logs" message.
+    for patterns, key, message in _BOOT_CAUSE_CHECKS:
+      if ssh_troubleshooter_utils.SearchPatternErrorInLog(patterns, sc_log):
+        self.issues[key] = message
+
+    # Kernel panic is a distinct symptom class.
+    if ssh_troubleshooter_utils.SearchPatternErrorInLog(
+        KERNEL_PANIC_PATTERNS, sc_log):
       self.issues['kernel_panic'] = KERNEL_PANIC_MESSAGE
+
+    # Generic fallback: a boot stall we could not attribute to a specific cause.
+    if not self.issues and ssh_troubleshooter_utils.SearchPatternErrorInLog(
+        VM_BOOT_PATTERNS, sc_log):
+      self.issues['boot_issue'] = VM_BOOT_MESSAGE
+
     log.status.Print('VM boot: {0} issue(s) found.\n'.format(len(self.issues)))
-    # Prompt appropriate messages to user.
     for message in self.issues.values():
       log.status.Print(message)

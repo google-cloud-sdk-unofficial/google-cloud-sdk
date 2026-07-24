@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA]
+  hints:
+    read_only: true
   help_text:
     brief: Get a Cloud Media Asset  annotation.
     description: Get a new Media Asset annotation.

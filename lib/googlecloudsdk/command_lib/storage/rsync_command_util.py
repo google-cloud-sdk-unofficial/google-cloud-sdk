@@ -478,6 +478,7 @@ def _get_copy_task(
     destination_container=None,
     dry_run=False,
     skip_unsupported=False,
+    do_not_decompress=False,
 ):
   """Generates copy tasks with generic settings and logic."""
   if _should_skip_unsupported_object_type(source_resource, skip_unsupported):
@@ -525,7 +526,7 @@ def _get_copy_task(
   return copy_task_factory.get_copy_task(
       source_resource,
       copy_destination,
-      do_not_decompress=True,
+      do_not_decompress=do_not_decompress,
       fetch_source_fields_scope=fields_scope,
       posix_to_set=posix_to_set,
       user_request_args=user_request_args,
@@ -564,6 +565,7 @@ def _compare_equal_object_urls_to_get_task_and_iteration_instruction(
     skip_unsupported=False,
     delete_unmatched_destination_objects=False,
     use_gsutil_delete_unmatched_behaviour=False,
+    do_not_decompress=False,
 ):
   """Similar to get_task_and_iteration_instruction except for equal URLs."""
 
@@ -608,6 +610,7 @@ def _compare_equal_object_urls_to_get_task_and_iteration_instruction(
             destination_resource=destination_object,
             dry_run=dry_run,
             skip_unsupported=skip_unsupported,
+            do_not_decompress=do_not_decompress,
         ),
         _IterateResource.BOTH,
     )
@@ -829,6 +832,7 @@ def _get_task_and_iteration_instruction(
     ignore_symlinks=False,
     skip_if_destination_has_later_modification_time=False,
     skip_unsupported=False,
+    do_not_decompress=False,
 ):
   """Compares resources and returns next rsync step.
 
@@ -855,6 +859,7 @@ def _get_task_and_iteration_instruction(
     skip_if_destination_has_later_modification_time (bool): Don't act if mtime
       metadata indicates we'd be overwriting with an older version of an object.
     skip_unsupported (bool): Skip copying unsupported object types.
+    do_not_decompress (bool): Do not decompress files at the destination.
 
   Returns:
     A pair of with a task and iteration instruction.
@@ -921,6 +926,7 @@ def _get_task_and_iteration_instruction(
             destination_container=destination_container,
             dry_run=dry_run,
             skip_unsupported=skip_unsupported,
+            do_not_decompress=do_not_decompress,
         ),
         _IterateResource.SOURCE,
     )
@@ -943,6 +949,7 @@ def _get_task_and_iteration_instruction(
             destination_container=destination_container,
             dry_run=dry_run,
             skip_unsupported=skip_unsupported,
+            do_not_decompress=do_not_decompress,
         ),
         _IterateResource.SOURCE,
     )
@@ -979,6 +986,7 @@ def _get_task_and_iteration_instruction(
             dry_run=dry_run,
             posix_to_set=None,
             skip_unsupported=skip_unsupported,
+            do_not_decompress=do_not_decompress,
         ),
         _IterateResource.BOTH,
     )
@@ -998,6 +1006,7 @@ def _get_task_and_iteration_instruction(
       use_gsutil_delete_unmatched_behaviour=(
           use_gsutil_delete_unmatched_behaviour
       ),
+      do_not_decompress=do_not_decompress,
   )
 
 
@@ -1015,6 +1024,7 @@ def get_operation_iterator(
     skip_if_destination_has_later_modification_time=False,
     skip_unsupported=False,
     task_status_queue=None,
+    do_not_decompress=False,
 ):
   """Returns task with next rsync operation (patch, delete, copy, etc)."""
   operation_count = bytes_operated_on = 0
@@ -1047,6 +1057,7 @@ def get_operation_iterator(
               skip_if_destination_has_later_modification_time
           ),
           skip_unsupported=skip_unsupported,
+          do_not_decompress=do_not_decompress,
       )
       if task:
         operation_count += 1

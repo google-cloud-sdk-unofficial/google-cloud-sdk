@@ -109,8 +109,8 @@ class Create(base.CreateCommand):
         """,
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Specifies additional command flags.
 
     Args:
@@ -137,7 +137,7 @@ class Create(base.CreateCommand):
     flags.AddBackupRule(parser)
     flags.AddMaxCustomOnDemandRetentionDays(parser)
     flags.AddDiskBackupPlanProperties(parser)
-    flags.AddComputeInstanceBackupPlanProperties(parser)
+    flags.AddComputeInstanceBackupPlanProperties(parser, release_track=cls.ReleaseTrack())
 
     description_help = """\
         Provide a description of the backup plan, such as specific use cases and

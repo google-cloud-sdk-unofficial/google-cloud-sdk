@@ -1404,6 +1404,9 @@ class CloudVmCluster(_messages.Message):
       projects/{project}/locations/{region}/cloudVmClusters/{cloud_vm_cluster}
     network: Optional. The name of the VPC network. Format:
       projects/{project}/global/networks/{network}
+    odbDnsZone: Optional. The name of the OdbDnsZone for using custom domain
+      name for the VM Cluster. Format: projects/{project}/locations/{location}
+      /odbNetworks/{odb_network}/odbDnsZones/{odb_dns_zone}
     odbNetwork: Optional. The name of the OdbNetwork associated with the VM
       Cluster. Format:
       projects/{project}/locations/{location}/odbNetworks/{odb_network} It is
@@ -1451,9 +1454,10 @@ class CloudVmCluster(_messages.Message):
   labels = _messages.MessageField('LabelsValue', 10)
   name = _messages.StringField(11)
   network = _messages.StringField(12)
-  odbNetwork = _messages.StringField(13)
-  odbSubnet = _messages.StringField(14)
-  properties = _messages.MessageField('CloudVmClusterProperties', 15)
+  odbDnsZone = _messages.StringField(13)
+  odbNetwork = _messages.StringField(14)
+  odbSubnet = _messages.StringField(15)
+  properties = _messages.MessageField('CloudVmClusterProperties', 16)
 
 
 class CloudVmClusterProperties(_messages.Message):

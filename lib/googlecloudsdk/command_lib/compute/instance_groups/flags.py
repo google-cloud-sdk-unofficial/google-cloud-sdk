@@ -113,6 +113,16 @@ def MakeZonalInstanceGroupManagerArg(plural=False):
       zonal_collection='compute.instanceGroupManagers',
       zone_explanation=flags.ZONE_PROPERTY_EXPLANATION)
 
+
+def MakeRegionalInstanceGroupManagerArg(plural=False):
+  return flags.ResourceArgument(
+      name='NAME',
+      resource_name='managed instance group',
+      completer=RegionalInstanceGroupManagersCompleter,
+      plural=plural,
+      regional_collection='compute.regionInstanceGroupManagers',
+      region_explanation=flags.REGION_PROPERTY_EXPLANATION)
+
 MULTISCOPE_INSTANCE_GROUP_ARG = flags.ResourceArgument(
     resource_name='instance group',
     completer=compute_completers.InstanceGroupsCompleter,
@@ -322,6 +332,7 @@ _LIST_INSTANCES_FORMAT = """\
               lastAttempt.errors.errors.map().format(
                 "Error {0}: {1}", code, message).list(separator=", ")
                 :label=LAST_ERROR,
+              scheduling.gracefulShutdownTimestamp:label=GRACEFUL_SHUTDOWN_TIMESTAMP,
               scheduling.terminationTimestamp:label=TERMINATION_TIMESTAMP
         )"""
 
@@ -337,6 +348,7 @@ _LIST_INSTANCES_FORMAT_BETA = """\
               lastAttempt.errors.errors.map().format(
                 "Error {0}: {1}", code, message).list(separator=", ")
                 :label=LAST_ERROR,
+              scheduling.gracefulShutdownTimestamp:label=GRACEFUL_SHUTDOWN_TIMESTAMP,
               scheduling.terminationTimestamp:label=TERMINATION_TIMESTAMP
         )"""
 
@@ -352,6 +364,7 @@ _LIST_INSTANCES_FORMAT_ALPHA = """\
               lastAttempt.errors.errors.map().format(
                 "Error {0}: {1}", code, message).list(separator=", ")
                 :label=LAST_ERROR,
+              scheduling.gracefulShutdownTimestamp:label=GRACEFUL_SHUTDOWN_TIMESTAMP,
               scheduling.terminationTimestamp:label=TERMINATION_TIMESTAMP
         )"""
 
@@ -395,16 +408,19 @@ class DynamicField:
   """Represents dynamic fields in list managed instances output."""
 
   TERMINATION_TIMESTAMP = 'TERMINATION_TIMESTAMP'
+  GRACEFUL_SHUTDOWN_TIMESTAMP = 'GRACEFUL_SHUTDOWN_TIMESTAMP'
+
+  ALL_ORDERED = [
+      GRACEFUL_SHUTDOWN_TIMESTAMP,
+      TERMINATION_TIMESTAMP,
+  ]
 
   @classmethod
-  def GetManagedInstanceDynamicFields(
-      cls, instance, release_track=base.ReleaseTrack.GA
-  ) -> List[str]:
+  def GetManagedInstanceDynamicFields(cls, instance) -> List[str]:
     """Returns dynamic fields for a managed instance based on its properties.
 
     Args:
       instance: Managed instance.
-      release_track: Release track.
     Returns:
       List of dynamic fields.
     """
@@ -413,18 +429,29 @@ class DynamicField:
     if cls._HasTerminationTimestamp(instance):
       dynamic_fields.append(cls.TERMINATION_TIMESTAMP)
 
+    if cls._HasGracefulShutdownTimestamp(instance):
+      dynamic_fields.append(cls.GRACEFUL_SHUTDOWN_TIMESTAMP)
+
     return dynamic_fields
 
   @classmethod
   def _HasTerminationTimestamp(cls, instance):
-    return hasattr(instance, 'scheduling') and hasattr(
-        instance.scheduling, 'terminationTimestamp'
+    return (
+        hasattr(instance, 'scheduling')
+        and hasattr(instance.scheduling, 'terminationTimestamp')
+        and instance.scheduling.terminationTimestamp is not None
+    )
+
+  @classmethod
+  def _HasGracefulShutdownTimestamp(cls, instance):
+    return (
+        hasattr(instance, 'scheduling')
+        and hasattr(instance.scheduling, 'gracefulShutdownTimestamp')
+        and instance.scheduling.gracefulShutdownTimestamp is not None
     )
 
 
-def _GetIgmDynamicFields(
-    managed_instances, release_track=base.ReleaseTrack.GA
-) -> List[str]:
+def _GetIgmDynamicFields(managed_instances) -> List[str]:
   """Returns dynamic fields for a list of managed instances.
 
   Dynamic fields are determined based on the properties of the instances
@@ -432,16 +459,23 @@ def _GetIgmDynamicFields(
 
   Args:
     managed_instances: List of managed instances.
-    release_track: Release track.
   Returns:
     List of dynamic fields.
   """
   dynamic_fields = set()
+  max_possible_fields = len(DynamicField.ALL_ORDERED)
   for instance in managed_instances:
-    dynamic_fields.update(DynamicField.GetManagedInstanceDynamicFields(
-        instance, release_track
-    ))
-  return list(dynamic_fields)
+    dynamic_fields.update(
+        DynamicField.GetManagedInstanceDynamicFields(instance)
+    )
+    if len(dynamic_fields) == max_possible_fields:
+      break
+
+  return [
+      field
+      for field in DynamicField.ALL_ORDERED
+      if field in dynamic_fields
+  ]
 
 
 def _TransformPreservedState(instance):
@@ -487,7 +521,7 @@ def GetListInstancesOutputWithDynamicFields(
       release_track
   ]
 
-  dynamic_fields = _GetIgmDynamicFields(managed_instances, release_track)
+  dynamic_fields = _GetIgmDynamicFields(managed_instances)
   complete_fields = static_fields + dynamic_fields
   complete_format = '(%s)' % ','.join(complete_fields)
   return complete_format
@@ -1426,3 +1460,25 @@ def ValidateUpdateStatefulPolicyParamsWithIPs(args, current_stateful_policy):
                                                      current_stateful_policy)
   _ValidateUpdateStatefulPolicyParamsWithExternalIPs(args,
                                                      current_stateful_policy)
+
+
+def AddMigStatefulCreateFlags(parser):
+  """Add stateful flags for creation to the parser."""
+  group = parser.add_group(
+      required=False,
+      mutex=False,
+      help='Stateful policy settings for the managed instance group.',
+  )
+  AddMigCreateStatefulFlags(group)
+  AddMigCreateStatefulIPsFlags(group)
+
+
+def AddMigStatefulUpdateFlags(parser):
+  """Add stateful flags for update to the parser."""
+  group = parser.add_group(
+      required=False,
+      mutex=False,
+      help='Stateful policy settings for the managed instance group.',
+  )
+  AddMigUpdateStatefulFlags(group)
+  AddMigUpdateStatefulFlagsIPs(group)

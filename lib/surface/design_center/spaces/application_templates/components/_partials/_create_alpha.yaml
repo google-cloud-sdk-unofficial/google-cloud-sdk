@@ -61,6 +61,10 @@
       Or create a YAML or JSON file with the parameters and run the following file example:
 
         $ {command} my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --shared-template-revision-uri=projects/my-project/locations/us-central1/spaces/my-space/sharedTemplates/my-shared-template/revisions/rev1 --parameters=my-parameters.yaml
+
+      To create the component `my-component` in application template `my-app-template`, space `my-space`, project `my-project` and location `us-central1` as a separate root module, run:
+
+        $ {command} my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --shared-template-revision-uri=projects/my-project/locations/us-central1/spaces/my-space/sharedTemplates/my-shared-template/revisions/rev1 --use-as-root-module
   arguments:
     params:
     - help_text: |-
@@ -297,6 +301,16 @@
             Deployment region for the component. If the scope is set to REGIONAL,
             then the apphub application is created in this region, e.g.
             `us-central1`.
+    - arg_name: use-as-root-module
+      api_field: component.useAsRootModule
+      action: store_true
+      required: false
+      type: bool
+      help_text: |-
+        Whether the component is exported as a separate terraform root module in
+        a composite application template. If this is false, then native components
+        will be exported as a submodule of a separate terraform root module.
+      default: null
   request:
     api_version: v1alpha
     collection:

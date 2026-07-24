@@ -147,6 +147,15 @@ image:
     attribute_name: image
     help: The name of the Google Compute Engine image.
 
+interconnect:
+  name: interconnect
+  collection: compute.interconnects
+  attributes:
+  - *project
+  - parameter_name: interconnect
+    attribute_name: interconnect
+    help: The name of the Google Compute Engine interconnect.
+
 instance:
   name: instance
   collection: compute.instances
@@ -176,6 +185,16 @@ instance_template:
     attribute_name: instance_template
     help: The name of the Google Compute Engine instance template.
 
+interconnect_attachment:
+  name: interconnect attachment
+  collection: compute.interconnectAttachments
+  attributes:
+  - *project
+  - *region
+  - parameter_name: interconnectAttachment
+    attribute_name: interconnect_attachment
+    help: The name of the Google Compute Engine interconnect attachment.
+
 interconnect_attachment_group:
   name: interconnect_attachment_group
   collection: compute.interconnectAttachmentGroups
@@ -203,6 +222,32 @@ network_profile:
   - parameter_name: networkProfile
     attribute_name: network_profile
     help: The name of the Google Compute Engine network profile.
+
+firewall_policy: &firewall_policy_spec
+  name: firewall_policy
+  collection: compute.firewallPolicies
+  attributes:
+  - parameter_name: firewallPolicy
+    attribute_name: firewall_policy
+    help: The name of the organization firewall policy.
+
+network_firewall_policy: &network_firewall_policy_spec
+  name: firewall_policy
+  collection: compute.networkFirewallPolicies
+  attributes:
+  - *project
+  - &firewall_policy_attr
+    parameter_name: firewallPolicy
+    attribute_name: firewall_policy
+    help: The name of the network firewall policy.
+
+region_network_firewall_policy: &region_network_firewall_policy_spec
+  name: firewall_policy
+  collection: compute.regionNetworkFirewallPolicies
+  attributes:
+  - *project
+  - *region
+  - *firewall_policy_attr
 
 node_group:
   name: node_group
@@ -258,6 +303,16 @@ reservation_block:
   - parameter_name: reservationBlocksId
     attribute_name: reservation_block
     help: The name of the Google Compute Engine reservation block.
+
+service_attachment:
+  name: service attachment
+  collection: compute.serviceAttachments
+  attributes:
+  - *project
+  - *region
+  - parameter_name: serviceAttachment
+    attribute_name: service_attachment
+    help: The name of the Google Compute Engine service attachment.
 
 subnet:
   name: subnetwork

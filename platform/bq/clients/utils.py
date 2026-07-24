@@ -734,7 +734,7 @@ def _ParseIdentifier(
 
 
 def GetProjectReference(
-    id_fallbacks: NamedTuple(
+    id_fallbacks: NamedTuple(  # pyrefly: ignore[invalid-annotation]
         'IDS',
         [
             ('project_id', Optional[str]),
@@ -749,7 +749,7 @@ def GetProjectReference(
     # it as a project_id.
     project_id = project_id or table_id or id_fallbacks.project_id
     if not dataset_id and project_id:
-      return bq_id_utils.ApiClientHelper.ProjectReference.Create(
+      return bq_id_utils.ApiClientHelper.ProjectReference.Create(  # pyrefly: ignore[bad-return]
           projectId=project_id
       )
   except ValueError:
@@ -764,7 +764,7 @@ def GetProjectReference(
 
 
 def GetDatasetReference(
-    id_fallbacks: NamedTuple(
+    id_fallbacks: NamedTuple(  # pyrefly: ignore[invalid-annotation]
         'IDS',
         [
             ('project_id', Optional[str]),
@@ -796,7 +796,7 @@ def GetDatasetReference(
         'Cannot determine dataset described by %s' % (dataset_identifier,)
     )
   try:
-    return bq_id_utils.ApiClientHelper.DatasetReference.Create(
+    return bq_id_utils.ApiClientHelper.DatasetReference.Create(  # pyrefly: ignore[bad-return]
         projectId=project_id, datasetId=dataset_id
     )
   except ValueError as e:
@@ -807,7 +807,7 @@ def GetDatasetReference(
 
 
 def GetTableReference(
-    id_fallbacks: NamedTuple(
+    id_fallbacks: NamedTuple(  # pyrefly: ignore[invalid-annotation]
         'IDS',
         [
             ('project_id', Optional[str]),
@@ -827,7 +827,7 @@ def GetTableReference(
   if default_dataset_id and not dataset_id:
     dataset_id = default_dataset_id
   try:
-    return bq_id_utils.ApiClientHelper.TableReference.Create(
+    return bq_id_utils.ApiClientHelper.TableReference.Create(  # pyrefly: ignore[bad-return]
         projectId=project_id or id_fallbacks.project_id,
         datasetId=dataset_id,
         tableId=table_id,
@@ -840,7 +840,7 @@ def GetTableReference(
 
 
 def GetRowAccessPolicyReference(
-    id_fallbacks: NamedTuple(
+    id_fallbacks: NamedTuple(  # pyrefly: ignore[invalid-annotation]
         'IDS',
         [
             ('project_id', Optional[str]),
@@ -853,7 +853,7 @@ def GetRowAccessPolicyReference(
   """Determine a RowAccessPolicyReference from an identifier and fallbacks."""
   try:
     table_reference = GetTableReference(id_fallbacks, table_identifier)
-    return bq_id_utils.ApiClientHelper.RowAccessPolicyReference.Create(
+    return bq_id_utils.ApiClientHelper.RowAccessPolicyReference.Create(  # pyrefly: ignore[bad-return]
         projectId=table_reference.projectId,
         datasetId=table_reference.datasetId,
         tableId=table_reference.tableId,
@@ -867,7 +867,7 @@ def GetRowAccessPolicyReference(
 
 
 def GetModelReference(
-    id_fallbacks: NamedTuple(
+    id_fallbacks: NamedTuple(  # pyrefly: ignore[invalid-annotation]
         'IDS',
         [
             ('project_id', Optional[str]),
@@ -881,7 +881,7 @@ def GetModelReference(
   if not dataset_id:
     project_id, dataset_id = _ParseDatasetIdentifier(id_fallbacks.dataset_id)
   try:
-    return bq_id_utils.ApiClientHelper.ModelReference.Create(
+    return bq_id_utils.ApiClientHelper.ModelReference.Create(  # pyrefly: ignore[bad-return]
         projectId=project_id or id_fallbacks.project_id,
         datasetId=dataset_id,
         modelId=table_id,
@@ -894,7 +894,7 @@ def GetModelReference(
 
 
 def GetRoutineReference(
-    id_fallbacks: NamedTuple(
+    id_fallbacks: NamedTuple(  # pyrefly: ignore[invalid-annotation]
         'IDS',
         [
             ('project_id', Optional[str]),
@@ -908,7 +908,7 @@ def GetRoutineReference(
   if not dataset_id:
     project_id, dataset_id = _ParseDatasetIdentifier(id_fallbacks.dataset_id)
   try:
-    return bq_id_utils.ApiClientHelper.RoutineReference.Create(
+    return bq_id_utils.ApiClientHelper.RoutineReference.Create(  # pyrefly: ignore[bad-return]
         projectId=project_id or id_fallbacks.project_id,
         datasetId=dataset_id,
         routineId=table_id,
@@ -929,7 +929,7 @@ def GetQueryDefaultDataset(identifier: str) -> Dict[str, str]:
 
 
 def GetReference(
-    id_fallbacks: NamedTuple(
+    id_fallbacks: NamedTuple(  # pyrefly: ignore[invalid-annotation]
         'IDS',
         [
             ('project_id', Optional[str]),
@@ -982,7 +982,7 @@ def GetReference(
 
 
 def GetJobReference(
-    id_fallbacks: NamedTuple(
+    id_fallbacks: NamedTuple(  # pyrefly: ignore[invalid-annotation]
         'IDS',
         [
             ('project_id', Optional[str]),
@@ -999,7 +999,7 @@ def GetJobReference(
     location = default_location
   if job_id:
     try:
-      return bq_id_utils.ApiClientHelper.JobReference.Create(
+      return bq_id_utils.ApiClientHelper.JobReference.Create(  # pyrefly: ignore[bad-return]
           projectId=project_id, jobId=job_id, location=location
       )
     except ValueError:
@@ -1010,7 +1010,7 @@ def GetJobReference(
 
 
 def GetReservationReference(
-    id_fallbacks: NamedTuple(
+    id_fallbacks: NamedTuple(  # pyrefly: ignore[invalid-annotation]
         'IDS',
         [
             ('project_id', Optional[str]),
@@ -1055,13 +1055,13 @@ def GetReservationReference(
   if not reservation_id:
     raise bq_error.BigqueryError('Reservation name not specified.')
   else:
-    return bq_id_utils.ApiClientHelper.ReservationReference.Create(
+    return bq_id_utils.ApiClientHelper.ReservationReference.Create(  # pyrefly: ignore[bad-return]
         projectId=project_id, location=location, reservationId=reservation_id
     )
 
 
 def GetBiReservationReference(
-    id_fallbacks: NamedTuple(
+    id_fallbacks: NamedTuple(  # pyrefly: ignore[invalid-annotation]
         'IDS',
         [
             ('project_id', Optional[str]),
@@ -1076,13 +1076,13 @@ def GetBiReservationReference(
   location = default_location
   if not location:
     raise bq_error.BigqueryError('Location not specified.')
-  return bq_id_utils.ApiClientHelper.BiReservationReference.Create(
+  return bq_id_utils.ApiClientHelper.BiReservationReference.Create(  # pyrefly: ignore[bad-return]
       projectId=project_id, location=location
   )
 
 
 def GetCapacityCommitmentReference(
-    id_fallbacks: NamedTuple(
+    id_fallbacks: NamedTuple(  # pyrefly: ignore[invalid-annotation]
         'IDS',
         [
             ('project_id', Optional[str]),
@@ -1117,7 +1117,7 @@ def GetCapacityCommitmentReference(
   if not capacity_commitment_id:
     raise bq_error.BigqueryError('Capacity commitment id not specified.')
 
-  return bq_id_utils.ApiClientHelper.CapacityCommitmentReference.Create(
+  return bq_id_utils.ApiClientHelper.CapacityCommitmentReference.Create(  # pyrefly: ignore[bad-return]
       projectId=project_id,
       location=location,
       capacityCommitmentId=capacity_commitment_id,
@@ -1125,7 +1125,7 @@ def GetCapacityCommitmentReference(
 
 
 def GetReservationAssignmentReference(
-    id_fallbacks: NamedTuple(
+    id_fallbacks: NamedTuple(  # pyrefly: ignore[invalid-annotation]
         'IDS',
         [
             ('project_id', Optional[str]),
@@ -1161,7 +1161,7 @@ def GetReservationAssignmentReference(
   reservation_assignment_id = (
       reservation_assignment_id or default_reservation_assignment_id
   )
-  return bq_id_utils.ApiClientHelper.ReservationAssignmentReference.Create(
+  return bq_id_utils.ApiClientHelper.ReservationAssignmentReference.Create(  # pyrefly: ignore[bad-return]
       projectId=project_id,
       location=location,
       reservationId=reservation_id,
@@ -1170,7 +1170,7 @@ def GetReservationAssignmentReference(
 
 
 def GetReservationGroupReference(
-    id_fallbacks: NamedTuple(
+    id_fallbacks: NamedTuple(  # pyrefly: ignore[invalid-annotation]
         'IDS',
         [
             ('project_id', Optional[str]),
@@ -1219,7 +1219,7 @@ def GetReservationGroupReference(
   if not reservation_group_id:
     raise bq_error.BigqueryError('Reservation group id not specified.')
   else:
-    return bq_id_utils.ApiClientHelper.ReservationGroupReference.Create(
+    return bq_id_utils.ApiClientHelper.ReservationGroupReference.Create(  # pyrefly: ignore[bad-return]
         projectId=project_id,
         location=location,
         reservationGroupId=reservation_group_id,
@@ -1227,7 +1227,7 @@ def GetReservationGroupReference(
 
 
 def GetConnectionReference(
-    id_fallbacks: NamedTuple(
+    id_fallbacks: NamedTuple(  # pyrefly: ignore[invalid-annotation]
         'IDS',
         [
             ('project_id', Optional[str]),
@@ -1244,16 +1244,16 @@ def GetConnectionReference(
     project_id, location, connection_id = _ParseConnectionIdentifier(identifier)
   elif path is not None:
     project_id, location, connection_id = ParseConnectionPath(path)
-  project_id = project_id or id_fallbacks.project_id
+  project_id = project_id or id_fallbacks.project_id  # pyrefly: ignore[unbound-name]
   if not project_id:
     raise bq_error.BigqueryError('Project id not specified.')
-  location = location or default_location
+  location = location or default_location  # pyrefly: ignore[unbound-name]
   if not location:
     raise bq_error.BigqueryError('Location not specified.')
-  connection_id = connection_id or default_connection_id
+  connection_id = connection_id or default_connection_id  # pyrefly: ignore[unbound-name]
   if not connection_id:
     raise bq_error.BigqueryError('Connection name not specified.')
-  return bq_id_utils.ApiClientHelper.ConnectionReference.Create(
+  return bq_id_utils.ApiClientHelper.ConnectionReference.Create(  # pyrefly: ignore[bad-return]
       projectId=project_id, location=location, connectionId=connection_id
   )
 
@@ -1358,7 +1358,7 @@ def ReadSchema(schema: str) -> List[str]:
 
 
 def NormalizeProjectReference(
-    id_fallbacks: NamedTuple(
+    id_fallbacks: NamedTuple(  # pyrefly: ignore[invalid-annotation]
         'IDS',
         [
             ('project_id', Optional[str]),

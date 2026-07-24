@@ -25,7 +25,6 @@ from io import BytesIO
 from os import (
     SEEK_END,
 )
-import socket
 
 import dulwich
 from dulwich.errors import (
@@ -107,6 +106,10 @@ KNOWN_RECEIVE_CAPABILITIES = set(
     ]
 )
 
+DEPTH_INFINITE = 0x7FFFFFFF
+
+NAK_LINE = b"NAK\n"
+
 
 def agent_string():
     return ("dulwich/%d.%d.%d" % dulwich.__version__).encode("ascii")
@@ -121,7 +124,7 @@ def capability_symref(from_ref, to_ref):
 
 
 def extract_capability_names(capabilities):
-    return set(parse_capability(c)[0] for c in capabilities)
+    return {parse_capability(c)[0] for c in capabilities}
 
 
 def parse_capability(capability):
@@ -141,20 +144,6 @@ COMMAND_UNSHALLOW = b"unshallow"
 COMMAND_DONE = b"done"
 COMMAND_WANT = b"want"
 COMMAND_HAVE = b"have"
-
-
-class ProtocolFile(object):
-    """A dummy file for network ops that expect file-like objects."""
-
-    def __init__(self, read, write):
-        self.read = read
-        self.write = write
-
-    def tell(self):
-        pass
-
-    def close(self):
-        pass
 
 
 def format_cmd_pkt(cmd, *args):
@@ -181,7 +170,7 @@ def pkt_line(data):
     return ("%04x" % (len(data) + 4)).encode("ascii") + data
 
 
-class Protocol(object):
+class Protocol:
     """Class for interacting with a remote git process over the wire.
 
     Parts of the git wire protocol use 'pkt-lines' to communicate. A pkt-line
@@ -236,8 +225,10 @@ class Protocol(object):
             if self.report_activity:
                 self.report_activity(size, "read")
             pkt_contents = read(size - 4)
-        except socket.error as e:
-            raise GitProtocolError(e)
+        except ConnectionResetError as exc:
+            raise HangupException() from exc
+        except OSError as exc:
+            raise GitProtocolError(exc) from exc
         else:
             if len(pkt_contents) + 4 != size:
                 raise GitProtocolError(
@@ -299,28 +290,8 @@ class Protocol(object):
             self.write(line)
             if self.report_activity:
                 self.report_activity(len(line), "write")
-        except socket.error as e:
-            raise GitProtocolError(e)
-
-    def write_file(self):
-        """Return a writable file-like object for this protocol."""
-
-        class ProtocolFile(object):
-            def __init__(self, proto):
-                self._proto = proto
-                self._offset = 0
-
-            def write(self, data):
-                self._proto.write(data)
-                self._offset += len(data)
-
-            def tell(self):
-                return self._offset
-
-            def close(self):
-                pass
-
-        return ProtocolFile(self)
+        except OSError as exc:
+            raise GitProtocolError(exc) from exc
 
     def write_sideband(self, channel, blob):
         """Write multiplexed data to the sideband.
@@ -376,7 +347,7 @@ class ReceivableProtocol(Protocol):
     def __init__(
         self, recv, write, close=None, report_activity=None, rbufsize=_RBUFSIZE
     ):
-        super(ReceivableProtocol, self).__init__(
+        super().__init__(
             self.read, write, close=close, report_activity=report_activity
         )
         self._recv = recv
@@ -508,7 +479,7 @@ def ack_type(capabilities):
     return SINGLE_ACK
 
 
-class BufferedPktLineWriter(object):
+class BufferedPktLineWriter:
     """Writer that wraps its data in pkt-lines and has an independent buffer.
 
     Consecutive calls to write() wrap the data in a pkt-line and then buffers
@@ -552,7 +523,7 @@ class BufferedPktLineWriter(object):
         self._wbuf = BytesIO()
 
 
-class PktLineParser(object):
+class PktLineParser:
     """Packet line parser that hands completed packets off to a callback."""
 
     def __init__(self, handle_pkt):
@@ -581,3 +552,31 @@ class PktLineParser(object):
     def get_tail(self):
         """Read back any unused data."""
         return self._readahead.getvalue()
+
+
+def format_capability_line(capabilities):
+    return b"".join([b" " + c for c in capabilities])
+
+
+def format_ref_line(ref, sha, capabilities=None):
+    if capabilities is None:
+        return sha + b" " + ref + b"\n"
+    else:
+        return (
+            sha + b" " + ref + b"\0"
+            + format_capability_line(capabilities)
+            + b"\n")
+
+
+def format_shallow_line(sha):
+    return COMMAND_SHALLOW + b" " + sha
+
+
+def format_unshallow_line(sha):
+    return COMMAND_UNSHALLOW + b" " + sha
+
+
+def format_ack_line(sha, ack_type=b""):
+    if ack_type:
+        ack_type = b" " + ack_type
+    return b"ACK " + sha + ack_type + b"\n"

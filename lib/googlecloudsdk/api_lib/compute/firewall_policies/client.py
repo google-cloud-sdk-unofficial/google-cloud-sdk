@@ -17,6 +17,7 @@
 
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
+from googlecloudsdk.command_lib.iam import iam_util
 
 OP_COLLECTION_NAME = 'compute.globalOrganizationOperations'
 API_COLLECTION_NAME = 'compute.firewallPolicies'
@@ -419,6 +420,49 @@ class OrgFirewallPolicy(object):
     return self.WaitOperation(
         op_res, message='Creating the organization firewall policy.'
     )
+
+  def _MakeGetIamPolicyRequestTuple(self, fp_id=None):
+    request = self._messages.ComputeFirewallPoliciesGetIamPolicyRequest(
+        resource=fp_id or self.ref.Name(),
+        # Explicitly request max supported IAM policy version (v3)
+        # to prevent the backend from truncating IAM Conditions.
+        optionsRequestedPolicyVersion=(
+            iam_util.MAX_LIBRARY_IAM_SUPPORTED_VERSION
+        ),
+    )
+    return (
+        self._client.firewallPolicies,
+        'GetIamPolicy',
+        request,
+    )
+
+  def _MakeSetIamPolicyRequestTuple(self, policy, fp_id=None):
+    set_policy_req = self._messages.GlobalOrganizationSetPolicyRequest(
+        policy=policy
+    )
+    request = self._messages.ComputeFirewallPoliciesSetIamPolicyRequest(
+        resource=fp_id or self.ref.Name(),
+        globalOrganizationSetPolicyRequest=set_policy_req,
+    )
+    return (
+        self._client.firewallPolicies,
+        'SetIamPolicy',
+        request,
+    )
+
+  def GetIamPolicy(self, fp_id=None, only_generate_request=False):
+    """Sends request to get the IAM policy."""
+    requests = [self._MakeGetIamPolicyRequestTuple(fp_id=fp_id)]
+    if not only_generate_request:
+      return self._compute_client.MakeRequests(requests)[0]
+    return requests
+
+  def SetIamPolicy(self, policy, fp_id=None, only_generate_request=False):
+    """Sends request to set the IAM policy."""
+    requests = [self._MakeSetIamPolicyRequestTuple(policy, fp_id=fp_id)]
+    if not only_generate_request:
+      return self._compute_client.MakeRequests(requests)[0]
+    return requests
 
   def ForceStartProgressiveRollout(
       self,

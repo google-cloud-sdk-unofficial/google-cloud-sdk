@@ -17,14 +17,13 @@
 # TODO(b/275749579): Rename this module.
 
 
-import functools
 import threading
 
-from googlecloudsdk.api_lib.storage import errors as cloud_api_errors
 from googlecloudsdk.api_lib.storage.gcs_grpc import client as gcs_grpc_client
 from googlecloudsdk.api_lib.storage.gcs_json import client as gcs_json_client
 from googlecloudsdk.api_lib.storage.gcs_xml import client as gcs_xml_client
 from googlecloudsdk.api_lib.storage.s3_xml import client as s3_xml_client
+from googlecloudsdk.command_lib.storage import bucket_detection_util
 from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.core import log
@@ -38,45 +37,10 @@ _INVALID_PROVIDER_PREFIX_MESSAGE = (
         )
     )
 )
-_GCS_ZONAL_BUCKET_LOCATION_TYPE = 'zone'
 
 # Module variable for holding one API instance per thread per (provider + bucket
 # type).
 _cloud_api_thread_local_storage = None
-
-
-@functools.lru_cache(maxsize=128)
-def _get_is_zonal_bucket_cached(
-    *, provider: storage_url.ProviderPrefix, bucket_name: str
-) -> bool:
-  if not bucket_name or provider != storage_url.ProviderPrefix.GCS:
-    return False
-  api_client = gcs_json_client.JsonClient()
-  return (
-      api_client.get_storage_layout(bucket_name).locationType
-      == _GCS_ZONAL_BUCKET_LOCATION_TYPE
-  )
-
-
-def _is_gcs_zonal_bucket(
-    *, provider: storage_url.ProviderPrefix, bucket_name: str
-) -> bool:
-  """Returns true if the given bucket is a GCS zonal bucket."""
-  try:
-    return _get_is_zonal_bucket_cached(
-        provider=provider, bucket_name=bucket_name
-    )
-  except cloud_api_errors.CloudApiError as e:
-    status_code = getattr(e, 'status_code', None)
-    if status_code in (401, 403, 404):
-      log.debug(
-          'Failed to get storage layout for bucket %s: %s', bucket_name, e
-      )
-      # If the bucket does not exist, we can assume it is not a zonal bucket.
-      # If the user does not have permission to check the bucket type, we will
-      # default to not using a zonal client.
-      return False
-    raise
 
 
 def _get_api_class(provider, is_zonal_bucket):
@@ -154,7 +118,7 @@ def get_api(provider, bucket_name=None):
   # zonal bucket client(gRPC Bidi Streaming) can be shared across multiple
   # zonal buckets. Hence, We only use whether a bucket is zonal or not to
   # determine the thread local storage key.
-  is_zonal_bucket = _is_gcs_zonal_bucket(
+  is_zonal_bucket = bucket_detection_util.is_gcs_zonal_bucket(
       provider=provider, bucket_name=bucket_name
   )
 
@@ -199,6 +163,20 @@ def get_capabilities(provider, bucket_name=None):
   """
   api_class = _get_api_class(
       provider,
-      _is_gcs_zonal_bucket(provider=provider, bucket_name=bucket_name),
+      bucket_detection_util.is_gcs_zonal_bucket(
+          provider=provider, bucket_name=bucket_name
+      ),
   )
   return api_class.capabilities
+
+
+def clear_thread_local_instances():
+  """Closes and removes all thread-local API client instances."""
+  if _cloud_api_thread_local_storage:
+    for key, client in list(_cloud_api_thread_local_storage.__dict__.items()):
+      if hasattr(client, 'close'):
+        try:
+          client.close()
+        except Exception as e:  # pylint: disable=broad-except
+          log.debug('Failed to close client %s: %r', key, e)
+    _cloud_api_thread_local_storage.__dict__.clear()

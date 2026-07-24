@@ -16,6 +16,7 @@
 
 
 from googlecloudsdk.api_lib.storage import api_factory
+from googlecloudsdk.api_lib.storage.gcs_json import operations as operations_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import operations_util
 from googlecloudsdk.command_lib.storage import storage_url
@@ -52,6 +53,13 @@ class Cancel(base.Command):
     )
 
   def Run(self, args):
+    if operations_util.is_location_operations_resource(args.operation_name):
+      operations_api.OperationsApi().cancel(args.operation_name)
+      log.status.Print(
+          'Sent cancel request for operation {}'.format(args.operation_name)
+      )
+      return
+
     bucket, operation_id = (
         operations_util.get_operation_bucket_and_id_from_name(
             args.operation_name

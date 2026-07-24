@@ -7240,6 +7240,23 @@ class APIAdapter(object):
     )
     return self.client.projects_locations_acceleratorNetworkProfiles.Get(req)
 
+  def DeleteAcceleratorNetworkProfile(self, profile_ref):
+    """DeleteAcceleratorNetworkProfile deletes an accelerator network profile.
+
+    Args:
+      profile_ref: The accelerator network profile resource reference.
+
+    Returns:
+      The operation to be executed for deleting the accelerator network profile.
+    """
+    req = self.messages.ContainerProjectsLocationsAcceleratorNetworkProfilesDeleteRequest(
+        name=profile_ref.RelativeName()
+    )
+    operation = (
+        self.client.projects_locations_acceleratorNetworkProfiles.Delete(req)
+    )
+    return self.ParseOperation(operation.name, profile_ref.locationsId)
+
   def ListNodePools(self, cluster_ref):
     req = self.messages.ContainerProjectsLocationsClustersNodePoolsListRequest(
         parent=ProjectLocationCluster(

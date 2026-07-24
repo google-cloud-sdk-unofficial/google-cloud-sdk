@@ -31,6 +31,7 @@ from googlecloudsdk.api_lib.storage.gcs_json import patch_apitools_messages
 from googlecloudsdk.command_lib import crash_handling
 from googlecloudsdk.command_lib.storage import encryption_util
 from googlecloudsdk.command_lib.storage import errors
+from googlecloudsdk.command_lib.storage import performance_util
 from googlecloudsdk.command_lib.storage.tasks import task
 from googlecloudsdk.command_lib.storage.tasks import task_buffer
 from googlecloudsdk.command_lib.storage.tasks import (
@@ -273,6 +274,7 @@ def _thread_worker(
     task_status_queue,
     idle_thread_count,
     abort_event,
+    thread_exit_callback=None,
 ):
   """A consumer thread run in a child process.
 
@@ -285,6 +287,8 @@ def _thread_worker(
     idle_thread_count (multiprocessing.Semaphore): Keeps track of how many
       threads are busy. Useful for spawning new workers if all threads are busy.
     abort_event (multiprocessing.Event): Global signal to abort.
+    thread_exit_callback (Callable[[], None]|None): An optional function to
+      execute in this thread's finally block.
   """
   # Verifiable Accounting: The thread is alive and ready for work.
   idle_thread_count.release()
@@ -363,6 +367,12 @@ def _thread_worker(
       log.debug('Failed to send poison pill: %r', e)
     # The thread will now die. We have successfully sent the Poison Pill or
     # failed to do so but reported the failure in logs.
+  finally:
+    if thread_exit_callback is not None:
+      try:
+        thread_exit_callback()
+      except Exception as e:  # pylint: disable=broad-except
+        log.debug('Thread exit callback failed: %r', e)
 
 
 @crash_handling.CrashManager
@@ -375,6 +385,7 @@ def _process_worker(
     shared_process_context,
     stack_trace_file_path,
     abort_event,
+    thread_exit_callback=None,
 ):
   """Starts a consumer thread pool.
 
@@ -390,7 +401,12 @@ def _process_worker(
       state that need to be replicated in child processes.
     stack_trace_file_path (str): File path to write stack traces to.
     abort_event (multiprocessing.Event): Global signal to abort.
+    thread_exit_callback (Callable[[], None]|None): An optional function to
+      execute in each worker thread's finally block.
   """
+  if properties.VALUES.storage.use_nic_isolation.GetBool():
+    performance_util.apply_nic_isolation()
+
   threads = []
   with shared_process_context:
     for _ in range(thread_count):
@@ -402,6 +418,7 @@ def _process_worker(
               task_status_queue,
               idle_thread_count,
               abort_event,
+              thread_exit_callback,
           ),
       )
       thread.start()
@@ -473,6 +490,7 @@ def _process_factory(
     shared_process_context,
     stack_trace_file_path,
     abort_event,
+    thread_exit_callback=None,
 ):
   """Create worker processes.
 
@@ -495,6 +513,8 @@ def _process_factory(
       state that need to be replicated in child processes.
     stack_trace_file_path (str): File path to write stack traces to.
     abort_event (multiprocessing.Event): Global signal to abort.
+    thread_exit_callback (Callable[[], None]|None): An optional function to
+      execute in each worker thread's finally block.
   """
   processes = []
   while not abort_event.is_set():
@@ -549,6 +569,7 @@ def _process_factory(
               shared_process_context,
               stack_trace_file_path,
               abort_event,
+              thread_exit_callback,
           ),
       )
 
@@ -640,6 +661,7 @@ class TaskGraphExecutor:
       thread_count=4,
       task_status_queue=None,
       progress_manager_args=None,
+      thread_exit_callback=None,
   ):
     """Initializes a TaskGraphExecutor instance.
 
@@ -654,6 +676,8 @@ class TaskGraphExecutor:
         progress to a central location.
       progress_manager_args (task_status.ProgressManagerArgs|None): Determines
         what type of progress indicator to display.
+      thread_exit_callback (Callable[[], None]|None): An optional function to
+        execute in each worker thread's finally block.
     """
 
     self._task_iterator = iter(task_iterator)
@@ -661,6 +685,7 @@ class TaskGraphExecutor:
     self._thread_count = thread_count
     self._task_status_queue = task_status_queue
     self._progress_manager_args = progress_manager_args
+    self._thread_exit_callback = thread_exit_callback
 
     self._process_count = 0
     self._idle_thread_count = multiprocessing_context.Semaphore(value=0)
@@ -894,6 +919,7 @@ class TaskGraphExecutor:
             shared_process_context,
             self.stack_trace_file_path,
             self._abort_event,
+            self._thread_exit_callback,
         ),
     )
 

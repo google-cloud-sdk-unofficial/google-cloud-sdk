@@ -29,6 +29,10 @@ help_text = textwrap.dedent("""\
     To update the description of a catalog `my-catalog`, run:
 
       $ {command} my-catalog --description="updated description"
+
+    To update a catalog `my-lakehouse-catalog` to catalog type lakehouse with restricted locations, run:
+
+      $ {command} my-lakehouse-catalog --catalog-type=lakehouse --restricted-locations=gs://my-bucket1,gs://my-bucket2
     """)
 
 help_text_alpha = textwrap.dedent("""\
@@ -51,6 +55,7 @@ class UpdateCatalog(base.UpdateCommand):
   _support_federated_catalog = False
   _support_unity_service_principal_application_id = False
   _support_glue_catalog = False
+  _support_snowflake_catalog = False
 
   @classmethod
   def Args(cls, parser):
@@ -69,6 +74,8 @@ class UpdateCatalog(base.UpdateCommand):
       arguments.AddUnityServicePrincipalApplicationIdArg(parser)
     if cls._support_glue_catalog:
       arguments.AddGlueAwsRoleArnArg(parser)
+    if cls._support_snowflake_catalog:
+      arguments.AddSnowflakeRoleArg(parser)
     if cls._support_federated_catalog:
       arguments.AddUpdateFederatedCatalogArgs(parser)
 
@@ -98,6 +105,13 @@ class UpdateCatalog(base.UpdateCommand):
       )
       catalog.federated_catalog_options.glue_catalog_info = (
           messages.GlueCatalogInfo(aws_role_arn=args.glue_aws_role_arn)
+      )
+    if args.IsKnownAndSpecified('snowflake_role'):
+      update_mask.append(
+          'federated_catalog_options.snowflake_catalog_info.snowflake_role'
+      )
+      catalog.federated_catalog_options.snowflake_catalog_info = (
+          messages.SnowflakeCatalogInfo(snowflake_role=args.snowflake_role)
       )
     if args.IsKnownAndSpecified('refresh_interval') or args.IsKnownAndSpecified(
         'namespace_filters'
@@ -165,6 +179,7 @@ class UpdateCatalog(base.UpdateCommand):
         or args.IsKnownAndSpecified('refresh_interval')
         or args.IsKnownAndSpecified('namespace_filters')
         or args.IsKnownAndSpecified('service_directory_name')
+        or args.IsKnownAndSpecified('snowflake_role')
     ):
       if not is_federated:
         raise exceptions.InvalidArgumentException(
@@ -180,6 +195,10 @@ class UpdateCatalog(base.UpdateCommand):
       is_unity = (
           get_response.federated_catalog_options
           and get_response.federated_catalog_options.unity_catalog_info
+      )
+      is_snowflake = (
+          get_response.federated_catalog_options
+          and get_response.federated_catalog_options.snowflake_catalog_info
       )
 
       if is_glue and args.IsKnownAndSpecified(
@@ -197,15 +216,43 @@ class UpdateCatalog(base.UpdateCommand):
             '--secret-name is not supported for Glue federated catalogs.',
         )
 
+      if is_glue and args.IsKnownAndSpecified('snowflake_role'):
+        raise exceptions.InvalidArgumentException(
+            '--snowflake-role',
+            '--snowflake-role is not supported for Glue federated catalogs.',
+        )
+
       if is_unity and args.IsKnownAndSpecified('glue_aws_role_arn'):
         raise exceptions.InvalidArgumentException(
             '--glue-aws-role-arn',
             'Cannot specify Glue Catalog arguments when updating a Unity'
             ' federated catalog.',
         )
+
+      if is_unity and args.IsKnownAndSpecified('snowflake_role'):
+        raise exceptions.InvalidArgumentException(
+            '--snowflake-role',
+            '--snowflake-role is not supported for Unity federated catalogs.',
+        )
+
+      if is_snowflake and args.IsKnownAndSpecified(
+          'unity_service_principal_application_id'
+      ):
+        raise exceptions.InvalidArgumentException(
+            '--unity-service-principal-application-id',
+            '--unity-service-principal-application-id is not supported for'
+            ' Snowflake federated catalogs.',
+        )
+
+      if is_snowflake and args.IsKnownAndSpecified('glue_aws_role_arn'):
+        raise exceptions.InvalidArgumentException(
+            '--glue-aws-role-arn',
+            'Cannot specify Glue Catalog arguments when updating a Snowflake'
+            ' federated catalog.',
+        )
     if (
         args.IsSpecified('catalog_type')
-        and args.catalog_type == 'biglake'
+        and args.catalog_type in ('biglake', 'lakehouse')
     ):
       update_mask.append('catalog_type')
       catalog_type = util.GetUpdateCatalogTypeEnumMapper(
@@ -233,6 +280,7 @@ class UpdateCatalog(base.UpdateCommand):
           or args.IsKnownAndSpecified('glue_aws_role_arn')
           or args.IsKnownAndSpecified('refresh_interval')
           or args.IsKnownAndSpecified('namespace_filters')
+          or args.IsKnownAndSpecified('snowflake_role')
       ):
         self._UpdateFederatedCatalogOptions(
             args, catalog, messages, update_mask
@@ -287,3 +335,4 @@ class UpdateAlpha(UpdateBeta):
   _support_service_directory_name = True
   _support_unity_service_principal_application_id = True
   _support_glue_catalog = True
+  _support_snowflake_catalog = True

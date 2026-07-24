@@ -89,6 +89,22 @@ class Create(base.Command):
             ' instance resource name.'
         ),
     )
+    parser.add_argument(
+        '--crypto-key-version-name',
+        required=False,
+        help=(
+            'ID to use for the crypto key version. This field is required'
+            ' for upgrade_key_trust operation type.'
+        ),
+    )
+    parser.add_argument(
+        '--two-factor-public-key-pem',
+        required=False,
+        help=(
+            'PEM file containing the two-factor public key.'
+            ' This field is required for upgrade_key_trust operation type.'
+        ),
+    )
 
   def validate_required_approver_count(self, args, messages, sthi_ref):
     if args.required_approver_count is None:
@@ -197,6 +213,26 @@ class Create(base.Command):
       req.singleTenantHsmInstanceProposal.refreshSingleTenantHsmInstance = (
           messages.RefreshSingleTenantHsmInstance()
       )
+    elif args.operation_type == 'upgrade_key_trust':
+      if args.crypto_key_version_name is None:
+        raise exceptions.BadArgumentException(
+            '--crypto-key-version-name',
+            'The crypto key version name must be specified for'
+            ' upgrade_key_trust operation type.',
+        )
+      if args.two_factor_public_key_pem is None:
+        raise exceptions.BadArgumentException(
+            '--two-factor-public-key-pem',
+            'The two-factor public key must be specified for'
+            ' upgrade_key_trust operation type.',
+        )
+      pem = pems.GetPemPublicKey(args.two_factor_public_key_pem)
+      req.singleTenantHsmInstanceProposal.upgradeKeyTrust = (
+          messages.UpgradeKeyTrust(
+              name=args.crypto_key_version_name,
+              twoFactorPublicKeyPem=pem,
+          )
+      )
     else:
       raise exceptions.BadArgumentException(
           '--operation-type',
@@ -205,7 +241,7 @@ class Create(base.Command):
           ' enable_sthi,'
           ' delete_sthi,'
           ' add_quorum_member,'
-          ' remove_quorum_member, or'
+          ' remove_quorum_member, upgrade_key_trust, or'
           ' refresh_sthi.',
       )
     return req

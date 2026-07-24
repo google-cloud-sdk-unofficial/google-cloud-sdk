@@ -65,6 +65,7 @@ def CreateImage(
     enable_automatic_updates=False,
     source_bucket=None,
     kms_key=None,
+    upload_through_run_api=False,
 ):
   """Creates an image from Source."""
   with metrics.RecordDuration(metric_names.CREATE_BUILD):
@@ -81,7 +82,16 @@ def CreateImage(
     client = 'gcloud'
 
     tracker.StartStage(stages.UPLOAD_SOURCE)
-    if kms_key:
+    if upload_through_run_api:
+      tracker.UpdateHeaderMessage('Uploading sources.')
+      source = sources.UploadThroughCloudRun(
+          source_to_upload=build_source,
+          region=region,
+          service_ref=resource_ref,
+          release_track=release_track,
+          kms_key=kms_key,
+      )
+    elif kms_key:
       tracker.UpdateHeaderMessage('Using the source from the specified bucket.')
       _ValidateCmekDeployment(build_source, build_image, kms_key)
       source = sources.GetGcsObject(build_source, location=region)

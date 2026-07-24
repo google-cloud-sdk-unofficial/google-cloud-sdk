@@ -157,9 +157,15 @@ class Create(base.CreateCommand):
         action=arg_parsers.FlattenAction(),
         help=(
             'Configures the two zones for the HA Controller and specifies how'
-            ' VM capacity is reserved in each zone. You must provide two zone'
-            ' configurations. You can also specify an existing reservation or'
-            ' node-group to guarantee capacity.'
+            ' VM capacity is reserved in each zone. You can also specify an'
+            ' existing reservation or a node-group to guarantee capacity. You'
+            ' must specify at least the name of the primary zone where the VM'
+            ' instance is located. If only one zone configuration is provided,'
+            ' it will be assumed to be the primary zone, and'
+            ' the other zone will be inferred based on the replica zones of'
+            ' the boot disk currently attached to the instance. During'
+            ' inference, the node and reservation affinities will be copied'
+            ' from the instance to the primary zone\'s configuration.'
         ),
     )
     parser.add_argument(

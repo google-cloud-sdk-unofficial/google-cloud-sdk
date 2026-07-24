@@ -253,45 +253,6 @@ class BatchCreateBitbucketServerConnectedRepositoriesResponseMetadata(_messages.
   createTime = _messages.StringField(3)
 
 
-class BatchCreateGitLabConnectedRepositoriesRequest(_messages.Message):
-  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated. RPC request
-  object accepted by BatchCreateGitLabConnectedRepositories RPC method.
-
-  Fields:
-    requests: Required. Requests to connect GitLab repositories.
-  """
-
-  requests = _messages.MessageField('CreateGitLabConnectedRepositoryRequest', 1, repeated=True)
-
-
-class BatchCreateGitLabConnectedRepositoriesResponse(_messages.Message):
-  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated. Response of
-  BatchCreateGitLabConnectedRepositories RPC method.
-
-  Fields:
-    gitlabConnectedRepositories: The GitLab connected repository requests'
-      responses.
-  """
-
-  gitlabConnectedRepositories = _messages.MessageField('GitLabConnectedRepository', 1, repeated=True)
-
-
-class BatchCreateGitLabConnectedRepositoriesResponseMetadata(_messages.Message):
-  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated. Metadata for
-  `BatchCreateGitLabConnectedRepositories` operation.
-
-  Fields:
-    completeTime: Time the operation was completed.
-    config: The name of the `GitLabConfig` that added connected repositories.
-      Format: `projects/{project}/locations/{location}/gitLabConfigs/{config}`
-    createTime: Time the operation was created.
-  """
-
-  completeTime = _messages.StringField(1)
-  config = _messages.StringField(2)
-  createTime = _messages.StringField(3)
-
-
 class BitbucketServerConfig(_messages.Message):
   r"""BitbucketServerConfig represents the configuration for a Bitbucket
   Server.
@@ -1223,10 +1184,6 @@ class BuildTrigger(_messages.Message):
     github: GitHubEventsConfig describes the configuration of a trigger that
       creates a build whenever a GitHub event is received. Mutually exclusive
       with `trigger_template`.
-    gitlabEnterpriseEventsConfig: Deprecated: CloudBuild GitLab V1 integration
-      is deprecated. GitLabEnterpriseEventsConfig describes the configuration
-      of a trigger that creates a build whenever a GitLab Enterprise event is
-      received.
     id: Output only. Unique identifier of the trigger.
     ignoredFiles: ignored_files and included_files are file glob matches using
       https://golang.org/pkg/path/filepath/#Match extended with support for
@@ -1351,21 +1308,20 @@ class BuildTrigger(_messages.Message):
   filter = _messages.StringField(12)
   gitFileSource = _messages.MessageField('GitFileSource', 13)
   github = _messages.MessageField('GitHubEventsConfig', 14)
-  gitlabEnterpriseEventsConfig = _messages.MessageField('GitLabEventsConfig', 15)
-  id = _messages.StringField(16)
-  ignoredFiles = _messages.StringField(17, repeated=True)
-  includeBuildLogs = _messages.EnumField('IncludeBuildLogsValueValuesEnum', 18)
-  includedFiles = _messages.StringField(19, repeated=True)
-  name = _messages.StringField(20)
-  pubsubConfig = _messages.MessageField('PubsubConfig', 21)
-  repositoryEventConfig = _messages.MessageField('RepositoryEventConfig', 22)
-  resourceName = _messages.StringField(23)
-  serviceAccount = _messages.StringField(24)
-  sourceToBuild = _messages.MessageField('GitRepoSource', 25)
-  substitutions = _messages.MessageField('SubstitutionsValue', 26)
-  tags = _messages.StringField(27, repeated=True)
-  triggerTemplate = _messages.MessageField('RepoSource', 28)
-  webhookConfig = _messages.MessageField('WebhookConfig', 29)
+  id = _messages.StringField(15)
+  ignoredFiles = _messages.StringField(16, repeated=True)
+  includeBuildLogs = _messages.EnumField('IncludeBuildLogsValueValuesEnum', 17)
+  includedFiles = _messages.StringField(18, repeated=True)
+  name = _messages.StringField(19)
+  pubsubConfig = _messages.MessageField('PubsubConfig', 20)
+  repositoryEventConfig = _messages.MessageField('RepositoryEventConfig', 21)
+  resourceName = _messages.StringField(22)
+  serviceAccount = _messages.StringField(23)
+  sourceToBuild = _messages.MessageField('GitRepoSource', 24)
+  substitutions = _messages.MessageField('SubstitutionsValue', 25)
+  tags = _messages.StringField(26, repeated=True)
+  triggerTemplate = _messages.MessageField('RepoSource', 27)
+  webhookConfig = _messages.MessageField('WebhookConfig', 28)
 
 
 class BuiltImage(_messages.Message):
@@ -2128,134 +2084,6 @@ class CloudbuildProjectsLocationsGetDefaultServiceAccountRequest(_messages.Messa
   name = _messages.StringField(1, required=True)
 
 
-class CloudbuildProjectsLocationsGitLabConfigsConnectedRepositoriesBatchCreateRequest(_messages.Message):
-  r"""A CloudbuildProjectsLocationsGitLabConfigsConnectedRepositoriesBatchCrea
-  teRequest object.
-
-  Fields:
-    batchCreateGitLabConnectedRepositoriesRequest: A
-      BatchCreateGitLabConnectedRepositoriesRequest resource to be passed as
-      the request body.
-    parent: The name of the `GitLabConfig` that adds connected repositories.
-      Format: `projects/{project}/locations/{location}/gitLabConfigs/{config}`
-  """
-
-  batchCreateGitLabConnectedRepositoriesRequest = _messages.MessageField('BatchCreateGitLabConnectedRepositoriesRequest', 1)
-  parent = _messages.StringField(2, required=True)
-
-
-class CloudbuildProjectsLocationsGitLabConfigsCreateRequest(_messages.Message):
-  r"""A CloudbuildProjectsLocationsGitLabConfigsCreateRequest object.
-
-  Fields:
-    gitLabConfig: A GitLabConfig resource to be passed as the request body.
-    gitlabConfigId: Optional. The ID to use for the GitLabConfig, which will
-      become the final component of the GitLabConfig's resource name.
-      gitlab_config_id must meet the following requirements: + They must
-      contain only alphanumeric characters and dashes. + They can be 1-64
-      characters long. + They must begin and end with an alphanumeric
-      character
-    parent: Required. Name of the parent resource.
-  """
-
-  gitLabConfig = _messages.MessageField('GitLabConfig', 1)
-  gitlabConfigId = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
-
-
-class CloudbuildProjectsLocationsGitLabConfigsDeleteRequest(_messages.Message):
-  r"""A CloudbuildProjectsLocationsGitLabConfigsDeleteRequest object.
-
-  Fields:
-    name: Required. The config resource name.
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
-class CloudbuildProjectsLocationsGitLabConfigsGetRequest(_messages.Message):
-  r"""A CloudbuildProjectsLocationsGitLabConfigsGetRequest object.
-
-  Fields:
-    name: Required. The config resource name.
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
-class CloudbuildProjectsLocationsGitLabConfigsListRequest(_messages.Message):
-  r"""A CloudbuildProjectsLocationsGitLabConfigsListRequest object.
-
-  Fields:
-    pageSize: The maximum number of configs to return. The service may return
-      fewer than this value. If unspecified, at most 50 configs will be
-      returned. The maximum value is 1000;, values above 1000 will be coerced
-      to 1000.
-    pageToken: A page token, received from a previous
-      'ListGitlabConfigsRequest' call. Provide this to retrieve the subsequent
-      page. When paginating, all other parameters provided to
-      'ListGitlabConfigsRequest' must match the call that provided the page
-      token.
-    parent: Required. Name of the parent resource
-  """
-
-  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
-
-
-class CloudbuildProjectsLocationsGitLabConfigsPatchRequest(_messages.Message):
-  r"""A CloudbuildProjectsLocationsGitLabConfigsPatchRequest object.
-
-  Fields:
-    gitLabConfig: A GitLabConfig resource to be passed as the request body.
-    name: Identifier. The resource name for the config.
-    updateMask: Update mask for the resource. If this is set, the server will
-      only update the fields specified in the field mask. Otherwise, a full
-      update of the mutable resource fields will be performed.
-  """
-
-  gitLabConfig = _messages.MessageField('GitLabConfig', 1)
-  name = _messages.StringField(2, required=True)
-  updateMask = _messages.StringField(3)
-
-
-class CloudbuildProjectsLocationsGitLabConfigsRemoveGitLabConnectedRepositoryRequest(_messages.Message):
-  r"""A CloudbuildProjectsLocationsGitLabConfigsRemoveGitLabConnectedRepositor
-  yRequest object.
-
-  Fields:
-    config: Required. The name of the `GitLabConfig` to remove a connected
-      repository. Format:
-      `projects/{project}/locations/{location}/gitLabConfigs/{config}`
-    removeGitLabConnectedRepositoryRequest: A
-      RemoveGitLabConnectedRepositoryRequest resource to be passed as the
-      request body.
-  """
-
-  config = _messages.StringField(1, required=True)
-  removeGitLabConnectedRepositoryRequest = _messages.MessageField('RemoveGitLabConnectedRepositoryRequest', 2)
-
-
-class CloudbuildProjectsLocationsGitLabConfigsReposListRequest(_messages.Message):
-  r"""A CloudbuildProjectsLocationsGitLabConfigsReposListRequest object.
-
-  Fields:
-    pageSize: The maximum number of repositories to return. The service may
-      return fewer than this value.
-    pageToken: A page token, received from a previous
-      ListGitLabRepositoriesRequest` call. Provide this to retrieve the
-      subsequent page. When paginating, all other parameters provided to
-      `ListGitLabRepositoriesRequest` must match the call that provided the
-      page token.
-    parent: Required. Name of the parent resource.
-  """
-
-  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
-
-
 class CloudbuildProjectsLocationsGithubEnterpriseConfigsCreateRequest(_messages.Message):
   r"""A CloudbuildProjectsLocationsGithubEnterpriseConfigsCreateRequest
   object.
@@ -2945,37 +2773,6 @@ class CreateGitHubEnterpriseConfigOperationMetadata(_messages.Message):
   githubEnterpriseConfig = _messages.StringField(3)
 
 
-class CreateGitLabConfigOperationMetadata(_messages.Message):
-  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated. Metadata for
-  `CreateGitLabConfig` operation.
-
-  Fields:
-    completeTime: Time the operation was completed.
-    createTime: Time the operation was created.
-    gitlabConfig: The resource name of the GitLabConfig to be created. Format:
-      `projects/{project}/locations/{location}/gitlabConfigs/{id}`.
-  """
-
-  completeTime = _messages.StringField(1)
-  createTime = _messages.StringField(2)
-  gitlabConfig = _messages.StringField(3)
-
-
-class CreateGitLabConnectedRepositoryRequest(_messages.Message):
-  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated. Request to
-  connect a repository from a connected GitLab host.
-
-  Fields:
-    gitlabConnectedRepository: Required. The GitLab repository to connect.
-    parent: Required. The name of the `GitLabConfig` that adds connected
-      repository. Format:
-      `projects/{project}/locations/{location}/gitLabConfigs/{config}`
-  """
-
-  gitlabConnectedRepository = _messages.MessageField('GitLabConnectedRepository', 1)
-  parent = _messages.StringField(2)
-
-
 class CreateWorkerPoolOperationMetadata(_messages.Message):
   r"""Metadata for the `CreateWorkerPool` operation.
 
@@ -3069,22 +2866,6 @@ class DeleteGitHubEnterpriseConfigOperationMetadata(_messages.Message):
   completeTime = _messages.StringField(1)
   createTime = _messages.StringField(2)
   githubEnterpriseConfig = _messages.StringField(3)
-
-
-class DeleteGitLabConfigOperationMetadata(_messages.Message):
-  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated. Metadata for
-  `DeleteGitLabConfig` operation.
-
-  Fields:
-    completeTime: Time the operation was completed.
-    createTime: Time the operation was created.
-    gitlabConfig: The resource name of the GitLabConfig to be created. Format:
-      `projects/{project}/locations/{location}/gitlabConfigs/{id}`.
-  """
-
-  completeTime = _messages.StringField(1)
-  createTime = _messages.StringField(2)
-  gitlabConfig = _messages.StringField(3)
 
 
 class DeleteWorkerPoolOperationMetadata(_messages.Message):
@@ -3530,148 +3311,6 @@ class GitHubRepositorySettingList(_messages.Message):
   """
 
   repositorySettings = _messages.MessageField('GitHubRepositorySetting', 1, repeated=True)
-
-
-class GitLabConfig(_messages.Message):
-  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated. GitLabConfig
-  represents the configuration for a GitLab integration.
-
-  Fields:
-    connectedRepositories: Connected GitLab.com or GitLabEnterprise
-      repositories for this config.
-    createTime: Output only. Time when the config was created.
-    enterpriseConfig: Optional. GitLabEnterprise config.
-    name: Identifier. The resource name for the config.
-    secrets: Required. Secret Manager secrets needed by the config.
-    username: Username of the GitLab.com or GitLab Enterprise account Cloud
-      Build will use.
-    webhookKey: Output only. UUID included in webhook requests. The UUID is
-      used to look up the corresponding config.
-  """
-
-  connectedRepositories = _messages.MessageField('GitLabRepositoryId', 1, repeated=True)
-  createTime = _messages.StringField(2)
-  enterpriseConfig = _messages.MessageField('GitLabEnterpriseConfig', 3)
-  name = _messages.StringField(4)
-  secrets = _messages.MessageField('GitLabSecrets', 5)
-  username = _messages.StringField(6)
-  webhookKey = _messages.StringField(7)
-
-
-class GitLabConnectedRepository(_messages.Message):
-  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated.
-  GitLabConnectedRepository represents a GitLab connected repository request
-  response.
-
-  Fields:
-    parent: The name of the `GitLabConfig` that added connected repository.
-      Format: `projects/{project}/locations/{location}/gitLabConfigs/{config}`
-    repo: The GitLab repositories to connect.
-    status: Output only. The status of the repo connection request.
-  """
-
-  parent = _messages.StringField(1)
-  repo = _messages.MessageField('GitLabRepositoryId', 2)
-  status = _messages.MessageField('Status', 3)
-
-
-class GitLabEnterpriseConfig(_messages.Message):
-  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated.
-  GitLabEnterpriseConfig represents the configuration for a GitLabEnterprise
-  integration.
-
-  Fields:
-    hostUri: Immutable. The URI of the GitlabEnterprise host.
-    serviceDirectoryConfig: The Service Directory configuration to be used
-      when reaching out to the GitLab Enterprise instance.
-    sslCa: The SSL certificate to use in requests to GitLab Enterprise
-      instances.
-  """
-
-  hostUri = _messages.StringField(1)
-  serviceDirectoryConfig = _messages.MessageField('ServiceDirectoryConfig', 2)
-  sslCa = _messages.StringField(3)
-
-
-class GitLabEventsConfig(_messages.Message):
-  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated.
-  GitLabEventsConfig describes the configuration of a trigger that creates a
-  build whenever a GitLab event is received.
-
-  Fields:
-    gitlabConfig: Output only. The GitLabConfig specified in the
-      gitlab_config_resource field.
-    gitlabConfigResource: The GitLab config resource that this trigger config
-      maps to.
-    projectNamespace: Namespace of the GitLab project.
-    pullRequest: Filter to match changes in pull requests.
-    push: Filter to match changes in refs like branches, tags.
-  """
-
-  gitlabConfig = _messages.MessageField('GitLabConfig', 1)
-  gitlabConfigResource = _messages.StringField(2)
-  projectNamespace = _messages.StringField(3)
-  pullRequest = _messages.MessageField('PullRequestFilter', 4)
-  push = _messages.MessageField('PushFilter', 5)
-
-
-class GitLabRepository(_messages.Message):
-  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated. Proto
-  Representing a GitLabRepository
-
-  Fields:
-    browseUri: Link to the browse repo page on the GitLab instance
-    description: Description of the repository
-    displayName: Display name of the repository
-    name: The resource name of the repository
-    repositoryId: Identifier for a repository
-  """
-
-  browseUri = _messages.StringField(1)
-  description = _messages.StringField(2)
-  displayName = _messages.StringField(3)
-  name = _messages.StringField(4)
-  repositoryId = _messages.MessageField('GitLabRepositoryId', 5)
-
-
-class GitLabRepositoryId(_messages.Message):
-  r"""GitLabRepositoryId identifies a specific repository hosted on GitLab.com
-  or GitLabEnterprise
-
-  Fields:
-    id: Required. Identifier for the repository. example: "namespace/project-
-      slug", namespace is usually the username or group ID
-    webhookId: Output only. The ID of the webhook that was created for
-      receiving events from this repo. We only create and manage a single
-      webhook for each repo.
-  """
-
-  id = _messages.StringField(1)
-  webhookId = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-
-
-class GitLabSecrets(_messages.Message):
-  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated.
-  GitLabSecrets represents the secrets in Secret Manager for a GitLab
-  integration.
-
-  Fields:
-    apiAccessTokenVersion: Required. The resource name for the api access
-      token's secret version
-    apiKeyVersion: Required. Immutable. API Key that will be attached to
-      webhook requests from GitLab to Cloud Build.
-    readAccessTokenVersion: Required. The resource name for the read access
-      token's secret version
-    webhookSecretVersion: Required. Immutable. The resource name for the
-      webhook secret's secret version. Once this field has been set, it cannot
-      be changed. If you need to change it, please create another
-      GitLabConfig.
-  """
-
-  apiAccessTokenVersion = _messages.StringField(1)
-  apiKeyVersion = _messages.StringField(2)
-  readAccessTokenVersion = _messages.StringField(3)
-  webhookSecretVersion = _messages.StringField(4)
 
 
 class GitRepoSource(_messages.Message):
@@ -4260,34 +3899,6 @@ class ListGitHubInstallationsResponse(_messages.Message):
   """
 
   installations = _messages.MessageField('Installation', 1, repeated=True)
-
-
-class ListGitLabConfigsResponse(_messages.Message):
-  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated. RPC response
-  object returned by ListGitLabConfigs RPC method.
-
-  Fields:
-    gitlabConfigs: A list of GitLabConfigs
-    nextPageToken: A token that can be sent as `page_token` to retrieve the
-      next page If this field is omitted, there are no subsequent pages.
-  """
-
-  gitlabConfigs = _messages.MessageField('GitLabConfig', 1, repeated=True)
-  nextPageToken = _messages.StringField(2)
-
-
-class ListGitLabRepositoriesResponse(_messages.Message):
-  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated. RPC response
-  object returned by the ListGitLabRepositories RPC method.
-
-  Fields:
-    gitlabRepositories: List of GitLab repositories
-    nextPageToken: A token that can be sent as `page_token` to retrieve the
-      next page. If this field is omitted, there are no subsequent pages.
-  """
-
-  gitlabRepositories = _messages.MessageField('GitLabRepository', 1, repeated=True)
-  nextPageToken = _messages.StringField(2)
 
 
 class ListGithubEnterpriseConfigsResponse(_messages.Message):
@@ -4937,17 +4548,6 @@ class RemoveBitbucketServerConnectedRepositoryRequest(_messages.Message):
   connectedRepository = _messages.MessageField('BitbucketServerRepositoryId', 1)
 
 
-class RemoveGitLabConnectedRepositoryRequest(_messages.Message):
-  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated. RPC request
-  object accepted by RemoveGitLabConnectedRepository RPC method.
-
-  Fields:
-    connectedRepository: The connected repository to remove.
-  """
-
-  connectedRepository = _messages.MessageField('GitLabRepositoryId', 1)
-
-
 class RepoSource(_messages.Message):
   r"""Location of the source in a Google Cloud Source Repository.
 
@@ -5257,19 +4857,6 @@ class SecurityConfig(_messages.Message):
 
   containerAnalysisStorage = _messages.MessageField('ContainerAnalysisStorage', 1)
   provenancePublicKey = _messages.StringField(2)
-
-
-class ServiceDirectoryConfig(_messages.Message):
-  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated.
-  ServiceDirectoryConfig represents Service Directory configuration for a SCM
-  host connection.
-
-  Fields:
-    service: The Service Directory service name. Format: projects/{project}/lo
-      cations/{location}/namespaces/{namespace}/services/{service}.
-  """
-
-  service = _messages.StringField(1)
 
 
 class Source(_messages.Message):
@@ -5720,22 +5307,6 @@ class UpdateGitHubEnterpriseConfigOperationMetadata(_messages.Message):
   completeTime = _messages.StringField(1)
   createTime = _messages.StringField(2)
   githubEnterpriseConfig = _messages.StringField(3)
-
-
-class UpdateGitLabConfigOperationMetadata(_messages.Message):
-  r"""Deprecated: CloudBuild GitLab V1 integration is deprecated. Metadata for
-  `UpdateGitLabConfig` operation.
-
-  Fields:
-    completeTime: Time the operation was completed.
-    createTime: Time the operation was created.
-    gitlabConfig: The resource name of the GitLabConfig to be created. Format:
-      `projects/{project}/locations/{location}/gitlabConfigs/{id}`.
-  """
-
-  completeTime = _messages.StringField(1)
-  createTime = _messages.StringField(2)
-  gitlabConfig = _messages.StringField(3)
 
 
 class UpdateWorkerPoolOperationMetadata(_messages.Message):

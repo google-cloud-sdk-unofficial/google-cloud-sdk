@@ -42,6 +42,12 @@ DETAILED_HELP = {
         """),
 }
 
+_PROJECT_SCOPE_SUPPORTED_TRACKS = (
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+)
+
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -52,7 +58,12 @@ class Update(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    sp_flags.AddSecurityProfileResource(parser, cls.ReleaseTrack())
+    project_scope_supported = (
+        cls.ReleaseTrack() in _PROJECT_SCOPE_SUPPORTED_TRACKS
+    )
+    sp_flags.AddSecurityProfileResource(
+        parser, cls.ReleaseTrack(), project_scope_supported
+    )
     sp_flags.AddProfileDescription(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, False)
@@ -132,15 +143,21 @@ class Update(base.UpdateCommand):
     labels_util.AddUpdateLabelsFlags(parser)
 
   def Run(self, args):
-    client = wildfire_api.Client(self.ReleaseTrack())
-    security_profile = args.CONCEPTS.security_profile.Parse()
+    result = args.CONCEPTS.security_profile.Parse()
+    security_profile = result.result
+
+    project_scoped = (
+        result.concept_type.name
+        == sp_flags.PROJECT_SECURITY_PROFILE_RESOURCE_COLLECTION
+    )
+    client = wildfire_api.Client(self.ReleaseTrack(), project_scoped)
     is_async = args.async_
 
     labels_update = labels_util.ProcessUpdateArgsLazy(
         args,
         client.messages.SecurityProfile.LabelsValue,
         orig_labels_thunk=lambda: client.GetSecurityProfile(
-            security_profile.result.RelativeName()
+            security_profile.RelativeName()
         ).labels,
     )
 
@@ -180,7 +197,7 @@ class Update(base.UpdateCommand):
       )
 
     response = client.UpdateWildfireAnalysisProfile(
-        name=security_profile.result.RelativeName(),
+        name=security_profile.RelativeName(),
         labels=labels_update.GetOrNone(),
         **kwargs,
     )
@@ -196,7 +213,7 @@ class Update(base.UpdateCommand):
     return client.WaitForOperation(
         operation_ref=client.GetOperationsRef(response),
         message='Waiting for security-profile [{}] to be updated'.format(
-            security_profile.result.RelativeName()
+            security_profile.RelativeName()
         ),
         has_result=True,
     )

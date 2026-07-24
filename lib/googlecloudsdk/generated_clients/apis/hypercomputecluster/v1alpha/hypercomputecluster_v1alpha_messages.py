@@ -1848,6 +1848,36 @@ class HypercomputeclusterProjectsLocationsMachineLearningRunsProfilerTargetsList
   parent = _messages.StringField(3, required=True)
 
 
+class HypercomputeclusterProjectsLocationsMachineLearningRunsStartContinuousProfilingRequest(_messages.Message):
+  r"""A HypercomputeclusterProjectsLocationsMachineLearningRunsStartContinuous
+  ProfilingRequest object.
+
+  Fields:
+    name: Required. The name of the MachineLearningRun to start profiling for.
+      Format: projects/*/locations/*/machineLearningRuns/*
+    startContinuousProfilingRequest: A StartContinuousProfilingRequest
+      resource to be passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  startContinuousProfilingRequest = _messages.MessageField('StartContinuousProfilingRequest', 2)
+
+
+class HypercomputeclusterProjectsLocationsMachineLearningRunsStopContinuousProfilingRequest(_messages.Message):
+  r"""A HypercomputeclusterProjectsLocationsMachineLearningRunsStopContinuousP
+  rofilingRequest object.
+
+  Fields:
+    name: Required. The name of the MachineLearningRun to stop profiling for.
+      Format: projects/*/locations/*/machineLearningRuns/*
+    stopContinuousProfilingRequest: A StopContinuousProfilingRequest resource
+      to be passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  stopContinuousProfilingRequest = _messages.MessageField('StopContinuousProfilingRequest', 2)
+
+
 class HypercomputeclusterProjectsLocationsOperationsCancelRequest(_messages.Message):
   r"""A HypercomputeclusterProjectsLocationsOperationsCancelRequest object.
 
@@ -2318,6 +2348,10 @@ class ManagedInstanceGroup(_messages.Message):
     bootDisk: Optional. Boot disk for the managed instance group.
     computeId: Required. ID of the compute resource used to create this
       managed instance group.
+    instanceGroupManager: Output only. Name of the managed instance group, in
+      the format `projects/{project}/zones/{zone}/instanceGroupManagers/{insta
+      nce_group_manager}`. or `projects/{project}/regions/{region}/instanceGro
+      upManagers/{instance_group_manager}`
     instanceTemplate: Output only. Instance template used to create instances
       in this group.
     resourcePolicyConfig: Optional. Resource policy configuration for this
@@ -2330,10 +2364,11 @@ class ManagedInstanceGroup(_messages.Message):
 
   bootDisk = _messages.MessageField('BootDisk', 1)
   computeId = _messages.StringField(2)
-  instanceTemplate = _messages.StringField(3)
-  resourcePolicyConfig = _messages.MessageField('ResourcePolicyConfig', 4)
-  storageConfigs = _messages.MessageField('StorageConfig', 5, repeated=True)
-  targetSize = _messages.IntegerField(6)
+  instanceGroupManager = _messages.StringField(3)
+  instanceTemplate = _messages.StringField(4)
+  resourcePolicyConfig = _messages.MessageField('ResourcePolicyConfig', 5)
+  storageConfigs = _messages.MessageField('StorageConfig', 6, repeated=True)
+  targetSize = _messages.IntegerField(7)
 
 
 class Metrics(_messages.Message):
@@ -4001,6 +4036,82 @@ class StandardQueryParameters(_messages.Message):
   upload_protocol = _messages.StringField(12)
 
 
+class StartContinuousProfilingRequest(_messages.Message):
+  r"""Request message for MachineLearningRuns.StartContinuousProfiling.
+
+  Enums:
+    DeviceTracerLevelValueValuesEnum: Optional. The device tracer level for
+      the continuous profiling activity.
+    HostTracerLevelValueValuesEnum: Optional. The host tracer level for the
+      continuous profiling activity.
+    PythonTracerLevelValueValuesEnum: Optional. The python tracer level for
+      the continuous profiling activity.
+
+  Fields:
+    deviceTracerLevel: Optional. The device tracer level for the continuous
+      profiling activity.
+    hostTracerLevel: Optional. The host tracer level for the continuous
+      profiling activity.
+    profilerTargets: Optional. Targets actively being profiled. If not
+      specified, all targets in the run will be profiled.
+    pythonTracerLevel: Optional. The python tracer level for the continuous
+      profiling activity.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. The request ID must be a valid UUID.
+  """
+
+  class DeviceTracerLevelValueValuesEnum(_messages.Enum):
+    r"""Optional. The device tracer level for the continuous profiling
+    activity.
+
+    Values:
+      DEVICE_TRACER_LEVEL_UNSPECIFIED: Tracer level is unspecified.
+      DEVICE_TRACER_LEVEL_DISABLED: Tracer level is disabled.
+      DEVICE_TRACER_LEVEL_ENABLED: Tracer level is enabled.
+    """
+    DEVICE_TRACER_LEVEL_UNSPECIFIED = 0
+    DEVICE_TRACER_LEVEL_DISABLED = 1
+    DEVICE_TRACER_LEVEL_ENABLED = 2
+
+  class HostTracerLevelValueValuesEnum(_messages.Enum):
+    r"""Optional. The host tracer level for the continuous profiling activity.
+
+    Values:
+      HOST_TRACER_LEVEL_UNSPECIFIED: Tracer level is unspecified.
+      HOST_TRACER_LEVEL_DISABLED: Tracer level is disabled.
+      HOST_TRACER_LEVEL_CRITICAL: Tracer level is critical.
+      HOST_TRACER_LEVEL_INFO: Tracer level is info.
+      HOST_TRACER_LEVEL_VERBOSE: Tracer level is verbose.
+    """
+    HOST_TRACER_LEVEL_UNSPECIFIED = 0
+    HOST_TRACER_LEVEL_DISABLED = 1
+    HOST_TRACER_LEVEL_CRITICAL = 2
+    HOST_TRACER_LEVEL_INFO = 3
+    HOST_TRACER_LEVEL_VERBOSE = 4
+
+  class PythonTracerLevelValueValuesEnum(_messages.Enum):
+    r"""Optional. The python tracer level for the continuous profiling
+    activity.
+
+    Values:
+      PYTHON_TRACER_LEVEL_UNSPECIFIED: Tracer level is unspecified.
+      PYTHON_TRACER_LEVEL_DISABLED: Tracer level is disabled.
+      PYTHON_TRACER_LEVEL_ENABLED: Tracer level is enabled.
+    """
+    PYTHON_TRACER_LEVEL_UNSPECIFIED = 0
+    PYTHON_TRACER_LEVEL_DISABLED = 1
+    PYTHON_TRACER_LEVEL_ENABLED = 2
+
+  deviceTracerLevel = _messages.EnumField('DeviceTracerLevelValueValuesEnum', 1)
+  hostTracerLevel = _messages.EnumField('HostTracerLevelValueValuesEnum', 2)
+  profilerTargets = _messages.StringField(3, repeated=True)
+  pythonTracerLevel = _messages.EnumField('PythonTracerLevelValueValuesEnum', 4)
+  requestId = _messages.StringField(5)
+
+
 class Status(_messages.Message):
   r"""The `Status` type defines a logical error model that is suitable for
   different programming environments, including REST APIs and RPC APIs. It is
@@ -4050,6 +4161,20 @@ class Status(_messages.Message):
   code = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   details = _messages.MessageField('DetailsValueListEntry', 2, repeated=True)
   message = _messages.StringField(3)
+
+
+class StopContinuousProfilingRequest(_messages.Message):
+  r"""Request message for MachineLearningRuns.StopContinuousProfiling.
+
+  Fields:
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. The request ID must be a valid UUID.
+  """
+
+  requestId = _messages.StringField(1)
 
 
 class StorageConfig(_messages.Message):

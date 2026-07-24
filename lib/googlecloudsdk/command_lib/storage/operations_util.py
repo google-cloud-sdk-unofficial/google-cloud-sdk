@@ -26,7 +26,7 @@ _BUCKET_AND_ID_OPERATION_NAME_REGEX = (
 )
 _LOCATION_OPERATION_NAME_REGEX = r'projects/(?P<project>[^/]+)/locations/(?P<location>[^/]+)/operations/(?P<id>.+)'
 _LOCATION_PARENT_REGEX = (
-    r'projects/(?P<project>[^/]+)/locations/(?P<location>[^/]+)$'
+    r'projects/(?P<project>[^/]+)/locations/(?P<location>[^/]+)/operations$'
 )
 
 

@@ -186,6 +186,7 @@ class Create(base.CreateCommand):
     flags.AddDestroyScheduledDurationFlag(parser)
     flags.AddCryptoKeyBackendFlag(parser)
     flags.AddAllowedAccessReasonsFlag(parser)
+    flags.AddHsmTrustedWrappingFlag(parser)
 
   def _CreateRequest(self, args):
     messages = cloudkms_base.GetMessagesModule()
@@ -232,6 +233,9 @@ class Create(base.CreateCommand):
     flags.SetRotationPeriod(args, req.cryptoKey)
     flags.SetDestroyScheduledDuration(args, req.cryptoKey)
     flags.SetKeyAccessJustificationsPolicy(args, req.cryptoKey)
+
+    if args.IsSpecified('hsm_trusted_wrapping'):
+      req.trustedWrappingEnabled = args.hsm_trusted_wrapping
 
     return req
 

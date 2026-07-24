@@ -108,7 +108,7 @@ class UnsupportedFlagMapping(FlagMapping):
     def raise_unsupported_flag_error(x: Union[str, bool]) -> Union[str, bool]:
       raise BigqueryGcloudDelegationUserError(error_message)
 
-    super().__init__(bq_name, 'unsupported_flag', raise_unsupported_flag_error)
+    super().__init__(bq_name, 'unsupported_flag', raise_unsupported_flag_error)  # pyrefly: ignore[bad-argument-type]
 
 
 def _convert_to_gcloud_flags(
@@ -215,7 +215,7 @@ class CommandMapping:
     self.bq_command = bq_command
     self.gcloud_command = gcloud_command
     self.flag_mapping_list = flag_mapping_list or []
-    self._flag_mappings: Dict[str, FlagMapping] = None
+    self._flag_mappings: Dict[str, FlagMapping] = None  # pyrefly: ignore[bad-assignment]
     self.table_projection = table_projection
     self.csv_projection = csv_projection
     self.json_mapping = json_mapping if json_mapping else lambda x, _: x
@@ -300,7 +300,7 @@ class CommandMapping:
           f'--format={gcloud_format}',
       )
     gcloud_command.extend(
-        _flatten_flag_dictionary(self._get_gcloud_flags(bq_command_flags))
+        _flatten_flag_dictionary(self._get_gcloud_flags(bq_command_flags))  # pyrefly: ignore[bad-argument-type]
     )
     if self.no_prompts:
       gcloud_command.append('--quiet')
@@ -446,7 +446,7 @@ class GcloudCommandGenerator:
     bq_format = filtered_global_flags.pop('format', 'sparse')
 
     gcloud_global_flags: List[str] = _flatten_flag_dictionary(
-        self.map_to_gcloud_global_flags(filtered_global_flags)
+        self.map_to_gcloud_global_flags(filtered_global_flags)  # pyrefly: ignore[bad-argument-type]
     )
 
     return (

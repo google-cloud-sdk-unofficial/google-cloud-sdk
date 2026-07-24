@@ -50,6 +50,7 @@ class Instance(container_resource.ContainerResource):
   PLAY_SYMBOL = '\N{BLACK RIGHT-POINTING TRIANGLE}'
   PAUSED_SYMBOL = '\N{DOUBLE VERTICAL BAR}'
   CHECK_MARK_SYMBOL = '\N{HEAVY CHECK MARK}'
+  SQUARE_SYMBOL = '\N{BLACK SQUARE}'
 
   OPERATION_ID_ANNOTATION = 'run.googleapis.com/operation-id'
   INSTANCE_SSH_ENABLED_ANNOTATION = 'run.googleapis.com/ssh-enabled'
@@ -62,7 +63,7 @@ class Instance(container_resource.ContainerResource):
           best=PLAY_SYMBOL, alt='+', color='green'
       ),
       InstanceStatus.STOPPED: InstanceSymbol(
-          best=PAUSED_SYMBOL, alt='-', color='blue'
+          best=SQUARE_SYMBOL, alt='-', color=None
       ),
       InstanceStatus.COMPLETED: InstanceSymbol(best=CHECK_MARK_SYMBOL, alt='+'),
       InstanceStatus.FAILED: InstanceSymbol(best='X', alt='X', color='red'),

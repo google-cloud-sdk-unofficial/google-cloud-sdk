@@ -47,7 +47,10 @@ class Trigger(calliope_base.Command):
     )
     group.add_argument(
         "--runner",
-        help="The full resource name to trigger a pipeline from.",
+        help=(
+            "The full resource name of the runner to "
+            "trigger a pipeline from."
+        ),
     )
     parser.add_argument(
         "--bundle",

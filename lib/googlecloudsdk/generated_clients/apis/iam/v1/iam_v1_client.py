@@ -1266,6 +1266,33 @@ class IamV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def SuggestWorkspaceLinkAttributeMapping(self, request, global_params=None):
+      r"""Suggests Workspace Link attribute mapping for a given workforce pool.
+
+      Args:
+        request: (IamLocationsWorkforcePoolsSuggestWorkspaceLinkAttributeMappingRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SuggestWorkspaceLinkAttributeMappingResponse) The response message.
+      """
+      config = self.GetMethodConfig('SuggestWorkspaceLinkAttributeMapping')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SuggestWorkspaceLinkAttributeMapping.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/locations/{locationsId}/workforcePools/{workforcePoolsId}:suggestWorkspaceLinkAttributeMapping',
+        http_method='GET',
+        method_id='iam.locations.workforcePools.suggestWorkspaceLinkAttributeMapping',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:suggestWorkspaceLinkAttributeMapping',
+        request_field='',
+        request_type_name='IamLocationsWorkforcePoolsSuggestWorkspaceLinkAttributeMappingRequest',
+        response_type_name='SuggestWorkspaceLinkAttributeMappingResponse',
+        supports_download=False,
+    )
+
     def TestIamPermissions(self, request, global_params=None):
       r"""Returns the caller's permissions on the WorkforcePool. If the pool doesn't exist, this call returns an empty set of permissions. It doesn't return a `NOT_FOUND` error.
 

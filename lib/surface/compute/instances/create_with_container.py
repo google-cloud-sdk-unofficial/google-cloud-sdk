@@ -185,7 +185,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_max_run_duration = True
   _support_graceful_shutdown = True
   _support_skip_guest_os_shutdown = True
-  _support_workload_identity_config = False
+  _support_workload_identity_config = True
   _support_vsock_mode = False
 
   @staticmethod
@@ -203,7 +203,7 @@ class CreateWithContainer(base.CreateCommand):
         support_disk_labels=False,
         support_ipv6_only=True,
         support_skip_guest_os_shutdown=True,
-        support_workload_identity_config=False,
+        support_workload_identity_config=True,
         support_vsock_mode=False,
     )
     instances_flags.AddNetworkTierArgs(parser, instance=True)
@@ -571,7 +571,7 @@ class CreateWithContainerBeta(CreateWithContainer):
   _support_any_reservation_then_fail_affinity = True
   _support_disk_labels = True
   _support_skip_guest_os_shutdown = True
-  _support_workload_identity_config = False
+  _support_workload_identity_config = True
 
   @staticmethod
   def Args(parser):
@@ -589,7 +589,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         support_ipv6_only=True,
         support_flex_start=True,
         support_skip_guest_os_shutdown=True,
-        support_workload_identity_config=False,
+        support_workload_identity_config=True,
         support_vsock_mode=False,
     )
     instances_flags.AddNetworkTierArgs(parser, instance=True)

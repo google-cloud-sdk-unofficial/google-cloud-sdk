@@ -47,12 +47,12 @@ class NewCmd(appcommands.Cmd):
     run_with_args = getattr(self, 'RunWithArgs', None)
     self._new_style = isinstance(run_with_args, types.MethodType)
     if self._new_style:
-      func = run_with_args.__func__
+      func = run_with_args.__func__  # pyrefly: ignore[missing-attribute]
       code = func.__code__  # pylint: disable=redefined-outer-name
       self._full_arg_list = list(code.co_varnames[: code.co_argcount])
       # TODO(user): There might be some corner case where this
       # is *not* the right way to determine bound vs. unbound method.
-      if isinstance(run_with_args.__self__, run_with_args.__self__.__class__):
+      if isinstance(run_with_args.__self__, run_with_args.__self__.__class__):  # pyrefly: ignore[missing-attribute]
         self._full_arg_list.pop(0)
       self._max_args = len(self._full_arg_list)
       self._min_args = self._max_args - len(func.__defaults__ or [])
@@ -269,7 +269,7 @@ class BigqueryCmd(NewCmd):
     if bq_auth_flags.USE_GOOGLE_AUTH.value:
       return False
     return not _UseServiceAccount() and not (
-        os.path.exists(bq_utils.GetBigqueryRcFilename())
+        os.path.exists(bq_utils.GetBigqueryRcFilename())  # pyrefly: ignore[bad-argument-type]
         or os.path.exists(FLAGS.credential_file)
     )
 
@@ -297,7 +297,7 @@ class BigqueryCmd(NewCmd):
       return_value = e.code
     except BaseException as e:  # pylint: disable=broad-exception-caught
       return bq_error_utils.process_error(e, name=self._command_name)
-    return return_value
+    return return_value  # pyrefly: ignore[bad-return]
 
   def PrintJobStartInfo(self, job) -> None:
     """Print a simple status line."""

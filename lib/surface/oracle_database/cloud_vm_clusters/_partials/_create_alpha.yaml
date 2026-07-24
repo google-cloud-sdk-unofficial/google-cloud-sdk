@@ -343,6 +343,17 @@
       resource_method_params:
         cloudVmCluster.backupOdbSubnet: '{__relative_name__}'
       required: false
+    - arg_name: odb-dns-zone
+      help_text: |-
+        The name of the OdbDnsZone for using custom domain name for the VM Cluster.
+        Format:
+        projects/{project}/locations/{location}/odbNetworks/{odb_network}/odbDnsZones/{odb_dns_zone}
+      is_positional: false
+      is_primary_resource: false
+      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_odb_networks_odb_dns_zones
+      resource_method_params:
+        cloudVmCluster.odbDnsZone: '{__relative_name__}'
+      required: false
     - arg_name: exascale-db-storage-vault
       help_text: |-
         The name of ExascaleDbStorageVault associated with the VM Cluster.

@@ -23349,6 +23349,32 @@ To prevent failure, Google recommends that you set the
         supports_download=False,
     )
 
+    def DeleteNamedSet(self, request, global_params=None):
+      r"""Deletes Named Set.
+
+      Args:
+        request: (ComputeRoutersDeleteNamedSetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('DeleteNamedSet')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    DeleteNamedSet.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.routers.deleteNamedSet',
+        ordered_params=['project', 'region', 'router'],
+        path_params=['project', 'region', 'router'],
+        query_params=['namedSet', 'requestId'],
+        relative_path='projects/{project}/regions/{region}/routers/{router}/deleteNamedSet',
+        request_field='',
+        request_type_name='ComputeRoutersDeleteNamedSetRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def DeleteRoutePolicy(self, request, global_params=None):
       r"""Deletes Route Policy.
 
@@ -23398,6 +23424,32 @@ To prevent failure, Google recommends that you set the
         request_field='',
         request_type_name='ComputeRoutersGetRequest',
         response_type_name='Router',
+        supports_download=False,
+    )
+
+    def GetNamedSet(self, request, global_params=None):
+      r"""Returns specified Named Set.
+
+      Args:
+        request: (ComputeRoutersGetNamedSetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (RoutersGetNamedSetResponse) The response message.
+      """
+      config = self.GetMethodConfig('GetNamedSet')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetNamedSet.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.routers.getNamedSet',
+        ordered_params=['project', 'region', 'router'],
+        path_params=['project', 'region', 'router'],
+        query_params=['namedSet'],
+        relative_path='projects/{project}/regions/{region}/routers/{router}/getNamedSet',
+        request_field='',
+        request_type_name='ComputeRoutersGetNamedSetRequest',
+        response_type_name='RoutersGetNamedSetResponse',
         supports_download=False,
     )
 
@@ -23584,6 +23636,33 @@ the data included in the request.
         supports_download=False,
     )
 
+    def ListNamedSets(self, request, global_params=None):
+      r"""Retrieves a list of router named set subresources available to the.
+specified project.
+
+      Args:
+        request: (ComputeRoutersListNamedSetsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (RoutersListNamedSets) The response message.
+      """
+      config = self.GetMethodConfig('ListNamedSets')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ListNamedSets.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.routers.listNamedSets',
+        ordered_params=['project', 'region', 'router'],
+        path_params=['project', 'region', 'router'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess'],
+        relative_path='projects/{project}/regions/{region}/routers/{router}/listNamedSets',
+        request_field='',
+        request_type_name='ComputeRoutersListNamedSetsRequest',
+        response_type_name='RoutersListNamedSets',
+        supports_download=False,
+    )
+
     def ListRoutePolicies(self, request, global_params=None):
       r"""Retrieves a list of router route policy subresources available to the.
 specified project.
@@ -23636,6 +23715,32 @@ patch format and processing rules.
         relative_path='projects/{project}/regions/{region}/routers/{router}',
         request_field='routerResource',
         request_type_name='ComputeRoutersPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def PatchNamedSet(self, request, global_params=None):
+      r"""Patches Named Set.
+
+      Args:
+        request: (ComputeRoutersPatchNamedSetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('PatchNamedSet')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    PatchNamedSet.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.routers.patchNamedSet',
+        ordered_params=['project', 'region', 'router'],
+        path_params=['project', 'region', 'router'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/regions/{region}/routers/{router}/patchNamedSet',
+        request_field='namedSet',
+        request_type_name='ComputeRoutersPatchNamedSetRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -23718,6 +23823,32 @@ representation enclosed in the request message payload.
         relative_path='projects/{project}/regions/{region}/routers/{router}',
         request_field='routerResource',
         request_type_name='ComputeRoutersUpdateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def UpdateNamedSet(self, request, global_params=None):
+      r"""Updates or creates new Named Set.
+
+      Args:
+        request: (ComputeRoutersUpdateNamedSetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('UpdateNamedSet')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    UpdateNamedSet.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.routers.updateNamedSet',
+        ordered_params=['project', 'region', 'router'],
+        path_params=['project', 'region', 'router'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/regions/{region}/routers/{router}/updateNamedSet',
+        request_field='namedSet',
+        request_type_name='ComputeRoutersUpdateNamedSetRequest',
         response_type_name='Operation',
         supports_download=False,
     )

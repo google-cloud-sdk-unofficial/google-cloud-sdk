@@ -1,0 +1,33 @@
+release_tracks: [ALPHA, BETA, GA, PREVIEW]
+help_text:
+  brief: Test IAM permissions for a Compute Engine node group.
+  description: |
+    Returns permissions that a caller has on the specified node group.
+  examples: |
+    To test if the caller has 'compute.nodeGroups.get' permission on a node group, run:
+
+      $ {command} my-node-group --zone=ZONE --permissions=compute.nodeGroups.get
+
+request:
+  collection: compute.nodeGroups
+  use_relative_name: false
+  method: testIamPermissions
+  api_version: v1
+  BETA:
+    api_version: beta
+  ALPHA:
+    api_version: alpha
+
+command_type: GENERIC
+
+arguments:
+  resource:
+    help_text: The ID of the node group to test the IAM permissions for.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:node_group
+  params:
+  - arg_name: permissions
+    api_field: testPermissionsRequest.permissions
+    required: true
+    repeated: true
+    help_text: |-
+      The permissions to test.

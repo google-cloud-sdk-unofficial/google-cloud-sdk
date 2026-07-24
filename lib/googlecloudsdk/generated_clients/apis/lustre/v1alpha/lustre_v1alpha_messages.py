@@ -518,6 +518,9 @@ class Instance(_messages.Message):
       ranges depend on the selected algorithm: - LZ4: 1 to 12 - ZSTD: 1 to 22
       Higher levels generally offer better compression ratios but may increase
       CPU usage.
+    irdmaNetwork: Optional. Immutable. The full name of the VPC network to
+      which the instance is connected via iRDMA. Must be in the format
+      `projects/{project_id}/global/networks/{network_name}`.
     kmsKey: Optional. Immutable. The Cloud KMS key name to use for data
       encryption. If not set, the instance will use Google-managed encryption
       keys. If set, the instance will use customer-managed encryption keys.
@@ -643,21 +646,22 @@ class Instance(_messages.Message):
   iamAccessControlEnabled = _messages.BooleanField(9)
   initialCompressionAlgorithm = _messages.EnumField('InitialCompressionAlgorithmValueValuesEnum', 10)
   initialCompressionLevel = _messages.IntegerField(11, variant=_messages.Variant.INT32)
-  kmsKey = _messages.StringField(12)
-  labels = _messages.MessageField('LabelsValue', 13)
-  maintenancePolicy = _messages.MessageField('MaintenancePolicy', 14)
-  mountPoint = _messages.StringField(15)
-  name = _messages.StringField(16)
-  network = _messages.StringField(17)
-  perUnitStorageThroughput = _messages.IntegerField(18)
-  placementPolicy = _messages.StringField(19)
-  satisfiesPzi = _messages.BooleanField(20)
-  satisfiesPzs = _messages.BooleanField(21)
-  state = _messages.EnumField('StateValueValuesEnum', 22)
-  stateReason = _messages.StringField(23)
-  uid = _messages.StringField(24)
-  upcomingMaintenanceSchedule = _messages.MessageField('MaintenanceSchedule', 25)
-  updateTime = _messages.StringField(26)
+  irdmaNetwork = _messages.StringField(12)
+  kmsKey = _messages.StringField(13)
+  labels = _messages.MessageField('LabelsValue', 14)
+  maintenancePolicy = _messages.MessageField('MaintenancePolicy', 15)
+  mountPoint = _messages.StringField(16)
+  name = _messages.StringField(17)
+  network = _messages.StringField(18)
+  perUnitStorageThroughput = _messages.IntegerField(19)
+  placementPolicy = _messages.StringField(20)
+  satisfiesPzi = _messages.BooleanField(21)
+  satisfiesPzs = _messages.BooleanField(22)
+  state = _messages.EnumField('StateValueValuesEnum', 23)
+  stateReason = _messages.StringField(24)
+  uid = _messages.StringField(25)
+  upcomingMaintenanceSchedule = _messages.MessageField('MaintenanceSchedule', 26)
+  updateTime = _messages.StringField(27)
 
 
 class ListDirectoryPoliciesResponse(_messages.Message):

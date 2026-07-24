@@ -18,12 +18,14 @@ class AdcMetadata(_messages.Message):
   Fields:
     applicationTemplateUri: Output only. ApplicationTemplate URI
     applicationUri: Output only. Application URI
+    catalogTemplateRevisionUri: Output only. CatalogTemplateRevision URI
     spaceUri: Output only. Space URI
   """
 
   applicationTemplateUri = _messages.StringField(1)
   applicationUri = _messages.StringField(2)
-  spaceUri = _messages.StringField(3)
+  catalogTemplateRevisionUri = _messages.StringField(3)
+  spaceUri = _messages.StringField(4)
 
 
 class AlternateDefault(_messages.Message):
@@ -122,6 +124,8 @@ class Application(_messages.Message):
   Enums:
     CompositionTypeValueValuesEnum: Output only. The composition type of the
       application: STANDARD OR COMPOSITE.
+    IacSourceValueValuesEnum: Output only. Indicates the IaC source format of
+      this application.
     ParamsUpdateStrategyValueValuesEnum: Optional. Specifies the strategy to
       use when updating the application parameters while updating the
       application template revision.
@@ -155,6 +159,8 @@ class Application(_messages.Message):
     deploymentTarget: Optional. The deployment target of the application.
     description: Optional. Description of the application.
     displayName: Optional. Display name of the application.
+    iacSource: Output only. Indicates the IaC source format of this
+      application.
     importExistingResources: Optional. Import existing resources into the
       application.
     name: Identifier. The name of the application. Format: projects/{project}/
@@ -175,6 +181,8 @@ class Application(_messages.Message):
       an application.
     source: Required. The application deployment source.
     state: Output only. Deployment state of the application.
+    templateMetadata: Output only. The input output variables parsed from the
+      imported terraform code.
     type: Optional. The type of the application.
     updateTime: Output only. Update timestamp.
     updatedTemplateRevision: Output only. The updated template revision
@@ -199,6 +207,19 @@ class Application(_messages.Message):
     APPLICATION_COMPOSITION_TYPE_UNSPECIFIED = 0
     STANDARD = 1
     COMPOSITE = 2
+
+  class IacSourceValueValuesEnum(_messages.Enum):
+    r"""Output only. Indicates the IaC source format of this application.
+
+    Values:
+      IAC_SOURCE_UNSPECIFIED: The source is not specified.
+      IAC_SOURCE_SAT: The IaC source is SAT. This is used to generate
+        equivalent Terraform.
+      IAC_SOURCE_TERRAFORM: The IaC source is Terraform.
+    """
+    IAC_SOURCE_UNSPECIFIED = 0
+    IAC_SOURCE_SAT = 1
+    IAC_SOURCE_TERRAFORM = 2
 
   class ParamsUpdateStrategyValueValuesEnum(_messages.Enum):
     r"""Optional. Specifies the strategy to use when updating the application
@@ -264,20 +285,22 @@ class Application(_messages.Message):
   deploymentTarget = _messages.MessageField('DeploymentTarget', 15)
   description = _messages.StringField(16)
   displayName = _messages.StringField(17)
-  importExistingResources = _messages.BooleanField(18)
-  name = _messages.StringField(19)
-  paramsUpdateStrategy = _messages.EnumField('ParamsUpdateStrategyValueValuesEnum', 20)
-  previewReference = _messages.StringField(21)
-  projectParameters = _messages.MessageField('ProjectParameters', 22, repeated=True)
-  rolesApisConfig = _messages.MessageField('RolesAndApisConfig', 23, repeated=True)
-  scope = _messages.MessageField('Scope', 24)
-  serializedApplicationTemplate = _messages.MessageField('SerializedApplicationTemplate', 25)
-  serviceAccount = _messages.StringField(26)
-  source = _messages.MessageField('DeploymentSource', 27)
-  state = _messages.EnumField('StateValueValuesEnum', 28)
-  type = _messages.EnumField('TypeValueValuesEnum', 29)
-  updateTime = _messages.StringField(30)
-  updatedTemplateRevision = _messages.MessageField('UpdatedTemplateRevision', 31)
+  iacSource = _messages.EnumField('IacSourceValueValuesEnum', 18)
+  importExistingResources = _messages.BooleanField(19)
+  name = _messages.StringField(20)
+  paramsUpdateStrategy = _messages.EnumField('ParamsUpdateStrategyValueValuesEnum', 21)
+  previewReference = _messages.StringField(22)
+  projectParameters = _messages.MessageField('ProjectParameters', 23, repeated=True)
+  rolesApisConfig = _messages.MessageField('RolesAndApisConfig', 24, repeated=True)
+  scope = _messages.MessageField('Scope', 25)
+  serializedApplicationTemplate = _messages.MessageField('SerializedApplicationTemplate', 26)
+  serviceAccount = _messages.StringField(27)
+  source = _messages.MessageField('DeploymentSource', 28)
+  state = _messages.EnumField('StateValueValuesEnum', 29)
+  templateMetadata = _messages.MessageField('TFBlueprintMetadata', 30)
+  type = _messages.EnumField('TypeValueValuesEnum', 31)
+  updateTime = _messages.StringField(32)
+  updatedTemplateRevision = _messages.MessageField('UpdatedTemplateRevision', 33)
 
 
 class ApplicationOperationMetadata(_messages.Message):
@@ -314,6 +337,8 @@ class ApplicationTemplate(_messages.Message):
       only param.
     IacFormatValueValuesEnum: Output only. The IaC format of the application
       template.
+    IacSourceValueValuesEnum: Output only. Indicates the IaC source format of
+      this application template.
 
   Fields:
     applicationParameters: Optional. Parameters to apply to all components in
@@ -327,6 +352,8 @@ class ApplicationTemplate(_messages.Message):
     description: Optional. Application template description.
     displayName: Optional. Application template display name.
     iacFormat: Output only. The IaC format of the application template.
+    iacSource: Output only. Indicates the IaC source format of this
+      application template.
     latestRevision: Output only. The latest application template revision.
     latestSystemRevisionUri: Output only. The URI of the most recent System
       Revision generated for this ApplicationTemplate. This ID corresponds to
@@ -340,6 +367,8 @@ class ApplicationTemplate(_messages.Message):
       template.
     serializedApplicationTemplate: Output only. The serialized application
       template.
+    templateMetadata: Output only. The input output variables parsed from the
+      imported terraform code.
     updateTime: Output only. Application template update timestamp.
   """
 
@@ -374,6 +403,20 @@ class ApplicationTemplate(_messages.Message):
     TERRAFORM = 1
     HELM = 2
 
+  class IacSourceValueValuesEnum(_messages.Enum):
+    r"""Output only. Indicates the IaC source format of this application
+    template.
+
+    Values:
+      IAC_SOURCE_UNSPECIFIED: The source is not specified.
+      IAC_SOURCE_SAT: The IaC source is SAT. This is used to generate
+        equivalent Terraform.
+      IAC_SOURCE_TERRAFORM: The IaC source is Terraform.
+    """
+    IAC_SOURCE_UNSPECIFIED = 0
+    IAC_SOURCE_SAT = 1
+    IAC_SOURCE_TERRAFORM = 2
+
   applicationParameters = _messages.MessageField('Parameter', 1, repeated=True)
   artifactLocation = _messages.MessageField('ArtifactLocation', 2)
   compositionType = _messages.EnumField('CompositionTypeValueValuesEnum', 3)
@@ -381,32 +424,61 @@ class ApplicationTemplate(_messages.Message):
   description = _messages.StringField(5)
   displayName = _messages.StringField(6)
   iacFormat = _messages.EnumField('IacFormatValueValuesEnum', 7)
-  latestRevision = _messages.StringField(8)
-  latestSystemRevisionUri = _messages.StringField(9)
-  name = _messages.StringField(10)
-  rootInputVariables = _messages.MessageField('ComponentVariable', 11, repeated=True)
-  rootOutputVariables = _messages.MessageField('ComponentVariable', 12, repeated=True)
-  saasRuntimeContext = _messages.MessageField('SaaSRuntimeContext', 13)
-  serializedApplicationTemplate = _messages.MessageField('SerializedApplicationTemplate', 14)
-  updateTime = _messages.StringField(15)
+  iacSource = _messages.EnumField('IacSourceValueValuesEnum', 8)
+  latestRevision = _messages.StringField(9)
+  latestSystemRevisionUri = _messages.StringField(10)
+  name = _messages.StringField(11)
+  rootInputVariables = _messages.MessageField('ComponentVariable', 12, repeated=True)
+  rootOutputVariables = _messages.MessageField('ComponentVariable', 13, repeated=True)
+  saasRuntimeContext = _messages.MessageField('SaaSRuntimeContext', 14)
+  serializedApplicationTemplate = _messages.MessageField('SerializedApplicationTemplate', 15)
+  templateMetadata = _messages.MessageField('TFBlueprintMetadata', 16)
+  updateTime = _messages.StringField(17)
 
 
 class ApplicationTemplateRevision(_messages.Message):
   r"""Application template revision resource.
 
+  Enums:
+    IacSourceValueValuesEnum: Output only. Indicates the IaC source format of
+      this application template revision.
+
   Fields:
+    applicationParameters: Optional. The values provided for the input
+      variables.
     artifactLocation: Output only. Details of the location where the IaC for
       this ApplicationTemplate Revision was last successfully exported.
     createTime: Output only. The application template revision creation
       timestamp.
+    iacSource: Output only. Indicates the IaC source format of this
+      application template revision.
     name: Identifier. The application template revision name.
     snapshot: Output only. The serialized application template.
+    templateMetadata: Output only. The input output variables parsed from the
+      imported terraform code.
   """
 
-  artifactLocation = _messages.MessageField('ArtifactLocation', 1)
-  createTime = _messages.StringField(2)
-  name = _messages.StringField(3)
-  snapshot = _messages.MessageField('SerializedApplicationTemplate', 4)
+  class IacSourceValueValuesEnum(_messages.Enum):
+    r"""Output only. Indicates the IaC source format of this application
+    template revision.
+
+    Values:
+      IAC_SOURCE_UNSPECIFIED: The source is not specified.
+      IAC_SOURCE_SAT: The IaC source is SAT. This is used to generate
+        equivalent Terraform.
+      IAC_SOURCE_TERRAFORM: The IaC source is Terraform.
+    """
+    IAC_SOURCE_UNSPECIFIED = 0
+    IAC_SOURCE_SAT = 1
+    IAC_SOURCE_TERRAFORM = 2
+
+  applicationParameters = _messages.MessageField('Parameter', 1, repeated=True)
+  artifactLocation = _messages.MessageField('ArtifactLocation', 2)
+  createTime = _messages.StringField(3)
+  iacSource = _messages.EnumField('IacSourceValueValuesEnum', 4)
+  name = _messages.StringField(5)
+  snapshot = _messages.MessageField('SerializedApplicationTemplate', 6)
+  templateMetadata = _messages.MessageField('TFBlueprintMetadata', 7)
 
 
 class ApplicationTemplateSystemRevision(_messages.Message):
@@ -909,6 +981,8 @@ class CatalogTemplateRevision(_messages.Message):
   r"""Template revisions inside a catalog.
 
   Enums:
+    IacSourceValueValuesEnum: Output only. Indicates the IaC source format of
+      this catalog template revision.
     StateValueValuesEnum: Output only. The template state
       (validating/ready/invalid).
     TemplateCategoryValueValuesEnum: Output only. The category of the
@@ -923,6 +997,8 @@ class CatalogTemplateRevision(_messages.Message):
   Fields:
     annotations: Optional. The annotations of the template revision. Key is
       the annotation name. Value is the annotation value.
+    applicationParameters: Optional. The values provided for the input
+      variables.
     applicationTemplateRevision: Output only. The application template
       revision.
     applicationTemplateRevisionSource: Optional. The application template
@@ -937,6 +1013,8 @@ class CatalogTemplateRevision(_messages.Message):
       gs://[bucket]/[object].
     gitSource: Optional. The git source.
     helmChartMetadata: Output only. The helm chart metadata.
+    iacSource: Output only. Indicates the IaC source format of this catalog
+      template revision.
     inferredMetadata: Output only. Metadata that was automatically inferred
       from the template content. This field can be updated by the system as it
       gets new information.
@@ -958,6 +1036,20 @@ class CatalogTemplateRevision(_messages.Message):
     updateTime: Output only. The catalog template update timestamp.
     uuid: Output only. UUID of the template revision.
   """
+
+  class IacSourceValueValuesEnum(_messages.Enum):
+    r"""Output only. Indicates the IaC source format of this catalog template
+    revision.
+
+    Values:
+      IAC_SOURCE_UNSPECIFIED: The source is not specified.
+      IAC_SOURCE_SAT: The IaC source is SAT. This is used to generate
+        equivalent Terraform.
+      IAC_SOURCE_TERRAFORM: The IaC source is Terraform.
+    """
+    IAC_SOURCE_UNSPECIFIED = 0
+    IAC_SOURCE_SAT = 1
+    IAC_SOURCE_TERRAFORM = 2
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. The template state (validating/ready/invalid).
@@ -1047,26 +1139,28 @@ class CatalogTemplateRevision(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   annotations = _messages.MessageField('AnnotationsValue', 1)
-  applicationTemplateRevision = _messages.MessageField('SerializedApplicationTemplate', 2)
-  applicationTemplateRevisionSource = _messages.StringField(3)
-  createTime = _messages.StringField(4)
-  description = _messages.StringField(5)
-  developerConnectSourceConfig = _messages.MessageField('DeveloperConnectSourceConfig', 6)
-  gcsSourceUri = _messages.StringField(7)
-  gitSource = _messages.MessageField('GitSource', 8)
-  helmChartMetadata = _messages.MessageField('HelmChartMetadata', 9)
-  inferredMetadata = _messages.MessageField('InferredMetadata', 10)
-  logicalProducts = _messages.MessageField('LogicalProduct', 11, repeated=True)
-  metadataInput = _messages.MessageField('MetadataInput', 12)
-  name = _messages.StringField(13)
-  ociRepo = _messages.MessageField('OciRepo', 14)
-  resourceTypes = _messages.MessageField('ResourceType', 15, repeated=True)
-  state = _messages.EnumField('StateValueValuesEnum', 16)
-  templateCategory = _messages.EnumField('TemplateCategoryValueValuesEnum', 17)
-  templateMetadata = _messages.MessageField('TFBlueprintMetadata', 18)
-  type = _messages.EnumField('TypeValueValuesEnum', 19)
-  updateTime = _messages.StringField(20)
-  uuid = _messages.StringField(21)
+  applicationParameters = _messages.MessageField('Parameter', 2, repeated=True)
+  applicationTemplateRevision = _messages.MessageField('SerializedApplicationTemplate', 3)
+  applicationTemplateRevisionSource = _messages.StringField(4)
+  createTime = _messages.StringField(5)
+  description = _messages.StringField(6)
+  developerConnectSourceConfig = _messages.MessageField('DeveloperConnectSourceConfig', 7)
+  gcsSourceUri = _messages.StringField(8)
+  gitSource = _messages.MessageField('GitSource', 9)
+  helmChartMetadata = _messages.MessageField('HelmChartMetadata', 10)
+  iacSource = _messages.EnumField('IacSourceValueValuesEnum', 11)
+  inferredMetadata = _messages.MessageField('InferredMetadata', 12)
+  logicalProducts = _messages.MessageField('LogicalProduct', 13, repeated=True)
+  metadataInput = _messages.MessageField('MetadataInput', 14)
+  name = _messages.StringField(15)
+  ociRepo = _messages.MessageField('OciRepo', 16)
+  resourceTypes = _messages.MessageField('ResourceType', 17, repeated=True)
+  state = _messages.EnumField('StateValueValuesEnum', 18)
+  templateCategory = _messages.EnumField('TemplateCategoryValueValuesEnum', 19)
+  templateMetadata = _messages.MessageField('TFBlueprintMetadata', 20)
+  type = _messages.EnumField('TypeValueValuesEnum', 21)
+  updateTime = _messages.StringField(22)
+  uuid = _messages.StringField(23)
 
 
 class Channel(_messages.Message):
@@ -2280,6 +2374,21 @@ class DesigncenterProjectsLocationsSpacesApplicationTemplatesImportRequest(_mess
   name = _messages.StringField(2, required=True)
 
 
+class DesigncenterProjectsLocationsSpacesApplicationTemplatesIngestIaCRequest(_messages.Message):
+  r"""A
+  DesigncenterProjectsLocationsSpacesApplicationTemplatesIngestIaCRequest
+  object.
+
+  Fields:
+    ingestApplicationTemplateIaCRequest: A IngestApplicationTemplateIaCRequest
+      resource to be passed as the request body.
+    name: Required. The name of the application template.
+  """
+
+  ingestApplicationTemplateIaCRequest = _messages.MessageField('IngestApplicationTemplateIaCRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
 class DesigncenterProjectsLocationsSpacesApplicationTemplatesListRequest(_messages.Message):
   r"""A DesigncenterProjectsLocationsSpacesApplicationTemplatesListRequest
   object.
@@ -2501,6 +2610,20 @@ class DesigncenterProjectsLocationsSpacesApplicationTemplatesRevisionsListReques
   parent = _messages.StringField(5, required=True)
 
 
+class DesigncenterProjectsLocationsSpacesApplicationTemplatesSnapshotRequest(_messages.Message):
+  r"""A DesigncenterProjectsLocationsSpacesApplicationTemplatesSnapshotRequest
+  object.
+
+  Fields:
+    name: Required. The name of the application template.
+    snapshotApplicationTemplateRequest: A SnapshotApplicationTemplateRequest
+      resource to be passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  snapshotApplicationTemplateRequest = _messages.MessageField('SnapshotApplicationTemplateRequest', 2)
+
+
 class DesigncenterProjectsLocationsSpacesApplicationTemplatesSystemRevisionsGetRequest(_messages.Message):
   r"""A DesigncenterProjectsLocationsSpacesApplicationTemplatesSystemRevisions
   GetRequest object.
@@ -2583,6 +2706,19 @@ class DesigncenterProjectsLocationsSpacesApplicationsDeployRequest(_messages.Mes
   """
 
   deployApplicationRequest = _messages.MessageField('DeployApplicationRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class DesigncenterProjectsLocationsSpacesApplicationsExportRequest(_messages.Message):
+  r"""A DesigncenterProjectsLocationsSpacesApplicationsExportRequest object.
+
+  Fields:
+    exportApplicationIaCRequest: A ExportApplicationIaCRequest resource to be
+      passed as the request body.
+    name: Required. The name of the application.
+  """
+
+  exportApplicationIaCRequest = _messages.MessageField('ExportApplicationIaCRequest', 1)
   name = _messages.StringField(2, required=True)
 
 
@@ -2984,6 +3120,19 @@ class DesigncenterProjectsLocationsSpacesCatalogsTemplatesRevisionsDeleteRequest
   name = _messages.StringField(1, required=True)
 
 
+class DesigncenterProjectsLocationsSpacesCatalogsTemplatesRevisionsFetchAssessmentReportRequest(_messages.Message):
+  r"""A DesigncenterProjectsLocationsSpacesCatalogsTemplatesRevisionsFetchAsse
+  ssmentReportRequest object.
+
+  Fields:
+    name: Required. The catalog template revision name in the following
+      format: `projects/{project}/locations/{location}/spaces/{space}/catalogs
+      /{catalog}/templates/{template}/revisions/{revision}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
 class DesigncenterProjectsLocationsSpacesCatalogsTemplatesRevisionsGetRequest(_messages.Message):
   r"""A
   DesigncenterProjectsLocationsSpacesCatalogsTemplatesRevisionsGetRequest
@@ -3224,6 +3373,19 @@ class DesigncenterProjectsLocationsSpacesSharedTemplatesListRequest(_messages.Me
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   parent = _messages.StringField(5, required=True)
+
+
+class DesigncenterProjectsLocationsSpacesSharedTemplatesRevisionsFetchAssessmentReportRequest(_messages.Message):
+  r"""A DesigncenterProjectsLocationsSpacesSharedTemplatesRevisionsFetchAssess
+  mentReportRequest object.
+
+  Fields:
+    name: Required. The shared template revision name in the following format:
+      `projects/{project}/locations/{location}/spaces/{space}/sharedTemplates/
+      {shared_template}/revisions/{revision}`
+  """
+
+  name = _messages.StringField(1, required=True)
 
 
 class DesigncenterProjectsLocationsSpacesSharedTemplatesRevisionsGetRequest(_messages.Message):
@@ -3571,6 +3733,34 @@ class Environment(_messages.Message):
   type = _messages.EnumField('TypeValueValuesEnum', 2)
 
 
+class ExportApplicationIaCRequest(_messages.Message):
+  r"""Request message for ExportApplicationIaC method.
+
+  Enums:
+    IacFormatValueValuesEnum: Optional. The IaC format to generate.
+
+  Fields:
+    artifactLocation: Optional. Specifies the destination for the generated
+      IaC, which can be Cloud Storage or a Developer Connect repository.
+    iacFormat: Optional. The IaC format to generate.
+  """
+
+  class IacFormatValueValuesEnum(_messages.Enum):
+    r"""Optional. The IaC format to generate.
+
+    Values:
+      IAC_FORMAT_UNSPECIFIED: IaC format is unspecified.
+      TERRAFORM: IaC format is Terraform.
+      HELM: IaC format is HELM.
+    """
+    IAC_FORMAT_UNSPECIFIED = 0
+    TERRAFORM = 1
+    HELM = 2
+
+  artifactLocation = _messages.MessageField('ArtifactLocation', 1)
+  iacFormat = _messages.EnumField('IacFormatValueValuesEnum', 2)
+
+
 class ExportApplicationTemplateIaCRequest(_messages.Message):
   r"""Request message for ExportApplicationTemplateIaC method.
 
@@ -3674,6 +3864,16 @@ class FetchApplicationAssessmentReportResponse(_messages.Message):
   assessmentReport = _messages.MessageField('AssessmentReport', 1)
 
 
+class FetchCatalogTemplateRevisionAssessmentReportResponse(_messages.Message):
+  r"""Response message for FetchCatalogTemplateRevisionAssessmentReport.
+
+  Fields:
+    assessmentReport: Assessment report for the catalog template revision.
+  """
+
+  assessmentReport = _messages.MessageField('AssessmentReport', 1)
+
+
 class FetchFrameworksResponse(_messages.Message):
   r"""Response for FetchFrameworks rpc
 
@@ -3685,6 +3885,16 @@ class FetchFrameworksResponse(_messages.Message):
 
   frameworks = _messages.MessageField('Framework', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
+
+
+class FetchSharedTemplateRevisionAssessmentReportResponse(_messages.Message):
+  r"""Response message for FetchSharedTemplateRevisionAssessmentReport.
+
+  Fields:
+    assessmentReport: Assessment report for the shared template revision.
+  """
+
+  assessmentReport = _messages.MessageField('AssessmentReport', 1)
 
 
 class FindingADCMetadata(_messages.Message):
@@ -3774,8 +3984,8 @@ class GenerateApplicationIaCRequest(_messages.Message):
   Fields:
     artifactLocation: Optional. Specifies the destination for the generated
       IaC, which can be Cloud Storage or a Developer Connect repository.
-    gcsUri: Optional. The Cloud Storage URI to write the generated IaC to.
-      DEPRECATED: Use the 'artifact_location' field instead.
+    gcsUri: Optional. DEPRECATED: Use the 'artifact_location' field instead.
+      The Cloud Storage URI to write the generated IaC to.
     iacFormat: Optional. The IaC format to generate.
   """
 
@@ -3801,8 +4011,8 @@ class GenerateApplicationIaCResponse(_messages.Message):
 
   Fields:
     artifactLocation: The destination where the generated IaC was written.
-    gcsUri: The Cloud Storage URI of the generated IaC. DEPRECATED: Use the
-      'artifact_location' field instead.
+    gcsUri: DEPRECATED: Use the 'artifact_location' field instead. The Cloud
+      Storage URI of the generated IaC.
     rootModulesMetadata: Root modules metadata of the application.
   """
 
@@ -3834,8 +4044,8 @@ class GenerateApplicationTemplateIaCRequest(_messages.Message):
   Fields:
     artifactLocation: Optional. Specifies the destination for the generated
       IaC, which can be Cloud Storage or a Developer Connect repository.
-    gcsUri: Optional. The Cloud Storage URI to write the generated IaC to.
-      DEPRECATED: Use the 'artifact_location' field instead.
+    gcsUri: Optional. DEPRECATED: Use the 'artifact_location' field instead.
+      The Cloud Storage URI to write the generated IaC to.
     iacFormat: Optional. The IaC format to generate.
   """
 
@@ -3861,8 +4071,8 @@ class GenerateApplicationTemplateIaCResponse(_messages.Message):
 
   Fields:
     artifactLocation: The destination where the generated IaC was written.
-    gcsUri: The Cloud Storage URI of the generated IaC. DEPRECATED: Use the
-      'artifact_location' field instead.
+    gcsUri: DEPRECATED: Use the 'artifact_location' field instead. The Cloud
+      Storage URI of the generated IaC.
     rootModulesMetadata: Root modules metadata of the application template.
   """
 
@@ -4105,8 +4315,8 @@ class IaCFile(_messages.Message):
 
   Fields:
     content: Optional. The content of the file. The content of the file can be
-      read and passed as a string. For example, for a terraform file, the
-      content is the the HCL content of the file.
+      read and passed as a string. For example, for a Terraform file, the
+      content is the HCL content of the file.
     name: Required. The name of the file.
   """
 
@@ -4331,7 +4541,7 @@ class ImportIaCError(_messages.Message):
     Values:
       TYPE_UNSPECIFIED: Default.
       INVALID: The change is invalid. Example: a string value provided for a
-        number input parameter type, which would be caught by terraform
+        number input parameter type, which would be caught by Terraform
         validation.
       NOT_SUPPORTED: The change is not supported. Example: a user directly
         adding a Terraform resource in main.tf that Design Center does not
@@ -4363,6 +4573,30 @@ class InferredMetadata(_messages.Message):
   description = _messages.StringField(2)
   templateMetadata = _messages.MessageField('TFBlueprintMetadata', 3)
   updateTime = _messages.StringField(4)
+
+
+class IngestApplicationTemplateIaCRequest(_messages.Message):
+  r"""Request message for IngestApplicationTemplateIaC method.
+
+  Fields:
+    devconnectSourceConfig: Optional. Configuration for fetching content from
+      source code repository such as GitHub or Bitbucket through Developer
+      Connect.
+    gcsUri: Optional. The Cloud Storage URI of the terraform code.
+    gitSource: Optional. The git source.
+    iacModule: Optional. The IaC configuration to import.
+    rawTerraformImportEnabled: Optional. If set to true, imports the IaC as
+      raw terraform and does not attempt SAT conversion.
+    validateCatalogCompatibility: Optional. If set to true, validates if the
+      imported IaC is compatible with the catalog.
+  """
+
+  devconnectSourceConfig = _messages.MessageField('DeveloperConnectSourceConfig', 1)
+  gcsUri = _messages.StringField(2)
+  gitSource = _messages.MessageField('GitSource', 3)
+  iacModule = _messages.MessageField('IaCModule', 4)
+  rawTerraformImportEnabled = _messages.BooleanField(5)
+  validateCatalogCompatibility = _messages.BooleanField(6)
 
 
 class ListApplicationTemplateRevisionsResponse(_messages.Message):
@@ -5697,6 +5931,8 @@ class SharedTemplateRevision(_messages.Message):
   r"""A read-only template revision that is shared with a space.
 
   Enums:
+    IacSourceValueValuesEnum: Output only. Indicates the IaC source format of
+      this shared template revision.
     TemplateCategoryValueValuesEnum: Output only. The category of the
       template.
     TypeValueValuesEnum: Optional. The Application Design Center assembly
@@ -5709,6 +5945,8 @@ class SharedTemplateRevision(_messages.Message):
   Fields:
     annotations: Optional. The annotations of the shared template revision.
       Key is the annotation name. Value is the annotation value.
+    applicationParameters: Optional. The values provided for the input
+      variables.
     applicationTemplateRevision: Output only. The serialized application
       template revision.
     applicationTemplateRevisionSource: Optional. The application template
@@ -5723,6 +5961,8 @@ class SharedTemplateRevision(_messages.Message):
       gs://[bucket]/[object].
     gitSource: Optional. The git source.
     helmChartMetadata: Output only. The helm chart metadata.
+    iacSource: Output only. Indicates the IaC source format of this shared
+      template revision.
     inferredMetadata: Output only. Metadata that was automatically inferred
       from the template content.
     logicalProducts: Output only. The Product Main logical product type
@@ -5740,6 +5980,20 @@ class SharedTemplateRevision(_messages.Message):
     templateCategory: Output only. The category of the template.
     type: Optional. The Application Design Center assembly template type.
   """
+
+  class IacSourceValueValuesEnum(_messages.Enum):
+    r"""Output only. Indicates the IaC source format of this shared template
+    revision.
+
+    Values:
+      IAC_SOURCE_UNSPECIFIED: The source is not specified.
+      IAC_SOURCE_SAT: The IaC source is SAT. This is used to generate
+        equivalent Terraform.
+      IAC_SOURCE_TERRAFORM: The IaC source is Terraform.
+    """
+    IAC_SOURCE_UNSPECIFIED = 0
+    IAC_SOURCE_SAT = 1
+    IAC_SOURCE_TERRAFORM = 2
 
   class TemplateCategoryValueValuesEnum(_messages.Enum):
     r"""Output only. The category of the template.
@@ -5815,23 +6069,25 @@ class SharedTemplateRevision(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   annotations = _messages.MessageField('AnnotationsValue', 1)
-  applicationTemplateRevision = _messages.MessageField('SerializedApplicationTemplate', 2)
-  applicationTemplateRevisionSource = _messages.StringField(3)
-  createTime = _messages.StringField(4)
-  description = _messages.StringField(5)
-  developerConnectSourceConfig = _messages.MessageField('DeveloperConnectSourceConfig', 6)
-  gcsSourceUri = _messages.StringField(7)
-  gitSource = _messages.MessageField('GitSource', 8)
-  helmChartMetadata = _messages.MessageField('HelmChartMetadata', 9)
-  inferredMetadata = _messages.MessageField('InferredMetadata', 10)
-  logicalProducts = _messages.MessageField('LogicalProduct', 11, repeated=True)
-  name = _messages.StringField(12)
-  ociRepo = _messages.MessageField('OciRepo', 13)
-  originTemplateRevision = _messages.StringField(14)
-  resourceTypes = _messages.MessageField('ResourceType', 15, repeated=True)
-  sharedTemplateMetadata = _messages.MessageField('TFBlueprintMetadata', 16)
-  templateCategory = _messages.EnumField('TemplateCategoryValueValuesEnum', 17)
-  type = _messages.EnumField('TypeValueValuesEnum', 18)
+  applicationParameters = _messages.MessageField('Parameter', 2, repeated=True)
+  applicationTemplateRevision = _messages.MessageField('SerializedApplicationTemplate', 3)
+  applicationTemplateRevisionSource = _messages.StringField(4)
+  createTime = _messages.StringField(5)
+  description = _messages.StringField(6)
+  developerConnectSourceConfig = _messages.MessageField('DeveloperConnectSourceConfig', 7)
+  gcsSourceUri = _messages.StringField(8)
+  gitSource = _messages.MessageField('GitSource', 9)
+  helmChartMetadata = _messages.MessageField('HelmChartMetadata', 10)
+  iacSource = _messages.EnumField('IacSourceValueValuesEnum', 11)
+  inferredMetadata = _messages.MessageField('InferredMetadata', 12)
+  logicalProducts = _messages.MessageField('LogicalProduct', 13, repeated=True)
+  name = _messages.StringField(14)
+  ociRepo = _messages.MessageField('OciRepo', 15)
+  originTemplateRevision = _messages.StringField(16)
+  resourceTypes = _messages.MessageField('ResourceType', 17, repeated=True)
+  sharedTemplateMetadata = _messages.MessageField('TFBlueprintMetadata', 18)
+  templateCategory = _messages.EnumField('TemplateCategoryValueValuesEnum', 19)
+  type = _messages.EnumField('TypeValueValuesEnum', 20)
 
 
 class SkippedDomain(_messages.Message):
@@ -5862,6 +6118,10 @@ class SkippedDomain(_messages.Message):
 
   domain = _messages.MessageField('Domain', 1)
   skipReason = _messages.EnumField('SkipReasonValueValuesEnum', 2)
+
+
+class SnapshotApplicationTemplateRequest(_messages.Message):
+  r"""Message for snapshotting an application template asynchronously."""
 
 
 class Space(_messages.Message):

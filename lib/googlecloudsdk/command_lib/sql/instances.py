@@ -214,6 +214,16 @@ def _ParseInstanceType(sql_messages, instance_type):
   return None
 
 
+def _ParseBackendType(sql_messages, backend_type):
+  if backend_type:
+    return (
+        sql_messages.DatabaseInstance.BackendTypeValueValuesEnum.lookup_by_name(
+            backend_type.replace('-', '_').upper()
+        )
+    )
+  return None
+
+
 # The caller must make sure that the connector_enforcement is specified.
 def _ParseConnectorEnforcement(sql_messages, connector_enforcement):
   return (
@@ -625,29 +635,27 @@ class _BaseInstances(object):
           sql_messages, args.data_api_access
       )
 
+    if args.IsKnownAndSpecified('storage_auto_increase_limit'):
+      # Resize limit should be settable if the original instance has resize
+      # turned on, or if the instance to be created has resize flag.
+      if (instance and instance.settings.storageAutoResize) or (
+          args.storage_auto_increase
+      ):
+        # If the limit is set to None, we want it to be set to 0. This is a
+        # backend requirement.
+        settings.storageAutoResizeLimit = args.storage_auto_increase_limit or 0
+      else:
+        raise exceptions.RequiredArgumentException(
+            '--storage-auto-increase',
+            (
+                'To set the storage capacity limit '
+                'using [--storage-auto-increase-limit], '
+                '[--storage-auto-increase] must be enabled.'
+            ),
+        )
+
     # BETA args.
     if IsBetaOrNewer(release_track):
-      if args.IsSpecified('storage_auto_increase_limit'):
-        # Resize limit should be settable if the original instance has resize
-        # turned on, or if the instance to be created has resize flag.
-        if (instance and instance.settings.storageAutoResize) or (
-            args.storage_auto_increase
-        ):
-          # If the limit is set to None, we want it to be set to 0. This is a
-          # backend requirement.
-          settings.storageAutoResizeLimit = (
-              args.storage_auto_increase_limit or 0
-          )
-        else:
-          raise exceptions.RequiredArgumentException(
-              '--storage-auto-increase',
-              (
-                  'To set the storage capacity limit '
-                  'using [--storage-auto-increase-limit], '
-                  '[--storage-auto-increase] must be enabled.'
-              ),
-          )
-
       if args.replication_lag_max_seconds_for_recreate is not None:
         settings.replicationLagMaxSeconds = (
             args.replication_lag_max_seconds_for_recreate
@@ -1190,6 +1198,16 @@ class _BaseInstances(object):
 
     if args.IsKnownAndSpecified('master_instance_name'):
       instance_resource.masterInstanceName = args.master_instance_name
+
+    if args.IsKnownAndSpecified('backend_type'):
+      instance_resource.backendType = _ParseBackendType(
+          sql_messages, args.backend_type
+      )
+    if args.IsKnownAndSpecified('gce_instance'):
+      semi_managed_config = reducers.SemiManagedConfig(
+          sql_messages, args.gce_instance
+      )
+      instance_resource.semiManagedConfig = semi_managed_config
 
     if args.IsKnownAndSpecified('root_password'):
       instance_resource.rootPassword = args.root_password

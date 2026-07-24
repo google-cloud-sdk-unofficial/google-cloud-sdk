@@ -91,7 +91,7 @@ def add_trailing_slash_if_missing(url: str) -> str:
 
 def get_tpc_root_url_from_flags(
     service: Service,
-    inputted_flags: NamedTuple(
+    inputted_flags: NamedTuple(  # pyrefly: ignore[invalid-annotation]
         'InputtedFlags',
         [
             ('API', flags.FlagHolder[Optional[str]]),
@@ -215,7 +215,7 @@ def get_tpc_root_url_from_flags(
 def add_api_key_to_discovery_url(
     discovery_url: str,
     universe_domain: Optional[str],
-    inputted_flags: NamedTuple(
+    inputted_flags: NamedTuple(  # pyrefly: ignore[invalid-annotation]
         'InputtedFlags',
         [
             (

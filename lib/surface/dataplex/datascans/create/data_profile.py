@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.dataplex import datascan
 from googlecloudsdk.api_lib.dataplex import util as dataplex_util
 from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.dataplex import resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
@@ -141,6 +142,18 @@ class DataProfile(base.Command):
         help='Publish data profile results to Dataplex catalog.',
         default=False,
     )
+    data_spec_arg.add_argument(
+        '--mode',
+        choices={
+            'STANDARD': (
+                'Profile your data with customizable scan settings.'
+            ),
+            'LIGHTWEIGHT': (
+                'Get quick insights with a low-latency, low-fidelity scan.'
+            ),
+        },
+        help='The execution mode for the profile scan.',
+    )
     execution_spec = parser.add_group(
         help='Data profile scan execution settings.'
     )
@@ -230,6 +243,23 @@ class DataProfile(base.Command):
       'Status code: {status_code}. {status_message}.'
   )
   def Run(self, args):
+    if (
+        args.IsKnownAndSpecified('mode')
+        and args.mode == 'LIGHTWEIGHT'
+        and (
+            args.IsKnownAndSpecified('sampling_percent')
+            or args.IsKnownAndSpecified('row_filter')
+            or args.IsKnownAndSpecified('include_field_names')
+            or args.IsKnownAndSpecified('exclude_field_names')
+            or args.IsKnownAndSpecified('incremental_field')
+        )
+    ):
+      raise calliope_exceptions.InvalidArgumentException(
+          '--mode',
+          'Cannot specify --sampling-percent, --row-filter, '
+          '--include-field-names, --exclude-field-names, '
+          'or --incremental-field when --mode is LIGHTWEIGHT.'
+      )
     datascan_ref = args.CONCEPTS.datascan.Parse()
     setattr(args, 'scan_type', 'PROFILE')
     dataplex_client = dataplex_util.GetClientInstance()

@@ -85,6 +85,10 @@ class TaskTemplate(proto.Message):
             disabled on this task template.
 
             This field is a member of `oneof`_ ``_gpu_zonal_redundancy_disabled``.
+        termination_grace_period (google.protobuf.duration_pb2.Duration):
+            Optional. Configured graceful termination
+            period for this task. This is the time between
+            SIGTERM and SIGKILL when shutting down.
     """
 
     containers: MutableSequence[k8s_min.Container] = proto.RepeatedField(
@@ -134,6 +138,11 @@ class TaskTemplate(proto.Message):
         proto.BOOL,
         number=12,
         optional=True,
+    )
+    termination_grace_period: duration_pb2.Duration = proto.Field(
+        proto.MESSAGE,
+        number=16,
+        message=duration_pb2.Duration,
     )
 
 

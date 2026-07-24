@@ -51,7 +51,7 @@ class CredentialLoader(object):
   def Load(self) -> WrappedCredentialsUnionType:
     """Loads credential."""
     cred = self._Load()
-    cred._user_agent = bq_auth_utils.get_client_user_agent()  # pylint: disable=protected-access
+    cred._user_agent = bq_auth_utils.get_client_user_agent()  # pylint: disable=protected-access  # pyrefly: ignore[missing-attribute]
     return cred
 
   def _Load(self) -> WrappedCredentialsUnionType:
@@ -108,7 +108,7 @@ class CachedCredentialLoader(CredentialLoader):
 
     cred = super(CachedCredentialLoader, self).Load()
     if not cred:
-      return None
+      return None  # pyrefly: ignore[bad-return]
 
     # Save credentials to storage now to reuse and also avoid a warning message.
     self._storage.put(cred)
@@ -137,7 +137,7 @@ class CachedCredentialLoader(CredentialLoader):
     except BaseException as e:  # pylint: disable=broad-except
       self._RaiseCredentialsCorrupt(e)
 
-    if not creds:
+    if not creds:  # pyrefly: ignore[unbound-name]
       return None  # Nothing cached.
 
     if isinstance(creds, wrapped_credentials.WrappedCredentials):

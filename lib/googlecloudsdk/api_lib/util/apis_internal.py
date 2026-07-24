@@ -294,7 +294,13 @@ def _GetGapicClientInstance(
       endpoint_override = None
 
     if endpoint_override:
-      address = urlparse(endpoint_override).netloc
+      lower_override = endpoint_override.lower()
+      if lower_override.startswith('http://') or lower_override.startswith(
+          'https://'
+      ):
+        address = urlparse(endpoint_override).netloc
+      else:
+        address = endpoint_override
 
     if address_override_func:
       address = address_override_func(address)

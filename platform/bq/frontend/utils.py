@@ -916,21 +916,21 @@ def UpdateExternalCatalogTableOptions(
     }
 
   external_catalog_table_options_dict = GetJson(external_options_str)
-  if _PARAMETERS_KEY in external_catalog_table_options_dict:
+  if _PARAMETERS_KEY in external_catalog_table_options_dict:  # pyrefly: ignore[not-iterable]
     current_options.setdefault(_PARAMETERS_KEY, {})
     current_options[_PARAMETERS_KEY].update(
-        external_catalog_table_options_dict[_PARAMETERS_KEY]
+        external_catalog_table_options_dict[_PARAMETERS_KEY]  # pyrefly: ignore[unsupported-operation]
     )
   else:
     current_options[_PARAMETERS_KEY] = None
-  if _STORAGE_DESCRIPTOR_KEY in external_catalog_table_options_dict:
+  if _STORAGE_DESCRIPTOR_KEY in external_catalog_table_options_dict:  # pyrefly: ignore[not-iterable]
     current_options[_STORAGE_DESCRIPTOR_KEY] = (
-        external_catalog_table_options_dict[_STORAGE_DESCRIPTOR_KEY]
+        external_catalog_table_options_dict[_STORAGE_DESCRIPTOR_KEY]  # pyrefly: ignore[unsupported-operation]
     )
   else:
     current_options[_STORAGE_DESCRIPTOR_KEY] = None
-  if _CONNECTION_ID_KEY in external_catalog_table_options_dict:
-    current_options[_CONNECTION_ID_KEY] = external_catalog_table_options_dict[
+  if _CONNECTION_ID_KEY in external_catalog_table_options_dict:  # pyrefly: ignore[not-iterable]
+    current_options[_CONNECTION_ID_KEY] = external_catalog_table_options_dict[  # pyrefly: ignore[unsupported-operation]
         _CONNECTION_ID_KEY
     ]
   else:
@@ -959,17 +959,17 @@ def UpdateExternalCatalogDatasetOptions(
         k: None for k in current_options[_PARAMETERS_KEY]
     }
   external_catalog_dataset_options_dict = GetJson(external_options_str)
-  if _PARAMETERS_KEY in external_catalog_dataset_options_dict:
+  if _PARAMETERS_KEY in external_catalog_dataset_options_dict:  # pyrefly: ignore[not-iterable]
     current_options.setdefault(_PARAMETERS_KEY, {})
-    for key, value in external_catalog_dataset_options_dict[
+    for key, value in external_catalog_dataset_options_dict[  # pyrefly: ignore[unsupported-operation]
         _PARAMETERS_KEY
     ].items():
       current_options[_PARAMETERS_KEY][key] = value
   else:
     current_options[_PARAMETERS_KEY] = None
-  if _DEFAULT_STORAGE_LOCATION_URI_KEY in external_catalog_dataset_options_dict:
+  if _DEFAULT_STORAGE_LOCATION_URI_KEY in external_catalog_dataset_options_dict:  # pyrefly: ignore[not-iterable]
     current_options[_DEFAULT_STORAGE_LOCATION_URI_KEY] = (
-        external_catalog_dataset_options_dict[_DEFAULT_STORAGE_LOCATION_URI_KEY]
+        external_catalog_dataset_options_dict[_DEFAULT_STORAGE_LOCATION_URI_KEY]  # pyrefly: ignore[unsupported-operation]
     )
   else:
     current_options[_DEFAULT_STORAGE_LOCATION_URI_KEY] = None
@@ -1344,7 +1344,7 @@ def GetJobMessagesForPrinting(printable_job_info):
           default_connection_stats = printable_job_info[
               'Default Connection Stats'
           ]
-          location_id = job_ref['location']
+          location_id = job_ref['location']  # pyrefly: ignore[bad-index]
           if 'provisioned' in default_connection_stats:
             if printable_job_info['Statement Type'] == 'CREATE_MODEL':
               target_type = 'model'
@@ -1490,14 +1490,14 @@ def PrintObjectsArray(object_infos, objects_type):
 
 
 class ResourceMetadata(TypedDict):
-  token: NotRequired[str] = None
-  unreachable: NotRequired[List[str]] = None
+  token: NotRequired[str] = None  # pyrefly: ignore[bad-assignment, bad-class-definition]
+  unreachable: NotRequired[List[str]] = None  # pyrefly: ignore[bad-assignment, bad-class-definition]
 
 
 def PrintObjectsArrayWithMetadata(
     objects_list: List[Any],
     objects_type: Type[bq_id_utils.ApiClientHelper.Reference],
-    passed_flags: NamedTuple(
+    passed_flags: NamedTuple(  # pyrefly: ignore[invalid-annotation]
         'PassedFlags',
         [
             ('print_last_token', bool),
@@ -1526,10 +1526,10 @@ def PrintObjectsArrayWithMetadata(
   if FLAGS.format in ['prettyjson', 'json']:
     if passed_flags.print_last_token or passed_flags.print_unreachable:
       json_object = {'results': objects_list}
-      if passed_flags.print_last_token and 'token' in objects_metadata:
-        json_object['token'] = objects_metadata['token']
-      if passed_flags.print_unreachable and 'unreachable' in objects_metadata:
-        json_object['unreachable'] = objects_metadata['unreachable']
+      if passed_flags.print_last_token and 'token' in objects_metadata:  # pyrefly: ignore[not-iterable]
+        json_object['token'] = objects_metadata['token']  # pyrefly: ignore[bad-assignment, unsupported-operation]
+      if passed_flags.print_unreachable and 'unreachable' in objects_metadata:  # pyrefly: ignore[not-iterable]
+        json_object['unreachable'] = objects_metadata['unreachable']  # pyrefly: ignore[unsupported-operation]
     else:
       json_object = objects_list
     bq_utils.PrintFormattedJsonObject(json_object)

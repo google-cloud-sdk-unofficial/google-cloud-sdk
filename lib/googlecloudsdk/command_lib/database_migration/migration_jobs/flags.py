@@ -581,3 +581,16 @@ def AddPostgresHomogeneousConfigFlag(parser, is_update=False):
           ' migration job.'
       ),
   )
+
+
+def AddMySqlHomogeneousConfigFlag(parser):
+  """Adds mysql homogeneous config flag to the given parser."""
+  parser.add_argument(
+      '--mysql-is-primary-destination',
+      action='store_true',
+      default=False,
+      help=(
+          'Whether the destination for the migration job is a primary instance.'
+      ),
+      hidden=True,
+  )

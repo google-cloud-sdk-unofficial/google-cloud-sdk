@@ -1599,7 +1599,7 @@ def AddLoggingFlag(parser, autopilot=False):
   """Adds a --logging flag to parser."""
   help_text = """\
 Set the components that have logging enabled. Valid component values are:
-`SYSTEM`, `WORKLOAD`, `API_SERVER`, `CONTROLLER_MANAGER`, `SCHEDULER`, `KCP_HPA`, `NONE`
+`SYSTEM`, `WORKLOAD`, `API_SERVER`, `CONTROLLER_MANAGER`, `SCHEDULER`, `KCP_HPA`, `KCP_VPA`, `NONE`
 
 For more information, see
 https://cloud.google.com/kubernetes-engine/docs/concepts/about-logs#available-logs
@@ -1613,7 +1613,7 @@ Examples:
   if autopilot:
     help_text = """\
 Set the components that have logging enabled. Valid component values are:
-`SYSTEM`, `WORKLOAD`, `API_SERVER`, `CONTROLLER_MANAGER`, `SCHEDULER`, `KCP_HPA`
+`SYSTEM`, `WORKLOAD`, `API_SERVER`, `CONTROLLER_MANAGER`, `SCHEDULER`, `KCP_HPA`, `KCP_VPA`
 
 The default is `SYSTEM,WORKLOAD`. If this flag is set, then `SYSTEM` must be
 included.
@@ -1625,7 +1625,7 @@ Examples:
 
   $ {command} --logging=SYSTEM
   $ {command} --logging=SYSTEM,WORKLOAD
-  $ {command} --logging=SYSTEM,WORKLOAD,API_SERVER,CONTROLLER_MANAGER,SCHEDULER,KCP_HPA
+  $ {command} --logging=SYSTEM,WORKLOAD,API_SERVER,CONTROLLER_MANAGER,SCHEDULER,KCP_HPA,KCP_VPA
 """
 
   parser.add_argument(
@@ -5692,6 +5692,11 @@ Examples:
       cgroupMode: 'CGROUP_MODE_V2'
       nodeKernelModuleLoading:
         policy: 'ENFORCE_SIGNED_MODULES'
+      nodeVfioConfig:
+        dmaEntryLimit: 65536
+      diskIoScheduler:
+        nodeSystemIoScheduler: 'bfq'
+        nodeAttachedDiskIoScheduler: 'mq-deadline'
 
 List of supported kubelet configs in 'kubeletConfig'.
 
@@ -5888,6 +5893,18 @@ KEY                                        | VALUE
 ------------------------------------------ | ------------------------------------------
 policy                                     | ENFORCE_SIGNED_MODULES, DO_NOT_ENFORCE_SIGNED_MODULES, POLICY_UNSPECIFIED
 
+List of supported keys in 'nodeVfioConfig' under 'linuxConfig'.
+
+KEY                                        | VALUE
+------------------------------------------ | ------------------------------------------
+dmaEntryLimit                              | integer between [65535, 4194304]
+
+List of supported keys in 'diskIoScheduler' under 'linuxConfig'.
+
+KEY                                        | VALUE
+------------------------------------------ | ------------------------------------------
+nodeSystemIoScheduler                      | string. Supported values: 'mq-deadline', 'bfq', 'kyber', 'none'.
+nodeAttachedDiskIoScheduler                | string. Supported values: 'mq-deadline', 'bfq', 'kyber', 'none'.
 
 The upper limit for total allocated hugepage size differs based upon machine size.
 
