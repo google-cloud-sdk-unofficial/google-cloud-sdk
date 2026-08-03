@@ -3829,6 +3829,7 @@ class DataplaneV2Config(_messages.Message):
       cluster.
 
   Fields:
+    ebpfHostRouting: Optional. eBPF host routing configuration for DPv2.
     scalabilityMode: Optional. Scalability mode for the cluster.
   """
 
@@ -3844,7 +3845,8 @@ class DataplaneV2Config(_messages.Message):
     DISABLED = 1
     SCALE_OPTIMIZED = 2
 
-  scalabilityMode = _messages.EnumField('ScalabilityModeValueValuesEnum', 1)
+  ebpfHostRouting = _messages.MessageField('EbpfHostRouting', 1)
+  scalabilityMode = _messages.EnumField('ScalabilityModeValueValuesEnum', 2)
 
 
 class Date(_messages.Message):
@@ -3987,6 +3989,18 @@ class DnsCacheConfig(_messages.Message):
 
   Fields:
     enabled: Whether NodeLocal DNSCache is enabled for this cluster.
+  """
+
+  enabled = _messages.BooleanField(1)
+
+
+class EbpfHostRouting(_messages.Message):
+  r"""EbpfHostRouting contains configuration for Dataplane V2 eBPF Host
+  Routing. Bypasses the Linux host stack for maximum throughput and lower
+  latency.
+
+  Fields:
+    enabled: Optional. Whether eBPF Host Routing is enabled.
   """
 
   enabled = _messages.BooleanField(1)

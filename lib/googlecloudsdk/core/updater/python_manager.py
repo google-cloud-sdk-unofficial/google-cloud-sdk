@@ -27,7 +27,7 @@ from googlecloudsdk.core.util import platforms
 
 PYTHON_VERSION = '3.14'
 PYTHON_VERSION_INFO = (3, 14)
-MACOS_PYTHON = 'python-3.14.5-macos11.tar.gz'
+MACOS_PYTHON = 'python-3.14.6-macos11.tar.gz'
 
 HOMEBREW_BIN = '/opt/homebrew/bin'
 MACOS_PYTHON_INSTALL_PATH = (
@@ -169,7 +169,7 @@ def _MacInstallPython():
 
       exit_code = execution_utils.Exec([
           'sudo', 'installer', '-target', '/', '-pkg',
-          './python-3.14.5-macos11.pkg'
+          './python-3.14.6-macos11.pkg'
       ], no_exit=True)
       if exit_code != 0:
         _PrintPythonInstallError('Installer failed.')

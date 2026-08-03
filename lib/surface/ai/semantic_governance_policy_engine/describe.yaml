@@ -1,4 +1,4 @@
-release_tracks: [BETA]
+release_tracks: [GA, BETA]
 help_text:
   brief: Describe the semantic governance policy engine config.
   description: Describe the semantic governance policy engine config.
@@ -13,7 +13,10 @@ arguments:
     required: true
 
 request:
-  api_version: v1beta1
+  BETA:
+    api_version: v1beta1
+  GA:
+    api_version: v1
   collection: aiplatform.projects.locations
   method: getSemanticGovernancePolicyEngine
   disable_resource_check: true

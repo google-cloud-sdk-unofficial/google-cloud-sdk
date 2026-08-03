@@ -277,6 +277,40 @@
           repeated: false
           help_text: |-
             OCI Cluster name.
+        - arg_name: properties-vm-file-system-storage-type
+          api_field: cloudVmCluster.properties.vmFileSystemStorageType
+          required: false
+          help_text: |-
+            Specifies whether VM file system storage / VM images are stored on local DB
+            server storage or Exascale storage.
+          choices:
+          - arg_value: vm-file-system-storage-type-local
+            enum_value: VM_FILE_SYSTEM_STORAGE_TYPE_LOCAL
+            help_text: |-
+              Local DB server storage.
+            hidden: true
+          - arg_value: vm-file-system-storage-type-exascale
+            enum_value: VM_FILE_SYSTEM_STORAGE_TYPE_EXASCALE
+            help_text: |-
+              Exascale storage.
+            hidden: true
+        - arg_name: properties-vm-backup-storage-type
+          api_field: cloudVmCluster.properties.vmBackupStorageType
+          required: false
+          help_text: |-
+            Specifies whether VM backups are stored on local DB server storage or
+            Exascale storage.
+          choices:
+          - arg_value: vm-backup-storage-type-local
+            enum_value: VM_BACKUP_STORAGE_TYPE_LOCAL
+            help_text: |-
+              Local DB server storage.
+            hidden: true
+          - arg_value: vm-backup-storage-type-exascale
+            enum_value: VM_BACKUP_STORAGE_TYPE_EXASCALE
+            help_text: |-
+              Exascale storage.
+            hidden: true
     - arg_name: labels
       api_field: cloudVmCluster.labels
       required: false

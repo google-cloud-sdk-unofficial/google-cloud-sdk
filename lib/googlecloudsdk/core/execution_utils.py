@@ -401,12 +401,7 @@ def _ReplaceSignal(signo, handler):
   try:
     yield
   finally:
-    try:
-      signal.signal(signo, old_handler)
-    except TypeError:
-      # This happens in production under Go when old_handler is None
-      # (C handler). We can't restore it, so we just pass.
-      pass
+    signal.signal(signo, old_handler)
 
 
 def _Exec(args,

@@ -74,6 +74,11 @@ class Condition(proto.Message):
             condition.
 
             This field is a member of `oneof`_ ``reasons``.
+        instance_reason (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.Condition.InstanceReason):
+            Output only. A reason for the instance
+            condition.
+
+            This field is a member of `oneof`_ ``reasons``.
         build_reason (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.Condition.BuildReason):
             Output only. A reason for the build
             condition.
@@ -272,6 +277,27 @@ class Condition(proto.Message):
         DELETED = 5
         DELAYED_START_PENDING = 6
 
+    class InstanceReason(proto.Enum):
+        r"""Reasons specific to Instance resource.
+
+        Values:
+            INSTANCE_REASON_UNSPECIFIED (0):
+                Default value.
+            INSTANCE_DELETED (1):
+                Instance deleted.
+            INSTANCE_STOPPED (2):
+                Instance stopped.
+            INSTANCE_STOPPING (3):
+                Instance stopping.
+            INSTANCE_NON_ZERO_EXIT_CODE (4):
+                Instance exited with a non-zero exit code.
+        """
+        INSTANCE_REASON_UNSPECIFIED = 0
+        INSTANCE_DELETED = 1
+        INSTANCE_STOPPED = 2
+        INSTANCE_STOPPING = 3
+        INSTANCE_NON_ZERO_EXIT_CODE = 4
+
     class BuildReason(proto.Enum):
         r"""Reasons specific to Build condition.
 
@@ -330,6 +356,12 @@ class Condition(proto.Message):
         number=11,
         oneof='reasons',
         enum=ExecutionReason,
+    )
+    instance_reason: InstanceReason = proto.Field(
+        proto.ENUM,
+        number=12,
+        oneof='reasons',
+        enum=InstanceReason,
     )
     build_reason: BuildReason = proto.Field(
         proto.ENUM,

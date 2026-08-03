@@ -1323,7 +1323,14 @@ class _BaseInstances(object):
     is_primary = instance_resource.masterInstanceName is None
     key_name = _GetAndValidateCmekKeyName(args, is_primary)
     enable_confidential = getattr(args, 'enable_confidential_storage', None)
-    if key_name or enable_confidential is not None:
+    enforce_cmek_log = getattr(
+        args, 'enforce_cmek_log_encryption_at_source', None
+    )
+    if (
+        key_name
+        or enable_confidential is not None
+        or enforce_cmek_log is not None
+    ):
       config = sql_messages.DiskEncryptionConfiguration(
           kind='sql#diskEncryptionConfiguration'
       )
@@ -1331,6 +1338,8 @@ class _BaseInstances(object):
         config.kmsKeyName = key_name
       if enable_confidential is not None:
         config.confidentialMode = enable_confidential
+      if enforce_cmek_log is not None:
+        config.cmekSourceLogEncryptionEnforced = enforce_cmek_log
       instance_resource.diskEncryptionConfiguration = config
 
     tags = getattr(args, 'tags')
@@ -1437,6 +1446,25 @@ class _BaseInstances(object):
       )
     if args.IsKnownAndSpecified('node_count'):
       instance_resource.nodeCount = args.node_count
+
+    enforce_cmek_log = getattr(
+        args, 'enforce_cmek_log_encryption_at_source', None
+    )
+    if enforce_cmek_log is not None:
+      if original.diskEncryptionConfiguration:
+        instance_resource.diskEncryptionConfiguration = (
+            original.diskEncryptionConfiguration
+        )
+        instance_resource.diskEncryptionConfiguration.cmekSourceLogEncryptionEnforced = (
+            enforce_cmek_log
+        )
+      else:
+        instance_resource.diskEncryptionConfiguration = (
+            sql_messages.DiskEncryptionConfiguration(
+                kind='sql#diskEncryptionConfiguration',
+                cmekSourceLogEncryptionEnforced=enforce_cmek_log,
+            )
+        )
 
     return instance_resource
 

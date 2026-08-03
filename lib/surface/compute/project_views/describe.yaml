@@ -11,8 +11,11 @@
         $ {command} --region=us-central1
 
   request:
+    ALPHA:
+      api_version: alpha
+    BETA:
+      api_version: beta
     collection: compute.projectViews
-    api_version: alpha
     method: get
     disable_resource_check: true
 

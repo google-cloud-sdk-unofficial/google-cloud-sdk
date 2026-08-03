@@ -280,6 +280,18 @@
             help_text: |-
               The email address used by Oracle to send notifications regarding databases
               and infrastructure.
+        - arg_name: properties-database-server-type
+          api_field: cloudExadataInfrastructure.properties.databaseServerType
+          required: false
+          repeated: false
+          help_text: |-
+            The database server type of the Exadata Infrastructure.
+        - arg_name: properties-storage-server-type
+          api_field: cloudExadataInfrastructure.properties.storageServerType
+          required: false
+          repeated: false
+          help_text: |-
+            The storage server type of the Exadata Infrastructure.
     - arg_name: labels
       api_field: cloudExadataInfrastructure.labels
       required: false

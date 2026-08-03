@@ -57,6 +57,14 @@ def GetClientInstance(release_track=base.ReleaseTrack.ALPHA):
   return apis.GetClientInstance('biglake', api_version)
 
 
+def GetTableClientInstance(release_track=base.ReleaseTrack.ALPHA):
+  client = GetClientInstance(release_track)
+  client.additional_http_headers['X-Iceberg-Access-Delegation'] = (
+      'vended-credentials'
+  )
+  return client
+
+
 def GetCatalogRef(catalog):
   """Get a resource reference to a catalog."""
   return resources.REGISTRY.Parse(
@@ -863,7 +871,10 @@ def CreateTable(catalog_id, namespace_id, table_data):
   endpoint = apis.GetEffectiveApiEndpoint('biglake', 'v1').strip('/')
   parent_name = GetNamespaceName(catalog_id, namespace_id)
   url = f'{endpoint}/iceberg/v1/restcatalog/v1/{parent_name}/tables'
-  headers = {'Content-Type': 'application/json'}
+  headers = {
+      'Content-Type': 'application/json',
+      'X-Iceberg-Access-Delegation': 'vended-credentials',
+  }
   response = requests.GetSession().request(
       'POST', url, data=json.dumps(table_data), headers=headers
   )
@@ -892,7 +903,10 @@ def GetTable(catalog_id, namespace_id, table_id):
   endpoint = apis.GetEffectiveApiEndpoint('biglake', 'v1').strip('/')
   table_name = GetTableName(catalog_id, namespace_id, table_id)
   url = f'{endpoint}/iceberg/v1/restcatalog/v1/{table_name}?alt=json&snapshots=refs'
-  headers = {'Content-Type': 'application/json'}
+  headers = {
+      'Content-Type': 'application/json',
+      'X-Iceberg-Access-Delegation': 'vended-credentials',
+  }
   response = requests.GetSession().request('GET', url, headers=headers)
   if int(response.status_code) != httplib.OK:
     raise HttpRequestFailError(
@@ -920,7 +934,10 @@ def UpdateTable(catalog_id, namespace_id, table_id, table_data):
   endpoint = apis.GetEffectiveApiEndpoint('biglake', 'v1').strip('/')
   table_name = GetTableName(catalog_id, namespace_id, table_id)
   url = f'{endpoint}/iceberg/v1/restcatalog/v1/{table_name}?alt=json'
-  headers = {'Content-Type': 'application/json'}
+  headers = {
+      'Content-Type': 'application/json',
+      'X-Iceberg-Access-Delegation': 'vended-credentials',
+  }
   response = requests.GetSession().request(
       'POST', url, data=json.dumps(table_data), headers=headers
   )

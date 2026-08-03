@@ -1,0 +1,29 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Get the owner instance of a Google Compute Engine global address.
+    description: |
+      Gets the owner instance of a Google Compute Engine global address.
+    examples: |
+      To get the owner instance of IP address `1.2.3.4`, run:
+
+        $ {command} 1.2.3.4
+
+  request:
+    collection: compute.globalAddresses
+    api_version: alpha
+    method: getOwnerInstance
+    use_relative_name: false
+    disable_resource_check: true
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.compute.addresses.flags:SetProjectRequestHook
+
+  command_type: GENERIC
+
+  arguments:
+    params:
+    - arg_name: ip_address
+      api_field: ipAddress
+      is_positional: true
+      required: true
+      help_text: |-
+        IP address to get the owner instance for.

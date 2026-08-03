@@ -50,7 +50,7 @@ def _Args(cls, parser, support_psc_google_apis,
 
   cls.NETWORK_ARG = flags.NetworkArgument()
   cls.NETWORK_ARG.AddArgument(parser)
-  flags.IpCollectionArgument().AddArgument(parser)
+  flags.AddIpCollectionGroup(parser)
 
 
 @base.UniverseCompatible
@@ -369,9 +369,12 @@ class Create(base.CreateCommand):
         network=network_url,
         ipv6EndpointType=ipv6_endpoint_type)
 
-    if args.ip_collection:
-      address_msg.ipCollection = flags.IpCollectionArgument().ResolveAsResource(
-          args, resource_parser).SelfLink()
+    if args.IsSpecified('ip_collection'):
+      address_msg.ipCollection = (
+          flags.IpCollectionArgument().ResolveAsResource(
+              args, resource_parser).SelfLink())
+    elif args.IsSpecified('internal_range'):
+      address_msg.ipCollection = args.internal_range
 
     return address_msg
 

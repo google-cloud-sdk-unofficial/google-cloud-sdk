@@ -30,7 +30,7 @@ from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(
     # MembershipFeature must be inherited before Feature so that this class can
     # use the prior's MembershipFeatureResourceName() method.
@@ -42,8 +42,8 @@ class Describe(
   mf_name = utils.CONFIG_MANAGEMENT_FEATURE_NAME
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(Describe):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class DescribeBeta(Describe):
   """Describe the Config Management feature."""
 
   detailed_help = {

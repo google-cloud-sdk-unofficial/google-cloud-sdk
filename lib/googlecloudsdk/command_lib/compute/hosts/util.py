@@ -14,33 +14,51 @@
 # limitations under the License.
 """Hooks for compute hosts commands."""
 
+from googlecloudsdk.calliope import exceptions
+
 
 def CreateAssociationHook(unused_ref, args, request):
-  """Constructs association path from reservation and block_name flags."""
+  """Constructs association path from reservation, reservation_block, and reservation_subblock flags."""
 
   # If user explicitly specified association, use it.
   if args.IsKnownAndSpecified('association') and args.association:
     request.association = args.association
     return request
 
-  if request.association and not (
-      request.association.startswith('reservations/')
-      or request.association.startswith('reservationBlocks/')
-  ):
-    request.association = ''
+  block_name_specified = (
+      args.IsKnownAndSpecified('reservation_block') and args.reservation_block
+  )
+
+  subblock_name_specified = (
+      args.IsKnownAndSpecified('reservation_subblock')
+      and args.reservation_subblock
+  )
+
+  reservation_specified = (
+      args.IsKnownAndSpecified('reservation') and args.reservation
+  )
+
+  if block_name_specified and not reservation_specified:
+    raise exceptions.RequiredArgumentException(
+        '--reservation',
+        'Must be specified when --reservation-block is provided.',
+    )
+
+  if subblock_name_specified and not block_name_specified:
+    raise exceptions.RequiredArgumentException(
+        '--reservation-block',
+        'Must be specified when --reservation-subblock is provided.',
+    )
 
   association = []
-  if args.IsKnownAndSpecified('reservation') and args.reservation:
+  if reservation_specified:
     association.append(f'reservations/{args.reservation}')
 
-  block_name = None
-  if args.IsKnownAndSpecified('reservation_block') and args.reservation_block:
-    block_name = args.reservation_block
-  elif args.IsKnownAndSpecified('block_name') and args.block_name:
-    block_name = args.block_name
+  if block_name_specified:
+    association.append(f'reservationBlocks/{args.reservation_block}')
 
-  if block_name:
-    association.append(f'reservationBlocks/{block_name}')
+  if subblock_name_specified:
+    association.append(f'reservationSubBlocks/{args.reservation_subblock}')
 
   if association:
     request.association = '/'.join(association)

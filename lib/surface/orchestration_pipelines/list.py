@@ -78,15 +78,11 @@ class List(calliope_base.Command):
     else:
       env_model = yaml_processor.load_environment_with_args(args)
 
-    list_dags_response = composer_utils.list_pipelines_with_filter(
+    dags = composer_utils.list_pipelines_with_filter(
         list_filter,
         env_model,
         args.runner,
         api_version,
     )
 
-    return {
-        "pipelines": composer_utils.convert_dags_to_pipelines(
-            list_dags_response.dags
-        )
-    }
+    return {"pipelines": composer_utils.convert_dags_to_pipelines(dags)}

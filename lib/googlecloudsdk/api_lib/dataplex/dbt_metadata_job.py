@@ -16,7 +16,10 @@
 
 from __future__ import annotations
 
+from urllib import parse
+
 from googlecloudsdk.api_lib.dataplex import util as dataplex_api
+from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
 from googlecloudsdk.generated_clients.apis.dataplex.v1 import dataplex_v1_messages
 
@@ -73,27 +76,80 @@ _SYSTEM_TYPES_PROJECT_BY_ENV = {
 # The 1P dbt types always live at the `global` location.
 _GLOBAL_TYPE_LOCATION = 'global'
 
+# Non-prod environments we can resolve type projects for (the keys minus prod).
+_NON_PROD_ENVS = frozenset(_CONNECTOR_TYPES_PROJECT_BY_ENV) - {'prod'}
+
+
+class UnknownDataplexEnvironmentError(exceptions.Error):
+  """Raised when the Dataplex endpoint maps to no known environment.
+
+  A safety net: silently falling through to prod type projects for an
+  unrecognized non-prod endpoint would point the import at the wrong system
+  projects. Callers can bypass detection entirely with the explicit
+  `--connector-types-project` / `--system-types-project` flags.
+  """
+
+
+def _EndpointHost(override: str) -> str:
+  """Returns the lower-cased host of a Dataplex endpoint override.
+
+  Args:
+    override: the raw `api_endpoint_overrides/dataplex` value, either a full URL
+      (`https://host/`) or a bare `host[/path]`.
+  """
+  override = override.strip().lower()
+  host = parse.urlparse(override).hostname
+  if not host:
+    # No scheme (e.g. 'staging-dataplex.sandbox.googleapis.com/'): parse the
+    # leading `host[/path]` ourselves.
+    host = override.split('//')[-1].split('/')[0]
+  return host
+
 
 def DetectEnvironment() -> str:
-  """Infers prod/staging/autopush from the Dataplex endpoint override.
+  """Infers the Dataplex environment from the configured endpoint override.
 
   Reads the `api_endpoint_overrides/dataplex` property (which the
-  CLOUDSDK_API_ENDPOINT_OVERRIDES_DATAPLEX env var also feeds). Defaults to
-  'prod' when no override (or an unrecognized one) is set.
+  CLOUDSDK_API_ENDPOINT_OVERRIDES_DATAPLEX env var also feeds). Dataplex
+  endpoints are `<env>-dataplex[.mtls].sandbox.googleapis.com` for non-prod and
+  `dataplex[.mtls].googleapis.com` for prod, so the environment is the first
+  host label's prefix before `-dataplex`.
 
-  This is a best-effort substring match on the endpoint host; the
-  `--connector-types-project` / `--system-types-project` flags exist to
-  override the inferred projects when the heuristic is insufficient.
+  Resolution:
+   * no override set -> prod;
+   * a recognized non-prod prefix (staging / autopush) -> that environment;
+   * any other prod-looking `*.googleapis.com` host -> prod (covers mTLS and
+     regional/PSC prod endpoints);
+   * an unrecognized `*.sandbox.googleapis.com` host -> raises, since it is an
+     unmapped non-prod environment and defaulting to prod projects would be
+     silently wrong.
 
   Returns:
     One of 'prod', 'staging' or 'autopush'.
+
+  Raises:
+    UnknownDataplexEnvironmentError: for a non-prod endpoint we cannot map.
   """
   override = properties.VALUES.api_endpoint_overrides.dataplex.Get() or ''
-  override = override.lower()
-  if 'autopush' in override:
-    return 'autopush'
-  if 'staging' in override:
-    return 'staging'
+  if not override.strip():
+    return 'prod'
+  host = _EndpointHost(override)
+  first_label = host.split('.')[0]
+  env = (
+      first_label[: -len('-dataplex')]
+      if first_label.endswith('-dataplex')
+      else ''
+  )
+  if env in _NON_PROD_ENVS:
+    return env
+  # Sandbox hosts we don't recognize are almost certainly a non-prod env we
+  # haven't mapped -- fail loudly instead of silently hitting prod projects.
+  if host.endswith('sandbox.googleapis.com'):
+    raise UnknownDataplexEnvironmentError(
+        'Cannot determine the Dataplex environment for endpoint [{0}]. Pass '
+        '--connector-types-project and --system-types-project explicitly.'
+        .format(override)
+    )
   return 'prod'
 
 
@@ -161,6 +217,7 @@ def GenerateImportMetadataJob(
     aspect_sync_mode: str,
     entry_link_types: list[str] | None = None,
     referenced_entry_scopes: list[str] | None = None,
+    extra_aspect_types: list[str] | None = None,
     log_level: str | None = None,
 ) -> dataplex_v1_messages.GoogleCloudDataplexV1MetadataJob:
   """Builds an IMPORT MetadataJob scoped to the 1P dbt connector types.
@@ -180,6 +237,8 @@ def GenerateImportMetadataJob(
       entry links).
     referenced_entry_scopes: optional list of `projects/{id}` scopes used to
       resolve entry-link / cross-project references.
+    extra_aspect_types: optional extra aspectType FQNs to add to the scope (e.g.
+      the `schema-join` aspect carried by logical-schema-join links).
     log_level: optional 'DEBUG' or 'INFO'.
 
   Returns:
@@ -199,8 +258,9 @@ def GenerateImportMetadataJob(
       scope=scope_cls(
           entryGroups=[EntryGroupName(eg_project, eg_location, entry_group)],
           entryTypes=EntryTypeNames(connector_types_project),
-          aspectTypes=AspectTypeNames(
-              connector_types_project, system_types_project
+          aspectTypes=(
+              AspectTypeNames(connector_types_project, system_types_project)
+              + (extra_aspect_types or [])
           ),
           entryLinkTypes=entry_link_types or [],
           referencedEntryScopes=referenced_entry_scopes or [],

@@ -957,6 +957,58 @@ def AddExternalMigration(parser):
   )
 
 
+def AddMetadataFilter(parser):
+  """Adds metadata-filter flag to the argparse."""
+  parser.add_argument(
+      '--metadata-filter',
+      type=arg_parsers.ArgDict(
+          spec={
+              'filter-match-criteria': lambda x: x.upper(),
+              'filter-labels': compute_flags.QuotedArgDict(),
+          },
+          required_keys=['filter-match-criteria', 'filter-labels'],
+          includes_json=True,
+      ),
+      action='append',
+      default=None,
+      help="""\
+      Opaque filter criteria used by load balancer to restrict routing configuration
+      to a limited set of xDS compliant clients.
+
+      *filter-match-criteria*::: Specifies how individual filter label matches
+      contribute toward the overall metadata filter match. Supported values are
+      `MATCH_ANY` and `MATCH_ALL`.
+
+      *filter-labels*::: A list of label/value pairs that must match labels in the
+      provided metadata based on filter-match-criteria, e.g., `{'key1':'val1','key2':'val2'}`.
+
+      Can be specified multiple times for multiple metadata filters.
+      """,
+  )
+
+
+def ParseMetadataFilters(messages, metadata_filter_args):
+  """Constructs a list of MetadataFilter messages from parsed args."""
+  metadata_filters = []
+  for filter_dict in metadata_filter_args:
+    criteria_str = filter_dict['filter-match-criteria']
+    criteria_enum = messages.MetadataFilter.FilterMatchCriteriaValueValuesEnum(
+        criteria_str
+    )
+    labels_dict = filter_dict['filter-labels']
+    filter_labels = [
+        messages.MetadataFilterLabelMatch(name=k, value=v)
+        for k, v in sorted(labels_dict.items())
+    ]
+    metadata_filters.append(
+        messages.MetadataFilter(
+            filterMatchCriteria=criteria_enum,
+            filterLabels=filter_labels,
+        )
+    )
+  return metadata_filters
+
+
 class PortRangesWithAll(object):
   """Particular keyword 'all' or a range of integer values."""
 

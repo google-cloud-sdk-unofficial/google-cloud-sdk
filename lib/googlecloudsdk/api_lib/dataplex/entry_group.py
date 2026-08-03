@@ -53,6 +53,26 @@ def GenerateEntryGroupUpdateMask(args):
   return update_mask
 
 
+def GetEntryGroup(entry_group_name):
+  """Fetches an EntryGroup by its relative resource name.
+
+  Args:
+    entry_group_name: the relative resource name of the entry group
+      (projects/{p}/locations/{l}/entryGroups/{eg}).
+
+  Returns:
+    The GoogleCloudDataplexV1EntryGroup message.
+
+  Raises:
+    apitools.base.py.exceptions.HttpError: if the entry group does not exist or
+      is not accessible.
+  """
+  return dataplex_api.GetClientInstance().projects_locations_entryGroups.Get(
+      dataplex_api.GetMessageModule()
+      .DataplexProjectsLocationsEntryGroupsGetRequest(name=entry_group_name)
+  )
+
+
 def WaitForOperation(operation):
   """Waits for the given google.longrunning.Operation to complete."""
   return dataplex_api.WaitForOperation(

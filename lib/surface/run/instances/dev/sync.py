@@ -14,6 +14,8 @@
 # limitations under the License.
 """Command to Sync local workspace to a Cloud Run Instance."""
 
+import uuid
+
 from googlecloudsdk.api_lib.run import ssh as run_ssh
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import config_changes
@@ -32,6 +34,7 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
+from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 
@@ -58,7 +61,7 @@ Container Flags
   group.AddArgument(flags.RemoveVolumeMountFlag())
   group.AddArgument(flags.ClearVolumeMountsFlag())
   group.AddArgument(flags.StartupProbeFlag())
-  group.AddArgument(flags.SandboxLauncherFlag(hidden=True))
+  group.AddArgument(flags.SandboxLauncherFlag())
   return group
 
 
@@ -124,10 +127,8 @@ class Sync(base.Command):
     flags.CONFIG_MAP_FLAGS.AddToParser(parser)
     instance_presentation = presentation_specs.ResourcePresentationSpec(
         'INSTANCE',
-        resource_args.GetInstanceResourceSpec(prompt=True),
+        resource_args.GetInstanceResourceSpec(),
         'Instance to sync to.',
-        required=True,
-        prefixes=False,
     )
     flags.AddLabelsFlag(parser)
     flags.AddServiceAccountFlag(parser)
@@ -180,10 +181,18 @@ class Sync(base.Command):
   def Run(self, args):
     flags.ValidatePublicFlags(args)
 
-    instance_ref = args.CONCEPTS.instance.Parse()
-    flags.ValidateResource(instance_ref)
     args.release_track = self.ReleaseTrack()
     args.project = flags.GetProjectID(args)
+
+    instance_ref = args.CONCEPTS.instance.Parse()
+    if not instance_ref:
+      instance_name = 'i' + uuid.uuid4().hex[:10]
+      instance_ref = resources.REGISTRY.Parse(
+          instance_name,
+          params={'namespacesId': args.project},
+          collection='run.namespaces.instances',
+      )
+    flags.ValidateResource(instance_ref)
 
     args.region = flags.GetRegion(args, prompt=False)
     if not args.region:
@@ -217,6 +226,10 @@ class Sync(base.Command):
             'The --cleanup flag is not supported for dev sync to an existing'
             ' Instance.'
         )
+
+      pretty_print.Info(f'Syncing to existing instance: {instance.name}')
+      if instance.urls:
+        pretty_print.Info(f'Instance URL: {{bold}}{instance.urls[0]}{{reset}}')
     else:
       changes = NecessaryChangesForInstancesDevSync(args)
       deploy_util.DeployInstanceFromSource(

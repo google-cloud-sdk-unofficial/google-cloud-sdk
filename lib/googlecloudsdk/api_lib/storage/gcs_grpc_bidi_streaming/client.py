@@ -117,10 +117,20 @@ class GcsGrpcBidiStreamingClient(cloud_api.CloudApi):
     # Creating the gapic client before "fork" will lead to a deadlock.
     if self._gapic_client is None:
       max_metadata_size = properties.VALUES.grpc.max_metadata_size.GetInt()
+      use_client_cert = (
+          properties.VALUES.context_aware.use_client_certificate.GetBool()
+      )
+      # DirectPath is incompatible with custom SSL/mTLS credentials
+      # (enabled via use_client_certificate). Combining both causes
+      # google.api_core.grpc_helpers to raise a ValueError.
+      attempt_direct_path = (
+          properties.VALUES.storage.attempt_grpc_direct_path.GetBool()
+          and not use_client_cert
+      )
       self._gapic_client = core_apis.GetGapicClientInstance(
           'storage',
           'v2',
-          attempt_direct_path=properties.VALUES.storage.attempt_grpc_direct_path.GetBool(),
+          attempt_direct_path=attempt_direct_path,
           redact_request_body_reason=redact_request_body_reason,
           address_override_func=_storage_address_override,
           channel_options={

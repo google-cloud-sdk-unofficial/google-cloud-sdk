@@ -410,93 +410,116 @@ WrappedSocket.makefile = socket_cls.makefile  # type: ignore[attr-defined]
 
 
 class PyOpenSSLContext:
-    """
+  """
     I am a wrapper class for the PyOpenSSL ``Context`` object. I am responsible
     for translating the interface of the standard library ``SSLContext`` object
     to calls into PyOpenSSL.
     """
 
-    def __init__(self, protocol: int) -> None:
-        self.protocol = _openssl_versions[protocol]
-        self._ctx = OpenSSL.SSL.Context(self.protocol)
-        self._options = 0
-        self.check_hostname = False
-        self._minimum_version: int = ssl.TLSVersion.MINIMUM_SUPPORTED
-        self._maximum_version: int = ssl.TLSVersion.MAXIMUM_SUPPORTED
-        self._verify_flags: int = ssl.VERIFY_X509_TRUSTED_FIRST
+  def __init__(self, protocol: int) -> None:
+    self.protocol = _openssl_versions[protocol]
+    self._ctx = OpenSSL.SSL.Context(self.protocol)
+    self._options = 0
+    self.check_hostname = False
+    self._minimum_version: int = ssl.TLSVersion.MINIMUM_SUPPORTED
+    self._maximum_version: int = ssl.TLSVersion.MAXIMUM_SUPPORTED
+    self._verify_flags: int = ssl.VERIFY_X509_TRUSTED_FIRST
 
-    @property
-    def options(self) -> int:
-        return self._options
+  @property
+  def options(self) -> int:
+    return self._options
 
-    @options.setter
-    def options(self, value: int) -> None:
-        self._options = value
-        self._set_ctx_options()
+  @options.setter
+  def options(self, value: int) -> None:
+    self._options = value
+    self._set_ctx_options()
 
-    @property
-    def verify_flags(self) -> int:
-        return self._verify_flags
+  @property
+  def verify_flags(self) -> int:
+    return self._verify_flags
 
-    @verify_flags.setter
-    def verify_flags(self, value: int) -> None:
-        self._verify_flags = value
-        self._ctx.get_cert_store().set_flags(self._verify_flags)
+  @verify_flags.setter
+  def verify_flags(self, value: int) -> None:
+    self._verify_flags = value
+    self._ctx.get_cert_store().set_flags(self._verify_flags)
 
-    @property
-    def verify_mode(self) -> int:
-        return _openssl_to_stdlib_verify[self._ctx.get_verify_mode()]
+  @property
+  def verify_mode(self) -> int:
+    return _openssl_to_stdlib_verify[self._ctx.get_verify_mode()]
 
-    @verify_mode.setter
-    def verify_mode(self, value: ssl.VerifyMode) -> None:
-        self._ctx.set_verify(_stdlib_to_openssl_verify[value], _verify_callback)
+  @verify_mode.setter
+  def verify_mode(self, value: ssl.VerifyMode) -> None:
+    self._ctx.set_verify(_stdlib_to_openssl_verify[value], _verify_callback)
 
-    def set_default_verify_paths(self) -> None:
-        self._ctx.set_default_verify_paths()
+  def set_default_verify_paths(self) -> None:
+    self._ctx.set_default_verify_paths()
 
-    def set_ciphers(self, ciphers: bytes | str) -> None:
-        if isinstance(ciphers, str):
-            ciphers = ciphers.encode("utf-8")
-        self._ctx.set_cipher_list(ciphers)
+  def set_ciphers(self, ciphers: bytes | str) -> None:
+    if isinstance(ciphers, str):
+      ciphers = ciphers.encode("utf-8")
+    self._ctx.set_cipher_list(ciphers)
 
-    def load_verify_locations(
+  def load_verify_locations(
         self,
         cafile: str | None = None,
         capath: str | None = None,
         cadata: bytes | None = None,
     ) -> None:
-        if cafile is not None:
-            cafile = cafile.encode("utf-8")  # type: ignore[assignment]
-        if capath is not None:
-            capath = capath.encode("utf-8")  # type: ignore[assignment]
-        try:
-            self._ctx.load_verify_locations(cafile, capath)
-            if cadata is not None:
-                self._ctx.load_verify_locations(BytesIO(cadata))
-        except OpenSSL.SSL.Error as e:
-            raise ssl.SSLError(f"unable to load trusted certificates: {e!r}") from e
+    if cafile is not None:
+      cafile = cafile.encode("utf-8")  # type: ignore[assignment]
+    if capath is not None:
+      capath = capath.encode("utf-8")  # type: ignore[assignment]
+    try:
+      if cafile is not None or capath is not None:
+        self._ctx.load_verify_locations(cafile, capath)
+      if cadata is not None:
+        if isinstance(cadata, str):
+          cadata = cadata.encode("utf-8")  # type: ignore[assignment]
+        from OpenSSL import crypto
 
-    def load_cert_chain(
-        self,
-        certfile: str,
-        keyfile: str | None = None,
-        password: str | None = None,
-    ) -> None:
-        try:
-            self._ctx.use_certificate_chain_file(certfile)
-            if password is not None:
-                if not isinstance(password, bytes):
-                    password = password.encode("utf-8")  # type: ignore[assignment]
-                self._ctx.set_passwd_cb(lambda *_: password)
-            self._ctx.use_privatekey_file(keyfile or certfile)
-        except OpenSSL.SSL.Error as e:
-            raise ssl.SSLError(f"Unable to load certificate chain: {e!r}") from e
+        if b"-----BEGIN CERTIFICATE-----" in cadata:
+          # Split PEM bundle and load certs individually
+          certs = cadata.split(b"-----BEGIN CERTIFICATE-----")
+          for cert_data in certs[1:]:
+            cert_pem = b"-----BEGIN CERTIFICATE-----" + cert_data
+            try:
+              cert = crypto.load_certificate(crypto.FILETYPE_PEM, cert_pem)
+              self._ctx.get_cert_store().add_cert(cert)
+            except crypto.Error as e:
+              log.warning("Failed to load PEM certificate from cadata: %s", e)
+        else:
+          # Try loading as DER
+          try:
+            cert = crypto.load_certificate(crypto.FILETYPE_ASN1, cadata)
+            self._ctx.get_cert_store().add_cert(cert)
+          except crypto.Error as e:
+            raise OpenSSL.SSL.Error(
+                f"Failed to load DER certificate from cadata: {e}"
+            )
+    except OpenSSL.SSL.Error as e:
+      raise ssl.SSLError(f"unable to load trusted certificates: {e!r}") from e
 
-    def set_alpn_protocols(self, protocols: list[bytes | str]) -> None:
-        protocols = [util.util.to_bytes(p, "ascii") for p in protocols]
-        return self._ctx.set_alpn_protos(protocols)  # type: ignore[no-any-return]
+  def load_cert_chain(
+      self,
+      certfile: str,
+      keyfile: str | None = None,
+      password: str | None = None,
+  ) -> None:
+    try:
+      self._ctx.use_certificate_chain_file(certfile)
+      if password is not None:
+        if not isinstance(password, bytes):
+          password = password.encode("utf-8")  # type: ignore[assignment]
+        self._ctx.set_passwd_cb(lambda *_: password)
+      self._ctx.use_privatekey_file(keyfile or certfile)
+    except OpenSSL.SSL.Error as e:
+      raise ssl.SSLError(f"Unable to load certificate chain: {e!r}") from e
 
-    def wrap_socket(
+  def set_alpn_protocols(self, protocols: list[bytes | str]) -> None:
+    protocols = [util.util.to_bytes(p, "ascii") for p in protocols]
+    return self._ctx.set_alpn_protos(protocols)  # type: ignore[no-any-return]
+
+  def wrap_socket(
         self,
         sock: socket_cls,
         server_side: bool = False,
@@ -504,53 +527,53 @@ class PyOpenSSLContext:
         suppress_ragged_eofs: bool = True,
         server_hostname: bytes | str | None = None,
     ) -> WrappedSocket:
-        cnx = OpenSSL.SSL.Connection(self._ctx, sock)
+    cnx = OpenSSL.SSL.Connection(self._ctx, sock)
 
-        # If server_hostname is an IP, don't use it for SNI, per RFC6066 Section 3
-        if server_hostname and not util.ssl_.is_ipaddress(server_hostname):
-            if isinstance(server_hostname, str):
-                server_hostname = server_hostname.encode("utf-8")
-            cnx.set_tlsext_host_name(server_hostname)
+    # If server_hostname is an IP, don't use it for SNI, per RFC6066 Section 3
+    if server_hostname and not util.ssl_.is_ipaddress(server_hostname):
+      if isinstance(server_hostname, str):
+        server_hostname = server_hostname.encode("utf-8")
+      cnx.set_tlsext_host_name(server_hostname)
 
-        cnx.set_connect_state()
+    cnx.set_connect_state()
 
-        while True:
-            try:
-                cnx.do_handshake()
-            except OpenSSL.SSL.WantReadError as e:
-                if not util.wait_for_read(sock, sock.gettimeout()):
-                    raise TimeoutError("select timed out") from e
-                continue
-            except OpenSSL.SSL.Error as e:
-                raise ssl.SSLError(f"bad handshake: {e!r}") from e
-            break
+    while True:
+      try:
+        cnx.do_handshake()
+      except OpenSSL.SSL.WantReadError as e:
+        if not util.wait_for_read(sock, sock.gettimeout()):
+          raise TimeoutError("select timed out") from e
+        continue
+      except OpenSSL.SSL.Error as e:
+        raise ssl.SSLError(f"bad handshake: {e!r}") from e
+      break
 
-        return WrappedSocket(cnx, sock)
+    return WrappedSocket(cnx, sock)
 
-    def _set_ctx_options(self) -> None:
-        self._ctx.set_options(
+  def _set_ctx_options(self) -> None:
+    self._ctx.set_options(
             self._options
             | _openssl_to_ssl_minimum_version[self._minimum_version]
             | _openssl_to_ssl_maximum_version[self._maximum_version]
         )
 
-    @property
-    def minimum_version(self) -> int:
-        return self._minimum_version
+  @property
+  def minimum_version(self) -> int:
+    return self._minimum_version
 
-    @minimum_version.setter
-    def minimum_version(self, minimum_version: int) -> None:
-        self._minimum_version = minimum_version
-        self._set_ctx_options()
+  @minimum_version.setter
+  def minimum_version(self, minimum_version: int) -> None:
+    self._minimum_version = minimum_version
+    self._set_ctx_options()
 
-    @property
-    def maximum_version(self) -> int:
-        return self._maximum_version
+  @property
+  def maximum_version(self) -> int:
+    return self._maximum_version
 
-    @maximum_version.setter
-    def maximum_version(self, maximum_version: int) -> None:
-        self._maximum_version = maximum_version
-        self._set_ctx_options()
+  @maximum_version.setter
+  def maximum_version(self, maximum_version: int) -> None:
+    self._maximum_version = maximum_version
+    self._set_ctx_options()
 
 
 def _verify_callback(

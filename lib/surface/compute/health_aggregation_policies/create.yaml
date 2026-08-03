@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, BETA, GA]
+  hints:
+    read_only: false
   help_text:
     brief: "Create a health aggregation policy."
     description: "Create a health aggregation policy."

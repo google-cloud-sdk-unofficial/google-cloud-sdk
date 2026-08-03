@@ -158,11 +158,11 @@ def list_pipelines_with_filter(list_filter, env_model, runner, api_version):
       collection='composer.projects.locations.environments',
       api_version=api_version,
   )
-  dags_list = dags_util.ListDags(
+  dags = dags_util.ListDags(
       environment_ref,
       list_filter=list_filter,
   )
-  return dags_list
+  return dags
 
 
 def parse_metadata_json(metadata_json):

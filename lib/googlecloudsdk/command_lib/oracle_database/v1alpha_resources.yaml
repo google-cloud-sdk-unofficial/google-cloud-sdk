@@ -65,7 +65,7 @@ projects_locations_cloud_exadata_infrastructures:
     parameter_name: cloudExadataInfrastructuresId
     attribute_name: cloud_exadata_infrastructure
     help: The cloudExadataInfrastructure id of the {resource} resource.
-  disable_auto_completers: true
+  disable_auto_completers: false
 projects_locations_cloud_vm_clusters:
   name: cloudVmCluster
   plural_name: cloudVmClusters
@@ -101,6 +101,18 @@ projects_locations_cloud_vm_clusters_or_exadb_vm_clusters:
       attribute_name: exadb_vm_cluster
       help: The exadbVmCluster id of the {resource} resource.
     disable_auto_completers: true
+projects_locations_database_connections:
+  name: databaseConnection
+  plural_name: databaseConnections
+  collection: oracledatabase.projects.locations.databaseConnections
+  attributes:
+  - *project
+  - *location
+  - &databaseConnection
+    parameter_name: databaseConnectionsId
+    attribute_name: database_connection
+    help: The databaseConnection id of the {resource} resource.
+  disable_auto_completers: false
 projects_locations_databases:
   name: database
   plural_name: databases
@@ -158,18 +170,18 @@ projects_locations_exascale_db_storage_vaults:
     attribute_name: exascale_db_storage_vault
     help: The exascaleDbStorageVault id of the {resource} resource.
   disable_auto_completers: false
-projects_locations_gi_versions:
-  name: giVersion
-  plural_name: giVersions
-  collection: oracledatabase.projects.locations.giVersions
+projects_locations_flex_components:
+  name: flexComponent
+  plural_name: flexComponents
+  collection: oracledatabase.projects.locations.flexComponents
   attributes:
   - *project
   - *location
-  - &giVersion
-    parameter_name: giVersionsId
-    attribute_name: gi_version
-    help: The giVersion id of the {resource} resource.
-  disable_auto_completers: true
+  - &flexComponent
+    parameter_name: flexComponentsId
+    attribute_name: flex_component
+    help: The flexComponent id of the {resource} resource.
+  disable_auto_completers: false
 projects_locations_goldengate_connection_assignments:
   name: goldengateConnectionAssignment
   plural_name: goldengateConnectionAssignments

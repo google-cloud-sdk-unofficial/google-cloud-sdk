@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA]
+  hints:
+    read_only: false
   command_type: GENERIC
   help_text:
     brief: Creates service account key.

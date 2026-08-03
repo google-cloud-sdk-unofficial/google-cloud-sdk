@@ -1,4 +1,6 @@
 - release_tracks: [GA, ALPHA]
+  hints:
+    read_only: true
 
   help_text:
     brief: List cloud access bindings under an organization.
@@ -210,14 +212,11 @@
 
   request:
     collection: accesscontextmanager.organizations.gcpUserAccessBindings
-    GA:
-      api_version: v1
-      modify_request_hooks:
-      - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessFilter
+    api_version: v1
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessFilter
     ALPHA:
       api_version: v1alpha
-      modify_request_hooks:
-      - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessFilter
 
   arguments:
     resource:
@@ -225,7 +224,4 @@
       spec: !REF googlecloudsdk.command_lib.accesscontextmanager.resources:organization
 
   output:
-    GA:
-      format: yaml(name, groupKey, principal, accessLevels, dryRunAccessLevels, sessionSettings, restrictedClientApplications, scopedAccessSettings)
-    ALPHA:
-      format: yaml(name, groupKey, principal, accessLevels, dryRunAccessLevels, sessionSettings, restrictedClientApplications, scopedAccessSettings)
+    format: yaml(name, groupKey, principal, accessLevels, dryRunAccessLevels, sessionSettings, scopedAccessSettings)

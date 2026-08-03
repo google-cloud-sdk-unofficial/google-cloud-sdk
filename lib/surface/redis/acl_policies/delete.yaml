@@ -14,6 +14,7 @@
   arguments:
     resource:
       spec: !REF googlecloudsdk.command_lib.redis.resources:acl_policy
+      is_positional: true
       help_text:
         Arguments and flags that specify the Redis ACL Policy you want to delete.
   async:

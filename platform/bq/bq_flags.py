@@ -21,7 +21,7 @@ ALPHA = flags.DEFINE_multi_enum_class(
     'alpha',
     {},
     AlphaFeatures,
-    'Naming an alpha feature with this flag will cause it be used.',
+    'Specifies an alpha feature to enable.',
 )
 
 APILOG = flags.DEFINE_string(
@@ -83,7 +83,7 @@ UNIVERSE_DOMAIN: flags.FlagHolder[Optional[str]] = flags.DEFINE_string(
 REQUEST_REASON: flags.FlagHolder[Optional[str]] = flags.DEFINE_string(
     'request_reason',
     None,
-    'A reason for making the request intended to be recorded in audit logging.',
+    'Specifies a reason for making a request that is recorded in audit logs.',
 )
 
 USE_GCLOUD_CONFIG = flags.DEFINE_boolean(
@@ -283,8 +283,8 @@ JOB_PROPERTY = flags.DEFINE_multi_string(
 ENABLE_RESUMABLE_UPLOADS = flags.DEFINE_boolean(
     'enable_resumable_uploads',
     None,
-    'Enables resumable uploads over HTTP (Only applies to load jobs that load '
-    'data from local files.). Defaults to True.'
+    'Enables resumable uploads over HTTP for jobs that load data from local'
+    ' files.'
 )
 MAX_ROWS_PER_REQUEST = flags.DEFINE_integer(
     'max_rows_per_request',
@@ -315,7 +315,8 @@ ENABLE_GDRIVE = flags.DEFINE_boolean(
 MTLS: flags.FlagHolder[bool] = flags.DEFINE_boolean(
     'mtls',
     False,
-    'If set will use mtls client certificate on connections to BigQuery.',
+    'If set to true, uses an mTLS client certificate on connections to'
+    ' BigQuery.',
 )
 
 

@@ -1484,8 +1484,13 @@ class CompositeApplicationParameters(_messages.Message):
 class Connection(_messages.Message):
   r"""Connection resource.
 
+  Enums:
+    DependencyTypeValueValuesEnum: Output only. The type of the connection
+      (data or logical).
+
   Fields:
     createTime: Output only. The connection creation timestamp.
+    dependencyType: Output only. The type of the connection (data or logical).
     destinationComponentParameters: Optional. The parameters of the connection
       associated with the destination component.
     destinationComponentUri: Required. The destination component URI used to
@@ -1498,12 +1503,28 @@ class Connection(_messages.Message):
     updateTime: Output only. The connection update timestamp.
   """
 
+  class DependencyTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The type of the connection (data or logical).
+
+    Values:
+      CONNECTION_DEPENDENCY_TYPE_UNSPECIFIED: The dependency type is
+        unspecified.
+      CONNECTION_DEPENDENCY_TYPE_DATA: Data dependency: output parameter of
+        one module is input to another.
+      CONNECTION_DEPENDENCY_TYPE_LOGICAL: Logical dependency: explicitly
+        declared execution order dependency (depends_on).
+    """
+    CONNECTION_DEPENDENCY_TYPE_UNSPECIFIED = 0
+    CONNECTION_DEPENDENCY_TYPE_DATA = 1
+    CONNECTION_DEPENDENCY_TYPE_LOGICAL = 2
+
   createTime = _messages.StringField(1)
-  destinationComponentParameters = _messages.MessageField('Parameter', 2, repeated=True)
-  destinationComponentUri = _messages.StringField(3)
-  name = _messages.StringField(4)
-  sourceComponentParameters = _messages.MessageField('Parameter', 5, repeated=True)
-  updateTime = _messages.StringField(6)
+  dependencyType = _messages.EnumField('DependencyTypeValueValuesEnum', 2)
+  destinationComponentParameters = _messages.MessageField('Parameter', 3, repeated=True)
+  destinationComponentUri = _messages.StringField(4)
+  name = _messages.StringField(5)
+  sourceComponentParameters = _messages.MessageField('Parameter', 6, repeated=True)
+  updateTime = _messages.StringField(7)
 
 
 class ConnectionConfig(_messages.Message):
@@ -4456,15 +4477,58 @@ class ImportIaCError(_messages.Message):
   but got \"number\"." type: INVALID }
 
   Enums:
+    ErrorCodeValueValuesEnum: Output only. Specific error code for the import
+      error.
     TypeValueValuesEnum: Output only. The type of error.
 
   Fields:
     description: Output only. The description of the error.
+    errorCode: Output only. Specific error code for the import error.
     file: Output only. The file where the error has occurred.
     range: Output only. The code portion where this error occurs.
     resourceAddress: Output only. The resource address of the error.
     type: Output only. The type of error.
   """
+
+  class ErrorCodeValueValuesEnum(_messages.Enum):
+    r"""Output only. Specific error code for the import error.
+
+    Values:
+      ERROR_CODE_UNSPECIFIED: Default.
+      ERROR_CODE_SYNTAX_ERROR: HCL Syntax errors (e.g. unclosed blocks, bad
+        characters)
+      ERROR_CODE_UNSUPPORTED_BLOCK_TYPE: Top-level block is e.g. "resource",
+        "data", "locals"
+      ERROR_CODE_TOP_LEVEL_ATTRIBUTE: Attributes defined outside of allowed
+        blocks
+      ERROR_CODE_UNSUPPORTED_MODULE: Module not present in catalog
+      ERROR_CODE_MODULE_UNSUPPORTED_ATTRIBUTE_ADDED: Attribute defined inside
+        module that is not in the shared template
+      ERROR_CODE_MODULE_REQUIRED_ATTRIBUTE_REMOVED: Mandatory attribute of
+        shared template is missing in module block
+      ERROR_CODE_PARAMETER_VALUE_INVALID: Value fails shared template schema
+        checks (regex, range, etc.)
+      ERROR_CODE_UNSUPPORTED_VARIABLE_CHANGE: Variable in variables.tf is
+        added, removed or schema changed
+      ERROR_CODE_UNSUPPORTED_OUTPUT_CHANGE: Output in outputs.tf is added,
+        removed or schema changed
+      ERROR_CODE_UNSUPPORTED_PROVIDER_CHANGE: Provider in providers.tf has
+        added blocks or modified attributes
+      ERROR_CODE_UNSUPPORTED_TFVAR_CHANGE: Value modified for variables
+        defined in terraform.tfvars
+    """
+    ERROR_CODE_UNSPECIFIED = 0
+    ERROR_CODE_SYNTAX_ERROR = 1
+    ERROR_CODE_UNSUPPORTED_BLOCK_TYPE = 2
+    ERROR_CODE_TOP_LEVEL_ATTRIBUTE = 3
+    ERROR_CODE_UNSUPPORTED_MODULE = 4
+    ERROR_CODE_MODULE_UNSUPPORTED_ATTRIBUTE_ADDED = 5
+    ERROR_CODE_MODULE_REQUIRED_ATTRIBUTE_REMOVED = 6
+    ERROR_CODE_PARAMETER_VALUE_INVALID = 7
+    ERROR_CODE_UNSUPPORTED_VARIABLE_CHANGE = 8
+    ERROR_CODE_UNSUPPORTED_OUTPUT_CHANGE = 9
+    ERROR_CODE_UNSUPPORTED_PROVIDER_CHANGE = 10
+    ERROR_CODE_UNSUPPORTED_TFVAR_CHANGE = 11
 
   class TypeValueValuesEnum(_messages.Enum):
     r"""Output only. The type of error.
@@ -4483,10 +4547,11 @@ class ImportIaCError(_messages.Message):
     NOT_SUPPORTED = 2
 
   description = _messages.StringField(1)
-  file = _messages.StringField(2)
-  range = _messages.MessageField('CodeRange', 3)
-  resourceAddress = _messages.StringField(4)
-  type = _messages.EnumField('TypeValueValuesEnum', 5)
+  errorCode = _messages.EnumField('ErrorCodeValueValuesEnum', 2)
+  file = _messages.StringField(3)
+  range = _messages.MessageField('CodeRange', 4)
+  resourceAddress = _messages.StringField(5)
+  type = _messages.EnumField('TypeValueValuesEnum', 6)
 
 
 class InferConnectionsRequest(_messages.Message):
@@ -5072,11 +5137,14 @@ class Parameter(_messages.Message):
 
   Fields:
     key: Required. The key of the parameter.
+    readOnly: Output only. Indicates if the parameter is read-only (driven by
+      expression).
     value: Optional. The value of the parameter.
   """
 
   key = _messages.StringField(1)
-  value = _messages.MessageField('extra_types.JsonValue', 2)
+  readOnly = _messages.BooleanField(2)
+  value = _messages.MessageField('extra_types.JsonValue', 3)
 
 
 class Policy(_messages.Message):
@@ -5729,7 +5797,12 @@ class SerializedComponent(_messages.Message):
 class SerializedConnection(_messages.Message):
   r"""Serialized connection.
 
+  Enums:
+    DependencyTypeValueValuesEnum: Output only. The type of the connection
+      (data or logical).
+
   Fields:
+    dependencyType: Output only. The type of the connection (data or logical).
     destinationComponentParameters: Optional. The parameters of the connection
       associated with the destination component.
     destinationComponentUri: Optional. The destination component URI used to
@@ -5739,10 +5812,26 @@ class SerializedConnection(_messages.Message):
     uri: Optional. The connection URI.
   """
 
-  destinationComponentParameters = _messages.MessageField('Parameter', 1, repeated=True)
-  destinationComponentUri = _messages.StringField(2)
-  sourceComponentParameters = _messages.MessageField('Parameter', 3, repeated=True)
-  uri = _messages.StringField(4)
+  class DependencyTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The type of the connection (data or logical).
+
+    Values:
+      CONNECTION_DEPENDENCY_TYPE_UNSPECIFIED: The dependency type is
+        unspecified.
+      CONNECTION_DEPENDENCY_TYPE_DATA: Data dependency: output parameter of
+        one module is input to another.
+      CONNECTION_DEPENDENCY_TYPE_LOGICAL: Logical dependency: explicitly
+        declared execution order dependency (depends_on).
+    """
+    CONNECTION_DEPENDENCY_TYPE_UNSPECIFIED = 0
+    CONNECTION_DEPENDENCY_TYPE_DATA = 1
+    CONNECTION_DEPENDENCY_TYPE_LOGICAL = 2
+
+  dependencyType = _messages.EnumField('DependencyTypeValueValuesEnum', 1)
+  destinationComponentParameters = _messages.MessageField('Parameter', 2, repeated=True)
+  destinationComponentUri = _messages.StringField(3)
+  sourceComponentParameters = _messages.MessageField('Parameter', 4, repeated=True)
+  uri = _messages.StringField(5)
 
 
 class SerializedPolicy(_messages.Message):

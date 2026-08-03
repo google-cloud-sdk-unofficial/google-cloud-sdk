@@ -46,7 +46,7 @@ class Update(base.UpdateCommand):
     concept_parsers.ConceptParser.ForResource(
         'fleet_package',
         flags.GetFleetPackageResourceSpec(),
-        'The Fleet Package to create.',
+        'The Fleet Package to update.',
         required=True,
         prefixes=False,
     ).AddToParser(parser)

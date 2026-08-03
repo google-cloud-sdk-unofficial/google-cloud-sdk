@@ -58,3 +58,7 @@
     - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool_provider.oidc_issuer_uri
     - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool_provider.oidc_allowed_audiences
     - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool_provider.oidc_jwks_json_path
+    - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool_provider.oidc_discovery_uri
+      release_tracks: [GA]
+    - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool_provider.actor_providers
+      release_tracks: [GA]

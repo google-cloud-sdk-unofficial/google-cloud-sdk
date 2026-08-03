@@ -112,6 +112,14 @@ def _CreateRequests(holder, args, url_map_arg):
     cache_invalidation_rule.cacheTags.extend(
         [tag.strip() for tag in args.tags.split(',')])
 
+  if hasattr(cache_invalidation_rule, 'httpStatus'):
+    if hasattr(args, 'http_status') and args.http_status is not None:
+      if args.http_status < 200 or args.http_status > 599:
+        raise compute_exceptions.ArgumentError(
+            'Invalid value for [--http-status]: Must be between 200 and 599.'
+        )
+      cache_invalidation_rule.httpStatus = args.http_status
+
   messages = holder.client.messages
   request = messages.ComputeUrlMapsInvalidateCacheRequest(
       project=url_map_ref.project,
@@ -161,6 +169,8 @@ class InvalidateCdnCache(base.SilentCommand):
     cls.URL_MAP_ARG = flags.GlobalUrlMapArgument()
     cls.URL_MAP_ARG.AddArgument(parser, cust_metavar='URLMAP')
     _Args(parser)
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      flags.AddHttpStatusArgToParser(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

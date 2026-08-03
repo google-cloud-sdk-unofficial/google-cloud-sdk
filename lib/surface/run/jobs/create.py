@@ -63,7 +63,7 @@ Container Flags
   group.AddArgument(flags.ClearVolumeMountsFlag())
   group.AddArgument(flags.StartupProbeFlag())
   if release_track != base.ReleaseTrack.GA:
-    group.AddArgument(flags.SandboxLauncherFlag(hidden=True))
+    group.AddArgument(flags.SandboxLauncherFlag())
 
   return group
 
@@ -188,7 +188,7 @@ class Create(base.Command):
       else:
         header_msg = 'Creating job...'
 
-      def _CreateJob(changes_):
+      def _CreateJob(changes_, job_to_create=None):
         with progress_tracker.StagedProgressTracker(
             header_msg,
             stages.JobStages(
@@ -199,7 +199,11 @@ class Create(base.Command):
         ) as tracker:
           execution_ = None
           job_ = operations.CreateJob(
-              job_ref, changes_, tracker, asyn=(args.async_ and not execute_now)
+              job_ref,
+              changes_,
+              job_to_create,
+              tracker,
+              asyn=(args.async_ and not execute_now),
           )
           if execute_now:
             execution_ = operations.RunJob(
@@ -208,7 +212,11 @@ class Create(base.Command):
           return job_, execution_
 
       try:
-        job, execution = _CreateJob(changes)
+        if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+          new_job = operations.ValidateJobBeforeCreate(job_ref, changes)
+          job, execution = _CreateJob(changes, new_job)
+        else:
+          job, execution = _CreateJob(changes)
       except exceptions.HttpError as e:
         if flags.ShouldRetryNoZonalRedundancy(args, str(e)):
           changes.append(

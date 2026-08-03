@@ -1,4 +1,4 @@
-release_tracks: [BETA]
+release_tracks: [GA, BETA]
 help_text:
   brief: List semantic governance policies.
   description: List semantic governance policies.
@@ -21,7 +21,10 @@ arguments:
         attribute_name: location
         help: The location containing the policies.
 request:
-  api_version: v1beta1
+  BETA:
+    api_version: v1beta1
+  GA:
+    api_version: v1
   collection: aiplatform.projects.locations.semanticGovernancePolicies
   method: list
   resource_method_params:

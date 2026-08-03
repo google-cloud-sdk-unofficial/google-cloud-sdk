@@ -33,6 +33,7 @@ LOCATIONS_COLLECTION = 'netapp.projects.locations'
 QUOTA_RULES_COLLECTION = 'netapp.projects.locations.volumes.quotaRules'
 HOST_GROUPS_COLLECTION = 'netapp.projects.locations.hostGroups'
 ONTAP_COLLECTION = 'netapp.projects.locations.storagePools.ontap'
+TRIALS_COLLECTION = 'netapp.projects.locations.trial'
 
 ACTIVE_DIRECTORY_RESOURCE = 'activeDirectories'
 STORAGE_POOL_RESOURCE = 'storagePools'
@@ -47,6 +48,7 @@ QUOTA_RULE_RESOURCE = 'quotaRules'
 HOST_GROUP_RESOURCE = 'hostGroups'
 ONTAP_RESOURCE = 'ontap'
 VOLUME_BACKUP_CONFIGS = 'volumeBackupConfigs'
+TRIAL_RESOURCE = 'trial'
 
 DEFAULT_MAX_WAIT_MS = 1800000
 MAX_WAIT_MS_CREATE_STORAGE_POOL = 7200000

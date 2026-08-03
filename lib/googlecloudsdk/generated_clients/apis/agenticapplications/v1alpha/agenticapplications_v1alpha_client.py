@@ -38,6 +38,7 @@ class AgenticapplicationsV1alpha(base_api.BaseApiClient):
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
     self.projects_locations_omnichannelEndpointConfigs = self.ProjectsLocationsOmnichannelEndpointConfigsService(self)
+    self.projects_locations_omnichannelTokenBrokers = self.ProjectsLocationsOmnichannelTokenBrokersService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects = self.ProjectsService(self)
 
@@ -75,6 +76,70 @@ class AgenticapplicationsV1alpha(base_api.BaseApiClient):
         request_field='',
         request_type_name='AgenticapplicationsProjectsLocationsOmnichannelEndpointConfigsGetRequest',
         response_type_name='OmnichannelEndpointConfig',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsOmnichannelTokenBrokersService(base_api.BaseApiService):
+    """Service class for the projects_locations_omnichannelTokenBrokers resource."""
+
+    _NAME = 'projects_locations_omnichannelTokenBrokers'
+
+    def __init__(self, client):
+      super(AgenticapplicationsV1alpha.ProjectsLocationsOmnichannelTokenBrokersService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def IssuePublicToken(self, request, global_params=None):
+      r"""IssuePublicToken method for the projects_locations_omnichannelTokenBrokers service.
+
+      Args:
+        request: (TokenBrokerIssueTokenRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TokenBrokerIssueTokenResponse) The response message.
+      """
+      config = self.GetMethodConfig('IssuePublicToken')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    IssuePublicToken.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/omnichannelTokenBrokers/{omnichannelTokenBrokersId}:issuePublicToken',
+        http_method='POST',
+        method_id='agenticapplications.projects.locations.omnichannelTokenBrokers.issuePublicToken',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:issuePublicToken',
+        request_field='<request>',
+        request_type_name='TokenBrokerIssueTokenRequest',
+        response_type_name='TokenBrokerIssueTokenResponse',
+        supports_download=False,
+    )
+
+    def IssueTrustedToken(self, request, global_params=None):
+      r"""IssueTrustedToken method for the projects_locations_omnichannelTokenBrokers service.
+
+      Args:
+        request: (TokenBrokerIssueTrustedTokenRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TokenBrokerIssueTrustedTokenResponse) The response message.
+      """
+      config = self.GetMethodConfig('IssueTrustedToken')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    IssueTrustedToken.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/omnichannelTokenBrokers/{omnichannelTokenBrokersId}:issueTrustedToken',
+        http_method='POST',
+        method_id='agenticapplications.projects.locations.omnichannelTokenBrokers.issueTrustedToken',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:issueTrustedToken',
+        request_field='<request>',
+        request_type_name='TokenBrokerIssueTrustedTokenRequest',
+        response_type_name='TokenBrokerIssueTrustedTokenResponse',
         supports_download=False,
     )
 

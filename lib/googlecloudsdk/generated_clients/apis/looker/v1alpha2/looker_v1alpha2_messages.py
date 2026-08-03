@@ -634,10 +634,9 @@ class ListInstancesResponse(_messages.Message):
 
   Fields:
     instances: The list of instances matching the request filters, up to the
-      requested ListInstancesRequest.pageSize.
+      requested `pageSize`.
     nextPageToken: If provided, a page token that can look up the next
-      ListInstancesRequest.pageSize results. If empty, the results list is
-      exhausted.
+      `pageSize` results. If empty, the results list is exhausted.
     unreachable: Locations that could not be reached.
   """
 

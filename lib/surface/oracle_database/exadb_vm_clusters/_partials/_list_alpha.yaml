@@ -20,12 +20,12 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: List exadbVmClusters
-    description: List exadbVmClusters
+    brief: List all ExadbVmClusters.
+    description: List all ExadbVmClusters.
     examples: |-
-      To list all exadbVmClusters, run:
+      To list all ExadbVmClusters in the location `us-east4`, run:
 
-          $ {command}
+        $ {command} --location=us-east4
   arguments:
     params:
     - help_text: |-

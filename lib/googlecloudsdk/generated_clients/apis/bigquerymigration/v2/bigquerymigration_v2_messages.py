@@ -744,9 +744,12 @@ class GoogleCloudBigqueryMigrationV2AssessmentFeatureHandle(_messages.Message):
   Fields:
     addShareableDataset: Optional. Whether to create a dataset containing non-
       PII data in addition to the output dataset.
+    generateTcoReport: Optional. Whether the TCO report Google Doc generation
+      is allowlisted for the project.
   """
 
   addShareableDataset = _messages.BooleanField(1)
+  generateTcoReport = _messages.BooleanField(2)
 
 
 class GoogleCloudBigqueryMigrationV2AssessmentTaskDetails(_messages.Message):

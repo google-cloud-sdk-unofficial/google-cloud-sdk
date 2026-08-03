@@ -266,6 +266,61 @@ class AlloyDbPitrWindow(_messages.Message):
   startTime = _messages.StringField(3)
 
 
+class AppliedAutoProtectionPolicy(_messages.Message):
+  r"""AppliedAutoProtectionPolicy is a read-only view of AutoProtectionPolicy
+  and AutoProtectionPolicyBinding resources that apply to a given workload
+  project.
+
+  Enums:
+    StatusValueValuesEnum: Output only. The status of the applied auto
+      protection policy.
+
+  Fields:
+    backupPlanDetails: Output only. The set of backup plan configurations,
+      mirroring the backup_plan_details from the source AutoProtectionPolicy.
+      Each element specifies a backup plan for a given resource type.
+    bindingEvaluationSummary: Output only. The summary of the last policy
+      application when the job has run.
+    createTime: Output only. Timestamp indicating when the binding was last
+      created.
+    criteria: Output only. The criteria resources must meet for this rule to
+      apply. From AutoProtectionPolicy.criteria.
+    name: Identifier. Canonical resource name. Format: projects/{workload-
+      project-number}/locations/{location}/appliedAutoProtectionPolicies/{id}.
+    sourceBinding: Output only. The full resource name of the
+      AutoProtectionPolicyBinding that applies the source policy to a scope
+      including this workload project. e.g., projects/{admin-project}/location
+      s/{location}/autoProtectionPolicies/{policy_id}/autoProtectionPolicyBind
+      ings/{binding_id}.
+    status: Output only. The status of the applied auto protection policy.
+    updateTime: Output only. Timestamp indicating when the binding was last
+      modified.
+  """
+
+  class StatusValueValuesEnum(_messages.Enum):
+    r"""Output only. The status of the applied auto protection policy.
+
+    Values:
+      STATE_UNSPECIFIED: State is not specified.
+      CREATING: The policy is in the process of being applied.
+      ACTIVE: The policy has been applied and is active.
+      DELETION_INITIATED: The policy is in the process of being removed.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+    DELETION_INITIATED = 3
+
+  backupPlanDetails = _messages.MessageField('BackupPlanDetail', 1, repeated=True)
+  bindingEvaluationSummary = _messages.MessageField('BindingEvaluationSummary', 2)
+  createTime = _messages.StringField(3)
+  criteria = _messages.MessageField('Criteria', 4)
+  name = _messages.StringField(5)
+  sourceBinding = _messages.StringField(6)
+  status = _messages.EnumField('StatusValueValuesEnum', 7)
+  updateTime = _messages.StringField(8)
+
+
 class AttachedDisk(_messages.Message):
   r"""An instance-attached disk resource.
 
@@ -457,6 +512,157 @@ class AuditLogConfig(_messages.Message):
 
   exemptedMembers = _messages.StringField(1, repeated=True)
   logType = _messages.EnumField('LogTypeValueValuesEnum', 2)
+
+
+class AutoProtectionDetails(_messages.Message):
+  r"""AutoProtectionDetails contains the protection details of a resource from
+  the current binding's perspective.
+
+  Enums:
+    StateValueValuesEnum: Output only. Protection state of the resource from
+      the current binding's perspective. Output only.
+
+  Fields:
+    backupPlanAssociation: Output only. Resource name of backup plan
+      association linked to the resource, if any. Format: projects/{project}/l
+      ocations/{location}/backupPlanAssociations/{backupPlanAssociationId}
+    dataSource: Output only. Resource name of the datasource linked to the
+      resource, if any. Format: projects/{project}/locations/{location}/backup
+      Vaults/{backupVaultId}/dataSources/{dataSourceId}
+    error: Output only. Error during last sync for protection/unprotection, if
+      any.
+    state: Output only. Protection state of the resource from the current
+      binding's perspective. Output only.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. Protection state of the resource from the current
+    binding's perspective. Output only.
+
+    Values:
+      STATE_UNSPECIFIED: State unspecified.
+      PROTECTED: Resource is protected.
+      PROTECTION_FAILED: Resource protection failed.
+      UNPROTECTING: Resource is being unprotected.
+      UNPROTECTION_FAILED: Resource unprotection failed.
+    """
+    STATE_UNSPECIFIED = 0
+    PROTECTED = 1
+    PROTECTION_FAILED = 2
+    UNPROTECTING = 3
+    UNPROTECTION_FAILED = 4
+
+  backupPlanAssociation = _messages.StringField(1)
+  dataSource = _messages.StringField(2)
+  error = _messages.MessageField('Status', 3)
+  state = _messages.EnumField('StateValueValuesEnum', 4)
+
+
+class AutoProtectionPolicy(_messages.Message):
+  r"""An AutoprotectionPolicy is a policy resource designed to automate backup
+  management, moving from manual per-resource protection to a bulk approach.
+  The policy dynamically discovers and applies a specified backup plan to all
+  eligible resources that match its defined scope and criteria.
+
+  Enums:
+    StateValueValuesEnum: Output only. The current state of the
+      AutoProtectionPolicy.
+
+  Fields:
+    backupPlanDetails: Required. The backup plan details for matching
+      resources.
+    bindingSummary: Output only. Summary of total count of different
+      containers covered through this policy.
+    createTime: Output only. The timestamp when the policy was created.
+    criteria: Required. The criteria for matching resources.
+    description: Optional. A description of the policy.
+    etag: Output only. The etag for the policy. If this is provided on update,
+      it must match the server's etag.
+    name: Identifier. The resource name of the AutoProtectionPolicy. Format: `
+      projects/{project}/locations/{location}/autoProtectionPolicies/{auto_pro
+      tection_policy}`
+    policyEvaluationSummary: Output only. Summary of last policy evaluation
+      when job was run per workload type.
+    state: Output only. The current state of the AutoProtectionPolicy.
+    updateTime: Output only. The timestamp when the policy was last updated.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current state of the AutoProtectionPolicy.
+
+    Values:
+      STATE_UNSPECIFIED: The state of the policy is unspecified.
+      CREATING: The policy is being created.
+      ACTIVE: The policy is active and protecting matching resources.
+      UPDATING: The policy is being updated.
+      DELETING: The policy is being deleted.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+    UPDATING = 3
+    DELETING = 4
+
+  backupPlanDetails = _messages.MessageField('BackupPlanDetail', 1, repeated=True)
+  bindingSummary = _messages.MessageField('BindingSummary', 2)
+  createTime = _messages.StringField(3)
+  criteria = _messages.MessageField('Criteria', 4)
+  description = _messages.StringField(5)
+  etag = _messages.StringField(6)
+  name = _messages.StringField(7)
+  policyEvaluationSummary = _messages.MessageField('PolicyEvaluationSummary', 8)
+  state = _messages.EnumField('StateValueValuesEnum', 9)
+  updateTime = _messages.StringField(10)
+
+
+class AutoProtectionPolicyBinding(_messages.Message):
+  r"""An AutoProtectionPolicyBinding (APPA) acts as the bridge between an
+  AutoProtectionPolicy and the scope (Project) where the policy should be
+  applied.
+
+  Enums:
+    StateValueValuesEnum: Output only. The current state of the
+      AutoProtectionPolicyBinding.
+
+  Fields:
+    bindingEvaluationSummary: Output only. Summaries of the last policy
+      application when the job has run, with one entry per resource type
+      specified in the AutoProtectionPolicy.
+    createTime: Output only. The timestamp when the binding was created.
+    description: Optional. A description of the binding.
+    etag: Optional. Output only. The etag for the binding. If this is provided
+      on update, it must match the server's etag.
+    name: Identifier. The resource name of the AutoProtectionPolicyBinding.
+      Format: `projects/{project}/locations/{location}/autoProtectionPolicies/
+      {auto_protection_policy}/bindings/{binding}`
+    scope: Required. Immutable. Resource Id of target container on which
+      policy will be applied. Format: projects/{project_id}
+    state: Output only. The current state of the AutoProtectionPolicyBinding.
+    updateTime: Output only. The timestamp when the binding was last updated.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current state of the AutoProtectionPolicyBinding.
+
+    Values:
+      STATE_UNSPECIFIED: The state of the binding is unspecified.
+      CREATING: The binding is being created.
+      ACTIVE: The binding is active.
+      DELETION_INITIATED: The binding deletion is initiated.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+    DELETION_INITIATED = 3
+
+  bindingEvaluationSummary = _messages.MessageField('BindingEvaluationSummary', 1)
+  createTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  etag = _messages.StringField(4)
+  name = _messages.StringField(5)
+  scope = _messages.StringField(6)
+  state = _messages.EnumField('StateValueValuesEnum', 7)
+  updateTime = _messages.StringField(8)
 
 
 class Backup(_messages.Message):
@@ -1142,6 +1348,24 @@ class BackupPlanAssociation(_messages.Message):
   updateTime = _messages.StringField(14)
 
 
+class BackupPlanDetail(_messages.Message):
+  r"""BackupPlanDetail defines configuration of protection.
+
+  Fields:
+    backupPlan: Required. The resource name of the BackupPlan to apply to
+      resources that match the policy's criteria. This backup plan must be in
+      the same location as AutoProtectionPolicy. Format:
+      projects/{project}/locations/{location}/backupPlans/{backupPlanId}
+    resourceType: Required. The type of resource that this policy will
+      automatically protect. Allowed values are,
+      `compute.googleapis.com/Instance` and `compute.googleapis.com/Disk` are
+      supported.
+  """
+
+  backupPlan = _messages.StringField(1)
+  resourceType = _messages.StringField(2)
+
+
 class BackupPlanRevision(_messages.Message):
   r"""`BackupPlanRevision` represents a snapshot of a `BackupPlan` at a point
   in time.
@@ -1502,6 +1726,239 @@ class BackupdrOrganizationsLocationsResourceBackupConfigsFetchRequest(_messages.
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   parent = _messages.StringField(5, required=True)
+
+
+class BackupdrProjectsLocationsAppliedAutoProtectionPoliciesListRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsAppliedAutoProtectionPoliciesListRequest
+  object.
+
+  Fields:
+    filter: Optional. A filter expression that filters resources listed in the
+      response.
+    orderBy: Optional. An expression that sorts the results in the response.
+    pageSize: Optional. The maximum number of applied policies to return in a
+      single page. The maximum value is 1000; values above 1000 will be
+      coerced to 1000. If unspecified or set to 0, a default page size of 500
+      will be used.
+    pageToken: Optional. A page token, received from a previous
+      `ListAppliedAutoProtectionPolicies` call.
+    parent: Required. The project and location for which to retrieve the list
+      of applied policies. Format: projects/{project}/locations/{location}
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class BackupdrProjectsLocationsAutoProtectionPoliciesBindingsCreateRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsAutoProtectionPoliciesBindingsCreateRequest
+  object.
+
+  Fields:
+    autoProtectionPolicyBinding: A AutoProtectionPolicyBinding resource to be
+      passed as the request body.
+    autoProtectionPolicyBindingId: Required. The ID to use for the binding.
+      This will become the final component of the binding's resource name.
+    parent: Required. The parent resource where this binding will be created.
+      Format: projects/{project}/locations/{location}/autoProtectionPolicies/{
+      auto_protection_policy}
+  """
+
+  autoProtectionPolicyBinding = _messages.MessageField('AutoProtectionPolicyBinding', 1)
+  autoProtectionPolicyBindingId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class BackupdrProjectsLocationsAutoProtectionPoliciesBindingsGetRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsAutoProtectionPoliciesBindingsGetRequest
+  object.
+
+  Fields:
+    name: Required. The name of the binding to retrieve. Format: projects/{pro
+      ject}/locations/{location}/autoProtectionPolicies/{auto_protection_polic
+      y}/bindings/{binding}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class BackupdrProjectsLocationsAutoProtectionPoliciesBindingsInitiateDeleteRequest(_messages.Message):
+  r"""A
+  BackupdrProjectsLocationsAutoProtectionPoliciesBindingsInitiateDeleteRequest
+  object.
+
+  Fields:
+    initiateDeleteAutoProtectionPolicyBindingRequest: A
+      InitiateDeleteAutoProtectionPolicyBindingRequest resource to be passed
+      as the request body.
+    name: Required. The name of the binding to delete. Format: projects/{proje
+      ct}/locations/{location}/autoProtectionPolicies/{auto_protection_policy}
+      /bindings/{binding}
+  """
+
+  initiateDeleteAutoProtectionPolicyBindingRequest = _messages.MessageField('InitiateDeleteAutoProtectionPolicyBindingRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class BackupdrProjectsLocationsAutoProtectionPoliciesBindingsListRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsAutoProtectionPoliciesBindingsListRequest
+  object.
+
+  Fields:
+    filter: Optional. A filter expression that filters resources listed in the
+      response. The following fields are filterable:
+    orderBy: Optional. An expression that sorts the results in the response.
+      The following fields are sortable:
+    pageSize: Optional. The maximum number of policies to return in a single
+      page is 500. If unspecified, a server-default value will be used.
+    pageToken: Optional. A page token, received from a previous
+      `ListAutoProtectionPolicies` call. Provide this to retrieve the
+      subsequent page.
+    parent: Required. The project and location for which to retrieve the list
+      of policies. Format: projects/{project}/locations/{location}
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class BackupdrProjectsLocationsAutoProtectionPoliciesBindingsMatchingResourcesGetRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsAutoProtectionPoliciesBindingsMatchingResourc
+  esGetRequest object.
+
+  Fields:
+    name: Required. The name of the matching resource to retrieve. Format: pro
+      jects/{project}/locations/{location}/autoProtectionPolicies/{auto_protec
+      tion_policy}/bindings/{binding}/matchingResources/{matching_resource}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class BackupdrProjectsLocationsAutoProtectionPoliciesBindingsMatchingResourcesListRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsAutoProtectionPoliciesBindingsMatchingResourc
+  esListRequest object.
+
+  Fields:
+    filter: Optional. Field match expression used to filter the results.
+    orderBy: Optional. Field by which to sort the results.
+    pageSize: Optional. The maximum number of `BindingMatchingResources` to
+      return in a single response. The default page size is 100 and maximum
+      page size is 200. Note that the response may include a partial list and
+      a caller should only rely on the response's next_page_token to determine
+      if there are more instances left to be queried.
+    pageToken: Optional. The value of next_page_token received from a previous
+      `ListBindingMatchingResources` call. Provide this to retrieve the
+      subsequent page in a multi-page list of results. When paginating, all
+      other parameters provided to `ListBindingMatchingResources` must match
+      the call that provided the page token.
+    parent: Required. The project, location, auto protection policy and
+      binding for which to retrieve `BindingMatchingResources` information.
+      Format: `projects/{project}/locations/{location}/autoProtectionPolicies/
+      {auto_protection_policy}/bindings/{binding}`. In Google Cloud Backup and
+      DR, locations map to Google Cloud regions, for example **us-central1**.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class BackupdrProjectsLocationsAutoProtectionPoliciesCreateRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsAutoProtectionPoliciesCreateRequest object.
+
+  Fields:
+    autoProtectionPolicy: A AutoProtectionPolicy resource to be passed as the
+      request body.
+    autoProtectionPolicyId: Required. The ID to use for the policy. This will
+      become the final component of the policy's resource name.
+    parent: Required. The parent resource where this policy will be created.
+      Format: projects/{project}/locations/{location}
+  """
+
+  autoProtectionPolicy = _messages.MessageField('AutoProtectionPolicy', 1)
+  autoProtectionPolicyId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class BackupdrProjectsLocationsAutoProtectionPoliciesDeleteRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsAutoProtectionPoliciesDeleteRequest object.
+
+  Fields:
+    etag: The current etag of the autoprotectionpolicy. If an etag is provided
+      and does not match the current etag of the connection, deletion will be
+      blocked.
+    name: Required. The name of the policy to delete. Format: projects/{projec
+      t}/locations/{location}/autoProtectionPolicies/{auto_protection_policy}
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+
+
+class BackupdrProjectsLocationsAutoProtectionPoliciesGetRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsAutoProtectionPoliciesGetRequest object.
+
+  Fields:
+    name: Required. The name of the policy to retrieve. Format: projects/{proj
+      ect}/locations/{location}/autoProtectionPolicies/{auto_protection_policy
+      }
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class BackupdrProjectsLocationsAutoProtectionPoliciesListRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsAutoProtectionPoliciesListRequest object.
+
+  Fields:
+    filter: Optional. A filter expression that filters resources listed in the
+      response. The following fields are filterable:
+    orderBy: Optional. An expression that sorts the results in the response.
+      The following fields are sortable:
+    pageSize: Optional. The maximum number of policies to return in a single
+      page. If unspecified, a server-default value will be used.
+    pageToken: Optional. A page token, received from a previous
+      `ListAutoProtectionPolicies` call. Provide this to retrieve the
+      subsequent page.
+    parent: Required. The project and location for which to retrieve the list
+      of policies. Format: projects/{project}/locations/{location}
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class BackupdrProjectsLocationsAutoProtectionPoliciesPatchRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsAutoProtectionPoliciesPatchRequest object.
+
+  Fields:
+    autoProtectionPolicy: A AutoProtectionPolicy resource to be passed as the
+      request body.
+    name: Identifier. The resource name of the AutoProtectionPolicy. Format: `
+      projects/{project}/locations/{location}/autoProtectionPolicies/{auto_pro
+      tection_policy}`
+    updateMask: Required. Field mask is used to specify the fields to be
+      overwritten in the AutoProtectionPolicy resource by the update. The
+      fields specified in the update_mask are relative to the resource, not
+      the full request. A field will be overwritten if it is in the mask. If
+      the user does not provide a mask then all fields will be overwritten.
+  """
+
+  autoProtectionPolicy = _messages.MessageField('AutoProtectionPolicy', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
 
 
 class BackupdrProjectsLocationsBackupPlanAssociationsCreateRequest(_messages.Message):
@@ -3005,6 +3462,63 @@ class Binding(_messages.Message):
   role = _messages.StringField(3)
 
 
+class BindingEvaluationSummary(_messages.Message):
+  r"""BindingEvaluationSummary contains the summary of the last run of job
+  that applies policy to matching resources for a given binding.
+
+  Fields:
+    failedResourceCount: Output only. The number of matching resources whose
+      protection failed during job run.
+    matchingResourceCount: Output only. The number of resources that currently
+      match the policy's criteria.
+    protectedResourceCount: Output only. The number of matching resources that
+      are successfully protected.
+  """
+
+  failedResourceCount = _messages.IntegerField(1)
+  matchingResourceCount = _messages.IntegerField(2)
+  protectedResourceCount = _messages.IntegerField(3)
+
+
+class BindingMatchingResource(_messages.Message):
+  r"""BindingMatchingResource contains the details of a resource that matches
+  the criteria of a binding.
+
+  Fields:
+    autoProtectionDetails: Output only. The auto protection details of the
+      resource from the current binding's perspective.
+    lastEvaluationTime: Output only. The timestamp when the resource was last
+      evaluated for protection.
+    name: Identifier. The resource name of the `BindingMatchingResource`.
+      Format: `projects/{project}/locations/{location}/autoProtectionPolicies/
+      {auto_protection_policy}/bindings/{binding}/matchingResources/{matching_
+      resource}`
+    resource: Required. Immutable. Resource name of the workload that matches
+      the criteria of the binding. The format can be either a relative
+      resource name (e.g., `projects/my-project/zones/us-
+      central1-a/instances/my-instance`) or a schemeless full resource name
+      (e.g., `//compute.googleapis.com/projects/my-project/zones/us-
+      central1-a/instances/my-instance`).
+  """
+
+  autoProtectionDetails = _messages.MessageField('AutoProtectionDetails', 1)
+  lastEvaluationTime = _messages.StringField(2)
+  name = _messages.StringField(3)
+  resource = _messages.StringField(4)
+
+
+class BindingSummary(_messages.Message):
+  r"""BindingSummary contains count of different containers covered through
+  this policy.
+
+  Fields:
+    projectCount: Output only. Total count of Projects protected with this
+      policy.
+  """
+
+  projectCount = _messages.IntegerField(1)
+
+
 class CancelOperationRequest(_messages.Message):
   r"""The request message for Operations.CancelOperation."""
 
@@ -3463,6 +3977,17 @@ class ConfidentialInstanceConfig(_messages.Message):
   """
 
   enableConfidentialCompute = _messages.BooleanField(1)
+
+
+class Criteria(_messages.Message):
+  r"""Criteria specifies a set of criteria for matching resources.
+
+  Fields:
+    matchingConditions: Required. A list of matching conditions that a
+      resource must meet to be protected by the policy.
+  """
+
+  matchingConditions = _messages.MessageField('MatchingCondition', 1, repeated=True)
 
 
 class CustomerEncryptionKey(_messages.Message):
@@ -4702,6 +5227,12 @@ class InitiateBackupResponse(_messages.Message):
   newBackupGenerationId = _messages.IntegerField(3, variant=_messages.Variant.INT32)
 
 
+class InitiateDeleteAutoProtectionPolicyBindingRequest(_messages.Message):
+  r"""Request message for initiating delete of an AutoProtectionPolicyBinding.
+  """
+
+
+
 class InstanceParams(_messages.Message):
   r"""Additional instance params.
 
@@ -4743,6 +5274,22 @@ class InstanceParams(_messages.Message):
   resourceManagerTags = _messages.MessageField('ResourceManagerTagsValue', 1)
 
 
+class KeyValuePair(_messages.Message):
+  r"""KeyValuePair defines a key-value pair for matching resource labels.
+
+  Fields:
+    key: Required. The key of the label to match. This must be in the format
+      `{label_key}`. The key must match the regex Format:`\p{Ll}\p{Lo}{0,62}`.
+    values: Required. The values of the label to match. There will be explicit
+      "OR" between values of array. Each value must be in the format
+      `{label_value}`. The value must match the regex Format:
+      `[\\p{Ll}\\p{Lo}\\p{N}_-]{1,63}`.
+  """
+
+  key = _messages.StringField(1)
+  values = _messages.StringField(2, repeated=True)
+
+
 class LabelKeyValPair(_messages.Message):
   r"""Message for a label key-value pair.
 
@@ -4762,6 +5309,55 @@ class LabelKeyValPair(_messages.Message):
 
   key = _messages.StringField(1)
   value = _messages.StringField(2)
+
+
+class ListAppliedAutoProtectionPoliciesResponse(_messages.Message):
+  r"""Response message for ListAppliedAutoProtectionPolicies.
+
+  Fields:
+    appliedAutoProtectionPolicies: A list of the AppliedAutoProtectionPolicy
+      resources found.
+    nextPageToken: A token that can be sent as `page_token` to retrieve the
+      next page.
+    unreachable: Unordered list. Locations that could not be reached. For
+      example, "projects/my-project/locations/us-east1"].
+  """
+
+  appliedAutoProtectionPolicies = _messages.MessageField('AppliedAutoProtectionPolicy', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListAutoProtectionPoliciesResponse(_messages.Message):
+  r"""Response message for ListAutoProtectionPolicies.
+
+  Fields:
+    autoProtectionPolicies: A list of the AutoProtectionPolicy resources
+      found.
+    nextPageToken: A token that can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+    unreachable: Locations that could not be reached.
+  """
+
+  autoProtectionPolicies = _messages.MessageField('AutoProtectionPolicy', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListAutoProtectionPolicyBindingsResponse(_messages.Message):
+  r"""Response message for ListAutoProtectionPolicyBindings.
+
+  Fields:
+    autoProtectionPolicyBindings: A list of the AutoProtectionPolicyBindings
+      resources found.
+    nextPageToken: A token that can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  autoProtectionPolicyBindings = _messages.MessageField('AutoProtectionPolicyBinding', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
 
 
 class ListBackupPlanAssociationsResponse(_messages.Message):
@@ -4866,6 +5462,22 @@ class ListBackupsResponse(_messages.Message):
   backups = _messages.MessageField('Backup', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
   unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListBindingMatchingResourcesResponse(_messages.Message):
+  r"""The response message for getting a list of `BindingMatchingResources`.
+
+  Fields:
+    matchingResources: The list of `BindingMatchingResources` in the
+      project,location for the specified binding.
+    nextPageToken: A token which may be sent as page_token in a subsequent
+      `ListBindingMatchingResources` call to retrieve the next page of
+      results. If this field is omitted or empty, then there are no more
+      results to return.
+  """
+
+  matchingResources = _messages.MessageField('BindingMatchingResource', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
 
 
 class ListDataSourceReferencesResponse(_messages.Message):
@@ -5232,6 +5844,17 @@ class ManagementURI(_messages.Message):
 
   api = _messages.StringField(1)
   webUi = _messages.StringField(2)
+
+
+class MatchingCondition(_messages.Message):
+  r"""MatchingCondition specifies a set of conditions for matching resources.
+
+  Fields:
+    labelCondition: Optional. A condition that matches resources based on
+      their labels. For MVP, this is limited to a single label match.
+  """
+
+  labelCondition = _messages.MessageField('KeyValuePair', 1)
 
 
 class Metadata(_messages.Message):
@@ -5714,6 +6337,24 @@ class Policy(_messages.Message):
   bindings = _messages.MessageField('Binding', 2, repeated=True)
   etag = _messages.BytesField(3)
   version = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+
+
+class PolicyEvaluationSummary(_messages.Message):
+  r"""PolicyEvaluationSummary contains the summary of the last run of job that
+  applies policy to matching resources.
+
+  Fields:
+    failedResourceCount: Output only. The number of matching resources whose
+      protection failed during job run.
+    matchingResourceCount: Output only. The number of resources that currently
+      match the policy's criteria.
+    protectedResourceCount: Output only. The number of matching resources that
+      are successfully protected.
+  """
+
+  failedResourceCount = _messages.IntegerField(1)
+  matchingResourceCount = _messages.IntegerField(2)
+  protectedResourceCount = _messages.IntegerField(3)
 
 
 class RegionDiskTargetEnvironment(_messages.Message):

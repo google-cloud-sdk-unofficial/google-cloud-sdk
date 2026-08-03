@@ -104,3 +104,17 @@ def UrlMapArgumentForTargetProxy(required=True, proxy_type='HTTP'):
         create the URL map. To delete a URL map that a target proxy is referring
         to, you must first delete the target {0} proxy.
         """.format(proxy_type))
+
+
+def AddHttpStatusArgToParser(parser):
+  parser.add_argument(
+      '--http-status',
+      type=int,
+      required=False,
+      default=None,
+      help="""\
+      If set, this invalidation rule will only apply to responses with the
+      given HTTP status. Valid range is 200-599.
+      """,
+  )
+

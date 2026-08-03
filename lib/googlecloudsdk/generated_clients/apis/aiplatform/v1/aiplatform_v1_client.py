@@ -84,6 +84,9 @@ class AiplatformV1(base_api.BaseApiClient):
     self.projects_locations_ragCorpora_ragFiles = self.ProjectsLocationsRagCorporaRagFilesService(self)
     self.projects_locations_ragCorpora = self.ProjectsLocationsRagCorporaService(self)
     self.projects_locations_reasoningEngines_runtimeRevisions = self.ProjectsLocationsReasoningEnginesRuntimeRevisionsService(self)
+    self.projects_locations_reasoningEngines_sandboxEnvironmentSnapshots = self.ProjectsLocationsReasoningEnginesSandboxEnvironmentSnapshotsService(self)
+    self.projects_locations_reasoningEngines_sandboxEnvironmentTemplates = self.ProjectsLocationsReasoningEnginesSandboxEnvironmentTemplatesService(self)
+    self.projects_locations_reasoningEngines_sandboxEnvironments = self.ProjectsLocationsReasoningEnginesSandboxEnvironmentsService(self)
     self.projects_locations_reasoningEngines_sessions_events = self.ProjectsLocationsReasoningEnginesSessionsEventsService(self)
     self.projects_locations_reasoningEngines_sessions = self.ProjectsLocationsReasoningEnginesSessionsService(self)
     self.projects_locations_reasoningEngines = self.ProjectsLocationsReasoningEnginesService(self)
@@ -4225,7 +4228,7 @@ class AiplatformV1(base_api.BaseApiClient):
         method_id='aiplatform.projects.locations.indexEndpoints.mutateDeployedIndex',
         ordered_params=['indexEndpoint'],
         path_params=['indexEndpoint'],
-        query_params=[],
+        query_params=['updateMask'],
         relative_path='v1/{+indexEndpoint}:mutateDeployedIndex',
         request_field='googleCloudAiplatformV1DeployedIndex',
         request_type_name='AiplatformProjectsLocationsIndexEndpointsMutateDeployedIndexRequest',
@@ -8145,6 +8148,441 @@ class AiplatformV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsReasoningEnginesSandboxEnvironmentSnapshotsService(base_api.BaseApiService):
+    """Service class for the projects_locations_reasoningEngines_sandboxEnvironmentSnapshots resource."""
+
+    _NAME = 'projects_locations_reasoningEngines_sandboxEnvironmentSnapshots'
+
+    def __init__(self, client):
+      super(AiplatformV1.ProjectsLocationsReasoningEnginesSandboxEnvironmentSnapshotsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes the specific SandboxEnvironmentSnapshot.
+
+      Args:
+        request: (AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentSnapshotsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/reasoningEngines/{reasoningEnginesId}/sandboxEnvironmentSnapshots/{sandboxEnvironmentSnapshotsId}',
+        http_method='DELETE',
+        method_id='aiplatform.projects.locations.reasoningEngines.sandboxEnvironmentSnapshots.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentSnapshotsDeleteRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of the specific SandboxEnvironmentSnapshot.
+
+      Args:
+        request: (AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentSnapshotsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAiplatformV1SandboxEnvironmentSnapshot) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/reasoningEngines/{reasoningEnginesId}/sandboxEnvironmentSnapshots/{sandboxEnvironmentSnapshotsId}',
+        http_method='GET',
+        method_id='aiplatform.projects.locations.reasoningEngines.sandboxEnvironmentSnapshots.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentSnapshotsGetRequest',
+        response_type_name='GoogleCloudAiplatformV1SandboxEnvironmentSnapshot',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists SandboxEnvironmentSnapshots in a given reasoning engine.
+
+      Args:
+        request: (AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentSnapshotsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAiplatformV1ListSandboxEnvironmentSnapshotsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/reasoningEngines/{reasoningEnginesId}/sandboxEnvironmentSnapshots',
+        http_method='GET',
+        method_id='aiplatform.projects.locations.reasoningEngines.sandboxEnvironmentSnapshots.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/sandboxEnvironmentSnapshots',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentSnapshotsListRequest',
+        response_type_name='GoogleCloudAiplatformV1ListSandboxEnvironmentSnapshotsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsReasoningEnginesSandboxEnvironmentTemplatesService(base_api.BaseApiService):
+    """Service class for the projects_locations_reasoningEngines_sandboxEnvironmentTemplates resource."""
+
+    _NAME = 'projects_locations_reasoningEngines_sandboxEnvironmentTemplates'
+
+    def __init__(self, client):
+      super(AiplatformV1.ProjectsLocationsReasoningEnginesSandboxEnvironmentTemplatesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a SandboxEnvironmentTemplate in a given reasoning engine.
+
+      Args:
+        request: (AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentTemplatesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/reasoningEngines/{reasoningEnginesId}/sandboxEnvironmentTemplates',
+        http_method='POST',
+        method_id='aiplatform.projects.locations.reasoningEngines.sandboxEnvironmentTemplates.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1/{+parent}/sandboxEnvironmentTemplates',
+        request_field='googleCloudAiplatformV1SandboxEnvironmentTemplate',
+        request_type_name='AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentTemplatesCreateRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes the specific SandboxEnvironmentTemplate.
+
+      Args:
+        request: (AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentTemplatesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/reasoningEngines/{reasoningEnginesId}/sandboxEnvironmentTemplates/{sandboxEnvironmentTemplatesId}',
+        http_method='DELETE',
+        method_id='aiplatform.projects.locations.reasoningEngines.sandboxEnvironmentTemplates.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentTemplatesDeleteRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of the specific SandboxEnvironmentTemplate.
+
+      Args:
+        request: (AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentTemplatesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAiplatformV1SandboxEnvironmentTemplate) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/reasoningEngines/{reasoningEnginesId}/sandboxEnvironmentTemplates/{sandboxEnvironmentTemplatesId}',
+        http_method='GET',
+        method_id='aiplatform.projects.locations.reasoningEngines.sandboxEnvironmentTemplates.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentTemplatesGetRequest',
+        response_type_name='GoogleCloudAiplatformV1SandboxEnvironmentTemplate',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists SandboxEnvironmentTemplates in a given reasoning engine.
+
+      Args:
+        request: (AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentTemplatesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAiplatformV1ListSandboxEnvironmentTemplatesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/reasoningEngines/{reasoningEnginesId}/sandboxEnvironmentTemplates',
+        http_method='GET',
+        method_id='aiplatform.projects.locations.reasoningEngines.sandboxEnvironmentTemplates.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/sandboxEnvironmentTemplates',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentTemplatesListRequest',
+        response_type_name='GoogleCloudAiplatformV1ListSandboxEnvironmentTemplatesResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsReasoningEnginesSandboxEnvironmentsService(base_api.BaseApiService):
+    """Service class for the projects_locations_reasoningEngines_sandboxEnvironments resource."""
+
+    _NAME = 'projects_locations_reasoningEngines_sandboxEnvironments'
+
+    def __init__(self, client):
+      super(AiplatformV1.ProjectsLocationsReasoningEnginesSandboxEnvironmentsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a SandboxEnvironment in a given reasoning engine.
+
+      Args:
+        request: (AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/reasoningEngines/{reasoningEnginesId}/sandboxEnvironments',
+        http_method='POST',
+        method_id='aiplatform.projects.locations.reasoningEngines.sandboxEnvironments.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1/{+parent}/sandboxEnvironments',
+        request_field='googleCloudAiplatformV1SandboxEnvironment',
+        request_type_name='AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsCreateRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes the specific SandboxEnvironment.
+
+      Args:
+        request: (AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/reasoningEngines/{reasoningEnginesId}/sandboxEnvironments/{sandboxEnvironmentsId}',
+        http_method='DELETE',
+        method_id='aiplatform.projects.locations.reasoningEngines.sandboxEnvironments.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsDeleteRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def Execute(self, request, global_params=None):
+      r"""Executes using a sandbox environment.
+
+      Args:
+        request: (AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsExecuteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAiplatformV1ExecuteSandboxEnvironmentResponse) The response message.
+      """
+      config = self.GetMethodConfig('Execute')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Execute.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/reasoningEngines/{reasoningEnginesId}/sandboxEnvironments/{sandboxEnvironmentsId}:execute',
+        http_method='POST',
+        method_id='aiplatform.projects.locations.reasoningEngines.sandboxEnvironments.execute',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:execute',
+        request_field='googleCloudAiplatformV1ExecuteSandboxEnvironmentRequest',
+        request_type_name='AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsExecuteRequest',
+        response_type_name='GoogleCloudAiplatformV1ExecuteSandboxEnvironmentResponse',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of the specific SandboxEnvironment.
+
+      Args:
+        request: (AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAiplatformV1SandboxEnvironment) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/reasoningEngines/{reasoningEnginesId}/sandboxEnvironments/{sandboxEnvironmentsId}',
+        http_method='GET',
+        method_id='aiplatform.projects.locations.reasoningEngines.sandboxEnvironments.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsGetRequest',
+        response_type_name='GoogleCloudAiplatformV1SandboxEnvironment',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists SandboxEnvironments in a given reasoning engine.
+
+      Args:
+        request: (AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAiplatformV1ListSandboxEnvironmentsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/reasoningEngines/{reasoningEnginesId}/sandboxEnvironments',
+        http_method='GET',
+        method_id='aiplatform.projects.locations.reasoningEngines.sandboxEnvironments.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/sandboxEnvironments',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsListRequest',
+        response_type_name='GoogleCloudAiplatformV1ListSandboxEnvironmentsResponse',
+        supports_download=False,
+    )
+
+    def Pause(self, request, global_params=None):
+      r"""Pauses the specific SandboxEnvironment.
+
+      Args:
+        request: (AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsPauseRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Pause')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Pause.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/reasoningEngines/{reasoningEnginesId}/sandboxEnvironments/{sandboxEnvironmentsId}:pause',
+        http_method='POST',
+        method_id='aiplatform.projects.locations.reasoningEngines.sandboxEnvironments.pause',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:pause',
+        request_field='googleCloudAiplatformV1PauseSandboxEnvironmentRequest',
+        request_type_name='AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsPauseRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def Resume(self, request, global_params=None):
+      r"""Resumes the specific SandboxEnvironment.
+
+      Args:
+        request: (AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsResumeRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Resume')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Resume.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/reasoningEngines/{reasoningEnginesId}/sandboxEnvironments/{sandboxEnvironmentsId}:resume',
+        http_method='POST',
+        method_id='aiplatform.projects.locations.reasoningEngines.sandboxEnvironments.resume',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:resume',
+        request_field='googleCloudAiplatformV1ResumeSandboxEnvironmentRequest',
+        request_type_name='AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsResumeRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def Snapshot(self, request, global_params=None):
+      r"""Snapshots the specific SandboxEnvironment resource and creates a SandboxEnvironmentSnapshot resource.
+
+      Args:
+        request: (GoogleCloudAiplatformV1SandboxEnvironmentSnapshot) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Snapshot')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Snapshot.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/reasoningEngines/{reasoningEnginesId}/sandboxEnvironments/{sandboxEnvironmentsId}:snapshot',
+        http_method='POST',
+        method_id='aiplatform.projects.locations.reasoningEngines.sandboxEnvironments.snapshot',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:snapshot',
+        request_field='<request>',
+        request_type_name='GoogleCloudAiplatformV1SandboxEnvironmentSnapshot',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
   class ProjectsLocationsReasoningEnginesSessionsEventsService(base_api.BaseApiService):
     """Service class for the projects_locations_reasoningEngines_sessions_events resource."""
 
@@ -8469,6 +8907,33 @@ class AiplatformV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='AiplatformProjectsLocationsReasoningEnginesDeleteRequest',
         response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def ExecuteCode(self, request, global_params=None):
+      r"""Executes code statelessly.
+
+      Args:
+        request: (AiplatformProjectsLocationsReasoningEnginesExecuteCodeRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAiplatformV1ExecuteCodeResponse) The response message.
+      """
+      config = self.GetMethodConfig('ExecuteCode')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ExecuteCode.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/reasoningEngines/{reasoningEnginesId}:executeCode',
+        http_method='POST',
+        method_id='aiplatform.projects.locations.reasoningEngines.executeCode',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:executeCode',
+        request_field='googleCloudAiplatformV1ExecuteCodeRequest',
+        request_type_name='AiplatformProjectsLocationsReasoningEnginesExecuteCodeRequest',
+        response_type_name='GoogleCloudAiplatformV1ExecuteCodeResponse',
         supports_download=False,
     )
 

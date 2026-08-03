@@ -45,6 +45,19 @@ def _CatchGoogleAPICallError(func):
   return Wrapper
 
 
+def WaitForOperation(response):
+  """Waits for the LRO response to complete, converting GAPIC errors."""
+  try:
+    return response.result()
+  except Exception as e:
+    # Checking module name string directly avoids importing standard GAPIC
+    # exceptions at top level that pull heavy grpc dependencies at loaded
+    # startup time.
+    if 'google.api_core.exceptions' in type(e).__module__:
+      core_exceptions.reraise(core_exceptions.Error(str(e)))
+    raise
+
+
 class WorkerPoolsOperations(object):
   """Client used to communicate with the actual Cloud Run V2 WorkerPools API."""
 

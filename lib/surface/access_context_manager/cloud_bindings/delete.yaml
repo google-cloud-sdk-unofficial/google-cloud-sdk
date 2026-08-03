@@ -1,4 +1,6 @@
 - release_tracks: [GA, ALPHA]
+  hints:
+    read_only: false
 
   help_text:
     brief: Delete a cloud access binding.

@@ -282,6 +282,9 @@ class Service(proto.Message):
     software lifecycle decisions such as rollout policy and team
     resource ownership.
 
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
     Attributes:
         name (str):
             Identifier. The fully qualified name of this Service. In
@@ -401,6 +404,10 @@ class Service(proto.Message):
             this Service.
         iap_enabled (bool):
             Optional. IAP settings on the Service.
+        ssh_enabled (bool):
+            Optional. Enables SSH access to the Service.
+
+            This field is a member of `oneof`_ ``_ssh_enabled``.
         multi_region_settings (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.Service.MultiRegionSettings):
             Optional. Settings for multi-region
             deployment.
@@ -617,6 +624,11 @@ class Service(proto.Message):
     iap_enabled: bool = proto.Field(
         proto.BOOL,
         number=25,
+    )
+    ssh_enabled: bool = proto.Field(
+        proto.BOOL,
+        number=29,
+        optional=True,
     )
     multi_region_settings: MultiRegionSettings = proto.Field(
         proto.MESSAGE,

@@ -42,13 +42,9 @@ class Seed(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
       ),
       'EXAMPLES': (
           """\
-        To seed a conversion workspace:
+        To seed and commit a conversion workspace:
 
           $ {command} my-conversion-workspace --region=us-central1 --source-connection-profile=cp1
-
-        To seed a conversion workspace and auto commit:
-
-          $ {command} my-conversion-workspace --region=us-central1 --source-connection-profile=cp1 --auto-commit
 
         To update the source database override before seeding:
 
@@ -112,7 +108,9 @@ class Seed(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
         name=conversion_workspace_ref.RelativeName(),
         src_connection_profile_ref=src_cp_ref,
         dest_connection_profile_ref=dest_cp_ref,
-        auto_commit=args.auto_commit,
+        auto_commit=args.auto_commit
+        if args.auto_commit is not None
+        else True,
         gcs_bucket=resolved_bucket,
         gcs_prefix=resolved_prefix,
     )

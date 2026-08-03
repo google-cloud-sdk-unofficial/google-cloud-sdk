@@ -1,0 +1,33 @@
+- release_tracks: [ALPHA, BETA, GA, PREVIEW]
+  help_text:
+    brief: Test IAM permissions for a Compute Engine subnetwork.
+    description: |
+      Returns permissions that a caller has on the specified subnetwork.
+    examples: |
+      To test if the caller has 'compute.subnetworks.get' permission on a subnetwork, run:
+
+        $ {command} my-subnetwork --region=REGION --permissions=compute.subnetworks.get
+
+  request:
+    collection: compute.subnetworks
+    api_version: v1
+    method: testIamPermissions
+    use_relative_name: false
+    BETA:
+      api_version: beta
+    ALPHA:
+      api_version: alpha
+
+  command_type: GENERIC
+
+  arguments:
+    resource:
+      help_text: The subnetwork for which to test permissions.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:subnet
+    params:
+    - arg_name: permissions
+      api_field: testPermissionsRequest.permissions
+      required: true
+      repeated: true
+      help_text: |-
+        Permissions to be tested.

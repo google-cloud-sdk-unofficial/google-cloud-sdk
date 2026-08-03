@@ -1,4 +1,6 @@
 - release_tracks: [GA, ALPHA]
+  hints:
+    read_only: true
 
   help_text:
     brief: Show details about a cloud access binding.

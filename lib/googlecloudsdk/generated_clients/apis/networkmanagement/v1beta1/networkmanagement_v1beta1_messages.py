@@ -1760,8 +1760,22 @@ class ForwardingRuleInfo(_messages.Message):
   r"""For display only. Metadata associated with a Compute Engine forwarding
   rule.
 
+  Enums:
+    EnvoyHealthCheckFirewallsConfigStateValueValuesEnum: Output only. State of
+      the firewalls allowing health check traffic to the load balancer
+      frontend (Envoy proxies). This is the result of the firewall
+      configuration analysis verifying that health check traffic from required
+      IP ranges to the the Envoy-based load balancer frontend is allowed by
+      firewall rules with the load balancer target.
+
   Fields:
     displayName: Name of the forwarding rule.
+    envoyHealthCheckFirewallsConfigState: Output only. State of the firewalls
+      allowing health check traffic to the load balancer frontend (Envoy
+      proxies). This is the result of the firewall configuration analysis
+      verifying that health check traffic from required IP ranges to the the
+      Envoy-based load balancer frontend is allowed by firewall rules with the
+      load balancer target.
     loadBalancerName: Name of the load balancer the forwarding rule belongs
       to. Empty for forwarding rules not related to load balancers (like PSC
       forwarding rules).
@@ -1787,17 +1801,48 @@ class ForwardingRuleInfo(_messages.Message):
     vip: VIP of the forwarding rule.
   """
 
+  class EnvoyHealthCheckFirewallsConfigStateValueValuesEnum(_messages.Enum):
+    r"""Output only. State of the firewalls allowing health check traffic to
+    the load balancer frontend (Envoy proxies). This is the result of the
+    firewall configuration analysis verifying that health check traffic from
+    required IP ranges to the the Envoy-based load balancer frontend is
+    allowed by firewall rules with the load balancer target.
+
+    Values:
+      HEALTH_CHECK_FIREWALLS_CONFIG_STATE_UNSPECIFIED: Configuration state
+        unspecified. It usually means that there are no relevant health checks
+        for this load balancer frontend, or there was an unexpected
+        configuration error preventing Connectivity Tests from verifying
+        health check configuration.
+      FIREWALLS_CONFIGURED: Firewall rules (policies) allow health check
+        traffic to the load balancer frontend.
+      FIREWALLS_PARTIALLY_CONFIGURED: Firewall rules (policies) allow health
+        check traffic to the load balancer frontend only from a part of the
+        required IP ranges.
+      FIREWALLS_NOT_CONFIGURED: Firewall rules (policies) deny health check
+        traffic to the load balancer frontend.
+      FIREWALLS_UNSUPPORTED: Connectivity Tests doesn't support evaluating
+        some of the firewall rules in the network, so it's not able to verify
+        health check configuration status.
+    """
+    HEALTH_CHECK_FIREWALLS_CONFIG_STATE_UNSPECIFIED = 0
+    FIREWALLS_CONFIGURED = 1
+    FIREWALLS_PARTIALLY_CONFIGURED = 2
+    FIREWALLS_NOT_CONFIGURED = 3
+    FIREWALLS_UNSUPPORTED = 4
+
   displayName = _messages.StringField(1)
-  loadBalancerName = _messages.StringField(2)
-  matchedPortRange = _messages.StringField(3)
-  matchedProtocol = _messages.StringField(4)
-  networkUri = _messages.StringField(5)
-  pscGoogleApiTarget = _messages.StringField(6)
-  pscServiceAttachmentUri = _messages.StringField(7)
-  region = _messages.StringField(8)
-  target = _messages.StringField(9)
-  uri = _messages.StringField(10)
-  vip = _messages.StringField(11)
+  envoyHealthCheckFirewallsConfigState = _messages.EnumField('EnvoyHealthCheckFirewallsConfigStateValueValuesEnum', 2)
+  loadBalancerName = _messages.StringField(3)
+  matchedPortRange = _messages.StringField(4)
+  matchedProtocol = _messages.StringField(5)
+  networkUri = _messages.StringField(6)
+  pscGoogleApiTarget = _messages.StringField(7)
+  pscServiceAttachmentUri = _messages.StringField(8)
+  region = _messages.StringField(9)
+  target = _messages.StringField(10)
+  uri = _messages.StringField(11)
+  vip = _messages.StringField(12)
 
 
 class GKEMasterInfo(_messages.Message):

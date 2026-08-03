@@ -15,7 +15,12 @@
 """Flags and helpers for general Cloud NetApp Files commands."""
 
 
+import random
+
+from googlecloudsdk.api_lib.netapp import netapp_client
 from googlecloudsdk.core import exceptions
+from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
 
 truthy = ['true', 'True', 'TRUE', 'on', 'ON', 'yes', 'YES']
@@ -28,4 +33,27 @@ class Error(exceptions.Error):
 
 class InvalidArgumentError(Error):
   """Raised when command line argument constraints are violated."""
+
+
+def ParseLocationForTrials(args, release_track):
+  """Parses location from args, falling back to a random location if not specified."""
+  location_ref = args.CONCEPTS.location.Parse()
+  if not location_ref:
+    project = properties.VALUES.core.project.GetOrFail()
+    project_ref = resources.REGISTRY.Parse(
+        project, collection='netapp.projects'
+    )
+    client = netapp_client.NetAppClient(release_track=release_track)
+    locations = list(client.ListLocations(project_ref))
+    if not locations:
+      raise exceptions.Error(
+          'No available locations found.'
+          ' Please ensure the Cloud NetApp Volumes API is enabled.'
+      )
+    chosen_location = random.choice(locations)
+    location_name = chosen_location.name
+    location_ref = resources.REGISTRY.Parse(
+        location_name, collection='netapp.projects.locations'
+    )
+  return location_ref
 

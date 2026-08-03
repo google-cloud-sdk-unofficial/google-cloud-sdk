@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, BETA, GA, PREVIEW]
+  hints:
+    read_only: true
   help_text:
     brief: "View the disks that are in a storage pool."
     description: "View the disks that are in a given storage pool."

@@ -65,7 +65,7 @@ def ContainerArgGroup(release_track=base.ReleaseTrack.ALPHA):
       flags.RemoveVolumeMountFlag(),
       flags.ClearVolumeMountsFlag(),
       flags.StartupProbeFlag(),
-      flags.SandboxLauncherFlag(hidden=True),
+      flags.SandboxLauncherFlag(),
   ]
   for flag in flags_to_add:
     group.AddArgument(flag)

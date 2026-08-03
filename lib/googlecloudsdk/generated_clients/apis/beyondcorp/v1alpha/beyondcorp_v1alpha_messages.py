@@ -3894,8 +3894,8 @@ class GoogleCloudBeyondcorpSaasplatformSubscriptionsV1alphaSubscription(_message
       ignored when creating a subscription.
     seatCount: Optional. Number of seats in the subscription.
     signupSource: Optional. Input only. The source from which the subscription
-      was initiated, for example "admin_console_browser_overview" or
-      "admin_console_security_insights".
+      was initiated, for example "admin-console-browser-overview" or "admin-
+      console-security-insights".
     sku: Required. SKU of subscription.
     startTime: Optional. Start time of the subscription.
     state: Output only. The current state of the subscription.

@@ -20,12 +20,13 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: remove exadbVmClusters
-    description: remove exadbVmClusters
+    brief: Remove virtual machines from an ExadbVmCluster.
+    description: Removes virtual machines from an existing ExadbVmCluster.
     examples: |-
-      To remove all exadbVmClusters, run:
+      To remove virtual machines with hostnames `host1` and `host2` from an ExadbVmCluster with id `my-instance`
+      in the location `us-east4`, run:
 
-          $ {command}
+        $ {command} my-instance --location=us-east4 --hostnames=host1,host2
   arguments:
     params:
     - help_text: |-

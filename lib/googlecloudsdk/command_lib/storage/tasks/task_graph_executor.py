@@ -314,13 +314,9 @@ def _thread_worker(
       # pylint: disable=broad-except
       # If any exception is raised, it will prevent the executor from exiting.
       except Exception as exception:
-        log.error(
-            'Task %r failed: %s',
-            getattr(task_wrapper, 'id', None),
-            exception,
-        )
+        log.error('%s', exception)
         log.debug(
-            'Task %r traceback:',
+            'Task %r failed. Traceback:',
             getattr(task_wrapper, 'id', None),
             exc_info=True,
         )

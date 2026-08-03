@@ -331,6 +331,8 @@ class Duration(object):
       parts = 7
     total_seconds = abs(self.total_seconds)
     count = 0
+    # TODO(b/537739458): Reset shown to 0 before each component check, or
+    # increment count only when a component is actually formatted.
     shown = 0
     result = []
     if self.total_seconds < 0:
@@ -416,6 +418,8 @@ class Duration(object):
     if calendar is not None:
       self.calendar = calendar
     self.seconds += delta.total_seconds()
+    # TODO(b/538171310): Normalize overwrites self.microseconds if seconds has
+    # a fractional part, causing pre-existing microseconds to be lost.
     self._Normalize()
     return self
 

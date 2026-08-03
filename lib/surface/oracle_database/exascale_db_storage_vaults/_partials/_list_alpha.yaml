@@ -20,12 +20,12 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: List exascaleDbStorageVaults
-    description: List exascaleDbStorageVaults
+    brief: List all ExascaleDbStorageVaults.
+    description: List all ExascaleDbStorageVaults.
     examples: |-
-      To list all exascaleDbStorageVaults, run:
+      To list all ExascaleDbStorageVaults in the location `us-east4`, run:
 
-          $ {command}
+        $ {command} --location=us-east4
   arguments:
     params:
     - help_text: |-

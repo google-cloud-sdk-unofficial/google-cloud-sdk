@@ -101,18 +101,18 @@ class Unpause(calliope_base.Command):
         collection="composer.projects.locations.environments",
         api_version=api_version,
     )
-    list_dags_response = dags_util.ListDags(
+    dags = dags_util.ListDags(
         environment_ref,
         list_filter=list_filter,
     )
 
-    if len(list_dags_response.dags) == 0:
+    if len(dags) == 0:
       return {
           "result": "failed",
           "reason": "No pipeline found for given bundle and pipeline IDs.",
       }
 
-    if len(list_dags_response.dags) > 1:
+    if len(dags) > 1:
       return {
           "result": "failed",
           "reason": (
@@ -122,10 +122,8 @@ class Unpause(calliope_base.Command):
 
     # If the pipeline is not paused and its DAG state is ACTIVE, return early.
     if (
-        not composer_utils.get_pipeline_paused_status(
-            list_dags_response.dags[0]
-        )
-        and list_dags_response.dags[0].state.name == "ACTIVE"
+        not composer_utils.get_pipeline_paused_status(dags[0])
+        and dags[0].state.name == "ACTIVE"
     ):
       log.status.Print(f"Pipeline {args.pipeline} is already active.")
       return {"result": "success"}
@@ -186,7 +184,7 @@ class Unpause(calliope_base.Command):
       }
 
     dag_ref = resources.REGISTRY.ParseRelativeName(
-        list_dags_response.dags[0].name,
+        dags[0].name,
         collection="composer.projects.locations.environments.dags",
         api_version=api_version,
     )
@@ -204,7 +202,7 @@ class Unpause(calliope_base.Command):
     log.status.Print("Waiting for the pipeline to be unpaused...")
     while True:
       try:
-        unpaused_dags_list = dags_util.ListDags(
+        unpaused_dags = dags_util.ListDags(
             environment_ref,
             list_filter=list_filter,
         )
@@ -212,11 +210,9 @@ class Unpause(calliope_base.Command):
         # Check for both pipeline paused status and DAG state to ensure the
         # pipeline is active.
         if (
-            unpaused_dags_list.dags
-            and not composer_utils.get_pipeline_paused_status(
-                unpaused_dags_list.dags[0]
-            )
-            and unpaused_dags_list.dags[0].state.name == "ACTIVE"
+            unpaused_dags
+            and not composer_utils.get_pipeline_paused_status(unpaused_dags[0])
+            and unpaused_dags[0].state.name == "ACTIVE"
         ):
           return {"result": "success"}
         time.sleep(

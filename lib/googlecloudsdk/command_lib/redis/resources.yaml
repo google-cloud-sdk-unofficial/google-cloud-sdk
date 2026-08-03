@@ -95,8 +95,23 @@ acl_policy:
   attributes:
   - *region
   - parameter_name: aclPoliciesId
-    attribute_name: acl_policy
+    attribute_name: acl-policy
     help: The ID of the ACL Policy.
+  disable_auto_completers: false
+
+acl_policy_revision:
+  name: revision
+  plural_name: revisions
+  collection: redis.projects.locations.aclPolicies.revisions
+  attributes:
+  - *region
+  - parameter_name: aclPoliciesId
+    attribute_name: acl-policy
+    help: The ID of the ACL Policy.
+  - &revision
+    parameter_name: revisionsId
+    attribute_name: revision
+    help: The revision id of the {resource} resource.
   disable_auto_completers: false
 
 token_auth_user:

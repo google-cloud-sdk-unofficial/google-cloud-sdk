@@ -32,9 +32,10 @@ the entry link types are core 1P types in a separate system project
 (``dataplex-types`` / ``dataplex-staging-types`` / ``dataplex-autopush-types``).
 
 EntryLink emission (lineage / semantic edges between entries) is implemented in
-``entry_links`` but OFF by default. ``GenerateImportFile`` only emits links when
-``include_entry_links=True``. See ``entry_links`` and ``entry_builders`` for the
-per-resource and per-edge construction detail.
+``entry_links`` and enabled by default: ``GenerateImportFile`` emits links
+unless ``include_entry_links=False`` (the ``metadata-jobs create`` command
+exposes this as ``--no-include-entry-links``). See ``entry_links`` and
+``entry_builders`` for the per-resource and per-edge construction detail.
 """
 
 from __future__ import annotations
@@ -114,6 +115,12 @@ def _load_json(path: str, required: bool) -> dict[str, Any]:
   except (ValueError, OSError, files.Error) as e:
     # ValueError: invalid JSON; OSError/files.Error: unreadable (e.g. missing
     # read permission on the file).
+    if not required:
+      log.warning(
+          'Optional dbt artifact [{0}] could not be read ({1}); ignoring it. '
+          'Some metadata may be missing.'.format(path, e)
+      )
+      return {}
     raise TransformError(
         'Failed to read dbt artifact [{0}]: {1}. Ensure the file is readable '
         'and is valid dbt JSON output.'.format(path, e)
@@ -130,7 +137,7 @@ def _load_json(path: str, required: bool) -> dict[str, Any]:
 
 def _warn_on_unsupported_manifest(manifest: dict[str, Any]) -> None:
   """Validates manifest shape and warns on an unrecognized schema version."""
-  if not isinstance(manifest, dict) or 'metadata' not in manifest:
+  if not isinstance(manifest, dict) or manifest.get('metadata') is None:
     raise TransformError(
         'The file does not look like a dbt manifest (expected a JSON object '
         'with a "metadata" field). Point --artifacts-path at a dbt project '
@@ -150,17 +157,58 @@ def _warn_on_unsupported_manifest(manifest: dict[str, Any]) -> None:
     )
 
 
+def _artifacts_base(artifacts_path: str) -> str:
+  """Returns the dir holding the dbt artifacts.
+
+  Tolerates being pointed at the project root or the ``target/`` dir directly:
+  if manifest.json is not at ``artifacts_path`` but in its ``target/`` subdir,
+  returns that subdir.
+
+  Args:
+    artifacts_path: the --artifacts-path value.
+
+  Returns:
+    The directory to read manifest.json / run_results.json etc. from.
+  """
+  if not os.path.exists(os.path.join(artifacts_path, MANIFEST_FILE)):
+    nested = os.path.join(artifacts_path, 'target')
+    if os.path.exists(os.path.join(nested, MANIFEST_FILE)):
+      return nested
+  return artifacts_path
+
+
+def MaterializedBigQueryDatasets(  # pylint: disable=invalid-name
+    artifacts_path: str,
+) -> set[tuple[str, str]]:
+  """Returns the ``(database, schema)`` pairs the dbt run materializes into.
+
+  Args:
+    artifacts_path: the --artifacts-path value (project root or target/ dir).
+
+  Returns:
+    The set of distinct ``(database, schema)`` pairs of materialized nodes.
+
+  Raises:
+    TransformError: if manifest.json is missing or malformed.
+  """
+  base = _artifacts_base(artifacts_path)
+  manifest = _load_json(os.path.join(base, MANIFEST_FILE), required=True)
+  return entry_links.materialized_bigquery_datasets(manifest)
+
+
 def GenerateImportFile(  # pylint: disable=invalid-name
     artifacts_path: str,
     output_path: str,
     *,
     eg_project: str,
+    eg_project_id: str,
     eg_location: str,
     entry_group: str,
     connector_types_project: str,
     system_types_project: str,
     types_location: str = 'global',
-    include_entry_links: bool = False,
+    include_entry_links: bool = True,
+    bigquery_location: str | None = None,
 ) -> dict[str, Any]:
   """Transforms dbt artifacts at artifacts_path into a JSONL import file.
 
@@ -169,6 +217,7 @@ def GenerateImportFile(  # pylint: disable=invalid-name
       etc.), or a directory whose `target/` subdir contains them.
     output_path: local path the JSONL import file is written to.
     eg_project: GCP project NUMBER owning the entry group / dbt entries.
+    eg_project_id: GCP project ID owning the entry group / dbt entries.
     eg_location: Dataplex region of the entry group.
     entry_group: short id of the entry group that receives the dbt entries.
     connector_types_project: project hosting the dbt aspect/entry types (e.g.
@@ -177,23 +226,23 @@ def GenerateImportFile(  # pylint: disable=invalid-name
     system_types_project: project hosting `contacts` + entry link types (e.g.
       dataplex-types / dataplex-staging-types).
     types_location: location of the system types (always `global`).
-    include_entry_links: when True, also emit EntryLink records. OFF by default.
+    include_entry_links: when True (the default), also emit EntryLink records.
+    bigquery_location: Dataplex region of the physical @bigquery entries. When
+      set (with include_entry_links), also emit materializes-to links from each
+      materialized dbt node to its physical BigQuery table entry.
 
   Returns:
-    A dict summary: {'entries': int, 'entry_links': int, 'output': str}.
+    A dict summary: {'entries': int, 'entry_links': int, 'output': str,
+    'bigquery_projects': list[str]} -- bigquery_projects are the BigQuery
+    projects materializes-to links reference (for the import job scope); empty
+    unless bigquery_location was given.
 
   Raises:
     TransformError: if a required artifact is missing or malformed, or if an
       entry or aspect exceeds the Dataplex size limits (fails before writing the
       import file, so nothing is uploaded to GCS or handed to an import job).
   """
-  # Tolerate being pointed at the project root or the target/ dir directly.
-  base = artifacts_path
-  if not os.path.exists(os.path.join(base, MANIFEST_FILE)):
-    nested = os.path.join(base, 'target')
-    if os.path.exists(os.path.join(nested, MANIFEST_FILE)):
-      base = nested
-
+  base = _artifacts_base(artifacts_path)
   manifest = _load_json(os.path.join(base, MANIFEST_FILE), required=True)
   _warn_on_unsupported_manifest(manifest)
   catalog = _load_json(os.path.join(base, CATALOG_FILE), required=False)
@@ -202,6 +251,7 @@ def GenerateImportFile(  # pylint: disable=invalid-name
 
   ctx = naming.Context(
       eg_project=eg_project,
+      eg_project_id=eg_project_id,
       eg_location=eg_location,
       entry_group=entry_group,
       connector_project=connector_types_project,
@@ -212,9 +262,14 @@ def GenerateImportFile(  # pylint: disable=invalid-name
   entries, known_ids = entry_builders.build_entries(
       ctx, manifest, catalog, run_results, sources
   )
-  links = (
-      entry_links.build_entry_links(ctx, manifest, known_ids)
-      if include_entry_links
+  links = []
+  if include_entry_links:
+    links = entry_links.build_entry_links(
+        ctx, manifest, known_ids, bigquery_location=bigquery_location
+    )
+  bigquery_projects = (
+      sorted(entry_links.materialized_bigquery_projects(manifest))
+      if include_entry_links and bigquery_location
       else []
   )
 
@@ -228,4 +283,5 @@ def GenerateImportFile(  # pylint: disable=invalid-name
       'entries': len(entries),
       'entry_links': len(links),
       'output': output_path,
+      'bigquery_projects': bigquery_projects,
   }

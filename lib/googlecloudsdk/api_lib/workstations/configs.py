@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.workstations.util import GetClientInstance
 from googlecloudsdk.api_lib.workstations.util import GetMessagesModule
 from googlecloudsdk.api_lib.workstations.util import VERSION_MAP
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 import six
@@ -111,6 +112,12 @@ class Configs:
     config.name = config_name
     config.idleTimeout = '{}s'.format(args.idle_timeout)
     config.runningTimeout = '{}s'.format(args.running_timeout)
+    if self.api_version != VERSION_MAP.get(base.ReleaseTrack.GA):
+      if args.IsSpecified('idle_action'):
+        config.idleAction = arg_utils.ChoiceToEnum(
+            args.idle_action,
+            self.messages.WorkstationConfig.IdleActionValueValuesEnum,
+        )
     if args.labels:
       config.labels = self.messages.WorkstationConfig.LabelsValue(
           additionalProperties=[
@@ -444,6 +451,14 @@ class Configs:
     if args.IsSpecified('running_timeout'):
       config.runningTimeout = '{}s'.format(args.running_timeout)
       update_mask.append('running_timeout')
+
+    if self.api_version != VERSION_MAP.get(base.ReleaseTrack.GA):
+      if args.IsSpecified('idle_action'):
+        config.idleAction = arg_utils.ChoiceToEnum(
+            args.idle_action,
+            self.messages.WorkstationConfig.IdleActionValueValuesEnum,
+        )
+        update_mask.append('idle_action')
 
     if args.IsSpecified('labels'):
       config.labels = self.messages.WorkstationConfig.LabelsValue(

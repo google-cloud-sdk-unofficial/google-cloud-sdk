@@ -192,6 +192,7 @@ class Create(base.CreateCommand):
     secrets_args.AddRegionalKmsKeyName(parser)
     secrets_args.AddCreateVersionDestroyTTL(parser)
     secrets_args.GetTagsArg().AddToParser(parser)
+    secrets_args.AddCreateSecretType(parser)
     annotations = parser.add_group(mutex=True, help='Annotations')
     map_util.AddMapSetFlag(annotations, 'annotations', 'Annotations', str, str)
 
@@ -216,6 +217,7 @@ class Create(base.CreateCommand):
     tags = secrets_args.GetTagsFromArgs(args, messages.Secret.TagsValue)
     replication_policy = args.replication_policy
     locations = args.locations
+    secret_type = args.secret_type
     kms_keys = []
 
     if args.replication_policy_file and args.replication_policy:
@@ -346,6 +348,7 @@ class Create(base.CreateCommand):
         regional_kms_key_name=args.regional_kms_key_name,
         version_destroy_ttl=version_destroy_ttl,
         secret_location=args.location,
+        secret_type=secret_type,
     )
 
     if data:

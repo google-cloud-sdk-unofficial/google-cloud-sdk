@@ -527,7 +527,7 @@ def GetBqCliUserAgentComponent() -> Optional[str]:
   """Returns the BQ CLI specific part of the user agent."""
   if not _BQ_CLI_COMMAND:
     return None
-  return f'bq.{_BQ_CLI_COMMAND}.{_BQ_CLI_RESOURCE or "unknown"}'
+  return f'command/bq.{_BQ_CLI_COMMAND}.{_BQ_CLI_RESOURCE or "unknown"}'
 
 
 def Pluralize(name: str) -> str:

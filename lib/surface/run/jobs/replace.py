@@ -197,20 +197,44 @@ class Replace(base.Command):
       )
 
       header = operation + ' job...'
-      with progress_tracker.StagedProgressTracker(
-          header,
-          stages.JobStages(),
-          failure_message='Job failed to deploy',
-          suppress_output=args.async_,
-      ) as tracker:
-        if job_obj:
-          job_obj = client.UpdateJob(
-              job_ref, changes, tracker, asyn=args.async_
-          )
+      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+        if is_create:
+          new_job = client.ValidateJobBeforeCreate(job_ref, changes)
+          with progress_tracker.StagedProgressTracker(
+              header,
+              stages.JobStages(),
+              failure_message='Job failed to deploy',
+              suppress_output=args.async_,
+          ) as tracker:
+            job_obj = client.CreateJob(
+                job_ref, changes, new_job, tracker, asyn=args.async_
+            )
         else:
-          job_obj = client.CreateJob(
-              job_ref, changes, tracker, asyn=args.async_
-          )
+          new_job = client.ValidateJobBeforeUpdate(job_ref, changes)
+          with progress_tracker.StagedProgressTracker(
+              header,
+              stages.JobStages(),
+              failure_message='Job failed to deploy',
+              suppress_output=args.async_,
+          ) as tracker:
+            job_obj = client.UpdateJob(
+                job_ref, changes, new_job, tracker, asyn=args.async_
+            )
+      else:
+        with progress_tracker.StagedProgressTracker(
+            header,
+            stages.JobStages(),
+            failure_message='Job failed to deploy',
+            suppress_output=args.async_,
+        ) as tracker:
+          if job_obj:
+            job_obj = client.UpdateJob(
+                job_ref, changes, tracker=tracker, asyn=args.async_
+            )
+          else:
+            job_obj = client.CreateJob(
+                job_ref, changes, tracker=tracker, asyn=args.async_
+            )
 
       operation = 'created' if is_create else 'updated'
       if args.async_:

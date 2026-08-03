@@ -385,7 +385,8 @@ def ConstructRestoreRequestFromArgsGA(
       restoreClusterRequest=alloydb_messages.RestoreClusterRequest(
           backupSource=restore_source.backup,
           continuousBackupSource=restore_source.continuous_backup,
-          # TODO(b/400420101): support backup_dr_backup_source
+          backupdrBackupSource=restore_source.backup_dr_backup,
+          backupdrPitrSource=restore_source.backup_dr_pitr,
           clusterId=args.cluster,
           cluster=cluster_resource,
       ),

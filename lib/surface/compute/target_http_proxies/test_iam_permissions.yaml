@@ -1,0 +1,30 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: Test IAM permissions for a Compute Engine target HTTP proxy.
+  description: |
+    Returns permissions that a caller has on the specified target HTTP proxy.
+
+  examples: |
+    To test if the caller has 'compute.targetHttpProxies.get' permission on a target HTTP proxy `my-proxy`, run:
+
+      $ {command} my-proxy --permissions=compute.targetHttpProxies.get
+
+request:
+  collection: compute.targetHttpProxies
+  api_version: alpha
+  method: testIamPermissions
+  use_relative_name: false
+
+command_type: GENERIC
+
+arguments:
+  resource:
+    help_text: The target HTTP proxy for which to test permissions.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:target_http_proxy
+  params:
+  - arg_name: permissions
+    api_field: testPermissionsRequest.permissions
+    required: true
+    repeated: true
+    help_text: |-
+      The permissions to test.

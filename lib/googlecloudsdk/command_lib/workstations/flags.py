@@ -313,6 +313,22 @@ def AddWorkstationResourceArg(parser, api_version='v1beta'):
   ).AddToParser(parser)
 
 
+def AddIdleActionFlag(parser):
+  """Adds an --idle-action flag to the given parser."""
+  help_text = """\
+  Action to take when a workstation using this config has been idle for the
+  duration specified in --idle-timeout.
+  """
+  parser.add_argument(
+      '--idle-action',
+      choices={
+          'stop': 'Stop the workstation after idle-timeout.',
+          'suspend': 'Suspend the workstation after idle-timeout.',
+      },
+      help=help_text,
+  )
+
+
 def AddIdleTimeoutFlag(parser, use_default=True):
   """Adds an --idle-timeout flag to the given parser."""
   help_text = """\

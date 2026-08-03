@@ -444,6 +444,30 @@ workload_identity_pool_provider:
       //iam.googleapis.com/projects/<project-number>/locations/<location>/workloadIdentityPools/<pool-id>/providers/<provider-id>
       https://iam.googleapis.com/projects/<project-number>/locations/<location>/workloadIdentityPools/<pool-id>/providers/<provider-id>
       ```
+  oidc_discovery_uri:
+    api_field: workloadIdentityPoolProvider.oidc.discoveryUri
+    GA:
+      api_field: workloadIdentityPoolProvider.oidc.discoveryUri
+    arg_name: discovery-uri
+    hidden: true
+    help_text: |-
+      URL to fetch the discovery document from, overriding the discovery document
+      URL derived from `issuer_uri`.
+
+  actor_providers:
+    api_field: workloadIdentityPoolProvider.actorProviders
+    GA:
+      api_field: workloadIdentityPoolProvider.actorProviders
+    type: 'googlecloudsdk.calliope.arg_parsers:ArgList:'
+    arg_name: actor-providers
+    hidden: true
+    help_text: |-
+      List of the resource names of
+      workload identity pool providers
+      in the same pool that are authorized to issue actor tokens for this
+      provider.
+
+
   saml_idp_metadata_path:
     api_field: workloadIdentityPoolProvider.saml.idpMetadataXml
     type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
@@ -973,6 +997,25 @@ workforce_pool_provider:
 
       Use `enabled-for-groups` to enable SCIM-managed groups.
       Use `scim-usage-unspecified` to disable SCIM-managed groups.
+    BETA:
+      choices:
+      - arg_value: enabled-for-groups
+        enum_value: ENABLED_FOR_GROUPS
+      - arg_value: scim-usage-unspecified
+        enum_value: SCIM_USAGE_UNSPECIFIED
+      - arg_value: enabled-for-users-groups
+        enum_value: ENABLED_FOR_USERS_GROUPS
+      help_text: |-
+        Specifies whether the workforce identity pool provider uses SCIM-managed
+        groups instead of the `google.groups` attribute mapping for authorization checks.
+
+        The `scim_usage` and `extended_attributes_oauth2_client` fields are
+        mutually exclusive. A request that enables both fields on the same
+        workforce identity pool provider will produce an error.
+
+        Use `enabled-for-groups` to enable SCIM-managed groups.
+        Use `enabled-for-users-groups` to enable SCIM-managed user claims and groups.
+        Use `scim-usage-unspecified` to disable SCIM-managed groups.
     ALPHA:
       choices:
       - arg_value: enabled-for-groups

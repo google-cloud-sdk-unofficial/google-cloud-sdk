@@ -21,6 +21,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.dataflow import job_utils
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class UpdateOptions(base.Command):
   """Update pipeline options on-the-fly for running Dataflow jobs.
@@ -85,7 +86,8 @@ class UpdateOptions(base.Command):
             ' streaming-engine jobs.'
         ),
     )
-    parser.add_argument(
+    utilization_group = parser.add_mutually_exclusive_group()
+    utilization_group.add_argument(
         '--worker-utilization-hint',
         type=float,
         help=(
@@ -94,13 +96,35 @@ class UpdateOptions(base.Command):
             ' enabled.'
         ),
     )
-    parser.add_argument(
+    utilization_group.add_argument(
         '--unset-worker-utilization-hint',
         action='store_true',
         help=(
             'Unset --worker-utilization-hint. This causes the'
             ' job autoscaling to fall back to internal tunings'
             ' if they exist, or otherwise use the default hint value.'
+        ),
+    )
+
+    latency_group = parser.add_mutually_exclusive_group(hidden=True)
+    latency_group.add_argument(
+        '--latency-tier',
+        type=str,
+        choices=['low_latency', 'medium_latency', 'high_latency'],
+        hidden=True,
+        help=(
+            'Latency tier for the job. Options are "low_latency", '
+            '"medium_latency", or "high_latency". Only supported for'
+            ' streaming-engine jobs with autoscaling enabled.'
+        ),
+    )
+    latency_group.add_argument(
+        '--unset-latency-tier',
+        action='store_true',
+        hidden=True,
+        help=(
+            'Unset --latency-tier. This causes the job to fall back to'
+            ' internal tunings.'
         ),
     )
 
@@ -118,6 +142,8 @@ class UpdateOptions(base.Command):
         and args.max_num_workers is None
         and args.worker_utilization_hint is None
         and not args.unset_worker_utilization_hint
+        and args.latency_tier is None
+        and not args.unset_latency_tier
     ):
       raise exceptions.OneOfArgumentsRequiredException(
           [
@@ -125,18 +151,10 @@ class UpdateOptions(base.Command):
               '--max-num-workers',
               '--worker-utilization-hint',
               '--unset-worker-utilization-hint',
+              '--latency-tier',
+              '--unset-latency-tier',
           ],
           'You must provide at-least one field to update',
-      )
-    elif (
-        args.worker_utilization_hint is not None
-        and args.unset_worker_utilization_hint
-    ):
-      raise exceptions.ConflictingArgumentsException(
-          'The arguments --worker-utilization-hint and'
-          ' --unset-worker-utilization-hint are mutually exclusive (as the'
-          ' unset command will unset the given hint), and must be called'
-          ' separately.',
       )
 
     job_ref = job_utils.ExtractJobRef(args)
@@ -148,4 +166,6 @@ class UpdateOptions(base.Command):
         max_num_workers=args.max_num_workers,
         worker_utilization_hint=args.worker_utilization_hint,
         unset_worker_utilization_hint=args.unset_worker_utilization_hint,
+        latency_tier=args.latency_tier,
+        unset_latency_tier=args.unset_latency_tier,
     )

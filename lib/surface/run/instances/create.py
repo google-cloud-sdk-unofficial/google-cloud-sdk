@@ -38,7 +38,6 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.generated_clients.apis.run.v1 import run_v1_messages as messages
 
-
 EXAMPLE_INSTANCE_IMAGE = 'us-docker.pkg.dev/cloudrun/container/hello:latest'
 
 
@@ -67,7 +66,7 @@ Container Flags
   group.AddArgument(flags.RemoveVolumeMountFlag())
   group.AddArgument(flags.ClearVolumeMountsFlag())
   group.AddArgument(flags.StartupProbeFlag())
-  group.AddArgument(flags.SandboxLauncherFlag(hidden=True))
+  group.AddArgument(flags.SandboxLauncherFlag())
 
   return group
 

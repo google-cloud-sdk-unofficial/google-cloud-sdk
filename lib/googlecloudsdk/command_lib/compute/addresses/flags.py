@@ -19,6 +19,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.command_lib.compute import completers as compute_completers
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.util import completers
+from googlecloudsdk.core import properties
 
 
 class RegionalAddressesCompleter(compute_completers.ListCommandCompleter):
@@ -262,3 +263,38 @@ def IpCollectionArgument(required=False):
           ' pool.'
       ),
   )
+
+
+def SetProjectRequestHook(ref, args, req):
+  """Hook to set project from core properties or --project global flag."""
+  del ref, args  # Unused.
+  req.project = properties.VALUES.core.project.Get(required=True)
+  return req
+
+
+def InternalRangeArgument(parser, required=False):
+  return parser.add_argument(
+      '--internal-range',
+      required=required,
+      help=(
+          'If specified, the internal range from which to allocate the '
+          'global internal IP address.'
+      ),
+  )
+
+
+def AddIpCollectionGroup(parser, required=False):
+  """Adds a mutually exclusive group for IP collection sources (PDP and IR).
+
+  Both --ip-collection and --internal-range map to the same underlying
+  Address.ipCollection API field, but only one must be specified at a time.
+
+  Args:
+    parser: The argparse parser to add the group to.
+    required: Whether one of the flags in the group is required.
+  """
+  group = parser.add_mutually_exclusive_group(required=required)
+  IpCollectionArgument().AddArgument(parser, group)
+  InternalRangeArgument(group)
+
+

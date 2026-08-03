@@ -1,4 +1,4 @@
-release_tracks: [BETA]
+release_tracks: [GA, BETA]
 help_text:
   brief: Delete a semantic governance policy.
   description: Delete a semantic governance policy.
@@ -33,14 +33,24 @@ arguments:
       will be returned.
     required: false
 request:
-  api_version: v1beta1
+  BETA:
+    api_version: v1beta1
+    # BETA only. See create.yaml for rationale.
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.ai.semantic_governance_policies.util:set_regional_endpoint
+    - googlecloudsdk.command_lib.ai.semantic_governance_policies.util:set_delete_etag
+  GA:
+    api_version: v1
+    # See create.yaml for rationale.
+    issue_request_hook: googlecloudsdk.command_lib.ai.semantic_governance_policies.util:issue_delete_and_normalize_lro
   collection: aiplatform.projects.locations.semanticGovernancePolicies
   method: delete
   resource_method_params:
     name: projects/{projectsId}/locations/{locationsId}/semanticGovernancePolicies/{semanticGovernancePoliciesId}
-  modify_request_hooks:
-  - googlecloudsdk.command_lib.ai.semantic_governance_policies.util:set_regional_endpoint
-  - googlecloudsdk.command_lib.ai.semantic_governance_policies.util:set_delete_etag
 
 async:
-  collection: aiplatform.projects.locations.semanticGovernancePolicies.operations
+  # See create.yaml for rationale.
+  BETA:
+    collection: aiplatform.projects.locations.semanticGovernancePolicies.operations
+  GA:
+    collection: aiplatform.projects.locations.operations

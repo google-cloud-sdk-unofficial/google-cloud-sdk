@@ -1,0 +1,27 @@
+release_tracks: [ALPHA]
+hidden: true
+help_text:
+  brief: List Redis ACL Policy Revisions.
+  description: List Redis ACL Policy Revisions for a given ACL policy.
+  examples: |
+    To list all ACL Policy Revisions for ACL policy `my-acl-policy` in region `us-central1`, run:
+
+      $ {command} --acl-policy=my-acl-policy --region=us-central1
+
+request:
+  collection: redis.projects.locations.aclPolicies.revisions
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  GA:
+    api_version: v1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.redis.resources:acl_policy
+    help_text: |
+        The ACL policy of the revisions to display.
+
+response:
+  id_field: name

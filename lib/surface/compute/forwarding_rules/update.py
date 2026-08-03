@@ -41,6 +41,7 @@ def _Args(
   flags.AddAllowGlobalAccess(parser)
   flags.AddAllowPscGlobalAccess(parser)
   flags.AddExternalMigration(parser)
+  flags.AddMetadataFilter(parser)
 
 
 @base.UniverseCompatible
@@ -115,6 +116,9 @@ class UpdateGA(base.UpdateCommand):
         or args.IsSpecified('load_balancing_scheme')
     )
 
+  def _HasMetadataFilterChange(self, args):
+    return args.IsSpecified('metadata_filter')
+
   def Modify(
       self, messages: message_proto, args, existing, cleared_fields
   ) -> message_proto.Message:
@@ -171,6 +175,12 @@ class UpdateGA(base.UpdateCommand):
       )
       has_change = True
 
+    if self._HasMetadataFilterChange(args):
+      forwarding_rule.metadataFilters = flags.ParseMetadataFilters(
+          messages, args.metadata_filter
+      )
+      has_change = True
+
     if not has_change:
       return None
 
@@ -197,6 +207,7 @@ class UpdateGA(base.UpdateCommand):
         self._HasPscGlobalAccessChange(args),
         self._HasSourceIpRangeChange(args),
         self._HasExternalMigrationChange(args),
+        self._HasMetadataFilterChange(args),
     ])
 
     if not has_change:

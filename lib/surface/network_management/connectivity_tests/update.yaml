@@ -159,6 +159,17 @@
     - group:
         mutex: true
         params:
+        - arg_name: source-dms-private-connection
+          api_field: connectivityTest.source.dmsPrivateConnection
+          help_text: |
+            DMS private connection URI as the source endpoint.
+        - arg_name: clear-source-dms-private-connection
+          type: bool
+          help_text: |
+            Clear existing source DMS private connection.
+    - group:
+        mutex: true
+        params:
         - arg_name: destination-instance
           api_field: connectivityTest.destination.instance
           help_text: |
@@ -317,6 +328,7 @@
       - googlecloudsdk.command_lib.network_management.util:ValidateAppEngineVersionsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateCloudRunRevisionsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateCloudRunJobsURIs
+      - googlecloudsdk.command_lib.network_management.util:ValidateDmsPrivateConnectionsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateForwardingRulesURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateRedisInstancesURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateRedisClustersURIs
@@ -334,6 +346,7 @@
       - googlecloudsdk.command_lib.network_management.util:ValidateAppEngineVersionsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateCloudRunRevisionsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateCloudRunJobsURIs
+      - googlecloudsdk.command_lib.network_management.util:ValidateDmsPrivateConnectionsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateForwardingRulesURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateRedisInstancesURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateRedisClustersURIs

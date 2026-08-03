@@ -8304,6 +8304,12 @@ class NetworksecurityProjectsLocationsSacAttachmentsDeleteRequest(_messages.Mess
   r"""A NetworksecurityProjectsLocationsSacAttachmentsDeleteRequest object.
 
   Fields:
+    ignorePartnerDeletionErrors: Optional. If set to true, the request will
+      delete the SAC Attachment even if some steps fail (e.g. deleting the
+      remote Symantec Location). This option is a no-op for partners where it
+      does not apply (e.g. Palo Alto Networks). WARNING: Enabling this option
+      may leave dangling resources in the Broadcom/Symantec customer portal
+      that requires manual cleanup.
     name: Required. Name of the resource, in the form
       `projects/{project}/locations/{location}/sacAttachments/{sac_attachment}
       `.
@@ -8320,8 +8326,9 @@ class NetworksecurityProjectsLocationsSacAttachmentsDeleteRequest(_messages.Mess
       not supported (00000000-0000-0000-0000-000000000000).
   """
 
-  name = _messages.StringField(1, required=True)
-  requestId = _messages.StringField(2)
+  ignorePartnerDeletionErrors = _messages.BooleanField(1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
 
 
 class NetworksecurityProjectsLocationsSacAttachmentsGetRequest(_messages.Message):

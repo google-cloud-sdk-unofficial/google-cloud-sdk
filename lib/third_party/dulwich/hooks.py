@@ -86,6 +86,8 @@ class ShellHook(Hook):
 
     def execute(self, *args):
         """Execute the hook with given args."""
+        import sys
+        print("DEBUG HOOK EXECUTE START:", self.name, self.filepath, self.cwd, file=sys.stderr)
         if len(args) != self.numparam:
             raise HookError(
                 "Hook %s executed with wrong number of args. \
@@ -97,9 +99,10 @@ class ShellHook(Hook):
             args = self.pre_exec_callback(*args)
 
         try:
-            ret = subprocess.call(
-                [os.path.relpath(self.filepath, self.cwd), *list(args)], cwd=self.cwd
-            )
+            cmd = [os.path.relpath(self.filepath, self.cwd), *list(args)]
+            print("DEBUG HOOK CALLING:", cmd, "cwd=", self.cwd, file=sys.stderr)
+            ret = subprocess.call(cmd, cwd=self.cwd)
+            print("DEBUG HOOK CALL RET:", ret, file=sys.stderr)
             if ret != 0:
                 if self.post_exec_callback is not None:
                     self.post_exec_callback(0, *args)

@@ -51,9 +51,8 @@ class Register(base.CreateCommand):
     arguments.AddTableRegisterArgs(parser)
 
   def Run(self, args):
-    client = util.GetClientInstance(self.ReleaseTrack())
+    client = util.GetTableClientInstance(self.ReleaseTrack())
     messages = client.MESSAGES_MODULE
-
     table_ref = args.CONCEPTS.table.Parse()
 
     register_request = messages.RegisterIcebergTableRequest(

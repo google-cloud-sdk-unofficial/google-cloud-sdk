@@ -251,7 +251,7 @@ targets in the module will be run.
         type=str,
         choices=['always', 'on-failure'],
         help=(
-            'Specifies when to record video of the device screen during the'
+            'Specify when to record video of the device screen during the'
             ' test run. Accepted values are `always` or `on-failure`.'
         ),
     )
@@ -271,7 +271,7 @@ targets in the module will be run.
         type=str,
         choices=['uniform', 'smart'],
         help=(
-            'Specifies the sharding strategy to partition the test execution'
+            'Specify the sharding strategy to partition the test execution'
             ' across multiple device allocations. Accepted values are `uniform`'
             ' or `smart`.'
         ),
@@ -280,7 +280,7 @@ targets in the module will be run.
         '--uniform-sharding-count',
         type=int,
         help=(
-            'Specifies the total number of shards to create for uniform'
+            'Specify the total number of shards to create for uniform'
             ' sharding. Required when `--sharding-option=uniform`.'
         ),
     )
@@ -288,7 +288,7 @@ targets in the module will be run.
         '--smart-sharding-target-duration',
         type=arg_parsers.Duration(lower_bound='2m', upper_bound='1h'),
         help=(
-            'Specifies the targeted execution time (e.g., `2m`, `10m`, `1h`)'
+            'Specify the targeted execution time (e.g., `2m`, `10m`, `1h`)'
             ' per shard for smart sharding. The valid range is `2m` to `1h`.'
             ' Required when `--sharding-option=smart`.'
         ),
@@ -297,7 +297,7 @@ targets in the module will be run.
         '--smart-sharding-record-name',
         type=str,
         help=(
-            'Specifies the name of the smart sharding record file, excluding'
+            'Specify the name of the smart sharding record file, excluding'
             ' the file extension. Required when `--sharding-option=smart`. This'
             ' file is located in the Google Cloud Storage bucket specified by'
             ' `--bucket-name` under the `smart-sharding/` directory with a'
@@ -307,10 +307,20 @@ targets in the module will be run.
         ),
     )
     parser.add_argument(
+        '--smart-sharding-max-shard-count',
+        type=int,
+        help=(
+            'Specify the maximum number of shards to create for smart'
+            ' sharding. If unset or set to 0, system-defined max limits are'
+            ' used. The valid range is `0` to `20` for physical devices and'
+            ' `0` to `200` for virtual devices.'
+        ),
+    )
+    parser.add_argument(
         '--flaky-test-attempts',
         type=int,
         help=(
-            'Specifies the maximum number of execution attempts per test shard'
+            'Specify the maximum number of execution attempts per test shard'
             ' to handle flakiness or infrastructure errors. If not specified,'
             ' defaults to 1.'
         ),
@@ -319,7 +329,7 @@ targets in the module will be run.
         '--instrumentation-timeout',
         type=arg_parsers.Duration(lower_bound='1m', upper_bound='1h'),
         help=(
-            'Specifies the maximum duration allowed for the instrumentation'
+            'Specify the maximum duration allowed for the instrumentation'
             ' test run (e.g., `10m`, `20s`, `1h`). The valid range is `1m` to'
             ' `1h`. If not specified, defaults to `5m`.'
         ),
@@ -328,7 +338,7 @@ targets in the module will be run.
         '--orchestrator-version',
         type=str,
         help=(
-            'Specifies the version of the Android Test Orchestrator to use'
+            'Specify the version of the Android Test Orchestrator to use'
             ' during test execution. If not specified, no orchestrator is'
             ' used. If set to `auto`, the system-default orchestrator version'
             ' is used.'
@@ -338,7 +348,7 @@ targets in the module will be run.
         '--locale',
         type=str,
         help=(
-            'Specifies the locale (language and region) to switch the device to'
+            'Specify the locale (language and region) to switch the device to'
             ' before running the test. The format is `language-region`, e.g.,'
             ' `en-US` or `zh-CN`. The typical language value is a two- or'
             ' three-letter language code as defined in ISO 639. The typical'
@@ -351,7 +361,7 @@ targets in the module will be run.
         type=str,
         choices=['portrait', 'landscape'],
         help=(
-            'Specifies the orientation to set the device to before running the'
+            'Specify the orientation to set the device to before running the'
             ' test. Accepted values are `portrait` or `landscape`.'
         ),
     )
@@ -381,7 +391,7 @@ targets in the module will be run.
     ):
       raise calliope_exceptions.RequiredArgumentException(
           '--uniform-sharding-count',
-          'Required when sharding-option is uniform.',
+          'Required when --sharding-option is uniform.',
       )
     if (
         args.sharding_option == 'smart'
@@ -389,7 +399,7 @@ targets in the module will be run.
     ):
       raise calliope_exceptions.RequiredArgumentException(
           '--smart-sharding-target-duration',
-          'Required when sharding-option is smart.',
+          'Required when --sharding-option is smart.',
       )
     if (
         args.sharding_option == 'smart'
@@ -397,7 +407,15 @@ targets in the module will be run.
     ):
       raise calliope_exceptions.RequiredArgumentException(
           '--smart-sharding-record-name',
-          'Required when sharding-option is smart.',
+          'Required when --sharding-option is smart.',
+      )
+    if (
+        args.smart_sharding_max_shard_count is not None
+        and args.sharding_option != 'smart'
+    ):
+      raise calliope_exceptions.InvalidArgumentException(
+          '--smart-sharding-max-shard-count',
+          'Can only be specified when --sharding-option is smart.',
       )
 
     location_ref = args.CONCEPTS.location.Parse()
@@ -460,7 +478,7 @@ targets in the module will be run.
       push_action = messages.DeviceAction(
           androidPushFiles=messages.AndroidPushFilesDeviceAction(
               fileConfigs=[
-                  messages.FileConfig(
+                  messages.AndroidPushFilesDeviceActionFileConfig(
                       destinationPath=dest,
                       sourceFile=messages.InputFile(
                           gcsInputFile=messages.GcsPath(
@@ -557,7 +575,7 @@ targets in the module will be run.
     uniform_sharding = None
     smart_sharding = None
     if args.sharding_option == 'uniform':
-      uniform_sharding = messages.UniformSharding(
+      uniform_sharding = messages.AndroidInstrumentationTestUniformSharding(
           shardCount=args.uniform_sharding_count
       )
     elif args.sharding_option == 'smart':
@@ -565,11 +583,12 @@ targets in the module will be run.
           f'gs://{bucket_name}/automation/smart-sharding/'
           f'{args.smart_sharding_record_name}.yaml'
       )
-      smart_sharding = messages.SmartSharding(
+      smart_sharding = messages.AndroidInstrumentationTestSmartSharding(
           targetedShardDuration=f'{args.smart_sharding_target_duration}s',
           timingRecord=messages.InputFile(
               gcsInputFile=messages.GcsPath(path=record_path)
           ),
+          maxShardCount=args.smart_sharding_max_shard_count,
       )
 
     android_instrumentation_test = messages.AndroidInstrumentationTest(
@@ -599,7 +618,7 @@ targets in the module will be run.
     if args.flaky_test_attempts is not None:
       settings = messages.JobSettings(
           retrySettings=messages.RetrySettings(
-              flakyTestRetryStrategy=messages.FlakyTestRetryStrategy(
+              flakyTestRetryStrategy=messages.RetrySettingsFlakyTestRetryStrategy(
                   flakyTestAttempts=args.flaky_test_attempts
               )
           )
@@ -624,8 +643,10 @@ targets in the module will be run.
       job_configs.append(job_config)
 
     gcs_path = f'gs://{bucket_name}/automation/sessions'
-    output_directory_config = messages.SessionOutputFileDirectoryConfig(
-        gcsOutputDirectory=messages.GcsPath(path=gcs_path)
+    output_directory_config = (
+        messages.SessionConfigSessionOutputFileDirectoryConfig(
+            gcsOutputDirectory=messages.GcsPath(path=gcs_path)
+        )
     )
     session_config = messages.SessionConfig(
         displayName='instrumentation-session',

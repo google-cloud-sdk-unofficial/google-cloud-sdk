@@ -523,12 +523,12 @@ class SqladminV1beta4(base_api.BaseApiClient):
       Args:
         request: (SqlConnectResolveRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
-
       Returns:
         (ConnectSettings) The response message.
       """
       config = self.GetMethodConfig('Resolve')
-      return self._RunMethod(config, request, global_params=global_params)
+      return self._RunMethod(
+          config, request, global_params=global_params)
 
     Resolve.method_config = lambda: base_api.ApiMethodInfo(
         http_method='GET',
@@ -1275,6 +1275,32 @@ class SqladminV1beta4(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def ListCapturedWorkloads(self, request, global_params=None):
+      r"""Lists all captured workloads associated with the instance.
+
+      Args:
+        request: (SqlInstancesListCapturedWorkloadsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (InstancesListCapturedWorkloadsResponse) The response message.
+      """
+      config = self.GetMethodConfig('ListCapturedWorkloads')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ListCapturedWorkloads.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='sql.instances.listCapturedWorkloads',
+        ordered_params=['project', 'instance'],
+        path_params=['instance', 'project'],
+        query_params=[],
+        relative_path='sql/v1beta4/projects/{project}/instances/{instance}/capturedWorkloads',
+        request_field='',
+        request_type_name='SqlInstancesListCapturedWorkloadsRequest',
+        response_type_name='InstancesListCapturedWorkloadsResponse',
+        supports_download=False,
+    )
+
     def ListServerCas(self, request, global_params=None):
       r"""Lists all of the trusted Certificate Authorities (CAs) for the specified instance. There can be up to three CAs listed: the CA that was used to sign the certificate that is currently in use, a CA that has been added but not yet used to sign a certificate, and a CA used to sign a certificate that has previously rotated out.
 
@@ -1319,7 +1345,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.patch',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=['enforcePsaWriteEndpoint'],
+        query_params=['enforcePsaWriteEndpoint', 'reconcilePscNetworking', 'reconcilePscNetworkingForce'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}',
         request_field='databaseInstance',
         request_type_name='SqlInstancesPatchRequest',
@@ -1614,6 +1640,58 @@ class SqladminV1beta4(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def StartWorkloadCapture(self, request, global_params=None):
+      r"""Starts capturing the SQL queries, transactions, and other operations executed on the primary instance. This traffic is securely stored and forms a "captured workload". This workload can be replayed later on a different instance to safely test performance impacts, database upgrades, configuration changes etc. before applying them to production.
+
+      Args:
+        request: (SqlInstancesStartWorkloadCaptureRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('StartWorkloadCapture')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    StartWorkloadCapture.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='sql.instances.startWorkloadCapture',
+        ordered_params=['project', 'instance'],
+        path_params=['instance', 'project'],
+        query_params=[],
+        relative_path='sql/v1beta4/projects/{project}/instances/{instance}:startWorkloadCapture',
+        request_field='sqlInstancesStartWorkloadCaptureRequest',
+        request_type_name='SqlInstancesStartWorkloadCaptureRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def StartWorkloadReplay(self, request, global_params=None):
+      r"""Starts executing a captured workload on a separate Cloud SQL instance provisioned for workload replay. This target instance simulates the production environment without affecting the primary instance.
+
+      Args:
+        request: (SqlInstancesStartWorkloadReplayRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('StartWorkloadReplay')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    StartWorkloadReplay.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='sql.instances.startWorkloadReplay',
+        ordered_params=['project', 'instance'],
+        path_params=['instance', 'project'],
+        query_params=[],
+        relative_path='sql/v1beta4/projects/{project}/instances/{instance}:startWorkloadReplay',
+        request_field='sqlInstancesStartWorkloadReplayRequest',
+        request_type_name='SqlInstancesStartWorkloadReplayRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def StopReplica(self, request, global_params=None):
       r"""Stops the replication in the read replica instance.
 
@@ -1636,6 +1714,58 @@ class SqladminV1beta4(base_api.BaseApiClient):
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/stopReplica',
         request_field='',
         request_type_name='SqlInstancesStopReplicaRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def StopWorkloadCapture(self, request, global_params=None):
+      r"""Stops capturing the query traffic and related operations executed on the primary instance.
+
+      Args:
+        request: (SqlInstancesStopWorkloadCaptureRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('StopWorkloadCapture')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    StopWorkloadCapture.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='sql.instances.stopWorkloadCapture',
+        ordered_params=['project', 'instance'],
+        path_params=['instance', 'project'],
+        query_params=[],
+        relative_path='sql/v1beta4/projects/{project}/instances/{instance}:stopWorkloadCapture',
+        request_field='sqlInstancesStopWorkloadCaptureRequest',
+        request_type_name='SqlInstancesStopWorkloadCaptureRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def StopWorkloadReplay(self, request, global_params=None):
+      r"""Stops executing a captured workload on the separate Cloud SQL instance.
+
+      Args:
+        request: (SqlInstancesStopWorkloadReplayRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('StopWorkloadReplay')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    StopWorkloadReplay.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='sql.instances.stopWorkloadReplay',
+        ordered_params=['project', 'instance'],
+        path_params=['instance', 'project'],
+        query_params=[],
+        relative_path='sql/v1beta4/projects/{project}/instances/{instance}:stopWorkloadReplay',
+        request_field='sqlInstancesStopWorkloadReplayRequest',
+        request_type_name='SqlInstancesStopWorkloadReplayRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -1746,7 +1876,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.operations.cancel',
         ordered_params=['project', 'operation'],
         path_params=['operation', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/operations/{operation}/cancel',
         request_field='',
         request_type_name='SqlOperationsCancelRequest',
@@ -1772,7 +1902,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.operations.get',
         ordered_params=['project', 'operation'],
         path_params=['operation', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/operations/{operation}',
         request_field='',
         request_type_name='SqlOperationsGetRequest',
@@ -1798,7 +1928,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.operations.list',
         ordered_params=['project'],
         path_params=['project'],
-        query_params=['filter', 'instance', 'maxResults', 'pageToken'],
+        query_params=['filter', 'instance', 'location', 'maxResults', 'pageToken'],
         relative_path='sql/v1beta4/projects/{project}/operations',
         request_field='',
         request_type_name='SqlOperationsListRequest',

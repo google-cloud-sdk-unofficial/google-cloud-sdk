@@ -73,3 +73,17 @@ class SharedTemplateRevisionsClient(object):
     describe_req = self.messages.DesigncenterProjectsLocationsSpacesSharedTemplatesRevisionsGetRequest(
         name=name)
     return self._str_client.Get(describe_req)
+
+  def FetchAssessmentReport(self, name):
+    """Fetch the assessment report of a SharedTemplateRevision.
+
+    Args:
+      name: str, the full resource name of the SharedTemplateRevision.
+
+    Returns:
+      FetchSharedTemplateRevisionAssessmentReportResponse resource.
+    """
+    request = self.messages.DesigncenterProjectsLocationsSpacesSharedTemplatesRevisionsFetchAssessmentReportRequest(
+        name=name
+    )
+    return self._str_client.FetchAssessmentReport(request)

@@ -669,7 +669,7 @@ class GoogleCloudRunV2CpuScaling(_messages.Message):
 
   Fields:
     cpuUtilization: Optional. Determines a threshold for CPU utilization
-      before scaling begins. Accepted values are between `0.1` and `0.95`
+      before scaling begins. Accepted values are between `0.1` and `0.90`
       (inclusive) or `0.0` to disable CPU utilization as threshold for
       scaling.
   """
@@ -2654,7 +2654,7 @@ class GoogleCloudRunV2RevisionScaling(_messages.Message):
       threshold for scaling. CPU and concurrency scaling cannot both be
       disabled.
     cpuUtilization: Optional. Determines a threshold for CPU utilization
-      before scaling begins. Accepted values are between `0.1` and `0.95`
+      before scaling begins. Accepted values are between `0.1` and `0.90`
       (inclusive) or `0.0` to disable CPU utilization as threshold for
       scaling. CPU and concurrency scaling cannot both be disabled.
     maxInstanceCount: Optional. Maximum number of serving instances that this

@@ -361,9 +361,9 @@ class ShaFile:
         """Return unique hash for this object."""
         return hash(self.id)
 
-    def as_pretty_string(self) -> bytes:
+    def as_pretty_string(self) -> str:
         """Return a string representing this object, fit for display."""
-        return self.as_raw_string()
+        return self.as_raw_string().decode("utf-8", "replace")
 
     def set_raw_string(self, text: bytes, sha: Optional[ObjectID] = None) -> None:
         """Set the contents of this object from a serialized string."""
@@ -670,7 +670,7 @@ class Blob(ShaFile):
 
 
 def _parse_message(
-    chunks: Iterable[bytes]
+    chunks: Iterable[bytes],
 ) -> Iterator[Union[Tuple[None, None], Tuple[Optional[bytes], bytes]]]:
     """Parse a message with a list of fields and a body.
 
@@ -943,11 +943,7 @@ class Tag(ShaFile):
             if keyids:
                 keys = [ctx.get_key(key) for key in keyids]
                 for key in keys:
-                    # google3 change: Backport fix for subkey.
-                    # Earth Engine does not verify keys, so this does not
-                    # change behavior in the Code Editor.
-                    # https://github.com/jelmer/dulwich/commit/8d1d263f9f0e202b3473c46a6b1b7c8fabca92c6
-                    for subkey in key.subkeys:
+                    for subkey in keys:
                         for sig in result.signatures:
                             if subkey.can_sign and subkey.fpr == sig.fpr:
                                 return
@@ -1204,7 +1200,7 @@ class Tree(ShaFile):
     def _serialize(self):
         return list(serialize_tree(self.iteritems()))
 
-    def as_pretty_string(self):
+    def as_pretty_string(self) -> str:
         text: List[str] = []
         for name, mode, hexsha in self.iteritems():
             text.append(pretty_format_tree_entry(name, mode, hexsha))
@@ -1543,11 +1539,7 @@ class Commit(ShaFile):
             if keyids:
                 keys = [ctx.get_key(key) for key in keyids]
                 for key in keys:
-                    # google3 change: Backport fix for subkey.
-                    # Earth Engine does not verify keys, so this does not
-                    # change behavior in the Code Editor.
-                    # https://github.com/jelmer/dulwich/commit/8d1d263f9f0e202b3473c46a6b1b7c8fabca92c6
-                    for subkey in key.subkeys:
+                    for subkey in keys:
                         for sig in result.signatures:
                             if subkey.can_sign and subkey.fpr == sig.fpr:
                                 return
@@ -1677,4 +1669,7 @@ try:
     # Try to import C versions
     from dulwich._objects import parse_tree, sorted_tree_items  # type: ignore
 except ImportError:
-    pass
+    try:
+        from dulwich.crates.objects._objects import parse_tree, sorted_tree_items  # type: ignore
+    except ImportError:
+        pass

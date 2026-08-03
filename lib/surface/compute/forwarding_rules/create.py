@@ -51,6 +51,7 @@ def _Args(parser, support_all_protocol, support_external_passthrough):
   flags.AddDisableAutomateDnsZone(parser)
   flags.AddIsMirroringCollector(parser)
   flags.AddServiceDirectoryRegistration(parser)
+  flags.AddMetadataFilter(parser)
 
   parser.add_argument(
       '--service-label',
@@ -635,6 +636,10 @@ class CreateHelper(object):
         args.subnet_region = forwarding_rule_ref.region
       forwarding_rule.subnetwork = flags.SUBNET_ARG.ResolveAsResource(
           args, resources).SelfLink()
+    if args.metadata_filter:
+      forwarding_rule.metadataFilters = flags.ParseMetadataFilters(
+          client.messages, args.metadata_filter
+      )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)

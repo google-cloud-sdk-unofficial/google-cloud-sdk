@@ -25,3 +25,8 @@ arguments:
     required: false
     help_text: |
       Name of the reservation block the host is associated with.
+  - arg_name: reservation-subblock
+    release_tracks: [ALPHA]
+    required: false
+    help_text: |
+      Name of the reservation subblock the host is associated with.

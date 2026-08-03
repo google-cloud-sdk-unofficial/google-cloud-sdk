@@ -60,7 +60,7 @@ class DevicerunV1alpha(base_api.BaseApiClient):
         request: (DevicerunProjectsLocationsDevicesGetRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
       Returns:
-        (Device) The response message.
+        (CatalogDevice) The response message.
       """
       config = self.GetMethodConfig('Get')
       return self._RunMethod(
@@ -76,7 +76,7 @@ class DevicerunV1alpha(base_api.BaseApiClient):
         relative_path='v1alpha/{+name}',
         request_field='',
         request_type_name='DevicerunProjectsLocationsDevicesGetRequest',
-        response_type_name='Device',
+        response_type_name='CatalogDevice',
         supports_download=False,
     )
 
@@ -87,7 +87,7 @@ class DevicerunV1alpha(base_api.BaseApiClient):
         request: (DevicerunProjectsLocationsDevicesListRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
       Returns:
-        (ListDevicesResponse) The response message.
+        (CatalogListDevicesResponse) The response message.
       """
       config = self.GetMethodConfig('List')
       return self._RunMethod(
@@ -103,7 +103,7 @@ class DevicerunV1alpha(base_api.BaseApiClient):
         relative_path='v1alpha/{+parent}/devices',
         request_field='',
         request_type_name='DevicerunProjectsLocationsDevicesListRequest',
-        response_type_name='ListDevicesResponse',
+        response_type_name='CatalogListDevicesResponse',
         supports_download=False,
     )
 

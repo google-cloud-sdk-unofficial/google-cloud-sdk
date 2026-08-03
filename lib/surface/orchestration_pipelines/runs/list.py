@@ -78,7 +78,7 @@ class List(calliope_base.Command):
         collection="composer.projects.locations.environments.dags",
         api_version=api_version,
     )
-    list_dag_runs_response = dags_util.ListDagRuns(
+    dag_runs = dags_util.ListDagRuns(
         dag_ref,
         list_filter=list_filter,
     )
@@ -86,6 +86,6 @@ class List(calliope_base.Command):
     # 2. Convert dag runs to pipeline runs.
     return {
         "pipeline_runs": composer_utils.convert_dag_runs_to_pipeline_runs(
-            list_dag_runs_response.dagRuns
+            dag_runs
         )
     }

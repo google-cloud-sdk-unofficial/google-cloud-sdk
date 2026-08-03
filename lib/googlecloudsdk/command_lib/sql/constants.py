@@ -52,6 +52,7 @@ TARGET_INSTANCE_OVERRIDE_FLAGS = (
     'enable_google_private_path',
     'enable_point_in_time_recovery',
     'enable_private_service_connect',
+    'enforce_cmek_log_encryption_at_source',
     'failover_replica_name',
     'final_backup',
     'final_backup_retention_days',

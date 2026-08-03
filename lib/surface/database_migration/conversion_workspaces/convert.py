@@ -70,7 +70,9 @@ class Convert(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
     result_operation = client.operations.Convert(
         name=conversion_workspace_ref.RelativeName(),
         filter_expr=self.ExtractBackendFilter(args),
-        auto_commit=args.auto_commit,
+        auto_commit=args.auto_commit
+        if args.auto_commit is not None
+        else True,
     )
 
     return self.HandleOperationResult(

@@ -19,7 +19,9 @@ from apitools.base.py import exceptions as apitools_exceptions
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.iam import iam_util
+from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
 def GetClient(version=None):
@@ -124,6 +126,7 @@ class Secrets(Client):
       regional_kms_key_name=None,
       version_destroy_ttl=None,
       secret_location=None,
+      secret_type=None,
   ):
     """Create a secret."""
     keys = keys or []
@@ -153,22 +156,36 @@ class Secrets(Client):
 
       # For regional requests, replication should not be there.
       replication = None
+
+    secret_type_enum = (
+        arg_utils.ChoiceToEnum(
+            secret_type,
+            self.messages.Secret.SecretTypeValueValuesEnum,
+        )
+        if secret_type
+        else None
+    )
+
+    secret = self.messages.Secret(
+        labels=labels,
+        tags=tags,
+        replication=replication,
+        expireTime=expire_time,
+        ttl=ttl,
+        topics=topics_message_list,
+        annotations=new_annotations,
+        rotation=rotation,
+        customerManagedEncryption=customer_managed_encryption,
+        versionDestroyTtl=version_destroy_ttl,
+    )
+    if secret_type_enum is not None:
+      secret.secretType = secret_type_enum
+
     return self.service.Create(
         self.messages.SecretmanagerProjectsSecretsCreateRequest(
             parent=GetParentRelativeNameForSecret(secret_ref, secret_location),
             secretId=secret_ref.Name(),
-            secret=self.messages.Secret(
-                labels=labels,
-                tags=tags,
-                replication=replication,
-                expireTime=expire_time,
-                ttl=ttl,
-                topics=topics_message_list,
-                annotations=new_annotations,
-                rotation=rotation,
-                customerManagedEncryption=customer_managed_encryption,
-                versionDestroyTtl=version_destroy_ttl,
-            ),
+            secret=secret,
         )
     )
 
@@ -387,6 +404,60 @@ class Secrets(Client):
     return self.SetIamPolicy(
         resorce_ref, policy, secret_location=secret_location
     )
+
+  def EnableManagedRotation(
+      self,
+      secret_ref,
+      cloud_sql_single_user_credentials,
+      location=None,
+  ):
+    """Enables managed rotation for the secret.
+
+    Args:
+      secret_ref: The secret resource reference.
+      cloud_sql_single_user_credentials: The Cloud SQL credentials message.
+      location: The location of the secret (optional).
+
+    Returns:
+      The response from the EnableManagedRotation API call.
+    """
+    m = self.messages
+    if not location:
+      raise exceptions.RequiredArgumentException(
+          '--location', 'Location is required for enabling managed rotation.'
+      )
+    req = m.SecretmanagerProjectsLocationsSecretsEnableManagedRotationRequest(
+        parent=GetRelativeName(secret_ref, location),
+        enableManagedRotationRequest=m.EnableManagedRotationRequest(
+            cloudSqlSingleUserCredentials=cloud_sql_single_user_credentials
+        ),
+    )
+    return self.client.projects_locations_secrets.EnableManagedRotation(req)
+
+  def RotateSecret(
+      self,
+      secret_ref,
+      location=None,
+  ):
+    """Handles managed rotation for the secret.
+
+    Args:
+      secret_ref: The secret resource reference.
+      location: The location of the secret (optional).
+
+    Returns:
+      The response from the RotateSecret API call.
+    """
+    m = self.messages
+    if not location:
+      raise exceptions.RequiredArgumentException(
+          '--location', 'Location is required for rotating a secret.'
+      )
+    req = m.SecretmanagerProjectsLocationsSecretsRotateSecretRequest(
+        parent=GetRelativeName(secret_ref, location),
+        rotateSecretRequest=m.RotateSecretRequest(),
+    )
+    return self.client.projects_locations_secrets.RotateSecret(req)
 
 
 class SecretsLatest(Client):

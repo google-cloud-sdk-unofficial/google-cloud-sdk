@@ -14,7 +14,6 @@
 # limitations under the License.
 """The gcloud run instances group."""
 
-
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
@@ -31,11 +30,13 @@ class Instances(base.Group):
   """
 
   detailed_help = {
-      'EXAMPLES': """
+      'EXAMPLES': (
+          """
           To list your existing instances, run:
 
             $ {command} list
-      """,
+      """
+      ),
   }
 
   @staticmethod

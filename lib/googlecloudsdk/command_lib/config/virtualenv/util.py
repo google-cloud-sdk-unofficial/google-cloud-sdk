@@ -31,7 +31,7 @@ MODULES = [
     'google_crc32c',
     'certifi',
     ('https://github.com/googleapis/enterprise-certificate-proxy/releases/down'
-     'load/v0.3.15/cryptography-46.0.7-cp38-abi3-macosx_10_9_universal2.whl'),
+     'load/v0.3.17/cryptography-46.0.7-cp38-abi3-macosx_10_9_universal2.whl'),
     'setuptools',
 ]
 

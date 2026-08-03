@@ -1207,12 +1207,11 @@ def AddEncryptionConfigFlags(parser, verb):
   ).AddToParser(parser)
 
 
-def AddRestoreClusterSourceFlags(parser, release_track):
+def AddRestoreClusterSourceFlags(parser):
   """Adds RestoreCluster flags.
 
   Args:
     parser: argparse.ArgumentParser: Parser object for command line inputs.
-    release_track: The command version being used - GA/BETA/ALPHA.
   """
   group = parser.add_group(
       mutex=True, required=True, help='RestoreCluster source types.'
@@ -1229,19 +1228,15 @@ def AddRestoreClusterSourceFlags(parser, release_track):
           ' created.'
       ),
   )
-  if (
-      release_track == base.ReleaseTrack.ALPHA
-      or release_track == base.ReleaseTrack.BETA
-  ):
-    group.add_argument(
-        '--backupdr-backup',
-        type=str,
-        help=(
-            'Backup DR backup to restore from. This is a resource path of the'
-            ' form'
-            ' projects/myProject/locations/us-central1/backupVaults/myBackupVault/dataSources/myDataSource/backups/myBackup.'
-        ),
-    )
+  group.add_argument(
+      '--backupdr-backup',
+      type=str,
+      help=(
+          'Backup DR backup to restore from. This is a resource path of the'
+          ' form'
+          ' projects/myProject/locations/us-central1/backupVaults/myBackupVault/dataSources/myDataSource/backups/myBackup.'
+      ),
+  )
 
   pitr_group = group.add_group(
       help='Restore a cluster from a source cluster at a given point in time.'
@@ -1262,18 +1257,14 @@ def AddRestoreClusterSourceFlags(parser, release_track):
           ' being created.'
       ),
   )
-  if (
-      release_track == base.ReleaseTrack.ALPHA
-      or release_track == base.ReleaseTrack.BETA
-  ):
-    pitr_source_group.add_argument(
-        '--backupdr-data-source',
-        help=(
-            'Backup DR data source to restore from. This is a resource path of'
-            ' the form'
-            ' projects/myProject/locations/us-central1/backupVaults/myBackupVault/dataSources/myDataSource.'
-        ),
-    )
+  pitr_source_group.add_argument(
+      '--backupdr-data-source',
+      help=(
+          'Backup DR data source to restore from. This is a resource path of'
+          ' the form'
+          ' projects/myProject/locations/us-central1/backupVaults/myBackupVault/dataSources/myDataSource.'
+      ),
+  )
   pitr_group.add_argument(
       '--point-in-time',
       type=arg_parsers.Datetime.Parse,

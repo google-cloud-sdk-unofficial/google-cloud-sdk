@@ -72,7 +72,9 @@ class ImportRules(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
         name=conversion_workspace_ref.RelativeName(),
         config_files=args.config_files,
         file_format=args.file_format,
-        auto_commit=args.auto_commit,
+        auto_commit=args.auto_commit
+        if args.auto_commit is not None
+        else True,
     )
 
     if result_operation.error is not None:

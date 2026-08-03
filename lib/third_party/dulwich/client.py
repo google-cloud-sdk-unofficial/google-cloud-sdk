@@ -333,12 +333,7 @@ class FetchPackResult:
         return super().__getattribute__(name)
 
     def __repr__(self) -> str:
-        return "{}({!r}, {!r}, {!r})".format(
-            self.__class__.__name__,
-            self.refs,
-            self.symrefs,
-            self.agent,
-        )
+        return f"{self.__class__.__name__}({self.refs!r}, {self.symrefs!r}, {self.agent!r})"
 
 
 class SendPackResult:
@@ -532,14 +527,16 @@ def _handle_upload_pack_head(proto, capabilities, graph_walker, wants, can_read,
             proto.write_pkt_line(
                 COMMAND_DEEPEN + b" " + str(depth).encode("ascii") + b"\n"
             )
-        proto.write_pkt_line(None)
+    proto.write_pkt_line(None)
+
+    if depth not in (0, None):
         if can_read is not None:
             (new_shallow, new_unshallow) = _read_shallow_updates(proto.read_pkt_seq())
         else:
             new_shallow = new_unshallow = None
     else:
         new_shallow = new_unshallow = set()
-        proto.write_pkt_line(None)
+
     have = next(graph_walker)
     while have:
         proto.write_pkt_line(COMMAND_HAVE + b" " + have + b"\n")
@@ -741,7 +738,9 @@ class GitClient:
             assert target is not None
             if origin is not None:
                 target_config = target.get_config()
-                target_config.set((b"remote", origin.encode("utf-8")), b"url", encoded_path)
+                target_config.set(
+                    (b"remote", origin.encode("utf-8")), b"url", encoded_path
+                )
                 target_config.set(
                     (b"remote", origin.encode("utf-8")),
                     b"fetch",
@@ -752,7 +751,9 @@ class GitClient:
             ref_message = b"clone: from " + encoded_path
             result = self.fetch(path, target, progress=progress, depth=depth)
             if origin is not None:
-                _import_remote_refs(target.refs, origin, result.refs, message=ref_message)
+                _import_remote_refs(
+                    target.refs, origin, result.refs, message=ref_message
+                )
 
             origin_head = result.symrefs.get(b"HEAD")
             origin_sha = result.refs.get(b"HEAD")
@@ -1403,7 +1404,7 @@ class SubprocessGitClient(TraditionalGitClient):
 
 
 class LocalGitClient(GitClient):
-    """Git Client that just uses a local Repo."""
+    """Git Client that just uses a local on-disk repository."""
 
     def __init__(
         self, thin_packs=True, report_activity=None, config: Optional[Config] = None
@@ -1432,7 +1433,7 @@ class LocalGitClient(GitClient):
         return closing(Repo(path))
 
     def send_pack(self, path, update_refs, generate_pack_data, progress=None):
-        """Upload a pack to a remote repository.
+        """Upload a pack to a local on-disk repository.
 
         Args:
           path: Repository path (as bytestring)
@@ -1525,7 +1526,7 @@ class LocalGitClient(GitClient):
         progress=None,
         depth=None,
     ) -> FetchPackResult:
-        """Retrieve a pack from a git smart server.
+        """Retrieve a pack from a local on-disk repository.
 
         Args:
           path: Remote path to fetch from
@@ -1560,7 +1561,7 @@ class LocalGitClient(GitClient):
             return FetchPackResult(r.get_refs(), symrefs, agent)
 
     def get_refs(self, path):
-        """Retrieve the current refs from a git smart server."""
+        """Retrieve the current refs from a local on-disk repository."""
         with self._open_repo(path) as target:
             return target.get_refs()
 
@@ -2242,6 +2243,16 @@ class AbstractHttpGitClient(GitClient):
         return f"{type(self).__name__}({self._base_url!r}, dumb={self.dumb!r})"
 
 
+def _wrap_urllib3_exceptions(func):
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except urllib3.exceptions.ProtocolError as error:
+            raise GitProtocolError(str(error)) from error
+
+    return wrapper
+
+
 class Urllib3HttpGitClient(AbstractHttpGitClient):
     def __init__(
         self,
@@ -2321,7 +2332,7 @@ class Urllib3HttpGitClient(AbstractHttpGitClient):
             resp.redirect_location = resp.get_redirect_location()
         else:
             resp.redirect_location = resp_url if resp_url != url else ""
-        return resp, resp.read
+        return resp, _wrap_urllib3_exceptions(resp.read)
 
 
 HttpGitClient = Urllib3HttpGitClient
@@ -2353,7 +2364,10 @@ def _win32_url_to_path(parsed) -> str:
     global url2pathname
     if url2pathname is None:
         from urllib.request import url2pathname  # type: ignore
-    return url2pathname(netloc + path)  # type: ignore
+    full_path = netloc + path
+    while "//" in full_path:
+        full_path = full_path.replace("//", "/")
+    return url2pathname(full_path)  # type: ignore
 
 
 def get_transport_and_path_from_url(

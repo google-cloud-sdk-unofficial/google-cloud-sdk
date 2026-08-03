@@ -4358,3 +4358,12 @@ def AddMinimalActionArgs(parser):
           not specified, the default will be NO_EFFECT.
       """,
   )
+
+
+def AddExtensionNameArg(parser):
+  """Adds the --extension-name argument."""
+  parser.add_argument(
+      '--extension-name',
+      required=True,
+      help='The name of the extension to get the state for.',
+  )

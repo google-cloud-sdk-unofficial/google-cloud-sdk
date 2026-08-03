@@ -24,7 +24,6 @@ from typing import Any
 
 from googlecloudsdk.api_lib.run import constants
 from googlecloudsdk.api_lib.run import k8s_object
-from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import iap_tunnel
 from googlecloudsdk.command_lib.compute import ssh_utils
 from googlecloudsdk.command_lib.util.ssh import ssh
@@ -191,17 +190,17 @@ class Ssh:
 
     workload_json = self._GetWorkloadJson()
     _ValidateGen2(workload_json)
+    _ValidateSSHEnabled(workload_json)
 
     if self.workload_type == self.WorkloadType.SERVICE:
       self.revision = self._GetOrValidateRevision(workload_json)
-      _ValidateSSHEnabled(workload_json)
 
     self.service_account = self._GetServiceAccountFromWorkloadJson(
         workload_json
     )
     self.project_number = _GetProjectNumberFromWorkloadJson(workload_json)
 
-    if self._UseCloudRunDomainOverride():
+    if self.iap_tunnel_url_override is None:
       self.iap_tunnel_url_override = constants.SSH_URL_TEMPLATE.format(
           region=self.region
       )
@@ -260,16 +259,6 @@ class Ssh:
     # The user did not specify a revision, and there is only one active
     # revision.
     return active_revisions[0]
-
-  def _UseCloudRunDomainOverride(self):
-    """Returns whether to use the Cloud Run domain override."""
-    if self.iap_tunnel_url_override:
-      return False
-    if self.release_track == base.ReleaseTrack.ALPHA and (
-        self.workload_type == self.WorkloadType.INSTANCE
-    ):
-      return False
-    return True
 
   def _UseQualDomain(self) -> bool:
     """Returns whether to use the Qual domain override."""

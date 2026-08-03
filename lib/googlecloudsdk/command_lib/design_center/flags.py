@@ -150,6 +150,44 @@ def GetCatalogTemplateRevisionResourceSpec():
   )
 
 
+def SharedTemplateAttributeConfig():
+  """Creates an attribute config for the shared template."""
+  return concepts.ResourceParameterAttributeConfig(
+      name='shared-template',
+      help_text='The sharedTemplate id of the revision resource.',
+  )
+
+
+def GetSharedTemplateRevisionResourceSpec():
+  """Creates the resource spec for a shared template revision."""
+  return concepts.ResourceSpec(
+      'designcenter.projects.locations.spaces.sharedTemplates.revisions',
+      resource_name='revision',
+      revisionsId=concepts.ResourceParameterAttributeConfig(
+          name='revision',
+          help_text='The revision id of the sharedTemplate revision resource.',
+      ),
+      sharedTemplatesId=SharedTemplateAttributeConfig(),
+      spacesId=SpaceResourceAttributeConfig(
+          'space', 'The space id of the revision resource.'
+      ),
+      locationsId=LocationAttributeConfig(),
+      projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
+  )
+
+
+def AddSharedTemplateRevisionResourceArg(
+    parser, verb='to fetch assessment report for'
+):
+  """Adds the Shared Template Revision resource argument to the parser."""
+  concept_parsers.ConceptParser.ForResource(
+      'revision',
+      GetSharedTemplateRevisionResourceSpec(),
+      'The shared template revision {}.'.format(verb),
+      required=True,
+  ).AddToParser(parser)
+
+
 def AddDescribeLocationFlags(parser):
   GetLocationResourceArg(positional=True).AddToParser(parser)
 
@@ -322,7 +360,8 @@ def AddRegisterWithApphubFlags(parser):
   base.ASYNC_FLAG.AddToParser(parser)
 
 
-def AddRegisterAppHubApplicationResourcesFlags(parser: argparse.ArgumentParser) -> None:
+def AddRegisterAppHubApplicationResourcesFlags(
+    parser: argparse.ArgumentParser) -> None:
   """Adds all flags for the register app hub application resources command.
 
   Args:

@@ -48,13 +48,12 @@ class Update(mf_base.UpdateCommand, features_base.UpdateCommand):
           the command also supports a `--version` flag dedicated to upgrades
           that operates independently of the `--config` flag. This command
           errors if the feature does not exist."""),
-      # TODO: b/435530306 - Use GA describe command in example instead.
       'EXAMPLES': textwrap.dedent(
           """\
           To update only the Config Sync sync directory on an existing
           membership configuration, run:
 
-            $ gcloud alpha container fleet config-management describe --view=config --memberships=example-membership-1 > config.yaml
+            $ {parent_command} describe --view=config --memberships=example-membership-1 > config.yaml
 
             $ sed -i "s/policyDir: foo/policyDir: bar/g" config.yaml
 
@@ -85,7 +84,6 @@ class Update(mf_base.UpdateCommand, features_base.UpdateCommand):
     v1_api_version = util.VERSION_MAP[cls.ReleaseTrack()]
     all_flags_group.add_argument(
         '--fleet-default-member-config',
-        # TODO: b/435530306 - Use GA describe command in example instead.
         help=textwrap.dedent(
             f"""\
             Path to YAML file, or `-` to read from stdin, that specifies the
@@ -99,7 +97,7 @@ class Update(mf_base.UpdateCommand, features_base.UpdateCommand):
             To update only the Config Sync sync directory on the existing
             fleet-default membership configuration, run:
 
-              $ gcloud alpha container fleet config-management describe --view=fleet-default-member-config > config.yaml
+              $ {{parent_command}} describe --view=fleet-default-member-config > config.yaml
 
               $ sed -i "s/policyDir: foo/policyDir: bar/g" config.yaml
 
@@ -107,7 +105,7 @@ class Update(mf_base.UpdateCommand, features_base.UpdateCommand):
 
             To achieve the same result in a single invocation, run:
 
-              $ gcloud alpha container fleet config-management describe --view=fleet-default-member-config | sed "s/policyDir: foo/policyDir: bar/g" | {{command}} --fleet-default-member-config="-\""""
+              $ {{parent_command}} describe --view=fleet-default-member-config | sed "s/policyDir: foo/policyDir: bar/g" | {{command}} --fleet-default-member-config="-\""""
         ),
     )
     membership_specific_group = all_flags_group.add_group()
@@ -122,7 +120,6 @@ class Update(mf_base.UpdateCommand, features_base.UpdateCommand):
     )
     cls.ORIGIN_FLAG.AddToParser(configuration_group)
     v2_api_version = util.V2_VERSION_MAP[cls.ReleaseTrack()]
-    # TODO: b/435530306 - Use GA describe command in example instead.
     configuration_group.add_argument(
         '--config',
         help=textwrap.dedent(
@@ -143,9 +140,9 @@ class Update(mf_base.UpdateCommand, features_base.UpdateCommand):
             membership configuration in a single invocation, making sure to
             first inspect the existing membership configuration, run:
 
-              $ gcloud alpha container fleet config-management describe --view=config --memberships=example-membership-1
+              $ {{parent_command}} describe --view=config --memberships=example-membership-1
 
-              $ gcloud alpha container fleet config-management describe --view=config --memberships=example-membership-1 | sed "s/policyDir: foo/policyDir: bar/g" | {{command}} --config="-" --memberships=example-membership-1"""
+              $ {{parent_command}} describe --view=config --memberships=example-membership-1 | sed "s/policyDir: foo/policyDir: bar/g" | {{command}} --config="-" --memberships=example-membership-1"""
         ),
     )
     # This group is to distinguish the functional difference between the

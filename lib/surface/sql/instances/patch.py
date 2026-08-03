@@ -401,6 +401,7 @@ def AddAlphaArgs(parser):
   flags.AddMsdtcEnabled(parser, hidden=True)
   flags.AddMsdtcRpcAuthMode(parser, hidden=True)
   flags.AddMsdtcHostMappings(parser, hidden=True)
+  flags.AddEnforceCmekLogEncryptionAtSource(parser, hidden=True)
 
 
 def RunBasePatchCommand(args, release_track):

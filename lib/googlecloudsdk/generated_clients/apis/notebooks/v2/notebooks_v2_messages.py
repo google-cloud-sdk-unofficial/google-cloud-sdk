@@ -77,11 +77,11 @@ class AccessConfig(_messages.Message):
   r"""An access configuration attached to an instance's network interface.
 
   Fields:
-    externalIp: An external IP address associated with this instance. Specify
-      an unused static external IP address available to the project or leave
-      this field undefined to use an IP from a shared ephemeral IP address
-      pool. If you specify a static external IP address, it must live in the
-      same region as the zone of the instance.
+    externalIp: Optional. An external IP address associated with this
+      instance. Specify an unused static external IP address available to the
+      project or leave this field undefined to use an IP from a shared
+      ephemeral IP address pool. If you specify a static external IP address,
+      it must live in the same region as the zone of the instance.
   """
 
   externalIp = _messages.StringField(1)
@@ -178,26 +178,26 @@ class BootDisk(_messages.Message):
   r"""The definition of a boot disk.
 
   Enums:
-    DiskEncryptionValueValuesEnum: Optional. Input only. Disk encryption
-      method used on the boot and data disks, defaults to GMEK.
+    DiskEncryptionValueValuesEnum: Optional. Disk encryption method used on
+      the boot and data disks, defaults to GMEK.
     DiskTypeValueValuesEnum: Optional. Indicates the type of the disk.
 
   Fields:
-    diskEncryption: Optional. Input only. Disk encryption method used on the
-      boot and data disks, defaults to GMEK.
+    diskEncryption: Optional. Disk encryption method used on the boot and data
+      disks, defaults to GMEK.
     diskSizeGb: Optional. The size of the boot disk in GB attached to this
       instance, up to a maximum of 64000 GB (64 TB). If not specified, this
       defaults to the recommended value of 150GB.
     diskType: Optional. Indicates the type of the disk.
-    kmsKey: Optional. Input only. The KMS key used to encrypt the disks, only
-      applicable if disk_encryption is CMEK. Format: `projects/{project_id}/lo
-      cations/{location}/keyRings/{key_ring_id}/cryptoKeys/{key_id}` Learn
-      more about using your own encryption keys.
+    kmsKey: Optional. The KMS key used to encrypt the disks, only applicable
+      if disk_encryption is CMEK. Format: `projects/{project_id}/locations/{lo
+      cation}/keyRings/{key_ring_id}/cryptoKeys/{key_id}` Learn more about
+      using your own encryption keys.
   """
 
   class DiskEncryptionValueValuesEnum(_messages.Enum):
-    r"""Optional. Input only. Disk encryption method used on the boot and data
-    disks, defaults to GMEK.
+    r"""Optional. Disk encryption method used on the boot and data disks,
+    defaults to GMEK.
 
     Values:
       DISK_ENCRYPTION_UNSPECIFIED: Disk encryption is not specified.
@@ -397,28 +397,28 @@ class DataDisk(_messages.Message):
   r"""An instance-attached disk resource.
 
   Enums:
-    DiskEncryptionValueValuesEnum: Optional. Input only. Disk encryption
-      method used on the boot and data disks, defaults to GMEK.
+    DiskEncryptionValueValuesEnum: Optional. Disk encryption method used on
+      the boot and data disks, defaults to GMEK.
     DiskTypeValueValuesEnum: Optional. Indicates the type of the disk.
 
   Fields:
-    diskEncryption: Optional. Input only. Disk encryption method used on the
-      boot and data disks, defaults to GMEK.
+    diskEncryption: Optional. Disk encryption method used on the boot and data
+      disks, defaults to GMEK.
     diskSizeGb: Optional. The size of the disk in GB attached to this VM
       instance, up to a maximum of 64000 GB (64 TB). If not specified, this
       defaults to 100.
     diskType: Optional. Indicates the type of the disk.
-    kmsKey: Optional. Input only. The KMS key used to encrypt the disks, only
-      applicable if disk_encryption is CMEK. Format: `projects/{project_id}/lo
-      cations/{location}/keyRings/{key_ring_id}/cryptoKeys/{key_id}` Learn
-      more about using your own encryption keys.
+    kmsKey: Optional. The KMS key used to encrypt the disks, only applicable
+      if disk_encryption is CMEK. Format: `projects/{project_id}/locations/{lo
+      cation}/keyRings/{key_ring_id}/cryptoKeys/{key_id}` Learn more about
+      using your own encryption keys.
     resourcePolicies: Optional. The resource policies to apply to the data
       disk.
   """
 
   class DiskEncryptionValueValuesEnum(_messages.Enum):
-    r"""Optional. Input only. Disk encryption method used on the boot and data
-    disks, defaults to GMEK.
+    r"""Optional. Disk encryption method used on the boot and data disks,
+    defaults to GMEK.
 
     Values:
       DISK_ENCRYPTION_UNSPECIFIED: Disk encryption is not specified.

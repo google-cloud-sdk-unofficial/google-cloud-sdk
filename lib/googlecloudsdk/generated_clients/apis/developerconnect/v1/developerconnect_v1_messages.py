@@ -2675,6 +2675,7 @@ class ProviderOAuthConfig(_messages.Message):
       NEW_RELIC: New Relic provider. No scopes are allowed.
       DATASTAX: Datastax provider. No scopes are allowed.
       DYNATRACE: Dynatrace provider.
+      BITBUCKET_CLOUD: Bitbucket Cloud provider.
     """
     SYSTEM_PROVIDER_UNSPECIFIED = 0
     GITHUB = 1
@@ -2685,6 +2686,7 @@ class ProviderOAuthConfig(_messages.Message):
     NEW_RELIC = 6
     DATASTAX = 7
     DYNATRACE = 8
+    BITBUCKET_CLOUD = 9
 
   scopes = _messages.StringField(1, repeated=True)
   systemProviderId = _messages.EnumField('SystemProviderIdValueValuesEnum', 2)
@@ -2932,6 +2934,7 @@ class StartOAuthResponse(_messages.Message):
       NEW_RELIC: New Relic provider. No scopes are allowed.
       DATASTAX: Datastax provider. No scopes are allowed.
       DYNATRACE: Dynatrace provider.
+      BITBUCKET_CLOUD: Bitbucket Cloud provider.
     """
     SYSTEM_PROVIDER_UNSPECIFIED = 0
     GITHUB = 1
@@ -2942,6 +2945,7 @@ class StartOAuthResponse(_messages.Message):
     NEW_RELIC = 6
     DATASTAX = 7
     DYNATRACE = 8
+    BITBUCKET_CLOUD = 9
 
   authUri = _messages.StringField(1)
   clientId = _messages.StringField(2)

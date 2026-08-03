@@ -103,6 +103,7 @@ def _entry(
     unique_id: str,
     entry_type: str,
     aspects_map: dict[str, Any],
+    fqn: str,
 ) -> dict[str, Any]:
   """Wraps an aspect map in the entry record shared by every builder."""
   return {
@@ -110,6 +111,16 @@ def _entry(
           'name': ctx.entry_name(naming.entry_id(unique_id)),
           'entryType': ctx.entry_type(entry_type),
           'aspects': aspects_map,
+          'fullyQualifiedName': fqn,
+          # Populate entrySource fields.
+          # While 'system' is defined in the EntryType, we must populate it here
+          # because the backend search service (searchEntries) does not perform
+          # fallback to EntryType and requires it to be populated in EntrySource
+          # to be indexed and filterable. platform is left unset for now.
+          'entrySource': {
+              'system': 'DBT',
+              'resource': unique_id,
+          },
       }
   }
 
@@ -117,7 +128,8 @@ def _entry(
 def _project_unique_id(manifest: dict[str, Any]) -> str:
   """The dbt unique_id of the synthetic project entry."""
   project_name = (
-      manifest.get('metadata', {}).get('project_name') or _DEFAULT_PROJECT_NAME
+      (manifest.get('metadata') or {}).get('project_name')
+      or _DEFAULT_PROJECT_NAME
   )
   return 'project.{0}'.format(project_name)
 
@@ -126,7 +138,7 @@ def _build_project_entry(
     ctx: naming.Context, manifest: dict[str, Any]
 ) -> dict[str, Any]:
   """Builds the dbt-project entry from the manifest metadata."""
-  meta = manifest.get('metadata', {})
+  meta = manifest.get('metadata') or {}
   project_name = meta.get('project_name') or _DEFAULT_PROJECT_NAME
   aspects_map = {
       ctx.aspect_key('dbt-project'): aspects.make_aspect(
@@ -138,7 +150,10 @@ def _build_project_entry(
           },
       ),
   }
-  return _entry(ctx, _project_unique_id(manifest), 'dbt-project', aspects_map)
+  fqn = ctx.dbt_project_fqn(project_name)
+  return _entry(
+      ctx, _project_unique_id(manifest), 'dbt-project', aspects_map, fqn
+  )
 
 
 def _build_model_entry(
@@ -148,9 +163,9 @@ def _build_model_entry(
     catalog_nodes: dict[str, Any],
 ) -> dict[str, Any]:
   """Builds a dbt-model entry with node, model, schema and contract aspects."""
-  config = node.get('config', {})
-  cat_node = catalog_nodes.get(unique_id, {})
-  stats = cat_node.get('stats', {})
+  config = node.get('config') or {}
+  cat_node = catalog_nodes.get(unique_id) or {}
+  stats = cat_node.get('stats') or {}
   enforced = bool((node.get('contract') or {}).get('enforced', False))
 
   model_data = {
@@ -171,7 +186,10 @@ def _build_model_entry(
   if contracts:
     aspects_map[ctx.aspect_key('dbt-model-contracts')] = contracts
 
-  return _entry(ctx, unique_id, 'dbt-model', aspects_map)
+  project_name = node.get('package_name') or _DEFAULT_PROJECT_NAME
+  resource_name = node.get('name') or ''
+  fqn = ctx.dbt_resource_fqn('dbt-model', project_name, resource_name)
+  return _entry(ctx, unique_id, 'dbt-model', aspects_map, fqn)
 
 
 def _freshness_period(spec: Any) -> str:
@@ -221,7 +239,11 @@ def _build_source_entry(
         ctx.aspect_fqn('dbt-data-quality'), dq
     )
 
-  return _entry(ctx, unique_id, 'dbt-source', aspects_map)
+  project_name = src.get('package_name') or _DEFAULT_PROJECT_NAME
+  source_name = src.get('source_name') or ''
+  table_name = src.get('identifier') or src.get('name') or ''
+  fqn = ctx.dbt_source_fqn(project_name, source_name, table_name)
+  return _entry(ctx, unique_id, 'dbt-source', aspects_map, fqn)
 
 
 def _build_seed_entry(
@@ -231,8 +253,8 @@ def _build_seed_entry(
     catalog_nodes: dict[str, Any],
 ) -> dict[str, Any]:
   """Builds a dbt-seed entry with node, seed and optional schema aspects."""
-  cat_node = catalog_nodes.get(unique_id, {})
-  stats = cat_node.get('stats', {})
+  cat_node = catalog_nodes.get(unique_id) or {}
+  stats = cat_node.get('stats') or {}
   seed_data = {}
   aspects.add_stat(seed_data, 'rowCount', stats, 'row_count')
   aspects.add_stat(seed_data, 'byteCount', stats, 'bytes')
@@ -243,7 +265,10 @@ def _build_seed_entry(
   _add_schema_aspect(
       ctx, aspects_map, cat_node.get('columns', {}), 'type', 'comment'
   )
-  return _entry(ctx, unique_id, 'dbt-seed', aspects_map)
+  project_name = node.get('package_name') or _DEFAULT_PROJECT_NAME
+  resource_name = node.get('name') or ''
+  fqn = ctx.dbt_resource_fqn('dbt-seed', project_name, resource_name)
+  return _entry(ctx, unique_id, 'dbt-seed', aspects_map, fqn)
 
 
 def _render_unique_key(unique_key: Any) -> str:
@@ -272,7 +297,7 @@ def _build_snapshot_entry(
     ctx: naming.Context, unique_id: str, node: dict[str, Any]
 ) -> dict[str, Any]:
   """Builds a dbt-snapshot entry with node and snapshot aspects."""
-  config = node.get('config', {})
+  config = node.get('config') or {}
   raw_strategy = config.get('strategy') or ''
   strategy = _SNAPSHOT_STRATEGY_ENUM.get(raw_strategy.lower())
   if raw_strategy and strategy is None:
@@ -302,7 +327,10 @@ def _build_snapshot_entry(
   aspects_map = aspects.base_aspects(
       ctx, unique_id, node, 'snapshot', 'dbt-snapshot', data
   )
-  return _entry(ctx, unique_id, 'dbt-snapshot', aspects_map)
+  project_name = node.get('package_name') or _DEFAULT_PROJECT_NAME
+  resource_name = node.get('name') or ''
+  fqn = ctx.dbt_resource_fqn('dbt-snapshot', project_name, resource_name)
+  return _entry(ctx, unique_id, 'dbt-snapshot', aspects_map, fqn)
 
 
 def _build_group_entry(
@@ -331,7 +359,10 @@ def _build_group_entry(
       # contacts is a required aspect on the dbt-group entry type.
       ctx.contacts_key(): aspects.contacts_aspect(ctx, identities),
   }
-  return _entry(ctx, unique_id, 'dbt-group', aspects_map)
+  project_name = group.get('package_name') or _DEFAULT_PROJECT_NAME
+  resource_name = group.get('name') or ''
+  fqn = ctx.dbt_resource_fqn('dbt-group', project_name, resource_name)
+  return _entry(ctx, unique_id, 'dbt-group', aspects_map, fqn)
 
 
 def _build_exposure_entry(
@@ -362,7 +393,10 @@ def _build_exposure_entry(
       # contacts is a required aspect on the dbt-exposure entry type.
       ctx.contacts_key(): aspects.contacts_aspect(ctx, identities),
   }
-  return _entry(ctx, unique_id, 'dbt-exposure', aspects_map)
+  project_name = exposure.get('package_name') or _DEFAULT_PROJECT_NAME
+  resource_name = exposure.get('name') or ''
+  fqn = ctx.dbt_resource_fqn('dbt-exposure', project_name, resource_name)
+  return _entry(ctx, unique_id, 'dbt-exposure', aspects_map, fqn)
 
 
 def _where_clause(where: Any) -> str:
@@ -421,7 +455,10 @@ def _build_metric_entry(
           },
       ),
   }
-  return _entry(ctx, unique_id, 'dbt-metric', aspects_map)
+  project_name = metric.get('package_name') or _DEFAULT_PROJECT_NAME
+  resource_name = metric.get('name') or ''
+  fqn = ctx.dbt_resource_fqn('dbt-metric', project_name, resource_name)
+  return _entry(ctx, unique_id, 'dbt-metric', aspects_map, fqn)
 
 
 def _build_macro_entry(
@@ -447,7 +484,10 @@ def _build_macro_entry(
           },
       ),
   }
-  return _entry(ctx, unique_id, 'dbt-macro', aspects_map)
+  project_name = macro.get('package_name') or _DEFAULT_PROJECT_NAME
+  resource_name = macro.get('name') or ''
+  fqn = ctx.dbt_resource_fqn('dbt-macro', project_name, resource_name)
+  return _entry(ctx, unique_id, 'dbt-macro', aspects_map, fqn)
 
 
 def _build_semantic_model_entry(
@@ -506,7 +546,10 @@ def _build_semantic_model_entry(
           },
       ),
   }
-  return _entry(ctx, unique_id, 'dbt-semantic-model', aspects_map)
+  project_name = sm.get('package_name') or _DEFAULT_PROJECT_NAME
+  resource_name = sm.get('name') or ''
+  fqn = ctx.dbt_resource_fqn('dbt-semantic-model', project_name, resource_name)
+  return _entry(ctx, unique_id, 'dbt-semantic-model', aspects_map, fqn)
 
 
 def _build_saved_query_entry(
@@ -540,7 +583,10 @@ def _build_saved_query_entry(
           },
       ),
   }
-  return _entry(ctx, unique_id, 'dbt-saved-query', aspects_map)
+  project_name = sq.get('package_name') or _DEFAULT_PROJECT_NAME
+  resource_name = sq.get('name') or ''
+  fqn = ctx.dbt_resource_fqn('dbt-saved-query', project_name, resource_name)
+  return _entry(ctx, unique_id, 'dbt-saved-query', aspects_map, fqn)
 
 
 def _test_category(test_node: dict[str, Any]) -> str:
@@ -591,7 +637,10 @@ def _build_test_entry(
           ctx.aspect_fqn('dbt-data-quality'), dq
       ),
   }
-  return _entry(ctx, unique_id, 'dbt-test', aspects_map)
+  project_name = test_node.get('package_name') or _DEFAULT_PROJECT_NAME
+  resource_name = test_node.get('name') or ''
+  fqn = ctx.dbt_resource_fqn('dbt-test', project_name, resource_name)
+  return _entry(ctx, unique_id, 'dbt-test', aspects_map, fqn)
 
 
 def _check_size_limits(unique_id: str, record: dict[str, Any]) -> None:
@@ -691,10 +740,12 @@ def build_entries(
     naming.TransformError: if any entry or aspect exceeds the Dataplex size
       limits, so the run fails before the import file is uploaded.
   """
-  project_name = manifest.get('metadata', {}).get('project_name') or ''
-  nodes = manifest.get('nodes', {})
-  manifest_sources = manifest.get('sources', {})
-  catalog_nodes = (catalog or {}).get('nodes', {})
+  project_name = (
+      manifest.get('metadata') or {}
+  ).get('project_name') or _DEFAULT_PROJECT_NAME
+  nodes = manifest.get('nodes') or {}
+  manifest_sources = manifest.get('sources') or {}
+  catalog_nodes = (catalog or {}).get('nodes') or {}
   group_map = manifest.get('group_map') or {}
   run_results_map = _index_by_unique_id((run_results or {}).get('results'))
   sources_map = _index_by_unique_id((sources or {}).get('results'))

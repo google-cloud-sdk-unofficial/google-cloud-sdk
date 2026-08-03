@@ -1,4 +1,4 @@
-release_tracks: [BETA]
+release_tracks: [GA, BETA]
 help_text:
   brief: Update the semantic governance policy engine config.
   description: Update the semantic governance policy engine config.
@@ -26,7 +26,10 @@ arguments:
       For example: `name=mygateway,network=net,subnetwork=subnet,dns-zone-name=dns`
 
 request:
-  api_version: v1beta1
+  BETA:
+    api_version: v1beta1
+  GA:
+    api_version: v1
   collection: aiplatform.projects.locations
   method: updateSemanticGovernancePolicyEngine
   disable_resource_check: true

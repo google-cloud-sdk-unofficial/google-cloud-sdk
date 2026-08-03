@@ -305,63 +305,6 @@ class Backup(_messages.Message):
   state = _messages.EnumField('StateValueValuesEnum', 7)
 
 
-class BigQueryMetastoreMigrationConfig(_messages.Message):
-  r"""Specifies the configuration required for migrating to BigQuery Metastore
-  service.
-
-  Enums:
-    DesiredMigrationStateValueValuesEnum: Required. The desired state of the
-      migration. Note that this also reflects the current state of the
-      migration. If an attempt to update to a new desired state fails, the
-      migration will revert to the previous state.
-
-  Fields:
-    bigqueryDatasetLocation: Required. The location where the BigQuery
-      resources (e.g. datasets, tables, etc.) should be created (e.g. us-
-      central1, us, eu, etc.)
-    bigqueryProjectId: Required. The project ID where the BigQuery resources
-      (e.g. datasets, tables, etc.) should be created.
-    desiredMigrationState: Required. The desired state of the migration. Note
-      that this also reflects the current state of the migration. If an
-      attempt to update to a new desired state fails, the migration will
-      revert to the previous state.
-  """
-
-  class DesiredMigrationStateValueValuesEnum(_messages.Enum):
-    r"""Required. The desired state of the migration. Note that this also
-    reflects the current state of the migration. If an attempt to update to a
-    new desired state fails, the migration will revert to the previous state.
-
-    Values:
-      DESIRED_MIGRATION_STATE_UNSPECIFIED: The default value. This value is
-        unused.
-      MIGRATE: By setting the desired migration state to MIGRATE, metadata
-        updates in Dataproc Metastore will be replicated to the BigQuery
-        Metastore service, ensuring that it remains consistently synchronized
-        with Dataproc Metastore. Note that this includes initial backfill of
-        existing metadata.
-      CUTOVER: By setting the desired migration state to CUTOVER, all metadata
-        requests are routed to BigQuery Metastore service and Dataproc
-        Metastore only functions as a proxy. This state can be considered as
-        the completion of the migration.
-      CANCEL: By setting the desired migration state to CANCEL, the migration
-        is effectively cancelled. If the previous migration state was MIGRATE,
-        then replication to BigQuery Metastore will be cancelled. If the
-        previous state was CUTOVER, then metadata requests will now be served
-        from Dataproc Metastore instead of BigQuery Metastore. Note that
-        existing metadata changes replicated to BigQuery Metastore service are
-        not rolled back.
-    """
-    DESIRED_MIGRATION_STATE_UNSPECIFIED = 0
-    MIGRATE = 1
-    CUTOVER = 2
-    CANCEL = 3
-
-  bigqueryDatasetLocation = _messages.StringField(1)
-  bigqueryProjectId = _messages.StringField(2)
-  desiredMigrationState = _messages.EnumField('DesiredMigrationStateValueValuesEnum', 3)
-
-
 class Binding(_messages.Message):
   r"""Associates members, or principals, with a role.
 
@@ -664,7 +607,6 @@ class Empty(_messages.Message):
   or the response type of an API method. For instance: service Foo { rpc
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
-
 
 
 class EncryptionConfig(_messages.Message):
@@ -1433,7 +1375,6 @@ class MessageSet(_messages.Message):
   """
 
 
-
 class MetadataExport(_messages.Message):
   r"""The details of a metadata export operation.
 
@@ -1751,9 +1692,8 @@ class MetastoreProjectsLocationsListRequest(_messages.Message):
   r"""A MetastoreProjectsLocationsListRequest object.
 
   Fields:
-    extraLocationTypes: Optional. Do not use this field. It is unsupported and
-      is ignored unless explicitly documented otherwise. This is primarily for
-      internal usage.
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
     filter: A filter to narrow down results to a preferred subset. The
       filtering language accepts strings like "displayName=tokyo", and is
       documented in more detail in AIP-160 (https://google.aip.dev/160).
@@ -2596,6 +2536,11 @@ class MigrationExecution(_messages.Message):
       FAILED: The migration execution has failed.
       CANCELLED: The migration execution is cancelled.
       DELETING: The migration execution is being deleted.
+      ROLLED_BACK: The migration execution has been rolled back. This occurs
+        when CancelMigration is invoked after the migration has completed and
+        the metastore service is in the PROXY state, returning the service to
+        the ACTIVE state. This enables rollback support when the customer
+        wants to resume using DPMS after a successful migration.
     """
     STATE_UNSPECIFIED = 0
     STARTING = 1
@@ -2606,6 +2551,7 @@ class MigrationExecution(_messages.Message):
     FAILED = 6
     CANCELLED = 7
     DELETING = 8
+    ROLLED_BACK = 9
 
   cloudSqlMigrationConfig = _messages.MessageField('CloudSQLMigrationConfig', 1)
   createTime = _messages.StringField(2)
@@ -3108,8 +3054,6 @@ class Service(_messages.Message):
     artifactGcsUri: Output only. A Cloud Storage URI (starting with gs://)
       that specifies where artifacts related to the metastore service are
       stored.
-    bigqueryMetastoreMigrationConfig: Optional. Specifies the configuration
-      required for migrating to BigQuery Metastore service.
     createTime: Output only. The time when the metastore service was created.
     databaseType: Immutable. The database type that the Metastore service
       stores its data.
@@ -3210,6 +3154,8 @@ class Service(_messages.Message):
       AUTOSCALING: The Dataproc Metastore service 2 is being scaled up or
         down.
       MIGRATING: The metastore service is processing a managed migration.
+      PROXY: The metastore service has completed managed migration and is now
+        proxying requests to the Lakehouse runtime catalog.
     """
     STATE_UNSPECIFIED = 0
     CREATING = 1
@@ -3221,6 +3167,7 @@ class Service(_messages.Message):
     ERROR = 7
     AUTOSCALING = 8
     MIGRATING = 9
+    PROXY = 10
 
   class TierValueValuesEnum(_messages.Enum):
     r"""Optional. The tier of the service.
@@ -3288,31 +3235,32 @@ class Service(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   artifactGcsUri = _messages.StringField(1)
-  bigqueryMetastoreMigrationConfig = _messages.MessageField('BigQueryMetastoreMigrationConfig', 2)
-  createTime = _messages.StringField(3)
-  databaseType = _messages.EnumField('DatabaseTypeValueValuesEnum', 4)
-  deletionProtection = _messages.BooleanField(5)
-  encryptionConfig = _messages.MessageField('EncryptionConfig', 6)
-  endpointUri = _messages.StringField(7)
-  hiveMetastoreConfig = _messages.MessageField('HiveMetastoreConfig', 8)
-  labels = _messages.MessageField('LabelsValue', 9)
-  maintenanceWindow = _messages.MessageField('MaintenanceWindow', 10)
-  metadataIntegration = _messages.MessageField('MetadataIntegration', 11)
-  metadataManagementActivity = _messages.MessageField('MetadataManagementActivity', 12)
-  name = _messages.StringField(13)
-  network = _messages.StringField(14)
-  networkConfig = _messages.MessageField('NetworkConfig', 15)
-  port = _messages.IntegerField(16, variant=_messages.Variant.INT32)
-  releaseChannel = _messages.EnumField('ReleaseChannelValueValuesEnum', 17)
-  scalingConfig = _messages.MessageField('ScalingConfig', 18)
-  scheduledBackup = _messages.MessageField('ScheduledBackup', 19)
-  state = _messages.EnumField('StateValueValuesEnum', 20)
-  stateMessage = _messages.StringField(21)
-  tags = _messages.MessageField('TagsValue', 22)
-  telemetryConfig = _messages.MessageField('TelemetryConfig', 23)
-  tier = _messages.EnumField('TierValueValuesEnum', 24)
-  uid = _messages.StringField(25)
-  updateTime = _messages.StringField(26)
+  createTime = _messages.StringField(2)
+  databaseType = _messages.EnumField('DatabaseTypeValueValuesEnum', 3)
+  deletionProtection = _messages.BooleanField(4)
+  encryptionConfig = _messages.MessageField('EncryptionConfig', 5)
+  endpointUri = _messages.StringField(6)
+  hiveMetastoreConfig = _messages.MessageField('HiveMetastoreConfig', 7)
+  labels = _messages.MessageField('LabelsValue', 8)
+  maintenanceWindow = _messages.MessageField('MaintenanceWindow', 9)
+  metadataIntegration = _messages.MessageField('MetadataIntegration', 10)
+  metadataManagementActivity = _messages.MessageField(
+      'MetadataManagementActivity', 11
+  )
+  name = _messages.StringField(12)
+  network = _messages.StringField(13)
+  networkConfig = _messages.MessageField('NetworkConfig', 14)
+  port = _messages.IntegerField(15, variant=_messages.Variant.INT32)
+  releaseChannel = _messages.EnumField('ReleaseChannelValueValuesEnum', 16)
+  scalingConfig = _messages.MessageField('ScalingConfig', 17)
+  scheduledBackup = _messages.MessageField('ScheduledBackup', 18)
+  state = _messages.EnumField('StateValueValuesEnum', 19)
+  stateMessage = _messages.StringField(20)
+  tags = _messages.MessageField('TagsValue', 21)
+  telemetryConfig = _messages.MessageField('TelemetryConfig', 22)
+  tier = _messages.EnumField('TierValueValuesEnum', 23)
+  uid = _messages.StringField(24)
+  updateTime = _messages.StringField(25)
 
 
 class SetIamPolicyRequest(_messages.Message):

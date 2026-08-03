@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, GA]
+  hints:
+    read_only: false
   help_text:
     brief: Create a new authorized organizations description.
     description: |

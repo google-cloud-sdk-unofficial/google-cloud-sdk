@@ -52,6 +52,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_ACLPOLICIES_REVISIONS = (
+      'projects.locations.aclPolicies.revisions',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/aclPolicies/'
+              '{aclPoliciesId}/revisions/{revisionsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_BACKUPCOLLECTIONS = (
       'projects.locations.backupCollections',
       '{+name}',

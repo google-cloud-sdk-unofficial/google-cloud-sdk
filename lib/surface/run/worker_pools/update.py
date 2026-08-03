@@ -14,7 +14,6 @@
 # limitations under the License.
 """Command for updating env vars and other configuration info."""
 
-from google.api_core import exceptions as gapic_exceptions
 from googlecloudsdk.api_lib.run import run_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import config_changes as config_changes_mod
@@ -32,7 +31,6 @@ from googlecloudsdk.command_lib.run.v2 import flags_parser
 from googlecloudsdk.command_lib.run.v2 import worker_pools_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
-from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core.console import progress_tracker
 
 
@@ -59,7 +57,7 @@ Container Flags
   group.AddArgument(flags.ClearVolumeMountsFlag())
   group.AddArgument(flags.GpuFlag())
   if release_track != base.ReleaseTrack.GA:
-    group.AddArgument(flags.SandboxLauncherFlag(hidden=True))
+    group.AddArgument(flags.SandboxLauncherFlag())
 
   return group
 
@@ -220,10 +218,7 @@ class Update(base.Command):
           )
 
       if dry_run:
-        try:
-          response.result()
-        except gapic_exceptions.GoogleAPICallError as e:
-          core_exceptions.reraise(core_exceptions.Error(str(e)))
+        worker_pools_operations.WaitForOperation(response)
         pretty_print.Success(
             'Worker pool [{}] has been validated.'.format(
                 worker_pool_ref.workerPoolsId
@@ -238,10 +233,7 @@ class Update(base.Command):
             )
         )
       else:
-        try:
-          response.result()  # Wait for the operation to complete.
-        except gapic_exceptions.GoogleAPICallError as e:
-          core_exceptions.reraise(core_exceptions.Error(str(e)))
+        worker_pools_operations.WaitForOperation(response)
         worker_pool_name = worker_pool_ref.workerPoolsId
 
         if creates_revision:

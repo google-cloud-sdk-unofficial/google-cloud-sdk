@@ -64,7 +64,7 @@ Container Flags
   group.AddArgument(flags.RemoveVolumeMountFlag())
   group.AddArgument(flags.ClearVolumeMountsFlag())
   group.AddArgument(flags.StartupProbeFlag())
-  group.AddArgument(flags.SandboxLauncherFlag(hidden=True))
+  group.AddArgument(flags.SandboxLauncherFlag())
   group.AddArgument(flags.Http2Flag())
   group.AddArgument(flags.WorkdirFlag())
   group.AddArgument(flags.BuildServiceAccountMutexGroup())
@@ -284,6 +284,11 @@ class Sync(base.Command):
             ' Service.'
         )
       self._ValidateServiceForDevSync(svc)
+
+      pretty_print.Info(f'Syncing to existing service: {svc.name}')
+      url = svc.latest_url or (svc.status.url if svc.status else '')
+      if url:
+        pretty_print.Info(f'Service URL: {{bold}}{url}{{reset}}')
     else:
       changes = NecessaryChangesForServicesDevSync(args)
       deploy_util.DeployServiceFromSource(

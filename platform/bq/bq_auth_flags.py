@@ -64,8 +64,10 @@ USE_GOOGLE_AUTH = flags.DEFINE_boolean(
 QUOTA_PROJECT_ID: flags.FlagHolder[Optional[str]] = flags.DEFINE_string(
     'quota_project_id',
     None,
-    'ID of a Google Cloud Project as the quota project to be used for billing '
-    'and quota limits.',
+    (
+        'Specifies the ID of a Google Cloud project to use as the quota'
+        ' project to be used for billing and quota limits.'
+    ),
     allow_hide_cpp=True,
     allow_override=True,
 )

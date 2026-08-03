@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, BETA]
 
 help_text:
   brief: |
@@ -21,25 +21,28 @@ arguments:
     help_text: The description for the express link.
   - arg_name: source-services
     api_field: expressLink.source.services
-    release_tracks: [ALPHA]
+    release_tracks: [ALPHA, BETA]
     help_text: |
       List of resources attached to the ExpressLink. The resources can be
       Cloud Run services.
     type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
   - arg_name: destination-services
     api_field: expressLink.destination.services
-    release_tracks: [ALPHA]
+    release_tracks: [ALPHA, BETA]
     help_text: |
       List of service URIs to which the ExpressLink resource is bound.
     type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
   - arg_name: matches-hostname
     api_field: expressLink.matches
-    release_tracks: [ALPHA]
+    release_tracks: [ALPHA, BETA]
     repeated: true
     type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
     help_text: |
       List of hostnames to match against the HTTP request host header.
-    processor: googlecloudsdk.command_lib.network_services.util:ExpressLinkMatchesHook:api_version=v1alpha1
+    ALPHA:
+      processor: googlecloudsdk.command_lib.network_services.util:ExpressLinkMatchesHook:api_version=v1alpha1
+    BETA:
+      processor: googlecloudsdk.command_lib.network_services.util:ExpressLinkMatchesHook:api_version=v1beta1
 
 async:
   collection: networkservices.projects.locations.operations

@@ -148,6 +148,11 @@
                 "list_instances"
               ]
             },
+            "RestartInstance": {
+              "methods": [
+                "restart_instance"
+              ]
+            },
             "SetIamPolicy": {
               "methods": [
                 "set_iam_policy"
@@ -203,6 +208,11 @@
                 "list_instances"
               ]
             },
+            "RestartInstance": {
+              "methods": [
+                "restart_instance"
+              ]
+            },
             "SetIamPolicy": {
               "methods": [
                 "set_iam_policy"
@@ -256,6 +266,11 @@
             "ListInstances": {
               "methods": [
                 "list_instances"
+              ]
+            },
+            "RestartInstance": {
+              "methods": [
+                "restart_instance"
               ]
             },
             "SetIamPolicy": {

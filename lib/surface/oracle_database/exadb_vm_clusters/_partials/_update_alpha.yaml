@@ -20,12 +20,13 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Update exadbVmClusters
-    description: Update an exadbVmCluster
+    brief: Update an ExadbVmCluster.
+    description: Update an ExadbVmCluster.
     examples: |-
-      To update the exadbVmCluster, run:
+      To add virtual machines to an existing ExadbVmCluster with id `my-instance` in the location `us-east4`
+      by updating the node-count to `4`, run:
 
-          $ {command}
+        $ {command} my-instance --location=us-east4 --properties-node-count=4
   arguments:
     params:
     - help_text: |-

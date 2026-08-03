@@ -61,6 +61,25 @@ def GetLocationResourceSpec(
   )
 
 
+def GetTokenBrokerResourceSpec(
+    help_text='Omnichannel token broker.',
+):
+  """Returns the ResourceSpec for an Omnichannel Token Broker."""
+  return concepts.ResourceSpec(
+      'agenticapplications.projects.locations.omnichannelTokenBrokers',
+      resource_name='token_broker',
+      projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
+      locationsId=concepts.ResourceParameterAttributeConfig(
+          name='location',
+          help_text='Location/Region of the token broker.',
+      ),
+      omnichannelTokenBrokersId=concepts.ResourceParameterAttributeConfig(
+          name='token_broker_id',
+          help_text=help_text,
+      ),
+  )
+
+
 class OmnichannelOperationPoller(waiter.OperationPoller):
   """Custom poller for Omnichannel Gateway asynchronous operations."""
 

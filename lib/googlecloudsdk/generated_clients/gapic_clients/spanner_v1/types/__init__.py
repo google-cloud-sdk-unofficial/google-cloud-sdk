@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from .change_stream import (
+    ChangeStreamRecord,
+)
 from .commit_response import (
     CommitResponse,
 )
@@ -74,6 +77,7 @@ from .type import (
 )
 
 __all__ = (
+    'ChangeStreamRecord',
     'CommitResponse',
     'KeyRange',
     'KeySet',

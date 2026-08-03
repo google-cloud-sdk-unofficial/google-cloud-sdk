@@ -461,8 +461,7 @@ class CloudControlDeployment(_messages.Message):
       DEPLOYMENT_STATE_CREATING: Deployment is being created.
       DEPLOYMENT_STATE_DELETING: Deployment is being deleted.
       DEPLOYMENT_STATE_UPDATING: Deployment is being updated.
-      DEPLOYMENT_STATE_FAILED: Deployment has failed. All the changes made by
-        the deployment were successfully rolled back. You can retry or delete
+      DEPLOYMENT_STATE_FAILED: Deployment has failed. You can retry or delete
         a deployment that's in this state.
       DEPLOYMENT_STATE_READY: Deployment is successful and ready to use.
       DEPLOYMENT_STATE_PARTIALLY_DEPLOYED: Deployment is partially deployed.
@@ -3116,8 +3115,7 @@ class FrameworkDeployment(_messages.Message):
       DEPLOYMENT_STATE_CREATING: Deployment is being created.
       DEPLOYMENT_STATE_DELETING: Deployment is being deleted.
       DEPLOYMENT_STATE_UPDATING: Deployment is being updated.
-      DEPLOYMENT_STATE_FAILED: Deployment has failed. All the changes made by
-        the deployment were successfully rolled back. You can retry or delete
+      DEPLOYMENT_STATE_FAILED: Deployment has failed. You can retry or delete
         a deployment that's in this state.
       DEPLOYMENT_STATE_READY: Deployment is successful and ready to use.
       DEPLOYMENT_STATE_PARTIALLY_DEPLOYED: Deployment is partially deployed.

@@ -142,6 +142,8 @@ class Jobs:
       max_num_workers=None,
       worker_utilization_hint=None,
       unset_worker_utilization_hint=None,
+      latency_tier=None,
+      unset_latency_tier=None,
   ):
     """Update pipeline options on a running job.
 
@@ -156,6 +158,8 @@ class Jobs:
       max_num_workers: Upper-bound for worker autoscaling
       worker_utilization_hint: Target CPU utilization for worker autoscaling
       unset_worker_utilization_hint: Unsets worker_utilization_hint value
+      latency_tier: The latency tier for autoscaling
+      unset_latency_tier: Unsets latency_tier value
 
     Returns:
       The updated Job
@@ -172,6 +176,7 @@ class Jobs:
                 if unset_worker_utilization_hint
                 else worker_utilization_hint
             ),
+            latencyTier=(None if unset_latency_tier else latency_tier),
         )
     )
 
@@ -187,6 +192,8 @@ class Jobs:
       update_mask_pieces.append(
           'runtime_updatable_params.worker_utilization_hint'
       )
+    if latency_tier is not None or unset_latency_tier:
+      update_mask_pieces.append('runtime_updatable_params.latency_tier')
     update_mask = ','.join(update_mask_pieces)
 
     request = GetMessagesModule().DataflowProjectsLocationsJobsUpdateRequest(

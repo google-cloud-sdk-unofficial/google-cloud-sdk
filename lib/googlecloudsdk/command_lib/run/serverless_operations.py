@@ -23,6 +23,7 @@ import functools
 import json
 import random
 import string
+import textwrap
 from typing import List
 from typing import NoReturn
 from typing import Optional
@@ -38,6 +39,7 @@ from googlecloudsdk.api_lib.run import execution
 from googlecloudsdk.api_lib.run import global_methods
 from googlecloudsdk.api_lib.run import instance
 from googlecloudsdk.api_lib.run import job
+from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.api_lib.run import metric_names
 from googlecloudsdk.api_lib.run import revision
 from googlecloudsdk.api_lib.run import route
@@ -65,6 +67,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import metrics
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
+from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.core.universe_descriptor import universe_descriptor
 from googlecloudsdk.core.util import retry
@@ -1890,16 +1893,88 @@ class ServerlessOperations(object):
 
     is_create = not prefetch
     if is_create:
-      return self.CreateJob(job_ref, config_changes, tracker, asyn)
+      return self.CreateJob(job_ref, config_changes, tracker=tracker, asyn=asyn)
     else:
-      return self.UpdateJob(job_ref, config_changes, tracker, asyn)
+      return self.UpdateJob(job_ref, config_changes, tracker=tracker, asyn=asyn)
 
-  def CreateJob(self, job_ref, config_changes, tracker=None, asyn=False):
+  def _MaybeWarnGpuTimeout(self, job_obj):
+    """Warns if a GPU job has a timeout greater than 1 hour."""
+    if not self._IsGpuJobWithLargeTimeout(job_obj):
+      return
+    warning_message = textwrap.dedent(
+        """\
+
+        You have set the task timeout to over 1 hour for a GPU-backed Cloud Run job.
+
+        While Cloud Run jobs support long-running tasks, Serverless GPU instances are subject to preemption events. For tasks running longer than an hour, there is a probability that your task may be preempted mid-execution.
+
+        Best Practices & Recommendations: To prevent data loss and wasted compute spend, your workload should gracefully handle interruptions:
+        1. Implement Checkpointing: Periodically save model weights/application states to Cloud Storage.
+        2. Catch System Signals: Listen for the SIGTERM signal (sent 10 seconds before migration) and the subsequent SIGKILL signal to pause/resume work safely.
+
+        Documentation Resources:
+        • Handling Maintenance Events: https://cloud.google.com/run/docs/configuring/task-timeout#maintenance-events
+        • Checkpointing & Signal Handling Sample: https://github.com/GoogleCloudPlatform/devrel-demos/tree/main/ai-ml/finetune_gemma"""
+    )
+    console_io.PromptContinue(
+        message=warning_message,
+        prompt_string='Are you sure you want to proceed',
+        default=True,
+        cancel_on_no=True,
+    )
+
+  def _IsGpuJobWithLargeTimeout(self, job_obj):
+    """Returns true if a job has GPU enabled and a timeout greater than 1 hour."""
+    has_gpu = False
+    for container in job_obj.template.containers.values():
+      if (
+          container.resources is not None
+          and container.resources.limits is not None
+      ):
+        for prop in container.resources.limits.additionalProperties:
+          if prop.key == 'nvidia.com/gpu' and prop.value and prop.value != '0':
+            has_gpu = True
+            break
+      if has_gpu:
+        break
+    if k8s_object.GPU_TYPE_NODE_SELECTOR in job_obj.template.node_selector:
+      has_gpu = True
+    timeout = job_obj.template.spec.timeoutSeconds
+    return has_gpu and timeout is not None and timeout > 3600
+
+  def ValidateJobBeforeCreate(self, job_ref, config_changes):
+    """Construct and validate a new Cloud Run Job to create.
+
+    Args:
+      job_ref: Resource, the job to create.
+      config_changes: list, objects that implement Adjust().
+
+    Returns:
+      A job.Job object.
+    """
+    new_job = job.Job.New(self._client, job_ref.Parent().Name())
+    new_job.name = job_ref.Name()
+    for config_change in config_changes:
+      new_job = config_change.Adjust(new_job)
+    self._MaybeWarnGpuTimeout(new_job)
+    return new_job
+
+  def CreateJob(
+      self,
+      job_ref,
+      config_changes,
+      job_to_create=None,
+      tracker=None,
+      asyn=False,
+  ):
     """Create a new Cloud Run Job.
 
     Args:
       job_ref: Resource, the job to create.
       config_changes: list, objects that implement Adjust().
+      job_to_create: a job.Job object with config changes already applied. If
+        provided, the job will be created with this job object and job_ref and
+        config_changes will be ignored.
       tracker: StagedProgressTracker, to report on the progress of releasing.
       asyn: bool, if True, return without waiting for the job to be updated.
 
@@ -1907,11 +1982,13 @@ class ServerlessOperations(object):
       A job.Job object.
     """
     messages = self.messages_module
-    new_job = job.Job.New(self._client, job_ref.Parent().Name())
-    new_job.name = job_ref.Name()
     parent = job_ref.Parent().RelativeName()
-    for config_change in config_changes:
-      new_job = config_change.Adjust(new_job)
+    new_job = job_to_create
+    if job_to_create is None:
+      new_job = job.Job.New(self._client, job_ref.Parent().Name())
+      new_job.name = job_ref.Name()
+      for config_change in config_changes:
+        new_job = config_change.Adjust(new_job)
     create_request = messages.RunNamespacesJobsCreateRequest(
         job=new_job.Message(), parent=parent
     )
@@ -1936,12 +2013,48 @@ class ServerlessOperations(object):
 
     return created_job
 
-  def UpdateJob(self, job_ref, config_changes, tracker=None, asyn=False):
+  def ValidateJobBeforeUpdate(self, job_ref, config_changes, prefetch=None):
+    """Construct and validate a new Cloud Run Job to update.
+
+    Args:
+      job_ref: Resource, the job to create.
+      config_changes: list, objects that implement Adjust().
+      prefetch: the job, pre-fetched by a GetJob() call. If None, will call
+        GetJob().
+
+    Returns:
+      A job.Job object.
+    """
+    update_job = prefetch or self.GetJob(job_ref)
+    if update_job is None:
+      raise serverless_exceptions.JobNotFoundError(
+          'Job [{}] could not be found.'.format(job_ref.Name())
+      )
+    already_gpu_job_with_large_timeout = self._IsGpuJobWithLargeTimeout(
+        update_job
+    )
+    for config_change in config_changes:
+      update_job = config_change.Adjust(update_job)
+    if not already_gpu_job_with_large_timeout:
+      self._MaybeWarnGpuTimeout(update_job)
+    return update_job
+
+  def UpdateJob(
+      self,
+      job_ref,
+      config_changes,
+      job_to_update=None,
+      tracker=None,
+      asyn=False,
+  ):
     """Update an existing Cloud Run Job.
 
     Args:
       job_ref: Resource, the job to update.
       config_changes: list, objects that implement Adjust().
+      job_to_update: a job.Job object with config changes already applied. If
+        provided, the job will be updated with this job object and job_ref and
+        config_changes will be ignored.
       tracker: StagedProgressTracker, to report on the progress of updating.
       asyn: bool, if True, return without waiting for the job to be updated.
 
@@ -1949,13 +2062,15 @@ class ServerlessOperations(object):
       A job.Job object.
     """
     messages = self.messages_module
-    update_job = self.GetJob(job_ref)
-    if update_job is None:
-      raise serverless_exceptions.JobNotFoundError(
-          'Job [{}] could not be found.'.format(job_ref.Name())
-      )
-    for config_change in config_changes:
-      update_job = config_change.Adjust(update_job)
+    update_job = job_to_update
+    if job_to_update is None:
+      update_job = self.GetJob(job_ref)
+      if update_job is None:
+        raise serverless_exceptions.JobNotFoundError(
+            'Job [{}] could not be found.'.format(job_ref.Name())
+        )
+      for config_change in config_changes:
+        update_job = config_change.Adjust(update_job)
     replace_request = messages.RunNamespacesJobsReplaceJobRequest(
         job=update_job.Message(), name=job_ref.RelativeName()
     )

@@ -72,6 +72,7 @@ class List(base.ListCommand):
         'table(name.segment(-1):label=ID, '
         'manufacturer:label=MAKE, '
         'displayName:label=NAME, '
+        'modelCode:label=MODEL, '
         'hardwareType:label=FORM, '
         'osVersion:label=OS_VERSION, '
         'products():label=PRODUCTS)'

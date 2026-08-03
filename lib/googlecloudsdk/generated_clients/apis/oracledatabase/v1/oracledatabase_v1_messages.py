@@ -1258,7 +1258,7 @@ class CloudExadataInfrastructureProperties(_messages.Message):
     customerContacts: Optional. The list of customer contacts.
     dataStorageSizeTb: Output only. Size, in terabytes, of the DATA disk
       group.
-    databaseServerType: Output only. The database server type of the Exadata
+    databaseServerType: Optional. The database server type of the Exadata
       Infrastructure.
     dbNodeStorageSizeGb: Output only. The local node storage allocated in GBs.
     dbServerVersion: Output only. The software version of the database servers
@@ -1292,7 +1292,7 @@ class CloudExadataInfrastructureProperties(_messages.Message):
       Infrastructure.
     storageCount: Optional. The number of Cloud Exadata storage servers for
       the Exadata Infrastructure.
-    storageServerType: Output only. The storage server type of the Exadata
+    storageServerType: Optional. The storage server type of the Exadata
       Infrastructure.
     storageServerVersion: Output only. The software version of the storage
       servers (cells) in the Exadata Infrastructure.
@@ -2662,10 +2662,12 @@ class DbSystemShape(_messages.Message):
   us/iaas/api/#/en/database/20160918/DbSystemShapeSummary/
 
   Fields:
+    availableCoreCount: Optional. Available core count.
     availableCoreCountPerNode: Optional. Number of cores per node.
     availableDataStorageTb: Optional. Storage per storage server in terabytes.
     availableMemoryPerNodeGb: Optional. Memory per database server node in
       gigabytes.
+    coreCountIncrement: Optional. Core count increment.
     maxNodeCount: Optional. Maximum number of database servers.
     maxStorageCount: Optional. Maximum number of storage servers.
     minCoreCountPerNode: Optional. Minimum core count per node.
@@ -2674,24 +2676,28 @@ class DbSystemShape(_messages.Message):
     minMemoryPerNodeGb: Optional. Minimum memory per node in gigabytes.
     minNodeCount: Optional. Minimum number of database servers.
     minStorageCount: Optional. Minimum number of storage servers.
+    minimumCoreCount: Optional. Minimum core count per node.
     name: Identifier. The name of the Database System Shape resource with the
       format:
       projects/{project}/locations/{region}/dbSystemShapes/{db_system_shape}
     shape: Optional. shape
   """
 
-  availableCoreCountPerNode = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  availableDataStorageTb = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  availableMemoryPerNodeGb = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  maxNodeCount = _messages.IntegerField(4, variant=_messages.Variant.INT32)
-  maxStorageCount = _messages.IntegerField(5, variant=_messages.Variant.INT32)
-  minCoreCountPerNode = _messages.IntegerField(6, variant=_messages.Variant.INT32)
-  minDbNodeStoragePerNodeGb = _messages.IntegerField(7, variant=_messages.Variant.INT32)
-  minMemoryPerNodeGb = _messages.IntegerField(8, variant=_messages.Variant.INT32)
-  minNodeCount = _messages.IntegerField(9, variant=_messages.Variant.INT32)
-  minStorageCount = _messages.IntegerField(10, variant=_messages.Variant.INT32)
-  name = _messages.StringField(11)
-  shape = _messages.StringField(12)
+  availableCoreCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  availableCoreCountPerNode = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  availableDataStorageTb = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  availableMemoryPerNodeGb = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  coreCountIncrement = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  maxNodeCount = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  maxStorageCount = _messages.IntegerField(7, variant=_messages.Variant.INT32)
+  minCoreCountPerNode = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+  minDbNodeStoragePerNodeGb = _messages.IntegerField(9, variant=_messages.Variant.INT32)
+  minMemoryPerNodeGb = _messages.IntegerField(10, variant=_messages.Variant.INT32)
+  minNodeCount = _messages.IntegerField(11, variant=_messages.Variant.INT32)
+  minStorageCount = _messages.IntegerField(12, variant=_messages.Variant.INT32)
+  minimumCoreCount = _messages.IntegerField(13, variant=_messages.Variant.INT32)
+  name = _messages.StringField(14)
+  shape = _messages.StringField(15)
 
 
 class DbVersion(_messages.Message):
@@ -2921,6 +2927,8 @@ class ExadbVmCluster(_messages.Message):
     gcpOracleZone: Output only. Immutable. The GCP Oracle zone where Oracle
       ExadbVmCluster is hosted. Example: us-east4-b-r2. During creation, the
       system will pick the zone assigned to the ExascaleDbStorageVault.
+    identityConnector: Output only. The identity connector details which will
+      allow OCI to securely access the resources in the customer project.
     labels: Optional. The labels or tags associated with the ExadbVmCluster.
     name: Identifier. The name of the ExadbVmCluster resource in the following
       format:
@@ -2965,11 +2973,12 @@ class ExadbVmCluster(_messages.Message):
   displayName = _messages.StringField(3)
   entitlementId = _messages.StringField(4)
   gcpOracleZone = _messages.StringField(5)
-  labels = _messages.MessageField('LabelsValue', 6)
-  name = _messages.StringField(7)
-  odbNetwork = _messages.StringField(8)
-  odbSubnet = _messages.StringField(9)
-  properties = _messages.MessageField('ExadbVmClusterProperties', 10)
+  identityConnector = _messages.MessageField('IdentityConnector', 6)
+  labels = _messages.MessageField('LabelsValue', 7)
+  name = _messages.StringField(8)
+  odbNetwork = _messages.StringField(9)
+  odbSubnet = _messages.StringField(10)
+  properties = _messages.MessageField('ExadbVmClusterProperties', 11)
 
 
 class ExadbVmClusterProperties(_messages.Message):
@@ -7777,8 +7786,11 @@ class OracledatabaseProjectsLocationsDbSystemShapesListRequest(_messages.Message
 
   Fields:
     filter: Optional. An expression for filtering the results of the request.
-      Only the gcp_oracle_zone_id field is supported in this format:
-      `gcp_oracle_zone_id="{gcp_oracle_zone_id}"`.
+      The `gcp_oracle_zone_id`, `shape_family`, and `database_edition` fields
+      are supported in the following format:
+      `gcp_oracle_zone_id="{gcp_oracle_zone_id}" AND
+      shape_family="{shape_family}" AND
+      database_edition="{database_edition}"`.
     pageSize: Optional. The maximum number of items to return. If unspecified,
       at most 50 database system shapes will be returned. The maximum value is
       1000; values above 1000 will be coerced to 1000.
@@ -8177,8 +8189,9 @@ class OracledatabaseProjectsLocationsGiVersionsListRequest(_messages.Message):
 
   Fields:
     filter: Optional. An expression for filtering the results of the request.
-      Only the shape, gcp_oracle_zone and gi_version fields are supported in
-      this format: `shape="{shape}"`.
+      Only the `shape` and `gcp_oracle_zone_id` fields are supported in the
+      following format: `shape="{shape}" AND
+      gcp_oracle_zone_id="{gcp_oracle_zone_id}"`.
     pageSize: Optional. The maximum number of items to return. If unspecified,
       a maximum of 50 Oracle Grid Infrastructure (GI) versions will be
       returned. The maximum value is 1000; values above 1000 will be reset to
@@ -8201,8 +8214,8 @@ class OracledatabaseProjectsLocationsGiVersionsMinorVersionsListRequest(_message
 
   Fields:
     filter: Optional. An expression for filtering the results of the request.
-      Only shapeFamily and gcp_oracle_zone_id are supported in this format:
-      `shape_family="{shapeFamily}" AND
+      Only the `shape_family` and `gcp_oracle_zone_id` fields are supported in
+      the following format: `shape_family="{shape_family}" AND
       gcp_oracle_zone_id="{gcp_oracle_zone_id}"`.
     pageSize: Optional. The maximum number of items to return. If unspecified,
       a maximum of 50 System Versions will be returned. The maximum value is

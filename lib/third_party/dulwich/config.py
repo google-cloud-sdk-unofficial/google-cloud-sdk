@@ -175,12 +175,12 @@ class Config:
         raise NotImplementedError(self.get_multivar)
 
     @overload
-    def get_boolean(self, section: SectionLike, name: NameLike, default: bool) -> bool:
-        ...
+    def get_boolean(
+        self, section: SectionLike, name: NameLike, default: bool
+    ) -> bool: ...
 
     @overload
-    def get_boolean(self, section: SectionLike, name: NameLike) -> Optional[bool]:
-        ...
+    def get_boolean(self, section: SectionLike, name: NameLike) -> Optional[bool]: ...
 
     def get_boolean(
         self, section: SectionLike, name: NameLike, default: Optional[bool] = None
@@ -698,7 +698,7 @@ class StackedConfig(Config):
         for path in paths:
             try:
                 cf = ConfigFile.from_path(path)
-            except FileNotFoundError:
+            except (FileNotFoundError, PermissionError):
                 continue
             backends.append(cf)
         return backends

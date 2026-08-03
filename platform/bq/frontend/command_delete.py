@@ -71,7 +71,10 @@ class Delete(bigquery_command.BigqueryCmd):
     flags.DEFINE_boolean(
         'force',
         None,
-        "Ignore existing tables and datasets, don't prompt.",
+        'Do not prompt for confirmation. Ignore non-existent resource for'
+        ' Table, Dataset, Job, Model, Routine, Connection, and Transfer Config.'
+        ' Force delete resource for Reservation, Capacity Commitment, and Row'
+        ' Access Policy.',
         short_name='f',
         flag_values=fv,
     )
@@ -289,7 +292,9 @@ class Delete(bigquery_command.BigqueryCmd):
           default_location=bq_flags.LOCATION.value,
       )
       client_connection.DeleteConnection(
-          client=client.GetConnectionV1ApiClient(), reference=reference
+          client=client.GetConnectionV1ApiClient(),
+          reference=reference,
+          ignore_not_found=self.force,
       )
     elif self.row_access_policy:
       try:

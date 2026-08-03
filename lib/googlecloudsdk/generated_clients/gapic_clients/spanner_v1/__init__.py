@@ -21,6 +21,7 @@ __version__ = package_version.__version__
 from .services.spanner import SpannerClient
 from .services.spanner import SpannerAsyncClient
 
+from .types.change_stream import ChangeStreamRecord
 from .types.commit_response import CommitResponse
 from .types.keys import KeyRange
 from .types.keys import KeySet
@@ -72,6 +73,7 @@ __all__ = (
 'BatchWriteRequest',
 'BatchWriteResponse',
 'BeginTransactionRequest',
+'ChangeStreamRecord',
 'CommitRequest',
 'CommitResponse',
 'CreateSessionRequest',

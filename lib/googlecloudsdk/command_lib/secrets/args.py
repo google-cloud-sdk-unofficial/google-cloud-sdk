@@ -15,6 +15,7 @@
 """Shared resource arguments and flags."""
 
 
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import parser_arguments
@@ -22,6 +23,7 @@ from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.calliope.concepts import multitype
 from googlecloudsdk.command_lib.secrets import completers as secrets_completers
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
+from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import resources
 
@@ -278,6 +280,64 @@ def AddCreateVersionDestroyTTL(parser, positional=False, **kwargs):
           'See `$ gcloud topic datetimes` for information on duration formats.'
       ),
       **kwargs,
+  )
+
+
+def _NormalizeSecretType(val):
+  if val is None:
+    return None
+  return val.replace('_', '-').lower()
+
+
+def AddCreateSecretType(parser, positional=False, **kwargs):
+  """Add flags for specifying secret type on secret creates.
+
+  Args:
+      parser: Given argument parser.
+      positional: Whether the argument is positional.
+      **kwargs: Extra arguments.
+  """
+  messages = apis.GetMessagesModule('secretmanager', 'v1')
+  choices = sorted([
+      arg_utils.EnumNameToChoice(name)
+      for name in messages.Secret.SecretTypeValueValuesEnum.names()
+  ])
+  parser.add_argument(
+      _ArgOrFlag('secret-type', positional),
+      metavar='SECRET-TYPE',
+      type=_NormalizeSecretType,
+      choices=choices,
+      help=('The type of the secret.'),
+      **kwargs,
+  )
+
+
+def AddCloudSqlCredentialsArgs(parser):
+  """Add flags for Cloud SQL credentials.
+
+  Args:
+      parser: Given argument parser.
+  """
+  csql_group = parser.add_group(
+      help='Cloud SQL single-user credential settings.', required=True
+  )
+  csql_group.add_argument(
+      '--instance-id',
+      help='The Cloud SQL instance ID.',
+      required=True,
+  )
+  csql_group.add_argument(
+      '--username',
+      help='The database username.',
+      required=True,
+  )
+  csql_group.add_argument(
+      '--password',
+      help=(
+          'The initial password to set for the database user. If not '
+          'provided, a random password will be generated.'
+      ),
+      required=False,
   )
 
 

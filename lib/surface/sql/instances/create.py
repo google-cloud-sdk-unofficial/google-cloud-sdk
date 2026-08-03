@@ -176,6 +176,7 @@ def AddBaseArgs(parser):
   flags.AddDatabaseCenterIntegrationEnabled(parser)
   flags.AddEnablePscAutoDns(parser)
   flags.AddEnablePscWriteEndpointDns(parser)
+  flags.AddEnableConfidentialStorage(parser)
 
   # When adding a new field for instance creation, determine if it should also
   # be included in the restore to new instance command. This command uses backup
@@ -197,18 +198,12 @@ def AddBetaArgs(parser):
 
 def AddAlphaArgs(parser):
   """Declare alpha flags for this command parser."""
-  parser.add_argument(
-      '--enable-confidential-storage',
-      action='store_true',
-      default=None,
-      hidden=True,
-      help='Whether to enable confidential mode for the instance.',
-  )
   flags.AddMsdtcEnabled(parser, hidden=True)
   flags.AddMsdtcRpcAuthMode(parser, hidden=True)
   flags.AddMsdtcHostMappings(parser, hidden=True)
   flags.AddBackendType(parser, hidden=True)
   flags.AddSemiManagedSqlServer(parser, hidden=True)
+  flags.AddEnforceCmekLogEncryptionAtSource(parser, hidden=True)
 
 
 def RunBaseCreateCommand(args, release_track):

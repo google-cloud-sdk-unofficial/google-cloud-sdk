@@ -1692,11 +1692,10 @@ class ExpressLink(_messages.Message):
     matches: Optional. A list of matches define conditions used to match
       requests to destination services. Each match is independent with the OR
       semantic, i.e. we consider it matched if ANY one of the matches is
-      satisfied. This field is only applicable to Cloud Run services: If an
-      ExpressLink has only one Cloud Run service, Match is optional. If not
-      specified, the default hostname `-..run.app` or the short name can be
-      used. If an ExpressLink has multiple Cloud Run services, at least one
-      Match with valid hostname is required.
+      satisfied. If an ExpressLink has only one Cloud Run service, Match is
+      optional. If not specified, the default hostname `-..run.app` or the
+      short name can be used. If an ExpressLink has multiple Cloud Run
+      services, at least one Match with valid hostname is required.
     name: Identifier. Name of the ExpressLink resource. It matches pattern
       `projects/*/locations/*/expressLinks/`.
     source: Optional. The source service(s) for this binding.
@@ -1756,7 +1755,7 @@ class ExpressLinkDestination(_messages.Message):
 
 class ExpressLinkMatch(_messages.Message):
   r"""Match defines the predicate used to match requests to destination
-  services. This field is only applicable to Cloud Run services.
+  services.
 
   Fields:
     hostname: Optional. Specifies the hostname to match against the HTTP

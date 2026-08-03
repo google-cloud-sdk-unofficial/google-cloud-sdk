@@ -40,6 +40,7 @@ __protobuf__ = proto.module(
         'ListInstancesResponse',
         'StopInstanceRequest',
         'StartInstanceRequest',
+        'RestartInstanceRequest',
         'Instance',
     },
 )
@@ -273,6 +274,37 @@ class StartInstanceRequest(proto.Message):
         validate_only (bool):
             Optional. Indicates that the request should
             be validated without actually stopping any
+            resources.
+        etag (str):
+            Optional. A system-generated fingerprint for
+            this version of the resource. This may be used
+            to detect modification conflict during updates.
+    """
+
+    name: str = proto.Field(
+        proto.STRING,
+        number=1,
+    )
+    validate_only: bool = proto.Field(
+        proto.BOOL,
+        number=2,
+    )
+    etag: str = proto.Field(
+        proto.STRING,
+        number=3,
+    )
+
+
+class RestartInstanceRequest(proto.Message):
+    r"""Request message for restarting an Instance.
+
+    Attributes:
+        name (str):
+            Required. The name of the Instance to
+            restart.
+        validate_only (bool):
+            Optional. Indicates that the request should
+            be validated without actually restarting any
             resources.
         etag (str):
             Optional. A system-generated fingerprint for

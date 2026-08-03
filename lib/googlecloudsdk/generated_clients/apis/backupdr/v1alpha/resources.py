@@ -41,6 +41,41 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_AUTOPROTECTIONPOLICIES = (
+      'projects.locations.autoProtectionPolicies',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'autoProtectionPolicies/{autoProtectionPoliciesId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_AUTOPROTECTIONPOLICIES_BINDINGS = (
+      'projects.locations.autoProtectionPolicies.bindings',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'autoProtectionPolicies/{autoProtectionPoliciesId}/bindings/'
+              '{bindingsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_AUTOPROTECTIONPOLICIES_BINDINGS_MATCHINGRESOURCES = (
+      'projects.locations.autoProtectionPolicies.bindings.matchingResources',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'autoProtectionPolicies/{autoProtectionPoliciesId}/bindings/'
+              '{bindingsId}/matchingResources/{matchingResourcesId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_BACKUPPLANASSOCIATIONS = (
       'projects.locations.backupPlanAssociations',
       '{+name}',

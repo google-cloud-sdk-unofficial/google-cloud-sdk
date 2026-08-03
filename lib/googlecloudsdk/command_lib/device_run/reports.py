@@ -38,6 +38,14 @@ def YieldSessionReportRows(session_report):
             if exec_report.result and exec_report.result.resultType
             else ''
         )
+        if result != 'PASSED':
+          if exec_report.status and exec_report.status.progressMessages:
+            latest_progress = exec_report.status.progressMessages[-1]
+            if latest_progress:
+              if result:
+                result = f'{result}: {latest_progress}'
+              else:
+                result = latest_progress
         yield {
             'job_name': job_name,
             'execution_name': exec_name,
@@ -49,6 +57,14 @@ def YieldSessionReportRows(session_report):
           if job_report.result and job_report.result.resultType
           else ''
       )
+      if result != 'PASSED':
+        if job_report.status and job_report.status.progressMessages:
+          latest_progress = job_report.status.progressMessages[-1]
+          if latest_progress:
+            if result:
+              result = f'{result}: {latest_progress}'
+            else:
+              result = latest_progress
       yield {
           'job_name': job_name,
           'execution_name': '',

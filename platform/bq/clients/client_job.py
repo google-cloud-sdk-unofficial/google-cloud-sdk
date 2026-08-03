@@ -23,6 +23,7 @@ from clients import table_reader as bq_table_reader
 from clients import utils as bq_client_utils
 from clients import wait_printer
 from utils import bq_error
+from utils import bq_gcloud_utils
 from utils import bq_id_utils
 from utils import bq_processor_utils
 
@@ -340,6 +341,16 @@ def DeleteJob(
 #################################
 
 
+def _ApplyEnvironmentFixedLabels(target_dict: Dict[str, Any]) -> None:
+  """Attaches fixed environment label(s) to the configuration or request dict if set."""
+  metrics = bq_gcloud_utils.load_metrics()
+  if metrics.get('environment') == 'gaas':
+    labels = target_dict.setdefault('labels', {})
+    fixed_label_key = 'goog-bqcli-mcp'
+    if fixed_label_key not in labels:
+      labels[fixed_label_key] = 'true'
+
+
 def StartJob(
     bqclient: bigquery_client.BigqueryClient,
     configuration,
@@ -383,9 +394,12 @@ def StartJob(
     configuration['properties'] = dict(  # pyrefly: ignore[no-matching-overload]
         prop.partition('=')[0::2] for prop in bqclient.job_property
     )
-  job_request = {'configuration': configuration}
   if labels:
-    job_request['labels'] = labels
+    bq_processor_utils.ApplyParameters(configuration, labels=labels)
+  _ApplyEnvironmentFixedLabels(configuration)
+  job_request = {'configuration': configuration}
+  if 'labels' in configuration:
+    job_request['labels'] = configuration['labels']
 
   # Use the default job id generator if no job id was supplied.
   job_id = job_id or bqclient.job_id_generator  # pyrefly: ignore[bad-assignment]
@@ -556,6 +570,7 @@ def _StartQueryRpc(
   )
   if labels:
     bq_processor_utils.ApplyParameters(request, labels=labels)
+  _ApplyEnvironmentFixedLabels(request)
   bq_processor_utils.ApplyParameters(
       request, connection_properties=connection_properties
   )

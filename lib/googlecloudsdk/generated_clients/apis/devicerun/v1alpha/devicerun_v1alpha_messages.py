@@ -31,19 +31,12 @@ class AndroidBugreportDeviceAction(_messages.Message):
 
 
 
-class AndroidDeviceDetails(_messages.Message):
-  r"""Android-specific device attributes.
-
-  Fields:
-    buildType: Output only. Mirrors the AOSP `ro.build.type` property, e.g.
-      "user", "userdebug", "eng". Empty if unknown.
-    supportedAbis: Output only. Lists ABIs supported by the device
-      (android.os.Build.SUPPORTED_ABIS), most preferred first, e.g.
-      "arm64-v8a".
+class AndroidDumpsysDeviceAction(_messages.Message):
+  r"""Captures dumpsys output from the device. The dumpsys will not be
+  captured when the test result is pass. The output will be written to a file
+  named `dumpsys.log` in the execution output directory.
   """
 
-  buildType = _messages.StringField(1)
-  supportedAbis = _messages.StringField(2, repeated=True)
 
 
 class AndroidInstallPackagesDeviceAction(_messages.Message):
@@ -160,11 +153,63 @@ class AndroidInstrumentationTest(_messages.Message):
   enableCodeCoverage = _messages.BooleanField(2)
   instrumentationTimeout = _messages.StringField(3)
   orchestratorVersion = _messages.StringField(4)
-  smartSharding = _messages.MessageField('SmartSharding', 5)
+  smartSharding = _messages.MessageField('AndroidInstrumentationTestSmartSharding', 5)
   testInstallable = _messages.MessageField('AndroidInstallable', 6)
   testRunnerClass = _messages.StringField(7)
   testTargets = _messages.StringField(8, repeated=True)
-  uniformSharding = _messages.MessageField('UniformSharding', 9)
+  uniformSharding = _messages.MessageField('AndroidInstrumentationTestUniformSharding', 9)
+
+
+class AndroidInstrumentationTestSmartSharding(_messages.Message):
+  r"""The smart sharding strategy to split the job into multiple shards based
+  on the test methods and their recorded execution time.
+
+  Fields:
+    maxShardCount: Optional. The maximum number of shards to create. If unset
+      or less than 1, system-defined max limits are used. This limit takes
+      precedence if the targeted_shard_duration cannot be satisfied. Limits: -
+      For physical devices, the number of shards must be <= 20. - For virtual
+      devices, the number of shards must be <= 200.
+    targetedShardDuration: Required. The targeted duration of each shard.
+      Limits: - Must be at least 2 minutes. - Must be at most 60 minutes.
+      Shard duration is not guaranteed because smart sharding uses test case
+      history and default durations which may not be accurate. Durations are
+      calculated based on the following inputs: - Timing records from previous
+      runs of the same test case. - For new test cases, the average duration
+      of other known test cases. - A system-chosen, default duration if there
+      are no previous timing records available. Because the actual shard
+      duration can exceed the targeted shard duration, we recommend that you
+      set the targeted value at least 5 minutes less than the maximum allowed
+      instrumentation timeout. This approach avoids cancelling the shard
+      before all tests can finish.
+    timingRecord: Required. The timing record file to use for smart sharding.
+      If the file does not exist, smart sharding will use default test time
+      (30s) for each test method to shard the job into multiple shards. This
+      file will be overwritten with the latest timing record after the job is
+      completed.
+  """
+
+  maxShardCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  targetedShardDuration = _messages.StringField(2)
+  timingRecord = _messages.MessageField('InputFile', 3)
+
+
+class AndroidInstrumentationTestUniformSharding(_messages.Message):
+  r"""Uniformly shards test cases given a total number of shards. It will be
+  translated to `-e numShard` and `-e shardIndex` AndroidJUnitRunner
+  arguments. With uniform sharding enabled, specifying either of these
+  sharding arguments via `environment_variables` is invalid. Based on the
+  sharding mechanism AndroidJUnitRunner uses, there is no guarantee that test
+  cases will be distributed uniformly across all shards.
+
+  Fields:
+    shardCount: Required. The total number of shards to create. This must
+      always be a positive number that is no greater than the total number of
+      test cases. Limits: - For physical devices, the number of shards must be
+      <= 20. - For virtual devices, the number of shards must be <= 200.
+  """
+
+  shardCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
 
 
 class AndroidLogcatDeviceAction(_messages.Message):
@@ -290,7 +335,19 @@ class AndroidPushFilesDeviceAction(_messages.Message):
       maximum of 50 files are allowed.
   """
 
-  fileConfigs = _messages.MessageField('FileConfig', 1, repeated=True)
+  fileConfigs = _messages.MessageField('AndroidPushFilesDeviceActionFileConfig', 1, repeated=True)
+
+
+class AndroidPushFilesDeviceActionFileConfig(_messages.Message):
+  r"""The configuration of pushing a file to the device.
+
+  Fields:
+    destinationPath: Required. The destination path on the device.
+    sourceFile: Required. The file to be pushed to the device.
+  """
+
+  destinationPath = _messages.StringField(1)
+  sourceFile = _messages.MessageField('InputFile', 2)
 
 
 class AndroidRecordVideoDeviceAction(_messages.Message):
@@ -317,10 +374,6 @@ class AndroidSwitchLocaleDeviceAction(_messages.Message):
   """
 
   localeCode = _messages.StringField(1)
-
-
-class AutomationSupport(_messages.Message):
-  r"""Per-product metadata for the Automation (DeviceRun) product."""
 
 
 class CancelSessionRequest(_messages.Message):
@@ -354,33 +407,26 @@ class CancelSessionResponse(_messages.Message):
   cancelResult = _messages.EnumField('CancelResultValueValuesEnum', 1)
 
 
-class Date(_messages.Message):
-  r"""Represents a whole or partial calendar date, such as a birthday. The
-  time of day and time zone are either specified elsewhere or are
-  insignificant. The date is relative to the Gregorian Calendar. This can
-  represent one of the following: * A full date, with non-zero year, month,
-  and day values. * A month and day, with a zero year (for example, an
-  anniversary). * A year on its own, with a zero month and a zero day. * A
-  year and month, with a zero day (for example, a credit card expiration
-  date). Related types: * google.type.TimeOfDay * google.type.DateTime *
-  google.protobuf.Timestamp
+class CatalogAndroidDeviceDetails(_messages.Message):
+  r"""Android-specific device attributes.
 
   Fields:
-    day: Day of a month. Must be from 1 to 31 and valid for the year and
-      month, or 0 to specify a year by itself or a year and month where the
-      day isn't significant.
-    month: Month of a year. Must be from 1 to 12, or 0 to specify a year
-      without a month and day.
-    year: Year of the date. Must be from 1 to 9999, or 0 to specify a date
-      without a year.
+    buildType: Output only. Mirrors the AOSP `ro.build.type` property, e.g.
+      "user", "userdebug", "eng". Empty if unknown.
+    supportedAbis: Output only. Lists ABIs supported by the device
+      (android.os.Build.SUPPORTED_ABIS), most preferred first, e.g.
+      "arm64-v8a".
   """
 
-  day = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  month = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  year = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  buildType = _messages.StringField(1)
+  supportedAbis = _messages.StringField(2, repeated=True)
 
 
-class Device(_messages.Message):
+class CatalogAutomationSupport(_messages.Message):
+  r"""Per-product metadata for the Automation (DeviceRun) product."""
+
+
+class CatalogDevice(_messages.Message):
   r"""A single routable device configuration in the catalog.
 
   Enums:
@@ -413,6 +459,12 @@ class Device(_messages.Message):
       date).
     manufacturer: Output only. Specifies the hardware manufacturer of the
       device.
+    modelCode: Output only. Provides a human-readable model identifier for
+      this device, independent of OS version. May be empty. Platform-
+      dependent: * Android physical: hardware codename
+      (android.os.Build.DEVICE), e.g. "shiba". * Android virtual: AVD model
+      identifier, e.g. "MediumPhone.arm". * iOS: model identifier, e.g.
+      "iphone14pro".
     name: Identifier. Identifies the device resource. Format:
       `projects/{project}/locations/{location}/devices/{device}`. The {device}
       segment is an opaque, stable string. Clients must not parse it to derive
@@ -492,20 +544,232 @@ class Device(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  androidDetails = _messages.MessageField('AndroidDeviceDetails', 1)
-  availability = _messages.MessageField('DeviceAvailability', 2)
+  androidDetails = _messages.MessageField('CatalogAndroidDeviceDetails', 1)
+  availability = _messages.MessageField('CatalogDeviceAvailability', 2)
   displayName = _messages.StringField(3)
   formFactor = _messages.EnumField('FormFactorValueValuesEnum', 4)
   hardwareType = _messages.EnumField('HardwareTypeValueValuesEnum', 5)
-  iosDetails = _messages.MessageField('IosDeviceDetails', 6)
+  iosDetails = _messages.MessageField('CatalogIosDeviceDetails', 6)
   labels = _messages.MessageField('LabelsValue', 7)
-  lifecycle = _messages.MessageField('Lifecycle', 8)
+  lifecycle = _messages.MessageField('CatalogLifecycle', 8)
   manufacturer = _messages.StringField(9)
-  name = _messages.StringField(10)
-  osVersion = _messages.StringField(11)
-  platform = _messages.EnumField('PlatformValueValuesEnum', 12)
-  primaryScreen = _messages.MessageField('ScreenMetrics', 13)
-  supportedProducts = _messages.MessageField('SupportedProduct', 14, repeated=True)
+  modelCode = _messages.StringField(10)
+  name = _messages.StringField(11)
+  osVersion = _messages.StringField(12)
+  platform = _messages.EnumField('PlatformValueValuesEnum', 13)
+  primaryScreen = _messages.MessageField('CatalogScreenMetrics', 14)
+  supportedProducts = _messages.MessageField('CatalogSupportedProduct', 15, repeated=True)
+
+
+class CatalogDeviceAvailability(_messages.Message):
+  r"""Fleet availability for a device configuration.
+
+  Enums:
+    AvailableValueValuesEnum: Output only. Specifies the current availability
+      bucket (idle, immediately allocatable devices) for this device
+      configuration. This is a best-effort snapshot, refreshed periodically.
+      It fluctuates depending on traffic as other requests allocate devices.
+    CapacityValueValuesEnum: Output only. Specifies the current capacity
+      bucket for this device configuration. Represents the total number of
+      online devices (idle or in use).
+
+  Fields:
+    available: Output only. Specifies the current availability bucket (idle,
+      immediately allocatable devices) for this device configuration. This is
+      a best-effort snapshot, refreshed periodically. It fluctuates depending
+      on traffic as other requests allocate devices.
+    capacity: Output only. Specifies the current capacity bucket for this
+      device configuration. Represents the total number of online devices
+      (idle or in use).
+  """
+
+  class AvailableValueValuesEnum(_messages.Enum):
+    r"""Output only. Specifies the current availability bucket (idle,
+    immediately allocatable devices) for this device configuration. This is a
+    best-effort snapshot, refreshed periodically. It fluctuates depending on
+    traffic as other requests allocate devices.
+
+    Values:
+      AVAILABILITY_UNSPECIFIED: The value of availability is unknown or unset.
+      AVAILABILITY_NONE: No devices of this configuration are currently idle.
+        A request can still be made, but it will queue until a device frees
+        up. Expect longer wait times, and avoid requesting many devices at
+        once (e.g. high shard counts).
+      AVAILABILITY_LOW: A small number of devices are currently idle. Suitable
+        for a few concurrent requests. Larger bursts (e.g. many shards) may
+        queue until devices free up.
+      AVAILABILITY_MEDIUM: A moderate number of devices are currently idle.
+        Suitable for a moderate number of concurrent requests. Very large
+        bursts may still queue.
+      AVAILABILITY_HIGH: Many devices are currently idle. Suitable for a large
+        number of concurrent requests with little to no queueing at the moment
+        of observation.
+    """
+    AVAILABILITY_UNSPECIFIED = 0
+    AVAILABILITY_NONE = 1
+    AVAILABILITY_LOW = 2
+    AVAILABILITY_MEDIUM = 3
+    AVAILABILITY_HIGH = 4
+
+  class CapacityValueValuesEnum(_messages.Enum):
+    r"""Output only. Specifies the current capacity bucket for this device
+    configuration. Represents the total number of online devices (idle or in
+    use).
+
+    Values:
+      CAPACITY_UNSPECIFIED: The value of device capacity is unknown or unset.
+      CAPACITY_NONE: No online devices of this configuration. These devices
+        are unavailable either temporarily or permanently and should not be
+        requested. If the device is also marked as deprecated, this state is
+        very likely permanent.
+      CAPACITY_LOW: Devices that are low in capacity (the lab has a small
+        number of these devices). These devices may be used if users need to
+        test on this specific device model and version. Please note that due
+        to low capacity, the tests may take much longer to finish, especially
+        if a large number of tests are invoked at once. These devices are not
+        suitable for test sharding.
+      CAPACITY_MEDIUM: Devices that are medium in capacity (the lab has a
+        decent number of these devices, though not as many as high capacity
+        devices). These devices are suitable for fewer test runs (e.g. fewer
+        than 100 tests) and only for low shard counts (e.g. less than 10
+        shards).
+      CAPACITY_HIGH: Devices that are high in capacity (the lab has a large
+        number of these devices). These devices are generally suggested for
+        running a large number of simultaneous tests (e.g. more than 100
+        tests). Please note that high capacity devices do not guarantee short
+        wait times due to several factors: 1. Traffic (how heavily they are
+        used at any given moment). 2. High capacity devices are prioritized
+        for certain usages, which may cause user tests to be slower than
+        selecting other similar device types.
+    """
+    CAPACITY_UNSPECIFIED = 0
+    CAPACITY_NONE = 1
+    CAPACITY_LOW = 2
+    CAPACITY_MEDIUM = 3
+    CAPACITY_HIGH = 4
+
+  available = _messages.EnumField('AvailableValueValuesEnum', 1)
+  capacity = _messages.EnumField('CapacityValueValuesEnum', 2)
+
+
+class CatalogDeviceStreamingSupport(_messages.Message):
+  r"""Per-product metadata for the DeviceStreaming product.
+
+  Fields:
+    minimumAndroidStudioVersion: Output only. Specifies the minimum Android
+      Studio version that supports this device. Optional; only set when the
+      device is known to work only at or above a certain Android Studio
+      version. Expected format "major.minor.micro.patch", e.g.
+      "5921.22.2211.8881706".
+  """
+
+  minimumAndroidStudioVersion = _messages.StringField(1)
+
+
+class CatalogIosDeviceDetails(_messages.Message):
+  r"""iOS-specific device attributes. Reserved for future iOS-only fields."""
+
+
+class CatalogLifecycle(_messages.Message):
+  r"""Device lifecycle: maturity state plus key lifecycle dates.
+
+  Enums:
+    StateValueValuesEnum: Output only. Specifies the current maturity state of
+      the device.
+
+  Fields:
+    removalDate: Output only. Specifies the date the device is scheduled to be
+      removed from the catalog. Only set when `state == DEPRECATED`.
+    state: Output only. Specifies the current maturity state of the device.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. Specifies the current maturity state of the device.
+
+    Values:
+      STATE_UNSPECIFIED: State not specified.
+      PREVIEW: Early access device. This device may have reduced stability and
+        availability.
+      ACTIVE: Generally available.
+      DEPRECATED: Still usable, but scheduled for removal.
+    """
+    STATE_UNSPECIFIED = 0
+    PREVIEW = 1
+    ACTIVE = 2
+    DEPRECATED = 3
+
+  removalDate = _messages.MessageField('Date', 1)
+  state = _messages.EnumField('StateValueValuesEnum', 2)
+
+
+class CatalogListDevicesResponse(_messages.Message):
+  r"""Response including listed devices.
+
+  Fields:
+    devices: The list of devices.
+    nextPageToken: Token to receive the next page of devices. This will be
+      absent if the end of the response list has been reached.
+  """
+
+  devices = _messages.MessageField('CatalogDevice', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
+class CatalogScreenMetrics(_messages.Message):
+  r"""Screen measurements of a device.
+
+  Fields:
+    densityDpi: Output only. Pixel density in dots per inch (dpi).
+    heightPx: Output only. Height in pixels.
+    widthPx: Output only. Width in pixels.
+  """
+
+  densityDpi = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  heightPx = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  widthPx = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+
+
+class CatalogSupportedProduct(_messages.Message):
+  r"""Declares that a device supports a given Device Cloud product, with
+  optional per-product metadata. Discriminated by which product-specific
+  message is set; adding a new product = new oneof arm + new per-product
+  message.
+
+  Fields:
+    automation: Output only. Represents Automation, which is DeviceRun-backed
+      automated test execution.
+    deviceStreaming: Output only. Represents DeviceStreaming, which is
+      interactive remote device streaming.
+  """
+
+  automation = _messages.MessageField('CatalogAutomationSupport', 1)
+  deviceStreaming = _messages.MessageField('CatalogDeviceStreamingSupport', 2)
+
+
+class Date(_messages.Message):
+  r"""Represents a whole or partial calendar date, such as a birthday. The
+  time of day and time zone are either specified elsewhere or are
+  insignificant. The date is relative to the Gregorian Calendar. This can
+  represent one of the following: * A full date, with non-zero year, month,
+  and day values. * A month and day, with a zero year (for example, an
+  anniversary). * A year on its own, with a zero month and a zero day. * A
+  year and month, with a zero day (for example, a credit card expiration
+  date). Related types: * google.type.TimeOfDay * google.type.DateTime *
+  google.protobuf.Timestamp
+
+  Fields:
+    day: Day of a month. Must be from 1 to 31 and valid for the year and
+      month, or 0 to specify a year by itself or a year and month where the
+      day isn't significant.
+    month: Month of a year. Must be from 1 to 12, or 0 to specify a year
+      without a month and day.
+    year: Year of the date. Must be from 1 to 9999, or 0 to specify a date
+      without a year.
+  """
+
+  day = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  month = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  year = _messages.IntegerField(3, variant=_messages.Variant.INT32)
 
 
 class DeviceAction(_messages.Message):
@@ -514,6 +778,7 @@ class DeviceAction(_messages.Message):
   Fields:
     androidBugreport: Captures a bugreport from the device unless the test
       result is pass.
+    androidDumpsys: Captures a dumpsys from the device.
     androidInstallPackages: Installs Android packages on the device.
     androidLogcat: Collects logcat output from the device.
     androidOrientation: Sets the orientation of the device.
@@ -523,66 +788,27 @@ class DeviceAction(_messages.Message):
     androidRecordVideo: Records a video of the device screen during the run.
     androidSwitchLocale: Switches the locale (language and region) of the
       device.
+    iosInstallPackages: Installs additional iOS packages on the device.
+    iosPullFiles: Pulls directories and files from the iOS device sandbox at
+      the end of the run.
+    iosPushFiles: Pushes files to the iOS device sandbox at the beginning of
+      the run.
+    iosRecordVideo: Records a video of the iOS device screen during the run.
   """
 
   androidBugreport = _messages.MessageField('AndroidBugreportDeviceAction', 1)
-  androidInstallPackages = _messages.MessageField('AndroidInstallPackagesDeviceAction', 2)
-  androidLogcat = _messages.MessageField('AndroidLogcatDeviceAction', 3)
-  androidOrientation = _messages.MessageField('AndroidOrientationDeviceAction', 4)
-  androidPullFiles = _messages.MessageField('AndroidPullFilesDeviceAction', 5)
-  androidPushFiles = _messages.MessageField('AndroidPushFilesDeviceAction', 6)
-  androidRecordVideo = _messages.MessageField('AndroidRecordVideoDeviceAction', 7)
-  androidSwitchLocale = _messages.MessageField('AndroidSwitchLocaleDeviceAction', 8)
-
-
-class DeviceAvailability(_messages.Message):
-  r"""Fleet availability for a device configuration.
-
-  Enums:
-    CapacityValueValuesEnum: Output only. Specifies the current capacity
-      bucket for this device configuration.
-
-  Fields:
-    capacity: Output only. Specifies the current capacity bucket for this
-      device configuration.
-  """
-
-  class CapacityValueValuesEnum(_messages.Enum):
-    r"""Output only. Specifies the current capacity bucket for this device
-    configuration.
-
-    Values:
-      CAPACITY_UNSPECIFIED: The value of device capacity is unknown or unset.
-      NONE: No online devices of this configuration. These devices are
-        unavailable either temporarily or permanently and should not be
-        requested. If the device is also marked as deprecated, this state is
-        very likely permanent.
-      LOW: Devices that are low in capacity (the lab has a small number of
-        these devices). These devices may be used if users need to test on
-        this specific device model and version. Please note that due to low
-        capacity, the tests may take much longer to finish, especially if a
-        large number of tests are invoked at once. These devices are not
-        suitable for test sharding.
-      MEDIUM: Devices that are medium in capacity (the lab has a decent number
-        of these devices, though not as many as high capacity devices). These
-        devices are suitable for fewer test runs (e.g. fewer than 100 tests)
-        and only for low shard counts (e.g. less than 10 shards).
-      HIGH: Devices that are high in capacity (the lab has a large number of
-        these devices). These devices are generally suggested for running a
-        large number of simultaneous tests (e.g. more than 100 tests). Please
-        note that high capacity devices do not guarantee short wait times due
-        to several factors: 1. Traffic (how heavily they are used at any given
-        moment). 2. High capacity devices are prioritized for certain usages,
-        which may cause user tests to be slower than selecting other similar
-        device types.
-    """
-    CAPACITY_UNSPECIFIED = 0
-    NONE = 1
-    LOW = 2
-    MEDIUM = 3
-    HIGH = 4
-
-  capacity = _messages.EnumField('CapacityValueValuesEnum', 1)
+  androidDumpsys = _messages.MessageField('AndroidDumpsysDeviceAction', 2)
+  androidInstallPackages = _messages.MessageField('AndroidInstallPackagesDeviceAction', 3)
+  androidLogcat = _messages.MessageField('AndroidLogcatDeviceAction', 4)
+  androidOrientation = _messages.MessageField('AndroidOrientationDeviceAction', 5)
+  androidPullFiles = _messages.MessageField('AndroidPullFilesDeviceAction', 6)
+  androidPushFiles = _messages.MessageField('AndroidPushFilesDeviceAction', 7)
+  androidRecordVideo = _messages.MessageField('AndroidRecordVideoDeviceAction', 8)
+  androidSwitchLocale = _messages.MessageField('AndroidSwitchLocaleDeviceAction', 9)
+  iosInstallPackages = _messages.MessageField('IosInstallPackagesDeviceAction', 10)
+  iosPullFiles = _messages.MessageField('IosPullFilesDeviceAction', 11)
+  iosPushFiles = _messages.MessageField('IosPushFilesDeviceAction', 12)
+  iosRecordVideo = _messages.MessageField('IosRecordVideoDeviceAction', 13)
 
 
 class DeviceConfig(_messages.Message):
@@ -611,20 +837,6 @@ class DeviceRequirement(_messages.Message):
 
   androidPhysicalDeviceRequirement = _messages.MessageField('AndroidPhysicalDeviceRequirement', 1)
   deviceId = _messages.StringField(2)
-
-
-class DeviceStreamingSupport(_messages.Message):
-  r"""Per-product metadata for the DeviceStreaming product.
-
-  Fields:
-    minimumAndroidStudioVersion: Output only. Specifies the minimum Android
-      Studio version that supports this device. Optional; only set when the
-      device is known to work only at or above a certain Android Studio
-      version. Expected format "major.minor.micro.patch", e.g.
-      "5921.22.2211.8881706".
-  """
-
-  minimumAndroidStudioVersion = _messages.StringField(1)
 
 
 class DevicerunProjectsLocationsDevicesGetRequest(_messages.Message):
@@ -930,32 +1142,6 @@ class ExecutionReport(_messages.Message):
   warnings = _messages.MessageField('Warning', 9, repeated=True)
 
 
-class FileConfig(_messages.Message):
-  r"""The configuration of pushing a file to the device.
-
-  Fields:
-    destinationPath: Required. The destination path on the device.
-    sourceFile: Required. The file to be pushed to the device.
-  """
-
-  destinationPath = _messages.StringField(1)
-  sourceFile = _messages.MessageField('InputFile', 2)
-
-
-class FlakyTestRetryStrategy(_messages.Message):
-  r"""Default retry strategy. It will retry on test failures for up to
-  flaky_test_attempts (including the initial run). It also retries on infra
-  issues for up to 2 attempts (including the initial run). So in total, an
-  execution can run up to flaky_test_attempts * 2 times in the worst case.
-
-  Fields:
-    flakyTestAttempts: Required. The total attempts for flaky tests, including
-      the initial run. Default value: 1 (no retry). Range: [1, 5].
-  """
-
-  flakyTestAttempts = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-
-
 class GcsPath(_messages.Message):
   r"""A path to a file or directory in Google Cloud Storage.
 
@@ -1185,8 +1371,78 @@ class IntRequirement(_messages.Message):
   range = _messages.MessageField('IntRangeRequirement', 2)
 
 
-class IosDeviceDetails(_messages.Message):
-  r"""iOS-specific device attributes. Reserved for future iOS-only fields."""
+class IosInstallPackagesDeviceAction(_messages.Message):
+  r"""Installs iOS packages on the device.
+
+  Fields:
+    ipas: Required. Additional iOS packages (IPAs) to install on the device.
+      Limits: - A maximum of 20 IPAs are allowed.
+  """
+
+  ipas = _messages.MessageField('InputFile', 1, repeated=True)
+
+
+class IosPullFilesDeviceAction(_messages.Message):
+  r"""Pulls directories and files from the iOS device sandbox at the end of
+  the run.
+
+  Fields:
+    paths: Required. Absolute directory or file paths to pull from the device.
+      Limits: - A maximum of 10 paths are allowed.
+  """
+
+  paths = _messages.MessageField('IosPullFilesDeviceActionPathConfig', 1, repeated=True)
+
+
+class IosPullFilesDeviceActionPathConfig(_messages.Message):
+  r"""The configuration of pulling a file or directory from the iOS device.
+
+  Fields:
+    bundleId: Required. The bundle ID of the application sandbox.
+    devicePath: Required. The device path relative to the app sandbox, e.g.
+      "/Documents/output/".
+  """
+
+  bundleId = _messages.StringField(1)
+  devicePath = _messages.StringField(2)
+
+
+class IosPushFilesDeviceAction(_messages.Message):
+  r"""Pushes files to the iOS device sandbox at the beginning of the run.
+
+  Fields:
+    fileConfigs: Required. Configs of pushing files to the device. Limits: - A
+      maximum of 50 files are allowed.
+  """
+
+  fileConfigs = _messages.MessageField('IosPushFilesDeviceActionFileConfig', 1, repeated=True)
+
+
+class IosPushFilesDeviceActionFileConfig(_messages.Message):
+  r"""The configuration of pushing a file to the iOS device.
+
+  Fields:
+    bundleId: Required. The bundle ID of the application sandbox.
+    destinationPath: Required. The destination path relative to the app
+      sandbox, e.g. "/Documents/file.txt".
+    sourceFile: Required. The file to be pushed.
+  """
+
+  bundleId = _messages.StringField(1)
+  destinationPath = _messages.StringField(2)
+  sourceFile = _messages.MessageField('InputFile', 3)
+
+
+class IosRecordVideoDeviceAction(_messages.Message):
+  r"""Records a video of the iOS device screen during the run. The video will
+  be written to a file named `video.mp4` in the execution output directory.
+
+  Fields:
+    discardOnPass: Optional. Whether to discard the video if the test passes.
+      If not specified, the default is false (always keep the video).
+  """
+
+  discardOnPass = _messages.BooleanField(1)
 
 
 class IosXcTest(_messages.Message):
@@ -1387,51 +1643,6 @@ class JobSettings(_messages.Message):
   """
 
   retrySettings = _messages.MessageField('RetrySettings', 1)
-
-
-class Lifecycle(_messages.Message):
-  r"""Device lifecycle: maturity state plus key lifecycle dates.
-
-  Enums:
-    StateValueValuesEnum: Output only. Specifies the current maturity state of
-      the device.
-
-  Fields:
-    removalDate: Output only. Specifies the date the device is scheduled to be
-      removed from the catalog. Only set when `state == DEPRECATED`.
-    state: Output only. Specifies the current maturity state of the device.
-  """
-
-  class StateValueValuesEnum(_messages.Enum):
-    r"""Output only. Specifies the current maturity state of the device.
-
-    Values:
-      STATE_UNSPECIFIED: State not specified.
-      PREVIEW: Early access device. This device may have reduced stability and
-        availability.
-      ACTIVE: Generally available.
-      DEPRECATED: Still usable, but scheduled for removal.
-    """
-    STATE_UNSPECIFIED = 0
-    PREVIEW = 1
-    ACTIVE = 2
-    DEPRECATED = 3
-
-  removalDate = _messages.MessageField('Date', 1)
-  state = _messages.EnumField('StateValueValuesEnum', 2)
-
-
-class ListDevicesResponse(_messages.Message):
-  r"""Response including listed devices.
-
-  Fields:
-    devices: The list of devices.
-    nextPageToken: Token to receive the next page of devices. This will be
-      absent if the end of the response list has been reached.
-  """
-
-  devices = _messages.MessageField('Device', 1, repeated=True)
-  nextPageToken = _messages.StringField(2)
 
 
 class ListLocationsResponse(_messages.Message):
@@ -1636,21 +1847,21 @@ class RetrySettings(_messages.Message):
       Execution to retry on test failures and infrastructure errors.
   """
 
-  flakyTestRetryStrategy = _messages.MessageField('FlakyTestRetryStrategy', 1)
+  flakyTestRetryStrategy = _messages.MessageField('RetrySettingsFlakyTestRetryStrategy', 1)
 
 
-class ScreenMetrics(_messages.Message):
-  r"""Screen measurements of a device.
+class RetrySettingsFlakyTestRetryStrategy(_messages.Message):
+  r"""Default retry strategy. It will retry on test failures for up to
+  flaky_test_attempts (including the initial run). It also retries on infra
+  issues for up to 2 attempts (including the initial run). So in total, an
+  execution can run up to flaky_test_attempts * 2 times in the worst case.
 
   Fields:
-    densityDpi: Output only. Pixel density in dots per inch (dpi).
-    heightPx: Output only. Height in pixels.
-    widthPx: Output only. Width in pixels.
+    flakyTestAttempts: Required. The total attempts for flaky tests, including
+      the initial run. Default value: 1 (no retry). Range: [1, 5].
   """
 
-  densityDpi = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  heightPx = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  widthPx = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  flakyTestAttempts = _messages.IntegerField(1, variant=_messages.Variant.INT32)
 
 
 class Session(_messages.Message):
@@ -1686,11 +1897,11 @@ class SessionConfig(_messages.Message):
 
   displayName = _messages.StringField(1)
   jobConfigs = _messages.MessageField('JobConfig', 2, repeated=True)
-  notificationConfig = _messages.MessageField('SessionNotificationConfig', 3)
-  outputDirectoryConfig = _messages.MessageField('SessionOutputFileDirectoryConfig', 4)
+  notificationConfig = _messages.MessageField('SessionConfigSessionNotificationConfig', 3)
+  outputDirectoryConfig = _messages.MessageField('SessionConfigSessionOutputFileDirectoryConfig', 4)
 
 
-class SessionNotificationConfig(_messages.Message):
+class SessionConfigSessionNotificationConfig(_messages.Message):
   r"""Config to control session notification.
 
   Fields:
@@ -1702,7 +1913,7 @@ class SessionNotificationConfig(_messages.Message):
   pubsubTopic = _messages.StringField(1, repeated=True)
 
 
-class SessionOutputFileDirectoryConfig(_messages.Message):
+class SessionConfigSessionOutputFileDirectoryConfig(_messages.Message):
   r"""Config to control session output file directory.
 
   Fields:
@@ -1730,40 +1941,6 @@ class SessionReport(_messages.Message):
   result = _messages.MessageField('Result', 4)
   startTime = _messages.StringField(5)
   status = _messages.MessageField('Status', 6)
-
-
-class SmartSharding(_messages.Message):
-  r"""The smart sharding strategy to split the job into multiple shards based
-  on the test methods and their recorded execution time.
-
-  Fields:
-    maxShardCount: Optional. The maximum number of shards to create. If unset
-      or less than 1, system-defined max limits are used. This limit takes
-      precedence if the targeted_shard_duration cannot be satisfied. Limits: -
-      For physical devices, the number of shards must be <= 20. - For virtual
-      devices, the number of shards must be <= 200.
-    targetedShardDuration: Required. The targeted duration of each shard.
-      Limits: - Must be at least 2 minutes. - Must be at most 60 minutes.
-      Shard duration is not guaranteed because smart sharding uses test case
-      history and default durations which may not be accurate. Durations are
-      calculated based on the following inputs: - Timing records from previous
-      runs of the same test case. - For new test cases, the average duration
-      of other known test cases. - A system-chosen, default duration if there
-      are no previous timing records available. Because the actual shard
-      duration can exceed the targeted shard duration, we recommend that you
-      set the targeted value at least 5 minutes less than the maximum allowed
-      instrumentation timeout. This approach avoids cancelling the shard
-      before all tests can finish.
-    timingRecord: Required. The timing record file to use for smart sharding.
-      If the file does not exist, smart sharding will use default test time
-      (30s) for each test method to shard the job into multiple shards. This
-      file will be overwritten with the latest timing record after the job is
-      completed.
-  """
-
-  maxShardCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  targetedShardDuration = _messages.StringField(2)
-  timingRecord = _messages.MessageField('InputFile', 3)
 
 
 class StandardQueryParameters(_messages.Message):
@@ -1885,41 +2062,6 @@ class StringSetRequirement(_messages.Message):
   """
 
   values = _messages.StringField(1, repeated=True)
-
-
-class SupportedProduct(_messages.Message):
-  r"""Declares that a device supports a given Device Cloud product, with
-  optional per-product metadata. Discriminated by which product-specific
-  message is set; adding a new product = new oneof arm + new per-product
-  message.
-
-  Fields:
-    automation: Output only. Represents Automation, which is DeviceRun-backed
-      automated test execution.
-    deviceStreaming: Output only. Represents DeviceStreaming, which is
-      interactive remote device streaming.
-  """
-
-  automation = _messages.MessageField('AutomationSupport', 1)
-  deviceStreaming = _messages.MessageField('DeviceStreamingSupport', 2)
-
-
-class UniformSharding(_messages.Message):
-  r"""Uniformly shards test cases given a total number of shards. It will be
-  translated to `-e numShard` and `-e shardIndex` AndroidJUnitRunner
-  arguments. With uniform sharding enabled, specifying either of these
-  sharding arguments via `environment_variables` is invalid. Based on the
-  sharding mechanism AndroidJUnitRunner uses, there is no guarantee that test
-  cases will be distributed uniformly across all shards.
-
-  Fields:
-    shardCount: Required. The total number of shards to create. This must
-      always be a positive number that is no greater than the total number of
-      test cases. Limits: - For physical devices, the number of shards must be
-      <= 20. - For virtual devices, the number of shards must be <= 200.
-  """
-
-  shardCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
 
 
 class Warning(_messages.Message):

@@ -14,6 +14,7 @@
 # limitations under the License.
 """Utilities for calling the Composer DAG API."""
 
+from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.composer import util as api_util
 from googlecloudsdk.calliope import base
 
@@ -48,18 +49,26 @@ def ListDags(
     environment_ref,
     list_filter=None,
     page_size=_DEFAULT_PAGE_SIZE,
+    limit=None,
     release_track=base.ReleaseTrack.BETA,
 ):
-  """Calls the Composer DAG API ListDags method."""
-  return GetDagsService(release_track=release_track).List(
-      api_util.GetMessagesModule(
-          release_track=release_track
-      ).ComposerProjectsLocationsEnvironmentsDagsListRequest(
-          parent=environment_ref.RelativeName(),
-          filter=list_filter,
-          pageSize=page_size,
-      )
+  """List DAGs in the given environment by using the Composer DAG API."""
+  service = GetDagsService(release_track=release_track)
+  request = api_util.GetMessagesModule(
+      release_track=release_track
+  ).ComposerProjectsLocationsEnvironmentsDagsListRequest(
+      parent=environment_ref.RelativeName(),
+      filter=list_filter,
   )
+  results = list_pager.YieldFromList(
+      service,
+      request,
+      limit=limit,
+      batch_size=page_size,
+      field='dags',
+      batch_size_attribute='pageSize',
+  )
+  return list(results)
 
 
 def TriggerDag(
@@ -108,35 +117,51 @@ def ActivateDag(
 def ListTasks(
     dag_ref,
     page_size=_DEFAULT_PAGE_SIZE,
+    limit=None,
     release_track=base.ReleaseTrack.BETA,
 ):
-  """Calls the Composer DAG API ListTasks method."""
-  return GetTasksService(release_track=release_track).List(
-      api_util.GetMessagesModule(
-          release_track=release_track
-      ).ComposerProjectsLocationsEnvironmentsDagsTasksListRequest(
-          parent=dag_ref.RelativeName(),
-          pageSize=page_size,
-      )
+  """Lists tasks in the given DAG by using the Composer DAG API."""
+  service = GetTasksService(release_track=release_track)
+  request = api_util.GetMessagesModule(
+      release_track=release_track
+  ).ComposerProjectsLocationsEnvironmentsDagsTasksListRequest(
+      parent=dag_ref.RelativeName(),
   )
+  results = list_pager.YieldFromList(
+      service,
+      request,
+      limit=limit,
+      batch_size=page_size,
+      field='tasks',
+      batch_size_attribute='pageSize',
+  )
+  return list(results)
 
 
 def ListDagRuns(
     dag_ref,
     list_filter=None,
     page_size=_DEFAULT_PAGE_SIZE,
+    limit=None,
     release_track=base.ReleaseTrack.BETA,
 ):
-  """Calls the Composer DAG API ListDagRuns method."""
-  return GetDagRunsService(release_track=release_track).List(
-      api_util.GetMessagesModule(
-          release_track=release_track
-      ).ComposerProjectsLocationsEnvironmentsDagsDagRunsListRequest(
-          parent=dag_ref.RelativeName(),
-          filter=list_filter,
-          pageSize=page_size,
-      )
+  """Lists DAG runs in the given DAG by using the Composer DAG API."""
+  service = GetDagRunsService(release_track=release_track)
+  request = api_util.GetMessagesModule(
+      release_track=release_track
+  ).ComposerProjectsLocationsEnvironmentsDagsDagRunsListRequest(
+      parent=dag_ref.RelativeName(),
+      filter=list_filter,
   )
+  results = list_pager.YieldFromList(
+      service,
+      request,
+      limit=limit,
+      batch_size=page_size,
+      field='dagRuns',
+      batch_size_attribute='pageSize',
+  )
+  return list(results)
 
 
 def GetDagRun(
@@ -155,13 +180,25 @@ def GetDagRun(
 
 def ListTaskInstances(
     dag_run_ref,
+    list_filter=None,
+    page_size=_DEFAULT_PAGE_SIZE,
+    limit=None,
     release_track=base.ReleaseTrack.BETA,
 ):
-  """Calls the Composer DAG API ListTaskInstances method."""
-  return GetTaskInstancesService(release_track=release_track).List(
-      api_util.GetMessagesModule(
-          release_track=release_track
-      ).ComposerProjectsLocationsEnvironmentsDagsDagRunsTaskInstancesListRequest(
-          parent=dag_run_ref.RelativeName(),
-      )
+  """Lists task instances in the given DAG run by using the Composer DAG API."""
+  service = GetTaskInstancesService(release_track=release_track)
+  request = api_util.GetMessagesModule(
+      release_track=release_track
+  ).ComposerProjectsLocationsEnvironmentsDagsDagRunsTaskInstancesListRequest(
+      parent=dag_run_ref.RelativeName(),
+      filter=list_filter,
   )
+  results = list_pager.YieldFromList(
+      service,
+      request,
+      limit=limit,
+      batch_size=page_size,
+      field='taskInstances',
+      batch_size_attribute='pageSize',
+  )
+  return list(results)

@@ -506,6 +506,42 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_REASONINGENGINES_SANDBOXENVIRONMENTSNAPSHOTS = (
+      'projects.locations.reasoningEngines.sandboxEnvironmentSnapshots',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'reasoningEngines/{reasoningEnginesId}/'
+              'sandboxEnvironmentSnapshots/{sandboxEnvironmentSnapshotsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_REASONINGENGINES_SANDBOXENVIRONMENTTEMPLATES = (
+      'projects.locations.reasoningEngines.sandboxEnvironmentTemplates',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'reasoningEngines/{reasoningEnginesId}/'
+              'sandboxEnvironmentTemplates/{sandboxEnvironmentTemplatesId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_REASONINGENGINES_SANDBOXENVIRONMENTS = (
+      'projects.locations.reasoningEngines.sandboxEnvironments',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'reasoningEngines/{reasoningEnginesId}/sandboxEnvironments/'
+              '{sandboxEnvironmentsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_REASONINGENGINES_SESSIONS = (
       'projects.locations.reasoningEngines.sessions',
       '{+name}',

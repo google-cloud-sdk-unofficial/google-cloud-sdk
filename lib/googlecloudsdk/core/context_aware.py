@@ -23,7 +23,6 @@ import os
 from google.auth import exceptions as google_auth_exceptions
 from google.auth.transport import _mtls_helper
 from googlecloudsdk.command_lib.auth import enterprise_certificate_config
-from googlecloudsdk.core import argv_utils
 from googlecloudsdk.core import config
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
@@ -200,12 +199,6 @@ def EncryptedSSLCredentials(config_path):
 
 def _ShouldRepairECP(cert_config):
   """Check if ECP binaries should be installed and the ECP config updated to point to them."""
-  # Skip repair if gcloud init is the command. This avoids mangling the wizard
-  # due to starting the component manager.
-  args = argv_utils.GetDecodedArgv()
-  if 'init' in args:
-    return False
-
   if 'cert_configs' not in cert_config:
     return False
 
@@ -225,10 +218,16 @@ def _ShouldRepairECP(cert_config):
 
   actual_keys = set(cert_config['libs'].keys())
 
-  if expected_keys == actual_keys:
-    return False
+  if expected_keys != actual_keys:
+    return True
 
-  return True
+  # Even if keys match, check if the binaries actually exist on disk.
+  for key in expected_keys:
+    path = cert_config['libs'].get(key)
+    if not path or not os.path.exists(path):
+      return True
+
+  return False
 
 
 def _GetPlatform():
@@ -363,6 +362,10 @@ def _GetCertificateConfigFile():
 
   cert_config = GetCertificateConfig(file_path)
 
+  if _ShouldRepairECP(cert_config):
+    _RepairECP(file_path)
+    cert_config = GetCertificateConfig(file_path)
+
   # Check if the config file contains the ecp binary path.
   # If ecp binary path is provided but the binary doesn't exist, throw
   # exception
@@ -405,9 +408,6 @@ def _GetCertificateConfigFile():
             file_path
         )
     )
-
-  if _ShouldRepairECP(cert_config):
-    _RepairECP(file_path)
 
   return file_path
 

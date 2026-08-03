@@ -381,7 +381,6 @@ class ArgAdder(object):
         '--ignore-warnings',
         action='store_true',
         default=False,
-        hidden=True,
         help='Ignore warnings when creating the materialized view.',
     )
     return self

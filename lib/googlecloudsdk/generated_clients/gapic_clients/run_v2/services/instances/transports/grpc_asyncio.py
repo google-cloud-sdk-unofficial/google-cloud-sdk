@@ -522,6 +522,32 @@ class InstancesGrpcAsyncIOTransport(InstancesTransport):
         return self._stubs['start_instance']
 
     @property
+    def restart_instance(self) -> Callable[
+            [instance.RestartInstanceRequest],
+            Awaitable[operations_pb2.Operation]]:
+        r"""Return a callable for the restart instance method over gRPC.
+
+        Restarts an Instance.
+
+        Returns:
+            Callable[[~.RestartInstanceRequest],
+                    Awaitable[~.Operation]]:
+                A function that, when called, will call the underlying RPC
+                on the server.
+        """
+        # Generate a "stub function" on-the-fly which will actually make
+        # the request.
+        # gRPC handles serialization and deserialization, so we just need
+        # to pass in the functions for each.
+        if 'restart_instance' not in self._stubs:
+            self._stubs['restart_instance'] = self._logged_channel.unary_unary(
+                '/google.cloud.run.v2.Instances/RestartInstance',
+                request_serializer=instance.RestartInstanceRequest.serialize,
+                response_deserializer=operations_pb2.Operation.FromString,
+            )
+        return self._stubs['restart_instance']
+
+    @property
     def get_iam_policy(self) -> Callable[
             [iam_policy_pb2.GetIamPolicyRequest],
             Awaitable[policy_pb2.Policy]]:
@@ -640,6 +666,11 @@ class InstancesGrpcAsyncIOTransport(InstancesTransport):
             ),
             self.start_instance: self._wrap_method(
                 self.start_instance,
+                default_timeout=None,
+                client_info=client_info,
+            ),
+            self.restart_instance: self._wrap_method(
+                self.restart_instance,
                 default_timeout=None,
                 client_info=client_info,
             ),

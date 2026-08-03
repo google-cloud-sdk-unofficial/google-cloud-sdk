@@ -167,6 +167,11 @@ class InstancesTransport(abc.ABC):
                 default_timeout=None,
                 client_info=client_info,
             ),
+            self.restart_instance: gapic_v1.method.wrap_method(
+                self.restart_instance,
+                default_timeout=None,
+                client_info=client_info,
+            ),
             self.get_iam_policy: gapic_v1.method.wrap_method(
                 self.get_iam_policy,
                 default_timeout=None,
@@ -255,6 +260,15 @@ class InstancesTransport(abc.ABC):
     @property
     def start_instance(self) -> Callable[
             [instance.StartInstanceRequest],
+            Union[
+                operations_pb2.Operation,
+                Awaitable[operations_pb2.Operation]
+            ]]:
+        raise NotImplementedError()
+
+    @property
+    def restart_instance(self) -> Callable[
+            [instance.RestartInstanceRequest],
             Union[
                 operations_pb2.Operation,
                 Awaitable[operations_pb2.Operation]

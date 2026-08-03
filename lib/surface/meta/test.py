@@ -31,6 +31,7 @@ from googlecloudsdk.core import module_util
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.core.util import encoding
+from googlecloudsdk.core.util import keyboard_interrupt
 
 
 @base.UniverseCompatible
@@ -132,6 +133,21 @@ class Test(base.Command):
             'Print the value of the CLOUDSDK_FROM_GOCLOUD environment variable.'
         ),
     )
+    scenarios.add_argument(
+        '--check-signal-handlers',
+        action='store_true',
+        help='Check installed SIGINT, SIGTERM, SIGPIPE, and SIGURG handlers.',
+    )
+    scenarios.add_argument(
+        '--check-subprocess-signal-restore',
+        action='store_true',
+        help='Check signal handler restoration after execution_utils.Exec.',
+    )
+    scenarios.add_argument(
+        '--broken-pipe-test',
+        action='store_true',
+        help='Handshake test for broken pipe handling.',
+    )
 
   def _RunArgDict(self, args):
     return args.arg_dict
@@ -195,6 +211,50 @@ class Test(base.Command):
         os.environ, 'CLOUDSDK_FROM_GOCLOUD', '(unset)'
     )
     print(f'CLOUDSDK_FROM_GOCLOUD: {val}')
+
+  def _FormatHandler(self, h):
+    if h == signal.default_int_handler:
+      return 'signal.default_int_handler'
+    elif h == keyboard_interrupt.HandleInterrupt:
+      return 'googlecloudsdk.core.util.keyboard_interrupt.HandleInterrupt'
+    elif h == signal.SIG_DFL:
+      return 'SIG_DFL'
+    elif h == signal.SIG_IGN:
+      return 'SIG_IGN'
+    elif h is None:
+      return 'None'
+    else:
+      return str(h)
+
+  def _RunCheckSignalHandlers(self, args):
+    res = {
+        'SIGINT': self._FormatHandler(signal.getsignal(signal.SIGINT)),
+        'SIGTERM': self._FormatHandler(signal.getsignal(signal.SIGTERM)),
+        'SIGPIPE': self._FormatHandler(signal.getsignal(signal.SIGPIPE)),
+        'SIGURG': self._FormatHandler(signal.getsignal(signal.SIGURG)),
+    }
+    if hasattr(signal, 'SIGALRM'):
+      res['SIGALRM'] = self._FormatHandler(signal.getsignal(signal.SIGALRM))
+    if hasattr(signal, 'SIGWINCH'):
+      res['SIGWINCH'] = self._FormatHandler(signal.getsignal(signal.SIGWINCH))
+    return res
+
+  def _RunCheckSubprocessSignalRestore(self, args):
+    before_int = self._FormatHandler(signal.getsignal(signal.SIGINT))
+    before_term = self._FormatHandler(signal.getsignal(signal.SIGTERM))
+    execution_utils.Exec(['true'], no_exit=True)
+    after_int = self._FormatHandler(signal.getsignal(signal.SIGINT))
+    after_term = self._FormatHandler(signal.getsignal(signal.SIGTERM))
+    return {
+        'SIGINT': {'before': before_int, 'after': after_int},
+        'SIGTERM': {'before': before_term, 'after': after_term},
+    }
+
+  def _RunBrokenPipeTest(self, args):
+    print('READY', flush=True)
+    time.sleep(0.5)
+    for i in range(1000):
+      print(f'Line {i}', flush=True)
 
   def _RunUncaughtException(self, args):
     raise ValueError('Catch me if you can.')
@@ -263,5 +323,12 @@ class Test(base.Command):
       r = None
     elif args.check_from_gocloud:
       self._RunCheckFromGocloud(args)
+      r = None
+    elif args.check_signal_handlers:
+      r = self._RunCheckSignalHandlers(args)
+    elif args.check_subprocess_signal_restore:
+      r = self._RunCheckSubprocessSignalRestore(args)
+    elif args.broken_pipe_test:
+      self._RunBrokenPipeTest(args)
       r = None
     return r

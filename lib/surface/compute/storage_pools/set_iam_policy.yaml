@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, BETA, GA, PREVIEW]
+  hints:
+    read_only: false
   help_text:
     brief: "Set the IAM policy of the given storage pool."
     description: "Set the IAM policy of the given storage pool."

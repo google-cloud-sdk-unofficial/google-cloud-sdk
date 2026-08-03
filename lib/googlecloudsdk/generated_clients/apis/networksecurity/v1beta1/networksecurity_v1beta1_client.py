@@ -4529,7 +4529,7 @@ class NetworksecurityV1beta1(base_api.BaseApiClient):
         method_id='networksecurity.projects.locations.sacAttachments.delete',
         ordered_params=['name'],
         path_params=['name'],
-        query_params=['requestId'],
+        query_params=['ignorePartnerDeletionErrors', 'requestId'],
         relative_path='v1beta1/{+name}',
         request_field='',
         request_type_name='NetworksecurityProjectsLocationsSacAttachmentsDeleteRequest',

@@ -18,6 +18,9 @@ import re
 from typing import Any
 
 from googlecloudsdk.core import exceptions
+_DMS_PRIVATE_CONNECTION_PATTERN = re.compile(
+    r"projects/(?:[a-z][a-z0-9-\.:]*[a-z0-9])/locations/[-\w]+/privateConnections/[-\w]+"
+)
 
 
 class NetworkManagementError(exceptions.Error):
@@ -102,6 +105,7 @@ def ClearSingleEndpointAttr(patch_request, endpoint_type, endpoint_name):
       "appEngineVersion",
       "cloudRunRevision",
       "cloudRunJob",
+      "dmsPrivateConnection",
       "forwardingRule",
       "redisInstance",
       "redisCluster",
@@ -133,6 +137,7 @@ def ClearSingleEndpointAttr(patch_request, endpoint_type, endpoint_name):
           "app-engine-version",
           "cloud-run-revision",
           "cloud-run-job",
+          "dms-private-connection",
       ])
     if endpoint_type == "destination":
       endpoints.extend([
@@ -157,6 +162,7 @@ def ClearEndpointAttrs(unused_ref, args, patch_request):
       ("clear_source_app_engine_version", "source", "appEngineVersion"),
       ("clear_source_cloud_run_revision", "source", "cloudRunRevision"),
       ("clear_source_cloud_run_job", "source", "cloudRunJob"),
+      ("clear_source_dms_private_connection", "source", "dmsPrivateConnection"),
       ("clear_destination_instance", "destination", "instance"),
       ("clear_destination_ip_address", "destination", "ipAddress"),
       (
@@ -200,6 +206,7 @@ def ClearSingleEndpointAttrBeta(patch_request, endpoint_type, endpoint_name):
       "appEngineVersion",
       "cloudRunRevision",
       "cloudRunJob",
+      "dmsPrivateConnection",
       "forwardingRule",
       "redisInstance",
       "redisCluster",
@@ -231,6 +238,7 @@ def ClearSingleEndpointAttrBeta(patch_request, endpoint_type, endpoint_name):
           "app-engine-version",
           "cloud-run-revision",
           "cloud-run-job",
+          "dms-private-connection",
       ])
     if endpoint_type == "destination":
       endpoints.extend([
@@ -255,6 +263,7 @@ def ClearEndpointAttrsBeta(unused_ref, args, patch_request):
       ("clear_source_app_engine_version", "source", "appEngineVersion"),
       ("clear_source_cloud_run_revision", "source", "cloudRunRevision"),
       ("clear_source_cloud_run_job", "source", "cloudRunJob"),
+      ("clear_source_dms_private_connection", "source", "dmsPrivateConnection"),
       ("clear_destination_instance", "destination", "instance"),
       ("clear_destination_ip_address", "destination", "ipAddress"),
       (
@@ -466,6 +475,25 @@ def ValidateCloudRunJobsURIs(unused_ref, args, request):
           "  projects/my-project/locations/location/jobs/my-job".format(
               flag, job
           )
+      )
+  return request
+
+
+def ValidateDmsPrivateConnectionsURIs(unused_ref, args, request):
+  """Checks if all provided DMS private connections URIs are in correct format."""
+  flags = [
+      "source_dms_private_connection",
+  ]
+  for flag in flags:
+    if not args.IsSpecified(flag):
+      continue
+
+    connection = getattr(args, flag)
+    if not _DMS_PRIVATE_CONNECTION_PATTERN.match(connection):
+      raise InvalidInputError(
+          f"Invalid value for flag {flag}: {connection}\n"
+          "Expected DMS private connection in the following format:\n"
+          "  projects/my-project/locations/location/privateConnections/my-connection"
       )
   return request
 

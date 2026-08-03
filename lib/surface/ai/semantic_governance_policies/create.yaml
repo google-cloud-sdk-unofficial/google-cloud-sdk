@@ -1,4 +1,4 @@
-release_tracks: [BETA]
+release_tracks: [GA, BETA]
 help_text:
   brief: Create a new semantic governance policy.
   description: Create a new semantic governance policy.
@@ -26,35 +26,78 @@ arguments:
   - arg_name: display-name
     required: true
     help_text: The user-defined name of the semantic governance policy.
-    api_field: googleCloudAiplatformV1beta1SemanticGovernancePolicy.displayName
+    BETA:
+      api_field: googleCloudAiplatformV1beta1SemanticGovernancePolicy.displayName
+    GA:
+      api_field: googleCloudAiplatformV1SemanticGovernancePolicy.displayName
   - arg_name: description
     help_text: The description of the semantic governance policy.
-    api_field: googleCloudAiplatformV1beta1SemanticGovernancePolicy.description
+    BETA:
+      api_field: googleCloudAiplatformV1beta1SemanticGovernancePolicy.description
+    GA:
+      api_field: googleCloudAiplatformV1SemanticGovernancePolicy.description
   - arg_name: natural-language-constraint
     required: true
     help_text: The natural language constraint of the semantic governance policy.
-    api_field: googleCloudAiplatformV1beta1SemanticGovernancePolicy.naturalLanguageConstraint
+    BETA:
+      api_field: googleCloudAiplatformV1beta1SemanticGovernancePolicy.naturalLanguageConstraint
+    GA:
+      api_field: googleCloudAiplatformV1SemanticGovernancePolicy.naturalLanguageConstraint
   - arg_name: agent
     required: true
     help_text: The name of the agent in Agent Registry that is affected by this policy.
-    api_field: googleCloudAiplatformV1beta1SemanticGovernancePolicy.agent
+    BETA:
+      api_field: googleCloudAiplatformV1beta1SemanticGovernancePolicy.agent
+    GA:
+      api_field: googleCloudAiplatformV1SemanticGovernancePolicy.agent
   - arg_name: mcp-tools
-    api_field: googleCloudAiplatformV1beta1SemanticGovernancePolicy.mcpTools
     repeated: true
     action: append
     type: googlecloudsdk.command_lib.ai.semantic_governance_policies.util:mcp_tools_parser
     help_text: |
       The MCP tools that are affected by this policy.
       Syntax: --mcp-tools=mcp-server=S1,tools=T1;T2
+    BETA:
+      api_field: googleCloudAiplatformV1beta1SemanticGovernancePolicy.mcpTools
+    GA:
+      api_field: googleCloudAiplatformV1SemanticGovernancePolicy.mcpTools
 request:
-  api_version: v1beta1
+  BETA:
+    api_version: v1beta1
+    # BETA only: the framework builds the request and applies these hooks.
+    # For GA, `issue_request_hook` (below) builds the request from scratch and
+    # invokes the same hooks internally. The declarative schema forbids
+    # `modify_request_hooks` and `issue_request_hook` at the same level (see
+    # yaml_command_schema.yaml `oneOf`), so scope this to BETA.
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.ai.semantic_governance_policies.util:set_regional_endpoint
+    - googlecloudsdk.command_lib.ai.semantic_governance_policies.util:set_semantic_governance_policy
+  GA:
+    api_version: v1
+    # Work around missing nested SGP.operations collection in aiplatform v1
+    # discovery (b/524667335). The hook rewrites the returned LRO name from
+    # the nested form to the top-level form so gcloud can find a matching
+    # collection to poll.
+    issue_request_hook: googlecloudsdk.command_lib.ai.semantic_governance_policies.util:issue_create_and_normalize_lro
   collection: aiplatform.projects.locations.semanticGovernancePolicies
   method: create
   resource_method_params:
     parent: projects/{projectsId}/locations/{locationsId}
     semanticGovernancePolicyId: "{semanticGovernancePoliciesId}"
-  modify_request_hooks:
-  - googlecloudsdk.command_lib.ai.semantic_governance_policies.util:set_regional_endpoint
-  - googlecloudsdk.command_lib.ai.semantic_governance_policies.util:set_semantic_governance_policy
 async:
-  collection: aiplatform.projects.locations.semanticGovernancePolicies.operations
+  # The two tracks poll different collections because their v1beta1 vs. v1
+  # discovery documents (and their server-returned LRO names) differ:
+  #
+  # * BETA (v1beta1) discovery includes the nested operations collection and
+  #   the server returns nested LRO names, so the poller uses the nested one.
+  # * GA (v1) discovery lacks the nested collection, so the poller has to use
+  #   the top-level one. `issue_request_hook` rewrites the server-returned LRO
+  #   name from nested to top-level form before we start polling.
+  #
+  # Listing an invalid collection here fails yaml_command_test.py's
+  # ValidateAsyncSection (b/524667335), so we scope per track instead of using
+  # a fallback list.
+  BETA:
+    collection: aiplatform.projects.locations.semanticGovernancePolicies.operations
+  GA:
+    collection: aiplatform.projects.locations.operations

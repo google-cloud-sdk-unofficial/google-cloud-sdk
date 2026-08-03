@@ -62,8 +62,8 @@ class GoogleCloudOrgpolicyV2Constraint(_messages.Message):
     name: Immutable. The resource name of the constraint. Must be in one of
       the following forms: *
       `projects/{project_number}/constraints/{constraint_name}` *
-      `folders/{folder_id}/constraints/{constraint_name}` *
-      `organizations/{organization_id}/constraints/{constraint_name}` For
+      `folders/{folder_number}/constraints/{constraint_name}` *
+      `organizations/{organization_number}/constraints/{constraint_name}` For
       example, "/projects/123/constraints/compute.disableSerialPortAccess".
     supportsDryRun: Shows if dry run is supported for this constraint or not.
     supportsSimulation: Shows if simulation is supported for this constraint
@@ -432,8 +432,8 @@ class GoogleCloudOrgpolicyV2Policy(_messages.Message):
       following forms, where `constraint_name` is the name of the constraint
       that this policy configures: *
       `projects/{project_number}/policies/{constraint_name}` *
-      `folders/{folder_id}/policies/{constraint_name}` *
-      `organizations/{organization_id}/policies/{constraint_name}` For
+      `folders/{folder_number}/policies/{constraint_name}` *
+      `organizations/{organization_number}/policies/{constraint_name}` For
       example, `projects/123/policies/compute.disableSerialPortAccess`. Note:
       `projects/{project_id}/policies/{constraint_name}` is also an acceptable
       name for API requests, but responses will return the name using the
@@ -671,8 +671,8 @@ class OrgpolicyFoldersConstraintsListRequest(_messages.Message):
       but the server may at any point start using this field.
     parent: Required. The Google Cloud resource that parents the constraint.
       Must be in one of the following forms: * `projects/{project_number}` *
-      `projects/{project_id}` * `folders/{folder_id}` *
-      `organizations/{organization_id}`
+      `projects/{project_id}` * `folders/{folder_number}` *
+      `organizations/{organization_number}`
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -689,7 +689,7 @@ class OrgpolicyFoldersPoliciesCreateRequest(_messages.Message):
     parent: Required. The Google Cloud resource that will parent the new
       policy. Must be in one of the following forms: *
       `projects/{project_number}` * `projects/{project_id}` *
-      `folders/{folder_id}` * `organizations/{organization_id}`
+      `folders/{folder_number}` * `organizations/{organization_number}`
   """
 
   googleCloudOrgpolicyV2Policy = _messages.MessageField('GoogleCloudOrgpolicyV2Policy', 1)
@@ -745,8 +745,8 @@ class OrgpolicyFoldersPoliciesListRequest(_messages.Message):
     parent: Required. The target Google Cloud resource that parents the set of
       constraints and policies that will be returned from this call. Must be
       in one of the following forms: * `projects/{project_number}` *
-      `projects/{project_id}` * `folders/{folder_id}` *
-      `organizations/{organization_id}`
+      `projects/{project_id}` * `folders/{folder_number}` *
+      `organizations/{organization_number}`
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -764,8 +764,8 @@ class OrgpolicyFoldersPoliciesPatchRequest(_messages.Message):
       following forms, where `constraint_name` is the name of the constraint
       that this policy configures: *
       `projects/{project_number}/policies/{constraint_name}` *
-      `folders/{folder_id}/policies/{constraint_name}` *
-      `organizations/{organization_id}/policies/{constraint_name}` For
+      `folders/{folder_number}/policies/{constraint_name}` *
+      `organizations/{organization_number}/policies/{constraint_name}` For
       example, `projects/123/policies/compute.disableSerialPortAccess`. Note:
       `projects/{project_id}/policies/{constraint_name}` is also an acceptable
       name for API requests, but responses will return the name using the
@@ -790,8 +790,8 @@ class OrgpolicyOrganizationsConstraintsListRequest(_messages.Message):
       but the server may at any point start using this field.
     parent: Required. The Google Cloud resource that parents the constraint.
       Must be in one of the following forms: * `projects/{project_number}` *
-      `projects/{project_id}` * `folders/{folder_id}` *
-      `organizations/{organization_id}`
+      `projects/{project_id}` * `folders/{folder_number}` *
+      `organizations/{organization_number}`
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -883,7 +883,7 @@ class OrgpolicyOrganizationsPoliciesCreateRequest(_messages.Message):
     parent: Required. The Google Cloud resource that will parent the new
       policy. Must be in one of the following forms: *
       `projects/{project_number}` * `projects/{project_id}` *
-      `folders/{folder_id}` * `organizations/{organization_id}`
+      `folders/{folder_number}` * `organizations/{organization_number}`
   """
 
   googleCloudOrgpolicyV2Policy = _messages.MessageField('GoogleCloudOrgpolicyV2Policy', 1)
@@ -939,8 +939,8 @@ class OrgpolicyOrganizationsPoliciesListRequest(_messages.Message):
     parent: Required. The target Google Cloud resource that parents the set of
       constraints and policies that will be returned from this call. Must be
       in one of the following forms: * `projects/{project_number}` *
-      `projects/{project_id}` * `folders/{folder_id}` *
-      `organizations/{organization_id}`
+      `projects/{project_id}` * `folders/{folder_number}` *
+      `organizations/{organization_number}`
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -958,8 +958,8 @@ class OrgpolicyOrganizationsPoliciesPatchRequest(_messages.Message):
       following forms, where `constraint_name` is the name of the constraint
       that this policy configures: *
       `projects/{project_number}/policies/{constraint_name}` *
-      `folders/{folder_id}/policies/{constraint_name}` *
-      `organizations/{organization_id}/policies/{constraint_name}` For
+      `folders/{folder_number}/policies/{constraint_name}` *
+      `organizations/{organization_number}/policies/{constraint_name}` For
       example, `projects/123/policies/compute.disableSerialPortAccess`. Note:
       `projects/{project_id}/policies/{constraint_name}` is also an acceptable
       name for API requests, but responses will return the name using the
@@ -984,8 +984,8 @@ class OrgpolicyProjectsConstraintsListRequest(_messages.Message):
       but the server may at any point start using this field.
     parent: Required. The Google Cloud resource that parents the constraint.
       Must be in one of the following forms: * `projects/{project_number}` *
-      `projects/{project_id}` * `folders/{folder_id}` *
-      `organizations/{organization_id}`
+      `projects/{project_id}` * `folders/{folder_number}` *
+      `organizations/{organization_number}`
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -1002,7 +1002,7 @@ class OrgpolicyProjectsPoliciesCreateRequest(_messages.Message):
     parent: Required. The Google Cloud resource that will parent the new
       policy. Must be in one of the following forms: *
       `projects/{project_number}` * `projects/{project_id}` *
-      `folders/{folder_id}` * `organizations/{organization_id}`
+      `folders/{folder_number}` * `organizations/{organization_number}`
   """
 
   googleCloudOrgpolicyV2Policy = _messages.MessageField('GoogleCloudOrgpolicyV2Policy', 1)
@@ -1058,8 +1058,8 @@ class OrgpolicyProjectsPoliciesListRequest(_messages.Message):
     parent: Required. The target Google Cloud resource that parents the set of
       constraints and policies that will be returned from this call. Must be
       in one of the following forms: * `projects/{project_number}` *
-      `projects/{project_id}` * `folders/{folder_id}` *
-      `organizations/{organization_id}`
+      `projects/{project_id}` * `folders/{folder_number}` *
+      `organizations/{organization_number}`
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -1077,8 +1077,8 @@ class OrgpolicyProjectsPoliciesPatchRequest(_messages.Message):
       following forms, where `constraint_name` is the name of the constraint
       that this policy configures: *
       `projects/{project_number}/policies/{constraint_name}` *
-      `folders/{folder_id}/policies/{constraint_name}` *
-      `organizations/{organization_id}/policies/{constraint_name}` For
+      `folders/{folder_number}/policies/{constraint_name}` *
+      `organizations/{organization_number}/policies/{constraint_name}` For
       example, `projects/123/policies/compute.disableSerialPortAccess`. Note:
       `projects/{project_id}/policies/{constraint_name}` is also an acceptable
       name for API requests, but responses will return the name using the

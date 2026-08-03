@@ -1,0 +1,35 @@
+release_tracks: [ALPHA, BETA, GA, PREVIEW]
+
+help_text:
+  brief: Test IAM permissions for a Compute Engine standard or archive snapshot.
+  description: |
+    *{command}* tests the IAM permissions that a caller has on a Compute Engine standard or archive snapshot.
+  examples: |
+    To test if the caller has the `compute.snapshots.get` permission on a snapshot `my-snapshot`, run:
+
+      $ {command} my-snapshot --permissions=compute.snapshots.get
+
+request:
+  collection: compute.snapshots
+  use_relative_name: false
+  api_version: v1
+  BETA:
+    api_version: beta
+  ALPHA:
+    api_version: alpha
+  method: testIamPermissions
+
+command_type: GENERIC
+
+arguments:
+  resource:
+    help_text: The snapshot for which to test permissions.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:snapshot
+  params:
+  - arg_name: permissions
+    api_field: testPermissionsRequest.permissions
+    required: true
+    repeated: true
+    metavar: PERMISSION
+    help_text: |-
+      The permissions to test.

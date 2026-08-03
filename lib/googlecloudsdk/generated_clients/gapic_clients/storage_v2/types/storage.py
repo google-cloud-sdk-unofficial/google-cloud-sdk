@@ -498,9 +498,8 @@ class ComposeObjectRequest(proto.Message):
             Optional. Specifies which groups of Object
             Contexts from the source object(s) should be
             dropped on the destination object during the
-            Compose operation. An accepted value is
-            "custom". Specified contexts in the destination
-            metadata will not be dropped.
+            Compose operation. Specified contexts in the
+            destination metadata will not be dropped.
     """
 
     class SourceObject(proto.Message):
@@ -2486,9 +2485,8 @@ class RewriteObjectRequest(proto.Message):
             Optional. Specifies which groups of Object
             Contexts from the source object should be
             dropped on the destination object during the
-            Rewrite operation. An accepted value is
-            "custom". Specified contexts in the destination
-            metadata will not be dropped.
+            Rewrite operation. Specified contexts in the
+            destination metadata will not be dropped.
     """
 
     destination_name: str = proto.Field(

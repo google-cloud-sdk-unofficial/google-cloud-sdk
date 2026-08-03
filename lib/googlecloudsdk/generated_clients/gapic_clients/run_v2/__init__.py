@@ -56,6 +56,7 @@ from .types.instance import GetInstanceRequest
 from .types.instance import Instance
 from .types.instance import ListInstancesRequest
 from .types.instance import ListInstancesResponse
+from .types.instance import RestartInstanceRequest
 from .types.instance import StartInstanceRequest
 from .types.instance import StopInstanceRequest
 from .types.instance import UpdateInstanceRequest
@@ -220,6 +221,7 @@ __all__ = (
 'Probe',
 'PubSubScaling',
 'ResourceRequirements',
+'RestartInstanceRequest',
 'Revision',
 'RevisionScaling',
 'RevisionScalingStatus',

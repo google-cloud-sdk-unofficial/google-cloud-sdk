@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, GA]
+  hints:
+    read_only: true
   help_text:
     brief: List authorized organizations descriptions.
     description: List all authorized organizations descriptions in an access policy object.

@@ -147,6 +147,16 @@ image:
     attribute_name: image
     help: The name of the Google Compute Engine image.
 
+image_view:
+  name: image_views
+  collection: compute.imageViews
+  attributes:
+  - *project
+  - *region
+  - parameter_name: resourceId
+    attribute_name: image_name
+    help: The name of the Google Compute Engine image to view.
+
 interconnect:
   name: interconnect
   collection: compute.interconnects

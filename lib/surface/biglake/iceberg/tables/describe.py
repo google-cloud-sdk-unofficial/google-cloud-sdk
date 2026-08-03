@@ -46,7 +46,7 @@ class Describe(base.DescribeCommand):
     arguments.AddTableDescribeArgs(parser)
 
   def Run(self, args):
-    client = util.GetClientInstance(self.ReleaseTrack())
+    client = util.GetTableClientInstance(self.ReleaseTrack())
     messages = client.MESSAGES_MODULE
 
     table_ref = args.CONCEPTS.table.Parse()

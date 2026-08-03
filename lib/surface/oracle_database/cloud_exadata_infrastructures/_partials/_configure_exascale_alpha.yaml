@@ -43,6 +43,13 @@
       type: int
       help_text: |-
         The total storage to be allocated to Exascale in GBs.
+    - arg_name: total-vm-storage-size-gb
+      api_field: configureExascaleCloudExadataInfrastructureRequest.totalVmStorageSizeGb
+      required: false
+      repeated: false
+      type: int
+      help_text: |-
+        Storage size needed for VM storage on Exascale in GBs.
     - arg_name: request-id
       api_field: configureExascaleCloudExadataInfrastructureRequest.requestId
       required: false

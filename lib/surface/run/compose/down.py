@@ -26,6 +26,8 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import yaml
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.console import progress_tracker
+from googlecloudsdk.core.util import files
 
 
 @base.Hidden
@@ -57,6 +59,7 @@ class Down(base.Command):
   def Args(parser):
     flags.AddDeployFromComposeArgument(parser)
     flags.AddRegionArg(parser)
+    parser.display_info.AddFormat('none')
 
   def Run(self, args):
     # 1. Resolve compose file
@@ -85,7 +88,7 @@ class Down(base.Command):
     # 2. Resolve project name from compose file
     try:
       compose_content = yaml.load_path(compose_file)
-    except Exception as e:
+    except (yaml.Error, files.Error, OSError) as e:
       raise compose_exceptions.GcloudError(
           f'Failed to read/parse compose file {compose_file}: {e}',
           exit_code=exit_codes.CONFIG_INVALID,
@@ -135,13 +138,25 @@ class Down(base.Command):
     )
 
     # Phase 1: Discovery
-    log.status.Print(
-        'Discovering resources for project: {}...'.format(project_name)
-    )
-    discovered, disabled_apis = teardown.Discover()
+    with progress_tracker.ProgressTracker(
+        "Discovering resources for project '{}'...".format(project_name),
+    ):
+      discovered, disabled_apis = teardown.Discover()
 
-    has_resources = any(discovered.values())
-    if not has_resources:
+    has_cloud_resources = any(
+        discovered.get(k)
+        for k in (
+            cleanup.SERVICES_KEY,
+            cleanup.SECRETS_KEY,
+            cleanup.BUCKET_KEY,
+            cleanup.IMAGES_KEY,
+        )
+    )
+    if not has_cloud_resources:
+      if discovered.get(cleanup.FINGERPRINTS_KEY):
+        teardown.Delete(
+            {cleanup.FINGERPRINTS_KEY: discovered[cleanup.FINGERPRINTS_KEY]}
+        )
       log.status.Print('No resources found to delete.')
       return {
           'compose_file': compose_file,
@@ -150,43 +165,97 @@ class Down(base.Command):
       }
 
     # Phase 2: Validation
-    log.status.Print('\nThe following resources will be deleted:')
-    if discovered.get('services'):
-      for s in discovered['services']:
-        log.status.Print(' - [Cloud Run Service] {}'.format(s))
-    if discovered.get('secrets'):
-      for s in discovered['secrets']:
-        log.status.Print(' - [Secret Manager Secret] {}'.format(s))
-    if discovered.get('bucket'):
+    log.status.Print(
+        '\nThe following resources (and associated data) will be deleted:'
+    )
+    if discovered.get(cleanup.SERVICES_KEY):
+      for s in discovered[cleanup.SERVICES_KEY]:
+        log.status.Print('  - Cloud Run service: {}'.format(s))
+    if discovered.get(cleanup.SECRETS_KEY):
+      for s in discovered[cleanup.SECRETS_KEY]:
+        log.status.Print('  - Secret Manager secret: {}'.format(s))
+    if discovered.get(cleanup.BUCKET_KEY):
       log.status.Print(
-          ' - [Cloud Storage Bucket] {}'.format(discovered['bucket'])
+          '  - Cloud Storage bucket: {}'.format(discovered[cleanup.BUCKET_KEY])
       )
+    if discovered.get(cleanup.IMAGES_KEY):
+      for img in discovered[cleanup.IMAGES_KEY]:
+        log.status.Print('  - Container image package: {}'.format(img))
 
     # Print warnings for disabled APIs only if services were found
-    if discovered.get('services'):
-      if disabled_apis.get('secrets'):
+    if discovered.get(cleanup.SERVICES_KEY):
+      if disabled_apis.get(cleanup.SECRETS_KEY):
         log.status.Print(
             '\n[Note] Secret Manager API is disabled in this project. Assuming'
             ' no secrets were deployed.'
         )
-      if disabled_apis.get('bucket'):
+      if disabled_apis.get(cleanup.BUCKET_KEY):
         log.status.Print(
             '\n[Note] Cloud Storage API is disabled in this project. Assuming'
             ' no GCS volumes were deployed.'
         )
+      if disabled_apis.get(cleanup.IMAGES_KEY):
+        log.status.Print(
+            '\n[Note] Artifact Registry API is disabled in this project.'
+            ' Assuming no container images were built.'
+        )
 
     # Prompt user
+    log.status.Print('')
     if not console_io.PromptContinue(
-        message='\nDo you want to continue',
+        prompt_string='Do you want to proceed',
         default=False,
     ):
       raise console_io.OperationCancelledError('Aborted by user.')
 
     # Phase 3: Execution
-    teardown.Delete(discovered)
+    stage_map = {
+        cleanup.BUCKET_KEY: 'Deleting Cloud Storage bucket...',
+        cleanup.IMAGES_KEY: 'Deleting Container image packages...',
+        cleanup.SECRETS_KEY: 'Deleting Secret Manager secrets...',
+        cleanup.SERVICES_KEY: 'Deleting Cloud Run services...',
+        cleanup.FINGERPRINTS_KEY: 'Cleaning local deployment state...',
+    }
+    stages_list = []
+    for key in (
+        cleanup.BUCKET_KEY,
+        cleanup.IMAGES_KEY,
+        cleanup.SECRETS_KEY,
+        cleanup.SERVICES_KEY,
+        cleanup.FINGERPRINTS_KEY,
+    ):
+      if discovered.get(key):
+        stages_list.append(progress_tracker.Stage(stage_map[key], key=key))
+
+    with progress_tracker.StagedProgressTracker(
+        "Cleaning up resources for project '{}'...".format(project_name),
+        stages_list,
+        success_message="Cleaned up resources for project '{}'.".format(
+            project_name
+        ),
+        failure_message=(
+            "Failed to clean up some resources for project '{}'.".format(
+                project_name
+            )
+        ),
+    ) as tracker:
+      failures = teardown.Delete(discovered, tracker=tracker)
+    if failures:
+      log.warning('\nThe following resources failed to delete:')
+      for f in failures:
+        log.warning(
+            ' - [{type}] {name}: {error}'.format(
+                type=f['type'], name=f['name'], error=f['error']
+            )
+        )
+      log.warning(
+          '\nYou can run the command again to retry deleting the failed'
+          ' resources.'
+      )
 
     return {
         'compose_file': compose_file,
         'project_name': project_name,
         'deleted_resources': discovered,
+        'failures': failures,
     }

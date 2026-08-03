@@ -4079,6 +4079,7 @@ def AddSourceInstanceOverrideArgs(
   )
   AddEnablePointInTimeRecovery(parser)
   AddEnablePrivateServiceConnect(psc_setup_group)
+  AddEnforceCmekLogEncryptionAtSource(parser)
   AddFinalBackup(parser)
   AddFinalbackupRetentionDays(parser)
   AddInsightsConfigEnhancedQueryInsightsEnabled(parser)
@@ -4134,6 +4135,17 @@ def AddEnableConfidentialStorage(parser, hidden=True):
       required=False,
       hidden=hidden,
       help='Enable Confidential Storage.',
+      action=arg_parsers.StoreTrueFalseAction,
+  )
+
+
+def AddEnforceCmekLogEncryptionAtSource(parser, hidden=True):
+  """Adds --enforce-cmek-log-encryption-at-source flag."""
+  parser.add_argument(
+      '--enforce-cmek-log-encryption-at-source',
+      required=False,
+      hidden=hidden,
+      help='Enforce CMEK log encryption at source.',
       action=arg_parsers.StoreTrueFalseAction,
   )
 

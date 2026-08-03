@@ -102,10 +102,6 @@ class AddNamedSet(base.CreateCommand):
       if (
           "The named set '{set_name}' was not found.".format(set_name=set_name)
           in exception.__str__()
-          # TODO(b/437296415): Remove this legacy error message once the new
-          # error message is fully rolled out.
-          or "Could not fetch resource:\n - Invalid value for field 'namedSet': "
-          in exception.__str__()
       ):
         return
       raise

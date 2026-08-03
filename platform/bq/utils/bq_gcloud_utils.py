@@ -317,7 +317,10 @@ def load_full_config() -> Dict[str, Any]:
   try:
     full_config = json.loads(out)
     if use_gcloud_config_list:
-      full_config = {'credential': {}, 'configuration': full_config}
+      full_config = {
+          'credential': {},
+          'configuration': {'properties': full_config},
+      }
     _config_cache = full_config
     if bq_flags.USE_GCLOUD_CONFIG_CACHE.value:
       _save_cache(full_config)

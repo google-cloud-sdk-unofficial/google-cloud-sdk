@@ -73,7 +73,7 @@ class Restore(base.RestoreCommand):
       parser: argparse.Parser: Parser object for command line inputs.
     """
     Restore.CommonArgs(parser)
-    flags.AddRestoreClusterSourceFlags(parser, cls.ReleaseTrack())
+    flags.AddRestoreClusterSourceFlags(parser)
     flags.AddDataplexIntegrationFlags(parser)
 
   def ConstructRestoreRequestFromArgs(self, alloydb_messages, location_ref,

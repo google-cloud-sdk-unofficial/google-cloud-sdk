@@ -70,26 +70,24 @@ class Describe(calliope_base.Command):
     else:
       env_model = yaml_processor.load_environment_with_args(args)
 
-    dags_list = composer_utils.list_pipelines_with_filter(
+    dags = composer_utils.list_pipelines_with_filter(
         list_filter, env_model, args.runner, api_version
     )
 
-    if len(dags_list.dags) != 1:
+    if len(dags) != 1:
       log.status.Print(
           f"No specific DAG found for bundle {args.bundle} and pipeline"
           f" {args.pipeline}",
       )
       return {"pipelines": []}
-    pipelines = composer_utils.convert_dags_to_pipelines(dags_list.dags)
+    pipelines = composer_utils.convert_dags_to_pipelines(dags)
 
     # 2. Retrieve the actions for the pipeline.
     dag_ref = resources.REGISTRY.ParseRelativeName(
-        dags_list.dags[0].name,
+        dags[0].name,
         collection="composer.projects.locations.environments.dags",
         api_version=api_version,
     )
-    list_tasks_response = dags_util.ListTasks(dag_ref)
-    pipelines[0]["actions"] = composer_utils.convert_tasks_to_actions(
-        list_tasks_response.tasks
-    )
+    tasks = dags_util.ListTasks(dag_ref)
+    pipelines[0]["actions"] = composer_utils.convert_tasks_to_actions(tasks)
     return {"pipelines": pipelines}

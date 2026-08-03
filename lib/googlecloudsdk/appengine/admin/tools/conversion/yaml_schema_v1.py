@@ -179,4 +179,9 @@ SCHEMA = s.Message(
     vm_settings=s.Map('beta_settings'),
     vpc_access_connector=s.Message(
         name=s.Value(converter=c.ToJsonString),
-        egress_setting=s.Value(converter=c.ToVpcEgressSettingEnum)))
+        egress_setting=s.Value(converter=c.ToVpcEgressSettingEnum),
+    ),
+    app_engine_bundled_services=s.RepeatedField(
+        element=s.Value(converter=c.ToBundledServiceTypeEnum)
+    ),
+)

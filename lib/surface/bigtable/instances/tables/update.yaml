@@ -49,6 +49,7 @@
     - googlecloudsdk.api_lib.bigtable.tables:HandleTieredStorageArgs
     - googlecloudsdk.api_lib.bigtable.tables:RefreshUpdateMask
     - googlecloudsdk.api_lib.bigtable.tables:HandleRowKeySchemaUpdateTableArgs
+    - googlecloudsdk.api_lib.bigtable.tables:HandleIgnoreWarningsUpdateTableArgs
 
   arguments:
     resource:
@@ -74,6 +75,11 @@
 
         This field is only used when `row-key-schema-definition-file` is set. It is ignored if
         `clear-row-key-schema` is set.
+    - arg_name: ignore-warnings
+      type: bool
+      default: false
+      help_text: |
+        If true, warnings about potentially risky changes (such as enabling tiered storage or clearing row key schemas) will be ignored and the update will proceed.
     - group:
         help_text: |
           Whether to update or clear the row key schema in the updated table. Only one of these

@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, BETA, GA, PREVIEW]
+  hints:
+    read_only: false
   help_text:
     brief: "Delete a storage pool."
     description: "Deleta a storage pool."

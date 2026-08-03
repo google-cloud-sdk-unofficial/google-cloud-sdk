@@ -48,12 +48,9 @@ class CreateMaterializedView(base.CreateCommand):
   @classmethod
   def Args(cls, parser: parser_arguments.ArgumentInterceptor) -> None:
     arguments.AddMaterializedViewResourceArg(parser, 'to create')
-    adder = arguments.ArgAdder(parser).AddViewQuery(
+    arguments.ArgAdder(parser).AddViewQuery(
         required=True
-    ).AddDeletionProtection()
-    if cls.ReleaseTrack() in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
-      adder.AddIgnoreWarnings()
-    adder.AddAsync()
+    ).AddDeletionProtection().AddIgnoreWarnings().AddAsync()
 
   def _CreateMaterializedView(
       self,

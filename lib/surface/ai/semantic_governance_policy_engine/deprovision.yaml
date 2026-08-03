@@ -1,4 +1,4 @@
-release_tracks: [BETA]
+release_tracks: [GA, BETA]
 help_text:
   brief: Deprovision the semantic governance policy engine.
   description: |
@@ -26,7 +26,10 @@ arguments:
     is_positional: false
 
 request:
-  api_version: v1beta1
+  BETA:
+    api_version: v1beta1
+  GA:
+    api_version: v1
   collection: aiplatform.projects.locations.semanticGovernancePolicyEngine
   method: deprovision
   disable_resource_check: true

@@ -16,11 +16,14 @@
 
 
 from googlecloudsdk.api_lib.netapp import constants
+from googlecloudsdk.api_lib.netapp import util as netapp_api_util
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.calliope.concepts import deps
+from googlecloudsdk.command_lib.util.apis import arg_utils
+from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import properties
 
@@ -564,3 +567,43 @@ def AddResourcePeerIpAddressesArg(parser):
           ' cluster peering, not required for svm peering.'
       ),
   )
+
+
+def AddEndTrialArgs(parser, release_track):
+  """Adds arguments for ending a NetApp Trial."""
+  concept_parsers.ConceptParser([
+      presentation_specs.ResourcePresentationSpec(
+          '--location',
+          GetLocationResourceSpec(),
+          'The location to end the trial. If not specified, '
+          'an available location will be automatically selected.',
+          required=False,
+      )
+  ]).AddToParser(parser)
+
+  messages = netapp_api_util.GetMessagesModule(release_track=release_track)
+
+  exit_reason_arg = arg_utils.ChoiceEnumMapper(
+      '--exit-reason',
+      messages.EndTrialRequest.ExitReasonValueValuesEnum,
+      help_str='The reason for exiting the trial.',
+      custom_mappings={
+          'UPGRADED': 'upgraded',
+          'OPT_OUT': 'opt-out',
+      },
+      required=False,
+      default='opt-out',
+  )
+  exit_reason_arg.choice_arg.AddToParser(parser)
+
+  parser.add_argument(
+      '--opt-out-reasons',
+      type=arg_parsers.ArgList(element_type=str),
+      metavar='REASON',
+      help=(
+          'The reasons for opting out of the trial. This flag can only be used'
+          ' if --exit-reason is opt-out.'
+      ),
+  )
+
+  AddResourceAsyncFlag(parser)

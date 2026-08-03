@@ -454,7 +454,7 @@ class BackupVault(_messages.Message):
     sourceBackupVault: Output only. Name of the Backup vault created in source
       region. Format: `projects/{project_id}/locations/{location}/backupVaults
       /{backup_vault_id}`
-    sourceRegion: Output only. Region in which the backup vault is created.
+    sourceRegion: Optional. Region in which the backup vault is created.
       Format: `projects/{project_id}/locations/{location}`
     state: Output only. The backup vault state.
   """

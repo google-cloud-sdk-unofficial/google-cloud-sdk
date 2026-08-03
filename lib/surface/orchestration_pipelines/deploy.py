@@ -762,11 +762,10 @@ class Deploy(calliope_base.Command):
             version=version_id,
         )
 
-        response = composer_dags_util.ListDags(
+        dags = composer_dags_util.ListDags(
             environment_ref,
             list_filter=list_filter,
         )
-        dags = getattr(response, "dags", []) or []
 
         dags_ready = (
             (len(dags) == 1)
@@ -792,8 +791,7 @@ class Deploy(calliope_base.Command):
                 collection="composer.projects.locations.environments.dags",
                 api_version=api_version,
             )
-            list_tasks_response = composer_dags_util.ListTasks(dag_ref)
-            tasks = getattr(list_tasks_response, "tasks", [])
+            tasks = composer_dags_util.ListTasks(dag_ref)
 
             if tasks:
               log.status.Print(

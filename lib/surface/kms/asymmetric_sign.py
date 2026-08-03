@@ -101,7 +101,12 @@ class AsymmetricSign(base.Command):
 
     if self._PerformIntegrityVerification(args):
       # args.digest_algorithm has been verified in get_digest.GetDigest()
-      digest_crc32c = crc32c.Crc32c(getattr(digest, args.digest_algorithm))
+      digest_attr = (
+          'externalMu'
+          if args.digest_algorithm == 'external-mu'
+          else args.digest_algorithm
+      )
+      digest_crc32c = crc32c.Crc32c(getattr(digest, digest_attr))
       req.asymmetricSignRequest = messages.AsymmetricSignRequest(
           digest=digest, digestCrc32c=digest_crc32c)
     else:

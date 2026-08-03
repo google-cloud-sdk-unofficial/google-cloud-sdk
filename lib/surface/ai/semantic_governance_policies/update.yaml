@@ -1,4 +1,4 @@
-release_tracks: [BETA]
+release_tracks: [GA, BETA]
 help_text:
   brief: Update a semantic governance policy.
   description: Update a semantic governance policy.
@@ -26,18 +26,33 @@ arguments:
   params:
   - arg_name: display-name
     help_text: The user-defined name of the semantic governance policy.
-    api_field: googleCloudAiplatformV1beta1SemanticGovernancePolicy.displayName
+    BETA:
+      api_field: googleCloudAiplatformV1beta1SemanticGovernancePolicy.displayName
+    GA:
+      api_field: googleCloudAiplatformV1SemanticGovernancePolicy.displayName
   - arg_name: description
     help_text: The description of the semantic governance policy.
-    api_field: googleCloudAiplatformV1beta1SemanticGovernancePolicy.description
+    BETA:
+      api_field: googleCloudAiplatformV1beta1SemanticGovernancePolicy.description
+    GA:
+      api_field: googleCloudAiplatformV1SemanticGovernancePolicy.description
   - arg_name: natural-language-constraint
     help_text: The natural language constraint of the semantic governance policy.
-    api_field: googleCloudAiplatformV1beta1SemanticGovernancePolicy.naturalLanguageConstraint
+    BETA:
+      api_field: googleCloudAiplatformV1beta1SemanticGovernancePolicy.naturalLanguageConstraint
+    GA:
+      api_field: googleCloudAiplatformV1SemanticGovernancePolicy.naturalLanguageConstraint
   - arg_name: agent
     help_text: The name of the agent in Agent Registry that is affected by this policy.
-    api_field: googleCloudAiplatformV1beta1SemanticGovernancePolicy.agent
+    BETA:
+      api_field: googleCloudAiplatformV1beta1SemanticGovernancePolicy.agent
+    GA:
+      api_field: googleCloudAiplatformV1SemanticGovernancePolicy.agent
   - arg_name: mcp-tools
-    api_field: googleCloudAiplatformV1beta1SemanticGovernancePolicy.mcpTools
+    BETA:
+      api_field: googleCloudAiplatformV1beta1SemanticGovernancePolicy.mcpTools
+    GA:
+      api_field: googleCloudAiplatformV1SemanticGovernancePolicy.mcpTools
     repeated: true
     action: append
     type: googlecloudsdk.command_lib.ai.semantic_governance_policies.util:mcp_tools_parser
@@ -50,16 +65,29 @@ arguments:
       If an etag is provided and does not match the current etag of the
       SemanticGovernancePolicy, update will be blocked and an ABORTED error
       will be returned.
-    api_field: googleCloudAiplatformV1beta1SemanticGovernancePolicy.etag
+    BETA:
+      api_field: googleCloudAiplatformV1beta1SemanticGovernancePolicy.etag
+    GA:
+      api_field: googleCloudAiplatformV1SemanticGovernancePolicy.etag
 request:
-  api_version: v1beta1
+  BETA:
+    api_version: v1beta1
+    # BETA only. See create.yaml for rationale.
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.ai.semantic_governance_policies.util:set_regional_endpoint
+    - googlecloudsdk.command_lib.ai.semantic_governance_policies.util:set_semantic_governance_policy
+  GA:
+    api_version: v1
+    # See create.yaml for rationale.
+    issue_request_hook: googlecloudsdk.command_lib.ai.semantic_governance_policies.util:issue_patch_and_normalize_lro
   collection: aiplatform.projects.locations.semanticGovernancePolicies
   method: patch
   resource_method_params:
     name: projects/{projectsId}/locations/{locationsId}/semanticGovernancePolicies/{semanticGovernancePoliciesId}
-  modify_request_hooks:
-  - googlecloudsdk.command_lib.ai.semantic_governance_policies.util:set_regional_endpoint
-  - googlecloudsdk.command_lib.ai.semantic_governance_policies.util:set_semantic_governance_policy
 
 async:
-  collection: aiplatform.projects.locations.semanticGovernancePolicies.operations
+  # See create.yaml for rationale.
+  BETA:
+    collection: aiplatform.projects.locations.semanticGovernancePolicies.operations
+  GA:
+    collection: aiplatform.projects.locations.operations

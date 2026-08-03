@@ -38,6 +38,7 @@ class Describe(base.DescribeCommand):
     summary['id'] = device_ref.Name()
     summary['name'] = device.displayName or ''
     summary['manufacturer'] = device.manufacturer or ''
+    summary['modelCode'] = device.modelCode or ''
     if device.platform is not None:
       platform_str = str(device.platform)
       if platform_str == 'IOS':

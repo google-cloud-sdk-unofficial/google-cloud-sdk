@@ -1901,11 +1901,10 @@ def AddArgsFlag(parser, for_execution_overrides=False):
   ArgsFlag(for_execution_overrides=for_execution_overrides).AddToParser(parser)
 
 
-def SandboxLauncherFlag(hidden=False):
+def SandboxLauncherFlag():
   """Add the --sandbox-launcher flag."""
   return base.Argument(
       '--sandbox-launcher',
-      hidden=hidden,
       action=arg_parsers.StoreTrueFalseAction,
       help='Set the container as a sandbox supervisor to launch sandboxes.',
   )

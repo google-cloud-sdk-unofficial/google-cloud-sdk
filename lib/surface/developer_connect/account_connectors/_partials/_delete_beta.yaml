@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@
       required: false
       repeated: false
       help_text: |-
-        The current etag of the AccountConnectorn.
+        Current etag of the AccountConnectorn.
         If an etag is provided and does not match the current etag of the
         AccountConnector, deletion will be blocked and an ABORTED error will be
         returned.

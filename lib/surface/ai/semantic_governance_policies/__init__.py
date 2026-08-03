@@ -19,7 +19,16 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.UniverseCompatible
-class SemanticGovernancePolicies(base.Group):
+class SemanticGovernancePoliciesBeta(base.Group):
+  """Manage Vertex AI Semantic Governance Policy resources."""
+
+  category = base.AI_AND_MACHINE_LEARNING_CATEGORY
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
+class SemanticGovernancePoliciesGA(base.Group):
   """Manage Vertex AI Semantic Governance Policy resources."""
 
   category = base.AI_AND_MACHINE_LEARNING_CATEGORY

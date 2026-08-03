@@ -1584,9 +1584,10 @@ class GcpUserAccessBinding(_messages.Message):
       "organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N"
     principal: Optional. Immutable. The principal that is subject to the
       access policies in this policy binding.
-    restrictedClientApplications: Optional. A list of applications that are
-      subject to this binding's restrictions. If the list is empty, the
-      binding restrictions will universally apply to all applications.
+    restrictedClientApplications: Optional. Deprecated: use
+      scoped_access_settings instead. A list of applications that are subject
+      to this binding's restrictions. If the list is empty, the binding
+      restrictions will universally apply to all applications.
     scopedAccessSettings: Optional. A list of scoped access settings that set
       this binding's restrictions on a subset of applications. This field
       cannot be set if restricted_client_applications is set.

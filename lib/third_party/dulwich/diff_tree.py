@@ -645,4 +645,11 @@ try:
         _merge_entries,
     )
 except ImportError:
-    pass
+    try:
+        from dulwich.crates.diff_tree._diff_tree import (  # type: ignore
+            _count_blocks,
+            _is_tree,
+            _merge_entries,
+        )
+    except ImportError:
+        pass

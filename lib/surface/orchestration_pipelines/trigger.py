@@ -82,17 +82,17 @@ class Trigger(calliope_base.Command):
     else:
       env_model = yaml_processor.load_environment_with_args(args)
 
-    dags_list = composer_utils.list_pipelines_with_filter(
+    dags = composer_utils.list_pipelines_with_filter(
         list_filter, env_model, args.runner, api_version
     )
 
-    if len(dags_list.dags) == 0:
+    if len(dags) == 0:
       return {
           "result": "failed",
           "reason": "No pipeline found for given bundle and pipeline IDs.",
       }
 
-    if len(dags_list.dags) > 1:
+    if len(dags) > 1:
       return {
           "result": "failed",
           "reason": (
@@ -101,11 +101,9 @@ class Trigger(calliope_base.Command):
       }
 
     # 2. Trigger the pipeline.
-    log.status.Print(
-        f"Triggering pipeline run for {dags_list.dags[0].dagId}..."
-    )
+    log.status.Print(f"Triggering pipeline run for {dags[0].dagId}...")
     dag_ref = resources.REGISTRY.ParseRelativeName(
-        dags_list.dags[0].name,
+        dags[0].name,
         collection="composer.projects.locations.environments.dags",
         api_version=api_version,
     )

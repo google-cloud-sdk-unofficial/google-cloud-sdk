@@ -216,7 +216,7 @@ def handle(
     )
 
 
-def _get_fingerprint_file_path(
+def get_fingerprint_file_path(
     compose_project_name: str, gcp_project_name: str, region: str
 ) -> str:
   """Constructs the path to the fingerprint JSON file.
@@ -258,7 +258,7 @@ def _save_source_fingerprints(
     gcp_project_name: The name of the GCP project.
     region: The region of the deployment.
   """
-  fingerprint_file = _get_fingerprint_file_path(
+  fingerprint_file = get_fingerprint_file_path(
       compose_project_name, gcp_project_name, region
   )
 
@@ -283,34 +283,45 @@ def _load_source_fingerprints(
   Returns:
     A dictionary mapping container names to a dictionary containing their
     'fingerprint' and 'image_id'. Returns an empty map if the file is not
-    found or cannot be parsed, as this loading is done on a best-effort basis.
+    found or invalid.
   """
-  fingerprint_file = _get_fingerprint_file_path(
+  fingerprint_file = get_fingerprint_file_path(
+      compose_project_name, gcp_project_name, region
+  )
+
+  if not os.path.exists(fingerprint_file):
+    return {}
+
+  try:
+    with files.FileReader(fingerprint_file) as f:
+      return json.load(f)
+  except (files.Error, ValueError) as e:
+    log.warning(f"Could not read fingerprint file '{fingerprint_file}': {e}")
+    return {}
+
+
+def delete_source_fingerprints(
+    compose_project_name: str, gcp_project_name: str, region: str
+) -> None:
+  """Deletes the local source fingerprint file for a compose deployment.
+
+  Args:
+    compose_project_name: The name of the compose project.
+    gcp_project_name: The name of the GCP project.
+    region: The region of the deployment.
+  """
+  fingerprint_file = get_fingerprint_file_path(
       compose_project_name, gcp_project_name, region
   )
 
   if os.path.exists(fingerprint_file):
     try:
-      with files.FileReader(fingerprint_file) as f:
-        return json.load(f)
-    except json.JSONDecodeError as e:
+      os.remove(fingerprint_file)
+      log.debug(f"Successfully deleted fingerprints file '{fingerprint_file}'.")
+    except (files.Error, OSError) as e:
       log.warning(
-          f"Could not decode fingerprint file '{fingerprint_file}': {e}. "
-          'Starting with an empty map.'
+          f"Could not delete fingerprint file '{fingerprint_file}': {e}"
       )
-      return {}
-    except files.Error as e:
-      log.warning(
-          f"Could not read fingerprint file '{fingerprint_file}': {e}. "
-          'Starting with an empty map.'
-      )
-      return {}
-  else:
-    log.debug(
-        f"Fingerprint file '{fingerprint_file}' not found. "
-        'Starting with an empty map.'
-    )
-    return {}
 
 
 def _calculate_source_fingerprint(build_config: BuildConfig) -> str:

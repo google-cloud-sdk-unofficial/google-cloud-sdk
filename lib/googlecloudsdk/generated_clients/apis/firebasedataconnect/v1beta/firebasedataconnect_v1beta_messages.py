@@ -47,12 +47,32 @@ class ClientCache(_messages.Message):
 class CloudSqlInstance(_messages.Message):
   r"""Settings for CloudSQL instance configuration.
 
+  Enums:
+    EditionValueValuesEnum: Output only. [Output only] The Cloud SQL instance
+      edition.
+
   Fields:
+    edition: Output only. [Output only] The Cloud SQL instance edition.
     instance: Required. Name of the CloudSQL instance, in the format: ```
       projects/{project}/locations/{location}/instances/{instance} ```
   """
 
-  instance = _messages.StringField(1)
+  class EditionValueValuesEnum(_messages.Enum):
+    r"""Output only. [Output only] The Cloud SQL instance edition.
+
+    Values:
+      EDITION_UNSPECIFIED: Unspecified edition.
+      EDITION_ENTERPRISE: Enterprise edition.
+      EDITION_ENTERPRISE_PLUS: Enterprise Plus edition.
+      EDITION_DEVELOPER: Developer edition (includes AI Developer edition).
+    """
+    EDITION_UNSPECIFIED = 0
+    EDITION_ENTERPRISE = 1
+    EDITION_ENTERPRISE_PLUS = 2
+    EDITION_DEVELOPER = 3
+
+  edition = _messages.EnumField('EditionValueValuesEnum', 1)
+  instance = _messages.StringField(2)
 
 
 class CodeChunk(_messages.Message):

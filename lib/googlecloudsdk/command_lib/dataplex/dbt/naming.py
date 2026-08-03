@@ -62,11 +62,17 @@ MAX_ENTRY_BYTES = 5 * 1024 * 1024
 # lookup per dataset (plus pinning the exact ``@bigquery`` entry-name format).
 # The link type stays advertised so the import job scope is ready once emission
 # lands. See ``entry_links`` for details.
+#
+# NOTE: dbt `relationships` tests map to ``logical-schema-join`` (an undirected
+# link over arbitrary Dataplex entries), NOT ``schema-join`` -- the latter is
+# restricted to BigQuery/BigLake entry types and so cannot link dbt entries.
+# ``logical-schema-join`` declares ``required_aspects: schema-join``, so those
+# links carry a schema-join aspect (see ``entry_links._schema_join_aspect``).
 LINK_TYPE_IDS: dict[str, str] = {
     'depends_on': 'depends-on',
     'materializes_to': 'materializes-to',
     'belongs_to': 'belongs-to',
-    'schema_join': 'schema-join',
+    'schema_join': 'logical-schema-join',
     'consumed_by': 'consumed-by',
     'defines_semantics_for': 'defines-semantics-for',
     'derives_from': 'derives-from',
@@ -112,11 +118,33 @@ class Context:
   """
 
   eg_project: str
+  eg_project_id: str
   eg_location: str
   entry_group: str
   connector_project: str
   system_project: str
   types_location: str
+
+  def dbt_project_fqn(self, project_name: str) -> str:
+    """Returns the FQN for a dbt project entry."""
+    return 'dbt:project:{0}.{1}'.format(self.eg_project_id, project_name)
+
+  def dbt_source_fqn(
+      self, project_name: str, source_name: str, table_name: str
+  ) -> str:
+    """Returns the FQN for a dbt source entry."""
+    return 'dbt:source:{0}.{1}.{2}.{3}'.format(
+        self.eg_project_id, project_name, source_name, table_name
+    )
+
+  def dbt_resource_fqn(
+      self, entry_type: str, project_name: str, resource_name: str
+  ) -> str:
+    """Returns the FQN for a standard dbt resource (model, seed, etc.)."""
+    subtype = entry_type.removeprefix('dbt-').replace('-', '_')
+    return 'dbt:{0}:{1}.{2}.{3}'.format(
+        subtype, self.eg_project_id, project_name, resource_name
+    )
 
   def entry_name(self, resource_entry_id: str) -> str:
     """Returns the full resource name of a dbt entry in the entry group."""

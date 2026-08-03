@@ -101,18 +101,18 @@ class Pause(calliope_base.Command):
         collection="composer.projects.locations.environments",
         api_version=api_version,
     )
-    list_dags_response = dags_util.ListDags(
+    dags = dags_util.ListDags(
         environment_ref,
         list_filter=list_filter,
     )
 
-    if len(list_dags_response.dags) == 0:
+    if len(dags) == 0:
       return {
           "result": "failed",
           "reason": "No pipeline found for given bundle and pipeline IDs.",
       }
 
-    if len(list_dags_response.dags) > 1:
+    if len(dags) > 1:
       return {
           "result": "failed",
           "reason": (
@@ -120,7 +120,7 @@ class Pause(calliope_base.Command):
           ),
       }
 
-    if composer_utils.get_pipeline_paused_status(list_dags_response.dags[0]):
+    if composer_utils.get_pipeline_paused_status(dags[0]):
       log.status.Print(f"Pipeline {args.pipeline} is already paused.")
       return {"result": "success"}
 
@@ -187,11 +187,11 @@ class Pause(calliope_base.Command):
     log.status.Print("Waiting for the pipeline to be paused...")
     while True:
       try:
-        paused_dags_list = dags_util.ListDags(
+        paused_dags = dags_util.ListDags(
             environment_ref, list_filter=list_filter
         )
-        if paused_dags_list.dags and composer_utils.get_pipeline_paused_status(
-            paused_dags_list.dags[0]
+        if paused_dags and composer_utils.get_pipeline_paused_status(
+            paused_dags[0]
         ):
           return {"result": "success"}
         time.sleep(

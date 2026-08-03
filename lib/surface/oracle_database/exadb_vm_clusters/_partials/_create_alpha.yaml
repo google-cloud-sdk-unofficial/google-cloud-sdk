@@ -20,12 +20,28 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Create exadbVmClusters
-    description: Create an exadbVmCluster
+    brief: Create a new ExadbVmCluster.
+    description: Create a new ExadbVmCluster.
     examples: |-
-      To create the exadbVmCluster, run:
+      To create an ExadbVmCluster with id `my-instance` in the location `us-east4`
+      with display-name `my instance`, node-count `2`, enabled-ecpu-count-per-node `4`,
+      vm-file-system-storage-size-in-gbs-per-node `100`, shape-attribute `SMART_STORAGE`,
+      exascale-db-storage-vault `projects/my-project/locations/us-east4/exascaleDbStorageVaults/my-vault`,
+      hostname-prefix `my-host`, ssh-public-keys `VtTxzlPJtIivthmLOmWdRDFy5l27pKUTwLp02`,
+      odb-network `projects/my-project/locations/us-east4/odbNetworks/my-network`,
+      odb-subnet `projects/my-project/locations/us-east4/odbNetworks/my-network/odbSubnets/my-subnet`,
+      backup-odb-subnet `projects/my-project/locations/us-east4/odbNetworks/my-network/odbSubnets/my-backup-subnet`,
+      grid-image-id `projects/my-project/locations/us-east4/giVersions/19.0.0.0`, run:
 
-          $ {command}
+        $ {command} my-instance --location=us-east4 --display-name="my instance" \
+        --properties-node-count=2 --properties-enabled-ecpu-count-per-node=4 \
+        --vm-file-system-storage-size-in-gbs-per-node=100 --properties-shape-attribute=SMART_STORAGE \
+        --properties-exascale-db-storage-vault=projects/my-project/locations/us-east4/exascaleDbStorageVaults/my-vault \
+        --properties-hostname-prefix=my-host --properties-ssh-public-keys="VtTxzlPJtIivthmLOmWdRDFy5l27pKUTwLp02" \
+        --odb-network=projects/my-project/locations/us-east4/odbNetworks/my-network \
+        --odb-subnet=projects/my-project/locations/us-east4/odbNetworks/my-network/odbSubnets/my-subnet \
+        --backup-odb-subnet=projects/my-project/locations/us-east4/odbNetworks/my-network/odbSubnets/my-backup-subnet \
+        --properties-grid-image-id=projects/my-project/locations/us-east4/giVersions/19.0.0.0
   arguments:
     params:
     - help_text: |-

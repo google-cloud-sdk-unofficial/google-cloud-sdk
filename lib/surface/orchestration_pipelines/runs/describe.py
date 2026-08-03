@@ -84,13 +84,11 @@ class Describe(calliope_base.Command):
         collection="composer.projects.locations.environments.dags",
         api_version=api_version,
     )
-    list_dag_runs_response = dags_util.ListDagRuns(
+    dag_runs = dags_util.ListDagRuns(
         dag_ref,
         list_filter=list_filter,
     )
-    pipeline_runs = composer_utils.convert_dag_runs_to_pipeline_runs(
-        list_dag_runs_response.dagRuns
-    )
+    pipeline_runs = composer_utils.convert_dag_runs_to_pipeline_runs(dag_runs)
     if len(pipeline_runs) != 1:
       log.status.Print(
           "No suitable orchestration pipeline run found for bundle"
@@ -102,16 +100,14 @@ class Describe(calliope_base.Command):
     # 2. List task instances for the dag run and convert to actions by
     # aggregating task instances with the same action names.
     dag_run_ref = resources.REGISTRY.ParseRelativeName(
-        list_dag_runs_response.dagRuns[0].name,
+        dag_runs[0].name,
         collection="composer.projects.locations.environments.dags.dagRuns",
         api_version=api_version,
     )
-    list_task_instances_response = dags_util.ListTaskInstances(
+    task_instances = dags_util.ListTaskInstances(
         dag_run_ref,
     )
     pipeline_runs[0]["actions"] = (
-        composer_utils.aggregate_task_instances_to_actions(
-            list_task_instances_response.taskInstances
-        )
+        composer_utils.aggregate_task_instances_to_actions(task_instances)
     )
     return {"pipelineRuns": pipeline_runs}

@@ -48,10 +48,15 @@ class AclPolicy(_messages.Message):
     StateValueValuesEnum: Output only. The state of the ACL policy.
 
   Fields:
+    createTime: Output only. The timestamp that the ACL policy was created.
     etag: Output only. Etag of the ACL policy.
+    instanceAclPolicyAttachments: Output only. The ACL policy attachment
+      status for each attached instance.
     name: Identifier. Full resource path of the ACL policy.
     rules: Required. The ACL rules within the ACL policy.
     state: Output only. The state of the ACL policy.
+    updateTime: Output only. The timestamp that the ACL policy was last
+      updated.
     version: Output only. Deprecated: Used in drift resolution.
   """
 
@@ -69,11 +74,97 @@ class AclPolicy(_messages.Message):
     UPDATING = 2
     DELETING = 3
 
-  etag = _messages.StringField(1)
-  name = _messages.StringField(2)
-  rules = _messages.MessageField('AclRule', 3, repeated=True)
+  createTime = _messages.StringField(1)
+  etag = _messages.StringField(2)
+  instanceAclPolicyAttachments = _messages.MessageField('InstanceAclPolicyAttachment', 3, repeated=True)
+  name = _messages.StringField(4)
+  rules = _messages.MessageField('AclRule', 5, repeated=True)
+  state = _messages.EnumField('StateValueValuesEnum', 6)
+  updateTime = _messages.StringField(7)
+  version = _messages.IntegerField(8)
+
+
+class AclPolicyInfo(_messages.Message):
+  r"""Details of the applied ACL policy.
+
+  Fields:
+    aclPolicyRevisionStatuses: Output only. A list of status for various
+      revisions of this ACL policy on the instance.
+    appliedAclPolicy: Output only. The resource name of the applied ACL
+      policy. Format:
+      "projects/{project}/locations/{location}/aclPolicies/{acl_policy}"
+    appliedAclPolicyRevision: Output only. The resource name of the applied
+      ACL policy revision. Format: "projects/{project}/locations/{location}/ac
+      lPolicies/{acl_policy}/revisions/{revision}"
+    appliedAclPolicyRevisionNumber: Output only. The revision number of the
+      applied ACL policy revision.
+  """
+
+  aclPolicyRevisionStatuses = _messages.MessageField('AclPolicyRevisionStatus', 1, repeated=True)
+  appliedAclPolicy = _messages.StringField(2)
+  appliedAclPolicyRevision = _messages.StringField(3)
+  appliedAclPolicyRevisionNumber = _messages.IntegerField(4)
+
+
+class AclPolicyRevision(_messages.Message):
+  r"""The ACL policy revision resource.
+
+  Fields:
+    attachedInstances: Output only. A list of instances that are attached to
+      this ACL policy revision.
+    createTime: Output only. The timestamp that the revision was created.
+    name: Identifier. The name of the ACL policy revision. Format: "projects/{
+      project}/locations/{location}/aclPolicies/{acl_policy}/revisions/{revisi
+      on}"
+    revisionNumber: Output only. The revision number of the ACL policy
+      revision.
+    snapshot: Output only. The snapshot of the ACL policy at the time of
+      revision creation.
+  """
+
+  attachedInstances = _messages.StringField(1, repeated=True)
+  createTime = _messages.StringField(2)
+  name = _messages.StringField(3)
+  revisionNumber = _messages.IntegerField(4)
+  snapshot = _messages.MessageField('AclPolicy', 5)
+
+
+class AclPolicyRevisionStatus(_messages.Message):
+  r"""AclPolicyRevisionStatus stores the per-revision status for an attached
+  instance.
+
+  Enums:
+    StateValueValuesEnum: Output only. AclPolicyRevision state.
+
+  Fields:
+    aclPolicyRevision: Output only. The resource name of the ACL policy
+      revision this status refers to. Format: "projects/{project}/locations/{l
+      ocation}/aclPolicies/{acl_policy}/revisions/{revision}"
+    aclPolicyRevisionNumber: Output only. The revision number of the ACL
+      policy revision this status refers to.
+    errorMessage: Output only. Human-readable error message providing more
+      details for FAILED states.
+    state: Output only. AclPolicyRevision state.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. AclPolicyRevision state.
+
+    Values:
+      STATE_UNSPECIFIED: Not set.
+      APPLYING: The instance is attempting to apply this revision.
+      APPLIED: The instance has successfully applied this revision.
+      FAILED: The instance failed to apply this revision.
+    """
+    STATE_UNSPECIFIED = 0
+    APPLYING = 1
+    APPLIED = 2
+    FAILED = 3
+
+  aclPolicyRevision = _messages.StringField(1)
+  aclPolicyRevisionNumber = _messages.IntegerField(2)
+  errorMessage = _messages.StringField(3)
   state = _messages.EnumField('StateValueValuesEnum', 4)
-  version = _messages.IntegerField(5)
 
 
 class AclRule(_messages.Message):
@@ -2409,6 +2500,7 @@ class Instance(_messages.Message):
       projects/{project}/locations/{location}/aclPolicies/{acl_policy}
     aclPolicyInSync: Output only. Deprecated: Whether the ACL rules applied to
       the instance are in sync.
+    aclPolicyInfo: Output only. Details of the applied ACL policy.
     allowFewerZonesDeployment: Optional. Immutable. Deprecated, do not use.
     asyncInstanceEndpointsDeletionEnabled: Optional. If true, instance
       endpoints that are created and registered by customers can be deleted
@@ -2662,51 +2754,68 @@ class Instance(_messages.Message):
 
   aclPolicy = _messages.StringField(1)
   aclPolicyInSync = _messages.BooleanField(2)
-  allowFewerZonesDeployment = _messages.BooleanField(3)
-  asyncInstanceEndpointsDeletionEnabled = _messages.BooleanField(4)
-  authorizationMode = _messages.EnumField('AuthorizationModeValueValuesEnum', 5)
-  automatedBackupConfig = _messages.MessageField('AutomatedBackupConfig', 6)
-  availableMaintenanceVersions = _messages.StringField(7, repeated=True)
-  backupCollection = _messages.StringField(8)
-  createTime = _messages.StringField(9)
-  crossInstanceReplicationConfig = _messages.MessageField('CrossInstanceReplicationConfig', 10)
-  deletionProtectionEnabled = _messages.BooleanField(11)
-  discoveryEndpoints = _messages.MessageField('DiscoveryEndpoint', 12, repeated=True)
-  effectiveMaintenanceVersion = _messages.StringField(13)
-  encryptionInfo = _messages.MessageField('EncryptionInfo', 14)
-  endpoints = _messages.MessageField('InstanceEndpoint', 15, repeated=True)
-  engineConfigs = _messages.MessageField('EngineConfigsValue', 16)
-  engineVersion = _messages.StringField(17)
-  gcsSource = _messages.MessageField('GcsBackupSource', 18)
-  kmsKey = _messages.StringField(19)
-  labels = _messages.MessageField('LabelsValue', 20)
-  maintenancePolicy = _messages.MessageField('MaintenancePolicy', 21)
-  maintenanceSchedule = _messages.MessageField('MaintenanceSchedule', 22)
-  maintenanceVersion = _messages.StringField(23)
-  managedBackupSource = _messages.MessageField('ManagedBackupSource', 24)
-  migrationConfig = _messages.MessageField('MigrationConfig', 25)
-  mode = _messages.EnumField('ModeValueValuesEnum', 26)
-  name = _messages.StringField(27)
-  nodeConfig = _messages.MessageField('NodeConfig', 28)
-  nodeType = _messages.EnumField('NodeTypeValueValuesEnum', 29)
-  ondemandMaintenance = _messages.BooleanField(30)
-  persistenceConfig = _messages.MessageField('PersistenceConfig', 31)
-  pscAttachmentDetails = _messages.MessageField('PscAttachmentDetail', 32, repeated=True)
-  pscAutoConnections = _messages.MessageField('PscAutoConnection', 33, repeated=True)
-  replicaCount = _messages.IntegerField(34, variant=_messages.Variant.INT32)
-  rotateServerCertificate = _messages.BooleanField(35)
-  satisfiesPzi = _messages.BooleanField(36)
-  satisfiesPzs = _messages.BooleanField(37)
-  serverCaMode = _messages.EnumField('ServerCaModeValueValuesEnum', 38)
-  serverCaPool = _messages.StringField(39)
-  shardCount = _messages.IntegerField(40, variant=_messages.Variant.INT32)
-  simulateMaintenanceEvent = _messages.BooleanField(41)
-  state = _messages.EnumField('StateValueValuesEnum', 42)
-  stateInfo = _messages.MessageField('StateInfo', 43)
-  transitEncryptionMode = _messages.EnumField('TransitEncryptionModeValueValuesEnum', 44)
-  uid = _messages.StringField(45)
-  updateTime = _messages.StringField(46)
-  zoneDistributionConfig = _messages.MessageField('ZoneDistributionConfig', 47)
+  aclPolicyInfo = _messages.MessageField('AclPolicyInfo', 3)
+  allowFewerZonesDeployment = _messages.BooleanField(4)
+  asyncInstanceEndpointsDeletionEnabled = _messages.BooleanField(5)
+  authorizationMode = _messages.EnumField('AuthorizationModeValueValuesEnum', 6)
+  automatedBackupConfig = _messages.MessageField('AutomatedBackupConfig', 7)
+  availableMaintenanceVersions = _messages.StringField(8, repeated=True)
+  backupCollection = _messages.StringField(9)
+  createTime = _messages.StringField(10)
+  crossInstanceReplicationConfig = _messages.MessageField('CrossInstanceReplicationConfig', 11)
+  deletionProtectionEnabled = _messages.BooleanField(12)
+  discoveryEndpoints = _messages.MessageField('DiscoveryEndpoint', 13, repeated=True)
+  effectiveMaintenanceVersion = _messages.StringField(14)
+  encryptionInfo = _messages.MessageField('EncryptionInfo', 15)
+  endpoints = _messages.MessageField('InstanceEndpoint', 16, repeated=True)
+  engineConfigs = _messages.MessageField('EngineConfigsValue', 17)
+  engineVersion = _messages.StringField(18)
+  gcsSource = _messages.MessageField('GcsBackupSource', 19)
+  kmsKey = _messages.StringField(20)
+  labels = _messages.MessageField('LabelsValue', 21)
+  maintenancePolicy = _messages.MessageField('MaintenancePolicy', 22)
+  maintenanceSchedule = _messages.MessageField('MaintenanceSchedule', 23)
+  maintenanceVersion = _messages.StringField(24)
+  managedBackupSource = _messages.MessageField('ManagedBackupSource', 25)
+  migrationConfig = _messages.MessageField('MigrationConfig', 26)
+  mode = _messages.EnumField('ModeValueValuesEnum', 27)
+  name = _messages.StringField(28)
+  nodeConfig = _messages.MessageField('NodeConfig', 29)
+  nodeType = _messages.EnumField('NodeTypeValueValuesEnum', 30)
+  ondemandMaintenance = _messages.BooleanField(31)
+  persistenceConfig = _messages.MessageField('PersistenceConfig', 32)
+  pscAttachmentDetails = _messages.MessageField('PscAttachmentDetail', 33, repeated=True)
+  pscAutoConnections = _messages.MessageField('PscAutoConnection', 34, repeated=True)
+  replicaCount = _messages.IntegerField(35, variant=_messages.Variant.INT32)
+  rotateServerCertificate = _messages.BooleanField(36)
+  satisfiesPzi = _messages.BooleanField(37)
+  satisfiesPzs = _messages.BooleanField(38)
+  serverCaMode = _messages.EnumField('ServerCaModeValueValuesEnum', 39)
+  serverCaPool = _messages.StringField(40)
+  shardCount = _messages.IntegerField(41, variant=_messages.Variant.INT32)
+  simulateMaintenanceEvent = _messages.BooleanField(42)
+  state = _messages.EnumField('StateValueValuesEnum', 43)
+  stateInfo = _messages.MessageField('StateInfo', 44)
+  transitEncryptionMode = _messages.EnumField('TransitEncryptionModeValueValuesEnum', 45)
+  uid = _messages.StringField(46)
+  updateTime = _messages.StringField(47)
+  zoneDistributionConfig = _messages.MessageField('ZoneDistributionConfig', 48)
+
+
+class InstanceAclPolicyAttachment(_messages.Message):
+  r"""InstanceAclPolicyAttachment stores the ACL policy status for an attached
+  instance for the revisions successfully applied, under application or
+  failed.
+
+  Fields:
+    aclPolicyRevisionStatuses: Output only. A list of status for various
+      revisions of this ACL policy on the instance.
+    instance: Output only. The resource name of the attached instance. Format:
+      "projects/{project}/locations/{location}/instances/{instance}"
+  """
+
+  aclPolicyRevisionStatuses = _messages.MessageField('AclPolicyRevisionStatus', 1, repeated=True)
+  instance = _messages.StringField(2)
 
 
 class InstanceEndpoint(_messages.Message):
@@ -2777,6 +2886,21 @@ class ListAclPoliciesResponse(_messages.Message):
   """
 
   aclPolicies = _messages.MessageField('AclPolicy', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListAclPolicyRevisionsResponse(_messages.Message):
+  r"""Response for `ListAclPolicyRevisions`.
+
+  Fields:
+    aclPolicyRevisions: A list of ACL policy revisions.
+    nextPageToken: Token to retrieve the next page of results, or empty if
+      there are no more results in the list.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  aclPolicyRevisions = _messages.MessageField('AclPolicyRevision', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
   unreachable = _messages.StringField(3, repeated=True)
 
@@ -3163,6 +3287,35 @@ class MemorystoreProjectsLocationsAclPoliciesPatchRequest(_messages.Message):
   name = _messages.StringField(2, required=True)
   requestId = _messages.StringField(3)
   updateMask = _messages.StringField(4)
+
+
+class MemorystoreProjectsLocationsAclPoliciesRevisionsGetRequest(_messages.Message):
+  r"""A MemorystoreProjectsLocationsAclPoliciesRevisionsGetRequest object.
+
+  Fields:
+    name: Required. Memorystore ACL policy revision resource name using the
+      form: `projects/{project}/locations/{location}/aclPolicies/{acl_policy}/
+      revisions/{revision}` where `location` refers to a GCP region.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class MemorystoreProjectsLocationsAclPoliciesRevisionsListRequest(_messages.Message):
+  r"""A MemorystoreProjectsLocationsAclPoliciesRevisionsListRequest object.
+
+  Fields:
+    pageSize: Optional. The maximum number of items to return.
+    pageToken: Optional. The `next_page_token` value returned from a previous
+      `ListAclPolicyRevisions` request, if any.
+    parent: Required. The resource name of the ACL policy to list revisions
+      for. Format:
+      "projects/{project}/locations/{location}/aclPolicies/{acl_policy}"
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
 
 
 class MemorystoreProjectsLocationsBackupCollectionsBackupsDeleteRequest(_messages.Message):

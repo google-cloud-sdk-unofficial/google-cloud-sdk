@@ -2998,10 +2998,16 @@ class AiplatformProjectsLocationsIndexEndpointsMutateDeployedIndexRequest(_messa
     indexEndpoint: Required. The name of the IndexEndpoint resource into which
       to deploy an Index. Format: `projects/{project}/locations/{location}/ind
       exEndpoints/{index_endpoint}`
+    updateMask: Optional. The update mask applies to the resource. The
+      supported paths are `automatic_resources`, `dedicated_resources`,
+      `enable_access_logging` and `deployed_index_auth_config`. When omitted,
+      the service will perform a full update of all fields. See
+      google.protobuf.FieldMask.
   """
 
   googleCloudAiplatformV1DeployedIndex = _messages.MessageField('GoogleCloudAiplatformV1DeployedIndex', 1)
   indexEndpoint = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
 
 
 class AiplatformProjectsLocationsIndexEndpointsPatchRequest(_messages.Message):
@@ -5584,6 +5590,22 @@ class AiplatformProjectsLocationsReasoningEnginesDeleteRequest(_messages.Message
   name = _messages.StringField(2, required=True)
 
 
+class AiplatformProjectsLocationsReasoningEnginesExecuteCodeRequest(_messages.Message):
+  r"""A AiplatformProjectsLocationsReasoningEnginesExecuteCodeRequest object.
+
+  Fields:
+    googleCloudAiplatformV1ExecuteCodeRequest: A
+      GoogleCloudAiplatformV1ExecuteCodeRequest resource to be passed as the
+      request body.
+    name: Required. The resource name of the sandbox environment to execute.
+      Format: `projects/{project}/locations/{location}/reasoningEngines/{reaso
+      ning_engine}`
+  """
+
+  googleCloudAiplatformV1ExecuteCodeRequest = _messages.MessageField('GoogleCloudAiplatformV1ExecuteCodeRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
 class AiplatformProjectsLocationsReasoningEnginesGetRequest(_messages.Message):
   r"""A AiplatformProjectsLocationsReasoningEnginesGetRequest object.
 
@@ -5678,6 +5700,251 @@ class AiplatformProjectsLocationsReasoningEnginesRuntimeRevisionsStreamQueryRequ
   """
 
   googleCloudAiplatformV1StreamQueryReasoningEngineRequest = _messages.MessageField('GoogleCloudAiplatformV1StreamQueryReasoningEngineRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentSnapshotsDeleteRequest(_messages.Message):
+  r"""A AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentSnapshots
+  DeleteRequest object.
+
+  Fields:
+    name: Required. The resource name of the SandboxEnvironmentSnapshot to
+      delete. Format: `projects/{project}/locations/{location}/reasoningEngine
+      s/{reasoning_engine}/sandboxEnvironmentSnapshots/{sandbox_environment_sn
+      apshot}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentSnapshotsGetRequest(_messages.Message):
+  r"""A AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentSnapshots
+  GetRequest object.
+
+  Fields:
+    name: Required. The resource name of the sandbox environment snapshot.
+      Format: `projects/{project}/locations/{location}/reasoningEngines/{reaso
+      ning_engine}/sandboxEnvironmentSnapshots/{sandbox_environment_snapshot}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentSnapshotsListRequest(_messages.Message):
+  r"""A AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentSnapshots
+  ListRequest object.
+
+  Fields:
+    filter: Optional. The standard list filter. More detail in
+      [AIP-160](https://google.aip.dev/160).
+    pageSize: Optional. The maximum number of SandboxEnvironmentSnapshots to
+      return. The service may return fewer than this value. If unspecified, at
+      most 100 SandboxEnvironmentSnapshots will be returned. Values above 100
+      will be coerced to 100.
+    pageToken: Optional. The standard list page token, received from a
+      previous `ListSandboxEnvironmentSnapshots` call. Provide this to
+      retrieve the subsequent page.
+    parent: Required. The resource name of the reasoning engine to list
+      sandbox environments from. Format: `projects/{project}/locations/{locati
+      on}/reasoningEngines/{reasoning_engine}`
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+
+
+class AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentTemplatesCreateRequest(_messages.Message):
+  r"""A AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentTemplates
+  CreateRequest object.
+
+  Fields:
+    googleCloudAiplatformV1SandboxEnvironmentTemplate: A
+      GoogleCloudAiplatformV1SandboxEnvironmentTemplate resource to be passed
+      as the request body.
+    parent: Required. The resource name of the reasoning engine to create the
+      SandboxEnvironmentTemplate in. Format: `projects/{project}/locations/{lo
+      cation}/reasoningEngines/{reasoning_engine}`.
+  """
+
+  googleCloudAiplatformV1SandboxEnvironmentTemplate = _messages.MessageField('GoogleCloudAiplatformV1SandboxEnvironmentTemplate', 1)
+  parent = _messages.StringField(2, required=True)
+
+
+class AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentTemplatesDeleteRequest(_messages.Message):
+  r"""A AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentTemplates
+  DeleteRequest object.
+
+  Fields:
+    name: Required. The resource name of the SandboxEnvironmentTemplate to
+      delete. Format: `projects/{project}/locations/{location}/reasoningEngine
+      s/{reasoning_engine}/sandboxEnvironmentTemplates/{sandbox_environment_te
+      mplate}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentTemplatesGetRequest(_messages.Message):
+  r"""A AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentTemplates
+  GetRequest object.
+
+  Fields:
+    name: Required. The resource name of the sandbox environment template.
+      Format: `projects/{project}/locations/{location}/reasoningEngines/{reaso
+      ning_engine}/sandboxEnvironmentTemplates/{sandbox_environment_template}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentTemplatesListRequest(_messages.Message):
+  r"""A AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentTemplates
+  ListRequest object.
+
+  Fields:
+    filter: Optional. The standard list filter. More detail in
+      [AIP-160](https://google.aip.dev/160).
+    pageSize: Optional. The maximum number of SandboxEnvironmentTemplates to
+      return. The service may return fewer than this value. If unspecified, at
+      most 100 SandboxEnvironmentTemplates will be returned.
+    pageToken: Optional. The standard list page token, received from a
+      previous `ListSandboxEnvironmentTemplates` call. Provide this to
+      retrieve the subsequent page.
+    parent: Required. The resource name of the reasoning engine to list
+      sandbox environment templates from. Format: `projects/{project}/location
+      s/{location}/reasoningEngines/{reasoning_engine}`
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+
+
+class AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsCreateRequest(_messages.Message):
+  r"""A
+  AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsCreateRequest
+  object.
+
+  Fields:
+    googleCloudAiplatformV1SandboxEnvironment: A
+      GoogleCloudAiplatformV1SandboxEnvironment resource to be passed as the
+      request body.
+    parent: Required. The resource name of the reasoning engine to create the
+      SandboxEnvironment in. Format: `projects/{project}/locations/{location}/
+      reasoningEngines/{reasoning_engine}`.
+  """
+
+  googleCloudAiplatformV1SandboxEnvironment = _messages.MessageField('GoogleCloudAiplatformV1SandboxEnvironment', 1)
+  parent = _messages.StringField(2, required=True)
+
+
+class AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsDeleteRequest(_messages.Message):
+  r"""A
+  AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsDeleteRequest
+  object.
+
+  Fields:
+    name: Required. The resource name of the SandboxEnvironment to delete.
+      Format: `projects/{project}/locations/{location}/reasoningEngines/{reaso
+      ning_engine}/sandboxEnvironments/{sandbox_environment}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsExecuteRequest(_messages.Message):
+  r"""A
+  AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsExecuteRequest
+  object.
+
+  Fields:
+    googleCloudAiplatformV1ExecuteSandboxEnvironmentRequest: A
+      GoogleCloudAiplatformV1ExecuteSandboxEnvironmentRequest resource to be
+      passed as the request body.
+    name: Required. The resource name of the sandbox environment to execute.
+      Format: `projects/{project}/locations/{location}/reasoningEngines/{reaso
+      ning_engine}/sandboxEnvironments/{sandbox_environment}`
+  """
+
+  googleCloudAiplatformV1ExecuteSandboxEnvironmentRequest = _messages.MessageField('GoogleCloudAiplatformV1ExecuteSandboxEnvironmentRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsGetRequest(_messages.Message):
+  r"""A
+  AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsGetRequest
+  object.
+
+  Fields:
+    name: Required. The resource name of the sandbox environment. Format: `pro
+      jects/{project}/locations/{location}/reasoningEngines/{reasoning_engine}
+      /sandboxEnvironments/{sandbox_environment}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsListRequest(_messages.Message):
+  r"""A
+  AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsListRequest
+  object.
+
+  Fields:
+    filter: Optional. The standard list filter. More detail in
+      [AIP-160](https://google.aip.dev/160).
+    pageSize: Optional. The maximum number of SandboxEnvironments to return.
+      The service may return fewer than this value. If unspecified, at most
+      100 SandboxEnvironments will be returned.
+    pageToken: Optional. The standard list page token, received from a
+      previous `ListSandboxEnvironments` call. Provide this to retrieve the
+      subsequent page.
+    parent: Required. The resource name of the reasoning engine to list
+      sandbox environments from. Format: `projects/{project}/locations/{locati
+      on}/reasoningEngines/{reasoning_engine}`
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+
+
+class AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsPauseRequest(_messages.Message):
+  r"""A
+  AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsPauseRequest
+  object.
+
+  Fields:
+    googleCloudAiplatformV1PauseSandboxEnvironmentRequest: A
+      GoogleCloudAiplatformV1PauseSandboxEnvironmentRequest resource to be
+      passed as the request body.
+    name: Required. The resource name of the sandbox environment to pause.
+      Format: `projects/{project}/locations/{location}/reasoningEngines/{reaso
+      ning_engine}/sandboxEnvironments/{sandbox_environment}`
+  """
+
+  googleCloudAiplatformV1PauseSandboxEnvironmentRequest = _messages.MessageField('GoogleCloudAiplatformV1PauseSandboxEnvironmentRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsResumeRequest(_messages.Message):
+  r"""A
+  AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsResumeRequest
+  object.
+
+  Fields:
+    googleCloudAiplatformV1ResumeSandboxEnvironmentRequest: A
+      GoogleCloudAiplatformV1ResumeSandboxEnvironmentRequest resource to be
+      passed as the request body.
+    name: Required. The resource name of the sandbox environment to resume.
+      Format: `projects/{project}/locations/{location}/reasoningEngines/{reaso
+      ning_engine}/sandboxEnvironments/{sandbox_environment}`
+  """
+
+  googleCloudAiplatformV1ResumeSandboxEnvironmentRequest = _messages.MessageField('GoogleCloudAiplatformV1ResumeSandboxEnvironmentRequest', 1)
   name = _messages.StringField(2, required=True)
 
 
@@ -7884,6 +8151,132 @@ class GoogleCloudAiplatformV1Attribution(_messages.Message):
   outputName = _messages.StringField(7)
 
 
+class GoogleCloudAiplatformV1AudioResponseFormat(_messages.Message):
+  r"""Configuration for audio-specific output formatting.
+
+  Enums:
+    DeliveryValueValuesEnum: Optional. Delivery mode for the generated
+      content.
+    MimeTypeValueValuesEnum: Optional. The MIME type of the audio output.
+
+  Fields:
+    bitRate: Optional. Bit rate in bits per second (bps). Only applicable for
+      compressed formats (MP3, Opus).
+    delivery: Optional. Delivery mode for the generated content.
+    mimeType: Optional. The MIME type of the audio output.
+    sampleRate: Optional. Sample rate for the generated audio in Hertz.
+  """
+
+  class DeliveryValueValuesEnum(_messages.Enum):
+    r"""Optional. Delivery mode for the generated content.
+
+    Values:
+      DELIVERY_UNSPECIFIED: Default value. This value is unused.
+      INLINE: Generated bytes are returned inline in the response.
+      URI: Generated content is stored and a URI is returned.
+    """
+    DELIVERY_UNSPECIFIED = 0
+    INLINE = 1
+    URI = 2
+
+  class MimeTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The MIME type of the audio output.
+
+    Values:
+      MIME_TYPE_UNSPECIFIED: Default value. This value is unused.
+      AUDIO_MP3: MP3 audio format.
+      AUDIO_OGG_OPUS: OGG Opus audio format.
+      AUDIO_L16: Raw PCM (L16) audio format.
+      AUDIO_WAV: WAV audio format.
+      AUDIO_ALAW: A-law audio format.
+      AUDIO_MULAW: Mu-law audio format.
+    """
+    MIME_TYPE_UNSPECIFIED = 0
+    AUDIO_MP3 = 1
+    AUDIO_OGG_OPUS = 2
+    AUDIO_L16 = 3
+    AUDIO_WAV = 4
+    AUDIO_ALAW = 5
+    AUDIO_MULAW = 6
+
+  bitRate = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  delivery = _messages.EnumField('DeliveryValueValuesEnum', 2)
+  mimeType = _messages.EnumField('MimeTypeValueValuesEnum', 3)
+  sampleRate = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+
+
+class GoogleCloudAiplatformV1AudioTranscription(_messages.Message):
+  r"""The transcription of an audio part. For multi-speaker audio, each
+  speaker segment is a separate Part with its own AudioTranscription carrying
+  the speaker_label.
+
+  Fields:
+    speakerLabel: Optional. A label identifying the speaker of this audio
+      segment (e.g. "spk_1", "spk_2"). Present when diarization is set.
+    text: Required. The transcription text of this audio segment.
+    words: Optional. Detailed word-level transcriptions and timing details.
+      Present when word_timestamp is set.
+  """
+
+  speakerLabel = _messages.StringField(1)
+  text = _messages.StringField(2)
+  words = _messages.MessageField('GoogleCloudAiplatformV1AudioTranscriptionWordInfo', 3, repeated=True)
+
+
+class GoogleCloudAiplatformV1AudioTranscriptionConfig(_messages.Message):
+  r"""Configuration for speech recognition (transcription).
+
+  Fields:
+    adaptationPhrases: Optional. A list of phrases to bias the ASR model
+      towards.
+    customVocabulary: Optional. A list of custom vocabulary phrases to bias
+      the speech recognition model toward recognizing specific terms.
+    diarization: Optional. Configures speaker diarization.
+    languageAuto: Optional. The model will detect the language automatically.
+    languageHints: Optional. Specifies one or more languages in the audio.
+    wordTimestamp: Optional. Configures word-level timestamp generation.
+  """
+
+  adaptationPhrases = _messages.StringField(1, repeated=True)
+  customVocabulary = _messages.StringField(2, repeated=True)
+  diarization = _messages.BooleanField(3)
+  languageAuto = _messages.MessageField('GoogleCloudAiplatformV1AudioTranscriptionConfigLanguageAuto', 4)
+  languageHints = _messages.MessageField('GoogleCloudAiplatformV1AudioTranscriptionConfigLanguageHints', 5)
+  wordTimestamp = _messages.BooleanField(6)
+
+
+class GoogleCloudAiplatformV1AudioTranscriptionConfigLanguageAuto(_messages.Message):
+  r"""Indicates the language of the audio should be automatically detected."""
+
+
+class GoogleCloudAiplatformV1AudioTranscriptionConfigLanguageHints(_messages.Message):
+  r"""Provides hints to the model about possible languages present in the
+  audio.
+
+  Fields:
+    languageCodes: Required. BCP-47 language codes. At least one must be
+      specified.
+  """
+
+  languageCodes = _messages.StringField(1, repeated=True)
+
+
+class GoogleCloudAiplatformV1AudioTranscriptionWordInfo(_messages.Message):
+  r"""Information about a single recognized word.
+
+  Fields:
+    endOffset: Optional. End offset in time of the word relative to the start
+      of the audio.
+    startOffset: Optional. Start offset in time of the word relative to the
+      start of the audio.
+    word: Required. Transcript of the word.
+  """
+
+  endOffset = _messages.StringField(1)
+  startOffset = _messages.StringField(2)
+  word = _messages.StringField(3)
+
+
 class GoogleCloudAiplatformV1AugmentPromptRequest(_messages.Message):
   r"""Request message for AugmentPrompt.
 
@@ -9088,6 +9481,24 @@ class GoogleCloudAiplatformV1Checkpoint(_messages.Message):
   step = _messages.IntegerField(3)
 
 
+class GoogleCloudAiplatformV1Chunk(_messages.Message):
+  r"""Container for bytes-encoded data such as video frame, audio sample, or a
+  complete binary/text data.
+
+  Fields:
+    data: Required. The data in the chunk.
+    metadata: Optional. Metadata that is associated with the data in the
+      payload.
+    mimeType: Required. Mime type of the chunk data. See
+      https://www.iana.org/assignments/media-types/media-types.xhtml for the
+      full list.
+  """
+
+  data = _messages.BytesField(1)
+  metadata = _messages.MessageField('GoogleCloudAiplatformV1Metadata', 2)
+  mimeType = _messages.StringField(3)
+
+
 class GoogleCloudAiplatformV1Citation(_messages.Message):
   r"""A citation for a piece of generatedcontent.
 
@@ -9154,6 +9565,8 @@ class GoogleCloudAiplatformV1CodeExecutionResult(_messages.Message):
     OutcomeValueValuesEnum: Required. Outcome of the code execution.
 
   Fields:
+    id: Optional. The identifier of the `ExecutableCode` part this result is
+      for. Only populated if the corresponding `ExecutableCode` has an id.
     outcome: Required. Outcome of the code execution.
     output: Optional. Contains stdout when code execution is successful,
       stderr or other description otherwise.
@@ -9176,8 +9589,9 @@ class GoogleCloudAiplatformV1CodeExecutionResult(_messages.Message):
     OUTCOME_FAILED = 2
     OUTCOME_DEADLINE_EXCEEDED = 3
 
-  outcome = _messages.EnumField('OutcomeValueValuesEnum', 1)
-  output = _messages.StringField(2)
+  id = _messages.StringField(1)
+  outcome = _messages.EnumField('OutcomeValueValuesEnum', 2)
+  output = _messages.StringField(3)
 
 
 class GoogleCloudAiplatformV1CoherenceInput(_messages.Message):
@@ -11689,8 +12103,13 @@ class GoogleCloudAiplatformV1DeploymentResourcePool(_messages.Message):
 class GoogleCloudAiplatformV1DeprovisionSemanticGovernancePolicyEngineRequest(_messages.Message):
   r"""Request message for SemanticGovernancePolicyEngineService.DeprovisionSem
   anticGovernancePolicyEngine.
+
+  Fields:
+    force: Optional. If true, the operation bypass checks on current state and
+      force the deprovisioning operation.
   """
 
+  force = _messages.BooleanField(1)
 
 
 class GoogleCloudAiplatformV1DestinationFeatureSetting(_messages.Message):
@@ -12040,6 +12459,9 @@ class GoogleCloudAiplatformV1Endpoint(_messages.Message):
       secured by this key.
     etag: Used to perform consistent read-modify-write updates. If not set, a
       blind "overwrite" update happens.
+    gdcConfig: Configures the Google Distributed Cloud (GDC) environment for
+      online prediction. Only set this field when the Endpoint is to be
+      deployed in a GDC environment.
     genAiAdvancedFeaturesConfig: Optional. Configuration for
       GenAiAdvancedFeatures. If the endpoint is serving GenAI models, advanced
       features like native RAG integration can be configured. Currently, only
@@ -12146,17 +12568,18 @@ class GoogleCloudAiplatformV1Endpoint(_messages.Message):
   enablePrivateServiceConnect = _messages.BooleanField(8)
   encryptionSpec = _messages.MessageField('GoogleCloudAiplatformV1EncryptionSpec', 9)
   etag = _messages.StringField(10)
-  genAiAdvancedFeaturesConfig = _messages.MessageField('GoogleCloudAiplatformV1GenAiAdvancedFeaturesConfig', 11)
-  labels = _messages.MessageField('LabelsValue', 12)
-  modelDeploymentMonitoringJob = _messages.StringField(13)
-  name = _messages.StringField(14)
-  network = _messages.StringField(15)
-  predictRequestResponseLoggingConfig = _messages.MessageField('GoogleCloudAiplatformV1PredictRequestResponseLoggingConfig', 16)
-  privateServiceConnectConfig = _messages.MessageField('GoogleCloudAiplatformV1PrivateServiceConnectConfig', 17)
-  satisfiesPzi = _messages.BooleanField(18)
-  satisfiesPzs = _messages.BooleanField(19)
-  trafficSplit = _messages.MessageField('TrafficSplitValue', 20)
-  updateTime = _messages.StringField(21)
+  gdcConfig = _messages.MessageField('GoogleCloudAiplatformV1GdcConfig', 11)
+  genAiAdvancedFeaturesConfig = _messages.MessageField('GoogleCloudAiplatformV1GenAiAdvancedFeaturesConfig', 12)
+  labels = _messages.MessageField('LabelsValue', 13)
+  modelDeploymentMonitoringJob = _messages.StringField(14)
+  name = _messages.StringField(15)
+  network = _messages.StringField(16)
+  predictRequestResponseLoggingConfig = _messages.MessageField('GoogleCloudAiplatformV1PredictRequestResponseLoggingConfig', 17)
+  privateServiceConnectConfig = _messages.MessageField('GoogleCloudAiplatformV1PrivateServiceConnectConfig', 18)
+  satisfiesPzi = _messages.BooleanField(19)
+  satisfiesPzs = _messages.BooleanField(20)
+  trafficSplit = _messages.MessageField('TrafficSplitValue', 21)
+  updateTime = _messages.StringField(22)
 
 
 class GoogleCloudAiplatformV1EnterpriseWebSearch(_messages.Message):
@@ -13178,6 +13601,8 @@ class GoogleCloudAiplatformV1ExecutableCode(_messages.Message):
 
   Fields:
     code: Required. The code to be executed.
+    id: Optional. Unique identifier of the `ExecutableCode` part. The server
+      returns the `CodeExecutionResult` with the matching `id`.
     language: Required. Programming language of the `code`.
   """
 
@@ -13193,7 +13618,48 @@ class GoogleCloudAiplatformV1ExecutableCode(_messages.Message):
     PYTHON = 1
 
   code = _messages.StringField(1)
-  language = _messages.EnumField('LanguageValueValuesEnum', 2)
+  id = _messages.StringField(2)
+  language = _messages.EnumField('LanguageValueValuesEnum', 3)
+
+
+class GoogleCloudAiplatformV1ExecuteCodeRequest(_messages.Message):
+  r"""Request message for SandboxEnvironmentExecutionService.ExecuteCode.
+
+  Fields:
+    inputs: Required. The inputs used for the stateless code execution.
+  """
+
+  inputs = _messages.MessageField('GoogleCloudAiplatformV1Chunk', 1, repeated=True)
+
+
+class GoogleCloudAiplatformV1ExecuteCodeResponse(_messages.Message):
+  r"""Response message for SandboxEnvironmentExecutionService.ExecuteCode.
+
+  Fields:
+    outputs: The outputs from the sandbox environment.
+  """
+
+  outputs = _messages.MessageField('GoogleCloudAiplatformV1Chunk', 1, repeated=True)
+
+
+class GoogleCloudAiplatformV1ExecuteSandboxEnvironmentRequest(_messages.Message):
+  r"""Request message for SandboxEnvironmentExecutionService.Execute.
+
+  Fields:
+    inputs: Required. The inputs to the sandbox environment.
+  """
+
+  inputs = _messages.MessageField('GoogleCloudAiplatformV1Chunk', 1, repeated=True)
+
+
+class GoogleCloudAiplatformV1ExecuteSandboxEnvironmentResponse(_messages.Message):
+  r"""Response message for SandboxEnvironmentExecutionService.Execute.
+
+  Fields:
+    outputs: The outputs from the sandbox environment.
+  """
+
+  outputs = _messages.MessageField('GoogleCloudAiplatformV1Chunk', 1, repeated=True)
 
 
 class GoogleCloudAiplatformV1Execution(_messages.Message):
@@ -16116,6 +16582,9 @@ class GoogleCloudAiplatformV1FunctionCall(_messages.Message):
   Fields:
     args: Optional. The function parameters and values in JSON object format.
       See FunctionDeclaration.parameters for parameter details.
+    id: Optional. The unique id of the function call. If populated, the client
+      to execute the `function_call` and return the response with the matching
+      `id`.
     name: Optional. The name of the function to call. Matches
       FunctionDeclaration.name.
     partialArgs: Optional. The partial argument value of the function call. If
@@ -16152,9 +16621,10 @@ class GoogleCloudAiplatformV1FunctionCall(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   args = _messages.MessageField('ArgsValue', 1)
-  name = _messages.StringField(2)
-  partialArgs = _messages.MessageField('GoogleCloudAiplatformV1PartialArg', 3, repeated=True)
-  willContinue = _messages.BooleanField(4)
+  id = _messages.StringField(2)
+  name = _messages.StringField(3)
+  partialArgs = _messages.MessageField('GoogleCloudAiplatformV1PartialArg', 4, repeated=True)
+  willContinue = _messages.BooleanField(5)
 
 
 class GoogleCloudAiplatformV1FunctionCallingConfig(_messages.Message):
@@ -16267,6 +16737,8 @@ class GoogleCloudAiplatformV1FunctionResponse(_messages.Message):
       whole "response" is treated as function output.
 
   Fields:
+    id: Optional. The id of the function call this response is for. Populated
+      by the client to match the corresponding function call `id`.
     name: Required. The name of the function to call. Matches
       FunctionDeclaration.name and FunctionCall.name.
     parts: Optional. Ordered `Parts` that constitute a function response.
@@ -16304,9 +16776,10 @@ class GoogleCloudAiplatformV1FunctionResponse(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  name = _messages.StringField(1)
-  parts = _messages.MessageField('GoogleCloudAiplatformV1FunctionResponsePart', 2, repeated=True)
-  response = _messages.MessageField('ResponseValue', 3)
+  id = _messages.StringField(1)
+  name = _messages.StringField(2)
+  parts = _messages.MessageField('GoogleCloudAiplatformV1FunctionResponsePart', 3, repeated=True)
+  response = _messages.MessageField('ResponseValue', 4)
 
 
 class GoogleCloudAiplatformV1FunctionResponseBlob(_messages.Message):
@@ -16370,6 +16843,14 @@ class GoogleCloudAiplatformV1GatewayConfig(_messages.Message):
     StateValueValuesEnum: Output only. The state of the Gateway configuration.
 
   Fields:
+    allowedProjects: Optional. Additional consumer projects permitted to
+      attach their own PSC endpoint to this gateway's ServiceAttachment. This
+      is the "decoupled" mode, where the customer creates the PSC endpoint in
+      a project other than this gateway's `network` project. Each listed
+      project is VPC-SC enforced: it must be within the caller's service
+      perimeter. The owning SemanticGovernancePolicyEngine's own project is
+      always permitted implicitly and need not be listed. Format: project ID
+      or number.
     dnsRecord: Output only. The fully qualified record name of the created
       A-record in Cloud DNS.
     dnsZoneName: Optional. FQDN of the private DNS zone to create DNS record
@@ -16406,13 +16887,14 @@ class GoogleCloudAiplatformV1GatewayConfig(_messages.Message):
     INACTIVE = 4
     FAILED = 5
 
-  dnsRecord = _messages.StringField(1)
-  dnsZoneName = _messages.StringField(2)
-  ipAddress = _messages.StringField(3)
-  network = _messages.StringField(4)
-  pscEndpoint = _messages.StringField(5)
-  state = _messages.EnumField('StateValueValuesEnum', 6)
-  subnetwork = _messages.StringField(7)
+  allowedProjects = _messages.StringField(1, repeated=True)
+  dnsRecord = _messages.StringField(2)
+  dnsZoneName = _messages.StringField(3)
+  ipAddress = _messages.StringField(4)
+  network = _messages.StringField(5)
+  pscEndpoint = _messages.StringField(6)
+  state = _messages.EnumField('StateValueValuesEnum', 7)
+  subnetwork = _messages.StringField(8)
 
 
 class GoogleCloudAiplatformV1GcsDestination(_messages.Message):
@@ -16437,6 +16919,17 @@ class GoogleCloudAiplatformV1GcsSource(_messages.Message):
   """
 
   uris = _messages.StringField(1, repeated=True)
+
+
+class GoogleCloudAiplatformV1GdcConfig(_messages.Message):
+  r"""Google Distributed Cloud (GDC) config.
+
+  Fields:
+    zone: GDC zone. A cluster will be designated for the Vertex AI workload in
+      this zone.
+  """
+
+  zone = _messages.StringField(1)
 
 
 class GoogleCloudAiplatformV1GenAiAdvancedFeaturesConfig(_messages.Message):
@@ -16772,6 +17265,8 @@ class GoogleCloudAiplatformV1GenerationConfig(_messages.Message):
     audioTimestamp: Optional. If enabled, audio timestamps will be included in
       the request to the model. This can be useful for synchronizing audio
       with other modalities in the response.
+    audioTranscriptionConfig: Optional. Config for audio transcription (speech
+      recognition).
     candidateCount: Optional. The number of candidate responses to generate. A
       higher `candidate_count` can provide more options to choose from, but it
       also consumes more resources. This can be useful for generating a
@@ -16803,6 +17298,8 @@ class GoogleCloudAiplatformV1GenerationConfig(_messages.Message):
       the generated text. A positive value encourages the model to generate
       more diverse and less repetitive text. Valid values can range from
       [-2.0, 2.0].
+    responseFormat: Optional. New response format field for the model to
+      configure output formatting and delivery.
     responseJsonSchema: Optional. When this field is set, response_schema must
       be omitted and response_mime_type must be set to `application/json`.
       Deprecated: Use `response_format` instead.
@@ -16901,27 +17398,29 @@ class GoogleCloudAiplatformV1GenerationConfig(_messages.Message):
     VIDEO = 4
 
   audioTimestamp = _messages.BooleanField(1)
-  candidateCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  enableAffectiveDialog = _messages.BooleanField(3)
-  frequencyPenalty = _messages.FloatField(4, variant=_messages.Variant.FLOAT)
-  imageConfig = _messages.MessageField('GoogleCloudAiplatformV1ImageConfig', 5)
-  logprobs = _messages.IntegerField(6, variant=_messages.Variant.INT32)
-  maxOutputTokens = _messages.IntegerField(7, variant=_messages.Variant.INT32)
-  mediaResolution = _messages.EnumField('MediaResolutionValueValuesEnum', 8)
-  presencePenalty = _messages.FloatField(9, variant=_messages.Variant.FLOAT)
-  responseJsonSchema = _messages.MessageField('extra_types.JsonValue', 10)
-  responseLogprobs = _messages.BooleanField(11)
-  responseMimeType = _messages.StringField(12)
-  responseModalities = _messages.EnumField('ResponseModalitiesValueListEntryValuesEnum', 13, repeated=True)
-  responseSchema = _messages.MessageField('GoogleCloudAiplatformV1Schema', 14)
-  routingConfig = _messages.MessageField('GoogleCloudAiplatformV1GenerationConfigRoutingConfig', 15)
-  seed = _messages.IntegerField(16, variant=_messages.Variant.INT32)
-  speechConfig = _messages.MessageField('GoogleCloudAiplatformV1SpeechConfig', 17)
-  stopSequences = _messages.StringField(18, repeated=True)
-  temperature = _messages.FloatField(19, variant=_messages.Variant.FLOAT)
-  thinkingConfig = _messages.MessageField('GoogleCloudAiplatformV1GenerationConfigThinkingConfig', 20)
-  topK = _messages.FloatField(21, variant=_messages.Variant.FLOAT)
-  topP = _messages.FloatField(22, variant=_messages.Variant.FLOAT)
+  audioTranscriptionConfig = _messages.MessageField('GoogleCloudAiplatformV1AudioTranscriptionConfig', 2)
+  candidateCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  enableAffectiveDialog = _messages.BooleanField(4)
+  frequencyPenalty = _messages.FloatField(5, variant=_messages.Variant.FLOAT)
+  imageConfig = _messages.MessageField('GoogleCloudAiplatformV1ImageConfig', 6)
+  logprobs = _messages.IntegerField(7, variant=_messages.Variant.INT32)
+  maxOutputTokens = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+  mediaResolution = _messages.EnumField('MediaResolutionValueValuesEnum', 9)
+  presencePenalty = _messages.FloatField(10, variant=_messages.Variant.FLOAT)
+  responseFormat = _messages.MessageField('GoogleCloudAiplatformV1ResponseFormat', 11, repeated=True)
+  responseJsonSchema = _messages.MessageField('extra_types.JsonValue', 12)
+  responseLogprobs = _messages.BooleanField(13)
+  responseMimeType = _messages.StringField(14)
+  responseModalities = _messages.EnumField('ResponseModalitiesValueListEntryValuesEnum', 15, repeated=True)
+  responseSchema = _messages.MessageField('GoogleCloudAiplatformV1Schema', 16)
+  routingConfig = _messages.MessageField('GoogleCloudAiplatformV1GenerationConfigRoutingConfig', 17)
+  seed = _messages.IntegerField(18, variant=_messages.Variant.INT32)
+  speechConfig = _messages.MessageField('GoogleCloudAiplatformV1SpeechConfig', 19)
+  stopSequences = _messages.StringField(20, repeated=True)
+  temperature = _messages.FloatField(21, variant=_messages.Variant.FLOAT)
+  thinkingConfig = _messages.MessageField('GoogleCloudAiplatformV1GenerationConfigThinkingConfig', 22)
+  topK = _messages.FloatField(23, variant=_messages.Variant.FLOAT)
+  topP = _messages.FloatField(24, variant=_messages.Variant.FLOAT)
 
 
 class GoogleCloudAiplatformV1GenerationConfigRoutingConfig(_messages.Message):
@@ -17305,6 +17804,9 @@ class GoogleCloudAiplatformV1GroundingMetadata(_messages.Message):
       source is Google Search with the Image Search search_type enabled.
     retrievalMetadata: Optional. Output only. Metadata related to the
       retrieval grounding source.
+    retrievalQueries: Optional. The queries that were executed by the
+      retrieval tools. This field is populated only when the grounding source
+      is a retrieval tool, such as Vertex AI Search.
     searchEntryPoint: Optional. A web search entry point that can be used to
       display search results. This field is populated only when the grounding
       source is Google Search.
@@ -17321,9 +17823,10 @@ class GoogleCloudAiplatformV1GroundingMetadata(_messages.Message):
   groundingSupports = _messages.MessageField('GoogleCloudAiplatformV1GroundingSupport', 3, repeated=True)
   imageSearchQueries = _messages.StringField(4, repeated=True)
   retrievalMetadata = _messages.MessageField('GoogleCloudAiplatformV1RetrievalMetadata', 5)
-  searchEntryPoint = _messages.MessageField('GoogleCloudAiplatformV1SearchEntryPoint', 6)
-  sourceFlaggingUris = _messages.MessageField('GoogleCloudAiplatformV1GroundingMetadataSourceFlaggingUri', 7, repeated=True)
-  webSearchQueries = _messages.StringField(8, repeated=True)
+  retrievalQueries = _messages.StringField(6, repeated=True)
+  searchEntryPoint = _messages.MessageField('GoogleCloudAiplatformV1SearchEntryPoint', 7)
+  sourceFlaggingUris = _messages.MessageField('GoogleCloudAiplatformV1GroundingMetadataSourceFlaggingUri', 8, repeated=True)
+  webSearchQueries = _messages.StringField(9, repeated=True)
 
 
 class GoogleCloudAiplatformV1GroundingMetadataSourceFlaggingUri(_messages.Message):
@@ -17578,6 +18081,104 @@ class GoogleCloudAiplatformV1ImageConfigImageOutputOptions(_messages.Message):
 
   compressionQuality = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   mimeType = _messages.StringField(2)
+
+
+class GoogleCloudAiplatformV1ImageResponseFormat(_messages.Message):
+  r"""Configuration for image-specific output formatting.
+
+  Enums:
+    AspectRatioValueValuesEnum: Optional. The aspect ratio for the image
+      output.
+    DeliveryValueValuesEnum: Optional. Delivery mode for the generated
+      content.
+    ImageSizeValueValuesEnum: Optional. The size of the image output.
+    MimeTypeValueValuesEnum: Optional. The MIME type of the image output.
+
+  Fields:
+    aspectRatio: Optional. The aspect ratio for the image output.
+    delivery: Optional. Delivery mode for the generated content.
+    imageSize: Optional. The size of the image output.
+    mimeType: Optional. The MIME type of the image output.
+  """
+
+  class AspectRatioValueValuesEnum(_messages.Enum):
+    r"""Optional. The aspect ratio for the image output.
+
+    Values:
+      ASPECT_RATIO_UNSPECIFIED: Default value. This value is unused.
+      ASPECT_RATIO_ONE_BY_ONE: 1:1 aspect ratio.
+      ASPECT_RATIO_TWO_BY_THREE: 2:3 aspect ratio.
+      ASPECT_RATIO_THREE_BY_TWO: 3:2 aspect ratio.
+      ASPECT_RATIO_THREE_BY_FOUR: 3:4 aspect ratio.
+      ASPECT_RATIO_FOUR_BY_THREE: 4:3 aspect ratio.
+      ASPECT_RATIO_FOUR_BY_FIVE: 4:5 aspect ratio.
+      ASPECT_RATIO_FIVE_BY_FOUR: 5:4 aspect ratio.
+      ASPECT_RATIO_NINE_BY_SIXTEEN: 9:16 aspect ratio.
+      ASPECT_RATIO_SIXTEEN_BY_NINE: 16:9 aspect ratio.
+      ASPECT_RATIO_TWENTY_ONE_BY_NINE: 21:9 aspect ratio.
+      ASPECT_RATIO_ONE_BY_EIGHT: 1:8 aspect ratio.
+      ASPECT_RATIO_EIGHT_BY_ONE: 8:1 aspect ratio.
+      ASPECT_RATIO_ONE_BY_FOUR: 1:4 aspect ratio.
+      ASPECT_RATIO_FOUR_BY_ONE: 4:1 aspect ratio.
+    """
+    ASPECT_RATIO_UNSPECIFIED = 0
+    ASPECT_RATIO_ONE_BY_ONE = 1
+    ASPECT_RATIO_TWO_BY_THREE = 2
+    ASPECT_RATIO_THREE_BY_TWO = 3
+    ASPECT_RATIO_THREE_BY_FOUR = 4
+    ASPECT_RATIO_FOUR_BY_THREE = 5
+    ASPECT_RATIO_FOUR_BY_FIVE = 6
+    ASPECT_RATIO_FIVE_BY_FOUR = 7
+    ASPECT_RATIO_NINE_BY_SIXTEEN = 8
+    ASPECT_RATIO_SIXTEEN_BY_NINE = 9
+    ASPECT_RATIO_TWENTY_ONE_BY_NINE = 10
+    ASPECT_RATIO_ONE_BY_EIGHT = 11
+    ASPECT_RATIO_EIGHT_BY_ONE = 12
+    ASPECT_RATIO_ONE_BY_FOUR = 13
+    ASPECT_RATIO_FOUR_BY_ONE = 14
+
+  class DeliveryValueValuesEnum(_messages.Enum):
+    r"""Optional. Delivery mode for the generated content.
+
+    Values:
+      DELIVERY_UNSPECIFIED: Default value. This value is unused.
+      INLINE: Generated bytes are returned inline in the response.
+      URI: Generated content is stored and a URI is returned.
+    """
+    DELIVERY_UNSPECIFIED = 0
+    INLINE = 1
+    URI = 2
+
+  class ImageSizeValueValuesEnum(_messages.Enum):
+    r"""Optional. The size of the image output.
+
+    Values:
+      IMAGE_SIZE_UNSPECIFIED: Default value. This value is unused.
+      IMAGE_SIZE_FIVE_TWELVE: 512px image size.
+      IMAGE_SIZE_ONE_K: 1K image size.
+      IMAGE_SIZE_TWO_K: 2K image size.
+      IMAGE_SIZE_FOUR_K: 4K image size.
+    """
+    IMAGE_SIZE_UNSPECIFIED = 0
+    IMAGE_SIZE_FIVE_TWELVE = 1
+    IMAGE_SIZE_ONE_K = 2
+    IMAGE_SIZE_TWO_K = 3
+    IMAGE_SIZE_FOUR_K = 4
+
+  class MimeTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The MIME type of the image output.
+
+    Values:
+      MIME_TYPE_UNSPECIFIED: Default value. This value is unused.
+      IMAGE_JPEG: JPEG image format.
+    """
+    MIME_TYPE_UNSPECIFIED = 0
+    IMAGE_JPEG = 1
+
+  aspectRatio = _messages.EnumField('AspectRatioValueValuesEnum', 1)
+  delivery = _messages.EnumField('DeliveryValueValuesEnum', 2)
+  imageSize = _messages.EnumField('ImageSizeValueValuesEnum', 3)
+  mimeType = _messages.EnumField('MimeTypeValueValuesEnum', 4)
 
 
 class GoogleCloudAiplatformV1ImportDataConfig(_messages.Message):
@@ -19182,6 +19783,52 @@ class GoogleCloudAiplatformV1ListReasoningEnginesResponse(_messages.Message):
   reasoningEngines = _messages.MessageField('GoogleCloudAiplatformV1ReasoningEngine', 2, repeated=True)
 
 
+class GoogleCloudAiplatformV1ListSandboxEnvironmentSnapshotsResponse(_messages.Message):
+  r"""Response message for
+  SandboxEnvironmentService.ListSandboxEnvironmentSnapshots.
+
+  Fields:
+    nextPageToken: A token, which can be sent as
+      ListSandboxEnvironmentSnapshotsRequest.page_token to retrieve the next
+      page. Absence of this field indicates there are no subsequent pages.
+    sandboxEnvironmentSnapshots: The SandboxEnvironmentSnapshots matching the
+      request.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  sandboxEnvironmentSnapshots = _messages.MessageField('GoogleCloudAiplatformV1SandboxEnvironmentSnapshot', 2, repeated=True)
+
+
+class GoogleCloudAiplatformV1ListSandboxEnvironmentTemplatesResponse(_messages.Message):
+  r"""Response message for
+  SandboxEnvironmentService.ListSandboxEnvironmentTemplates.
+
+  Fields:
+    nextPageToken: A token, which can be sent as
+      ListSandboxEnvironmentTemplatesRequest.page_token to retrieve the next
+      page. Absence of this field indicates there are no subsequent pages.
+    sandboxEnvironmentTemplates: The SandboxEnvironmentTemplates matching the
+      request.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  sandboxEnvironmentTemplates = _messages.MessageField('GoogleCloudAiplatformV1SandboxEnvironmentTemplate', 2, repeated=True)
+
+
+class GoogleCloudAiplatformV1ListSandboxEnvironmentsResponse(_messages.Message):
+  r"""Response message for SandboxEnvironmentService.ListSandboxEnvironments.
+
+  Fields:
+    nextPageToken: A token, which can be sent as
+      ListSandboxEnvironmentsRequest.page_token to retrieve the next page.
+      Absence of this field indicates there are no subsequent pages.
+    sandboxEnvironments: The SandboxEnvironments matching the request.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  sandboxEnvironments = _messages.MessageField('GoogleCloudAiplatformV1SandboxEnvironment', 2, repeated=True)
+
+
 class GoogleCloudAiplatformV1ListSavedQueriesResponse(_messages.Message):
   r"""Response message for DatasetService.ListSavedQueries.
 
@@ -19609,6 +20256,49 @@ class GoogleCloudAiplatformV1MergeVersionAliasesRequest(_messages.Message):
   """
 
   versionAliases = _messages.StringField(1, repeated=True)
+
+
+class GoogleCloudAiplatformV1Metadata(_messages.Message):
+  r"""Metadata for a chunk.
+
+  Messages:
+    AttributesValue: Optional. Attributes attached to the data. The keys have
+      semantic conventions and the consumers of the attributes should know how
+      to deserialize the value bytes based on the keys.
+
+  Fields:
+    attributes: Optional. Attributes attached to the data. The keys have
+      semantic conventions and the consumers of the attributes should know how
+      to deserialize the value bytes based on the keys.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AttributesValue(_messages.Message):
+    r"""Optional. Attributes attached to the data. The keys have semantic
+    conventions and the consumers of the attributes should know how to
+    deserialize the value bytes based on the keys.
+
+    Messages:
+      AdditionalProperty: An additional property for a AttributesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type AttributesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AttributesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A byte attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.BytesField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  attributes = _messages.MessageField('AttributesValue', 1)
 
 
 class GoogleCloudAiplatformV1MetadataSchema(_messages.Message):
@@ -20141,8 +20831,8 @@ class GoogleCloudAiplatformV1Model(_messages.Message):
       source. Currently it only supports specifing the Model Garden models and
       Genie models.
     checkpoints: Optional. Output only. The checkpoints of the model.
-    containerSpec: Input only. The specification of the container that is to
-      be used when deploying this Model. The specification is ingested upon
+    containerSpec: The specification of the container that is to be used when
+      deploying this Model. The specification is ingested upon
       ModelService.UploadModel, and all binaries it contains are copied and
       stored internally by Vertex AI. Not required for AutoML Models.
     createTime: Output only. Timestamp when this Model was uploaded into
@@ -22567,11 +23257,32 @@ class GoogleCloudAiplatformV1NotebookExecutionJobCustomEnvironmentSpec(_messages
     networkSpec: The network configuration to use for the execution job.
     persistentDiskSpec: The specification of a persistent disk to attach for
       the execution job.
+    shieldedInstanceConfig: Optional. Shielded VM configuration (for example,
+      Secure Boot) for the execution VM.
   """
 
   machineSpec = _messages.MessageField('GoogleCloudAiplatformV1MachineSpec', 1)
   networkSpec = _messages.MessageField('GoogleCloudAiplatformV1NetworkSpec', 2)
   persistentDiskSpec = _messages.MessageField('GoogleCloudAiplatformV1PersistentDiskSpec', 3)
+  shieldedInstanceConfig = _messages.MessageField('GoogleCloudAiplatformV1NotebookExecutionJobCustomEnvironmentSpecShieldedInstanceConfig', 4)
+
+
+class GoogleCloudAiplatformV1NotebookExecutionJobCustomEnvironmentSpecShieldedInstanceConfig(_messages.Message):
+  r"""A set of Shielded VM options for the execution VM. Mirrors
+  `google.cloud.notebooks.v2.ShieldedInstanceConfig`. See
+  https://cloud.google.com/compute/docs/instances/modifying-shielded-vm.
+
+  Fields:
+    enableIntegrityMonitoring: Optional. Whether the VM instance has integrity
+      monitoring enabled.
+    enableSecureBoot: Optional. Whether the VM instance has Secure Boot
+      enabled. Disabled by default.
+    enableVtpm: Optional. Whether the VM instance has vTPM enabled.
+  """
+
+  enableIntegrityMonitoring = _messages.BooleanField(1)
+  enableSecureBoot = _messages.BooleanField(2)
+  enableVtpm = _messages.BooleanField(3)
 
 
 class GoogleCloudAiplatformV1NotebookExecutionJobDataformRepositorySource(_messages.Message):
@@ -22615,7 +23326,48 @@ class GoogleCloudAiplatformV1NotebookExecutionJobGcsNotebookSource(_messages.Mes
 
 
 class GoogleCloudAiplatformV1NotebookExecutionJobWorkbenchRuntime(_messages.Message):
-  r"""Configuration for a Workbench Instances-based environment."""
+  r"""Configuration for a Workbench Instances-based environment.
+
+  Fields:
+    customContainerImage: A user-provided container image. The notebook
+      executes inside this container on a managed container-host (COS) VM.
+    vmImage: A specific Compute Engine VM image to run the notebook on.
+  """
+
+  customContainerImage = _messages.MessageField('GoogleCloudAiplatformV1NotebookExecutionJobWorkbenchRuntimeContainerImage', 1)
+  vmImage = _messages.MessageField('GoogleCloudAiplatformV1NotebookExecutionJobWorkbenchRuntimeVmImage', 2)
+
+
+class GoogleCloudAiplatformV1NotebookExecutionJobWorkbenchRuntimeContainerImage(_messages.Message):
+  r"""The definition of a user-provided container image to run the notebook
+  execution in. Mirrors `google.cloud.notebooks.v2.ContainerImage`.
+
+  Fields:
+    repository: Required. The path to the container image repository. For
+      example: `gcr.io/{project_id}/{image_name}`.
+    tag: Optional. The tag of the container image. If unset, defaults to
+      `latest`.
+  """
+
+  repository = _messages.StringField(1)
+  tag = _messages.StringField(2)
+
+
+class GoogleCloudAiplatformV1NotebookExecutionJobWorkbenchRuntimeVmImage(_messages.Message):
+  r"""The definition of a Compute Engine VM image to run the notebook
+  execution on. Mirrors `google.cloud.notebooks.v2.VmImage`.
+
+  Fields:
+    family: Use this VM image family to find the image; the newest image in
+      this family is used.
+    name: Use this VM image name to find the image.
+    project: Required. The name of the Google Cloud project that this VM image
+      belongs to. Format: `{project_id}`.
+  """
+
+  family = _messages.StringField(1)
+  name = _messages.StringField(2)
+  project = _messages.StringField(3)
 
 
 class GoogleCloudAiplatformV1NotebookIdleShutdownConfig(_messages.Message):
@@ -23366,6 +24118,8 @@ class GoogleCloudAiplatformV1Part(_messages.Message):
   filled with raw bytes.
 
   Fields:
+    audioTranscription: Optional. Audio (input or output) transcription. This
+      is only set when this Part contains audio data.
     codeExecutionResult: Optional. The result of executing the ExecutableCode.
     executableCode: Optional. Code generated by the model that is intended to
       be executed.
@@ -23392,17 +24146,18 @@ class GoogleCloudAiplatformV1Part(_messages.Message):
       specified while the video data is presented in inline_data or file_data.
   """
 
-  codeExecutionResult = _messages.MessageField('GoogleCloudAiplatformV1CodeExecutionResult', 1)
-  executableCode = _messages.MessageField('GoogleCloudAiplatformV1ExecutableCode', 2)
-  fileData = _messages.MessageField('GoogleCloudAiplatformV1FileData', 3)
-  functionCall = _messages.MessageField('GoogleCloudAiplatformV1FunctionCall', 4)
-  functionResponse = _messages.MessageField('GoogleCloudAiplatformV1FunctionResponse', 5)
-  inlineData = _messages.MessageField('GoogleCloudAiplatformV1Blob', 6)
-  mediaResolution = _messages.MessageField('GoogleCloudAiplatformV1PartMediaResolution', 7)
-  text = _messages.StringField(8)
-  thought = _messages.BooleanField(9)
-  thoughtSignature = _messages.BytesField(10)
-  videoMetadata = _messages.MessageField('GoogleCloudAiplatformV1VideoMetadata', 11)
+  audioTranscription = _messages.MessageField('GoogleCloudAiplatformV1AudioTranscription', 1)
+  codeExecutionResult = _messages.MessageField('GoogleCloudAiplatformV1CodeExecutionResult', 2)
+  executableCode = _messages.MessageField('GoogleCloudAiplatformV1ExecutableCode', 3)
+  fileData = _messages.MessageField('GoogleCloudAiplatformV1FileData', 4)
+  functionCall = _messages.MessageField('GoogleCloudAiplatformV1FunctionCall', 5)
+  functionResponse = _messages.MessageField('GoogleCloudAiplatformV1FunctionResponse', 6)
+  inlineData = _messages.MessageField('GoogleCloudAiplatformV1Blob', 7)
+  mediaResolution = _messages.MessageField('GoogleCloudAiplatformV1PartMediaResolution', 8)
+  text = _messages.StringField(9)
+  thought = _messages.BooleanField(10)
+  thoughtSignature = _messages.BytesField(11)
+  videoMetadata = _messages.MessageField('GoogleCloudAiplatformV1VideoMetadata', 12)
 
 
 class GoogleCloudAiplatformV1PartMediaResolution(_messages.Message):
@@ -23471,6 +24226,12 @@ class GoogleCloudAiplatformV1PartialArg(_messages.Message):
 
 class GoogleCloudAiplatformV1PauseModelDeploymentMonitoringJobRequest(_messages.Message):
   r"""Request message for JobService.PauseModelDeploymentMonitoringJob."""
+
+
+class GoogleCloudAiplatformV1PauseSandboxEnvironmentRequest(_messages.Message):
+  r"""Request message for SandboxEnvironmentService.PauseSandboxEnvironment.
+  """
+
 
 
 class GoogleCloudAiplatformV1PauseScheduleRequest(_messages.Message):
@@ -26639,9 +27400,12 @@ class GoogleCloudAiplatformV1ReasoningEngineSpecContainerSpec(_messages.Message)
     imageUri: Required. The Artifact Registry Docker image URI (e.g., us-
       central1-docker.pkg.dev/my-project/my-repo/my-image:tag) of the
       container image that is to be run on each worker replica.
+    port: Optional. The port the container listens on. Defaults to 8080 if
+      unset.
   """
 
   imageUri = _messages.StringField(1)
+  port = _messages.IntegerField(2, variant=_messages.Variant.INT32)
 
 
 class GoogleCloudAiplatformV1ReasoningEngineSpecDeploymentSpec(_messages.Message):
@@ -27176,6 +27940,22 @@ class GoogleCloudAiplatformV1ResourcesConsumed(_messages.Message):
   replicaHours = _messages.FloatField(1)
 
 
+class GoogleCloudAiplatformV1ResponseFormat(_messages.Message):
+  r"""Configuration for the model to configure output formatting and delivery.
+
+  Fields:
+    audio: Audio output format.
+    image: Image output format.
+    text: Text output format.
+    video: Video output format.
+  """
+
+  audio = _messages.MessageField('GoogleCloudAiplatformV1AudioResponseFormat', 1)
+  image = _messages.MessageField('GoogleCloudAiplatformV1ImageResponseFormat', 2)
+  text = _messages.MessageField('GoogleCloudAiplatformV1TextResponseFormat', 3)
+  video = _messages.MessageField('GoogleCloudAiplatformV1VideoResponseFormat', 4)
+
+
 class GoogleCloudAiplatformV1RestoreDatasetVersionOperationMetadata(_messages.Message):
   r"""Runtime operation information for DatasetService.RestoreDatasetVersion.
 
@@ -27188,6 +27968,12 @@ class GoogleCloudAiplatformV1RestoreDatasetVersionOperationMetadata(_messages.Me
 
 class GoogleCloudAiplatformV1ResumeModelDeploymentMonitoringJobRequest(_messages.Message):
   r"""Request message for JobService.ResumeModelDeploymentMonitoringJob."""
+
+
+class GoogleCloudAiplatformV1ResumeSandboxEnvironmentRequest(_messages.Message):
+  r"""Request message for SandboxEnvironmentService.ResumeSandboxEnvironment.
+  """
+
 
 
 class GoogleCloudAiplatformV1ResumeScheduleRequest(_messages.Message):
@@ -27670,6 +28456,479 @@ class GoogleCloudAiplatformV1SamplingStrategyRandomSampleConfig(_messages.Messag
   """
 
   sampleRate = _messages.FloatField(1)
+
+
+class GoogleCloudAiplatformV1SandboxEnvironment(_messages.Message):
+  r"""SandboxEnvironment is a containerized environment that provides a
+  customizable secure execution runtime for AI agents.
+
+  Enums:
+    StateValueValuesEnum: Output only. The runtime state of the
+      SandboxEnvironment.
+
+  Fields:
+    connectionInfo: Output only. The connection information of the
+      SandboxEnvironment.
+    createTime: Output only. The timestamp when this SandboxEnvironment was
+      created.
+    displayName: Required. The display name of the SandboxEnvironment.
+    expireTime: Optional. Timestamp in UTC of when this SandboxEnvironment is
+      considered expired. This is *always* provided on output, regardless of
+      what `expiration` was sent on input.
+    latestSandboxEnvironmentSnapshot: Output only. The resource name of the
+      latest snapshot taken for this SandboxEnvironment.
+    name: Identifier. The name of the SandboxEnvironment.
+    owner: Optional. Owner information for this sandbox environment. A Sandbox
+      can only be restored from a snapshot that belongs to the same owner. If
+      not set, sandbox will be created as the default owner.
+    sandboxEnvironmentSnapshot: Optional. The resource name of the
+      SandboxEnvironmentSnapshot to use for creating this SandboxEnvironment.
+      Format: `projects/{project}/locations/{location}/reasoningEngines/{reaso
+      ning_engine}/sandboxEnvironmentSnapshots/{sandbox_environment_snapshot}`
+    sandboxEnvironmentTemplate: Optional. The name of the
+      SandboxEnvironmentTemplate specified in the parent Agent Engine resource
+      that this SandboxEnvironment is created from.
+    spec: Optional. The configuration of the SandboxEnvironment.
+    state: Output only. The runtime state of the SandboxEnvironment.
+    ttl: Optional. Input only. The TTL for the sandbox environment. The
+      expiration time is computed: now + TTL.
+    updateTime: Output only. The timestamp when this SandboxEnvironment was
+      most recently updated.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The runtime state of the SandboxEnvironment.
+
+    Values:
+      STATE_UNSPECIFIED: The default value. This value is unused.
+      STATE_PROVISIONING: Runtime resources are being allocated for the
+        sandbox environment.
+      STATE_RUNNING: Sandbox runtime is ready for serving.
+      STATE_DEPROVISIONING: Sandbox runtime is halted, performing tear down
+        tasks.
+      STATE_TERMINATED: Sandbox has terminated with underlying runtime
+        failure.
+      STATE_DELETED: Sandbox runtime has been deleted.
+    """
+    STATE_UNSPECIFIED = 0
+    STATE_PROVISIONING = 1
+    STATE_RUNNING = 2
+    STATE_DEPROVISIONING = 3
+    STATE_TERMINATED = 4
+    STATE_DELETED = 5
+
+  connectionInfo = _messages.MessageField('GoogleCloudAiplatformV1SandboxEnvironmentConnectionInfo', 1)
+  createTime = _messages.StringField(2)
+  displayName = _messages.StringField(3)
+  expireTime = _messages.StringField(4)
+  latestSandboxEnvironmentSnapshot = _messages.StringField(5)
+  name = _messages.StringField(6)
+  owner = _messages.StringField(7)
+  sandboxEnvironmentSnapshot = _messages.StringField(8)
+  sandboxEnvironmentTemplate = _messages.StringField(9)
+  spec = _messages.MessageField('GoogleCloudAiplatformV1SandboxEnvironmentSpec', 10)
+  state = _messages.EnumField('StateValueValuesEnum', 11)
+  ttl = _messages.StringField(12)
+  updateTime = _messages.StringField(13)
+
+
+class GoogleCloudAiplatformV1SandboxEnvironmentConnectionInfo(_messages.Message):
+  r"""The connection information of the SandboxEnvironment.
+
+  Fields:
+    loadBalancerHostname: Output only. The hostname of the load balancer.
+    loadBalancerIp: Output only. The IP address of the load balancer.
+    routingToken: Output only. The routing token for the SandboxEnvironment.
+    sandboxInternalIp: Output only. The internal IP address of the
+      SandboxEnvironment.
+  """
+
+  loadBalancerHostname = _messages.StringField(1)
+  loadBalancerIp = _messages.StringField(2)
+  routingToken = _messages.StringField(3)
+  sandboxInternalIp = _messages.StringField(4)
+
+
+class GoogleCloudAiplatformV1SandboxEnvironmentSnapshot(_messages.Message):
+  r"""SandboxEnvironmentSnapshot is a snapshot of the SandboxEnvironment.
+
+  Enums:
+    PostSnapshotActionValueValuesEnum: Optional. Input only. Action to take on
+      the source SandboxEnvironment after the snapshot is taken. This field is
+      only used in CreateSandboxEnvironmentSnapshotRequest and it is not
+      stored in the resource.
+
+  Fields:
+    createTime: Output only. The timestamp when this
+      SandboxEnvironmentSnapshot was created.
+    displayName: Required. The display name of the SandboxEnvironmentSnapshot.
+    expireTime: Optional. Timestamp in UTC of when this
+      SandboxEnvironmentSnapshot is considered expired. This is *always*
+      provided on output, regardless of what `expiration` was sent on input.
+    name: Identifier. The resource name of the SandboxEnvironmentSnapshot.
+      Format: `projects/{project}/locations/{location}/reasoningEngines/{reaso
+      ning_engine}/sandboxEnvironmentSnapshots/{sandbox_environment_snapshot}`
+    owner: Optional. Owner information for this sandbox snapshot. Different
+      owners will have isolations on snapshot storage and identity. If not
+      set, snapshot will be created as the default owner.
+    parentSnapshot: Output only. The resource name of the parent
+      SandboxEnvironmentSnapshot. Empty if this is a root Snapshot (the first
+      snapshot from a newly created sandbox). Can be used to reconstruct the
+      whole ancestry tree of snapshots.
+    postSnapshotAction: Optional. Input only. Action to take on the source
+      SandboxEnvironment after the snapshot is taken. This field is only used
+      in CreateSandboxEnvironmentSnapshotRequest and it is not stored in the
+      resource.
+    sizeBytes: Optional. Output only. Size of the snapshot data in bytes.
+    sourceSandboxEnvironment: Required. The resource name of the source
+      SandboxEnvironment this snapshot was taken from.
+    ttl: Optional. Input only. The TTL for the sandbox environment snapshot.
+      The expiration time is computed: now + TTL.
+    updateTime: Output only. The timestamp when this SandboxEnvironment was
+      most recently updated.
+  """
+
+  class PostSnapshotActionValueValuesEnum(_messages.Enum):
+    r"""Optional. Input only. Action to take on the source SandboxEnvironment
+    after the snapshot is taken. This field is only used in
+    CreateSandboxEnvironmentSnapshotRequest and it is not stored in the
+    resource.
+
+    Values:
+      POST_SNAPSHOT_ACTION_UNSPECIFIED: The default value. This value is
+        unused.
+      RUNNING: Sandbox environment will continue to run after snapshot is
+        taken.
+      PAUSE: Sandbox environment will be paused after snapshot is taken.
+    """
+    POST_SNAPSHOT_ACTION_UNSPECIFIED = 0
+    RUNNING = 1
+    PAUSE = 2
+
+  createTime = _messages.StringField(1)
+  displayName = _messages.StringField(2)
+  expireTime = _messages.StringField(3)
+  name = _messages.StringField(4)
+  owner = _messages.StringField(5)
+  parentSnapshot = _messages.StringField(6)
+  postSnapshotAction = _messages.EnumField('PostSnapshotActionValueValuesEnum', 7)
+  sizeBytes = _messages.IntegerField(8)
+  sourceSandboxEnvironment = _messages.StringField(9)
+  ttl = _messages.StringField(10)
+  updateTime = _messages.StringField(11)
+
+
+class GoogleCloudAiplatformV1SandboxEnvironmentSpec(_messages.Message):
+  r"""The specification of a SandboxEnvironment.
+
+  Fields:
+    codeExecutionEnvironment: Optional. The code execution environment.
+  """
+
+  codeExecutionEnvironment = _messages.MessageField('GoogleCloudAiplatformV1SandboxEnvironmentSpecCodeExecutionEnvironment', 1)
+
+
+class GoogleCloudAiplatformV1SandboxEnvironmentSpecCodeExecutionEnvironment(_messages.Message):
+  r"""The code execution environment with customized settings.
+
+  Enums:
+    CodeLanguageValueValuesEnum: The coding language supported in this
+      environment.
+    MachineConfigValueValuesEnum: The machine config of the code execution
+      environment.
+
+  Fields:
+    codeLanguage: The coding language supported in this environment.
+    machineConfig: The machine config of the code execution environment.
+  """
+
+  class CodeLanguageValueValuesEnum(_messages.Enum):
+    r"""The coding language supported in this environment.
+
+    Values:
+      LANGUAGE_UNSPECIFIED: The default value. This value is unused.
+      LANGUAGE_PYTHON: The coding language is Python.
+      LANGUAGE_JAVASCRIPT: The coding language is JavaScript.
+    """
+    LANGUAGE_UNSPECIFIED = 0
+    LANGUAGE_PYTHON = 1
+    LANGUAGE_JAVASCRIPT = 2
+
+  class MachineConfigValueValuesEnum(_messages.Enum):
+    r"""The machine config of the code execution environment.
+
+    Values:
+      MACHINE_CONFIG_UNSPECIFIED: The default value: milligcu 2000, memory
+        1.5Gib
+      MACHINE_CONFIG_VCPU4_RAM4GIB: The default value: milligcu 4000, memory 4
+        Gib
+    """
+    MACHINE_CONFIG_UNSPECIFIED = 0
+    MACHINE_CONFIG_VCPU4_RAM4GIB = 1
+
+  codeLanguage = _messages.EnumField('CodeLanguageValueValuesEnum', 1)
+  machineConfig = _messages.EnumField('MachineConfigValueValuesEnum', 2)
+
+
+class GoogleCloudAiplatformV1SandboxEnvironmentTemplate(_messages.Message):
+  r"""The specification of a SandboxEnvironmentTemplate. A
+  SandboxEnvironmentTemplate defines a template for creating
+  SandboxEnvironments.
+
+  Enums:
+    StateValueValuesEnum: Output only. The state of the sandbox environment
+      template.
+
+  Fields:
+    createTime: Output only. The timestamp when this
+      SandboxEnvironmentTemplate was created.
+    customContainerEnvironment: The sandbox environment for custom container
+      workloads.
+    defaultContainerEnvironment: The sandbox environment for default container
+      workloads.
+    displayName: Required. The display name of the SandboxEnvironmentTemplate.
+    egressControlConfig: Optional. The configuration for egress control of
+      this template.
+    name: Identifier. The resource name of the SandboxEnvironmentTemplate.
+      Format: `projects/{project}/locations/{location}/reasoningEngines/{reaso
+      ning_engine}/sandboxEnvironmentTemplates/{sandbox_environment_template}`
+    state: Output only. The state of the sandbox environment template.
+    updateTime: Output only. The timestamp when this
+      SandboxEnvironmentTemplate was most recently updated.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the sandbox environment template.
+
+    Values:
+      UNSPECIFIED: The default value. This value is unused.
+      PROVISIONING: Runtime resources are being allocated for the sandbox
+        environment.
+      ACTIVE: Sandbox runtime is ready for serving.
+      DEPROVISIONING: Sandbox runtime is halted, performing tear down tasks.
+      DELETED: Sandbox has terminated with underlying runtime failure.
+      FAILED: Sandbox has failed to provision.
+    """
+    UNSPECIFIED = 0
+    PROVISIONING = 1
+    ACTIVE = 2
+    DEPROVISIONING = 3
+    DELETED = 4
+    FAILED = 5
+
+  createTime = _messages.StringField(1)
+  customContainerEnvironment = _messages.MessageField('GoogleCloudAiplatformV1SandboxEnvironmentTemplateCustomContainerEnvironment', 2)
+  defaultContainerEnvironment = _messages.MessageField('GoogleCloudAiplatformV1SandboxEnvironmentTemplateDefaultContainerEnvironment', 3)
+  displayName = _messages.StringField(4)
+  egressControlConfig = _messages.MessageField('GoogleCloudAiplatformV1SandboxEnvironmentTemplateEgressControlConfig', 5)
+  name = _messages.StringField(6)
+  state = _messages.EnumField('StateValueValuesEnum', 7)
+  updateTime = _messages.StringField(8)
+
+
+class GoogleCloudAiplatformV1SandboxEnvironmentTemplateCustomContainerEnvironment(_messages.Message):
+  r"""The customized sandbox runtime environment for BYOC.
+
+  Fields:
+    customContainerSpec: The specification of the custom container
+      environment.
+    ports: Ports to expose from the container.
+    resources: Resource requests and limits for the container.
+  """
+
+  customContainerSpec = _messages.MessageField('GoogleCloudAiplatformV1SandboxEnvironmentTemplateCustomContainerSpec', 1)
+  ports = _messages.MessageField('GoogleCloudAiplatformV1SandboxEnvironmentTemplateNetworkPort', 2, repeated=True)
+  resources = _messages.MessageField('GoogleCloudAiplatformV1SandboxEnvironmentTemplateResourceRequirements', 3)
+
+
+class GoogleCloudAiplatformV1SandboxEnvironmentTemplateCustomContainerSpec(_messages.Message):
+  r"""Specification for deploying from a custom container image.
+
+  Fields:
+    imageUri: Required. The Artifact Registry Docker image URI (e.g., us-
+      central1-docker.pkg.dev/my-project/my-repo/my-image:tag) of the
+      container image that is to be run on each worker replica.
+  """
+
+  imageUri = _messages.StringField(1)
+
+
+class GoogleCloudAiplatformV1SandboxEnvironmentTemplateDefaultContainerEnvironment(_messages.Message):
+  r"""The default sandbox runtime environment for default container workloads.
+
+  Enums:
+    DefaultContainerCategoryValueValuesEnum: Required. The category of the
+      default container image.
+
+  Fields:
+    defaultContainerCategory: Required. The category of the default container
+      image.
+    resources: Optional. Resource requests and limits for the default
+      container.
+  """
+
+  class DefaultContainerCategoryValueValuesEnum(_messages.Enum):
+    r"""Required. The category of the default container image.
+
+    Values:
+      DEFAULT_CONTAINER_CATEGORY_UNSPECIFIED: The default value. This value is
+        unused.
+      DEFAULT_CONTAINER_CATEGORY_COMPUTER_USE: The default container image for
+        Computer Use.
+      DEFAULT_CONTAINER_CATEGORY_SHELL_SANDBOX: The default container image
+        for Shell Sandbox.
+    """
+    DEFAULT_CONTAINER_CATEGORY_UNSPECIFIED = 0
+    DEFAULT_CONTAINER_CATEGORY_COMPUTER_USE = 1
+    DEFAULT_CONTAINER_CATEGORY_SHELL_SANDBOX = 2
+
+  defaultContainerCategory = _messages.EnumField('DefaultContainerCategoryValueValuesEnum', 1)
+  resources = _messages.MessageField('GoogleCloudAiplatformV1SandboxEnvironmentTemplateResourceRequirements', 2)
+
+
+class GoogleCloudAiplatformV1SandboxEnvironmentTemplateEgressControlConfig(_messages.Message):
+  r"""Configuration for egress control of sandbox instances.
+
+  Fields:
+    customerVpcNetwork: Optional. The customer VPC network that sandbox egress
+      is routed into.
+    dnsPeeringConfigs: Optional. DNS peering configurations that allow sandbox
+      egress to resolve customer-internal domains via the customer VPC.
+    internetAccess: Optional. Whether to allow internet access.
+    networkAttachment: Optional. The name of the customer VPC
+      NetworkAttachment used to draw a PSC interface IP into the customer VPC
+      for sandbox egress.
+  """
+
+  customerVpcNetwork = _messages.StringField(1)
+  dnsPeeringConfigs = _messages.MessageField('GoogleCloudAiplatformV1SandboxEnvironmentTemplateEgressControlConfigDnsPeeringConfig', 2, repeated=True)
+  internetAccess = _messages.BooleanField(3)
+  networkAttachment = _messages.StringField(4)
+
+
+class GoogleCloudAiplatformV1SandboxEnvironmentTemplateEgressControlConfigDnsPeeringConfig(_messages.Message):
+  r"""Configuration for peering a customer's private DNS zone so that sandbox
+  egress can resolve customer-internal domains via the customer VPC.
+
+  Fields:
+    domain: Required. The DNS name suffix of the zone being peered to, e.g.,
+      "my-internal-domain.corp.". Must end with a dot.
+    targetNetwork: Required. The VPC network name in the target_project where
+      the DNS zone specified by 'domain' is visible.
+    targetProject: Required. The project ID hosting the Cloud DNS managed zone
+      that contains the 'domain'. The Vertex AI Service Agent requires the
+      dns.peer role on this project.
+  """
+
+  domain = _messages.StringField(1)
+  targetNetwork = _messages.StringField(2)
+  targetProject = _messages.StringField(3)
+
+
+class GoogleCloudAiplatformV1SandboxEnvironmentTemplateNetworkPort(_messages.Message):
+  r"""Represents a network port in a container.
+
+  Enums:
+    ProtocolValueValuesEnum: Optional. Protocol for port. Defaults to TCP if
+      not specified.
+
+  Fields:
+    port: Optional. Port number to expose. This must be a valid port number,
+      between 1 and 65535.
+    protocol: Optional. Protocol for port. Defaults to TCP if not specified.
+  """
+
+  class ProtocolValueValuesEnum(_messages.Enum):
+    r"""Optional. Protocol for port. Defaults to TCP if not specified.
+
+    Values:
+      PROTOCOL_UNSPECIFIED: Unspecified protocol. Defaults to TCP.
+      TCP: TCP protocol.
+      UDP: UDP protocol.
+    """
+    PROTOCOL_UNSPECIFIED = 0
+    TCP = 1
+    UDP = 2
+
+  port = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  protocol = _messages.EnumField('ProtocolValueValuesEnum', 2)
+
+
+class GoogleCloudAiplatformV1SandboxEnvironmentTemplateResourceRequirements(_messages.Message):
+  r"""Message to define resource requests and limits (mirroring Kubernetes)
+  for each sandbox instance created from this template.
+
+  Messages:
+    LimitsValue: Optional. The maximum amounts of compute resources allowed.
+      Keys are resource names (e.g., "cpu", "memory"). Values are quantities
+      (e.g., "500m", "1Gi").
+    RequestsValue: Optional. The requested amounts of compute resources. Keys
+      are resource names (e.g., "cpu", "memory"). Values are quantities (e.g.,
+      "250m", "512Mi").
+
+  Fields:
+    limits: Optional. The maximum amounts of compute resources allowed. Keys
+      are resource names (e.g., "cpu", "memory"). Values are quantities (e.g.,
+      "500m", "1Gi").
+    requests: Optional. The requested amounts of compute resources. Keys are
+      resource names (e.g., "cpu", "memory"). Values are quantities (e.g.,
+      "250m", "512Mi").
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LimitsValue(_messages.Message):
+    r"""Optional. The maximum amounts of compute resources allowed. Keys are
+    resource names (e.g., "cpu", "memory"). Values are quantities (e.g.,
+    "500m", "1Gi").
+
+    Messages:
+      AdditionalProperty: An additional property for a LimitsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LimitsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LimitsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class RequestsValue(_messages.Message):
+    r"""Optional. The requested amounts of compute resources. Keys are
+    resource names (e.g., "cpu", "memory"). Values are quantities (e.g.,
+    "250m", "512Mi").
+
+    Messages:
+      AdditionalProperty: An additional property for a RequestsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type RequestsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a RequestsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  limits = _messages.MessageField('LimitsValue', 1)
+  requests = _messages.MessageField('RequestsValue', 2)
 
 
 class GoogleCloudAiplatformV1SavedQuery(_messages.Message):
@@ -34161,6 +35420,35 @@ class GoogleCloudAiplatformV1TensorboardTimeSeriesMetadata(_messages.Message):
   maxWallTime = _messages.StringField(3)
 
 
+class GoogleCloudAiplatformV1TextResponseFormat(_messages.Message):
+  r"""Configuration for text-specific output formatting.
+
+  Enums:
+    MimeTypeValueValuesEnum: Optional. The IANA standard MIME type of the
+      response.
+
+  Fields:
+    mimeType: Optional. The IANA standard MIME type of the response.
+    schema: Optional. The JSON schema that the output should conform to. Only
+      applicable when mime_type is APPLICATION_JSON.
+  """
+
+  class MimeTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The IANA standard MIME type of the response.
+
+    Values:
+      MIME_TYPE_UNSPECIFIED: Default value. This value is unused.
+      APPLICATION_JSON: JSON output format.
+      TEXT_PLAIN: Plain text output format.
+    """
+    MIME_TYPE_UNSPECIFIED = 0
+    APPLICATION_JSON = 1
+    TEXT_PLAIN = 2
+
+  mimeType = _messages.EnumField('MimeTypeValueValuesEnum', 1)
+  schema = _messages.MessageField('extra_types.JsonValue', 2)
+
+
 class GoogleCloudAiplatformV1ThresholdConfig(_messages.Message):
   r"""The config for feature monitoring threshold.
 
@@ -34563,11 +35851,6 @@ class GoogleCloudAiplatformV1ToolParallelAiSearch(_messages.Message):
       "source_policy": { "include_domains": ["google.com", "wikipedia.org"],
       "exclude_domains": ["example.com"] }, "fetch_policy": {
       "max_age_seconds": 3600 } }
-    enableDataRetention: Optional. Instructs Vertex Grounding to use
-      Parallel's Zero Data Retention Marketplace product. If this value is
-      "false" or omitted, the Parallel Web Search for Grounding standard
-      subscription will be used. If this value is "true", the Parallel Web
-      Search for Grounding - ZDR subscription will be used.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -34604,7 +35887,6 @@ class GoogleCloudAiplatformV1ToolParallelAiSearch(_messages.Message):
 
   apiKey = _messages.StringField(1)
   customConfigs = _messages.MessageField('CustomConfigsValue', 2)
-  enableDataRetention = _messages.BooleanField(3)
 
 
 class GoogleCloudAiplatformV1ToolParameterKVMatchInput(_messages.Message):
@@ -36264,6 +37546,52 @@ class GoogleCloudAiplatformV1VideoMetadata(_messages.Message):
   endOffset = _messages.StringField(1)
   fps = _messages.FloatField(2)
   startOffset = _messages.StringField(3)
+
+
+class GoogleCloudAiplatformV1VideoResponseFormat(_messages.Message):
+  r"""Configuration for video-specific output formatting.
+
+  Enums:
+    AspectRatioValueValuesEnum: The aspect ratio for the video output.
+    DeliveryValueValuesEnum: Optional. Delivery mode for the generated
+      content.
+
+  Fields:
+    aspectRatio: The aspect ratio for the video output.
+    delivery: Optional. Delivery mode for the generated content.
+    duration: Optional. The duration for the video output.
+    gcsUri: Optional. The Google Cloud Storage URI to store the video output.
+      Required for Vertex if delivery is URI.
+  """
+
+  class AspectRatioValueValuesEnum(_messages.Enum):
+    r"""The aspect ratio for the video output.
+
+    Values:
+      ASPECT_RATIO_UNSPECIFIED: Default value. This value is unused.
+      ASPECT_RATIO_SIXTEEN_BY_NINE: 16:9 aspect ratio.
+      ASPECT_RATIO_NINE_BY_SIXTEEN: 9:16 aspect ratio.
+    """
+    ASPECT_RATIO_UNSPECIFIED = 0
+    ASPECT_RATIO_SIXTEEN_BY_NINE = 1
+    ASPECT_RATIO_NINE_BY_SIXTEEN = 2
+
+  class DeliveryValueValuesEnum(_messages.Enum):
+    r"""Optional. Delivery mode for the generated content.
+
+    Values:
+      DELIVERY_UNSPECIFIED: Default value. This value is unused.
+      INLINE: Generated bytes are returned inline in the response.
+      URI: Generated content is stored and a URI is returned.
+    """
+    DELIVERY_UNSPECIFIED = 0
+    INLINE = 1
+    URI = 2
+
+  aspectRatio = _messages.EnumField('AspectRatioValueValuesEnum', 1)
+  delivery = _messages.EnumField('DeliveryValueValuesEnum', 2)
+  duration = _messages.StringField(3)
+  gcsUri = _messages.StringField(4)
 
 
 class GoogleCloudAiplatformV1VoiceConfig(_messages.Message):

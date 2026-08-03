@@ -76,7 +76,7 @@ Container Flags
   group.AddArgument(flags.ClearVolumeMountsFlag())
   group.AddArgument(flags.StartupProbeFlag())
   if release_track != base.ReleaseTrack.GA:
-    group.AddArgument(flags.SandboxLauncherFlag(hidden=True))
+    group.AddArgument(flags.SandboxLauncherFlag())
 
   return group
 
@@ -291,6 +291,11 @@ class Deploy(base.Command):
               conn_context, job_ref, operation_message, 'job'
           )
       )
+      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+        if job_obj is None:
+          operations.ValidateJobBeforeCreate(job_ref, changes)
+        else:
+          operations.ValidateJobBeforeUpdate(job_ref, changes, prefetch=job_obj)
       operation = 'Creating' if job_obj is None else 'Updating'
       if build_from_source and execute_now:
         header_msg = 'Building, {} and running job...'.format(operation.lower())

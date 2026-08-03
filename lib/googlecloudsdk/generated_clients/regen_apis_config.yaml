@@ -123,8 +123,6 @@ apis:
         projects.locations.semanticGovernancePolicyEngine:
           path:
             projects/{projectsId}/locations/{locationsId}/semanticGovernancePolicyEngine
-      skip:
-        bug: b/535540947
     v1:
       discovery_doc: aiplatform_v1.json
       gcloud_gapic_library: google/cloud/aiplatform/v1:aiplatform_v1_py
@@ -1500,8 +1498,6 @@ apis:
             projects/{projectsId}/locations/{locationsId}/caPools/{caPoolsId}
   metastore:
     v1alpha:
-      skip:
-        bug: b/511170151
       discovery_doc: metastore_v1alpha.json
       resources:
         projects.locations.services.databases:
@@ -1511,8 +1507,6 @@ apis:
           path:
             projects/{projectsId}/locations/{locationsId}/services/{servicesId}/databases/{databasesId}/tables/{tablesId}
     v1beta:
-      skip:
-        bug: b/511170151
       discovery_doc: metastore_v1beta.json
       resources:
         projects.locations.services.databases:
@@ -1522,8 +1516,6 @@ apis:
           path:
             projects/{projectsId}/locations/{locationsId}/services/{servicesId}/databases/{databasesId}/tables/{tablesId}
     v1:
-      skip:
-        bug: b/511170151
       discovery_doc: metastore_v1.json
       default: true
   microservices:
@@ -1977,11 +1969,13 @@ apis:
       discovery_doc: speech_v2.json
   sqladmin:
     v1beta4:
-      skip:
-        bug: b/514665658
       discovery_doc: sqladmin_v1beta4.json
       unelidable_request_methods:
       - sql.instances.insert
+      - sql.instances.startWorkloadCapture
+      - sql.instances.startWorkloadReplay
+      - sql.instances.stopWorkloadCapture
+      - sql.instances.stopWorkloadReplay
       resources:
         projects:
           path: projects/{project}

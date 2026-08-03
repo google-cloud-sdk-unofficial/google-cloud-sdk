@@ -20,12 +20,13 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Create exascaleDbStorageVaults
-    description: Create an exascaleDbStorageVault
+    brief: Create a new ExascaleDbStorageVault.
+    description: Create a new ExascaleDbStorageVault.
     examples: |-
-      To create the exascaleDbStorageVault, run:
+      To create an ExascaleDbStorageVault with id `my-vault` in the location `us-east4`
+      with display-name `my vault` and total storage `1000` GB, run:
 
-          $ {command}
+        $ {command} my-vault --location=us-east4 --display-name="my vault" --total-size-gbs=1000
   arguments:
     params:
     - help_text: |-

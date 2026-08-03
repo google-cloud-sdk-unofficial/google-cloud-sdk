@@ -25,7 +25,6 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.BETA,
     base.ReleaseTrack.GA,
     base.ReleaseTrack.PREVIEW,
 )
@@ -101,8 +100,11 @@ class Create(base.CreateCommand):
     return result
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+)
+class CreateAlphaBeta(Create):
   r"""Creates a Compute Engine public advertised prefix.
 
     ## EXAMPLES

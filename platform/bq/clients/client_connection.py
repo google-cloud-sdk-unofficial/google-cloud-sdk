@@ -371,16 +371,22 @@ def _GetUpdateMaskRecursively(
 def DeleteConnection(
     client: discovery.Resource,
     reference: bq_id_utils.ApiClientHelper.ConnectionReference,
+    ignore_not_found: bool = False,
 ):
   """Delete a connection with the given connection reference.
 
   Arguments:
     client: the client used to make the request.
     reference: Connection to delete.
+    ignore_not_found: Whether to ignore "not found" errors.
   """
-  client.projects().locations().connections().delete(
-      name=reference.path()
-  ).execute()
+  try:
+    client.projects().locations().connections().delete(
+        name=reference.path()
+    ).execute()
+  except bq_error.BigqueryNotFoundError:
+    if not ignore_not_found:
+      raise
 
 
 def ListConnections(

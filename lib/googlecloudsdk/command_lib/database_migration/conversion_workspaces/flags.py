@@ -199,8 +199,8 @@ def AddAutoCommitFlag(parser: argparse.ArgumentParser) -> None:
   """Adds a --auto-commit flag to the given parser."""
   parser.add_argument(
       '--auto-commit',
-      action='store_true',
-      help='Auto commits the conversion workspace.',
+      action=arg_parsers.StoreTrueFalseAction,
+      help='Auto-commit the conversion workspace (default: True).',
   )
 
 

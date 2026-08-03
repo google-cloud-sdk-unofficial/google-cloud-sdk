@@ -696,6 +696,13 @@ def HandleRowKeySchemaUpdateTableArgs(unused_ref, args, req):
   return req
 
 
+def HandleIgnoreWarningsUpdateTableArgs(unused_ref, args, req):
+  """Handles ignore warnings update table args."""
+  if getattr(args, 'ignore_warnings', False):
+    req.ignoreWarnings = True
+  return req
+
+
 def Base64EncodeBinaryFieldsInRowKeySchema(row_key_schema):
   """Encodes binary fields in the row key schema in Base64."""
   # We don't need to check for missing encoding here, as the admin API will
