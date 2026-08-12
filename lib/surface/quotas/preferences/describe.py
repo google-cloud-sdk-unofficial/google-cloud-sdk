@@ -66,7 +66,7 @@ class DescribeAlpha(base.DescribeCommand):
     )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class DescribeBeta(base.DescribeCommand):
   """Get details about a single QuotaPreference.
@@ -108,5 +108,5 @@ class DescribeBeta(base.DescribeCommand):
       The requested QuotaPreference for specified container and service.
     """
     return quota_preference.GetQuotaPreference(
-        args, release_track=base.ReleaseTrack.BETA
+        args, release_track=self.ReleaseTrack()
     )

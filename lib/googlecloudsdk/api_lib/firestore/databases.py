@@ -54,6 +54,7 @@ def CreateDatabase(
     firestore_data_access_mode,
     realtime_updates_mode,
     concurrency_mode,
+    storage_placement=None,
     tags=None,
 ):
   """Performs a Firestore Admin v1 Database Creation.
@@ -74,6 +75,8 @@ def CreateDatabase(
     realtime_updates_mode: The Realtime Updates mode to use for this database,
       an Enum.
     concurrency_mode: The concurrency mode to use for this database, an Enum.
+    storage_placement: the storage placement for SMMR databases, a string or
+      None.
     tags: the tags to attach to the database, a key-value dictionary, or None.
 
   Returns:
@@ -98,6 +101,7 @@ def CreateDatabase(
               firestoreDataAccessMode=firestore_data_access_mode,
               realtimeUpdatesMode=realtime_updates_mode,
               concurrencyMode=concurrency_mode,
+              storagePlacement=storage_placement,
               tags=tags_value,
           ),
       )

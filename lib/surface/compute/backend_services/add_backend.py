@@ -328,8 +328,8 @@ class AddBackendBeta(AddBackend):
   # Allow --preference flag to be set when updating the backend.
   support_in_flight_balancing = True
   support_inline_service = True
-  # TODO(b/502655796) - Set true for Beta promotion.
-  support_external_passthrough = False
+  # TODO(b/502655802) - Remove all references on promotion to GA.
+  support_external_passthrough = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

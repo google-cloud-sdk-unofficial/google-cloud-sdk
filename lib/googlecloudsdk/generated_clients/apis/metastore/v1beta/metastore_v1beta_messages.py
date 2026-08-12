@@ -285,7 +285,6 @@ class BackfillStatus(_messages.Message):
       SUCCEEDED: Backfill complete, report is available
       FAILED: Backfill failed; check report for details
     """
-
     STATE_UNSPECIFIED = 0
     PENDING = 1
     RUNNING = 2
@@ -346,7 +345,6 @@ class Backup(_messages.Message):
 
 class BigLakeMetastoreMigrationConfig(_messages.Message):
   r"""Defines the configuration required to migrate metadata from a Dataproc
-
   Metastore service to BigLake Metastore.
 
   Enums:
@@ -378,17 +376,14 @@ class BigLakeMetastoreMigrationConfig(_messages.Message):
   """
 
   class ConflictPolicyValueValuesEnum(_messages.Enum):
-    r"""Optional.
-
-    The policy to handle conflicts when migrating resources, defaults to SKIP if
-    not specified.
+    r"""Optional. The policy to handle conflicts when migrating resources,
+    defaults to SKIP if not specified.
 
     Values:
       CONFLICT_POLICY_UNSPECIFIED: The conflict policy is unspecified.
       SKIP: Skip migrating resources that already exist in the target catalog.
       OVERWRITE: Update resources that already exist in the target catalog.
     """
-
     CONFLICT_POLICY_UNSPECIFIED = 0
     SKIP = 1
     OVERWRITE = 2
@@ -401,7 +396,6 @@ class BigLakeMetastoreMigrationConfig(_messages.Message):
       BACKFILL: Performs the metadata migration of requested resources. The
         migration completes once the backfill is finished.
     """
-
     MIGRATION_MODE_UNSPECIFIED = 0
     BACKFILL = 1
 
@@ -539,16 +533,13 @@ class CatalogSummary(_messages.Message):
       HIVE: BigLake Metastore Hive catalog.
       ICEBERG: BigLake Metastore Iceberg REST catalog.
     """
-
     CATALOG_TYPE_UNSPECIFIED = 0
     HIVE = 1
     ICEBERG = 2
 
   catalog = _messages.StringField(1)
   catalogType = _messages.EnumField('CatalogTypeValueValuesEnum', 2)
-  databaseSummaries = _messages.MessageField(
-      'DatabaseSummary', 3, repeated=True
-  )
+  databaseSummaries = _messages.MessageField('DatabaseSummary', 3, repeated=True)
 
 
 class CdcConfig(_messages.Message):
@@ -817,7 +808,6 @@ class DatabaseSummary(_messages.Message):
         failure (e.g., parent resource missing).
       ERROR: Resource cannot be migrated due to an error during discovery.
     """
-
     ACTION_UNSPECIFIED = 0
     CREATE = 1
     UPDATE = 2
@@ -826,9 +816,8 @@ class DatabaseSummary(_messages.Message):
     ERROR = 5
 
   class ResultStatusValueValuesEnum(_messages.Enum):
-    r"""Output only. The migration result status for the database.
-
-    This is only set if the migration is not a dry run.
+    r"""Output only. The migration result status for the database. This is
+    only set if the migration is not a dry run.
 
     Values:
       STATE_UNSPECIFIED: The state is unspecified.
@@ -836,7 +825,6 @@ class DatabaseSummary(_messages.Message):
       FAILED: The resource failed to migrate.
       SKIPPED: The resource was skipped and will not be migrated.
     """
-
     STATE_UNSPECIFIED = 0
     SUCCEEDED = 1
     FAILED = 2
@@ -901,6 +889,7 @@ class Empty(_messages.Message):
   or the response type of an API method. For instance: service Foo { rpc
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
+
 
 
 class EncryptionConfig(_messages.Message):
@@ -1715,6 +1704,7 @@ class MessageSet(_messages.Message):
   sourced only to facilitate the migration of Google products with MessageSet-
   bearing messages to open-source environments.
   """
+
 
 
 class MetadataExport(_messages.Message):
@@ -2968,9 +2958,7 @@ class MigrationExecution(_messages.Message):
     DELETING = 8
     ROLLED_BACK = 9
 
-  biglakeMetastoreMigrationConfig = _messages.MessageField(
-      'BigLakeMetastoreMigrationConfig', 1
-  )
+  biglakeMetastoreMigrationConfig = _messages.MessageField('BigLakeMetastoreMigrationConfig', 1)
   cloudSqlMigrationConfig = _messages.MessageField('CloudSQLMigrationConfig', 2)
   createTime = _messages.StringField(3)
   endTime = _messages.StringField(4)
@@ -3739,9 +3727,7 @@ class Service(_messages.Message):
   labels = _messages.MessageField('LabelsValue', 8)
   maintenanceWindow = _messages.MessageField('MaintenanceWindow', 9)
   metadataIntegration = _messages.MessageField('MetadataIntegration', 10)
-  metadataManagementActivity = _messages.MessageField(
-      'MetadataManagementActivity', 11
-  )
+  metadataManagementActivity = _messages.MessageField('MetadataManagementActivity', 11)
   multiRegionConfig = _messages.MessageField('MultiRegionConfig', 12)
   name = _messages.StringField(13)
   network = _messages.StringField(14)
@@ -3966,7 +3952,6 @@ class TableSummary(_messages.Message):
   @encoding.MapUnrecognizedFields('additionalProperties')
   class PlanCountsValue(_messages.Message):
     r"""Output only. Number of tables with a specific migration plan action.
-
     The key is the action name (e.g. CREATE, UPDATE, SKIP, etc.).
 
     Messages:
@@ -3987,16 +3972,13 @@ class TableSummary(_messages.Message):
       key = _messages.StringField(1)
       value = _messages.IntegerField(2)
 
-    additionalProperties = _messages.MessageField(
-        'AdditionalProperty', 1, repeated=True
-    )
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class ResultCountsValue(_messages.Message):
     r"""Output only. Number of tables with a specific migration result status.
-
-    The key is the status name (e.g. SUCCEEDED, FAILED, SKIPPED, etc.). This is
-    only set if the migration is not a dry run.
+    The key is the status name (e.g. SUCCEEDED, FAILED, SKIPPED, etc.). This
+    is only set if the migration is not a dry run.
 
     Messages:
       AdditionalProperty: An additional property for a ResultCountsValue
@@ -4017,9 +3999,7 @@ class TableSummary(_messages.Message):
       key = _messages.StringField(1)
       value = _messages.IntegerField(2)
 
-    additionalProperties = _messages.MessageField(
-        'AdditionalProperty', 1, repeated=True
-    )
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   partitionDiscoveredCount = _messages.IntegerField(1)
   partitionFailedCount = _messages.IntegerField(2)

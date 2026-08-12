@@ -93,7 +93,7 @@ class DlpV2(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Returns a list of the sensitive information types that the DLP API supports. See https://cloud.google.com/sensitive-data-protection/docs/infotypes-reference to learn more.
+      r"""Returns a list of the sensitive information types that the DLP API supports. See https://docs.cloud.google.com/sensitive-data-protection/docs/infotypes-reference to learn more.
 
       Args:
         request: (DlpInfoTypesListRequest) input message
@@ -129,7 +129,7 @@ class DlpV2(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Returns a list of the sensitive information types that the DLP API supports. See https://cloud.google.com/sensitive-data-protection/docs/infotypes-reference to learn more.
+      r"""Returns a list of the sensitive information types that the DLP API supports. See https://docs.cloud.google.com/sensitive-data-protection/docs/infotypes-reference to learn more.
 
       Args:
         request: (DlpLocationsInfoTypesListRequest) input message
@@ -176,7 +176,7 @@ class DlpV2(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a DeidentifyTemplate for reusing frequently used configuration for de-identifying content, images, and storage. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
+      r"""Creates a DeidentifyTemplate for reusing frequently used configuration for de-identifying content, images, and storage. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
 
       Args:
         request: (DlpOrganizationsDeidentifyTemplatesCreateRequest) input message
@@ -203,7 +203,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a DeidentifyTemplate. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
+      r"""Deletes a DeidentifyTemplate. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
 
       Args:
         request: (DlpOrganizationsDeidentifyTemplatesDeleteRequest) input message
@@ -230,7 +230,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a DeidentifyTemplate. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
+      r"""Gets a DeidentifyTemplate. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
 
       Args:
         request: (DlpOrganizationsDeidentifyTemplatesGetRequest) input message
@@ -257,7 +257,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists DeidentifyTemplates. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
+      r"""Lists DeidentifyTemplates. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
 
       Args:
         request: (DlpOrganizationsDeidentifyTemplatesListRequest) input message
@@ -284,7 +284,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates the DeidentifyTemplate. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
+      r"""Updates the DeidentifyTemplate. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
 
       Args:
         request: (DlpOrganizationsDeidentifyTemplatesPatchRequest) input message
@@ -321,7 +321,7 @@ class DlpV2(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates an InspectTemplate for reusing frequently used configuration for inspecting content, images, and storage. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
+      r"""Creates an InspectTemplate for reusing frequently used configuration for inspecting content, images, and storage. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
 
       Args:
         request: (DlpOrganizationsInspectTemplatesCreateRequest) input message
@@ -348,7 +348,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes an InspectTemplate. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
+      r"""Deletes an InspectTemplate. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
 
       Args:
         request: (DlpOrganizationsInspectTemplatesDeleteRequest) input message
@@ -375,7 +375,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets an InspectTemplate. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
+      r"""Gets an InspectTemplate. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
 
       Args:
         request: (DlpOrganizationsInspectTemplatesGetRequest) input message
@@ -402,7 +402,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists InspectTemplates. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
+      r"""Lists InspectTemplates. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
 
       Args:
         request: (DlpOrganizationsInspectTemplatesListRequest) input message
@@ -429,7 +429,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates the InspectTemplate. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
+      r"""Updates the InspectTemplate. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
 
       Args:
         request: (DlpOrganizationsInspectTemplatesPatchRequest) input message
@@ -702,7 +702,7 @@ class DlpV2(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a DeidentifyTemplate for reusing frequently used configuration for de-identifying content, images, and storage. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
+      r"""Creates a DeidentifyTemplate for reusing frequently used configuration for de-identifying content, images, and storage. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
 
       Args:
         request: (DlpOrganizationsLocationsDeidentifyTemplatesCreateRequest) input message
@@ -729,7 +729,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a DeidentifyTemplate. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
+      r"""Deletes a DeidentifyTemplate. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
 
       Args:
         request: (DlpOrganizationsLocationsDeidentifyTemplatesDeleteRequest) input message
@@ -756,7 +756,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a DeidentifyTemplate. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
+      r"""Gets a DeidentifyTemplate. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
 
       Args:
         request: (DlpOrganizationsLocationsDeidentifyTemplatesGetRequest) input message
@@ -783,7 +783,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists DeidentifyTemplates. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
+      r"""Lists DeidentifyTemplates. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
 
       Args:
         request: (DlpOrganizationsLocationsDeidentifyTemplatesListRequest) input message
@@ -810,7 +810,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates the DeidentifyTemplate. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
+      r"""Updates the DeidentifyTemplate. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
 
       Args:
         request: (DlpOrganizationsLocationsDeidentifyTemplatesPatchRequest) input message
@@ -992,7 +992,7 @@ class DlpV2(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Lists DlpJobs that match the specified filter in the request. See https://cloud.google.com/sensitive-data-protection/docs/inspecting-storage and https://cloud.google.com/sensitive-data-protection/docs/compute-risk-analysis to learn more.
+      r"""Lists DlpJobs that match the specified filter in the request. See https://docs.cloud.google.com/sensitive-data-protection/docs/inspecting-storage and https://docs.cloud.google.com/sensitive-data-protection/docs/compute-risk-analysis to learn more.
 
       Args:
         request: (DlpOrganizationsLocationsDlpJobsListRequest) input message
@@ -1120,7 +1120,7 @@ class DlpV2(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Returns a list of the sensitive information types that the DLP API supports. See https://cloud.google.com/sensitive-data-protection/docs/infotypes-reference to learn more.
+      r"""Returns a list of the sensitive information types that the DLP API supports. See https://docs.cloud.google.com/sensitive-data-protection/docs/infotypes-reference to learn more.
 
       Args:
         request: (DlpOrganizationsLocationsInfoTypesListRequest) input message
@@ -1157,7 +1157,7 @@ class DlpV2(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates an InspectTemplate for reusing frequently used configuration for inspecting content, images, and storage. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
+      r"""Creates an InspectTemplate for reusing frequently used configuration for inspecting content, images, and storage. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
 
       Args:
         request: (DlpOrganizationsLocationsInspectTemplatesCreateRequest) input message
@@ -1184,7 +1184,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes an InspectTemplate. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
+      r"""Deletes an InspectTemplate. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
 
       Args:
         request: (DlpOrganizationsLocationsInspectTemplatesDeleteRequest) input message
@@ -1211,7 +1211,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets an InspectTemplate. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
+      r"""Gets an InspectTemplate. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
 
       Args:
         request: (DlpOrganizationsLocationsInspectTemplatesGetRequest) input message
@@ -1238,7 +1238,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists InspectTemplates. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
+      r"""Lists InspectTemplates. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
 
       Args:
         request: (DlpOrganizationsLocationsInspectTemplatesListRequest) input message
@@ -1265,7 +1265,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates the InspectTemplate. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
+      r"""Updates the InspectTemplate. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
 
       Args:
         request: (DlpOrganizationsLocationsInspectTemplatesPatchRequest) input message
@@ -1302,7 +1302,7 @@ class DlpV2(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a job trigger to run DLP actions such as scanning storage for sensitive information on a set schedule. See https://cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
+      r"""Creates a job trigger to run DLP actions such as scanning storage for sensitive information on a set schedule. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
 
       Args:
         request: (DlpOrganizationsLocationsJobTriggersCreateRequest) input message
@@ -1329,7 +1329,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a job trigger. See https://cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
+      r"""Deletes a job trigger. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
 
       Args:
         request: (DlpOrganizationsLocationsJobTriggersDeleteRequest) input message
@@ -1356,7 +1356,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a job trigger. See https://cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
+      r"""Gets a job trigger. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
 
       Args:
         request: (DlpOrganizationsLocationsJobTriggersGetRequest) input message
@@ -1383,7 +1383,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists job triggers. See https://cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
+      r"""Lists job triggers. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
 
       Args:
         request: (DlpOrganizationsLocationsJobTriggersListRequest) input message
@@ -1410,7 +1410,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates a job trigger. See https://cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
+      r"""Updates a job trigger. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
 
       Args:
         request: (DlpOrganizationsLocationsJobTriggersPatchRequest) input message
@@ -1511,7 +1511,7 @@ class DlpV2(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a pre-built stored infoType to be used for inspection. See https://cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
+      r"""Creates a pre-built stored infoType to be used for inspection. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
 
       Args:
         request: (DlpOrganizationsLocationsStoredInfoTypesCreateRequest) input message
@@ -1538,7 +1538,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a stored infoType. See https://cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
+      r"""Deletes a stored infoType. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
 
       Args:
         request: (DlpOrganizationsLocationsStoredInfoTypesDeleteRequest) input message
@@ -1565,7 +1565,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a stored infoType. See https://cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
+      r"""Gets a stored infoType. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
 
       Args:
         request: (DlpOrganizationsLocationsStoredInfoTypesGetRequest) input message
@@ -1592,7 +1592,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists stored infoTypes. See https://cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
+      r"""Lists stored infoTypes. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
 
       Args:
         request: (DlpOrganizationsLocationsStoredInfoTypesListRequest) input message
@@ -1619,7 +1619,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates the stored infoType by creating a new version. The existing version will continue to be used until the new version is ready. See https://cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
+      r"""Updates the stored infoType by creating a new version. The existing version will continue to be used until the new version is ready. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
 
       Args:
         request: (DlpOrganizationsLocationsStoredInfoTypesPatchRequest) input message
@@ -1757,7 +1757,7 @@ class DlpV2(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a pre-built stored infoType to be used for inspection. See https://cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
+      r"""Creates a pre-built stored infoType to be used for inspection. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
 
       Args:
         request: (DlpOrganizationsStoredInfoTypesCreateRequest) input message
@@ -1784,7 +1784,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a stored infoType. See https://cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
+      r"""Deletes a stored infoType. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
 
       Args:
         request: (DlpOrganizationsStoredInfoTypesDeleteRequest) input message
@@ -1811,7 +1811,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a stored infoType. See https://cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
+      r"""Gets a stored infoType. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
 
       Args:
         request: (DlpOrganizationsStoredInfoTypesGetRequest) input message
@@ -1838,7 +1838,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists stored infoTypes. See https://cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
+      r"""Lists stored infoTypes. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
 
       Args:
         request: (DlpOrganizationsStoredInfoTypesListRequest) input message
@@ -1865,7 +1865,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates the stored infoType by creating a new version. The existing version will continue to be used until the new version is ready. See https://cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
+      r"""Updates the stored infoType by creating a new version. The existing version will continue to be used until the new version is ready. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
 
       Args:
         request: (DlpOrganizationsStoredInfoTypesPatchRequest) input message
@@ -1912,7 +1912,7 @@ class DlpV2(base_api.BaseApiClient):
           }
 
     def Deidentify(self, request, global_params=None):
-      r"""De-identifies potentially sensitive info from a ContentItem. This method has limits on input size and output size. See https://cloud.google.com/sensitive-data-protection/docs/deidentify-sensitive-data to learn more. When no InfoTypes or CustomInfoTypes are specified in this request, the system will automatically choose what detectors to run. By default this may be all types, but may change over time as detectors are updated.
+      r"""De-identifies potentially sensitive info from a ContentItem. This method has limits on input size and output size. See https://docs.cloud.google.com/sensitive-data-protection/docs/deidentify-sensitive-data to learn more. When no InfoTypes or CustomInfoTypes are specified in this request, the system will automatically choose what detectors to run. By default this may be all types, but may change over time as detectors are updated.
 
       Args:
         request: (DlpProjectsContentDeidentifyRequest) input message
@@ -1939,7 +1939,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Inspect(self, request, global_params=None):
-      r"""Finds potentially sensitive info in content. This method has limits on input size, processing time, and output size. When no InfoTypes or CustomInfoTypes are specified in this request, the system will automatically choose what detectors to run. By default this may be all types, but may change over time as detectors are updated. For how to guides, see https://cloud.google.com/sensitive-data-protection/docs/inspecting-images and https://cloud.google.com/sensitive-data-protection/docs/inspecting-text,.
+      r"""Finds potentially sensitive info in content. This method has limits on input size, processing time, and output size. When no InfoTypes or CustomInfoTypes are specified in this request, the system will automatically choose what detectors to run. By default this may be all types, but may change over time as detectors are updated. For how to guides, see https://docs.cloud.google.com/sensitive-data-protection/docs/inspecting-images and https://docs.cloud.google.com/sensitive-data-protection/docs/inspecting-text,.
 
       Args:
         request: (DlpProjectsContentInspectRequest) input message
@@ -1966,7 +1966,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Reidentify(self, request, global_params=None):
-      r"""Re-identifies content that has been de-identified. See https://cloud.google.com/sensitive-data-protection/docs/pseudonymization#re-identification_in_free_text_code_example to learn more.
+      r"""Re-identifies content that has been de-identified. See https://docs.cloud.google.com/sensitive-data-protection/docs/pseudonymization#re-identification_in_free_text_code_example to learn more.
 
       Args:
         request: (DlpProjectsContentReidentifyRequest) input message
@@ -2003,7 +2003,7 @@ class DlpV2(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a DeidentifyTemplate for reusing frequently used configuration for de-identifying content, images, and storage. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
+      r"""Creates a DeidentifyTemplate for reusing frequently used configuration for de-identifying content, images, and storage. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
 
       Args:
         request: (DlpProjectsDeidentifyTemplatesCreateRequest) input message
@@ -2030,7 +2030,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a DeidentifyTemplate. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
+      r"""Deletes a DeidentifyTemplate. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
 
       Args:
         request: (DlpProjectsDeidentifyTemplatesDeleteRequest) input message
@@ -2057,7 +2057,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a DeidentifyTemplate. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
+      r"""Gets a DeidentifyTemplate. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
 
       Args:
         request: (DlpProjectsDeidentifyTemplatesGetRequest) input message
@@ -2084,7 +2084,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists DeidentifyTemplates. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
+      r"""Lists DeidentifyTemplates. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
 
       Args:
         request: (DlpProjectsDeidentifyTemplatesListRequest) input message
@@ -2111,7 +2111,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates the DeidentifyTemplate. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
+      r"""Updates the DeidentifyTemplate. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
 
       Args:
         request: (DlpProjectsDeidentifyTemplatesPatchRequest) input message
@@ -2148,7 +2148,7 @@ class DlpV2(base_api.BaseApiClient):
           }
 
     def Cancel(self, request, global_params=None):
-      r"""Starts asynchronous cancellation on a long-running DlpJob. The server makes a best effort to cancel the DlpJob, but success is not guaranteed. See https://cloud.google.com/sensitive-data-protection/docs/inspecting-storage and https://cloud.google.com/sensitive-data-protection/docs/compute-risk-analysis to learn more.
+      r"""Starts asynchronous cancellation on a long-running DlpJob. The server makes a best effort to cancel the DlpJob, but success is not guaranteed. See https://docs.cloud.google.com/sensitive-data-protection/docs/inspecting-storage and https://docs.cloud.google.com/sensitive-data-protection/docs/compute-risk-analysis to learn more.
 
       Args:
         request: (DlpProjectsDlpJobsCancelRequest) input message
@@ -2175,7 +2175,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Create(self, request, global_params=None):
-      r"""Creates a new job to inspect storage or calculate risk metrics. See https://cloud.google.com/sensitive-data-protection/docs/inspecting-storage and https://cloud.google.com/sensitive-data-protection/docs/compute-risk-analysis to learn more. When no InfoTypes or CustomInfoTypes are specified in inspect jobs, the system will automatically choose what detectors to run. By default this may be all types, but may change over time as detectors are updated.
+      r"""Creates a new job to inspect storage or calculate risk metrics. See https://docs.cloud.google.com/sensitive-data-protection/docs/inspecting-storage and https://docs.cloud.google.com/sensitive-data-protection/docs/compute-risk-analysis to learn more. When no InfoTypes or CustomInfoTypes are specified in inspect jobs, the system will automatically choose what detectors to run. By default this may be all types, but may change over time as detectors are updated.
 
       Args:
         request: (DlpProjectsDlpJobsCreateRequest) input message
@@ -2202,7 +2202,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a long-running DlpJob. This method indicates that the client is no longer interested in the DlpJob result. The job will be canceled if possible. See https://cloud.google.com/sensitive-data-protection/docs/inspecting-storage and https://cloud.google.com/sensitive-data-protection/docs/compute-risk-analysis to learn more.
+      r"""Deletes a long-running DlpJob. This method indicates that the client is no longer interested in the DlpJob result. The job will be canceled if possible. See https://docs.cloud.google.com/sensitive-data-protection/docs/inspecting-storage and https://docs.cloud.google.com/sensitive-data-protection/docs/compute-risk-analysis to learn more.
 
       Args:
         request: (DlpProjectsDlpJobsDeleteRequest) input message
@@ -2229,7 +2229,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets the latest state of a long-running DlpJob. See https://cloud.google.com/sensitive-data-protection/docs/inspecting-storage and https://cloud.google.com/sensitive-data-protection/docs/compute-risk-analysis to learn more.
+      r"""Gets the latest state of a long-running DlpJob. See https://docs.cloud.google.com/sensitive-data-protection/docs/inspecting-storage and https://docs.cloud.google.com/sensitive-data-protection/docs/compute-risk-analysis to learn more.
 
       Args:
         request: (DlpProjectsDlpJobsGetRequest) input message
@@ -2256,7 +2256,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists DlpJobs that match the specified filter in the request. See https://cloud.google.com/sensitive-data-protection/docs/inspecting-storage and https://cloud.google.com/sensitive-data-protection/docs/compute-risk-analysis to learn more.
+      r"""Lists DlpJobs that match the specified filter in the request. See https://docs.cloud.google.com/sensitive-data-protection/docs/inspecting-storage and https://docs.cloud.google.com/sensitive-data-protection/docs/compute-risk-analysis to learn more.
 
       Args:
         request: (DlpProjectsDlpJobsListRequest) input message
@@ -2293,7 +2293,7 @@ class DlpV2(base_api.BaseApiClient):
           }
 
     def Redact(self, request, global_params=None):
-      r"""Redacts potentially sensitive info from an image. This method has limits on input size, processing time, and output size. See https://cloud.google.com/sensitive-data-protection/docs/redacting-sensitive-data-images to learn more. When no InfoTypes or CustomInfoTypes are specified in this request, the system will automatically choose what detectors to run. By default this may be all types, but may change over time as detectors are updated. Only the first frame of each multiframe image is redacted. Metadata and other frames are omitted in the response.
+      r"""Redacts potentially sensitive info from an image. This method has limits on input size, processing time, and output size. See https://docs.cloud.google.com/sensitive-data-protection/docs/redacting-sensitive-data-images to learn more. When no InfoTypes or CustomInfoTypes are specified in this request, the system will automatically choose what detectors to run. By default this may be all types, but may change over time as detectors are updated. Only the first frame of each multiframe image is redacted. Metadata and other frames are omitted in the response.
 
       Args:
         request: (DlpProjectsImageRedactRequest) input message
@@ -2330,7 +2330,7 @@ class DlpV2(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates an InspectTemplate for reusing frequently used configuration for inspecting content, images, and storage. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
+      r"""Creates an InspectTemplate for reusing frequently used configuration for inspecting content, images, and storage. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
 
       Args:
         request: (DlpProjectsInspectTemplatesCreateRequest) input message
@@ -2357,7 +2357,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes an InspectTemplate. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
+      r"""Deletes an InspectTemplate. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
 
       Args:
         request: (DlpProjectsInspectTemplatesDeleteRequest) input message
@@ -2384,7 +2384,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets an InspectTemplate. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
+      r"""Gets an InspectTemplate. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
 
       Args:
         request: (DlpProjectsInspectTemplatesGetRequest) input message
@@ -2411,7 +2411,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists InspectTemplates. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
+      r"""Lists InspectTemplates. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
 
       Args:
         request: (DlpProjectsInspectTemplatesListRequest) input message
@@ -2438,7 +2438,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates the InspectTemplate. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
+      r"""Updates the InspectTemplate. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
 
       Args:
         request: (DlpProjectsInspectTemplatesPatchRequest) input message
@@ -2502,7 +2502,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Create(self, request, global_params=None):
-      r"""Creates a job trigger to run DLP actions such as scanning storage for sensitive information on a set schedule. See https://cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
+      r"""Creates a job trigger to run DLP actions such as scanning storage for sensitive information on a set schedule. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
 
       Args:
         request: (DlpProjectsJobTriggersCreateRequest) input message
@@ -2529,7 +2529,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a job trigger. See https://cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
+      r"""Deletes a job trigger. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
 
       Args:
         request: (DlpProjectsJobTriggersDeleteRequest) input message
@@ -2556,7 +2556,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a job trigger. See https://cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
+      r"""Gets a job trigger. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
 
       Args:
         request: (DlpProjectsJobTriggersGetRequest) input message
@@ -2583,7 +2583,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists job triggers. See https://cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
+      r"""Lists job triggers. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
 
       Args:
         request: (DlpProjectsJobTriggersListRequest) input message
@@ -2610,7 +2610,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates a job trigger. See https://cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
+      r"""Updates a job trigger. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
 
       Args:
         request: (DlpProjectsJobTriggersPatchRequest) input message
@@ -2883,7 +2883,7 @@ class DlpV2(base_api.BaseApiClient):
           }
 
     def Deidentify(self, request, global_params=None):
-      r"""De-identifies potentially sensitive info from a ContentItem. This method has limits on input size and output size. See https://cloud.google.com/sensitive-data-protection/docs/deidentify-sensitive-data to learn more. When no InfoTypes or CustomInfoTypes are specified in this request, the system will automatically choose what detectors to run. By default this may be all types, but may change over time as detectors are updated.
+      r"""De-identifies potentially sensitive info from a ContentItem. This method has limits on input size and output size. See https://docs.cloud.google.com/sensitive-data-protection/docs/deidentify-sensitive-data to learn more. When no InfoTypes or CustomInfoTypes are specified in this request, the system will automatically choose what detectors to run. By default this may be all types, but may change over time as detectors are updated.
 
       Args:
         request: (DlpProjectsLocationsContentDeidentifyRequest) input message
@@ -2910,7 +2910,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Inspect(self, request, global_params=None):
-      r"""Finds potentially sensitive info in content. This method has limits on input size, processing time, and output size. When no InfoTypes or CustomInfoTypes are specified in this request, the system will automatically choose what detectors to run. By default this may be all types, but may change over time as detectors are updated. For how to guides, see https://cloud.google.com/sensitive-data-protection/docs/inspecting-images and https://cloud.google.com/sensitive-data-protection/docs/inspecting-text,.
+      r"""Finds potentially sensitive info in content. This method has limits on input size, processing time, and output size. When no InfoTypes or CustomInfoTypes are specified in this request, the system will automatically choose what detectors to run. By default this may be all types, but may change over time as detectors are updated. For how to guides, see https://docs.cloud.google.com/sensitive-data-protection/docs/inspecting-images and https://docs.cloud.google.com/sensitive-data-protection/docs/inspecting-text,.
 
       Args:
         request: (DlpProjectsLocationsContentInspectRequest) input message
@@ -2937,7 +2937,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Reidentify(self, request, global_params=None):
-      r"""Re-identifies content that has been de-identified. See https://cloud.google.com/sensitive-data-protection/docs/pseudonymization#re-identification_in_free_text_code_example to learn more.
+      r"""Re-identifies content that has been de-identified. See https://docs.cloud.google.com/sensitive-data-protection/docs/pseudonymization#re-identification_in_free_text_code_example to learn more.
 
       Args:
         request: (DlpProjectsLocationsContentReidentifyRequest) input message
@@ -3119,7 +3119,7 @@ class DlpV2(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a DeidentifyTemplate for reusing frequently used configuration for de-identifying content, images, and storage. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
+      r"""Creates a DeidentifyTemplate for reusing frequently used configuration for de-identifying content, images, and storage. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
 
       Args:
         request: (DlpProjectsLocationsDeidentifyTemplatesCreateRequest) input message
@@ -3146,7 +3146,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a DeidentifyTemplate. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
+      r"""Deletes a DeidentifyTemplate. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
 
       Args:
         request: (DlpProjectsLocationsDeidentifyTemplatesDeleteRequest) input message
@@ -3173,7 +3173,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a DeidentifyTemplate. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
+      r"""Gets a DeidentifyTemplate. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
 
       Args:
         request: (DlpProjectsLocationsDeidentifyTemplatesGetRequest) input message
@@ -3200,7 +3200,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists DeidentifyTemplates. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
+      r"""Lists DeidentifyTemplates. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
 
       Args:
         request: (DlpProjectsLocationsDeidentifyTemplatesListRequest) input message
@@ -3227,7 +3227,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates the DeidentifyTemplate. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
+      r"""Updates the DeidentifyTemplate. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates-deid to learn more.
 
       Args:
         request: (DlpProjectsLocationsDeidentifyTemplatesPatchRequest) input message
@@ -3409,7 +3409,7 @@ class DlpV2(base_api.BaseApiClient):
           }
 
     def Cancel(self, request, global_params=None):
-      r"""Starts asynchronous cancellation on a long-running DlpJob. The server makes a best effort to cancel the DlpJob, but success is not guaranteed. See https://cloud.google.com/sensitive-data-protection/docs/inspecting-storage and https://cloud.google.com/sensitive-data-protection/docs/compute-risk-analysis to learn more.
+      r"""Starts asynchronous cancellation on a long-running DlpJob. The server makes a best effort to cancel the DlpJob, but success is not guaranteed. See https://docs.cloud.google.com/sensitive-data-protection/docs/inspecting-storage and https://docs.cloud.google.com/sensitive-data-protection/docs/compute-risk-analysis to learn more.
 
       Args:
         request: (DlpProjectsLocationsDlpJobsCancelRequest) input message
@@ -3436,7 +3436,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Create(self, request, global_params=None):
-      r"""Creates a new job to inspect storage or calculate risk metrics. See https://cloud.google.com/sensitive-data-protection/docs/inspecting-storage and https://cloud.google.com/sensitive-data-protection/docs/compute-risk-analysis to learn more. When no InfoTypes or CustomInfoTypes are specified in inspect jobs, the system will automatically choose what detectors to run. By default this may be all types, but may change over time as detectors are updated.
+      r"""Creates a new job to inspect storage or calculate risk metrics. See https://docs.cloud.google.com/sensitive-data-protection/docs/inspecting-storage and https://docs.cloud.google.com/sensitive-data-protection/docs/compute-risk-analysis to learn more. When no InfoTypes or CustomInfoTypes are specified in inspect jobs, the system will automatically choose what detectors to run. By default this may be all types, but may change over time as detectors are updated.
 
       Args:
         request: (DlpProjectsLocationsDlpJobsCreateRequest) input message
@@ -3463,7 +3463,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a long-running DlpJob. This method indicates that the client is no longer interested in the DlpJob result. The job will be canceled if possible. See https://cloud.google.com/sensitive-data-protection/docs/inspecting-storage and https://cloud.google.com/sensitive-data-protection/docs/compute-risk-analysis to learn more.
+      r"""Deletes a long-running DlpJob. This method indicates that the client is no longer interested in the DlpJob result. The job will be canceled if possible. See https://docs.cloud.google.com/sensitive-data-protection/docs/inspecting-storage and https://docs.cloud.google.com/sensitive-data-protection/docs/compute-risk-analysis to learn more.
 
       Args:
         request: (DlpProjectsLocationsDlpJobsDeleteRequest) input message
@@ -3517,7 +3517,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets the latest state of a long-running DlpJob. See https://cloud.google.com/sensitive-data-protection/docs/inspecting-storage and https://cloud.google.com/sensitive-data-protection/docs/compute-risk-analysis to learn more.
+      r"""Gets the latest state of a long-running DlpJob. See https://docs.cloud.google.com/sensitive-data-protection/docs/inspecting-storage and https://docs.cloud.google.com/sensitive-data-protection/docs/compute-risk-analysis to learn more.
 
       Args:
         request: (DlpProjectsLocationsDlpJobsGetRequest) input message
@@ -3571,7 +3571,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists DlpJobs that match the specified filter in the request. See https://cloud.google.com/sensitive-data-protection/docs/inspecting-storage and https://cloud.google.com/sensitive-data-protection/docs/compute-risk-analysis to learn more.
+      r"""Lists DlpJobs that match the specified filter in the request. See https://docs.cloud.google.com/sensitive-data-protection/docs/inspecting-storage and https://docs.cloud.google.com/sensitive-data-protection/docs/compute-risk-analysis to learn more.
 
       Args:
         request: (DlpProjectsLocationsDlpJobsListRequest) input message
@@ -3699,7 +3699,7 @@ class DlpV2(base_api.BaseApiClient):
           }
 
     def Redact(self, request, global_params=None):
-      r"""Redacts potentially sensitive info from an image. This method has limits on input size, processing time, and output size. See https://cloud.google.com/sensitive-data-protection/docs/redacting-sensitive-data-images to learn more. When no InfoTypes or CustomInfoTypes are specified in this request, the system will automatically choose what detectors to run. By default this may be all types, but may change over time as detectors are updated. Only the first frame of each multiframe image is redacted. Metadata and other frames are omitted in the response.
+      r"""Redacts potentially sensitive info from an image. This method has limits on input size, processing time, and output size. See https://docs.cloud.google.com/sensitive-data-protection/docs/redacting-sensitive-data-images to learn more. When no InfoTypes or CustomInfoTypes are specified in this request, the system will automatically choose what detectors to run. By default this may be all types, but may change over time as detectors are updated. Only the first frame of each multiframe image is redacted. Metadata and other frames are omitted in the response.
 
       Args:
         request: (DlpProjectsLocationsImageRedactRequest) input message
@@ -3736,7 +3736,7 @@ class DlpV2(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Returns a list of the sensitive information types that the DLP API supports. See https://cloud.google.com/sensitive-data-protection/docs/infotypes-reference to learn more.
+      r"""Returns a list of the sensitive information types that the DLP API supports. See https://docs.cloud.google.com/sensitive-data-protection/docs/infotypes-reference to learn more.
 
       Args:
         request: (DlpProjectsLocationsInfoTypesListRequest) input message
@@ -3773,7 +3773,7 @@ class DlpV2(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates an InspectTemplate for reusing frequently used configuration for inspecting content, images, and storage. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
+      r"""Creates an InspectTemplate for reusing frequently used configuration for inspecting content, images, and storage. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
 
       Args:
         request: (DlpProjectsLocationsInspectTemplatesCreateRequest) input message
@@ -3800,7 +3800,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes an InspectTemplate. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
+      r"""Deletes an InspectTemplate. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
 
       Args:
         request: (DlpProjectsLocationsInspectTemplatesDeleteRequest) input message
@@ -3827,7 +3827,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets an InspectTemplate. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
+      r"""Gets an InspectTemplate. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
 
       Args:
         request: (DlpProjectsLocationsInspectTemplatesGetRequest) input message
@@ -3854,7 +3854,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists InspectTemplates. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
+      r"""Lists InspectTemplates. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
 
       Args:
         request: (DlpProjectsLocationsInspectTemplatesListRequest) input message
@@ -3881,7 +3881,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates the InspectTemplate. See https://cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
+      r"""Updates the InspectTemplate. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-templates to learn more.
 
       Args:
         request: (DlpProjectsLocationsInspectTemplatesPatchRequest) input message
@@ -3945,7 +3945,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Create(self, request, global_params=None):
-      r"""Creates a job trigger to run DLP actions such as scanning storage for sensitive information on a set schedule. See https://cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
+      r"""Creates a job trigger to run DLP actions such as scanning storage for sensitive information on a set schedule. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
 
       Args:
         request: (DlpProjectsLocationsJobTriggersCreateRequest) input message
@@ -3972,7 +3972,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a job trigger. See https://cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
+      r"""Deletes a job trigger. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
 
       Args:
         request: (DlpProjectsLocationsJobTriggersDeleteRequest) input message
@@ -3999,7 +3999,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a job trigger. See https://cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
+      r"""Gets a job trigger. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
 
       Args:
         request: (DlpProjectsLocationsJobTriggersGetRequest) input message
@@ -4053,7 +4053,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists job triggers. See https://cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
+      r"""Lists job triggers. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
 
       Args:
         request: (DlpProjectsLocationsJobTriggersListRequest) input message
@@ -4080,7 +4080,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates a job trigger. See https://cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
+      r"""Updates a job trigger. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-job-triggers to learn more.
 
       Args:
         request: (DlpProjectsLocationsJobTriggersPatchRequest) input message
@@ -4181,7 +4181,7 @@ class DlpV2(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a pre-built stored infoType to be used for inspection. See https://cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
+      r"""Creates a pre-built stored infoType to be used for inspection. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
 
       Args:
         request: (DlpProjectsLocationsStoredInfoTypesCreateRequest) input message
@@ -4208,7 +4208,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a stored infoType. See https://cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
+      r"""Deletes a stored infoType. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
 
       Args:
         request: (DlpProjectsLocationsStoredInfoTypesDeleteRequest) input message
@@ -4235,7 +4235,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a stored infoType. See https://cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
+      r"""Gets a stored infoType. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
 
       Args:
         request: (DlpProjectsLocationsStoredInfoTypesGetRequest) input message
@@ -4262,7 +4262,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists stored infoTypes. See https://cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
+      r"""Lists stored infoTypes. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
 
       Args:
         request: (DlpProjectsLocationsStoredInfoTypesListRequest) input message
@@ -4289,7 +4289,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates the stored infoType by creating a new version. The existing version will continue to be used until the new version is ready. See https://cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
+      r"""Updates the stored infoType by creating a new version. The existing version will continue to be used until the new version is ready. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
 
       Args:
         request: (DlpProjectsLocationsStoredInfoTypesPatchRequest) input message
@@ -4427,7 +4427,7 @@ class DlpV2(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a pre-built stored infoType to be used for inspection. See https://cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
+      r"""Creates a pre-built stored infoType to be used for inspection. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
 
       Args:
         request: (DlpProjectsStoredInfoTypesCreateRequest) input message
@@ -4454,7 +4454,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a stored infoType. See https://cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
+      r"""Deletes a stored infoType. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
 
       Args:
         request: (DlpProjectsStoredInfoTypesDeleteRequest) input message
@@ -4481,7 +4481,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets a stored infoType. See https://cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
+      r"""Gets a stored infoType. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
 
       Args:
         request: (DlpProjectsStoredInfoTypesGetRequest) input message
@@ -4508,7 +4508,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists stored infoTypes. See https://cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
+      r"""Lists stored infoTypes. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
 
       Args:
         request: (DlpProjectsStoredInfoTypesListRequest) input message
@@ -4535,7 +4535,7 @@ class DlpV2(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates the stored infoType by creating a new version. The existing version will continue to be used until the new version is ready. See https://cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
+      r"""Updates the stored infoType by creating a new version. The existing version will continue to be used until the new version is ready. See https://docs.cloud.google.com/sensitive-data-protection/docs/creating-stored-infotypes to learn more.
 
       Args:
         request: (DlpProjectsStoredInfoTypesPatchRequest) input message

@@ -14,14 +14,12 @@
 # limitations under the License.
 """Create ECP configurations."""
 
-
 import enum
 import json
 import os
 
 from googlecloudsdk.core import config
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import platforms
 
@@ -368,17 +366,6 @@ def create_ecp_config(config_type, base_config=None, **kwargs):
             ' configuration. Valid options are: [PKCS11, KEYCHAIN, MYSTORE]'
         ).format(config_type)
     )
-
-  # TODO(b/459858373): remove gating for ECP HTTP Proxy on internal user check.
-  if (
-      not (
-          properties.VALUES.context_aware.use_ecp_http_proxy.GetBool()
-          and properties.IsInternalUserCheck()
-      )
-      and 'libs' in libs_config
-      and 'ecp_http_proxy' in libs_config['libs']
-  ):
-    del libs_config['libs']['ecp_http_proxy']
 
   return {'cert_configs': ecp_config, **libs_config}
 

@@ -41,6 +41,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_AGENTCONNECTIVITYTEMPLATES = (
+      'projects.locations.agentConnectivityTemplates',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'agentConnectivityTemplates/{agentConnectivityTemplatesId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_AGENTGATEWAYS = (
       'projects.locations.agentGateways',
       '{+name}',

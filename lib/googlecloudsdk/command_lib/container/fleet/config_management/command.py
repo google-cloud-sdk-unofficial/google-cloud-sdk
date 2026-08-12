@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Common logic between commands on Config Management surface."""
+"""Common applyspec logic between commands on Config Management surface."""
 
 from googlecloudsdk.command_lib.container.fleet.config_management import utils
 from googlecloudsdk.command_lib.container.fleet.features import base
@@ -20,8 +20,6 @@ from googlecloudsdk.command_lib.container.fleet.policycontroller import constant
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import yaml
 
-# TODO(b/298461043): Move error message instructions into
-# https://cloud.google.com/anthos-config-management/docs/reference/gcloud-apply-fields.
 MAP_NODE_EXCEPTION_FORMAT = ('{} must be a YAML mapping node.'
                              ' This field should either contain indented'
                              ' key, value pairs or have the empty map {{}} as'
@@ -37,7 +35,7 @@ LIST_EXCEPTION_FORMAT = (
 
 
 class Common(base.FeatureCommand):
-  """Common operations between commands on Config Management surface.
+  """Common apply spec logic between commands on Config Management surface.
   """
 
   def parse_config_management(self, config_file_path):
@@ -51,8 +49,6 @@ class Common(base.FeatureCommand):
     Raises: Any errors during parsing. May not check semantic meaning of
       field values.
     """
-    # TODO(b/298461043): Investigate whether it is worth our time to move the
-    # apply-spec syntax into proto so that we get automatic parsing.
     try:
       config = yaml.load_path(config_file_path)
     except yaml.Error as e:
@@ -60,11 +56,6 @@ class Common(base.FeatureCommand):
           'Invalid config yaml file {}'.format(config_file_path), e
       )
     _validate_meta(config)
-    # TODO(b/298461043): Align on parsing and error messages across ACM
-    # sub-components.
-    # TODO(b/298461043): Scan for illegal fields by reading from
-    # utils.APPLY_SPEC_VERSION_1. Access specific fields via constant variables
-    # in utils.
     cm_spec = self.messages.ConfigManagementMembershipSpec(
         configSync=self._parse_config_sync(config),
         policyController=self._parse_policy_controller(config),

@@ -3091,6 +3091,8 @@ class Instance(_messages.Message):
       configured for the instance.
     pscInstanceConfig: Optional. The configuration for Private Service Connect
       (PSC) for the instance.
+    pscInstanceInfo: Output only. Information about the Private Service
+      Connect (PSC) for the instance.
     publicIpAddress: Output only. The public IP addresses for the Instance.
       This is available ONLY when enable_public_ip is set. This is the
       connection endpoint for an end-user application.
@@ -3342,17 +3344,18 @@ class Instance(_messages.Message):
   observabilityConfig = _messages.MessageField('ObservabilityInstanceConfig', 25)
   outboundPublicIpAddresses = _messages.StringField(26, repeated=True)
   pscInstanceConfig = _messages.MessageField('PscInstanceConfig', 27)
-  publicIpAddress = _messages.StringField(28)
-  queryInsightsConfig = _messages.MessageField('QueryInsightsInstanceConfig', 29)
-  readPoolConfig = _messages.MessageField('ReadPoolConfig', 30)
-  reconciling = _messages.BooleanField(31)
-  satisfiesPzi = _messages.BooleanField(32)
-  satisfiesPzs = _messages.BooleanField(33)
-  state = _messages.EnumField('StateValueValuesEnum', 34)
-  uid = _messages.StringField(35)
-  updatePolicy = _messages.MessageField('UpdatePolicy', 36)
-  updateTime = _messages.StringField(37)
-  writableNode = _messages.MessageField('Node', 38)
+  pscInstanceInfo = _messages.MessageField('PscInstanceInfo', 28)
+  publicIpAddress = _messages.StringField(29)
+  queryInsightsConfig = _messages.MessageField('QueryInsightsInstanceConfig', 30)
+  readPoolConfig = _messages.MessageField('ReadPoolConfig', 31)
+  reconciling = _messages.BooleanField(32)
+  satisfiesPzi = _messages.BooleanField(33)
+  satisfiesPzs = _messages.BooleanField(34)
+  state = _messages.EnumField('StateValueValuesEnum', 35)
+  uid = _messages.StringField(36)
+  updatePolicy = _messages.MessageField('UpdatePolicy', 37)
+  updateTime = _messages.StringField(38)
+  writableNode = _messages.MessageField('Node', 39)
 
 
 class InstanceDowntimeStatus(_messages.Message):
@@ -4148,12 +4151,16 @@ class PscInstanceConfig(_messages.Message):
   level.
 
   Enums:
+    PscAutoConnectionPolicyStateValueValuesEnum: Optional. Configuration for
+      setting up PSC auto connection for the instance.
     PscAutoDnsStateValueValuesEnum: Optional. Configuration for setting up PSC
       auto DNS for the instance.
 
   Fields:
     allowedConsumerProjects: Optional. List of consumer projects that are
       allowed to create PSC endpoints to service-attachments to this instance.
+    pscAutoConnectionPolicyState: Optional. Configuration for setting up PSC
+      auto connection for the instance.
     pscAutoConnections: Optional. Configurations for setting up PSC service
       automation.
     pscAutoDnsState: Optional. Configuration for setting up PSC auto DNS for
@@ -4169,6 +4176,22 @@ class PscInstanceConfig(_messages.Message):
       the resource will be in the format of
       `projects//regions//serviceAttachments/`
   """
+
+  class PscAutoConnectionPolicyStateValueValuesEnum(_messages.Enum):
+    r"""Optional. Configuration for setting up PSC auto connection for the
+    instance.
+
+    Values:
+      PSC_AUTO_CONNECTION_POLICY_STATE_UNSPECIFIED: The state is unspecified.
+        For old instances, this means the PSC auto connection is disabled. For
+        new instances, this means the PSC auto connection is enabled by
+        default.
+      ENABLED: Enables the PSC auto connection for the instance.
+      DISABLED: Disables the PSC auto connection for the instance.
+    """
+    PSC_AUTO_CONNECTION_POLICY_STATE_UNSPECIFIED = 0
+    ENABLED = 1
+    DISABLED = 2
 
   class PscAutoDnsStateValueValuesEnum(_messages.Enum):
     r"""Optional. Configuration for setting up PSC auto DNS for the instance.
@@ -4187,11 +4210,34 @@ class PscInstanceConfig(_messages.Message):
     PSC_AUTO_DNS_STATE_DISABLED = 2
 
   allowedConsumerProjects = _messages.StringField(1, repeated=True)
-  pscAutoConnections = _messages.MessageField('PscAutoConnectionConfig', 2, repeated=True)
-  pscAutoDnsState = _messages.EnumField('PscAutoDnsStateValueValuesEnum', 3)
-  pscDnsName = _messages.StringField(4)
-  pscInterfaceConfigs = _messages.MessageField('PscInterfaceConfig', 5, repeated=True)
-  serviceAttachmentLink = _messages.StringField(6)
+  pscAutoConnectionPolicyState = _messages.EnumField('PscAutoConnectionPolicyStateValueValuesEnum', 2)
+  pscAutoConnections = _messages.MessageField('PscAutoConnectionConfig', 3, repeated=True)
+  pscAutoDnsState = _messages.EnumField('PscAutoDnsStateValueValuesEnum', 4)
+  pscDnsName = _messages.StringField(5)
+  pscInterfaceConfigs = _messages.MessageField('PscInterfaceConfig', 6, repeated=True)
+  serviceAttachmentLink = _messages.StringField(7)
+
+
+class PscInstanceInfo(_messages.Message):
+  r"""Information about the Private Service Connect (PSC) for the instance.
+
+  Fields:
+    effectivePscAutoConnectionPolicy: Output only. Indicates if the PSC auto
+      connection policy is enabled for the instance. For older instances, this
+      will be off by default, but for newer instances, this will be auto-
+      enabled.
+    effectivePscAutoDnsEnabled: Output only. The effective state of the PSC
+      auto DNS for the instance.
+    pscAutoDnsNames: Output only. Specifies the auto DNS names for the
+      instance.
+    serviceConnectionPolicy: Output only. The PSC service connection policy
+      name. The format is "projects//regions//serviceConnectionPolicies/"
+  """
+
+  effectivePscAutoConnectionPolicy = _messages.BooleanField(1)
+  effectivePscAutoDnsEnabled = _messages.BooleanField(2)
+  pscAutoDnsNames = _messages.StringField(3, repeated=True)
+  serviceConnectionPolicy = _messages.StringField(4)
 
 
 class PscInterfaceConfig(_messages.Message):

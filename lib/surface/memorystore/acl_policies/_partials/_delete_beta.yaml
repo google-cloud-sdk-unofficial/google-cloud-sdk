@@ -28,9 +28,9 @@
   arguments:
     params:
     - help_text: |-
-        Redis ACL Policy resource name using the form:
+        Memorystore ACL policy resource name using the form:
             `projects/{project}/locations/{location}/aclPolicies/{acl_policy_id}`
-        where `location` refers to a GCP region.
+        where `location` refers to a Google Cloud region.
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.memorystore.v1beta_resources:projects_locations_acl_policies

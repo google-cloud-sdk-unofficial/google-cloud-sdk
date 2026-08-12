@@ -85,25 +85,25 @@ class ClusterUtil:
 
   def MakeCluster(self) -> Any:
     """Returns a cluster message."""
-    blueprint = getattr(self.args, "blueprint", None)
+    ref_arch = getattr(self.args, "reference_architecture", None)
     quickstart = getattr(self.args, "quickstart_cluster", False)
-    if blueprint or quickstart:
-      _blueprints.ApplyBlueprint(
+    if ref_arch or quickstart:
+      _blueprints.ApplyReferenceArchitecture(
           self.args, self.message_module, self.cluster_ref
       )
 
-    if not blueprint and not quickstart and not self.args.IsSpecified("config"):
+    if not ref_arch and not quickstart and not self.args.IsSpecified("config"):
       if not self.args.IsSpecified("network") and not self.args.IsSpecified(
           "create_network"
       ):
         raise errors.ClusterDirectorError(
             "Must specify network configuration (e.g. --create-network or "
-            "--network and --subnet) when not using a blueprint."
+            "--network and --subnet) when not using a reference architecture."
         )
       if not self.args.IsSpecified("slurm_login_node"):
         raise errors.ClusterDirectorError(
             "Must specify slurm login node configuration (--slurm-login-node) "
-            "when not using a blueprint."
+            "when not using a reference architecture."
         )
 
     cluster = self.MakeClusterBasic()

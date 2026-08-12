@@ -2406,6 +2406,10 @@ class DatamigrationProjectsLocationsFetchStaticIpsRequest(_messages.Message):
   r"""A DatamigrationProjectsLocationsFetchStaticIpsRequest object.
 
   Fields:
+    fetchReservedPublicIps: Optional. Indicates whether to fetch the reserved
+      public IP addresses allocated for private connections in this location.
+      If false or not set, fetches the shared external static IP addresses
+      instead.
     name: Required. The resource name for the location for which static IPs
       should be returned. Must be in the format `projects/*/locations/*`.
     pageSize: Optional. Maximum number of IPs to return.
@@ -2413,9 +2417,10 @@ class DatamigrationProjectsLocationsFetchStaticIpsRequest(_messages.Message):
       `FetchStaticIps` call.
   """
 
-  name = _messages.StringField(1, required=True)
-  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(3)
+  fetchReservedPublicIps = _messages.BooleanField(1)
+  name = _messages.StringField(2, required=True)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
 
 
 class DatamigrationProjectsLocationsGetRequest(_messages.Message):
@@ -6463,6 +6468,7 @@ class PrivateConnection(_messages.Message):
       "mass": "1.3kg", "count": "3" }`.
     name: The name of the resource.
     pscInterfaceConfig: PSC Interface configuration.
+    reservedPublicIpConfig: Reserved Public IP configuration.
     satisfiesPzi: Output only. Reserved for future use.
     satisfiesPzs: Output only. Reserved for future use.
     state: Output only. The state of the private connection.
@@ -6526,11 +6532,12 @@ class PrivateConnection(_messages.Message):
   labels = _messages.MessageField('LabelsValue', 4)
   name = _messages.StringField(5)
   pscInterfaceConfig = _messages.MessageField('PscInterfaceConfig', 6)
-  satisfiesPzi = _messages.BooleanField(7)
-  satisfiesPzs = _messages.BooleanField(8)
-  state = _messages.EnumField('StateValueValuesEnum', 9)
-  updateTime = _messages.StringField(10)
-  vpcPeeringConfig = _messages.MessageField('VpcPeeringConfig', 11)
+  reservedPublicIpConfig = _messages.MessageField('ReservedPublicIpConfig', 7)
+  satisfiesPzi = _messages.BooleanField(8)
+  satisfiesPzs = _messages.BooleanField(9)
+  state = _messages.EnumField('StateValueValuesEnum', 10)
+  updateTime = _messages.StringField(11)
+  vpcPeeringConfig = _messages.MessageField('VpcPeeringConfig', 12)
 
 
 class PrivateConnectivity(_messages.Message):
@@ -6721,6 +6728,18 @@ class RequestInfo(_messages.Message):
 
   requestId = _messages.StringField(1)
   servingData = _messages.StringField(2)
+
+
+class ReservedPublicIpConfig(_messages.Message):
+  r"""Reserved Public IP configuration.
+
+  Fields:
+    egressPublicIps: Output only. The reserved public IPs.
+    natIpsCount: Optional. Number of static public IP addresses to reserve.
+  """
+
+  egressPublicIps = _messages.StringField(1, repeated=True)
+  natIpsCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
 
 
 class ResourceInfo(_messages.Message):

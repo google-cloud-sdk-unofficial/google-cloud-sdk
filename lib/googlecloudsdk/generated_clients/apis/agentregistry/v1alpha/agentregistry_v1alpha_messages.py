@@ -67,6 +67,8 @@ class Agent(_messages.Message):
       defined by the hosting environment (i.e. cloud provider).
     name: Identifier. The resource name of an Agent. Format:
       `projects/{project}/locations/{location}/agents/{agent}`.
+    networkConfig: Optional. Google Cloud specific infrastructure routing
+      configurations. Optional.
     protocols: Output only. The connection details for the Agent.
     skills: Output only. Skills the agent possesses, often obtained from the
       A2A Agent Card.
@@ -144,11 +146,12 @@ class Agent(_messages.Message):
   displayName = _messages.StringField(6)
   location = _messages.StringField(7)
   name = _messages.StringField(8)
-  protocols = _messages.MessageField('Protocol', 9, repeated=True)
-  skills = _messages.MessageField('A2ASkill', 10, repeated=True)
-  uid = _messages.StringField(11)
-  updateTime = _messages.StringField(12)
-  version = _messages.StringField(13)
+  networkConfig = _messages.MessageField('NetworkConfig', 9)
+  protocols = _messages.MessageField('Protocol', 10, repeated=True)
+  skills = _messages.MessageField('A2ASkill', 11, repeated=True)
+  uid = _messages.StringField(12)
+  updateTime = _messages.StringField(13)
+  version = _messages.StringField(14)
 
 
 class AgentSpec(_messages.Message):
@@ -741,12 +744,16 @@ class AgentregistryProjectsLocationsSkillsDeleteRequest(_messages.Message):
   r"""A AgentregistryProjectsLocationsSkillsDeleteRequest object.
 
   Fields:
+    force: Optional. If set to true, any child SkillRevisions under this Skill
+      will also be deleted. Otherwise, the request will only succeed if the
+      Skill has no child SkillRevisions.
     name: Required. Target Skill container name to remove.
     requestId: Optional. Signed UUID request idempotency token.
   """
 
-  name = _messages.StringField(1, required=True)
-  requestId = _messages.StringField(2)
+  force = _messages.BooleanField(1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
 
 
 class AgentregistryProjectsLocationsSkillsGetRequest(_messages.Message):
@@ -763,7 +770,16 @@ class AgentregistryProjectsLocationsSkillsListRequest(_messages.Message):
   r"""A AgentregistryProjectsLocationsSkillsListRequest object.
 
   Fields:
-    filter: Optional. Filtering results
+    filter: Optional. Use this field to specify filter criteria on list
+      results. Filter expressions can be used to restrict results based upon
+      filterable fields, where equality operators can be used. See
+      [instructions](https://docs.cloud.google.com/agent-registry/search-
+      agents-and-tools) for more details. Allowed operators: `=`, `<`, `>`,
+      `NOT`, `AND`, `OR`, and `()`. | Field | `=` | `<`, `>` |
+      |--------------|-----|----------| | state | Yes | No | | targetState |
+      Yes | No | | createTime | Yes | Yes | | updateTime | Yes | Yes |
+      Examples: * `state=ACTIVE` to restrict results to skills in the `ACTIVE`
+      state.
     orderBy: Optional. Hint for how to order the results
     pageSize: Optional. Requested page size. Server may return fewer items
       than requested. If unspecified, server will pick an appropriate default.
@@ -861,7 +877,15 @@ class AgentregistryProjectsLocationsSkillsSearchRequest(_messages.Message):
 
   Fields:
     filter: Optional. Use this field to specify additional filter criteria on
-      search results.
+      search results. Filter expressions can be used to restrict results based
+      upon filterable fields, where equality operators can be used. See
+      [instructions](https://docs.cloud.google.com/agent-registry/search-
+      agents-and-tools) for more details. Allowed operators: `=`, `<`, `>`,
+      `NOT`, `AND`, `OR`, and `()`. | Field | `=` | `<`, `>` |
+      |--------------|-----|----------| | state | Yes | No | | targetState |
+      Yes | No | | createTime | Yes | Yes | | updateTime | Yes | Yes |
+      Examples: * `state=ACTIVE` to restrict results to skills in the `ACTIVE`
+      state.
     pageSize: Optional. The maximum number of search results to return per
       page. The page size is capped at `100`, even if a larger value is
       specified. A negative value will result in an `INVALID_ARGUMENT` error.
@@ -875,7 +899,25 @@ class AgentregistryProjectsLocationsSkillsSearchRequest(_messages.Message):
       `projects/{project}/locations/{location}`.
     searchString: Optional. Search criteria used to select the Skills to
       return. If no search criteria is specified then all accessible Skills
-      will be returned.
+      will be returned. Search expressions can be used to restrict results
+      based upon searchable fields, where the operators can be used along with
+      the suffix wildcard symbol `*`. See
+      [instructions](https://docs.cloud.google.com/agent-registry/search-
+      agents-and-tools) for more details. Allowed operators: `=`, `:`, `NOT`,
+      `AND`, `OR`, and `()`. Searchable fields: | Field | `=` | `:` | `*` |
+      Keyword Search |
+      |---------------------------|-----|-----|-----|----------------| |
+      skillId | Yes | Yes | Yes | Included | | name | No | Yes | Yes |
+      Included | | displayName | No | Yes | Yes | Included | | description |
+      No | Yes | No | Included | | frontmatter.name | No | Yes | No | Included
+      | | frontmatter.description | No | Yes | No | Included | |
+      frontmatter.compatibility | No | Yes | No | Included | |
+      frontmatter.license | No | Yes | No | Included | Examples: *
+      `skillId="urn:skill:projects-1234:locations:global:private-important-
+      skill"` to find the skill with the specified skill ID. *
+      `name:important` to find skills whose name contains `important` as a
+      word. * `displayName:works*` to find skills whose display name contains
+      words that start with `works`.
     searchType: Optional. The type of search.
   """
 
@@ -1071,6 +1113,8 @@ class Endpoint(_messages.Message):
     interfaces: Required. The connection details for the Endpoint.
     name: Identifier. The resource name of the Endpoint. Format:
       `projects/{project}/locations/{location}/endpoints/{endpoint}`.
+    networkConfig: Optional. Google Cloud specific infrastructure routing
+      configurations. Optional.
     updateTime: Output only. Update time.
   """
 
@@ -1135,7 +1179,8 @@ class Endpoint(_messages.Message):
   endpointId = _messages.StringField(5)
   interfaces = _messages.MessageField('Interface', 6, repeated=True)
   name = _messages.StringField(7)
-  updateTime = _messages.StringField(8)
+  networkConfig = _messages.MessageField('NetworkConfig', 8)
+  updateTime = _messages.StringField(9)
 
 
 class EndpointSpec(_messages.Message):
@@ -1547,6 +1592,8 @@ class McpServer(_messages.Message):
       Servers.
     name: Identifier. The resource name of the MCP Server. Format:
       `projects/{project}/locations/{location}/mcpServers/{mcp_server}`.
+    networkConfig: Optional. Google Cloud specific infrastructure routing
+      configurations. Optional.
     tools: Output only. Tools provided by the MCP Server.
     updateTime: Output only. Update time.
   """
@@ -1614,8 +1661,9 @@ class McpServer(_messages.Message):
   interfaces = _messages.MessageField('Interface', 5, repeated=True)
   mcpServerId = _messages.StringField(6)
   name = _messages.StringField(7)
-  tools = _messages.MessageField('Tool', 8, repeated=True)
-  updateTime = _messages.StringField(9)
+  networkConfig = _messages.MessageField('NetworkConfig', 8)
+  tools = _messages.MessageField('Tool', 9, repeated=True)
+  updateTime = _messages.StringField(10)
 
 
 class McpServerSpec(_messages.Message):
@@ -1678,6 +1726,20 @@ class McpServerSpec(_messages.Message):
 
   content = _messages.MessageField('ContentValue', 1)
   type = _messages.EnumField('TypeValueValuesEnum', 2)
+
+
+class NetworkConfig(_messages.Message):
+  r"""Represents Google Cloud specific infrastructure routing configurations.
+
+  Fields:
+    privateServiceConnectServiceAttachments: Optional. The Resource Name of
+      the target Private Service Connect Service Attachments. Format: `project
+      s/{project}/regions/{region}/serviceAttachments/{service_attachment}`
+      The caller must have update permission on the referenced Service
+      Attachments. Optional.
+  """
+
+  privateServiceConnectServiceAttachments = _messages.StringField(1, repeated=True)
 
 
 class Operation(_messages.Message):

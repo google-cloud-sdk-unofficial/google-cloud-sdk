@@ -2895,6 +2895,7 @@ class NatInfo(_messages.Message):
     protocol: IP protocol in string format, for example: "TCP", "UDP", "ICMP".
     routerUri: URI of the Cloud Router. Only valid when type is CLOUD_NAT.
       Format: `projects/{project_id}/regions/{region}/routers/{router_id}`
+    ruleNumber: The number of the NAT rule that was matched.
     type: Type of NAT.
   """
 
@@ -2949,7 +2950,8 @@ class NatInfo(_messages.Message):
   oldSourcePort = _messages.IntegerField(11, variant=_messages.Variant.INT32)
   protocol = _messages.StringField(12)
   routerUri = _messages.StringField(13)
-  type = _messages.EnumField('TypeValueValuesEnum', 14)
+  ruleNumber = _messages.IntegerField(14, variant=_messages.Variant.INT32)
+  type = _messages.EnumField('TypeValueValuesEnum', 15)
 
 
 class NetworkInfo(_messages.Message):

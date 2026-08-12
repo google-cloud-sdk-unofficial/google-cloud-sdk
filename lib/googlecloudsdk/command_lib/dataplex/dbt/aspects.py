@@ -161,7 +161,7 @@ def stat_int(stats: dict[str, Any], key: str) -> int | None:
 
   Args:
     stats: the catalog node's ``stats`` mapping.
-    key: the stat name to read (e.g. 'row_count', 'bytes').
+    key: the stat name to read (e.g. 'num_rows', 'num_bytes').
 
   Returns:
     The stat value as int, or None when the stat is absent or not included.

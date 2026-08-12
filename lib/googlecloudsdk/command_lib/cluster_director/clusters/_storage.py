@@ -153,6 +153,8 @@ def MakeClusterStorages(
         )
       if lustre.get("capacityGb") is not None:
         _validator.ValidateLustreCapacity(lustre.get("capacityGb"))
+      if lustre.get("filesystem") is not None:
+        _validator.ValidateLustreFilesystemName(lustre.get("filesystem"))
       storage_ids.add(storage_id)
 
       new_lustre = message_module.NewLustreConfig(
@@ -160,8 +162,11 @@ def MakeClusterStorages(
           filesystem=lustre.get("filesystem"),
           capacityGb=lustre.get("capacityGb"),
           description=lustre.get("description"),
-          perUnitStorageThroughput=lustre.get("perUnitStorageThroughput"),
       )
+      if hasattr(new_lustre, "perUnitStorageThroughput"):
+        val = lustre.get("perUnitStorageThroughput")
+        if val is not None:
+          new_lustre.perUnitStorageThroughput = val
       if hasattr(new_lustre, "dynamicTierOptions"):
         dynamic_tier_mode = lustre.get("dynamicTierOptionsMode")
         if dynamic_tier_mode is not None:
@@ -476,6 +481,8 @@ def MakeClusterStoragesPatch(
         )
       if lustre.get("capacityGb") is not None:
         _validator.ValidateLustreCapacity(lustre.get("capacityGb"))
+      if lustre.get("filesystem") is not None:
+        _validator.ValidateLustreFilesystemName(lustre.get("filesystem"))
       lustre_name = _GetLustreName(cluster_ref, lustre.get("name"))
       for storage_resource in storages.values():
         config = storage_resource.config
@@ -493,8 +500,11 @@ def MakeClusterStoragesPatch(
           filesystem=lustre.get("filesystem"),
           capacityGb=lustre.get("capacityGb"),
           description=lustre.get("description"),
-          perUnitStorageThroughput=lustre.get("perUnitStorageThroughput"),
       )
+      if hasattr(new_lustre, "perUnitStorageThroughput"):
+        val = lustre.get("perUnitStorageThroughput")
+        if val is not None:
+          new_lustre.perUnitStorageThroughput = val
       if hasattr(new_lustre, "dynamicTierOptions"):
         dynamic_tier_mode = lustre.get("dynamicTierOptionsMode")
         if dynamic_tier_mode is not None:

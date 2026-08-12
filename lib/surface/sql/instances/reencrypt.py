@@ -44,6 +44,7 @@ DETAILED_HELP = {
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.DefaultUniverseOnly
 class Reencrypt(base.Command):
   """Reencrypts a Cloud SQL CMEK instance."""
 
@@ -87,11 +88,43 @@ class Reencrypt(base.Command):
         collection='sql.instances',
     )
 
-    if not console_io.PromptContinue(
-        'WARNING: Reencryption will restart your instance if the primary key'
-        " version is different from the instance's key version."
-    ):
-      return None
+    is_hyperdisk_machine = False
+    try:
+      instance_resource = sql_client.instances.Get(
+          sql_messages.SqlInstancesGetRequest(
+              project=instance_ref.project, instance=instance_ref.instance
+          )
+      )
+
+      # Check machine type
+      if instance_resource.settings and instance_resource.settings.tier:
+        tier = instance_resource.settings.tier.lower()
+        if 'c4-' in tier or 'c4a-' in tier or 'n4-' in tier:
+          is_hyperdisk_machine = True
+    except exceptions.HttpError as e:
+      # If permissions are missing for instances.get, assume it's a hyperdisk
+      # machine to force the prompt and avoid a hard failure.
+      if e.status_code == 403:
+        log.warning(
+            'Could not fetch instance details to check for Hyperdisk machine '
+            'type due to missing permissions (cloudsql.instances.get). '
+            'Proceeding with caution, assuming re-encryption may cause '
+            'downtime.'
+        )
+        is_hyperdisk_machine = True
+      else:
+        raise
+
+    if is_hyperdisk_machine:
+      message = (
+          'WARNING: Re-encryption for this instance type (e.g., C4, C4A, N4 '
+          'series) requires a restart and will cause downtime.'
+      )
+      if not console_io.PromptContinue(
+          message=message, prompt_string='Do you want to continue'
+      ):
+        return None
+
     try:
       result = sql_client.instances.Reencrypt(
           sql_messages.SqlInstancesReencryptRequest(

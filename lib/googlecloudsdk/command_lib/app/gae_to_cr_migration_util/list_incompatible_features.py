@@ -205,7 +205,7 @@ def _check_for_incompatibility(
       # TODO: b/493877807 - Better handle runtime validation for flex.
       if util.is_flex_env(input_data) and key.startswith('runtime'):
         continue
-      if not value_restricted_features[key].validate(key, val):
+      if not value_restricted_features[key].validate(val):
         incompatible_list.append(value_restricted_features[key])
   return incompatible_list
 

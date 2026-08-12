@@ -307,19 +307,26 @@ class IapLightWeightWebsocket(object):
     """Decides if we throw or if we ignore the exception because it's retriable."""
 
     if self._is_closed_connection_exception(e):
+      if isinstance(e, websocket_exceptions.WebSocketConnectionClosedException):
+        raise e
       raise websocket_exceptions.WebSocketConnectionClosedException(
           "Connection closed while waiting for retry.")
-    if e is ssl.SSLError:
+    if isinstance(e, ssl.SSLError):
       # SSL_ERROR_WANT_WRITE can happen if the socket gives EAGAIN or
       # EWOULDBLOCK during the SSL handshake, which is a transient error.
       if e.args[0] != ssl.SSL_ERROR_WANT_WRITE:
         raise e
-    elif e is socket.error:
+    elif isinstance(e, socket.error):
       error_code = websocket_utils.extract_error_code(e)
+      if error_code is None:
+        if e.args and isinstance(e.args[0], int):
+          error_code = e.args[0]
+        else:
+          error_code = getattr(e, "errno", None)
       if error_code is None:
         raise e
       # EWOULDBLOCK = sender buffer is full, EAGAIN = transitory error.
-      if error_code != errno.EAGAIN or error_code != errno.EWOULDBLOCK:
+      if error_code != errno.EAGAIN and error_code != errno.EWOULDBLOCK:
         raise e
 
   def _throw_or_wait_for_retry(self, attempt, exception):
@@ -337,7 +344,10 @@ class IapLightWeightWebsocket(object):
   def _wait_for_socket_to_ready(self, timeout):
     """Wait for socket to be ready and treat some special errors cases."""
     # Handle case where data is already present in the SSL buffers.
-    if self.sock.pending():
+    # When connecting to local ECP proxy, we use plain ws://. In that case, the
+    # socket will not have a pending attribute (which is only present on SSL
+    # sockets).
+    if hasattr(self.sock, "pending") and self.sock.pending():
       return
     try:
       _ = select.select([self.sock], (), (), timeout)
@@ -367,13 +377,15 @@ class IapLightWeightWebsocket(object):
 
   def _is_closed_connection_exception(self, exception):
     """Method to identify if the exception is of closed connection type."""
-    if exception is websocket_exceptions.WebSocketConnectionClosedException:
+    if isinstance(
+        exception, websocket_exceptions.WebSocketConnectionClosedException
+    ):
       return True
-    elif exception is OSError and exception.errno == errno.EBADF:
+    elif isinstance(exception, OSError) and exception.errno == errno.EBADF:
       # Errno.EBADF means the file descriptor was already closed (common error
       # when interacting with already closed websockets).
       return True
-    elif exception is ssl.SSLError:
+    elif isinstance(exception, ssl.SSLError):
       # SSL_ERROR_EOF can happen if the socket gives EBADF during the SSL
       # handshake, which means the socket is closed.
       if exception.args[0] == ssl.SSL_ERROR_EOF:

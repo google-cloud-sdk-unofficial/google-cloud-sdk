@@ -724,6 +724,8 @@ class ContinuousProfilingSweep(_messages.Message):
       (`state`) only captures the status of the snapshot session as a whole,
       whereas this map provides target-specific progress. The map key is the
       target hostname.
+    xprofServerPort: Optional. The custom port for the Xprof server. If not
+      specified, default port 9999 will be used.
   """
 
   class DeviceTracerLevelValueValuesEnum(_messages.Enum):
@@ -822,6 +824,7 @@ class ContinuousProfilingSweep(_messages.Message):
   state = _messages.EnumField('StateValueValuesEnum', 6)
   sweepId = _messages.StringField(7)
   targetSessions = _messages.MessageField('TargetSessionsValue', 8)
+  xprofServerPort = _messages.IntegerField(9, variant=_messages.Variant.INT32)
 
 
 class CreateFilestoreInstance(_messages.Message):
@@ -1242,6 +1245,23 @@ class ExistingNetworkConfig(_messages.Message):
 
   network = _messages.StringField(1)
   subnetwork = _messages.StringField(2)
+
+
+class ExistingNfsConfig(_messages.Message):
+  r"""When set in a StorageResourceConfig, indicates that an existing NFS
+  share should be imported.
+
+  Fields:
+    mountOptions: Optional. Immutable. Options to mount the NFS share, as
+      expected by fs_mntops field infstab(5), for example:
+      "rw,vers=4.1,nconnect=2,noatime".
+    remoteMount: Required. Immutable. Remote mount path of the NFS share.
+    serverIpAddress: Required. Immutable. Server IP address of the NFS share.
+  """
+
+  mountOptions = _messages.StringField(1)
+  remoteMount = _messages.StringField(2)
+  serverIpAddress = _messages.StringField(3)
 
 
 class FileShareConfig(_messages.Message):
@@ -2631,12 +2651,14 @@ class NewBucketConfig(_messages.Message):
       COLDLINE: Very low-cost storage for infrequently accessed data.
       ARCHIVE: Lowest-cost storage for data archiving, online backup, and
         disaster recovery.
+      RAPID: Storage class optimized for I/O intensive workloads.
     """
     STORAGE_CLASS_UNSPECIFIED = 0
     STANDARD = 1
     NEARLINE = 2
     COLDLINE = 3
     ARCHIVE = 4
+    RAPID = 5
 
   autoclass = _messages.MessageField('GcsAutoclassConfig', 1)
   bucket = _messages.StringField(2)
@@ -2718,6 +2740,8 @@ class NewFlexStartInstancesConfig(_messages.Message):
       e.g. `n2-standard-2`.
     maxDuration: Required. Immutable. Specifies the time limit for created
       instances. Instances will be terminated at the end of this duration.
+    networkTags: Optional. Immutable. A list of network tags to attach to the
+      VM instances. A maximum of 64 network tags are allowed.
     zone: Required. Immutable. Name of the zone in which VM instances should
       run, e.g., `us-central1-a`. Must be in the same region as the cluster,
       and must match the zone of any other resources specified in the cluster.
@@ -2751,7 +2775,8 @@ class NewFlexStartInstancesConfig(_messages.Message):
   atmTags = _messages.MessageField('AtmTagsValue', 1)
   machineType = _messages.StringField(2)
   maxDuration = _messages.StringField(3)
-  zone = _messages.StringField(4)
+  networkTags = _messages.StringField(4, repeated=True)
+  zone = _messages.StringField(5)
 
 
 class NewLustreConfig(_messages.Message):
@@ -2815,6 +2840,8 @@ class NewOnDemandInstancesConfig(_messages.Message):
     machineType: Required. Immutable. Name of the Compute Engine [machine
       type](https://cloud.google.com/compute/docs/machine-resource) to use,
       e.g. `n2-standard-2`.
+    networkTags: Optional. Immutable. A list of network tags to attach to the
+      VM instances. A maximum of 64 network tags are allowed.
     zone: Required. Immutable. Name of the zone in which VM instances should
       run, e.g., `us-central1-a`. Must be in the same region as the cluster,
       and must match the zone of any other resources specified in the cluster.
@@ -2847,7 +2874,8 @@ class NewOnDemandInstancesConfig(_messages.Message):
 
   atmTags = _messages.MessageField('AtmTagsValue', 1)
   machineType = _messages.StringField(2)
-  zone = _messages.StringField(3)
+  networkTags = _messages.StringField(3, repeated=True)
+  zone = _messages.StringField(4)
 
 
 class NewReservedInstancesConfig(_messages.Message):
@@ -2864,6 +2892,8 @@ class NewReservedInstancesConfig(_messages.Message):
     atmTags: Optional. Immutable. Unstable: Contact hypercompute-service-eng@
       before using.
     machineType: Optional. Immutable. Deprecated: Do not use.
+    networkTags: Optional. Immutable. A list of network tags to attach to the
+      VM instances. A maximum of 64 network tags are allowed.
     reservation: Optional. Immutable. Name of the reservation from which VM
       instances should be created, in the format
       `projects/{project}/zones/{zone}/reservations/{reservation}`.
@@ -2905,10 +2935,11 @@ class NewReservedInstancesConfig(_messages.Message):
 
   atmTags = _messages.MessageField('AtmTagsValue', 1)
   machineType = _messages.StringField(2)
-  reservation = _messages.StringField(3)
-  reservationBlock = _messages.StringField(4)
-  reservationSubBlock = _messages.StringField(5)
-  zone = _messages.StringField(6)
+  networkTags = _messages.StringField(3, repeated=True)
+  reservation = _messages.StringField(4)
+  reservationBlock = _messages.StringField(5)
+  reservationSubBlock = _messages.StringField(6)
+  zone = _messages.StringField(7)
 
 
 class NewSpotInstancesConfig(_messages.Message):
@@ -2931,6 +2962,8 @@ class NewSpotInstancesConfig(_messages.Message):
     machineType: Required. Immutable. Name of the Compute Engine [machine
       type](https://cloud.google.com/compute/docs/machine-resource) to use,
       e.g. `n2-standard-2`.
+    networkTags: Optional. Immutable. A list of network tags to attach to the
+      VM instances. A maximum of 64 network tags are allowed.
     terminationAction: Optional. Termination action for the instance. If not
       specified, Compute Engine sets the termination action to DELETE.
     zone: Required. Immutable. Name of the zone in which VM instances should
@@ -2978,8 +3011,9 @@ class NewSpotInstancesConfig(_messages.Message):
 
   atmTags = _messages.MessageField('AtmTagsValue', 1)
   machineType = _messages.StringField(2)
-  terminationAction = _messages.EnumField('TerminationActionValueValuesEnum', 3)
-  zone = _messages.StringField(4)
+  networkTags = _messages.StringField(3, repeated=True)
+  terminationAction = _messages.EnumField('TerminationActionValueValuesEnum', 4)
+  zone = _messages.StringField(5)
 
 
 class Node(_messages.Message):
@@ -3613,10 +3647,20 @@ class SlurmConfig(_messages.Message):
       "priority/multifactor" to enable the Multifactor Job Priority Plugin.
     PrologFlagsValueListEntryValuesEnum:
 
+  Messages:
+    AdditionalSettingsValue: Optional. Additional
+      [slurm.conf](https://slurm.schedmd.com/slurm.conf.html) settings. Keys
+      and values are injected directly into slurm.conf without any semantic
+      validation.
+
   Fields:
     accountingStorageEnforceFlags: Optional. Flags to control the level of
       association to impose on job submissions. By default no flags are set.
       Corresponds to AccountingStorageEnforce.
+    additionalSettings: Optional. Additional
+      [slurm.conf](https://slurm.schedmd.com/slurm.conf.html) settings. Keys
+      and values are injected directly into slurm.conf without any semantic
+      validation.
     healthCheckInterval: Optional. The interval in seconds between executions
       of HealthCheckProgram. If provided, must be > 0. To disable health
       checks, use disable_health_check_program instead.
@@ -3797,25 +3841,55 @@ class SlurmConfig(_messages.Message):
     SERIAL = 7
     X11 = 8
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AdditionalSettingsValue(_messages.Message):
+    r"""Optional. Additional
+    [slurm.conf](https://slurm.schedmd.com/slurm.conf.html) settings. Keys and
+    values are injected directly into slurm.conf without any semantic
+    validation.
+
+    Messages:
+      AdditionalProperty: An additional property for a AdditionalSettingsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        AdditionalSettingsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AdditionalSettingsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   accountingStorageEnforceFlags = _messages.EnumField('AccountingStorageEnforceFlagsValueListEntryValuesEnum', 1, repeated=True)
-  healthCheckInterval = _messages.IntegerField(2)
-  healthCheckNodeState = _messages.StringField(3)
-  healthCheckProgram = _messages.StringField(4)
-  preemptExemptTime = _messages.StringField(5)
-  preemptMode = _messages.EnumField('PreemptModeValueListEntryValuesEnum', 6, repeated=True)
-  preemptType = _messages.EnumField('PreemptTypeValueValuesEnum', 7)
-  priorityType = _messages.EnumField('PriorityTypeValueValuesEnum', 8)
-  priorityWeightAge = _messages.IntegerField(9)
-  priorityWeightAssoc = _messages.IntegerField(10)
-  priorityWeightFairshare = _messages.IntegerField(11)
-  priorityWeightJobSize = _messages.IntegerField(12)
-  priorityWeightPartition = _messages.IntegerField(13)
-  priorityWeightQos = _messages.IntegerField(14)
-  priorityWeightTres = _messages.StringField(15)
-  prologEpilogTimeout = _messages.StringField(16)
-  prologFlags = _messages.EnumField('PrologFlagsValueListEntryValuesEnum', 17, repeated=True)
-  requeueExitCodes = _messages.IntegerField(18, repeated=True)
-  requeueHoldExitCodes = _messages.IntegerField(19, repeated=True)
+  additionalSettings = _messages.MessageField('AdditionalSettingsValue', 2)
+  healthCheckInterval = _messages.IntegerField(3)
+  healthCheckNodeState = _messages.StringField(4)
+  healthCheckProgram = _messages.StringField(5)
+  preemptExemptTime = _messages.StringField(6)
+  preemptMode = _messages.EnumField('PreemptModeValueListEntryValuesEnum', 7, repeated=True)
+  preemptType = _messages.EnumField('PreemptTypeValueValuesEnum', 8)
+  priorityType = _messages.EnumField('PriorityTypeValueValuesEnum', 9)
+  priorityWeightAge = _messages.IntegerField(10)
+  priorityWeightAssoc = _messages.IntegerField(11)
+  priorityWeightFairshare = _messages.IntegerField(12)
+  priorityWeightJobSize = _messages.IntegerField(13)
+  priorityWeightPartition = _messages.IntegerField(14)
+  priorityWeightQos = _messages.IntegerField(15)
+  priorityWeightTres = _messages.StringField(16)
+  prologEpilogTimeout = _messages.StringField(17)
+  prologFlags = _messages.EnumField('PrologFlagsValueListEntryValuesEnum', 18, repeated=True)
+  requeueExitCodes = _messages.IntegerField(19, repeated=True)
+  requeueHoldExitCodes = _messages.IntegerField(20, repeated=True)
 
 
 class SlurmLoginNodes(_messages.Message):
@@ -3845,6 +3919,8 @@ class SlurmLoginNodes(_messages.Message):
     machineType: Required. Name of the Compute Engine [machine
       type](https://cloud.google.com/compute/docs/machine-resource) to use for
       login nodes, e.g. `n2-standard-2`.
+    networkTags: Optional. Network tags to be applied to each login node
+      instance. A maximum of 64 network tags are allowed.
     serviceAccount: Optional. Unstable: Contact hypercompute-service-eng@
       before using.
     startupScript: Optional. [Startup
@@ -3892,10 +3968,11 @@ class SlurmLoginNodes(_messages.Message):
   instances = _messages.MessageField('ComputeInstance', 5, repeated=True)
   labels = _messages.MessageField('LabelsValue', 6)
   machineType = _messages.StringField(7)
-  serviceAccount = _messages.MessageField('ServiceAccount', 8)
-  startupScript = _messages.StringField(9)
-  storageConfigs = _messages.MessageField('StorageConfig', 10, repeated=True)
-  zone = _messages.StringField(11)
+  networkTags = _messages.StringField(8, repeated=True)
+  serviceAccount = _messages.MessageField('ServiceAccount', 9)
+  startupScript = _messages.StringField(10)
+  storageConfigs = _messages.MessageField('StorageConfig', 11, repeated=True)
+  zone = _messages.StringField(12)
 
 
 class SlurmNodeDetails(_messages.Message):
@@ -4163,8 +4240,7 @@ class StartContinuousProfilingRequest(_messages.Message):
       profiling activity.
     hostTracerLevel: Optional. The host tracer level for the continuous
       profiling activity.
-    profilerTargets: Optional. Targets actively being profiled. If not
-      specified, all targets in the run will be profiled.
+    profilerTargets: Required. Targets actively being profiled.
     pythonTracerLevel: Optional. The python tracer level for the continuous
       profiling activity.
     requestId: Optional. An optional request ID to identify requests. Specify
@@ -4172,6 +4248,8 @@ class StartContinuousProfilingRequest(_messages.Message):
       will know to ignore the request if it has already been completed. The
       server will guarantee that for at least 60 minutes since the first
       request. The request ID must be a valid UUID.
+    xprofServerPort: Optional. The custom port for the Xprof server. If not
+      specified, default port 9999 will be used.
   """
 
   class DeviceTracerLevelValueValuesEnum(_messages.Enum):
@@ -4221,6 +4299,7 @@ class StartContinuousProfilingRequest(_messages.Message):
   profilerTargets = _messages.StringField(3, repeated=True)
   pythonTracerLevel = _messages.EnumField('PythonTracerLevelValueValuesEnum', 4)
   requestId = _messages.StringField(5)
+  xprofServerPort = _messages.IntegerField(6, variant=_messages.Variant.INT32)
 
 
 class Status(_messages.Message):
@@ -4341,6 +4420,8 @@ class StorageResourceConfig(_messages.Message):
       Filestore instance should be imported.
     existingLustre: Optional. Immutable. If set, indicates that an existing
       Managed Lustre instance should be imported.
+    existingNfs: Optional. Immutable. If set, indicates that an existing NFS
+      share should be imported.
     newBucket: Optional. Immutable. If set, indicates that a new Cloud Storage
       bucket should be created.
     newFilestore: Optional. Immutable. If set, indicates that a new Filestore
@@ -4352,9 +4433,10 @@ class StorageResourceConfig(_messages.Message):
   existingBucket = _messages.MessageField('ExistingBucketConfig', 1)
   existingFilestore = _messages.MessageField('ExistingFilestoreConfig', 2)
   existingLustre = _messages.MessageField('ExistingLustreConfig', 3)
-  newBucket = _messages.MessageField('NewBucketConfig', 4)
-  newFilestore = _messages.MessageField('NewFilestoreConfig', 5)
-  newLustre = _messages.MessageField('NewLustreConfig', 6)
+  existingNfs = _messages.MessageField('ExistingNfsConfig', 4)
+  newBucket = _messages.MessageField('NewBucketConfig', 5)
+  newFilestore = _messages.MessageField('NewFilestoreConfig', 6)
+  newLustre = _messages.MessageField('NewLustreConfig', 7)
 
 
 class TargetSession(_messages.Message):

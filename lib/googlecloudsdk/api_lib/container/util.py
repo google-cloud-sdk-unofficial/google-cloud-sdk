@@ -18,6 +18,7 @@
 import io
 import os
 import re
+from typing import Any, Dict
 
 from apitools.base.py import encoding
 from apitools.base.py import exceptions as apitools_exceptions
@@ -2403,6 +2404,255 @@ def LoadSoleTenantConfigFromNodeAffinityYaml(affinities_yaml, messages):
     node_affinities.append(node_affinity)
 
   return messages.SoleTenantConfig(nodeAffinities=node_affinities)
+
+
+def _ValidateJwtAuthenticationConfig(cfg: Dict[str, Any]) -> None:
+  """Strictly validates the YAML structure matches the K8s CRD subset."""
+  if not isinstance(cfg, dict):
+    raise Error('JWT authenticator config must be a YAML/JSON dictionary.')
+
+  allowed_top = {'jwt'}
+  unknown_top = set(cfg.keys()) - allowed_top
+  if unknown_top:
+    raise Error(
+        'Unknown top-level fields: {}. '
+        'Only the "jwt" field is accepted.'.format(sorted(list(unknown_top)))
+    )
+
+  if 'jwt' not in cfg or not isinstance(cfg['jwt'], list):
+    raise Error('Missing or invalid "jwt" list.')
+
+  if not cfg['jwt']:
+    raise Error('No JWT authenticators specified.')
+
+  for idx, authn in enumerate(cfg['jwt']):
+    if not isinstance(authn, dict):
+      raise Error(
+          'JWT authenticator at index [{}] must be a dictionary.'.format(idx)
+      )
+
+    allowed_authn = {
+        'issuer',
+        'claimMappings',
+        'claimValidationRules',
+        'userValidationRules',
+    }
+    unknown_authn = set(authn.keys()) - allowed_authn
+    if unknown_authn:
+      raise Error(
+          'Authenticator at index [{}] has unknown fields: {}'.format(
+              idx, sorted(list(unknown_authn))
+          )
+      )
+
+    if 'issuer' not in authn or not isinstance(authn['issuer'], dict):
+      raise Error(
+          'Authenticator at index [{}] is missing required "issuer" dictionary.'
+          .format(idx)
+      )
+
+    issuer = authn['issuer']
+    allowed_issuer = {
+        'url',
+        'audiences',
+        'discoveryURL',
+        'certificateAuthority',
+    }
+    unknown_issuer = set(issuer.keys()) - allowed_issuer
+    if unknown_issuer:
+      raise Error(
+          'Authenticator at index [{}] "issuer" has unknown fields: {}'.format(
+              idx, sorted(list(unknown_issuer))
+          )
+      )
+    if 'url' not in issuer:
+      raise Error(
+          'Authenticator at index [{}] "issuer" is missing required field'
+          ' "url".'.format(idx)
+      )
+    if 'audiences' not in issuer or not isinstance(issuer['audiences'], list):
+      raise Error(
+          'Authenticator at index [{}] "issuer" is missing required list'
+          ' "audiences".'.format(idx)
+      )
+
+    if 'certificateAuthority' in issuer:
+      if not isinstance(issuer['certificateAuthority'], str):
+        raise Error(
+            'Authenticator at index [{}] "issuer.certificateAuthority" must be'
+            ' a string.'.format(idx)
+        )
+
+    if 'claimMappings' in authn:
+      if not isinstance(authn['claimMappings'], dict):
+        raise Error(
+            'Authenticator at index [{}] "claimMappings" must be a'
+            ' dictionary.'.format(idx)
+        )
+      cm = authn['claimMappings']
+      allowed_cm = {'username', 'groups', 'uid', 'extra'}
+      unknown_cm = set(cm.keys()) - allowed_cm
+      if unknown_cm:
+        raise Error(
+            'Authenticator at index [{}] "claimMappings" has unknown fields: {}'
+            .format(idx, sorted(list(unknown_cm)))
+        )
+      if 'username' not in cm or not isinstance(cm['username'], dict):
+        raise Error(
+            'Authenticator at index [{}] "claimMappings" is missing required'
+            ' "username" dictionary.'.format(idx)
+        )
+
+      for field in ['username', 'groups', 'uid']:
+        if field in cm:
+          val = cm[field]
+          if not isinstance(val, dict):
+            raise Error(
+                'Authenticator at index [{}] "claimMappings.{}" must be a'
+                ' dictionary.'.format(idx, field)
+            )
+          if set(val.keys()) != {'expression'}:
+            raise Error(
+                'Authenticator at index [{}] "claimMappings.{}" must contain'
+                ' only "expression".'.format(idx, field)
+            )
+
+      if 'extra' in cm:
+        if not isinstance(cm['extra'], list):
+          raise Error(
+              'Authenticator at index [{}] "claimMappings.extra" must be a'
+              ' list.'.format(idx)
+          )
+        for e_idx, extra in enumerate(cm['extra']):
+          if not isinstance(extra, dict) or set(extra.keys()) != {
+              'key',
+              'valueExpression',
+          }:
+            raise Error(
+                'Authenticator at index [{}] "claimMappings.extra[{}]" must'
+                ' contain only "key" and "valueExpression".'.format(idx, e_idx)
+            )
+
+    for rules_field in ['claimValidationRules', 'userValidationRules']:
+      if rules_field in authn:
+        if not isinstance(authn[rules_field], list):
+          raise Error(
+              'Authenticator at index [{}] "{}" must be a list.'.format(
+                  idx, rules_field
+              )
+          )
+        for r_idx, rule in enumerate(authn[rules_field]):
+          if not isinstance(rule, dict):
+            raise Error(
+                'Authenticator at index [{}] "{}[{}]" must be a'
+                ' dictionary.'.format(idx, rules_field, r_idx)
+            )
+          allowed_rule = {'expression', 'message'}
+          unknown_rule = set(rule.keys()) - allowed_rule
+          if unknown_rule:
+            raise Error(
+                'Authenticator at index [{}] "{}[{}]" has unknown fields: {}'
+                .format(idx, rules_field, r_idx, sorted(list(unknown_rule)))
+            )
+          if 'expression' not in rule:
+            raise Error(
+                'Authenticator at index [{}] "{}[{}]" is missing required'
+                ' field "expression".'.format(idx, rules_field, r_idx)
+            )
+
+
+def LoadJwtAuthenticatorConfigFromYaml(content: str, messages: Any) -> Any:
+  """Loads json/yaml JWT authenticator config from file contents."""
+  if not content:
+    raise Error('No JWT authenticator config specified.')
+
+  try:
+    cfg_dict = yaml.load(content)
+  except yaml.YAMLParseError as e:
+    raise Error('config is not valid YAML/JSON: {}'.format(e)) from e
+
+  _ValidateJwtAuthenticationConfig(cfg_dict)
+
+  api_authenticators = []
+  for idx, authn in enumerate(cfg_dict['jwt']):
+    issuer = authn['issuer']
+
+    authenticator_args = messages.JWTAuthenticator(
+        issuerUrl=issuer['url'],
+        audiences=issuer['audiences'],
+    )
+
+    if 'discoveryURL' in issuer:
+      authenticator_args.discoveryUrl = issuer['discoveryURL']
+
+    if 'certificateAuthority' in issuer:
+      ca_val = issuer['certificateAuthority']
+      try:
+        authenticator_args.certificateAuthority = ca_val.encode('utf-8')
+      except Exception as e:
+        raise Error(
+            'Failed to encode certificateAuthority for authenticator at index'
+            ' [{}]: {}'.format(idx, e)
+        ) from e
+
+    if 'claimMappings' in authn:
+      cm = authn['claimMappings']
+
+      username_expr = None
+      if 'username' in cm:
+        username_expr = messages.ClaimExpression(
+            expression=cm['username']['expression']
+        )
+
+      groups_expr = None
+      if 'groups' in cm:
+        groups_expr = messages.ClaimExpression(
+            expression=cm['groups']['expression']
+        )
+
+      uid_expr = None
+      if 'uid' in cm:
+        uid_expr = messages.ClaimExpression(expression=cm['uid']['expression'])
+
+      extra_mappings = []
+      if 'extra' in cm:
+        for extra in cm['extra']:
+          extra_mappings.append(
+              messages.ExtraMapping(
+                  key=extra['key'], valueExpression=extra['valueExpression']
+              )
+          )
+
+      authenticator_args.claimMappings = messages.ClaimMappings(
+          username=username_expr,
+          groups=groups_expr,
+          uid=uid_expr,
+          extraMappings=extra_mappings,
+      )
+
+    if 'claimValidationRules' in authn:
+      claim_rules = []
+      for rule in authn['claimValidationRules']:
+        claim_rules.append(
+            messages.ClaimValidationRule(
+                expression=rule.get('expression'), message=rule.get('message')
+            )
+        )
+      authenticator_args.claimValidationRules = claim_rules
+
+    if 'userValidationRules' in authn:
+      user_rules = []
+      for rule in authn['userValidationRules']:
+        user_rules.append(
+            messages.UserValidationRule(
+                expression=rule['expression'], message=rule.get('message')
+            )
+        )
+      authenticator_args.userValidationRules = user_rules
+
+    api_authenticators.append(authenticator_args)
+
+  return messages.JWTAuthenticatorConfig(authenticators=api_authenticators)
 
 
 def _IsGoogleInternalUser():

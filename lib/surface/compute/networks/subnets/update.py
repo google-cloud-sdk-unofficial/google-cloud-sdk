@@ -180,6 +180,7 @@ class UpdateBeta(Update):
 
   _api_version = compute_api.COMPUTE_BETA_API_VERSION
   _include_ipv6_secondary_ranges = True
+  _include_ipv6_network_tier = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -190,4 +191,3 @@ class UpdateAlpha(UpdateBeta):
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION
   _update_purpose_to_private = True
   _include_ipv6_secondary_ranges = True
-  _include_ipv6_network_tier = True

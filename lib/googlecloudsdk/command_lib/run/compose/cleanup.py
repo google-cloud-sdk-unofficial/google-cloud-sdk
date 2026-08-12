@@ -24,7 +24,9 @@ from googlecloudsdk.api_lib.secrets import api as secrets_api
 from googlecloudsdk.api_lib.storage import storage_api
 from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.api_lib.util import apis as apis_util
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.command_lib.artifacts import requests as ar_requests
+from googlecloudsdk.command_lib.run import deletion
 from googlecloudsdk.command_lib.run import exceptions as serverless_exceptions
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.run.compose import builder
@@ -118,10 +120,12 @@ class CloudRunServiceHandler(ResourceHandler):
         )
         try:
           client.DeleteService(service_ref)
-
+          poller = deletion.DeletionPoller(client.GetService)
+          waiter.PollUntilDone(poller, service_ref)
         except (
             api_exceptions.HttpError,
             serverless_exceptions.ServiceNotFoundError,
+            waiter.TimeoutError,
         ) as e:
           log.warning(
               'Failed to delete Cloud Run service {}: {}'.format(name, e)
@@ -144,6 +148,9 @@ class SecretManagerHandler(ResourceHandler):
         collection='cloudresourcemanager.projects',
     )
     request_filter = f'labels.run-compose-project:{self.sanitized_project_name}'
+    if self.region:
+      sanitized_region = compose_resource.sanitize_label_value(self.region)
+      request_filter += f' labels.run-compose-region:{sanitized_region}'
     with SuppressApiEnablementPrompt():
       try:
         secrets = secrets_client.ListWithPager(
@@ -338,7 +345,16 @@ class ArtifactRegistryHandler(ResourceHandler):
           f'/repositories/{AR_REPO_NAME}/packages/{name}'
       )
       try:
-        ar_requests.DeletePackage(client, messages, full_pkg_name)
+        op = ar_requests.DeletePackage(client, messages, full_pkg_name)
+        if op and getattr(op, 'name', None):
+          op_resource = resources.REGISTRY.ParseRelativeName(
+              op.name,
+              collection='artifactregistry.projects.locations.operations',
+          )
+          poller = waiter.CloudOperationPollerNoResources(
+              client.projects_locations_operations
+          )
+          waiter.WaitFor(poller, op_resource, message=None)
       except api_exceptions.HttpError as e:
         log.warning(
             'Failed to delete Artifact Registry package {}: {}'.format(name, e)

@@ -1,0 +1,33 @@
+release_tracks: [ALPHA, BETA]
+help_text:
+  brief: Test IAM permissions for a Compute Engine router.
+  description: |
+    *{command}* tests the IAM permissions that a caller has on a Compute Engine router.
+
+  examples: |
+    To test if the caller has the 'compute.routers.get' permission on a router `my-router`, run:
+
+      $ {command} my-router --region=REGION --permissions=compute.routers.get
+
+request:
+  collection: compute.routers
+  api_version: beta
+  method: testIamPermissions
+  use_relative_name: false
+  ALPHA:
+    api_version: alpha
+
+command_type: GENERIC
+
+arguments:
+  resource:
+    help_text: The router on which you want to test permissions.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:router
+  params:
+  - arg_name: permissions
+    api_field: testPermissionsRequest.permissions
+    required: true
+    repeated: true
+    metavar: PERMISSION
+    help_text: |-
+      The permissions to test.

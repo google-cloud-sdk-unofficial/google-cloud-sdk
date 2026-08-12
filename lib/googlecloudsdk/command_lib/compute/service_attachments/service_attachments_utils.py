@@ -28,6 +28,15 @@ def GetConnectionPreference(args, messages):
   return None
 
 
+def GetRoutingMode(args, messages):
+  """Get routing mode of the tunneling config."""
+  if args.IsSpecified('routing_mode'):
+    return messages.ServiceAttachmentTunnelingConfig.RoutingModeValueValuesEnum(
+        args.routing_mode
+    )
+  return None
+
+
 def GetConsumerAcceptList(args, messages):
   """Get consumer accept list of the service attachment."""
   consumer_accept_list = []

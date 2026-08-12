@@ -1404,6 +1404,33 @@ class DesigncenterV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def RecommendIAMRoles(self, request, global_params=None):
+      r"""Gets recommended roles for an application.
+
+      Args:
+        request: (DesigncenterProjectsLocationsSpacesApplicationsRecommendIAMRolesRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('RecommendIAMRoles')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    RecommendIAMRoles.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/spaces/{spacesId}/applications/{applicationsId}:recommendIAMRoles',
+        http_method='POST',
+        method_id='designcenter.projects.locations.spaces.applications.recommendIAMRoles',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:recommendIAMRoles',
+        request_field='recommendIAMRolesRequest',
+        request_type_name='DesigncenterProjectsLocationsSpacesApplicationsRecommendIAMRolesRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Register(self, request, global_params=None):
       r"""Register deployed application from terraform state file with App Hub.
 

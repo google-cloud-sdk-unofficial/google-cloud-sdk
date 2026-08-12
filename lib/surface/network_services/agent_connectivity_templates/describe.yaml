@@ -1,0 +1,26 @@
+# Copyright 2026 Google LLC. All Rights Reserved.
+release_tracks: [ALPHA, BETA, GA]
+
+help_text:
+  brief: |
+    Describe a Agent Connectivity Template.
+  description: Show details of an Agent Connectivity Template.
+
+  examples: |
+    Show details about an Agent Connectivity Template named 'my-agent-connectivity-template'.
+
+        $ {command} my-agent-connectivity-template --location=us-central1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:agentConnectivityTemplate
+    help_text: Name of the agent connectivity template to describe.
+
+request:
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  GA:
+    api_version: v1
+  collection: networkservices.projects.locations.agentConnectivityTemplates

@@ -167,10 +167,11 @@ class Create(base.CreateCommand):
     parser.add_argument(
         '--kms-key',
         required=False,
-        hidden=True,  # TODO: b/487194873 - Remove when the feature goes GA.
         help="""\
         The KMS key to use for encryption of the private cloud.
-        Format: projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}
+        Must be a valid KMS key resource name.
+        Format: `projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}`.
+        Specifying this key enables CMEK.
         """,
     )
     parser.add_argument(

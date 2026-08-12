@@ -23,7 +23,7 @@ from googlecloudsdk.command_lib.quotas import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class UpdateBeta(base.UpdateCommand):
   """Update the QuotaAdjusterSettings of a resource container.
@@ -73,7 +73,7 @@ class UpdateBeta(base.UpdateCommand):
       None or any possible error.
     """
     self.updated_resource = quota_adjuster_settings.UpdateQuotaAdjusterSettings(
-        args, release_track=base.ReleaseTrack.BETA
+        args, release_track=self.ReleaseTrack()
     )
     self.validate_only = args.validate_only
     return self.updated_resource

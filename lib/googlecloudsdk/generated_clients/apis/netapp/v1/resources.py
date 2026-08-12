@@ -129,6 +129,18 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_STORAGEPOOLS_VOLUMEPERFORMANCEGROUPS = (
+      'projects.locations.storagePools.volumePerformanceGroups',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/storagePools/'
+              '{storagePoolsId}/volumePerformanceGroups/'
+              '{volumePerformanceGroupsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_VOLUMES = (
       'projects.locations.volumes',
       '{+name}',

@@ -345,7 +345,6 @@ class Backup(_messages.Message):
 
 class BigLakeMetastoreMigrationConfig(_messages.Message):
   r"""Defines the configuration required to migrate metadata from a Dataproc
-
   Metastore service to BigLake Metastore.
 
   Enums:
@@ -377,17 +376,14 @@ class BigLakeMetastoreMigrationConfig(_messages.Message):
   """
 
   class ConflictPolicyValueValuesEnum(_messages.Enum):
-    r"""Optional.
-
-    The policy to handle conflicts when migrating resources, defaults to SKIP if
-    not specified.
+    r"""Optional. The policy to handle conflicts when migrating resources,
+    defaults to SKIP if not specified.
 
     Values:
       CONFLICT_POLICY_UNSPECIFIED: The conflict policy is unspecified.
       SKIP: Skip migrating resources that already exist in the target catalog.
       OVERWRITE: Update resources that already exist in the target catalog.
     """
-
     CONFLICT_POLICY_UNSPECIFIED = 0
     SKIP = 1
     OVERWRITE = 2
@@ -893,6 +889,7 @@ class Empty(_messages.Message):
   or the response type of an API method. For instance: service Foo { rpc
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
+
 
 
 class EncryptionConfig(_messages.Message):
@@ -1707,6 +1704,7 @@ class MessageSet(_messages.Message):
   sourced only to facilitate the migration of Google products with MessageSet-
   bearing messages to open-source environments.
   """
+
 
 
 class MetadataExport(_messages.Message):
@@ -3729,9 +3727,7 @@ class Service(_messages.Message):
   labels = _messages.MessageField('LabelsValue', 8)
   maintenanceWindow = _messages.MessageField('MaintenanceWindow', 9)
   metadataIntegration = _messages.MessageField('MetadataIntegration', 10)
-  metadataManagementActivity = _messages.MessageField(
-      'MetadataManagementActivity', 11
-  )
+  metadataManagementActivity = _messages.MessageField('MetadataManagementActivity', 11)
   multiRegionConfig = _messages.MessageField('MultiRegionConfig', 12)
   name = _messages.StringField(13)
   network = _messages.StringField(14)

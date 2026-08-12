@@ -299,3 +299,21 @@ def AddNatIpsPerEndpoint(parser):
       help="""\
       The number of NAT IP addresses to be allocated per connected endpoint.
       """)
+
+
+def AddRoutingMode(parser):
+  routing_mode_choices = {
+      'STANDARD_ROUTING':
+          'Response traffic, after de-encapsulation, will be returned to the '
+          'client.',
+      'PACKET_INJECTION':
+          'Traffic sent to this service attachment will be reinjected into '
+          'the consumer network.',
+  }
+
+  parser.add_argument(
+      '--routing-mode',
+      choices=routing_mode_choices,
+      type=lambda x: x.replace('-', '_').upper(),
+      help='Specifies the routing mode for tunneling configuration on this '
+      'service attachment.')

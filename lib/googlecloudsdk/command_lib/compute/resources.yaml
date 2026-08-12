@@ -86,6 +86,15 @@ address:
     attribute_name: address
     help: The name of the Google Compute address.
 
+http_health_check:
+  name: http health check
+  collection: compute.httpHealthChecks
+  attributes:
+  - *project
+  - parameter_name: httpHealthCheck
+    attribute_name: http_health_check
+    help: The name of the Google Compute Engine HTTP health check.
+
 firewall:
   name: firewall_rule
   collection: compute.firewalls
@@ -213,6 +222,15 @@ interconnect_attachment_group:
   - parameter_name: interconnectAttachmentGroup
     attribute_name: interconnect_attachment_group
     help: The name of the Google Compute Engine interconnect attachment group.
+
+interconnect_group:
+  name: interconnect_group
+  collection: compute.interconnectGroups
+  attributes:
+  - *project
+  - parameter_name: interconnectGroup
+    attribute_name: interconnect_group
+    help: The name of the Google Compute Engine interconnect group.
 
 network_attachment:
   name: network attachment
@@ -342,6 +360,15 @@ snapshot:
   - parameter_name: snapshot
     attribute_name: snapshot_name
     help: The name of the Google Compute Engine snapshot.
+
+snapshot_group:
+  name: snapshot group
+  collection: compute.snapshotGroups
+  attributes:
+  - *project
+  - parameter_name: snapshotGroup
+    attribute_name: snapshot_group_name
+    help: The name of the Google Compute Engine snapshot group.
 
 storage_pool:
   name: storage pool
@@ -580,3 +607,13 @@ host:
   - parameter_name: host
     attribute_name: host_name
     help: The name of the Google Compute Engine host.
+
+router:
+  name: router
+  collection: compute.routers
+  attributes:
+  - *project
+  - *region
+  - parameter_name: router
+    attribute_name: router
+    help: The name of the Google Compute Engine router.

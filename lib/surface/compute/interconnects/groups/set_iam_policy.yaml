@@ -1,0 +1,36 @@
+release_tracks: [ALPHA, BETA, GA, PREVIEW]
+
+help_text:
+  brief: Set the IAM policy for a Compute Engine interconnect group.
+  description: |
+    Sets the IAM policy for the given interconnect group as defined in a JSON or YAML file.
+
+  examples: |
+    To set the IAM policy for the interconnect group `my-interconnect-group` using a policy defined in the JSON file `policy.json`, run:
+
+      $ {command} my-interconnect-group policy.json
+
+    See https://cloud.google.com/iam/docs/managing-policies for details of the
+    policy file format and contents.
+
+request:
+  collection: compute.interconnectGroups
+  api_version: v1
+  use_relative_name: false
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=globalSetPolicyRequest.policy.version
+  BETA:
+    api_version: beta
+  ALPHA:
+    api_version: alpha
+
+iam:
+  set_iam_policy_request_path: globalSetPolicyRequest
+  message_type_overrides:
+    policy: Policy
+    set_iam_policy_request: ComputeInterconnectGroupsSetIamPolicyRequest
+
+arguments:
+  resource:
+    help_text: The interconnect group to set the IAM policy for.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:interconnect_group

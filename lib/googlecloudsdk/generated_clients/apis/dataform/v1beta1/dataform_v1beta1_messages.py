@@ -446,6 +446,8 @@ class CompilationResult(_messages.Message):
       Key.
     dataformCoreVersion: Output only. The version of `@dataform/core` that was
       used for compilation.
+    gcsRepositorySnapshotMetadata: Output only. Metadata about the repository
+      snapshot used by scheduled notebooks.
     gitCommitish: Immutable. Git commit/tag/branch name at which the
       repository should be compiled. Must exist in the remote repository.
       Examples: - a commit SHA: `12ade345` - a tag: `tag1` - a branch name:
@@ -472,13 +474,14 @@ class CompilationResult(_messages.Message):
   createTime = _messages.StringField(3)
   dataEncryptionState = _messages.MessageField('DataEncryptionState', 4)
   dataformCoreVersion = _messages.StringField(5)
-  gitCommitish = _messages.StringField(6)
-  internalMetadata = _messages.StringField(7)
-  name = _messages.StringField(8)
-  privateResourceMetadata = _messages.MessageField('PrivateResourceMetadata', 9)
-  releaseConfig = _messages.StringField(10)
-  resolvedGitCommitSha = _messages.StringField(11)
-  workspace = _messages.StringField(12)
+  gcsRepositorySnapshotMetadata = _messages.MessageField('GcsRepositorySnapshotMetadata', 6)
+  gitCommitish = _messages.StringField(7)
+  internalMetadata = _messages.StringField(8)
+  name = _messages.StringField(9)
+  privateResourceMetadata = _messages.MessageField('PrivateResourceMetadata', 10)
+  releaseConfig = _messages.StringField(11)
+  resolvedGitCommitSha = _messages.StringField(12)
+  workspace = _messages.StringField(13)
 
 
 class CompilationResultAction(_messages.Message):
@@ -2414,6 +2417,35 @@ class FolderContentsEntry(_messages.Message):
   repository = _messages.MessageField('Repository', 2)
 
 
+class GcsRepositorySnapshotDestination(_messages.Message):
+  r"""Configures the destination for a repository snapshot.
+
+  Fields:
+    repositorySnapshotUri: Optional. The Google Cloud Storage destination to
+      upload the repository snapshot to. Format: `gs://bucket-name/path/`.
+  """
+
+  repositorySnapshotUri = _messages.StringField(1)
+
+
+class GcsRepositorySnapshotMetadata(_messages.Message):
+  r"""Metadata about a repository snapshot stored in Google Cloud Storage.
+
+  Fields:
+    crc32cChecksum: Output only. The crc32c checksum of the repository
+      snapshot, big-endian base64 encoded.
+    generation: Output only. The generation number of the Cloud Storage
+      object. See https://cloud.google.com/storage/docs/metadata#generation-
+      number.
+    repositorySnapshotUri: Output only. The Google Cloud Storage URI of the
+      repository snapshot.
+  """
+
+  crc32cChecksum = _messages.StringField(1)
+  generation = _messages.IntegerField(2)
+  repositorySnapshotUri = _messages.StringField(3)
+
+
 class GitRemoteSettings(_messages.Message):
   r"""Controls Git remote configuration for a repository.
 
@@ -2930,6 +2962,7 @@ class NotebookAction(_messages.Message):
 
   Fields:
     contents: Output only. The code contents of a Notebook to be run.
+    filePath: Output only. The path to the notebook file in the repository.
     jobId: Output only. The ID of the Gemini Enterprise Agent Platform job
       that executed the notebook in contents and also the ID used for the
       outputs created in Google Cloud Storage buckets. Only set once the job
@@ -2937,7 +2970,8 @@ class NotebookAction(_messages.Message):
   """
 
   contents = _messages.StringField(1)
-  jobId = _messages.StringField(2)
+  filePath = _messages.StringField(2)
+  jobId = _messages.StringField(3)
 
 
 class NotebookRuntimeOptions(_messages.Message):
@@ -2950,10 +2984,14 @@ class NotebookRuntimeOptions(_messages.Message):
       specified, a runtime is created with Colab's default specifications.
     gcsOutputBucket: Optional. The Google Cloud Storage location to upload the
       result to. Format: `gs://bucket-name`.
+    gcsRepositorySnapshotDestination: Optional. The Google Cloud Storage
+      destination to upload the snapshot to. For empty URI it defaults to the
+      provided gcs_output_bucket. Format: `gs://bucket-name/path/`.
   """
 
   aiPlatformNotebookRuntimeTemplate = _messages.StringField(1)
   gcsOutputBucket = _messages.StringField(2)
+  gcsRepositorySnapshotDestination = _messages.MessageField('GcsRepositorySnapshotDestination', 3)
 
 
 class Operation(_messages.Message):
@@ -3611,9 +3649,9 @@ class ReleaseConfig(_messages.Message):
       must have been created using this release config. Must be in the format
       `projects/*/locations/*/repositories/*/compilationResults/*`.
     timeZone: Optional. Specifies the time zone to be used when interpreting
-      cron_schedule. Must be a time zone name from the time zone database
-      (https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). If left
-      unspecified, the default is UTC.
+      cron_schedule. Must be a time zone name from the [time zone
+      database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
+      If left unspecified, the default is `UTC`.
   """
 
   codeCompilationConfig = _messages.MessageField('CodeCompilationConfig', 1)
@@ -4187,9 +4225,9 @@ class WorkflowConfig(_messages.Message):
       release_compilation_result should be executed. Must be in the format
       `projects/*/locations/*/repositories/*/releaseConfigs/*`.
     timeZone: Optional. Specifies the time zone to be used when interpreting
-      cron_schedule. Must be a time zone name from the time zone database
-      (https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). If left
-      unspecified, the default is UTC.
+      cron_schedule. Must be a time zone name from the [time zone
+      database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
+      If left unspecified, the default is `UTC`.
     updateTime: Output only. The timestamp of when the WorkflowConfig was last
       updated.
     workflowTriggerConfig: Optional. Optional trigger configuration for this

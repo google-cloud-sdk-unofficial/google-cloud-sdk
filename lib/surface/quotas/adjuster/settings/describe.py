@@ -19,7 +19,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.quotas import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class DescribeBeta(base.DescribeCommand):
   """Gets details of the QuotaAdjusterSettings for a resource container.
@@ -58,7 +58,7 @@ class DescribeBeta(base.DescribeCommand):
       The requested QuotaAdjusterSettings for the project.
     """
     return quota_adjuster_settings.GetQuotaAdjusterSettings(
-        args, release_track=base.ReleaseTrack.BETA
+        args, release_track=self.ReleaseTrack()
     )
 
 

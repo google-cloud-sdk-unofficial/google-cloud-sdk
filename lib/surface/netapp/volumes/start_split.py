@@ -24,11 +24,11 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class StartSplit(base.Command):
   """Starts splitting a Cloud NetApp clone volume from its source volume."""
 
-  _RELEASE_TRACK = base.ReleaseTrack.BETA
+  _RELEASE_TRACK = base.ReleaseTrack.GA
 
   detailed_help = {
       'DESCRIPTION': textwrap.dedent("""\
@@ -68,8 +68,17 @@ class StartSplit(base.Command):
     return result
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class StartSplitAlpha(StartSplit):
   """Starts splitting a Cloud NetApp clone volume from its source volume."""
 
   _RELEASE_TRACK = base.ReleaseTrack.ALPHA
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class StartSplitBeta(StartSplit):
+  """Starts splitting a Cloud NetApp clone volume from its source volume."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.BETA

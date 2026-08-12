@@ -48,6 +48,7 @@ from googlecloudsdk.command_lib.run import resource_change_validators
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.run import stages
 from googlecloudsdk.command_lib.run import validators
+from googlecloudsdk.command_lib.run.sourcedeploys import sources
 from googlecloudsdk.command_lib.util.args import map_util
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
@@ -864,6 +865,17 @@ class Deploy(base.Command):
 
     containers = self._ValidateAndGetContainers(args)
     deploy_from_source = self._ValidateAndGetDeployFromSource(containers)
+    if (
+        self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+        and deploy_from_source
+        and not properties.VALUES.regional.endpoint_mode.IsExplicitlySet()
+        and not getattr(args, 'domain', None)
+    ):
+      properties.VALUES.SetInvocationValue(
+          properties.VALUES.regional.endpoint_mode,
+          properties.VALUES.regional.REGIONAL_PREFERRED,
+          None,
+      )
     is_local_build = validators.IsLocalBuildFromSource(
         self.ReleaseTrack(), deploy_from_source
     )
@@ -932,10 +944,8 @@ class Deploy(base.Command):
     skip_build = False
     upload_through_run_api = False
     if deploy_from_source:
-      container_args = next(iter(deploy_from_source.values()))
-      upload_through_run_api = (
-          flags.IsUploadLaunchStage(self.ReleaseTrack())
-          and container_args.run_upload
+      upload_through_run_api = sources.ShouldUploadThroughRunApi(
+          deploy_from_source, self.ReleaseTrack()
       )
     with serverless_operations.Connect(
         conn_context, skip_activation_prompt

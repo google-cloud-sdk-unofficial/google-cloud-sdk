@@ -72,7 +72,7 @@ class ListAlpha(base.ListCommand):
     )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class ListBeta(base.ListCommand):
   """List QuotaPreferences in a given project, folder or organization.
@@ -120,5 +120,5 @@ class ListBeta(base.ListCommand):
       List of quota preferences.
     """
     return quota_preference.ListQuotaPreferences(
-        args, release_track=base.ReleaseTrack.BETA
+        args, release_track=self.ReleaseTrack()
     )

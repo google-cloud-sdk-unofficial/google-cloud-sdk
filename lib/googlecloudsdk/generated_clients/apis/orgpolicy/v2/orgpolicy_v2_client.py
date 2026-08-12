@@ -13,7 +13,7 @@ class OrgpolicyV2(base_api.BaseApiClient):
   MTLS_BASE_URL = 'https://orgpolicy.mtls.googleapis.com/'
 
   _PACKAGE = 'orgpolicy'
-  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform']
+  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/organizationpolicy', 'https://www.googleapis.com/auth/organizationpolicy.readonly']
   _VERSION = 'v2'
   _CLIENT_ID = 'CLIENT_ID'
   _CLIENT_SECRET = 'CLIENT_SECRET'

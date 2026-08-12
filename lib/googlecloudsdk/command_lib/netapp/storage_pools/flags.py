@@ -441,6 +441,16 @@ def AddStoragePoolUnifiedPoolArg(parser):
   )
 
 
+def AddStoragePoolClusterArg(parser):
+  """Adds the Cluster arg to the arg parser."""
+  parser.add_argument(
+      '--cluster',
+      type=str,
+      hidden=True,
+      help="""The name of the cluster.""",
+  )
+
+
 def AddStoragePoolQosTypeArg(parser, messages):
   GetStoragePoolQosTypeArg(
       messages
@@ -482,6 +492,7 @@ def AddStoragePoolCreateArgs(parser, release_track):
     AddStoragePoolEnableHotTierAutoResizeArg(parser)
     AddStoragePoolUnifiedPoolArg(parser)
     AddStoragePoolScaleTierArg(parser, messages)
+    AddStoragePoolClusterArg(parser)
 
 
 def AddStoragePoolDeleteArgs(parser):
@@ -623,10 +634,8 @@ def AddStoragePoolUpdateBackupConfigArgs(parser):
   backup_config_help = textwrap.dedent("""\
       Backup Config contains backup related config on a volume in ONTAP-mode Storage Pool.
 
-      Backup Config will have the following format
-      `--backup-config=backup-policies=BACKUP_POLICIES,
-      backup-vault=BACKUP_VAULT_NAME,
-      enable-scheduled-backups=ENABLE_SCHEDULED_BACKUPS`
+      Backup Config will have the following format:
+      `--backup-config=backup-policies=BACKUP_POLICIES,backup-vault=BACKUP_VAULT_NAME,enable-scheduled-backups=ENABLE_SCHEDULED_BACKUPS`
 
       backup-policies is a pound-separated (#) list of backup policy names, backup-vault can include
       a single backup-vault resource name, and enable-scheduled-backups is a Boolean value indicating

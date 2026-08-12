@@ -16,6 +16,7 @@
 
 
 import os
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.emulators import util
 from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
@@ -66,6 +67,11 @@ def StartFirestoreEmulator(args, log_file=None):
     start_args.append('--database-mode=datastore-mode')
   else:
     start_args.append(f'--database-mode={args.database_mode}')
+  # TODO(b/539597053): Update to --require-indexes and --index-file.
+  if args.require_indexes:
+    start_args.append(f'--require_indexes={args.require_indexes}')
+  if args.index_file:
+    start_args.append(f'--index_file={args.index_file}')
   if args.import_data:
     start_args.append(f'--import-data={args.import_data}')
   if args.export_on_exit:
@@ -80,8 +86,31 @@ def StartFirestoreEmulator(args, log_file=None):
   return util.Exec(exec_args, log_file=log_file)
 
 
-def ValidateStartArgs(args):  # pylint: disable=unused-argument
-  pass
+def ValidateStartArgs(args):
+  """Validates start arguments for Firestore emulator."""
+  require_indexes = getattr(args, 'require_indexes', False)
+  index_file = getattr(args, 'index_file', None)
+  is_datastore_mode = (
+      getattr(args, 'use_firestore_in_datastore_mode', False)
+      or getattr(args, 'database_mode', None)
+      in ('datastore-mode', 'datastore')
+  )
+  if (require_indexes or index_file) and not is_datastore_mode:
+    raise exceptions.InvalidArgumentException(
+        '--require-indexes, --index-file',
+        '--require-indexes and --index-file are only supported when running in'
+        ' Datastore Mode.',
+    )
+  if require_indexes and not index_file:
+    raise exceptions.RequiredArgumentException(
+        '--index-file',
+        '--index-file is required when --require-indexes is specified.',
+    )
+  if index_file and not require_indexes:
+    raise exceptions.RequiredArgumentException(
+        '--require-indexes',
+        '--require-indexes is required when --index-file is specified.',
+    )
 
 
 def GetHostPort():

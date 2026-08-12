@@ -76,7 +76,7 @@ def ResolveDatasetLocations(  # pylint: disable=invalid-name
       )
     except apitools_exceptions.HttpError as e:
       log.debug(
-          'Could not read BigQuery dataset [%s.%s] for materializes-to '
+          'Could not read BigQuery dataset [%s.%s] for represents (physical) '
           'location: %s',
           project,
           dataset,

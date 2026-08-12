@@ -22,7 +22,6 @@ from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.network_connectivity import flags
 from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
@@ -74,10 +73,11 @@ class AcceptSpoke(base.Command):
 
 
 AcceptSpoke.detailed_help = {
-    'EXAMPLES': f""" \
+    'EXAMPLES': """\
   To accept a spoke named ``my-spoke'' into a hub named ``my-hub'', run:
 
-      $ {{command}} my-hub --spoke="https://networkconnectivity.{properties.VALUES.core.universe_domain.Get()}/v1/projects/spoke-project/locations/global/spokes/my-spoke"
+      $ {command} my-hub \\
+          --spoke="projects/spoke-project/locations/global/spokes/my-spoke"
   """,
     'API REFERENCE': """ \
   This command uses the networkconnectivity/v1 API. The full documentation

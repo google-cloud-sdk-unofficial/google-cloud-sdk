@@ -216,14 +216,6 @@ def ProcessSessionSettings(unused_ref, args, req):
   """
   del unused_ref
   if args.IsKnownAndSpecified('session_length'):
-    if args.IsKnownAndSpecified(
-        'restricted_client_application_client_ids'
-    ) or args.IsKnownAndSpecified('restricted_client_application_names'):
-      raise calliope_exceptions.InvalidArgumentException(
-          '--session-length',
-          'Cannot set session length on restricted client applications. Use '
-          'scoped access settings.',
-      )
     session_length = times.ParseDuration(
         req.gcpUserAccessBinding.sessionSettings.sessionLength
     ).total_seconds
@@ -779,26 +771,11 @@ def _ValidateRestrictedProjectScope(args, req):
 def ProcessScopedAccessSettings(unused_ref, args, req):
   """Hook to process and validate scoped access settings from the request."""
 
-  def _ValidateRestrictedClientApplicationNamesAndClientIdsAreNotSpecified(
-      args,
-  ):
-    legacy_prca_fields_specified = args.IsKnownAndSpecified(
-        'restricted_client_application_names'
-    ) or args.IsKnownAndSpecified('restricted_client_application_client_ids')
-    if legacy_prca_fields_specified:
-      raise calliope_exceptions.InvalidArgumentException(
-          '--binding-file',
-          'The binding-file cannot be specified at the same time as'
-          ' `--restricted-client-application-names` or'
-          ' `--restricted-client-application-client-ids`.',
-      )
-
   def _Start(unused_ref, args, req):
     del unused_ref
     if not args.IsKnownAndSpecified('binding_file'):
       return req
 
-    _ValidateRestrictedClientApplicationNamesAndClientIdsAreNotSpecified(args)
     _ProcessScopesInScopedAccessSettings(req)
     _ValidateRestrictedProjectScope(args, req)
     _ProcessAccessSettingsInScopedAccessSettings(req)
@@ -978,8 +955,6 @@ class GcpUserAccessBindingStructureValidator:
       unrecognized_fields.add('principal')
     if gcp_user_access_binding.sessionSettings is not None:
       unrecognized_fields.add('sessionSettings')
-    if gcp_user_access_binding.restrictedClientApplications:
-      unrecognized_fields.add('restrictedClientApplications')
     if gcp_user_access_binding.all_unrecognized_fields():
       unrecognized_fields.update(
           gcp_user_access_binding.all_unrecognized_fields()

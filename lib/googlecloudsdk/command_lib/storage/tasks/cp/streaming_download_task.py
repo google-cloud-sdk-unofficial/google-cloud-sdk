@@ -35,6 +35,7 @@ from googlecloudsdk.command_lib.storage.tasks import task_status
 from googlecloudsdk.command_lib.storage.tasks.cp import copy_util
 from googlecloudsdk.command_lib.storage.tasks.cp import download_util
 from googlecloudsdk.command_lib.util import crc32c
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
@@ -174,16 +175,28 @@ class StreamingDownloadTask(copy_util.ObjectCopyTask):
     else:
       digesters = None
 
-    api.download_object(
-        self._source_resource,
-        self._download_stream,
-        request_config,
-        digesters=digesters,
-        download_strategy=cloud_api.DownloadStrategy.ONE_SHOT,
-        progress_callback=progress_callback,
-        start_byte=self._start_byte,
-        end_byte=self._end_byte,
+    original_preallocate = (
+        properties.VALUES.storage.preallocate_disk_space.GetBool()
     )
+    if original_preallocate and self.is_bidi_download:
+      log.debug(
+          'Metadata preallocation is not supported for streaming downloads.'
+          ' Bypassing.'
+      )
+      properties.VALUES.storage.preallocate_disk_space.Set(False)
+    try:
+      api.download_object(
+          self._source_resource,
+          self._download_stream,
+          request_config,
+          digesters=digesters,
+          download_strategy=cloud_api.DownloadStrategy.ONE_SHOT,
+          progress_callback=progress_callback,
+          start_byte=self._start_byte,
+          end_byte=self._end_byte,
+      )
+    finally:
+      properties.VALUES.storage.preallocate_disk_space.Set(original_preallocate)
     self._download_stream.flush()
 
     if is_full_download:

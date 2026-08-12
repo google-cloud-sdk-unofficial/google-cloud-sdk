@@ -335,6 +335,7 @@ def ParseCreateOptionsBase(
       enable_private_endpoint=get_default('enable_private_endpoint'),
       enable_gke_oidc=getattr(args, 'enable_gke_oidc', None),
       enable_identity_service=getattr(args, 'enable_identity_service', None),
+      jwt_authenticator_config=getattr(args, 'jwt_authenticator_config', None),
       ephemeral_storage_local_ssd=(ephemeral_storage_local_ssd),
       gpudirect_strategy=get_default('gpudirect_strategy'),
       image_type=get_default('image_type'),
@@ -962,6 +963,9 @@ flags_to_add = {
         'gkeoidc': flags.AddGkeOidcFlag,
         'hostmaintenanceinterval': flags.AddHostMaintenanceIntervalFlag,
         'identityservice': flags.AddIdentityServiceFlag,
+        'jwtAuthenticatorConfig': lambda p: flags.AddJwtAuthenticatorConfigFlag(
+            p, hidden=True
+        ),
         'ilbsubsetting': flags.AddILBSubsettingFlags,
         'localssds': flags.AddLocalSSDsBetaFlags,
         'loggingmonitoring': flags.AddEnableLoggingMonitoringSystemOnlyFlag,
@@ -1202,6 +1206,9 @@ flags_to_add = {
         'gpudirectstrategy': flags.AddGpuDirectStrategyFlag,
         'hostmaintenanceinterval': flags.AddHostMaintenanceIntervalFlag,
         'identityservice': flags.AddIdentityServiceFlag,
+        'jwtAuthenticatorConfig': lambda p: flags.AddJwtAuthenticatorConfigFlag(
+            p, hidden=True
+        ),
         'ilbsubsetting': flags.AddILBSubsettingFlags,
         'imageflags': flags.AddImageFlagsCreate,
         'intranodevisibility': flags.AddEnableIntraNodeVisibilityFlag,

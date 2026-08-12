@@ -254,8 +254,8 @@ def _RaiseNotEligibleForUpgradeError(function):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpgradeBeta(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Upgrade(base.Command):
   """Upgrade a 1st gen Cloud Function to the Cloud Run function."""
 
   detailed_help = {
@@ -286,7 +286,7 @@ class UpgradeBeta(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddFunctionResourceArg(parser, 'to upgrade')
-    flags.AddUpgradeFlags(parser, release_track=base.ReleaseTrack.BETA)
+    flags.AddUpgradeFlags(parser)
 
   def Run(self, args):
     client = client_v2.FunctionsClient(self.ReleaseTrack())
@@ -410,11 +410,12 @@ class UpgradeBeta(base.Command):
 
 
 @base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpgradeBeta(Upgrade):
+  """Upgrade a 1st gen Cloud Function to the Cloud Run function."""
+
+
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpgradeAlpha(UpgradeBeta):
   """Upgrade a 1st gen Cloud Function to the Cloud Run function."""
-
-  @staticmethod
-  def Args(parser):
-    flags.AddFunctionResourceArg(parser, 'to upgrade')
-    flags.AddUpgradeFlags(parser, release_track=base.ReleaseTrack.ALPHA)

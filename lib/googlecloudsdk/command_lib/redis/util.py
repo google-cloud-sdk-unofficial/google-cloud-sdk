@@ -164,23 +164,29 @@ def UpdateAclPolicyRulesHook(resource_ref, args, req):
   messages = GetMessagesForResource(resource_ref)
   existing_rules = req.aclPolicy.rules or []
 
-  # Index existing rules by username
-  rules_dict = {r.username: r.rule for r in existing_rules}
-
-  if getattr(args, 'add_rules', None):
-    for r in args.add_rules:
-      rules_dict[r['username']] = r['rule']
+  # Maintain rules as a list of tuples (username, rule)
+  rules_list = []
+  for r in existing_rules:
+    u = r.username if hasattr(r, 'username') else r.get('username')
+    rule = r.rule if hasattr(r, 'rule') else r.get('rule')
+    rules_list.append((u, rule))
 
   if getattr(args, 'remove_rules', None):
     for r in args.remove_rules:
-      name = r['username']
-      if name in rules_dict:
-        del rules_dict[name]
+      u = r.username if hasattr(r, 'username') else r.get('username')
+      rule = r.rule if hasattr(r, 'rule') else r.get('rule')
 
-  # Convert back to message list using whatever the type of rules is
+      if u and rule:
+        # Remove only if both match
+        rules_list = [
+            (username, rule_str)
+            for username, rule_str in rules_list
+            if not (username == u and rule_str == rule)
+        ]
+
+  # Convert back to message list
   new_rules = []
-  # Attempt to use AclRule as type
-  for username, rule_str in rules_dict.items():
+  for username, rule_str in rules_list:
     new_rules.append(messages.AclRule(username=username, rule=rule_str))
 
   req.aclPolicy.rules = new_rules

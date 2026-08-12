@@ -22,7 +22,7 @@ from googlecloudsdk.core import log
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe a Device Run session."""
 
@@ -47,10 +47,10 @@ class Describe(base.DescribeCommand):
     session = client.Get(session_ref)
 
     session_id = session_ref.Name()
+    report = session.sessionReport
+    status = report.status if report else None
     status_type = (
-        str(session.sessionReport.status.statusType)
-        if session.sessionReport and session.sessionReport.status
-        else 'UNKNOWN'
+        str(status.statusType) if status and status.statusType else 'UNKNOWN'
     )
 
     if args.full:
@@ -60,13 +60,16 @@ class Describe(base.DescribeCommand):
 
     if status_type != 'DONE':
       log.status.Print(f'Session [{session_id}] status is [{status_type}].')
-
-      if status_type == 'RUNNING':
-        log.status.Print(session.sessionReport.status.progressMessages[0])
+      if status_type == 'RUNNING' and status.progressMessages:
+        log.status.Print(status.progressMessages[-1])
       return None
 
-    result_type = session.sessionReport.result.resultType
-    rows = reports.ExtractSessionReportRows(session.sessionReport)
+    result_type = (
+        report.result.resultType
+        if report and report.result
+        else 'UNKNOWN'
+    )
+    rows = reports.ExtractSessionReportRows(report)
 
     log.status.Print(
         f'Session [{session_id}] finished with result [{result_type}].'
@@ -106,4 +109,3 @@ To display full details of a session, run:
   $ {command} my-session --location=us-central1 --full
 """,
 }
-

@@ -250,6 +250,18 @@ def GetGdceZoneArg():
   )
 
 
+def GetHiddenGdcZoneArg():
+  return base.Argument(
+      '--gdc-zone',
+      required=False,
+      default=None,
+      hidden=True,
+      help="""\
+      The name of the GDC zone. If set, the endpoint is for GDCc.
+      """,
+  )
+
+
 def GetGdcZoneArg():
   return base.Argument(
       '--gdc-zone',
@@ -1622,6 +1634,32 @@ def AddEndpointResourceArg(
       GetEndpointResourceSpec(prompt_func=prompt_func),
       'The endpoint {}.'.format(verb),
       required=True,
+  ).AddToParser(parser)
+
+
+def AddMutateDeployedModelArgs(parser):
+  """Adds arguments for mutate-deployed-model command."""
+  GetDeployedModelId(required=True).AddToParser(parser)
+  AddEndpointResourceArg(
+      parser,
+      'containing the deployed model to mutate',
+      prompt_func=region_util.PromptForOpRegion,
+  )
+
+  base.Argument(
+      '--min-replica-count',
+      type=arg_parsers.BoundedInt(0, sys.maxsize, unlimited=True),
+      help="""\
+New minimum number of machine replicas for the deployment resources.
+""",
+  ).AddToParser(parser)
+
+  base.Argument(
+      '--max-replica-count',
+      type=arg_parsers.BoundedInt(1, upper_bound=4096),
+      help="""\
+New maximum number of machine replicas for the deployment resources.
+""",
   ).AddToParser(parser)
 
 

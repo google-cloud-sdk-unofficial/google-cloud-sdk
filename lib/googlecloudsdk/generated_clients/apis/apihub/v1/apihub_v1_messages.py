@@ -2836,7 +2836,9 @@ class GoogleCloudApihubV1ApigeeXHybridConfig(_messages.Message):
 
 
 class GoogleCloudApihubV1ApigeeXTargetDetails(_messages.Message):
-  r"""The target configuration for Apigee X.
+  r"""The target configuration for Apigee X. Note: If this API is called while
+  an earlier deployment is still in progress, the earlier deployment will be
+  aborted and a new deployment will be triggered.
 
   Fields:
     deployedRevision: Output only. The revision number of the Apigee proxy
@@ -5354,6 +5356,7 @@ class GoogleCloudApihubV1Plugin(_messages.Message):
       API_DISCOVERY: The gateway type is API Discovery.
       OTHERS: The gateway type for any other types of gateways.
       AWS_API_GATEWAY: The gateway type is AWS API Gateway.
+      AZURE_API_MANAGEMENT: The gateway type is Azure API Management.
     """
     GATEWAY_TYPE_UNSPECIFIED = 0
     APIGEE_X_AND_HYBRID = 1
@@ -5364,6 +5367,7 @@ class GoogleCloudApihubV1Plugin(_messages.Message):
     API_DISCOVERY = 6
     OTHERS = 7
     AWS_API_GATEWAY = 8
+    AZURE_API_MANAGEMENT = 9
 
   class OwnershipTypeValueValuesEnum(_messages.Enum):
     r"""Output only. The type of the plugin, indicating whether it is

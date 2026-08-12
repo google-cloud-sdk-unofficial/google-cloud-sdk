@@ -2247,11 +2247,17 @@ class ColumnFamilyStats(_messages.Message):
     logicalDataBytes: How much space the data in the column family occupies.
       This is roughly how many bytes would be needed to read the contents of
       the entire column family (e.g. by streaming all contents out).
+    logicalDataHddBytes: Output only. The logical data bytes of the column
+      family stored on HDD.
+    logicalDataSsdBytes: Output only. The logical data bytes of the column
+      family stored on SSD.
   """
 
   averageCellsPerColumn = _messages.FloatField(1)
   averageColumnsPerRow = _messages.FloatField(2)
   logicalDataBytes = _messages.IntegerField(3)
+  logicalDataHddBytes = _messages.IntegerField(4)
+  logicalDataSsdBytes = _messages.IntegerField(5)
 
 
 class CopyBackupMetadata(_messages.Message):

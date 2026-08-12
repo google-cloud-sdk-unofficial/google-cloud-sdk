@@ -11,6 +11,92 @@ from apitools.base.py import extra_types
 package = 'networkservices'
 
 
+class AgentConnectivityTemplate(_messages.Message):
+  r"""AgentConnectivityTemplate represents the agent gateway resource.
+
+  Enums:
+    ProtocolsValueListEntryValuesEnum:
+
+  Messages:
+    LabelsValue: Optional. Set of label tags associated with the
+      AgentConnectivityTemplate resource.
+
+  Fields:
+    agentGatewayCard: Output only. Field for populated
+      AgentGateway card.
+    createTime: Output only. The timestamp when the resource was created.
+    description: Optional. A free-text description of the resource. Max length
+      1024 characters.
+    etag: Optional. Etag of the resource. If this is provided, it must match
+      the server's etag. If the provided etag does not match the server's
+      etag, the request will fail with a 409 ABORTED error.
+    googleManaged: Optional. Proxy is orchestrated and managed by GoogleCloud
+      in a tenant project.
+    labels: Optional. Set of label tags associated with the
+      AgentConnectivityTemplate resource.
+    name: Identifier. Name of the AgentConnectivityTemplate resource. It
+      matches pattern `projects/*/locations/*/agentConnectivityTemplates/`.
+    networkConfig: Optional. Network configuration for the
+      AgentConnectivityTemplate.
+    protocols: Optional. Deprecated.
+    registries: Optional. A list of Agent registries containing the agents,
+      MCP servers and tools governed by the Agent Gateway. Note: Currently
+      limited to project-scoped registries Must be of format `//agentregistry.
+      googleapis.com/projects/{project}/locations/{location}/`
+    selfManaged: Optional. Attach to existing Application Load Balancers or
+      Secure Web Proxies.
+    updateTime: Output only. The timestamp when the resource was updated.
+  """
+
+  class ProtocolsValueListEntryValuesEnum(_messages.Enum):
+    r"""ProtocolsValueListEntryValuesEnum enum type.
+
+    Values:
+      PROTOCOL_UNSPECIFIED: Unspecified protocol.
+      MCP: Message Control Plane protocol.
+    """
+    PROTOCOL_UNSPECIFIED = 0
+    MCP = 1
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Set of label tags associated with the
+    AgentConnectivityTemplate resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  agentGatewayCard = _messages.MessageField('AgentGatewayAgentGatewayOutputCard', 1)
+  createTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  etag = _messages.StringField(4)
+  googleManaged = _messages.MessageField('AgentGatewayGoogleManaged', 5)
+  labels = _messages.MessageField('LabelsValue', 6)
+  name = _messages.StringField(7)
+  networkConfig = _messages.MessageField('AgentGatewayNetworkConfig', 8)
+  protocols = _messages.EnumField('ProtocolsValueListEntryValuesEnum', 9, repeated=True)
+  registries = _messages.StringField(10, repeated=True)
+  selfManaged = _messages.MessageField('AgentGatewaySelfManaged', 11)
+  updateTime = _messages.StringField(12)
+
+
 class AgentGateway(_messages.Message):
   r"""AgentGateway represents the agent gateway resource.
 
@@ -187,9 +273,13 @@ class AgentGatewaySelfManaged(_messages.Message):
   Fields:
     resourceUri: Optional. A supported Google Cloud networking proxy in the
       Project and Location
+    resourceUris: Optional. List of supported Google Cloud networking proxies
+      in the Project and Location. resource_uris is mutually exclusive with
+      resource_uri.
   """
 
   resourceUri = _messages.StringField(1)
+  resourceUris = _messages.StringField(2, repeated=True)
 
 
 class AuthzExtension(_messages.Message):
@@ -199,11 +289,11 @@ class AuthzExtension(_messages.Message):
   Enums:
     LoadBalancingSchemeValueValuesEnum: Optional. All backend services and
       forwarding rules referenced by this extension must share the same load
-      balancing scheme. Supported values: `INTERNAL_MANAGED`,
-      `EXTERNAL_MANAGED`. Can be omitted for AuthzExtensions that do not
-      reference a backend service. For more information, refer to [Backend
-      services overview](https://cloud.google.com/load-balancing/docs/backend-
-      service).
+      balancing scheme. The supported values are `INTERNAL_MANAGED` and
+      `EXTERNAL_MANAGED`. You can omit this field for `AuthzExtensions`
+      resources that don't reference a backend service. For more information,
+      see [Backend services overview](https://cloud.google.com/load-
+      balancing/docs/backend-service).
     WireFormatValueValuesEnum: Optional. The format of communication supported
       by the callout extension. This field is supported only for regional
       `AuthzExtension` resources. If not specified, the default value
@@ -226,7 +316,7 @@ class AuthzExtension(_messages.Message):
   Fields:
     authority: Optional. The `:authority` header in the gRPC request sent from
       Envoy to the extension service. It is required when the `service` field
-      points to a backend service or a wasm plugin.
+      points to a backend service.
     createTime: Output only. The timestamp when the resource was created.
     description: Optional. A human-readable description of the resource.
     failOpen: Optional. Determines how the proxy behaves if the call to the
@@ -256,9 +346,9 @@ class AuthzExtension(_messages.Message):
       resources.
     loadBalancingScheme: Optional. All backend services and forwarding rules
       referenced by this extension must share the same load balancing scheme.
-      Supported values: `INTERNAL_MANAGED`, `EXTERNAL_MANAGED`. Can be omitted
-      for AuthzExtensions that do not reference a backend service. For more
-      information, refer to [Backend services
+      The supported values are `INTERNAL_MANAGED` and `EXTERNAL_MANAGED`. You
+      can omit this field for `AuthzExtensions` resources that don't reference
+      a backend service. For more information, see [Backend services
       overview](https://cloud.google.com/load-balancing/docs/backend-service).
     metadata: Optional. The metadata provided here is included as part of the
       `metadata_context` (of type `google.protobuf.Struct`) in the
@@ -271,12 +361,20 @@ class AuthzExtension(_messages.Message):
       following format: `projects/{project}/locations/{location}/authzExtensio
       ns/{authz_extension}`.
     service: Required. The reference to the service that runs the extension.
-      To configure a callout extension, `service` must be a fully-qualified
-      reference to a [backend service](https://cloud.google.com/compute/docs/r
-      eference/rest/v1/backendServices) in the format: `https://www.googleapis
-      .com/compute/v1/projects/{project}/regions/{region}/backendServices/{bac
-      kendService}` or `https://www.googleapis.com/compute/v1/projects/{projec
-      t}/global/backendServices/{backendService}`.
+      To configure a callout extension: For global AuthzExtension, `service`
+      must be a fully-qualified reference to a [backend service](https://cloud
+      .google.com/compute/docs/reference/rest/v1/backendServices) in the
+      format: `https://www.googleapis.com/compute/v1/projects/{project}/global
+      /backendServices/{backendService}`. For regional AuthzExtension,
+      `service` must be a fully-qualified reference to one of the following: *
+      a [backend service](https://cloud.google.com/compute/docs/reference/rest
+      /v1/backendServices) in the format: `https://www.googleapis.com/compute/
+      v1/projects/{project}/regions/{region}/backendServices/{backendService}`
+      . * a fully qualified domain name that can be resolved by the Google
+      Cloud DNS. * `iap.googleapis.com` and it can only be referenced by an
+      AuthzPolicy with the policyProfile set to REQUEST_AUTHZ. *
+      `modelarmor..rep.googleapis.com` and it can only be referenced by an
+      AuthzPolicy with the policyProfile set to CONTENT_AUTHZ.
     timeout: Required. Specifies the timeout for each individual message on
       the stream. The timeout must be between 10-10000 milliseconds.
     updateTime: Output only. The timestamp when the resource was updated.
@@ -288,11 +386,11 @@ class AuthzExtension(_messages.Message):
 
   class LoadBalancingSchemeValueValuesEnum(_messages.Enum):
     r"""Optional. All backend services and forwarding rules referenced by this
-    extension must share the same load balancing scheme. Supported values:
-    `INTERNAL_MANAGED`, `EXTERNAL_MANAGED`. Can be omitted for AuthzExtensions
-    that do not reference a backend service. For more information, refer to
-    [Backend services overview](https://cloud.google.com/load-
-    balancing/docs/backend-service).
+    extension must share the same load balancing scheme. The supported values
+    are `INTERNAL_MANAGED` and `EXTERNAL_MANAGED`. You can omit this field for
+    `AuthzExtensions` resources that don't reference a backend service. For
+    more information, see [Backend services
+    overview](https://cloud.google.com/load-balancing/docs/backend-service).
 
     Values:
       LOAD_BALANCING_SCHEME_UNSPECIFIED: Default value. Do not use.
@@ -476,15 +574,16 @@ class EndpointPolicy(_messages.Message):
       inbound traffic at the matched endpoints. Refer to Authorization. If
       this field is not specified, authorization is disabled(no authz checks)
       for this endpoint.
-    clientTlsPolicy: Optional. A URL referring to a ClientTlsPolicy resource.
-      ClientTlsPolicy can be set to specify the authentication for traffic
-      from the proxy to the actual endpoints. More specifically, it is applied
-      to the outgoing traffic from the proxy to the endpoint. This is
-      typically used for sidecar model where the proxy identifies itself as
-      endpoint to the control plane, with the connection between sidecar and
-      endpoint requiring authentication. If this field is not set,
-      authentication is disabled(open). Applicable only when
-      EndpointPolicyType is SIDECAR_PROXY.
+    clientTlsPolicy: Optional. Deprecated: This field is not used and is a no-
+      op. A URL referring to a ClientTlsPolicy resource. ClientTlsPolicy can
+      be set to specify the authentication for traffic from the proxy to the
+      actual endpoints. More specifically, it is applied to the outgoing
+      traffic from the proxy to the endpoint. This is typically used for
+      sidecar model where the proxy identifies itself as endpoint to the
+      control plane, with the connection between sidecar and endpoint
+      requiring authentication. If this field is not set, authentication is
+      disabled(open). Applicable only when EndpointPolicyType is
+      SIDECAR_PROXY.
     createTime: Output only. The timestamp when the resource was created.
     description: Optional. A free-text description of the resource. Max length
       1024 characters.
@@ -585,11 +684,10 @@ class ExpressLink(_messages.Message):
     matches: Optional. A list of matches define conditions used to match
       requests to destination services. Each match is independent with the OR
       semantic, i.e. we consider it matched if ANY one of the matches is
-      satisfied. This field is only applicable to Cloud Run services: If an
-      ExpressLink has only one Cloud Run service, Match is optional. If not
-      specified, the default hostname `-..run.app` or the short name can be
-      used. If an ExpressLink has multiple Cloud Run services, at least one
-      Match with valid hostname is required.
+      satisfied. If an ExpressLink has only one Cloud Run service, Match is
+      optional. If not specified, the default hostname `-..run.app` or the
+      short name can be used. If an ExpressLink has multiple Cloud Run
+      services, at least one Match with valid hostname is required.
     name: Identifier. Name of the ExpressLink resource. It matches pattern
       `projects/*/locations/*/expressLinks/`.
     source: Optional. The source service(s) for this binding.
@@ -649,7 +747,7 @@ class ExpressLinkDestination(_messages.Message):
 
 class ExpressLinkMatch(_messages.Message):
   r"""Match defines the predicate used to match requests to destination
-  services. This field is only applicable to Cloud Run services.
+  services.
 
   Fields:
     hostname: Optional. Specifies the hostname to match against the HTTP
@@ -2720,6 +2818,25 @@ class LbTrafficExtension(_messages.Message):
   updateTime = _messages.StringField(9)
 
 
+class ListAgentConnectivityTemplatesResponse(_messages.Message):
+  r"""Response returned by the ListAgentConnectivityTemplates method.
+
+  Fields:
+    agentConnectivityTemplates: List of AgentConnectivityTemplate resources.
+    nextPageToken: If there might be more results than those appearing in this
+      response, then `next_page_token` is included. To get the next set of
+      results, call this method again using the value of `next_page_token` as
+      `page_token`.
+    unreachable: Unreachable resources. Populated when the request attempts to
+      list all resources across all supported locations, while some locations
+      are temporarily unavailable.
+  """
+
+  agentConnectivityTemplates = _messages.MessageField('AgentConnectivityTemplate', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListAgentGatewaysResponse(_messages.Message):
   r"""Response returned by the ListAgentGateways method.
 
@@ -3284,6 +3401,25 @@ class ListTcpRoutesResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class ListTelemetryPoliciesResponse(_messages.Message):
+  r"""Response returned by the ListTelemetryPolicies method.
+
+  Fields:
+    nextPageToken: If there might be more results than those appearing in this
+      response, then `next_page_token` is included. To get the next set of
+      results, call this method again using the value of `next_page_token` as
+      `page_token`.
+    telemetryPolicies: List of TelemetryPolicy resources.
+    unreachable: Unreachable resources. Populated when the request attempts to
+      list all resources across all supported locations, while some locations
+      are temporarily unavailable.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  telemetryPolicies = _messages.MessageField('TelemetryPolicy', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListTlsRoutesResponse(_messages.Message):
   r"""Response returned by the ListTlsRoutes method.
 
@@ -3658,6 +3794,17 @@ class MetadataLabels(_messages.Message):
 
   labelName = _messages.StringField(1)
   labelValue = _messages.StringField(2)
+
+
+class MetricsConfiguration(_messages.Message):
+  r"""Configuration for metrics collection.
+
+  Fields:
+    enabled: Optional. Indicates whether metrics are enabled or disabled. Set
+      to true to explicitly enable, or false to explicitly disable.
+  """
+
+  enabled = _messages.BooleanField(1)
 
 
 class MulticastConsumerAssociation(_messages.Message):
@@ -4440,6 +4587,98 @@ class MulticastResourceState(_messages.Message):
     OBSOLETE = 8
 
   state = _messages.EnumField('StateValueValuesEnum', 1)
+
+
+class NetworkservicesProjectsLocationsAgentConnectivityTemplatesCreateRequest(_messages.Message):
+  r"""A
+  NetworkservicesProjectsLocationsAgentConnectivityTemplatesCreateRequest
+  object.
+
+  Fields:
+    agentConnectivityTemplate: A AgentConnectivityTemplate resource to be
+      passed as the request body.
+    agentConnectivityTemplateId: Required. Short name of the
+      AgentConnectivityTemplate resource to be created.
+    parent: Required. The parent resource of the AgentConnectivityTemplate.
+      Must be in the format `projects/*/locations/*`.
+  """
+
+  agentConnectivityTemplate = _messages.MessageField('AgentConnectivityTemplate', 1)
+  agentConnectivityTemplateId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class NetworkservicesProjectsLocationsAgentConnectivityTemplatesDeleteRequest(_messages.Message):
+  r"""A
+  NetworkservicesProjectsLocationsAgentConnectivityTemplatesDeleteRequest
+  object.
+
+  Fields:
+    etag: Optional. The etag of the AgentConnectivityTemplate to delete.
+    name: Required. A name of the AgentConnectivityTemplate to delete. Must be
+      in the format `projects/*/locations/*/agentConnectivityTemplates/*`.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+
+
+class NetworkservicesProjectsLocationsAgentConnectivityTemplatesGetRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsAgentConnectivityTemplatesGetRequest
+  object.
+
+  Fields:
+    name: Required. A name of the AgentConnectivityTemplate to get. Must be in
+      the format `projects/*/locations/*/agentConnectivityTemplates/*`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworkservicesProjectsLocationsAgentConnectivityTemplatesListRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsAgentConnectivityTemplatesListRequest
+  object.
+
+  Fields:
+    pageSize: Optional. Maximum number of AgentConnectivityTemplates to return
+      per call.
+    pageToken: Optional. The value returned by the last
+      `ListAgentConnectivityTemplatesResponse` Indicates that this is a
+      continuation of a prior `ListAgentConnectivityTemplates` call, and that
+      the system should return the next page of data.
+    parent: Required. The project and location from which the
+      AgentConnectivityTemplates should be listed, specified in the format
+      `projects/*/locations/*`.
+    returnPartialSuccess: Optional. If true, allow partial responses for
+      multi-regional Aggregated List requests. Otherwise if one of the
+      locations is down or unreachable, the Aggregated List request will fail.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  returnPartialSuccess = _messages.BooleanField(4)
+
+
+class NetworkservicesProjectsLocationsAgentConnectivityTemplatesPatchRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsAgentConnectivityTemplatesPatchRequest
+  object.
+
+  Fields:
+    agentConnectivityTemplate: A AgentConnectivityTemplate resource to be
+      passed as the request body.
+    name: Identifier. Name of the AgentConnectivityTemplate resource. It
+      matches pattern `projects/*/locations/*/agentConnectivityTemplates/`.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the AgentConnectivityTemplate resource by the update. The
+      fields specified in the update_mask are relative to the resource, not
+      the full request. A field will be overwritten if it is in the mask. If
+      the user does not provide a mask then all fields will be overwritten.
+  """
+
+  agentConnectivityTemplate = _messages.MessageField('AgentConnectivityTemplate', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
 
 
 class NetworkservicesProjectsLocationsAgentGatewaysCreateRequest(_messages.Message):
@@ -8023,6 +8262,102 @@ class NetworkservicesProjectsLocationsTcpRoutesPatchRequest(_messages.Message):
   updateMask = _messages.StringField(3)
 
 
+class NetworkservicesProjectsLocationsTelemetryPoliciesCreateRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsTelemetryPoliciesCreateRequest object.
+
+  Fields:
+    parent: Required. The parent resource where this policy will be created.
+      Must be in the format `projects/{project}/locations/{location}`.
+    telemetryPolicy: A TelemetryPolicy resource to be passed as the request
+      body.
+    telemetryPolicyId: Required. The ID to use for the telemetry policy, which
+      will become the final component of the telemetry policy's resource name.
+      This value must be 4-63 characters long, and match the regular
+      expression `[a-z]([-a-z0-9]{2,61}[a-z0-9])`.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  telemetryPolicy = _messages.MessageField('TelemetryPolicy', 2)
+  telemetryPolicyId = _messages.StringField(3)
+
+
+class NetworkservicesProjectsLocationsTelemetryPoliciesDeleteRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsTelemetryPoliciesDeleteRequest object.
+
+  Fields:
+    etag: Optional. The etag of the TelemetryPolicy. If this is provided, it
+      must match the server's etag.
+    name: Required. A name of the TelemetryPolicy to delete. Must be in the
+      format `projects/{project}/locations/{location}/telemetryPolicies/{telem
+      etry_policy}`.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+
+
+class NetworkservicesProjectsLocationsTelemetryPoliciesGetRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsTelemetryPoliciesGetRequest object.
+
+  Fields:
+    name: Required. A name of the TelemetryPolicy to get. Must be in the
+      format `projects/{project}/locations/{location}/telemetryPolicies/{telem
+      etry_policy}`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworkservicesProjectsLocationsTelemetryPoliciesListRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsTelemetryPoliciesListRequest object.
+
+  Fields:
+    pageSize: Optional. The maximum number of policies to return. The service
+      may return fewer than this value. If unspecified, at most 50 policies
+      will be returned. The maximum value is 1000; values above 1000 will be
+      coerced to 1000.
+    pageToken: Optional. A page token, received from a previous
+      `ListTelemetryPolicies` call. Provide this to retrieve the subsequent
+      page.
+    parent: Required. The project and location from which the
+      TelemetryPolicies should be listed, specified in the format
+      `projects/{project}/locations/{location}`.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class NetworkservicesProjectsLocationsTelemetryPoliciesPatchRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsTelemetryPoliciesPatchRequest object.
+
+  Fields:
+    allowMissing: Optional. If set to true, and the telemetry policy is not
+      found, a new telemetry policy will be created. In this situation,
+      `update_mask` is ignored.
+    name: Identifier. Represents the resource name of the policy. Format: `pro
+      jects/{project}/locations/{location}/telemetryPolicies/{telemetry_policy
+      }`
+    telemetryPolicy: A TelemetryPolicy resource to be passed as the request
+      body.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the TelemetryPolicy resource by the update. The fields
+      specified in the update_mask are relative to the resource, not the full
+      request. A field will be overwritten if it is in the mask. If the
+      `update_mask` is not provided, the service will treat it as an implied
+      field mask equivalent to all fields provided in the request message.
+      This means that only the fields populated in the `telemetry_policy`
+      field will be updated. The special value `*` can be used to indicate
+      full replacement.
+  """
+
+  allowMissing = _messages.BooleanField(1)
+  name = _messages.StringField(2, required=True)
+  telemetryPolicy = _messages.MessageField('TelemetryPolicy', 3)
+  updateMask = _messages.StringField(4)
+
+
 class NetworkservicesProjectsLocationsTlsRoutesCreateRequest(_messages.Message):
   r"""A NetworkservicesProjectsLocationsTlsRoutesCreateRequest object.
 
@@ -9414,6 +9749,133 @@ class TcpRouteRouteRule(_messages.Message):
   matches = _messages.MessageField('TcpRouteRouteMatch', 2, repeated=True)
 
 
+class TelemetryPolicy(_messages.Message):
+  r"""Provides a configuration for telemetry.
+
+  Messages:
+    AnnotationsValue: Optional. User-provided annotations.
+    LabelsValue: Optional. Set of label tags associated with the
+      TelemetryPolicy resource.
+
+  Fields:
+    annotations: Optional. User-provided annotations.
+    createTime: Output only. Indicates the timestamp when the resource was
+      created.
+    deleteTime: Output only. The time when this resource was soft-deleted.
+      Only populated if the resource is in the process of being deleted.
+    displayName: Optional. Provides a human-readable name for the policy.
+    etag: Provides a mechanism for optimistic concurrency control. If this is
+      provided, it must match the server's etag. If the provided etag does not
+      match the server's etag, the request will fail with a 409 ABORTED error.
+    labels: Optional. Set of label tags associated with the TelemetryPolicy
+      resource.
+    metricsConfiguration: Optional. Specifies the top-level configuration
+      block within the telemetry policy that contains all the settings for how
+      metrics will be applied to the target resources.
+    name: Identifier. Represents the resource name of the policy. Format: `pro
+      jects/{project}/locations/{location}/telemetryPolicies/{telemetry_policy
+      }`
+    reconciling: Output only. If true, the service is currently reconciling
+      the resource to the desired state.
+    telemetryTarget: Required. Specifies the set of targets to which this
+      telemetry policy applies.
+    tracingConfiguration: Optional. Specifies the top-level configuration
+      block within the telemetry policy that contains all the settings for how
+      tracing will be applied to the target resources.
+    uid: Output only. Specifies the server-assigned unique identifier for the
+      policy.
+    updateTime: Output only. Indicates the timestamp when the resource was
+      last updated.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AnnotationsValue(_messages.Message):
+    r"""Optional. User-provided annotations.
+
+    Messages:
+      AdditionalProperty: An additional property for a AnnotationsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type AnnotationsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AnnotationsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Set of label tags associated with the TelemetryPolicy
+    resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  annotations = _messages.MessageField('AnnotationsValue', 1)
+  createTime = _messages.StringField(2)
+  deleteTime = _messages.StringField(3)
+  displayName = _messages.StringField(4)
+  etag = _messages.StringField(5)
+  labels = _messages.MessageField('LabelsValue', 6)
+  metricsConfiguration = _messages.MessageField('MetricsConfiguration', 7)
+  name = _messages.StringField(8)
+  reconciling = _messages.BooleanField(9)
+  telemetryTarget = _messages.MessageField('TelemetryTarget', 10)
+  tracingConfiguration = _messages.MessageField('TracingConfiguration', 11)
+  uid = _messages.StringField(12)
+  updateTime = _messages.StringField(13)
+
+
+class TelemetryTarget(_messages.Message):
+  r"""Specifies the set of targets to which the TelemetryPolicy should be
+  applied.
+
+  Fields:
+    resources: Required. Lists references to the resources that are targeted
+      by the policy. Types of resources supported: - `run.googleapis.com/` -
+      `compute.googleapis.com/` - `networkservices.googleapis.com/` The format
+      must be the full resource name of a supported resource. Examples: `//run
+      .googleapis.com/projects/{project}/locations/{location}/services/{servic
+      e}` `//compute.googleapis.com/projects/my-
+      project/global/forwardingRules/my-fr-1`
+      `//compute.googleapis.com/projects/my-project/regions/us-
+      central1/forwardingRules/my-fr-1`
+      `//networkservices.googleapis.com/projects/my-project/locations/us-
+      central1/gateways/my-secure-web-proxy-gateway`
+      `//networkservices.googleapis.com/projects/my-project/locations/us-
+      east1/agentGateways/my-agent-gateway`
+  """
+
+  resources = _messages.StringField(1, repeated=True)
+
+
 class TlsRoute(_messages.Message):
   r"""TlsRoute defines how traffic should be routed based on SNI and other
   matching L3 attributes.
@@ -9550,6 +10012,63 @@ class TlsRouteRouteRule(_messages.Message):
 
   action = _messages.MessageField('TlsRouteRouteAction', 1)
   matches = _messages.MessageField('TlsRouteRouteMatch', 2, repeated=True)
+
+
+class TracingConfiguration(_messages.Message):
+  r"""Configuration for tracing collection.
+
+  Fields:
+    customSpanAttributes: Optional. Provides key-value pairs for adding
+      context to spans. Supports literalValue (static) and fromHeaderValue
+      (dynamic extraction).
+    parentBasedSampling: Optional. Configures honoring a sampled bit in
+      downstream traceparentID headers.
+    samplingRate: Optional. Specifies the tracing sampling rate. The sampling
+      rate is a float number in the interval [0, 1]. The sampling rate is
+      applied to all requests to the targeted resources. The default value is
+      0.0.
+  """
+
+  customSpanAttributes = _messages.MessageField('TracingConfigurationCustomSpanAttribute', 1, repeated=True)
+  parentBasedSampling = _messages.MessageField('TracingConfigurationParentBasedSampling', 2)
+  samplingRate = _messages.FloatField(3, variant=_messages.Variant.FLOAT)
+
+
+class TracingConfigurationCustomSpanAttribute(_messages.Message):
+  r"""Key-value pairs for adding context to spans. Supports literal_value
+  (static) and from_header_value (dynamic extraction). Note: literal_value and
+  from_header_value are mutually exclusive, but at least one of them must be
+  set.
+
+  Fields:
+    attributeName: Required. Defines the key for a custom attribute that is
+      added to the trace spans generated by the Google Cloud Load Balancer
+      (GCLB).
+    fromHeaderValue: Optional. Specifies an incoming request header name from
+      which the value for the custom span attribute should be dynamically
+      extracted. Note: the value of the header might be changed during the
+      request processing; in this case the resulting value will be stored.
+    literalValue: Optional. Assigns a static, constant value to the custom
+      trace span attribute defined by the corresponding attribute_name.
+  """
+
+  attributeName = _messages.StringField(1)
+  fromHeaderValue = _messages.StringField(2)
+  literalValue = _messages.StringField(3)
+
+
+class TracingConfigurationParentBasedSampling(_messages.Message):
+  r"""Configures honoring a sampled bit in downstream traceparentID headers.
+
+  Fields:
+    enabled: Optional. Provides a master switch to respect a sampled bit in
+      incoming traceparentID headers. Default is false.
+    samplingRate: Optional. Specifies the sampling rate to use when the
+      sampled bit is set in the incoming traceparentID header.
+  """
+
+  enabled = _messages.BooleanField(1)
+  samplingRate = _messages.FloatField(2, variant=_messages.Variant.FLOAT)
 
 
 class TrafficPortSelector(_messages.Message):

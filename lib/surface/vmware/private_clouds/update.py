@@ -65,7 +65,6 @@ class Update(base.UpdateCommand):
     parser.add_argument(
         '--encryption-type',
         required=False,
-        hidden=True,  # TODO: b/487194873 - Remove when the feature goes GA.
         help="""\
         The encryption type to use for the private cloud.
         CMEK requires --kms-key to be set.
@@ -79,10 +78,9 @@ class Update(base.UpdateCommand):
     parser.add_argument(
         '--kms-key',
         required=False,
-        hidden=True,  # TODO: b/487194873 - Remove when the feature goes GA.
         help="""\
         The Cloud KMS key resource name to use for encryption.
-        Format: projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}
+        Format: `projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}`.
         Required and only applicable when --encryption-type is CMEK.
         """,
         default=None,

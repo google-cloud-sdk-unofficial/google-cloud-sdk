@@ -23,7 +23,7 @@ from googlecloudsdk.core import log
 # TODO(b/321801975) make command public after preview.
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Deprecate(
-    is_removed=False,  # Set to False to issue a warning first
+    is_removed=True,
     warning=(
         'The `gcloud alpha api-registry mcp disable` command is deprecated and '
         ' will be removed in a future release.'
@@ -54,7 +54,7 @@ class DisableAlpha(base.SilentCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.Deprecate(
-    is_removed=False,  # Set to False to issue a warning first
+    is_removed=True,
     warning=(
         'The `gcloud beta api-registry mcp disable` command is deprecated and '
         ' will be removed in a future release.'

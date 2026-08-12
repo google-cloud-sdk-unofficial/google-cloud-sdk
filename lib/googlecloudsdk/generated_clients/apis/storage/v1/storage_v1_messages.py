@@ -1464,6 +1464,7 @@ class ManagedFolder(_messages.Message):
       for preconditions and for detecting changes in metadata.
     name: The name of the managed folder. Required if not specified by URL
       parameter.
+    rapidCacheConfig: The rapid cache configuration for the managed folder.
     selfLink: The link to this managed folder.
     updateTime: The last update time of the managed folder metadata in RFC
       3339 format.
@@ -1475,8 +1476,9 @@ class ManagedFolder(_messages.Message):
   kind = _messages.StringField(4, default='storage#managedFolder')
   metageneration = _messages.IntegerField(5)
   name = _messages.StringField(6)
-  selfLink = _messages.StringField(7)
-  updateTime = _message_types.DateTimeField(8)
+  rapidCacheConfig = _messages.MessageField('RapidCacheConfig', 7)
+  selfLink = _messages.StringField(8)
+  updateTime = _message_types.DateTimeField(9)
 
 
 class ManagedFolders(_messages.Message):
@@ -2011,6 +2013,80 @@ class Policy(_messages.Message):
   kind = _messages.StringField(3, default='storage#policy')
   resourceId = _messages.StringField(4)
   version = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+
+
+class RapidCacheConfig(_messages.Message):
+  r"""Configuration options for the rapid cache of a managed folder.
+
+  Messages:
+    PoliciesValue: A map of rapid cache IDs to the corresponding
+      `RapidCachePolicy` configurations for a managed folder.
+
+  Fields:
+    policies: A map of rapid cache IDs to the corresponding `RapidCachePolicy`
+      configurations for a managed folder.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class PoliciesValue(_messages.Message):
+    r"""A map of rapid cache IDs to the corresponding `RapidCachePolicy`
+    configurations for a managed folder.
+
+    Messages:
+      AdditionalProperty: An additional property for a PoliciesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type PoliciesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a PoliciesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A RapidCachePolicy attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('RapidCachePolicy', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  policies = _messages.MessageField('PoliciesValue', 1)
+
+
+class RapidCachePolicy(_messages.Message):
+  r"""The rapid cache policy configuration for a managed folder.
+
+  Enums:
+    IngestOnWriteValueValuesEnum: The ingest-on-write policy for objects in
+      the managed folder. When set to `enabled`, objects are automatically
+      ingested into the cache when they are written to the managed folder.
+
+  Fields:
+    ingestOnWrite: The ingest-on-write policy for objects in the managed
+      folder. When set to `enabled`, objects are automatically ingested into
+      the cache when they are written to the managed folder.
+    rapidCacheId: The unique identifier of the rapid cache.
+  """
+
+  class IngestOnWriteValueValuesEnum(_messages.Enum):
+    r"""The ingest-on-write policy for objects in the managed folder. When set
+    to `enabled`, objects are automatically ingested into the cache when they
+    are written to the managed folder.
+
+    Values:
+      enabled: Ingestion on write is explicitly enabled for the managed
+        folder.
+      unspecified: Ingestion on write isn't specified at the managed folder
+        level and is inherited from the parent resource's configuration. This
+        is the default value.
+    """
+    enabled = 0
+    unspecified = 1
+
+  ingestOnWrite = _messages.EnumField('IngestOnWriteValueValuesEnum', 1)
+  rapidCacheId = _messages.StringField(2)
 
 
 class RelocateBucketRequest(_messages.Message):
@@ -3230,6 +3306,27 @@ class StorageManagedFoldersTestIamPermissionsRequest(_messages.Message):
   managedFolder = _messages.StringField(2, required=True)
   permissions = _messages.StringField(3, required=True)
   userProject = _messages.StringField(4)
+
+
+class StorageManagedFoldersUpdateRequest(_messages.Message):
+  r"""A StorageManagedFoldersUpdateRequest object.
+
+  Fields:
+    bucket: The name of the bucket containing the managed folder.
+    ifMetagenerationMatch: Makes the operation conditional on whether the
+      metageneration of the managed folder matches the specified value.
+    ifMetagenerationNotMatch: Makes the operation conditional on whether the
+      metageneration of the managed folder doesn't match the specified value.
+    managedFolder: The name of the managed folder.
+    managedFolderResource: A ManagedFolder resource to be passed as the
+      request body.
+  """
+
+  bucket = _messages.StringField(1, required=True)
+  ifMetagenerationMatch = _messages.IntegerField(2)
+  ifMetagenerationNotMatch = _messages.IntegerField(3)
+  managedFolder = _messages.StringField(4, required=True)
+  managedFolderResource = _messages.MessageField('ManagedFolder', 5)
 
 
 class StorageNotificationsDeleteRequest(_messages.Message):

@@ -423,6 +423,7 @@ class CreateWithContainer(base.CreateCommand):
             args=args,
             support_confidential_compute_type=True,
             support_confidential_compute_type_tdx=True,
+            support_confidential_compute_type_cca=True,
         )
     )
     workload_identity_config = (
@@ -575,6 +576,7 @@ class CreateWithContainerBeta(CreateWithContainer):
             args=args,
             support_confidential_compute_type=True,
             support_confidential_compute_type_tdx=True,
+            support_confidential_compute_type_cca=True,
         )
     )
     guest_accelerators = (
@@ -735,6 +737,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
             args=args,
             support_confidential_compute_type=True,
             support_confidential_compute_type_tdx=True,
+            support_confidential_compute_type_cca=True,
         )
     )
     guest_accelerators = (

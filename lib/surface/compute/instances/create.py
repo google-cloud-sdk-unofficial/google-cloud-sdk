@@ -129,6 +129,7 @@ def _CommonArgs(
     support_vsock_mode=False,
     support_standard_tier=False,
     support_local_ssd_encryption_mode=False,
+    support_expose_host_topology=False,
 ):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
@@ -201,6 +202,8 @@ def _CommonArgs(
   instances_flags.AddDisplayDeviceArg(parser)
   instances_flags.AddMinNodeCpuArg(parser)
   instances_flags.AddNestedVirtualizationArgs(parser)
+  if support_expose_host_topology:
+    instances_flags.AddExposeHostTopologyArg(parser)
   instances_flags.AddThreadsPerCoreArgs(parser)
   instances_flags.AddEnableUefiNetworkingArgs(parser)
   instances_flags.AddResourceManagerTagsArgs(parser)
@@ -331,6 +334,7 @@ class Create(base.CreateCommand):
   _support_confidential_compute_type = True
   _support_confidential_compute_type_tdx = True
   _support_snp_svsm = False
+  _support_confidential_compute_type_cca = True
   _support_local_ssd_recovery_timeout = True
   _support_local_ssd_encryption_mode = True
   _support_internal_ipv6_reservation = True
@@ -357,6 +361,7 @@ class Create(base.CreateCommand):
   _support_dns64_eligible = False
   _support_nat64_eligible = False
   _support_vsock_mode = False
+  _support_expose_host_topology = False
 
   @classmethod
   def Args(cls, parser):
@@ -407,11 +412,11 @@ class Create(base.CreateCommand):
                                                   utils.COMPUTE_GA_API_VERSION)
     instances_flags.AddConfidentialComputeArgs(
         parser,
-        support_confidential_compute_type=cls
-        ._support_confidential_compute_type,
-        support_confidential_compute_type_tdx=cls
-        ._support_confidential_compute_type_tdx,
-        support_snp_svsm=cls._support_snp_svsm)
+        support_confidential_compute_type=cls._support_confidential_compute_type,
+        support_confidential_compute_type_tdx=cls._support_confidential_compute_type_tdx,
+        support_snp_svsm=cls._support_snp_svsm,
+        support_confidential_compute_type_cca=cls._support_confidential_compute_type_cca,
+    )
     instances_flags.AddKeyRevocationActionTypeArgs(parser)
     instances_flags.AddVisibleCoreCountArgs(parser)
     instances_flags.AddAvailabilityDomainAgrs(parser)
@@ -470,6 +475,7 @@ class Create(base.CreateCommand):
         support_skip_guest_os_shutdown=self._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=self._support_preemption_notice_duration,
         support_vsock_mode=self._support_vsock_mode,
+        support_expose_host_topology=self._support_expose_host_topology,
     )
     tags = instance_utils.GetTags(args, compute_client)
     labels = instance_utils.GetLabels(args, compute_client)
@@ -514,15 +520,14 @@ class Create(base.CreateCommand):
     shielded_instance_config = create_utils.BuildShieldedInstanceConfigMessage(
         messages=compute_client.messages, args=args)
 
-    confidential_instance_config = (
-        create_utils.BuildConfidentialInstanceConfigMessage(
-            messages=compute_client.messages,
-            args=args,
-            support_confidential_compute_type=self
-            ._support_confidential_compute_type,
-            support_confidential_compute_type_tdx=self
-            ._support_confidential_compute_type_tdx,
-            support_snp_svsm=self._support_snp_svsm))
+    confidential_instance_config = create_utils.BuildConfidentialInstanceConfigMessage(
+        messages=compute_client.messages,
+        args=args,
+        support_confidential_compute_type=self._support_confidential_compute_type,
+        support_confidential_compute_type_tdx=self._support_confidential_compute_type_tdx,
+        support_snp_svsm=self._support_snp_svsm,
+        support_confidential_compute_type_cca=self._support_confidential_compute_type_cca,
+    )
 
     csek_keys = csek_utils.CsekKeyStore.FromArgs(args,
                                                  self._support_rsa_encrypted)
@@ -895,6 +900,7 @@ class CreateBeta(Create):
   _support_confidential_compute_type = True
   _support_confidential_compute_type_tdx = True
   _support_snp_svsm = False
+  _support_confidential_compute_type_cca = True
   _support_local_ssd_recovery_timeout = True
   _support_local_ssd_size = True
   _support_vlan_nic = True
@@ -971,6 +977,7 @@ class CreateBeta(Create):
         support_nat64_eligible=cls._support_nat64_eligible,
         support_vsock_mode=cls._support_vsock_mode,
         support_local_ssd_encryption_mode=cls._support_local_ssd_encryption_mode,
+        support_standard_tier=True,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()
@@ -984,11 +991,11 @@ class CreateBeta(Create):
         parser, utils.COMPUTE_BETA_API_VERSION)
     instances_flags.AddConfidentialComputeArgs(
         parser,
-        support_confidential_compute_type=cls
-        ._support_confidential_compute_type,
-        support_confidential_compute_type_tdx=cls
-        ._support_confidential_compute_type_tdx,
-        support_snp_svsm=cls._support_snp_svsm)
+        support_confidential_compute_type=cls._support_confidential_compute_type,
+        support_confidential_compute_type_tdx=cls._support_confidential_compute_type_tdx,
+        support_snp_svsm=cls._support_snp_svsm,
+        support_confidential_compute_type_cca=cls._support_confidential_compute_type_cca,
+    )
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddKeyRevocationActionTypeArgs(parser)
     instances_flags.AddVisibleCoreCountArgs(parser)
@@ -1033,6 +1040,7 @@ class CreateAlpha(CreateBeta):
   _support_confidential_compute_type = True
   _support_confidential_compute_type_tdx = True
   _support_snp_svsm = True
+  _support_confidential_compute_type_cca = True
   _support_local_ssd_recovery_timeout = True
   _support_local_ssd_size = True
   _support_vlan_nic = True
@@ -1057,6 +1065,7 @@ class CreateAlpha(CreateBeta):
   _support_dns64_eligible = True
   _support_nat64_eligible = True
   _support_alias_ipv6_ranges = True
+  _support_expose_host_topology = True
 
   @classmethod
   def Args(cls, parser):
@@ -1099,6 +1108,7 @@ class CreateAlpha(CreateBeta):
         support_vsock_mode=cls._support_vsock_mode,
         support_local_ssd_encryption_mode=cls._support_local_ssd_encryption_mode,
         support_standard_tier=True,
+        support_expose_host_topology=cls._support_expose_host_topology,
     )
 
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
@@ -1113,11 +1123,11 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddConfidentialComputeArgs(
         parser,
-        support_confidential_compute_type=cls
-        ._support_confidential_compute_type,
-        support_confidential_compute_type_tdx=cls
-        ._support_confidential_compute_type_tdx,
-        support_snp_svsm=cls._support_snp_svsm)
+        support_confidential_compute_type=cls._support_confidential_compute_type,
+        support_confidential_compute_type_tdx=cls._support_confidential_compute_type_tdx,
+        support_snp_svsm=cls._support_snp_svsm,
+        support_confidential_compute_type_cca=cls._support_confidential_compute_type_cca,
+    )
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddPrivateIpv6GoogleAccessArg(
         parser, utils.COMPUTE_ALPHA_API_VERSION)

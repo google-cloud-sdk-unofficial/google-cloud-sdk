@@ -5232,7 +5232,7 @@ def RunUploadFlag():
   """Create the --run-upload flag."""
   return base.Argument(
       '--run-upload',
-      action='store_true',
+      action=arg_parsers.StoreTrueFalseAction,
       hidden=True,
       help=(
           'Specifies that the source should be uploaded via Cloud Run'

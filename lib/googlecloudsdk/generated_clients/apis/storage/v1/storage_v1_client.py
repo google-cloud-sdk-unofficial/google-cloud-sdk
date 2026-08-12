@@ -1318,6 +1318,32 @@ class StorageV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Update(self, request, global_params=None):
+      r"""Updates a managed folder using patch semantics.
+
+      Args:
+        request: (StorageManagedFoldersUpdateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ManagedFolder) The response message.
+      """
+      config = self.GetMethodConfig('Update')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Update.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='PATCH',
+        method_id='storage.managedFolders.update',
+        ordered_params=['bucket', 'managedFolder'],
+        path_params=['bucket', 'managedFolder'],
+        query_params=['ifMetagenerationMatch', 'ifMetagenerationNotMatch'],
+        relative_path='b/{bucket}/managedFolders/{managedFolder}',
+        request_field='managedFolderResource',
+        request_type_name='StorageManagedFoldersUpdateRequest',
+        response_type_name='ManagedFolder',
+        supports_download=False,
+    )
+
   class NotificationsService(base_api.BaseApiService):
     """Service class for the notifications resource."""
 

@@ -1759,10 +1759,11 @@ class ConfigManagementMembershipSpec(_messages.Message):
   Intended to parallel the ConfigManagement CR.
 
   Enums:
-    ManagementValueValuesEnum: Optional. Deprecated: In Preview, automatic
-      Feature management is unavailable from version 1.21.0 onwards, and
-      Config Sync only supports manual upgrades. If set to manual upgrades,
-      clear this field instead, which is behaviorally equivalent.
+    ManagementValueValuesEnum: Optional. Deprecated: Automatic Feature
+      management is in Preview and is unavailable in version 1.21.0 and later,
+      after which Config Sync only supports manual upgrades. If set to manual
+      upgrades, clear this field instead, which is behaviorally equivalent but
+      helps prevent compatibility issues with newer fields.
 
   Fields:
     binauthz: Optional. Deprecated: Binauthz configuration will be ignored and
@@ -1780,10 +1781,11 @@ class ConfigManagementMembershipSpec(_messages.Message):
       cluster. Deprecated: Configuring Hierarchy Controller through the
       configmanagement feature is no longer recommended. Use
       https://github.com/kubernetes-sigs/hierarchical-namespaces instead.
-    management: Optional. Deprecated: In Preview, automatic Feature management
-      is unavailable from version 1.21.0 onwards, and Config Sync only
-      supports manual upgrades. If set to manual upgrades, clear this field
-      instead, which is behaviorally equivalent.
+    management: Optional. Deprecated: Automatic Feature management is in
+      Preview and is unavailable in version 1.21.0 and later, after which
+      Config Sync only supports manual upgrades. If set to manual upgrades,
+      clear this field instead, which is behaviorally equivalent but helps
+      prevent compatibility issues with newer fields.
     policyController: Optional. Policy Controller configuration for the
       cluster. Deprecated: Configuring Policy Controller through the
       configmanagement feature is no longer recommended. Use the
@@ -1795,10 +1797,11 @@ class ConfigManagementMembershipSpec(_messages.Message):
   """
 
   class ManagementValueValuesEnum(_messages.Enum):
-    r"""Optional. Deprecated: In Preview, automatic Feature management is
-    unavailable from version 1.21.0 onwards, and Config Sync only supports
-    manual upgrades. If set to manual upgrades, clear this field instead,
-    which is behaviorally equivalent.
+    r"""Optional. Deprecated: Automatic Feature management is in Preview and
+    is unavailable in version 1.21.0 and later, after which Config Sync only
+    supports manual upgrades. If set to manual upgrades, clear this field
+    instead, which is behaviorally equivalent but helps prevent compatibility
+    issues with newer fields.
 
     Values:
       MANAGEMENT_UNSPECIFIED: Unspecified
@@ -8984,6 +8987,9 @@ class UpgradeRolloutSequenceRequest(_messages.Message):
     force: Optional. If set to true, any rollout already running on the first
       stage of the sequence will be cancelled to allow for the creation of the
       new rollout.
+    patchOnly: Optional. If set to true, the rollout will only upgrade
+      clusters that match the minor version of the `version` field, but are on
+      an earlier patch version.
     upgradeType: Required. The type of upgrade.
     version: Required. GKE version to upgrade to. A valid GKE version
       available on the release channel used by the sequence. Patch versions
@@ -9013,8 +9019,9 @@ class UpgradeRolloutSequenceRequest(_messages.Message):
     NODE = 2
 
   force = _messages.BooleanField(1)
-  upgradeType = _messages.EnumField('UpgradeTypeValueValuesEnum', 2)
-  version = _messages.StringField(3)
+  patchOnly = _messages.BooleanField(2)
+  upgradeType = _messages.EnumField('UpgradeTypeValueValuesEnum', 3)
+  version = _messages.StringField(4)
 
 
 class VersionUpgrade(_messages.Message):

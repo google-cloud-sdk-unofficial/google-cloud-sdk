@@ -68,8 +68,6 @@ class Parser:
     Raises:
       error: if legacy fields are set.
     """
-    # TODO(b/433355766): Verify the public documentation for configmanagement
-    # fields in the Hub API before promotion to beta.
     api_msg = (self.messages.ConfigManagementMembershipSpec if is_fleet_default
                else self.messages_v2.ConfigManagementSpec)
     # TODO(b/459918638): Python unit test reading from stdin.

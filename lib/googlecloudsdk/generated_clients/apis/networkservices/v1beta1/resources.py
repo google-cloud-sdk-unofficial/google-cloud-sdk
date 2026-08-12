@@ -41,6 +41,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_AGENTCONNECTIVITYTEMPLATES = (
+      'projects.locations.agentConnectivityTemplates',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'agentConnectivityTemplates/{agentConnectivityTemplatesId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_AGENTGATEWAYS = (
       'projects.locations.agentGateways',
       '{+name}',
@@ -411,6 +422,17 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/tcpRoutes/'
               '{tcpRoutesId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_TELEMETRYPOLICIES = (
+      'projects.locations.telemetryPolicies',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'telemetryPolicies/{telemetryPoliciesId}',
       },
       ['name'],
       True

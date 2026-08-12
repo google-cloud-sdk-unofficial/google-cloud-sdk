@@ -17,6 +17,7 @@
 
 from googlecloudsdk.api_lib.netapp.storage_pools import client as storagepools_client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.netapp.storage_pools import flags as storagepools_flags
 from googlecloudsdk.command_lib.util.args import labels_util
 
@@ -84,6 +85,7 @@ class Create(base.CreateCommand):
     scale_tier = None
     scale_type = None
     mode = None
+    cluster = None
     if args.type is not None:
       storage_pool_type = storagepools_flags.GetStoragePoolTypeEnumFromArg(
           args.type, client.messages
@@ -107,6 +109,13 @@ class Create(base.CreateCommand):
         scale_tier = storagepools_flags.GetStoragePoolScaleTierEnumFromArg(
             args.scale_tier, client.messages
         )
+      if args.cluster is not None:
+        if mode != client.messages.StoragePool.ModeValueValuesEnum.ONTAP:
+          raise exceptions.InvalidArgumentException(
+              '--cluster',
+              'Cluster can only be specified if mode is ONTAP.',
+          )
+        cluster = args.cluster
 
     storage_pool = client.ParseStoragePoolConfig(
         name=storagepool_ref.RelativeName(),
@@ -132,6 +141,7 @@ class Create(base.CreateCommand):
         scale_tier=scale_tier,
         scale_type=scale_type,
         mode=mode,
+        cluster=cluster,
     )
     result = client.CreateStoragePool(
         storagepool_ref, args.async_, storage_pool

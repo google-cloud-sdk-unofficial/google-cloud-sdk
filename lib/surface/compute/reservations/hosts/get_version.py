@@ -22,12 +22,22 @@ from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.hosts import get_version_helper
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.UniverseCompatible
 class GetVersion(base.Command):
   """Get software versions for a Compute Engine host in a reservation."""
 
   HOST_ARG = None
+
+  detailed_help = {
+      'EXAMPLES': """\
+          To get software versions for a host named `my-host` in reservation `my-reservation` and zone `us-central1-a`, run:
+
+            $ {command} my-host --reservation=my-reservation --zone=us-central1-a
+          """
+  }
 
   @classmethod
   def Args(cls, parser: argparse.ArgumentParser):

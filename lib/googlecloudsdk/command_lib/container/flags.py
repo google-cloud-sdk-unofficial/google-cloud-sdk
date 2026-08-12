@@ -4570,6 +4570,19 @@ To disable Identity Service in an existing cluster, explicitly set flag
   )
 
 
+def AddJwtAuthenticatorConfigFlag(parser, hidden=False):
+  """Adds --jwt-authenticator-config flag to the parser."""
+  parser.add_argument(
+      '--jwt-authenticator-config',
+      type=arg_parsers.FileContents(),
+      default=None,
+      hidden=hidden,
+      help="""\
+Path to a YAML file containing the configuration for the native Kubernetes JWT authenticator.
+""",
+  )
+
+
 def AddResourceUsageExportFlags(parser, is_update=False, hidden=False):
   """Adds flags about exporting cluster resource usage to BigQuery."""
 

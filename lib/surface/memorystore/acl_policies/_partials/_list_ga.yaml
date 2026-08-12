@@ -28,7 +28,7 @@
   arguments:
     params:
     - help_text: |-
-        The resource name of the cluster location using the form:
+        The resource name of the ACL policy location using the form:
             `projects/{project}/locations/{location}`
         where `location` refers to a Google Cloud region.
       is_positional: false

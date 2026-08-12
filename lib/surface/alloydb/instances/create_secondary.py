@@ -133,6 +133,7 @@ class CreateSecondaryBeta(CreateSecondary):
   def Args(cls, parser):
     super(CreateSecondaryBeta, CreateSecondaryBeta).Args(parser)
     flags.AddEnablePscAutoDns(parser)
+    flags.AddEnablePscAutoConnectionPolicy(parser)
 
   def ConstructSecondaryCreateRequestFromArgs(
       self, client, alloydb_messages, cluster_ref, args

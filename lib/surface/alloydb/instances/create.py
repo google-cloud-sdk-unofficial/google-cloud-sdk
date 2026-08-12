@@ -178,6 +178,7 @@ class CreateBeta(Create):
 
     flags.AddAutoscalerCreateFlags(parser)
     flags.AddEnablePscAutoDns(parser)
+    flags.AddEnablePscAutoConnectionPolicy(parser)
 
   def ConstructCreateRequestFromArgs(
       self, client, alloydb_messages, cluster_ref, args

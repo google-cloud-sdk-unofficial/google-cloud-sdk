@@ -5580,6 +5580,9 @@ class GoogleCloudDialogflowCxV3Fulfillment(_messages.Message):
     advancedSettings: Hierarchical advanced settings for this fulfillment. The
       settings exposed at the lower level overrides the settings exposed at
       the higher level.
+    codeBlockFunction: Optional. The name of the code block function to
+      execute, if this is a code block fulfillment. The code block itself is
+      implied by the fulfillment's parent, e.g. a playbook.
     conditionalCases: Conditional cases for this fulfillment.
     enableGenerativeFallback: If the flag is true, the agent will utilize LLM
       to generate a text response. If LLM generation fails, the defined
@@ -5605,14 +5608,15 @@ class GoogleCloudDialogflowCxV3Fulfillment(_messages.Message):
   """
 
   advancedSettings = _messages.MessageField('GoogleCloudDialogflowCxV3AdvancedSettings', 1)
-  conditionalCases = _messages.MessageField('GoogleCloudDialogflowCxV3FulfillmentConditionalCases', 2, repeated=True)
-  enableGenerativeFallback = _messages.BooleanField(3)
-  generators = _messages.MessageField('GoogleCloudDialogflowCxV3FulfillmentGeneratorSettings', 4, repeated=True)
-  messages = _messages.MessageField('GoogleCloudDialogflowCxV3ResponseMessage', 5, repeated=True)
-  returnPartialResponses = _messages.BooleanField(6)
-  setParameterActions = _messages.MessageField('GoogleCloudDialogflowCxV3FulfillmentSetParameterAction', 7, repeated=True)
-  tag = _messages.StringField(8)
-  webhook = _messages.StringField(9)
+  codeBlockFunction = _messages.StringField(2)
+  conditionalCases = _messages.MessageField('GoogleCloudDialogflowCxV3FulfillmentConditionalCases', 3, repeated=True)
+  enableGenerativeFallback = _messages.BooleanField(4)
+  generators = _messages.MessageField('GoogleCloudDialogflowCxV3FulfillmentGeneratorSettings', 5, repeated=True)
+  messages = _messages.MessageField('GoogleCloudDialogflowCxV3ResponseMessage', 6, repeated=True)
+  returnPartialResponses = _messages.BooleanField(7)
+  setParameterActions = _messages.MessageField('GoogleCloudDialogflowCxV3FulfillmentSetParameterAction', 8, repeated=True)
+  tag = _messages.StringField(9)
+  webhook = _messages.StringField(10)
 
 
 class GoogleCloudDialogflowCxV3FulfillmentConditionalCases(_messages.Message):
@@ -8560,6 +8564,9 @@ class GoogleCloudDialogflowCxV3beta1Fulfillment(_messages.Message):
     advancedSettings: Hierarchical advanced settings for this fulfillment. The
       settings exposed at the lower level overrides the settings exposed at
       the higher level.
+    codeBlockFunction: Optional. The name of the code block function to
+      execute, if this is a code block fulfillment. The code block itself is
+      implied by the fulfillment's parent, e.g. a playbook.
     conditionalCases: Conditional cases for this fulfillment.
     enableGenerativeFallback: If the flag is true, the agent will utilize LLM
       to generate a text response. If LLM generation fails, the defined
@@ -8585,14 +8592,15 @@ class GoogleCloudDialogflowCxV3beta1Fulfillment(_messages.Message):
   """
 
   advancedSettings = _messages.MessageField('GoogleCloudDialogflowCxV3beta1AdvancedSettings', 1)
-  conditionalCases = _messages.MessageField('GoogleCloudDialogflowCxV3beta1FulfillmentConditionalCases', 2, repeated=True)
-  enableGenerativeFallback = _messages.BooleanField(3)
-  generators = _messages.MessageField('GoogleCloudDialogflowCxV3beta1FulfillmentGeneratorSettings', 4, repeated=True)
-  messages = _messages.MessageField('GoogleCloudDialogflowCxV3beta1ResponseMessage', 5, repeated=True)
-  returnPartialResponses = _messages.BooleanField(6)
-  setParameterActions = _messages.MessageField('GoogleCloudDialogflowCxV3beta1FulfillmentSetParameterAction', 7, repeated=True)
-  tag = _messages.StringField(8)
-  webhook = _messages.StringField(9)
+  codeBlockFunction = _messages.StringField(2)
+  conditionalCases = _messages.MessageField('GoogleCloudDialogflowCxV3beta1FulfillmentConditionalCases', 3, repeated=True)
+  enableGenerativeFallback = _messages.BooleanField(4)
+  generators = _messages.MessageField('GoogleCloudDialogflowCxV3beta1FulfillmentGeneratorSettings', 5, repeated=True)
+  messages = _messages.MessageField('GoogleCloudDialogflowCxV3beta1ResponseMessage', 6, repeated=True)
+  returnPartialResponses = _messages.BooleanField(7)
+  setParameterActions = _messages.MessageField('GoogleCloudDialogflowCxV3beta1FulfillmentSetParameterAction', 8, repeated=True)
+  tag = _messages.StringField(9)
+  webhook = _messages.StringField(10)
 
 
 class GoogleCloudDialogflowCxV3beta1FulfillmentConditionalCases(_messages.Message):

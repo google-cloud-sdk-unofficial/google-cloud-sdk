@@ -31,6 +31,40 @@ DETAILED_HELP = {
         Use one of the following options to create a cluster:
         - [Preferred] Use granular flags to define cluster specs.
         - Use --config flag with cluster specs in JSON format.
+        - Use --quickstart-cluster or --reference-architecture to apply pre-configured templates.
+
+        ## REFERENCE ARCHITECTURES AND QUICKSTART
+        Reference architectures and quickstart options allow you to quickly provision clusters with pre-defined configurations for compute, storage, and orchestrator.
+
+        *quickstart* (applied when using `--quickstart-cluster`):
+        - Compute: 2x a3-megagpu-8g nodes (Flex Start, max duration 7 days).
+        - Login Node: 1x n2-standard-16 node.
+        - Storage: 36TB Lustre storage (scratch disk).
+
+        *a3-ultra* (applied when using `--reference-architecture=a3-ultra`):
+        - Compute: 4x reserved nodes (requires specifying `--reserved-instances`).
+        - Login Node: 1x n2-standard-16 node.
+        - Storage: 36TB Lustre storage (scratch disk) and 5.1TB Filestore storage.
+
+        *a4-high-flex-start* (applied when using `--reference-architecture=a4-high-flex-start`):
+        - Compute: 4x a4-highgpu-8g nodes (Flex Start, max duration 7 days).
+        - Login Node: 1x n2-standard-16 node.
+        - Storage: 18TB Lustre storage (scratch disk) and 2TB Filestore storage.
+
+        *a4x-high* (applied when using `--reference-architecture=a4x-high`):
+        - Compute: 18x reserved nodes (requires specifying `--reserved-instances`).
+        - Login Node: 1x n2-standard-16 node.
+        - Storage: 36TB Lustre storage (scratch disk).
+
+        *g4* (applied when using `--reference-architecture=g4`):
+        - Compute: 4x g4-standard-384 nodes (Flex Start, max duration 7 days).
+        - Login Node: 1x n2-standard-16 node.
+        - Storage: 36TB Lustre storage (scratch disk) and 10.2TB Filestore storage.
+
+        *h4d-highmem* (applied when using `--reference-architecture=h4d-highmem`):
+        - Compute: 4x h4d-highmem-192 nodes (Flex Start, max duration 7 days).
+        - Login Node: 1x n2-standard-16 node.
+        - Storage: 18TB Lustre storage (scratch disk) and 1TB Filestore storage.
 
         Please refer to the examples below for more details.
         """),
@@ -66,9 +100,9 @@ DETAILED_HELP = {
 
         $ {command} my-cluster --location=us-central1 --quickstart-cluster --create-network name=network0
 
-        To create a cluster `my-cluster` in location `us-central1` using a pre-defined blueprint choice (such as `g4`), run the following example:
+        To create a cluster `my-cluster` in location `us-central1` using a pre-defined reference architecture choice (such as `g4`), run the following example:
 
-        $ {command} my-cluster --location=us-central1 --blueprint=g4 --create-network name=network0
+        $ {command} my-cluster --location=us-central1 --reference-architecture=g4 --create-network name=network0
         """),
 }
 
@@ -119,9 +153,11 @@ class Create(base.CreateCommand):
     flags.AddNetworkProject(
         parser=network_source_group, api_version=api_version
     )
-    blueprint_group = flag_group.add_group(mutex=True)
-    flags.AddBlueprint(parser=blueprint_group, api_version=api_version)
-    flags.AddQuickstartCluster(parser=blueprint_group)
+    ref_arch_group = flag_group.add_group(mutex=True)
+    flags.AddReferenceArchitecture(
+        parser=ref_arch_group, api_version=api_version
+    )
+    flags.AddQuickstartCluster(parser=ref_arch_group)
     flags.AddCreateFilestores(parser=flag_group, api_version=api_version)
     flags.AddFilestores(parser=flag_group, api_version=api_version)
     flags.AddCreateGcsBuckets(parser=flag_group, api_version=api_version)

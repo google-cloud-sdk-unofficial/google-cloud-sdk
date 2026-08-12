@@ -14,7 +14,8 @@
 # limitations under the License.
 """API library for Omnichannel Token Brokers."""
 
-from apitools.base.py import extra_types
+from apitools.base.py import encoding
+from googlecloudsdk.api_lib.agentic_applications import client as api_client
 from googlecloudsdk.api_lib.util import apis
 
 
@@ -71,18 +72,28 @@ class TokenBrokersClient(object):
     Returns:
       TokenBrokerIssueTrustedTokenResponse message.
     """
-    struct_msg = None
-    if trusted_fields:
-      if isinstance(trusted_fields, dict):
-        struct_msg = extra_types.JsonToMessage(
-            self.messages.GoogleProtobufStruct, trusted_fields
-        )
-      else:
-        struct_msg = trusted_fields
+    relative_name = token_broker_ref.RelativeName()
+    url = f"{self.client.url.rstrip('/')}/v1alpha/{relative_name}:issueTrustedToken"
 
-    req = self.messages.TokenBrokerIssueTrustedTokenRequest(
-        name=token_broker_ref.RelativeName(),
-        trustedFields=struct_msg,
+    body = {
+        'name': token_broker_ref.RelativeName(),
+    }
+    if trusted_fields:
+      body['trustedFields'] = trusted_fields
+
+    # Note: We use a manual HTTP request here instead of apitools because
+    # the generated GoogleProtobufStruct message wraps fields in a 'fields' key,
+    # whereas the API expects a flattened JSON object for trustedFields
+    # (standard google.protobuf.Struct behavior). Using apitools would require
+    # custom codecs or lead to serialization mismatch.
+    req_client = api_client.OmnichannelGatewayClient()
+    response_dict = req_client.Request(
+        'POST',
+        url,
+        body=body,
+        error_msg='Failed to issue trusted token',
     )
 
-    return self._service.IssueTrustedToken(req)
+    return encoding.DictToMessage(
+        response_dict, self.messages.TokenBrokerIssueTrustedTokenResponse
+    )

@@ -1,0 +1,35 @@
+release_tracks: [ALPHA, BETA, GA, PREVIEW]
+
+help_text:
+  brief: Test IAM permissions for a Compute Engine HTTP health check.
+  description: |
+    Returns permissions that a caller has on the specified HTTP health check.
+  examples: |
+    To test whether the caller has the 'compute.httpHealthChecks.list' permission
+    on an HTTP health check, run:
+
+      $ {command} my-http-health-check --permissions=compute.httpHealthChecks.list
+
+request:
+  collection: compute.httpHealthChecks
+  use_relative_name: false
+  method: testIamPermissions
+  api_version: v1
+  BETA:
+    api_version: beta
+  ALPHA:
+    api_version: alpha
+
+command_type: GENERIC
+
+arguments:
+  resource:
+    help_text: The name of the HTTP health check to test permissions for.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:http_health_check
+  params:
+  - arg_name: permissions
+    api_field: testPermissionsRequest.permissions
+    required: true
+    repeated: true
+    help_text: |-
+      Permissions to be tested.

@@ -373,46 +373,7 @@ class CreateServiceAccountRequest(_messages.Message):
 
 
 class DisableServiceAccountKeyRequest(_messages.Message):
-  r"""The service account key disable request.
-
-  Enums:
-    ServiceAccountKeyDisableReasonValueValuesEnum: Optional. Describes the
-      reason this key is being disabled. If unspecified, the default value of
-      SERVICE_ACCOUNT_KEY_DISABLE_REASON_USER_INITIATED will be used.
-
-  Fields:
-    extendedStatusMessage: Optional. Usable by internal google services only.
-      An extended_status_message can be used to include additional information
-      about the key, such as its private key data being exposed on a public
-      repository like GitHub.
-    serviceAccountKeyDisableReason: Optional. Describes the reason this key is
-      being disabled. If unspecified, the default value of
-      SERVICE_ACCOUNT_KEY_DISABLE_REASON_USER_INITIATED will be used.
-  """
-
-  class ServiceAccountKeyDisableReasonValueValuesEnum(_messages.Enum):
-    r"""Optional. Describes the reason this key is being disabled. If
-    unspecified, the default value of
-    SERVICE_ACCOUNT_KEY_DISABLE_REASON_USER_INITIATED will be used.
-
-    Values:
-      SERVICE_ACCOUNT_KEY_DISABLE_REASON_UNSPECIFIED: Unspecified disable
-        reason
-      SERVICE_ACCOUNT_KEY_DISABLE_REASON_USER_INITIATED: Disabled by the user
-      SERVICE_ACCOUNT_KEY_DISABLE_REASON_EXPOSED: Google detected this Service
-        Account external key's private key data as exposed, typically in a
-        public repository on GitHub or similar.
-      SERVICE_ACCOUNT_KEY_DISABLE_REASON_COMPROMISE_DETECTED: This service
-        account external key was detected as compromised and used by an
-        attacker.
-    """
-    SERVICE_ACCOUNT_KEY_DISABLE_REASON_UNSPECIFIED = 0
-    SERVICE_ACCOUNT_KEY_DISABLE_REASON_USER_INITIATED = 1
-    SERVICE_ACCOUNT_KEY_DISABLE_REASON_EXPOSED = 2
-    SERVICE_ACCOUNT_KEY_DISABLE_REASON_COMPROMISE_DETECTED = 3
-
-  extendedStatusMessage = _messages.StringField(1)
-  serviceAccountKeyDisableReason = _messages.EnumField('ServiceAccountKeyDisableReasonValueValuesEnum', 2)
+  r"""The service account key disable request."""
 
 
 class DisableServiceAccountRequest(_messages.Message):

@@ -1330,8 +1330,8 @@ class RunV2(base_api.BaseApiClient):
           'Upload': base_api.ApiUploadInfo(
               accept=['*/*'],
               max_size=262144000,
-              resumable_multipart=None,
-              resumable_path=None,
+              resumable_multipart=True,
+              resumable_path='/resumable/upload/v2/{+parent}:uploadSource',
               simple_multipart=True,
               simple_path='/upload/v2/{+parent}:uploadSource',
           ),

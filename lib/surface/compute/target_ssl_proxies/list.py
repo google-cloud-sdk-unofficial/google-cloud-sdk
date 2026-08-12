@@ -15,13 +15,13 @@
 """Command for listing target SSL proxies."""
 
 
-from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.target_ssl_proxies import flags
-from googlecloudsdk.core import properties
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(
     base.ReleaseTrack.GA,
     base.ReleaseTrack.BETA,
@@ -34,22 +34,19 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    lister.AddBaseListerArgs(parser)
     parser.display_info.AddCacheUpdater(flags.TargetSslProxiesCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
 
-    client = holder.client.apitools_client
-    messages = client.MESSAGES_MODULE
+    request_data = lister.ParseNamesAndRegexpFlags(args, holder.resources)
 
-    project = properties.VALUES.core.project.Get(required=True)
-
-    request = messages.ComputeTargetSslProxiesListRequest(
-        project=project, filter=args.filter
+    list_implementation = lister.GlobalLister(
+        client, client.apitools_client.targetSslProxies
     )
 
-    return list_pager.YieldFromList(
-        client.targetSslProxies, request, field='items',
-        limit=args.limit, batch_size=None)
+    return lister.Invoke(request_data, list_implementation)
 
 List.detailed_help = base_classes.GetGlobalListerHelp('target SSL proxies')

@@ -52,30 +52,12 @@ MAX_ENTRY_BYTES = 5 * 1024 * 1024
 
 # Short emitter key -> entryLinkType id. The fully-qualified name is built per
 # run against the resolved system-types project via ``Context.link_type_fqn``.
-#
-# NOTE: ``materializes_to`` is declared here (and therefore advertised by
-# ``entry_links.LinkTypeFqns`` for the import job scope) but is not emitted yet.
-# Emitting it is deferred because it is a substantial piece of work: a
-# materializes-to link targets the physical table's entry in the ``@bigquery``
-# system entry group, whose resource name is keyed by the dataset's BigQuery
-# REGION -- which the dbt manifest does not carry, so it needs a live `bq`
-# lookup per dataset (plus pinning the exact ``@bigquery`` entry-name format).
-# The link type stays advertised so the import job scope is ready once emission
-# lands. See ``entry_links`` for details.
-#
-# NOTE: dbt `relationships` tests map to ``logical-schema-join`` (an undirected
-# link over arbitrary Dataplex entries), NOT ``schema-join`` -- the latter is
-# restricted to BigQuery/BigLake entry types and so cannot link dbt entries.
-# ``logical-schema-join`` declares ``required_aspects: schema-join``, so those
-# links carry a schema-join aspect (see ``entry_links._schema_join_aspect``).
 LINK_TYPE_IDS: dict[str, str] = {
-    'depends_on': 'depends-on',
-    'materializes_to': 'materializes-to',
-    'belongs_to': 'belongs-to',
-    'schema_join': 'logical-schema-join',
-    'consumed_by': 'consumed-by',
-    'defines_semantics_for': 'defines-semantics-for',
-    'derives_from': 'derives-from',
+    'depends_on': 'depends-on-lineage-imported',
+    'materializes_to': 'represents',
+    'consumed_by': 'depends-on-imported',
+    'defines_semantics_for': 'represents',
+    'derives_from': 'depends-on-imported',
 }
 
 

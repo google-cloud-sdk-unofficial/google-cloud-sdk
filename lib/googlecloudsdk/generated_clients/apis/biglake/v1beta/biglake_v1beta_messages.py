@@ -324,6 +324,20 @@ class BiglakeHiveV1betaProjectsCatalogsDeleteRequest(_messages.Message):
   name = _messages.StringField(1, required=True)
 
 
+class BiglakeHiveV1betaProjectsCatalogsFailoverRequest(_messages.Message):
+  r"""A BiglakeHiveV1betaProjectsCatalogsFailoverRequest object.
+
+  Fields:
+    failoverHiveCatalogRequest: A FailoverHiveCatalogRequest resource to be
+      passed as the request body.
+    name: Required. The name of the catalog in the form
+      "projects/{project_id}/catalogs/{catalog_id}"
+  """
+
+  failoverHiveCatalogRequest = _messages.MessageField('FailoverHiveCatalogRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
 class BiglakeHiveV1betaProjectsCatalogsGetRequest(_messages.Message):
   r"""A BiglakeHiveV1betaProjectsCatalogsGetRequest object.
 
@@ -391,6 +405,45 @@ class Empty(_messages.Message):
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
 
+
+
+class FailoverHiveCatalogRequest(_messages.Message):
+  r"""Request message for FailoverHiveCatalog.
+
+  Fields:
+    conditionalFailoverReplicationTime: Optional. If unset, wait for all data
+      from the source region to replicate to the new primary region before
+      completing the failover, with no data loss (also called "soft
+      failover"). If set, failover immediately, accepting the loss of any data
+      committed in the source region after this timestamp, that has not yet
+      replicated. If any data committed before this time has not replicated,
+      the failover will not be performed and an error will be returned (also
+      called "hard failover").
+    primaryReplica: Required. The region being assigned as the new primary
+      replica region. For example "us-east1". This must be one of the replica
+      regions in the catalog's list of replicas marked as a "secondary".
+    validateOnly: Optional. If set, only validate the request, but do not
+      perform the update. This can be used to inspect the replication_time at
+      any time, including before performing a fail-over.
+  """
+
+  conditionalFailoverReplicationTime = _messages.StringField(1)
+  primaryReplica = _messages.StringField(2)
+  validateOnly = _messages.BooleanField(3)
+
+
+class FailoverHiveCatalogResponse(_messages.Message):
+  r"""Response message for FailoverHiveCatalog.
+
+  Fields:
+    replicationTime: Output only. The min timestamp for which all namespaces
+      and table metadata have been replicated in the region specified as the
+      new primary_replica. Some resources may have been replicated more
+      recently than this timestamp. If empty, the replica has just been
+      created and has not yet been fully initialized.
+  """
+
+  replicationTime = _messages.StringField(1)
 
 
 class FieldSchema(_messages.Message):

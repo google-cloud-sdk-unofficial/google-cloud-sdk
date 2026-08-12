@@ -15,24 +15,22 @@
 
 """services mcp enable command."""
 
-from googlecloudsdk.api_lib.services import services_util
-from googlecloudsdk.api_lib.services import serviceusage
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.services import common_flags
-from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
-from googlecloudsdk.core.console import console_io
-
-_OP_BASE_CMD = 'gcloud beta services operations '
-_OP_WAIT_CMD = _OP_BASE_CMD + 'wait {0}'
-
-_SERVICE = 'services/%s'
-_PROJECT_RESOURCE = 'projects/{}'
-_FOLDER_RESOURCE = 'folders/{}'
-_ORGANIZATION_RESOURCE = 'organizations/{}'
-_CONSUMER_POLICY_DEFAULT = '/consumerPolicies/{}'
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'MCP enablement is not required and this command is no-op. To enable'
+        ' a service, please use: gcloud services enable.'
+    ),
+    error=(
+        'MCP enablement is not required and this command is no-op. To enable'
+        ' a service, please use: gcloud services enable.'
+    ),
+)
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Enable(base.SilentCommand):
@@ -90,90 +88,4 @@ class Enable(base.SilentCommand):
     Returns:
       Updated MCP Policy.
     """
-    project = properties.VALUES.core.project.Get(required=True)
-    resource_name = _PROJECT_RESOURCE.format(project)
-    if args.IsSpecified('project'):
-      resource_name = _PROJECT_RESOURCE.format(args.project)
-      project = args.project
-    if args.IsSpecified('folder'):
-      resource_name = _FOLDER_RESOURCE.format(args.folder)
-      folder = args.folder
-    else:
-      folder = None
-    if args.IsSpecified('organization'):
-      resource_name = _ORGANIZATION_RESOURCE.format(args.organization)
-      organization = args.organization
-    else:
-      organization = None
-
-    # check if sevice has Mcp Config
-    service_metadata = serviceusage.GetServiceV2Beta(
-        f'{resource_name}/services/{args.service}'
-    )
-    if not args.skip_mcp_endpoint_check and (
-        not service_metadata.service.mcpServer
-        or not service_metadata.service.mcpServer.urls
-    ):
-      log.error(
-          f'The service {args.service} does not have MCP endpoint.'
-      )
-      return
-
-    log.warning(
-        'MCP enablement is not required and only service enablement will be'
-        ' performed.'
-    )
-    if not service_metadata.state.enableRules:
-      enable_msg = serviceusage.GetMcpEnabledError(
-          service=args.service, resource_name=resource_name
-      )
-      do_enable = console_io.PromptContinue(
-          enable_msg,
-          default=False,
-          throw_if_unattended=True,
-      )
-      if do_enable:
-        enable_service_op = serviceusage.AddEnableRule(
-            [args.service],
-            project,
-            folder=folder,
-            organization=organization,
-        )
-
-        if args.async_:
-          cmd = _OP_WAIT_CMD.format(enable_service_op.name)
-          log.status.Print(
-              'Asynchronous operation is in progress... '
-              'Use the following command to wait for its '
-              f'completion:\n {cmd}'
-          )
-          return
-
-        # The operation should not be None when enable rules are empty,
-        # but in case it is, we check it here to avoid error.
-        if enable_service_op:
-          enable_service_op = services_util.WaitOperation(
-              enable_service_op.name, serviceusage.GetOperationV2Beta
-          )
-
-          if enable_service_op.error:
-            log.error(
-                f'Failed to enable the service {args.service} for the resource'
-                f' {resource_name}: {enable_service_op.error}'
-            )
-            return
-          else:
-            log.status.Print(
-                f'The service {args.service} has been enabled for the'
-                f' resource {resource_name}.'
-            )
-            return
-      else:
-        return
-
-    else:
-      log.status.Print(
-          f'The service {args.service} has'
-          f' been enabled for the resource {resource_name}.'
-      )
-      return
+    pass

@@ -84,14 +84,21 @@ def AddConfig(parser, api_version=None, required=False, hidden=False):
   )
 
 
-def AddBlueprint(parser, api_version=None, hidden=False):
-  """Adds a blueprint flag for the given API version."""
+def AddReferenceArchitecture(parser, api_version=None, hidden=False):
+  """Adds a reference architecture flag for the given API version."""
   if api_version not in ["v1alpha", "v1beta", "v1"]:
-    raise ValueError(f"Unsupported API version for blueprint: {api_version!r}")
+    raise ValueError(
+        f"Unsupported API version for reference-architecture: {api_version!r}"
+    )
   parser.add_argument(
-      "--blueprint",
+      "--reference-architecture",
       help=textwrap.dedent("""
-        Reference a pre-defined architecture (e.g., "a3-ultra").
+        Reference a pre-defined architecture. Available options:
+        - a3-ultra: 4x reserved nodes (requires --reserved-instances), 1x login node (n2-standard-16), 36TB Lustre storage, and 5.1TB Filestore storage.
+        - a4-high-flex-start: 4x a4-highgpu-8g compute nodes (Flex Start), 1x login node (n2-standard-16), 18TB Lustre storage, and 2TB Filestore storage.
+        - a4x-high: 18x reserved nodes (requires --reserved-instances), 1x login node (n2-standard-16), and 36TB Lustre storage.
+        - g4: 4x g4-standard-384 compute nodes (Flex Start), 1x login node (n2-standard-16), 36TB Lustre storage, and 10.2TB Filestore storage.
+        - h4d-highmem: 4x h4d-highmem-192 compute nodes (Flex Start), 1x login node (n2-standard-16), 18TB Lustre storage, and 1TB Filestore storage.
       """),
       choices=[
           "a3-ultra",
@@ -109,10 +116,12 @@ def AddQuickstartCluster(parser, hidden=False):
   parser.add_argument(
       "--quickstart-cluster",
       action="store_true",
-      help=(
-          "If specified, creates a cluster with sensible defaults for compute,"
-          " network, and orchestrator."
-      ),
+      help=textwrap.dedent("""
+        If specified, creates a cluster with sensible defaults:
+        - Compute: 2x a3-megagpu-8g nodes (Flex Start, max duration 7 days).
+        - Login: 1x n2-standard-16 node.
+        - Storage: 36TB Lustre storage (scratch disk).
+      """),
       hidden=hidden,
   )
 

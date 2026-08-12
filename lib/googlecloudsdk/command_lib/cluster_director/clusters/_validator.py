@@ -173,3 +173,12 @@ def ValidateStorageConfigs(
             "be '/data'."
         )
 
+
+def ValidateLustreFilesystemName(name: str) -> None:
+  """Validates that Lustre filesystem name is between 1 and 8 characters long, lowercase letters and numbers."""
+  if not re.match(r"^[a-z0-9]{1,8}$", name):
+    raise ClusterDirectorError(
+        f"Lustre filesystem name '{name}' is invalid. The name must be"
+        " between 1 and 8 characters long and contain only lowercase letters"
+        " and numbers."
+    )

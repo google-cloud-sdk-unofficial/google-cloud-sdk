@@ -1,0 +1,35 @@
+# Copyright 2026 Google LLC. All Rights Reserved.
+release_tracks: [ALPHA, BETA, GA]
+
+help_text:
+  brief: |
+    List Agent Connectivity Templates.
+  description: |
+    List all agent connectivity templates in the specified location of the current project.
+  examples: |
+    To list agent connectivity templates in the current project, run:
+
+      $ {command} --location=us-central1
+
+request:
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  GA:
+    api_version: v1
+  collection: networkservices.projects.locations.agentConnectivityTemplates
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:location
+    help_text: Location to list agent connectivity templates in.
+
+response:
+  id_field: name
+
+output:
+  format: |-
+    table(
+       name.basename():label=NAME
+     )

@@ -17,7 +17,9 @@
 from __future__ import annotations
 
 import os
+import uuid
 
+from apitools.base.py import encoding
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
 from googlecloudsdk.api_lib.dataplex import dbt_metadata_job as dbt_job_lib
@@ -27,13 +29,12 @@ from googlecloudsdk.api_lib.dataplex import util as dataplex_util
 from googlecloudsdk.api_lib.storage import storage_api
 from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.dataplex import resource_args
 from googlecloudsdk.command_lib.dataplex.dbt import bigquery_location as bq_loc
-from googlecloudsdk.command_lib.dataplex.dbt import profiles as dbt_profiles
 from googlecloudsdk.command_lib.dataplex.dbt import transform as dbt_transform
 from googlecloudsdk.command_lib.projects import util as projects_util
 from googlecloudsdk.command_lib.util.apis import arg_utils
@@ -43,6 +44,38 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.util import files
 
 _JSONL_FILENAME = 'dbt_metadata.jsonl'
+
+# Metadata job states that mean the import is no longer running.
+_TERMINAL_STATES = frozenset(
+    ['SUCCEEDED', 'SUCCEEDED_WITH_ERRORS', 'FAILED', 'CANCELED']
+)
+
+
+class _ImportJobPoller(waiter.OperationPoller):
+  """Polls a metadata import job until it reaches a terminal state.
+
+  The metadataJobs.create operation completes when the job is accepted, not when
+  the import finishes, so the job's own status has to be polled to learn the
+  real outcome (and entry counts).
+  """
+
+  def __init__(self, jobs_service, messages):
+    self._jobs_service = jobs_service
+    self._messages = messages
+
+  def IsDone(self, job):
+    state = job.status.state if job and job.status else None
+    return str(state) in _TERMINAL_STATES if state else False
+
+  def Poll(self, job_name):
+    return self._jobs_service.Get(
+        self._messages.DataplexProjectsLocationsMetadataJobsGetRequest(
+            name=job_name
+        )
+    )
+
+  def GetResult(self, job):
+    return job
 
 
 @base.Hidden
@@ -158,39 +191,19 @@ class Create(base.Command):
         action='store_true',
         default=True,
         help="""Also emit EntryLink records capturing dbt lineage and semantic
-        relationships (depends-on, belongs-to, consumed-by, etc.).""",
+        relationships (depends-on-lineage-imported, represents, depends-on-imported, etc.).""",
     )
-    bigquery_link_group = parser.add_group(
-        mutex=True,
-        help="""Control `materializes-to` links from materialized dbt nodes to
-        their physical BigQuery table entries.""",
-    )
-    bigquery_link_group.add_argument(
-        '--bigquery-location',
-        help="""Dataplex region of the physical BigQuery table entries (the
-        system `@bigquery` entry group), e.g. `us-central1`. Used to emit
-        `materializes-to` links from each materialized dbt node
-        (model/seed/snapshot) to its physical BigQuery table entry. If omitted,
-        it is inferred from the dbt project's `profiles.yml`
-        (`outputs.<target>.location`); when it cannot be inferred, either pass
-        this flag or `--skip-bigquery-link`.""",
-    )
-    bigquery_link_group.add_argument(
+    parser.add_argument(
         '--skip-bigquery-link',
         action='store_true',
         default=False,
-        help="""Skip `materializes-to` links (dbt node -> physical BigQuery
-        table). Use when the BigQuery tables are not cataloged in Dataplex or
-        the location cannot be provided.""",
-    )
-    bigquery_link_group.add_argument(
-        '--skip-bigquery-location-lookup',
-        action='store_true',
-        default=False,
-        help="""Do not call BigQuery to read the materialized datasets' actual
-        locations; infer the location from the dbt project's `profiles.yml`
-        instead. Use offline, without `bigquery.datasets.get` access, or to
-        avoid the extra API calls.""",
+        help="""Skip `represents` links (dbt node -> physical BigQuery
+        table entry). Otherwise a `represents` link is emitted for each
+        materialized dbt node (model/seed/snapshot) whose BigQuery dataset lives
+        in the import location (`--location`); links can only reference
+        @bigquery entries in that same region, so datasets in another region are
+        skipped automatically. Use this flag when the BigQuery tables are not
+        cataloged in Dataplex.""",
     )
     parser.add_argument(
         '--validate-only',
@@ -237,11 +250,11 @@ class Create(base.Command):
         project_number, project_id, location, args.entry_group
     )
 
-    # Resolve the BigQuery location for materializes-to links (dbt node ->
-    # physical @bigquery table). Not in the dbt artifacts, so: flag wins, else
-    # infer from the project's profiles.yml, else require the caller to pass it
-    # or opt out with --skip-bigquery-link.
-    bigquery_location = self._ResolveBigQueryLocation(args)
+    # Resolve which datasets get represents (physical) links
+    # (dbt node -> physical @bigquery table entry). Those links can only
+    # reference @bigquery entries in the import location, so datasets in another
+    # region are dropped.
+    linkable_datasets = self._ResolveLinkableDatasets(args, location)
 
     # 1. Transform dbt artifacts into a JSONL import file in a temp dir.
     with files.TemporaryDirectory() as tmp_dir:
@@ -250,13 +263,14 @@ class Create(base.Command):
           artifacts_path=args.artifacts_path,
           output_path=local_jsonl,
           eg_project=project_number,
+          eg_project_id=project_id,
           eg_location=location,
           entry_group=args.entry_group,
           connector_types_project=connector_types_project,
           system_types_project=system_types_project,
           types_location=types_location,
           include_entry_links=args.include_entry_links,
-          bigquery_location=bigquery_location,
+          linkable_datasets=linkable_datasets,
       )
       log.status.Print(
           'Transformed dbt artifacts: {0} entries, {1} entry links.'.format(
@@ -282,18 +296,10 @@ class Create(base.Command):
           system_types_project, types_location
       )
       # Scope the caller's project plus any BigQuery projects that
-      # materializes-to links target, so those cross-entry references resolve.
+      # represents (physical) links target, so those cross-entry references
+      # resolve.
       referenced_entry_scopes = ['projects/{0}'.format(project_number)] + [
-          'projects/{0}'.format(p)
-          for p in summary.get('bigquery_projects', [])
-      ]
-      # logical-schema-join links (from dbt relationships tests) carry a
-      # `schema-join` aspect -- a core 1P type in the system project; it must be
-      # in the import scope for the aspect to be accepted.
-      extra_aspect_types = [
-          'projects/{0}/locations/{1}/aspectTypes/schema-join'.format(
-              system_types_project, types_location
-          )
+          'projects/{0}'.format(p) for p in summary.get('bigquery_projects', [])
       ]
 
     job = dbt_job_lib.GenerateImportMetadataJob(
@@ -325,126 +331,93 @@ class Create(base.Command):
       log.status.Print('Validation complete.')
       return
 
-    # Always surface the operation up front so the import job can be monitored
-    # externally (e.g. `gcloud dataplex operations describe`), whether or not we
-    # wait for it to finish.
-    log.status.Print(
-        'Submitted dbt metadata import job with operation [{0}].'.format(
-            create_req_op.name
-        )
-    )
+    # Always surface the operation and the job ID.
+    job_id = metadata_job_id or self._ServerGeneratedJobId(create_req_op)
+    if job_id:
+      log.status.Print(
+          'Submitted dbt metadata import job [{0}] with operation [{1}].'
+          .format(job_id, create_req_op.name)
+      )
+    else:
+      log.status.Print(
+          'Submitted dbt metadata import job with operation [{0}].'.format(
+              create_req_op.name
+          )
+      )
 
     if getattr(args, 'async_', False):
       return
 
+    # The create operation only confirms the job was accepted. Wait for it, then
+    # poll the job itself until the import reaches a terminal state so we can
+    # report the real outcome (and fail on a failed import).
     metadata_job_lib.WaitForOperation(create_req_op)
-    log.CreatedResource(
-        metadata_job_id,
-        details='dbt metadata import job created in [{0}]'.format(parent),
+    if not job_id:
+      # Without the id we can't address the job to poll; the create succeeded.
+      log.status.Print(
+          'dbt metadata import job created in [{0}].'.format(parent)
+      )
+      return
+    result = self._WaitForImport(
+        dataplex_client, message, '{0}/metadataJobs/{1}'.format(parent, job_id)
     )
+    self._ReportImportOutcome(job_id, result)
 
-  def _ResolveBigQueryLocation(
-      self, args: parser_extensions.Namespace
-  ) -> str | None:
-    """Resolves the Dataplex region of the physical @bigquery table entries.
+  def _ResolveLinkableDatasets(
+      self, args: parser_extensions.Namespace, location: str
+  ) -> frozenset[tuple[str, str]] | None:
+    """Returns the BigQuery datasets to emit represents links for.
 
-    materializes-to links target those entries; their region is not in the dbt
-    artifacts. Resolution order: skip flag -> None; explicit flag; the datasets'
-    actual location via a live BigQuery lookup (authoritative); best-effort
-    inference from the dbt project's profiles.yml; otherwise raise so the caller
-    supplies it or opts out.
+    A represents link points a dbt node at its physical @bigquery table
+    entry. The link is created in the caller's entry group at the import
+    location; Dataplex only supports same-region entry links, and the @bigquery
+    entry of a BigQuery table lives in the Dataplex region matching its dataset.
+    So a link is only valid when the dataset is in the import location -- its
+    region is not a choice, it is always the import location. A live BigQuery
+    lookup is used only to drop datasets that demonstrably live elsewhere;
+    callers who can't do that lookup or don't want these links pass
+    --skip-bigquery-link.
 
     Args:
       args: the parsed command arguments.
+      location: the import location (the entry group / metadata job region).
 
     Returns:
-      The BigQuery location, or None when entry links / materializes-to links
-      are not being emitted.
-
-    Raises:
-      RequiredArgumentException: when it cannot be resolved and neither
-        --bigquery-location nor --skip-bigquery-link was given, or when the
-        materialized datasets span multiple BigQuery regions.
+      The set of (project, dataset) pairs to emit links for, or None when
+      represents links are disabled or nothing is co-located with the
+      import location.
     """
     if not args.include_entry_links or args.skip_bigquery_link:
       return None
-    if args.bigquery_location:
-      return args.bigquery_location
-    # Authoritative: the datasets' own (immutable) locations.
-    if not args.skip_bigquery_location_lookup:
-      resolved = self._ResolveViaBigQuery(args.artifacts_path)
-      if resolved:
-        return resolved
-    inferred = dbt_profiles.infer_bigquery_location(args.artifacts_path)
-    if inferred:
-      if inferred.source == dbt_profiles.SOURCE_DEFAULT:
-        log.warning(
-            'The dbt project sets no BigQuery location in profiles.yml; '
-            'assuming the [{0}] multi-region (the dbt-bigquery default for new '
-            'datasets) for materializes-to links. If the tables live in '
-            'another region, pass --bigquery-location=REGION or '
-            '--skip-bigquery-link.'.format(inferred.location)
-        )
-      else:
-        log.status.Print(
-            'Inferred BigQuery location [{0}] from the dbt project for '
-            'materializes-to links.'.format(inferred.location)
-        )
-      return inferred.location
-    raise calliope_exceptions.RequiredArgumentException(
-        '--bigquery-location',
-        'Could not determine the BigQuery location of the dbt resources -- '
-        'neither from a live BigQuery lookup nor from the project '
-        '(profiles.yml). Pass --bigquery-location=REGION (the Dataplex region '
-        "of the physical BigQuery table entries, e.g. 'us-central1') to emit "
-        'materializes-to links, or --skip-bigquery-link to skip them.',
-    )
-
-  def _ResolveViaBigQuery(self, artifacts_path: str) -> str | None:
-    """Reads the shared region of the datasets the dbt run materializes into.
-
-    Reads each materialized dataset's location with a live ``datasets.get``.
-
-    Args:
-      artifacts_path: the --artifacts-path value.
-
-    Returns:
-      The single Dataplex region shared by the materialized datasets, or None
-      when there is nothing to materialize or no dataset could be read.
-
-    Raises:
-      RequiredArgumentException: when the materialized datasets span multiple
-        BigQuery regions, which a single materializes-to location cannot
-        represent.
-    """
-    datasets = dbt_transform.MaterializedBigQueryDatasets(artifacts_path)
+    datasets = dbt_transform.MaterializedBigQueryDatasets(args.artifacts_path)
     if not datasets:
       return None
+    # Drop only datasets we can prove live in another region. Datasets we can't
+    # read (no bigquery.datasets.get access, or not found) are kept
+    # optimistically -- the import reports an unresolved @bigquery target as a
+    # non-fatal per-link error.
     resolved = bq_loc.ResolveDatasetLocations(datasets)
-    if not resolved:
+    mismatched = {
+        dataset: region
+        for dataset, region in resolved.items()
+        if region != location
+    }
+    linkable = frozenset(datasets - set(mismatched))
+    if mismatched:
       log.warning(
-          'Could not read the materialized BigQuery datasets to determine '
-          'their location (missing access or datasets); falling back to '
-          "the dbt project's profiles.yml."
+          'Skipping represents links for {0} BigQuery dataset(s) not in '
+          'the import location [{1}]: {2}. Entry links must be same-region, so '
+          '@bigquery entries in another region cannot be linked; run the '
+          'import in that region (--location) to link them.'.format(
+              len(mismatched),
+              location,
+              ', '.join(
+                  '{0}.{1} [{2}]'.format(project, dataset, region)
+                  for (project, dataset), region in sorted(mismatched.items())
+              ),
+          )
       )
-      return None
-    regions = set(resolved.values())
-    if len(regions) == 1:
-      region = next(iter(regions))
-      log.status.Print(
-          'Resolved BigQuery location [{0}] from the materialized datasets for '
-          'materializes-to links.'.format(region)
-      )
-      return region
-    raise calliope_exceptions.RequiredArgumentException(
-        '--bigquery-location',
-        'The dbt project materializes tables into BigQuery datasets in more '
-        'than one region ({0}), which a single materializes-to location cannot '
-        'represent. Pass --bigquery-location=REGION to pin one, or '
-        '--skip-bigquery-link to skip these links.'.format(
-            ', '.join(sorted(regions))
-        ),
-    )
+    return linkable or None
 
   def _CheckEntryGroupExists(
       self,
@@ -497,6 +470,113 @@ class Create(base.Command):
       return None
     return metadata_job_id
 
+  def _ServerGeneratedJobId(self, operation) -> str | None:
+    """Returns the metadata job id the server assigned to a create operation.
+
+    The id is only unknown locally when it wasn't passed on the command line.
+    The server records it as the operation's target resource path when the
+    operation is created -- available even with --async -- so it can be surfaced
+    without waiting for the import to finish. Returns None if it isn't there.
+
+    Args:
+      operation: The create long-running operation.
+    """
+    if operation is None or operation.metadata is None:
+      return None
+    target = encoding.MessageToPyValue(operation.metadata).get('target')
+    return target.split('/')[-1] if target else None
+
+  def _WaitForImport(self, dataplex_client, messages, job_name):
+    """Polls the metadata job until the import reaches a terminal state.
+
+    Args:
+      dataplex_client: The Dataplex API client.
+      messages: The Dataplex message module.
+      job_name: The full metadata job resource name to poll.
+
+    Returns:
+      The finished GoogleCloudDataplexV1MetadataJob resource.
+    """
+    poller = _ImportJobPoller(
+        dataplex_client.projects_locations_metadataJobs, messages
+    )
+    return waiter.WaitFor(
+        poller,
+        job_name,
+        'Waiting for dbt metadata import job [{0}] to finish'.format(
+            job_name.split('/')[-1]
+        ),
+    )
+
+  def _ReportImportOutcome(self, job_id: str | None, result) -> None:
+    """Reports the finished import job's state and entry counts.
+
+    The create operation completing doesn't mean the import succeeded: the job
+    can finish SUCCEEDED, SUCCEEDED_WITH_ERRORS, FAILED or CANCELED. Surface the
+    real state (and the entry counts) rather than a blanket "created", and fail
+    the command on a failed or canceled import.
+
+    Args:
+      job_id: The metadata job id, if known.
+      result: The finished GoogleCloudDataplexV1MetadataJob resource.
+
+    Raises:
+      exceptions.Error: If the import job failed or was canceled.
+    """
+    label = 'dbt metadata import job'
+    if job_id:
+      label = '{0} [{1}]'.format(label, job_id)
+    status = getattr(result, 'status', None)
+    state = (
+        str(status.state) if status and status.state else 'STATE_UNSPECIFIED'
+    )
+    message = status.message if status and status.message else ''
+    suffix = ': {0}'.format(message) if message else ''
+
+    if state in ('FAILED', 'CANCELED'):
+      raise exceptions.Error('{0} {1}{2}'.format(label, state.lower(), suffix))
+    if state == 'SUCCEEDED_WITH_ERRORS':
+      log.warning('{0} completed with errors{1}'.format(label, suffix))
+    elif state == 'SUCCEEDED':
+      log.status.Print('{0} succeeded.'.format(label))
+    else:
+      log.status.Print('{0} finished.'.format(label))
+
+    counts = self._ImportCounts(getattr(result, 'importResult', None))
+    if counts:
+      log.status.Print('  {0}'.format(counts))
+
+  def _ImportCounts(self, import_result) -> str:
+    """Returns a compact summary of import entry / link counts, or ''."""
+    if import_result is None:
+      return ''
+    entries = ', '.join(
+        '{0} {1}'.format(n, name)
+        for name, n in (
+            ('created', import_result.createdEntries),
+            ('updated', import_result.updatedEntries),
+            ('recreated', import_result.recreatedEntries),
+            ('deleted', import_result.deletedEntries),
+            ('unchanged', import_result.unchangedEntries),
+        )
+        if n
+    )
+    links = ', '.join(
+        '{0} {1}'.format(n, name)
+        for name, n in (
+            ('created', import_result.createdEntryLinks),
+            ('deleted', import_result.deletedEntryLinks),
+            ('unchanged', import_result.unchangedEntryLinks),
+        )
+        if n
+    )
+    parts = []
+    if entries:
+      parts.append('entries: {0}'.format(entries))
+    if links:
+      parts.append('entry links: {0}'.format(links))
+    return '; '.join(parts)
+
   def _GetProjectNumber(self, project_id: str) -> str:
     project_ref = projects_util.ParseProject(project_id)
     return str(projects_api.Get(project_ref).projectNumber)
@@ -506,6 +586,8 @@ class Create(base.Command):
   ) -> str:
     """Returns gs://bucket/<prefix>/<job-id>/ for the per-job upload."""
     prefix = storage_uri if storage_uri.endswith('/') else storage_uri + '/'
-    # When the job id is server-generated, fall back to a stable folder.
-    job_folder = metadata_job_id or 'dbt-import'
+    # A server-generated job id isn't known at upload time; use a unique folder
+    # so concurrent server-id jobs sharing this storage-uri don't overwrite each
+    # other's import file.
+    job_folder = metadata_job_id or 'dbt-import-{0}'.format(uuid.uuid4().hex)
     return '{0}{1}/'.format(prefix, job_folder)

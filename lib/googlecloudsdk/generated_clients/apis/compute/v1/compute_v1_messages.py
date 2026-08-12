@@ -130,6 +130,10 @@ class AcceleratorType(_messages.Message):
     maximumCardsPerInstance: [Output Only] Maximum number of accelerator cards
       allowed per instance.
     name: [Output Only] Name of the resource.
+    resourceMetadata: Output only. Contains standard resource metadata for an
+      AcceleratorType resource. It is populated for each instance of the
+      AcceleratorType resource, and includes the api_version the instance was
+      retrieved through, and its canonical resource_type name.
     selfLink: Output only. [Output Only] Server-defined, fully qualified URL
       for this resource.
     zone: [Output Only] The name of the zone where the accelerator type
@@ -144,8 +148,9 @@ class AcceleratorType(_messages.Message):
   kind = _messages.StringField(5, default='compute#acceleratorType')
   maximumCardsPerInstance = _messages.IntegerField(6, variant=_messages.Variant.INT32)
   name = _messages.StringField(7)
-  selfLink = _messages.StringField(8)
-  zone = _messages.StringField(9)
+  resourceMetadata = _messages.MessageField('ResourceMetadata', 8)
+  selfLink = _messages.StringField(9)
+  zone = _messages.StringField(10)
 
 
 class AcceleratorTypeAggregatedList(_messages.Message):
@@ -214,7 +219,7 @@ class AcceleratorTypeAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -382,7 +387,7 @@ class AcceleratorTypeList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -543,7 +548,7 @@ class AcceleratorTypesScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -812,7 +817,13 @@ class Address(_messages.Message):
       address that is assigned      to multiple internal forwarding rules.
       - `PRIVATE_SERVICE_CONNECT` for a private network address that is
       used to configure Private Service Connect. Only global internal
-      addresses      can use this purpose.
+      addresses      can use this purpose.      -
+      `PASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP0` for addresses      that
+      can only be assigned to global external Passthrough Network Load
+      Balancer forwarding rules, as an Availability Group 0 address.      -
+      `PASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP1` for addresses that
+      can only be assigned to global external Passthrough Network Load
+      Balancer      forwarding rules, as an Availability Group 1 address.
     StatusValueValuesEnum: Output only. [Output Only] The status of the
       address, which can be one ofRESERVING, RESERVED, or IN_USE. An address
       that is RESERVING is currently in the process of being reserved. A
@@ -902,7 +913,13 @@ class Address(_messages.Message):
       to multiple internal forwarding rules.      - `PRIVATE_SERVICE_CONNECT`
       for a private network address that is      used to configure Private
       Service Connect. Only global internal addresses      can use this
-      purpose.
+      purpose.      - `PASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP0` for
+      addresses      that can only be assigned to global external Passthrough
+      Network Load      Balancer forwarding rules, as an Availability Group 0
+      address.      - `PASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP1` for
+      addresses that      can only be assigned to global external Passthrough
+      Network Load Balancer      forwarding rules, as an Availability Group 1
+      address.
     region: Output only. [Output Only] The URL of the region where a regional
       address resides. For regional addresses, you must specify the region as
       a path parameter in the HTTP request URL. *This field is not applicable
@@ -1000,6 +1017,12 @@ class Address(_messages.Message):
     to multiple internal forwarding rules.      - `PRIVATE_SERVICE_CONNECT`
     for a private network address that is      used to configure Private
     Service Connect. Only global internal addresses      can use this purpose.
+    - `PASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP0` for addresses      that
+    can only be assigned to global external Passthrough Network Load
+    Balancer forwarding rules, as an Availability Group 0 address.      -
+    `PASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP1` for addresses that
+    can only be assigned to global external Passthrough Network Load Balancer
+    forwarding rules, as an Availability Group 1 address.
 
     Values:
       DNS_RESOLVER: DNS resolver address in the subnetwork.
@@ -1161,7 +1184,7 @@ class AddressAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -1329,7 +1352,7 @@ class AddressList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -1489,7 +1512,7 @@ class AddressesScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -2198,7 +2221,29 @@ class AttachedDiskInitializeParams(_messages.Message):
       at least 10 GB. If you specify a sourceImage, which is required for boot
       disks, the default size is the size of the sourceImage. If you do not
       specify a sourceImage, the default disk size is 500 GB.
-    diskType: A string attribute.
+    diskType: Specifies the disk type used for the boot disk or an additional
+      data disk. For valid disk type values, see  Supported types for
+      Hyperdisk volumes and Persistent Disk type variables.  When creating a
+      single instance, you must provide either the full or partial URL of the
+      disk type. For example, the following values are valid:               -
+      https://www.googleapis.com/compute/v1/projects/project/zones/zone/diskTy
+      pes/diskType      - projects/project/zones/zone/diskTypes/diskType
+      - zones/zone/diskTypes/diskType    When creating an instance template,
+      instance flexibility policy, or when creating or updating an all-
+      instances configuration, you specify the disk type without a URL, for
+      example, hyperdisk-balanced.  If you omit this field for a disk, the
+      default disk type depends on the instance's machine series, as follows.
+      - For first- and second-generation machine series like N1, N2, T2, and
+      M1, the        default disk type is Standard Persistent Disk        (pd-
+      standard).     - For C3, C3D, and M3 the default is Balanced Persistent
+      Disk     (pd-balanced).     - For other third-generation machine
+      series like A3, H3, Z3, all         fourth-generation types like C4, N4,
+      M4, and newer machine series,         the default is Hyperdisk Balanced
+      (hyperdisk-balanced).    The disk type you specify must be compatible
+      with the instance's machine series. For a list of machine series that
+      support Persistent Disk, see Machine series support for Persistent Disk.
+      For a list of machine series that support Hyperdisk, seeMachine series
+      support for Hyperdisk.
     enableConfidentialCompute: Whether this disk is using confidential compute
       mode.
     labels: Labels to apply to this disk. These can be later modified by
@@ -2646,7 +2691,7 @@ class AutoscalerAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -2814,7 +2859,7 @@ class AutoscalerList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -3168,7 +3213,7 @@ class AutoscalersScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -3986,7 +4031,7 @@ class BackendBucketAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -4361,7 +4406,7 @@ class BackendBucketList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -4529,7 +4574,7 @@ class BackendBucketListUsable(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -4763,7 +4808,7 @@ class BackendBucketsScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -5301,7 +5346,11 @@ class BackendService(_messages.Message):
       lists of backends and health checks must be both empty.
     serviceLbPolicy: URL to networkservices.ServiceLbPolicy resource.  Can
       only be set if load balancing scheme is EXTERNAL_MANAGED,
-      INTERNAL_MANAGED or INTERNAL_SELF_MANAGED and the scope is global.
+      INTERNAL_MANAGED or INTERNAL_SELF_MANAGED for a global backend service,
+      and EXTERNAL_MANAGED or INTERNAL_MANAGED for a regional backend service.
+      For a global backend service, the service lb policy must be global. For
+      a regional backend service, the service lb policy must be regional and
+      in the same region.
     sessionAffinity: Type of session affinity to use. The default is NONE.
       Only NONE and HEADER_FIELD are supported when the backend service is
       referenced by a URL map that is bound to target gRPC proxy that has
@@ -5743,7 +5792,7 @@ class BackendServiceAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -6609,7 +6658,7 @@ class BackendServiceList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -6777,7 +6826,7 @@ class BackendServiceListUsable(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -7348,7 +7397,7 @@ class BackendServicesScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -8924,7 +8973,7 @@ class CommitmentAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -9092,7 +9141,7 @@ class CommitmentList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -9322,7 +9371,7 @@ class CommitmentsScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -9572,7 +9621,7 @@ class CompositeHealthCheckAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -9771,7 +9820,7 @@ class CompositeHealthCheckList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -9960,7 +10009,7 @@ class CompositeHealthChecksScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -34169,6 +34218,87 @@ class ComputeRegionsListRequest(_messages.Message):
   returnPartialSuccess = _messages.BooleanField(6)
 
 
+class ComputeReliabilityRisksGetRequest(_messages.Message):
+  r"""A ComputeReliabilityRisksGetRequest object.
+
+  Fields:
+    project: Project ID for this request.
+    reliabilityRisk: Name of the ReliabilityRisk resource to return.
+  """
+
+  project = _messages.StringField(1, required=True)
+  reliabilityRisk = _messages.StringField(2, required=True)
+
+
+class ComputeReliabilityRisksListRequest(_messages.Message):
+  r"""A ComputeReliabilityRisksListRequest object.
+
+  Fields:
+    filter: A filter expression that filters resources listed in the response.
+      Most Compute resources support two types of filter expressions:
+      expressions that support regular expressions and expressions that follow
+      API improvement proposal AIP-160. These two types of filter expressions
+      cannot be mixed in one request.  If you want to use AIP-160, your
+      expression must specify the field name, an operator, and the value that
+      you want to use for filtering. The value must be a string, a number, or
+      a boolean. The operator must be either `=`, `!=`, `>`, `<`, `<=`, `>=`
+      or `:`.  For example, if you are filtering Compute Engine instances, you
+      can exclude instances named `example-instance` by specifying `name !=
+      example-instance`.  The `:*` comparison can be used to test whether a
+      key has been defined. For example, to find all objects with `owner`
+      label use: ``` labels.owner:* ```  You can also filter nested fields.
+      For example, you could specify `scheduling.automaticRestart = false` to
+      include instances only if they are not scheduled for automatic restarts.
+      You can use filtering on nested fields to filter based onresource
+      labels.  To filter on multiple expressions, provide each separate
+      expression within parentheses. For example: ```
+      (scheduling.automaticRestart = true) (cpuPlatform = "Intel Skylake") ```
+      By default, each expression is an `AND` expression. However, you can
+      include `AND` and `OR` expressions explicitly. For example: ```
+      (cpuPlatform = "Intel Skylake") OR (cpuPlatform = "Intel Broadwell") AND
+      (scheduling.automaticRestart = true) ```  If you want to use a regular
+      expression, use the `eq` (equal) or `ne` (not equal) operator against a
+      single un-parenthesized expression with or without quotes or against
+      multiple parenthesized expressions. Examples:  `fieldname eq unquoted
+      literal` `fieldname eq 'single quoted literal'` `fieldname eq "double
+      quoted literal"` `(fieldname1 eq literal) (fieldname2 ne "literal")`
+      The literal value is interpreted as a regular expression using GoogleRE2
+      library syntax. The literal value must match the entire field.  For
+      example, to filter for instances that do not end with name "instance",
+      you would use `name ne .*instance`.  You cannot combine constraints on
+      multiple fields using regular expressions.
+    maxResults: The maximum number of results per page that should be
+      returned. If the number of available results is larger than
+      `maxResults`, Compute Engine returns a `nextPageToken` that can be used
+      to get the next page of results in subsequent list requests. Acceptable
+      values are `0` to `500`, inclusive. (Default: `500`)
+    orderBy: Sorts list results by a certain order. By default, results are
+      returned in alphanumerical order based on the resource name.  You can
+      also sort results in descending order based on the creation timestamp
+      using `orderBy="creationTimestamp desc"`. This sorts results based on
+      the `creationTimestamp` field in reverse chronological order (newest
+      result first). Use this to sort resources like operations so that the
+      newest operation is returned first.  Currently, only sorting by `name`
+      or `creationTimestamp desc` is supported.
+    pageToken: Specifies a page token to use. Set `pageToken` to the
+      `nextPageToken` returned by a previous list request to get the next page
+      of results.
+    project: Project ID for this request.
+    returnPartialSuccess: Opt-in for partial success behavior which provides
+      partial results in case of failure. The default value is false.  For
+      example, when partial success behavior is enabled, aggregatedList for a
+      single zone scope either returns all resources in the zone or no
+      resources, with an error code.
+  """
+
+  filter = _messages.StringField(1)
+  maxResults = _messages.IntegerField(2, variant=_messages.Variant.UINT32, default=500)
+  orderBy = _messages.StringField(3)
+  pageToken = _messages.StringField(4)
+  project = _messages.StringField(5, required=True)
+  returnPartialSuccess = _messages.BooleanField(6)
+
+
 class ComputeReservationBlocksGetIamPolicyRequest(_messages.Message):
   r"""A ComputeReservationBlocksGetIamPolicyRequest object.
 
@@ -43135,7 +43265,7 @@ class CrossSiteNetworkList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -43993,7 +44123,7 @@ class DiskAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -44293,7 +44423,7 @@ class DiskList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -44683,7 +44813,7 @@ class DiskTypeAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -44851,7 +44981,7 @@ class DiskTypeList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -45011,7 +45141,7 @@ class DiskTypesScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -45213,7 +45343,7 @@ class DisksScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -45624,7 +45754,7 @@ class ExchangedPeeringRoutesList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -45984,7 +46114,7 @@ class ExternalVpnGatewayList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -46429,7 +46559,7 @@ class FirewallList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -46698,7 +46828,7 @@ class FirewallPoliciesScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -46985,7 +47115,7 @@ class FirewallPolicyList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -48037,7 +48167,7 @@ class ForwardingRuleAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -48215,7 +48345,7 @@ class ForwardingRuleList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -48405,7 +48535,7 @@ class ForwardingRulesScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -48601,6 +48731,10 @@ class FutureReservation(_messages.Message):
       the given name does not exist already, it is created automatically at
       the time of Approval with INACTIVE state till specified start-time.
       Either provide the reservation_name or a name_prefix.
+    resourceMetadata: Output only. Contains standard resource metadata for an
+      FutureReservation resource. It is populated for each instance of the
+      FutureReservation resource, and includes the api_version the instance
+      was retrieved through, and its canonical resource_type name.
     schedulingType: Maintenance information for this reservation
     selfLink: Output only. [Output Only] Server-defined fully-qualified URL
       for this resource.
@@ -48700,15 +48834,16 @@ class FutureReservation(_messages.Message):
   planningStatus = _messages.EnumField('PlanningStatusValueValuesEnum', 16)
   reservationMode = _messages.EnumField('ReservationModeValueValuesEnum', 17)
   reservationName = _messages.StringField(18)
-  schedulingType = _messages.EnumField('SchedulingTypeValueValuesEnum', 19)
-  selfLink = _messages.StringField(20)
-  selfLinkWithId = _messages.StringField(21)
-  shareSettings = _messages.MessageField('ShareSettings', 22)
-  specificReservationRequired = _messages.BooleanField(23)
-  specificSkuProperties = _messages.MessageField('FutureReservationSpecificSKUProperties', 24)
-  status = _messages.MessageField('FutureReservationStatus', 25)
-  timeWindow = _messages.MessageField('FutureReservationTimeWindow', 26)
-  zone = _messages.StringField(27)
+  resourceMetadata = _messages.MessageField('ResourceMetadata', 19)
+  schedulingType = _messages.EnumField('SchedulingTypeValueValuesEnum', 20)
+  selfLink = _messages.StringField(21)
+  selfLinkWithId = _messages.StringField(22)
+  shareSettings = _messages.MessageField('ShareSettings', 23)
+  specificReservationRequired = _messages.BooleanField(24)
+  specificSkuProperties = _messages.MessageField('FutureReservationSpecificSKUProperties', 25)
+  status = _messages.MessageField('FutureReservationStatus', 26)
+  timeWindow = _messages.MessageField('FutureReservationTimeWindow', 27)
+  zone = _messages.StringField(28)
 
 
 class FutureReservationCommitmentInfo(_messages.Message):
@@ -49146,7 +49281,7 @@ class FutureReservationsAggregatedListResponse(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -49318,7 +49453,7 @@ class FutureReservationsListResponse(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -49480,7 +49615,7 @@ class FutureReservationsScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -50559,7 +50694,7 @@ class GlobalVmExtensionPolicyList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -51472,7 +51607,7 @@ class HealthAggregationPoliciesScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -51757,7 +51892,7 @@ class HealthAggregationPolicyAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -51925,7 +52060,7 @@ class HealthAggregationPolicyList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -52071,8 +52206,9 @@ class HealthCheck(_messages.Message):
 
   Enums:
     TypeValueValuesEnum: Specifies the type of the healthCheck, either
-      TCP,SSL, HTTP, HTTPS,HTTP2 or GRPC. Exactly one of the protocol-specific
-      health check fields must be specified, which must matchtype field.
+      TCP,SSL, HTTP, HTTPS,HTTP2, GRPC or GRPC_WITH_TLS. Exactly one of the
+      protocol-specific health check fields must be specified, which must
+      match type field.
 
   Fields:
     checkIntervalSec: How often (in seconds) to send a health check. The
@@ -52109,27 +52245,27 @@ class HealthCheck(_messages.Message):
       regions. This can only be set for global health check. If this list is
       non-empty, then there are restrictions on what other health check fields
       are supported and what other resources can use this health check:
-      - SSL, HTTP2, and GRPC protocols are not supported.    - The TCP request
-      field is not supported.    - The proxyHeader field for HTTP, HTTPS, and
-      TCP is not    supported.    - The checkIntervalSec field must be at
-      least 30.    - The health check cannot be used with BackendService nor
-      with managed    instance group auto-healing.
+      - SSL, HTTP2, GRPC, and GRPC_WITH_TLS protocols are not supported.    -
+      The TCP request field is not supported.    - The proxyHeader field for
+      HTTP, HTTPS, and TCP is not    supported.    - The checkIntervalSec
+      field must be at least 30.    - The health check cannot be used with
+      BackendService nor with managed    instance group auto-healing.
     sslHealthCheck: A SSLHealthCheck attribute.
     tcpHealthCheck: A TCPHealthCheck attribute.
     timeoutSec: How long (in seconds) to wait before claiming failure. The
       default value is 5 seconds. It is invalid for timeoutSec to have greater
       value than checkIntervalSec.
     type: Specifies the type of the healthCheck, either TCP,SSL, HTTP,
-      HTTPS,HTTP2 or GRPC. Exactly one of the protocol-specific health check
-      fields must be specified, which must matchtype field.
+      HTTPS,HTTP2, GRPC or GRPC_WITH_TLS. Exactly one of the protocol-specific
+      health check fields must be specified, which must match type field.
     unhealthyThreshold: A so-far healthy instance will be marked unhealthy
       after this many consecutive failures. The default value is 2.
   """
 
   class TypeValueValuesEnum(_messages.Enum):
     r"""Specifies the type of the healthCheck, either TCP,SSL, HTTP,
-    HTTPS,HTTP2 or GRPC. Exactly one of the protocol-specific health check
-    fields must be specified, which must matchtype field.
+    HTTPS,HTTP2, GRPC or GRPC_WITH_TLS. Exactly one of the protocol-specific
+    health check fields must be specified, which must match type field.
 
     Values:
       GRPC: <no description>
@@ -52210,7 +52346,7 @@ class HealthCheckList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -52541,7 +52677,7 @@ class HealthCheckServiceAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -52725,7 +52861,7 @@ class HealthCheckServicesList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -52885,7 +53021,7 @@ class HealthCheckServicesScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -53074,7 +53210,7 @@ class HealthChecksAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -53235,7 +53371,7 @@ class HealthChecksScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -53502,7 +53638,7 @@ class HealthSourceAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -53700,7 +53836,7 @@ class HealthSourceList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -53895,7 +54031,7 @@ class HealthSourcesScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -54396,7 +54532,7 @@ class HostsListResponse(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -54777,7 +54913,7 @@ class HttpHealthCheckList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -55387,7 +55523,7 @@ class HttpsHealthCheckList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -55848,7 +55984,7 @@ class ImageList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -56443,7 +56579,7 @@ class InstanceAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -56811,7 +56947,7 @@ class InstanceGroupAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -56980,7 +57116,7 @@ class InstanceGroupList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -57391,7 +57527,7 @@ class InstanceGroupManagerAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -57795,7 +57931,7 @@ class InstanceGroupManagerList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -58208,7 +58344,7 @@ class InstanceGroupManagerResizeRequestsListResponse(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -59215,7 +59351,7 @@ class InstanceGroupManagersListPerInstanceConfigsResp(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -59407,7 +59543,7 @@ class InstanceGroupManagersScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -59668,7 +59804,7 @@ class InstanceGroupsListInstances(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -59871,7 +60007,7 @@ class InstanceGroupsScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -60052,7 +60188,7 @@ class InstanceList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -60219,7 +60355,7 @@ class InstanceListReferrers(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -61032,7 +61168,7 @@ class InstanceTemplateAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -61199,7 +61335,7 @@ class InstanceTemplateList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -61360,7 +61496,7 @@ class InstanceTemplatesScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -61761,7 +61897,7 @@ class InstancesScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -62248,7 +62384,7 @@ class InstantSnapshotAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -62525,7 +62661,7 @@ class InstantSnapshotList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -62753,7 +62889,7 @@ class InstantSnapshotsScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -63941,7 +64077,7 @@ class InterconnectAttachmentAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -64499,7 +64635,7 @@ class InterconnectAttachmentGroupsListResponse(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -64916,7 +65052,7 @@ class InterconnectAttachmentList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -65180,7 +65316,7 @@ class InterconnectAttachmentsScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -66056,7 +66192,7 @@ class InterconnectGroupsListResponse(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -66298,7 +66434,7 @@ class InterconnectList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -66646,7 +66782,7 @@ class InterconnectLocationList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -67390,7 +67526,7 @@ class InterconnectRemoteLocationList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -67861,7 +67997,7 @@ class LicensesListResponse(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -68029,7 +68165,7 @@ class ListInstantSnapshotGroups(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -68522,7 +68658,7 @@ class MachineImageList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -68862,7 +68998,7 @@ class MachineTypeAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -69030,7 +69166,7 @@ class MachineTypeList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -69191,7 +69327,7 @@ class MachineTypesScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -70177,7 +70313,7 @@ class NetworkAttachmentAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -70400,7 +70536,7 @@ class NetworkAttachmentList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -70560,7 +70696,7 @@ class NetworkAttachmentsScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -70800,7 +70936,7 @@ class NetworkEdgeSecurityServiceAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -70963,7 +71099,7 @@ class NetworkEdgeSecurityServicesScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -71388,7 +71524,7 @@ class NetworkEndpointGroupAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -71637,7 +71773,7 @@ class NetworkEndpointGroupList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -71905,7 +72041,7 @@ class NetworkEndpointGroupsListNetworkEndpoints(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -72065,7 +72201,7 @@ class NetworkEndpointGroupsScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -72270,7 +72406,7 @@ class NetworkFirewallPolicyAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -72621,7 +72757,7 @@ class NetworkList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -73860,7 +73996,7 @@ class NetworkProfilesListResponse(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -74418,7 +74554,7 @@ class NodeGroupAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -74622,7 +74758,7 @@ class NodeGroupList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -74901,7 +75037,7 @@ class NodeGroupsListNodes(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -75074,7 +75210,7 @@ class NodeGroupsScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -75411,7 +75547,7 @@ class NodeTemplateAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -75579,7 +75715,7 @@ class NodeTemplateList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -75754,7 +75890,7 @@ class NodeTemplatesScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -75992,7 +76128,7 @@ class NodeTypeAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -76160,7 +76296,7 @@ class NodeTypeList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -76320,7 +76456,7 @@ class NodeTypesScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -76550,7 +76686,7 @@ class NotificationEndpointAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -76747,7 +76883,7 @@ class NotificationEndpointList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -76907,7 +77043,7 @@ class NotificationEndpointsScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -77206,7 +77342,7 @@ class Operation(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -77421,7 +77557,7 @@ class OperationAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -77589,7 +77725,7 @@ class OperationList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -77749,7 +77885,7 @@ class OperationsScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -78164,7 +78300,7 @@ class PacketMirroringAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -78386,7 +78522,7 @@ class PacketMirroringList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -78607,7 +78743,7 @@ class PacketMirroringsScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -79415,7 +79551,7 @@ class PreviewFeatureList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -80086,7 +80222,7 @@ class PublicAdvertisedPrefixList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -80485,7 +80621,7 @@ class PublicDelegatedPrefixAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -80653,7 +80789,7 @@ class PublicDelegatedPrefixList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -80912,7 +81048,7 @@ class PublicDelegatedPrefixesScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -81536,7 +81672,7 @@ class Region(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -81727,7 +81863,7 @@ class RegionAutoscalerList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -81894,7 +82030,7 @@ class RegionDiskTypeList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -82125,7 +82261,7 @@ class RegionInstanceGroupList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -82304,7 +82440,7 @@ class RegionInstanceGroupManagerList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -82486,7 +82622,7 @@ class RegionInstanceGroupManagerResizeRequestsListResponse(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -82816,7 +82952,7 @@ class RegionInstanceGroupManagersListInstanceConfigsResp(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -83087,7 +83223,7 @@ class RegionInstanceGroupsListInstances(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -83302,7 +83438,7 @@ class RegionList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -83614,6 +83750,207 @@ class RegionUrlMapsValidateRequest(_messages.Message):
   resource = _messages.MessageField('UrlMap', 1)
 
 
+class ReliabilityRisk(_messages.Message):
+  r"""Represents a ReliabilityRisk resource.
+
+  Fields:
+    creationTimestamp: Output only. [Output Only] Creation timestamp in
+      RFC3339 text format.
+    description: An optional textual description of the resource; provided
+      when the resource is created.
+    details: [Output Only] Details of the reliability risk resource
+    id: [Output Only] The unique identifier for the resource. This identifier
+      is defined by the server.
+    kind: Output only. [Output Only] Type of resource. Always
+      compute#reliabilityRisk for reliability risks.
+    name: Name of the resource. The name must be 1-63 characters long and
+      comply with RFC1035.
+    recommendation: The recommendation to mitigate the risk.
+    selfLink: Output only. [Output Only] Server-defined URL for the resource.
+    selfLinkWithId: Output only. [Output Only] Server-defined URL for this
+      resource with the resource id.
+  """
+
+  creationTimestamp = _messages.StringField(1)
+  description = _messages.StringField(2)
+  details = _messages.MessageField('RiskDetails', 3)
+  id = _messages.IntegerField(4, variant=_messages.Variant.UINT64)
+  kind = _messages.StringField(5, default='compute#reliabilityRisk')
+  name = _messages.StringField(6)
+  recommendation = _messages.MessageField('RiskRecommendation', 7)
+  selfLink = _messages.StringField(8)
+  selfLinkWithId = _messages.StringField(9)
+
+
+class ReliabilityRisksListResponse(_messages.Message):
+  r"""Response message for the List method of ReliabilityRisksService.
+
+  Messages:
+    WarningValue: [Output Only] Informational warning message.
+
+  Fields:
+    etag: [Output Only] An ETag of the resource.
+    id: [Output Only] Unique identifier for the resource; defined by the
+      server.
+    items: A list of ReliabilityRisk resources.
+    nextPageToken: [Output Only] This token allows you to get the next page of
+      results for list requests. If the number of results is larger
+      thanmaxResults, use the nextPageToken as a value for the query parameter
+      pageToken in the next list request. Subsequent list requests will have
+      their own nextPageToken to continue paging through the results.
+    selfLink: Output only. [Output Only] Server-defined URL for this resource.
+    unreachables: Output only. [Output Only] Unreachable resources.
+      end_interface: MixerListResponseWithEtagBuilder
+    warning: [Output Only] Informational warning message.
+  """
+
+  class WarningValue(_messages.Message):
+    r"""[Output Only] Informational warning message.
+
+    Enums:
+      CodeValueValuesEnum: [Output Only] A warning code, if applicable. For
+        example, Compute Engine returns NO_RESULTS_ON_PAGE if there are no
+        results in the response.
+
+    Messages:
+      DataValueListEntry: A DataValueListEntry object.
+
+    Fields:
+      code: [Output Only] A warning code, if applicable. For example, Compute
+        Engine returns NO_RESULTS_ON_PAGE if there are no results in the
+        response.
+      data: [Output Only] Metadata about this warning in key: value format.
+        For example:  "data": [   {    "key": "scope",    "value": "zones/us-
+        east1-d"   }]
+      message: [Output Only] A human-readable description of the warning code.
+    """
+
+    class CodeValueValuesEnum(_messages.Enum):
+      r"""[Output Only] A warning code, if applicable. For example, Compute
+      Engine returns NO_RESULTS_ON_PAGE if there are no results in the
+      response.
+
+      Values:
+        CLEANUP_FAILED: Warning about failed cleanup of transient changes made
+          by a failed operation.
+        DEPRECATED_RESOURCE_USED: A link to a deprecated resource was created.
+        DEPRECATED_TYPE_USED: When deploying and at least one of the resources
+          has a type marked as deprecated
+        DISK_SIZE_LARGER_THAN_IMAGE_SIZE: The user created a boot disk that is
+          larger than image size.
+        EXPERIMENTAL_TYPE_USED: When deploying and at least one of the
+          resources has a type marked as experimental
+        EXTERNAL_API_WARNING: Warning that is present in an external api call
+        FIELD_VALUE_OVERRIDEN: Warning that value of a field has been
+          overridden. Deprecated unused field.
+        INJECTED_KERNELS_DEPRECATED: The operation involved use of an injected
+          kernel, which is deprecated.
+        INVALID_HEALTH_CHECK_FOR_DYNAMIC_WIEGHTED_LB: A WEIGHTED_MAGLEV
+          backend service is associated with a health check that is not of
+          type HTTP/HTTPS/HTTP2.
+        LARGE_DEPLOYMENT_WARNING: When deploying a deployment with a
+          exceedingly large number of resources
+        LIST_OVERHEAD_QUOTA_EXCEED: Resource can't be retrieved due to list
+          overhead quota exceed which captures the amount of resources
+          filtered out by user-defined list filter.
+        MISSING_TYPE_DEPENDENCY: A resource depends on a missing type
+        NEXT_HOP_ADDRESS_NOT_ASSIGNED: The route's nextHopIp address is not
+          assigned to an instance on the network.
+        NEXT_HOP_CANNOT_IP_FORWARD: The route's next hop instance cannot ip
+          forward.
+        NEXT_HOP_INSTANCE_HAS_NO_IPV6_INTERFACE: The route's nextHopInstance
+          URL refers to an instance that does not have an ipv6 interface on
+          the same network as the route.
+        NEXT_HOP_INSTANCE_NOT_FOUND: The route's nextHopInstance URL refers to
+          an instance that does not exist.
+        NEXT_HOP_INSTANCE_NOT_ON_NETWORK: The route's nextHopInstance URL
+          refers to an instance that is not on the same network as the route.
+        NEXT_HOP_NOT_RUNNING: The route's next hop instance does not have a
+          status of RUNNING.
+        NOT_CRITICAL_ERROR: Error which is not critical. We decided to
+          continue the process despite the mentioned error.
+        NO_RESULTS_ON_PAGE: No results are present on a particular list page.
+        PARTIAL_SUCCESS: Success is reported, but some results may be missing
+          due to errors
+        QUOTA_INFO_UNAVAILABLE: Quota information is not available to client
+          requests (e.g: regions.list).
+        REQUIRED_TOS_AGREEMENT: The user attempted to use a resource that
+          requires a TOS they have not accepted.
+        RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING: Warning that a resource is
+          in use.
+        RESOURCE_NOT_DELETED: One or more of the resources set to auto-delete
+          could not be deleted because they were in use.
+        SCHEMA_VALIDATION_IGNORED: When a resource schema validation is
+          ignored.
+        SINGLE_INSTANCE_PROPERTY_TEMPLATE: Instance template used in instance
+          group manager is valid as such, but its application does not make a
+          lot of sense, because it allows only single instance in instance
+          group.
+        UNDECLARED_PROPERTIES: When undeclared properties in the schema are
+          present
+        UNREACHABLE: A given scope cannot be reached.
+      """
+      CLEANUP_FAILED = 0
+      DEPRECATED_RESOURCE_USED = 1
+      DEPRECATED_TYPE_USED = 2
+      DISK_SIZE_LARGER_THAN_IMAGE_SIZE = 3
+      EXPERIMENTAL_TYPE_USED = 4
+      EXTERNAL_API_WARNING = 5
+      FIELD_VALUE_OVERRIDEN = 6
+      INJECTED_KERNELS_DEPRECATED = 7
+      INVALID_HEALTH_CHECK_FOR_DYNAMIC_WIEGHTED_LB = 8
+      LARGE_DEPLOYMENT_WARNING = 9
+      LIST_OVERHEAD_QUOTA_EXCEED = 10
+      MISSING_TYPE_DEPENDENCY = 11
+      NEXT_HOP_ADDRESS_NOT_ASSIGNED = 12
+      NEXT_HOP_CANNOT_IP_FORWARD = 13
+      NEXT_HOP_INSTANCE_HAS_NO_IPV6_INTERFACE = 14
+      NEXT_HOP_INSTANCE_NOT_FOUND = 15
+      NEXT_HOP_INSTANCE_NOT_ON_NETWORK = 16
+      NEXT_HOP_NOT_RUNNING = 17
+      NOT_CRITICAL_ERROR = 18
+      NO_RESULTS_ON_PAGE = 19
+      PARTIAL_SUCCESS = 20
+      QUOTA_INFO_UNAVAILABLE = 21
+      REQUIRED_TOS_AGREEMENT = 22
+      RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING = 23
+      RESOURCE_NOT_DELETED = 24
+      SCHEMA_VALIDATION_IGNORED = 25
+      SINGLE_INSTANCE_PROPERTY_TEMPLATE = 26
+      UNDECLARED_PROPERTIES = 27
+      UNREACHABLE = 28
+
+    class DataValueListEntry(_messages.Message):
+      r"""A DataValueListEntry object.
+
+      Fields:
+        key: [Output Only] A key that provides more detail on the warning
+          being returned. For example, for warnings where there are no results
+          in a list request for a particular zone, this key might be scope and
+          the key value might be the zone name. Other examples might be a key
+          indicating a deprecated resource and a suggested replacement, or a
+          warning about invalid network settings (for example, if an instance
+          attempts to perform IP forwarding but is not enabled for IP
+          forwarding).
+        value: [Output Only] A warning data value corresponding to the key.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    code = _messages.EnumField('CodeValueValuesEnum', 1)
+    data = _messages.MessageField('DataValueListEntry', 2, repeated=True)
+    message = _messages.StringField(3)
+
+  etag = _messages.StringField(1)
+  id = _messages.StringField(2)
+  items = _messages.MessageField('ReliabilityRisk', 3, repeated=True)
+  nextPageToken = _messages.StringField(4)
+  selfLink = _messages.StringField(5)
+  unreachables = _messages.StringField(6, repeated=True)
+  warning = _messages.MessageField('WarningValue', 7)
+
+
 class RequestMirrorPolicy(_messages.Message):
   r"""A policy that specifies how requests intended for the route's backends
   are shadowed to a separate mirrored backend service. The load balancer
@@ -83712,6 +84049,10 @@ class Reservation(_messages.Message):
     reservationSharingPolicy: Specify the reservation sharing policy. If
       unspecified, the reservation will not be shared with Google Cloud
       managed services.
+    resourceMetadata: Output only. [Output Only] Contains standard resource
+      metadata for an Allocation resource. It is populated for each instance
+      of the Allocation resource, and includes the api_version the instance
+      was retrieved through, and its canonical resource_type name.
     resourcePolicies: Resource policies to be added to this reservation. The
       key is defined by user, and the value is resource policy url. This is to
       define placement policy with reservation.
@@ -83878,16 +84219,17 @@ class Reservation(_messages.Message):
   params = _messages.MessageField('ReservationParams', 16)
   protectionTier = _messages.EnumField('ProtectionTierValueValuesEnum', 17)
   reservationSharingPolicy = _messages.MessageField('AllocationReservationSharingPolicy', 18)
-  resourcePolicies = _messages.MessageField('ResourcePoliciesValue', 19)
-  resourceStatus = _messages.MessageField('AllocationResourceStatus', 20)
-  satisfiesPzs = _messages.BooleanField(21)
-  schedulingType = _messages.EnumField('SchedulingTypeValueValuesEnum', 22)
-  selfLink = _messages.StringField(23)
-  shareSettings = _messages.MessageField('ShareSettings', 24)
-  specificReservation = _messages.MessageField('AllocationSpecificSKUReservation', 25)
-  specificReservationRequired = _messages.BooleanField(26)
-  status = _messages.EnumField('StatusValueValuesEnum', 27)
-  zone = _messages.StringField(28)
+  resourceMetadata = _messages.MessageField('ResourceMetadata', 19)
+  resourcePolicies = _messages.MessageField('ResourcePoliciesValue', 20)
+  resourceStatus = _messages.MessageField('AllocationResourceStatus', 21)
+  satisfiesPzs = _messages.BooleanField(22)
+  schedulingType = _messages.EnumField('SchedulingTypeValueValuesEnum', 23)
+  selfLink = _messages.StringField(24)
+  shareSettings = _messages.MessageField('ShareSettings', 25)
+  specificReservation = _messages.MessageField('AllocationSpecificSKUReservation', 26)
+  specificReservationRequired = _messages.BooleanField(27)
+  status = _messages.EnumField('StatusValueValuesEnum', 28)
+  zone = _messages.StringField(29)
 
 
 class ReservationAdvancedDeploymentControl(_messages.Message):
@@ -84029,7 +84371,7 @@ class ReservationAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -84353,7 +84695,7 @@ class ReservationBlocksListResponse(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -84520,7 +84862,7 @@ class ReservationList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -84870,7 +85212,7 @@ class ReservationSlotsListResponse(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -85194,7 +85536,7 @@ class ReservationSubBlocksListResponse(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -85506,7 +85848,7 @@ class ReservationsScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -85692,6 +86034,22 @@ class ResourceGroupReference(_messages.Message):
   group = _messages.StringField(1)
 
 
+class ResourceMetadata(_messages.Message):
+  r"""Standardized resource metadata common to all compute resources.
+
+  Fields:
+    apiVersion: The version of the API interface that this resource was
+      retrieved through. For example, `"2025-01-01"` or
+      `"2025-01-01-preview"`.
+    resourceType: The canonical resource type name in the format of a resource
+      type as defined by [AIP-123](https://google.aip.dev/123). For example,
+      `"compute.googleapis.com/Instance"`.
+  """
+
+  apiVersion = _messages.StringField(1)
+  resourceType = _messages.StringField(2)
+
+
 class ResourcePoliciesScopedList(_messages.Message):
   r"""A ResourcePoliciesScopedList object.
 
@@ -85723,7 +86081,7 @@ class ResourcePoliciesScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -85985,7 +86343,7 @@ class ResourcePolicyAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -86282,7 +86640,7 @@ class ResourcePolicyList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -86819,9 +87177,15 @@ class ResourceStatusReservationConsumptionInfo(_messages.Message):
   Fields:
     consumedReservation: Output only. [Output Only] The full resource name of
       the reservation that this instance is consuming from.
+    consumedReservationBlock: Output only. [Output Only] The full resource
+      name of the reservation block that this instance is consuming from.
+    consumedReservationSubBlock: Output only. [Output Only] The full resource
+      name of the reservation sub-block that this instance is consuming from.
   """
 
   consumedReservation = _messages.StringField(1)
+  consumedReservationBlock = _messages.StringField(2)
+  consumedReservationSubBlock = _messages.StringField(3)
 
 
 class ResourceStatusScheduling(_messages.Message):
@@ -86884,6 +87248,85 @@ class ResourceStatusShutdownDetails(_messages.Message):
   requestTimestamp = _messages.StringField(2)
   stopState = _messages.EnumField('StopStateValueValuesEnum', 3)
   targetState = _messages.EnumField('TargetStateValueValuesEnum', 4)
+
+
+class RiskDetails(_messages.Message):
+  r"""Detailed insights and metrics about a detected reliability risk.
+
+  Enums:
+    SeverityValueValuesEnum: The severity of the risk.
+    TypeValueValuesEnum: The type of risk.
+
+  Fields:
+    duration: The duration of the risk since it was detected.
+    globalDnsInsight: Insight details for global DNS risk.
+    lastUpdateTimestamp: The last time the risk was updated.
+    severity: The severity of the risk.
+    type: The type of risk.
+  """
+
+  class SeverityValueValuesEnum(_messages.Enum):
+    r"""The severity of the risk.
+
+    Values:
+      CRITICAL: Critical severity.
+      HIGH: High severity.
+      LOW: Low severity.
+      MEDIUM: Medium severity.
+      SEVERITY_UNSPECIFIED: No severity specified. The default value.
+    """
+    CRITICAL = 0
+    HIGH = 1
+    LOW = 2
+    MEDIUM = 3
+    SEVERITY_UNSPECIFIED = 4
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""The type of risk.
+
+    Values:
+      GLOBAL_DNS: Risk type related to global DNS.
+      RISK_TYPE_UNSPECIFIED: Default value. This value is unused.
+    """
+    GLOBAL_DNS = 0
+    RISK_TYPE_UNSPECIFIED = 1
+
+  duration = _messages.StringField(1)
+  globalDnsInsight = _messages.MessageField('RiskDetailsGlobalDnsInsight', 2)
+  lastUpdateTimestamp = _messages.StringField(3)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 4)
+  type = _messages.EnumField('TypeValueValuesEnum', 5)
+
+
+class RiskDetailsGlobalDnsInsight(_messages.Message):
+  r"""Detailed insights for a global DNS reliability risk.
+
+  Fields:
+    projectDefaultIsGlobalDns: Indicates whether the project's default DNS
+      setting is global DNS.
+    queryObservationWindow: The observation window for the query counts.
+    riskyQueryCount: The number of queries that are risky. This is always less
+      than or equal to total_query_count.
+    totalQueryCount: The total number of queries in the observation window.
+  """
+
+  projectDefaultIsGlobalDns = _messages.BooleanField(1)
+  queryObservationWindow = _messages.StringField(2)
+  riskyQueryCount = _messages.IntegerField(3)
+  totalQueryCount = _messages.IntegerField(4)
+
+
+class RiskRecommendation(_messages.Message):
+  r"""Recommendation for mitigating a reliability risk, including a reference
+  URL.
+
+  Fields:
+    content: Mitigation guide for the risk.
+    referenceUrl: URL referencing a more detailed mitigation guide.
+  """
+
+  content = _messages.StringField(1)
+  referenceUrl = _messages.StringField(2)
 
 
 class Rollout(_messages.Message):
@@ -87274,7 +87717,7 @@ class RolloutPlansListResponse(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -87590,7 +88033,7 @@ class RolloutsListResponse(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -87907,7 +88350,7 @@ class Route(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -88143,7 +88586,7 @@ class RouteList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -88531,7 +88974,7 @@ class RouterAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -89128,7 +89571,7 @@ class RouterList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -89995,7 +90438,7 @@ class RoutersListBgpRoutes(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -90166,7 +90609,7 @@ class RoutersListNamedSets(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -90337,7 +90780,7 @@ class RoutersListRoutePolicies(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -90509,7 +90952,7 @@ class RoutersScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -91031,6 +91474,10 @@ class Scheduling(_messages.Message):
       set during instance creation or while the instance isstopped and
       therefore, in a `TERMINATED` state. SeeInstance Life Cycle for more
       information on the possible instance states.
+    preemptionNoticeDuration: Specifies the Metadata Service preemption notice
+      duration before the GCE ACPI G2 Soft Off signal is triggered for Spot
+      VMs only. If not specified, there will be no wait before the G2 Soft Off
+      signal is triggered.
     provisioningModel: Specifies the provisioning model of the instance.
     skipGuestOsShutdown: Default is false and there will be 120 seconds
       between GCE ACPI G2 Soft Off and ACPI G3 Mechanical Off for Standard VMs
@@ -91101,9 +91548,10 @@ class Scheduling(_messages.Message):
   onHostMaintenance = _messages.EnumField('OnHostMaintenanceValueValuesEnum', 11)
   onInstanceStopAction = _messages.MessageField('SchedulingOnInstanceStopAction', 12)
   preemptible = _messages.BooleanField(13)
-  provisioningModel = _messages.EnumField('ProvisioningModelValueValuesEnum', 14)
-  skipGuestOsShutdown = _messages.BooleanField(15)
-  terminationTime = _messages.StringField(16)
+  preemptionNoticeDuration = _messages.MessageField('Duration', 14)
+  provisioningModel = _messages.EnumField('ProvisioningModelValueValuesEnum', 15)
+  skipGuestOsShutdown = _messages.BooleanField(16)
+  terminationTime = _messages.StringField(17)
 
 
 class SchedulingGracefulShutdown(_messages.Message):
@@ -91246,7 +91694,7 @@ class SecurityPoliciesAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -91418,7 +91866,7 @@ class SecurityPoliciesScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -92040,7 +92488,7 @@ class SecurityPolicyList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -93260,7 +93708,7 @@ class ServiceAttachmentAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -93495,7 +93943,7 @@ class ServiceAttachmentList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -93655,7 +94103,7 @@ class ServiceAttachmentsScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -94354,7 +94802,7 @@ class SnapshotList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -95035,7 +95483,7 @@ class SslCertificateAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -95202,7 +95650,7 @@ class SslCertificateList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -95488,7 +95936,7 @@ class SslCertificatesScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -95679,7 +96127,7 @@ class SslPoliciesAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -95849,7 +96297,7 @@ class SslPoliciesList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -96019,7 +96467,7 @@ class SslPoliciesScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -96305,7 +96753,7 @@ class SslPolicy(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -96782,8 +97230,8 @@ class StoragePool(_messages.Message):
       text format.
     description: An optional description of this resource. Provide this
       property when you create the resource.
-    exapoolProvisionedCapacityGb: Output only. [Output Only] Provisioned
-      capacities for each SKU for this Exapool in GiB
+    exapoolProvisionedCapacityGb: Provisioned capacities for each SKU for this
+      Exapool in GiB
     id: Output only. [Output Only] The unique identifier for the resource.
       This identifier is defined by the server.
     kind: Output only. [Output Only] Type of the resource. Always
@@ -96996,7 +97444,7 @@ class StoragePoolAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -97242,7 +97690,7 @@ class StoragePoolList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -97415,7 +97863,7 @@ class StoragePoolListDisks(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -97823,7 +98271,7 @@ class StoragePoolTypeAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -97990,7 +98438,7 @@ class StoragePoolTypeList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -98151,7 +98599,7 @@ class StoragePoolTypesScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -98308,7 +98756,7 @@ class StoragePoolsScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -98843,7 +99291,7 @@ class SubnetworkAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -99011,7 +99459,7 @@ class SubnetworkList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -99432,7 +99880,7 @@ class SubnetworksScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -99585,7 +100033,7 @@ class SubnetworksScopedWarning(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -99993,7 +100441,7 @@ class TargetGrpcProxyList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -100153,7 +100601,7 @@ class TargetHttpProxiesScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -100445,7 +100893,7 @@ class TargetHttpProxyList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -100605,7 +101053,7 @@ class TargetHttpsProxiesScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -101098,7 +101546,7 @@ class TargetHttpsProxyAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -101266,7 +101714,7 @@ class TargetHttpsProxyList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -101530,7 +101978,7 @@ class TargetInstanceAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -101697,7 +102145,7 @@ class TargetInstanceList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -101857,7 +102305,7 @@ class TargetInstancesScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -102188,7 +102636,7 @@ class TargetPoolAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -102370,7 +102818,7 @@ class TargetPoolList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -102580,7 +103028,7 @@ class TargetPoolsScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -102883,7 +103331,7 @@ class TargetSslProxyList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -103043,7 +103491,7 @@ class TargetTcpProxiesScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -103357,7 +103805,7 @@ class TargetTcpProxyAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -103524,7 +103972,7 @@ class TargetTcpProxyList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -103834,7 +104282,7 @@ class TargetVpnGatewayAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -104002,7 +104450,7 @@ class TargetVpnGatewayList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -104231,7 +104679,7 @@ class TargetVpnGatewaysScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -104704,7 +105152,7 @@ class UrlMapList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -104978,7 +105426,7 @@ class UrlMapsAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -105139,7 +105587,7 @@ class UrlMapsScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -105546,7 +105994,7 @@ class UsableSubnetworksAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -105816,7 +106264,7 @@ class VmEndpointNatMappingsList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -105977,7 +106425,7 @@ class VmExtensionPoliciesScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -106279,7 +106727,7 @@ class VmExtensionPolicyAggregatedListResponse(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -106535,7 +106983,7 @@ class VmExtensionPolicyList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -106864,7 +107312,7 @@ class VpnGatewayAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -107032,7 +107480,7 @@ class VpnGatewayList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -107405,7 +107853,7 @@ class VpnGatewaysScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -107840,7 +108288,7 @@ class VpnTunnelAggregatedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -108020,7 +108468,7 @@ class VpnTunnelList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -108278,7 +108726,7 @@ class VpnTunnelsScopedList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -108710,7 +109158,7 @@ class WireGroupList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -108992,7 +109440,7 @@ class XpnHostList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -109237,7 +109685,7 @@ class ZoneList(_messages.Message):
         response.
       data: [Output Only] Metadata about this warning in key: value format.
         For example:  "data": [   {    "key": "scope",    "value": "zones/us-
-        east1-d"   }
+        east1-d"   }]
       message: [Output Only] A human-readable description of the warning code.
     """
 

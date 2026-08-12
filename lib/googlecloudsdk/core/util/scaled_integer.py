@@ -194,6 +194,8 @@ def ParseInteger(string, default_unit='', type_abbr='B'):
       _ISO_IEC_UNITS, string, default_unit=default_unit, type_abbr=type_abbr)
 
 
+# TODO(b/539499096): Format negative values with scaled unit prefixes instead of
+# raw fallback.
 def FormatInteger(value, type_abbr='B'):
   """Returns a pretty string representation of an ISO Decimal value.
 
@@ -212,6 +214,8 @@ def FormatInteger(value, type_abbr='B'):
   return '{}{}'.format(value, type_abbr)
 
 
+# TODO(b/539499096): Format negative values with scaled unit prefixes instead of
+# raw fallback.
 def FormatBinaryNumber(value, type_abbr='B', decimal_places=-1):
   """Returns a pretty string of a binary-base number with decimal precision.
 

@@ -26,6 +26,26 @@ class Action(_messages.Message):
   type = _messages.StringField(2)
 
 
+class AnomalousDeleteSpike(_messages.Message):
+  r"""Represents a finding about anomalous spikes in delete operations on a
+  bucket. This corresponds to the `ANOMALOUS_DELETE_SPIKE` finding type.
+
+  Fields:
+    bucket: Output only. The name of the bucket.
+    deleteOperationCount: Output only. The total count of delete operations on
+      the bucket.
+    objectSizeBytes: Output only. The total size of objects in the bucket in
+      bytes.
+    topPrefixes: Output only. A list of top object prefixes contributing to
+      the finding.
+  """
+
+  bucket = _messages.StringField(1)
+  deleteOperationCount = _messages.IntegerField(2)
+  objectSizeBytes = _messages.IntegerField(3)
+  topPrefixes = _messages.MessageField('IntelligenceFindingAnomalousDeleteSpikePrefixContribution', 4, repeated=True)
+
+
 class ApplyFeaturePermissionsRequest(_messages.Message):
   r"""Helps the user update the permissions on buckets that match a feature
   config/any feature configs.
@@ -743,6 +763,27 @@ class DeleteFolderRecursiveRequest(_messages.Message):
   requestId = _messages.StringField(3)
 
 
+class DormantBucket(_messages.Message):
+  r"""Represents a finding about dormant buckets with no recent activity. This
+  corresponds to the `DORMANT_BUCKET` finding type.
+
+  Fields:
+    bucket: Output only. The name of the bucket.
+    inactiveDays: Output only. The number of days the bucket has been
+      inactive.
+    objectSizeBytes: Output only. The total size of objects in the bucket in
+      bytes and the percentage of the project's total storage size this bucket
+      occupies.
+    topPrefixes: Output only. A list of top object prefixes contributing to
+      the finding.
+  """
+
+  bucket = _messages.StringField(1)
+  inactiveDays = _messages.IntegerField(2)
+  objectSizeBytes = _messages.MessageField('ValueWithPercentage', 3)
+  topPrefixes = _messages.MessageField('IntelligenceFindingDormantBucketPrefixContribution', 4, repeated=True)
+
+
 class DropObjectGoogleContextsResponse(_messages.Message):
   r"""Response message for DropObjectGoogleContexts.
 
@@ -865,6 +906,30 @@ class EncryptionControlViolation(_messages.Message):
   """
 
   bucketViolationDetails = _messages.MessageField('BucketSecurityControlViolation', 1)
+
+
+class ExcessiveNonCurrentVersion(_messages.Message):
+  r"""Represents a finding about excessive non-current object versions in a
+  bucket. This corresponds to the `EXCESSIVE_NON_CURRENT_VERSION` finding
+  type.
+
+  Fields:
+    averageNonCurrentVersionPerObject: Output only. The average number of non-
+      current versions per object.
+    bucket: Output only. The name of the bucket.
+    nonCurrentObjectCount: Output only. The count of non-current object
+      versions and their percentage of the total object count.
+    nonCurrentVersionSizeBytes: Output only. The total size of non-current
+      object versions in bytes and their percentage of the total storage size.
+    topPrefixes: Output only. A list of top object prefixes contributing to
+      the finding.
+  """
+
+  averageNonCurrentVersionPerObject = _messages.FloatField(1)
+  bucket = _messages.StringField(2)
+  nonCurrentObjectCount = _messages.MessageField('ValueWithPercentage', 3)
+  nonCurrentVersionSizeBytes = _messages.MessageField('ValueWithPercentage', 4)
+  topPrefixes = _messages.MessageField('IntelligenceFindingExcessiveNonCurrentVersionPrefixContribution', 5, repeated=True)
 
 
 class FailedFolderRequest(_messages.Message):
@@ -990,11 +1055,13 @@ class FindingSummary(_messages.Message):
       FINDING_CATEGORY_DATA_MANAGEMENT: Category is 'Data Management'.
       FINDING_CATEGORY_PERFORMANCE: Category is 'Performance'.
       FINDING_CATEGORY_SECURITY: Category is 'Security'.
+      FINDING_CATEGORY_USAGE_MANAGEMENT: Category is 'Usage Management'.
     """
     FINDING_CATEGORY_UNSPECIFIED = 0
     FINDING_CATEGORY_DATA_MANAGEMENT = 1
     FINDING_CATEGORY_PERFORMANCE = 2
     FINDING_CATEGORY_SECURITY = 3
+    FINDING_CATEGORY_USAGE_MANAGEMENT = 4
 
   class SeverityValueValuesEnum(_messages.Enum):
     r"""Severity of the finding.
@@ -1030,6 +1097,22 @@ class FindingSummary(_messages.Message):
         within the bucket violating Data Retention Control.
       FINDING_TYPE_DATA_DELETION_CONTROL_VIOLATION: Finding is about objects
         within the bucket violating Data Deletion Control.
+      FINDING_TYPE_INEFFICIENT_OBJECT_SIZE: Finding is about inefficient
+        object sizes in a bucket.
+      FINDING_TYPE_STALE_TEMPORARY_DATA: Finding is about stale temporary data
+        in a bucket.
+      FINDING_TYPE_DORMANT_BUCKET: Finding is about dormant buckets with no
+        recent activity.
+      FINDING_TYPE_INEFFICIENT_OVERWRITE: A finding about inefficient
+        overwrites in a bucket.
+      FINDING_TYPE_ANOMALOUS_DELETE_SPIKE: Finding is about a spike in delete
+        requests in a bucket.
+      FINDING_TYPE_MISSING_SOFT_DELETE: Finding is about a bucket with soft
+        delete disabled.
+      FINDING_TYPE_EXCESSIVE_NON_CURRENT_VERSION: Finding is about a bucket
+        with excessive non current versions.
+      FINDING_TYPE_ZERO_BYTE_OBJECT: Finding is about a bucket with zero byte
+        objects.
     """
     FINDING_TYPE_UNSPECIFIED = 0
     FINDING_TYPE_COLDLINE_AND_ARCHIVAL_STORAGE_OPERATIONS_SPIKE = 1
@@ -1041,6 +1124,14 @@ class FindingSummary(_messages.Message):
     FINDING_TYPE_ENCRYPTION_CONTROL_VIOLATION = 7
     FINDING_TYPE_DATA_RETENTION_CONTROL_VIOLATION = 8
     FINDING_TYPE_DATA_DELETION_CONTROL_VIOLATION = 9
+    FINDING_TYPE_INEFFICIENT_OBJECT_SIZE = 10
+    FINDING_TYPE_STALE_TEMPORARY_DATA = 11
+    FINDING_TYPE_DORMANT_BUCKET = 12
+    FINDING_TYPE_INEFFICIENT_OVERWRITE = 13
+    FINDING_TYPE_ANOMALOUS_DELETE_SPIKE = 14
+    FINDING_TYPE_MISSING_SOFT_DELETE = 15
+    FINDING_TYPE_EXCESSIVE_NON_CURRENT_VERSION = 16
+    FINDING_TYPE_ZERO_BYTE_OBJECT = 17
 
   category = _messages.EnumField('CategoryValueValuesEnum', 1)
   createTime = _messages.StringField(2)
@@ -1225,6 +1316,50 @@ class Image(_messages.Message):
   url = _messages.StringField(3)
 
 
+class InefficientObjectSize(_messages.Message):
+  r"""Represents a finding about inefficient object sizes in a bucket. This
+  corresponds to the `INEFFICIENT_OBJECT_SIZE` finding type.
+
+  Fields:
+    bucket: Output only. The name of the bucket.
+    smallObjectCount: Output only. The count of small objects and their
+      percentage of the total object count.
+    smallObjectOperationCount: Output only. The count of A/B operations on
+      small objects and their percentage of total operations.
+    smallObjectSizeBytes: Output only. The total size of small objects
+      (object_size <128 KB) in bytes and their percentage of the total storage
+      size.
+    topPrefixes: Output only. A list of top object prefixes contributing to
+      the finding.
+  """
+
+  bucket = _messages.StringField(1)
+  smallObjectCount = _messages.MessageField('ValueWithPercentage', 2)
+  smallObjectOperationCount = _messages.MessageField('ValueWithPercentage', 3)
+  smallObjectSizeBytes = _messages.MessageField('ValueWithPercentage', 4)
+  topPrefixes = _messages.MessageField('IntelligenceFindingInefficientObjectSizePrefixContribution', 5, repeated=True)
+
+
+class InefficientOverwrite(_messages.Message):
+  r"""A finding about inefficient overwrites in a bucket. This corresponds to
+  the `INEFFICIENT_OVERWRITE` finding type.
+
+  Fields:
+    bucket: Output only. The name of the bucket.
+    objectSizeBytes: Output only. The total size of all objects in the bucket,
+      in bytes.
+    topPrefixes: Output only. The top object prefixes contributing to the
+      finding.
+    updateOperationCount: Output only. The total number of update operations
+      performed on the bucket.
+  """
+
+  bucket = _messages.StringField(1)
+  objectSizeBytes = _messages.IntegerField(2)
+  topPrefixes = _messages.MessageField('IntelligenceFindingInefficientOverwritePrefixContribution', 3, repeated=True)
+  updateOperationCount = _messages.IntegerField(4)
+
+
 class IntelligenceConfig(_messages.Message):
   r"""The `IntelligenceConfig` resource associated with your organization,
   folder, or project.
@@ -1315,6 +1450,8 @@ class IntelligenceFinding(_messages.Message):
     TypeValueValuesEnum: Output only. Type of this finding.
 
   Fields:
+    anomalousDeleteSpike: Output only. `IntelligenceFinding` about anomalous
+      spikes in delete operations on a bucket.
     associatedResources: Output only. Contains GCP resource names that are
       relevant to this `IntelligenceFinding`. The `target_resource` is also
       added as part of `associated_resources`. eg: -
@@ -1334,8 +1471,18 @@ class IntelligenceFinding(_messages.Message):
     dataRetentionControlViolation: Output only. `IntelligenceFinding` about
       objects violating Data Retention Control.
     description: Output only. A short description about the finding.
+    dormantBucket: Output only. `IntelligenceFinding` about dormant buckets
+      with no recent activity.
     encryptionControlViolation: Output only. `IntelligenceFinding` about
       objects violating Encryption Control.
+    excessiveNonCurrentVersion: Output only. `IntelligenceFinding` about
+      excessive non-current object versions in a bucket.
+    inefficientObjectSize: Output only. `IntelligenceFinding` about
+      inefficient object sizes in a bucket.
+    inefficientOverwrite: Output only. A finding about inefficient overwrites
+      in a bucket.
+    missingSoftDelete: Output only. `IntelligenceFinding` about buckets with
+      no soft delete configured.
     name: Identifier. The resource name of `IntelligenceFinding`. Format: `pro
       jects/{project}/locations/{location}/intelligenceFindings/{intelligence_
       finding}`
@@ -1344,6 +1491,8 @@ class IntelligenceFinding(_messages.Message):
     publicAccessControlViolation: Output only. `IntelligenceFinding` about
       objects violating Public Access Control.
     severity: Output only. Severity of the finding.
+    staleTemporaryData: Output only. `IntelligenceFinding` about stale
+      temporary data ( objects with tmp/ or staging/) in a bucket.
     storageGrowthAboveTrend: Output only. `IntelligenceFinding` about growth
       in storage above the expected trend.
     targetResource: Output only. The fully qualified resource name of the
@@ -1354,6 +1503,8 @@ class IntelligenceFinding(_messages.Message):
       in throttled requests (429 errors) within a project.
     type: Output only. Type of this finding.
     updateTime: Output only. The time at which the finding was last updated.
+    zeroByteObject: Output only. `IntelligenceFinding` about zero-byte objects
+      in a bucket.
   """
 
   class CategoryValueValuesEnum(_messages.Enum):
@@ -1364,11 +1515,13 @@ class IntelligenceFinding(_messages.Message):
       FINDING_CATEGORY_DATA_MANAGEMENT: Category is 'Data Management'.
       FINDING_CATEGORY_PERFORMANCE: Category is 'Performance'.
       FINDING_CATEGORY_SECURITY: Category is 'Security'.
+      FINDING_CATEGORY_USAGE_MANAGEMENT: Category is 'Usage Management'.
     """
     FINDING_CATEGORY_UNSPECIFIED = 0
     FINDING_CATEGORY_DATA_MANAGEMENT = 1
     FINDING_CATEGORY_PERFORMANCE = 2
     FINDING_CATEGORY_SECURITY = 3
+    FINDING_CATEGORY_USAGE_MANAGEMENT = 4
 
   class SeverityValueValuesEnum(_messages.Enum):
     r"""Output only. Severity of the finding.
@@ -1404,6 +1557,22 @@ class IntelligenceFinding(_messages.Message):
         within the bucket violating Data Retention Control.
       FINDING_TYPE_DATA_DELETION_CONTROL_VIOLATION: Finding is about objects
         within the bucket violating Data Deletion Control.
+      FINDING_TYPE_INEFFICIENT_OBJECT_SIZE: Finding is about inefficient
+        object sizes in a bucket.
+      FINDING_TYPE_STALE_TEMPORARY_DATA: Finding is about stale temporary data
+        in a bucket.
+      FINDING_TYPE_DORMANT_BUCKET: Finding is about dormant buckets with no
+        recent activity.
+      FINDING_TYPE_INEFFICIENT_OVERWRITE: A finding about inefficient
+        overwrites in a bucket.
+      FINDING_TYPE_ANOMALOUS_DELETE_SPIKE: Finding is about a spike in delete
+        requests in a bucket.
+      FINDING_TYPE_MISSING_SOFT_DELETE: Finding is about a bucket with soft
+        delete disabled.
+      FINDING_TYPE_EXCESSIVE_NON_CURRENT_VERSION: Finding is about a bucket
+        with excessive non current versions.
+      FINDING_TYPE_ZERO_BYTE_OBJECT: Finding is about a bucket with zero byte
+        objects.
     """
     FINDING_TYPE_UNSPECIFIED = 0
     FINDING_TYPE_COLDLINE_AND_ARCHIVAL_STORAGE_OPERATIONS_SPIKE = 1
@@ -1415,26 +1584,58 @@ class IntelligenceFinding(_messages.Message):
     FINDING_TYPE_ENCRYPTION_CONTROL_VIOLATION = 7
     FINDING_TYPE_DATA_RETENTION_CONTROL_VIOLATION = 8
     FINDING_TYPE_DATA_DELETION_CONTROL_VIOLATION = 9
+    FINDING_TYPE_INEFFICIENT_OBJECT_SIZE = 10
+    FINDING_TYPE_STALE_TEMPORARY_DATA = 11
+    FINDING_TYPE_DORMANT_BUCKET = 12
+    FINDING_TYPE_INEFFICIENT_OVERWRITE = 13
+    FINDING_TYPE_ANOMALOUS_DELETE_SPIKE = 14
+    FINDING_TYPE_MISSING_SOFT_DELETE = 15
+    FINDING_TYPE_EXCESSIVE_NON_CURRENT_VERSION = 16
+    FINDING_TYPE_ZERO_BYTE_OBJECT = 17
 
-  associatedResources = _messages.StringField(1, repeated=True)
-  bandwidthQuotaNearLimit = _messages.MessageField('BandwidthQuotaNearLimit', 2)
-  category = _messages.EnumField('CategoryValueValuesEnum', 3)
-  coldlineAndArchivalStorageOperationsSpike = _messages.MessageField('ColdlineAndArchivalStorageOperationsSpike', 4)
-  createTime = _messages.StringField(5)
-  crossRegionEgressSpike = _messages.MessageField('CrossRegionEgressSpike', 6)
-  dataDeletionControlViolation = _messages.MessageField('DataDeletionControlViolation', 7)
-  dataRetentionControlViolation = _messages.MessageField('DataRetentionControlViolation', 8)
-  description = _messages.StringField(9)
-  encryptionControlViolation = _messages.MessageField('EncryptionControlViolation', 10)
-  name = _messages.StringField(11)
-  observationPeriod = _messages.MessageField('Interval', 12)
-  publicAccessControlViolation = _messages.MessageField('PublicAccessControlViolation', 13)
-  severity = _messages.EnumField('SeverityValueValuesEnum', 14)
-  storageGrowthAboveTrend = _messages.MessageField('StorageGrowthAboveTrend', 15)
-  targetResource = _messages.StringField(16)
-  throttledRequestsSpike = _messages.MessageField('ThrottledRequestSpike', 17)
-  type = _messages.EnumField('TypeValueValuesEnum', 18)
-  updateTime = _messages.StringField(19)
+  anomalousDeleteSpike = _messages.MessageField('AnomalousDeleteSpike', 1)
+  associatedResources = _messages.StringField(2, repeated=True)
+  bandwidthQuotaNearLimit = _messages.MessageField('BandwidthQuotaNearLimit', 3)
+  category = _messages.EnumField('CategoryValueValuesEnum', 4)
+  coldlineAndArchivalStorageOperationsSpike = _messages.MessageField('ColdlineAndArchivalStorageOperationsSpike', 5)
+  createTime = _messages.StringField(6)
+  crossRegionEgressSpike = _messages.MessageField('CrossRegionEgressSpike', 7)
+  dataDeletionControlViolation = _messages.MessageField('DataDeletionControlViolation', 8)
+  dataRetentionControlViolation = _messages.MessageField('DataRetentionControlViolation', 9)
+  description = _messages.StringField(10)
+  dormantBucket = _messages.MessageField('DormantBucket', 11)
+  encryptionControlViolation = _messages.MessageField('EncryptionControlViolation', 12)
+  excessiveNonCurrentVersion = _messages.MessageField('ExcessiveNonCurrentVersion', 13)
+  inefficientObjectSize = _messages.MessageField('InefficientObjectSize', 14)
+  inefficientOverwrite = _messages.MessageField('InefficientOverwrite', 15)
+  missingSoftDelete = _messages.MessageField('MissingSoftDelete', 16)
+  name = _messages.StringField(17)
+  observationPeriod = _messages.MessageField('Interval', 18)
+  publicAccessControlViolation = _messages.MessageField('PublicAccessControlViolation', 19)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 20)
+  staleTemporaryData = _messages.MessageField('StaleTemporaryData', 21)
+  storageGrowthAboveTrend = _messages.MessageField('StorageGrowthAboveTrend', 22)
+  targetResource = _messages.StringField(23)
+  throttledRequestsSpike = _messages.MessageField('ThrottledRequestSpike', 24)
+  type = _messages.EnumField('TypeValueValuesEnum', 25)
+  updateTime = _messages.StringField(26)
+  zeroByteObject = _messages.MessageField('ZeroByteObject', 27)
+
+
+class IntelligenceFindingAnomalousDeleteSpikePrefixContribution(_messages.Message):
+  r"""Represents the contribution of an object prefix towards the finding.
+
+  Fields:
+    deleteOperationCount: Output only. The count of delete operations for this
+      prefix.
+    objectSizeBytes: Output only. The total size of objects in bytes for this
+      prefix.
+    prefix: Output only. The object prefix. Format: `a/b/c`, `a/b/d`, etc.
+  """
+
+  deleteOperationCount = _messages.IntegerField(1)
+  objectSizeBytes = _messages.IntegerField(2)
+  prefix = _messages.StringField(3)
 
 
 class IntelligenceFindingBandwidthQuotaNearLimitBucketContribution(_messages.Message):
@@ -1651,6 +1852,90 @@ class IntelligenceFindingCrossRegionEgressSpikeBucketContributionContributionSer
   totalEgressBytes = _messages.IntegerField(3)
 
 
+class IntelligenceFindingDormantBucketPrefixContribution(_messages.Message):
+  r"""Represents the contribution of an object prefix towards the finding.
+
+  Fields:
+    objectSizeBytes: Output only. The total size of objects in bytes for this
+      prefix.
+    prefix: Output only. The object prefix. Format: `a/b/c`, `a/b/d`, etc.
+  """
+
+  objectSizeBytes = _messages.IntegerField(1)
+  prefix = _messages.StringField(2)
+
+
+class IntelligenceFindingExcessiveNonCurrentVersionPrefixContribution(_messages.Message):
+  r"""Represents the contribution of an object prefix towards the finding.
+
+  Fields:
+    averageNonCurrentVersionPerObject: Output only. The average number of non-
+      current versions per object for this prefix.
+    nonCurrentObjectCount: Output only. The count of non-current object
+      versions for this prefix.
+    nonCurrentVersionSizeBytes: Output only. The total size of non-current
+      versions in bytes for this prefix.
+    prefix: Output only. The object prefix. Format: `a/b/c`, `a/b/d`, etc.
+  """
+
+  averageNonCurrentVersionPerObject = _messages.FloatField(1)
+  nonCurrentObjectCount = _messages.IntegerField(2)
+  nonCurrentVersionSizeBytes = _messages.IntegerField(3)
+  prefix = _messages.StringField(4)
+
+
+class IntelligenceFindingInefficientObjectSizePrefixContribution(_messages.Message):
+  r"""Represents the contribution of an object prefix towards the finding.
+
+  Fields:
+    prefix: Output only. The object prefix. Format: `a/b/c`, `a/b/d`, etc.
+    smallObjectCount: Output only. The count of small objects for this prefix.
+    smallObjectOperationCount: Output only. The count of A/B operations on
+      small objects for this prefix.
+    smallObjectSizeBytes: Output only. The total size of small objects in
+      bytes for this prefix.
+  """
+
+  prefix = _messages.StringField(1)
+  smallObjectCount = _messages.IntegerField(2)
+  smallObjectOperationCount = _messages.IntegerField(3)
+  smallObjectSizeBytes = _messages.IntegerField(4)
+
+
+class IntelligenceFindingInefficientOverwritePrefixContribution(_messages.Message):
+  r"""The contribution of an object prefix toward the finding.
+
+  Fields:
+    objectSizeBytes: Output only. The total size of all objects with this
+      prefix, in bytes.
+    prefix: Output only. The object prefix. For example, a/b/c or a/b/d.
+    updateOperationCount: Output only. The number of update operations
+      performed for this prefix.
+  """
+
+  objectSizeBytes = _messages.IntegerField(1)
+  prefix = _messages.StringField(2)
+  updateOperationCount = _messages.IntegerField(3)
+
+
+class IntelligenceFindingMissingSoftDeletePrefixContribution(_messages.Message):
+  r"""Represents the contribution of an object prefix towards the finding.
+
+  Fields:
+    lastThirtyDaysMutationCount: Output only. The count of write/delete
+      operations in the last 30 days for this prefix.
+    objectCount: Output only. The count of objects for this prefix.
+    objectSizeBytes: Output only. The total size of objects in bytes for this
+      prefix.
+    prefix: Output only. The object prefix. Format: `a/b/c`, `a/b/d`, etc.
+  """
+
+  lastThirtyDaysMutationCount = _messages.IntegerField(1)
+  objectCount = _messages.IntegerField(2)
+  objectSizeBytes = _messages.IntegerField(3)
+  prefix = _messages.StringField(4)
+
+
 class IntelligenceFindingRevision(_messages.Message):
   r"""An `IntelligenceFindingRevision` represents a specific revision of an
   `IntelligenceFinding` resource.
@@ -1668,6 +1953,24 @@ class IntelligenceFindingRevision(_messages.Message):
   createTime = _messages.StringField(1)
   name = _messages.StringField(2)
   snapshot = _messages.MessageField('IntelligenceFinding', 3)
+
+
+class IntelligenceFindingStaleTemporaryDataPrefixContribution(_messages.Message):
+  r"""Represents the contribution of an object prefix towards the finding.
+
+  Fields:
+    prefix: Output only. The object prefix. Format: `a/b/c`, `a/b/d`, etc.
+    staleObjectCount: Output only. The count of stale objects for this prefix.
+    staleObjectOperationCount: Output only. The count of operations on stale
+      objects for this prefix.
+    staleObjectSizeBytes: Output only. The total size of stale objects in
+      bytes for this prefix.
+  """
+
+  prefix = _messages.StringField(1)
+  staleObjectCount = _messages.IntegerField(2)
+  staleObjectOperationCount = _messages.IntegerField(3)
+  staleObjectSizeBytes = _messages.IntegerField(4)
 
 
 class IntelligenceFindingStorageGrowthAboveTrendBucketContribution(_messages.Message):
@@ -1810,6 +2113,22 @@ class IntelligenceFindingThrottledRequestSpikeBucketContributionContributionServ
   percentageIncrease = _messages.FloatField(1)
   serviceAccount = _messages.StringField(2)
   throttledRequests = _messages.IntegerField(3)
+
+
+class IntelligenceFindingZeroByteObjectPrefixContribution(_messages.Message):
+  r"""Represents the contribution of an object prefix towards the finding.
+
+  Fields:
+    prefix: Output only. The object prefix. Format: `a/b/c`, `a/b/d`, etc.
+    zeroByteObjectCount: Output only. The count of zero-byte objects for this
+      prefix.
+    zeroByteObjectOperationCount: Output only. The count of A/B operations on
+      zero-byte objects for this prefix.
+  """
+
+  prefix = _messages.StringField(1)
+  zeroByteObjectCount = _messages.IntegerField(2)
+  zeroByteObjectOperationCount = _messages.IntegerField(3)
 
 
 class Interval(_messages.Message):
@@ -2178,6 +2497,32 @@ class ManagementHubTrialConfig(_messages.Message):
   """
 
   expireTime = _messages.StringField(1)
+
+
+class MissingSoftDelete(_messages.Message):
+  r"""Represents a high volume of modification and deletion operations on a
+  bucket where Soft Delete is not configured. This corresponds to the
+  `MISSING_SOFT_DELETE` finding type.
+
+  Fields:
+    bucket: Output only. The name of the bucket.
+    lastThirtyDaysMutationCount: Output only. The count of write/delete
+      operations in the last 30 days.
+    objectCount: Output only. The total count of objects in the bucket.
+    objectSizeBytes: Output only. The total size of objects in the bucket in
+      bytes.
+    retentionPeriodDays: Output only. The soft delete retention period in
+      days. A value of 0 indicates that soft delete is disabled.
+    topPrefixes: Output only. A list of top object prefixes contributing to
+      the finding.
+  """
+
+  bucket = _messages.StringField(1)
+  lastThirtyDaysMutationCount = _messages.IntegerField(2)
+  objectCount = _messages.IntegerField(3)
+  objectSizeBytes = _messages.IntegerField(4)
+  retentionPeriodDays = _messages.IntegerField(5)
+  topPrefixes = _messages.MessageField('IntelligenceFindingMissingSoftDeletePrefixContribution', 6, repeated=True)
 
 
 class Model(_messages.Message):
@@ -2807,6 +3152,30 @@ class SourceConfig(_messages.Message):
 
   bucketSources = _messages.MessageField('BucketSourceSpec', 1, repeated=True)
   modelId = _messages.StringField(2)
+
+
+class StaleTemporaryData(_messages.Message):
+  r"""Represents a finding about stale temporary data (objects with tmp/ or
+  staging/) in a bucket. This corresponds to the `STALE_TEMPORARY_DATA`
+  finding type.
+
+  Fields:
+    bucket: Output only. The name of the bucket.
+    staleObjectCount: Output only. The count of stale temporary objects and
+      their percentage of the total object count.
+    staleObjectOperationCount: Output only. The count of operations on stale
+      temporary objects and their percentage of total operations.
+    staleObjectSizeBytes: Output only. The total size of stale temporary
+      objects in bytes and their percentage of the total storage size.
+    topPrefixes: Output only. A list of top object prefixes contributing to
+      the finding.
+  """
+
+  bucket = _messages.StringField(1)
+  staleObjectCount = _messages.MessageField('ValueWithPercentage', 2)
+  staleObjectOperationCount = _messages.MessageField('ValueWithPercentage', 3)
+  staleObjectSizeBytes = _messages.MessageField('ValueWithPercentage', 4)
+  topPrefixes = _messages.MessageField('IntelligenceFindingStaleTemporaryDataPrefixContribution', 5, repeated=True)
 
 
 class StandardQueryParameters(_messages.Message):
@@ -4480,6 +4849,19 @@ class UniformBucketLevelAccess(_messages.Message):
   lockTime = _messages.StringField(2)
 
 
+class ValueWithPercentage(_messages.Message):
+  r"""Represents a value (such as a count or a size) and its percentage
+  relative to a total.
+
+  Fields:
+    percentage: Output only. The percentage (range: 0.0 to 100.0).
+    value: Output only. The value.
+  """
+
+  percentage = _messages.FloatField(1)
+  value = _messages.IntegerField(2)
+
+
 class Versioning(_messages.Message):
   r"""Properties of a bucket related to versioning. For more information about
   Cloud Storage versioning, see [Object
@@ -4530,6 +4912,26 @@ class Website(_messages.Message):
 
   mainPageSuffix = _messages.StringField(1)
   notFoundPage = _messages.StringField(2)
+
+
+class ZeroByteObject(_messages.Message):
+  r"""Represents a finding about zero-byte objects in a bucket. This
+  corresponds to the `ZERO_BYTE_OBJECT` finding type.
+
+  Fields:
+    bucket: Output only. The name of the bucket.
+    topPrefixes: Output only. A list of top object prefixes contributing to
+      the finding.
+    zeroByteObjectCount: Output only. The count of zero-byte objects and their
+      percentage of the total object count.
+    zeroByteObjectOperationCount: Output only. The count of A/B operations on
+      zero-byte objects and their percentage of total operations.
+  """
+
+  bucket = _messages.StringField(1)
+  topPrefixes = _messages.MessageField('IntelligenceFindingZeroByteObjectPrefixContribution', 2, repeated=True)
+  zeroByteObjectCount = _messages.MessageField('ValueWithPercentage', 3)
+  zeroByteObjectOperationCount = _messages.MessageField('ValueWithPercentage', 4)
 
 
 encoding.AddCustomJsonFieldMapping(

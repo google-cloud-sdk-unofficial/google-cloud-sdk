@@ -30,6 +30,104 @@ class AWSV4Signature(_messages.Message):
   secretAccessKeyVersion = _messages.StringField(3)
 
 
+class AgentConnectivityTemplate(_messages.Message):
+  r"""AgentConnectivityTemplate represents a reusable network configuration.
+
+  Enums:
+    AccessPathValueValuesEnum: Required. Immutable. The path of the access.
+      Maps roughly to ingress/egress, though we keep CLIENT_TO_AGENT and
+      AGENT_TO_ANYWHERE as carryovers from Agent Gateway's original resource
+      model. The path is immutable once set. Exactly one path can be set.
+    AccessTypesValueListEntryValuesEnum:
+
+  Messages:
+    LabelsValue: Optional. Set of label tags associated with the
+      AgentConnectivityTemplate resource.
+
+  Fields:
+    accessPath: Required. Immutable. The path of the access. Maps roughly to
+      ingress/egress, though we keep CLIENT_TO_AGENT and AGENT_TO_ANYWHERE as
+      carryovers from Agent Gateway's original resource model. The path is
+      immutable once set. Exactly one path can be set.
+    accessTypes: Optional. The types of network access provided to the
+      gateway. Both PUBLIC and PRIVATE can be configured.
+    createTime: Output only. The timestamp when the resource was created.
+    description: Optional. A free-text description of the resource. Max length
+      1024 characters.
+    egressNetworkConfig: Optional. Configuration for egress network traffic.
+    etag: Optional. Etag of the resource. If this is provided, it must match
+      the server's etag. If the provided etag does not match the server's
+      etag, the request will fail with a 409 ABORTED error.
+    labels: Optional. Set of label tags associated with the
+      AgentConnectivityTemplate resource.
+    name: Identifier. Name of the AgentConnectivityTemplate resource. It
+      matches pattern `projects/*/locations/*/agentConnectivityTemplates/`.
+    updateTime: Output only. The timestamp when the resource was updated.
+  """
+
+  class AccessPathValueValuesEnum(_messages.Enum):
+    r"""Required. Immutable. The path of the access. Maps roughly to
+    ingress/egress, though we keep CLIENT_TO_AGENT and AGENT_TO_ANYWHERE as
+    carryovers from Agent Gateway's original resource model. The path is
+    immutable once set. Exactly one path can be set.
+
+    Values:
+      ACCESS_PATH_UNSPECIFIED: Unspecified access path.
+      CLIENT_TO_AGENT: Protect connection to Agent or Tool.
+      AGENT_TO_ANYWHERE: Govern agent connections to destinations.
+    """
+    ACCESS_PATH_UNSPECIFIED = 0
+    CLIENT_TO_AGENT = 1
+    AGENT_TO_ANYWHERE = 2
+
+  class AccessTypesValueListEntryValuesEnum(_messages.Enum):
+    r"""AccessTypesValueListEntryValuesEnum enum type.
+
+    Values:
+      ACCESS_TYPE_UNSPECIFIED: Unspecified access type.
+      PUBLIC: Public network access.
+      PRIVATE: Private network access.
+    """
+    ACCESS_TYPE_UNSPECIFIED = 0
+    PUBLIC = 1
+    PRIVATE = 2
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Set of label tags associated with the
+    AgentConnectivityTemplate resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  accessPath = _messages.EnumField('AccessPathValueValuesEnum', 1)
+  accessTypes = _messages.EnumField('AccessTypesValueListEntryValuesEnum', 2, repeated=True)
+  createTime = _messages.StringField(3)
+  description = _messages.StringField(4)
+  egressNetworkConfig = _messages.MessageField('EgressNetworkConfig', 5)
+  etag = _messages.StringField(6)
+  labels = _messages.MessageField('LabelsValue', 7)
+  name = _messages.StringField(8)
+  updateTime = _messages.StringField(9)
+
+
 class AgentGateway(_messages.Message):
   r"""AgentGateway represents the agent gateway resource.
 
@@ -1065,6 +1163,19 @@ class Connection(_messages.Message):
   nccHub = _messages.StringField(2)
 
 
+class DnsPeeringConfig(_messages.Message):
+  r"""DNS Peering configuration.
+
+  Fields:
+    domain: Optional. The domain to peer.
+    targetNetwork: Optional. The target network resource name for DNS peering.
+      Format: projects/{project}/global/networks/{network_id}
+  """
+
+  domain = _messages.StringField(1)
+  targetNetwork = _messages.StringField(2)
+
+
 class EdgeCacheKeyset(_messages.Message):
   r"""Represents a collection of public keys used for validating signed
   requests.
@@ -1412,6 +1523,73 @@ class EdgeCacheService(_messages.Message):
   requireTls = _messages.BooleanField(12)
   routing = _messages.MessageField('Routing', 13)
   updateTime = _messages.StringField(14)
+
+
+class EgressNetworkConfig(_messages.Message):
+  r"""A EgressNetworkConfig object.
+
+  Enums:
+    VpcEgressValueValuesEnum: Optional. The VPC egress setting.
+
+  Fields:
+    dnsPeeringConfig: Optional. DNS Peering configuration.
+    networkAttachment: Optional. The network attachment resource name. Format:
+      projects/{project}/regions/{region}/networkAttachments/{network_attachme
+      nt_id}
+    tlsConfig: Optional. The TLS configuration for the egress traffic.
+    trustConfig: Optional. The trust config resource name. Format:
+      projects/{project}/locations/{location}/trustConfigs/{trust_config}
+    vpcEgress: Optional. The VPC egress setting.
+  """
+
+  class VpcEgressValueValuesEnum(_messages.Enum):
+    r"""Optional. The VPC egress setting.
+
+    Values:
+      VPC_EGRESS_UNSPECIFIED: Unspecified
+      ALL_TRAFFIC: All outbound traffic is routed through the VPC connector.
+      PRIVATE_RANGES_ONLY: Only private IP ranges are routed through the VPC
+        connector.
+    """
+    VPC_EGRESS_UNSPECIFIED = 0
+    ALL_TRAFFIC = 1
+    PRIVATE_RANGES_ONLY = 2
+
+  dnsPeeringConfig = _messages.MessageField('DnsPeeringConfig', 1)
+  networkAttachment = _messages.StringField(2)
+  tlsConfig = _messages.MessageField('EgressNetworkConfigTlsConfig', 3)
+  trustConfig = _messages.StringField(4)
+  vpcEgress = _messages.EnumField('VpcEgressValueValuesEnum', 5)
+
+
+class EgressNetworkConfigTlsConfig(_messages.Message):
+  r"""Configuration for TLS connections.
+
+  Enums:
+    AdditionalRootsValueValuesEnum: Optional. The additional roots to trust.
+
+  Fields:
+    additionalRoots: Optional. The additional roots to trust.
+    trustConfig: Optional. The trust config resource name. Format:
+      projects/{project}/locations/{location}/trustConfigs/{trust_config}
+  """
+
+  class AdditionalRootsValueValuesEnum(_messages.Enum):
+    r"""Optional. The additional roots to trust.
+
+    Values:
+      ADDITIONAL_ROOTS_UNSPECIFIED: Unspecified additional roots.
+      NO_ADDITIONAL_ROOTS: Trust only the certificates provided in
+        `trust_config`.
+      PUBLICLY_TRUSTED_ROOTS: Trust certificates provided in `trust_config`
+        and publicly trusted roots.
+    """
+    ADDITIONAL_ROOTS_UNSPECIFIED = 0
+    NO_ADDITIONAL_ROOTS = 1
+    PUBLICLY_TRUSTED_ROOTS = 2
+
+  additionalRoots = _messages.EnumField('AdditionalRootsValueValuesEnum', 1)
+  trustConfig = _messages.StringField(2)
 
 
 class Empty(_messages.Message):
@@ -3774,6 +3952,25 @@ class LbTrafficExtension(_messages.Message):
   updateTime = _messages.StringField(9)
 
 
+class ListAgentConnectivityTemplatesResponse(_messages.Message):
+  r"""Response returned by the ListAgentConnectivityTemplates method.
+
+  Fields:
+    agentConnectivityTemplates: List of AgentConnectivityTemplate resources.
+    nextPageToken: If there might be more results than those appearing in this
+      response, then `next_page_token` is included. To get the next set of
+      results, call this method again using the value of `next_page_token` as
+      `page_token`.
+    unreachable: Unordered list. Unreachable resources. Populated when the
+      request attempts to list all resources across all supported locations,
+      while some locations are temporarily unavailable.
+  """
+
+  agentConnectivityTemplates = _messages.MessageField('AgentConnectivityTemplate', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListAgentGatewaysResponse(_messages.Message):
   r"""Response returned by the ListAgentGateways method.
 
@@ -5495,6 +5692,98 @@ class MulticastResourceState(_messages.Message):
     OBSOLETE = 8
 
   state = _messages.EnumField('StateValueValuesEnum', 1)
+
+
+class NetworkservicesProjectsLocationsAgentConnectivityTemplatesCreateRequest(_messages.Message):
+  r"""A
+  NetworkservicesProjectsLocationsAgentConnectivityTemplatesCreateRequest
+  object.
+
+  Fields:
+    agentConnectivityTemplate: A AgentConnectivityTemplate resource to be
+      passed as the request body.
+    agentConnectivityTemplateId: Required. Short name of the
+      AgentConnectivityTemplate resource to be created.
+    parent: Required. The parent resource of the AgentConnectivityTemplate.
+      Must be in the format `projects/*/locations/*`.
+  """
+
+  agentConnectivityTemplate = _messages.MessageField('AgentConnectivityTemplate', 1)
+  agentConnectivityTemplateId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class NetworkservicesProjectsLocationsAgentConnectivityTemplatesDeleteRequest(_messages.Message):
+  r"""A
+  NetworkservicesProjectsLocationsAgentConnectivityTemplatesDeleteRequest
+  object.
+
+  Fields:
+    etag: Optional. The etag of the AgentConnectivityTemplate to delete.
+    name: Required. A name of the AgentConnectivityTemplate to delete. Must be
+      in the format `projects/*/locations/*/agentConnectivityTemplates/*`.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+
+
+class NetworkservicesProjectsLocationsAgentConnectivityTemplatesGetRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsAgentConnectivityTemplatesGetRequest
+  object.
+
+  Fields:
+    name: Required. A name of the AgentConnectivityTemplate to get. Must be in
+      the format `projects/*/locations/*/agentConnectivityTemplates/*`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworkservicesProjectsLocationsAgentConnectivityTemplatesListRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsAgentConnectivityTemplatesListRequest
+  object.
+
+  Fields:
+    pageSize: Optional. Maximum number of AgentConnectivityTemplates to return
+      per call.
+    pageToken: Optional. The value returned by the last
+      `ListAgentConnectivityTemplatesResponse` Indicates that this is a
+      continuation of a prior `ListAgentConnectivityTemplates` call, and that
+      the system should return the next page of data.
+    parent: Required. The project and location from which the
+      AgentConnectivityTemplates should be listed, specified in the format
+      `projects/*/locations/*`.
+    returnPartialSuccess: Optional. If true, allow partial responses for
+      multi-regional Aggregated List requests. Otherwise if one of the
+      locations is down or unreachable, the Aggregated List request will fail.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  returnPartialSuccess = _messages.BooleanField(4)
+
+
+class NetworkservicesProjectsLocationsAgentConnectivityTemplatesPatchRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsAgentConnectivityTemplatesPatchRequest
+  object.
+
+  Fields:
+    agentConnectivityTemplate: A AgentConnectivityTemplate resource to be
+      passed as the request body.
+    name: Identifier. Name of the AgentConnectivityTemplate resource. It
+      matches pattern `projects/*/locations/*/agentConnectivityTemplates/`.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the AgentConnectivityTemplate resource by the update. The
+      fields specified in the update_mask are relative to the resource, not
+      the full request. A field will be overwritten if it is in the mask. If
+      the user does not provide a mask then all fields will be overwritten.
+  """
+
+  agentConnectivityTemplate = _messages.MessageField('AgentConnectivityTemplate', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
 
 
 class NetworkservicesProjectsLocationsAgentGatewaysCreateRequest(_messages.Message):
@@ -11660,36 +11949,37 @@ class WasmPluginLogConfig(_messages.Message):
   If logging is enabled, plugin logs are exported to Cloud Logging.
 
   Enums:
-    MinLogLevelValueValuesEnum: Non-empty default. Specifies the lowest level
-      of the plugin logs that are exported to Cloud Logging. This setting
-      relates to the logs generated by using logging statements in your Wasm
-      code. This field is can be set only if logging is enabled for the
-      plugin. If the field is not provided when logging is enabled, it is set
-      to `INFO` by default.
+    MinLogLevelValueValuesEnum: Optional. Non-empty default. Specifies the
+      lowest level of the plugin logs that are exported to Cloud Logging. This
+      setting relates to the logs generated by using logging statements in
+      your Wasm code. This field is can be set only if logging is enabled for
+      the plugin. If the field is not provided when logging is enabled, it is
+      set to `INFO` by default.
 
   Fields:
     enable: Optional. Specifies whether to enable logging for activity by this
       plugin. Defaults to `false`.
-    minLogLevel: Non-empty default. Specifies the lowest level of the plugin
-      logs that are exported to Cloud Logging. This setting relates to the
-      logs generated by using logging statements in your Wasm code. This field
-      is can be set only if logging is enabled for the plugin. If the field is
-      not provided when logging is enabled, it is set to `INFO` by default.
-    sampleRate: Non-empty default. Configures the sampling rate of activity
-      logs, where `1.0` means all logged activity is reported and `0.0` means
-      no activity is reported. A floating point value between `0.0` and `1.0`
-      indicates that a percentage of log messages is stored. The default value
-      when logging is enabled is `1.0`. The value of the field must be between
-      `0` and `1` (inclusive). This field can be specified only if logging is
-      enabled for this plugin.
+    minLogLevel: Optional. Non-empty default. Specifies the lowest level of
+      the plugin logs that are exported to Cloud Logging. This setting relates
+      to the logs generated by using logging statements in your Wasm code.
+      This field is can be set only if logging is enabled for the plugin. If
+      the field is not provided when logging is enabled, it is set to `INFO`
+      by default.
+    sampleRate: Optional. Non-empty default. Configures the sampling rate of
+      activity logs, where `1.0` means all logged activity is reported and
+      `0.0` means no activity is reported. A floating point value between
+      `0.0` and `1.0` indicates that a percentage of log messages is stored.
+      The default value when logging is enabled is `1.0`. The value of the
+      field must be between `0` and `1` (inclusive). This field can be
+      specified only if logging is enabled for this plugin.
   """
 
   class MinLogLevelValueValuesEnum(_messages.Enum):
-    r"""Non-empty default. Specifies the lowest level of the plugin logs that
-    are exported to Cloud Logging. This setting relates to the logs generated
-    by using logging statements in your Wasm code. This field is can be set
-    only if logging is enabled for the plugin. If the field is not provided
-    when logging is enabled, it is set to `INFO` by default.
+    r"""Optional. Non-empty default. Specifies the lowest level of the plugin
+    logs that are exported to Cloud Logging. This setting relates to the logs
+    generated by using logging statements in your Wasm code. This field is can
+    be set only if logging is enabled for the plugin. If the field is not
+    provided when logging is enabled, it is set to `INFO` by default.
 
     Values:
       LOG_LEVEL_UNSPECIFIED: Unspecified value. Defaults to `LogLevel.INFO`.

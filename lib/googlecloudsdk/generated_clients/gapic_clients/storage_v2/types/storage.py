@@ -4411,6 +4411,11 @@ class ObjectCustomContextPayload(proto.Message):
         update_time (google.protobuf.timestamp_pb2.Timestamp):
             Output only. The time at which the object
             context was last updated.
+        extended_data_type_url (str):
+            Output only. Type URL of the object context's extended data.
+            The value provided here identifies the data type of a larger
+            payload that can be retrieved via the
+            ``ViewObjectFullContext`` API call.
     """
 
     value: str = proto.Field(
@@ -4426,6 +4431,10 @@ class ObjectCustomContextPayload(proto.Message):
         proto.MESSAGE,
         number=3,
         message=timestamp_pb2.Timestamp,
+    )
+    extended_data_type_url: str = proto.Field(
+        proto.STRING,
+        number=4,
     )
 
 

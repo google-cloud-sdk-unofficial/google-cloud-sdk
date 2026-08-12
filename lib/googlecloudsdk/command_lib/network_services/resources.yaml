@@ -127,6 +127,18 @@ agentGateway:
     attribute_name: agent_gateway
     help: Id of the agent gateway.
 
+agentConnectivityTemplate:
+  name: agent connectivity template
+  collection: networkservices.projects.locations.agentConnectivityTemplates
+  request_id_field: agentConnectivityTemplateId
+  attributes:
+  - *project
+  - *location
+  - &agentConnectivityTemplate
+    parameter_name: agentConnectivityTemplatesId
+    attribute_name: agent_connectivity_template
+    help: Id of the agent connectivity template.
+
 telemetryPolicy:
   name: telemetry policy
   collection: networkservices.projects.locations.telemetryPolicies

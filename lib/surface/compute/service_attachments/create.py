@@ -60,15 +60,21 @@ class CreateHelper(object):
   PRODUCER_FORWARDING_RULE_ARG = None
   NAT_SUBNETWORK_ARG = None
 
-  def __init__(self, holder):
+  def __init__(
+      self, holder, support_routing_mode=False
+  ):
     self._holder = holder
+    self._support_routing_mode = support_routing_mode
 
   @classmethod
-  def Args(cls, parser):
+  def Args(
+      cls, parser, support_routing_mode=False
+  ):
     """Create a Google Compute Engine service attachment.
 
     Args:
       parser: the parser that parses the input from the user.
+      support_routing_mode: whether the command supports the routing-mode flag.
     """
     cls.SERVICE_ATTACHMENT_ARG = flags.ServiceAttachmentArgument()
     cls.SERVICE_ATTACHMENT_ARG.AddArgument(parser, operation_type='create')
@@ -93,6 +99,8 @@ class CreateHelper(object):
     flags.AddDomainNames(parser)
     flags.AddPropagatedConnectionLimit(parser)
     flags.AddNatIpsPerEndpoint(parser)
+    if support_routing_mode:
+      flags.AddRoutingMode(parser)
 
   def Run(self, args):
     """Issue a service attachment INSERT request."""
@@ -155,6 +163,16 @@ class CreateHelper(object):
       )
     if args.IsSpecified('nat_ips_per_endpoint'):
       service_attachment.natIpsPerEndpoint = args.nat_ips_per_endpoint
+    if self._support_routing_mode:
+      routing_mode = service_attachments_utils.GetRoutingMode(
+          args, client.messages
+      )
+      if routing_mode:
+        service_attachment.tunnelingConfig = (
+            client.messages.ServiceAttachmentTunnelingConfig(
+                routingMode=routing_mode
+            )
+        )
 
     request = client.messages.ComputeServiceAttachmentsInsertRequest(
         project=service_attachment_ref.project,
@@ -169,15 +187,20 @@ class CreateHelper(object):
 class Create(base.CreateCommand):
   """Create a Google Compute Engine service attachment."""
 
+  _support_routing_mode = False
   detailed_help = _DetailedHelp()
 
   @classmethod
   def Args(cls, parser):
-    CreateHelper.Args(parser)
+    CreateHelper.Args(
+        parser, cls._support_routing_mode
+    )
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return CreateHelper(holder).Run(args)
+    return CreateHelper(
+        holder, self._support_routing_mode
+    ).Run(args)
 
 
 @base.ReleaseTracks(
@@ -186,6 +209,7 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
   """Create a Google Compute Engine service attachment."""
 
+  _support_routing_mode = True
   detailed_help = _DetailedHelp()
 
 
@@ -195,4 +219,5 @@ class CreateBeta(Create):
 class CreateAlpha(Create):
   """Create a Google Compute Engine service attachment."""
 
+  _support_routing_mode = True
   detailed_help = _DetailedHelp()

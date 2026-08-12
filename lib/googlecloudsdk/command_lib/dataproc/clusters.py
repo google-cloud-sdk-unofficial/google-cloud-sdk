@@ -204,25 +204,22 @@ def ArgsForClusterRef(
       type=ArgMultiValueDict(),
       action=arg_parsers.FlattenAction(),
   )
-  if alpha:
-    master_machine_type_group.add_argument(
-        '--master-instance-selection',
-        type=arg_parsers.ArgJSON(),
-        action=arg_parsers.FlattenAction(),
-        hidden=True,
-        help="""\
-        Instance selection configurations for the master node group.
-        """,
-    )
-    master_machine_type_group.add_argument(
-        '--master-instance-flexibility-policy-file',
-        type=arg_parsers.YAMLFileContents(),
-        hidden=True,
-        help="""\
-        Path to a YAML or JSON file containing the instance flexibility policy
-        for the master node group.
-        """,
-    )
+  master_machine_type_group.add_argument(
+      '--master-instance-selection',
+      type=arg_parsers.ArgJSON(),
+      action=arg_parsers.FlattenAction(),
+      help="""\
+      Instance selection configurations for the master node group.
+      """,
+  )
+  master_machine_type_group.add_argument(
+      '--master-instance-flexibility-policy-file',
+      type=arg_parsers.YAMLFileContents(),
+      help="""\
+      Path to a YAML or JSON file containing the instance flexibility policy
+      for the master node group.
+      """,
+  )
 
   worker_machine_type_group = parser.add_argument_group(mutex=True)
   worker_machine_type_group.add_argument(
@@ -251,25 +248,22 @@ def ArgsForClusterRef(
       type=ArgMultiValueDict(),
       action=arg_parsers.FlattenAction(),
   )
-  if alpha:
-    worker_machine_type_group.add_argument(
-        '--worker-instance-selection',
-        type=arg_parsers.ArgJSON(),
-        action=arg_parsers.FlattenAction(),
-        hidden=True,
-        help="""\
-        Instance selection configurations for the primary worker node group.
-        """,
-    )
-    worker_machine_type_group.add_argument(
-        '--worker-instance-flexibility-policy-file',
-        type=arg_parsers.YAMLFileContents(),
-        hidden=True,
-        help="""\
-        Path to a YAML or JSON file containing the instance flexibility policy
-        for the primary worker node group.
-        """,
-    )
+  worker_machine_type_group.add_argument(
+      '--worker-instance-selection',
+      type=arg_parsers.ArgJSON(),
+      action=arg_parsers.FlattenAction(),
+      help="""\
+      Instance selection configurations for the primary worker node group.
+      """,
+  )
+  worker_machine_type_group.add_argument(
+      '--worker-instance-flexibility-policy-file',
+      type=arg_parsers.YAMLFileContents(),
+      help="""\
+      Path to a YAML or JSON file containing the instance flexibility policy
+      for the primary worker node group.
+      """,
+  )
 
   parser.add_argument(
       '--min-secondary-worker-fraction',
@@ -322,25 +316,22 @@ def ArgsForClusterRef(
       type=ArgMultiValueDict(),
       action=arg_parsers.FlattenAction(),
   )
-  if alpha:
-    secondary_worker_machine_type_group.add_argument(
-        '--secondary-worker-instance-selection',
-        type=arg_parsers.ArgJSON(),
-        action=arg_parsers.FlattenAction(),
-        hidden=True,
-        help="""\
-        Instance selection configurations for the secondary worker node group.
-        """,
-    )
-    secondary_worker_machine_type_group.add_argument(
-        '--secondary-worker-instance-flexibility-policy-file',
-        type=arg_parsers.YAMLFileContents(),
-        hidden=True,
-        help="""\
-        Path to a YAML or JSON file containing the instance flexibility policy
-        for the secondary worker node group.
-        """,
-    )
+  secondary_worker_machine_type_group.add_argument(
+      '--secondary-worker-instance-selection',
+      type=arg_parsers.ArgJSON(),
+      action=arg_parsers.FlattenAction(),
+      help="""\
+      Instance selection configurations for the secondary worker node group.
+      """,
+  )
+  secondary_worker_machine_type_group.add_argument(
+      '--secondary-worker-instance-flexibility-policy-file',
+      type=arg_parsers.YAMLFileContents(),
+      help="""\
+      Path to a YAML or JSON file containing the instance flexibility policy
+      for the secondary worker node group.
+      """,
+  )
 
   parser.add_argument(
       '--cluster-type',

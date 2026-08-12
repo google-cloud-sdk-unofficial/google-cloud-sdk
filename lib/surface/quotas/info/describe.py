@@ -27,16 +27,16 @@ class DescribeAlpha(base.DescribeCommand):
   ## EXAMPLES
 
   To get the details about quota `CpusPerProject` for service
-  `example.$$UNIVERSE_DOMAIN$$` and `projects/my-project`, run:
+  `example.googleapis.com` and `projects/my-project`, run:
 
-    $ {command} CpusPerProject --service=example.$$UNIVERSE_DOMAIN$$
+    $ {command} CpusPerProject --service=example.googleapis.com
     --project=my-project
 
 
   To get the details about quota `CpusPerProject` for service
-  `example.$$UNIVERSE_DOMAIN$$` and `folders/123`, run:
+  `example.googleapis.com` and `folders/123`, run:
 
-    $ {command} CpusPerProject --service=example.$$UNIVERSE_DOMAIN$$
+    $ {command} CpusPerProject --service=example.googleapis.com
     --folder=123
   """
 
@@ -73,7 +73,7 @@ class DescribeAlpha(base.DescribeCommand):
     )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class DescribeBeta(base.DescribeCommand):
   """Retrieve the QuotaInfo of a quota for a project, folder or organization.
@@ -81,16 +81,16 @@ class DescribeBeta(base.DescribeCommand):
   ## EXAMPLES
 
   To get the details about quota `CpusPerProject` for service
-  `example.$$UNIVERSE_DOMAIN$$` and `projects/my-project`, run:
+  `example.googleapis.com` and `projects/my-project`, run:
 
-    $ {command} CpusPerProject --service=example.$$UNIVERSE_DOMAIN$$
+    $ {command} CpusPerProject --service=example.googleapis.com
     --project=my-project
 
 
   To get the details about quota `CpusPerProject` for service
-  `example.$$UNIVERSE_DOMAIN$$` and `folders/123`, run:
+  `example.googleapis.com` and `folders/123`, run:
 
-    $ {command} CpusPerProject --service=example.$$UNIVERSE_DOMAIN$$
+    $ {command} CpusPerProject --service=example.googleapis.com
     --folder=123
   """
 
@@ -122,5 +122,5 @@ class DescribeBeta(base.DescribeCommand):
         args.organization,
         args.service,
         args.QUOTA_ID,
-        release_track=base.ReleaseTrack.BETA,
+        release_track=self.ReleaseTrack(),
     )

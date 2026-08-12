@@ -523,14 +523,18 @@ class FileObjectResource(Resource):
     size (int|None): Size of local file in bytes or None if pipe or stream.
     storage_url (StorageUrl): A StorageUrl object representing the resource.
     md5_hash (bytes): Base64-encoded digest of MD5 hash.
+    crc32c_hash (str|None): Base64-encoded digest of CRC32C hash.
     is_symlink (bool|None): Whether this file is known to be a symlink.
   """
   TYPE_STRING = 'file_object'
 
-  def __init__(self, storage_url_object, md5_hash=None, is_symlink=None):
+  def __init__(
+      self, storage_url_object, md5_hash=None, crc32c_hash=None, is_symlink=None
+  ):
     """Initializes resource. Args are a subset of attributes."""
     super(FileObjectResource, self).__init__(storage_url_object)
     self.md5_hash = md5_hash
+    self.crc32c_hash = crc32c_hash
     self._is_symlink = is_symlink
 
   def is_container(self):
@@ -558,10 +562,13 @@ class FileSymlinkPlaceholderResource(FileObjectResource):
     Refer to super class.
   """
 
-  def __init__(self, storage_url_object, md5_hash=None):
+  def __init__(self, storage_url_object, md5_hash=None, crc32c_hash=None):
     """Initializes resource. Args are a subset of attributes."""
     super(FileSymlinkPlaceholderResource, self).__init__(
-        storage_url_object, md5_hash, True
+        storage_url_object,
+        md5_hash=md5_hash,
+        crc32c_hash=crc32c_hash,
+        is_symlink=True,
     )
 
   @property

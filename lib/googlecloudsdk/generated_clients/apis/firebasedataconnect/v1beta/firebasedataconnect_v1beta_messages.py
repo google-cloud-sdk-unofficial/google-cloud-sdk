@@ -2094,6 +2094,7 @@ class Service(_messages.Message):
 
   Fields:
     annotations: Optional. Stores small amounts of arbitrary data.
+    connectors: Output only. The list of connectors in this service.
     createTime: Output only. [Output only] Create time stamp.
     displayName: Optional. Mutable human-readable name. 63 character limit.
     etag: Output only. This checksum is computed by the server based on the
@@ -2109,6 +2110,9 @@ class Service(_messages.Message):
       connections.
     reconciling: Output only. A field that if true, indicates that the system
       is working update the service.
+    schemas: Output only. The list of schemas in this service.
+    source: Optional. Input only. The source files for service, schemas, and
+      connectors.
     uid: Output only. System-assigned, unique identifier.
     updateTime: Output only. [Output only] Update time stamp.
   """
@@ -2163,14 +2167,17 @@ class Service(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   annotations = _messages.MessageField('AnnotationsValue', 1)
-  createTime = _messages.StringField(2)
-  displayName = _messages.StringField(3)
-  etag = _messages.StringField(4)
-  labels = _messages.MessageField('LabelsValue', 5)
-  name = _messages.StringField(6)
-  reconciling = _messages.BooleanField(7)
-  uid = _messages.StringField(8)
-  updateTime = _messages.StringField(9)
+  connectors = _messages.MessageField('Connector', 2, repeated=True)
+  createTime = _messages.StringField(3)
+  displayName = _messages.StringField(4)
+  etag = _messages.StringField(5)
+  labels = _messages.MessageField('LabelsValue', 6)
+  name = _messages.StringField(7)
+  reconciling = _messages.BooleanField(8)
+  schemas = _messages.MessageField('Schema', 9, repeated=True)
+  source = _messages.MessageField('Source', 10)
+  uid = _messages.StringField(11)
+  updateTime = _messages.StringField(12)
 
 
 class Source(_messages.Message):

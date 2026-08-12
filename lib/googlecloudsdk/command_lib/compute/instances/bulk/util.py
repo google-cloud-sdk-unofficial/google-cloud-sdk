@@ -48,8 +48,41 @@ class SupportedFeatures:
       support_workload_identity_config,
       support_instance_selection_min_cpu_platform,
       support_vsock_mode=False,
+      support_expose_host_topology=False,
   ):
+    """Initializes SupportedFeatures.
+
+    Args:
+      support_display_device: bool, whether display device is supported.
+      support_secure_tags: bool, whether secure tags are supported.
+      support_numa_node_count: bool, whether NUMA node count is supported.
+      support_snp_svsm: bool, whether SNP SVSM is supported.
+      support_max_count_per_zone: bool, whether max count per zone is supported.
+      support_custom_hostnames: bool, whether custom hostnames are supported.
+      support_specific_then_x_affinity: bool, whether specific then X affinity
+        is supported.
+      support_any_reservation_then_fail_affinity: bool, whether any reservation
+        then fail affinity is supported.
+      support_watchdog_timer: bool, whether watchdog timer is supported.
+      support_graceful_shutdown: bool, whether graceful shutdown is supported.
+      support_source_snapshot_region: bool, whether source snapshot region is
+        supported.
+      support_skip_guest_os_shutdown: bool, whether skip guest OS shutdown is
+        supported.
+      support_preemption_notice_duration: bool, whether preemption notice
+        duration is supported.
+      support_instance_flexibility_policy: bool, whether instance flexibility
+        policy is supported.
+      support_workload_identity_config: bool, whether workload identity config
+        is supported.
+      support_instance_selection_min_cpu_platform: bool, whether min CPU
+        platform is supported.
+      support_vsock_mode: bool, whether vsock mode is supported.
+      support_expose_host_topology: bool, whether expose host topology is
+        supported.
+    """
     self.support_secure_tags = support_secure_tags
+    self.support_expose_host_topology = support_expose_host_topology
     self.support_display_device = support_display_device
     self.support_numa_node_count = support_numa_node_count
     self.support_snp_svsm = support_snp_svsm
@@ -360,6 +393,7 @@ def CreateBulkInsertInstanceResource(
           supported_features.support_preemption_notice_duration
       ),
       support_vsock_mode=supported_features.support_vsock_mode,
+      support_expose_host_topology=supported_features.support_expose_host_topology,
   )
   tags = instance_utils.GetTags(args, compute_client)
   labels = instance_utils.GetLabels(
@@ -398,6 +432,7 @@ def CreateBulkInsertInstanceResource(
           support_confidential_compute_type=True,
           support_confidential_compute_type_tdx=True,
           support_snp_svsm=supported_features.support_snp_svsm,
+          support_confidential_compute_type_cca=True,
       )
   )
 

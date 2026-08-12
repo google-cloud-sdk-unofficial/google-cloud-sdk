@@ -23,12 +23,15 @@ import time
 
 from googlecloudsdk.api_lib.compute import iap_tunnel_websocket_helper as helper
 from googlecloudsdk.api_lib.compute import iap_tunnel_websocket_utils as utils
+from googlecloudsdk.core import context_aware
+from googlecloudsdk.core import ecp_proxy_manager
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import retry
 import six
 from six.moves import queue
+from six.moves.urllib import parse
 
 MAX_WEBSOCKET_SEND_WAIT_TIME_SEC = 2
 MAX_WEBSOCKET_OPEN_WAIT_TIME_SEC = 60
@@ -44,6 +47,12 @@ class SendAckNotification(exceptions.Error):
 
 
 class ConnectionCreationError(exceptions.Error):
+  pass
+
+
+class EcpProxyStartError(ConnectionCreationError):
+  """Error raised when the local Enterprise Certificate Proxy (ECP) fails to start."""
+
   pass
 
 
@@ -202,12 +211,32 @@ class IapTunnelWebSocket(object):
     r = retry.Retryer(max_wait_ms=MAX_RECONNECT_WAIT_TIME_MS,
                       exponential_sleep_multiplier=1.1,
                       wait_ceiling_ms=MAX_RECONNECT_SLEEP_TIME_MS)
+
+    def ShouldRetry(exc_type, exc_value, exc_traceback, state):
+      # We retry on most exceptions (e.g. connection drops), but we fail fast
+      # if the ECP proxy fails to start (EcpProxyStartError) since retrying
+      # will not resolve a local configuration or binary startup failure.
+      del exc_value, exc_traceback, state  # Unused
+      if issubclass(exc_type, EcpProxyStartError):
+        return False
+      return True
+
     try:
-      r.RetryOnException(func=reconnect_func,
-                         sleep_ms=RECONNECT_INITIAL_SLEEP_MS)
+      r.RetryOnException(
+          func=reconnect_func,
+          should_retry_if=ShouldRetry,
+          sleep_ms=RECONNECT_INITIAL_SLEEP_MS,
+      )
     except retry.RetryException:
       log.warning('[%d] Unable to reconnect within [%d] ms',
                   self._conn_id, MAX_RECONNECT_WAIT_TIME_MS, exc_info=True)
+      self._StopConnectionAsync()
+    except EcpProxyStartError as e:
+      log.warning(
+          '[%d] ECP HTTP Proxy failed to start during reconnect: %s',
+          self._conn_id,
+          e,
+      )
       self._StopConnectionAsync()
 
   def _EnqueueBytesWithWaitForReconnect(self, bytes_to_send):
@@ -282,17 +311,59 @@ class IapTunnelWebSocket(object):
           self._tunnel_target, should_use_new_websocket=True)
       log.info('[%d] Connecting with URL [%r]', self._conn_id, url)
 
+    use_ecp_proxy = False
+    proxy_info = self._tunnel_target.proxy_info
+
+    ca_config = context_aware.Config()
+    if (
+        ca_config
+        and ca_config.config_type
+        == context_aware.ConfigType.ENTERPRISE_CERTIFICATE
+        and ca_config.use_local_proxy
+    ):
+      use_ecp_proxy = True
+
+    if use_ecp_proxy:
+      proxy_port = ecp_proxy_manager.get_proxy_port()
+      if not proxy_port:
+        raise EcpProxyStartError(
+            'ECP HTTP Proxy is enabled but could not be started.'
+        )
+
+      parsed_url = parse.urlsplit(url)
+      original_host = parsed_url.hostname
+
+      # Rewrite URL to target local ECP proxy
+      # wss://mtls.tunnel.cloudproxy.app/... -> ws://localhost:<port>/...
+      url = parse.urlunsplit((
+          'ws',
+          'localhost:{}'.format(proxy_port),
+          parsed_url.path,
+          parsed_url.query,
+          parsed_url.fragment,
+      ))
+
+      # Add target host header for ECP proxy
+      headers.append('x-goog-ecpproxy-target-host: {}'.format(original_host))
+
+      # Bypass standard proxy for the localhost connection
+      proxy_info = None
+      log.debug(
+          'Routing IAP WebSocket through ECP HTTP Proxy on port %d', proxy_port
+      )
+
     self._connect_msg_received = False
 
     self._websocket_helper = helper.IapTunnelWebSocketHelper(
         url,
         headers,
         self._ignore_certs,
-        self._tunnel_target.proxy_info,
+        proxy_info,
         self._OnData,
         self._OnClose,
         should_use_new_websocket=True,
-        conn_id=self._conn_id)
+        conn_id=self._conn_id,
+    )
     self._websocket_helper.StartReceivingThread()
 
   def _SendAck(self):

@@ -1,13 +1,19 @@
-release_tracks: [ALPHA, BETA]
+release_tracks: [ALPHA, BETA, GA]
 help_text:
   brief: Describe a Google Compute Engine host in a reservation.
   description: |
     Describe a Google Compute Engine host in a reservation.
+  examples: |
+    To describe a host named `my-host` in reservation `my-reservation` and zone `us-central1-a`:
+
+      $ {command} my-host --reservation=my-reservation --zone=us-central1-a
 request:
   ALPHA:
     api_version: alpha
   BETA:
     api_version: beta
+  GA:
+    api_version: v1
   collection: compute.hosts
   method: get
   modify_request_hooks:
@@ -24,9 +30,9 @@ arguments:
   - arg_name: reservation-block
     required: false
     help_text: |
-      Name of the reservation block the host is associated with.
+      Name of the reservation block the host is associated with. This argument requires `--reservation` to be specified.
   - arg_name: reservation-subblock
     release_tracks: [ALPHA]
     required: false
     help_text: |
-      Name of the reservation subblock the host is associated with.
+      Name of the reservation subblock the host is associated with. This argument requires `--reservation` and `--reservation-block` to be specified.

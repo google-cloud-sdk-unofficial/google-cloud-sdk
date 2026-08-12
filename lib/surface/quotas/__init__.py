@@ -18,7 +18,7 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class CloudQuotasBeta(base.Group):
   """Manage Cloud Quotas quota info, quota preferences and quota adjuster settings."""

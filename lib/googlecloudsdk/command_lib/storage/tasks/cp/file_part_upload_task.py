@@ -134,6 +134,14 @@ class FilePartUploadTask(file_part_task.FilePartTask):
     digesters = upload_util.get_digesters(
         self._source_resource, self._destination_resource)
     destination_url = self._destination_resource.storage_url
+    def final_headers_callback():
+      if not digesters:
+        return None
+      header_value = hash_util.get_x_goog_hash_header_value(digesters)
+      if header_value:
+        return {'X-Goog-Hash': header_value}
+      return None
+
     provider = destination_url.scheme
     if properties.VALUES.storage.enable_zonal_buckets_bidi_streaming.GetBool():
       api = api_factory.get_api(
@@ -254,6 +262,7 @@ class FilePartUploadTask(file_part_task.FilePartTask):
               source_resource=source_resource_for_metadata,
               tracker_callback=tracker_callback,
               upload_strategy=upload_strategy,
+              final_headers_callback=final_headers_callback,
           )
 
         def _handle_resumable_upload_error(exc_type, exc_value, exc_traceback,
@@ -263,12 +272,19 @@ class FilePartUploadTask(file_part_task.FilePartTask):
               'Resumable upload error.',
               exc_info=(exc_type, exc_value, exc_traceback),
           )
+          status_code = getattr(exc_value, 'status_code', None)
+          if status_code is None and hasattr(exc_value, 'payload'):
+            status_code = getattr(exc_value.payload, 'status_code', None)
+
           if not (
               isinstance(exc_value, api_errors.NotFoundError)
-              or getattr(exc_value, 'status_code', None) == 410
+              or status_code == 410
           ):
 
-            if isinstance(exc_value, api_errors.ResumableUploadAbortError):
+            if (
+                isinstance(exc_value, api_errors.ResumableUploadAbortError)
+                or status_code == 400
+            ):
               tracker_file_util.delete_tracker_file(tracker_file_path)
 
             # Otherwise the error is probably a persistent network issue

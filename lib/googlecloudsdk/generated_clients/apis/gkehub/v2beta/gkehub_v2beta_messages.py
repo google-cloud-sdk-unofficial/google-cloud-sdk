@@ -1274,10 +1274,11 @@ class ConfigManagementSpec(_messages.Message):
   Intended to parallel the ConfigManagement CR.
 
   Enums:
-    ManagementValueValuesEnum: Optional. Deprecated: In Preview, automatic
-      Feature management is unavailable from version 1.21.0 onwards, and
-      Config Sync only supports manual upgrades. If set to manual upgrades,
-      clear this field instead, which is behaviorally equivalent.
+    ManagementValueValuesEnum: Optional. Deprecated: Automatic Feature
+      management is in Preview and is unavailable in version 1.21.0 and later,
+      after which Config Sync only supports manual upgrades. If set to manual
+      upgrades, clear this field instead, which is behaviorally equivalent but
+      helps prevent compatibility issues with newer fields.
 
   Fields:
     binauthz: Optional. Deprecated: Binauthz configuration will be ignored and
@@ -1295,10 +1296,11 @@ class ConfigManagementSpec(_messages.Message):
       cluster. Deprecated: Configuring Hierarchy Controller through the
       configmanagement feature is no longer recommended. Use
       https://github.com/kubernetes-sigs/hierarchical-namespaces instead.
-    management: Optional. Deprecated: In Preview, automatic Feature management
-      is unavailable from version 1.21.0 onwards, and Config Sync only
-      supports manual upgrades. If set to manual upgrades, clear this field
-      instead, which is behaviorally equivalent.
+    management: Optional. Deprecated: Automatic Feature management is in
+      Preview and is unavailable in version 1.21.0 and later, after which
+      Config Sync only supports manual upgrades. If set to manual upgrades,
+      clear this field instead, which is behaviorally equivalent but helps
+      prevent compatibility issues with newer fields.
     policyController: Optional. Policy Controller configuration for the
       cluster. Deprecated: Configuring Policy Controller through the
       configmanagement feature is no longer recommended. Use the
@@ -1310,10 +1312,11 @@ class ConfigManagementSpec(_messages.Message):
   """
 
   class ManagementValueValuesEnum(_messages.Enum):
-    r"""Optional. Deprecated: In Preview, automatic Feature management is
-    unavailable from version 1.21.0 onwards, and Config Sync only supports
-    manual upgrades. If set to manual upgrades, clear this field instead,
-    which is behaviorally equivalent.
+    r"""Optional. Deprecated: Automatic Feature management is in Preview and
+    is unavailable in version 1.21.0 and later, after which Config Sync only
+    supports manual upgrades. If set to manual upgrades, clear this field
+    instead, which is behaviorally equivalent but helps prevent compatibility
+    issues with newer fields.
 
     Values:
       MANAGEMENT_UNSPECIFIED: Unspecified

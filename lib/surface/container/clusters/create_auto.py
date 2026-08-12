@@ -30,6 +30,7 @@ auto_flags = [
     'nodeidentity',
     'privatecluster',
     'authenticatorsecurity',
+    'jwtAuthenticatorConfig',
     'databaseencryption',
     'bootdiskkms',
     'autoprovisioning_network_tags',

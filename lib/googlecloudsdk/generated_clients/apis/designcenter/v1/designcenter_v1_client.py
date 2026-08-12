@@ -1404,6 +1404,33 @@ class DesigncenterV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def RecommendIAMRoles(self, request, global_params=None):
+      r"""Gets recommended roles for an application.
+
+      Args:
+        request: (DesigncenterProjectsLocationsSpacesApplicationsRecommendIAMRolesRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('RecommendIAMRoles')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    RecommendIAMRoles.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/spaces/{spacesId}/applications/{applicationsId}:recommendIAMRoles',
+        http_method='POST',
+        method_id='designcenter.projects.locations.spaces.applications.recommendIAMRoles',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:recommendIAMRoles',
+        request_field='recommendIAMRolesRequest',
+        request_type_name='DesigncenterProjectsLocationsSpacesApplicationsRecommendIAMRolesRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class ProjectsLocationsSpacesCatalogsSharesService(base_api.BaseApiService):
     """Service class for the projects_locations_spaces_catalogs_shares resource."""
 

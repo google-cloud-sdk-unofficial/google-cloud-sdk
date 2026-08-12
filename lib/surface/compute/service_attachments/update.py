@@ -61,17 +61,20 @@ class UpdateHelper(object):
       self,
       holder,
       support_endpoint_based_security_arg,
+      support_routing_mode=False,
   ):
     self._holder = holder
     self._support_endpoint_based_security_arg = (
         support_endpoint_based_security_arg
     )
+    self._support_routing_mode = support_routing_mode
 
   @classmethod
   def Args(
       cls,
       parser,
       support_endpoint_based_security_arg,
+      support_routing_mode=False,
   ):
     """Create a Google Compute Engine service attachment.
 
@@ -79,6 +82,7 @@ class UpdateHelper(object):
       parser: the parser that parses the input from the user.
       support_endpoint_based_security_arg: Whether to support endpoint based
         security.
+      support_routing_mode: Whether to support routing mode.
 
     cls: Hold onto the definition of a complex argument so it can be used later
       to process the user's input.
@@ -104,6 +108,8 @@ class UpdateHelper(object):
       flags.AddConsumerAcceptListOld(parser)
     flags.AddPropagatedConnectionLimit(parser)
     flags.AddNatIpsPerEndpoint(parser)
+    if support_routing_mode:
+      flags.AddRoutingMode(parser)
 
   def _GetConsumerAcceptList(self, args, holder):
     if self._support_endpoint_based_security_arg:
@@ -277,6 +283,23 @@ class UpdateHelper(object):
       if args.nat_ips_per_endpoint != old_resource.natIpsPerEndpoint:
         replacement.natIpsPerEndpoint = args.nat_ips_per_endpoint
         is_updated = True
+    if self._support_routing_mode:
+      new_routing_mode = service_attachments_utils.GetRoutingMode(
+          args, holder.client.messages
+      )
+      if new_routing_mode:
+        old_routing_mode = (
+            old_resource.tunnelingConfig.routingMode
+            if old_resource.tunnelingConfig
+            else None
+        )
+        if new_routing_mode != old_routing_mode:
+          if old_resource.tunnelingConfig is None:
+            replacement.tunnelingConfig = (
+                holder.client.messages.ServiceAttachmentTunnelingConfig()
+            )
+          replacement.tunnelingConfig.routingMode = new_routing_mode
+          is_updated = True
 
     if is_updated:
       return replacement
@@ -303,12 +326,11 @@ class UpdateHelper(object):
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(
-    base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW, base.ReleaseTrack.BETA
-)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
 class Update(base.UpdateCommand):
   """Update a Google Compute Engine service attachment."""
   _support_endpoint_based_security_arg = True
+  _support_routing_mode = False
   detailed_help = _DetailedHelp()
 
   @classmethod
@@ -316,6 +338,7 @@ class Update(base.UpdateCommand):
     UpdateHelper.Args(
         parser,
         cls._support_endpoint_based_security_arg,
+        cls._support_routing_mode,
     )
 
   def Run(self, args):
@@ -324,11 +347,21 @@ class Update(base.UpdateCommand):
     return UpdateHelper(
         holder,
         self._support_endpoint_based_security_arg,
+        self._support_routing_mode,
     ).Run(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
   """Update a Google Compute Engine service attachment."""
 
+  _support_routing_mode = True
+  detailed_help = _DetailedHelp()
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
+  """Update a Google Compute Engine service attachment."""
+
+  _support_routing_mode = True
   detailed_help = _DetailedHelp()

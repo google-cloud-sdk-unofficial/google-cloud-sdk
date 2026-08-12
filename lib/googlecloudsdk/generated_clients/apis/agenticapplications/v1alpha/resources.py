@@ -52,6 +52,14 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_OMNICHANNELTOKENBROKERS = (
+      'projects.locations.omnichannelTokenBrokers',
+      'projects/{projectsId}/locations/{locationsId}/omnichannelTokenBrokers/'
+      '{omnichannelTokenBrokersId}',
+      {},
+      ['projectsId', 'locationsId', 'omnichannelTokenBrokersId'],
+      True
+  )
 
   def __init__(self, collection_name, path, flat_paths, params,
                enable_uri_parsing):

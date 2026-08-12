@@ -232,6 +232,14 @@ def AddCommonEnterpriseCertConfigFlags(parser):
       ),
   )
   parser.add_argument(
+      '--ecp-http-proxy',
+      default=None,
+      help=(
+          'Provide a custom path to the ECP HTTP'
+          ' proxy binary. This flag must be the full path to the binary.'
+      ),
+  )
+  parser.add_argument(
       '--output-file',
       default=None,
       help=(

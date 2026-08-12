@@ -1150,6 +1150,106 @@ class FirewallPolicyRuleOperationMetadata(_messages.Message):
   allocatedPriority = _messages.IntegerField(1, variant=_messages.Variant.INT32)
 
 
+class GetHealthOperationMetadata(_messages.Message):
+  r"""Metadata for GetHealth operations.
+
+  Fields:
+    healthInfo: Output only. The health information.
+  """
+
+  healthInfo = _messages.MessageField('GetHealthOperationMetadataHealthInfo', 1)
+
+
+class GetHealthOperationMetadataHealthInfo(_messages.Message):
+  r"""Health information.
+
+  Enums:
+    AvailabilitySloStatusValueValuesEnum: Output only. The availability SLO
+      status.
+    HealthStatusValueValuesEnum: Output only. The health status.
+    RepairCategoryValueValuesEnum: Output only. The repair category.
+    UnhealthyReasonValueValuesEnum: Output only. The reason for unhealthy
+      status.
+
+  Fields:
+    availabilitySloStatus: Output only. The availability SLO status.
+    healthStatus: Output only. The health status.
+    repairCategory: Output only. The repair category.
+    unhealthyReason: Output only. The reason for unhealthy status.
+    updateTime: Output only. The time when health info was updated.
+  """
+
+  class AvailabilitySloStatusValueValuesEnum(_messages.Enum):
+    r"""Output only. The availability SLO status.
+
+    Values:
+      AVAILABILITY_SLO_STATUS_UNSPECIFIED: Unspecified availability SLO
+        status.
+      AVAILABILITY_SLO_STATUS_IN_SLO: The slot availability is in SLO.
+      AVAILABILITY_SLO_STATUS_OUT_OF_SLO: The slot availability is out of SLO.
+      AVAILABILITY_SLO_STATUS_SLO_UNKNOWN: The slot availability is unknown.
+    """
+    AVAILABILITY_SLO_STATUS_UNSPECIFIED = 0
+    AVAILABILITY_SLO_STATUS_IN_SLO = 1
+    AVAILABILITY_SLO_STATUS_OUT_OF_SLO = 2
+    AVAILABILITY_SLO_STATUS_SLO_UNKNOWN = 3
+
+  class HealthStatusValueValuesEnum(_messages.Enum):
+    r"""Output only. The health status.
+
+    Values:
+      HEALTH_STATUS_UNSPECIFIED: Unspecified health status.
+      HEALTH_STATUS_HEALTHY: The reservation slot is healthy.
+      HEALTH_STATUS_UNHEALTHY: The reservation slot is unhealthy.
+    """
+    HEALTH_STATUS_UNSPECIFIED = 0
+    HEALTH_STATUS_HEALTHY = 1
+    HEALTH_STATUS_UNHEALTHY = 2
+
+  class RepairCategoryValueValuesEnum(_messages.Enum):
+    r"""Output only. The repair category.
+
+    Values:
+      REPAIR_CATEGORY_UNSPECIFIED: <no description>
+      REPAIR_CATEGORY_PLANNED_MAINTENANCE: The repair is because of a planned
+        maintenance
+      REPAIR_CATEGORY_EMERGENT_MAINTENANCE: The repair is because of an
+        emergent maintenance
+      REPAIR_CATEGORY_USER_REPORTED_FAULT: The repair is because of a user
+        reported fault
+      REPAIR_CATEGORY_CRITICAL_FAILURE: The repair is because of critical
+        failures, that are scoped outside emergent maintenance
+    """
+    REPAIR_CATEGORY_UNSPECIFIED = 0
+    REPAIR_CATEGORY_PLANNED_MAINTENANCE = 1
+    REPAIR_CATEGORY_EMERGENT_MAINTENANCE = 2
+    REPAIR_CATEGORY_USER_REPORTED_FAULT = 3
+    REPAIR_CATEGORY_CRITICAL_FAILURE = 4
+
+  class UnhealthyReasonValueValuesEnum(_messages.Enum):
+    r"""Output only. The reason for unhealthy status.
+
+    Values:
+      UNHEALTHY_REASON_UNSPECIFIED: Unspecified unhealthy reason.
+      UNHEALTHY_REASON_REPAIRING: The slot is unhealthy because repair is in
+        progress
+      UNHEALTHY_REASON_PENDING_USER_APPROVAL: The slot is unhealthy because
+        there is a pending repair, waiting for customer approval
+      UNHEALTHY_REASON_UNSCHEDULABLE: The slot is unhealthy because a vm
+        cannot be scheduled on it, and no repairs are running on the slot
+    """
+    UNHEALTHY_REASON_UNSPECIFIED = 0
+    UNHEALTHY_REASON_REPAIRING = 1
+    UNHEALTHY_REASON_PENDING_USER_APPROVAL = 2
+    UNHEALTHY_REASON_UNSCHEDULABLE = 3
+
+  availabilitySloStatus = _messages.EnumField('AvailabilitySloStatusValueValuesEnum', 1)
+  healthStatus = _messages.EnumField('HealthStatusValueValuesEnum', 2)
+  repairCategory = _messages.EnumField('RepairCategoryValueValuesEnum', 3)
+  unhealthyReason = _messages.EnumField('UnhealthyReasonValueValuesEnum', 4)
+  updateTime = _messages.StringField(5)
+
+
 class GetVersionOperationMetadata(_messages.Message):
   r"""A GetVersionOperationMetadata object.
 
@@ -1437,6 +1537,8 @@ class Operation(_messages.Message):
       networkFirewallPolicies.addRule and
       regionNetworkFirewallPolicies.addRule methods if not explicitly provided
       by the user.
+    getHealthOperationMetadata: Output only. [Output Only] Metadata for
+      GetHealth operations.
     getVersionOperationMetadata: A GetVersionOperationMetadata attribute.
     httpErrorMessage: [Output Only] If the operation fails, this field
       contains the HTTP error message that was returned, such as `NOT FOUND`.
@@ -1590,7 +1692,8 @@ class Operation(_messages.Message):
         Engine returns NO_RESULTS_ON_PAGE if there are no results in the
         response.
       data: [Output Only] Metadata about this warning in key: value format.
-        For example: "data": [ { "key": "scope", "value": "zones/us-east1-d" }
+        For example: "data": [ { "key": "scope", "value": "zones/us-east1-d"
+        }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -1751,30 +1854,31 @@ class Operation(_messages.Message):
   endTime = _messages.StringField(5)
   error = _messages.MessageField('ErrorValue', 6)
   firewallPolicyRuleOperationMetadata = _messages.MessageField('FirewallPolicyRuleOperationMetadata', 7)
-  getVersionOperationMetadata = _messages.MessageField('GetVersionOperationMetadata', 8)
-  httpErrorMessage = _messages.StringField(9)
-  httpErrorStatusCode = _messages.IntegerField(10, variant=_messages.Variant.INT32)
-  id = _messages.IntegerField(11, variant=_messages.Variant.UINT64)
-  insertTime = _messages.StringField(12)
-  instancesBulkInsertOperationMetadata = _messages.MessageField('InstancesBulkInsertOperationMetadata', 13)
-  kind = _messages.StringField(14, default='compute#operation')
-  name = _messages.StringField(15)
-  operationGroupId = _messages.StringField(16)
-  operationType = _messages.StringField(17)
-  progress = _messages.IntegerField(18, variant=_messages.Variant.INT32)
-  region = _messages.StringField(19)
-  selfLink = _messages.StringField(20)
-  selfLinkWithId = _messages.StringField(21)
-  setAutoscalerLinkOperationMetadata = _messages.MessageField('SetAutoscalerLinkOperationMetadata', 22)
-  setCommonInstanceMetadataOperationMetadata = _messages.MessageField('SetCommonInstanceMetadataOperationMetadata', 23)
-  startTime = _messages.StringField(24)
-  status = _messages.EnumField('StatusValueValuesEnum', 25)
-  statusMessage = _messages.StringField(26)
-  targetId = _messages.IntegerField(27, variant=_messages.Variant.UINT64)
-  targetLink = _messages.StringField(28)
-  user = _messages.StringField(29)
-  warnings = _messages.MessageField('WarningsValueListEntry', 30, repeated=True)
-  zone = _messages.StringField(31)
+  getHealthOperationMetadata = _messages.MessageField('GetHealthOperationMetadata', 8)
+  getVersionOperationMetadata = _messages.MessageField('GetVersionOperationMetadata', 9)
+  httpErrorMessage = _messages.StringField(10)
+  httpErrorStatusCode = _messages.IntegerField(11, variant=_messages.Variant.INT32)
+  id = _messages.IntegerField(12, variant=_messages.Variant.UINT64)
+  insertTime = _messages.StringField(13)
+  instancesBulkInsertOperationMetadata = _messages.MessageField('InstancesBulkInsertOperationMetadata', 14)
+  kind = _messages.StringField(15, default='compute#operation')
+  name = _messages.StringField(16)
+  operationGroupId = _messages.StringField(17)
+  operationType = _messages.StringField(18)
+  progress = _messages.IntegerField(19, variant=_messages.Variant.INT32)
+  region = _messages.StringField(20)
+  selfLink = _messages.StringField(21)
+  selfLinkWithId = _messages.StringField(22)
+  setAutoscalerLinkOperationMetadata = _messages.MessageField('SetAutoscalerLinkOperationMetadata', 23)
+  setCommonInstanceMetadataOperationMetadata = _messages.MessageField('SetCommonInstanceMetadataOperationMetadata', 24)
+  startTime = _messages.StringField(25)
+  status = _messages.EnumField('StatusValueValuesEnum', 26)
+  statusMessage = _messages.StringField(27)
+  targetId = _messages.IntegerField(28, variant=_messages.Variant.UINT64)
+  targetLink = _messages.StringField(29)
+  user = _messages.StringField(30)
+  warnings = _messages.MessageField('WarningsValueListEntry', 31, repeated=True)
+  zone = _messages.StringField(32)
 
 
 class OperationDetails(_messages.Message):
@@ -2017,7 +2121,8 @@ class Resource(_messages.Message):
         Engine returns NO_RESULTS_ON_PAGE if there are no results in the
         response.
       data: [Output Only] Metadata about this warning in key: value format.
-        For example: "data": [ { "key": "scope", "value": "zones/us-east1-d" }
+        For example: "data": [ { "key": "scope", "value": "zones/us-east1-d"
+        }]
       message: [Output Only] A human-readable description of the warning code.
     """
 
@@ -2346,7 +2451,8 @@ class ResourceUpdate(_messages.Message):
         Engine returns NO_RESULTS_ON_PAGE if there are no results in the
         response.
       data: [Output Only] Metadata about this warning in key: value format.
-        For example: "data": [ { "key": "scope", "value": "zones/us-east1-d" }
+        For example: "data": [ { "key": "scope", "value": "zones/us-east1-d"
+        }]
       message: [Output Only] A human-readable description of the warning code.
     """
 

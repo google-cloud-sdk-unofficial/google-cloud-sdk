@@ -1,0 +1,35 @@
+release_tracks: [ALPHA, BETA, GA, PREVIEW]
+
+help_text:
+  brief: Test IAM permissions for a Compute Engine disk.
+  description: |
+    Test whether a caller has the provided permissions on a given disk. This command returns
+    a list of the permissions from the provided list that the caller possesses.
+  examples: |
+    To test whether the caller has the 'compute.disks.getIamPolicy' permission on a disk, run:
+
+      $ {command} my-disk --permissions=compute.disks.getIamPolicy
+
+request:
+  collection: compute.disks
+  use_relative_name: false
+  method: testIamPermissions
+  api_version: v1
+  BETA:
+    api_version: beta
+  ALPHA:
+    api_version: alpha
+
+command_type: GENERIC
+
+arguments:
+  resource:
+    help_text: The disk to test permissions for.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:disk
+  params:
+  - arg_name: permissions
+    api_field: testPermissionsRequest.permissions
+    required: true
+    repeated: true
+    help_text: |-
+      Permissions to be tested.

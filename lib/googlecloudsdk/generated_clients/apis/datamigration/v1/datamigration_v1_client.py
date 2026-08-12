@@ -1928,7 +1928,7 @@ class DatamigrationV1(base_api.BaseApiClient):
         method_id='datamigration.projects.locations.fetchStaticIps',
         ordered_params=['name'],
         path_params=['name'],
-        query_params=['pageSize', 'pageToken'],
+        query_params=['fetchReservedPublicIps', 'pageSize', 'pageToken'],
         relative_path='v1/{+name}:fetchStaticIps',
         request_field='',
         request_type_name='DatamigrationProjectsLocationsFetchStaticIpsRequest',

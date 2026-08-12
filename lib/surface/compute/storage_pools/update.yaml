@@ -5,7 +5,7 @@
     brief: "Update a storage pool."
     description: "Update a storage pool."
     examples: |
-      To update the size of a storage pool named 'my-storage-pool', run th following command:
+      To update the size of a storage pool named 'my-storage-pool', run the following command:
 
         $ {command} my-storage-pool --provisioned-capacity=20TB
 
@@ -60,6 +60,30 @@
       help_text: |
         Throughput in MB/s provision the pool with.
       type: int
+
+    - arg_name: exapool-capacity-optimized-capacity
+      release_tracks: [ALPHA]
+      api_field: storagePoolResource.exapoolProvisionedCapacityGb.capacityOptimized
+      help_text: |
+        Provisioned capacity-optimized capacity of the exapool. Can only be specified for Exapool storage pools.
+      type: 'googlecloudsdk.calliope.arg_parsers:BinarySize:'
+      processor: googlecloudsdk.api_lib.compute.storage_pools.processors:convert_to_gb
+
+    - arg_name: exapool-read-optimized-capacity
+      release_tracks: [ALPHA]
+      api_field: storagePoolResource.exapoolProvisionedCapacityGb.readOptimized
+      help_text: |
+        Provisioned read-optimized capacity of the exapool. Can only be specified for Exapool storage pools.
+      type: 'googlecloudsdk.calliope.arg_parsers:BinarySize:'
+      processor: googlecloudsdk.api_lib.compute.storage_pools.processors:convert_to_gb
+
+    - arg_name: exapool-write-optimized-capacity
+      release_tracks: [ALPHA]
+      api_field: storagePoolResource.exapoolProvisionedCapacityGb.writeOptimized
+      help_text: |
+        Provisioned write-optimized capacity of the exapool. Can only be specified for Exapool storage pools.
+      type: 'googlecloudsdk.calliope.arg_parsers:BinarySize:'
+      processor: googlecloudsdk.api_lib.compute.storage_pools.processors:convert_to_gb
 
     - arg_name: add-share-with
       release_tracks: [ALPHA]

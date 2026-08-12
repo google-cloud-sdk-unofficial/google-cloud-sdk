@@ -1781,7 +1781,7 @@ class ClusterStatus(_messages.Message):
       includes status reported by the agent.
 
   Fields:
-    detail: Optional. Output only. Details of cluster's state.
+    detail: Optional. Details of cluster's state.
     state: Output only. The cluster's state.
     stateStartTime: Output only. Time when this state was entered (see JSON
       representation of Timestamp (https://developers.google.com/protocol-
@@ -7304,8 +7304,8 @@ class JobStatus(_messages.Message):
       includes status reported by the agent.
 
   Fields:
-    details: Optional. Output only. Job state details, such as an error
-      description if the state is ERROR.
+    details: Optional. Job state details, such as an error description if the
+      state is ERROR.
     state: Output only. A state message specifying the overall job state.
     stateStartTime: Output only. The time when this state was entered.
     substate: Output only. Additional state information, which includes status
@@ -7917,9 +7917,9 @@ class ManagedGroupConfig(_messages.Message):
       central1/instanceGroupManagers/my-igm.
     instanceTemplateName: Output only. The name of the Instance Template used
       for the Managed Instance Group.
-    instanceTemplateUri: Optional. Output only. Partial URI of the Instance
-      Template. Example:
-      projects/project_id/regions/region/instanceTemplates/template-id
+    instanceTemplateUri: Optional. Partial URI of the Instance Template.
+      Example: projects/project_id/regions/region/instanceTemplates/template-
+      id
   """
 
   instanceGroupManagerName = _messages.StringField(1)

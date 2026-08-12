@@ -26,6 +26,8 @@ from googlecloudsdk.api_lib.run import run_util
 from googlecloudsdk.api_lib.storage import storage_api
 from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.command_lib.builds import staging_bucket_util
+from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import validators
 from googlecloudsdk.command_lib.run.sourcedeploys import region_name_util
 from googlecloudsdk.command_lib.run.sourcedeploys import types
 from googlecloudsdk.core import exceptions as core_exceptions
@@ -37,6 +39,7 @@ from googlecloudsdk.core.util import times
 
 _GCS_PREFIX = 'gs://'
 _MAX_BUCKET_NAME_LENGTH = 63
+MAX_RUN_UPLOAD_SOURCE_SIZE_BYTES = 248 * 1024 * 1024
 
 
 class BucketNameError(core_exceptions.Error):
@@ -178,6 +181,49 @@ def GetGcsObject(source: str, location: str):
 def IsGcsObject(source: str) -> bool:
   """Returns true if the source is located remotely in a GCS object."""
   return (source or '').startswith(_GCS_PREFIX)
+
+
+def GetSourceSizeBytes(source_path: str) -> int:
+  """Returns the size of the source path in bytes.
+
+  Args:
+    source_path: The local file or directory path, or GCS object.
+
+  Returns:
+    The size in bytes. Returns -1 if source_path does not exist or is a GCS
+    object.
+  """
+  if (
+      not source_path
+      or IsGcsObject(source_path)
+      or not os.path.exists(source_path)
+  ):
+    return -1
+  if os.path.isfile(source_path):
+    return os.path.getsize(source_path)
+  if os.path.isdir(source_path):
+    return files.GetTreeSizeBytes(source_path)
+  return -1
+
+
+def ShouldUploadThroughRunApi(deploy_from_source, release_track) -> bool:
+  """Returns True if the source should be uploaded via Cloud Run Upload Source API."""
+  if not flags.IsUploadLaunchStage(release_track):
+    return False
+
+  if not deploy_from_source:
+    return False
+
+  container_args = next(iter(deploy_from_source.values()))
+  if flags.FlagIsExplicitlySet(container_args, 'run_upload'):
+    return bool(container_args.run_upload)
+
+  if validators.IsNoBuildFromSource(release_track, deploy_from_source):
+    source_path = getattr(container_args, 'source', None)
+    source_size = GetSourceSizeBytes(source_path)
+    return 0 <= source_size < MAX_RUN_UPLOAD_SOURCE_SIZE_BYTES
+
+  return False
 
 
 def GetGsutilUri(source) -> str:

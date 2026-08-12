@@ -7641,7 +7641,6 @@ class GoogleCloudAiplatformV1AddContextArtifactsAndExecutionsResponse(_messages.
   """
 
 
-
 class GoogleCloudAiplatformV1AddContextChildrenRequest(_messages.Message):
   r"""Request message for MetadataService.AddContextChildren.
 
@@ -9303,7 +9302,6 @@ class GoogleCloudAiplatformV1CancelAsyncQueryReasoningEngineResponse(_messages.M
   r"""Response message for
   ReasoningEngineExecutionService.CancelAsyncQueryReasoningEngine.
   """
-
 
 
 class GoogleCloudAiplatformV1CancelBatchPredictionJobRequest(_messages.Message):
@@ -12102,6 +12100,7 @@ class GoogleCloudAiplatformV1DeploymentResourcePool(_messages.Message):
 
 class GoogleCloudAiplatformV1DeprovisionSemanticGovernancePolicyEngineRequest(_messages.Message):
   r"""Request message for SemanticGovernancePolicyEngineService.DeprovisionSem
+
   anticGovernancePolicyEngine.
 
   Fields:
@@ -13484,7 +13483,6 @@ class GoogleCloudAiplatformV1ExactMatchSpec(_messages.Message):
   r"""Spec for exact match metric - returns 1 if prediction and reference
   exactly matches, otherwise 0.
   """
-
 
 
 class GoogleCloudAiplatformV1Examples(_messages.Message):
@@ -17181,7 +17179,6 @@ class GoogleCloudAiplatformV1GenerateContentResponseUsageMetadata(_messages.Mess
 class GoogleCloudAiplatformV1GenerateFetchAccessTokenRequest(_messages.Message):
   r"""Request message for FeatureOnlineStoreService.GenerateFetchAccessToken.
   """
-
 
 
 class GoogleCloudAiplatformV1GenerateFetchAccessTokenResponse(_messages.Message):
@@ -26759,13 +26756,11 @@ class GoogleCloudAiplatformV1RagManagedDbConfigBasic(_messages.Message):
   """
 
 
-
 class GoogleCloudAiplatformV1RagManagedDbConfigScaled(_messages.Message):
   r"""Scaled tier offers production grade performance along with autoscaling
   functionality. It is suitable for customers with large amounts of data or
   performance sensitive workloads.
   """
-
 
 
 class GoogleCloudAiplatformV1RagManagedDbConfigUnprovisioned(_messages.Message):
@@ -26774,7 +26769,6 @@ class GoogleCloudAiplatformV1RagManagedDbConfigUnprovisioned(_messages.Message):
   the data cannot be recovered. To start using RAG Engine again, you will need
   to update the tier by calling the UpdateRagEngineConfig API.
   """
-
 
 
 class GoogleCloudAiplatformV1RagQuery(_messages.Message):
@@ -27732,7 +27726,6 @@ class GoogleCloudAiplatformV1RebootPersistentResourceOperationMetadata(_messages
 class GoogleCloudAiplatformV1RebootPersistentResourceRequest(_messages.Message):
   r"""Request message for PersistentResourceService.RebootPersistentResource.
   """
-
 
 
 class GoogleCloudAiplatformV1RemoveContextChildrenRequest(_messages.Message):
@@ -32928,7 +32921,6 @@ class GoogleCloudAiplatformV1SchemaVisualInspectionMaskSavedQueryMetadata(_messa
   """
 
 
-
 class GoogleCloudAiplatformV1SearchDataItemsResponse(_messages.Message):
   r"""Response message for DatasetService.SearchDataItems.
 
@@ -35683,7 +35675,6 @@ class GoogleCloudAiplatformV1ToolCodeExecution(_messages.Message):
   """
 
 
-
 class GoogleCloudAiplatformV1ToolComputerUse(_messages.Message):
   r"""Tool to support computer use.
 
@@ -36216,7 +36207,6 @@ class GoogleCloudAiplatformV1TrajectoryAnyOrderMatchSpec(_messages.Message):
   """
 
 
-
 class GoogleCloudAiplatformV1TrajectoryExactMatchInput(_messages.Message):
   r"""Instances and metric spec for TrajectoryExactMatch metric.
 
@@ -36266,7 +36256,6 @@ class GoogleCloudAiplatformV1TrajectoryExactMatchSpec(_messages.Message):
   r"""Spec for TrajectoryExactMatch metric - returns 1 if tool calls in the
   reference trajectory exactly match the predicted trajectory, else 0.
   """
-
 
 
 class GoogleCloudAiplatformV1TrajectoryInOrderMatchInput(_messages.Message):
@@ -36321,7 +36310,6 @@ class GoogleCloudAiplatformV1TrajectoryInOrderMatchSpec(_messages.Message):
   """
 
 
-
 class GoogleCloudAiplatformV1TrajectoryPrecisionInput(_messages.Message):
   r"""Instances and metric spec for TrajectoryPrecision metric.
 
@@ -36373,7 +36361,6 @@ class GoogleCloudAiplatformV1TrajectoryPrecisionSpec(_messages.Message):
   """
 
 
-
 class GoogleCloudAiplatformV1TrajectoryRecallInput(_messages.Message):
   r"""Instances and metric spec for TrajectoryRecall metric.
 
@@ -36422,7 +36409,6 @@ class GoogleCloudAiplatformV1TrajectoryRecallSpec(_messages.Message):
   r"""Spec for TrajectoryRecall metric - returns a float score based on
   average recall of individual tool calls.
   """
-
 
 
 class GoogleCloudAiplatformV1TrajectorySingleToolUseInput(_messages.Message):
@@ -37699,7 +37685,6 @@ class GoogleCloudAiplatformV1WriteFeatureValuesResponse(_messages.Message):
   """
 
 
-
 class GoogleCloudAiplatformV1WriteTensorboardExperimentDataRequest(_messages.Message):
   r"""Request message for TensorboardService.WriteTensorboardExperimentData.
 
@@ -37714,7 +37699,6 @@ class GoogleCloudAiplatformV1WriteTensorboardExperimentDataRequest(_messages.Mes
 class GoogleCloudAiplatformV1WriteTensorboardExperimentDataResponse(_messages.Message):
   r"""Response message for TensorboardService.WriteTensorboardExperimentData.
   """
-
 
 
 class GoogleCloudAiplatformV1WriteTensorboardRunDataRequest(_messages.Message):
@@ -38085,7 +38069,6 @@ class GoogleProtobufEmpty(_messages.Message):
   or the response type of an API method. For instance: service Foo { rpc
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
-
 
 
 class GoogleRpcStatus(_messages.Message):

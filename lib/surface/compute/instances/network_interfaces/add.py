@@ -39,7 +39,7 @@ class Add(base.UpdateCommand):
   """
 
   enable_ipv6_assignment = False
-  support_igmp_query = False
+  support_igmp_query = True
   support_alias_ipv6_ranges = False
   support_dns64_eligible = False
   support_nat64_eligible = False
@@ -65,7 +65,10 @@ class Add(base.UpdateCommand):
     network_interfaces_flags.AddNetworkTierArg(parser)
     network_interfaces_flags.AddIpv6NetworkTierArg(
         parser,
-        support_standard_tier=(cls.ReleaseTrack() == base.ReleaseTrack.ALPHA),
+        support_standard_tier=(
+            cls.ReleaseTrack()
+            in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]
+        ),
     )
     network_interfaces_flags.AddAddressArgs(parser)
     network_interfaces_flags.AddExternalIpv6AddressArg(parser)
@@ -165,7 +168,6 @@ class AddBeta(Add):
   """
 
   enable_ipv6_assignment = False
-  support_igmp_query = False
   support_alias_ipv6_ranges = True
   support_dns64_eligible = False
   support_nat64_eligible = False
@@ -183,7 +185,6 @@ class AddAlpha(AddBeta):
   """
 
   enable_ipv6_assignment = True
-  support_igmp_query = True
   support_alias_ipv6_ranges = True
   support_dns64_eligible = True
   support_nat64_eligible = True

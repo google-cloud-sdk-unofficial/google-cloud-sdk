@@ -1,12 +1,18 @@
-release_tracks: [ALPHA, BETA]
+release_tracks: [ALPHA, BETA, GA]
 help_text:
   brief: List Google Compute Engine hosts for a reservation.
   description: List Google Compute Engine hosts in a given project and zone, filtered by reservation.
+  examples: |
+    To list hosts in reservation `my-reservation` and zone `us-central1-a`:
+
+      $ {command} --reservation=my-reservation --zone=us-central1-a
 request:
   ALPHA:
     api_version: alpha
   BETA:
     api_version: beta
+  GA:
+    api_version: v1
   collection: compute.hosts
   method: list
   modify_request_hooks:
@@ -24,11 +30,11 @@ arguments:
   - arg_name: reservation-block
     required: false
     help_text: |
-      Name of the reservation block the hosts are associated with.
+      Name of the reservation block the hosts are associated with. This argument requires `--reservation` to be specified.
   - arg_name: reservation-subblock
     required: false
     release_tracks: [ALPHA]
     help_text: |
-      Name of the reservation subblock the hosts are associated with.
+      Name of the reservation subblock the hosts are associated with. This argument requires `--reservation` and `--reservation-block` to be specified.
 response:
   id_field: name

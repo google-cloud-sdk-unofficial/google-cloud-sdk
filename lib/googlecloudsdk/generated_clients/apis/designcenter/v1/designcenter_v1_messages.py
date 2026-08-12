@@ -1250,6 +1250,8 @@ class Component(_messages.Message):
       component.
     createTime: Output only. The component creation timestamp.
     displayName: Optional. The component display name.
+    inputVariableAliases: Optional. Input variable aliases defined on this
+      live component.
     name: Identifier. The component name.
     parameters: Optional. The component parameters.
     roles: Output only. IAM roles required by the service account to deploy
@@ -1269,12 +1271,13 @@ class Component(_messages.Message):
   connectionsParameters = _messages.MessageField('ConnectionParameters', 4, repeated=True)
   createTime = _messages.StringField(5)
   displayName = _messages.StringField(6)
-  name = _messages.StringField(7)
-  parameters = _messages.MessageField('Parameter', 8, repeated=True)
-  roles = _messages.StringField(9, repeated=True)
-  sharedTemplateRevisionUri = _messages.StringField(10)
-  updateTime = _messages.StringField(11)
-  useAsRootModule = _messages.BooleanField(12)
+  inputVariableAliases = _messages.MessageField('InputVariableAlias', 7, repeated=True)
+  name = _messages.StringField(8)
+  parameters = _messages.MessageField('Parameter', 9, repeated=True)
+  roles = _messages.StringField(10, repeated=True)
+  sharedTemplateRevisionUri = _messages.StringField(11)
+  updateTime = _messages.StringField(12)
+  useAsRootModule = _messages.BooleanField(13)
 
 
 class ComponentApplicationInfo(_messages.Message):
@@ -2805,6 +2808,22 @@ class DesigncenterProjectsLocationsSpacesApplicationsPreviewRequest(_messages.Me
 
   name = _messages.StringField(1, required=True)
   previewApplicationRequest = _messages.MessageField('PreviewApplicationRequest', 2)
+
+
+class DesigncenterProjectsLocationsSpacesApplicationsRecommendIAMRolesRequest(_messages.Message):
+  r"""A
+  DesigncenterProjectsLocationsSpacesApplicationsRecommendIAMRolesRequest
+  object.
+
+  Fields:
+    name: Required. The application name. Format: projects/$project/locations/
+      $location/spaces/$space/applications/$application
+    recommendIAMRolesRequest: A RecommendIAMRolesRequest resource to be passed
+      as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  recommendIAMRolesRequest = _messages.MessageField('RecommendIAMRolesRequest', 2)
 
 
 class DesigncenterProjectsLocationsSpacesCatalogsCreateRequest(_messages.Message):
@@ -4498,6 +4517,21 @@ class InferredMetadata(_messages.Message):
   updateTime = _messages.StringField(4)
 
 
+class InputVariableAlias(_messages.Message):
+  r"""Input variable alias mapping for a component in a composite application
+  template.
+
+  Fields:
+    alias: Required. Alias for the variable name to be exposed at the root
+      level of the composite template.
+    variable: Required. Name of the input variable inside the component's
+      underlying template or module.
+  """
+
+  alias = _messages.StringField(1)
+  variable = _messages.StringField(2)
+
+
 class ListApplicationTemplateRevisionsResponse(_messages.Message):
   r"""Message for response to listing application template revisions.
 
@@ -5261,6 +5295,10 @@ class ProvisionDeploymentGroupOperationMetadata(_messages.Message):
   deploymentUnitProgress = _messages.MessageField('DeploymentUnitProgress', 2, repeated=True)
 
 
+class RecommendIAMRolesRequest(_messages.Message):
+  r"""Message for getting recommended roles for an application."""
+
+
 class RegisterAppHubApplicationResourcesRequest(_messages.Message):
   r"""Request message for RegisterAppHubApplicationResources method.
 
@@ -5390,16 +5428,18 @@ class RootInputVariable(_messages.Message):
   r"""Input variable of a root module.
 
   Fields:
+    alias: Alias for the variable name.
     defaultValue: Default value of the input variable.
     value: Value for the input variable.
     variable: Name of the input variable.
     variableType: Type of the input variable.
   """
 
-  defaultValue = _messages.MessageField('extra_types.JsonValue', 1)
-  value = _messages.MessageField('extra_types.JsonValue', 2)
-  variable = _messages.StringField(3)
-  variableType = _messages.StringField(4)
+  alias = _messages.StringField(1)
+  defaultValue = _messages.MessageField('extra_types.JsonValue', 2)
+  value = _messages.MessageField('extra_types.JsonValue', 3)
+  variable = _messages.StringField(4)
+  variableType = _messages.StringField(5)
 
 
 class RootModule(_messages.Message):
@@ -5613,6 +5653,8 @@ class SerializedComponent(_messages.Message):
     connectionsParameters: Output only. The connection parameters of the
       component.
     displayName: Optional. The component display name.
+    inputVariableAliases: Optional. Input variable aliases defined for this
+      serialized component.
     parameters: Optional. The component parameters.
     roles: Optional. IAM roles required by the service account to deploy the
       component.
@@ -5631,11 +5673,12 @@ class SerializedComponent(_messages.Message):
   connections = _messages.MessageField('SerializedConnection', 4, repeated=True)
   connectionsParameters = _messages.MessageField('ConnectionParameters', 5, repeated=True)
   displayName = _messages.StringField(6)
-  parameters = _messages.MessageField('Parameter', 7, repeated=True)
-  roles = _messages.StringField(8, repeated=True)
-  sharedTemplateRevisionUri = _messages.StringField(9)
-  uri = _messages.StringField(10)
-  useAsRootModule = _messages.BooleanField(11)
+  inputVariableAliases = _messages.MessageField('InputVariableAlias', 7, repeated=True)
+  parameters = _messages.MessageField('Parameter', 8, repeated=True)
+  roles = _messages.StringField(9, repeated=True)
+  sharedTemplateRevisionUri = _messages.StringField(10)
+  uri = _messages.StringField(11)
+  useAsRootModule = _messages.BooleanField(12)
 
 
 class SerializedConnection(_messages.Message):

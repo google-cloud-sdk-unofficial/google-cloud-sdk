@@ -17,7 +17,7 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class QuotaAdjusterBeta(base.Group):
   """The command group for Cloud Quotas Adjuster."""

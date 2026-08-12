@@ -46,7 +46,9 @@ class NetappV1(base_api.BaseApiClient):
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
     self.projects_locations_storagePools_backupConfigs = self.ProjectsLocationsStoragePoolsBackupConfigsService(self)
     self.projects_locations_storagePools_ontap = self.ProjectsLocationsStoragePoolsOntapService(self)
+    self.projects_locations_storagePools_volumePerformanceGroups = self.ProjectsLocationsStoragePoolsVolumePerformanceGroupsService(self)
     self.projects_locations_storagePools = self.ProjectsLocationsStoragePoolsService(self)
+    self.projects_locations_trial = self.ProjectsLocationsTrialService(self)
     self.projects_locations_volumes_quotaRules = self.ProjectsLocationsVolumesQuotaRulesService(self)
     self.projects_locations_volumes_replications = self.ProjectsLocationsVolumesReplicationsService(self)
     self.projects_locations_volumes_snapshots = self.ProjectsLocationsVolumesSnapshotsService(self)
@@ -1251,6 +1253,151 @@ class NetappV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsStoragePoolsVolumePerformanceGroupsService(base_api.BaseApiService):
+    """Service class for the projects_locations_storagePools_volumePerformanceGroups resource."""
+
+    _NAME = 'projects_locations_storagePools_volumePerformanceGroups'
+
+    def __init__(self, client):
+      super(NetappV1.ProjectsLocationsStoragePoolsVolumePerformanceGroupsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new volume performance group.
+
+      Args:
+        request: (NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/storagePools/{storagePoolsId}/volumePerformanceGroups',
+        http_method='POST',
+        method_id='netapp.projects.locations.storagePools.volumePerformanceGroups.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['volumePerformanceGroupId'],
+        relative_path='v1/{+parent}/volumePerformanceGroups',
+        request_field='volumePerformanceGroup',
+        request_type_name='NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a volume performance group.
+
+      Args:
+        request: (NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/storagePools/{storagePoolsId}/volumePerformanceGroups/{volumePerformanceGroupsId}',
+        http_method='DELETE',
+        method_id='netapp.projects.locations.storagePools.volumePerformanceGroups.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Returns details of the specified volume performance group.
+
+      Args:
+        request: (NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (VolumePerformanceGroup) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/storagePools/{storagePoolsId}/volumePerformanceGroups/{volumePerformanceGroupsId}',
+        http_method='GET',
+        method_id='netapp.projects.locations.storagePools.volumePerformanceGroups.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsGetRequest',
+        response_type_name='VolumePerformanceGroup',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Returns a list of volume performance groups in a `StoragePool`. Use `-` as storage pool name to list volume performance groups across all storage pools in a project.
+
+      Args:
+        request: (NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListVolumePerformanceGroupsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/storagePools/{storagePoolsId}/volumePerformanceGroups',
+        http_method='GET',
+        method_id='netapp.projects.locations.storagePools.volumePerformanceGroups.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/volumePerformanceGroups',
+        request_field='',
+        request_type_name='NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsListRequest',
+        response_type_name='ListVolumePerformanceGroupsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates an existing volume performance group.
+
+      Args:
+        request: (NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/storagePools/{storagePoolsId}/volumePerformanceGroups/{volumePerformanceGroupsId}',
+        http_method='PATCH',
+        method_id='netapp.projects.locations.storagePools.volumePerformanceGroups.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1/{+name}',
+        request_field='volumePerformanceGroup',
+        request_type_name='NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class ProjectsLocationsStoragePoolsService(base_api.BaseApiService):
     """Service class for the projects_locations_storagePools resource."""
 
@@ -1500,6 +1647,70 @@ class NetappV1(base_api.BaseApiClient):
         relative_path='v1/{+name}:validateDirectoryService',
         request_field='validateDirectoryServiceRequest',
         request_type_name='NetappProjectsLocationsStoragePoolsValidateDirectoryServiceRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsTrialService(base_api.BaseApiService):
+    """Service class for the projects_locations_trial resource."""
+
+    _NAME = 'projects_locations_trial'
+
+    def __init__(self, client):
+      super(NetappV1.ProjectsLocationsTrialService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def EndTrial(self, request, global_params=None):
+      r"""EndTrial ends a Trial. Note: Trial is a singleton resource (AIP-156).
+
+      Args:
+        request: (NetappProjectsLocationsTrialEndTrialRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('EndTrial')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    EndTrial.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/trial:endTrial',
+        http_method='POST',
+        method_id='netapp.projects.locations.trial.endTrial',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:endTrial',
+        request_field='endTrialRequest',
+        request_type_name='NetappProjectsLocationsTrialEndTrialRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def SubscribeTrial(self, request, global_params=None):
+      r"""SubscribeTrial subscribes a Trial. Note: Trial is a singleton resource (AIP-156).
+
+      Args:
+        request: (NetappProjectsLocationsTrialSubscribeTrialRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('SubscribeTrial')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SubscribeTrial.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/trial:subscribeTrial',
+        http_method='POST',
+        method_id='netapp.projects.locations.trial.subscribeTrial',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1/{+parent}:subscribeTrial',
+        request_field='subscribeTrialRequest',
+        request_type_name='NetappProjectsLocationsTrialSubscribeTrialRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -2192,6 +2403,33 @@ class NetappV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def GetSplitStatus(self, request, global_params=None):
+      r"""Retrieves the current state, progress, and details of a split operation for a volume. This method is relevant when the volume is a clone. For volumes that are not clones, this method will return an error.
+
+      Args:
+        request: (NetappProjectsLocationsVolumesGetSplitStatusRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SplitStatus) The response message.
+      """
+      config = self.GetMethodConfig('GetSplitStatus')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetSplitStatus.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/volumes/{volumesId}:getSplitStatus',
+        http_method='GET',
+        method_id='netapp.projects.locations.volumes.getSplitStatus',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:getSplitStatus',
+        request_field='',
+        request_type_name='NetappProjectsLocationsVolumesGetSplitStatusRequest',
+        response_type_name='SplitStatus',
+        supports_download=False,
+    )
+
     def List(self, request, global_params=None):
       r"""Lists Volumes in a given project.
 
@@ -2300,6 +2538,33 @@ class NetappV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def StartSplit(self, request, global_params=None):
+      r"""Splits a clone volume from its source volume. This operation will only work for volumes which have clone_details set(clones). For volumes that are not clones, this operation will return an error.
+
+      Args:
+        request: (NetappProjectsLocationsVolumesStartSplitRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('StartSplit')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    StartSplit.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/volumes/{volumesId}:startSplit',
+        http_method='POST',
+        method_id='netapp.projects.locations.volumes.startSplit',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:startSplit',
+        request_field='startSplitRequest',
+        request_type_name='NetappProjectsLocationsVolumesStartSplitRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class ProjectsLocationsService(base_api.BaseApiService):
     """Service class for the projects_locations resource."""
 
@@ -2334,6 +2599,33 @@ class NetappV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='NetappProjectsLocationsGetRequest',
         response_type_name='Location',
+        supports_download=False,
+    )
+
+    def GetTrial(self, request, global_params=None):
+      r"""GetTrial gets a Trial.
+
+      Args:
+        request: (NetappProjectsLocationsGetTrialRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Trial) The response message.
+      """
+      config = self.GetMethodConfig('GetTrial')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetTrial.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/trial',
+        http_method='GET',
+        method_id='netapp.projects.locations.getTrial',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='NetappProjectsLocationsGetTrialRequest',
+        response_type_name='Trial',
         supports_download=False,
     )
 

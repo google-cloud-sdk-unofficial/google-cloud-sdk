@@ -217,6 +217,7 @@ class CreateFirestoreAPI(base.Command):
         self.FirestoreDataAccessMode(args.enable_firestore_data_access),
         self.RealtimeUpdatesMode(args.enable_realtime_updates),
         self.DatabaseConcurrencyMode(args.concurrency_mode),
+        storage_placement=getattr(args, 'storage_placement', None),
         tags=args.tags,
     )
 
@@ -225,6 +226,9 @@ class CreateFirestoreAPI(base.Command):
     flags.AddLocationFlag(
         parser, required=True, suggestion_aliases=['--region']
     )
+    # TODO(b/538690821): Promote --storage-placement flag to BETA/GA.
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      flags.AddStoragePlacementFlag(parser)
     parser.add_argument(
         '--edition',
         help='The edition of the database.',

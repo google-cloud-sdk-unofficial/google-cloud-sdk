@@ -18,20 +18,24 @@ The functions here construct EntryLink records that capture lineage and
 semantic relationships between dbt entries. They are emitted by default;
 ``transform.GenerateImportFile`` skips them only when
 ``include_entry_links=False`` (exposed as ``--no-include-entry-links`` on the
-``metadata-jobs create`` command). The dbt entry link types (belongs-to,
-consumed-by, defines-semantics-for, depends-on, derives-from, materializes-to,
-schema-join) are first-party system types under the same environment-specific
-system project as the aspect / entry types.
+``metadata-jobs create`` command). The dbt entry link types (represents,
+depends-on-lineage-imported, depends-on-imported) are first-party system types
+under the corresponding environment-specific system project (e.g.,
+dataplex-staging-types), which is separate from the project hosting the dbt
+aspect / entry types (e.g., dataplex-staging-3p-types).
 
-dbt ``relationships`` tests map to ``logical-schema-join`` (undirected, accepts
-any Dataplex entry) carrying the required ``schema-join`` aspect -- NOT the
-BigQuery-only ``schema-join`` link type, which cannot link dbt entries.
+``represents`` links are used for both:
+1. Physical mapping: dbt model/seed/snapshot ->
+   the physical @bigquery table entry. These are emitted only when
+   ``build_entry_links(linkable_datasets=...)`` names the datasets to link.
+   Entry links are same-region, so the @bigquery entries are named in the
+   import location (``ctx.eg_location``); a link only resolves for a dataset
+   that actually lives there, so the caller passes the set of co-located
+   datasets.
+2. Semantic mapping: dbt semantic model -> dbt model.
 
-``materializes-to`` links (dbt model/seed/snapshot -> the physical @bigquery
-table entry) are emitted only when ``build_entry_links(bigquery_location=...)``
-is given the physical entries' Dataplex region -- it is not carried in the
-manifest, so callers supply it (see ``transform`` / the command's
-``--bigquery-location``). All other edges are derived purely from the manifest.
+All other edges (lineage and external consumption) are derived purely from the
+manifest.
 """
 
 from __future__ import annotations
@@ -99,7 +103,7 @@ _EntryReference = TypedDict(
 
 
 # The entry link itself. ``aspects`` is set only for link types that declare
-# ``required_aspects`` (e.g. logical-schema-join carries a ``schema-join``
+# ``required_aspects`` (e.g. schema-join-imported carries a ``schema-join``
 # aspect), hence total=False.
 _EntryLinkBody = TypedDict(
     '_EntryLinkBody',
@@ -129,7 +133,7 @@ def _link_id(
           'utf-8'
       )
   ).hexdigest()[:16]
-  link_type_id = link_type_short.replace('_', '-')
+  link_type_id = naming.LINK_TYPE_IDS[link_type_short]
   return f'{link_type_id}-{digest}'
 
 
@@ -154,11 +158,10 @@ def _entry_link(
     source_path: optional column path on the source entry.
     target_path: optional column path on the target entry.
     aspects: optional aspect map (key -> {aspectType, data}) attached to the
-      link, required by link types that declare ``required_aspects`` (e.g.
-      logical-schema-join needs the ``schema-join`` aspect).
+      link, required by link types that declare ``required_aspects``.
     undirected: when True, both references are UNSPECIFIED (the link type is
-      undirected, e.g. logical-schema-join); a directed SOURCE/TARGET reference
-      would be rejected for an undirected type.
+      undirected); a directed SOURCE/TARGET reference would be rejected for an
+      undirected type.
 
   Returns:
     An EntryLink record.
@@ -304,165 +307,10 @@ def _index_uid_by_name(
   return index
 
 
-def _node_group(node: dict[str, Any]) -> str | None:
-  """Returns the group a node belongs to, declared top-level or under config."""
-  return node.get('group') or (node.get('config') or {}).get('group')
-
-
-def _emit_belongs_to(
-    ctx: naming.Context, manifest: Mapping[str, Any], known_ids: Set[str]
-) -> list[EntryLinkRecord]:
-  """Model / semantic_model / metric -> dbt group entry."""
-  out: list[EntryLinkRecord] = []
-  group_uid_by_name = _index_uid_by_name(manifest.get(_GROUPS))
-  sources = [
-      (_NODES, lambda n: n.get('resource_type') == 'model'),
-      (_SEMANTIC_MODELS, lambda _: True),
-      (_METRICS, lambda _: True),
-  ]
-  for top_key, predicate in sources:
-    for uid, node in (manifest.get(top_key) or {}).items():
-      if not predicate(node):
-        continue
-      group_name = _node_group(node)
-      if not group_name:
-        continue
-      group_uid = group_uid_by_name.get(group_name)
-      if not group_uid:
-        continue
-      group_id = naming.entry_id(group_uid)
-      if group_id not in known_ids:
-        continue
-      out.append(
-          _entry_link(
-              ctx,
-              'belongs_to',
-              ctx.entry_name(naming.entry_id(uid)),
-              ctx.entry_name(group_id),
-          )
-      )
-  return out
-
-
-def _schema_join_aspect(
-    ctx: naming.Context,
-    source_sql: str,
-    source_field: str,
-    target_sql: str,
-    target_field: str,
-) -> dict[str, Any]:
-  """Builds the ``schema-join`` aspect required by logical-schema-join links.
-
-  ``logical-schema-join`` declares ``required_aspects: schema-join``, so each
-  link carries a single Dataplex-owned ``schema-join`` aspect describing the
-  joinable columns (payload follows the aspect type's ``SchemaJoins`` template).
-  The ``schema-join`` aspect type is a core 1P type in the same system project
-  as the entry link types, so its key / fqn use ``system_project``.
-
-  Args:
-    ctx: the naming.Context holding the naming coordinates for this run.
-    source_sql: SQL representation (relation name) of the source entity.
-    source_field: joinable column on the source entity.
-    target_sql: SQL representation (relation name) of the target entity.
-    target_field: joinable column on the target entity.
-
-  Returns:
-    An aspect map ({aspect_key: {aspectType, data}}) for the link.
-  """
-  key = f'{ctx.system_project}.{ctx.types_location}.schema-join'
-  fqn = (
-      f'projects/{ctx.system_project}/locations/{ctx.types_location}/'
-      'aspectTypes/schema-join'
-  )
-  data = {
-      'joins': [{
-          'source': {'name': source_sql, 'fields': [source_field]},
-          'target': {'name': target_sql, 'fields': [target_field]},
-          # A dbt `relationships` test asserts a user-authored foreign key.
-          'type': 'FOREIGN_KEY',
-          'inferenceSource': 'USER',
-      }],
-      'userManaged': True,
-  }
-  return {key: {'aspectType': fqn, 'data': data}}
-
-
-def _emit_schema_join(
-    ctx: naming.Context, manifest: Mapping[str, Any], known_ids: Set[str]
-) -> list[EntryLinkRecord]:
-  """Child model -> parent model, from relationships tests.
-
-  Emitted as a ``logical-schema-join`` link (undirected, accepts any Dataplex
-  entry) carrying the required ``schema-join`` aspect. The BigQuery-native
-  ``schema-join`` link type is NOT used -- it is restricted to BigQuery/BigLake
-  entry types and cannot link dbt entries. The joinable columns live in the
-  aspect (source/target fields), NOT as entryReference ``path`` values: dbt
-  columns are in the custom ``dbt-schema`` aspect, not a Dataplex-resolvable
-  entry path, so a column path would be rejected.
-
-  Args:
-    ctx: the naming.Context holding the naming coordinates for this run.
-    manifest: the manifest dict.
-    known_ids: set of known entry IDs (to filter dependencies that exist).
-
-  Returns:
-    A list of logical-schema-join EntryLink records.
-  """
-  out: list[EntryLinkRecord] = []
-  nodes = manifest.get(_NODES) or {}
-  model_uid_by_name = _index_uid_by_name(
-      nodes, lambda n: n.get('resource_type') == 'model'
-  )
-  for node in nodes.values():
-    if node.get('resource_type') != 'test':
-      continue
-    tm = node.get('test_metadata') or {}
-    if tm.get('name') != 'relationships':
-      continue
-    kwargs = tm.get('kwargs') or {}
-    attached = node.get('attached_node')
-    if not attached:
-      continue
-    parent_name = _parse_ref(kwargs.get('to') or '')
-    if not parent_name:
-      continue
-    parent_uid = model_uid_by_name.get(parent_name)
-    if not parent_uid:
-      continue
-    child_id = naming.entry_id(attached)
-    parent_id = naming.entry_id(parent_uid)
-    if child_id not in known_ids or parent_id not in known_ids:
-      continue
-    child_col = kwargs.get('column_name') or None
-    parent_col = kwargs.get('field') or None
-    aspects = None
-    if child_col and parent_col:
-      # The schema-join aspect names the joinable columns; use each model's
-      # relation_name (SQL representation), falling back to the entry id.
-      child_sql = (nodes.get(attached) or {}).get('relation_name') or child_id
-      parent_sql = (nodes.get(parent_uid) or {}).get('relation_name') or (
-          parent_id
-      )
-      aspects = _schema_join_aspect(
-          ctx, child_sql, child_col, parent_sql, parent_col
-      )
-    out.append(
-        _entry_link(
-            ctx,
-            'schema_join',
-            ctx.entry_name(child_id),
-            ctx.entry_name(parent_id),
-            aspects=aspects,
-            undirected=True,
-        )
-    )
-  return out
-
-
 def _emit_consumed_by(
     ctx: naming.Context, manifest: Mapping[str, Any], known_ids: Set[str]
 ) -> list[EntryLinkRecord]:
-  """Upstream dbt resource -> exposure entry."""
+  """exposure entry -> Upstream dbt resource (depends-on-imported)."""
   out: list[EntryLinkRecord] = []
   for exp_uid, exposure in (manifest.get(_EXPOSURES) or {}).items():
     exp_id = naming.entry_id(exp_uid)
@@ -477,8 +325,8 @@ def _emit_consumed_by(
           _entry_link(
               ctx,
               'consumed_by',
-              ctx.entry_name(up_id),
               exp_fqn,
+              ctx.entry_name(up_id),
           )
       )
   return out
@@ -487,7 +335,7 @@ def _emit_consumed_by(
 def _emit_defines_semantics_for(
     ctx: naming.Context, manifest: Mapping[str, Any], known_ids: Set[str]
 ) -> list[EntryLinkRecord]:
-  """semantic_model -> its backing model."""
+  """Emits represents (semantic) links from semantic models to their backing models."""
   out: list[EntryLinkRecord] = []
   for sm_uid, sm in (manifest.get(_SEMANTIC_MODELS) or {}).items():
     sm_id = naming.entry_id(sm_uid)
@@ -539,18 +387,18 @@ _MATERIALIZED_RESOURCE_TYPES = frozenset(['model', 'seed', 'snapshot'])
 
 
 def _get_bigquery_entry_name(
-    bq_location: str, database: str, schema: str, table: str
+    location: str, database: str, schema: str, table: str
 ) -> str:
   """Returns the @bigquery entry resource name a dbt node materializes to.
 
   Dataplex auto-catalogs BigQuery tables into the system ``@bigquery`` entry
   group; the entry id is the table's BigQuery resource path. The project may be
-  given by id or number -- the dbt node carries the id (``database``). The
-  entry's Dataplex region (``bq_location``) is not in the manifest.
+  given by id or number -- the dbt node carries the id (``database``).
 
   Args:
-    bq_location: Dataplex region hosting the @bigquery entries (e.g.
-      us-central1).
+    location: Dataplex region of the @bigquery entry. Entry links are
+      same-region, so this is the import location (the dbt entries' region); a
+      link only resolves when the table's dataset actually lives there.
     database: BigQuery project (dbt ``database``).
     schema: BigQuery dataset (dbt ``schema``).
     table: BigQuery table (dbt ``alias`` / ``name``).
@@ -559,7 +407,7 @@ def _get_bigquery_entry_name(
     The @bigquery entry resource name.
   """
   return (
-      f'projects/{database}/locations/{bq_location}/entryGroups/@bigquery/'
+      f'projects/{database}/locations/{location}/entryGroups/@bigquery/'
       # gcloud-disable-gdu-domain
       f'entries/bigquery.googleapis.com/projects/{database}/datasets/{schema}/'
       f'tables/{table}'
@@ -569,7 +417,8 @@ def _get_bigquery_entry_name(
 def materialized_bigquery_projects(manifest: Mapping[str, Any]) -> set[str]:
   """Returns the BigQuery projects (dbt ``database``) of materialized nodes.
 
-  Used to scope the import job's referencedEntryScopes so materializes-to links
+  Used to scope the import job's referencedEntryScopes so represents (physical)
+  links
   to physical @bigquery entries in those projects resolve.
 
   Args:
@@ -610,25 +459,28 @@ def _emit_materializes_to(
     ctx: naming.Context,
     manifest: Mapping[str, Any],
     known_ids: Set[str],
-    bq_location: str,
+    linkable_datasets: Set[tuple[str, str]],
 ) -> list[EntryLinkRecord]:
-  """Emits materializes-to links from dbt nodes to their @bigquery tables.
+  """Emits represents (physical) links from dbt nodes to their @bigquery tables.
 
   The target is the Dataplex system @bigquery entry for the BigQuery table dbt
-  writes; its Dataplex region comes from ``bq_location`` (not in the manifest).
-  The physical entry must already be cataloged (BigQuery metadata is auto-
-  ingested into Dataplex); if it is absent the import reports that link as an
-  error and continues. ``materializes-to`` disables the target permission check,
-  so read-only access to the physical table is sufficient.
+  writes. Entry links are same-region, so the @bigquery entry is named in the
+  import location (``ctx.eg_location``) -- a link only resolves when the table's
+  dataset actually lives there, hence the ``linkable_datasets`` filter. The
+  physical entry must already be cataloged (BigQuery metadata is auto-ingested
+  into Dataplex); if it is absent the import reports that link as an error and
+  continues. ``represents`` disables the target permission check, so
+  read-only access to the physical table is sufficient.
 
   Args:
     ctx: the naming.Context holding the naming coordinates for this run.
     manifest: the parsed dbt manifest.json.
     known_ids: set of emitted dbt entry ids.
-    bq_location: Dataplex region hosting the @bigquery entries.
+    linkable_datasets: only nodes whose (database, schema) is in this set get a
+      link (the datasets known to live in the import location).
 
   Returns:
-    A list of materializes-to EntryLink records.
+    A list of represents (physical) EntryLink records.
   """
   out: list[EntryLinkRecord] = []
   for uid, node in (manifest.get(_NODES) or {}).items():
@@ -642,12 +494,16 @@ def _emit_materializes_to(
     table = node.get('alias') or node.get('name')
     if not (database and schema and table):
       continue
+    if (database, schema) not in linkable_datasets:
+      continue
     out.append(
         _entry_link(
             ctx,
             'materializes_to',
             ctx.entry_name(d_id),
-            _get_bigquery_entry_name(bq_location, database, schema, table),
+            _get_bigquery_entry_name(
+                ctx.eg_location, database, schema, table
+            ),
         )
     )
   return out
@@ -657,7 +513,7 @@ def build_entry_links(
     ctx: naming.Context,
     manifest: Mapping[str, Any],
     known_ids: Set[str],
-    bigquery_location: str | None = None,
+    linkable_datasets: Set[tuple[str, str]] | None = None,
 ) -> list[EntryLinkRecord]:
   """Builds all EntryLink records (lineage + semantic edges).
 
@@ -668,22 +524,21 @@ def build_entry_links(
     manifest: the parsed dbt manifest.json.
     known_ids: the set of Dataplex entry ids the transform emitted; edges that
       reference an id outside this set are dropped.
-    bigquery_location: Dataplex region of the physical @bigquery entries. When
-      set, materializes-to links (dbt node -> physical BigQuery table) are
-      emitted; when None they are skipped (the region is not in the manifest).
+    linkable_datasets: the BigQuery (database, schema) datasets to emit
+      represents (physical) links for -- those known to live in the import
+      location (@bigquery entries are named there, as entry links are
+      same-region). When None, no physical links are emitted.
 
   Returns:
     A list of EntryLink records for the resolvable lineage / semantic edges.
   """
   links: list[EntryLinkRecord] = []
   links.extend(_emit_depends_on(ctx, manifest, known_ids))
-  links.extend(_emit_belongs_to(ctx, manifest, known_ids))
-  links.extend(_emit_schema_join(ctx, manifest, known_ids))
   links.extend(_emit_consumed_by(ctx, manifest, known_ids))
   links.extend(_emit_defines_semantics_for(ctx, manifest, known_ids))
   links.extend(_emit_derives_from(ctx, manifest, known_ids))
-  if bigquery_location:
+  if linkable_datasets is not None:
     links.extend(
-        _emit_materializes_to(ctx, manifest, known_ids, bigquery_location)
+        _emit_materializes_to(ctx, manifest, known_ids, linkable_datasets)
     )
   return links

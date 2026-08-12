@@ -17,6 +17,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any, Dict, Optional, cast
 import uuid
 
@@ -42,7 +43,7 @@ BLUEPRINT_DEFINITIONS = {
                     "newLustre": {
                         "capacityGb": 36000,
                         "perUnitStorageThroughput": 500,
-                        "filesystem": "scratch-fs",
+                        "filesystem": "scratch",
                     }
                 }
             }
@@ -60,7 +61,7 @@ BLUEPRINT_DEFINITIONS = {
                     "newLustre": {
                         "capacityGb": 36000,
                         "perUnitStorageThroughput": 500,
-                        "filesystem": "scratch-fs",
+                        "filesystem": "scratch",
                     }
                 }
             },
@@ -95,7 +96,7 @@ BLUEPRINT_DEFINITIONS = {
                     "newLustre": {
                         "capacityGb": 18000,
                         "perUnitStorageThroughput": 500,
-                        "filesystem": "scratch-fs",
+                        "filesystem": "scratch",
                     }
                 }
             },
@@ -123,7 +124,7 @@ BLUEPRINT_DEFINITIONS = {
                     "newLustre": {
                         "capacityGb": 36000,
                         "perUnitStorageThroughput": 1000,
-                        "filesystem": "scratch-fs",
+                        "filesystem": "scratch",
                     }
                 }
             }
@@ -148,7 +149,7 @@ BLUEPRINT_DEFINITIONS = {
                     "newLustre": {
                         "capacityGb": 36000,
                         "perUnitStorageThroughput": 500,
-                        "filesystem": "scratch-fs",
+                        "filesystem": "scratch",
                     }
                 }
             },
@@ -183,7 +184,7 @@ BLUEPRINT_DEFINITIONS = {
                     "newLustre": {
                         "capacityGb": 18000,
                         "perUnitStorageThroughput": 500,
-                        "filesystem": "scratch-fs",
+                        "filesystem": "scratch",
                     }
                 }
             },
@@ -202,33 +203,65 @@ BLUEPRINT_DEFINITIONS = {
 }
 
 
-def ApplyBlueprint(
+def ApplyReferenceArchitecture(
     args: Any, message_module: Any, cluster_ref: Any
 ) -> None:
-  """Applies blueprint or quickstart defaults to arguments."""
-  blueprint = getattr(args, "blueprint", None)
+  """Applies reference architecture or quickstart defaults to arguments."""
+  ref_arch = getattr(args, "reference_architecture", None)
   quickstart = getattr(args, "quickstart_cluster", False)
-  if not blueprint and not quickstart:
+  if not ref_arch and not quickstart:
     return
 
-  if blueprint and quickstart:
+  if ref_arch and quickstart:
     raise errors.ClusterDirectorError(
-        "Cannot specify both --blueprint and --quickstart-cluster."
+        "Cannot specify both --reference-architecture and --quickstart-cluster."
     )
 
   if quickstart:
-    blueprint_spec = BLUEPRINT_DEFINITIONS.get("quickstart")
+    spec = BLUEPRINT_DEFINITIONS.get("quickstart")
     label = "--quickstart-cluster"
   else:
-    blueprint_spec = cast(Dict[str, Any], BLUEPRINT_DEFINITIONS.get(blueprint))
-    label = f"'{blueprint}'"
+    spec = cast(Dict[str, Any], BLUEPRINT_DEFINITIONS.get(ref_arch))
+    label = f"'{ref_arch}'"
 
-  if not blueprint_spec:
+  if not spec:
     raise errors.ClusterDirectorError(
-        f"Blueprint {label} is not defined."
+        f"Reference architecture {label} is not defined."
     )
 
-  _ApplySpec(args, message_module, cluster_ref, blueprint_spec, label)
+  _ApplySpec(args, message_module, cluster_ref, spec, label)
+
+
+def _GetSpecifiedZone(args: Any) -> Optional[str]:
+  """Returns the first specified zone from compute instances in args."""
+  for flag in [
+      "on_demand_instances",
+      "spot_instances",
+      "reserved_instances",
+      "flex_start_instances",
+  ]:
+    if args.IsSpecified(flag):
+      instances = getattr(args, flag)
+      for instance in instances:
+        if instance.get("zone"):
+          return instance.get("zone")
+  return None
+
+
+def _SafeAppend(prefix: str, suffix: str, max_length: int = 63) -> str:
+  """Appends suffix to prefix, truncating prefix to fit max_length."""
+  if len(prefix) + len(suffix) <= max_length:
+    return prefix + suffix
+
+  truncate_to = max_length - len(suffix)
+  truncated = prefix[:truncate_to]
+
+  # Avoid double dashes if both truncated ends with '-' and
+  # suffix starts with '-'
+  if truncated.endswith("-") and suffix.startswith("-"):
+    truncated = truncated[:-1]
+
+  return truncated + suffix
 
 
 def _ApplySpec(
@@ -240,9 +273,13 @@ def _ApplySpec(
 ) -> None:
   """Applies dynamic defaults from a spec dictionary to argparse args namespace."""
   prefix = cluster_ref.clustersId
-  zone = f"{cluster_ref.locationsId}-b"  # Default zone if not specified.
+  specified_zone = _GetSpecifiedZone(args)
+  zone = (
+      specified_zone or f"{cluster_ref.locationsId}-b"
+  )  # Default zone if not specified.
   ri_zone = zone
-  compute_id = f"{prefix}-compute"
+  default_compute_id = _SafeAppend(prefix, "-compute")
+  compute_id = default_compute_id
 
   # 1. Process Compute Resources from Spec
   compute_resources = spec.get("computeResources", {})
@@ -254,8 +291,8 @@ def _ApplySpec(
     if "newReservedInstances" in config_spec:
       if not args.IsSpecified("reserved_instances"):
         raise errors.ClusterDirectorError(
-            f"Blueprint {label} requires a reservation. Please specify "
-            "the --reserved-instances flag with a valid reservation."
+            f"Reference architecture {label} requires a reservation. Please"
+            " specify the --reserved-instances flag with a valid reservation."
         )
       for ri in args.reserved_instances:
         if not (
@@ -264,9 +301,9 @@ def _ApplySpec(
             or ri.get("reservationSubBlock")
         ):
           raise errors.ClusterDirectorError(
-              f"Blueprint {label} requires a reservation. Please specify a"
-              " reservation, reservationBlock, or reservationSubBlock in"
-              " --reserved-instances."
+              f"Reference architecture {label} requires a reservation. Please"
+              " specify a reservation, reservationBlock, or"
+              " reservationSubBlock in --reserved-instances."
           )
         res_path = ri.get("reservation")
         inferred_zone = None
@@ -280,7 +317,7 @@ def _ApplySpec(
       compute_id = (
           args.reserved_instances[0].get("id")
           if args.reserved_instances
-          else f"{prefix}-compute"
+          else default_compute_id
       )
       ri_zone = (
           args.reserved_instances[0].get("zone")
@@ -292,7 +329,7 @@ def _ApplySpec(
       spec_flex = config_spec["newFlexStartInstances"]
       if not args.IsSpecified("flex_start_instances"):
         args.flex_start_instances = [{
-            "id": f"{prefix}-compute",
+            "id": default_compute_id,
             "machineType": spec_flex["machineType"],
             "zone": zone,
             "maxDuration": spec_flex["maxDuration"],
@@ -310,7 +347,7 @@ def _ApplySpec(
       compute_id = (
           args.flex_start_instances[0].get("id")
           if args.flex_start_instances
-          else f"{prefix}-compute"
+          else default_compute_id
       )
       ri_zone = (
           args.flex_start_instances[0].get("zone")
@@ -325,12 +362,17 @@ def _ApplySpec(
     if "newLustre" in st_config:
       spec_lustre = st_config["newLustre"]
       if not args.IsSpecified("create_lustres"):
+        lustre_id = _SafeAppend(prefix, "-lustre")
+        # Sanitize prefix for filesystem name: only alphanumeric, lowercase,
+        # max 6 chars (to leave 2 for 'fs').
+        sanitized_prefix = re.sub(r"[^a-zA-Z0-9]", "", prefix).lower()
+        fs_name = sanitized_prefix[:6] + "fs"
         args.create_lustres = [{
-            "id": f"{prefix}-scratch-disk",
-            "name": f"locations/{ri_zone}/instances/{prefix}-lustre",
+            "id": _SafeAppend(prefix, "-scratch-disk"),
+            "name": f"locations/{ri_zone}/instances/{lustre_id}",
             "capacityGb": spec_lustre["capacityGb"],
             "perUnitStorageThroughput": spec_lustre["perUnitStorageThroughput"],
-            "filesystem": f"{prefix}fs",
+            "filesystem": fs_name,
         }]
         _SetSpecified(args, "create_lustres", "--create-lustres")
 
@@ -341,9 +383,10 @@ def _ApplySpec(
             spec_filestore["tier"]
         )
         fileshare_spec = spec_filestore.get("fileShares", [{}])[0]
+        filestore_id = _SafeAppend(prefix, "-filestore")
         args.create_filestores = [{
-            "id": f"{prefix}-filestore-disk",
-            "name": f"locations/{ri_zone}/instances/{prefix}-filestore",
+            "id": _SafeAppend(prefix, "-filestore-disk"),
+            "name": f"locations/{ri_zone}/instances/{filestore_id}",
             "capacityGb": fileshare_spec.get("capacityGb"),
             "fileshare": fileshare_spec.get("fileShare"),
             "tier": tier_enum,
@@ -353,27 +396,30 @@ def _ApplySpec(
   # 3. Create Network if not specified
   if not args.IsSpecified("network") and not args.IsSpecified("create_network"):
     random_suffix = uuid.uuid4().hex[:5]
-    args.create_network = {"name": f"{prefix}-net-{random_suffix}"}
+    net_name = _SafeAppend(prefix, f"-net-{random_suffix}")
+    args.create_network = {"name": net_name}
     _SetSpecified(args, "create_network", "--create-network")
 
   # 4. Create Node Sets and Partitions
   node_count = spec.get("nodeCount", 1)
   if not args.IsSpecified("slurm_node_sets"):
     args.slurm_node_sets = [{
-        "id": f"{prefix}ns",
+        "id": _SafeAppend(prefix, "ns"),
         "computeId": compute_id,
         "type": "gce",
         "staticNodeCount": node_count,
     }]
     _SetSpecified(args, "slurm_node_sets", "--slurm-node-sets")
   if not args.IsSpecified("slurm_partitions"):
+    partition_id = _SafeAppend(prefix, "partition")
+    ns_id = _SafeAppend(prefix, "ns")
     args.slurm_partitions = [{
-        "id": f"{prefix}partition",
-        "nodeSetIds": [f"{prefix}ns"],
+        "id": partition_id,
+        "nodeSetIds": [ns_id],
     }]
     _SetSpecified(args, "slurm_partitions", "--slurm-partitions")
   if not args.IsSpecified("slurm_default_partition"):
-    args.slurm_default_partition = f"{prefix}partition"
+    args.slurm_default_partition = _SafeAppend(prefix, "partition")
     _SetSpecified(args, "slurm_default_partition", "--slurm-default-partition")
 
   # 5. Default Login Nodes

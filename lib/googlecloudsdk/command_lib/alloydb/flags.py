@@ -530,6 +530,21 @@ def AddEnablePscAutoDns(parser):
   )
 
 
+def AddEnablePscAutoConnectionPolicy(parser):
+  """Adds the `--enable-psc-auto-connection-policy` flag to the parser.
+
+  Args:
+    parser: argparse.ArgumentParser, The parser to which the flag will be added.
+  """
+  parser.add_argument(
+      '--enable-psc-auto-connection-policy',
+      required=False,
+      help='Enable PSC auto connection policy for an AlloyDB instance.',
+      action=arg_parsers.StoreTrueFalseAction,
+      hidden=True,
+  )
+
+
 def ClearPSCAutoConnections(parser):
   """Adds the `--clear-psc-auto-connections` flag to the parser."""
   parser.add_argument(

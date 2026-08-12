@@ -198,7 +198,10 @@ def EncryptedSSLCredentials(config_path):
 
 
 def _ShouldRepairECP(cert_config):
-  """Check if ECP binaries should be installed and the ECP config updated to point to them."""
+  """Check if ECP binaries should be installed and the ECP config updated (internal users only)."""
+  if not properties.IsInternalUserCheck():
+    return False
+
   if 'cert_configs' not in cert_config:
     return False
 
@@ -208,13 +211,7 @@ def _ShouldRepairECP(cert_config):
   if 'libs' not in cert_config:
     return False
 
-  expected_keys = set(['ecp', 'ecp_client', 'tls_offload'])
-  # TODO(b/459858373): remove gating for ECP HTTP Proxy on internal user check.
-  if (
-      properties.VALUES.context_aware.use_ecp_http_proxy.GetBool()
-      and properties.IsInternalUserCheck()
-  ):
-    expected_keys.add('ecp_http_proxy')
+  expected_keys = set(['ecp', 'ecp_client', 'tls_offload', 'ecp_http_proxy'])
 
   actual_keys = set(cert_config['libs'].keys())
 
@@ -386,15 +383,11 @@ def _GetCertificateConfigFile():
         )
     )
 
-  # TODO(b/459858373): remove gating for ECP HTTP Proxy on internal user check.
+  # If ECP HTTP proxy is specified in the config, verify that the binary exists.
   if (
       'libs' in cert_config
       and 'ecp_http_proxy' in cert_config['libs']
       and not os.path.exists(cert_config['libs']['ecp_http_proxy'])
-      and (
-          properties.VALUES.context_aware.use_ecp_http_proxy.GetBool()
-          and properties.IsInternalUserCheck()
-      )
   ):
     raise CertProvisionException(
         'Enterprise certificate provider (ECP) HTTP proxy binary path'
@@ -469,8 +462,7 @@ class _EnterpriseCertConfigImpl(_ConfigImpl):
         properties.VALUES.context_aware.use_ecp_http_proxy.GetBool()
     )
 
-    # TODO(b/459858373): Remove gating for ECP HTTP Proxy on internal user check
-    return use_ecp_http_proxy and properties.IsInternalUserCheck()
+    return use_ecp_http_proxy
 
 
 class _OnDiskCertConfigImpl(_ConfigImpl):

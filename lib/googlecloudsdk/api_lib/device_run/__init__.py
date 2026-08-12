@@ -14,10 +14,12 @@
 # limitations under the License.
 """Utilities for the GCP Device Cloud (device-run) API."""
 
+from apitools.base.py import encoding
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core.console import progress_tracker
 
 
 class UnsupportedReleaseTrackError(Exception):
@@ -25,7 +27,7 @@ class UnsupportedReleaseTrackError(Exception):
 
 
 def ReleaseTrackToApiVersion(release_track):
-  if release_track == base.ReleaseTrack.ALPHA:
+  if release_track in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
     return 'v1alpha'
   else:
     raise UnsupportedReleaseTrackError(release_track)
@@ -240,3 +242,31 @@ class DeviceRunOperationPoller(waiter.OperationPoller):
     return self.resource_service.Get(
         request_type(name=self.resource_ref.RelativeName())
     )
+
+
+def WaitForOperation(poller, operation_ref, message):
+  """Waits for a Device Run operation to complete, displaying status messages."""
+  status_message = ['']
+
+  def _DetailMessageCallback():
+    return status_message[0]
+
+  def _TrackerUpdateFunc(unused_tracker, operation, unused_status):
+    if getattr(operation, 'metadata', None):
+      metadata = encoding.MessageToPyValue(operation.metadata)
+      msg = metadata.get('statusMessage')
+      if msg:
+        status_message[0] = msg
+
+  tracker = progress_tracker.ProgressTracker(
+      message,
+      detail_message_callback=_DetailMessageCallback,
+  )
+
+  return waiter.WaitFor(
+      poller,
+      operation_ref,
+      custom_tracker=tracker,
+      tracker_update_func=_TrackerUpdateFunc,
+  )
+

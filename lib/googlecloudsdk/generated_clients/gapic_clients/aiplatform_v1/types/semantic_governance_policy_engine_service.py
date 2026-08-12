@@ -224,22 +224,27 @@ class UpdateSemanticGovernancePolicyEngineOperationMetadata(proto.Message):
 
 
 class DeprovisionSemanticGovernancePolicyEngineRequest(proto.Message):
-    r"""Request message for
-    [SemanticGovernancePolicyEngineService.DeprovisionSemanticGovernancePolicyEngine][google.cloud.aiplatform.v1.SemanticGovernancePolicyEngineService.DeprovisionSemanticGovernancePolicyEngine].
+  r"""Request message for
 
-    Attributes:
-        name (str):
-            Required. The resource name of the
-            SemanticGovernancePolicyEngine to deprovision.
-            Format:
+  [SemanticGovernancePolicyEngineService.DeprovisionSemanticGovernancePolicyEngine][google.cloud.aiplatform.v1.SemanticGovernancePolicyEngineService.DeprovisionSemanticGovernancePolicyEngine].
 
+  Attributes:
+      name (str): Required. The resource name of the
+        SemanticGovernancePolicyEngine to deprovision.
+          Format:
             projects/{project}/locations/{location}/semanticGovernancePolicyEngine
-    """
+      force (bool): Optional. If true, the operation bypass checks on current
+        state and force the deprovisioning operation.
+  """
 
-    name: str = proto.Field(
-        proto.STRING,
-        number=1,
-    )
+  name: str = proto.Field(
+      proto.STRING,
+      number=1,
+  )
+  force: bool = proto.Field(
+      proto.BOOL,
+      number=2,
+  )
 
 
 class DeprovisionSemanticGovernancePolicyEngineOperationMetadata(proto.Message):

@@ -116,7 +116,6 @@
               api_field: googleIamV3PolicyBinding.target.resource
               required: false
               repeated: false
-              hidden: true
               help_text: |-
                 The full resource name that's used for access policy bindings.
 
@@ -146,7 +145,6 @@
         enum_value: ACCESS
         help_text: |-
           Access policy kind.
-        hidden: true
       - arg_value: regional-access-boundary
         enum_value: REGIONAL_ACCESS_BOUNDARY
         help_text: |-

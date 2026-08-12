@@ -208,7 +208,7 @@ def GenerateImportFile(  # pylint: disable=invalid-name
     system_types_project: str,
     types_location: str = 'global',
     include_entry_links: bool = True,
-    bigquery_location: str | None = None,
+    linkable_datasets: set[tuple[str, str]] | None = None,
 ) -> dict[str, Any]:
   """Transforms dbt artifacts at artifacts_path into a JSONL import file.
 
@@ -227,15 +227,17 @@ def GenerateImportFile(  # pylint: disable=invalid-name
       dataplex-types / dataplex-staging-types).
     types_location: location of the system types (always `global`).
     include_entry_links: when True (the default), also emit EntryLink records.
-    bigquery_location: Dataplex region of the physical @bigquery entries. When
-      set (with include_entry_links), also emit materializes-to links from each
-      materialized dbt node to its physical BigQuery table entry.
+    linkable_datasets: the BigQuery (database, schema) datasets to emit
+      materializes-to links for (dbt node -> physical @bigquery table entry) --
+      the datasets known to live in the import location, since entry links are
+      same-region and the @bigquery entries are named there. When None
+      (or with include_entry_links=False), no materializes-to links are emitted.
 
   Returns:
     A dict summary: {'entries': int, 'entry_links': int, 'output': str,
     'bigquery_projects': list[str]} -- bigquery_projects are the BigQuery
     projects materializes-to links reference (for the import job scope); empty
-    unless bigquery_location was given.
+    unless linkable_datasets was given.
 
   Raises:
     TransformError: if a required artifact is missing or malformed, or if an
@@ -265,13 +267,12 @@ def GenerateImportFile(  # pylint: disable=invalid-name
   links = []
   if include_entry_links:
     links = entry_links.build_entry_links(
-        ctx, manifest, known_ids, bigquery_location=bigquery_location
+        ctx, manifest, known_ids, linkable_datasets=linkable_datasets
     )
-  bigquery_projects = (
-      sorted(entry_links.materialized_bigquery_projects(manifest))
-      if include_entry_links and bigquery_location
-      else []
-  )
+  # Scope only the projects whose datasets are actually linked.
+  bigquery_projects = []
+  if include_entry_links and linkable_datasets:
+    bigquery_projects = sorted({project for project, _ in linkable_datasets})
 
   with files.FileWriter(output_path) as f:
     for item in entries:

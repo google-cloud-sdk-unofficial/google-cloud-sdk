@@ -28,6 +28,7 @@ from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.calliope.concepts import deps
 from googlecloudsdk.command_lib.eventarc import flags as eventarc_flags
 from googlecloudsdk.command_lib.util import completers
+from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
@@ -43,6 +44,7 @@ LOCATIONS_COLLECTION = API + '.projects.locations'
 SIGNATURE_TYPES = ['http', 'event', 'cloudevent']
 SEVERITIES = ['DEBUG', 'INFO', 'ERROR']
 EGRESS_SETTINGS = ['PRIVATE-RANGES-ONLY', 'ALL']
+DIRECT_VPC_EGRESS_SETTINGS = ['PRIVATE-RANGES-ONLY', 'ALL', 'ALL-TRAFFIC']
 INGRESS_SETTINGS = ['ALL', 'INTERNAL-ONLY', 'INTERNAL-AND-GCLB']
 SECURITY_LEVEL = ['SECURE-ALWAYS', 'SECURE-OPTIONAL']
 INGRESS_SETTINGS_MAPPING = {
@@ -57,8 +59,20 @@ EGRESS_SETTINGS_MAPPING = {
 }
 DIRECT_VPC_EGRESS_SETTINGS_MAPPING = {
     'VPC_EGRESS_PRIVATE_RANGES_ONLY': 'private-ranges-only',
-    'VPC_EGRESS_ALL_TRAFFIC': 'all',
+    'VPC_EGRESS_ALL_TRAFFIC': 'all-traffic',
 }
+
+
+class DirectVpcEgressEnumMapper(arg_utils.ChoiceEnumMapper):
+  """ChoiceEnumMapper for direct VPC egress settings that supports deprecated 'all' alias."""
+
+  def GetEnumForChoice(self, choice_value):
+    if choice_value == 'all':
+      choice_value = 'all-traffic'
+    return super(DirectVpcEgressEnumMapper, self).GetEnumForChoice(
+        choice_value
+    )
+
 
 SECURITY_LEVEL_MAPPING = {
     'SECURE_ALWAYS': 'secure-always',
@@ -584,7 +598,7 @@ def _AddDirectVpcEgressFlag(parser):
   """Add flags for setting Direct VPC egress settings."""
   direct_vpc_egress_arg = base.ChoiceArgument(
       '--direct-vpc-egress',
-      choices=[x.lower() for x in EGRESS_SETTINGS],
+      choices=[x.lower() for x in DIRECT_VPC_EGRESS_SETTINGS],
       help_str=(
           'Specify which of the outbound traffic to send through Direct VPC'
           ' egress. Configuring Direct VPC network is required to use this'
@@ -1191,7 +1205,7 @@ def AddConcurrencyFlag(parser):
   )
 
 
-def AddUpgradeFlags(parser, release_track=base.ReleaseTrack.GA):
+def AddUpgradeFlags(parser):
   """Adds upgrade related function flags."""
   description = 'Upgrade a 1st gen Cloud Function to a Cloud Run Function.'
   commit_flag_help = '- `--commit` and optionally `--skip-detach`'
@@ -1219,16 +1233,15 @@ def AddUpgradeFlags(parser, release_track=base.ReleaseTrack.GA):
       ),
   )
   AddTriggerServiceAccountFlag(setup_config_group)
-  if release_track in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
-    AddRuntimeFlag(setup_config_group)
-    setup_config_group.add_argument(
-        '--max-instances',
-        type=arg_parsers.BoundedInt(lower_bound=1),
-        help="""\
+  AddRuntimeFlag(setup_config_group)
+  setup_config_group.add_argument(
+      '--max-instances',
+      type=arg_parsers.BoundedInt(lower_bound=1),
+      help="""\
           Sets the maximum number of instances for the function. A function
           execution that would exceed max-instances times out.
         """,
-    )
+  )
 
   upgrade_group.add_argument(
       '--redirect-traffic',
@@ -1253,19 +1266,18 @@ def AddUpgradeFlags(parser, release_track=base.ReleaseTrack.GA):
           ' 1st gen copy of the function.'
       ),
   )
-  if release_track in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
-    commit_group.add_argument(
-        '--skip-detach',
-        action='store_true',
-        hidden=False,
-        help=(
-            'The function will not be detached when committing the upgrade to'
-            ' allow continued use of the Cloud Functions v2 API. You can detach'
-            ' the function to Cloud Run afterward'
-            ' https://docs.cloud.google.com/run/docs/functions/comparison#detach_your_function.'
-            ' This flag is only valid when used with the --commit flag.'
-        ),
-    )
+  commit_group.add_argument(
+      '--skip-detach',
+      action='store_true',
+      hidden=False,
+      help=(
+          'The function will not be detached when committing the upgrade to'
+          ' allow continued use of the Cloud Functions v2 API. You can detach'
+          ' the function to Cloud Run afterward'
+          ' https://docs.cloud.google.com/run/docs/functions/comparison#detach_your_function.'
+          ' This flag is only valid when used with the --commit flag.'
+      ),
+  )
 
   upgrade_group.add_argument(
       '--abort',

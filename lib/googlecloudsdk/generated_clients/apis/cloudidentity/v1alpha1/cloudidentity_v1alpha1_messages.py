@@ -1510,6 +1510,23 @@ class ExpiryDetail(_messages.Message):
   expireTime = _messages.StringField(1)
 
 
+class ExternalId(_messages.Message):
+  r"""A secondary identifier for an entity in the Cloud Identity Groups API.
+  Used to link a `Group` in Cloud Identity Groups API with a corresponding
+  entity in an external identity system or directory.
+
+  Fields:
+    id: Required. The unique identifier assigned by the external identity
+      provider. The API does not enforce uniqueness of the Ids, but it is best
+      practice for the client to ensure that the Ids are unique.
+    namespace: Required. The namespace in which the entity exists. Cannot be
+      empty. Currently, the only allowable namespace is `"system/external"`.
+  """
+
+  id = _messages.StringField(1)
+  namespace = _messages.StringField(2)
+
+
 class GetMembershipGraphResponse(_messages.Message):
   r"""The response message for MembershipsService.GetMembershipGraph.
 
@@ -2412,7 +2429,8 @@ class GoogleAppsCloudidentityDevicesV1WipeDeviceUserResponse(_messages.Message):
 
 class Group(_messages.Message):
   r"""A group within the Cloud Identity Groups API. A `Group` is a collection
-  of entities, where each entity is either a user or another group.
+  of entities, where each entity is either a user or another group. Next id:
+  13
 
   Messages:
     LabelsValue: Required. One or more label entries that apply to the Group.
@@ -2439,6 +2457,10 @@ class Group(_messages.Message):
       of a `Group`. Must not be longer than 4,096 characters.
     displayName: The display name of the `Group`.
     dynamicGroupMetadata: Dynamic group metadata like queries and status.
+    externalIds: Optional. External identifiers associated with the `Group`.
+      Enables external identity providers and directory sync tools to link
+      their native unique identifiers with this group. Currently, the only
+      allowable namespace is `"system/external"`.
     groupKey: Required. The `EntityKey` of the `Group`.
     labels: Required. One or more label entries that apply to the Group.
       Labels contain a key with an empty value. Google Groups are the default
@@ -2512,12 +2534,13 @@ class Group(_messages.Message):
   description = _messages.StringField(3)
   displayName = _messages.StringField(4)
   dynamicGroupMetadata = _messages.MessageField('DynamicGroupMetadata', 5)
-  groupKey = _messages.MessageField('EntityKey', 6)
-  labels = _messages.MessageField('LabelsValue', 7)
-  name = _messages.StringField(8)
-  parent = _messages.StringField(9)
-  posixGroups = _messages.MessageField('PosixGroup', 10, repeated=True)
-  updateTime = _messages.StringField(11)
+  externalIds = _messages.MessageField('ExternalId', 6, repeated=True)
+  groupKey = _messages.MessageField('EntityKey', 7)
+  labels = _messages.MessageField('LabelsValue', 8)
+  name = _messages.StringField(9)
+  parent = _messages.StringField(10)
+  posixGroups = _messages.MessageField('PosixGroup', 11, repeated=True)
+  updateTime = _messages.StringField(12)
 
 
 class GroupRelation(_messages.Message):

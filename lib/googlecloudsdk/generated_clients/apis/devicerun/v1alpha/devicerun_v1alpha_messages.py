@@ -24,19 +24,29 @@ class AllocationConfig(_messages.Message):
 
 
 class AndroidBugreportDeviceAction(_messages.Message):
-  r"""Captures a bugreport from the device. The bugreport will not be captured
-  when the test result is pass. The output will be written to a file named
-  `bugreport.zip` in the execution output directory.
+  r"""Captures a bugreport from the device. The output will be written to a
+  file named `bugreport.zip` in the execution output directory.
+
+  Fields:
+    collectOnPass: Optional. Whether to deliver the bugreport when the test
+      passes. If false, the bugreport is skipped on pass to save time (default
+      behavior). If true, the bugreport is always delivered.
   """
 
+  collectOnPass = _messages.BooleanField(1)
 
 
 class AndroidDumpsysDeviceAction(_messages.Message):
-  r"""Captures dumpsys output from the device. The dumpsys will not be
-  captured when the test result is pass. The output will be written to a file
-  named `dumpsys.log` in the execution output directory.
+  r"""Captures dumpsys output from the device. The output will be written to a
+  file named `dumpsys.log` in the execution output directory.
+
+  Fields:
+    collectOnPass: Optional. Whether to deliver the dumpsys when the test
+      passes. If false, the dumpsys is skipped on pass to save time (default
+      behavior). If true, the dumpsys is always delivered.
   """
 
+  collectOnPass = _messages.BooleanField(1)
 
 
 class AndroidInstallPackagesDeviceAction(_messages.Message):
@@ -217,6 +227,16 @@ class AndroidLogcatDeviceAction(_messages.Message):
   file named `logcat.txt` in the execution output directory.
   """
 
+
+
+class AndroidMockLocationDeviceAction(_messages.Message):
+  r"""Mocks the location of the Android device.
+
+  Fields:
+    location: Required. The mock location to set on the device.
+  """
+
+  location = _messages.MessageField('LatLng', 1)
 
 
 class AndroidNativeBinary(_messages.Message):
@@ -781,6 +801,7 @@ class DeviceAction(_messages.Message):
     androidDumpsys: Captures a dumpsys from the device.
     androidInstallPackages: Installs Android packages on the device.
     androidLogcat: Collects logcat output from the device.
+    androidMockLocation: Mocks the location of the device.
     androidOrientation: Sets the orientation of the device.
     androidPullFiles: Pulls directories and files from the device at the end
       of the run.
@@ -800,15 +821,16 @@ class DeviceAction(_messages.Message):
   androidDumpsys = _messages.MessageField('AndroidDumpsysDeviceAction', 2)
   androidInstallPackages = _messages.MessageField('AndroidInstallPackagesDeviceAction', 3)
   androidLogcat = _messages.MessageField('AndroidLogcatDeviceAction', 4)
-  androidOrientation = _messages.MessageField('AndroidOrientationDeviceAction', 5)
-  androidPullFiles = _messages.MessageField('AndroidPullFilesDeviceAction', 6)
-  androidPushFiles = _messages.MessageField('AndroidPushFilesDeviceAction', 7)
-  androidRecordVideo = _messages.MessageField('AndroidRecordVideoDeviceAction', 8)
-  androidSwitchLocale = _messages.MessageField('AndroidSwitchLocaleDeviceAction', 9)
-  iosInstallPackages = _messages.MessageField('IosInstallPackagesDeviceAction', 10)
-  iosPullFiles = _messages.MessageField('IosPullFilesDeviceAction', 11)
-  iosPushFiles = _messages.MessageField('IosPushFilesDeviceAction', 12)
-  iosRecordVideo = _messages.MessageField('IosRecordVideoDeviceAction', 13)
+  androidMockLocation = _messages.MessageField('AndroidMockLocationDeviceAction', 5)
+  androidOrientation = _messages.MessageField('AndroidOrientationDeviceAction', 6)
+  androidPullFiles = _messages.MessageField('AndroidPullFilesDeviceAction', 7)
+  androidPushFiles = _messages.MessageField('AndroidPushFilesDeviceAction', 8)
+  androidRecordVideo = _messages.MessageField('AndroidRecordVideoDeviceAction', 9)
+  androidSwitchLocale = _messages.MessageField('AndroidSwitchLocaleDeviceAction', 10)
+  iosInstallPackages = _messages.MessageField('IosInstallPackagesDeviceAction', 11)
+  iosPullFiles = _messages.MessageField('IosPullFilesDeviceAction', 12)
+  iosPushFiles = _messages.MessageField('IosPushFilesDeviceAction', 13)
+  iosRecordVideo = _messages.MessageField('IosRecordVideoDeviceAction', 14)
 
 
 class DeviceConfig(_messages.Message):
@@ -854,6 +876,14 @@ class DevicerunProjectsLocationsDevicesListRequest(_messages.Message):
   r"""A DevicerunProjectsLocationsDevicesListRequest object.
 
   Fields:
+    filter: Optional. An AIP-160 (https://google.aip.dev/160) filter
+      expression restricting which devices are returned. An empty filter
+      returns all devices. Filtering is supported over the `Device` fields,
+      including nested fields via dot-path. Enum and string values must be
+      double-quoted. Examples: * `platform = "ANDROID"` * `platform =
+      "ANDROID" AND os_version = "34"` * `hardware_type = "PHYSICAL" AND
+      form_factor = "PHONE"` * `android_details.build_type = "userdebug"` *
+      `availability.capacity = "HIGH"`
     pageSize: Optional. The maximum number of devices to return. The server
       may return fewer items than this value.
     pageToken: Optional. A page token, received from a previous `ListDevices`
@@ -864,9 +894,10 @@ class DevicerunProjectsLocationsDevicesListRequest(_messages.Message):
       `projects/{project}/locations/global`.
   """
 
-  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
 
 
 class DevicerunProjectsLocationsGetRequest(_messages.Message):
@@ -1122,7 +1153,6 @@ class ExecutionReport(_messages.Message):
     displayName: Output only. The display_name set by users in the
       ExecutionConfig.
     endTime: Output only. The end time of the execution.
-    genFiles: Output only. The output files of the execution.
     id: Output only. The unique identifier of the execution.
     outputFiles: Output only. The output files of the execution.
     result: Output only. The result of the execution.
@@ -1133,13 +1163,12 @@ class ExecutionReport(_messages.Message):
 
   displayName = _messages.StringField(1)
   endTime = _messages.StringField(2)
-  genFiles = _messages.MessageField('OutputFile', 3, repeated=True)
-  id = _messages.StringField(4)
-  outputFiles = _messages.MessageField('OutputFile', 5, repeated=True)
-  result = _messages.MessageField('Result', 6)
-  startTime = _messages.StringField(7)
-  status = _messages.MessageField('Status', 8)
-  warnings = _messages.MessageField('Warning', 9, repeated=True)
+  id = _messages.StringField(3)
+  outputFiles = _messages.MessageField('OutputFile', 4, repeated=True)
+  result = _messages.MessageField('Result', 5)
+  startTime = _messages.StringField(6)
+  status = _messages.MessageField('Status', 7)
+  warnings = _messages.MessageField('Warning', 8, repeated=True)
 
 
 class GcsPath(_messages.Message):
@@ -1645,6 +1674,22 @@ class JobSettings(_messages.Message):
   retrySettings = _messages.MessageField('RetrySettings', 1)
 
 
+class LatLng(_messages.Message):
+  r"""An object that represents a latitude/longitude pair. This is expressed
+  as a pair of doubles to represent degrees latitude and degrees longitude.
+  Unless specified otherwise, this object must conform to the WGS84 standard.
+  Values must be within normalized ranges.
+
+  Fields:
+    latitude: The latitude in degrees. It must be in the range [-90.0, +90.0].
+    longitude: The longitude in degrees. It must be in the range [-180.0,
+      +180.0].
+  """
+
+  latitude = _messages.FloatField(1)
+  longitude = _messages.FloatField(2)
+
+
 class ListLocationsResponse(_messages.Message):
   r"""The response message for Locations.ListLocations.
 
@@ -1856,12 +1901,42 @@ class RetrySettingsFlakyTestRetryStrategy(_messages.Message):
   issues for up to 2 attempts (including the initial run). So in total, an
   execution can run up to flaky_test_attempts * 2 times in the worst case.
 
+  Enums:
+    TestReductionModeValueValuesEnum: Optional. The mode of test reduction for
+      retry. If the test runner doesn't support the specified test reduction
+      mode, the request will be rejected with an `INVALID_ARGUMENT` error.
+
   Fields:
     flakyTestAttempts: Required. The total attempts for flaky tests, including
       the initial run. Default value: 1 (no retry). Range: [1, 5].
+    parallelRetry: Optional. Whether to retry the test failures in parallel.
+      By default, the test is retried sequentially. If true, when the initial
+      attempt fails, (flaky_test_attempts - 1) attempts will be triggered at
+      the same time to run in parallel.
+    testReductionMode: Optional. The mode of test reduction for retry. If the
+      test runner doesn't support the specified test reduction mode, the
+      request will be rejected with an `INVALID_ARGUMENT` error.
   """
 
+  class TestReductionModeValueValuesEnum(_messages.Enum):
+    r"""Optional. The mode of test reduction for retry. If the test runner
+    doesn't support the specified test reduction mode, the request will be
+    rejected with an `INVALID_ARGUMENT` error.
+
+    Values:
+      TEST_REDUCTION_MODE_UNSPECIFIED: The test reduction mode is unspecified.
+        Will default to `NO_REDUCTION`.
+      NO_REDUCTION: Runs the same set of test cases of the previous attempt.
+      REDUCE_TO_FAILED_TEST_CASES: Only runs the failed test cases of the
+        previous attempt.
+    """
+    TEST_REDUCTION_MODE_UNSPECIFIED = 0
+    NO_REDUCTION = 1
+    REDUCE_TO_FAILED_TEST_CASES = 2
+
   flakyTestAttempts = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  parallelRetry = _messages.BooleanField(2)
+  testReductionMode = _messages.EnumField('TestReductionModeValueValuesEnum', 3)
 
 
 class Session(_messages.Message):
@@ -2016,8 +2091,9 @@ class Status(_messages.Message):
   Fields:
     progressMessages: Output only. Human-readable, detailed descriptions of
       the session/job/execution's progress. For example: "Provisioning a
-      device", "Starting Test". During the course of execution new data may be
-      appended to the end of progress_messages.
+      device", "Starting Test". Each message should contain only one line of
+      text. During the course of execution new data may be appended to the end
+      of progress_messages.
     statusType: Output only. The status type of the session/job/execution.
   """
 

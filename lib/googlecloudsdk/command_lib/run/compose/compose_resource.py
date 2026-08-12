@@ -69,6 +69,7 @@ _RUN_COMPOSE_BUILD_METRIC = 'run_compose_build'
 _MANAGED_BY_LABEL = 'managed-by'
 _RUN_COMPOSE_MANAGED_BY_VALUE = 'runcompose'
 _RUN_COMPOSE_PROJECT_LABEL = 'run-compose-project'
+_RUN_COMPOSE_REGION_LABEL = 'run-compose-region'
 
 
 def generate_gcs_bucket_name(compose_project_name: str, region: str) -> str:
@@ -725,10 +726,15 @@ def _create_secret_and_add_version(
     try:
       # Default replication policy is automatic
       messages = secrets_client.messages
+      target_region = properties.VALUES.run.region.Get()
       labels_dict = {
           _MANAGED_BY_LABEL: _RUN_COMPOSE_MANAGED_BY_VALUE,
           _RUN_COMPOSE_PROJECT_LABEL: sanitize_label_value(project_name),
       }
+      if target_region:
+        labels_dict[_RUN_COMPOSE_REGION_LABEL] = sanitize_label_value(
+            target_region
+        )
       labels_value = messages.Secret.LabelsValue(
           additionalProperties=[
               messages.Secret.LabelsValue.AdditionalProperty(key=k, value=v)

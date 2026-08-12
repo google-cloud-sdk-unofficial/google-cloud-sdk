@@ -22,11 +22,11 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class GetSplitStatus(base.DescribeCommand):
   """Retrieves the split status of a Cloud NetApp clone volume."""
 
-  _RELEASE_TRACK = base.ReleaseTrack.BETA
+  _RELEASE_TRACK = base.ReleaseTrack.GA
 
   detailed_help = {
       'DESCRIPTION': textwrap.dedent("""\
@@ -51,8 +51,17 @@ class GetSplitStatus(base.DescribeCommand):
     return client.GetSplitStatus(volume_ref)
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class GetSplitStatusAlpha(GetSplitStatus):
   """Retrieves the split status of a Cloud NetApp clone volume."""
 
   _RELEASE_TRACK = base.ReleaseTrack.ALPHA
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class GetSplitStatusBeta(GetSplitStatus):
+  """Retrieves the split status of a Cloud NetApp clone volume."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.BETA

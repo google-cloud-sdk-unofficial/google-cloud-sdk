@@ -102,12 +102,13 @@ class Start(base.Command):
         '--import-data',
         required=False,
         help='File path to the data to be loaded into the emulator upon start '
-        'up. Example:`/home/user/myexports/sampleExport/sampleExport.overall_export_metadata.`')
+        'up. Example: '
+        '`/home/user/myexports/sampleExport/sampleExport.overall_export_metadata.`')
     parser.add_argument(
         '--export-on-exit',
         required=False,
         help='Directory path in which emulator data will be saved upon '
-        'shutdown. Example:`/home/user/myexports/2024-03-26/`')
+        'shutdown. Example: `/home/user/myexports/2024-03-26/`')
     parser.add_argument(
         '--licenses',
         default=False,
@@ -121,6 +122,27 @@ class Start(base.Command):
         choices=['standard', 'enterprise'],
         help=(
             'The database edition to start the Firestore Emulator in.'
+        ),
+    )
+    parser.add_argument(
+        '--require-indexes',
+        default=False,
+        action='store_true',
+        help=(
+            'If set, the emulator will require composite indexes to be defined '
+            'in the index file for all queries that require them.\n\n'
+            'Only supported in Datastore Mode in conjunction with '
+            '`--index-file`.'
+        ),
+    )
+    parser.add_argument(
+        '--index-file',
+        required=False,
+        help=(
+            'File path to the index file to be used by the emulator. '
+            'Example: `/home/user/firestore.indexes.yaml`\n\n'
+            'Only supported in Datastore Mode in conjunction with '
+            '`--require-indexes`.'
         ),
     )
 

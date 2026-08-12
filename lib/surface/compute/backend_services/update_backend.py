@@ -278,8 +278,8 @@ class UpdateBackendBeta(UpdateBackend):
   https://cloud.google.com/load-balancing/docs/backend-service.
   """
 
-  # TODO(b/502655796) - Set true for Beta promotion.
-  support_external_passthrough = False
+  # TODO(b/502655802) - Remove all references on promotion to GA.
+  support_external_passthrough = True
 
   @classmethod
   def Args(cls, parser):

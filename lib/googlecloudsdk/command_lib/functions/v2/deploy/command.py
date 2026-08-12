@@ -1057,7 +1057,7 @@ def _GetDirectVpcNetworkSettings(
           'Direct VPC is required for setting `--direct-vpc-egress`.',
       )
 
-    direct_vpc_egress = arg_utils.ChoiceEnumMapper(
+    direct_vpc_egress = flags.DirectVpcEgressEnumMapper(
         arg_name='direct_vpc_egress',
         message_enum=messages.ServiceConfig.DirectVpcEgressValueValuesEnum,
         custom_mappings=flags.DIRECT_VPC_EGRESS_SETTINGS_MAPPING,

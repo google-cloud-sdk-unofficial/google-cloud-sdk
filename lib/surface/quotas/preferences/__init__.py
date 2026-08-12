@@ -33,7 +33,7 @@ class QuotaPreferencesAlpha(base.Group):
   """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class QuotaPreferencesBeta(base.Group):
   """Manage Cloud Quotas QuotaPreferences.

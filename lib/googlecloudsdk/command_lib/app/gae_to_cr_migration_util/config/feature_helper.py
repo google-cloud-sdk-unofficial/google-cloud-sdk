@@ -120,21 +120,12 @@ class RangeLimitFeature(UnsupportedFeature):
 class ValueLimitFeature(UnsupportedFeature):
   """ValueLmimtFeature presents a value_limited Features, it extends UnsupportedFeature and adds additional fields to validate compatible value."""
 
-  allowed_values: Sequence[str] = None
-  known_values: Sequence[str] = None
+  disallowed_values: Sequence[str] = None
   valid_format: str = None
   flags: Sequence[str] = None
 
-  def _check_runtime_value(self, val: str):
-    """Check if the given value is a valid runtime value."""
-    if self.known_values is not None and val not in self.known_values:
-      reason = f"'{val}' is not a valid runtime value."
-      self.reason = reason
-      return False
-    return True
-
-  def validate(self, key: str, val: str) -> bool:
-    """Check if the given value is valid, either by regex or set of known/allowed values."""
+  def validate(self, val: str) -> bool:
+    """Check if the given value is valid, either by regex or set of disallowed values."""
     if self.valid_format is not None:
       # validate by regex only when valid_format is present.
       if isinstance(val, list):
@@ -142,9 +133,12 @@ class ValueLimitFeature(UnsupportedFeature):
             re.fullmatch(self.valid_format, str(v)) is not None for v in val
         )
       return re.fullmatch(self.valid_format, str(val)) is not None
-    if key.startswith("runtime") and not self._check_runtime_value(val):
+    if (
+        self.disallowed_values is not None
+        and str(val) in self.disallowed_values
+    ):
       return False
-    return self.allowed_values is not None and val in self.allowed_values
+    return True
 
 
 @dataclasses.dataclass

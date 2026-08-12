@@ -41,6 +41,7 @@ def _Args(
     support_confidential_compute_type=False,
     support_confidential_compute_type_tdx=False,
     support_snp_svsm=False,
+    support_confidential_compute_type_cca=False,
     support_specific_then_x_affinity=False,
     support_any_reservation_then_fail_affinity=False,
     support_disk_labels=False,
@@ -50,6 +51,7 @@ def _Args(
     support_skip_guest_os_shutdown=False,
     support_workload_identity_config=False,
     support_vsock_mode=False,
+    support_expose_host_topology=False,
 ):
   """Add flags shared by all release tracks."""
   parser.display_info.AddFormat(instances_flags.DEFAULT_LIST_FORMAT)
@@ -102,8 +104,11 @@ def _Args(
       support_confidential_compute_type,
       support_confidential_compute_type_tdx,
       support_snp_svsm,
+      support_confidential_compute_type_cca,
   )
   instances_flags.AddNestedVirtualizationArgs(parser)
+  if support_expose_host_topology:
+    instances_flags.AddExposeHostTopologyArg(parser)
   instances_flags.AddThreadsPerCoreArgs(parser)
   instances_flags.AddIPv6AddressArgs(parser)
   instances_flags.AddIPv6PrefixLengthArgs(parser)
@@ -178,6 +183,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_confidential_compute_type = True
   _support_confidential_compute_type_tdx = True
   _support_snp_svsm = False
+  _support_confidential_compute_type_cca = True
   _support_local_ssd_recovery_timeout = True
   _support_specific_then_x_affinity = False
   _support_any_reservation_then_fail_affinity = False
@@ -187,6 +193,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_skip_guest_os_shutdown = True
   _support_workload_identity_config = True
   _support_vsock_mode = False
+  _support_expose_host_topology = False
 
   @staticmethod
   def Args(parser):
@@ -198,6 +205,7 @@ class CreateWithContainer(base.CreateCommand):
         support_confidential_compute_type=True,
         support_confidential_compute_type_tdx=True,
         support_snp_svsm=False,
+        support_confidential_compute_type_cca=True,
         support_specific_then_x_affinity=False,
         support_any_reservation_then_fail_affinity=False,
         support_disk_labels=False,
@@ -349,6 +357,7 @@ class CreateWithContainer(base.CreateCommand):
         support_graceful_shutdown=self._support_graceful_shutdown,
         support_skip_guest_os_shutdown=self._support_skip_guest_os_shutdown,
         support_vsock_mode=self._support_vsock_mode,
+        support_expose_host_topology=self._support_expose_host_topology,
     )
     service_accounts = instance_utils.GetServiceAccounts(
         args, compute_client, skip_defaults
@@ -475,6 +484,7 @@ class CreateWithContainer(base.CreateCommand):
           support_confidential_compute_type=self._support_confidential_compute_type,
           support_confidential_compute_type_tdx=self._support_confidential_compute_type_tdx,
           support_snp_svsm=self._support_snp_svsm,
+          support_confidential_compute_type_cca=self._support_confidential_compute_type_cca,
       )
       if confidential_instance_config:
         instance.confidentialInstanceConfig = confidential_instance_config
@@ -564,6 +574,7 @@ class CreateWithContainerBeta(CreateWithContainer):
   _support_confidential_compute_type = True
   _support_confidential_compute_type_tdx = True
   _support_snp_svsm = False
+  _support_confidential_compute_type_cca = True
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
   _support_local_ssd_recovery_timeout = True
@@ -582,6 +593,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         support_confidential_compute_type=True,
         support_confidential_compute_type_tdx=True,
         support_snp_svsm=False,
+        support_confidential_compute_type_cca=True,
         support_specific_then_x_affinity=True,
         support_any_reservation_then_fail_affinity=True,
         support_disk_labels=True,
@@ -620,6 +632,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   _support_confidential_compute_type = True
   _support_confidential_compute_type_tdx = True
   _support_snp_svsm = True
+  _support_confidential_compute_type_cca = True
   _support_local_ssd_recovery_timeout = True
   _support_specific_then_x_affinity = True
   _support_any_reservation_then_fail_affinity = True
@@ -628,6 +641,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   _support_skip_guest_os_shutdown = True
   _support_workload_identity_config = True
   _support_vsock_mode = True
+  _support_expose_host_topology = True
 
   @staticmethod
   def Args(parser):
@@ -638,6 +652,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         support_confidential_compute_type=True,
         support_confidential_compute_type_tdx=True,
         support_snp_svsm=True,
+        support_confidential_compute_type_cca=True,
         support_specific_then_x_affinity=True,
         support_any_reservation_then_fail_affinity=True,
         support_disk_labels=True,
@@ -647,6 +662,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         support_skip_guest_os_shutdown=True,
         support_workload_identity_config=True,
         support_vsock_mode=True,
+        support_expose_host_topology=True,
     )
 
     instances_flags.AddNetworkTierArgs(parser, instance=True)

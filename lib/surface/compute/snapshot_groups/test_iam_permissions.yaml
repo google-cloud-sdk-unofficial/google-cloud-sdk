@@ -1,0 +1,37 @@
+release_tracks: [ALPHA, BETA]
+
+BETA:
+  hidden: true
+
+help_text:
+  brief: Test IAM permissions for a Compute Engine snapshot group.
+  description: |
+    Returns the permissions that a caller has on the specified Compute Engine snapshot group.
+  examples: |
+    To test if the caller has `compute.snapshotGroups.delete` permission on
+    `my-snapshot-group`, run:
+
+      $ {command} my-snapshot-group --permissions=compute.snapshotGroups.delete
+
+request:
+  collection: compute.snapshotGroups
+  use_relative_name: false
+  method: testIamPermissions
+  BETA:
+    api_version: beta
+  ALPHA:
+    api_version: alpha
+  resource_method_params:
+    resource: '{snapshotGroup}'
+
+arguments:
+  resource:
+    help_text: The snapshot group to test permissions for.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:snapshot_group
+  params:
+  - arg_name: permissions
+    api_field: testPermissionsRequest.permissions
+    required: true
+    repeated: true
+    help_text: |-
+      The permissions to test.

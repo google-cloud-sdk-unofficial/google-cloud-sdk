@@ -60,7 +60,7 @@ properties:
   name:
     description: |-
       Identifier. Name of the EndpointPolicy resource. It matches pattern
-      `projects/{project}/locations/global/endpointPolicies/{endpoint_policy}` .
+      `projects/{project}/locations/*/endpointPolicies/{endpoint_policy}`.
     type: string
   securityPolicy:
     description: |-

@@ -227,51 +227,57 @@ def setup_parser(parser, is_update=False, release_track=None):
         action='store_true',
         help=(
             'Enable replication to automatically copy all new and existing'
-            ' objects from the source to the destination. Note: Objects'
+            ' objects from one Cloud Storage bucket to another. Objects'
             ' deleted from the source bucket will not be deleted from the'
-            ' destination bucket. Please note that it is an event-driven'
-            ' transfer.'
+            ' destination bucket. See'
+            ' https://docs.cloud.google.com/storage-transfer/docs/'
+            'cross-bucket-replication for details.'
         ),
     )
 
   event_stream = parser.add_group(
-      help=('EVENT STREAM\n\nConfigure an event stream to transfer data'
-            ' whenever it is added or changed at your source, enabling you to'
-            ' act on the data in near real time. This event-driven transfer'
-            ' execution mode is available for transfers from Google Cloud'
-            ' Storage and Amazon S3. For formatting information, see'
-            ' https://cloud.google.com/sdk/gcloud/reference/topic/datetimes.'),
+      help=('EVENT STREAM\n\nConfigure an event-driven transfer to transfer'
+            ' data whenever it is added or changed at your source. Event-driven'
+            ' transfers are available from Google Cloud Storage, Amazon S3, '
+            ' and Azure Blob Storage sources.'
+            ' For more information, see'
+            ' https://docs.cloud.google.com/storage-transfer/docs/'
+            'event-driven-transfers.'),
       sort_args=False)
   event_stream.add_argument(
       '--event-stream-name',
-      help=('Specify an event stream that Storage Transfer Service can use to'
-            ' listen for when objects are created or updated. For Google Cloud'
-            ' Storage sources, specify a Cloud Pub/Sub subscription, using'
-            ' format "projects/yourproject/subscriptions/yoursubscription". For'
-            ' Amazon S3 sources, specify the Amazon Resource Name (ARN) of an'
-            ' Amazon Simple Queue Service (SQS) queue using format'
-            ' "arn:aws:sqs:region:account_id:queue_name".'))
+      help=(
+          'Specify the event stream used to listen for object creations and'
+          ' updates. Supported formats by source are:\n'
+          ' - Cloud Storage: A Cloud Pub/Sub subscription '
+          ' (`projects/project_id/subscriptions/subscription_id`).\n'
+          ' - Amazon S3: An Amazon SQS queue ARN '
+          ' (`arn:aws:sqs:region:account_id:queue_name`).\n'
+          ' - Azure Storage: An Azure Event Grid topic '
+          ' (`azure_storage_account.queue.core.windows.net/queue_name`).'))
   event_stream.add_argument(
       '--event-stream-starts',
-      help=('Set when to start listening for events UTC using the'
+      help=('When to start listening for events, in UTC using the'
             ' %Y-%m-%dT%H:%M:%S%z datetime format (e.g.,'
-            ' 2020-04-12T06:42:12+04:00). If not set, the job will start'
+            ' `2020-04-12T06:42:12+04:00`). If not set, the job starts'
             ' running and listening for events upon the successful submission'
             ' of the create job command.'))
   event_stream.add_argument(
       '--event-stream-expires',
-      help=('Set when to stop listening for events UTC using the'
+      help=('When to stop listening for events, in UTC using the'
             ' %Y-%m-%dT%H:%M:%S%z datetime format (e.g.,'
-            ' 2020-04-12T06:42:12+04:00). If not set, the job will continue'
+            ' `2020-04-12T06:42:12+04:00`). If not set, the job continues'
             ' running and listening for events indefinitely.'))
   if is_update:
     event_stream.add_argument(
         '--clear-event-stream',
         action='store_true',
         help=(
-            "Remove the job's entire event stream configuration by clearing all scheduling"
-            ' all event stream flags. The job will no longer listen for'
-            ' events unless a new configuratin is specified.'))
+            "Remove the job's entire event stream configuration by clearing all"
+            ' event stream flags. The job will no longer listen'
+            ' for events unless a new configuration is specified.'
+        ),
+    )
 
   schedule = parser.add_group(
       help=("SCHEDULE\n\nA job's schedule determines when and how often the job"
@@ -458,7 +464,8 @@ def setup_parser(parser, is_update=False, release_track=None):
       ' set to the destination bucket default.'
       ' Valid values are:\n\n'
       ' - Any of the values listed in the Cloud Storage documentation:'
-      '   [Available storage classes](https://cloud.google.com/storage/docs/storage-classes#classes).\n'
+      '   [Available storage classes]'
+      '(https://cloud.google.com/storage/docs/storage-classes#classes).\n'
       " - `preserve` - Preserves each object's original storage class. Only"
       '   supported for transfers between Cloud Storage buckets.\n'
       ' \nCustom storage class settings are ignored if the destination bucket'
@@ -469,8 +476,8 @@ def setup_parser(parser, is_update=False, release_track=None):
 
   notification_config = parser.add_group(
       help=(
-          'NOTIFICATION CONFIG\n\nA configuration for receiving notifications of'
-          'transfer operation status changes via Cloud Pub/Sub.'),
+          'NOTIFICATION CONFIG\n\nA configuration for receiving notifications'
+          ' of transfer operation status changes via Cloud Pub/Sub.'),
       sort_args=False)
   if is_update:
     notification_config.add_argument(

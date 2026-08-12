@@ -119,6 +119,20 @@ def AddDatabaseIdFlag(parser, required=False, hidden=False):
   )
 
 
+def AddChangeStreamIdArg(parser):
+  """Adds positional arg for change stream id to the given parser.
+
+  Args:
+    parser: The argparse parser.
+  """
+  parser.add_argument(
+      'change_stream',
+      metavar='CHANGE_STREAM',
+      type=str,
+      help='The ID of the change stream.',
+  )
+
+
 def AddNamespaceIdsFlag(parser):
   """Adds flag for namespace ids to the given parser."""
   parser.add_argument(
@@ -195,6 +209,32 @@ def AddLocationFlag(
   )
 
 
+def AddStoragePlacementFlag(parser):
+  """Adds flag for storage placement to the given parser.
+
+  Args:
+    parser: The argparse parser.
+  """
+  parser.add_argument(
+      '--storage-placement',
+      metavar='STORAGE_PLACEMENT',
+      required=False,
+      default=None,
+      type=str,
+      help=textwrap.dedent("""\
+          The storage placement for the database.
+
+          This is required when creating a database in a Standard Managed
+          Multi-Region (SMMR), such as `us` or `eu`.
+
+          For example, to specify storage placement `nam5` when creating a
+          database in `us`:
+
+            $ {command} --location=us --storage-placement=nam5
+          """),
+  )
+
+
 def AddBackupFlag(parser):
   """Adds flag for backup to the given parser.
 
@@ -237,27 +277,32 @@ def AddBackupScheduleFlag(parser):
   )
 
 
-def AddRetentionFlag(parser, required=False):
+def AddRetentionFlag(parser, required=False, default=None, help_text=None):
   """Adds flag for retention to the given parser.
 
   Args:
     parser: The argparse parser.
     required: Whether the flag must be set for running the command, a bool.
+    default: The default value for the flag, a string.
+    help_text: The help text for the flag, a string.
   """
+  if not help_text:
+    help_text = textwrap.dedent("""\
+        The rention of the backup. At what relative time in the future,
+        compared to the creation time of the backup should the backup be
+        deleted, i.e. keep backups for 7 days.
+
+        For example, to set retention as 7 days.
+
+        $ {command} --retention=7d
+        """)
   parser.add_argument(
       '--retention',
       metavar='RETENTION',
       required=required,
       type=arg_parsers.Duration(),
-      help=textwrap.dedent("""\
-          The rention of the backup. At what relative time in the future,
-          compared to the creation time of the backup should the backup be
-          deleted, i.e. keep backups for 7 days.
-
-          For example, to set retention as 7 days.
-
-          $ {command} --retention=7d
-          """),
+      default=default,
+      help=help_text,
   )
 
 

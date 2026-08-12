@@ -165,15 +165,7 @@ def AddVolumeExportPolicyArg(parser: argparse.ArgumentParser, messages: Any):
         Export Policy of a Cloud NetApp Files Volume.
         This will be a field similar to network
         in which export policy fields can be specified as such:
-        `--export-policy=allowed-clients=ALLOWED_CLIENTS_IP_ADDRESSES,
-        has-root-access=HAS_ROOT_ACCESS_BOOL,access=ACCESS_TYPE,nfsv3=NFSV3,
-        nfsv4=NFSV4,kerberos-5-read-only=KERBEROS_5_READ_ONLY,
-        kerberos-5-read-write=KERBEROS_5_READ_WRITE,
-        kerberos-5i-read-only=KERBEROS_5I_READ_ONLY,
-        kerberos-5i-read-write=KERBEROS_5I_READ_WRITE,
-        kerberos-5p-read-only=KERBEROS_5P_READ_ONLY,
-        kerberos-5p-read-write=KERBEROS_5P_READ_WRITE,
-        squash-mode=SQUASH_MODE,anon-uid=ANON_UID`
+        `--export-policy=allowed-clients=ALLOWED_CLIENTS_IP_ADDRESSES,has-root-access=HAS_ROOT_ACCESS_BOOL,access-type=ACCESS_TYPE,nfsv3=NFSV3,nfsv4=NFSV4,kerberos-5-read-only=KERBEROS_5_READ_ONLY,kerberos-5-read-write=KERBEROS_5_READ_WRITE,kerberos-5i-read-only=KERBEROS_5I_READ_ONLY,kerberos-5i-read-write=KERBEROS_5I_READ_WRITE,kerberos-5p-read-only=KERBEROS_5P_READ_ONLY,kerberos-5p-read-write=KERBEROS_5P_READ_WRITE,squash-mode=SQUASH_MODE,anon-uid=ANON_UID`
   """)
   parser.add_argument(
       '--export-policy',
@@ -475,10 +467,8 @@ def AddVolumeBackupConfigArg(parser):
   backup_config_help = textwrap.dedent("""\
     Backup Config contains backup related config on a volume.
 
-        Backup Config will have the following format
-        `--backup-config=backup-policies=BACKUP_POLICIES,
-        backup-vault=BACKUP_VAULT_NAME,
-        enable-scheduled-backups=ENABLE_SCHEDULED_BACKUPS
+        Backup Config will have the following format:
+        `--backup-config=backup-policies=BACKUP_POLICIES,backup-vault=BACKUP_VAULT_NAME,enable-scheduled-backups=ENABLE_SCHEDULED_BACKUPS`
 
     backup-policies is a pound-separated (#) list of backup policy names, backup-vault can include
     a single backup-vault resource name, and enable-scheduled-backups is a Boolean value indicating
@@ -587,9 +577,8 @@ def AddVolumeTieringPolicyArg(parser, messages, release_track):
   tiering_policy_help = textwrap.dedent("""\
       Tiering Policy contains auto tiering policy on a volume.
 
-      Tiering Policy will have the following format
-      --tiering-policy=tier-action=TIER_ACTION,
-      cooling-threshold-days=COOLING_THRESHOLD_DAYS
+      Tiering Policy will have the following format:
+      `--tiering-policy=tier-action=TIER_ACTION,cooling-threshold-days=COOLING_THRESHOLD_DAYS`
 
       tier-action is an enum, supported values are ENABLED or PAUSED,
 cooling-threshold-days is an integer represents time in days to mark the
@@ -634,18 +623,8 @@ def AddVolumeHybridReplicationParametersArg(
   hybrid_replication_parameters_help = textwrap.dedent("""\
   Hybrid Replication Parameters contains hybrid replication parameters on a volume.
 
-      Hybrid Replication Parameters will have the following format
-      --hybrid-replication-parameters=replication=REPLICATION,
-      peer-volume-name=PEER_VOLUME_NAME,
-      peer-cluster-name=PEER_CLUSTER_NAME,
-      peer-svm-name=PEER_SVM_NAME,
-      peer-ip-addresses=[PEER-IP-ADDRESS1#PEER-IP-ADDRESS2#...],
-      cluster-location=CLUSTER_LOCATION,
-      description=DESCRIPTION,
-      replication-schedule=REPLICATION_SCHEDULE,
-      hybrid-replication-type=HYBRID_REPLICATION_TYPE,
-      large-volume-constituent-count=LARGE_VOLUME_CONSTITUENT_COUNT,
-      labels=[KEY1:VALUE1#KEY2:VALUE2#...],
+      Hybrid Replication Parameters will have the following format:
+      `--hybrid-replication-parameters=replication=REPLICATION,peer-volume-name=PEER_VOLUME_NAME,peer-cluster-name=PEER_CLUSTER_NAME,peer-svm-name=PEER_SVM_NAME,peer-ip-addresses=[PEER-IP-ADDRESS1#PEER-IP-ADDRESS2#...],cluster-location=CLUSTER_LOCATION,description=DESCRIPTION,replication-schedule=REPLICATION_SCHEDULE,hybrid-replication-type=HYBRID_REPLICATION_TYPE,large-volume-constituent-count=LARGE_VOLUME_CONSTITUENT_COUNT,labels=[KEY1:VALUE1#KEY2:VALUE2#...]`
 
   replication is the desired name for the replication of the volume,
   peer-volume-name is the name of the user's local source volume,
@@ -697,13 +676,8 @@ def AddVolumeCacheParametersArg(parser, hidden=False):
   cache_parameters_help = textwrap.dedent("""\
   Cache Parameters contains cache parameters of a volume.
 
-      Cache Parameters will have the following format
-      `--cache-parameters=peer-volume-name=PEER_VOLUME_NAME,
-        peer-cluster-name=PEER_CLUSTER_NAME,
-        peer-svm-name=PEER_SVM_NAME,
-        peer-ip-addresses=[PEER-IP-ADDRESS1#PEER-IP-ADDRESS2#...],
-        enable-global-file-lock=ENABLE_GLOBAL_FILE_LOCK,
-        cache-config=CACHE_CONFIG`
+      Cache Parameters will have the following format:
+      `--cache-parameters=peer-volume-name=PEER_VOLUME_NAME,peer-cluster-name=PEER_CLUSTER_NAME,peer-svm-name=PEER_SVM_NAME,peer-ip-addresses=[PEER-IP-ADDRESS1#PEER-IP-ADDRESS2#...],enable-global-file-lock=ENABLE_GLOBAL_FILE_LOCK,cache-config=CACHE_CONFIG`
 
       *peer-volume-name*::: Name of the user's local source volume
       *peer-cluster-name*::: Name of the user's local source cluster
@@ -736,10 +710,8 @@ def AddVolumeCachePrePopulateArg(parser, hidden=False):
   cache_pre_populate_help = textwrap.dedent("""\
       Cache Pre-populate contains cache pre-populate parameters of a volume.
 
-      Cache Pre-populate will have the following format
-      `--cache-pre-populate=path-list=PATH_LIST1#PATH_LIST2,
-        exclude-path-list=EXCLUDE_PATH_LIST1#EXCLUDE_PATH_LIST2,
-        recursion=RECURSION`
+      Cache Pre-populate will have the following format:
+      `--cache-pre-populate=path-list=PATH_LIST1#PATH_LIST2,exclude-path-list=EXCLUDE_PATH_LIST1#EXCLUDE_PATH_LIST2,recursion=RECURSION`
 
       *path-list*::: Hashtag-separated(#) list of paths to be pre-populated
       *exclude-path-list*::: Hashtag-separated(#) list of paths to be excluded from pre-population

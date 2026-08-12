@@ -18,6 +18,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Submit(base.Group):
   """Submit automation sessions with different types of jobs via Device Run."""

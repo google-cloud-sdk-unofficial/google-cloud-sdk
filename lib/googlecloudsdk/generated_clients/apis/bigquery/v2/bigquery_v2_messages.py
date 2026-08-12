@@ -9784,16 +9784,17 @@ class TableFieldSchema(_messages.Message):
     CategoriesValue: Deprecated.
     DataGovernanceTagsInfoValue: Optional. Specifies the data governance tags
       on this field. This field works with other column-level security fields
-      as follows: - Precedence: If a data governance tag is attached to a
+      as follows: * **Precedence**: If a data governance tag is attached to a
       column, it takes precedence over the policy tag attached to the column.
       However, if a data policy is attached to a column, it takes precedence
-      over the data governance tag. - Patching behavior (how this field
-      behaves during a `Table.patch` schema update): - Unset: If the
-      `data_governance_tags_info` field is omitted from the update request,
-      the existing tags on the column are preserved. - Empty Field: To clear
-      data governance tags from a column, send the `data_governance_tags_info`
-      field as an empty object. This will remove all tags from the column. -
-      Updating tags: To replace existing tag, send the field with the new tag.
+      over the data governance tag. * **Patching behavior**: Describes how
+      this field behaves during a `Table.patch` schema update: * **Unset**: If
+      the `data_governance_tags_info` field is omitted from the update
+      request, the existing tags on the column are preserved. * **Empty
+      Field**: To clear data governance tags from a column, send the
+      `data_governance_tags_info` field as an empty object. This removes all
+      tags from the column. * **Updating tags**: To replace an existing tag,
+      send the field with the new tag.
     PolicyTagsValue: Optional. The policy tags attached to this field, used
       for field-level access control. If not set, defaults to empty
       policy_tags.
@@ -9807,16 +9808,17 @@ class TableFieldSchema(_messages.Message):
       case-sensitive behavior.
     dataGovernanceTagsInfo: Optional. Specifies the data governance tags on
       this field. This field works with other column-level security fields as
-      follows: - Precedence: If a data governance tag is attached to a column,
-      it takes precedence over the policy tag attached to the column. However,
-      if a data policy is attached to a column, it takes precedence over the
-      data governance tag. - Patching behavior (how this field behaves during
-      a `Table.patch` schema update): - Unset: If the
-      `data_governance_tags_info` field is omitted from the update request,
-      the existing tags on the column are preserved. - Empty Field: To clear
-      data governance tags from a column, send the `data_governance_tags_info`
-      field as an empty object. This will remove all tags from the column. -
-      Updating tags: To replace existing tag, send the field with the new tag.
+      follows: * **Precedence**: If a data governance tag is attached to a
+      column, it takes precedence over the policy tag attached to the column.
+      However, if a data policy is attached to a column, it takes precedence
+      over the data governance tag. * **Patching behavior**: Describes how
+      this field behaves during a `Table.patch` schema update: * **Unset**: If
+      the `data_governance_tags_info` field is omitted from the update
+      request, the existing tags on the column are preserved. * **Empty
+      Field**: To clear data governance tags from a column, send the
+      `data_governance_tags_info` field as an empty object. This removes all
+      tags from the column. * **Updating tags**: To replace an existing tag,
+      send the field with the new tag.
     dataPolicies: Optional. Data policies attached to this field, used for
       field-level access control.
     dataPolicyList: Optional. Specifies data policies attached to this field,
@@ -9911,41 +9913,42 @@ class TableFieldSchema(_messages.Message):
 
   class DataGovernanceTagsInfoValue(_messages.Message):
     r"""Optional. Specifies the data governance tags on this field. This field
-    works with other column-level security fields as follows: - Precedence: If
-    a data governance tag is attached to a column, it takes precedence over
-    the policy tag attached to the column. However, if a data policy is
-    attached to a column, it takes precedence over the data governance tag. -
-    Patching behavior (how this field behaves during a `Table.patch` schema
-    update): - Unset: If the `data_governance_tags_info` field is omitted from
-    the update request, the existing tags on the column are preserved. - Empty
-    Field: To clear data governance tags from a column, send the
-    `data_governance_tags_info` field as an empty object. This will remove all
-    tags from the column. - Updating tags: To replace existing tag, send the
-    field with the new tag.
+    works with other column-level security fields as follows: *
+    **Precedence**: If a data governance tag is attached to a column, it takes
+    precedence over the policy tag attached to the column. However, if a data
+    policy is attached to a column, it takes precedence over the data
+    governance tag. * **Patching behavior**: Describes how this field behaves
+    during a `Table.patch` schema update: * **Unset**: If the
+    `data_governance_tags_info` field is omitted from the update request, the
+    existing tags on the column are preserved. * **Empty Field**: To clear
+    data governance tags from a column, send the `data_governance_tags_info`
+    field as an empty object. This removes all tags from the column. *
+    **Updating tags**: To replace an existing tag, send the field with the new
+    tag.
 
     Messages:
       DataGovernanceTagsValue: Optional. The data governance tags added to
         this field are used for field-level access control. Only one data
         governance tag is currently supported on a field. Tag keys are
         globally unique. Tag key is expected to be in the namespaced format,
-        for example "123456789012/pii" where 123456789012 is the ID of the
-        parent organization or project resource for this tag key. Tag value is
+        for example "parent-id/pii" where parent-id is the ID of the parent
+        organization or project resource for this tag key. Tag value is
         expected to be the short name, for example "sensitive". See [Tag
         definitions](https://cloud.google.com/iam/docs/tags-access-
-        control#definitions) for more details. For example:
-        "123456789012/pii": "sensitive", "myProject/cost_center": "sales"
+        control#definitions) for more details. For example: "parent-id/pii":
+        "sensitive", "myProject/cost_center": "sales"
 
     Fields:
       dataGovernanceTags: Optional. The data governance tags added to this
         field are used for field-level access control. Only one data
         governance tag is currently supported on a field. Tag keys are
         globally unique. Tag key is expected to be in the namespaced format,
-        for example "123456789012/pii" where 123456789012 is the ID of the
-        parent organization or project resource for this tag key. Tag value is
+        for example "parent-id/pii" where parent-id is the ID of the parent
+        organization or project resource for this tag key. Tag value is
         expected to be the short name, for example "sensitive". See [Tag
         definitions](https://cloud.google.com/iam/docs/tags-access-
-        control#definitions) for more details. For example:
-        "123456789012/pii": "sensitive", "myProject/cost_center": "sales"
+        control#definitions) for more details. For example: "parent-id/pii":
+        "sensitive", "myProject/cost_center": "sales"
     """
 
     @encoding.MapUnrecognizedFields('additionalProperties')
@@ -9953,12 +9956,12 @@ class TableFieldSchema(_messages.Message):
       r"""Optional. The data governance tags added to this field are used for
       field-level access control. Only one data governance tag is currently
       supported on a field. Tag keys are globally unique. Tag key is expected
-      to be in the namespaced format, for example "123456789012/pii" where
-      123456789012 is the ID of the parent organization or project resource
-      for this tag key. Tag value is expected to be the short name, for
-      example "sensitive". See [Tag
+      to be in the namespaced format, for example "parent-id/pii" where
+      parent-id is the ID of the parent organization or project resource for
+      this tag key. Tag value is expected to be the short name, for example
+      "sensitive". See [Tag
       definitions](https://cloud.google.com/iam/docs/tags-access-
-      control#definitions) for more details. For example: "123456789012/pii":
+      control#definitions) for more details. For example: "parent-id/pii":
       "sensitive", "myProject/cost_center": "sales"
 
       Messages:

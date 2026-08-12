@@ -237,6 +237,8 @@ class Test(base.Command):
       res['SIGALRM'] = self._FormatHandler(signal.getsignal(signal.SIGALRM))
     if hasattr(signal, 'SIGWINCH'):
       res['SIGWINCH'] = self._FormatHandler(signal.getsignal(signal.SIGWINCH))
+    if hasattr(signal, 'SIGUSR1'):
+      res['SIGUSR1'] = self._FormatHandler(signal.getsignal(signal.SIGUSR1))
     return res
 
   def _RunCheckSubprocessSignalRestore(self, args):

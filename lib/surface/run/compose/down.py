@@ -202,11 +202,11 @@ class Down(base.Command):
 
     # Prompt user
     log.status.Print('')
-    if not console_io.PromptContinue(
+    console_io.PromptContinue(
         prompt_string='Do you want to proceed',
-        default=False,
-    ):
-      raise console_io.OperationCancelledError('Aborted by user.')
+        cancel_on_no=True,
+        cancel_string='Aborted by user.',
+    )
 
     # Phase 3: Execution
     stage_map = {

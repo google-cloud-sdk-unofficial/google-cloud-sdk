@@ -63,7 +63,7 @@ class DlpOrganizationsDeidentifyTemplatesCreateRequest(_messages.Message):
     parent: Required. Parent resource name. The format of this value varies
       depending on the scope of the request (project or organization) and
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -126,7 +126,7 @@ class DlpOrganizationsDeidentifyTemplatesListRequest(_messages.Message):
     parent: Required. Parent resource name. The format of this value varies
       depending on the scope of the request (project or organization) and
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -173,7 +173,7 @@ class DlpOrganizationsInspectTemplatesCreateRequest(_messages.Message):
     parent: Required. Parent resource name. The format of this value varies
       depending on the scope of the request (project or organization) and
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -236,7 +236,7 @@ class DlpOrganizationsInspectTemplatesListRequest(_messages.Message):
     parent: Required. Parent resource name. The format of this value varies
       depending on the scope of the request (project or organization) and
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -443,7 +443,7 @@ class DlpOrganizationsLocationsDeidentifyTemplatesCreateRequest(_messages.Messag
     parent: Required. Parent resource name. The format of this value varies
       depending on the scope of the request (project or organization) and
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -506,7 +506,7 @@ class DlpOrganizationsLocationsDeidentifyTemplatesListRequest(_messages.Message)
     parent: Required. Parent resource name. The format of this value varies
       depending on the scope of the request (project or organization) and
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -667,7 +667,7 @@ class DlpOrganizationsLocationsDlpJobsListRequest(_messages.Message):
     pageToken: The standard list page token.
     parent: Required. Parent resource name. The format of this value varies
       depending on whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -803,7 +803,7 @@ class DlpOrganizationsLocationsInspectTemplatesCreateRequest(_messages.Message):
     parent: Required. Parent resource name. The format of this value varies
       depending on the scope of the request (project or organization) and
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -866,7 +866,7 @@ class DlpOrganizationsLocationsInspectTemplatesListRequest(_messages.Message):
     parent: Required. Parent resource name. The format of this value varies
       depending on the scope of the request (project or organization) and
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -912,7 +912,7 @@ class DlpOrganizationsLocationsJobTriggersCreateRequest(_messages.Message):
       request body.
     parent: Required. Parent resource name. The format of this value varies
       depending on whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -989,7 +989,7 @@ class DlpOrganizationsLocationsJobTriggersListRequest(_messages.Message):
       calls.
     parent: Required. Parent resource name. The format of this value varies
       depending on whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -1098,7 +1098,7 @@ class DlpOrganizationsLocationsStoredInfoTypesCreateRequest(_messages.Message):
     parent: Required. Parent resource name. The format of this value varies
       depending on the scope of the request (project or organization) and
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -1159,7 +1159,7 @@ class DlpOrganizationsLocationsStoredInfoTypesListRequest(_messages.Message):
     parent: Required. Parent resource name. The format of this value varies
       depending on the scope of the request (project or organization) and
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -1273,7 +1273,7 @@ class DlpOrganizationsStoredInfoTypesCreateRequest(_messages.Message):
     parent: Required. Parent resource name. The format of this value varies
       depending on the scope of the request (project or organization) and
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -1334,7 +1334,7 @@ class DlpOrganizationsStoredInfoTypesListRequest(_messages.Message):
     parent: Required. Parent resource name. The format of this value varies
       depending on the scope of the request (project or organization) and
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -1376,7 +1376,7 @@ class DlpProjectsContentDeidentifyRequest(_messages.Message):
       request body.
     parent: Parent resource name. The format of this value varies depending on
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -1399,7 +1399,7 @@ class DlpProjectsContentInspectRequest(_messages.Message):
       request body.
     parent: Parent resource name. The format of this value varies depending on
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -1422,7 +1422,7 @@ class DlpProjectsContentReidentifyRequest(_messages.Message):
       request body.
     parent: Required. Parent resource name. The format of this value varies
       depending on whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -1446,7 +1446,7 @@ class DlpProjectsDeidentifyTemplatesCreateRequest(_messages.Message):
     parent: Required. Parent resource name. The format of this value varies
       depending on the scope of the request (project or organization) and
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -1509,7 +1509,7 @@ class DlpProjectsDeidentifyTemplatesListRequest(_messages.Message):
     parent: Required. Parent resource name. The format of this value varies
       depending on the scope of the request (project or organization) and
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -1569,7 +1569,7 @@ class DlpProjectsDlpJobsCreateRequest(_messages.Message):
       request body.
     parent: Required. Parent resource name. The format of this value varies
       depending on whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -1641,7 +1641,7 @@ class DlpProjectsDlpJobsListRequest(_messages.Message):
     pageToken: The standard list page token.
     parent: Required. Parent resource name. The format of this value varies
       depending on whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -1682,7 +1682,7 @@ class DlpProjectsImageRedactRequest(_messages.Message):
       request body.
     parent: Parent resource name. The format of this value varies depending on
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -1706,7 +1706,7 @@ class DlpProjectsInspectTemplatesCreateRequest(_messages.Message):
     parent: Required. Parent resource name. The format of this value varies
       depending on the scope of the request (project or organization) and
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -1769,7 +1769,7 @@ class DlpProjectsInspectTemplatesListRequest(_messages.Message):
     parent: Required. Parent resource name. The format of this value varies
       depending on the scope of the request (project or organization) and
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -1830,7 +1830,7 @@ class DlpProjectsJobTriggersCreateRequest(_messages.Message):
       request body.
     parent: Required. Parent resource name. The format of this value varies
       depending on whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -1907,7 +1907,7 @@ class DlpProjectsJobTriggersListRequest(_messages.Message):
       calls.
     parent: Required. Parent resource name. The format of this value varies
       depending on whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -2123,7 +2123,7 @@ class DlpProjectsLocationsContentDeidentifyRequest(_messages.Message):
       request body.
     parent: Parent resource name. The format of this value varies depending on
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -2146,7 +2146,7 @@ class DlpProjectsLocationsContentInspectRequest(_messages.Message):
       request body.
     parent: Parent resource name. The format of this value varies depending on
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -2242,7 +2242,7 @@ class DlpProjectsLocationsContentReidentifyRequest(_messages.Message):
       request body.
     parent: Required. Parent resource name. The format of this value varies
       depending on whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -2266,7 +2266,7 @@ class DlpProjectsLocationsDeidentifyTemplatesCreateRequest(_messages.Message):
     parent: Required. Parent resource name. The format of this value varies
       depending on the scope of the request (project or organization) and
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -2329,7 +2329,7 @@ class DlpProjectsLocationsDeidentifyTemplatesListRequest(_messages.Message):
     parent: Required. Parent resource name. The format of this value varies
       depending on the scope of the request (project or organization) and
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -2475,7 +2475,7 @@ class DlpProjectsLocationsDlpJobsCreateRequest(_messages.Message):
       request body.
     parent: Required. Parent resource name. The format of this value varies
       depending on whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -2576,7 +2576,7 @@ class DlpProjectsLocationsDlpJobsListRequest(_messages.Message):
     pageToken: The standard list page token.
     parent: Required. Parent resource name. The format of this value varies
       depending on whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -2691,7 +2691,7 @@ class DlpProjectsLocationsImageRedactRequest(_messages.Message):
       request body.
     parent: Parent resource name. The format of this value varies depending on
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -2735,7 +2735,7 @@ class DlpProjectsLocationsInspectTemplatesCreateRequest(_messages.Message):
     parent: Required. Parent resource name. The format of this value varies
       depending on the scope of the request (project or organization) and
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -2798,7 +2798,7 @@ class DlpProjectsLocationsInspectTemplatesListRequest(_messages.Message):
     parent: Required. Parent resource name. The format of this value varies
       depending on the scope of the request (project or organization) and
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -2859,7 +2859,7 @@ class DlpProjectsLocationsJobTriggersCreateRequest(_messages.Message):
       request body.
     parent: Required. Parent resource name. The format of this value varies
       depending on whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -2951,7 +2951,7 @@ class DlpProjectsLocationsJobTriggersListRequest(_messages.Message):
       calls.
     parent: Required. Parent resource name. The format of this value varies
       depending on whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -3060,7 +3060,7 @@ class DlpProjectsLocationsStoredInfoTypesCreateRequest(_messages.Message):
     parent: Required. Parent resource name. The format of this value varies
       depending on the scope of the request (project or organization) and
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -3121,7 +3121,7 @@ class DlpProjectsLocationsStoredInfoTypesListRequest(_messages.Message):
     parent: Required. Parent resource name. The format of this value varies
       depending on the scope of the request (project or organization) and
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -3235,7 +3235,7 @@ class DlpProjectsStoredInfoTypesCreateRequest(_messages.Message):
     parent: Required. Parent resource name. The format of this value varies
       depending on the scope of the request (project or organization) and
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -3296,7 +3296,7 @@ class DlpProjectsStoredInfoTypesListRequest(_messages.Message):
     parent: Required. Parent resource name. The format of this value varies
       depending on the scope of the request (project or organization) and
       whether you have [specified a processing
-      location](https://cloud.google.com/sensitive-data-
+      location](https://docs.cloud.google.com/sensitive-data-
       protection/docs/specifying-location): + Projects scope, location
       specified: `projects/{project_id}/locations/{location_id}` + Projects
       scope, no location specified (defaults to global):
@@ -3331,14 +3331,14 @@ class DlpProjectsStoredInfoTypesPatchRequest(_messages.Message):
 
 class GooglePrivacyDlpV2Action(_messages.Message):
   r"""A task to execute on the completion of a job. See
-  https://cloud.google.com/sensitive-data-protection/docs/concepts-actions to
-  learn more.
+  https://docs.cloud.google.com/sensitive-data-protection/docs/concepts-
+  actions to learn more.
 
   Fields:
     deidentify: Create a de-identified copy of the input data.
     jobNotificationEmails: Sends an email when the job completes. The email
       goes to IAM project owners and technical [Essential
-      Contacts](https://cloud.google.com/resource-manager/docs/managing-
+      Contacts](https://docs.cloud.google.com/resource-manager/docs/managing-
       notification-contacts).
     pubSub: Publish a notification to a Pub/Sub topic.
     publishFindingsToCloudDataCatalog: Deprecated because Data Catalog is
@@ -3392,7 +3392,7 @@ class GooglePrivacyDlpV2AdjustByImageFindings(_messages.Message):
       the bounding boxes of the target finding and the context infoType
       findings.
     infoTypes: A list of image-supported infoTypes-excluding [document
-      infoTypes](https://cloud.google.com/sensitive-data-
+      infoTypes](https://docs.cloud.google.com/sensitive-data-
       protection/docs/infotypes-reference#documents)-to be used as context for
       the adjustment rule. Sensitive Data Protection adjusts the likelihood of
       an image finding if its bounding box has the specified spatial
@@ -3840,9 +3840,10 @@ class GooglePrivacyDlpV2BigQueryOptions(_messages.Message):
       inclusively. Both 0 and 100 means no limit. Defaults to 0. Only one of
       rows_limit and rows_limit_percent can be specified. Cannot be used in
       conjunction with TimespanConfig. Caution: A [known
-      issue](https://cloud.google.com/sensitive-data-protection/docs/known-
-      issues#bq-sampling) is causing the `rowsLimitPercent` field to behave
-      unexpectedly. We recommend using `rowsLimit` instead.
+      issue](https://docs.cloud.google.com/sensitive-data-
+      protection/docs/known-issues#bq-sampling) is causing the
+      `rowsLimitPercent` field to behave unexpectedly. We recommend using
+      `rowsLimit` instead.
     sampleMethod: How to sample the data.
     tableReference: Complete BigQuery table reference.
   """
@@ -3995,7 +3996,7 @@ class GooglePrivacyDlpV2BucketingConfig(_messages.Message):
   used on data of type: number, long, string, timestamp. If the bound `Value`
   type differs from the type of data being transformed, we will first attempt
   converting the type of the data to be transformed to match the type of the
-  bound before comparing. See https://cloud.google.com/sensitive-data-
+  bound before comparing. See https://docs.cloud.google.com/sensitive-data-
   protection/docs/concepts-bucketing to learn more.
 
   Fields:
@@ -4217,8 +4218,8 @@ class GooglePrivacyDlpV2CloudSqlDiscoveryTarget(_messages.Message):
 class GooglePrivacyDlpV2CloudSqlIamCredential(_messages.Message):
   r"""Use IAM authentication to connect. This requires the Cloud SQL IAM
   feature to be enabled on the instance, which is not the default for Cloud
-  SQL. See https://cloud.google.com/sql/docs/postgres/authentication and
-  https://cloud.google.com/sql/docs/mysql/authentication.
+  SQL. See https://docs.cloud.google.com/sql/docs/postgres/authentication and
+  https://docs.cloud.google.com/sql/docs/mysql/authentication.
   """
 
 
@@ -4313,7 +4314,7 @@ class GooglePrivacyDlpV2CloudStorageOptions(_messages.Message):
       `bytes_limit_per_file_percent` can be specified. This field can't be set
       if de-identification is requested. For certain file types, setting this
       field has no effect. For more information, see [Limits on bytes scanned
-      per file](https://cloud.google.com/sensitive-data-
+      per file](https://docs.cloud.google.com/sensitive-data-
       protection/docs/supported-file-types#max-byte-size-per-file).
     bytesLimitPerFilePercent: Max percentage of bytes to scan from a file. The
       rest are omitted. The number of bytes scanned is rounded down. Must be
@@ -4322,8 +4323,8 @@ class GooglePrivacyDlpV2CloudStorageOptions(_messages.Message):
       can be specified. This field can't be set if de-identification is
       requested. For certain file types, setting this field has no effect. For
       more information, see [Limits on bytes scanned per
-      file](https://cloud.google.com/sensitive-data-protection/docs/supported-
-      file-types#max-byte-size-per-file).
+      file](https://docs.cloud.google.com/sensitive-data-
+      protection/docs/supported-file-types#max-byte-size-per-file).
     fileSet: The set of one or more files to scan.
     fileTypes: List of file type groups to include in the scan. If empty, all
       files are scanned and available data format processors are applied. In
@@ -4533,7 +4534,7 @@ class GooglePrivacyDlpV2ColumnDataProfile(_messages.Message):
     datasetId: The BigQuery dataset ID, if the resource profiled is a BigQuery
       table.
     datasetLocation: If supported, the location where the dataset's data is
-      stored. See https://cloud.google.com/bigquery/docs/locations for
+      stored. See https://docs.cloud.google.com/bigquery/docs/locations for
       supported BigQuery locations.
     datasetProjectId: The Google Cloud project ID that owns the profiled
       resource.
@@ -4842,7 +4843,7 @@ class GooglePrivacyDlpV2ContentItem(_messages.Message):
       is assumed that all included messages are contiguous and ordered in
       chronological order.
     table: Structured content for inspection. See
-      https://cloud.google.com/sensitive-data-protection/docs/inspecting-
+      https://docs.cloud.google.com/sensitive-data-protection/docs/inspecting-
       text#inspecting_a_table to learn more.
     value: String data to inspect or redact.
   """
@@ -5198,8 +5199,8 @@ class GooglePrivacyDlpV2CryptoHashConfig(_messages.Message):
   hashing. Uses SHA-256. The key size must be either 32 or 64 bytes. Outputs a
   base64 encoded representation of the hashed output (for example,
   L7k0BHmF1ha5U3NfGykjro4xWi1MPVQPjhMAZbSV9mM=). Currently, only string and
-  integer values can be hashed. See https://cloud.google.com/sensitive-data-
-  protection/docs/pseudonymization to learn more.
+  integer values can be hashed. See https://docs.cloud.google.com/sensitive-
+  data-protection/docs/pseudonymization to learn more.
 
   Fields:
     cryptoKey: The key used by the hash function.
@@ -5233,7 +5234,7 @@ class GooglePrivacyDlpV2CryptoReplaceFfxFpeConfig(_messages.Message):
   encoded as ASCII. For a given crypto key and context, the same identifier
   will be replaced with the same surrogate. Identifiers must be at least two
   characters long. In the case that the identifier is the empty string, it
-  will be skipped. See https://cloud.google.com/sensitive-data-
+  will be skipped. See https://docs.cloud.google.com/sensitive-data-
   protection/docs/pseudonymization to learn more. Note: We recommend using
   CryptoDeterministicConfig for all use cases which do not require preserving
   the input alphabet space and size, plus warrant referential integrity. FPE
@@ -5275,7 +5276,7 @@ class GooglePrivacyDlpV2CryptoReplaceFfxFpeConfig(_messages.Message):
       'abc', the full replacement value will be: 'MY_TOKEN_INFO_TYPE(3):abc'
       This annotation identifies the surrogate when inspecting content using
       the custom infoType
-      [`SurrogateType`](https://cloud.google.com/sensitive-data-
+      [`SurrogateType`](https://docs.cloud.google.com/sensitive-data-
       protection/docs/reference/rest/v2/InspectConfig#surrogatetype). This
       facilitates reversal of the surrogate when it occurs in free text. In
       order for inspection to work properly, the name of this infoType must
@@ -5417,9 +5418,8 @@ class GooglePrivacyDlpV2DataProfileAction(_messages.Message):
     pubSubNotification: Publish a message into the Pub/Sub topic.
     publishToChronicle: Publishes generated data profiles to Google Security
       Operations. For more information, see [Use Sensitive Data Protection
-      data in context-aware
-      analytics](https://cloud.google.com/chronicle/docs/detection/usecase-
-      dlp-high-risk-user-download).
+      data in context-aware analytics](https://docs.cloud.google.com/chronicle
+      /docs/detection/usecase-dlp-high-risk-user-download).
     publishToDataplexCatalog: Publishes a portion of each profile to Dataplex
       Universal Catalog with the aspect type Sensitive Data Protection
       Profile.
@@ -5492,8 +5492,8 @@ class GooglePrivacyDlpV2DataProfileFinding(_messages.Message):
     fullResourceName: The [full resource name](https://cloud.google.com/apis/d
       esign/resource_names#full_resource_name) of the resource profiled for
       this finding.
-    infotype: The [type of content](https://cloud.google.com/sensitive-data-
-      protection/docs/infotypes-reference) that might have been found.
+    infotype: The [type of content](https://docs.cloud.google.com/sensitive-
+      data-protection/docs/infotypes-reference) that might have been found.
     location: Where the content was found.
     quote: The content that was found. Even if the content is not textual, it
       may be converted to a textual representation here. If the finding
@@ -5564,7 +5564,7 @@ class GooglePrivacyDlpV2DataProfileJobConfig(_messages.Message):
   r"""Configuration for setting up a job to scan resources for profile
   generation. Only one data profile configuration may exist per organization,
   folder, or project. The generated data profiles are retained according to
-  the [data retention policy] (https://cloud.google.com/sensitive-data-
+  the [data retention policy] (https://docs.cloud.google.com/sensitive-data-
   protection/docs/data-profiles#retention).
 
   Fields:
@@ -5578,8 +5578,9 @@ class GooglePrivacyDlpV2DataProfileJobConfig(_messages.Message):
       is specified, but a "global" template is specified, it will be copied to
       that region and used instead. If no global or region-specific template
       is provided for a region with data, that region's data will not be
-      scanned. For more information, see https://cloud.google.com/sensitive-
-      data-protection/docs/data-profiles#data-residency.
+      scanned. For more information, see
+      https://docs.cloud.google.com/sensitive-data-protection/docs/data-
+      profiles#data-residency.
     location: The data to scan.
     otherCloudStartingLocation: Must be set only when scanning other clouds.
     projectId: The project that will run the scan. The DLP service account
@@ -5803,7 +5804,7 @@ class GooglePrivacyDlpV2DatastoreOptions(_messages.Message):
 
 class GooglePrivacyDlpV2DateShiftConfig(_messages.Message):
   r"""Shifts dates by random number of days, with option to be consistent for
-  the same context. See https://cloud.google.com/sensitive-data-
+  the same context. See https://docs.cloud.google.com/sensitive-data-
   protection/docs/concepts-date-shifting to learn more.
 
   Fields:
@@ -6087,7 +6088,7 @@ class GooglePrivacyDlpV2DeidentifyDataSourceStats(_messages.Message):
 
 class GooglePrivacyDlpV2DeidentifyTemplate(_messages.Message):
   r"""DeidentifyTemplates contains instructions on how to de-identify content.
-  See https://cloud.google.com/sensitive-data-protection/docs/concepts-
+  See https://docs.cloud.google.com/sensitive-data-protection/docs/concepts-
   templates to learn more.
 
   Fields:
@@ -6222,9 +6223,9 @@ class GooglePrivacyDlpV2Dictionary(_messages.Message):
   matches for "jennifer". Dictionary words containing a large number of
   characters that are not letters or digits may result in unexpected findings
   because such characters are treated as whitespace. The
-  [limits](https://cloud.google.com/sensitive-data-protection/limits) page
-  contains details about the size limits of dictionaries. For dictionaries
-  that do not fit within these constraints, consider using
+  [limits](https://docs.cloud.google.com/sensitive-data-protection/limits)
+  page contains details about the size limits of dictionaries. For
+  dictionaries that do not fit within these constraints, consider using
   `LargeCustomDictionaryConfig` in the `StoredInfoType` API.
 
   Fields:
@@ -6454,12 +6455,14 @@ class GooglePrivacyDlpV2DiscoveryCloudStorageConditions(_messages.Message):
       CLOUD_STORAGE_BUCKET_ATTRIBUTE_UNSPECIFIED: Unused.
       ALL_SUPPORTED_BUCKETS: Scan buckets regardless of the attribute.
       AUTOCLASS_DISABLED: Buckets with
-        [Autoclass](https://cloud.google.com/storage/docs/autoclass) disabled.
-        Only one of AUTOCLASS_DISABLED or AUTOCLASS_ENABLED should be set.
+        [Autoclass](https://docs.cloud.google.com/storage/docs/autoclass)
+        disabled. Only one of AUTOCLASS_DISABLED or AUTOCLASS_ENABLED should
+        be set.
       AUTOCLASS_ENABLED: Buckets with
-        [Autoclass](https://cloud.google.com/storage/docs/autoclass) enabled.
-        Only one of AUTOCLASS_DISABLED or AUTOCLASS_ENABLED should be set.
-        Scanning Autoclass-enabled buckets can affect object storage classes.
+        [Autoclass](https://docs.cloud.google.com/storage/docs/autoclass)
+        enabled. Only one of AUTOCLASS_DISABLED or AUTOCLASS_ENABLED should be
+        set. Scanning Autoclass-enabled buckets can affect object storage
+        classes.
     """
     CLOUD_STORAGE_BUCKET_ATTRIBUTE_UNSPECIFIED = 0
     ALL_SUPPORTED_BUCKETS = 1
@@ -6570,7 +6573,7 @@ class GooglePrivacyDlpV2DiscoveryConfig(_messages.Message):
   r"""Configuration for discovery to scan resources for profile generation.
   Only one discovery configuration may exist per organization, folder, or
   project. The generated data profiles are retained according to the [data
-  retention policy] (https://cloud.google.com/sensitive-data-
+  retention policy] (https://docs.cloud.google.com/sensitive-data-
   protection/docs/data-profiles#retention).
 
   Enums:
@@ -6593,8 +6596,9 @@ class GooglePrivacyDlpV2DiscoveryConfig(_messages.Message):
       specified, but a "global" template is specified, it will be copied to
       that region and used instead. If no global or region-specific template
       is provided for a region with data, that region's data will not be
-      scanned. For more information, see https://cloud.google.com/sensitive-
-      data-protection/docs/data-profiles#data-residency.
+      scanned. For more information, see
+      https://docs.cloud.google.com/sensitive-data-protection/docs/data-
+      profiles#data-residency.
     lastRunTime: Output only. The timestamp of the last time this config was
       executed.
     name: Output only. Unique resource name for the DiscoveryConfig, assigned
@@ -7178,11 +7182,11 @@ class GooglePrivacyDlpV2Domain(_messages.Message):
         example, text, image, multimodal). The `TEXT_EMBEDDING` signal might
         also be present if the table contains text embeddings.
       VERTEX_PLUGIN: The [Cloud SQL Vertex
-        AI](https://cloud.google.com/sql/docs/postgres/integrate-cloud-sql-
-        with-vertex-ai) plugin is installed on the database.
+        AI](https://docs.cloud.google.com/sql/docs/postgres/integrate-cloud-
+        sql-with-vertex-ai) plugin is installed on the database.
       VECTOR_PLUGIN: Support for [Cloud SQL vector
-        embeddings](https://cloud.google.com/sql/docs/mysql/enable-vector-
-        search) is enabled on the database.
+        embeddings](https://docs.cloud.google.com/sql/docs/mysql/enable-
+        vector-search) is enabled on the database.
       SOURCE_CODE: Source code is present.
       SERVICE: If the service determines the category type. For example,
         Vertex AI assets would always have a `Category` of `AI`.
@@ -7282,7 +7286,7 @@ class GooglePrivacyDlpV2ExcludeByImageFindings(_messages.Message):
       the bounding boxes of the target finding and the context infoType
       findings.
     infoTypes: A list of image-supported infoTypes-excluding [document
-      infoTypes](https://cloud.google.com/sensitive-data-
+      infoTypes](https://docs.cloud.google.com/sensitive-data-
       protection/docs/infotypes-reference#documents)-to be used as context for
       the exclusion rule. A finding is excluded if its bounding box has the
       specified spatial relationship (defined by `image_containment_type`)
@@ -7390,9 +7394,9 @@ class GooglePrivacyDlpV2Export(_messages.Message):
       generated and the dataset and table are created, the discovery scan
       configuration will be updated with the dataset and table names. * See
       [Analyze data profiles stored in
-      BigQuery](https://cloud.google.com/sensitive-data-
+      BigQuery](https://docs.cloud.google.com/sensitive-data-
       protection/docs/analyze-data-profiles). * See [Sample queries for your
-      BigQuery table](https://cloud.google.com/sensitive-data-
+      BigQuery table](https://docs.cloud.google.com/sensitive-data-
       protection/docs/analyze-data-profiles#sample_sql_queries). * Data is
       inserted using [streaming
       insert](https://cloud.google.com/blog/products/bigquery/life-of-a-
@@ -7402,10 +7406,10 @@ class GooglePrivacyDlpV2Export(_messages.Message):
       may not be instantly visible to queries by the time your topic receives
       the Pub/Sub notification. * The best practice is to use the same table
       for an entire organization so that you can take advantage of the
-      [provided Data Studio reports](https://cloud.google.com/sensitive-data-
-      protection/docs/analyze-data-profiles#use_a_premade_report). If you use
-      VPC Service Controls to define security perimeters, then you must use a
-      separate table for each boundary.
+      [provided Data Studio reports](https://docs.cloud.google.com/sensitive-
+      data-protection/docs/analyze-data-profiles#use_a_premade_report). If you
+      use VPC Service Controls to define security perimeters, then you must
+      use a separate table for each boundary.
     sampleFindingsTable: Store sample data profile findings in an existing
       table or a new table in an existing dataset. Each regeneration will
       result in new rows in BigQuery. Data is inserted using [streaming
@@ -7620,8 +7624,9 @@ class GooglePrivacyDlpV2FileStoreCollection(_messages.Message):
       match at least one pattern. For a resource to match the tag filters, the
       resource must have all of the provided tags attached. Tags refer to
       Resource Manager tags bound to the resource or its ancestors. For more
-      information, see [Manage schedules](https://cloud.google.com/sensitive-
-      data-protection/docs/profile-project-cloud-storage#manage-schedules).
+      information, see [Manage
+      schedules](https://docs.cloud.google.com/sensitive-data-
+      protection/docs/profile-project-cloud-storage#manage-schedules).
   """
 
   includeRegexes = _messages.MessageField('GooglePrivacyDlpV2FileStoreRegexes', 1)
@@ -7662,8 +7667,8 @@ class GooglePrivacyDlpV2FileStoreDataProfile(_messages.Message):
     fileStoreIsEmpty: The file store does not have any files. If the profiling
       operation failed, this is false.
     fileStoreLocation: The location of the file store. * Cloud Storage:
-      https://cloud.google.com/storage/docs/locations#available-locations *
-      Amazon S3:
+      https://docs.cloud.google.com/storage/docs/locations#available-locations
+      * Amazon S3:
       https://docs.aws.amazon.com/general/latest/gr/rande.html#regional-
       endpoints
     fileStorePath: The file store path. * Cloud Storage: `gs://{bucket}` *
@@ -8007,8 +8012,8 @@ class GooglePrivacyDlpV2FixedSizeBucketingConfig(_messages.Message):
   with "10-20". This can be used on data of type: double, long. If the bound
   Value type differs from the type of data being transformed, we will first
   attempt converting the type of the data to be transformed to match the type
-  of the bound before comparing. See https://cloud.google.com/sensitive-data-
-  protection/docs/concepts-bucketing to learn more.
+  of the bound before comparing. See https://docs.cloud.google.com/sensitive-
+  data-protection/docs/concepts-bucketing to learn more.
 
   Fields:
     bucketSize: Required. Size of each bucket (except for minimum and maximum
@@ -8086,7 +8091,7 @@ class GooglePrivacyDlpV2HotwordRule(_messages.Message):
       "xxx" is the area code in question. For tabular data, if you want to
       modify the likelihood of an entire column of findngs, see [Hotword
       example: Set the match likelihood of a table column]
-      (https://cloud.google.com/sensitive-data-protection/docs/creating-
+      (https://docs.cloud.google.com/sensitive-data-protection/docs/creating-
       custom-infotypes-likelihood#match-column-values).
   """
 
@@ -8401,7 +8406,7 @@ class GooglePrivacyDlpV2InfoType(_messages.Message):
   Fields:
     name: Name of the information type. Either a name of your choosing when
       creating a CustomInfoType, or one of the names listed at
-      https://cloud.google.com/sensitive-data-protection/docs/infotypes-
+      https://docs.cloud.google.com/sensitive-data-protection/docs/infotypes-
       reference when specifying a built-in type. When sending Cloud DLP
       results to Data Catalog, infoType names should conform to the pattern
       `[A-Za-z0-9$_-]{1,64}`.
@@ -8812,14 +8817,14 @@ class GooglePrivacyDlpV2InspectConfig(_messages.Message):
       threshold. The default is POSSIBLE. In general, the highest likelihood
       setting yields the fewest findings in results and the lowest chance of a
       false positive. For more information, see [Match
-      likelihood](https://cloud.google.com/sensitive-data-
+      likelihood](https://docs.cloud.google.com/sensitive-data-
       protection/docs/likelihood).
 
   Fields:
     contentOptions: Deprecated and unused.
     customInfoTypes: CustomInfoTypes provided by the user. See
-      https://cloud.google.com/sensitive-data-protection/docs/creating-custom-
-      infotypes to learn more.
+      https://docs.cloud.google.com/sensitive-data-protection/docs/creating-
+      custom-infotypes to learn more.
     excludeInfoTypes: When true, excludes type information of the findings.
       This is not used for data profiling.
     includeQuote: When true, a contextual quote from the data that triggered a
@@ -8827,7 +8832,7 @@ class GooglePrivacyDlpV2InspectConfig(_messages.Message):
       for data profiling.
     infoTypes: Restricts what info_types to look for. The values must
       correspond to InfoType values returned by ListInfoTypes or listed at
-      https://cloud.google.com/sensitive-data-protection/docs/infotypes-
+      https://docs.cloud.google.com/sensitive-data-protection/docs/infotypes-
       reference. When no InfoTypes or CustomInfoTypes are specified in a
       request, the system may automatically choose a default list of detectors
       to run, which may change over time. If you need precise control and
@@ -8848,7 +8853,7 @@ class GooglePrivacyDlpV2InspectConfig(_messages.Message):
       default is POSSIBLE. In general, the highest likelihood setting yields
       the fewest findings in results and the lowest chance of a false
       positive. For more information, see [Match
-      likelihood](https://cloud.google.com/sensitive-data-
+      likelihood](https://docs.cloud.google.com/sensitive-data-
       protection/docs/likelihood).
     minLikelihoodPerInfoType: Minimum likelihood per infotype. For each
       infotype, a user can specify a minimum likelihood. The system only
@@ -8876,8 +8881,9 @@ class GooglePrivacyDlpV2InspectConfig(_messages.Message):
     r"""Only returns findings equal to or above this threshold. The default is
     POSSIBLE. In general, the highest likelihood setting yields the fewest
     findings in results and the lowest chance of a false positive. For more
-    information, see [Match likelihood](https://cloud.google.com/sensitive-
-    data-protection/docs/likelihood).
+    information, see [Match
+    likelihood](https://docs.cloud.google.com/sensitive-data-
+    protection/docs/likelihood).
 
     Values:
       LIKELIHOOD_UNSPECIFIED: Default value; same as POSSIBLE.
@@ -8987,7 +8993,7 @@ class GooglePrivacyDlpV2InspectResult(_messages.Message):
 class GooglePrivacyDlpV2InspectTemplate(_messages.Message):
   r"""The inspectTemplate contains a configuration (set of types of sensitive
   data to be detected) to be used anywhere you otherwise would normally
-  specify InspectConfig. See https://cloud.google.com/sensitive-data-
+  specify InspectConfig. See https://docs.cloud.google.com/sensitive-data-
   protection/docs/concepts-templates to learn more.
 
   Fields:
@@ -9049,15 +9055,16 @@ class GooglePrivacyDlpV2InspectionRuleSet(_messages.Message):
 
 class GooglePrivacyDlpV2JobNotificationEmails(_messages.Message):
   r"""Sends an email when the job completes. The email goes to IAM project
-  owners and technical [Essential Contacts](https://cloud.google.com/resource-
-  manager/docs/managing-notification-contacts).
+  owners and technical [Essential
+  Contacts](https://docs.cloud.google.com/resource-manager/docs/managing-
+  notification-contacts).
   """
 
 
 
 class GooglePrivacyDlpV2JobTrigger(_messages.Message):
   r"""Contains a configuration to make API calls on a repeating basis. See
-  https://cloud.google.com/sensitive-data-protection/docs/concepts-job-
+  https://docs.cloud.google.com/sensitive-data-protection/docs/concepts-job-
   triggers to learn more.
 
   Enums:
@@ -9324,9 +9331,9 @@ class GooglePrivacyDlpV2KmsWrappedCryptoKey(_messages.Message):
   following IAM permissions when sending a request to perform a crypto
   transformation using a KMS-wrapped crypto key: dlp.kms.encrypt For more
   information, see [Creating a wrapped key]
-  (https://cloud.google.com/sensitive-data-protection/docs/create-wrapped-
-  key). Note: When you use Cloud KMS for cryptographic operations, [charges
-  apply](https://cloud.google.com/kms/pricing).
+  (https://docs.cloud.google.com/sensitive-data-protection/docs/create-
+  wrapped-key). Note: When you use Cloud KMS for cryptographic operations,
+  [charges apply](https://cloud.google.com/kms/pricing).
 
   Fields:
     cryptoKeyName: Required. The resource name of the KMS CryptoKey to use for
@@ -9430,8 +9437,8 @@ class GooglePrivacyDlpV2LabelFieldMetadata(_messages.Message):
 class GooglePrivacyDlpV2LargeCustomDictionaryConfig(_messages.Message):
   r"""Configuration for a custom dictionary created from a data source of any
   size up to the maximum size defined in the
-  [limits](https://cloud.google.com/sensitive-data-protection/limits) page.
-  The artifacts of dictionary creation are stored in the specified Cloud
+  [limits](https://docs.cloud.google.com/sensitive-data-protection/limits)
+  page. The artifacts of dictionary creation are stored in the specified Cloud
   Storage location. Consider using `CustomInfoType.Dictionary` for smaller
   dictionaries that satisfy the size requirements.
 
@@ -9892,8 +9899,8 @@ class GooglePrivacyDlpV2OtherCloudDiscoveryStartingLocation(_messages.Message):
 class GooglePrivacyDlpV2OtherCloudDiscoveryTarget(_messages.Message):
   r"""Target used to match against for discovery of resources from other
   clouds. An [AWS connector in Security Command Center
-  (Enterprise](https://cloud.google.com/security-command-center/docs/connect-
-  scc-to-aws) is required to use this feature.
+  (Enterprise](https://docs.cloud.google.com/security-command-
+  center/docs/connect-scc-to-aws) is required to use this feature.
 
   Fields:
     conditions: Optional. In addition to matching the filter, these conditions
@@ -10297,7 +10304,7 @@ class GooglePrivacyDlpV2Proximity(_messages.Message):
       tabular data, if you want to modify the likelihood of an entire column
       of findngs, set this to 1. For more information, see [Hotword example:
       Set the match likelihood of a table column]
-      (https://cloud.google.com/sensitive-data-protection/docs/creating-
+      (https://docs.cloud.google.com/sensitive-data-protection/docs/creating-
       custom-infotypes-likelihood#match-column-values).
   """
 
@@ -10466,7 +10473,7 @@ class GooglePrivacyDlpV2PublishFindingsToDataplexCatalog(_messages.Message):
   r"""Publish findings of a DlpJob to Dataplex Universal Catalog as a
   `sensitive-data-protection-job-result` aspect. For more information, see
   [Send inspection results to Dataplex Universal Catalog as
-  aspects](https://cloud.google.com/sensitive-data-protection/docs/add-
+  aspects](https://docs.cloud.google.com/sensitive-data-protection/docs/add-
   aspects-inspection-job). Aspects are stored in Dataplex Universal Catalog
   storage and are governed by service-specific policies for Dataplex Universal
   Catalog. For more information, see [Service Specific
@@ -10499,8 +10506,8 @@ class GooglePrivacyDlpV2PublishToChronicle(_messages.Message):
 class GooglePrivacyDlpV2PublishToDataplexCatalog(_messages.Message):
   r"""Create Dataplex Universal Catalog aspects for profiled resources with
   the aspect type Sensitive Data Protection Profile. To learn more about
-  aspects, see https://cloud.google.com/sensitive-data-protection/docs/add-
-  aspects.
+  aspects, see https://docs.cloud.google.com/sensitive-data-
+  protection/docs/add-aspects.
 
   Fields:
     lowerDataRiskToLow: Whether creating a Dataplex Universal Catalog aspect
@@ -10517,7 +10524,7 @@ class GooglePrivacyDlpV2PublishToDataplexCatalog(_messages.Message):
 class GooglePrivacyDlpV2PublishToPubSub(_messages.Message):
   r"""Publish a message into a given Pub/Sub topic when DlpJob has completed.
   The message contains a single field, `DlpJobName`, which is equal to the
-  finished job's [`DlpJob.name`](https://cloud.google.com/sensitive-data-
+  finished job's [`DlpJob.name`](https://docs.cloud.google.com/sensitive-data-
   protection/docs/reference/rest/v2/projects.dlpJobs#DlpJob). Compatible with:
   Inspect, Risk
 
@@ -10847,8 +10854,8 @@ class GooglePrivacyDlpV2ReplaceDictionaryConfig(_messages.Message):
 
   Fields:
     wordList: A list of words to select from for random replacement. The
-      [limits](https://cloud.google.com/sensitive-data-protection/limits) page
-      contains details about the size limits of dictionaries.
+      [limits](https://docs.cloud.google.com/sensitive-data-protection/limits)
+      page contains details about the size limits of dictionaries.
   """
 
   wordList = _messages.MessageField('GooglePrivacyDlpV2WordList', 1)
@@ -10933,7 +10940,7 @@ class GooglePrivacyDlpV2Result(_messages.Message):
 
 class GooglePrivacyDlpV2RiskAnalysisJobConfig(_messages.Message):
   r"""Configuration for a risk analysis job. See
-  https://cloud.google.com/sensitive-data-protection/docs/concepts-risk-
+  https://docs.cloud.google.com/sensitive-data-protection/docs/concepts-risk-
   analysis to learn more.
 
   Fields:
@@ -11084,7 +11091,7 @@ class GooglePrivacyDlpV2SecretsDiscoveryTarget(_messages.Message):
   will scan cloud resource metadata for secrets daily. No inspect template
   should be included in the discovery config for a security benchmarks scan.
   Instead, the built-in list of secrets and credentials infoTypes will be used
-  (see https://cloud.google.com/sensitive-data-protection/docs/infotypes-
+  (see https://docs.cloud.google.com/sensitive-data-protection/docs/infotypes-
   reference#credentials_and_secrets). Credentials and secrets discovered will
   be reported as vulnerabilities to Security Command Center.
   """
@@ -11229,8 +11236,9 @@ class GooglePrivacyDlpV2StoredInfoType(_messages.Message):
 
 class GooglePrivacyDlpV2StoredInfoTypeConfig(_messages.Message):
   r"""Configuration for stored infoTypes. All fields and subfield are provided
-  by the user. For more information, see https://cloud.google.com/sensitive-
-  data-protection/docs/creating-custom-infotypes.
+  by the user. For more information, see
+  https://docs.cloud.google.com/sensitive-data-protection/docs/creating-
+  custom-infotypes.
 
   Fields:
     description: Description of the StoredInfoType (max 256 characters).
@@ -11374,11 +11382,11 @@ class GooglePrivacyDlpV2SummaryResult(_messages.Message):
 
 class GooglePrivacyDlpV2SurrogateType(_messages.Message):
   r"""Message for detecting output from deidentification transformations such
-  as [`CryptoReplaceFfxFpeConfig`](https://cloud.google.com/sensitive-data-pro
-  tection/docs/reference/rest/v2/organizations.deidentifyTemplates#cryptorepla
-  ceffxfpeconfig). These types of transformations are those that perform
-  pseudonymization, thereby producing a "surrogate" as output. This should be
-  used in conjunction with a field on the transformation such as
+  as [`CryptoReplaceFfxFpeConfig`](https://docs.cloud.google.com/sensitive-
+  data-protection/docs/reference/rest/v2/organizations.deidentifyTemplates#cry
+  ptoreplaceffxfpeconfig). These types of transformations are those that
+  perform pseudonymization, thereby producing a "surrogate" as output. This
+  should be used in conjunction with a field on the transformation such as
   `surrogate_info_type`. This CustomInfoType does not support the use of
   `detection_rules`.
   """
@@ -11387,7 +11395,7 @@ class GooglePrivacyDlpV2SurrogateType(_messages.Message):
 
 class GooglePrivacyDlpV2Table(_messages.Message):
   r"""Structured content to inspect. Up to 50,000 `Value`s per request
-  allowed. See https://cloud.google.com/sensitive-data-
+  allowed. See https://docs.cloud.google.com/sensitive-data-
   protection/docs/inspecting-structured-text#inspecting_a_table to learn more.
 
   Fields:
@@ -11421,7 +11429,7 @@ class GooglePrivacyDlpV2TableDataProfile(_messages.Message):
     dataSourceType: The resource type that was profiled.
     datasetId: If the resource is BigQuery, the dataset ID.
     datasetLocation: If supported, the location where the dataset's data is
-      stored. See https://cloud.google.com/bigquery/docs/locations for
+      stored. See https://docs.cloud.google.com/bigquery/docs/locations for
       supported locations.
     datasetProjectId: The Google Cloud project ID that owns the resource.
     domains: Domains associated with the profile.
@@ -11673,9 +11681,9 @@ class GooglePrivacyDlpV2TagFilters(_messages.Message):
 
 
 class GooglePrivacyDlpV2TagResources(_messages.Message):
-  r"""If set, attaches the [tags] (https://cloud.google.com/resource-
+  r"""If set, attaches the [tags] (https://docs.cloud.google.com/resource-
   manager/docs/tags/tags-overview) provided to profiled resources. Tags
-  support [access control](https://cloud.google.com/iam/docs/tags-access-
+  support [access control](https://docs.cloud.google.com/iam/docs/tags-access-
   control). You can conditionally grant or deny access to a resource based on
   whether the resource has a specific tag.
 
@@ -11685,12 +11693,12 @@ class GooglePrivacyDlpV2TagResources(_messages.Message):
   Fields:
     lowerDataRiskToLow: Whether applying a tag to a resource should lower the
       risk of the profile for that resource. For example, in conjunction with
-      an [IAM deny policy](https://cloud.google.com/iam/docs/deny-overview),
-      you can deny all principals a permission if a tag value is present,
-      mitigating the risk of the resource. This also lowers the data risk of
-      resources at the lower levels of the resource hierarchy. For example,
-      reducing the data risk of a table data profile also reduces the data
-      risk of the constituent column data profiles.
+      an [IAM deny policy](https://docs.cloud.google.com/iam/docs/deny-
+      overview), you can deny all principals a permission if a tag value is
+      present, mitigating the risk of the resource. This also lowers the data
+      risk of resources at the lower levels of the resource hierarchy. For
+      example, reducing the data risk of a table data profile also reduces the
+      data risk of the constituent column data profiles.
     profileGenerationsToTag: The profile generations for which the tag should
       be attached to resources. If you attach a tag to only new profiles, then
       if the sensitivity score of a profile subsequently changes, its tag
@@ -11822,9 +11830,10 @@ class GooglePrivacyDlpV2TimespanConfig(_messages.Message):
       automatic population will scan data that is at least three hours old
       when the job starts. This is because streaming buffer rows are not read
       during inspection and reading up to the current timestamp will result in
-      skipped rows. See the [known issue](https://cloud.google.com/sensitive-
-      data-protection/docs/known-issues#recently-streamed-data) related to
-      this operation.
+      skipped rows. See the [known
+      issue](https://docs.cloud.google.com/sensitive-data-
+      protection/docs/known-issues#recently-streamed-data) related to this
+      operation.
     endTime: Exclude files, tables, or rows newer than this value. If not set,
       no upper time limit is applied.
     startTime: Exclude files, tables, or rows older than this value. If not
@@ -11838,7 +11847,7 @@ class GooglePrivacyDlpV2TimespanConfig(_messages.Message):
       column are skipped. Valid data types of the provided BigQuery column
       are: `INTEGER`, `DATE`, `TIMESTAMP`, and `DATETIME`. If your BigQuery
       table is [partitioned at ingestion
-      time](https://cloud.google.com/bigquery/docs/partitioned-
+      time](https://docs.cloud.google.com/bigquery/docs/partitioned-
       tables#ingestion_time), you can use any of the following pseudo-columns
       as your timestamp field. When used with Cloud DLP, these pseudo-column
       names are case sensitive. - `_PARTITIONTIME` - `_PARTITIONDATE` -
@@ -11847,8 +11856,8 @@ class GooglePrivacyDlpV2TimespanConfig(_messages.Message):
       entity does not contain the provided timestamp property or contains
       empty or invalid values, then it is included. Valid data types of the
       provided timestamp property are: `TIMESTAMP`. See the [known
-      issue](https://cloud.google.com/sensitive-data-protection/docs/known-
-      issues#bq-timespan) related to this operation.
+      issue](https://docs.cloud.google.com/sensitive-data-
+      protection/docs/known-issues#bq-timespan) related to this operation.
   """
 
   enableAutoPopulationOfTimespanConfig = _messages.BooleanField(1)

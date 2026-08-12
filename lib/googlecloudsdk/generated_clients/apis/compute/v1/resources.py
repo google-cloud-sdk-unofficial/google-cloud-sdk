@@ -693,6 +693,13 @@ class Collections(enum.Enum):
       ['project', 'region'],
       True
   )
+  RELIABILITYRISKS = (
+      'reliabilityRisks',
+      'projects/{project}/global/reliabilityRisks/{reliabilityRisk}',
+      {},
+      ['project', 'reliabilityRisk'],
+      True
+  )
   RESERVATIONBLOCKS = (
       'reservationBlocks',
       'projects/{project}/zones/{zone}/reservations/{reservation}/'

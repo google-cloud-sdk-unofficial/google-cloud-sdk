@@ -26,18 +26,17 @@
 
           $ {command}
   arguments:
-    params:
-    - help_text: |-
+    resource:
+      help_text: |-
         Identifier. Resource name of the Skill.
         Format: `projects/{project}/locations/{location}/skills/{skill}`
         The `{skill}` segment acts as the resource ID. If the skill is associated
         with a Publisher, this segment typically uses a hyphenated namespace prefix
         corresponding to the publisher (e.g., `google-workspace-create-docs`).
       is_positional: true
-      is_primary_resource: true
-      request_id_field: skillId
-      resource_spec: !REF googlecloudsdk.command_lib.agent_registry.v1alpha_resources:projects_locations_skills
-      required: true
+      spec: !REF googlecloudsdk.command_lib.agent_registry.v1alpha_resources:projects_locations_skills
+      display_name_hook: googlecloudsdk.command_lib.agent_registry.util:SkillDisplayNameHook
+    params:
     - arg_name: display-name
       api_field: skill.displayName
       required: false
@@ -207,11 +206,7 @@
     collection:
     - agentregistry.projects.locations.skills
     modify_request_hooks:
-    - googlecloudsdk.command_lib.agent_registry.util:StripPrivatePrefixHook
     - googlecloudsdk.command_lib.agent_registry.util:SetDisplayNameAndDefaultsInCreate
-  response:
-    modify_response_hooks:
-    - googlecloudsdk.command_lib.agent_registry.util:EnsurePrivatePrefixInResponseHook
   async:
     collection:
     - agentregistry.projects.locations.operations

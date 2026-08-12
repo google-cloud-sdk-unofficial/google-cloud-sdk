@@ -200,6 +200,7 @@ def _ConstructInstanceFromArgs(client, alloydb_messages, args):
       or args.psc_network_attachment_uri is not None
       or args.psc_auto_connections is not None
       or getattr(args, 'enable_psc_auto_dns', None) is not None
+      or getattr(args, 'enable_psc_auto_connection_policy', None) is not None
   ):
     instance_resource.pscInstanceConfig = PscInstanceConfig(
         alloydb_messages=alloydb_messages,
@@ -207,6 +208,9 @@ def _ConstructInstanceFromArgs(client, alloydb_messages, args):
         psc_network_attachment_uri=args.psc_network_attachment_uri,
         psc_auto_connections=args.psc_auto_connections,
         enable_psc_auto_dns=getattr(args, 'enable_psc_auto_dns', None),
+        enable_psc_auto_connection_policy=getattr(
+            args, 'enable_psc_auto_connection_policy', None
+        ),
     )
 
   if args.enable_connection_pooling:
@@ -351,6 +355,7 @@ def _ConstructSecondaryInstanceFromArgs(client, alloydb_messages, args):
       or args.psc_network_attachment_uri is not None
       or args.psc_auto_connections is not None
       or getattr(args, 'enable_psc_auto_dns', None) is not None
+      or getattr(args, 'enable_psc_auto_connection_policy', None) is not None
   ):
     instance_resource.pscInstanceConfig = PscInstanceConfig(
         alloydb_messages=alloydb_messages,
@@ -358,6 +363,9 @@ def _ConstructSecondaryInstanceFromArgs(client, alloydb_messages, args):
         psc_network_attachment_uri=args.psc_network_attachment_uri,
         psc_auto_connections=args.psc_auto_connections,
         enable_psc_auto_dns=getattr(args, 'enable_psc_auto_dns', None),
+        enable_psc_auto_connection_policy=getattr(
+            args, 'enable_psc_auto_connection_policy', None
+        ),
     )
 
   if args.enable_connection_pooling:
@@ -686,6 +694,7 @@ def ConstructInstanceAndUpdatePathsFromArgs(
       or args.psc_auto_connections is not None
       or args.clear_psc_auto_connections
       or getattr(args, 'enable_psc_auto_dns', None) is not None
+      or getattr(args, 'enable_psc_auto_connection_policy', None) is not None
   ):
     instance_resource.pscInstanceConfig = PscInstanceConfig(
         alloydb_messages=alloydb_messages,
@@ -695,6 +704,9 @@ def ConstructInstanceAndUpdatePathsFromArgs(
         psc_auto_connections=args.psc_auto_connections,
         clear_psc_auto_connections=args.clear_psc_auto_connections,
         enable_psc_auto_dns=getattr(args, 'enable_psc_auto_dns', None),
+        enable_psc_auto_connection_policy=getattr(
+            args, 'enable_psc_auto_connection_policy', None
+        ),
     )
   if (
       args.psc_network_attachment_uri is not None
@@ -710,6 +722,12 @@ def ConstructInstanceAndUpdatePathsFromArgs(
         alloydb_messages.PscInstanceConfig, 'PscAutoDnsStateValueValuesEnum'
     ):
       paths.append('pscInstanceConfig.pscAutoDnsState')
+  if getattr(args, 'enable_psc_auto_connection_policy', None) is not None:
+    if hasattr(
+        alloydb_messages.PscInstanceConfig,
+        'PscAutoConnectionPolicyStateValueValuesEnum',
+    ):
+      paths.append('pscInstanceConfig.pscAutoConnectionPolicyState')
 
   # We update the whole connection pool config if any of the connection pooling
   # flags are set because we want to preserve any existing flags. But to do so,
@@ -1340,6 +1358,9 @@ def PscInstanceConfig(**kwargs):
   psc_auto_connections = kwargs.get('psc_auto_connections')
   clear_psc_auto_connections = kwargs.get('clear_psc_auto_connections')
   enable_psc_auto_dns = kwargs.get('enable_psc_auto_dns')
+  enable_psc_auto_connection_policy = kwargs.get(
+      'enable_psc_auto_connection_policy'
+  )
 
   psc_instance_config = alloydb_messages.PscInstanceConfig()
   if allowed_psc_projects:
@@ -1371,6 +1392,19 @@ def PscInstanceConfig(**kwargs):
       else:
         psc_instance_config.pscAutoDnsState = (
             alloydb_messages.PscInstanceConfig.PscAutoDnsStateValueValuesEnum.PSC_AUTO_DNS_STATE_DISABLED
+        )
+  if enable_psc_auto_connection_policy is not None:
+    if hasattr(
+        alloydb_messages.PscInstanceConfig,
+        'PscAutoConnectionPolicyStateValueValuesEnum',
+    ):
+      if enable_psc_auto_connection_policy:
+        psc_instance_config.pscAutoConnectionPolicyState = (
+            alloydb_messages.PscInstanceConfig.PscAutoConnectionPolicyStateValueValuesEnum.ENABLED
+        )
+      else:
+        psc_instance_config.pscAutoConnectionPolicyState = (
+            alloydb_messages.PscInstanceConfig.PscAutoConnectionPolicyStateValueValuesEnum.DISABLED
         )
 
   return psc_instance_config

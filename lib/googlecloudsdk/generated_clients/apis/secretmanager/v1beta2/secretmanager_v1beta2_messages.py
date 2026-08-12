@@ -749,6 +749,29 @@ class ReplicationStatus(_messages.Message):
   userManaged = _messages.MessageField('UserManagedStatus', 2)
 
 
+class ResourcePolicyMember(_messages.Message):
+  r"""Output-only policy member strings of a Google Cloud resource's built-in
+  identity.
+
+  Fields:
+    iamPolicyNamePrincipal: Output only. IAM policy binding member referring
+      to a Google Cloud resource by user-assigned name
+      (https://google.aip.dev/122). If a resource is deleted and recreated
+      with the same name, the binding will be applicable to the new resource.
+      Example: `principal://parametermanager.googleapis.com/projects/12345/nam
+      e/locations/us-central1-a/parameters/my-parameter`
+    iamPolicyUidPrincipal: Output only. IAM policy binding member referring to
+      a Google Cloud resource by system-assigned unique identifier
+      (https://google.aip.dev/148#uid). If a resource is deleted and recreated
+      with the same name, the binding will not be applicable to the new
+      resource Example: `principal://parametermanager.googleapis.com/projects/
+      12345/uid/locations/us-central1-a/parameters/a918fed5`
+  """
+
+  iamPolicyNamePrincipal = _messages.StringField(1)
+  iamPolicyUidPrincipal = _messages.StringField(2)
+
+
 class Rotation(_messages.Message):
   r"""The rotation time and period for a Secret. At next_rotation_time, Secret
   Manager will send a Pub/Sub notification to the topics configured on the

@@ -43,7 +43,7 @@ class QuotaInfoAlpha(base.Group):
   """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class QuotaInfoBeta(base.Group):
   """Manage Cloud Quotas QuotaInfo.

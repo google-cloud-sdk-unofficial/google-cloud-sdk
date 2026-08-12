@@ -18,6 +18,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Devices(base.Group):
   """Manage Device Run devices."""

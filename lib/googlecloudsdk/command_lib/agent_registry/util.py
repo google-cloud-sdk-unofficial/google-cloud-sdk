@@ -40,9 +40,16 @@ def SetDisplayNameAndDefaultsInCreate(resource_ref, args, request_msg):
     skill = skill_class()
     request_msg.skill = skill
 
+  if resource_ref:
+    if not request_msg.skillId:
+      request_msg.skillId = resource_ref.Name()
+    request_msg.parent = 'projects/{}/locations/{}'.format(
+        resource_ref.projectsId, resource_ref.locationsId
+    )
+
   # Fallback displayName
   if not skill.displayName:
-    skill_id = getattr(request_msg, 'skillId', None) or (
+    skill_id = request_msg.skillId or (
         resource_ref.skillsId if resource_ref else 'my-skill'
     )
     skill.displayName = skill_id
@@ -81,10 +88,14 @@ def ReadPayloadFile(resource_ref, args, request_msg):
 
 
 def SkillDisplayNameHook(resource_ref, args):
-  """Modifies the display name of the skill to include the 'private-' prefix.
+  """Modifies the display name of the skill to include the correct prefix.
 
   Ensures that standard gcloud console output reflects the actual backend
-  resource name, even if the user didn't type the prefix.
+  resource name. The input `resource_ref.Name()` is the name typed by the user,
+  which may or may not already have the prefix (e.g. 'my-skill' or
+  'private-my-skill').
+
+  This hook prepends the publisher prefix (or 'private-') to the skill name.
 
   Args:
     resource_ref: The resource reference.
@@ -93,61 +104,13 @@ def SkillDisplayNameHook(resource_ref, args):
   Returns:
     The display name string.
   """
-  del args  # Unused
   if not resource_ref:
     return 'unknown'
 
   name = resource_ref.Name()
-  if not name.startswith('private-'):
-    name = 'private-' + name
-
-  return name
-
-
-def StripPrivatePrefixHook(ref, args, request):
-  """Strips 'private-' prefix from skillId in the request path/ID.
-
-  Prevents potential double-prefixing if the user explicitly typed the
-  prefix in the command, ensuring we send the raw ID to the backend which
-  then applies the enforcement.
-
-  Args:
-    ref: The resource reference.
-    args: The command line arguments.
-    request: The request message to modify.
-
-  Returns:
-    The modified request message.
-  """
-  del ref, args  # Unused
-
-  if request.skillId:
-    while request.skillId.startswith('private-'):
-      request.skillId = request.skillId[len('private-') :]
-
-  return request
-
-
-def EnsurePrivatePrefixInResponseHook(response, args):
-  """Ensures the response returned by operations or get has the correct name.
-
-  Guarantees that the resource name in the response starts with 'private-' for
-  skill resources, ensuring consistent display in gcloud.
-
-  Args:
-    response: The response message.
-    args: The command line arguments.
-
-  Returns:
-    The modified response message.
-  """
-  del args  # Unused
-
-  if response and hasattr(response, 'name') and response.name:
-    parts = response.name.split('/')
-    if len(parts) == 6 and parts[4] == 'skills':
-      if not parts[5].startswith('private-'):
-        parts[5] = 'private-' + parts[5]
-        response.name = '/'.join(parts)
-
-  return response
+  prefix = (
+      args.publisher.split('/')[-1]
+      if args and args.IsSpecified('publisher')
+      else 'private'
+  )
+  return f'{prefix}-{name}'

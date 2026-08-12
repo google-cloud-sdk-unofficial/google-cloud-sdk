@@ -106,13 +106,13 @@ class IapTunnelWebSocketHelper(object):
   def Close(self, msg=''):
     """Close the WebSocket."""
     if not self._is_closed:
+      self._is_closed = True
       try:
         self._websocket.close()
       except:  # pylint: disable=bare-except
         pass
       if not self._error_msg:
         self._error_msg = msg
-      self._is_closed = True
 
   def IsClosed(self):
     """Check to see if WebSocket has closed."""

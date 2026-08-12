@@ -661,6 +661,11 @@ class BulkDeleteResourcesRequest(_messages.Message):
       server creates one or more objects per resource type. Each object
       contains newline delimited strings in the format
       {resourceType}/{resourceId}.
+    gcsSource: Optional. Specifies the Cloud Storage source data location
+      containing the list of resource IDs to delete. Each file inside
+      `gcs_source` must contain newline-delimited strings in the format
+      `{resourceType}/{resourceId}`. This field is mutually exclusive with
+      filter parameters such as `type` and `until`.
     type: Optional. String of comma-delimited FHIR resource types. If
       provided, only resources of the specified resource type(s) will be
       deleted.
@@ -692,10 +697,11 @@ class BulkDeleteResourcesRequest(_messages.Message):
     HISTORY_ONLY = 3
 
   gcsDestination = _messages.MessageField('GoogleCloudHealthcareV1beta1FhirGcsDestination', 1)
-  type = _messages.StringField(2)
-  until = _messages.StringField(3)
-  validateOnly = _messages.BooleanField(4)
-  versionConfig = _messages.EnumField('VersionConfigValueValuesEnum', 5)
+  gcsSource = _messages.MessageField('GoogleCloudHealthcareV1beta1FhirGcsSource', 2)
+  type = _messages.StringField(3)
+  until = _messages.StringField(4)
+  validateOnly = _messages.BooleanField(5)
+  versionConfig = _messages.EnumField('VersionConfigValueValuesEnum', 6)
 
 
 class BulkExportGcsDestination(_messages.Message):
@@ -3426,18 +3432,18 @@ class GoogleCloudHealthcareV1beta1FhirGcsSource(_messages.Message):
   r"""Specifies the configuration for importing data from Cloud Storage.
 
   Fields:
-    uri: Points to a Cloud Storage URI containing file(s) to import. The URI
-      must be in the following format: `gs://{bucket_id}/{object_id}`. The URI
-      can include wildcards in `object_id` and thus identify multiple files.
-      Supported wildcards: * `*` to match 0 or more non-separator characters *
-      `**` to match 0 or more characters (including separators). Must be used
-      at the end of a path and with no other wildcards in the path. Can also
-      be used with a file extension (such as .ndjson), which imports all files
-      with the extension in the specified directory and its sub-directories.
-      For example, `gs://my-bucket/my-directory/**.ndjson` imports all files
-      with `.ndjson` extensions in `my-directory/` and its sub-directories. *
-      `?` to match 1 character Files matching the wildcard are expected to
-      contain content only, no metadata.
+    uri: Required. Points to a Cloud Storage URI containing file(s) to import.
+      The URI must be in the following format: `gs://{bucket_id}/{object_id}`.
+      The URI can include wildcards in `object_id` and thus identify multiple
+      files. Supported wildcards: * `*` to match 0 or more non-separator
+      characters * `**` to match 0 or more characters (including separators).
+      Must be used at the end of a path and with no other wildcards in the
+      path. Can also be used with a file extension (such as .ndjson), which
+      imports all files with the extension in the specified directory and its
+      sub-directories. For example, `gs://my-bucket/my-directory/**.ndjson`
+      imports all files with `.ndjson` extensions in `my-directory/` and its
+      sub-directories. * `?` to match 1 character Files matching the wildcard
+      are expected to contain content only, no metadata.
   """
 
   uri = _messages.StringField(1)

@@ -847,6 +847,7 @@ class _SectionApiEndpointOverrides(_Section):
         command='gcloud compliance-manager')
     self.cloudshell = self._Add(
         'cloudshell', command='gcloud cloud-shell', hidden=True)
+    self.cloudsupport = self._Add('cloudsupport', command='gcloud support')
     self.cloudtasks = self._Add('cloudtasks', command='gcloud tasks')
     self.cloudtrace = self._Add('cloudtrace', command='gcloud trace')
     self.composer = self._Add('composer', command='gcloud composer')

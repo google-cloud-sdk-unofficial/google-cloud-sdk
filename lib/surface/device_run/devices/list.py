@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib import device_run
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.device_run import resource_args
+from googlecloudsdk.command_lib.device_run.devices import devices
 from googlecloudsdk.core import resources
 
 
@@ -59,8 +60,45 @@ def _TransformProducts(resource):
   return ', '.join(products)
 
 
+def _GetAvailabilityField(resource, field_name):
+  """Safely retrieves a field from device's availability."""
+  if isinstance(resource, dict):
+    availability = resource.get('availability')
+  else:
+    availability = getattr(resource, 'availability', None)
+
+  if not availability:
+    return None
+
+  if isinstance(availability, dict):
+    return availability.get(field_name)
+  else:
+    return getattr(availability, field_name, None)
+
+
+def _TransformCapacity(resource):
+  """Transforms device availability capacity for table display.
+
+  Args:
+    resource: The device resource (dict or object).
+
+  Returns:
+    The capacity string with prefix removed, or empty string.
+  """
+  value = _GetAvailabilityField(resource, 'capacity')
+  capacity = devices.StripCapacityPrefix(value)
+  return capacity if capacity is not None else ''
+
+
+def _TransformAvailability(resource):
+  """Transforms device availability available status for table display."""
+  value = _GetAvailabilityField(resource, 'available')
+  available = devices.StripAvailabilityPrefix(value)
+  return available if available is not None else ''
+
+
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List available Device Run devices."""
 
@@ -75,9 +113,15 @@ class List(base.ListCommand):
         'modelCode:label=MODEL, '
         'hardwareType:label=FORM, '
         'osVersion:label=OS_VERSION, '
+        'capacity_status():label=CAPACITY, '
+        'availability_status():label=AVAILABILITY, '
         'products():label=PRODUCTS)'
     )
-    parser.display_info.AddTransforms({'products': _TransformProducts})
+    parser.display_info.AddTransforms({
+        'products': _TransformProducts,
+        'capacity_status': _TransformCapacity,
+        'availability_status': _TransformAvailability,
+    })
 
     def UriFunc(resource):
       ref = resources.REGISTRY.Parse(

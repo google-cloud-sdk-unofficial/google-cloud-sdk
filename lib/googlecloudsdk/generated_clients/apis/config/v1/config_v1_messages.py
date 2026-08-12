@@ -226,6 +226,37 @@ class CancelOperationRequest(_messages.Message):
   r"""The request message for Operations.CancelOperation."""
 
 
+class CloudProvisioningToolVersion(_messages.Message):
+  r"""CloudProvisioningToolVersion represents the version of the cloud
+  provisioning tool.
+
+  Enums:
+    ToolValueValuesEnum: Optional. The tool used for provisioning.
+
+  Fields:
+    tool: Optional. The tool used for provisioning.
+    versionConstraint: Optional. The version constraint of the tool. Format:
+      "Major.Minor.Patch" (e.g., "1.12.0") or "=Major.Minor.Patch" (e.g.,
+      "=1.12.0").
+  """
+
+  class ToolValueValuesEnum(_messages.Enum):
+    r"""Optional. The tool used for provisioning.
+
+    Values:
+      TOOL_UNSPECIFIED: The default value. This value is used if the tool is
+        omitted.
+      TERRAFORM: Terraform.
+      OPENTOFU: OpenTofu.
+    """
+    TOOL_UNSPECIFIED = 0
+    TERRAFORM = 1
+    OPENTOFU = 2
+
+  tool = _messages.EnumField('ToolValueValuesEnum', 1)
+  versionConstraint = _messages.StringField(2)
+
+
 class ConfigProjectsLocationsDeploymentGroupsCreateRequest(_messages.Message):
   r"""A ConfigProjectsLocationsDeploymentGroupsCreateRequest object.
 
@@ -1226,6 +1257,136 @@ class ConfigProjectsLocationsUpdateAutoMigrationConfigRequest(_messages.Message)
   updateMask = _messages.StringField(3)
 
 
+class ConfigProjectsLocationsWarmPoolsCreateRequest(_messages.Message):
+  r"""A ConfigProjectsLocationsWarmPoolsCreateRequest object.
+
+  Fields:
+    parent: Required. The parent in whose context the WarmPool is created. The
+      parent value is in the format:
+      'projects/{project_id}/locations/{location}'.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    warmPool: A WarmPool resource to be passed as the request body.
+    warmPoolId: Required. The WarmPool ID. This value can be up to 40
+      characters. Valid characters are lowercase letters, numbers, and
+      hyphens. The first character must be a lowercase letter, and the last
+      character must be a lowercase letter or a number.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  warmPool = _messages.MessageField('WarmPool', 3)
+  warmPoolId = _messages.StringField(4)
+
+
+class ConfigProjectsLocationsWarmPoolsDeleteRequest(_messages.Message):
+  r"""A ConfigProjectsLocationsWarmPoolsDeleteRequest object.
+
+  Fields:
+    name: Required. The name of the WarmPool in the format:
+      'projects/{project_id}/locations/{location}/warmPools/{warm_pool}'.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class ConfigProjectsLocationsWarmPoolsGetRequest(_messages.Message):
+  r"""A ConfigProjectsLocationsWarmPoolsGetRequest object.
+
+  Fields:
+    name: Required. The name of the warm pool. Format:
+      'projects/{project_id}/locations/{location}/warmPools/{warm_pool}'.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class ConfigProjectsLocationsWarmPoolsListRequest(_messages.Message):
+  r"""A ConfigProjectsLocationsWarmPoolsListRequest object.
+
+  Fields:
+    filter: Optional. Lists the WarmPools that match the filter expression. A
+      filter expression filters the resources listed in the response. The
+      expression must be of the form '{field} {operator} {value}' where
+      operators: '<', '>', '<=', '>=', '!=', '=', ':' are supported (colon ':'
+      represents a HAS operator which is roughly synonymous with equality).
+      {field} can refer to a proto or JSON field, or a synthetic field. Field
+      names can be camelCase or snake_case. Examples: - Filter by name: name =
+      "projects/foo/locations/us-central1/warmPools/bar - Filter by labels: -
+      Resources that have a key called 'foo' labels.foo:* - Resources that
+      have a key called 'foo' whose value is 'bar' labels.foo = bar - Filter
+      by state: - WarmPools in CREATING state. state=CREATING
+    orderBy: Optional. Field to use to sort the list.
+    pageSize: Optional. When requesting a page of resources, 'page_size'
+      specifies number of resources to return. If unspecified, at most 500
+      will be returned. The maximum value is 1000.
+    pageToken: Optional. Token returned by previous call to 'ListWarmPools'
+      which specifies the position in the list from where to continue listing
+      the resources.
+    parent: Required. The parent in whose context the WarmPools are listed.
+      The parent value is in the format:
+      'projects/{project_id}/locations/{location}'.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class ConfigProjectsLocationsWarmPoolsPatchRequest(_messages.Message):
+  r"""A ConfigProjectsLocationsWarmPoolsPatchRequest object.
+
+  Fields:
+    name: Identifier. Resource name of the warm pool. Format:
+      `projects/{project}/locations/{location}/warmPools/{warm_pool}`
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. Field mask used to specify the fields to be
+      overwritten in the WarmPool resource by the update. The fields specified
+      in the update_mask are relative to the resource, not the full request. A
+      field will be overwritten if it is in the mask. If the user does not
+      provide a mask then all fields will be overwritten.
+    warmPool: A WarmPool resource to be passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  updateMask = _messages.StringField(3)
+  warmPool = _messages.MessageField('WarmPool', 4)
+
+
 class DeleteStatefileRequest(_messages.Message):
   r"""A request to delete a state file passed to a 'DeleteStatefile' call.
 
@@ -1318,6 +1479,10 @@ class Deployment(_messages.Message):
     tfVersionConstraint: The user-specified Terraform version constraint.
       Example: "=1.3.10".
     updateTime: Output only. Time when the deployment was last modified.
+    warmPool: The User-specified IM Warmed Pool resource to execute the job
+      in. Format:
+      projects/{project}/locations/{location}/warmPools/{warmPoolId} This
+      field is mutually exclusive with worker_pool.
     workerPool: The user-specified Cloud Build worker pool resource in which
       the Cloud Build job will execute. Format:
       `projects/{project}/locations/{location}/workerPools/{workerPoolId}`. If
@@ -1492,7 +1657,8 @@ class Deployment(_messages.Message):
   tfVersion = _messages.StringField(21)
   tfVersionConstraint = _messages.StringField(22)
   updateTime = _messages.StringField(23)
-  workerPool = _messages.StringField(24)
+  warmPool = _messages.StringField(24)
+  workerPool = _messages.StringField(25)
 
 
 class DeploymentGroup(_messages.Message):
@@ -2259,6 +2425,21 @@ class ListTerraformVersionsResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class ListWarmPoolsResponse(_messages.Message):
+  r"""Response to list WarmPools.
+
+  Fields:
+    nextPageToken: Token to be supplied to the next ListWarmPools request via
+      `page_token` to obtain the next set of results.
+    unreachable: Unordered list. Locations that could not be reached.
+    warmPools: List of WarmPools.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  unreachable = _messages.StringField(2, repeated=True)
+  warmPools = _messages.MessageField('WarmPool', 3, repeated=True)
+
+
 class Location(_messages.Message):
   r"""A resource that represents a Google Cloud location.
 
@@ -2494,6 +2675,7 @@ class OperationMetadata(_messages.Message):
     target: Output only. Server-defined resource path for the target of the
       operation.
     verb: Output only. Name of the verb executed by the operation.
+    warmPoolMetadata: Output only. Metadata about WarmPool operation state.
   """
 
   apiVersion = _messages.StringField(1)
@@ -2506,6 +2688,7 @@ class OperationMetadata(_messages.Message):
   statusMessage = _messages.StringField(8)
   target = _messages.StringField(9)
   verb = _messages.StringField(10)
+  warmPoolMetadata = _messages.MessageField('WarmPoolOperationMetadata', 11)
 
 
 class Policy(_messages.Message):
@@ -2619,10 +2802,10 @@ class Preview(_messages.Message):
     build: Output only. Cloud Build instance UUID associated with this
       preview.
     createTime: Output only. Time the preview was created.
-    deployment: Optional. Optional deployment reference. If specified, the
-      preview will be performed using the provided deployment's current state
-      and use any relevant fields from the deployment unless explicitly
-      specified in the preview create request.
+    deployment: Optional. Deployment reference. If specified, the preview will
+      be performed using the provided deployment's current state and use any
+      relevant fields from the deployment unless explicitly specified in the
+      preview create request.
     errorCode: Output only. Code describing any errors that may have occurred.
     errorLogs: Output only. Link to tf-error.ndjson file, which contains the
       full list of the errors encountered during a Terraform preview. Format:
@@ -3319,6 +3502,10 @@ class Revision(_messages.Message):
     tfVersionConstraint: Output only. The user-specified Terraform version
       constraint. Example: "=1.3.10".
     updateTime: Output only. Time when the revision was last modified.
+    warmPool: Output only. The User-specified IM Warmed Pool resource to
+      execute the job in. Format:
+      projects/{project}/locations/{location}/warmPools/{warmPoolId} This
+      field is mutually exclusive with worker_pool.
     workerPool: Output only. The user-specified Cloud Build worker pool
       resource in which the Cloud Build job will execute. Format:
       `projects/{project}/locations/{location}/workerPools/{workerPoolId}`. If
@@ -3418,7 +3605,8 @@ class Revision(_messages.Message):
   tfVersion = _messages.StringField(18)
   tfVersionConstraint = _messages.StringField(19)
   updateTime = _messages.StringField(20)
-  workerPool = _messages.StringField(21)
+  warmPool = _messages.StringField(21)
+  workerPool = _messages.StringField(22)
 
 
 class SetIamPolicyRequest(_messages.Message):
@@ -3755,6 +3943,122 @@ class UnlockDeploymentRequest(_messages.Message):
   """
 
   lockId = _messages.IntegerField(1)
+
+
+class WarmPool(_messages.Message):
+  r"""WarmPool represents a pool of pre-warmed instances.
+
+  Enums:
+    StateValueValuesEnum: Output only. Current state of the warm pool.
+
+  Messages:
+    LabelsValue: Optional. User-defined labels for the warm pool.
+
+  Fields:
+    cloudProvisioningToolVersion: Optional. The cloud provisioning tool
+      version set on the Warm Pool. If not provided, the latest available
+      version of the tool will be used.
+    createTime: Output only. Time when the warm pool was created.
+    labels: Optional. User-defined labels for the warm pool.
+    name: Identifier. Resource name of the warm pool. Format:
+      `projects/{project}/locations/{location}/warmPools/{warm_pool}`
+    poolSize: Required. Size of the warm pool. Recommended to keep 1:1 mapping
+      between number of concurrent requests per second (QPS) and warm pool
+      size to avoid the latency overhead incurred by cold starts. Minimum pool
+      size is 1.
+    serviceAccount: Required. Service Producer owned SA(eg: ALM P4SA) that
+      will be attached to the warmed pool.
+    state: Output only. Current state of the warm pool.
+    updateTime: Output only. Time when the warm pool was last modified.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. Current state of the warm pool.
+
+    Values:
+      STATE_UNSPECIFIED: The default value. This value is used if the state is
+        omitted.
+      CREATING: The warm pool is being created.
+      ACTIVE: The warm pool is active and ready to use.
+      UPDATING: The warm pool is being updated.
+      DELETING: The warm pool is being deleted.
+      FAILED: The warm pool has encountered an unexpected error.
+      DELETED: The warm pool has been deleted.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+    UPDATING = 3
+    DELETING = 4
+    FAILED = 5
+    DELETED = 6
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. User-defined labels for the warm pool.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  cloudProvisioningToolVersion = _messages.MessageField('CloudProvisioningToolVersion', 1)
+  createTime = _messages.StringField(2)
+  labels = _messages.MessageField('LabelsValue', 3)
+  name = _messages.StringField(4)
+  poolSize = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  serviceAccount = _messages.StringField(6)
+  state = _messages.EnumField('StateValueValuesEnum', 7)
+  updateTime = _messages.StringField(8)
+
+
+class WarmPoolOperationMetadata(_messages.Message):
+  r"""Metadata about a WarmPool operation.
+
+  Enums:
+    StepValueValuesEnum: Output only. The current step of the WarmPool
+      operation.
+
+  Fields:
+    step: Output only. The current step of the WarmPool operation.
+  """
+
+  class StepValueValuesEnum(_messages.Enum):
+    r"""Output only. The current step of the WarmPool operation.
+
+    Values:
+      WARM_POOL_STEP_UNSPECIFIED: The default value. This value is used if the
+        step is omitted.
+      CREATING_POOL: Creating the warm pool infrastructure.
+      WARMING_POOL: Warming up instances in the pool.
+      ROLLING_BACK: Rolling back the warm pool infrastructure creation on
+        failure.
+      SUCCEEDED: Operation was successful.
+      FAILED: Operation failed.
+    """
+    WARM_POOL_STEP_UNSPECIFIED = 0
+    CREATING_POOL = 1
+    WARMING_POOL = 2
+    ROLLING_BACK = 3
+    SUCCEEDED = 4
+    FAILED = 5
+
+  step = _messages.EnumField('StepValueValuesEnum', 1)
 
 
 encoding.AddCustomJsonFieldMapping(

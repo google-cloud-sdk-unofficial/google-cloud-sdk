@@ -298,6 +298,8 @@ def AddBulkCreateNetworkingArgs(
       *--stack-type*. This flag can be repeated to specify multiple network
       interfaces.
 
+      The following keys are allowed:
+
       *network*::: Specifies the network that the interface will be part of.
       If subnet is also specified it must be subnetwork of this network. If
       neither is specified, this defaults to the "default" network.
@@ -316,17 +318,17 @@ def AddBulkCreateNetworkingArgs(
 
   multiple_network_interface_cards_spec['no-address'] = None
   network_interface_help += """
-    *no-address*::: If specified the interface will have no external IP.
-    If not specified instances will get ephemeral IPs.
-    """
+      *no-address*::: If specified the interface will have no external IP.
+      If not specified instances will get ephemeral IPs.
+  """
 
   multiple_network_interface_cards_spec['queue-count'] = int
   network_interface_help += """
-    *queue-count*::: Specifies the networking queue count for this interface.
-    Both Rx and Tx queues will be set to this number. If it's not specified, a
-    default queue count will be assigned. See
-    https://cloud.google.com/compute/docs/network-bandwidth#rx-tx for
-    more details.
+      *queue-count*::: Specifies the networking queue count for this interface.
+      Both Rx and Tx queues will be set to this number. If it's not specified, a
+      default queue count will be assigned. See
+      https://cloud.google.com/compute/docs/network-bandwidth#rx-tx for
+      more details.
   """
 
   multiple_network_interface_cards_spec['stack-type'] = (
@@ -334,9 +336,9 @@ def AddBulkCreateNetworkingArgs(
   )
   stack_types = '`IPV4_ONLY`, `IPV4_IPV6`, `IPV6_ONLY`'
   network_interface_help += f"""
-    *stack-type*::: Specifies whether IPv6 is enabled on the interface.
-    ``STACK_TYPE'' must be one of: {stack_types}.
-    The default value is `IPV4_ONLY`.
+      *stack-type*::: Specifies whether IPv6 is enabled on the interface.
+      ``STACK_TYPE'' must be one of: {stack_types}.
+      The default value is `IPV4_ONLY`.
   """
 
   if support_igmp_query:
@@ -418,8 +420,32 @@ def AddCommonBulkInsertArgs(
     support_workload_identity_config=False,
     support_instance_selection_min_cpu_platform=False,
     support_vsock_mode=False,
+    support_expose_host_topology=False,
 ):
-  """Register parser args common to all tracks."""
+  """Registers parser args common to all tracks.
+
+  Args:
+    parser: The argparse parser.
+    support_watchdog_timer: bool, whether watchdog timer is supported.
+    support_igmp_query: bool, whether IGMP query is supported.
+    support_graceful_shutdown: bool, whether graceful shutdown is supported.
+    support_flex_start: bool, whether flex start is supported.
+    support_source_snapshot_region: bool, whether source snapshot region is
+      supported.
+    support_skip_guest_os_shutdown: bool, whether skip guest OS shutdown is
+      supported.
+    support_preemption_notice_duration: bool, whether preemption notice duration
+      is supported.
+    support_instance_flexibility_policy: bool, whether instance flexibility
+      policy is supported.
+    support_workload_identity_config: bool, whether workload identity config is
+      supported.
+    support_instance_selection_min_cpu_platform: bool, whether min CPU platform
+      is supported.
+    support_vsock_mode: bool, whether vsock mode is supported.
+    support_expose_host_topology: bool, whether expose host topology is
+      supported.
+  """
   metadata_utils.AddMetadataArgs(parser)
   AddDiskArgsForBulk(parser)
   instances_flags.AddCreateDiskArgs(
@@ -481,6 +507,8 @@ def AddCommonBulkInsertArgs(
   )
   instances_flags.AddShieldedInstanceConfigArgs(parser)
   instances_flags.AddNestedVirtualizationArgs(parser)
+  if support_expose_host_topology:
+    instances_flags.AddExposeHostTopologyArg(parser)
   instances_flags.AddThreadsPerCoreArgs(parser)
   instances_flags.AddEnableUefiNetworkingArgs(parser)
   instances_flags.AddResourceManagerTagsArgs(parser)
@@ -536,6 +564,7 @@ def AddCommonBulkInsertArgs(
       support_confidential_compute_type=True,
       support_confidential_compute_type_tdx=True,
       support_snp_svsm=support_snp_svsm,
+      support_confidential_compute_type_cca=True,
   )
   instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
   AddBulkCreateArgs(

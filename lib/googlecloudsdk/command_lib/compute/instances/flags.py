@@ -586,7 +586,7 @@ def AddLocalSsdArgsWithSize(parser):
               'device-name': str,
               'interface': lambda x: x.upper(),
               'size': arg_parsers.BinarySize(
-                  lower_bound='375GB', upper_bound='6000GB'
+                  lower_bound='375GB', upper_bound='7000GB'
               ),
           }
       ),
@@ -2815,6 +2815,20 @@ def AddNoRestartOnFailureArgs(parser):
       """)
 
 
+def AddExposeHostTopologyArg(parser):
+  """Adds the --expose-host-topology flag to the parser.
+
+  Args:
+    parser: The argparse parser.
+  """
+  parser.add_argument(
+      '--expose-host-topology',
+      action=arg_parsers.StoreTrueFalseAction,
+      help="""\
+      If true, exposes the hashed physical host ID in the VM's ResourceStatus.
+      """)
+
+
 def AddMaintenancePolicyArgs(parser, deprecate=False):
   """Adds maintenance behavior related args."""
   help_text = """\
@@ -3027,23 +3041,31 @@ def ValidateLocalSsdFlags(args):
     # still accepted as a value for select customers. Updates to any public
     # documentation will occur once Large Local SSD is more widely available.
     if size is not None:
-      if (
-          size != (constants.SSD_SMALL_PARTITION_GB * constants.BYTES_IN_ONE_GB)
-          and size
-          != (constants.SSD_LARGE_PARTITION_GB * constants.BYTES_IN_ONE_GB)
-          and size
-          != (constants.SSD_Z3_METAL_PARTITION_GB * constants.BYTES_IN_ONE_GB)
-      ):
+      valid_partitions_gb = (
+          constants.SSD_SMALL_PARTITION_GB,
+          constants.SSD_LARGE_PARTITION_GB,
+          constants.SSD_Z3_METAL_PARTITION_GB,
+          constants.SSD_Z4D_PARTITION_GB,
+          constants.SSD_Z4D_STANDARD_PARTITION_GB,
+          constants.SSD_Z4D_METAL_PARTITION_GB,
+      )
+
+      valid_sizes_bytes = {
+          gb * constants.BYTES_IN_ONE_GB for gb in valid_partitions_gb
+      }
+
+      if size not in valid_sizes_bytes:
+        # Dynamically generate the string of valid GB sizes
+        unique_partitions = []
+        for gb in valid_partitions_gb:
+          if gb not in unique_partitions:
+            unique_partitions.append(gb)
+        legal_values_str = ', '.join(f'{gb}GB' for gb in unique_partitions)
+
         raise exceptions.InvalidArgumentException(
             '--local-ssd:size',
-            'Unexpected local SSD size: [{given}] bytes. '
-            'Legal values are {small}GB, {large}GB, and {z3_metal}GB only.'
-            .format(
-                given=size,
-                small=constants.SSD_SMALL_PARTITION_GB,
-                large=constants.SSD_LARGE_PARTITION_GB,
-                z3_metal=constants.SSD_Z3_METAL_PARTITION_GB,
-            ),
+            f'Unexpected local SSD size: [{size}] bytes. Legal values are'
+            f' {legal_values_str} only.',
         )
 
 
@@ -3332,7 +3354,9 @@ def AddConfidentialComputeArgs(
     parser,
     support_confidential_compute_type=False,
     support_confidential_compute_type_tdx=False,
-    support_snp_svsm=False) -> None:
+    support_snp_svsm=False,
+    support_confidential_compute_type_cca=False,
+) -> None:
   """Adds flags for confidential compute for instance."""
   if support_confidential_compute_type:
     choices = {
@@ -3357,6 +3381,15 @@ def AddConfidentialComputeArgs(
         Trust Domain eXtension based on Intel virtualization features for
         running confidential instances is also supported.
         """)))
+    if support_confidential_compute_type_cca:
+      choices['CCA'] = 'Arm Confidential Compute Architecture'
+      help_text = ''.join((
+          help_text,
+          ("""\
+        Arm Confidential Compute Architecture for running confidential
+        instances is also supported.
+        """),
+      ))
     if support_snp_svsm:
       svsm_help_text = textwrap.dedent("""\
         Secure VM Service Module (SVSM) is supported on AMD Secure Nested Paging

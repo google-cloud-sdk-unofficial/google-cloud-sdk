@@ -39,6 +39,7 @@ def _AddArgsGa(parser):
   labels_util.AddCreateLabelsFlags(parser)
   flags.GetEndpointNetworkArg().AddToParser(parser)
   flags.GetEncryptionKmsKeyNameArg().AddToParser(parser)
+  flags.GetHiddenGdcZoneArg().AddToParser(parser)
   flags.GetHiddenGdceZoneArg().AddToParser(parser)
   flags.AddRequestResponseLoggingConfigGroupArgs(parser)
 
@@ -76,6 +77,7 @@ def _Run(args, version):
           network=args.network,
           endpoint_id=args.endpoint_id,
           encryption_kms_key_name=args.encryption_kms_key_name,
+          gdc_zone=args.gdc_zone,
           request_response_logging_table=args.request_response_logging_table,
           request_response_logging_rate=args.request_response_logging_rate)
     else:

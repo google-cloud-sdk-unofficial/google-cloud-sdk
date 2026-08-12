@@ -609,6 +609,7 @@ class Empty(_messages.Message):
   """
 
 
+
 class EncryptionConfig(_messages.Message):
   r"""Encryption settings for the service.
 
@@ -1373,6 +1374,7 @@ class MessageSet(_messages.Message):
   sourced only to facilitate the migration of Google products with MessageSet-
   bearing messages to open-source environments.
   """
+
 
 
 class MetadataExport(_messages.Message):
@@ -3244,9 +3246,7 @@ class Service(_messages.Message):
   labels = _messages.MessageField('LabelsValue', 8)
   maintenanceWindow = _messages.MessageField('MaintenanceWindow', 9)
   metadataIntegration = _messages.MessageField('MetadataIntegration', 10)
-  metadataManagementActivity = _messages.MessageField(
-      'MetadataManagementActivity', 11
-  )
+  metadataManagementActivity = _messages.MessageField('MetadataManagementActivity', 11)
   name = _messages.StringField(12)
   network = _messages.StringField(13)
   networkConfig = _messages.MessageField('NetworkConfig', 14)

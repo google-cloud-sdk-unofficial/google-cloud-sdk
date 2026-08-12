@@ -237,8 +237,7 @@ def GenerateImportMetadataJob(
       entry links).
     referenced_entry_scopes: optional list of `projects/{id}` scopes used to
       resolve entry-link / cross-project references.
-    extra_aspect_types: optional extra aspectType FQNs to add to the scope (e.g.
-      the `schema-join` aspect carried by logical-schema-join links).
+    extra_aspect_types: optional extra aspectType FQNs to add to the scope.
     log_level: optional 'DEBUG' or 'INFO'.
 
   Returns:

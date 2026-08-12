@@ -15,14 +15,22 @@
 
 """services mcp list command."""
 
-import sys
 
-from googlecloudsdk.api_lib.services import services_util
-from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.services import common_flags
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'MCP enablement is not required and this command is no-op. To list'
+        ' services, please use: gcloud services list.'
+    ),
+    error=(
+        'MCP enablement is not required and this command is no-op. To list'
+        ' services, please use: gcloud services list.'
+    ),
+)
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
@@ -95,33 +103,4 @@ class List(base.ListCommand):
     Returns:
       The list of MCP services for the given project, folder or organization.
     """
-    # Default mode is --enabled, so if no flags were specified,
-    # turn on the args.enabled flag.
-    if not (args.enabled or args.available):
-      args.enabled = True
-    if args.IsSpecified('project'):
-      project = args.project
-    else:
-      project = services_util.GetValidatedProject(args.project)
-    if args.IsSpecified('folder'):
-      folder = args.folder
-    else:
-      folder = None
-    if args.IsSpecified('organization'):
-      organization = args.organization
-    else:
-      organization = None
-
-    if args.IsSpecified('limit'):
-      limit = args.limit
-    else:
-      limit = sys.maxsize
-
-    return serviceusage.ListMcpServicesV2Beta(
-        project,
-        args.enabled,
-        args.page_size,
-        limit=limit,
-        folder=folder,
-        organization=organization,
-    )
+    return []

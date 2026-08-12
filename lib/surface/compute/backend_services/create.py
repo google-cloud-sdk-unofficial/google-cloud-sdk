@@ -78,6 +78,21 @@ def AddIapFlag(parser):
       """)
 
 
+def _ApplyHaPolicyArgs(messages, args, backend_service):
+  """Applies HA policy arguments to the backend service."""
+  if not args.IsKnownAndSpecified('ha_policy_fast_ip_move'):
+    return
+
+  if not backend_service.haPolicy:
+    backend_service.haPolicy = messages.BackendServiceHAPolicy()
+
+  backend_service.haPolicy.fastIPMove = (
+      messages.BackendServiceHAPolicy.FastIPMoveValueValuesEnum(
+          args.ha_policy_fast_ip_move
+      )
+  )
+
+
 class CreateHelper(object):
   """Helper class to create a backend service."""
 
@@ -167,7 +182,6 @@ class CreateHelper(object):
       flags.AddAllowMultinetwork(parser)
     flags.AddResourceManagerTags(parser)
     flags.AddHaPolicyCreateFlags(parser)
-    flags.AddHaPolicyLeaderFlags(parser)
 
   def __init__(
       self,
@@ -317,9 +331,7 @@ class CreateHelper(object):
     if self._support_allow_multinetwork:
       backend_service.allowMultinetwork = args.allow_multinetwork
 
-    backend_services_utils.ApplyHaPolicyArgs(
-        client.messages, args, backend_service
-    )
+    _ApplyHaPolicyArgs(client.messages, args, backend_service)
 
     request = client.messages.ComputeBackendServicesInsertRequest(
         backendService=backend_service, project=backend_services_ref.project
@@ -447,9 +459,7 @@ class CreateHelper(object):
     if self._support_allow_multinetwork:
       backend_service.allowMultinetwork = args.allow_multinetwork
 
-    backend_services_utils.ApplyHaPolicyArgs(
-        client.messages, args, backend_service
-    )
+    _ApplyHaPolicyArgs(client.messages, args, backend_service)
 
     request = client.messages.ComputeRegionBackendServicesInsertRequest(
         backendService=backend_service,

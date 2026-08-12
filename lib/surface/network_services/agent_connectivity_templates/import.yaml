@@ -1,0 +1,42 @@
+# Copyright 2026 Google LLC. All Rights Reserved.
+release_tracks: [ALPHA, BETA, GA]
+
+help_text:
+  brief: |
+    Import an Agent Connectivity Template.
+  description: |
+    Import an agent connectivity template.
+  examples: |
+    To import an agent connectivity template named 'my-agent-connectivity-template' from a YAML file, run:
+
+    $ {command} my-agent-connectivity-template --location=us-central1 --source=my-agent-connectivity-template.yaml
+
+request:
+  collection: networkservices.projects.locations.agentConnectivityTemplates
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  GA:
+    api_version: v1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:agentConnectivityTemplate
+    help_text: Name of the agent connectivity template to import.
+
+async:
+  collection: networkservices.projects.locations.operations
+
+import:
+  abort_if_equivalent: true
+  create_if_not_exists: true
+  create_request:
+    collection: networkservices.projects.locations.agentConnectivityTemplates
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+    method: create

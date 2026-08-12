@@ -283,8 +283,38 @@ def CreateSchedulingMessage(
     preemption_notice_duration=None,
     current_cpus=None,
     vsock_mode=None,
+    expose_host_topology=None,
 ):
-  """Create scheduling message for VM."""
+  """Creates scheduling message for VM.
+
+  Args:
+    messages: The compute API messages module.
+    maintenance_policy: Host maintenance policy.
+    preemptible: Whether the VM is preemptible.
+    restart_on_failure: Whether to restart on failure.
+    node_affinities: List of node affinities.
+    min_node_cpu: Minimum node CPU.
+    location_hint: Location hint.
+    maintenance_freeze_duration: Maintenance freeze duration.
+    maintenance_interval: Maintenance interval.
+    provisioning_model: Provisioning model (e.g. SPOT).
+    instance_termination_action: Instance termination action.
+    host_error_timeout_seconds: Host error timeout in seconds.
+    max_run_duration: Max run duration.
+    termination_time: Termination time.
+    local_ssd_recovery_timeout: Local SSD recovery timeout.
+    availability_domain: Availability domain.
+    graceful_shutdown: Graceful shutdown options.
+    discard_local_ssds_at_termination_timestamp: Discard local SSDs timestamp.
+    skip_guest_os_shutdown: Whether to skip guest OS shutdown.
+    preemption_notice_duration: Preemption notice duration.
+    current_cpus: Current CPUs.
+    vsock_mode: VSock mode.
+    expose_host_topology: Whether to expose hashed host topology ID.
+
+  Returns:
+    Scheduling message object for the VM.
+  """
   # Note: We always specify automaticRestart=False for preemptible VMs. This
   # makes sense, since no-restart-on-failure is defined as "store-true", and
   # thus can't be given an explicit value. Hence it either has its default
@@ -380,6 +410,9 @@ def CreateSchedulingMessage(
     scheduling.vsockMode = messages.SchedulingVsockMode(
         mode=messages.SchedulingVsockMode.ModeValueValuesEnum(vsock_mode_val)
     )
+
+  if expose_host_topology is not None:
+    scheduling.exposeHostTopology = expose_host_topology
 
   return scheduling
 
@@ -479,10 +512,14 @@ def CreateConfidentialParavisorConfigMessage(args, messages, support_snp_svsm):
   )
 
 
-def CreateConfidentialInstanceMessage(messages, args,
-                                      support_confidential_compute_type,
-                                      support_confidential_compute_type_tdx,
-                                      support_snp_svsm):
+def CreateConfidentialInstanceMessage(
+    messages,
+    args,
+    support_confidential_compute_type,
+    support_confidential_compute_type_tdx,
+    support_snp_svsm,
+    support_confidential_compute_type_cca,
+):
   """Create confidentialInstanceConfig message for VM."""
   confidential_instance_config_msg = None
   enable_confidential_compute = None
@@ -502,10 +539,17 @@ def CreateConfidentialInstanceMessage(messages, args,
         .ConfidentialInstanceTypeValueValuesEnum(
             args.confidential_compute_type))
 
-    if (not support_confidential_compute_type_tdx and
-        'TDX' in (
-            messages.ConfidentialInstanceConfig
-            .ConfidentialInstanceTypeValueValuesEnum)):
+    if (
+        not support_confidential_compute_type_tdx
+        and args.confidential_compute_type == 'TDX'
+    ):
+      enable_confidential_compute = None
+      confidential_instance_type = None
+
+    if (
+        not support_confidential_compute_type_cca
+        and args.confidential_compute_type == 'CCA'
+    ):
       enable_confidential_compute = None
       confidential_instance_type = None
 
@@ -768,8 +812,35 @@ def GetScheduling(
     support_skip_guest_os_shutdown=False,
     support_preemption_notice_duration=False,
     support_vsock_mode=False,
+    support_expose_host_topology=False,
 ):
-  """Generate a Scheduling Message or None based on specified args."""
+  """Generates a Scheduling Message or None based on specified args.
+
+  Args:
+    args: The argparse Namespace containing user parameters.
+    client: The API client object.
+    skip_defaults: bool, whether to skip default values when creating
+      scheduling.
+    support_node_affinity: bool, whether node affinity is supported.
+    support_min_node_cpu: bool, whether min node CPU is supported.
+    support_node_project: bool, whether node project is supported.
+    support_host_error_timeout_seconds: bool, whether host error timeout is
+      supported.
+    support_max_run_duration: bool, whether max run duration is supported.
+    support_local_ssd_recovery_timeout: bool, whether local SSD recovery timeout
+      is supported.
+    support_graceful_shutdown: bool, whether graceful shutdown is supported.
+    support_skip_guest_os_shutdown: bool, whether skip guest OS shutdown is
+      supported.
+    support_preemption_notice_duration: bool, whether preemption notice duration
+      is supported.
+    support_vsock_mode: bool, whether vsock mode is supported.
+    support_expose_host_topology: bool, whether expose host topology is
+      supported.
+
+  Returns:
+    A Scheduling message object, or None if no scheduling flags are specified.
+  """
   node_affinities = None
   if support_node_affinity:
     node_affinities = sole_tenancy_util.GetSchedulingNodeAffinityListFromArgs(
@@ -860,21 +931,32 @@ def GetScheduling(
   ):
     vsock_mode = args.vsock_mode
 
+  expose_host_topology = None
+  if (
+      support_expose_host_topology
+      and args.IsKnownAndSpecified('expose_host_topology')
+      and hasattr(args, 'expose_host_topology')
+  ):
+    expose_host_topology = args.expose_host_topology
+
   current_cpus = None
   if args.IsKnownAndSpecified('current_cpus') and hasattr(
       args, 'current_cpus'
   ):
     current_cpus = args.current_cpus
 
+  dests = [
+      'instance_termination_action',
+      'maintenance_policy',
+      'preemptible',
+      'provisioning_model',
+  ]
+  if support_expose_host_topology:
+    dests.append('expose_host_topology')
+
   if (
       skip_defaults
-      and not IsAnySpecified(
-          args,
-          'instance_termination_action',
-          'maintenance_policy',
-          'preemptible',
-          'provisioning_model',
-      )
+      and not IsAnySpecified(args, *dests)
       and not restart_on_failure
       and not node_affinities
       and not max_run_duration
@@ -913,6 +995,7 @@ def GetScheduling(
       preemption_notice_duration=preemption_notice_duration,
       current_cpus=current_cpus,
       vsock_mode=vsock_mode,
+      expose_host_topology=expose_host_topology,
   )
 
 

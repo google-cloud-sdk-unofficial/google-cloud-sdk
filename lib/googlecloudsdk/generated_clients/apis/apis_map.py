@@ -1259,6 +1259,24 @@ MAP = _ApiDefMap({
             {},
         ),
     },
+    'cloudsupport': {
+        'v2': (
+            ('googlecloudsdk.generated_clients.apis.cloudsupport.v2', 'cloudsupport_v2_client.CloudsupportV2', 'cloudsupport_v2_messages', 'https://cloudsupport.googleapis.com/'),
+            None,
+            True,
+            True,
+            '',
+            {},
+        ),
+        'v2beta': (
+            ('googlecloudsdk.generated_clients.apis.cloudsupport.v2beta', 'cloudsupport_v2beta_client.CloudsupportV2beta', 'cloudsupport_v2beta_messages', 'https://cloudsupport.googleapis.com/'),
+            None,
+            False,
+            True,
+            '',
+            {},
+        ),
+    },
     'cloudtasks': {
         'v2': (
             ('googlecloudsdk.generated_clients.apis.cloudtasks.v2', 'cloudtasks_v2_client.CloudtasksV2', 'cloudtasks_v2_messages', 'https://cloudtasks.googleapis.com/'),
@@ -3950,7 +3968,7 @@ MAP = _ApiDefMap({
             True,
             True,
             '',
-            {},
+            {'us-central1': 'https://workstations.us-central1.rep.googleapis.com/'},
         ),
         'v1beta': (
             ('googlecloudsdk.generated_clients.apis.workstations.v1beta', 'workstations_v1beta_client.WorkstationsV1beta', 'workstations_v1beta_messages', 'https://workstations.googleapis.com/'),
@@ -3958,7 +3976,7 @@ MAP = _ApiDefMap({
             False,
             True,
             '',
-            {},
+            {'us-central1': 'https://workstations.us-central1.rep.googleapis.com/'},
         ),
     },
 })

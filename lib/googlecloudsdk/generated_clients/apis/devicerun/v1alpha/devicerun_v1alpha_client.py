@@ -99,7 +99,7 @@ class DevicerunV1alpha(base_api.BaseApiClient):
         method_id='devicerun.projects.locations.devices.list',
         ordered_params=['parent'],
         path_params=['parent'],
-        query_params=['pageSize', 'pageToken'],
+        query_params=['filter', 'pageSize', 'pageToken'],
         relative_path='v1alpha/{+parent}/devices',
         request_field='',
         request_type_name='DevicerunProjectsLocationsDevicesListRequest',

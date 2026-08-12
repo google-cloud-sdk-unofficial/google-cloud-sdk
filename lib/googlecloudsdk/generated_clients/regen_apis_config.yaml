@@ -86,6 +86,10 @@ apis:
     v1alpha:
       discovery_doc: agenticapplications_v1alpha.json
       default: true
+      resources:
+        projects.locations.omnichannelTokenBrokers:
+          path:
+            projects/{projectsId}/locations/{locationsId}/omnichannelTokenBrokers/{omnichannelTokenBrokersId}
   agentidentity:
     v1:
       discovery_doc: agentidentity_v1.json
@@ -123,6 +127,8 @@ apis:
         projects.locations.semanticGovernancePolicyEngine:
           path:
             projects/{projectsId}/locations/{locationsId}/semanticGovernancePolicyEngine
+      skip:
+        bug: b/538601144
     v1:
       discovery_doc: aiplatform_v1.json
       gcloud_gapic_library: google/cloud/aiplatform/v1:aiplatform_v1_py
@@ -597,6 +603,12 @@ apis:
     v1:
       discovery_doc: cloudshell_v1.json
       enable_mtls: true
+  cloudsupport:
+    v2:
+      discovery_doc: cloudsupport_v2.json
+      default: true
+    v2beta:
+      discovery_doc: cloudsupport_v2beta.json
   cloudtasks:
     v2beta2:
       discovery_doc: cloudtasks_v2beta2.json
@@ -892,6 +904,8 @@ apis:
         projects.locations.lakes.zones.assets.actions:
           path:
             projects/{projectsId}/locations/{locationsId}/lakes/{lakesId}/zones/{zonesId}/assets/{assetsId}/actions/{actionsId}
+      skip:
+        bug: b/539506524
   dataproc:
     v1:
       discovery_doc: dataproc_v1.json
@@ -976,6 +990,8 @@ apis:
         projects.locations.instances:
           path:
             projects/{projectsId}/locations/{locationsId}/instances/{instancesId}
+      skip:
+        bug: b/539506765
     v1alpha:
       discovery_doc: developerconnect_v1alpha.json
       resources:
@@ -1982,6 +1998,8 @@ apis:
         blueGreenDeployments:
           path:
             projects/{project}/locations/{location}/blueGreenDeployments/{blueGreenDeploymentsId}
+      skip:
+        bug: b/539506040
   stream:
     v1:
       discovery_doc: stream_v1.json
@@ -2554,6 +2572,9 @@ canonical_surfaces:
     name: cloudshell
     command: cloud-shell
     hidden: true
+  cloudsupport:
+    name: cloudsupport
+    command: support
   cloudtasks:
     name: cloudtasks
     command: tasks

@@ -18,10 +18,11 @@ import collections
 from googlecloudsdk.api_lib import device_run
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.device_run import resource_args
+from googlecloudsdk.command_lib.device_run.devices import devices
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe a Device Run device."""
 
@@ -86,6 +87,14 @@ class Describe(base.DescribeCommand):
           tags.append(f'{prop.key}:{prop.value}')
       if tags:
         summary['tags'] = sorted(tags)
+
+    if device.availability:
+      capacity = devices.StripCapacityPrefix(device.availability.capacity)
+      if capacity is not None:
+        summary['capacity'] = capacity
+      available = devices.StripAvailabilityPrefix(device.availability.available)
+      if available is not None:
+        summary['availability'] = available
 
     return summary
 

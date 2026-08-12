@@ -342,7 +342,6 @@ _LIST_INSTANCES_FORMAT_BETA = """\
               instanceStatus:label=STATUS,
               instanceHealth[0].detailedHealthState:label=HEALTH_STATE,
               currentAction:label=ACTION,
-              preservedState():label=PRESERVED_STATE,
               version.instanceTemplate.basename():label=INSTANCE_TEMPLATE,
               version.name:label=VERSION_NAME,
               lastAttempt.errors.errors.map().format(
@@ -384,7 +383,8 @@ _LIST_INSTANCES_STATIC_FIELDS_GA = [
     'VERSION_NAME',
     'LAST_ERROR'
 ]
-_LIST_INSTANCES_STATIC_FIELDS_BETA = [
+_LIST_INSTANCES_STATIC_FIELDS_BETA = _LIST_INSTANCES_STATIC_FIELDS_GA
+_LIST_INSTANCES_STATIC_FIELDS_ALPHA = [
     'NAME',
     'ZONE',
     'STATUS',
@@ -395,7 +395,6 @@ _LIST_INSTANCES_STATIC_FIELDS_BETA = [
     'VERSION_NAME',
     'LAST_ERROR'
 ]
-_LIST_INSTANCES_STATIC_FIELDS_ALPHA = _LIST_INSTANCES_STATIC_FIELDS_BETA
 
 _RELEASE_TRACK_TO_LIST_INSTANCES_BASE_STATIC_FIELDS = {
     base.ReleaseTrack.GA: _LIST_INSTANCES_STATIC_FIELDS_GA,

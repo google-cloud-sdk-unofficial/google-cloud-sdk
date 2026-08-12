@@ -1,0 +1,29 @@
+# Copyright 2026 Google LLC. All Rights Reserved.
+release_tracks: [ALPHA, BETA, GA]
+
+help_text:
+  brief: |
+    Delete an Agent Connectivity Template.
+  description: |
+    Delete the specified Agent Connectivity Template.
+  examples: |
+    To delete an Agent Connectivity Template named 'my-agent-connectivity-template', run:
+
+      $ {command} my-agent-connectivity-template --location=us-central1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:agentConnectivityTemplate
+    help_text: Name of the agent connectivity template to delete.
+
+async:
+  collection: networkservices.projects.locations.operations
+
+request:
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  GA:
+    api_version: v1
+  collection: networkservices.projects.locations.agentConnectivityTemplates

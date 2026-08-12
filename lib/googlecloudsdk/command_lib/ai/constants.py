@@ -42,6 +42,11 @@ AI_PLATFORM_RELEASE_TRACK_TO_VERSION = {
 # for more details.
 SUPPORTED_REGION = ('us-central1', 'europe-west4', 'asia-east1')
 
+# Multi-regional (mREP) jurisdictions. These are served on dedicated REP hosts
+# (aiplatform.<geo>.rep.<domain>) rather than the locational
+# <region>-aiplatform.<domain> form, where <domain> is the universe domain.
+MREP_JURISDICTIONS = ('us',)
+
 # NOTE: GDU-specific, see comment above SUPPORTED_REGION.
 # Available regions specifically for training, including custom-jobs and
 # hp-tuning-jobs.

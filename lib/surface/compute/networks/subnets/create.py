@@ -53,6 +53,7 @@ def _AddArgs(
     include_aggregate_purpose,
     include_l2,
     include_custom_hardware_link,
+    include_cloud_extension,
     api_version,
     include_peer_migration_purpose,
     include_ipv6_secondary_ranges,
@@ -179,6 +180,11 @@ def _AddArgs(
   if include_custom_hardware_link:
     purpose_choices['CUSTOM_HARDWARE_LINK'] = (
         'Reserved for Custom Hardware Link.'
+    )
+
+  if include_cloud_extension:
+    purpose_choices['CLOUD_EXTENSION'] = (
+        'Reserved for Cloud Extension Machines.'
     )
 
   if include_peer_migration_purpose:
@@ -434,6 +440,7 @@ def _CreateSubnetwork(
     include_aggregate_purpose,
     include_l2,
     include_custom_hardware_link,
+    include_cloud_extension,
     ip_collection_ref,
     include_peer_migration_purpose,
     ipv6_network_tier,
@@ -517,6 +524,11 @@ def _CreateSubnetwork(
           include_custom_hardware_link
           and subnetwork.purpose
           == messages.Subnetwork.PurposeValueValuesEnum.CUSTOM_HARDWARE_LINK
+      )
+      or (
+          include_cloud_extension
+          and subnetwork.purpose
+          == messages.Subnetwork.PurposeValueValuesEnum.CLOUD_EXTENSION
       )
   ):
     # Clear unsupported fields in the subnet resource
@@ -602,6 +614,7 @@ def _Run(
     include_aggregate_purpose,
     include_l2,
     include_custom_hardware_link,
+    include_cloud_extension,
     include_peer_migration_purpose,
     include_ipv6_secondary_ranges,
     include_ipv6_network_tier,
@@ -634,6 +647,7 @@ def _Run(
       include_aggregate_purpose,
       include_l2,
       include_custom_hardware_link,
+      include_cloud_extension,
       ip_collection_ref,
       include_peer_migration_purpose,
       ipv6_network_tier=ipv6_network_tier,
@@ -680,6 +694,7 @@ class Create(base.CreateCommand):
   _include_l2 = False
   _api_version = compute_api.COMPUTE_GA_API_VERSION
   _include_custom_hardware_link = False
+  _include_cloud_extension = False
   _include_peer_migration_purpose = True
   _include_ipv6_secondary_ranges = False
   _include_ipv6_network_tier = False
@@ -695,6 +710,7 @@ class Create(base.CreateCommand):
         cls._include_aggregate_purpose,
         cls._include_l2,
         cls._include_custom_hardware_link,
+        cls._include_cloud_extension,
         cls._api_version,
         cls._include_peer_migration_purpose,
         cls._include_ipv6_secondary_ranges,
@@ -712,6 +728,7 @@ class Create(base.CreateCommand):
         self._include_aggregate_purpose,
         self._include_l2,
         self._include_custom_hardware_link,
+        self._include_cloud_extension,
         self._include_peer_migration_purpose,
         self._include_ipv6_secondary_ranges,
         self._include_ipv6_network_tier,
@@ -724,6 +741,7 @@ class CreateBeta(Create):
 
   _api_version = compute_api.COMPUTE_BETA_API_VERSION
   _include_ipv6_secondary_ranges = True
+  _include_ipv6_network_tier = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -735,7 +753,7 @@ class CreateAlpha(CreateBeta):
   _include_l2 = True
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION
   _include_custom_hardware_link = True
+  _include_cloud_extension = True
   _include_peer_migration_purpose = True
   _include_ipv6_secondary_ranges = True
-  _include_ipv6_network_tier = True
   _include_arp_broadcasting = True

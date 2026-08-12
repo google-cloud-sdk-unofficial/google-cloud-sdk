@@ -19,7 +19,6 @@ from googlecloudsdk.api_lib.container.fleet import util
 
 CONFIG_MANAGEMENT_FEATURE_NAME = 'configmanagement'
 
-# TODO(b/433355766): Move code not used by GA commands into separate file.
 APPLY_SPEC_VERSION_1 = """
 applySpecVersion: 1
 spec:

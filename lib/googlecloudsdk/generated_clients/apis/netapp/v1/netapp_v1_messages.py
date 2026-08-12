@@ -452,7 +452,7 @@ class BackupVault(_messages.Message):
     sourceBackupVault: Output only. Name of the Backup vault created in source
       region. Format: `projects/{project_id}/locations/{location}/backupVaults
       /{backup_vault_id}`
-    sourceRegion: Output only. Region in which the backup vault is created.
+    sourceRegion: Optional. Region in which the backup vault is created.
       Format: `projects/{project_id}/locations/{location}`
     state: Output only. The backup vault state.
   """
@@ -731,6 +731,10 @@ class CancelOperationRequest(_messages.Message):
 class CloneDetails(_messages.Message):
   r"""Details about a clone volume.
 
+  Enums:
+    SplitStateValueValuesEnum: Output only. The current state of the clone
+      split operation.
+
   Fields:
     sharedSpaceGib: Output only. Shared space in GiB. Determined at volume
       creation time based on size of source snapshot.
@@ -739,11 +743,29 @@ class CloneDetails(_messages.Message):
       ject}/locations/{location}/volumes/{volume}/snapshots/{snapshot}
     sourceVolume: Output only. Full name of the source volume resource.
       Format: projects/{project}/locations/{location}/volumes/{volume}
+    splitState: Output only. The current state of the clone split operation.
   """
+
+  class SplitStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current state of the clone split operation.
+
+    Values:
+      SPLIT_STATE_UNSPECIFIED: State is not specified.
+      SPLIT_STATE_NOT_SPLITTING: The volume is a thin clone, sharing blocks
+        with its source.
+      SPLIT_STATE_IN_PROGRESS: A split operation is currently active and in
+        progress.
+      SPLIT_STATE_FAILED: The attempt to split the volume failed.
+    """
+    SPLIT_STATE_UNSPECIFIED = 0
+    SPLIT_STATE_NOT_SPLITTING = 1
+    SPLIT_STATE_IN_PROGRESS = 2
+    SPLIT_STATE_FAILED = 3
 
   sharedSpaceGib = _messages.IntegerField(1)
   sourceSnapshot = _messages.StringField(2)
   sourceVolume = _messages.StringField(3)
+  splitState = _messages.EnumField('SplitStateValueValuesEnum', 4)
 
 
 class DailySchedule(_messages.Message):
@@ -790,6 +812,36 @@ class EncryptVolumesRequest(_messages.Message):
   volumes.
   """
 
+
+
+class EndTrialRequest(_messages.Message):
+  r"""EndTrialRequest ends a Trial.
+
+  Enums:
+    ExitReasonValueValuesEnum: Required. The reason for exiting the trial.
+
+  Fields:
+    exitReason: Required. The reason for exiting the trial.
+    optOutReasons: Optional. Contains the reasons for opting out of the free
+      trial if exit reason is OPT_OUT.
+  """
+
+  class ExitReasonValueValuesEnum(_messages.Enum):
+    r"""Required. The reason for exiting the trial.
+
+    Values:
+      EXIT_REASON_UNSPECIFIED: Exit reason is unspecified.
+      EXPIRED: Trial expired after 30 days.
+      UPGRADED: Trial was upgraded to a paid account.
+      OPT_OUT: User opted out of the trial.
+    """
+    EXIT_REASON_UNSPECIFIED = 0
+    EXPIRED = 1
+    UPGRADED = 2
+    OPT_OUT = 3
+
+  exitReason = _messages.EnumField('ExitReasonValueValuesEnum', 1)
+  optOutReasons = _messages.StringField(2, repeated=True)
 
 
 class EstablishPeeringRequest(_messages.Message):
@@ -1659,6 +1711,22 @@ class ListStoragePoolsResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class ListVolumePerformanceGroupsResponse(_messages.Message):
+  r"""ListVolumePerformanceGroupsResponse is the response to a
+  ListVolumePerformanceGroupsRequest.
+
+  Fields:
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    unreachable: Unordered list. Locations that could not be reached.
+    volumePerformanceGroups: The list of volume performance groups.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  unreachable = _messages.StringField(2, repeated=True)
+  volumePerformanceGroups = _messages.MessageField('VolumePerformanceGroup', 3, repeated=True)
+
+
 class ListVolumesResponse(_messages.Message):
   r"""Message for response to listing Volumes
 
@@ -1758,10 +1826,14 @@ class LocationMetadata(_messages.Message):
   r"""Metadata for a given google.cloud.location.Location.
 
   Enums:
+    FlexPerformanceTierValueValuesEnum: Output only. Indicates the flex
+      performance tier of this location.
     SupportedFlexPerformanceValueListEntryValuesEnum:
     SupportedServiceLevelsValueListEntryValuesEnum:
 
   Fields:
+    flexPerformanceTier: Output only. Indicates the flex performance tier of
+      this location.
     hasOntapProxy: Output only. Indicates if the location has ONTAP Proxy
       support.
     hasVcp: Output only. Indicates if the location has VCP support.
@@ -1770,6 +1842,16 @@ class LocationMetadata(_messages.Message):
     supportedServiceLevels: Output only. Supported service levels in a
       location.
   """
+
+  class FlexPerformanceTierValueValuesEnum(_messages.Enum):
+    r"""Output only. Indicates the flex performance tier of this location.
+
+    Values:
+      FLEX_PERFORMANCE_TIER_UNSPECIFIED: Unspecified flex performance tier.
+      LIMITED: Flex performance tier is limited.
+    """
+    FLEX_PERFORMANCE_TIER_UNSPECIFIED = 0
+    LIMITED = 1
 
   class SupportedFlexPerformanceValueListEntryValuesEnum(_messages.Enum):
     r"""SupportedFlexPerformanceValueListEntryValuesEnum enum type.
@@ -1799,10 +1881,11 @@ class LocationMetadata(_messages.Message):
     STANDARD = 3
     FLEX = 4
 
-  hasOntapProxy = _messages.BooleanField(1)
-  hasVcp = _messages.BooleanField(2)
-  supportedFlexPerformance = _messages.EnumField('SupportedFlexPerformanceValueListEntryValuesEnum', 3, repeated=True)
-  supportedServiceLevels = _messages.EnumField('SupportedServiceLevelsValueListEntryValuesEnum', 4, repeated=True)
+  flexPerformanceTier = _messages.EnumField('FlexPerformanceTierValueValuesEnum', 1)
+  hasOntapProxy = _messages.BooleanField(2)
+  hasVcp = _messages.BooleanField(3)
+  supportedFlexPerformance = _messages.EnumField('SupportedFlexPerformanceValueListEntryValuesEnum', 4, repeated=True)
+  supportedServiceLevels = _messages.EnumField('SupportedServiceLevelsValueListEntryValuesEnum', 5, repeated=True)
 
 
 class MonthlySchedule(_messages.Message):
@@ -2196,6 +2279,19 @@ class NetappProjectsLocationsGetRequest(_messages.Message):
 
   Fields:
     name: Resource name for the location.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetappProjectsLocationsGetTrialRequest(_messages.Message):
+  r"""A NetappProjectsLocationsGetTrialRequest object.
+
+  Fields:
+    name: Required. Name of the trial. Format:
+      projects/{project}/locations/{location}/trial location can be any valid
+      cloud region in which Google Cloud NetApp Volumes is available. It will
+      get the same global trial resource irrespective of the location.
   """
 
   name = _messages.StringField(1, required=True)
@@ -2678,6 +2774,121 @@ class NetappProjectsLocationsStoragePoolsValidateDirectoryServiceRequest(_messag
   validateDirectoryServiceRequest = _messages.MessageField('ValidateDirectoryServiceRequest', 2)
 
 
+class NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsCreateRequest(_messages.Message):
+  r"""A
+  NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsCreateRequest
+  object.
+
+  Fields:
+    parent: Required. Value for parent.
+    volumePerformanceGroup: A VolumePerformanceGroup resource to be passed as
+      the request body.
+    volumePerformanceGroupId: Required. The ID to use for the volume
+      performance group, which will become the final component of the volume
+      performance group's resource name.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  volumePerformanceGroup = _messages.MessageField('VolumePerformanceGroup', 2)
+  volumePerformanceGroupId = _messages.StringField(3)
+
+
+class NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsDeleteRequest(_messages.Message):
+  r"""A
+  NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsDeleteRequest
+  object.
+
+  Fields:
+    name: Required. The resource name of the volume performance group. Format:
+      projects/{project}/locations/{location}/storagePools/{storage_pool}/volu
+      mePerformanceGroups/{volume_performance_group}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsGetRequest(_messages.Message):
+  r"""A NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsGetRequest
+  object.
+
+  Fields:
+    name: Required. The resource name of the volume performance group. Format:
+      projects/{project}/locations/{location}/storagePools/{storage_pool}/volu
+      mePerformanceGroups/{volume_performance_group}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsListRequest(_messages.Message):
+  r"""A NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsListRequest
+  object.
+
+  Fields:
+    filter: Optional. Filter to apply to the request. Supported fields for
+      filtering: - `name` - `throughput_mibps` - `allocation_type` For
+      example: `allocation_type = "SHARED" AND throughput_mibps > 100`
+    orderBy: Optional. Hint for how to order the results
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, the server will pick an appropriate
+      default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Parent value for ListVolumePerformanceGroupsRequest
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsPatchRequest(_messages.Message):
+  r"""A NetappProjectsLocationsStoragePoolsVolumePerformanceGroupsPatchRequest
+  object.
+
+  Fields:
+    name: Identifier. The resource name of the volume performance group.
+    updateMask: Optional. The list of fields to update.
+    volumePerformanceGroup: A VolumePerformanceGroup resource to be passed as
+      the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  updateMask = _messages.StringField(2)
+  volumePerformanceGroup = _messages.MessageField('VolumePerformanceGroup', 3)
+
+
+class NetappProjectsLocationsTrialEndTrialRequest(_messages.Message):
+  r"""A NetappProjectsLocationsTrialEndTrialRequest object.
+
+  Fields:
+    endTrialRequest: A EndTrialRequest resource to be passed as the request
+      body.
+    name: Required. Name of the trial. Format:
+      projects/{project}/locations/{location}/trial location can be any valid
+      cloud region in which Google Cloud NetApp Volumes is available. It will
+      get the same global trial resource irrespective of the location.
+  """
+
+  endTrialRequest = _messages.MessageField('EndTrialRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class NetappProjectsLocationsTrialSubscribeTrialRequest(_messages.Message):
+  r"""A NetappProjectsLocationsTrialSubscribeTrialRequest object.
+
+  Fields:
+    parent: Required. Parent value.
+    subscribeTrialRequest: A SubscribeTrialRequest resource to be passed as
+      the request body.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  subscribeTrialRequest = _messages.MessageField('SubscribeTrialRequest', 2)
+
+
 class NetappProjectsLocationsVolumesCreateRequest(_messages.Message):
   r"""A NetappProjectsLocationsVolumesCreateRequest object.
 
@@ -2728,6 +2939,17 @@ class NetappProjectsLocationsVolumesGetRequest(_messages.Message):
 
   Fields:
     name: Required. Name of the volume
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetappProjectsLocationsVolumesGetSplitStatusRequest(_messages.Message):
+  r"""A NetappProjectsLocationsVolumesGetSplitStatusRequest object.
+
+  Fields:
+    name: Required. The full name of the volume. Format:
+      projects/{project_number}/locations/{location}/volumes/{volume_id}
   """
 
   name = _messages.StringField(1, required=True)
@@ -3110,6 +3332,21 @@ class NetappProjectsLocationsVolumesSnapshotsPatchRequest(_messages.Message):
   name = _messages.StringField(1, required=True)
   snapshot = _messages.MessageField('Snapshot', 2)
   updateMask = _messages.StringField(3)
+
+
+class NetappProjectsLocationsVolumesStartSplitRequest(_messages.Message):
+  r"""A NetappProjectsLocationsVolumesStartSplitRequest object.
+
+  Fields:
+    name: Required. The full name of the clone volume to be split from its
+      source. Format:
+      projects/{project_number}/locations/{location}/volumes/{volume_id}
+    startSplitRequest: A StartSplitRequest resource to be passed as the
+      request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  startSplitRequest = _messages.MessageField('StartSplitRequest', 2)
 
 
 class OntapSource(_messages.Message):
@@ -3824,6 +4061,44 @@ class SnapshotPolicy(_messages.Message):
   weeklySchedule = _messages.MessageField('WeeklySchedule', 5)
 
 
+class SplitStatus(_messages.Message):
+  r"""Message for SplitStatus.
+
+  Enums:
+    SplitStateValueValuesEnum: Output only. The current state of the clone
+      split operation.
+
+  Fields:
+    progressPercent: Output only. The estimated progress percentage of the
+      split operation (0-100). This is meaningful primarily when split_state
+      is IN_PROGRESS.
+    splitState: Output only. The current state of the clone split operation.
+    stateDetails: Output only. Human-readable details about the current state.
+      Mostly used for displaying error messages during split failure Examples:
+      "Split in progress", "Error: insufficient capacity".
+  """
+
+  class SplitStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current state of the clone split operation.
+
+    Values:
+      SPLIT_STATE_UNSPECIFIED: State is not specified.
+      SPLIT_STATE_NOT_SPLITTING: The volume is a thin clone, sharing blocks
+        with its source.
+      SPLIT_STATE_IN_PROGRESS: A split operation is currently active and in
+        progress.
+      SPLIT_STATE_FAILED: The attempt to split the volume failed.
+    """
+    SPLIT_STATE_UNSPECIFIED = 0
+    SPLIT_STATE_NOT_SPLITTING = 1
+    SPLIT_STATE_IN_PROGRESS = 2
+    SPLIT_STATE_FAILED = 3
+
+  progressPercent = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  splitState = _messages.EnumField('SplitStateValueValuesEnum', 2)
+  stateDetails = _messages.StringField(3)
+
+
 class StandardQueryParameters(_messages.Message):
   r"""Query parameters accepted by all methods.
 
@@ -3885,6 +4160,10 @@ class StandardQueryParameters(_messages.Message):
   trace = _messages.StringField(10)
   uploadType = _messages.StringField(11)
   upload_protocol = _messages.StringField(12)
+
+
+class StartSplitRequest(_messages.Message):
+  r"""Request message for splitting a volume."""
 
 
 class Status(_messages.Message):
@@ -4216,6 +4495,10 @@ class StoragePool(_messages.Message):
   zone = _messages.StringField(34)
 
 
+class SubscribeTrialRequest(_messages.Message):
+  r"""SubscribeTrialRequest subscribes a Trial."""
+
+
 class SwitchActiveReplicaZoneRequest(_messages.Message):
   r"""SwitchActiveReplicaZoneRequest switch the active/replica zone for a
   regional storagePool.
@@ -4292,6 +4575,70 @@ class TransferStats(_messages.Message):
   totalTransferDuration = _messages.StringField(6)
   transferBytes = _messages.IntegerField(7)
   updateTime = _messages.StringField(8)
+
+
+class Trial(_messages.Message):
+  r"""Trial represents a 30-day free trial for Google Cloud NetApp Volumes. It
+  is global in scope for a project. It is not bound to a location, but a valid
+  cloud region in which Google Cloud NetApp Volumes is available is required
+  to subscribe to the trial.
+
+  Enums:
+    ExitReasonValueValuesEnum: Output only. The reason for exiting the trial.
+    StateValueValuesEnum: Output only. The State of the trial.
+
+  Fields:
+    endTime: Output only. The time when the trial ends.
+    exitReason: Output only. The reason for exiting the trial.
+    name: Identifier. The resource name of the trial. Format:
+      projects/{project}/locations/{location}/trial Irrespective of the
+      location, the trial is global in scope for a project. location can be
+      any valid cloud region in which Google Cloud NetApp Volumes is
+      available.
+    optOutReasons: Output only. Contains the reasons for opting out of the
+      free trial if exit reason is OPT_OUT.
+    startTime: Output only. The time when the trial started.
+    state: Output only. The State of the trial.
+  """
+
+  class ExitReasonValueValuesEnum(_messages.Enum):
+    r"""Output only. The reason for exiting the trial.
+
+    Values:
+      EXIT_REASON_UNSPECIFIED: Exit reason is unspecified.
+      EXPIRED: Trial expired after 30 days.
+      UPGRADED: Trial was upgraded to a paid account.
+      OPT_OUT: User opted out of the trial.
+    """
+    EXIT_REASON_UNSPECIFIED = 0
+    EXPIRED = 1
+    UPGRADED = 2
+    OPT_OUT = 3
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The State of the trial.
+
+    Values:
+      STATE_UNSPECIFIED: Default value. Unspecified state.
+      ACTIVE: Trial is active. Computed as start_time <= current_time <=
+        end_time.
+      INACTIVE: Trial is inactive. Computed as current_time < start_time or
+        current_time > end_time.
+      ELIGIBLE: Project is eligible for a new free trial.
+      INELIGIBLE: Project is ineligible for a new free trial.
+    """
+    STATE_UNSPECIFIED = 0
+    ACTIVE = 1
+    INACTIVE = 2
+    ELIGIBLE = 3
+    INELIGIBLE = 4
+
+  endTime = _messages.StringField(1)
+  exitReason = _messages.EnumField('ExitReasonValueValuesEnum', 2)
+  name = _messages.StringField(3)
+  optOutReasons = _messages.StringField(4, repeated=True)
+  startTime = _messages.StringField(5)
+  state = _messages.EnumField('StateValueValuesEnum', 6)
 
 
 class UpdateBackupConfigRequest(_messages.Message):
@@ -4669,6 +5016,40 @@ class VolumeBackupConfig(_messages.Message):
 
   backupConfig = _messages.MessageField('BackupConfig', 1)
   volumeUuid = _messages.StringField(2)
+
+
+class VolumePerformanceGroup(_messages.Message):
+  r"""A Volume Performance Group resource under a Storage Pool.
+
+  Enums:
+    AllocationTypeValueValuesEnum: Required. Allocation type of the volume
+      performance group.
+
+  Fields:
+    allocationType: Required. Allocation type of the volume performance group.
+    iops: Required. IOPS limit for the group. Minimum value is 1.
+    name: Identifier. The resource name of the volume performance group.
+    throughputMibPerSecond: Required. Throughput in MiB/s. Minimum value is 1.
+  """
+
+  class AllocationTypeValueValuesEnum(_messages.Enum):
+    r"""Required. Allocation type of the volume performance group.
+
+    Values:
+      ALLOCATION_TYPE_UNSPECIFIED: Unspecified allocation type.
+      SHARED: The VPG's performance limits are shared collectively by all
+        volumes in the group.
+      PER_VOLUME: The VPG's performance limits are applied to each volume in
+        the group individually.
+    """
+    ALLOCATION_TYPE_UNSPECIFIED = 0
+    SHARED = 1
+    PER_VOLUME = 2
+
+  allocationType = _messages.EnumField('AllocationTypeValueValuesEnum', 1)
+  iops = _messages.IntegerField(2)
+  name = _messages.StringField(3)
+  throughputMibPerSecond = _messages.IntegerField(4)
 
 
 class WeeklySchedule(_messages.Message):

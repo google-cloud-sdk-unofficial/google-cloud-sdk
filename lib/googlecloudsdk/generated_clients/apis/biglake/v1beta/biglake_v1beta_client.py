@@ -517,6 +517,33 @@ class BiglakeV1beta(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Failover(self, request, global_params=None):
+      r"""Failover the catalog to a new primary replica region.
+
+      Args:
+        request: (BiglakeHiveV1betaProjectsCatalogsFailoverRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (FailoverHiveCatalogResponse) The response message.
+      """
+      config = self.GetMethodConfig('Failover')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Failover.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='hive/v1beta/projects/{projectsId}/catalogs/{catalogsId}:failover',
+        http_method='POST',
+        method_id='biglake.hive.v1beta.projects.catalogs.failover',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='hive/v1beta/{+name}:failover',
+        request_field='failoverHiveCatalogRequest',
+        request_type_name='BiglakeHiveV1betaProjectsCatalogsFailoverRequest',
+        response_type_name='FailoverHiveCatalogResponse',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Gets the catalog specified by the resource name.
 

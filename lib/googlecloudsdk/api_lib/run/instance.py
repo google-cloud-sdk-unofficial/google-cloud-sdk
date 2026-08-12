@@ -65,7 +65,9 @@ class Instance(container_resource.ContainerResource):
       InstanceStatus.STOPPED: InstanceSymbol(
           best=SQUARE_SYMBOL, alt='-', color=None
       ),
-      InstanceStatus.COMPLETED: InstanceSymbol(best=CHECK_MARK_SYMBOL, alt='+'),
+      InstanceStatus.COMPLETED: InstanceSymbol(
+          best=SQUARE_SYMBOL, alt='-', color=None
+      ),
       InstanceStatus.FAILED: InstanceSymbol(best='X', alt='X', color='red'),
   }
 

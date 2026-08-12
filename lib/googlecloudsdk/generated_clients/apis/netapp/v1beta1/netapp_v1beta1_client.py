@@ -1662,7 +1662,7 @@ class NetappV1beta1(base_api.BaseApiClient):
           }
 
     def EndTrial(self, request, global_params=None):
-      r"""EndTrial ends a Trial.
+      r"""EndTrial ends a Trial. Note: Trial is a singleton resource (AIP-156).
 
       Args:
         request: (NetappProjectsLocationsTrialEndTrialRequest) input message
@@ -1689,7 +1689,7 @@ class NetappV1beta1(base_api.BaseApiClient):
     )
 
     def SubscribeTrial(self, request, global_params=None):
-      r"""SubscribeTrial subscribes a Trial.
+      r"""SubscribeTrial subscribes a Trial. Note: Trial is a singleton resource (AIP-156).
 
       Args:
         request: (NetappProjectsLocationsTrialSubscribeTrialRequest) input message

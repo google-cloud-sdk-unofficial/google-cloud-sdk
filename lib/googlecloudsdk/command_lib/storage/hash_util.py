@@ -19,9 +19,11 @@ from __future__ import annotations
 import base64
 import binascii
 import enum
+from typing import Any
 
 from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import fast_crc32c_util
+from googlecloudsdk.command_lib.util import crc32c
 from googlecloudsdk.core import log
 from googlecloudsdk.core.updater import installers
 from googlecloudsdk.core.util import files
@@ -227,3 +229,30 @@ def reset_digesters(digesters):
       raise errors.Error(
           'Unknown hash algorithm found in digesters: {}'.format(hash_algorithm)
       )
+
+
+def get_x_goog_hash_header_value(
+    digesters: dict[HashAlgorithm, Any],
+) -> str | None:
+  """Creates X-Goog-Hash header value from digesters.
+
+  Args:
+    digesters (dict[HashAlgorithm, hash object]): Digesters.
+
+  Returns:
+    str: Value for X-Goog-Hash header, or None if no supported hashes.
+  """
+  parts = []
+  if HashAlgorithm.CRC32C in digesters:
+    parts.append(
+        'crc32c={}'.format(crc32c.get_hash(digesters[HashAlgorithm.CRC32C]))
+    )
+  if HashAlgorithm.MD5 in digesters:
+    parts.append(
+        'md5={}'.format(
+            get_base64_hash_digest_string(digesters[HashAlgorithm.MD5])
+        )
+    )
+  if parts:
+    return ','.join(parts)
+  return None

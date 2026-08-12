@@ -15,7 +15,6 @@
 """Command to wait for Device Run operation completion."""
 
 from googlecloudsdk.api_lib import device_run
-from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.device_run import resource_args
 
@@ -37,7 +36,7 @@ class Wait(base.SilentCommand):
         operations_service=client.service,
         resource_ref=None,
     )
-    waiter.WaitFor(
+    device_run.WaitForOperation(
         poller,
         operation_ref,
         'Waiting for operation [{}] to complete.'.format(operation_ref.Name()),

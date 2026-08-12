@@ -2920,6 +2920,8 @@ class GeminiGcpEnablementSetting(_messages.Message):
     geminiEnterpriseProject: Optional. The Gemini enterprise project for this
       setting. Format: projects/{project} The `{project}` segment can be the
       project ID or project number.
+    hasCustomInstructions: Optional. Indicates whether custom instructions are
+      defined.
     labels: Optional. Labels as key value pairs.
     mutationsEnabled: Optional. Indicates whether resource mutations are
       enabled. If not set, resource mutations are disabled.
@@ -2991,13 +2993,14 @@ class GeminiGcpEnablementSetting(_messages.Message):
   enableCustomerDataSharing = _messages.BooleanField(4)
   gcsBucket = _messages.StringField(5)
   geminiEnterpriseProject = _messages.StringField(6)
-  labels = _messages.MessageField('LabelsValue', 7)
-  mutationsEnabled = _messages.BooleanField(8)
-  name = _messages.StringField(9)
-  proactiveAgentsEnabled = _messages.BooleanField(10)
-  releaseChannel = _messages.EnumField('ReleaseChannelValueValuesEnum', 11)
-  updateTime = _messages.StringField(12)
-  webGroundingType = _messages.EnumField('WebGroundingTypeValueValuesEnum', 13)
+  hasCustomInstructions = _messages.BooleanField(7)
+  labels = _messages.MessageField('LabelsValue', 8)
+  mutationsEnabled = _messages.BooleanField(9)
+  name = _messages.StringField(10)
+  proactiveAgentsEnabled = _messages.BooleanField(11)
+  releaseChannel = _messages.EnumField('ReleaseChannelValueValuesEnum', 12)
+  updateTime = _messages.StringField(13)
+  webGroundingType = _messages.EnumField('WebGroundingTypeValueValuesEnum', 14)
 
 
 class GeminiInBigQueryConversationalAnalyticsSetting(_messages.Message):

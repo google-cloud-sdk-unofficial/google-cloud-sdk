@@ -110,6 +110,7 @@ class StoragePoolsClient(object):
       scale_tier: Optional[str] = None,
       scale_type: str | None = None,
       mode: Optional[str] = None,
+      cluster: Optional[str] = None,
   ):
     """Parses the command line arguments for Create Storage Pool into a config."""
     return self._adapter.ParseStoragePoolConfig(
@@ -136,6 +137,7 @@ class StoragePoolsClient(object):
         scale_tier=scale_tier,
         scale_type=scale_type,
         mode=mode,
+        cluster=cluster,
     )
 
   def ListStoragePools(self, location_ref, limit=None):
@@ -437,6 +439,7 @@ class StoragePoolsAdapter(object):
       scale_tier: Optional[str] = None,
       scale_type: str | None = None,
       mode: Optional[str] = None,
+      cluster: Optional[str] = None,
   ):
     """Parses the command line arguments for Create Storage Pool into a config.
 
@@ -465,6 +468,7 @@ class StoragePoolsAdapter(object):
       scale_tier: Scale tier of the Storage Pool
       scale_type: Scale type of the Storage Pool
       mode: Mode of the Storage Pool - ONTAP or DEFAULT
+      cluster: Cluster of the Storage Pool - for ONTAP PO mode pools
 
     Returns:
       The configuration that will be used as the request body for creating a
@@ -510,6 +514,8 @@ class StoragePoolsAdapter(object):
       storage_pool.scaleType = scale_type
     if mode is not None:
       storage_pool.mode = mode
+    if cluster is not None:
+      storage_pool.cluster = cluster
     return storage_pool
 
   def ParseUpdatedStoragePoolConfig(

@@ -14,59 +14,19 @@
 # limitations under the License.
 """Command to submit a Device Run instrumentation session."""
 
-import datetime
-import os
 import uuid
 
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib import device_run
 from googlecloudsdk.api_lib.storage import storage_api
-from googlecloudsdk.api_lib.storage import storage_util
-from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
-from googlecloudsdk.command_lib.device_run import reports
 from googlecloudsdk.command_lib.device_run import resource_args
+from googlecloudsdk.command_lib.device_run import session_submit_ops
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
-
-
-def _GetRunId():
-  timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M.%S%f')
-  random_suffix = uuid.uuid4().hex[:4].upper()
-  return f'{timestamp}_{random_suffix}'
-
-
-def _UploadFileIfNeeded(path, bucket_name, storage_client, run_id):
-  """Uploads a local file to GCS if it is not already a GCS path."""
-  if path.startswith('gs://'):
-    return path
-  log.status.Print(f'Uploading [{path}].')
-  target_gcs_path = (
-      f'gs://{bucket_name}/automation/inputs/{run_id}/{os.path.basename(path)}'
-  )
-  target_obj_ref = storage_util.ObjectReference.FromUrl(target_gcs_path)
-  storage_client.CopyFileToGCS(path, target_obj_ref)
-  return target_gcs_path
-
-
-def _GetDefaultBucketName(project_id):
-  """Returns the default bucket name for the current project.
-
-  Args:
-    project_id: str, the Google Cloud project ID.
-
-  Returns:
-    GCS bucket name.
-  """
-  safe_project = (
-      project_id.replace(':', '-').replace('.', '-').replace('google', 'elgoog')
-  )
-
-  return safe_project + '-devicerun'
 
 
 def _ValidateAppPath(path):
@@ -89,12 +49,45 @@ def _ValidateTestPath(path):
   return path
 
 
+def _ParseLatLng(val):
+  """Parses a latitude,longitude string into a tuple of floats."""
+  try:
+    lat_str, lng_str = val.split(',')
+  except ValueError as exc:
+    raise arg_parsers.ArgumentTypeError(
+        f'Invalid coordinates [{val}]. '
+        'Format must be latitude,longitude (e.g. 37.4220,-122.0841).'
+    ) from exc
+  try:
+    lat = float(lat_str)
+  except ValueError as exc:
+    raise arg_parsers.ArgumentTypeError(
+        f'Invalid latitude [{lat_str}] in coordinates. Must be a float.'
+    ) from exc
+  try:
+    lng = float(lng_str)
+  except ValueError as exc:
+    raise arg_parsers.ArgumentTypeError(
+        f'Invalid longitude [{lng_str}] in coordinates. Must be a float.'
+    ) from exc
+
+  if not -90.0 <= lat <= 90.0:
+    raise arg_parsers.ArgumentTypeError(
+        f'Latitude [{lat}] must be between -90.0 and 90.0.'
+    )
+  if not -180.0 <= lng <= 180.0:
+    raise arg_parsers.ArgumentTypeError(
+        f'Longitude [{lng}] must be between -180.0 and 180.0.'
+    )
+  return lat, lng
+
+
 class SessionNameNotFoundError(exceptions.Error):
   """Raised when the session name cannot be found."""
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Instrumentation(base.Command):
   """Submit a Device Run session with an instrumentation job."""
 
@@ -256,6 +249,24 @@ targets in the module will be run.
         ),
     )
     parser.add_argument(
+        '--dumpsys',
+        type=str,
+        choices=['always', 'on-failure'],
+        help=(
+            'Specify when to collect dumpsys from the device.'
+            ' Accepted values are `always` or `on-failure`.'
+        ),
+    )
+    parser.add_argument(
+        '--bugreport',
+        type=str,
+        choices=['always', 'on-failure'],
+        help=(
+            'Specify when to collect bugreport from the device.'
+            ' Accepted values are `always` or `on-failure`.'
+        ),
+    )
+    parser.add_argument(
         '--labels',
         metavar='KEY=VALUE',
         type=arg_parsers.ArgDict(operators={'=': None, ' ': None}),
@@ -326,6 +337,25 @@ targets in the module will be run.
         ),
     )
     parser.add_argument(
+        '--flaky-test-parallel-retry',
+        action=arg_parsers.StoreTrueFalseAction,
+        help=(
+            'Whether to retry the test failures in parallel. By default, the'
+            ' test is retried sequentially. If true, when the initial attempt'
+            ' fails, (flaky-test-attempts - 1) attempts will be triggered at'
+            ' the same time to run in parallel.'
+        ),
+    )
+    parser.add_argument(
+        '--flaky-test-retry-level',
+        choices=['shard', 'test'],
+        help=(
+            'Specify the level to retry the test failures. By default, the test'
+            ' is retried at the shard level. Accepted values are `shard` or'
+            ' `test`.'
+        ),
+    )
+    parser.add_argument(
         '--instrumentation-timeout',
         type=arg_parsers.Duration(lower_bound='1m', upper_bound='1h'),
         help=(
@@ -363,6 +393,18 @@ targets in the module will be run.
         help=(
             'Specify the orientation to set the device to before running the'
             ' test. Accepted values are `portrait` or `landscape`.'
+        ),
+    )
+    parser.add_argument(
+        '--coordinates',
+        type=_ParseLatLng,
+        metavar='LATITUDE,LONGITUDE',
+        help=(
+            'Specify the mock location coordinates (latitude and longitude)'
+            ' to set on the device before running the test. The format is'
+            ' latitude,longitude (e.g., 37.4220,-122.0841). Latitude must be'
+            ' in the range [-90.0, 90.0] and longitude must be in the range'
+            ' [-180.0, 180.0].'
         ),
     )
     base.ASYNC_FLAG.AddToParser(parser)
@@ -417,6 +459,22 @@ targets in the module will be run.
           '--smart-sharding-max-shard-count',
           'Can only be specified when --sharding-option is smart.',
       )
+    if (
+        args.flaky_test_parallel_retry is not None
+        and args.flaky_test_attempts is None
+    ):
+      raise calliope_exceptions.InvalidArgumentException(
+          '--flaky-test-parallel-retry',
+          'Can only be specified when --flaky-test-attempts is specified.',
+      )
+    if (
+        args.flaky_test_retry_level is not None
+        and args.flaky_test_attempts is None
+    ):
+      raise calliope_exceptions.InvalidArgumentException(
+          '--flaky-test-retry-level',
+          'Can only be specified when --flaky-test-attempts is specified.',
+      )
 
     location_ref = args.CONCEPTS.location.Parse()
     client = device_run.SessionsClient(api_version='v1alpha')
@@ -426,7 +484,7 @@ targets in the module will be run.
     bucket_name = args.bucket_name
     if not bucket_name:
       project = properties.VALUES.core.project.Get(required=True)
-      bucket_name = _GetDefaultBucketName(project)
+      bucket_name = session_submit_ops.GetDefaultBucketName(project)
       log.status.Print(
           f'Using the default GCS bucket [gs://{bucket_name}] for input and'
           ' result files. Will create the bucket if it does not exist.'
@@ -444,15 +502,15 @@ targets in the module will be run.
           check_ownership=True,
       )
 
-    run_id = _GetRunId()
-    test_gcs = _UploadFileIfNeeded(
+    run_id = session_submit_ops.GetRunId()
+    test_gcs = session_submit_ops.UploadFileIfNeeded(
         args.test, bucket_name, storage_client, run_id
     )
 
     installables = []
     if args.apps:
       for app_apk in args.apps:
-        app_apk_gcs = _UploadFileIfNeeded(
+        app_apk_gcs = session_submit_ops.UploadFileIfNeeded(
             app_apk, bucket_name, storage_client, run_id
         )
         installables.append(
@@ -466,6 +524,12 @@ targets in the module will be run.
         )
 
     device_actions = []
+    # Always enable logcat and make it the first action.
+    logcat_action = messages.DeviceAction(
+        androidLogcat=messages.AndroidLogcatDeviceAction()
+    )
+    device_actions.append(logcat_action)
+
     if installables:
       device_action = messages.DeviceAction(
           androidInstallPackages=messages.AndroidInstallPackagesDeviceAction(
@@ -482,7 +546,7 @@ targets in the module will be run.
                       destinationPath=dest,
                       sourceFile=messages.InputFile(
                           gcsInputFile=messages.GcsPath(
-                              path=_UploadFileIfNeeded(
+                              path=session_submit_ops.UploadFileIfNeeded(
                                   src, bucket_name, storage_client, run_id
                               )
                           )
@@ -526,10 +590,30 @@ targets in the module will be run.
       )
       device_actions.append(video_action)
 
-    logcat_action = messages.DeviceAction(
-        androidLogcat=messages.AndroidLogcatDeviceAction()
-    )
-    device_actions.append(logcat_action)
+    if args.dumpsys:
+      dumpsys_action = messages.DeviceAction(
+          androidDumpsys=messages.AndroidDumpsysDeviceAction(
+              collectOnPass=(args.dumpsys == 'always')
+          )
+      )
+      device_actions.append(dumpsys_action)
+
+    if args.bugreport:
+      bugreport_action = messages.DeviceAction(
+          androidBugreport=messages.AndroidBugreportDeviceAction(
+              collectOnPass=(args.bugreport == 'always')
+          )
+      )
+      device_actions.append(bugreport_action)
+
+    if args.coordinates:
+      lat, lng = args.coordinates
+      mock_location_action = messages.DeviceAction(
+          androidMockLocation=messages.AndroidMockLocationDeviceAction(
+              location=messages.LatLng(latitude=lat, longitude=lng)
+          )
+      )
+      device_actions.append(mock_location_action)
 
     test_installable = messages.AndroidInstallable(
         files=[
@@ -616,10 +700,23 @@ targets in the module will be run.
 
     settings = None
     if args.flaky_test_attempts is not None:
+      test_reduction_mode = None
+      if args.flaky_test_retry_level is not None:
+        if args.flaky_test_retry_level == 'shard':
+          test_reduction_mode = (
+              messages.RetrySettingsFlakyTestRetryStrategy.TestReductionModeValueValuesEnum.NO_REDUCTION
+          )
+        elif args.flaky_test_retry_level == 'test':
+          test_reduction_mode = (
+              messages.RetrySettingsFlakyTestRetryStrategy.TestReductionModeValueValuesEnum.REDUCE_TO_FAILED_TEST_CASES
+          )
+
       settings = messages.JobSettings(
           retrySettings=messages.RetrySettings(
               flakyTestRetryStrategy=messages.RetrySettingsFlakyTestRetryStrategy(
-                  flakyTestAttempts=args.flaky_test_attempts
+                  flakyTestAttempts=args.flaky_test_attempts,
+                  parallelRetry=args.flaky_test_parallel_retry,
+                  testReductionMode=test_reduction_mode,
               )
           )
       )
@@ -690,40 +787,7 @@ targets in the module will be run.
     if args.async_:
       return
 
-    operation_ref = resources.REGISTRY.ParseRelativeName(
-        operation.name,
-        collection='devicerun.projects.locations.operations',
-    )
-    operations_client = device_run.OperationsClient(api_version='v1alpha')
-    poller = device_run.DeviceRunOperationPoller(
-        resource_service=client.service,
-        operations_service=operations_client.service,
-        resource_ref=None,
-    )
-    waiter.WaitFor(
-        poller,
-        operation_ref,
-        f'Waiting for session [{session_id}] to complete.',
-    )
-    session_ref = resources.REGISTRY.ParseRelativeName(
-        session_name,
-        collection='devicerun.projects.locations.sessions',
-    )
-    session = client.Get(session_ref)
-    result_type = (
-        session.sessionReport.result.resultType
-        if session.sessionReport and session.sessionReport.result
-        else None
-    )
-    rows = reports.ExtractSessionReportRows(session.sessionReport)
-
-    # Print a blank line for spacing.
-    log.status.Print()
-    log.status.Print(
-        f'Session [{session_id}] finished with result [{result_type}].'
-    )
-
-    return rows
+    return session_submit_ops.WaitForSession(client, operation, session_name)
 
 
 Instrumentation.detailed_help = {

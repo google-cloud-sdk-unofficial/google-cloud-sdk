@@ -98,6 +98,12 @@
                     Enables Proof Key for Code Exchange (PKCE) for the OAuth flow to prevent
                     authorization code interception attacks.
                   default: null
+                - arg_name: three-legged-oauth-default-continue-uri
+                  api_field: authProvider.authProviderTypeParams.threeLeggedOauth.defaultContinueUri
+                  required: false
+                  repeated: false
+                  help_text: |-
+                    The default continue URI for 3LO flow to redirect end users after consent.
             - group:
                 api_field: authProvider.authProviderTypeParams.twoLeggedOauth
                 required: false

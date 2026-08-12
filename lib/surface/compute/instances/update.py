@@ -264,8 +264,16 @@ class Update(base.UpdateCommand):
                                    'Updating display device of instance [{0}]',
                                    instance_ref.Name()) or result
 
-    if instance_utils.IsAnySpecified(args, 'node', 'node_affinity_file',
-                                     'node_group', 'clear_node_affinities'):
+    if (
+        instance_utils.IsAnySpecified(
+            args,
+            'node',
+            'node_affinity_file',
+            'node_group',
+            'clear_node_affinities',
+        )
+        or args.IsKnownAndSpecified('expose_host_topology')
+    ):
       update_scheduling_ref = self._GetUpdateInstanceSchedulingRef(
           instance_ref, args, holder, most_disruptive_allowed_action,
           minimal_action)
@@ -281,18 +289,37 @@ class Update(base.UpdateCommand):
                                       minimal_action):
     client = holder.client.apitools_client
     messages = holder.client.messages
+
+    update_affinities = False
+    affinities = None
     if instance_utils.IsAnySpecified(args, 'node', 'node_affinity_file',
                                      'node_group'):
       affinities = sole_tenancy_util.GetSchedulingNodeAffinityListFromArgs(
           args, messages)
+      update_affinities = True
     elif args.IsSpecified('clear_node_affinities'):
       affinities = []
-    else:
+      update_affinities = True
+
+    update_expose_host_topology = False
+    expose_host_topology = None
+    if args.IsKnownAndSpecified('expose_host_topology'):
+      expose_host_topology = args.expose_host_topology
+      update_expose_host_topology = True
+
+    if not update_affinities and not update_expose_host_topology:
       # No relevant args were specified. We shouldn't have called this function.
       return None
+
     instance = client.instances.Get(
         messages.ComputeInstancesGetRequest(**instance_ref.AsDict()))
-    instance.scheduling.nodeAffinities = affinities
+
+    if update_affinities:
+      instance.scheduling.nodeAffinities = affinities
+    if update_expose_host_topology:
+      if not instance.scheduling:
+        instance.scheduling = messages.Scheduling()
+      instance.scheduling.exposeHostTopology = expose_host_topology
 
     request = messages.ComputeInstancesUpdateRequest(
         instance=instance_ref.Name(),
@@ -588,5 +615,6 @@ class UpdateAlpha(UpdateBeta):
     flags.AddWorkloadIdentityConfigArgs(parser)
     flags.AddMostDisruptiveAllowedActionArgs(parser)
     flags.AddMinimalActionArgs(parser)
+    flags.AddExposeHostTopologyArg(parser)
 
 Update.detailed_help = DETAILED_HELP

@@ -21,6 +21,7 @@ import os
 import re
 import time
 
+from apitools.base.py import encoding
 from apitools.base.py import exceptions as apitools_exceptions
 from apitools.base.py import http_wrapper
 from googlecloudsdk.api_lib.compute import constants
@@ -768,6 +769,7 @@ class CreateClusterOptions(object):
       enable_alts=None,
       enable_gke_oidc=None,
       enable_identity_service=None,
+      jwt_authenticator_config=None,
       enable_shielded_nodes=None,
       linux_sysctls=None,
       disable_default_snat=None,
@@ -1051,6 +1053,7 @@ class CreateClusterOptions(object):
     self.enable_alts = enable_alts
     self.enable_gke_oidc = enable_gke_oidc
     self.enable_identity_service = enable_identity_service
+    self.jwt_authenticator_config = jwt_authenticator_config
     self.enable_shielded_nodes = enable_shielded_nodes
     self.linux_sysctls = linux_sysctls
     self.enable_kernel_module_signature_enforcement = (
@@ -2638,6 +2641,11 @@ class APIAdapter(object):
     node_config = self.ParseNodeConfig(options)
     pools = self.ParseNodePools(options, node_config)
     cluster = self.messages.Cluster(name=cluster_ref.clusterId, nodePools=pools)
+
+    if options.jwt_authenticator_config is not None:
+      cluster.jwtAuthenticatorConfig = util.LoadJwtAuthenticatorConfigFromYaml(
+          options.jwt_authenticator_config, self.messages
+      )
 
     if options.linked_runners_mode is not None:
       cluster.linkedRunnersConfig = _GetLinkedRunnersConfig(

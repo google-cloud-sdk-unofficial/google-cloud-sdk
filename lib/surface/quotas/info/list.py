@@ -26,17 +26,17 @@ class ListAlpha(base.ListCommand):
 
   ## EXAMPLES
 
-  To list all quota info for service `example.$$UNIVERSE_DOMAIN$$` and
+  To list all quota info for service `example.googleapis.com` and
   `projects/12321`, run:
 
-    $ {command} --service=example.$$UNIVERSE_DOMAIN$$ --project=12321
-    $ {command} --service=example.$$UNIVERSE_DOMAIN$$ --project=my-project-id
+    $ {command} --service=example.googleapis.com --project=12321
+    $ {command} --service=example.googleapis.com --project=my-project-id
 
    To list first 100 quota info ordered alphabetically for service
-   `example.$$UNIVERSE_DOMAIN$$` and `folders/123`,
+   `example.googleapis.com` and `folders/123`,
    run:
 
-    $ {command} --service=example.$$UNIVERSE_DOMAIN$$ --folder=123
+    $ {command} --service=example.googleapis.com --folder=123
     --page-size=100
   """
 
@@ -65,24 +65,24 @@ class ListAlpha(base.ListCommand):
     return quota_info.ListQuotaInfo(args, release_track=base.ReleaseTrack.GA)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class ListBeta(base.ListCommand):
   """List QuotaInfos of all quotas for a given project, folder or organization.
 
   ## EXAMPLES
 
-  To list all quota info for service `example.$$UNIVERSE_DOMAIN$$` and
+  To list all quota info for service `example.googleapis.com` and
   `projects/12321`, run:
 
-    $ {command} --service=example.$$UNIVERSE_DOMAIN$$ --project=12321
-    $ {command} --service=example.$$UNIVERSE_DOMAIN$$m --project=my-project-id
+    $ {command} --service=example.googleapis.com --project=12321
+    $ {command} --service=example.googleapis.comm --project=my-project-id
 
    To list first 100 quota info ordered alphabetically for service
-   `example.$$UNIVERSE_DOMAIN$$` and `folders/123`,
+   `example.googleapis.com` and `folders/123`,
    run:
 
-    $ {command} --service=example.$$UNIVERSE_DOMAIN$$ --folder=123
+    $ {command} --service=example.googleapis.com --folder=123
     --page-size=100
   """
 
@@ -107,4 +107,4 @@ class ListBeta(base.ListCommand):
     Returns:
       List of QuotaInfo for specified container and service.
     """
-    return quota_info.ListQuotaInfo(args, release_track=base.ReleaseTrack.BETA)
+    return quota_info.ListQuotaInfo(args, release_track=self.ReleaseTrack())

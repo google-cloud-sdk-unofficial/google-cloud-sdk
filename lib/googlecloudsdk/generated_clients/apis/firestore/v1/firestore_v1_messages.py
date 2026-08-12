@@ -2147,6 +2147,7 @@ class GoogleFirestoreAdminV1Backup(_messages.Message):
     stats: Output only. Statistics about the backup. This data only becomes
       available after the backup is fully materialized to secondary storage.
       This field will be empty till then.
+    storagePlacement: Output only. The storage placement of the backup.
   """
 
   class StateValueValuesEnum(_messages.Enum):
@@ -2171,6 +2172,7 @@ class GoogleFirestoreAdminV1Backup(_messages.Message):
   snapshotTime = _messages.StringField(5)
   state = _messages.EnumField('StateValueValuesEnum', 6)
   stats = _messages.MessageField('GoogleFirestoreAdminV1Stats', 7)
+  storagePlacement = _messages.StringField(8)
 
 
 class GoogleFirestoreAdminV1BackupSchedule(_messages.Message):
@@ -2606,6 +2608,10 @@ class GoogleFirestoreAdminV1Database(_messages.Message):
       for this database.
     sourceInfo: Output only. Information about the provenance of this
       database.
+    storagePlacement: The storage placement for the database. This field is
+      required if `location_id` is a Standard Managed Multi-Region (SMMR),
+      e.g. "us". In this case, `storage_placement` must be set to the
+      underlying Google Managed Multi-Region (GMMR), e.g. "nam5".
     tags: Optional. Input only. Immutable. Tag keys/values directly bound to
       this resource. For example: "123/environment": "production",
       "123/costCenter": "marketing"
@@ -2822,11 +2828,12 @@ class GoogleFirestoreAdminV1Database(_messages.Message):
   previousId = _messages.StringField(17)
   realtimeUpdatesMode = _messages.EnumField('RealtimeUpdatesModeValueValuesEnum', 18)
   sourceInfo = _messages.MessageField('GoogleFirestoreAdminV1SourceInfo', 19)
-  tags = _messages.MessageField('TagsValue', 20)
-  type = _messages.EnumField('TypeValueValuesEnum', 21)
-  uid = _messages.StringField(22)
-  updateTime = _messages.StringField(23)
-  versionRetentionPeriod = _messages.StringField(24)
+  storagePlacement = _messages.StringField(20)
+  tags = _messages.MessageField('TagsValue', 21)
+  type = _messages.EnumField('TypeValueValuesEnum', 22)
+  uid = _messages.StringField(23)
+  updateTime = _messages.StringField(24)
+  versionRetentionPeriod = _messages.StringField(25)
 
 
 class GoogleFirestoreAdminV1DatabaseScope(_messages.Message):
@@ -3565,7 +3572,14 @@ class GoogleFirestoreAdminV1ListUserCredsResponse(_messages.Message):
 
 
 class GoogleFirestoreAdminV1LocationMetadata(_messages.Message):
-  r"""The metadata message for google.cloud.location.Location.metadata."""
+  r"""The metadata message for google.cloud.location.Location.metadata.
+
+  Fields:
+    availableStoragePlacements: The available storage placements for the
+      location.
+  """
+
+  availableStoragePlacements = _messages.StringField(1, repeated=True)
 
 
 class GoogleFirestoreAdminV1PitrSnapshot(_messages.Message):

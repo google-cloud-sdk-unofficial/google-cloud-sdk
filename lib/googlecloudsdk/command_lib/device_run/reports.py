@@ -82,4 +82,8 @@ def ExtractSessionReportRows(session_report):
     list[dict]: A list of row dictionaries containing 'job_name',
       'execution_name', and 'result' keys.
   """
-  return list(YieldSessionReportRows(session_report))
+  return sorted(
+      YieldSessionReportRows(session_report),
+      key=lambda x: (x.get('job_name', ''), x.get('execution_name', '')),
+  )
+

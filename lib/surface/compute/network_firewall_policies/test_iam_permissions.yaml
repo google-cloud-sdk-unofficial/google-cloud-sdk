@@ -1,0 +1,35 @@
+release_tracks: [ALPHA, BETA, GA, PREVIEW]
+help_text:
+  brief: Test IAM permissions for a Compute Engine network firewall policy.
+  description: |
+    Returns permissions that a caller has on the specified network firewall policy.
+
+  examples: |
+    To test if the caller has 'compute.firewallPolicies.get' permission
+    on a network firewall policy `my-policy`, run:
+
+      $ {command} my-policy --permissions=compute.firewallPolicies.get
+
+request:
+  collection: compute.networkFirewallPolicies
+  api_version: v1
+  method: testIamPermissions
+  use_relative_name: false
+  BETA:
+    api_version: beta
+  ALPHA:
+    api_version: alpha
+
+command_type: GENERIC
+
+arguments:
+  resource:
+    help_text: The network firewall policy for which to test permissions.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:network_firewall_policy
+  params:
+  - arg_name: permissions
+    api_field: testPermissionsRequest.permissions
+    required: true
+    repeated: true
+    help_text: |-
+      The permissions to test.

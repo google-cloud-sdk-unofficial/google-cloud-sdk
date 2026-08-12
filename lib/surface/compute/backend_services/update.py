@@ -67,6 +67,42 @@ def AddIapFlag(parser):
       """)
 
 
+def _ApplyHaPolicyArgs(messages, args, backend_service):
+  """Applies HA policy arguments to the backend service."""
+  backend_group_specified = args.IsKnownAndSpecified(
+      'ha_policy_leader_backend_group'
+  )
+  instance_specified = args.IsKnownAndSpecified('ha_policy_leader_instance')
+
+  leader_specified = backend_group_specified or instance_specified
+
+  if not leader_specified:
+    return
+
+  if not backend_service.haPolicy:
+    backend_service.haPolicy = messages.BackendServiceHAPolicy()
+
+  if not backend_service.haPolicy.leader:
+    backend_service.haPolicy.leader = messages.BackendServiceHAPolicyLeader()
+
+  if backend_group_specified:
+    backend_service.haPolicy.leader.backendGroup = (
+        args.ha_policy_leader_backend_group
+    )
+
+  if not instance_specified:
+    return
+
+  if not backend_service.haPolicy.leader.networkEndpoint:
+    backend_service.haPolicy.leader.networkEndpoint = (
+        messages.BackendServiceHAPolicyLeaderNetworkEndpoint()
+    )
+
+  backend_service.haPolicy.leader.networkEndpoint.instance = (
+      args.ha_policy_leader_instance
+  )
+
+
 class UpdateHelper(object):
   """Helper class that updates a backend service."""
 
@@ -370,7 +406,7 @@ class UpdateHelper(object):
     ):
       replacement.allowMultinetwork = args.allow_multinetwork
 
-    backend_services_utils.ApplyHaPolicyArgs(client.messages, args, replacement)
+    _ApplyHaPolicyArgs(client.messages, args, replacement)
     return replacement, cleared_fields
 
   def ValidateArgs(self, args):

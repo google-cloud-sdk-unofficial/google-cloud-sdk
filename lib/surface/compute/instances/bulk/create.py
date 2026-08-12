@@ -147,6 +147,7 @@ class Create(base.Command):
   """Create Compute Engine virtual machine instances."""
 
   _support_display_device = False
+  _support_igmp_query = True
   _support_secure_tags = False
   _support_numa_node_count = False
   _support_snp_svsm = False
@@ -164,6 +165,7 @@ class Create(base.Command):
   _support_workload_identity_config = True
   _support_instance_selection_min_cpu_platform = False
   _support_vsock_mode = False
+  _support_expose_host_topology = False
 
   _log_async = False
 
@@ -173,6 +175,7 @@ class Create(base.Command):
         parser,
         base.ReleaseTrack.GA,
         support_display_device=cls._support_display_device,
+        support_igmp_query=cls._support_igmp_query,
         support_numa_node_count=cls._support_numa_node_count,
         support_snp_svsm=cls._support_snp_svsm,
         support_max_count_per_zone=cls._support_max_count_per_zone,
@@ -188,6 +191,7 @@ class Create(base.Command):
         support_workload_identity_config=cls._support_workload_identity_config,
         support_instance_selection_min_cpu_platform=cls._support_instance_selection_min_cpu_platform,
         support_vsock_mode=cls._support_vsock_mode,
+        support_expose_host_topology=cls._support_expose_host_topology,
     )
     cls.AddSourceInstanceTemplate(parser)
 
@@ -236,6 +240,7 @@ class Create(base.Command):
         self._support_workload_identity_config,
         self._support_instance_selection_min_cpu_platform,
         support_vsock_mode=self._support_vsock_mode,
+        support_expose_host_topology=self._support_expose_host_topology,
     )
     bulk_instance_resource = bulk_util.CreateBulkInsertInstanceResource(
         args,
@@ -379,7 +384,6 @@ class CreateBeta(Create):
   _support_watchdog_timer = False
   _support_graceful_shutdown = True
   _support_flex_start = False
-  _support_igmp_query = False
   _support_source_snapshot_region = False
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = True
@@ -432,7 +436,6 @@ class CreateAlpha(Create):
   _support_specific_then_x_affinity = True
   _support_any_reservation_then_fail_affinity = True
   _support_watchdog_timer = True
-  _support_igmp_query = True
   _support_graceful_shutdown = True
   _support_flex_start = False
   _support_source_snapshot_region = True
@@ -442,6 +445,7 @@ class CreateAlpha(Create):
   _support_workload_identity_config = True
   _support_instance_selection_min_cpu_platform = True
   _support_vsock_mode = True
+  _support_expose_host_topology = True
 
   @classmethod
   def Args(cls, parser):
@@ -466,6 +470,7 @@ class CreateAlpha(Create):
         support_workload_identity_config=cls._support_workload_identity_config,
         support_instance_selection_min_cpu_platform=cls._support_instance_selection_min_cpu_platform,
         support_vsock_mode=cls._support_vsock_mode,
+        support_expose_host_topology=cls._support_expose_host_topology,
     )
 
     cls.AddSourceInstanceTemplate(parser)

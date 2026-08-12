@@ -110,17 +110,20 @@ def _get_existing_transfer_roles_for_account(
 
 @base.UniverseCompatible
 class Authorize(base.Command):
-  """Authorize an account for all Transfer Service features."""
+  """Authorize an account for all Storage Transfer Service features."""
 
   # pylint:disable=line-too-long
   detailed_help = {
       'DESCRIPTION':
           """\
-      Authorize a Google account for all Transfer Service features.
+      Authorize a Google account for all Storage Transfer Service features.
 
       This command provides admin and owner rights for simplicity. If that's
-      too much authority for your use case, see custom setups here:
-      https://cloud.google.com/storage-transfer/docs/on-prem-set-up
+      too much authority for your use case, see
+      [Agent-based transfer permissions](https://docs.cloud.google.com/storage-transfer/docs/file-system-permissions)
+      or
+      [Agentless transfer permissions](https://docs.cloud.google.com/storage-transfer/docs/iam-cloud)
+      for a fine-grained list of roles.
       """,
       'EXAMPLES':
           """\

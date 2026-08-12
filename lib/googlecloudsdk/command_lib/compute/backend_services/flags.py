@@ -15,10 +15,7 @@
 """Flags and helpers for the compute backend-services commands."""
 
 
-from typing import Any
-
 from googlecloudsdk.calliope import arg_parsers
-from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.command_lib.compute import completers as compute_completers
 from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
@@ -309,7 +306,7 @@ def AddIpAddressSelectionPolicy(parser):
   )
 
 
-def AddExternalMigration(parser: parser_arguments.ArgumentInterceptor):
+def AddExternalMigration(parser):
   """Add flags related to Gfe2 to Gfe3 canary migration.
 
   Args:
@@ -1405,9 +1402,9 @@ def AddNetwork(parser):
 
 
 def AddBackendServiceTlsSettings(
-    parser: Any,
-    add_clear_argument: bool = False,
-    support_identity: bool = False,
+    parser,
+    add_clear_argument=False,
+    support_identity=False,
 ) -> None:
   """Adds a --tls-settings flag to the given parser."""
   group = parser.add_mutually_exclusive_group()

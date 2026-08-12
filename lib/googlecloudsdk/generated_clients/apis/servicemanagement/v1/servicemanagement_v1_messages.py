@@ -2966,21 +2966,71 @@ class MetricRule(_messages.Message):
   metric's configured quota behaviors to apply to the method call.
 
   Messages:
+    AgenticMetricCostsValue: Optional. Metrics to update when the selected
+      methods are called, and the associated cost applied to each metric, iff
+      the source of the call is an agent. The key of the map is the metric
+      name, and the values are the amount increased for the metric against
+      which the quota limits are defined. The value must not be negative.
     MetricCostsValue: Metrics to update when the selected methods are called,
       and the associated cost applied to each metric. The key of the map is
       the metric name, and the values are the amount increased for the metric
       against which the quota limits are defined. The value must not be
       negative.
+    NonagenticMetricCostsValue: Optional. Metrics to update when the selected
+      methods are called, and the associated cost applied to each metric, iff
+      the source of the call is not an agent. The key of the map is the metric
+      name, and the values are the amount increased for the metric against
+      which the quota limits are defined. The value must not be negative.
 
   Fields:
+    agenticMetricCosts: Optional. Metrics to update when the selected methods
+      are called, and the associated cost applied to each metric, iff the
+      source of the call is an agent. The key of the map is the metric name,
+      and the values are the amount increased for the metric against which the
+      quota limits are defined. The value must not be negative.
     metricCosts: Metrics to update when the selected methods are called, and
       the associated cost applied to each metric. The key of the map is the
       metric name, and the values are the amount increased for the metric
       against which the quota limits are defined. The value must not be
       negative.
+    nonagenticMetricCosts: Optional. Metrics to update when the selected
+      methods are called, and the associated cost applied to each metric, iff
+      the source of the call is not an agent. The key of the map is the metric
+      name, and the values are the amount increased for the metric against
+      which the quota limits are defined. The value must not be negative.
     selector: Selects the methods to which this rule applies. Refer to
       selector for syntax details.
   """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AgenticMetricCostsValue(_messages.Message):
+    r"""Optional. Metrics to update when the selected methods are called, and
+    the associated cost applied to each metric, iff the source of the call is
+    an agent. The key of the map is the metric name, and the values are the
+    amount increased for the metric against which the quota limits are
+    defined. The value must not be negative.
+
+    Messages:
+      AdditionalProperty: An additional property for a AgenticMetricCostsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        AgenticMetricCostsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AgenticMetricCostsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.IntegerField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class MetricCostsValue(_messages.Message):
@@ -3010,8 +3060,40 @@ class MetricRule(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  metricCosts = _messages.MessageField('MetricCostsValue', 1)
-  selector = _messages.StringField(2)
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class NonagenticMetricCostsValue(_messages.Message):
+    r"""Optional. Metrics to update when the selected methods are called, and
+    the associated cost applied to each metric, iff the source of the call is
+    not an agent. The key of the map is the metric name, and the values are
+    the amount increased for the metric against which the quota limits are
+    defined. The value must not be negative.
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        NonagenticMetricCostsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        NonagenticMetricCostsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a NonagenticMetricCostsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.IntegerField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  agenticMetricCosts = _messages.MessageField('AgenticMetricCostsValue', 1)
+  metricCosts = _messages.MessageField('MetricCostsValue', 2)
+  nonagenticMetricCosts = _messages.MessageField('NonagenticMetricCostsValue', 3)
+  selector = _messages.StringField(4)
 
 
 class Mixin(_messages.Message):
@@ -3859,6 +3941,11 @@ class QuotaLimit(_messages.Message):
   duration for a limit type. There can be at most one limit for a duration and
   limit type combination defined within a `QuotaGroup`.
 
+  Enums:
+    TrafficSourceValueValuesEnum: Optional. This is only informational, the
+      logic to allocate the quota to the correct metric (such as in
+      `metric_rules`) should identify which quota metrics to allocate to.
+
   Messages:
     ValuesValue: Tiered limit values. You must specify this as a key:value
       pair, with an integer value that is the maximum number of requests
@@ -3903,6 +3990,9 @@ class QuotaLimit(_messages.Message):
       unique within the service. The name can only include alphanumeric
       characters as well as '-'. The maximum length of the limit name is 64
       characters.
+    trafficSource: Optional. This is only informational, the logic to allocate
+      the quota to the correct metric (such as in `metric_rules`) should
+      identify which quota metrics to allocate to.
     unit: Specify the unit of the quota limit. It uses the same syntax as
       MetricDescriptor.unit. The supported unit kinds are determined by the
       quota backend system. Here are some examples: * "1/min/{project}" for
@@ -3913,6 +4003,23 @@ class QuotaLimit(_messages.Message):
       with an integer value that is the maximum number of requests allowed for
       the specified unit. Currently only STANDARD is supported.
   """
+
+  class TrafficSourceValueValuesEnum(_messages.Enum):
+    r"""Optional. This is only informational, the logic to allocate the quota
+    to the correct metric (such as in `metric_rules`) should identify which
+    quota metrics to allocate to.
+
+    Values:
+      TRAFFIC_SOURCE_UNSPECIFIED: This quota limit applies to all traffic.
+        This is the default value.
+      TRAFFIC_SOURCE_NONAGENTIC: This quota limit applies to traffic not
+        recognized as agentic.
+      TRAFFIC_SOURCE_AGENTIC: This quota limit applies to only agentic
+        traffic.
+    """
+    TRAFFIC_SOURCE_UNSPECIFIED = 0
+    TRAFFIC_SOURCE_NONAGENTIC = 1
+    TRAFFIC_SOURCE_AGENTIC = 2
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class ValuesValue(_messages.Message):
@@ -3948,8 +4055,9 @@ class QuotaLimit(_messages.Message):
   maxLimit = _messages.IntegerField(6)
   metric = _messages.StringField(7)
   name = _messages.StringField(8)
-  unit = _messages.StringField(9)
-  values = _messages.MessageField('ValuesValue', 10)
+  trafficSource = _messages.EnumField('TrafficSourceValueValuesEnum', 9)
+  unit = _messages.StringField(10)
+  values = _messages.MessageField('ValuesValue', 11)
 
 
 class QuotaLimitOverride(_messages.Message):

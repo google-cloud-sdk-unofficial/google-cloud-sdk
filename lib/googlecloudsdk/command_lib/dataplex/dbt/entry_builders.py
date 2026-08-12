@@ -98,31 +98,38 @@ def _json_or_empty(value: Any) -> str:
   return json.dumps(value, default=str)
 
 
+def _node_group(node: dict[str, Any]) -> str | None:
+  """Returns the group a node belongs to, declared top-level or under config."""
+  return node.get('group') or (node.get('config') or {}).get('group')
+
+
 def _entry(
     ctx: naming.Context,
     unique_id: str,
     entry_type: str,
     aspects_map: dict[str, Any],
     fqn: str,
+    parent_entry_name: str | None = None,
 ) -> dict[str, Any]:
   """Wraps an aspect map in the entry record shared by every builder."""
-  return {
-      'entry': {
-          'name': ctx.entry_name(naming.entry_id(unique_id)),
-          'entryType': ctx.entry_type(entry_type),
-          'aspects': aspects_map,
-          'fullyQualifiedName': fqn,
-          # Populate entrySource fields.
-          # While 'system' is defined in the EntryType, we must populate it here
-          # because the backend search service (searchEntries) does not perform
-          # fallback to EntryType and requires it to be populated in EntrySource
-          # to be indexed and filterable. platform is left unset for now.
-          'entrySource': {
-              'system': 'DBT',
-              'resource': unique_id,
-          },
-      }
+  entry = {
+      'name': ctx.entry_name(naming.entry_id(unique_id)),
+      'entryType': ctx.entry_type(entry_type),
+      'aspects': aspects_map,
+      'fullyQualifiedName': fqn,
+      # Populate entrySource fields.
+      # While 'system' is defined in the EntryType, we must populate it here
+      # because the backend search service (searchEntries) does not perform
+      # fallback to EntryType and requires it to be populated in EntrySource
+      # to be indexed and filterable. platform is left unset for now.
+      'entrySource': {
+          'system': 'DBT',
+          'resource': fqn,
+      },
   }
+  if parent_entry_name:
+    entry['parentEntry'] = parent_entry_name
+  return {'entry': entry}
 
 
 def _project_unique_id(manifest: dict[str, Any]) -> str:
@@ -161,6 +168,7 @@ def _build_model_entry(
     unique_id: str,
     node: dict[str, Any],
     catalog_nodes: dict[str, Any],
+    parent_entry_name: str | None = None,
 ) -> dict[str, Any]:
   """Builds a dbt-model entry with node, model, schema and contract aspects."""
   config = node.get('config') or {}
@@ -172,8 +180,12 @@ def _build_model_entry(
       'isContractEnforced': enforced,
       'materializationType': config.get('materialized') or '',
   }
-  aspects.add_stat(model_data, 'rowCount', stats, 'row_count')
-  aspects.add_stat(model_data, 'byteCount', stats, 'bytes')
+  # BigQuery's dbt catalog reports table stats under the `num_rows` /
+  # `num_bytes` stat keys (see the dbt-bigquery catalog macro); other adapters
+  # use different names (e.g. Snowflake's `row_count` / `bytes`). This connector
+  # ingests BigQuery dbt projects, so read the BigQuery keys.
+  aspects.add_stat(model_data, 'rowCount', stats, 'num_rows')
+  aspects.add_stat(model_data, 'byteCount', stats, 'num_bytes')
 
   aspects_map = aspects.base_aspects(
       ctx, unique_id, node, 'model', 'dbt-model', model_data
@@ -189,7 +201,14 @@ def _build_model_entry(
   project_name = node.get('package_name') or _DEFAULT_PROJECT_NAME
   resource_name = node.get('name') or ''
   fqn = ctx.dbt_resource_fqn('dbt-model', project_name, resource_name)
-  return _entry(ctx, unique_id, 'dbt-model', aspects_map, fqn)
+  return _entry(
+      ctx,
+      unique_id,
+      'dbt-model',
+      aspects_map,
+      fqn,
+      parent_entry_name=parent_entry_name,
+  )
 
 
 def _freshness_period(spec: Any) -> str:
@@ -256,8 +275,9 @@ def _build_seed_entry(
   cat_node = catalog_nodes.get(unique_id) or {}
   stats = cat_node.get('stats') or {}
   seed_data = {}
-  aspects.add_stat(seed_data, 'rowCount', stats, 'row_count')
-  aspects.add_stat(seed_data, 'byteCount', stats, 'bytes')
+  # See _build_model_entry: BigQuery dbt catalogs key these num_rows/num_bytes.
+  aspects.add_stat(seed_data, 'rowCount', stats, 'num_rows')
+  aspects.add_stat(seed_data, 'byteCount', stats, 'num_bytes')
 
   aspects_map = aspects.base_aspects(
       ctx, unique_id, node, 'seed', 'dbt-seed', seed_data
@@ -427,7 +447,10 @@ def _where_clause(where: Any) -> str:
 
 
 def _build_metric_entry(
-    ctx: naming.Context, unique_id: str, metric: dict[str, Any]
+    ctx: naming.Context,
+    unique_id: str,
+    metric: dict[str, Any],
+    parent_entry_name: str | None = None,
 ) -> dict[str, Any]:
   """Builds a dbt-metric entry with node and metric aspects."""
   type_params = metric.get('type_params') or {}
@@ -458,7 +481,14 @@ def _build_metric_entry(
   project_name = metric.get('package_name') or _DEFAULT_PROJECT_NAME
   resource_name = metric.get('name') or ''
   fqn = ctx.dbt_resource_fqn('dbt-metric', project_name, resource_name)
-  return _entry(ctx, unique_id, 'dbt-metric', aspects_map, fqn)
+  return _entry(
+      ctx,
+      unique_id,
+      'dbt-metric',
+      aspects_map,
+      fqn,
+      parent_entry_name=parent_entry_name,
+  )
 
 
 def _build_macro_entry(
@@ -491,7 +521,10 @@ def _build_macro_entry(
 
 
 def _build_semantic_model_entry(
-    ctx: naming.Context, unique_id: str, sm: dict[str, Any]
+    ctx: naming.Context,
+    unique_id: str,
+    sm: dict[str, Any],
+    parent_entry_name: str | None = None,
 ) -> dict[str, Any]:
   """Builds a dbt-semantic-model entry with node and semantic-model aspects."""
   relation = sm.get('node_relation') or {}
@@ -549,7 +582,14 @@ def _build_semantic_model_entry(
   project_name = sm.get('package_name') or _DEFAULT_PROJECT_NAME
   resource_name = sm.get('name') or ''
   fqn = ctx.dbt_resource_fqn('dbt-semantic-model', project_name, resource_name)
-  return _entry(ctx, unique_id, 'dbt-semantic-model', aspects_map, fqn)
+  return _entry(
+      ctx,
+      unique_id,
+      'dbt-semantic-model',
+      aspects_map,
+      fqn,
+      parent_entry_name=parent_entry_name,
+  )
 
 
 def _build_saved_query_entry(
@@ -564,7 +604,12 @@ def _build_saved_query_entry(
     exports.append({
         'name': ex.get('name', ''),
         'materializationType': export_as,
-        'namespace': ex_config.get('schema') or '',
+        # dbt's *rendered* export config carries the target schema under
+        # `schema_name`; `schema` only survives in `unrendered_config`. Prefer
+        # the rendered key, falling back to the raw one.
+        'namespace': (
+            ex_config.get('schema_name') or ex_config.get('schema') or ''
+        ),
         'alias': ex_config.get('alias') or '',
     })
 
@@ -579,7 +624,7 @@ def _build_saved_query_entry(
               'groupBy': qp.get('group_by') or [],
               'whereClause': _where_clause(qp.get('where')),
               'exports': exports,
-              'metadata': _json_or_empty(sq.get('metadata')),
+              'metadata': _json_or_empty((sq.get('config') or {}).get('meta')),
           },
       ),
   }
@@ -712,6 +757,21 @@ def _index_by_unique_id(
   return index
 
 
+def _resolve_parent_group_entry(
+    ctx: naming.Context,
+    node: dict[str, Any],
+    group_uid_by_name: dict[str, str],
+) -> str | None:
+  """Resolves the parent group entry name for a node, if it belongs to one."""
+  group_name = _node_group(node)
+  if not group_name:
+    return None
+  group_uid = group_uid_by_name.get(group_name)
+  if not group_uid:
+    return None
+  return ctx.entry_name(naming.entry_id(group_uid))
+
+
 def build_entries(
     ctx: naming.Context,
     manifest: dict[str, Any],
@@ -750,6 +810,12 @@ def build_entries(
   run_results_map = _index_by_unique_id((run_results or {}).get('results'))
   sources_map = _index_by_unique_id((sources or {}).get('results'))
 
+  group_uid_by_name = {
+      group.get('name'): uid
+      for uid, group in (manifest.get('groups') or {}).items()
+      if group.get('name')
+  }
+
   entries = []
   # entry_id -> unique_id, tracked as entries are added. This hands entry_links
   # a ready id set and lets us warn when the lossy unique_id -> entry_id mapping
@@ -782,7 +848,17 @@ def build_entries(
   for unique_id, node in nodes.items():
     rt = node.get('resource_type')
     if rt == 'model':
-      add(unique_id, _build_model_entry(ctx, unique_id, node, catalog_nodes))
+      parent_name = _resolve_parent_group_entry(ctx, node, group_uid_by_name)
+      add(
+          unique_id,
+          _build_model_entry(
+              ctx,
+              unique_id,
+              node,
+              catalog_nodes,
+              parent_entry_name=parent_name,
+          ),
+      )
     elif rt == 'seed':
       add(unique_id, _build_seed_entry(ctx, unique_id, node, catalog_nodes))
     elif rt == 'snapshot':
@@ -800,7 +876,13 @@ def build_entries(
     add(unique_id, _build_exposure_entry(ctx, unique_id, exposure))
 
   for unique_id, metric in (manifest.get('metrics') or {}).items():
-    add(unique_id, _build_metric_entry(ctx, unique_id, metric))
+    parent_name = _resolve_parent_group_entry(ctx, metric, group_uid_by_name)
+    add(
+        unique_id,
+        _build_metric_entry(
+            ctx, unique_id, metric, parent_entry_name=parent_name
+        ),
+    )
 
   for unique_id, macro in (manifest.get('macros') or {}).items():
     # Only emit macros defined in the user's project (not imported packages).
@@ -809,7 +891,13 @@ def build_entries(
     add(unique_id, _build_macro_entry(ctx, unique_id, macro))
 
   for unique_id, sm in (manifest.get('semantic_models') or {}).items():
-    add(unique_id, _build_semantic_model_entry(ctx, unique_id, sm))
+    parent_name = _resolve_parent_group_entry(ctx, sm, group_uid_by_name)
+    add(
+        unique_id,
+        _build_semantic_model_entry(
+            ctx, unique_id, sm, parent_entry_name=parent_name
+        ),
+    )
 
   for unique_id, sq in (manifest.get('saved_queries') or {}).items():
     add(unique_id, _build_saved_query_entry(ctx, unique_id, sq))

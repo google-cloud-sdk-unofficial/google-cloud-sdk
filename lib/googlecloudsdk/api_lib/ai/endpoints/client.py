@@ -147,6 +147,7 @@ class EndpointsClient(object):
       network=None,
       endpoint_id=None,
       encryption_kms_key_name=None,
+      gdc_zone=None,
       request_response_logging_table=None,
       request_response_logging_rate=None,
   ):
@@ -161,6 +162,7 @@ class EndpointsClient(object):
       endpoint_id: str or None, the id of the new endpoint.
       encryption_kms_key_name: str or None, the Cloud KMS resource identifier of
         the customer managed encryption key used to protect a resource.
+      gdc_zone: str or None, the name of the GDC zone.
       request_response_logging_table: str or None, the BigQuery table uri for
         request-response logging.
       request_response_logging_rate: float or None, the sampling rate for
@@ -175,12 +177,19 @@ class EndpointsClient(object):
           kmsKeyName=encryption_kms_key_name
       )
 
+    gdc_config = (
+        self.messages.GoogleCloudAiplatformV1GdcConfig(zone=gdc_zone)
+        if gdc_zone
+        else None
+    )
+
     endpoint = api_util.GetMessage('Endpoint', constants.GA_VERSION)(
         displayName=display_name,
         description=description,
         labels=labels,
         network=network,
         encryptionSpec=encryption_spec,
+        gdcConfig=gdc_config,
     )
     if request_response_logging_table is not None:
       endpoint.predictRequestResponseLoggingConfig = api_util.GetMessage(
@@ -980,23 +989,25 @@ class EndpointsClient(object):
           machine_spec.acceleratorType = accelerator.acceleratorType
           machine_spec.acceleratorCount = accelerator.acceleratorCount
       else:
-        # When the user omits --machine-type, send the legacy "user-omitted"
-        # sentinel. The server (see go/ggc-dynamic-machine-specs) detects
-        # this sentinel and translates it to the cluster's actual machine
-        # type via lookupInfraCluster, preserving today's behavior in which
-        # the gcloud-provided value is ignored and the cluster's real
-        # hardware is used.
+        # When the user omits --machine-type, default to 'a3-ultragpu-8g-gdc'
+        # (real H200 machine type, matches today's preview zones).
         machine_spec = self.messages.GoogleCloudAiplatformV1beta1MachineSpec(
-            machineType='n1-standard-2',
-            acceleratorType=self.messages.GoogleCloudAiplatformV1beta1MachineSpec.AcceleratorTypeValueValuesEnum.NVIDIA_TESLA_T4,
-            acceleratorCount=1,
+            machineType='a3-ultragpu-8g-gdc',
         )
-      # GGC does not support autoscaling at GA, so min_replica_count and
-      # max_replica_count are forced to 1 regardless of what the user passed.
+      # GGC does not support autoscaling at GA, but we pass the user-provided
+      # replica counts if available.
       # Server-side validation enforces min == max unconditionally.
       dedicated = self.messages.GoogleCloudAiplatformV1beta1DedicatedResources(
-          machineSpec=machine_spec, minReplicaCount=1, maxReplicaCount=1
+          machineSpec=machine_spec,
       )
+      if min_replica_count is None and max_replica_count is None:
+        dedicated.minReplicaCount = 1
+        dedicated.maxReplicaCount = 1
+      else:
+        if min_replica_count is not None:
+          dedicated.minReplicaCount = min_replica_count
+        if max_replica_count is not None:
+          dedicated.maxReplicaCount = max_replica_count
       deployed_model = self.messages.GoogleCloudAiplatformV1beta1DeployedModel(
           dedicatedResources=dedicated,
           displayName=display_name,
@@ -1152,6 +1163,94 @@ class EndpointsClient(object):
         googleCloudAiplatformV1beta1DeployModelRequest=deployed_model_req,
     )
     return self.client.projects_locations_endpoints.DeployModel(req)
+
+  def MutateDeployedModelBeta(
+      self,
+      endpoint_ref,
+      deployed_model_id,
+      min_replica_count=None,
+      max_replica_count=None,
+  ):
+    """Mutates a deployed model in an endpoint using v1beta1 API."""
+    # 1. Fetch endpoint to determine resource type
+    endpoint_msg = self.Get(endpoint_ref)
+    deployed_model = None
+    if endpoint_msg.deployedModels:
+      for dm in endpoint_msg.deployedModels:
+        if dm.id == deployed_model_id:
+          deployed_model = dm
+          break
+
+    if not deployed_model:
+      raise errors.ArgumentError(
+          'Deployed model {} not found in endpoint {}.'.format(
+              deployed_model_id, endpoint_ref.RelativeName()
+          )
+      )
+
+    has_automatic_resources = deployed_model.automaticResources is not None
+
+    updated_deployed_model = (
+        self.messages.GoogleCloudAiplatformV1beta1DeployedModel(
+            id=deployed_model_id
+        )
+    )
+    update_mask_paths = []
+
+    if not has_automatic_resources:
+      dedicated_resources = (
+          self.messages.GoogleCloudAiplatformV1beta1DedicatedResources()
+      )
+      has_dedicated_updates = False
+
+      if min_replica_count is not None:
+        dedicated_resources.minReplicaCount = min_replica_count
+        update_mask_paths.append('dedicated_resources.min_replica_count')
+        has_dedicated_updates = True
+
+      if max_replica_count is not None:
+        dedicated_resources.maxReplicaCount = max_replica_count
+        update_mask_paths.append('dedicated_resources.max_replica_count')
+        has_dedicated_updates = True
+
+      if has_dedicated_updates:
+        updated_deployed_model.dedicatedResources = dedicated_resources
+
+    else:
+      automatic_resources = (
+          self.messages.GoogleCloudAiplatformV1beta1AutomaticResources()
+      )
+      has_automatic_updates = False
+
+      if min_replica_count is not None:
+        automatic_resources.minReplicaCount = min_replica_count
+        update_mask_paths.append('automatic_resources.min_replica_count')
+        has_automatic_updates = True
+
+      if max_replica_count is not None:
+        automatic_resources.maxReplicaCount = max_replica_count
+        update_mask_paths.append('automatic_resources.max_replica_count')
+        has_automatic_updates = True
+
+      if has_automatic_updates:
+        updated_deployed_model.automaticResources = automatic_resources
+
+    if not update_mask_paths:
+      raise errors.ArgumentError('No fields to update specified.')
+
+    # Build request
+    mutate_request = (
+        self.messages.GoogleCloudAiplatformV1beta1MutateDeployedModelRequest(
+            deployedModel=updated_deployed_model,
+            updateMask=','.join(update_mask_paths),
+        )
+    )
+
+    req = self.messages.AiplatformProjectsLocationsEndpointsMutateDeployedModelRequest(
+        endpoint=endpoint_ref.RelativeName(),
+        googleCloudAiplatformV1beta1MutateDeployedModelRequest=mutate_request
+    )
+    return self.client.projects_locations_endpoints.MutateDeployedModel(req)
 
   def UndeployModel(self, endpoint_ref, deployed_model_id, traffic_split=None):
     """Undeploys a model from an endpoint using v1 API.

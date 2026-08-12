@@ -17,9 +17,7 @@
 
 https://en.wikipedia.org/wiki/ISO_8601#Durations
 https://tools.ietf.org/html/rfc3339
-
 """
-
 
 import datetime
 
@@ -114,8 +112,18 @@ class Duration(object):
   _SECONDS_PER_YEAR = _SECONDS_PER_DAY * _DAYS_PER_YEAR
   _SECONDS_PER_MONTH = _SECONDS_PER_YEAR / _MONTHS_PER_YEAR
 
-  def __init__(self, years=0, months=0, days=0, hours=0, minutes=0, seconds=0,
-               microseconds=0, delta=None, calendar=False):
+  def __init__(
+      self,
+      years=0,
+      months=0,
+      days=0,
+      hours=0,
+      minutes=0,
+      seconds=0,
+      microseconds=0,
+      delta=None,
+      calendar=False,
+  ):
     self.years = years
     self.months = months
     self.days = days
@@ -271,7 +279,9 @@ class Duration(object):
       elif len(amount) == 1:
         raise ValueError(
             "Duration unit '{}' must be preceded by a number.".format(
-                string[i:]))
+                string[i:]
+            )
+        )
       else:
         number = float(''.join(amount))
         amount = [sign]
@@ -432,13 +442,22 @@ class Duration(object):
     Returns:
       The a copy of datetime object dt relative to the duration.
     """
+    # TODO(b/538248552): GetRelativeDateTime carries non-calendar hours directly
+    # into days via wall-clock math instead of using physical elapsed duration.
+
     # Add the duration parts to the new dt parts and normalize to valid ranges.
 
     # All parts are normalized so abs(underflow) and abs(overflow) must be <
     # 2 * the max normalized value.
 
     microsecond, second, minute, hour, day, month, year = (
-        dt.microsecond, dt.second, dt.minute, dt.hour, dt.day, dt.month, dt.year
+        dt.microsecond,
+        dt.second,
+        dt.minute,
+        dt.hour,
+        dt.day,
+        dt.month,
+        dt.year,
     )
 
     microsecond += self.microseconds
@@ -506,4 +525,5 @@ class Duration(object):
           year += 1
 
     return datetime.datetime(
-        year, month, day, hour, minute, second, microsecond, dt.tzinfo)
+        year, month, day, hour, minute, second, microsecond, dt.tzinfo
+    )

@@ -37,7 +37,7 @@ class UpdateAlpha(base.UpdateCommand):
   that applies to the `default_limit` quota for `projects/12321`, run:
 
     $ {command} my-preference
-    --service=example.$$UNIVERSE_DOMAIN$$
+    --service=example.googleapis.com
     --project=12321
     --quota-id=default_limit
     --preferred-value=100
@@ -47,7 +47,7 @@ class UpdateAlpha(base.UpdateCommand):
   To create a new quota preference for `organizations/789`, run:
 
     $ {command} my-preference
-    --service=example.$$UNIVERSE_DOMAIN$$
+    --service=example.googleapis.com
     --organization=789
     --quota-id=default_limit
     --preferred-value=200
@@ -108,7 +108,7 @@ class UpdateAlpha(base.UpdateCommand):
       )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class UpdateBeta(base.UpdateCommand):
   """Update the parameters of a single QuotaPreference.
@@ -122,7 +122,7 @@ class UpdateBeta(base.UpdateCommand):
   that applies to the `default_limit` quota for `projects/12321`, run:
 
     $ {command} my-preference
-    --service=example.$$UNIVERSE_DOMAIN$$
+    --service=example.googleapis.com
     --project=12321
     --quota-id=default_limit
     --preferred-value=100
@@ -132,7 +132,7 @@ class UpdateBeta(base.UpdateCommand):
   To create a new quota preference for `organizations/789`, run:
 
     $ {command} my-preference
-    --service=example.$$UNIVERSE_DOMAIN$$
+    --service=example.googleapis.com
     --organization=789
     --quota-id=default_limit
     --preferred-value=200
@@ -175,7 +175,7 @@ class UpdateBeta(base.UpdateCommand):
       None or any possible error.
     """
     self.updated_resource = quota_preference.UpdateQuotaPreference(
-        args, release_track=base.ReleaseTrack.BETA
+        args, release_track=self.ReleaseTrack()
     )
     self.validate_only = args.validate_only
     return self.updated_resource

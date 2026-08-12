@@ -170,6 +170,19 @@ class Interconnect(object):
             self._messages.ComputeInterconnectsGetMacsecConfigRequest(
                 project=self.ref.project, interconnect=self.ref.Name()))
 
+  def _MakeSetNameRequestTuple(self, new_name):
+    return (
+        self._client.interconnects,
+        'SetName',
+        self._messages.ComputeInterconnectsSetNameRequest(
+            interconnectsSetNameRequest=self._messages.InterconnectsSetNameRequest(
+                name=new_name, currentName=self.ref.Name()
+            ),
+            interconnect=self.ref.Name(),
+            project=self.ref.project,
+        ),
+    )
+
   @property
   def _messages(self):
     return self._compute_client.messages
@@ -236,6 +249,15 @@ class Interconnect(object):
     requests = [self._MakeGetMacsecConfigRequestTuple()]
     if not only_generate_request:
       resources = self._compute_client.MakeRequests(requests)
+      return resources[0]
+    return requests
+
+  def SetName(self, new_name, only_generate_request=False):
+    requests = [self._MakeSetNameRequestTuple(new_name)]
+    if not only_generate_request:
+      resources = self._compute_client.MakeRequests(
+          requests, followup_overrides=[new_name]
+      )
       return resources[0]
     return requests
 
