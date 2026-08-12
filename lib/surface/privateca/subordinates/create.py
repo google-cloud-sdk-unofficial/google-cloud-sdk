@@ -15,6 +15,7 @@
 """Create a new subordinate certificate authority."""
 
 
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.privateca import base as privateca_base
 from googlecloudsdk.api_lib.privateca import request_utils
 from googlecloudsdk.calliope import base
@@ -41,7 +42,8 @@ class Create(base.CreateCommand):
   r"""Create a new subordinate certificate authority.
 
   ## EXAMPLES
-  To create a subordinate CA named 'server-tls-1' whose issuer is on Private CA:
+  To create a subordinate CA named 'server-tls-1' whose issuer is on
+  Certificate Authority Service:
 
     $ {command} server-tls-1 \
         --location=us-west1 --pool=my-pool \
@@ -120,7 +122,8 @@ class Create(base.CreateCommand):
         presentation_specs.ResourcePresentationSpec(
             '--issuer-pool',
             resource_args.CreateCaPoolResourceSpec('Issuer'),
-            'The issuing CA Pool to use, if it is on Private CA.',
+            'The issuing CA Pool to use, if it is on Certificate Authority'
+            ' Service.',
             prefixes=True,
             required=False,
             flag_name_overrides={
@@ -176,8 +179,8 @@ class Create(base.CreateCommand):
 
     offline_issuer_group = issuer_configuration_group.add_group(
         help=(
-            'If the issuing CA is not hosted on Private CA, you must provide '
-            'these settings:'
+            'If the issuing CA is not hosted on Certificate Authority Service,'
+            ' you must provide these settings:'
         )
     )
     base.Argument(
@@ -312,18 +315,60 @@ class Create(base.CreateCommand):
       p4sa_email = p4sa.GetOrCreate(project_ref)
       p4sa.AddResourceRoleBindings(p4sa_email, kms_key_ref, bucket_ref)
 
-    operations.Await(
-        self.client.projects_locations_caPools_certificateAuthorities.Create(
-            self.messages.PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesCreateRequest(
-                certificateAuthority=new_ca,
-                certificateAuthorityId=ca_ref.Name(),
-                parent=ca_ref.Parent().RelativeName(),
-                requestId=request_utils.GenerateRequestId(),
+    try:
+      operations.Await(
+          self.client.projects_locations_caPools_certificateAuthorities.Create(
+              self.messages.PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesCreateRequest(
+                  certificateAuthority=new_ca,
+                  certificateAuthorityId=ca_ref.Name(),
+                  parent=ca_ref.Parent().RelativeName(),
+                  requestId=request_utils.GenerateRequestId(),
+              )
+          ),
+          'Creating Certificate Authority.',
+          api_version='v1',
+      )
+    except apitools_exceptions.HttpConflictError as e:
+      try:
+        existing_ca = self.client.projects_locations_caPools_certificateAuthorities.Get(
+            self.messages.PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesGetRequest(
+                name=ca_ref.RelativeName()
             )
-        ),
-        'Creating Certificate Authority.',
-        api_version='v1',
-    )
+        )
+        if (
+            existing_ca.state
+            == self.messages.CertificateAuthority.StateValueValuesEnum.AWAITING_USER_ACTIVATION
+        ):
+          activate_cmd = (
+              'gcloud privateca subordinates activate {} --pool {} --location'
+              ' {}'.format(
+                  ca_ref.Name(),
+                  ca_ref.Parent().Name(),
+                  ca_ref.Parent().Parent().Name(),
+              )
+          )
+          if args.IsSpecified('issuer_pool'):
+            issuer_pool_ref = args.CONCEPTS.issuer_pool.Parse()
+            activate_cmd += ' --issuer-pool {} --issuer-location {}'.format(
+                issuer_pool_ref.Name(), issuer_pool_ref.Parent().Name()
+            )
+            if args.IsSpecified('issuer_ca'):
+              activate_cmd += ' --issuer-ca {}'.format(args.issuer_ca)
+          else:
+            activate_cmd += ' --pem-chain <path-to-pem-chain>'
+
+          log.error(
+              'Certificate Authority [{}] already exists and is awaiting'
+              ' activation.'.format(ca_ref.Name())
+          )
+          raise exceptions.ToolException(
+              'To activate this CA, run:\n  {}'.format(activate_cmd)
+          )
+      except exceptions.ToolException:
+        raise
+      except Exception:  # pylint: disable=broad-except
+        pass
+      raise e
 
     csr_response = self.client.projects_locations_caPools_certificateAuthorities.Fetch(
         self.messages.PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesFetchRequest(

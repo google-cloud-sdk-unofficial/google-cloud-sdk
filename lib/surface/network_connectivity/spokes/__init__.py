@@ -24,3 +24,4 @@ from googlecloudsdk.calliope import base
 )
 class Spokes(base.Group):
   """Manage Network Connectivity Center spokes."""
+  category = base.NETWORKING_CATEGORY

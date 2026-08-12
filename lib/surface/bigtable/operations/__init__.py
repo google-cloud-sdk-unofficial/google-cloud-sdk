@@ -21,3 +21,5 @@ from googlecloudsdk.calliope import base
 
 class Operations(base.Group):
   """Manage Cloud Bigtable operations."""
+
+  category = base.DATABASES_CATEGORY

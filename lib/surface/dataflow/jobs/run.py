@@ -20,6 +20,7 @@ from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataflow import dataflow_util
+from googlecloudsdk.command_lib.dataflow import flags
 from googlecloudsdk.command_lib.dataflow import job_utils
 from googlecloudsdk.core import properties
 
@@ -91,6 +92,8 @@ def _CommonArgs(parser):
       help=('Region ID of the job\'s regional endpoint. ' +
             dataflow_util.DEFAULT_REGION_MESSAGE))
 
+  flags.AddEnableTurnkeyAlertsFlag(parser)
+
   streaming_update_args = parser.add_argument_group()
   streaming_update_args.add_argument(
       '--update',
@@ -139,6 +142,7 @@ def _CommonRun(args):
       transform_name_mappings=args.transform_name_mappings,
       additional_experiments=args.additional_experiments,
       additional_user_labels=args.additional_user_labels,
+      turnkey_alerts_enabled=args.enable_turnkey_alerts,
   )
   if args.update:
     return apis.Templates.LaunchDynamicTemplate(arguments)

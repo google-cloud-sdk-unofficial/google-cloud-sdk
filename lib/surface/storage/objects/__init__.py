@@ -22,4 +22,4 @@ from googlecloudsdk.calliope import base
 @base.UniverseCompatible
 class Objects(base.Group):
   """Manage Cloud Storage objects."""
-
+  category = base.STORAGE_CATEGORY

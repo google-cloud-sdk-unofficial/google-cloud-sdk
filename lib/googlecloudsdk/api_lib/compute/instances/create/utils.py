@@ -1242,16 +1242,21 @@ def GetProjectServiceAccount(args,
     service_account = None
   else:
     service_account = args.service_account
-  if (skip_defaults and not args.IsSpecified('scopes') and
-      not args.IsSpecified('no_scopes') and
-      not args.IsSpecified('service_account') and
-      not args.IsSpecified('no_service_account')):
+  has_workload_identity = args.IsKnownAndSpecified(
+      'identity_type'
+  ) and args.identity_type in ('AGENT_IDENTITY', 'WORKLOAD_IDENTITY')
+  if (
+      (skip_defaults or has_workload_identity)
+      and not args.IsSpecified('scopes')
+      and not args.IsSpecified('no_scopes')
+      and not args.IsSpecified('service_account')
+      and not args.IsSpecified('no_service_account')
+  ):
     service_accounts = []
   else:
     service_accounts = instance_utils.CreateServiceAccountMessages(
-        messages=client.messages,
-        scopes=scopes,
-        service_account=service_account)
+        messages=client.messages, scopes=scopes, service_account=service_account
+    )
   return service_accounts
 
 

@@ -499,7 +499,7 @@ def AddPscGroup(parser):
   """Add a group which contains the PSC-related arguments to the given parser."""
   psc_group = parser.add_group(required=False, mutex=True)
   AddExportPscFlag(psc_group)
-  psc_gapi_group = psc_group.add_group(required=False, mutex=False, hidden=True)
+  psc_gapi_group = psc_group.add_group(required=False, mutex=False)
   AddExportPscPublishedServicesAndRegionalGoogleApisFlag(psc_gapi_group)
   AddExportPscGlobalGoogleApisFlag(psc_gapi_group)
 
@@ -520,7 +520,6 @@ def AddExportPscPublishedServicesAndRegionalGoogleApisFlag(parser):
       '--export-psc-published-services-and-regional-google-apis',
       action=arg_parsers.StoreTrueFalseAction,
       required=False,
-      hidden=True,
       help="""Whether propagation for Private Service Connect for published services and regional Google APIs is enabled for the hub.""",
   )
 
@@ -531,7 +530,6 @@ def AddExportPscGlobalGoogleApisFlag(parser):
       '--export-psc-global-google-apis',
       action=arg_parsers.StoreTrueFalseAction,
       required=False,
-      hidden=True,
       help="""Whether propagation for Private Service Connect for global Google APIs is enabled for the hub.""",
   )
 

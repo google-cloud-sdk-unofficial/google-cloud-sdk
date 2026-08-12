@@ -639,6 +639,16 @@ class FlagAttribute(_messages.Message):
   valueType = _messages.EnumField('ValueTypeValueValuesEnum', 10)
 
 
+class FlagNameList(_messages.Message):
+  r"""Wrapper for a list of flags.
+
+  Fields:
+    flags: Required. Flags to be rolled out.
+  """
+
+  flags = _messages.StringField(1, repeated=True)
+
+
 class FlagRelease(_messages.Message):
   r"""A collection of FlagRevisions.
 
@@ -669,6 +679,8 @@ class FlagRelease(_messages.Message):
     etag: Output only. An opaque value that uniquely identifies a version or
       generation of a resource. It can be used to confirm that the client and
       server agree on the ordering of a resource being written.
+    flagNamesRelease: Optional. Immutable. Specifies the release consisting of
+      a list of flags.
     flagRevisions: Optional. Immutable. DEPRECATED: Use flag_revisions_release
       instead. FlagRevisions to be rolled out. Only one of flag_revisions,
       all_flags, or flag_sets can be set. It used to be the ultimate source to
@@ -760,16 +772,17 @@ class FlagRelease(_messages.Message):
   createTime = _messages.StringField(4)
   effectiveFlagRevisions = _messages.StringField(5, repeated=True)
   etag = _messages.StringField(6)
-  flagRevisions = _messages.StringField(7, repeated=True)
-  flagRevisionsRelease = _messages.MessageField('FlagRevisionList', 8)
-  flagSets = _messages.StringField(9, repeated=True)
-  flagSetsRelease = _messages.MessageField('FlagSetList', 10)
-  labels = _messages.MessageField('LabelsValue', 11)
-  name = _messages.StringField(12)
-  obsoleteFlags = _messages.StringField(13, repeated=True)
-  uid = _messages.StringField(14)
-  unitKind = _messages.StringField(15)
-  updateTime = _messages.StringField(16)
+  flagNamesRelease = _messages.MessageField('FlagNameList', 7)
+  flagRevisions = _messages.StringField(8, repeated=True)
+  flagRevisionsRelease = _messages.MessageField('FlagRevisionList', 9)
+  flagSets = _messages.StringField(10, repeated=True)
+  flagSetsRelease = _messages.MessageField('FlagSetList', 11)
+  labels = _messages.MessageField('LabelsValue', 12)
+  name = _messages.StringField(13)
+  obsoleteFlags = _messages.StringField(14, repeated=True)
+  uid = _messages.StringField(15)
+  unitKind = _messages.StringField(16)
+  updateTime = _messages.StringField(17)
 
 
 class FlagRevision(_messages.Message):

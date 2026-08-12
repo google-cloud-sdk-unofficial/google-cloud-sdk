@@ -491,6 +491,20 @@ def _get_copy_task(
     copy_destination = _get_copy_destination_resource(
         source_resource, source_container, destination_container
     )
+    if copy_util.should_skip_file_download_if_outside_destination(
+        source_resource.storage_url,
+        source_container.storage_url,
+        copy_destination.storage_url,
+        destination_container.storage_url,
+    ):
+      log.status.Print(
+          'Skipping copy of source URL {} because it would be copied '
+          'outside the expected destination directory: {}.'.format(
+              source_resource.storage_url.versionless_url_string,
+              os.path.abspath(destination_container.storage_url.resource_name),
+          )
+      )
+      return
   if dry_run:
     if isinstance(source_resource, resource_reference.FileObjectResource):
       try:
@@ -704,6 +718,13 @@ def _get_copy_destination_resource(
   new_destination_object_url = destination_container.storage_url.join(
       destination_delimited_containerless_source_string
   )
+
+  # Normalize local file URLs so that traversing '..' won't crash os.stat
+  # on missing intermediate directories (like 'bar/../inside.txt').
+  if isinstance(new_destination_object_url, storage_url.FileUrl):
+    new_destination_object_url = storage_url.FileUrl(
+        os.path.normpath(new_destination_object_url.resource_name)
+    )
 
   new_destination_resource = resource_reference.UnknownResource(
       new_destination_object_url

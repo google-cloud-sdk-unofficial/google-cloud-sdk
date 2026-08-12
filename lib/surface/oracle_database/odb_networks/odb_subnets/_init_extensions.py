@@ -21,11 +21,14 @@ from googlecloudsdk.calliope import base
 
 class OdbSubnetsAlpha(base.Group):
   """Optional no-auto-generated code for ALPHA."""
+  category = base.UNCATEGORIZED_CATEGORY
 
 
 class OdbSubnetsBeta(base.Group):
   """Optional no-auto-generated code for BETA."""
+  category = base.UNCATEGORIZED_CATEGORY
 
 
 class OdbSubnetsGa(base.Group):
   """Optional no-auto-generated code for GA."""
+  category = base.UNCATEGORIZED_CATEGORY

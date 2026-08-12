@@ -15,9 +15,8 @@
 
 """Command to List MCP tools."""
 
-from googlecloudsdk.api_lib.api_registry import utils
-from googlecloudsdk.api_lib.api_registry.mcp import tools
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import log
 
 
 _DETAILED_HELP = {
@@ -34,16 +33,10 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Deprecate(
-    is_removed=False,  # Set to False to issue a warning first
+    is_removed=False,
     warning=(
-        'The `gcloud alpha api-registry mcp tools list` command is '
-        'deprecated and will be removed in a future release. '
-        'For similar functionality, you can use Agent Registry. '
-        'Note: Agent Registry does not treat tools as a separate collection. '
-        'To view tools, please use `gcloud alpha agent-registry mcp-servers'
-        ' list` or `describe` command to view the tools included in the'
-        ' server payloads. For more information, see: '
-        'https://docs.cloud.google.com/sdk/gcloud/reference/alpha/agent-registry/mcp-servers'
+        'The `gcloud alpha api-registry mcp tools list` command is deprecated'
+        ' and will be removed in a future release.'
     ),
     error=(
         'The `gcloud alpha api-registry mcp tools list` command has been '
@@ -53,7 +46,7 @@ _DETAILED_HELP = {
         ' list` or `describe` command to view the tools included in the server'
         ' payloads. For more information, see: '
         'https://docs.cloud.google.com/sdk/gcloud/reference/alpha/agent-registry/mcp-servers'
-    )
+    ),
 )
 @base.DefaultUniverseOnly
 class ListAlpha(base.ListCommand):
@@ -73,27 +66,23 @@ class ListAlpha(base.ListCommand):
 
   def Run(self, args):
     """Run the list command."""
-    client = tools.McpToolsClient('v1alpha')
-    project = utils.GetProject()
-    location = utils.GetLocation()
-    # As per AIP-159, the wildcard '-' matches all MCP Servers.
-    mcp_server = '-'
-    parent = f'projects/{project}/locations/{location}/mcpServers/{mcp_server}'
-    return client.ListAlpha(parent, args)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-@base.Deprecate(
-    is_removed=False,  # Set to False to issue a warning first
-    warning=(
-        'The `gcloud beta api-registry mcp tools list` command is '
-        'deprecated and will be removed in a future release. '
+    log.status.Print(
         'For similar functionality, you can use Agent Registry. '
         'Note: Agent Registry does not treat tools as a separate collection. '
         'To view tools, please use `gcloud alpha agent-registry mcp-servers'
         ' list` or `describe` command to view the tools included in the'
         ' server payloads. For more information, see: '
         'https://docs.cloud.google.com/sdk/gcloud/reference/alpha/agent-registry/mcp-servers'
+    )
+    return []
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'The `gcloud beta api-registry mcp tools list` command is deprecated'
+        ' and will be removed in a future release.'
     ),
     error=(
         'The `gcloud beta api-registry mcp tools list` command has been '
@@ -103,7 +92,7 @@ class ListAlpha(base.ListCommand):
         ' list` or `describe` command to view the tools included in the server'
         ' payloads. For more information, see: '
         'https://docs.cloud.google.com/sdk/gcloud/reference/alpha/agent-registry/mcp-servers'
-    )
+    ),
 )
 @base.DefaultUniverseOnly
 class ListBeta(base.ListCommand):
@@ -123,10 +112,12 @@ class ListBeta(base.ListCommand):
 
   def Run(self, args):
     """Run the list command."""
-    client = tools.McpToolsClient('v1beta')
-    project = utils.GetProject()
-    location = utils.GetLocation()
-    # As per AIP-159, the wildcard '-' matches all MCP Servers.
-    mcp_server = '-'
-    parent = f'projects/{project}/locations/{location}/mcpServers/{mcp_server}'
-    return client.ListBeta(parent, args)
+    log.status.Print(
+        'For similar functionality, you can use Agent Registry. '
+        'Note: Agent Registry does not treat tools as a separate collection. '
+        'To view tools, please use `gcloud alpha agent-registry mcp-servers'
+        ' list` or `describe` command to view the tools included in the'
+        ' server payloads. For more information, see: '
+        'https://docs.cloud.google.com/sdk/gcloud/reference/alpha/agent-registry/mcp-servers'
+    )
+    return []

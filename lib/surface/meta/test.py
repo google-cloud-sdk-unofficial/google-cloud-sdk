@@ -14,7 +14,7 @@
 # limitations under the License.
 """The `gcloud meta test` command."""
 
-
+import multiprocessing
 import os
 import signal
 import sys
@@ -148,6 +148,11 @@ class Test(base.Command):
         action='store_true',
         help='Handshake test for broken pipe handling.',
     )
+    scenarios.add_argument(
+        '--multiprocessing-spawn',
+        action='store_true',
+        help='Run a basic multiprocessing.Pool.map using spawn start method.',
+    )
 
   def _RunArgDict(self, args):
     return args.arg_dict
@@ -258,6 +263,12 @@ class Test(base.Command):
     for i in range(1000):
       print(f'Line {i}', flush=True)
 
+  def _RunMultiprocessingSpawn(self, args):
+    ctx = multiprocessing.get_context('spawn')
+    with ctx.Pool(2) as pool:
+      results = pool.map(abs, [-1, -2, -3, -4])
+    print(results)
+
   def _RunUncaughtException(self, args):
     raise ValueError('Catch me if you can.')
 
@@ -332,5 +343,8 @@ class Test(base.Command):
       r = self._RunCheckSubprocessSignalRestore(args)
     elif args.broken_pipe_test:
       self._RunBrokenPipeTest(args)
+      r = None
+    elif args.multiprocessing_spawn:
+      self._RunMultiprocessingSpawn(args)
       r = None
     return r

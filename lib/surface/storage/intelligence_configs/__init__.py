@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*- #
 # Copyright 2025 Google LLC. All Rights Reserved.
 #
@@ -22,3 +21,4 @@ from googlecloudsdk.calliope import base
 @base.DefaultUniverseOnly
 class StorageIntelligence(base.Group):
   """Manage Cloud Storage Intelligence Configurations."""
+  category = base.STORAGE_CATEGORY

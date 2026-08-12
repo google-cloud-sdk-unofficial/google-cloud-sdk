@@ -16,20 +16,16 @@
 # TODO: b/300099033 - Capitalize and turn into a sentence.
 """services MCP policies get-effective-policy command."""
 
-import collections
-
-from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.services import common_flags
-from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
-
-_PROJECT_RESOURCE = 'projects/{}'
-_FOLDER_RESOURCE = 'folders/{}'
-_ORGANIZATION_RESOURCE = 'organizations/{}'
 
 
 # TODO: b/321801975 - Make command public after suv2 launch.
+@base.Deprecate(
+    is_removed=False,
+    warning='MCP policies are not required and this command is no-op.',
+    error='MCP policies are not required and this command is no-op.',
+)
 @base.UniverseCompatible
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -80,38 +76,4 @@ class GetEffectivePolicy(base.Command):
     Returns:
       Effective Policy.
     """
-
-    if args.IsSpecified('folder'):
-      resource_name = _FOLDER_RESOURCE.format(args.folder)
-    elif args.IsSpecified('organization'):
-      resource_name = _ORGANIZATION_RESOURCE.format(args.organization)
-    elif args.IsSpecified('project'):
-      resource_name = _PROJECT_RESOURCE.format(args.project)
-    else:
-      project = properties.VALUES.core.project.Get(required=True)
-      resource_name = _PROJECT_RESOURCE.format(project)
-
-    response = serviceusage.GetEffectiveMcpPolicy(
-        resource_name + '/effectiveMcpPolicy', args.view
-    )
-
-    if args.IsSpecified('format'):
-      return response
-    else:
-      log.status.Print('McpEnableRules:')
-      for enable_rule in response.mcpEnableRules:
-        log.status.Print(' McpServices:')
-        for mcp_service in enable_rule.mcpServices:
-          log.status.Print('  - %s' % mcp_service.service)
-      if args.view == 'FULL':
-        log.status.Print('\nMetadata of effective policy:')
-        result = []
-
-        resources = collections.namedtuple(
-            'serviceMcpSources', ['EnabledMcpService', 'EnabledMcpPolicies']
-        )
-
-        for metadata in response.mcpEnableRuleMetadata:
-          for values in metadata.serviceMcpSources.additionalProperties:
-            result.append(resources(values.key, values.value.policies))
-        return result
+    pass

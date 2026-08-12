@@ -20,6 +20,7 @@ import datetime
 from googlecloudsdk.command_lib.run.printers import container_and_volume_printer_util as container_util
 from googlecloudsdk.command_lib.run.printers import k8s_object_printer_util as k8s_util
 from googlecloudsdk.command_lib.util import time_util
+from googlecloudsdk.core.console import console_attr
 from googlecloudsdk.core.resource import custom_printer_base as cp
 
 EXECUTION_PRINTER_FORMAT = 'execution'
@@ -100,6 +101,12 @@ class TaskPrinter(cp.CustomPrinterBase):
   """
 
   @staticmethod
+  def GetTerminationGracePeriod(record):
+    if record.termination_grace_period is not None:
+      return '{}s'.format(record.termination_grace_period)
+    return None
+
+  @staticmethod
   def TransformSpec(record):
     labels = [
         (
@@ -107,6 +114,10 @@ class TaskPrinter(cp.CustomPrinterBase):
             k8s_util.FormatDurationShort(record.spec.timeoutSeconds)
             if record.spec.timeoutSeconds
             else None,
+        ),
+        (
+            'Termination Grace Period',
+            TaskPrinter.GetTerminationGracePeriod(record),
         ),
         (
             'Max Retries',
@@ -205,6 +216,18 @@ class ExecutionPrinter(cp.CustomPrinterBase):
     if record.status is None:
       return ''
     lines = []
+    con = console_attr.GetConsoleAttr()
+    start_condition = (
+        record.conditions.get('Started') if record.conditions else None
+    )
+    if (
+        start_condition
+        and start_condition.get('reason') == 'DelayedStartPending'
+        and start_condition.get('message')
+    ):
+      lines.append(
+          con.Emphasize(start_condition['message'].rstrip('.'))
+      )
     if record.ready_condition['status'] is None:
       lines.append(
           '{} currently running'.format(

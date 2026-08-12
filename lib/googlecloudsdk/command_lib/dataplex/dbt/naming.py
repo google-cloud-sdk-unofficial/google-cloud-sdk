@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import dataclasses
+import re
 
 from googlecloudsdk.core import exceptions as core_exceptions
 
@@ -42,18 +43,35 @@ MAX_ENTRY_ID_LENGTH = 4000
 # whole entry can outgrow these limits; the transform fails early rather than
 # copy the file to GCS and let the import job reject the item server-side.
 #
-# Max JSON size of a single aspect's `data`. The reserved `schema` /
-# data-profile aspects have higher limits, but the dbt connector emits neither
-# -- its columns live in a custom `dbt-schema` aspect, which is subject to
-# this limit.
+# Max JSON size of a single aspect's `data`.
 MAX_ASPECT_JSON_BYTES = 120 * 1024
+# The reserved 1P `schema` aspect gets a much larger budget than everything
+# else (see AspectDataSizeValidator), which is what lets dbt columns survive a
+# wide, deeply nested schema.
+MAX_SCHEMA_ASPECT_JSON_BYTES = 2 * 1024 * 1024
+# The 1P `schema` aspect is additionally capped on column count, nested fields
+# included, because each column becomes an addressable entry path.
+MAX_SCHEMA_COLUMNS = 10000
 # Max total size of one entry (all of its aspects together).
 MAX_ENTRY_BYTES = 5 * 1024 * 1024
+# SQL bodies are unbounded user content, and a node can carry two copies (raw
+# and compiled) in one aspect, so each is capped at a quarter of the per-aspect
+# budget. Budgeted in UTF-8 bytes rather than characters because
+# MAX_ASPECT_JSON_BYTES is itself measured on the encoded aspect, so a
+# character budget would let non-ASCII SQL outgrow it.
+MAX_CODE_BYTES = 30 * 1024
+
+# EntrySource caps, from the Entry API reference. dbt display names and
+# descriptions are free-form user content, so they are clipped to these.
+MAX_DISPLAY_NAME_LENGTH = 500
+MAX_DESCRIPTION_LENGTH = 2000
+MAX_LABEL_LENGTH = 128
 
 # Short emitter key -> entryLinkType id. The fully-qualified name is built per
 # run against the resolved system-types project via ``Context.link_type_fqn``.
 LINK_TYPE_IDS: dict[str, str] = {
     'depends_on': 'depends-on-lineage-imported',
+    'schema_join': 'schema-join',
     'materializes_to': 'represents',
     'consumed_by': 'depends-on-imported',
     'defines_semantics_for': 'represents',
@@ -76,6 +94,44 @@ def entry_id(unique_id: str) -> str:
     The Dataplex entry id (lowercased, with dots replaced by underscores).
   """
   return unique_id.lower().replace('.', '_')
+
+
+# Matches a dbt ``ref(...)`` call and captures its quoted arguments. dbt refs
+# can be ``ref('model')``, ``ref('package', 'model')`` or ``ref('model',
+# version=2)``; the target model is always the last quoted positional argument.
+_REF_CALL = re.compile(r'ref\(([^)]*)\)')
+_QUOTED = re.compile(r"""['"]([^'"]+)['"]""")
+
+
+def parse_ref(s: str | None) -> str | None:
+  """Returns the target model name from a dbt ``ref(...)`` expression.
+
+  The model name is the last quoted positional argument -- ``ref('model')``,
+  ``ref('package', 'model')`` or ``ref('model', version=...)``. Positional
+  arguments always come before keyword arguments, so we stop at the first
+  keyword argument; this keeps a quoted keyword value like ``version='1'`` from
+  being mistaken for the model name.
+
+  Args:
+    s: The raw dbt ``ref(...)`` expression, or None.
+
+  Returns:
+    The referenced model name, or None if ``s`` is empty or has no quoted
+    positional argument.
+  """
+  if not s:
+    return None
+  call = _REF_CALL.search(s)
+  if not call:
+    return None
+  model = None
+  for arg in call.group(1).split(','):
+    if '=' in arg:  # A keyword argument (e.g. version=1); positionals end here.
+      break
+    quoted = _QUOTED.search(arg)
+    if quoted:
+      model = quoted.group(1)
+  return model
 
 
 @dataclasses.dataclass(frozen=True)
@@ -161,6 +217,28 @@ class Context:
   def contacts_key(self) -> str:
     """Returns the `contacts` aspect's key for the entry's aspect map."""
     return '{0}.{1}.contacts'.format(self.system_project, self.types_location)
+
+  def schema_fqn(self) -> str:
+    """Returns the full resource name of the core 1P `schema` aspect type."""
+    return (
+        f'projects/{self.system_project}/locations/{self.types_location}/'
+        'aspectTypes/schema'
+    )
+
+  def schema_key(self) -> str:
+    """Returns the 1P `schema` aspect's key for the entry's aspect map."""
+    return f'{self.system_project}.{self.types_location}.schema'
+
+  def schema_join_fqn(self) -> str:
+    """Returns the full resource name of the core `schema-join` aspect type."""
+    return (
+        f'projects/{self.system_project}/locations/{self.types_location}/'
+        'aspectTypes/schema-join'
+    )
+
+  def schema_join_key(self) -> str:
+    """Returns the `schema-join` aspect's key for a link's aspect map."""
+    return f'{self.system_project}.{self.types_location}.schema-join'
 
   def link_type_fqn(self, short_name: str) -> str:
     """Returns the full resource name of a core entry link type."""

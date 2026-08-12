@@ -24,7 +24,6 @@ from googlecloudsdk.core import log
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
-@base.Hidden
 class Resume(base.Command):
   """Starts resuming all given jobs.
 
@@ -33,6 +32,17 @@ class Resume(base.Command):
   not successful or the job is already running, the job state will be unchanged.
   If a job is already in the `JOB_STATE_RUNNING` state, the command will succeed
   and do nothing.
+
+  ## EXAMPLES
+
+  To resume a single job, run:
+
+    $ {command} 2000-01-02_03_04_05-12345678901234567890 --region=us-central1
+
+  To resume multiple jobs, run:
+
+    $ {command} 2000-01-02_03_04_05-12345678901234567890
+    2000-12-11_10_09_08-09876543210987654321 --region=us-central1
   """
 
   @staticmethod

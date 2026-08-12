@@ -42,18 +42,10 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Set
 import hashlib
-import re
 from typing import Any, TypedDict
 
+from googlecloudsdk.command_lib.dataplex.dbt import entry_builders
 from googlecloudsdk.command_lib.dataplex.dbt import naming
-
-# Matches a dbt ``ref(...)`` call and captures its quoted arguments. dbt refs
-# can be ``ref('model')``, ``ref('package', 'model')`` or ``ref('model',
-# version=2)``; the target model is always the last quoted positional argument.
-# A ``source(...)`` reference is deliberately not matched (it has no single
-# entry counterpart resolvable from the string alone).
-_REF_CALL = re.compile(r'ref\(([^)]*)\)')
-_QUOTED = re.compile(r"""['"]([^'"]+)['"]""")
 
 # dbt manifest top-level sections this module reads. Each of these (except
 # ``parent_map``) holds resources the transform emits as entries; ``parent_map``
@@ -81,10 +73,33 @@ def LinkTypeFqns(  # pylint: disable=invalid-name
   Returns:
     A list of fully-qualified entryLinkType resource names.
   """
+  # Several short keys share one consolidated type id (materializes_to and
+  # defines_semantics_for are both `represents`), so dedupe before scoping.
   return [
       f'projects/{system_project}/locations/{types_location}/'
       f'entryLinkTypes/{link_id}'
-      for link_id in naming.LINK_TYPE_IDS.values()
+      for link_id in sorted(set(naming.LINK_TYPE_IDS.values()))
+  ]
+
+
+def LinkAspectTypeFqns(  # pylint: disable=invalid-name
+    system_project: str, types_location: str
+) -> list[str]:
+  """Fully-qualified aspectType names the entry links carry, for the job scope.
+
+  A link type that declares ``required_aspects`` carries that aspect on every
+  link, and the import job only accepts it when the aspect type is in scope.
+
+  Args:
+    system_project: project hosting the core 1P aspect types.
+    types_location: location of the system types (always `global`).
+
+  Returns:
+    A list of fully-qualified aspectType resource names.
+  """
+  return [
+      f'projects/{system_project}/locations/{types_location}/'
+      'aspectTypes/schema-join'
   ]
 
 
@@ -103,8 +118,8 @@ _EntryReference = TypedDict(
 
 
 # The entry link itself. ``aspects`` is set only for link types that declare
-# ``required_aspects`` (e.g. schema-join-imported carries a ``schema-join``
-# aspect), hence total=False.
+# ``required_aspects`` (e.g. schema-join carries a ``schema-join`` aspect),
+# hence total=False.
 _EntryLinkBody = TypedDict(
     '_EntryLinkBody',
     {
@@ -195,37 +210,6 @@ def _entry_link(
   return {'entryLink': entry_link}
 
 
-def _parse_ref(s: str | None) -> str | None:
-  """Returns the target model name from a dbt ``ref(...)`` expression.
-
-  The model name is the last quoted positional argument -- ``ref('model')``,
-  ``ref('package', 'model')`` or ``ref('model', version=...)``. Positional
-  arguments always come before keyword arguments, so we stop at the first
-  keyword argument; this keeps a quoted keyword value like ``version='1'`` from
-  being mistaken for the model name.
-
-  Args:
-    s: The raw dbt ``ref(...)`` expression, or None.
-
-  Returns:
-    The referenced model name, or None if ``s`` is empty or has no quoted
-    positional argument.
-  """
-  if not s:
-    return None
-  call = _REF_CALL.search(s)
-  if not call:
-    return None
-  model = None
-  for arg in call.group(1).split(','):
-    if '=' in arg:  # A keyword argument (e.g. version=1); positionals end here.
-      break
-    quoted = _QUOTED.search(arg)
-    if quoted:
-      model = quoted.group(1)
-  return model
-
-
 def _emit_depends_on(
     ctx: naming.Context, manifest: Mapping[str, Any], known_ids: Set[str]
 ) -> list[EntryLinkRecord]:
@@ -298,12 +282,22 @@ def _index_uid_by_name(
     A dict of short resource name -> dbt unique_id.
   """
   index = {}
+  ambiguous = set()
   for uid, node in (mapping or {}).items():
     if not predicate(node):
       continue
     name = node.get('name')
-    if name:
-      index[name] = uid
+    if not name:
+      continue
+    if name in index:
+      # Versioned models share one ``name``, as do same-named models in two
+      # packages. Resolving to an arbitrary one would emit a confident link to
+      # the wrong entry, so drop the name and emit nothing for it.
+      ambiguous.add(name)
+      continue
+    index[name] = uid
+  for name in ambiguous:
+    del index[name]
   return index
 
 
@@ -335,24 +329,44 @@ def _emit_consumed_by(
 def _emit_defines_semantics_for(
     ctx: naming.Context, manifest: Mapping[str, Any], known_ids: Set[str]
 ) -> list[EntryLinkRecord]:
-  """Emits represents (semantic) links from semantic models to their backing models."""
+  """Emits represents links from semantic models to their backing model.
+
+  A semantic model represents exactly one model, which dbt names outright as
+  ``model: ref('orders')``. Fanning out over ``depends_on`` instead would claim
+  the semantic model represents every node it touches -- a filter referencing a
+  second model, say -- so only the declared model is linked. This is the same
+  resolution ``entry_builders`` uses to pick the semantic model's parent entry.
+
+  Args:
+    ctx: the naming.Context holding the naming coordinates for this run.
+    manifest: the parsed dbt manifest.json.
+    known_ids: the set of Dataplex entry ids the transform emitted.
+
+  Returns:
+    One represents link per semantic model whose backing model resolves.
+  """
   out: list[EntryLinkRecord] = []
+  model_uid_by_name = entry_builders.model_uids_by_name(
+      manifest.get(_NODES) or {}
+  )
   for sm_uid, sm in (manifest.get(_SEMANTIC_MODELS) or {}).items():
     sm_id = naming.entry_id(sm_uid)
     if sm_id not in known_ids:
       continue
-    for ref_uid in (sm.get('depends_on') or {}).get('nodes') or []:
-      ref_id = naming.entry_id(ref_uid)
-      if ref_id not in known_ids:
-        continue
-      out.append(
-          _entry_link(
-              ctx,
-              'defines_semantics_for',
-              ctx.entry_name(sm_id),
-              ctx.entry_name(ref_id),
-          )
-      )
+    model_uid = entry_builders.described_model(sm, model_uid_by_name)
+    if not model_uid:
+      continue
+    model_id = naming.entry_id(model_uid)
+    if model_id not in known_ids:
+      continue
+    out.append(
+        _entry_link(
+            ctx,
+            'defines_semantics_for',
+            ctx.entry_name(sm_id),
+            ctx.entry_name(model_id),
+        )
+    )
   return out
 
 
@@ -384,6 +398,134 @@ def _emit_derives_from(
 
 # dbt resource types that materialize to a physical BigQuery table.
 _MATERIALIZED_RESOURCE_TYPES = frozenset(['model', 'seed', 'snapshot'])
+
+
+def _schema_join_aspect(
+    ctx: naming.Context,
+    source_sql: str,
+    target_sql: str,
+    column_pairs: list[tuple[str, str]],
+) -> dict[str, Any]:
+  """Builds the ``schema-join`` aspect required by schema-join links.
+
+  The ``schema-join`` link type declares ``required_aspects: schema-join``, so
+  each link carries a Dataplex-owned ``schema-join`` aspect describing the
+  joinable columns (payload follows the aspect type's ``SchemaJoins`` template).
+
+  Args:
+    ctx: the naming.Context holding the naming coordinates for this run.
+    source_sql: SQL representation (relation name) of the source entity.
+    target_sql: SQL representation (relation name) of the target entity.
+    column_pairs: (source column, target column) pairs to join on, one per join.
+
+  Returns:
+    An aspect map ({aspect_key: {aspectType, data}}) for the link.
+  """
+  data = {
+      'joins': [
+          {
+              'source': {'name': source_sql, 'fields': [source_field]},
+              'target': {'name': target_sql, 'fields': [target_field]},
+              # A dbt `relationships` test asserts a user-authored foreign key.
+              'type': 'FOREIGN_KEY',
+              'inferenceSource': 'USER',
+          }
+          for source_field, target_field in column_pairs
+      ],
+      'userManaged': True,
+  }
+  return {
+      ctx.schema_join_key(): {
+          'aspectType': ctx.schema_join_fqn(),
+          'data': data,
+      }
+  }
+
+
+def _emit_schema_join(
+    ctx: naming.Context, manifest: Mapping[str, Any], known_ids: Set[str]
+) -> list[EntryLinkRecord]:
+  """Child model -> parent model, from relationships tests.
+
+  Emitted as a ``schema-join`` link (undirected) carrying the required
+  ``schema-join`` aspect. The joinable columns live in that aspect
+  (source/target fields) rather than as entryReference ``path`` values, which
+  an undirected reference does not accept.
+
+  A test that does not name both columns is skipped rather than emitted without
+  the aspect, which the link type would reject.
+
+  Args:
+    ctx: the naming.Context holding the naming coordinates for this run.
+    manifest: the manifest dict.
+    known_ids: set of known entry IDs (to filter dependencies that exist).
+
+  Returns:
+    A list of schema-join EntryLink records.
+  """
+  nodes = manifest.get(_NODES) or {}
+  model_uid_by_name = _index_uid_by_name(
+      nodes, lambda n: n.get('resource_type') in _MATERIALIZED_RESOURCE_TYPES
+  )
+  # unique_id pair -> the columns to join on. The link id is derived from the
+  # two endpoints alone, so several relationships tests between the same pair of
+  # models have to share one link and one aspect. The pair is ordered so that
+  # two tests pointing opposite ways across the same models land on one link
+  # rather than two half-populated ones; the join records keep the orientation.
+  columns_by_pair: dict[tuple[str, str], list[tuple[str, str]]] = {}
+  for node in nodes.values():
+    if node.get('resource_type') != 'test':
+      continue
+    tm = node.get('test_metadata') or {}
+    if tm.get('name') != 'relationships':
+      continue
+    kwargs = tm.get('kwargs') or {}
+    attached = node.get('attached_node')
+    if not attached:
+      continue
+    child_col = kwargs.get('column_name')
+    parent_col = kwargs.get('field')
+    if not child_col or not parent_col:
+      continue
+    parent_name = naming.parse_ref(kwargs.get('to') or '')
+    if not parent_name:
+      continue
+    parent_uid = model_uid_by_name.get(parent_name)
+    if not parent_uid:
+      continue
+    if (
+        naming.entry_id(attached) not in known_ids
+        or naming.entry_id(parent_uid) not in known_ids
+    ):
+      continue
+    source_uid, target_uid = sorted((attached, parent_uid))
+    if source_uid == attached:
+      columns = (child_col, parent_col)
+    else:
+      columns = (parent_col, child_col)
+    pairs = columns_by_pair.setdefault((source_uid, target_uid), [])
+    if columns not in pairs:
+      pairs.append(columns)
+
+  out: list[EntryLinkRecord] = []
+  for (source_uid, target_uid), pairs in columns_by_pair.items():
+    source_id = naming.entry_id(source_uid)
+    target_id = naming.entry_id(target_uid)
+    # The schema-join aspect names the joinable columns; use each model's
+    # relation_name (SQL representation), falling back to the entry id.
+    source_sql = (nodes.get(source_uid) or {}).get('relation_name') or source_id
+    target_sql = (nodes.get(target_uid) or {}).get('relation_name') or target_id
+    out.append(
+        _entry_link(
+            ctx,
+            'schema_join',
+            ctx.entry_name(source_id),
+            ctx.entry_name(target_id),
+            aspects=_schema_join_aspect(ctx, source_sql, target_sql, pairs),
+            undirected=True,
+        )
+    )
+  return out
 
 
 def _get_bigquery_entry_name(
@@ -537,6 +679,7 @@ def build_entry_links(
   links.extend(_emit_consumed_by(ctx, manifest, known_ids))
   links.extend(_emit_defines_semantics_for(ctx, manifest, known_ids))
   links.extend(_emit_derives_from(ctx, manifest, known_ids))
+  links.extend(_emit_schema_join(ctx, manifest, known_ids))
   if linkable_datasets is not None:
     links.extend(
         _emit_materializes_to(ctx, manifest, known_ids, linkable_datasets)

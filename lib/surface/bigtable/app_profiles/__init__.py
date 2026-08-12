@@ -21,3 +21,5 @@ from googlecloudsdk.core import properties
 
 class AppProfiles(base.Group):
   """Manage Cloud Bigtable app profiles."""
+
+  category = base.DATABASES_CATEGORY

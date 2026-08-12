@@ -12,15 +12,17 @@
   request:
     ALPHA:
       api_version: alpha
-      modify_request_hooks:
-      - googlecloudsdk.api_lib.compute.storage_pools.modify_request_hooks:modify_share_settings
     BETA:
       api_version: beta
     GA:
       api_version: v1
+    PREVIEW:
+      api_version: v1
 
     collection: compute.storagePools
     method: update
+    modify_request_hooks:
+    - googlecloudsdk.api_lib.compute.storage_pools.modify_request_hooks:modify_share_settings
 
   async:
     collection: compute.zoneOperations
@@ -62,7 +64,6 @@
       type: int
 
     - arg_name: exapool-capacity-optimized-capacity
-      release_tracks: [ALPHA]
       api_field: storagePoolResource.exapoolProvisionedCapacityGb.capacityOptimized
       help_text: |
         Provisioned capacity-optimized capacity of the exapool. Can only be specified for Exapool storage pools.
@@ -70,7 +71,6 @@
       processor: googlecloudsdk.api_lib.compute.storage_pools.processors:convert_to_gb
 
     - arg_name: exapool-read-optimized-capacity
-      release_tracks: [ALPHA]
       api_field: storagePoolResource.exapoolProvisionedCapacityGb.readOptimized
       help_text: |
         Provisioned read-optimized capacity of the exapool. Can only be specified for Exapool storage pools.
@@ -78,7 +78,6 @@
       processor: googlecloudsdk.api_lib.compute.storage_pools.processors:convert_to_gb
 
     - arg_name: exapool-write-optimized-capacity
-      release_tracks: [ALPHA]
       api_field: storagePoolResource.exapoolProvisionedCapacityGb.writeOptimized
       help_text: |
         Provisioned write-optimized capacity of the exapool. Can only be specified for Exapool storage pools.
@@ -86,7 +85,6 @@
       processor: googlecloudsdk.api_lib.compute.storage_pools.processors:convert_to_gb
 
     - arg_name: add-share-with
-      release_tracks: [ALPHA]
       hidden: true
       help_text: |
         Projects to add to storage pool share list. Specify a comma-separated list of projects to add.
@@ -96,7 +94,6 @@
       metavar: SHARE_WITH,[SHARE_WITH,...]
 
     - arg_name: remove-share-with
-      release_tracks: [ALPHA]
       hidden: true
       help_text: |
         Projects to remove from storage pool share list. Specify a comma-separated list of projects to remove.

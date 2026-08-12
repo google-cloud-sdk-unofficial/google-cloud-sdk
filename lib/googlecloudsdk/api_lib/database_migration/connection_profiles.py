@@ -357,14 +357,34 @@ class ConnectionProfilesClient(object):
         )
 
   def _GetMySqlConnectionProfile(self, args):
+    """Creates a MySQL connection profile according to the given args.
+
+    Args:
+      args: argparse.Namespace, The arguments that this command was invoked
+        with.
+
+    Returns:
+      MySqlConnectionProfile, to use when creating the connection profile.
+    """
     ssl_config = self._GetSslConfig(args)
-    return self.messages.MySqlConnectionProfile(
+    connection_profile_obj = self.messages.MySqlConnectionProfile(
         host=args.host,
         port=args.port,
         username=args.username,
         password=args.password,
         ssl=ssl_config,
-        cloudSqlId=args.GetValue(self._InstanceArgName()))
+        cloudSqlId=args.GetValue(self._InstanceArgName()),
+    )
+
+    if args.IsKnownAndSpecified('private_connection'):
+      private_connectivity = args.CONCEPTS.private_connection.Parse()
+      connection_profile_obj.privateConnectivity = (
+          self.messages.PrivateConnectivity(
+              privateConnection=private_connectivity.RelativeName()
+          )
+      )
+
+    return connection_profile_obj
 
   def _UpdateMySqlConnectionProfile(
       self, connection_profile, args, update_fields):

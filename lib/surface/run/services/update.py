@@ -427,6 +427,7 @@ class AlphaUpdate(BetaUpdate):
     flags.AddConcurrencyUtilizationFlag(parser)
     flags.AddClearPresetFlag(parser)
     flags.AddSshFlag(parser)
+    flags.AddGracePeriodFlag(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(
         parser, container_args, cls.ReleaseTrack()

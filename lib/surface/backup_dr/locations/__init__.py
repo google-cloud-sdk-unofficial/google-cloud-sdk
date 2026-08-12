@@ -24,3 +24,4 @@ from googlecloudsdk.calliope import base
 @base.DefaultUniverseOnly
 class Location(base.Group):
   """Manage Backup and DR locations."""
+  category = base.STORAGE_CATEGORY

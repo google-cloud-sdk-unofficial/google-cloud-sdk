@@ -266,6 +266,7 @@ class CreateGA(base.CreateCommand):
           help=(
               'The capacity tier of the VPN tunnel. This is used for IPsec over'
               ' Interconnect tunnels to indicate different bandwidth limits.'
+              ' CAPACITY_TIER must be one of: *DEFAULT*, *HIGH*.'
           ),
       )
 

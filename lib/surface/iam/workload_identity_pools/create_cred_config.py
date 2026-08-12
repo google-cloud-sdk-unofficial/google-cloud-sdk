@@ -43,7 +43,7 @@ class CreateCredConfig(base.CreateCommand):
 
           To create an executable-source credential configuration for your project, run the following command:
 
-            $ {command} locations/$REGION/workforcePools/$WORKFORCE_POOL_ID/providers/$PROVIDER_ID --executable-command=$EXECUTABLE_COMMAND --executable-timeout-millis=30000 --executable-output-file=$CACHE_FILE --output-file=credentials.json
+            $ {command} projects/$PROJECT_NUMBER/locations/$REGION/workloadIdentityPools/$WORKLOAD_POOL_ID/providers/$PROVIDER_ID --executable-command=$EXECUTABLE_COMMAND --executable-timeout-millis=30000 --executable-output-file=$CACHE_FILE --output-file=credentials.json
 
           To create an AWS-based credential configuration for your project, run:
 
@@ -164,16 +164,6 @@ class CreateCredConfig(base.CreateCommand):
       raise exceptions.ConflictingArgumentsException(
           '--credential-cert-private-key-path can be used only for X.509'
           ' certificate credential types'
-      )
-    if (args.sts_location and args.sts_location != 'global') and (
-        args.credential_cert_path
-        or args.credential_cert_private_key_path
-        or args.credential_cert_trust_chain_path
-    ):
-      # X.509 federation is not GA-ed on REP/locational endpoints.
-      raise exceptions.ConflictingArgumentsException(
-          'Workload Identity Federation with X.509 certificates is not'
-          ' supported on locational Security Token Service endpoints.'
       )
 
   def Run(self, args):

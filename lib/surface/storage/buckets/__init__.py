@@ -22,4 +22,4 @@ from googlecloudsdk.calliope import base
 @base.UniverseCompatible
 class Buckets(base.Group):
   """Manage Cloud Storage buckets."""
-
+  category = base.STORAGE_CATEGORY

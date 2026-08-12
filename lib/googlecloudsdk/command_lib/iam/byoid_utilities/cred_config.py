@@ -18,7 +18,9 @@
 import abc
 import enum
 import json
+import re
 
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.auth import enterprise_certificate_config
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -41,16 +43,9 @@ class ByoidEndpoints(object):
       universe_domain='googleapis.com',
       sts_location='',
   ):
-    # TODO: b/444042857 - Remove this check and add support for mTLS with
-    # locational STS endpoints when it is GA-ed.
-    if enable_mtls and sts_location and sts_location != 'global':
-      raise GeneratorError(
-          'mTLS is not supported with locational Security Token Service'
-          ' endpoints.'
-      )
     self._sts_global_template = 'https://{service}.{mtls}{universe}'
     self._sts_locational_template = (
-        'https://{service}.{sts_location}.rep.{universe}'
+        'https://{service}.{sts_location}.rep.{mtls}{universe}'
     )
     self._service = service
     self._mtls = 'mtls.' if enable_mtls else ''
@@ -66,6 +61,7 @@ class ByoidEndpoints(object):
     return self._sts_locational_template.format(
         service=self._service,
         sts_location=self._sts_location,
+        mtls=self._mtls,
         universe=self._universe_domain,
     )
 
@@ -109,9 +105,49 @@ class IamEndpoints(ByoidEndpoints):
 
 RESOURCE_TYPE = 'credential configuration file'
 
+# Expected resource name formats for the AUDIENCE positional argument. These
+# mirror the IAM v1 API provider resource name patterns.
+_WORKFORCE_AUDIENCE_PATTERN = re.compile(
+    r'^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+$'
+)
+_WORKLOAD_AUDIENCE_PATTERN = re.compile(
+    r'^projects/[^/]+/locations/[^/]+/workloadIdentityPools/'
+    r'[^/]+/providers/[^/]+$'
+)
+
+
+def _validate_audience(audience, config_type):
+  """Validates that the audience matches the expected provider resource name.
+
+  Args:
+    audience: The audience string provided by the user.
+    config_type: The ConfigType of the credential config being created.
+
+  Raises:
+    calliope_exceptions.InvalidArgumentException: if the audience is not a valid
+    provider resource name for the given config type.
+  """
+  if config_type is ConfigType.WORKFORCE_POOLS:
+    pattern = _WORKFORCE_AUDIENCE_PATTERN
+    expected = 'locations/<location>/workforcePools/<pool>/providers/<provider>'
+  else:
+    pattern = _WORKLOAD_AUDIENCE_PATTERN
+    expected = (
+        'projects/<project>/locations/<location>/workloadIdentityPools/'
+        '<pool>/providers/<provider>'
+    )
+
+  if not pattern.match(audience):
+    raise calliope_exceptions.InvalidArgumentException(
+        'AUDIENCE',
+        'The audience must be a provider resource name of the form "{}". '
+        'Got "{}".'.format(expected, audience),
+    )
+
 
 def create_credential_config(args, config_type):
   """Creates the byoid credential config based on CLI arguments."""
+  _validate_audience(args.audience, config_type)
   # If a certificate path was provided, enable mtls by default.
   is_cert = getattr(args, 'credential_cert_path', None) is not None
   enable_mtls = getattr(args, 'enable_mtls', False)

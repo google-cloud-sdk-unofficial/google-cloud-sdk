@@ -39,6 +39,7 @@ from googlecloudsdk.core.document_renderers import html_renderer
 from googlecloudsdk.core.document_renderers import linter_renderer
 from googlecloudsdk.core.document_renderers import man_renderer
 from googlecloudsdk.core.document_renderers import markdown_renderer
+from googlecloudsdk.core.document_renderers import projections_renderer
 from googlecloudsdk.core.document_renderers import renderer
 from googlecloudsdk.core.document_renderers import text_renderer
 
@@ -46,10 +47,11 @@ from googlecloudsdk.core.document_renderers import text_renderer
 STYLES = {
     'devsite': devsite_renderer.DevSiteRenderer,
     'html': html_renderer.HTMLRenderer,
+    'linter': linter_renderer.LinterRenderer,
     'man': man_renderer.ManRenderer,
     'markdown': markdown_renderer.MarkdownRenderer,
+    'projections': projections_renderer.ProjectionsRenderer,
     'text': text_renderer.TextRenderer,
-    'linter': linter_renderer.LinterRenderer
 }
 
 

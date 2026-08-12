@@ -21,6 +21,7 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Ftp(base.Group):
   """A command group for managing Cloud FTP servers and users."""
+  category = base.STORAGE_CATEGORY
 
   detailed_help = {
       'DESCRIPTION': (

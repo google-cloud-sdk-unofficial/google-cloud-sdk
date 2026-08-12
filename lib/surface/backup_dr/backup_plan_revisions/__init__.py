@@ -23,3 +23,4 @@ from googlecloudsdk.calliope import base
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class BackupPlanRevisions(base.Group):
   """View Backup and DR backup plan revisions."""
+  category = base.STORAGE_CATEGORY

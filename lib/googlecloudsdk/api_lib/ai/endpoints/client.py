@@ -734,6 +734,68 @@ class EndpointsClient(object):
     )
     return self.client.projects_locations_endpoints.Explain(req)
 
+  def _BuildGdcGgsDeployedModel(
+      self,
+      machine_type,
+      accelerator_dict,
+      display_name,
+      model,
+      min_replica_count,
+      max_replica_count,
+      version,
+  ):
+    """Builds a DeployedModel message for GDC GGS (GGC).
+
+    Args:
+      machine_type: str or None, the type of the machine to serve the model.
+      accelerator_dict: dict or None, the accelerator attached to the deployed
+        model from args.
+      display_name: str, the display name of the new deployed model.
+      model: str, Id of the uploaded model to be deployed.
+      min_replica_count: int or None, the minimum number of replicas the
+        deployed model will be always deployed on.
+      max_replica_count: int or None, the maximum number of replicas the
+        deployed model may be deployed on.
+      version: str, the API version to use for messages (e.g.
+        googlecloudsdk.command_lib.ai.constants.BETA_VERSION or
+        googlecloudsdk.command_lib.ai.constants.GA_VERSION).
+
+    Returns:
+      A DeployedModel message tailored for GDC GGS.
+    """
+    machine_spec_cl = api_util.GetMessage('MachineSpec', version)
+    dedicated_resources_cl = api_util.GetMessage('DedicatedResources', version)
+    deployed_model_cl = api_util.GetMessage('DeployedModel', version)
+    if machine_type is not None:
+      # Honor the user-provided --machine-type. The server validates the
+      # value against the set of supported GGC machine types.
+      machine_spec = machine_spec_cl(machineType=machine_type)
+      accelerator = flags.ParseAcceleratorFlag(accelerator_dict, version)
+      if accelerator is not None:
+        machine_spec.acceleratorType = accelerator.acceleratorType
+        machine_spec.acceleratorCount = accelerator.acceleratorCount
+    else:
+      # When the user omits --machine-type, default to 'a3-ultragpu-8g-gdc'
+      # (real H200 machine type, matches today's preview zones).
+      machine_spec = machine_spec_cl(machineType='a3-ultragpu-8g-gdc')
+
+    # GGC does not support autoscaling at GA, but we pass the user-provided
+    # replica counts if available.
+    # Server-side validation enforces min == max unconditionally.
+    dedicated = dedicated_resources_cl(machineSpec=machine_spec)
+    if min_replica_count is None and max_replica_count is None:
+      dedicated.minReplicaCount = 1
+      dedicated.maxReplicaCount = 1
+    if min_replica_count is not None:
+      dedicated.minReplicaCount = min_replica_count
+    if max_replica_count is not None:
+      dedicated.maxReplicaCount = max_replica_count
+    return deployed_model_cl(
+        dedicatedResources=dedicated,
+        displayName=display_name,
+        gdcConnectedModel=model,
+    )
+
   def DeployModel(
       self,
       endpoint_ref,
@@ -795,71 +857,85 @@ class EndpointsClient(object):
     Returns:
       A long-running operation for DeployModel.
     """
-    model_ref = _ParseModel(model, region)
-
-    resource_type = _GetModelDeploymentResourceType(model_ref, self.client)
-    if resource_type == 'DEDICATED_RESOURCES':
-      # dedicated resources
-      machine_spec = self.messages.GoogleCloudAiplatformV1MachineSpec()
-      if machine_type is not None:
-        machine_spec.machineType = machine_type
-      if tpu_topology is not None:
-        machine_spec.tpuTopology = tpu_topology
-      if multihost_gpu_node_count is not None:
-        machine_spec.multihostGpuNodeCount = multihost_gpu_node_count
-      accelerator = flags.ParseAcceleratorFlag(
-          accelerator_dict, constants.GA_VERSION
-      )
-      if accelerator is not None:
-        machine_spec.acceleratorType = accelerator.acceleratorType
-        machine_spec.acceleratorCount = accelerator.acceleratorCount
-      if reservation_affinity is not None:
-        machine_spec.reservationAffinity = flags.ParseReservationAffinityFlag(
-            reservation_affinity, constants.GA_VERSION
-        )
-      if gpu_partition_size is not None:
-        machine_spec.gpuPartitionSize = gpu_partition_size
-
-      dedicated = self.messages.GoogleCloudAiplatformV1DedicatedResources(
-          machineSpec=machine_spec, spot=spot
-      )
-      # min-replica-count is required and must be >= 1 if models use dedicated
-      # resources. Default to 1 if not specified.
-      dedicated.minReplicaCount = min_replica_count or 1
-      if max_replica_count is not None:
-        dedicated.maxReplicaCount = max_replica_count
-      if required_replica_count is not None:
-        dedicated.requiredReplicaCount = required_replica_count
-
-      if autoscaling_metric_specs is not None:
-        autoscaling_metric_specs_list = []
-        for name, target in sorted(autoscaling_metric_specs.items()):
-          autoscaling_metric_specs_list.append(
-              self.messages.GoogleCloudAiplatformV1AutoscalingMetricSpec(
-                  metricName=constants.OP_AUTOSCALING_METRIC_NAME_MAPPER[name],
-                  target=target,
-              )
-          )
-        dedicated.autoscalingMetricSpecs = autoscaling_metric_specs_list
-
-      deployed_model = self.messages.GoogleCloudAiplatformV1DeployedModel(
-          dedicatedResources=dedicated,
-          displayName=display_name,
-          model=model_ref.RelativeName(),
+    is_gdc_ggs_model = _CheckIsGdcGgsModel(self, endpoint_ref)
+    if is_gdc_ggs_model:
+      deployed_model = self._BuildGdcGgsDeployedModel(
+          machine_type,
+          accelerator_dict,
+          display_name,
+          model,
+          min_replica_count,
+          max_replica_count,
+          constants.GA_VERSION,
       )
     else:
-      # automatic resources
-      automatic = self.messages.GoogleCloudAiplatformV1AutomaticResources()
-      if min_replica_count is not None:
-        automatic.minReplicaCount = min_replica_count
-      if max_replica_count is not None:
-        automatic.maxReplicaCount = max_replica_count
+      model_ref = _ParseModel(model, region)
 
-      deployed_model = self.messages.GoogleCloudAiplatformV1DeployedModel(
-          automaticResources=automatic,
-          displayName=display_name,
-          model=model_ref.RelativeName(),
-      )
+      resource_type = _GetModelDeploymentResourceType(model_ref, self.client)
+      if resource_type == 'DEDICATED_RESOURCES':
+        # dedicated resources
+        machine_spec = self.messages.GoogleCloudAiplatformV1MachineSpec()
+        if machine_type is not None:
+          machine_spec.machineType = machine_type
+        if tpu_topology is not None:
+          machine_spec.tpuTopology = tpu_topology
+        if multihost_gpu_node_count is not None:
+          machine_spec.multihostGpuNodeCount = multihost_gpu_node_count
+        accelerator = flags.ParseAcceleratorFlag(
+            accelerator_dict, constants.GA_VERSION
+        )
+        if accelerator is not None:
+          machine_spec.acceleratorType = accelerator.acceleratorType
+          machine_spec.acceleratorCount = accelerator.acceleratorCount
+        if reservation_affinity is not None:
+          machine_spec.reservationAffinity = flags.ParseReservationAffinityFlag(
+              reservation_affinity, constants.GA_VERSION
+          )
+        if gpu_partition_size is not None:
+          machine_spec.gpuPartitionSize = gpu_partition_size
+
+        dedicated = self.messages.GoogleCloudAiplatformV1DedicatedResources(
+            machineSpec=machine_spec, spot=spot
+        )
+        # min-replica-count is required and must be >= 1 if models use dedicated
+        # resources. Default to 1 if not specified.
+        dedicated.minReplicaCount = min_replica_count or 1
+        if max_replica_count is not None:
+          dedicated.maxReplicaCount = max_replica_count
+        if required_replica_count is not None:
+          dedicated.requiredReplicaCount = required_replica_count
+
+        if autoscaling_metric_specs is not None:
+          autoscaling_metric_specs_list = []
+          for name, target in sorted(autoscaling_metric_specs.items()):
+            autoscaling_metric_specs_list.append(
+                self.messages.GoogleCloudAiplatformV1AutoscalingMetricSpec(
+                    metricName=constants.OP_AUTOSCALING_METRIC_NAME_MAPPER[
+                        name
+                    ],
+                    target=target,
+                )
+            )
+          dedicated.autoscalingMetricSpecs = autoscaling_metric_specs_list
+
+        deployed_model = self.messages.GoogleCloudAiplatformV1DeployedModel(
+            dedicatedResources=dedicated,
+            displayName=display_name,
+            model=model_ref.RelativeName(),
+        )
+      else:
+        # automatic resources
+        automatic = self.messages.GoogleCloudAiplatformV1AutomaticResources()
+        if min_replica_count is not None:
+          automatic.minReplicaCount = min_replica_count
+        if max_replica_count is not None:
+          automatic.maxReplicaCount = max_replica_count
+
+        deployed_model = self.messages.GoogleCloudAiplatformV1DeployedModel(
+            automaticResources=automatic,
+            displayName=display_name,
+            model=model_ref.RelativeName(),
+        )
 
     deployed_model.enableAccessLogging = enable_access_logging
     deployed_model.disableContainerLogging = disable_container_logging
@@ -976,42 +1052,14 @@ class EndpointsClient(object):
     """
     is_gdc_ggs_model = _CheckIsGdcGgsModel(self, endpoint_ref)
     if is_gdc_ggs_model:
-      if machine_type is not None:
-        # Honor the user-provided --machine-type. The server validates the
-        # value against the set of supported GGC machine types.
-        machine_spec = self.messages.GoogleCloudAiplatformV1beta1MachineSpec(
-            machineType=machine_type,
-        )
-        accelerator = flags.ParseAcceleratorFlag(
-            accelerator_dict, constants.BETA_VERSION
-        )
-        if accelerator is not None:
-          machine_spec.acceleratorType = accelerator.acceleratorType
-          machine_spec.acceleratorCount = accelerator.acceleratorCount
-      else:
-        # When the user omits --machine-type, default to 'a3-ultragpu-8g-gdc'
-        # (real H200 machine type, matches today's preview zones).
-        machine_spec = self.messages.GoogleCloudAiplatformV1beta1MachineSpec(
-            machineType='a3-ultragpu-8g-gdc',
-        )
-      # GGC does not support autoscaling at GA, but we pass the user-provided
-      # replica counts if available.
-      # Server-side validation enforces min == max unconditionally.
-      dedicated = self.messages.GoogleCloudAiplatformV1beta1DedicatedResources(
-          machineSpec=machine_spec,
-      )
-      if min_replica_count is None and max_replica_count is None:
-        dedicated.minReplicaCount = 1
-        dedicated.maxReplicaCount = 1
-      else:
-        if min_replica_count is not None:
-          dedicated.minReplicaCount = min_replica_count
-        if max_replica_count is not None:
-          dedicated.maxReplicaCount = max_replica_count
-      deployed_model = self.messages.GoogleCloudAiplatformV1beta1DeployedModel(
-          dedicatedResources=dedicated,
-          displayName=display_name,
-          gdcConnectedModel=model,
+      deployed_model = self._BuildGdcGgsDeployedModel(
+          machine_type,
+          accelerator_dict,
+          display_name,
+          model,
+          min_replica_count,
+          max_replica_count,
+          constants.BETA_VERSION,
       )
     else:
       model_ref = _ParseModel(model, region)

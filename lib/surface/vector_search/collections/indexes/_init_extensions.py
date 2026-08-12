@@ -22,13 +22,16 @@ from googlecloudsdk.calliope import base
 @base.DefaultUniverseOnly
 class IndexesAlpha(base.Group):
   """Optional no-auto-generated code for ALPHA."""
+  category = base.VECTOR_SEARCH_CATEGORY
 
 
 @base.DefaultUniverseOnly
 class IndexesBeta(base.Group):
   """Optional no-auto-generated code for BETA."""
+  category = base.VECTOR_SEARCH_CATEGORY
 
 
 @base.DefaultUniverseOnly
 class IndexesGa(base.Group):
   """Optional no-auto-generated code for GA."""
+  category = base.VECTOR_SEARCH_CATEGORY

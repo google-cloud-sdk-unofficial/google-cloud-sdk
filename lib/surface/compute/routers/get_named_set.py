@@ -34,7 +34,9 @@ class GetNamedSet(base.DescribeCommand):
   @classmethod
   def Args(cls, parser):
     GetNamedSet.ROUTER_ARG = flags.RouterArgument()
-    GetNamedSet.ROUTER_ARG.AddArgument(parser, operation_type='get')
+    GetNamedSet.ROUTER_ARG.AddArgument(
+        parser, operation_type='get the named set from'
+    )
     parser.add_argument(
         '--set-name',
         help="""Name of the named set to get.""",

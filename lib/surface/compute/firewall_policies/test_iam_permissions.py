@@ -1,0 +1,105 @@
+# -*- coding: utf-8 -*- #
+# Copyright 2026 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""Command to test IAM permissions for an organization firewall policy."""
+
+
+from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute.firewall_policies import client
+from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.firewall_policies import firewall_policies_utils
+from googlecloudsdk.command_lib.compute.firewall_policies import flags
+
+
+@base.DefaultUniverseOnly
+class TestIamPermissions(base.Command):
+  """Test IAM permissions for a Compute Engine organization firewall policy."""
+
+  FIREWALL_POLICY_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.FIREWALL_POLICY_ARG = flags.FirewallPolicyArgument(
+        required=True, operation='test IAM permissions'
+    )
+    cls.FIREWALL_POLICY_ARG.AddArgument(parser, operation_type='get')
+
+    parser.add_argument(
+        '--organization',
+        help=(
+            'Organization ID in which the organization firewall policy is '
+            'to be described. Must be set if FIREWALL_POLICY is short name.'
+        ),
+    )
+    parser.add_argument(
+        '--permissions',
+        type=arg_parsers.ArgList(),
+        metavar='PERMISSION',
+        required=True,
+        help='The permissions to test.',
+    )
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    ref = self.FIREWALL_POLICY_ARG.ResolveAsResource(
+        args, holder.resources, with_project=False
+    )
+
+    org_firewall_policy = client.OrgFirewallPolicy(
+        ref=ref,
+        compute_client=holder.client,
+        resources=holder.resources,
+        version=str(self.ReleaseTrack()).lower(),
+    )
+
+    fp_id = firewall_policies_utils.GetFirewallPolicyId(
+        firewall_policy_client=org_firewall_policy,
+        firewall_policy=ref.Name(),
+        organization=args.organization,
+    )
+
+    return org_firewall_policy.TestIamPermissions(
+        fp_id=fp_id, permissions=args.permissions
+    )
+
+
+TestIamPermissions.detailed_help = {
+    'brief': (
+        'Test IAM permissions for a Compute Engine organization firewall'
+        ' policy.'
+    ),
+    'DESCRIPTION': (
+        """\
+        Returns permissions that a caller has on the specified organization
+        firewall policy.
+        """
+    ),
+    'EXAMPLES': (
+        """\
+        To test if the caller has `compute.firewallPolicies.get` permission on
+        the organization firewall policy `my-policy`
+        (under organization `123456789`), run:
+
+          $ {command} my-policy \
+              --organization=123456789 \
+              --permissions=compute.firewallPolicies.get
+
+        To test if the caller has `compute.firewallPolicies.get` permission on
+        the organization firewall policy with numeric ID `987654321`, run:
+
+          $ {command} 987654321 --permissions=compute.firewallPolicies.get
+        """
+    ),
+}

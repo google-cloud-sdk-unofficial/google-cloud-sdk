@@ -6161,6 +6161,53 @@ class PauseRolloutRequest(_messages.Message):
   r"""Request message for pausing a rollout."""
 
 
+class PerStageSoakDurationOverrides(_messages.Message):
+  r"""Configuration for per-stage soak duration overrides.
+
+  Messages:
+    StageOverridesValue: Required. A mapping of stage numbers to their
+      respective desired soak durations. Key is the stage number, value is the
+      desired soak duration. Stages omitted from the map will receive the
+      standard soak duration configured on the sequence for that stage.
+
+  Fields:
+    stageOverrides: Required. A mapping of stage numbers to their respective
+      desired soak durations. Key is the stage number, value is the desired
+      soak duration. Stages omitted from the map will receive the standard
+      soak duration configured on the sequence for that stage.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class StageOverridesValue(_messages.Message):
+    r"""Required. A mapping of stage numbers to their respective desired soak
+    durations. Key is the stage number, value is the desired soak duration.
+    Stages omitted from the map will receive the standard soak duration
+    configured on the sequence for that stage.
+
+    Messages:
+      AdditionalProperty: An additional property for a StageOverridesValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type StageOverridesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a StageOverridesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  stageOverrides = _messages.MessageField('StageOverridesValue', 1)
+
+
 class Policy(_messages.Message):
   r"""An Identity and Access Management (IAM) policy, which specifies access
   controls for Google Cloud resources. A `Policy` is a collection of
@@ -7071,7 +7118,7 @@ class Role(_messages.Message):
 
 
 class Rollout(_messages.Message):
-  r"""Rollout contains the Rollout metadata and configuration. Next ID: 28
+  r"""Rollout contains the Rollout metadata and configuration. Next ID: 31
 
   Enums:
     IntentValueValuesEnum: Output only. The intent of the rollout.
@@ -7088,6 +7135,10 @@ class Rollout(_messages.Message):
       node pool targets of a single cluster (GKE Hub membership) that's part
       of this Rollout. The key is the membership name of the cluster. The
       value is the state of the cluster.
+    StageSoakDurationOverridesValue: Optional. Overrides the soak durations
+      for specific stages of the rollout. Key is the stage number, value is
+      the desired soak duration. Stages omitted from the map will receive the
+      standard soak duration configured on the sequence for that stage.
 
   Fields:
     annotations: Optional. Annotations for this Rollout.
@@ -7102,6 +7153,11 @@ class Rollout(_messages.Message):
     excludedClusters: Optional. Output only. The excluded clusters from the
       rollout.
     feature: Optional. Feature config to use for Rollout.
+    ignoreClusterDisruptionBudgets: Optional. If set to true, the rollout will
+      ignore the disruption budgets of the clusters.
+    ignoreMaintenancePolicies: Optional. If set to true, the rollout will
+      ignore any maintenance policies (Maintenance Windows and Maintenance
+      Exclusions) set on the clusters.
     intent: Output only. The intent of the rollout.
     labels: Optional. Labels for this Rollout.
     lastPauseTime: Output only. The timestamp at which the Rollout was last
@@ -7120,6 +7176,10 @@ class Rollout(_messages.Message):
     scheduledStartTime: Optional. The timestamp at which the Rollout is
       scheduled to start. If not specified, the Rollout will start
       immediately.
+    stageSoakDurationOverrides: Optional. Overrides the soak durations for
+      specific stages of the rollout. Key is the stage number, value is the
+      desired soak duration. Stages omitted from the map will receive the
+      standard soak duration configured on the sequence for that stage.
     stages: Output only. The stages of the Rollout.
     state: Output only. State specifies various states of the Rollout.
     stateReason: Output only. A human-readable description explaining the
@@ -7297,6 +7357,35 @@ class Rollout(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class StageSoakDurationOverridesValue(_messages.Message):
+    r"""Optional. Overrides the soak durations for specific stages of the
+    rollout. Key is the stage number, value is the desired soak duration.
+    Stages omitted from the map will receive the standard soak duration
+    configured on the sequence for that stage.
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        StageSoakDurationOverridesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        StageSoakDurationOverridesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a StageSoakDurationOverridesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   annotations = _messages.MessageField('AnnotationsValue', 1)
   clusterStatus = _messages.MessageField('ClusterStatus', 2, repeated=True)
   completeTime = _messages.StringField(3)
@@ -7306,24 +7395,27 @@ class Rollout(_messages.Message):
   etag = _messages.StringField(7)
   excludedClusters = _messages.MessageField('ExcludedCluster', 8, repeated=True)
   feature = _messages.MessageField('FeatureUpdate', 9)
-  intent = _messages.EnumField('IntentValueValuesEnum', 10)
-  labels = _messages.MessageField('LabelsValue', 11)
-  lastPauseTime = _messages.StringField(12)
-  managedRolloutConfig = _messages.MessageField('ManagedRolloutConfig', 13)
-  membershipStates = _messages.MessageField('MembershipStatesValue', 14)
-  name = _messages.StringField(15)
-  rolloutSequence = _messages.StringField(16)
-  schedule = _messages.MessageField('Schedule', 17)
-  scheduledStartTime = _messages.StringField(18)
-  stages = _messages.MessageField('RolloutStage', 19, repeated=True)
-  state = _messages.EnumField('StateValueValuesEnum', 20)
-  stateReason = _messages.StringField(21)
-  stateReasonType = _messages.EnumField('StateReasonTypeValueValuesEnum', 22)
-  systemConfigIgnored = _messages.BooleanField(23)
-  trigger = _messages.EnumField('TriggerValueValuesEnum', 24)
-  uid = _messages.StringField(25)
-  updateTime = _messages.StringField(26)
-  versionUpgrade = _messages.MessageField('VersionUpgrade', 27)
+  ignoreClusterDisruptionBudgets = _messages.BooleanField(10)
+  ignoreMaintenancePolicies = _messages.BooleanField(11)
+  intent = _messages.EnumField('IntentValueValuesEnum', 12)
+  labels = _messages.MessageField('LabelsValue', 13)
+  lastPauseTime = _messages.StringField(14)
+  managedRolloutConfig = _messages.MessageField('ManagedRolloutConfig', 15)
+  membershipStates = _messages.MessageField('MembershipStatesValue', 16)
+  name = _messages.StringField(17)
+  rolloutSequence = _messages.StringField(18)
+  schedule = _messages.MessageField('Schedule', 19)
+  scheduledStartTime = _messages.StringField(20)
+  stageSoakDurationOverrides = _messages.MessageField('StageSoakDurationOverridesValue', 21)
+  stages = _messages.MessageField('RolloutStage', 22, repeated=True)
+  state = _messages.EnumField('StateValueValuesEnum', 23)
+  stateReason = _messages.StringField(24)
+  stateReasonType = _messages.EnumField('StateReasonTypeValueValuesEnum', 25)
+  systemConfigIgnored = _messages.BooleanField(26)
+  trigger = _messages.EnumField('TriggerValueValuesEnum', 27)
+  uid = _messages.StringField(28)
+  updateTime = _messages.StringField(29)
+  versionUpgrade = _messages.MessageField('VersionUpgrade', 30)
 
 
 class RolloutCreationScope(_messages.Message):
@@ -8677,9 +8769,18 @@ class UpgradeRolloutSequenceRequest(_messages.Message):
     force: Optional. If set to true, any rollout already running on the first
       stage of the sequence will be cancelled to allow for the creation of the
       new rollout.
+    ignoreClusterDisruptionBudgets: Optional. If set to true, the rollout will
+      ignore the disruption budgets of the clusters.
+    ignoreMaintenancePolicies: Optional. If set to true, the rollout will
+      ignore any maintenance policies (Maintenance Windows and Maintenance
+      Exclusions) set on the clusters.
     patchOnly: Optional. If set to true, the rollout will only upgrade
       clusters that match the minor version of the `version` field, but are on
       an earlier patch version.
+    soakDurationOverrideAllStages: Optional. Overrides the soak duration for
+      all stages of the rollout.
+    soakDurationOverridePerStage: Optional. Overrides the soak durations for
+      specific stages of the rollout.
     upgradeType: Required. The type of upgrade.
     version: Required. GKE version to upgrade to. A valid GKE version
       available on the release channel used by the sequence. Patch versions
@@ -8709,9 +8810,13 @@ class UpgradeRolloutSequenceRequest(_messages.Message):
     NODE = 2
 
   force = _messages.BooleanField(1)
-  patchOnly = _messages.BooleanField(2)
-  upgradeType = _messages.EnumField('UpgradeTypeValueValuesEnum', 3)
-  version = _messages.StringField(4)
+  ignoreClusterDisruptionBudgets = _messages.BooleanField(2)
+  ignoreMaintenancePolicies = _messages.BooleanField(3)
+  patchOnly = _messages.BooleanField(4)
+  soakDurationOverrideAllStages = _messages.StringField(5)
+  soakDurationOverridePerStage = _messages.MessageField('PerStageSoakDurationOverrides', 6)
+  upgradeType = _messages.EnumField('UpgradeTypeValueValuesEnum', 7)
+  version = _messages.StringField(8)
 
 
 class VersionUpgrade(_messages.Message):

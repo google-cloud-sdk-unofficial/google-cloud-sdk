@@ -1238,6 +1238,33 @@ class ContainerDependenciesChange(config_changes.TemplateConfigChanger):
     return resource
 
 
+@dataclasses.dataclass(frozen=True)
+class TerminationGracePeriodChanges(config_changes.TemplateConfigChanger):
+  """Represents the user intent to update the termination grace period.
+
+  Attributes:
+    termination_grace_period: The grace period in seconds to set in the
+      template. If None, it is cleared (reverts to default).
+  """
+
+  termination_grace_period: int | None = None
+
+  @classmethod
+  def FromFlag(cls, grace_period_str):
+    return cls(config_changes.ParseTerminationGracePeriodFlag(grace_period_str))
+
+  def Adjust(self, resource):
+    # For V2 GAPIC resources, assigning None to a duration_pb2.Duration
+    # field clears it so that field mask properly removes the field.
+    if self.termination_grace_period is None:
+      resource.template.termination_grace_period = None
+    else:
+      resource.template.termination_grace_period = duration_pb2.Duration(
+          seconds=self.termination_grace_period
+      )
+    return resource
+
+
 # Common config changes to all resource types ends.
 
 
@@ -1291,13 +1318,19 @@ class WorkerPoolCpuScalingChange(config_changes.NonTemplateConfigChanger):
   ) -> worker_pool_objects.WorkerPool:
     if self.restore_default:
       # Revert to system default
-      resource.scaling.cpu_scaling = None
+      resource.scaling.cpu_scaling = vendor_settings.CpuScaling()
+      resource.scaling.scaling_mode = (
+          vendor_settings.WorkerPoolScaling.ScalingMode.AUTOMATIC
+      )
+      resource.scaling.manual_instance_count = None
+
     elif self.cpu_utilization == 0.0:
       # Handled as "disabled"
       if not resource.scaling.cpu_scaling:
         resource.scaling.cpu_scaling = vendor_settings.CpuScaling()
       resource.scaling.cpu_scaling.cpu_utilization = 0.0
-    else:
+
+    elif self.cpu_utilization is not None:
       if not resource.scaling.cpu_scaling:
         # Ensure the sub-object exists
         resource.scaling.cpu_scaling = vendor_settings.CpuScaling()
@@ -1307,6 +1340,21 @@ class WorkerPoolCpuScalingChange(config_changes.NonTemplateConfigChanger):
       )
       # Clear manual instance count when autoscaling is enabled
       resource.scaling.manual_instance_count = None
+
+    elif (
+        resource.scaling.scaling_mode
+        != vendor_settings.WorkerPoolScaling.ScalingMode.AUTOMATIC
+    ):
+      # If cpu_utilization is None and we are transitioning from MANUAL to
+      # AUTOMATIC mode, enable CPU scaling to use the default target.
+      resource.scaling.cpu_scaling = vendor_settings.CpuScaling()
+      resource.scaling.scaling_mode = (
+          vendor_settings.WorkerPoolScaling.ScalingMode.AUTOMATIC
+      )
+      resource.scaling.manual_instance_count = None
+
+    # If already in AUTOMATIC mode and no target is specified, we fall through
+    # as a no-op to preserve existing settings.
     return resource
 
 

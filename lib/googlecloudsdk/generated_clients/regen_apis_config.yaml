@@ -999,6 +999,13 @@ apis:
           path: projects/{projectsId}/secrets/{secretsId}
         projects.secrets.versions:
           path: projects/{projectsId}/secrets/{secretsId}/versions/{versionsId}
+  developerknowledge:
+    v1alpha:
+      discovery_doc: developerknowledge_v1alpha.json
+      default: true
+      resources:
+        v1alpha:
+          path: v1alpha
   devicerun:
     v1alpha:
       discovery_doc: devicerun_v1alpha.json
@@ -1065,6 +1072,8 @@ apis:
     v1:
       discovery_doc: edgecontainer_v1.json
       enable_mtls: true
+      skip:
+        bug: b/541258707
     v1beta:
       discovery_doc: edgecontainer_v1beta.json
       enable_mtls: true
@@ -1133,6 +1142,8 @@ apis:
     v1:
       discovery_doc: firestore_v1.json
       default: true
+      skip:
+        bug: b/541257660
   genomics:
     v1:
       discovery_doc: genomics_v1.json
@@ -1224,6 +1235,8 @@ apis:
       resources:
         projects.locations:
           path: projects/{projectsId}/locations/{locationsId}
+      skip:
+        bug: b/541258803
     v1beta:
       discovery_doc: hypercomputecluster_v1beta.json
     v1:
@@ -2650,6 +2663,10 @@ canonical_surfaces:
   developerconnect:
     name: developerconnect
     command: developerconnect
+    hidden: true
+  developerknowledge:
+    name: developerknowledge
+    command: developerknowledge
     hidden: true
   devicerun:
     name: devicerun

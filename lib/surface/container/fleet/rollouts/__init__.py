@@ -24,3 +24,4 @@ from googlecloudsdk.calliope import base
 )
 class Rollouts(base.Group):
   """Manage rollouts."""
+  category = base.COMPUTE_CATEGORY

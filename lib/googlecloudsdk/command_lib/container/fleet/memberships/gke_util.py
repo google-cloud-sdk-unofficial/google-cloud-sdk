@@ -122,7 +122,7 @@ def ConstructGKEClusterResourceLinkAndURI(
       cluster_name,
   )
   gke_cluster_uri = '{}/v1/projects/{}/locations/{}/clusters/{}'.format(
-      container_endpoint, project_id, cluster_location, cluster_name
+      canonical_endpoint, project_id, cluster_location, cluster_name
   )
   return gke_resource_link, gke_cluster_uri
 

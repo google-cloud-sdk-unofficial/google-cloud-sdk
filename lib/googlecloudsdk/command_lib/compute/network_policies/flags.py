@@ -14,7 +14,6 @@
 # limitations under the License.
 """Flags and helpers for the compute network policies commands."""
 
-
 import argparse
 
 from googlecloudsdk.calliope import arg_parsers
@@ -137,7 +136,9 @@ def AddArgsDescribeAssociation(parser):
   )
 
 
-def AddArgsAddRule(parser: argparse.ArgumentParser) -> None:
+def AddArgsAddRule(
+    parser: argparse.ArgumentParser, support_address_groups: bool
+) -> None:
   """Adds the arguments for network policy add rules method."""
   AddDescription(parser, required=False)
   AddRulePriority(
@@ -147,7 +148,9 @@ def AddArgsAddRule(parser: argparse.ArgumentParser) -> None:
   )
   AddRuleName(parser, required=False)
   AddSrcIpRanges(parser, required=False)
-  AddDestIpRanges(parser, required=True)
+  AddDestIpRanges(parser, required=False)
+  if support_address_groups:
+    AddDestAddressGroups(parser, required=False)
   AddLayer4Configs(parser, required=True)
   AddTrafficClass(parser, required=True)
   AddDscpMode(parser, required=True)
@@ -188,7 +191,9 @@ def AddArgsDescribeRule(parser: argparse.ArgumentParser) -> None:
   )
 
 
-def AddArgsUpdateRule(parser: argparse.ArgumentParser) -> None:
+def AddArgsUpdateRule(
+    parser: argparse.ArgumentParser, support_address_groups: bool
+) -> None:
   """Adds the arguments for network policy update rules method."""
   AddRulePriority(
       parser,
@@ -197,6 +202,8 @@ def AddArgsUpdateRule(parser: argparse.ArgumentParser) -> None:
   )
   AddDescription(parser)
   AddDestIpRanges(parser)
+  if support_address_groups:
+    AddDestAddressGroups(parser, required=False)
   AddDisabled(parser)
   AddTrafficClass(parser, required=False)
   AddDscpMode(parser, required=False)
@@ -303,6 +310,19 @@ def AddDestIpRanges(
       required=required,
       metavar='DEST_IP_RANGE',
       help='Destination IP ranges to match for this rule.',
+  )
+
+
+def AddDestAddressGroups(
+    parser: argparse.ArgumentParser, required: bool = False
+) -> None:
+  """Adds the destination address groups."""
+  parser.add_argument(
+      '--dest-address-groups',
+      type=arg_parsers.ArgList(),
+      required=required,
+      metavar='DEST_ADDRESS_GROUP',
+      help='Destination address groups to match for this rule.',
   )
 
 

@@ -22,13 +22,16 @@ from googlecloudsdk.calliope import base
 @base.DefaultUniverseOnly
 class SecurityGatewaysAlpha(base.Group):
   """Optional no-auto-generated code for ALPHA."""
+  category = base.SECURITY_CATEGORY
 
 
 @base.DefaultUniverseOnly
 class SecurityGatewaysBeta(base.Group):
   """Optional no-auto-generated code for BETA."""
+  category = base.SECURITY_CATEGORY
 
 
 @base.DefaultUniverseOnly
 class SecurityGatewaysGa(base.Group):
   """Optional no-auto-generated code for GA."""
+  category = base.SECURITY_CATEGORY

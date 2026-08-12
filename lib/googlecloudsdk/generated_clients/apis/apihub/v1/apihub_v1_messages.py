@@ -6347,7 +6347,9 @@ class GoogleCloudApihubV1Version(_messages.Message):
       These definitions will be added to the version when a new spec is added
       or when an existing spec is updated. Format is `projects/{project}/locat
       ions/{location}/apis/{api}/versions/{version}/definitions/{definition}`
-    deployments: Optional. The deployments linked to this API version. Note: A
+    deployments: Optional. The deployments linked directly to this API
+      version. Only directly-linked deployments are returned; deployments
+      linked to this version's specs or operations are not included. Note: A
       particular API version could be deployed to multiple deployments (for
       dev deployment, UAT deployment, etc) Format is
       `projects/{project}/locations/{location}/deployments/{deployment}`

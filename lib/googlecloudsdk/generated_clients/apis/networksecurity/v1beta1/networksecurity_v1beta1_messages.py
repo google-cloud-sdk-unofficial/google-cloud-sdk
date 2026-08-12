@@ -9425,6 +9425,8 @@ class UllMirroringCollector(_messages.Message):
   r"""Message describing UllMirroringCollector object
 
   Enums:
+    ProducerPolicyValueValuesEnum: Output only. Administrative policy set by
+      the service producer.
     StateValueValuesEnum: Output only. Current state of the collector.
 
   Messages:
@@ -9440,11 +9442,27 @@ class UllMirroringCollector(_messages.Message):
       projects/{project}/regions/{region}/forwardingRules/{forwardingRule}
     labels: Optional. Labels as key value pairs
     name: Immutable. Identifier. The name of the UllMirroringCollector.
+    producerPolicy: Output only. Administrative policy set by the service
+      producer.
     reconciling: Output only. Whether reconciling is in progress, recommended
       per https://google.aip.dev/128.
     state: Output only. Current state of the collector.
     updateTime: Output only. [Output only] Update time stamp
   """
+
+  class ProducerPolicyValueValuesEnum(_messages.Enum):
+    r"""Output only. Administrative policy set by the service producer.
+
+    Values:
+      PRODUCER_POLICY_UNSPECIFIED: Unspecified policy state.
+      ENABLED: Normal operational state. Collector is enabled.
+      DISABLED: Emergency override state. Packet delivery to the Collector is
+        administratively disabled. Used in emergency situations to protect
+        compute and network infrastructure from severe traffic overload.
+    """
+    PRODUCER_POLICY_UNSPECIFIED = 0
+    ENABLED = 1
+    DISABLED = 2
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. Current state of the collector.
@@ -9494,9 +9512,10 @@ class UllMirroringCollector(_messages.Message):
   forwardingRule = _messages.StringField(3)
   labels = _messages.MessageField('LabelsValue', 4)
   name = _messages.StringField(5)
-  reconciling = _messages.BooleanField(6)
-  state = _messages.EnumField('StateValueValuesEnum', 7)
-  updateTime = _messages.StringField(8)
+  producerPolicy = _messages.EnumField('ProducerPolicyValueValuesEnum', 6)
+  reconciling = _messages.BooleanField(7)
+  state = _messages.EnumField('StateValueValuesEnum', 8)
+  updateTime = _messages.StringField(9)
 
 
 class UllMirroringCollectorRule(_messages.Message):

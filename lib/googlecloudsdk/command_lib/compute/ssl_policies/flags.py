@@ -243,3 +243,18 @@ def GetPostQuantumKeyExchangeFlag():
 
 def ParseTlsVersion(tls_version):
   return _TLS_VERSION_MAP[tls_version] if tls_version else None
+
+
+def GetTlsModeFlag():
+  """Returns the flag for specifying TLS mode."""
+  return base.Argument(
+      '--tls-mode',
+      choices={
+          'SIMPLE': 'Secures connections with standard TLS semantics.',
+          'MUTUAL': (
+              'Secures connections to the backends that use mutual TLS by '
+              'presenting client certificates for authentication.'
+          )
+      },
+      help='Indicates how TLS is enforced for server connections.'
+  )

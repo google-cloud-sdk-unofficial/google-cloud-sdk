@@ -50,8 +50,10 @@ def _Args(
     support_flex_start=True,
     support_skip_guest_os_shutdown=False,
     support_workload_identity_config=False,
+    support_identity_type=False,
     support_vsock_mode=False,
     support_expose_host_topology=False,
+    support_external_ip_tier=False,
 ):
   """Add flags shared by all release tracks."""
   parser.display_info.AddFormat(instances_flags.DEFAULT_LIST_FORMAT)
@@ -92,7 +94,9 @@ def _Args(
   instances_flags.AddCustomMachineTypeArgs(parser)
   instances_flags.AddNetworkArgs(parser)
   instances_flags.AddPrivateNetworkIpArgs(parser)
-  instances_flags.AddNetworkPerformanceConfigsArgs(parser)
+  instances_flags.AddNetworkPerformanceConfigsArgs(
+      parser, support_external_ip_tier=support_external_ip_tier
+  )
   instances_flags.AddShieldedInstanceConfigArgs(
       parser=parser, for_container=True
   )
@@ -146,7 +150,9 @@ def _Args(
   if support_skip_guest_os_shutdown:
     instances_flags.AddSkipGuestOsShutdownArgs(parser)
   if support_workload_identity_config:
-    instances_flags.AddWorkloadIdentityConfigArgs(parser)
+    instances_flags.AddWorkloadIdentityConfigArgs(
+        parser, support_identity_type=support_identity_type
+    )
   instances_flags.AddRequestValidForDurationArgs(parser)
 
 
@@ -192,8 +198,10 @@ class CreateWithContainer(base.CreateCommand):
   _support_graceful_shutdown = True
   _support_skip_guest_os_shutdown = True
   _support_workload_identity_config = True
+  _support_identity_type = False
   _support_vsock_mode = False
   _support_expose_host_topology = False
+  _support_external_ip_tier = False
 
   @staticmethod
   def Args(parser):
@@ -210,9 +218,12 @@ class CreateWithContainer(base.CreateCommand):
         support_any_reservation_then_fail_affinity=False,
         support_disk_labels=False,
         support_ipv6_only=True,
+        support_graceful_shutdown=True,
         support_skip_guest_os_shutdown=True,
         support_workload_identity_config=True,
+        support_identity_type=False,
         support_vsock_mode=False,
+        support_external_ip_tier=CreateWithContainer._support_external_ip_tier,
     )
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
@@ -396,6 +407,7 @@ class CreateWithContainer(base.CreateCommand):
             args,
             compute_client.messages,
             self._support_workload_identity_config,
+            self._support_identity_type,
         )
     )
 
@@ -583,6 +595,7 @@ class CreateWithContainerBeta(CreateWithContainer):
   _support_disk_labels = True
   _support_skip_guest_os_shutdown = True
   _support_workload_identity_config = True
+  _support_identity_type = False
 
   @staticmethod
   def Args(parser):
@@ -602,7 +615,9 @@ class CreateWithContainerBeta(CreateWithContainer):
         support_flex_start=True,
         support_skip_guest_os_shutdown=True,
         support_workload_identity_config=True,
+        support_identity_type=False,
         support_vsock_mode=False,
+        support_external_ip_tier=CreateWithContainerBeta._support_external_ip_tier,
     )
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgs(parser)
@@ -640,8 +655,10 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   _support_ipv6_only = True
   _support_skip_guest_os_shutdown = True
   _support_workload_identity_config = True
+  _support_identity_type = True
   _support_vsock_mode = True
   _support_expose_host_topology = True
+  _support_external_ip_tier = True
 
   @staticmethod
   def Args(parser):
@@ -661,8 +678,10 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         support_flex_start=True,
         support_skip_guest_os_shutdown=True,
         support_workload_identity_config=True,
+        support_identity_type=True,
         support_vsock_mode=True,
         support_expose_host_topology=True,
+        support_external_ip_tier=CreateWithContainerAlpha._support_external_ip_tier,
     )
 
     instances_flags.AddNetworkTierArgs(parser, instance=True)

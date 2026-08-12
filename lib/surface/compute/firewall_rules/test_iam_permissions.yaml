@@ -1,0 +1,32 @@
+release_tracks: [ALPHA]
+universe_compatible: true
+help_text:
+  brief: Test IAM permissions for a Compute Engine firewall rule.
+  description: |
+    Returns permissions that a caller has on the specified firewall rule.
+
+  examples: |
+    To test if the caller has 'compute.firewalls.get' permission on a firewall rule `my-firewall-rule`, run:
+
+      $ {command} my-firewall-rule --permissions=compute.firewalls.get
+
+request:
+  collection: compute.firewalls
+  api_version: alpha
+  method: testIamPermissions
+  use_relative_name: false
+
+command_type: GENERIC
+
+arguments:
+  resource:
+    help_text: The firewall rule for which to test permissions.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:firewall
+  params:
+  - arg_name: permissions
+    api_field: testPermissionsRequest.permissions
+    required: true
+    repeated: true
+    metavar: PERMISSION
+    help_text: |-
+      Permissions to test.

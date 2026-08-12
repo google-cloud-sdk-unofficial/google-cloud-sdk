@@ -40,24 +40,21 @@ def AddSplitPoints(database_ref, split_points, initiator_string):
 
 def ListSplitPoints(database_ref):
   """List the user added split points fo a database."""
-# TODO(b/362149997): Check this for both dialects.
+  # TODO(b/362149997): Check this for both dialects.
   session_name = database_sessions.Create(database_ref, None)
 
   session = resources.REGISTRY.ParseRelativeName(
       relative_name=session_name.name,
       collection='spanner.projects.instances.databases.sessions',
   )
-  try:
-    return _TransformToSplitResult(
-        database_sessions.ExecuteSql(
-            'SELECT TABLE_NAME, INDEX_NAME, INITIATOR, SPLIT_KEY, EXPIRE_TIME'
-            ' FROM SPANNER_SYS.USER_SPLIT_POINTS',
-            'NORMAL',
-            session,
-        )
-    )
-  finally:
-    database_sessions.Delete(session)
+  return _TransformToSplitResult(
+      database_sessions.ExecuteSql(
+          'SELECT TABLE_NAME, INDEX_NAME, INITIATOR, SPLIT_KEY, EXPIRE_TIME'
+          ' FROM SPANNER_SYS.USER_SPLIT_POINTS',
+          'NORMAL',
+          session,
+      )
+  )
 
 
 def _TransformToSplitResult(result):

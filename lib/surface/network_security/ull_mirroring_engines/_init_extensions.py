@@ -21,11 +21,14 @@ from googlecloudsdk.calliope import base
 
 class UllMirroringEnginesAlpha(base.Group):
   """Optional no-auto-generated code for ALPHA."""
+  category = base.NETWORK_SECURITY_CATEGORY
 
 
 class UllMirroringEnginesBeta(base.Group):
   """Optional no-auto-generated code for BETA."""
+  category = base.NETWORK_SECURITY_CATEGORY
 
 
 class UllMirroringEnginesGa(base.Group):
   """Optional no-auto-generated code for GA."""
+  category = base.NETWORK_SECURITY_CATEGORY

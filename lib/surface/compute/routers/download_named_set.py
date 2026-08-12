@@ -38,8 +38,10 @@ class DownloadNamedSet(base.DescribeCommand):
 
   @classmethod
   def Args(cls, parser):
-    DownloadNamedSet.ROUTER_ARG = flags.RouterArgument()
-    DownloadNamedSet.ROUTER_ARG.AddArgument(parser, operation_type='export')
+    DownloadNamedSet.ROUTER_ARG = flags.RouterArgument(
+        custom_help='Name of the router with the named set to export.'
+    )
+    DownloadNamedSet.ROUTER_ARG.AddArgument(parser)
     parser.add_argument(
         '--set-name',
         required=True,
@@ -48,12 +50,15 @@ class DownloadNamedSet(base.DescribeCommand):
     parser.add_argument(
         '--file-name',
         required=True,
-        help='The name of the file to download the named set config to.',
+        help='The name of the file to download the named set configuration to.',
     )
     parser.add_argument(
         '--file-format',
         choices=['json', 'yaml'],
-        help='Format of the file passed to --file-name',
+        help=(
+            'Format of the file passed to --file-name. If not specified, the'
+            ' default file format is YAML.'
+        ),
     )
 
   def Run(self, args):

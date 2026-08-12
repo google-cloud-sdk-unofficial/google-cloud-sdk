@@ -472,6 +472,28 @@ def AddMacsecPreSharedKeyNameForRomoveKey(parser):
       """)
 
 
+def AddMacsecKeyGroupForUpdate(parser):
+  """Adds key-group and clear-key-group flags to the argparse.ArgumentParser."""
+  group = parser.add_mutually_exclusive_group(required=False)
+  group.add_argument(
+      '--key-group',
+      help="""\
+      URL of the InterconnectKeyGroup resource to use for MACsec, in the
+      format:
+      projects/{project}/locations/{region}/interconnectKeyGroups/{interconnectKeyGroup}.
+      """,
+  )
+  group.add_argument(
+      '--clear-key-group',
+      default=None,
+      action='store_true',
+      help="""\
+      If specified, remove the key group from the MACsec configuration of the
+      interconnect.
+      """,
+  )
+
+
 def AddAaiEnabled(parser):
   """Adds enabled flag to the argparse.ArgumentParser."""
   parser.add_argument(

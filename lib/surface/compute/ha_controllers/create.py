@@ -18,11 +18,11 @@
 
 import textwrap
 
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.ha_controllers import utils as api_utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute.ha_controllers import utils
 from googlecloudsdk.command_lib.util.apis import arg_utils
 
@@ -217,10 +217,27 @@ class Create(base.CreateCommand):
         ),
     )
 
+    parser.add_argument(
+        '--migrate-disks-to-regional',
+        action=arg_parsers.StoreTrueFalseAction,
+        help=(
+            'Specifies whether to migrate the zonal disks of the VM to'
+            ' regional disks. The HA controller requires regional disks. To'
+            ' migrate the disks, you must supply the --zone-configuration'
+            ' flag for the two zones where the regional disks store and'
+            ' replicate data.'
+        ),
+    )
+
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
     ha_controller_ref = args.CONCEPTS.ha_controller.Parse()
+    if len(args.zone_configuration) != 2 and args.migrate_disks_to_regional:
+      raise compute_exceptions.AbortedError(
+          'If you migrate zonal disks to regional disks, then you must specify'
+          ' both zone configurations.'
+      )
     ha_controller = client.messages.HaController(
         name=ha_controller_ref.Name(),
         region=ha_controller_ref.region,
@@ -232,6 +249,15 @@ class Create(base.CreateCommand):
             args.network_auto_configuration
         ),
     )
+    if args.migrate_disks_to_regional:
+      utils.MigrateZonalDisksToRegional(
+          holder,
+          args.instance_name,
+          ha_controller_ref.project,
+          ha_controller_ref.region,
+          ha_controller.zoneConfigurations.additionalProperties[0].key,
+          ha_controller.zoneConfigurations.additionalProperties[1].key,
+      )
     if args.backend_service:
       ha_controller.backendServices = args.backend_service
     return api_utils.Insert(

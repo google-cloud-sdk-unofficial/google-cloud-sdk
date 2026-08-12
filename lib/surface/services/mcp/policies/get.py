@@ -14,27 +14,16 @@
 # limitations under the License.
 """services mcp policies get command."""
 
-import json
-
-from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.services import common_flags
-from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import yaml
-from googlecloudsdk.core.util import files
-
-_PROJECT_RESOURCE = 'projects/{}'
-_FOLDER_RESOURCE = 'folders/{}'
-_ORGANIZATION_RESOURCE = 'organizations/{}'
-_MCP_POLICY_DEFAULT = '/mcpPolicies/{}'
-_INVALID_TIMESTAMP = (
-    # Invalid timestamp as the consumer policy is not created previously.
-    '1970-01-01T00:00:00Z'
-)
 
 
 # TODO(b/321801975) make command public after suv2 launch.
+@base.Deprecate(
+    is_removed=False,
+    warning='MCP policies are not required and this command is no-op.',
+    error='MCP policies are not required and this command is no-op.',
+)
 @base.UniverseCompatible
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -87,93 +76,4 @@ class Get(base.Command):
     Returns:
       Resource name and its parent name.
     """
-    if args.IsSpecified('folder'):
-      resource_name = _FOLDER_RESOURCE.format(args.folder)
-    elif args.IsSpecified('organization'):
-      resource_name = _ORGANIZATION_RESOURCE.format(args.organization)
-    elif args.IsSpecified('project'):
-      resource_name = _PROJECT_RESOURCE.format(args.project)
-    else:
-      project = properties.VALUES.core.project.Get(required=True)
-      resource_name = _PROJECT_RESOURCE.format(project)
-
-    policy = serviceusage.GetMcpPolicy(
-        resource_name + _MCP_POLICY_DEFAULT.format(args.policy_name),
-    )
-
-    if args.IsSpecified('output_file'):
-      if not (
-          args.output_file.endswith('.json')
-          or args.output_file.endswith('.yaml')
-      ):
-        log.error(
-            'Invalid output-file format. Please provide path to a yaml or json'
-            ' file.'
-        )
-      else:
-        if args.output_file.endswith('.json'):
-          data = json.dumps(_ConvertToDict(policy), sort_keys=False)
-        else:
-          data = yaml.dump(_ConvertToDict(policy), round_trip=True)
-        files.WriteFileContents(args.output_file, data)
-
-        log.status.Print(
-            'Policy written to the output file %s ' % args.output_file
-        )
-    elif args.IsSpecified('format'):
-      return policy
-    else:
-      result = _ConvertToDict(policy)
-      for k, v in result.items():
-        if k not in ['mcpEnableRules'] and v:
-          log.status.Print(k + ': ' + v)
-        elif k == 'mcpEnableRules':
-          log.status.Print(k + ':')
-          for enable_rule in v:
-            _PrintRules(enable_rule)
-      return
-
-
-def _ConvertToDict(policy):
-  """ConvertToDict command.
-
-  Args:
-    policy: mcpPolicy to be convert to orderedDict.
-
-  Returns:
-    orderedDict.
-  """
-
-  output = {
-      'name': policy.name,
-      'mcpEnableRules': [],
-      'updateTime': policy.updateTime,
-      'createTime': policy.createTime,
-      'etag': policy.etag,
-  }
-
-  for enable_rule in policy.mcpEnableRules:
-    if enable_rule.mcpServices:
-      output['mcpEnableRules'].append(
-          {'mcpservices': list(enable_rule.mcpServices)}
-      )
-
-  if not policy.mcpEnableRules:
-    del output['mcpEnableRules']
-
-  if policy.updateTime == _INVALID_TIMESTAMP:
-    del output['updateTime']
-  if policy.createTime == _INVALID_TIMESTAMP:
-    del output['createTime']
-
-  return output
-
-
-def _PrintRules(rule):
-  keys = ['mcpServices']
-  for key in keys:
-    if key in rule.keys():
-      log.status.Print(' ' + key + ':')
-      for mcpservices in rule[key]:
-        for services in mcpservices:
-          log.status.Print('  - ' + services)
+    pass

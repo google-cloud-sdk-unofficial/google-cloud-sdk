@@ -124,6 +124,24 @@ class BandwidthQuotaNearLimit(_messages.Message):
   totalBandwidthConsumptionBytes = _messages.IntegerField(4)
 
 
+class BandwidthSpike(_messages.Message):
+  r"""Represents a finding about a bandwidth spike on a project. This
+  corresponds to the `BANDWIDTH_SPIKE` finding type.
+
+  Fields:
+    currentBandwidthBytesPerMinute: Output only. The total bandwidth
+      consumption in bytes per minute during the observation period.
+    percentageIncrease: Output only. The percentage increase in bandwidth
+      consumption.
+    topBuckets: Output only. A list of top buckets driving the increase in
+      bandwidth consumption.
+  """
+
+  currentBandwidthBytesPerMinute = _messages.IntegerField(1)
+  percentageIncrease = _messages.FloatField(2)
+  topBuckets = _messages.MessageField('IntelligenceFindingBandwidthSpikeBucketContribution', 3, repeated=True)
+
+
 class BatchApplyFeaturePermissionsRequest(_messages.Message):
   r"""Helps the user update the permissions on buckets that match a feature
   config/any feature configs.
@@ -744,6 +762,16 @@ class Date(_messages.Message):
   year = _messages.IntegerField(3, variant=_messages.Variant.INT32)
 
 
+class DefaultCmekEncryptionViolation(_messages.Message):
+  r"""Details about a default CMEK encryption violation.
+
+  Fields:
+    bucketViolationDetails: Output only. Bucket level violation details.
+  """
+
+  bucketViolationDetails = _messages.MessageField('BucketSecurityControlViolation', 1)
+
+
 class DeleteFolderRecursiveRequest(_messages.Message):
   r"""Request message for DeleteFolderRecursive.
 
@@ -900,6 +928,16 @@ class Encryption(_messages.Message):
 
 class EncryptionControlViolation(_messages.Message):
   r"""Detail message for Encryption Control Violation.
+
+  Fields:
+    bucketViolationDetails: Output only. Bucket level violation details.
+  """
+
+  bucketViolationDetails = _messages.MessageField('BucketSecurityControlViolation', 1)
+
+
+class EnforcedEncryptionViolation(_messages.Message):
+  r"""Details about a bucket-enforced encryption violation.
 
   Fields:
     bucketViolationDetails: Output only. Bucket level violation details.
@@ -1113,6 +1151,12 @@ class FindingSummary(_messages.Message):
         with excessive non current versions.
       FINDING_TYPE_ZERO_BYTE_OBJECT: Finding is about a bucket with zero byte
         objects.
+      FINDING_TYPE_BANDWIDTH_SPIKE: Finding is about a bandwidth spike on a
+        project.
+      FINDING_TYPE_DEFAULT_CMEK_ENCRYPTION_VIOLATION: Finding is about objects
+        within the bucket missing default CMEK protection.
+      FINDING_TYPE_ENFORCED_ENCRYPTION_VIOLATION: Finding is about objects
+        within the bucket violating enforced encryption rules.
     """
     FINDING_TYPE_UNSPECIFIED = 0
     FINDING_TYPE_COLDLINE_AND_ARCHIVAL_STORAGE_OPERATIONS_SPIKE = 1
@@ -1132,6 +1176,9 @@ class FindingSummary(_messages.Message):
     FINDING_TYPE_MISSING_SOFT_DELETE = 15
     FINDING_TYPE_EXCESSIVE_NON_CURRENT_VERSION = 16
     FINDING_TYPE_ZERO_BYTE_OBJECT = 17
+    FINDING_TYPE_BANDWIDTH_SPIKE = 18
+    FINDING_TYPE_DEFAULT_CMEK_ENCRYPTION_VIOLATION = 19
+    FINDING_TYPE_ENFORCED_ENCRYPTION_VIOLATION = 20
 
   category = _messages.EnumField('CategoryValueValuesEnum', 1)
   createTime = _messages.StringField(2)
@@ -1459,6 +1506,8 @@ class IntelligenceFinding(_messages.Message):
       `cloudresourecemanager.googleapis.com/projects/p1`
     bandwidthQuotaNearLimit: Output only. `IntelligenceFinding` about a
       bandwidth consumption approaching the quota limit.
+    bandwidthSpike: Output only. `IntelligenceFinding` about a bandwidth spike
+      in a project.
     category: Output only. Category of this finding.
     coldlineAndArchivalStorageOperationsSpike: Output only.
       `IntelligenceFinding` about a spike in Class A/B operations on Coldline
@@ -1470,11 +1519,15 @@ class IntelligenceFinding(_messages.Message):
       objects violating Data Deletion Control.
     dataRetentionControlViolation: Output only. `IntelligenceFinding` about
       objects violating Data Retention Control.
+    defaultCmekEncryptionViolation: Output only. `IntelligenceFinding` about
+      objects missing default CMEK encryption.
     description: Output only. A short description about the finding.
     dormantBucket: Output only. `IntelligenceFinding` about dormant buckets
       with no recent activity.
     encryptionControlViolation: Output only. `IntelligenceFinding` about
       objects violating Encryption Control.
+    enforcedEncryptionViolation: Output only. `IntelligenceFinding` about
+      objects violating bucket-enforced encryption rules.
     excessiveNonCurrentVersion: Output only. `IntelligenceFinding` about
       excessive non-current object versions in a bucket.
     inefficientObjectSize: Output only. `IntelligenceFinding` about
@@ -1573,6 +1626,12 @@ class IntelligenceFinding(_messages.Message):
         with excessive non current versions.
       FINDING_TYPE_ZERO_BYTE_OBJECT: Finding is about a bucket with zero byte
         objects.
+      FINDING_TYPE_BANDWIDTH_SPIKE: Finding is about a bandwidth spike on a
+        project.
+      FINDING_TYPE_DEFAULT_CMEK_ENCRYPTION_VIOLATION: Finding is about objects
+        within the bucket missing default CMEK protection.
+      FINDING_TYPE_ENFORCED_ENCRYPTION_VIOLATION: Finding is about objects
+        within the bucket violating enforced encryption rules.
     """
     FINDING_TYPE_UNSPECIFIED = 0
     FINDING_TYPE_COLDLINE_AND_ARCHIVAL_STORAGE_OPERATIONS_SPIKE = 1
@@ -1592,34 +1651,40 @@ class IntelligenceFinding(_messages.Message):
     FINDING_TYPE_MISSING_SOFT_DELETE = 15
     FINDING_TYPE_EXCESSIVE_NON_CURRENT_VERSION = 16
     FINDING_TYPE_ZERO_BYTE_OBJECT = 17
+    FINDING_TYPE_BANDWIDTH_SPIKE = 18
+    FINDING_TYPE_DEFAULT_CMEK_ENCRYPTION_VIOLATION = 19
+    FINDING_TYPE_ENFORCED_ENCRYPTION_VIOLATION = 20
 
   anomalousDeleteSpike = _messages.MessageField('AnomalousDeleteSpike', 1)
   associatedResources = _messages.StringField(2, repeated=True)
   bandwidthQuotaNearLimit = _messages.MessageField('BandwidthQuotaNearLimit', 3)
-  category = _messages.EnumField('CategoryValueValuesEnum', 4)
-  coldlineAndArchivalStorageOperationsSpike = _messages.MessageField('ColdlineAndArchivalStorageOperationsSpike', 5)
-  createTime = _messages.StringField(6)
-  crossRegionEgressSpike = _messages.MessageField('CrossRegionEgressSpike', 7)
-  dataDeletionControlViolation = _messages.MessageField('DataDeletionControlViolation', 8)
-  dataRetentionControlViolation = _messages.MessageField('DataRetentionControlViolation', 9)
-  description = _messages.StringField(10)
-  dormantBucket = _messages.MessageField('DormantBucket', 11)
-  encryptionControlViolation = _messages.MessageField('EncryptionControlViolation', 12)
-  excessiveNonCurrentVersion = _messages.MessageField('ExcessiveNonCurrentVersion', 13)
-  inefficientObjectSize = _messages.MessageField('InefficientObjectSize', 14)
-  inefficientOverwrite = _messages.MessageField('InefficientOverwrite', 15)
-  missingSoftDelete = _messages.MessageField('MissingSoftDelete', 16)
-  name = _messages.StringField(17)
-  observationPeriod = _messages.MessageField('Interval', 18)
-  publicAccessControlViolation = _messages.MessageField('PublicAccessControlViolation', 19)
-  severity = _messages.EnumField('SeverityValueValuesEnum', 20)
-  staleTemporaryData = _messages.MessageField('StaleTemporaryData', 21)
-  storageGrowthAboveTrend = _messages.MessageField('StorageGrowthAboveTrend', 22)
-  targetResource = _messages.StringField(23)
-  throttledRequestsSpike = _messages.MessageField('ThrottledRequestSpike', 24)
-  type = _messages.EnumField('TypeValueValuesEnum', 25)
-  updateTime = _messages.StringField(26)
-  zeroByteObject = _messages.MessageField('ZeroByteObject', 27)
+  bandwidthSpike = _messages.MessageField('BandwidthSpike', 4)
+  category = _messages.EnumField('CategoryValueValuesEnum', 5)
+  coldlineAndArchivalStorageOperationsSpike = _messages.MessageField('ColdlineAndArchivalStorageOperationsSpike', 6)
+  createTime = _messages.StringField(7)
+  crossRegionEgressSpike = _messages.MessageField('CrossRegionEgressSpike', 8)
+  dataDeletionControlViolation = _messages.MessageField('DataDeletionControlViolation', 9)
+  dataRetentionControlViolation = _messages.MessageField('DataRetentionControlViolation', 10)
+  defaultCmekEncryptionViolation = _messages.MessageField('DefaultCmekEncryptionViolation', 11)
+  description = _messages.StringField(12)
+  dormantBucket = _messages.MessageField('DormantBucket', 13)
+  encryptionControlViolation = _messages.MessageField('EncryptionControlViolation', 14)
+  enforcedEncryptionViolation = _messages.MessageField('EnforcedEncryptionViolation', 15)
+  excessiveNonCurrentVersion = _messages.MessageField('ExcessiveNonCurrentVersion', 16)
+  inefficientObjectSize = _messages.MessageField('InefficientObjectSize', 17)
+  inefficientOverwrite = _messages.MessageField('InefficientOverwrite', 18)
+  missingSoftDelete = _messages.MessageField('MissingSoftDelete', 19)
+  name = _messages.StringField(20)
+  observationPeriod = _messages.MessageField('Interval', 21)
+  publicAccessControlViolation = _messages.MessageField('PublicAccessControlViolation', 22)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 23)
+  staleTemporaryData = _messages.MessageField('StaleTemporaryData', 24)
+  storageGrowthAboveTrend = _messages.MessageField('StorageGrowthAboveTrend', 25)
+  targetResource = _messages.StringField(26)
+  throttledRequestsSpike = _messages.MessageField('ThrottledRequestSpike', 27)
+  type = _messages.EnumField('TypeValueValuesEnum', 28)
+  updateTime = _messages.StringField(29)
+  zeroByteObject = _messages.MessageField('ZeroByteObject', 30)
 
 
 class IntelligenceFindingAnomalousDeleteSpikePrefixContribution(_messages.Message):
@@ -1707,6 +1772,71 @@ class IntelligenceFindingBandwidthQuotaNearLimitBucketContributionContributionSe
   percentageIncrease = _messages.FloatField(1)
   serviceAccount = _messages.StringField(2)
   totalBandwidthConsumptionBytes = _messages.IntegerField(3)
+
+
+class IntelligenceFindingBandwidthSpikeBucketContribution(_messages.Message):
+  r"""Represents the bandwidth spike details for a bucket.
+
+  Fields:
+    bucket: Output only. The name of the bucket.
+    contribution: Output only. The details about the contribution of the
+      bucket.
+    currentBandwidthBytesPerMinute: Output only. The current bandwidth
+      consumption in bytes per minute for the bucket.
+    error: Output only. The error related to accessing the details about the
+      contribution of the bucket.
+    percentageIncrease: Output only. The percentage increase in bandwidth
+      consumption for the bucket.
+  """
+
+  bucket = _messages.StringField(1)
+  contribution = _messages.MessageField('IntelligenceFindingBandwidthSpikeBucketContributionContribution', 2)
+  currentBandwidthBytesPerMinute = _messages.IntegerField(3)
+  error = _messages.MessageField('Status', 4)
+  percentageIncrease = _messages.FloatField(5)
+
+
+class IntelligenceFindingBandwidthSpikeBucketContributionContribution(_messages.Message):
+  r"""Represents the contribution of the bucket towards the
+  `IntelligenceFinding`.
+
+  Fields:
+    topPrefixes: Output only. A list of the top object prefixes driving the
+      increase in bandwidth consumption.
+    topServiceAccounts: Output only. A list of the top service accounts
+      driving the increase in bandwidth consumption.
+  """
+
+  topPrefixes = _messages.MessageField('IntelligenceFindingBandwidthSpikeBucketContributionContributionPrefixContribution', 1, repeated=True)
+  topServiceAccounts = _messages.MessageField('IntelligenceFindingBandwidthSpikeBucketContributionContributionServiceAccountContribution', 2, repeated=True)
+
+
+class IntelligenceFindingBandwidthSpikeBucketContributionContributionPrefixContribution(_messages.Message):
+  r"""Represents the bandwidth spike details for an object prefix.
+
+  Fields:
+    currentBandwidthBytesPerMinute: Output only. The total bandwidth
+      consumption in bytes per minute for the object prefix.
+    prefix: Output only. The object prefix. Format: `a/b/c`, 'a/b/d', etc.
+  """
+
+  currentBandwidthBytesPerMinute = _messages.IntegerField(1)
+  prefix = _messages.StringField(2)
+
+
+class IntelligenceFindingBandwidthSpikeBucketContributionContributionServiceAccountContribution(_messages.Message):
+  r"""Represents the bandwidth spike details for the service account.
+
+  Fields:
+    currentBandwidthBytesPerMinute: Output only. The current bandwidth
+      consumption in bytes per minute for the service account.
+    serviceAccount: Output only. The identifier of the service account.
+      Format: `serviceAccount:name@domain.com` eg: `name@project-
+      id.iam.gserviceaccount.com`
+  """
+
+  currentBandwidthBytesPerMinute = _messages.IntegerField(1)
+  serviceAccount = _messages.StringField(2)
 
 
 class IntelligenceFindingColdlineAndArchivalStorageOperationsSpikeBucketContribution(_messages.Message):

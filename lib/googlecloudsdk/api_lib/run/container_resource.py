@@ -79,6 +79,15 @@ class ContainerResource(k8s_object.KubernetesObject):
     self.container.image = value
 
   @property
+  def termination_grace_period(self):
+    """The termination grace period in seconds."""
+    return self.spec.terminationGracePeriodSeconds
+
+  @termination_grace_period.setter
+  def termination_grace_period(self, value):
+    self.spec.terminationGracePeriodSeconds = value
+
+  @property
   def command(self):
     """command to be invoked by container."""
     return self.container.command

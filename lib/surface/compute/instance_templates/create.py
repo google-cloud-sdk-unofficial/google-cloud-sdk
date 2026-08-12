@@ -76,16 +76,25 @@ def _CommonArgs(
     support_preemption_notice_duration=False,
     support_enable_vpc_scoped_dns=False,
     support_workload_identity_config=False,
+    support_identity_type=False,
     support_alias_ipv6_ranges=False,
     support_dns64_eligible=False,
     support_nat64_eligible=False,
     support_vsock_mode=False,
     support_expose_host_topology=False,
+    include_kms_key_service_account=False,
+    support_external_ip_tier=False,
+    support_windows_license_optimization_mode=False,
+    support_latency_tolerant=False,
 ):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
   metadata_utils.AddMetadataArgs(parser)
-  instances_flags.AddDiskArgs(parser, enable_kms=support_kms)
+  instances_flags.AddDiskArgs(
+      parser,
+      enable_kms=support_kms,
+      include_kms_key_service_account=include_kms_key_service_account,
+  )
   instances_flags.AddCreateDiskArgs(
       parser,
       enable_kms=support_kms,
@@ -93,6 +102,7 @@ def _CommonArgs(
       support_multi_writer=support_multi_writer,
       support_replica_zones=support_replica_zones,
       support_disk_labels=support_disk_labels,
+      include_kms_key_service_account=include_kms_key_service_account,
   )
   if support_local_ssd_size:
     instances_flags.AddLocalSsdArgsWithSize(parser)
@@ -166,6 +176,12 @@ def _CommonArgs(
   if support_preemption_notice_duration:
     instances_flags.AddPreemptionNoticeDurationArgs(parser)
 
+  if support_windows_license_optimization_mode:
+    instances_flags.AddWindowsLicenseOptimizationMode(parser)
+
+  if support_latency_tolerant:
+    instances_flags.AddLatencyTolerantArgs(parser)
+
   instance_templates_flags.AddServiceProxyConfigArgs(
       parser, release_track=release_track
   )
@@ -179,7 +195,9 @@ def _CommonArgs(
   if support_visible_core_count:
     instances_flags.AddVisibleCoreCountArgs(parser)
 
-  instances_flags.AddNetworkPerformanceConfigsArgs(parser)
+  instances_flags.AddNetworkPerformanceConfigsArgs(
+      parser, support_external_ip_tier=support_external_ip_tier
+  )
 
   if support_region_instance_template:
     if support_subnet_region:
@@ -239,7 +257,9 @@ The type of reservation for instances created from this template.
   if support_skip_guest_os_shutdown:
     instances_flags.AddSkipGuestOsShutdownArgs(parser)
   if support_workload_identity_config:
-    instances_flags.AddWorkloadIdentityConfigArgs(parser)
+    instances_flags.AddWorkloadIdentityConfigArgs(
+        parser, support_identity_type=support_identity_type
+    )
 
 
 def _ValidateInstancesFlags(
@@ -620,11 +640,14 @@ def _RunCreate(
     support_preemption_notice_duration=False,
     support_enable_vpc_scoped_dns=False,
     support_workload_identity_config=False,
+    support_identity_type=False,
     support_alias_ipv6_ranges=False,
     support_dns64_eligible=False,
     support_nat64_eligible=False,
     support_vsock_mode=False,
     support_expose_host_topology=False,
+    support_windows_license_optimization_mode=False,
+    support_latency_tolerant=False,
 ):
   """Common routine for creating instance template.
 
@@ -689,12 +712,16 @@ def _RunCreate(
         supported.
       support_workload_identity_config: Indicate whether workload identity
         config is supported.
+      support_identity_type: Indicate whether identity type is supported.
       support_alias_ipv6_ranges: Indicate whether alias ipv6 range is supported.
       support_dns64_eligible: Indicate whether dns64 is supported.
       support_nat64_eligible: Indicate whether nat64 is supported.
       support_vsock_mode: Indicate whether vsock mode is supported.
       support_expose_host_topology: Indicate whether expose host topology is
         supported.
+      support_windows_license_optimization_mode: Indicate whether Windows
+        license optimization mode is supported.
+      support_latency_tolerant: Indicate whether latency tolerant is supported.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -919,6 +946,16 @@ def _RunCreate(
   ):
     expose_host_topology = args.expose_host_topology
 
+  windows_license_optimization_mode = None
+  if support_windows_license_optimization_mode and args.IsSpecified(
+      'windows_license_optimization_mode'
+  ):
+    windows_license_optimization_mode = args.windows_license_optimization_mode
+
+  latency_tolerant = None
+  if support_latency_tolerant and args.IsSpecified('latency_tolerant'):
+    latency_tolerant = args.latency_tolerant
+
   scheduling = instance_utils.CreateSchedulingMessage(
       messages=client.messages,
       maintenance_policy=args.maintenance_policy,
@@ -940,6 +977,8 @@ def _RunCreate(
       preemption_notice_duration=preemption_notice_duration,
       vsock_mode=vsock_mode,
       expose_host_topology=expose_host_topology,
+      windows_license_optimization_mode=windows_license_optimization_mode,
+      latency_tolerant=latency_tolerant,
   )
 
   if args.no_service_account:
@@ -1018,7 +1057,10 @@ def _RunCreate(
   )
 
   workload_identity_config = instance_utils.CreateWorkloadIdentityConfigMessage(
-      args, client.messages, support_workload_identity_config
+      args,
+      client.messages,
+      support_workload_identity_config,
+      support_identity_type,
   )
 
   if support_region_instance_template and args.IsSpecified(
@@ -1270,7 +1312,7 @@ class Create(base.CreateCommand):
   _support_local_ssd_recovery_timeout = True
   _support_specific_then_x_affinity = False
   _support_any_reservation_then_fail_affinity = False
-  _support_graceful_shutdown = False
+  _support_graceful_shutdown = True
   _support_vlan_nic = True
   _support_watchdog_timer = False
   _support_disk_labels = False
@@ -1283,11 +1325,14 @@ class Create(base.CreateCommand):
   _support_preemption_notice_duration = False
   _support_enable_vpc_scoped_dns = False
   _support_workload_identity_config = True
+  _support_identity_type = False
   _support_alias_ipv6_ranges = False
   _support_dns64_eligible = False
   _support_nat64_eligible = False
   _support_vsock_mode = False
   _support_expose_host_topology = False
+  _support_external_ip_tier = False
+  _support_windows_license_optimization_mode = False
 
   @classmethod
   def Args(cls, parser):
@@ -1322,10 +1367,12 @@ class Create(base.CreateCommand):
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
         support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
         support_workload_identity_config=cls._support_workload_identity_config,
+        support_identity_type=cls._support_identity_type,
         support_alias_ipv6_ranges=cls._support_alias_ipv6_ranges,
         support_dns64_eligible=cls._support_dns64_eligible,
         support_nat64_eligible=cls._support_nat64_eligible,
         support_vsock_mode=cls._support_vsock_mode,
+        support_external_ip_tier=cls._support_external_ip_tier,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1384,6 +1431,7 @@ class Create(base.CreateCommand):
         support_preemption_notice_duration=self._support_preemption_notice_duration,
         support_enable_vpc_scoped_dns=self._support_enable_vpc_scoped_dns,
         support_workload_identity_config=self._support_workload_identity_config,
+        support_identity_type=self._support_identity_type,
         support_alias_ipv6_ranges=self._support_alias_ipv6_ranges,
         support_dns64_eligible=self._support_dns64_eligible,
         support_nat64_eligible=self._support_nat64_eligible,
@@ -1431,7 +1479,6 @@ class CreateBeta(Create):
   _support_maintenance_interval = True
   _support_specific_then_x_affinity = True
   _support_any_reservation_then_fail_affinity = True
-  _support_graceful_shutdown = True
   _support_vlan_nic = True
   _support_watchdog_timer = False
   _support_disk_labels = True
@@ -1442,6 +1489,7 @@ class CreateBeta(Create):
   _support_preemption_notice_duration = True
   _support_enable_vpc_scoped_dns = False
   _support_workload_identity_config = True
+  _support_identity_type = False
   _support_alias_ipv6_ranges = True
   _support_dns64_eligible = True
   _support_nat64_eligible = True
@@ -1479,10 +1527,13 @@ class CreateBeta(Create):
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
         support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
         support_workload_identity_config=cls._support_workload_identity_config,
+        support_identity_type=cls._support_identity_type,
         support_alias_ipv6_ranges=cls._support_alias_ipv6_ranges,
         support_dns64_eligible=cls._support_dns64_eligible,
         support_nat64_eligible=cls._support_nat64_eligible,
         support_vsock_mode=cls._support_vsock_mode,
+        include_kms_key_service_account=True,
+        support_external_ip_tier=cls._support_external_ip_tier,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1544,6 +1595,7 @@ class CreateBeta(Create):
         support_preemption_notice_duration=self._support_preemption_notice_duration,
         support_enable_vpc_scoped_dns=self._support_enable_vpc_scoped_dns,
         support_workload_identity_config=self._support_workload_identity_config,
+        support_identity_type=self._support_identity_type,
         support_alias_ipv6_ranges=self._support_alias_ipv6_ranges,
         support_dns64_eligible=self._support_dns64_eligible,
         support_nat64_eligible=self._support_nat64_eligible,
@@ -1591,7 +1643,6 @@ class CreateAlpha(Create):
   _support_maintenance_interval = True
   _support_specific_then_x_affinity = True
   _support_any_reservation_then_fail_affinity = True
-  _support_graceful_shutdown = True
   _support_vlan_nic = True
   _support_ipv6_only = True
   _support_watchdog_timer = True
@@ -1602,11 +1653,15 @@ class CreateAlpha(Create):
   _support_preemption_notice_duration = True
   _support_enable_vpc_scoped_dns = True
   _support_workload_identity_config = True
+  _support_identity_type = True
   _support_alias_ipv6_ranges = True
   _support_vsock_mode = True
   _support_dns64_eligible = True
   _support_nat64_eligible = True
   _support_expose_host_topology = True
+  _support_external_ip_tier = True
+  _support_windows_license_optimization_mode = True
+  _support_latency_tolerant = True
 
   @classmethod
   def Args(cls, parser):
@@ -1642,11 +1697,16 @@ class CreateAlpha(Create):
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
         support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
         support_workload_identity_config=cls._support_workload_identity_config,
+        support_identity_type=cls._support_identity_type,
         support_alias_ipv6_ranges=cls._support_alias_ipv6_ranges,
         support_dns64_eligible=cls._support_dns64_eligible,
         support_nat64_eligible=cls._support_nat64_eligible,
         support_vsock_mode=cls._support_vsock_mode,
         support_expose_host_topology=cls._support_expose_host_topology,
+        include_kms_key_service_account=True,
+        support_external_ip_tier=cls._support_external_ip_tier,
+        support_windows_license_optimization_mode=cls._support_windows_license_optimization_mode,
+        support_latency_tolerant=cls._support_latency_tolerant,
     )
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
@@ -1711,11 +1771,14 @@ class CreateAlpha(Create):
         support_preemption_notice_duration=self._support_preemption_notice_duration,
         support_enable_vpc_scoped_dns=self._support_enable_vpc_scoped_dns,
         support_workload_identity_config=self._support_workload_identity_config,
+        support_identity_type=self._support_identity_type,
         support_alias_ipv6_ranges=self._support_alias_ipv6_ranges,
         support_dns64_eligible=self._support_dns64_eligible,
         support_nat64_eligible=self._support_nat64_eligible,
         support_vsock_mode=self._support_vsock_mode,
         support_expose_host_topology=self._support_expose_host_topology,
+        support_windows_license_optimization_mode=self._support_windows_license_optimization_mode,
+        support_latency_tolerant=self._support_latency_tolerant,
     )
 
 

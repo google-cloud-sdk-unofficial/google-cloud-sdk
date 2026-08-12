@@ -14,6 +14,7 @@
 # limitations under the License.
 """Troubleshoot VM boot and kernel issue for ssh connection."""
 
+import collections
 import re
 
 from googlecloudsdk.api_lib.util import apis
@@ -269,6 +270,9 @@ _BOOT_CAUSE_CHECKS = [
 ]
 
 
+BootFinding = collections.namedtuple('BootFinding', ['cause', 'message'])
+
+
 def _FilterSessionLogToLastBoot(sc_log):
   """Filters the serial log down to the last boot session.
 
@@ -323,33 +327,49 @@ class VMBootTroubleshooter(ssh_troubleshooter.SshTroubleshooter):
   def cleanup_resources(self):
     return
 
-  def troubleshoot(self):
-    log.status.Print('---- Checking VM boot status ----')
-    sc_log = ssh_troubleshooter_utils.GetSerialConsoleLog(
-        self.compute_client, self.compute_message, self.instance.name,
-        self.project.name, self.zone)
+  def FindBootIssues(self, sc_log=None):
+    """Analyze serial console log and return detected boot issues.
+
+    Args:
+      sc_log: str, the serial console log content. If None, it will be fetched.
+
+    Returns:
+      list[BootFinding]: A list of BootFinding namedtuples containing the
+        detected boot issues.
+    """
+    if sc_log is None:
+      sc_log = ssh_troubleshooter_utils.GetSerialConsoleLog(
+          self.compute_client, self.compute_message, self.instance.name,
+          self.project.name, self.zone)
 
     # Scope matching to the current boot: the buffer survives in-place
     # reboots, and failures from an already-fixed boot must not be
     # reported as the current root cause.
     sc_log = _FilterSessionLogToLastBoot(sc_log)
 
+    findings = []
     # Cause-specific boot failures first, so we report the real root cause
     # and a targeted fix instead of a generic "check your logs" message.
     for patterns, key, message in _BOOT_CAUSE_CHECKS:
       if ssh_troubleshooter_utils.SearchPatternErrorInLog(patterns, sc_log):
-        self.issues[key] = message
+        findings.append(BootFinding(key, message))
 
     # Kernel panic is a distinct symptom class.
     if ssh_troubleshooter_utils.SearchPatternErrorInLog(
         KERNEL_PANIC_PATTERNS, sc_log):
-      self.issues['kernel_panic'] = KERNEL_PANIC_MESSAGE
+      findings.append(BootFinding('kernel_panic', KERNEL_PANIC_MESSAGE))
 
     # Generic fallback: a boot stall we could not attribute to a specific cause.
-    if not self.issues and ssh_troubleshooter_utils.SearchPatternErrorInLog(
+    if not findings and ssh_troubleshooter_utils.SearchPatternErrorInLog(
         VM_BOOT_PATTERNS, sc_log):
-      self.issues['boot_issue'] = VM_BOOT_MESSAGE
+      findings.append(BootFinding('boot_issue', VM_BOOT_MESSAGE))
 
+    return findings
+
+  def troubleshoot(self):
+    log.status.Print('---- Checking VM boot status ----')
+    self.issues = self.FindBootIssues()
     log.status.Print('VM boot: {0} issue(s) found.\n'.format(len(self.issues)))
-    for message in self.issues.values():
-      log.status.Print(message)
+    for finding in self.issues:
+      log.status.Print(finding.message)
+

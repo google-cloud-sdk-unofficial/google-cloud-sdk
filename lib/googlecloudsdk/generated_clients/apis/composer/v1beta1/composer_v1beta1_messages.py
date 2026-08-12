@@ -3145,6 +3145,7 @@ class Task(_messages.Message):
     startDate: Determines the execution_date for the first task instance.
     taskConcurrency: When set, a task will be able to limit the concurrent
       runs across execution dates.
+    taskGroupIds: The ordered chain of task groups to which a task belongs.
     taskId: The task ID.
     taskType: The operator used in this task.
     triggerRule: Defines the rule by which dependencies are applied for the
@@ -3184,12 +3185,13 @@ class Task(_messages.Message):
   sla = _messages.StringField(24)
   startDate = _messages.StringField(25)
   taskConcurrency = _messages.IntegerField(26, variant=_messages.Variant.INT32)
-  taskId = _messages.StringField(27)
-  taskType = _messages.StringField(28)
-  triggerRule = _messages.StringField(29)
-  upstreamTasks = _messages.StringField(30, repeated=True)
-  waitForDownstream = _messages.BooleanField(31)
-  weightRule = _messages.StringField(32)
+  taskGroupIds = _messages.StringField(27, repeated=True)
+  taskId = _messages.StringField(28)
+  taskType = _messages.StringField(29)
+  triggerRule = _messages.StringField(30)
+  upstreamTasks = _messages.StringField(31, repeated=True)
+  waitForDownstream = _messages.BooleanField(32)
+  weightRule = _messages.StringField(33)
 
 
 class TaskInstance(_messages.Message):

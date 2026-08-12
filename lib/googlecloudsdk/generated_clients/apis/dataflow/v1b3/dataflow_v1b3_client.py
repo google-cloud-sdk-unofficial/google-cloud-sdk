@@ -314,7 +314,7 @@ class DataflowV1b3(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Request the job status. To request the status of a job, we recommend using `projects.locations.jobs.messages.list` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.jobs.messages.list` is not recommended, as you can only request the status of jobs that are running in `us-central1`.
+      r"""Request the job status. To request the status of a job, we recommend using `projects.locations.jobs.messages.list` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.jobs.messages.list` is not recommended, as you can only request the status of jobs that are running in `us-central1`. # IAM Permissions Requires the `dataflow.messages.list` permission on the job.
 
       Args:
         request: (DataflowProjectsJobsMessagesListRequest) input message
@@ -412,7 +412,7 @@ class DataflowV1b3(base_api.BaseApiClient):
           }
 
     def Aggregated(self, request, global_params=None):
-      r"""List the jobs of a project across all regions. **Note:** This method doesn't support filtering the list of jobs by name.
+      r"""List the jobs of a project across all regions. **Note:** This method doesn't support filtering the list of jobs by name. # IAM Permissions Requires the `dataflow.jobs.list` permission on the project.
 
       Args:
         request: (DataflowProjectsJobsAggregatedRequest) input message
@@ -438,7 +438,7 @@ class DataflowV1b3(base_api.BaseApiClient):
     )
 
     def Create(self, request, global_params=None):
-      r"""Creates a Dataflow job. To create a job, we recommend using `projects.locations.jobs.create` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.jobs.create` is not recommended, as your job will always start in `us-central1`. Do not enter confidential information when you supply string values using the API.
+      r"""Creates a Dataflow job. To create a job, we recommend using `projects.locations.jobs.create` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.jobs.create` is not recommended, as your job will always start in `us-central1`. Do not enter confidential information when you supply string values using the API. # IAM Permissions 1. Requires the `dataflow.jobs.create` permission on the project. 2. `resourcemanager.projects.get` (Specifically required for regional endpoints to resolve regional resource metadata).
 
       Args:
         request: (DataflowProjectsJobsCreateRequest) input message
@@ -464,7 +464,7 @@ class DataflowV1b3(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets the state of the specified Cloud Dataflow job. To get the state of a job, we recommend using `projects.locations.jobs.get` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.jobs.get` is not recommended, as you can only get the state of jobs that are running in `us-central1`.
+      r"""Gets the state of the specified Cloud Dataflow job. To get the state of a job, we recommend using `projects.locations.jobs.get` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.jobs.get` is not recommended, as you can only get the state of jobs that are running in `us-central1`. # IAM Permissions Requires the `dataflow.jobs.get` permission on the job.
 
       Args:
         request: (DataflowProjectsJobsGetRequest) input message
@@ -490,7 +490,7 @@ class DataflowV1b3(base_api.BaseApiClient):
     )
 
     def GetMetrics(self, request, global_params=None):
-      r"""Request the job status. To request the status of a job, we recommend using `projects.locations.jobs.getMetrics` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.jobs.getMetrics` is not recommended, as you can only request the status of jobs that are running in `us-central1`.
+      r"""Request the job status. To request the status of a job, we recommend using `projects.locations.jobs.getMetrics` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.jobs.getMetrics` is not recommended, as you can only request the status of jobs that are running in `us-central1`. # IAM Permissions Requires the `dataflow.metrics.get` permission on the job.
 
       Args:
         request: (DataflowProjectsJobsGetMetricsRequest) input message
@@ -516,7 +516,7 @@ class DataflowV1b3(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""List the jobs of a project. To list the jobs of a project in a region, we recommend using `projects.locations.jobs.list` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). To list the all jobs across all regions, use `projects.jobs.aggregated`. Using `projects.jobs.list` is not recommended, because you can only get the list of jobs that are running in `us-central1`. `projects.locations.jobs.list` and `projects.jobs.list` support filtering the list of jobs by name. Filtering by name isn't supported by `projects.jobs.aggregated`.
+      r"""List the jobs of a project. To list the jobs of a project in a region, we recommend using `projects.locations.jobs.list` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). To list the all jobs across all regions, use `projects.jobs.aggregated`. Using `projects.jobs.list` is not recommended, because you can only get the list of jobs that are running in `us-central1`. `projects.locations.jobs.list` and `projects.jobs.list` support filtering the list of jobs by name. Filtering by name isn't supported by `projects.jobs.aggregated`. # IAM Permissions Requires the `dataflow.jobs.list` permission on the project.
 
       Args:
         request: (DataflowProjectsJobsListRequest) input message
@@ -542,7 +542,7 @@ class DataflowV1b3(base_api.BaseApiClient):
     )
 
     def Snapshot(self, request, global_params=None):
-      r"""Snapshot the state of a streaming job.
+      r"""Snapshot the state of a streaming job. # IAM Permissions Requires the `dataflow.jobs.snapshot` permission on the job.
 
       Args:
         request: (DataflowProjectsJobsSnapshotRequest) input message
@@ -568,7 +568,7 @@ class DataflowV1b3(base_api.BaseApiClient):
     )
 
     def Update(self, request, global_params=None):
-      r"""Updates the state of an existing Cloud Dataflow job. To update the state of an existing job, we recommend using `projects.locations.jobs.update` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.jobs.update` is not recommended, as you can only update the state of jobs that are running in `us-central1`.
+      r"""Updates the state of an existing Cloud Dataflow job. To update the state of an existing job, we recommend using `projects.locations.jobs.update` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.jobs.update` is not recommended, as you can only update the state of jobs that are running in `us-central1`. # IAM Permissions 1. Requires the `dataflow.jobs.cancel` permission to cancel a job. 2. Requires the `dataflow.jobs.updateContents` permission to update runtime parameters.
 
       Args:
         request: (DataflowProjectsJobsUpdateRequest) input message
@@ -803,7 +803,7 @@ class DataflowV1b3(base_api.BaseApiClient):
           }
 
     def Launch(self, request, global_params=None):
-      r"""Launch a job with a FlexTemplate.
+      r"""Launch a job with a FlexTemplate. # IAM Permissions Requires the following IAM permission(s) on the resource: - `dataflow.jobs.create` - `resourcemanager.projects.get` - `iam.serviceAccounts.actAs` - `storage.buckets.get` - `storage.buckets.create` (Required if the default staging bucket must be created).
 
       Args:
         request: (DataflowProjectsLocationsFlexTemplatesLaunchRequest) input message
@@ -927,7 +927,7 @@ class DataflowV1b3(base_api.BaseApiClient):
           }
 
     def List(self, request, global_params=None):
-      r"""Request the job status. To request the status of a job, we recommend using `projects.locations.jobs.messages.list` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.jobs.messages.list` is not recommended, as you can only request the status of jobs that are running in `us-central1`.
+      r"""Request the job status. To request the status of a job, we recommend using `projects.locations.jobs.messages.list` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.jobs.messages.list` is not recommended, as you can only request the status of jobs that are running in `us-central1`. # IAM Permissions Requires the `dataflow.messages.list` permission on the job.
 
       Args:
         request: (DataflowProjectsLocationsJobsMessagesListRequest) input message
@@ -999,7 +999,7 @@ class DataflowV1b3(base_api.BaseApiClient):
           }
 
     def GetExecutionDetails(self, request, global_params=None):
-      r"""Request detailed information about the execution status of a stage of the job. EXPERIMENTAL. This API is subject to change or removal without notice.
+      r"""Request detailed information about the execution status of a stage of the job. EXPERIMENTAL. This API is subject to change or removal without notice. # IAM Permissions Requires the `dataflow.metrics.get` permission on the job.
 
       Args:
         request: (DataflowProjectsLocationsJobsStagesGetExecutionDetailsRequest) input message
@@ -1097,7 +1097,7 @@ class DataflowV1b3(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a Dataflow job. To create a job, we recommend using `projects.locations.jobs.create` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.jobs.create` is not recommended, as your job will always start in `us-central1`. Do not enter confidential information when you supply string values using the API.
+      r"""Creates a Dataflow job. To create a job, we recommend using `projects.locations.jobs.create` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.jobs.create` is not recommended, as your job will always start in `us-central1`. Do not enter confidential information when you supply string values using the API. # IAM Permissions 1. Requires the `dataflow.jobs.create` permission on the project. 2. `resourcemanager.projects.get` (Specifically required for regional endpoints to resolve regional resource metadata).
 
       Args:
         request: (DataflowProjectsLocationsJobsCreateRequest) input message
@@ -1123,7 +1123,7 @@ class DataflowV1b3(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets the state of the specified Cloud Dataflow job. To get the state of a job, we recommend using `projects.locations.jobs.get` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.jobs.get` is not recommended, as you can only get the state of jobs that are running in `us-central1`.
+      r"""Gets the state of the specified Cloud Dataflow job. To get the state of a job, we recommend using `projects.locations.jobs.get` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.jobs.get` is not recommended, as you can only get the state of jobs that are running in `us-central1`. # IAM Permissions Requires the `dataflow.jobs.get` permission on the job.
 
       Args:
         request: (DataflowProjectsLocationsJobsGetRequest) input message
@@ -1149,7 +1149,7 @@ class DataflowV1b3(base_api.BaseApiClient):
     )
 
     def GetExecutionDetails(self, request, global_params=None):
-      r"""Request detailed information about the execution status of the job. EXPERIMENTAL. This API is subject to change or removal without notice.
+      r"""Request detailed information about the execution status of the job. EXPERIMENTAL. This API is subject to change or removal without notice. # IAM Permissions Requires the `dataflow.metrics.get` permission on the job.
 
       Args:
         request: (DataflowProjectsLocationsJobsGetExecutionDetailsRequest) input message
@@ -1175,7 +1175,7 @@ class DataflowV1b3(base_api.BaseApiClient):
     )
 
     def GetMetrics(self, request, global_params=None):
-      r"""Request the job status. To request the status of a job, we recommend using `projects.locations.jobs.getMetrics` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.jobs.getMetrics` is not recommended, as you can only request the status of jobs that are running in `us-central1`.
+      r"""Request the job status. To request the status of a job, we recommend using `projects.locations.jobs.getMetrics` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.jobs.getMetrics` is not recommended, as you can only request the status of jobs that are running in `us-central1`. # IAM Permissions Requires the `dataflow.metrics.get` permission on the job.
 
       Args:
         request: (DataflowProjectsLocationsJobsGetMetricsRequest) input message
@@ -1201,7 +1201,7 @@ class DataflowV1b3(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""List the jobs of a project. To list the jobs of a project in a region, we recommend using `projects.locations.jobs.list` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). To list the all jobs across all regions, use `projects.jobs.aggregated`. Using `projects.jobs.list` is not recommended, because you can only get the list of jobs that are running in `us-central1`. `projects.locations.jobs.list` and `projects.jobs.list` support filtering the list of jobs by name. Filtering by name isn't supported by `projects.jobs.aggregated`.
+      r"""List the jobs of a project. To list the jobs of a project in a region, we recommend using `projects.locations.jobs.list` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). To list the all jobs across all regions, use `projects.jobs.aggregated`. Using `projects.jobs.list` is not recommended, because you can only get the list of jobs that are running in `us-central1`. `projects.locations.jobs.list` and `projects.jobs.list` support filtering the list of jobs by name. Filtering by name isn't supported by `projects.jobs.aggregated`. # IAM Permissions Requires the `dataflow.jobs.list` permission on the project.
 
       Args:
         request: (DataflowProjectsLocationsJobsListRequest) input message
@@ -1227,7 +1227,7 @@ class DataflowV1b3(base_api.BaseApiClient):
     )
 
     def Snapshot(self, request, global_params=None):
-      r"""Snapshot the state of a streaming job.
+      r"""Snapshot the state of a streaming job. # IAM Permissions Requires the `dataflow.jobs.snapshot` permission on the job.
 
       Args:
         request: (DataflowProjectsLocationsJobsSnapshotRequest) input message
@@ -1253,7 +1253,7 @@ class DataflowV1b3(base_api.BaseApiClient):
     )
 
     def Update(self, request, global_params=None):
-      r"""Updates the state of an existing Cloud Dataflow job. To update the state of an existing job, we recommend using `projects.locations.jobs.update` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.jobs.update` is not recommended, as you can only update the state of jobs that are running in `us-central1`.
+      r"""Updates the state of an existing Cloud Dataflow job. To update the state of an existing job, we recommend using `projects.locations.jobs.update` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.jobs.update` is not recommended, as you can only update the state of jobs that are running in `us-central1`. # IAM Permissions 1. Requires the `dataflow.jobs.cancel` permission to cancel a job. 2. Requires the `dataflow.jobs.updateContents` permission to update runtime parameters.
 
       Args:
         request: (DataflowProjectsLocationsJobsUpdateRequest) input message
@@ -1377,7 +1377,7 @@ class DataflowV1b3(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a Cloud Dataflow job from a template. Do not enter confidential information when you supply string values using the API. To create a job, we recommend using `projects.locations.templates.create` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.templates.create` is not recommended, because your job will always start in `us-central1`.
+      r"""Creates a Cloud Dataflow job from a template. Do not enter confidential information when you supply string values using the API. To create a job, we recommend using `projects.locations.templates.create` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.templates.create` is not recommended, because your job will always start in `us-central1`. # IAM Permissions Requires the following IAM permission(s) on the project: - `dataflow.jobs.create` - `resourcemanager.projects.get`.
 
       Args:
         request: (DataflowProjectsLocationsTemplatesCreateRequest) input message
@@ -1403,7 +1403,7 @@ class DataflowV1b3(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Get the template associated with a template. To get the template, we recommend using `projects.locations.templates.get` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.templates.get` is not recommended, because only templates that are running in `us-central1` are retrieved.
+      r"""Get the template associated with a template. To get the template, we recommend using `projects.locations.templates.get` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.templates.get` is not recommended, because only templates that are running in `us-central1` are retrieved. # IAM Permissions Requires the `resourcemanager.projects.get` permission on the project.
 
       Args:
         request: (DataflowProjectsLocationsTemplatesGetRequest) input message
@@ -1429,7 +1429,7 @@ class DataflowV1b3(base_api.BaseApiClient):
     )
 
     def Launch(self, request, global_params=None):
-      r"""Launches a template. To launch a template, we recommend using `projects.locations.templates.launch` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.templates.launch` is not recommended, because jobs launched from the template will always start in `us-central1`.
+      r"""Launches a template. To launch a template, we recommend using `projects.locations.templates.launch` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.templates.launch` is not recommended, because jobs launched from the template will always start in `us-central1`. # IAM Permissions Requires the following IAM permission(s) on the project: - `dataflow.jobs.create` - `resourcemanager.projects.get`.
 
       Args:
         request: (DataflowProjectsLocationsTemplatesLaunchRequest) input message
@@ -1600,7 +1600,7 @@ class DataflowV1b3(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a Cloud Dataflow job from a template. Do not enter confidential information when you supply string values using the API. To create a job, we recommend using `projects.locations.templates.create` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.templates.create` is not recommended, because your job will always start in `us-central1`.
+      r"""Creates a Cloud Dataflow job from a template. Do not enter confidential information when you supply string values using the API. To create a job, we recommend using `projects.locations.templates.create` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.templates.create` is not recommended, because your job will always start in `us-central1`. # IAM Permissions Requires the following IAM permission(s) on the project: - `dataflow.jobs.create` - `resourcemanager.projects.get`.
 
       Args:
         request: (DataflowProjectsTemplatesCreateRequest) input message
@@ -1626,7 +1626,7 @@ class DataflowV1b3(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Get the template associated with a template. To get the template, we recommend using `projects.locations.templates.get` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.templates.get` is not recommended, because only templates that are running in `us-central1` are retrieved.
+      r"""Get the template associated with a template. To get the template, we recommend using `projects.locations.templates.get` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.templates.get` is not recommended, because only templates that are running in `us-central1` are retrieved. # IAM Permissions Requires the `resourcemanager.projects.get` permission on the project.
 
       Args:
         request: (DataflowProjectsTemplatesGetRequest) input message
@@ -1652,7 +1652,7 @@ class DataflowV1b3(base_api.BaseApiClient):
     )
 
     def Launch(self, request, global_params=None):
-      r"""Launches a template. To launch a template, we recommend using `projects.locations.templates.launch` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.templates.launch` is not recommended, because jobs launched from the template will always start in `us-central1`.
+      r"""Launches a template. To launch a template, we recommend using `projects.locations.templates.launch` with a [regional endpoint] (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using `projects.templates.launch` is not recommended, because jobs launched from the template will always start in `us-central1`. # IAM Permissions Requires the following IAM permission(s) on the project: - `dataflow.jobs.create` - `resourcemanager.projects.get`.
 
       Args:
         request: (DataflowProjectsTemplatesLaunchRequest) input message

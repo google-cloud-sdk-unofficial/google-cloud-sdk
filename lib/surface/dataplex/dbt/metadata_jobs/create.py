@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import os
+import textwrap
 import uuid
 
 from apitools.base.py import encoding
@@ -37,7 +38,6 @@ from googlecloudsdk.command_lib.dataplex import resource_args
 from googlecloudsdk.command_lib.dataplex.dbt import bigquery_location as bq_loc
 from googlecloudsdk.command_lib.dataplex.dbt import transform as dbt_transform
 from googlecloudsdk.command_lib.projects import util as projects_util
-from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
@@ -158,33 +158,31 @@ class Create(base.Command):
         Defaults automatically; for internal/testing use only.""",
     )
     parser.add_argument(
-        '--import-entry-sync-mode',
-        choices={
-            'FULL': (
-                """All entries in the job scope are synced; entries absent
-                    from the import file are deleted."""
-            ),
-            'INCREMENTAL': (
-                """Only entries present in the import file are
-                    modified."""
-            ),
-        },
-        type=arg_utils.ChoiceToEnumName,
-        default='FULL',
-        help='Entry sync mode for the import job.',
-    )
-    parser.add_argument(
-        '--import-aspect-sync-mode',
-        choices={
-            'FULL': """All aspects in the job scope are synced.""",
-            'INCREMENTAL': (
-                """Only aspects present in the import file are
-                    modified."""
-            ),
-        },
-        type=arg_utils.ChoiceToEnumName,
-        default='INCREMENTAL',
-        help='Aspect sync mode for the import job.',
+        '--aspects-only',
+        action='store_true',
+        default=False,
+        help=textwrap.dedent("""\
+            Update only the metadata this dbt run observed, and leave the rest
+            of the entry group untouched. No entry is created, deleted or
+            re-parented, no entry link is emitted, and an aspect whose dbt
+            artifact was absent from this run keeps the value a previous run
+            gave it.
+
+            Use this for routine ingestion, after whichever dbt command your
+            pipeline already runs: `dbt build`, `dbt test`, `dbt source
+            freshness`, or a `--select`-narrowed rebuild. It is safe to run
+            repeatedly and from several jobs.
+
+            Omit it when the set of dbt resources itself changed (a model
+            added, renamed or deleted), since only a full run creates and
+            prunes entries. A full run also refreshes display names,
+            descriptions, labels, entry links and the entry hierarchy, which
+            this flag leaves alone; and because a full run must write every
+            entry's required aspects, run it from as complete an artifact set
+            as your pipeline can produce.
+
+            The first ingestion into an entry group must be a full run: there
+            are no entries to attach aspects to yet."""),
     )
     parser.add_argument(
         '--include-entry-links',
@@ -250,11 +248,24 @@ class Create(base.Command):
         project_number, project_id, location, args.entry_group
     )
 
+    # An entry link is structure, not metadata about an entry, so it belongs to
+    # the same pass that creates and prunes entries. Emitting links from an
+    # aspect-only run would also put entryLink items in a job whose entry sync
+    # mode cannot act on them.
+    include_entry_links = args.include_entry_links and not args.aspects_only
+    if args.aspects_only and args.IsSpecified('include_entry_links'):
+      log.warning(
+          'Ignoring --include-entry-links: --aspects-only updates aspects on '
+          'existing entries and emits no entry links.'
+      )
+
     # Resolve which datasets get represents (physical) links
     # (dbt node -> physical @bigquery table entry). Those links can only
     # reference @bigquery entries in the import location, so datasets in another
     # region are dropped.
-    linkable_datasets = self._ResolveLinkableDatasets(args, location)
+    linkable_datasets = self._ResolveLinkableDatasets(
+        args, location, include_entry_links
+    )
 
     # 1. Transform dbt artifacts into a JSONL import file in a temp dir.
     with files.TemporaryDirectory() as tmp_dir:
@@ -269,7 +280,7 @@ class Create(base.Command):
           connector_types_project=connector_types_project,
           system_types_project=system_types_project,
           types_location=types_location,
-          include_entry_links=args.include_entry_links,
+          include_entry_links=include_entry_links,
           linkable_datasets=linkable_datasets,
       )
       log.status.Print(
@@ -277,6 +288,17 @@ class Create(base.Command):
               summary['entries'], summary['entry_links']
           )
       )
+      if args.aspects_only:
+        # An aspect-only import skips an entry that does not exist yet and
+        # reports success either way, so a dbt resource added since the last
+        # full run goes missing with nothing in the output to say so.
+        log.status.Print(
+            'Aspect-only import: aspects are written to entries that already '
+            'exist; no entry is created, deleted or re-parented, and no entry '
+            'link is emitted. Re-run without --aspects-only if this project '
+            'has gained, renamed or dropped a resource since the last full '
+            'run.'
+        )
 
       # 2. Upload the JSONL under a per-job prefix (avoids stale-file
       #    duplicates) and point the import job at that prefix.
@@ -291,7 +313,7 @@ class Create(base.Command):
     entry_link_types = None
     referenced_entry_scopes = None
     extra_aspect_types = None
-    if args.include_entry_links:
+    if include_entry_links:
       entry_link_types = dbt_transform.LinkTypeFqns(
           system_types_project, types_location
       )
@@ -301,6 +323,12 @@ class Create(base.Command):
       referenced_entry_scopes = ['projects/{0}'.format(project_number)] + [
           'projects/{0}'.format(p) for p in summary.get('bigquery_projects', [])
       ]
+      # The schema-join aspect type needs a dedicated permission on the entry
+      # group, so only pull it into scope when a link actually carries it.
+      if summary.get('schema_join_links'):
+        extra_aspect_types = dbt_transform.LinkAspectTypeFqns(
+            system_types_project, types_location
+        )
 
     job = dbt_job_lib.GenerateImportMetadataJob(
         eg_project=project_number,
@@ -309,8 +337,14 @@ class Create(base.Command):
         connector_types_project=connector_types_project,
         system_types_project=system_types_project,
         source_storage_uri=storage_prefix,
-        entry_sync_mode=args.import_entry_sync_mode,
-        aspect_sync_mode=args.import_aspect_sync_mode,
+        # The service accepts exactly two pairings: entry FULL or NONE, always
+        # with aspect INCREMENTAL (ValidateMetadataJobGraph's
+        # validateEntrySyncMode / validateAspectSyncMode). NONE is the
+        # aspect-only import, which skips the required-aspect union the FULL
+        # path applies to the write mask, so an aspect this run did not observe
+        # is left as it is.
+        entry_sync_mode='NONE' if args.aspects_only else 'FULL',
+        aspect_sync_mode='INCREMENTAL',
         entry_link_types=entry_link_types,
         referenced_entry_scopes=referenced_entry_scopes,
         extra_aspect_types=extra_aspect_types,
@@ -364,7 +398,10 @@ class Create(base.Command):
     self._ReportImportOutcome(job_id, result)
 
   def _ResolveLinkableDatasets(
-      self, args: parser_extensions.Namespace, location: str
+      self,
+      args: parser_extensions.Namespace,
+      location: str,
+      include_entry_links: bool,
   ) -> frozenset[tuple[str, str]] | None:
     """Returns the BigQuery datasets to emit represents links for.
 
@@ -381,13 +418,14 @@ class Create(base.Command):
     Args:
       args: the parsed command arguments.
       location: the import location (the entry group / metadata job region).
+      include_entry_links: whether this run emits entry links at all.
 
     Returns:
       The set of (project, dataset) pairs to emit links for, or None when
       represents links are disabled or nothing is co-located with the
       import location.
     """
-    if not args.include_entry_links or args.skip_bigquery_link:
+    if not include_entry_links or args.skip_bigquery_link:
       return None
     datasets = dbt_transform.MaterializedBigQueryDatasets(args.artifacts_path)
     if not datasets:

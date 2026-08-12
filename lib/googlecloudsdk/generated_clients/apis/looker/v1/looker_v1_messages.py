@@ -190,6 +190,9 @@ class ExportMetadata(_messages.Message):
     SourceValueValuesEnum: The source type of the migration.
 
   Fields:
+    esaSourceDatasetId: Source BigQuery dataset (formatted as
+      `project_id:dataset_id`) for O2C Elite System Activity (ESA) direct
+      dataset migration.
     exportEncryptionKey: Encryption key that was used to encrypt the export
       artifacts.
     filePaths: List of files created as part of export artifact (excluding the
@@ -216,13 +219,14 @@ class ExportMetadata(_messages.Message):
     LOOKER_CORE = 1
     LOOKER_ORIGINAL = 2
 
-  exportEncryptionKey = _messages.MessageField('ExportMetadataEncryptionKey', 1)
-  filePaths = _messages.StringField(2, repeated=True)
-  lookerEncryptionKey = _messages.StringField(3)
-  lookerInstance = _messages.StringField(4)
-  lookerPlatformEdition = _messages.StringField(5)
-  lookerVersion = _messages.StringField(6)
-  source = _messages.EnumField('SourceValueValuesEnum', 7)
+  esaSourceDatasetId = _messages.StringField(1)
+  exportEncryptionKey = _messages.MessageField('ExportMetadataEncryptionKey', 2)
+  filePaths = _messages.StringField(3, repeated=True)
+  lookerEncryptionKey = _messages.StringField(4)
+  lookerInstance = _messages.StringField(5)
+  lookerPlatformEdition = _messages.StringField(6)
+  lookerVersion = _messages.StringField(7)
+  source = _messages.EnumField('SourceValueValuesEnum', 8)
 
 
 class ExportMetadataEncryptionKey(_messages.Message):

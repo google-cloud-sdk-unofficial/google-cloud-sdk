@@ -767,9 +767,9 @@ class AccesscontextmanagerOrganizationsGcpUserAccessBindingsListRequest(_message
   Fields:
     filter: Optional. The literal filter to apply to the results returned. See
       https://google.aip.dev/160 for more details. Accepts values: *
-      principal:group_key * principal:service_account OR
-      principal:service_account_project_number. If this field is empty or not
-      one of the above, the default value is "principal:group_key".
+      `principal:group_key` * `principal:service_account` OR
+      `principal:service_account_project_number`. If this field is empty or
+      not one of the above, the default value is `"principal:group_key"`.
     pageSize: Optional. Maximum number of items to return. The server may
       return fewer items. If left blank, the server may return any number of
       items.
@@ -1625,10 +1625,10 @@ class GcpUserAccessBinding(_messages.Message):
       "organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N"
     principal: Optional. Immutable. The principal that is subject to the
       access policies in this policy binding.
-    restrictedClientApplications: Optional. Deprecated: use
-      scoped_access_settings instead. A list of applications that are subject
-      to this binding's restrictions. If the list is empty, the binding
-      restrictions will universally apply to all applications.
+    restrictedClientApplications: Optional. Deprecated: Use
+      `scoped_access_settings` instead. A list of applications that are
+      subject to this binding's restrictions. If the list is empty, the
+      binding restrictions will universally apply to all applications.
     scopedAccessSettings: Optional. A list of scoped access settings that set
       this binding's restrictions on a subset of applications. This field
       cannot be set if restricted_client_applications is set.
@@ -1941,7 +1941,7 @@ class Modifier(_messages.Message):
   r"""Modifier to apply to the API requests.
 
   Fields:
-    addRequestHeader: Adds additional HTTP request headers.
+    addRequestHeader: Adds an additional HTTP request header.
   """
 
   addRequestHeader = _messages.MessageField('AddRequestHeader', 1)
@@ -2178,7 +2178,7 @@ class Policy(_messages.Message):
 
 class Principal(_messages.Message):
   r"""The comprehensive identity container supporting identities including
-  groups, service accounts and federated identities. Only one of them can be
+  groups, service accounts, and federated identities. Only one of them can be
   set to create an access binding.
 
   Fields:
@@ -2194,7 +2194,8 @@ class Principal(_messages.Message):
       multiple policies (e.g., if there is a policy for all service accounts
       in a project and a policy for the service account), the closest (i.e.
       the most specific) dry-run policy will be used for the dry-run
-      functionality and the closest policy will be used for the enforcement.
+      functionality and the closest enforcement policy will be used for the
+      enforcement.
     serviceAccountProjectNumber: Immutable. Cloud project number used to
       assign policies to all service accounts owned by the project.
   """
@@ -2226,7 +2227,7 @@ class Project(_messages.Message):
     name: The GCP project resource name. Format: "projects/{project_number}"
       (Only the numeric project name variation is supported). Example:
       "projects/1234567890"
-    projectNumber: Deprecated: Use name instead.
+    projectNumber: Deprecated: Use `name` instead.
   """
 
   name = _messages.StringField(1)
@@ -2320,7 +2321,7 @@ class ServicePattern(_messages.Message):
     modifiers: Modifiers to apply to the requests that match the URL pattern.
     pattern: URL pattern to allow. Only patterns of ".googleapis.com/*",
       "www.googleapis.com//*" and "*.appspot.com/* forms are supported, where
-      should be alphanumerical name.
+      should be an alphanumeric name.
     service: Supported service to allow.
   """
 
@@ -2467,14 +2468,17 @@ class SessionSettings(_messages.Message):
     maxInactivity: Optional. How long a user is allowed to take between
       actions before a new access token must be issued. Only set for Google
       Cloud apps.
-    sessionLength: Optional. The session length. Setting this field to zero is
-      equal to disabling session. Also can set infinite session by flipping
-      the enabled bit to false below. If use_oidc_max_age is true, for OIDC
-      apps, the session length will be the minimum of this field and OIDC
-      max_age param.
+    sessionLength: Optional. The session length. Setting this field to zero
+      allows for sessions that are active indefinitely. Also, setting
+      `session_length_enabled` to false disregards session limits, which means
+      that sessions never expire. If use_oidc_max_age is true, for OIDC apps,
+      the session length will be the minimum of this field and the OIDC
+      max_age param. If this field is set to zero, `session_length_enabled`
+      must be set to false or left unset.
     sessionLengthEnabled: Optional. This field enables or disables Google
       Cloud session length. When false, all fields set above will be
-      disregarded and the session length is basically infinite.
+      disregarded and the session length is basically infinite. If
+      `session_length` is set to zero, this field must be set to false.
     sessionReauthMethod: Optional. Session method when user's Google Cloud
       session is up.
     useOidcMaxAge: Optional. Only useful for OIDC apps. When false, the OIDC
@@ -2784,8 +2788,8 @@ class VpcAccessibleServices(_messages.Message):
     r"""ServicePatternsEnforcementScopesValueListEntryValuesEnum enum type.
 
     Values:
-      SERVICE_PATTERNS_ENFORCEMENT_SCOPE_UNSPECIFIED: Default value. This can
-        not be used.
+      SERVICE_PATTERNS_ENFORCEMENT_SCOPE_UNSPECIFIED: Default value. This
+        cannot be used.
       GOOGLE_APIS_VIA_PRIVATE_PATH: Enables VPC Accessible Services
         enforcement for all APIs (including unsupported APIs) for Private
         Google Access configured with Private VIP and Private Service Connect

@@ -83,8 +83,17 @@ class SupportedAirflowVersion(collections.namedtuple(
 
 
 SUBCOMMAND_ALLOWLIST = {
-    'backfill': SupportedAirflowVersion(from_version=None, to_version='2.0.0'),
+    'backfill': SupportedAirflowVersion(from_version=None, to_version=None),
     'clear': SupportedAirflowVersion(from_version=None, to_version='2.0.0'),
+    'config': SupportedAirflowVersion(
+        from_version='2.11.0',
+        to_version=None,
+        allowed_nested_subcommands={
+            'lint': SupportedAirflowVersion(
+                from_version='2.11.0', to_version=None
+            ),
+        },
+    ),
     'connections': SupportedAirflowVersion(
         from_version=None, to_version='3.3.0'
     ),

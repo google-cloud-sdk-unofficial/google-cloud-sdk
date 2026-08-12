@@ -46,6 +46,7 @@ DETAILED_HELP = {
     base.ReleaseTrack.GA,
     base.ReleaseTrack.PREVIEW,
 )
+@base.UniverseCompatible
 class Update(base.UpdateCommand):
   """Update a Compute Engine interconnect MACsec configuration.
 
@@ -63,6 +64,8 @@ class Update(base.UpdateCommand):
 
     flags.AddMacsecEnabledForUpdate(parser)
     flags.AddFailOpenForUpdate(parser)
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      flags.AddMacsecKeyGroupForUpdate(parser)
 
   def Collection(self):
     return 'compute.interconnects'
@@ -72,10 +75,23 @@ class Update(base.UpdateCommand):
     ref = self.INTERCONNECT_ARG.ResolveAsResource(args, holder.resources)
     interconnect = client.Interconnect(ref, compute_client=holder.client)
 
+    key_group = getattr(args, 'key_group', None)
+    clear_key_group = getattr(args, 'clear_key_group', False)
+
     macsec = None
-    if args.fail_open is not None:
+    if args.fail_open is not None or key_group is not None or clear_key_group:
       macsec = interconnect.Describe().macsec
+      if macsec is None:
+        macsec = holder.client.messages.InterconnectMacsec()
+
+    cleared_fields = []
+    if args.fail_open is not None:
       macsec.failOpen = args.fail_open
+    if key_group is not None:
+      macsec.interconnectKeyGroup = args.key_group
+    if clear_key_group:
+      macsec.interconnectKeyGroup = None
+      cleared_fields.append('macsec.interconnectKeyGroup')
 
     return interconnect.Patch(
         description=None,
@@ -88,7 +104,9 @@ class Update(base.UpdateCommand):
         labels=None,
         label_fingerprint=None,
         macsec_enabled=args.enabled,
-        macsec=macsec)
+        macsec=macsec,
+        cleared_fields=cleared_fields,
+    )
 
 
 Update.detailed_help = DETAILED_HELP

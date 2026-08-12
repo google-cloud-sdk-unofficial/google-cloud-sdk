@@ -15,9 +15,8 @@
 
 """Command to List MCP servers."""
 
-from googlecloudsdk.api_lib.api_registry import utils
-from googlecloudsdk.api_lib.api_registry.mcp import servers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import log
 
 
 _DETAILED_HELP = {
@@ -34,21 +33,17 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Deprecate(
-    is_removed=False,  # Set to False to issue a warning first
+    is_removed=False,
     warning=(
         'The `gcloud alpha api-registry mcp servers list` command is deprecated'
-        ' and will be removed in a future release. Please use `gcloud alpha'
-        ' agent-registry mcp-servers list` instead. Note: Agent Registry only'
-        ' lists MCP servers for service APIs that are enabled in a project. For'
-        ' more information, see: '
-        'https://docs.cloud.google.com/sdk/gcloud/reference/alpha/agent-registry/mcp-servers'
+        ' and will be removed in a future release.'
     ),
     error=(
         'The `gcloud alpha api-registry mcp servers list` command has been'
         ' removed. Please use `gcloud alpha agent-registry mcp-servers list`'
         ' instead. For more information, see: '
         'https://docs.cloud.google.com/sdk/gcloud/reference/alpha/agent-registry/mcp-servers'
-    )
+    ),
 )
 @base.DefaultUniverseOnly
 class ListAlpha(base.ListCommand):
@@ -68,32 +63,29 @@ class ListAlpha(base.ListCommand):
 
   def Run(self, args):
     """Run the list command."""
-    client = servers.McpServersClient(version='v1alpha')
-    project = utils.GetProject()
-    location = utils.GetLocation()
-    parent = (
-        f'projects/{project}/locations/{location}'
+    log.status.Print(
+        'For similar functionality, you can use Agent Registry. Please use'
+        ' `gcloud alpha agent-registry mcp-servers list` instead. Note: Agent'
+        ' Registry only lists MCP servers for service APIs that are enabled in'
+        ' a project. For more information, see: '
+        'https://docs.cloud.google.com/sdk/gcloud/reference/alpha/agent-registry/mcp-servers'
     )
-    return client.ListAlpha(parent, args)
+    return []
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.Deprecate(
-    is_removed=False,  # Set to False to issue a warning first
+    is_removed=False,
     warning=(
         'The `gcloud beta api-registry mcp servers list` command is deprecated'
-        ' and will be removed in a future release. Please use `gcloud alpha'
-        ' agent-registry mcp-servers list` instead. Note: Agent Registry only'
-        ' lists MCP servers for service APIs that are enabled in a project. For'
-        ' more information, see: '
-        'https://docs.cloud.google.com/sdk/gcloud/reference/alpha/agent-registry/mcp-servers'
+        ' and will be removed in a future release.'
     ),
     error=(
         'The `gcloud beta api-registry mcp servers list` command has been'
         ' removed. Please use `gcloud alpha agent-registry mcp-servers list`'
         ' instead. For more information, see: '
         'https://docs.cloud.google.com/sdk/gcloud/reference/alpha/agent-registry/mcp-servers'
-    )
+    ),
 )
 @base.DefaultUniverseOnly
 class ListBeta(base.ListCommand):
@@ -113,10 +105,11 @@ class ListBeta(base.ListCommand):
 
   def Run(self, args):
     """Run the list command."""
-    client = servers.McpServersClient(version='v1beta')
-    project = utils.GetProject()
-    location = utils.GetLocation()
-    parent = (
-        f'projects/{project}/locations/{location}'
+    log.status.Print(
+        'For similar functionality, you can use Agent Registry. Please use'
+        ' `gcloud alpha agent-registry mcp-servers list` instead. Note: Agent'
+        ' Registry only lists MCP servers for service APIs that are enabled in'
+        ' a project. For more information, see: '
+        'https://docs.cloud.google.com/sdk/gcloud/reference/alpha/agent-registry/mcp-servers'
     )
-    return client.ListBeta(parent, args)
+    return []

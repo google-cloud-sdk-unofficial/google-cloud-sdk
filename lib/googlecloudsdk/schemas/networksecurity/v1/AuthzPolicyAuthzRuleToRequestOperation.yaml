@@ -37,6 +37,13 @@ properties:
     type: array
     items:
       $ref: AuthzPolicyAuthzRuleStringMatch.yaml
+  mcp:
+    description: |-
+      Optional. Defines the MCP protocol attributes to match on. If the MCP
+      payload in the request body cannot be successfully parsed, the
+      request will be denied. This field can be set only for AuthzPolicies
+      targeting AgentGateway resources.
+    $ref: AuthzPolicyAuthzRuleToRequestOperationMCP.yaml
   methods:
     description: |-
       A list of HTTP methods to match against. Each entry must be a valid

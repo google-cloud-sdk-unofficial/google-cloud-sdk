@@ -22,3 +22,4 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class RegionalEndpoints(base.Group):
   """Manage Network Connectivity RegionalEndpoints."""
+  category = base.NETWORKING_CATEGORY

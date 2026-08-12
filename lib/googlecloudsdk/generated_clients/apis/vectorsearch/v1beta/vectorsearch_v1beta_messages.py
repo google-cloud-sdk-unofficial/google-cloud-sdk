@@ -1173,7 +1173,9 @@ class GoogleCloudVectorsearchV1betaSemanticSearch(_messages.Message):
   r"""Defines a semantic search operation.
 
   Enums:
-    TaskTypeValueValuesEnum: Required. The task type of the query embedding.
+    TaskTypeValueValuesEnum: Optional. The task type of the query embedding.
+      Must be specified for text-only embedding models, see Not needed for
+      multi modal embedding models, see
 
   Messages:
     FilterValue: Optional. A JSON filter expression, e.g. {"genre": {"$eq":
@@ -1190,12 +1192,16 @@ class GoogleCloudVectorsearchV1betaSemanticSearch(_messages.Message):
     searchText: Required. The query text, which is used to generate an
       embedding according to the embedding model specified in the collection
       config.
-    taskType: Required. The task type of the query embedding.
+    taskType: Optional. The task type of the query embedding. Must be
+      specified for text-only embedding models, see Not needed for multi modal
+      embedding models, see
     topK: Optional. The number of data objects to return.
   """
 
   class TaskTypeValueValuesEnum(_messages.Enum):
-    r"""Required. The task type of the query embedding.
+    r"""Optional. The task type of the query embedding. Must be specified for
+    text-only embedding models, see Not needed for multi modal embedding
+    models, see
 
     Values:
       EMBEDDING_TASK_TYPE_UNSPECIFIED: Unspecified task type.
@@ -1444,20 +1450,36 @@ class GoogleCloudVectorsearchV1betaVertexEmbeddingConfig(_messages.Message):
   vector field using Vertex AI embeddings API.
 
   Enums:
-    TaskTypeValueValuesEnum: Required. Required: Task type for the embeddings.
+    TaskTypeValueValuesEnum: Optional. Optional: Task type for the embeddings.
+      Required for text-only embedding models, see
+      https://docs.cloud.google.com/gemini-enterprise-agent-
+      platform/models/embeddings/task-types Not needed for multi modal
+      embedding models, see https://docs.cloud.google.com/gemini-enterprise-
+      agent-platform/models/embeddings/get-multimodal-embeddings#specify-task-
+      instructions
 
   Fields:
     modelId: Required. Required: ID of the embedding model to use. See
       https://cloud.google.com/vertex-ai/generative-
       ai/docs/learn/models#embeddings-models for the list of supported models.
-    taskType: Required. Required: Task type for the embeddings.
+    taskType: Optional. Optional: Task type for the embeddings. Required for
+      text-only embedding models, see https://docs.cloud.google.com/gemini-
+      enterprise-agent-platform/models/embeddings/task-types Not needed for
+      multi modal embedding models, see https://docs.cloud.google.com/gemini-
+      enterprise-agent-platform/models/embeddings/get-multimodal-
+      embeddings#specify-task-instructions
     textTemplate: Required. Required: Text template for the input to the
       model. The template must contain one or more references to fields in the
       DataObject, e.g.: "Movie Title: {title} ---- Movie Plot: {plot}".
   """
 
   class TaskTypeValueValuesEnum(_messages.Enum):
-    r"""Required. Required: Task type for the embeddings.
+    r"""Optional. Optional: Task type for the embeddings. Required for text-
+    only embedding models, see https://docs.cloud.google.com/gemini-
+    enterprise-agent-platform/models/embeddings/task-types Not needed for
+    multi modal embedding models, see https://docs.cloud.google.com/gemini-
+    enterprise-agent-platform/models/embeddings/get-multimodal-
+    embeddings#specify-task-instructions
 
     Values:
       EMBEDDING_TASK_TYPE_UNSPECIFIED: Unspecified task type.
@@ -1491,14 +1513,11 @@ class GoogleCloudVectorsearchV1betaVertexEmbeddingConfig(_messages.Message):
 
 
 class GoogleCloudVectorsearchV1betaVertexRanker(_messages.Message):
-  r"""Defines a ranker using the Vertex AI ranking service. See
-  https://cloud.google.com/generative-ai-app-builder/docs/ranking for details.
+  r"""Defines a ranker using the Vertex AI ranking service. See for details.
 
   Fields:
     model: Required. The model used for ranking documents. The list of
-      available models is described in
-      https://docs.cloud.google.com/generative-ai-app-
-      builder/docs/ranking#models. Currently, only `semantic-ranker-
+      available models is described in . Currently, only `semantic-ranker-
       fast@latest` is supported.
     textRecordSpec: The record spec for text search.
     topN: Required. The number of documents to be processed for ranking.

@@ -53,7 +53,6 @@ _DBT_ASPECT_TYPES = (
     'dbt-macro',
     'dbt-semantic-model',
     'dbt-saved-query',
-    'dbt-schema',
     'dbt-data-quality',
     'dbt-model-contracts',
 )
@@ -176,26 +175,27 @@ def AspectTypeNames(
     connector_types_project: str,
     system_types_project: str,
 ) -> list[str]:
-  """Relative resource names of the dbt aspect types + `contacts`.
+  """Relative resource names of the dbt aspect types + the 1P types we emit.
 
-  dbt-* aspect types come from the connector project; `contacts` is a core 1P
-  type from the system project.
+  dbt-* aspect types come from the connector project; `contacts` and `schema`
+  are core 1P types from the system project.
 
   Args:
     connector_types_project: project hosting the dbt aspect types.
-    system_types_project: project hosting the core `contacts` aspect type.
+    system_types_project: project hosting the core 1P aspect types.
 
   Returns:
-    A list of aspect type resource names (dbt aspect types + `contacts`).
+    A list of aspect type resource names.
   """
   names = [
       f'projects/{connector_types_project}/locations/'
       f'{_GLOBAL_TYPE_LOCATION}/aspectTypes/{n}'
       for n in _DBT_ASPECT_TYPES
   ]
-  names.append(
+  names.extend(
       f'projects/{system_types_project}/locations/'
-      f'{_GLOBAL_TYPE_LOCATION}/aspectTypes/contacts'
+      f'{_GLOBAL_TYPE_LOCATION}/aspectTypes/{n}'
+      for n in ('contacts', 'schema')
   )
   return names
 
@@ -231,8 +231,10 @@ def GenerateImportMetadataJob(
     system_types_project: project hosting `contacts` + entry link types
       (dataplex-types / dataplex-staging-types / ...).
     source_storage_uri: gs:// prefix containing the import JSONL file(s).
-    entry_sync_mode: 'FULL' or 'INCREMENTAL'.
-    aspect_sync_mode: 'FULL' or 'INCREMENTAL'.
+    entry_sync_mode: 'FULL' (create, update and prune entries) or 'NONE' (leave
+      the entry set alone and write aspects only).
+    aspect_sync_mode: 'INCREMENTAL'; the service accepts no other value
+      alongside either entry sync mode.
     entry_link_types: optional list of entryLinkType FQNs (only when emitting
       entry links).
     referenced_entry_scopes: optional list of `projects/{id}` scopes used to

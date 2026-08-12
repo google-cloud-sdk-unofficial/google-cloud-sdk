@@ -132,9 +132,17 @@ def AddMaxRetentionDays(parser):
   )
 
 
-def AddKmsKeyArg(parser):
+def AddKmsKeyArg(parser, include_kms_key_service_account=False):
   kms_resource_args.AddKmsKeyResourceArg(
       parser, 'snapshot', region_fallthrough=True)
+  if include_kms_key_service_account:
+    parser.add_argument(
+        '--kms-key-service-account',
+        type=str,
+        help="""\
+        Service account email to use when requesting encryption for the specified KMS key.
+        """,
+    )
 
 
 SOURCE_DISK_ARG = compute_flags.ResourceArgument(

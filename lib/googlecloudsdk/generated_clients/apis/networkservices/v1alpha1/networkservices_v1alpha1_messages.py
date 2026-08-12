@@ -139,6 +139,9 @@ class AgentGateway(_messages.Message):
       resource.
 
   Fields:
+    agentConnectivityTemplate: Optional. The resource name of the
+      AgentConnectivityTemplate. Format: projects/{project}/locations/{locatio
+      n}/agentConnectivityTemplates/{template}
     agentGatewayCard: Output only. Field for populated AgentGateway card.
     createTime: Output only. The timestamp when the resource was created.
     description: Optional. A free-text description of the resource. Max length
@@ -197,18 +200,19 @@ class AgentGateway(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  agentGatewayCard = _messages.MessageField('AgentGatewayAgentGatewayOutputCard', 1)
-  createTime = _messages.StringField(2)
-  description = _messages.StringField(3)
-  etag = _messages.StringField(4)
-  googleManaged = _messages.MessageField('AgentGatewayGoogleManaged', 5)
-  labels = _messages.MessageField('LabelsValue', 6)
-  name = _messages.StringField(7)
-  networkConfig = _messages.MessageField('AgentGatewayNetworkConfig', 8)
-  protocols = _messages.EnumField('ProtocolsValueListEntryValuesEnum', 9, repeated=True)
-  registries = _messages.StringField(10, repeated=True)
-  selfManaged = _messages.MessageField('AgentGatewaySelfManaged', 11)
-  updateTime = _messages.StringField(12)
+  agentConnectivityTemplate = _messages.StringField(1)
+  agentGatewayCard = _messages.MessageField('AgentGatewayAgentGatewayOutputCard', 2)
+  createTime = _messages.StringField(3)
+  description = _messages.StringField(4)
+  etag = _messages.StringField(5)
+  googleManaged = _messages.MessageField('AgentGatewayGoogleManaged', 6)
+  labels = _messages.MessageField('LabelsValue', 7)
+  name = _messages.StringField(8)
+  networkConfig = _messages.MessageField('AgentGatewayNetworkConfig', 9)
+  protocols = _messages.EnumField('ProtocolsValueListEntryValuesEnum', 10, repeated=True)
+  registries = _messages.StringField(11, repeated=True)
+  selfManaged = _messages.MessageField('AgentGatewaySelfManaged', 12)
+  updateTime = _messages.StringField(13)
 
 
 class AgentGatewayAgentGatewayOutputCard(_messages.Message):
@@ -1542,8 +1546,8 @@ class EgressNetworkConfig(_messages.Message):
     networkAttachment: Optional. The network attachment resource name. Format:
       projects/{project}/regions/{region}/networkAttachments/{network_attachme
       nt_id}
-    tlsConfig: Optional. The TLS configuration for the egress traffic.
-    trustConfig: Optional. The trust config resource name. Format:
+    trustConfig: Optional. Deprecated: Use tls_config instead. The trust
+      config resource name. Format:
       projects/{project}/locations/{location}/trustConfigs/{trust_config}
     vpcEgress: Optional. The VPC egress setting.
   """
@@ -1563,39 +1567,8 @@ class EgressNetworkConfig(_messages.Message):
 
   dnsPeeringConfig = _messages.MessageField('DnsPeeringConfig', 1)
   networkAttachment = _messages.StringField(2)
-  tlsConfig = _messages.MessageField('EgressNetworkConfigTlsConfig', 3)
-  trustConfig = _messages.StringField(4)
-  vpcEgress = _messages.EnumField('VpcEgressValueValuesEnum', 5)
-
-
-class EgressNetworkConfigTlsConfig(_messages.Message):
-  r"""Configuration for TLS connections.
-
-  Enums:
-    AdditionalRootsValueValuesEnum: Optional. The additional roots to trust.
-
-  Fields:
-    additionalRoots: Optional. The additional roots to trust.
-    trustConfig: Optional. The trust config resource name. Format:
-      projects/{project}/locations/{location}/trustConfigs/{trust_config}
-  """
-
-  class AdditionalRootsValueValuesEnum(_messages.Enum):
-    r"""Optional. The additional roots to trust.
-
-    Values:
-      ADDITIONAL_ROOTS_UNSPECIFIED: Unspecified additional roots.
-      NO_ADDITIONAL_ROOTS: Trust only the certificates provided in
-        `trust_config`.
-      PUBLICLY_TRUSTED_ROOTS: Trust certificates provided in `trust_config`
-        and publicly trusted roots.
-    """
-    ADDITIONAL_ROOTS_UNSPECIFIED = 0
-    NO_ADDITIONAL_ROOTS = 1
-    PUBLICLY_TRUSTED_ROOTS = 2
-
-  additionalRoots = _messages.EnumField('AdditionalRootsValueValuesEnum', 1)
-  trustConfig = _messages.StringField(2)
+  trustConfig = _messages.StringField(3)
+  vpcEgress = _messages.EnumField('VpcEgressValueValuesEnum', 4)
 
 
 class EgressRouting(_messages.Message):
@@ -1997,14 +1970,19 @@ class ExtensionBinding(_messages.Message):
     name: Identifier. Name of the `ExtensionBinding` resource in the following
       format: `projects/{project}/locations/{location}/extensionBindings/{exte
       nsion_binding}`.
+    priority: Optional. Priority of the extension binding. Lower numbers
+      indicate higher priority. Priority of extension bindings are used to
+      determine the order in which extension bindings are applied to a
+      request.
     producerExtension: Required. The name of the extension that this binding
       should attach to target resources. Format: For Google-provided
       extensions, specify the service endpoint (see [Model Armor
       integration](https://docs.cloud.google.com/model-armor/integrations))
     producerMetadata: Optional. Additional metadata that should be passed to
       the attached extension with each request.
-    targets: Required. Specifies a list of targets to which this
-      `ExtensionBinding` should be attached. Limited to 1 target.
+    target: Required. Specifies a target to which this `ExtensionBinding`
+      should be attached. The target can be either a single resource or a
+      scope of resources.
     updateTime: Output only. The timestamp when the resource was updated.
   """
 
@@ -2069,10 +2047,11 @@ class ExtensionBinding(_messages.Message):
   labels = _messages.MessageField('LabelsValue', 5)
   matchConditions = _messages.MessageField('ExtensionBindingMatchCondition', 6, repeated=True)
   name = _messages.StringField(7)
-  producerExtension = _messages.StringField(8)
-  producerMetadata = _messages.MessageField('ProducerMetadataValue', 9)
-  targets = _messages.MessageField('ExtensionBindingTarget', 10, repeated=True)
-  updateTime = _messages.StringField(11)
+  priority = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+  producerExtension = _messages.StringField(9)
+  producerMetadata = _messages.MessageField('ProducerMetadataValue', 10)
+  target = _messages.MessageField('ExtensionBindingTarget', 11)
+  updateTime = _messages.StringField(12)
 
 
 class ExtensionBindingMatchCondition(_messages.Message):
@@ -2187,15 +2166,48 @@ class ExtensionBindingTarget(_messages.Message):
   attach.
 
   Fields:
-    resource: Required. The reference to the target resource, to which this
-      binding should attach. For Agent Gateway, this would be the full
-      resource name, in the format:
+    resources: Optional. The reference to the target resource, to which this
+      binding should attach. Exactly one of `resources` or `scope` must be
+      set. For Agent Gateway, this would be the full resource name, in the
+      format:
       `projects/{project}/locations/{location}/agentGateways/{agent_gateway}`.
       For AI App, this would be the full resource name, in the format:
       `projects/{project}/locations/{location}/applications/{application}`.
+    scope: Optional. Specifies the scope of resources to which this binding
+      should attach. Exactly one of `resources` or `scope` must be set.
   """
 
-  resource = _messages.StringField(1)
+  resources = _messages.StringField(1, repeated=True)
+  scope = _messages.MessageField('ExtensionBindingTargetScope', 2)
+
+
+class ExtensionBindingTargetScope(_messages.Message):
+  r"""Specifies the scope of resources to which this binding should attach.
+
+  Enums:
+    ResourceTypesValueListEntryValuesEnum:
+
+  Fields:
+    parent: Required. Parent resource name specification, in the format:
+      `projects/{project_number}`.
+    resourceTypes: Required. Type of the resource to which the binding should
+      attach. Limited to 1 resource type.
+  """
+
+  class ResourceTypesValueListEntryValuesEnum(_messages.Enum):
+    r"""ResourceTypesValueListEntryValuesEnum enum type.
+
+    Values:
+      RESOURCE_TYPE_UNSPECIFIED: Default value. Should not be used.
+      AI_APPLICATION: AI Application resources.
+      AGENT_GATEWAY: Agent Gateway resources.
+    """
+    RESOURCE_TYPE_UNSPECIFIED = 0
+    AI_APPLICATION = 1
+    AGENT_GATEWAY = 2
+
+  parent = _messages.StringField(1)
+  resourceTypes = _messages.EnumField('ResourceTypesValueListEntryValuesEnum', 2, repeated=True)
 
 
 class ExtensionChain(_messages.Message):
@@ -2560,12 +2572,17 @@ class FlexShieldingOptions(_messages.Message):
         a region not being specified.
       AFRICA_SOUTH1: Content is fetched from an origin or cache near `africa-
         south1`.
+      EUROPE_WEST3: Content is fetched from an origin or cache near `europe-
+        west3`.
       ME_CENTRAL1: Content is fetched from an origin or cache near `me-
         central1`.
+      US_EAST5: Content is fetched from an origin or cache near `us-east5`.
     """
     FLEX_SHIELDING_REGION_UNSPECIFIED = 0
     AFRICA_SOUTH1 = 1
-    ME_CENTRAL1 = 2
+    EUROPE_WEST3 = 2
+    ME_CENTRAL1 = 3
+    US_EAST5 = 4
 
   flexShieldingRegions = _messages.EnumField('FlexShieldingRegionsValueListEntryValuesEnum', 1, repeated=True)
 

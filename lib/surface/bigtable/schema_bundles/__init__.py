@@ -22,3 +22,5 @@ from googlecloudsdk.calliope import base
 @base.UniverseCompatible
 class SchemaBundles(base.Group):
   """Manage Bigtable schema bundles."""
+
+  category = base.DATABASES_CATEGORY

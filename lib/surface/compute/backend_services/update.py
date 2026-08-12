@@ -37,11 +37,20 @@ from googlecloudsdk.command_lib.compute.security_policies import (
 from googlecloudsdk.core import log
 
 
-def AddIapFlag(parser):
+def AddIapFlag(parser, alpha=False):
   # TODO(b/34479878): It would be nice if the auto-generated help text were
   # a bit better so we didn't need to be quite so verbose here.
+  metavar = None
+  if alpha:
+    metavar = (
+        'disabled|enabled,['
+        'oauth2-client-id=OAUTH2-CLIENT-ID,'
+        'oauth2-client-secret=OAUTH2-CLIENT-SECRET,'
+        'oauth2-client-info-developer-email-address=DEVELOPER-EMAIL-ADDRESS]'
+    )
   flags.AddIap(
       parser,
+      metavar=metavar,
       help="""\
       Change the Identity Aware Proxy (IAP) service configuration for the
       backend service. You can set IAP to 'enabled' or 'disabled', or modify
@@ -120,6 +129,7 @@ class UpdateHelper(object):
       support_ip_port_dynamic_forwarding,
       support_forward_proxy,
       support_allow_multinetwork,
+      support_iap_alpha=False,
   ):
     """Add all arguments for updating a backend service."""
 
@@ -180,12 +190,14 @@ class UpdateHelper(object):
     flags.AddLoggingOptionalFields(parser)
     flags.AddLoggingHttpHeaders(parser, register_no_flags=True)
 
-    AddIapFlag(parser)
+    AddIapFlag(parser, alpha=support_iap_alpha)
     flags.AddCustomRequestHeaders(parser, remove_all_flag=True, default=None)
 
     cdn_flags.AddCdnPolicyArgs(parser, 'backend service', update_command=True)
 
     flags.AddConnectionTrackingPolicy(parser)
+    flags.AddConsistentHashMinimumRingSize(parser)
+    flags.AddCircuitBreakersMaxRequests(parser)
     flags.AddCompressionMode(parser)
 
     flags.AddServiceLoadBalancingPolicy(parser, required=False, is_update=True)
@@ -292,6 +304,12 @@ class UpdateHelper(object):
       replacement.connectionDraining = client.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
 
+    backend_services_utils.ApplyConsistentHashSettings(
+        client, args, replacement
+    )
+    backend_services_utils.ApplyCircuitBreakersSettings(
+        client, args, replacement
+    )
     backend_services_utils.ApplySubsettingArgs(
         client, args, replacement, self._support_subsetting_subset_size
     )
@@ -506,6 +524,8 @@ class UpdateHelper(object):
         else False,
         args.IsSpecified('ha_policy_leader_backend_group'),
         args.IsSpecified('ha_policy_leader_instance'),
+        args.IsSpecified('consistent_hash_minimum_ring_size'),
+        args.IsSpecified('circuit_breakers_max_requests'),
     ]):
       raise compute_exceptions.UpdatePropertyError(
           'At least one property must be modified.')
@@ -671,6 +691,7 @@ class UpdateGA(base.UpdateCommand):
   _support_ip_port_dynamic_forwarding = False
   _support_forward_proxy = False
   _support_allow_multinetwork = False
+  _support_iap_alpha = False
 
   @classmethod
   def Args(cls, parser):
@@ -680,6 +701,7 @@ class UpdateGA(base.UpdateCommand):
         support_ip_port_dynamic_forwarding=cls._support_ip_port_dynamic_forwarding,
         support_forward_proxy=cls._support_forward_proxy,
         support_allow_multinetwork=cls._support_allow_multinetwork,
+        support_iap_alpha=cls._support_iap_alpha,
     )
 
   def Run(self, args):
@@ -718,3 +740,4 @@ class UpdateAlpha(UpdateBeta):
   _support_ip_port_dynamic_forwarding = True
   _support_forward_proxy = True
   _support_allow_multinetwork = True
+  _support_iap_alpha = True

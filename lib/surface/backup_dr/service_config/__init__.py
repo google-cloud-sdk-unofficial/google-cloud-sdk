@@ -23,3 +23,4 @@ from googlecloudsdk.calliope import base
 )
 class ServiceConfig(base.Group):
   """Manage Backup and DR Service configuration."""
+  category = base.STORAGE_CATEGORY

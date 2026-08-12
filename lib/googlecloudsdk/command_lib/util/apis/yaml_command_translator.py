@@ -759,6 +759,10 @@ class BaseCommandGenerator(six.with_metaclass(abc.ABCMeta, object)):
       command.hints = base.CommandHint(**self.spec.hints)
     if self.spec.guidance:
       command.guidance = self.spec.guidance
+    command.is_yaml_command = True
+    command.yaml_spec = self.spec
+    if self.has_request_method:
+      command.methods = self.methods
     return command
 
   @abc.abstractmethod

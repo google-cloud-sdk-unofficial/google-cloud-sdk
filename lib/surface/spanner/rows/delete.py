@@ -73,13 +73,9 @@ class Delete(base.DeleteCommand):
 
     mutation = database_sessions.MutationFactory.Delete(table, args.keys)
 
-    # To commit a transaction in a session, we need to create one and delete it
-    # at the end.
+    # To commit a transaction in a session, we need to create one.
     session_name = database_sessions.Create(database_ref)
     session = resources.REGISTRY.ParseRelativeName(
         relative_name=session_name.name,
         collection='spanner.projects.instances.databases.sessions')
-    try:
-      return database_sessions.Commit(session, [mutation])
-    finally:
-      database_sessions.Delete(session)
+    return database_sessions.Commit(session, [mutation])

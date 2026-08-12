@@ -735,12 +735,12 @@ class AccesscontextmanagerOrganizationsGcpUserAccessBindingsListRequest(_message
   object.
 
   Fields:
-    filter: Optional. The literal filter pipelines to be returned. See
+    filter: Optional. The literal filter to apply to the results returned. See
       https://google.aip.dev/160 for more details. Accepts values: *
-      principal:group_key * principal:service_account OR
-      principal:service_account_project_number *
-      principal:federated_principal. If this field is empty or not one of the
-      above, the default value is "principal:group_key".
+      `principal:group_key` * `principal:service_account` OR
+      `principal:service_account_project_number` *
+      `principal:federated_principal`. If this field is empty or not one of
+      the above, the default value is `"principal:group_key"`.
     pageSize: Optional. Maximum number of items to return. The server may
       return fewer items. If left blank, the server may return any number of
       items.
@@ -1584,10 +1584,10 @@ class GcpUserAccessBinding(_messages.Message):
       "organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N"
     principal: Optional. Immutable. The principal that is subject to the
       access policies in this policy binding.
-    restrictedClientApplications: Optional. Deprecated: use
-      scoped_access_settings instead. A list of applications that are subject
-      to this binding's restrictions. If the list is empty, the binding
-      restrictions will universally apply to all applications.
+    restrictedClientApplications: Optional. Deprecated: Use
+      `scoped_access_settings` instead. A list of applications that are
+      subject to this binding's restrictions. If the list is empty, the
+      binding restrictions will universally apply to all applications.
     scopedAccessSettings: Optional. A list of scoped access settings that set
       this binding's restrictions on a subset of applications. This field
       cannot be set if restricted_client_applications is set.
@@ -1873,7 +1873,7 @@ class Modifier(_messages.Message):
   r"""Modifier to apply to the API requests.
 
   Fields:
-    addRequestHeader: Adds additional HTTP request headers.
+    addRequestHeader: Adds an additional HTTP request header.
   """
 
   addRequestHeader = _messages.MessageField('AddRequestHeader', 1)
@@ -2114,15 +2114,15 @@ class Principal(_messages.Message):
   ID: 5
 
   Fields:
-    federatedPrincipal: Immutable. IAM federated principal name to assign
-      policies to workforce/workload federated identities. Can be principal
-      set or single principal, here are some examples: Single principal: princ
-      ipal://iam.googleapis.com/projects/{project_number}/locations/global/wor
-      kloadIdentityPools/{pool_id}/subject/{subject_attribute_value}
-      PrincipalSet: principalSet://iam.googleapis.com/projects/{project_number
-      }/locations/global/workloadIdentityPools/{pool_id}/*
+    federatedPrincipal: Immutable. An IAM principal identifier for the
+      federated workforce or workload to assign the policy to. Examples
+      include the following: * Single principal: `principal://iam.googleapis.c
+      om/projects/{project_number}/locations/global/workloadIdentityPools/{poo
+      l_id}/subject/{subject_attribute_value}` * All workloads in a workload
+      identity pool: `principalSet://iam.googleapis.com/projects/{project_numb
+      er}/locations/global/workloadIdentityPools/{pool_id}/*`
     serviceAccount: Immutable. Service account email used to assign policies
-      to a single 1p service account.
+      to a single service account.
     serviceAccountProjectNumber: Immutable. Project number used to assign
       policies to all service accounts in a Google Cloud project.
   """
@@ -2266,8 +2266,8 @@ class ServicePattern(_messages.Message):
   Fields:
     modifiers: Modifiers to apply to the requests that match the URL pattern.
     pattern: URL pattern to allow. Only patterns of ".googleapis.com/*",
-      "www.googleapis.com//*" and "*.appspot.com/* form are supported, where
-      should be alphanumerical name.
+      "www.googleapis.com//*" and "*.appspot.com/* forms are supported, where
+      should be an alphanumeric name.
     service: Supported service to allow.
   """
 
@@ -2415,16 +2415,17 @@ class SessionSettings(_messages.Message):
     maxInactivity: Optional. How long a user is allowed to take between
       actions before a new access token must be issued. Only set for Google
       Cloud apps.
-    sessionLength: Optional. The session length. Setting this field to zero is
-      equal to disabling reauth. Also can set infinite session by flipping the
-      enabled bit to false below. If use_oidc_max_age is true, for OIDC apps,
-      the session length will be the minimum of this field and OIDC max_age
-      param. If this field is set to zero, session_length_enabled must be set
-      to false or left unset.
+    sessionLength: Optional. The session length. Setting this field to zero
+      allows for sessions that are active indefinitely. Also, setting
+      `session_length_enabled` to false disregards session limits, which means
+      that sessions never expire. If use_oidc_max_age is true, for OIDC apps,
+      the session length will be the minimum of this field and the OIDC
+      max_age param. If this field is set to zero, `session_length_enabled`
+      must be set to false or left unset.
     sessionLengthEnabled: Optional. This field enables or disables Google
       Cloud session length. When false, all fields set above will be
       disregarded and the session length is basically infinite. If
-      session_length is set to zero, this field must be false.
+      `session_length` is set to zero, this field must be set to false.
     sessionReauthMethod: Optional. Session method when user's Google Cloud
       session is up.
     useOidcMaxAge: Optional. Only useful for OIDC apps. When false, the OIDC
@@ -2776,8 +2777,8 @@ class VpcAccessibleServices(_messages.Message):
     r"""ServicePatternsEnforcementScopesValueListEntryValuesEnum enum type.
 
     Values:
-      SERVICE_PATTERNS_ENFORCEMENT_SCOPE_UNSPECIFIED: Default value. This can
-        not be used.
+      SERVICE_PATTERNS_ENFORCEMENT_SCOPE_UNSPECIFIED: Default value. This
+        cannot be used.
       GOOGLE_APIS_VIA_PRIVATE_PATH: Enables VPC Accessible Services
         enforcement for all APIs (including unsupported APIs) for Private
         Google Access configured with Private VIP and Private Service Connect

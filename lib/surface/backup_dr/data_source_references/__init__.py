@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 )
 class DataSourceReferences(base.Group):
   """Command group for Backup and DR Data Source References."""
+  category = base.STORAGE_CATEGORY
 
   group = True
   commands = ['describe', 'fetch-for-resource-type']

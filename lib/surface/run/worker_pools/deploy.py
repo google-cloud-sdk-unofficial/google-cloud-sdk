@@ -451,6 +451,7 @@ class AlphaDeploy(BetaDeploy):
   @classmethod
   def Args(cls, parser) -> None:
     super(AlphaDeploy, cls).Args(parser)
+    flags.AddGracePeriodFlag(parser, object_to_shutdown='worker pool instances')
     # Worker Pool flag
     flags.AddCpuUtilizationFlag(parser, hidden=True, resource_kind='workerPool')
     flags.AddWorkerPoolMinInstancesFlag(parser)

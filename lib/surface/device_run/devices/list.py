@@ -111,7 +111,7 @@ class List(base.ListCommand):
         'manufacturer:label=MAKE, '
         'displayName:label=NAME, '
         'modelCode:label=MODEL, '
-        'hardwareType:label=FORM, '
+        'hardwareType:label=HARDWARE_TYPE, '
         'osVersion:label=OS_VERSION, '
         'capacity_status():label=CAPACITY, '
         'availability_status():label=AVAILABILITY, '

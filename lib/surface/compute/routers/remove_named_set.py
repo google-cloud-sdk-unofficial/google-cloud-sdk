@@ -34,7 +34,7 @@ class RemoveNamedSet(base.DeleteCommand):
   @classmethod
   def Args(cls, parser):
     RemoveNamedSet.ROUTER_ARG = flags.RouterArgument()
-    RemoveNamedSet.ROUTER_ARG.AddArgument(parser, operation_type='delete')
+    RemoveNamedSet.ROUTER_ARG.AddArgument(parser, operation_type='update')
     parser.add_argument(
         '--set-name',
         help="""Name of the named set to be removed.""",

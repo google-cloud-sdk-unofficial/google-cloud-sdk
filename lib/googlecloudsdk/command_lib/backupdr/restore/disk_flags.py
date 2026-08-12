@@ -340,7 +340,7 @@ def AddStoragePoolArg(parser, required=False):
 
 def AddSourceInstanceDiskArgs(parser):
   """Adds the source instance disk selection flags to the given parser."""
-  group = parser.add_mutually_exclusive_group(hidden=True)
+  group = parser.add_mutually_exclusive_group()
   group.add_argument(
       '--source-instance-boot-disk',
       action='store_true',
@@ -351,6 +351,7 @@ def AddSourceInstanceDiskArgs(parser):
       type=str,
       help=(
           'The device name of the disk to be restored. This is the device name '
-          'of the disk as specified in the original VM instance.'
+          'of the disk as specified in the original VM instance backup. This '
+          'is different from source disk resource name.'
       ),
   )

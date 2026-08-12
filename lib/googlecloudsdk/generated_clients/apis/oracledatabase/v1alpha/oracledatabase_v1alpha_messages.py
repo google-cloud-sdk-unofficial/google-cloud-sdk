@@ -1520,8 +1520,6 @@ class CloudVmClusterProperties(_messages.Message):
     systemVersion: Optional. Operating system version of the image.
     timeZone: Optional. Time zone of VM Cluster to set. Defaults to UTC if not
       specified.
-    vmBackupStorageSizeGb: Output only. Storage size allocated for VM backups
-      on Exascale.
     vmBackupStorageType: Optional. Specifies whether VM backups are stored on
       local DB server storage or Exascale storage.
     vmFileSystemStorageType: Optional. Specifies whether VM file system
@@ -1664,9 +1662,8 @@ class CloudVmClusterProperties(_messages.Message):
   storageSizeGb = _messages.IntegerField(32, variant=_messages.Variant.INT32)
   systemVersion = _messages.StringField(33)
   timeZone = _messages.MessageField('TimeZone', 34)
-  vmBackupStorageSizeGb = _messages.IntegerField(35, variant=_messages.Variant.INT32)
-  vmBackupStorageType = _messages.EnumField('VmBackupStorageTypeValueValuesEnum', 36)
-  vmFileSystemStorageType = _messages.EnumField('VmFileSystemStorageTypeValueValuesEnum', 37)
+  vmBackupStorageType = _messages.EnumField('VmBackupStorageTypeValueValuesEnum', 35)
+  vmFileSystemStorageType = _messages.EnumField('VmFileSystemStorageTypeValueValuesEnum', 36)
 
 
 class ConfigureExascaleCloudExadataInfrastructureRequest(_messages.Message):
@@ -1893,8 +1890,6 @@ class DatabaseConnection(_messages.Message):
       Example: "your-db-host.example.com:1521/YOUR_SERVICE_NAME"
     createTime: Output only. The create time of the resource.
     displayName: Optional. User-friendly display name for the connection.
-    knowledgeCatalogConfig: Optional. Optional: Configuration for Dataplex
-      Knowledge Catalog integration.
     labels: Optional. Optional: Labels as key-value pairs to organize the
       resource.
     name: Identifier. The resource name of the DatabaseConnection. Format: pro
@@ -1966,16 +1961,15 @@ class DatabaseConnection(_messages.Message):
   connectionString = _messages.StringField(1)
   createTime = _messages.StringField(2)
   displayName = _messages.StringField(3)
-  knowledgeCatalogConfig = _messages.MessageField('KnowledgeCatalogConfig', 4)
-  labels = _messages.MessageField('LabelsValue', 5)
-  name = _messages.StringField(6)
-  network = _messages.StringField(7)
-  odbNetwork = _messages.StringField(8)
-  passwordSecretVersion = _messages.StringField(9)
-  state = _messages.EnumField('StateValueValuesEnum', 10)
-  updateTime = _messages.StringField(11)
-  username = _messages.StringField(12)
-  walletSecretVersion = _messages.StringField(13)
+  labels = _messages.MessageField('LabelsValue', 4)
+  name = _messages.StringField(5)
+  network = _messages.StringField(6)
+  odbNetwork = _messages.StringField(7)
+  passwordSecretVersion = _messages.StringField(8)
+  state = _messages.EnumField('StateValueValuesEnum', 9)
+  updateTime = _messages.StringField(10)
+  username = _messages.StringField(11)
+  walletSecretVersion = _messages.StringField(12)
 
 
 class DatabaseConnectionStringProfile(_messages.Message):
@@ -6371,17 +6365,6 @@ class KafkaBootstrapServer(_messages.Message):
   host = _messages.StringField(1)
   port = _messages.IntegerField(2, variant=_messages.Variant.INT32)
   privateIpAddress = _messages.StringField(3)
-
-
-class KnowledgeCatalogConfig(_messages.Message):
-  r"""Knowledge Catalog Configuration for the DatabaseConnection.
-
-  Fields:
-    enabled: Required. Whether periodic knowledge catalog extraction is
-      enabled.
-  """
-
-  enabled = _messages.BooleanField(1)
 
 
 class ListAutonomousDatabaseBackupsResponse(_messages.Message):

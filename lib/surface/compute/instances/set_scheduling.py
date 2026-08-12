@@ -19,10 +19,14 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.command_lib.compute.sole_tenancy import flags as sole_tenancy_flags
 from googlecloudsdk.command_lib.compute.sole_tenancy import util as sole_tenancy_util
 from googlecloudsdk.core.util import times
+
+
+_SECONDS_PER_HOUR = 3600
 
 
 @base.UniverseCompatible
@@ -47,7 +51,7 @@ class SetSchedulingInstances(base.SilentCommand):
   _support_host_error_timeout_seconds = True
   _support_local_ssd_recovery_timeout = True
   _support_max_run_duration = True
-  _support_graceful_shutdown = False
+  _support_graceful_shutdown = True
 
   @classmethod
   def Args(cls, parser):
@@ -72,6 +76,7 @@ class SetSchedulingInstances(base.SilentCommand):
     flags.AddDiscardLocalSsdVmArgs(parser, is_update=True)
     flags.AddHostErrorTimeoutSecondsArgs(parser)
     flags.AddSkipGuestOsShutdownArgs(parser)
+    flags.AddGracefulShutdownArgs(parser)
 
   def _Run(self, args):
     """Issues request necessary for setting scheduling options."""
@@ -91,8 +96,11 @@ class SetSchedulingInstances(base.SilentCommand):
       scheduling_options.preemptible = args.preemptible
 
     if self._support_host_error_timeout_seconds and hasattr(
-        args, 'host_error_timeout_seconds'):
-      scheduling_options.hostErrorTimeoutSeconds = args.host_error_timeout_seconds
+        args, 'host_error_timeout_seconds'
+    ):
+      scheduling_options.hostErrorTimeoutSeconds = (
+          args.host_error_timeout_seconds
+      )
 
     if self._support_graceful_shutdown:
       graceful_shutdown = instance_utils.ExtractGracefulShutdownFromArgs(
@@ -195,6 +203,19 @@ class SetSchedulingInstances(base.SilentCommand):
       scheduling_options.onInstanceStopAction = None
       cleared_fields.append('onInstanceStopAction')
 
+    if args.IsKnownAndSpecified('maintenance_freeze_duration'):
+      if args.maintenance_freeze_duration % _SECONDS_PER_HOUR != 0:
+        raise exceptions.InvalidArgumentException(
+            '--maintenance-freeze-duration',
+            'Maintenance freeze duration must be in a whole number of hours.'
+        )
+      scheduling_options.maintenanceFreezeDurationHours = (
+          args.maintenance_freeze_duration // _SECONDS_PER_HOUR
+      )
+    elif args.IsKnownAndSpecified('clear_maintenance_freeze_duration'):
+      scheduling_options.maintenanceFreezeDurationHours = None
+      cleared_fields.append('maintenanceFreezeDurationHours')
+
     if instance_utils.IsAnySpecified(args, 'node', 'node_affinity_file',
                                      'node_group'):
       affinities = sole_tenancy_util.GetSchedulingNodeAffinityListFromArgs(
@@ -208,6 +229,29 @@ class SetSchedulingInstances(base.SilentCommand):
         'skip_guest_os_shutdown'
     ):
       scheduling_options.skipGuestOsShutdown = args.skip_guest_os_shutdown
+
+    if args.IsKnownAndSpecified('windows_license_optimization_mode'):
+      windows_license_optimization_mode_val = (
+          args.windows_license_optimization_mode.upper().replace('-', '_')
+      )
+      scheduling_options.windowsLicenseOptimizationMode = (
+          client.messages.Scheduling.WindowsLicenseOptimizationModeValueValuesEnum(
+              windows_license_optimization_mode_val
+          )
+      )
+    elif args.IsKnownAndSpecified('clear_windows_license_optimization_mode'):
+      scheduling_options.windowsLicenseOptimizationMode = None
+      cleared_fields.append('windowsLicenseOptimizationMode')
+
+    if hasattr(args, 'latency_tolerant') and args.IsSpecified(
+        'latency_tolerant'
+    ):
+      scheduling_options.latencyTolerant = args.latency_tolerant
+    elif hasattr(
+        args, 'clear_latency_tolerant'
+    ) and args.IsSpecified('clear_latency_tolerant'):
+      scheduling_options.latencyTolerant = None
+      cleared_fields.append('latencyTolerant')
 
     with holder.client.apitools_client.IncludeFields(cleared_fields):
       request = client.messages.ComputeInstancesSetSchedulingRequest(
@@ -234,7 +278,6 @@ class SetSchedulingInstancesBeta(SetSchedulingInstances):
   _support_host_error_timeout_seconds = True
   _support_max_run_duration = True
   _support_local_ssd_recovery_timeout = True
-  _support_graceful_shutdown = True
 
   @classmethod
   def Args(cls, parser):
@@ -261,6 +304,7 @@ class SetSchedulingInstancesBeta(SetSchedulingInstances):
     flags.AddGracefulShutdownArgs(parser)
     flags.AddSkipGuestOsShutdownArgs(parser)
     flags.AddPreemptionNoticeDurationArgs(parser)
+    flags.AddMaintenanceFreezeDurationArgs(parser, is_update=True)
 
   def Run(self, args):
     return self._Run(args)
@@ -277,7 +321,6 @@ class SetSchedulingInstancesAlpha(SetSchedulingInstancesBeta):
   _support_host_error_timeout_seconds = True
   _support_local_ssd_recovery_timeout = True
   _support_max_run_duration = True
-  _support_graceful_shutdown = True
 
   @classmethod
   def Args(cls, parser):
@@ -305,3 +348,6 @@ class SetSchedulingInstancesAlpha(SetSchedulingInstancesBeta):
     flags.AddGracefulShutdownArgs(parser)
     flags.AddSkipGuestOsShutdownArgs(parser)
     flags.AddPreemptionNoticeDurationArgs(parser)
+    flags.AddWindowsLicenseOptimizationMode(parser, is_update=True)
+    flags.AddLatencyTolerantArgs(parser, is_update=True)
+    flags.AddMaintenanceFreezeDurationArgs(parser, is_update=True)

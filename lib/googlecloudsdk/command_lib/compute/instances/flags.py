@@ -491,6 +491,115 @@ def AddStableFleetArgs(parser):
   AddMaintenanceFreezeDuration().AddToParser(parser)
 
 
+def AddWindowsLicenseOptimizationMode(parser, is_update=False):
+  """Adds the --windows-license-optimization-mode flag to the parser.
+
+  Args:
+    parser: The parser to add the flag to.
+    is_update: Whether the flag is for updating an existing instance.
+
+  Returns:
+    None
+  """
+  choices = {
+      'auto': (
+          'Automatically maximize savings and minimize performance impact'
+          ' by matching license optimization mode to current CPU'
+          ' utilization.'
+      ),
+      'balanced': (
+          'Significant license cost savings via moderate throttles (40%'
+          ' baseline, 10 minute maximum burst at full utilization).'
+      ),
+      'cost-optimized': (
+          'Maximum license cost savings via restrictive throttles (20%'
+          ' baseline, 3.75 minute maximum burst at full utilization).'
+      ),
+      'off': 'No license cost savings with maximum CPU performance.',
+      'performance': (
+          'Moderate license cost savings via least restrictive throttles'
+          ' (60% baseline, 22 minute maximum burst at full utilization).'
+      ),
+  }
+  if is_update:
+    mutex = parser.add_mutually_exclusive_group()
+    mutex.add_argument(
+        '--clear-windows-license-optimization-mode',
+        action='store_true',
+        help="""\
+        Clears the Windows Server License Optimization Mode from the instance.
+        """,
+    )
+    mutex.add_argument(
+        '--windows-license-optimization-mode',
+        choices=choices,
+        help="""\
+        Specifies the Windows Server License Optimization Mode of the VM.
+        """,
+    )
+  else:
+    parser.add_argument(
+        '--windows-license-optimization-mode',
+        choices=choices,
+        help="""\
+        Specifies the Windows Server License Optimization Mode of the VM.
+        """,
+    )
+
+
+def AddLatencyTolerantArgs(parser, is_update=False):
+  """Adds latency tolerant args."""
+  help_str = """\
+    If true, the instance is latency tolerant.
+    Defines whether the instance is tolerant of higher CPU latency. When
+    enabled, the instance may experience higher scheduling or execution
+    latencies, making it suitable for latency-insensitive workloads or batch
+    processing.
+  """
+  if is_update:
+    mutex = parser.add_mutually_exclusive_group()
+    mutex.add_argument(
+        '--clear-latency-tolerant',
+        action='store_true',
+        help="""\
+        Clear the latency tolerant flag from the instance.
+        """,
+    )
+    mutex.add_argument(
+        '--latency-tolerant',
+        action=arg_parsers.StoreTrueFalseAction,
+        help=help_str,
+    )
+  else:
+    parser.add_argument(
+        '--latency-tolerant',
+        action=arg_parsers.StoreTrueFalseAction,
+        help=help_str,
+    )
+
+
+def AddMaintenanceFreezeDurationArgs(parser, is_update=False):
+  """Adds maintenance freeze duration args.
+
+  Args:
+    parser: The argparse parser to add args to.
+    is_update: True if this is an update command, which adds a mutually
+      exclusive group containing --clear-maintenance-freeze-duration.
+  """
+  if is_update:
+    mutex = parser.add_mutually_exclusive_group()
+    mutex.add_argument(
+        '--clear-maintenance-freeze-duration',
+        action='store_true',
+        help="""\
+        Clears the maintenance freeze duration from the instance.
+        """,
+    )
+    AddMaintenanceFreezeDuration().AddToParser(mutex)
+  else:
+    AddMaintenanceFreezeDuration().AddToParser(parser)
+
+
 def GetPrivateIpv6GoogleAccessTypeFlagMapper(messages):
   return arg_utils.ChoiceEnumMapper(
       '--private-ipv6-google-access-type',
@@ -629,16 +738,23 @@ def GetDiskDeviceNameHelp(container_mount_enabled=False):
             '`persistent-disk-N` is used.')
 
 
-def AddDiskArgs(parser,
-                enable_regional_disks=False,
-                enable_kms=False,
-                container_mount_enabled=False):
+def AddDiskArgs(
+    parser,
+    enable_regional_disks=False,
+    enable_kms=False,
+    container_mount_enabled=False,
+    include_kms_key_service_account=False,
+):
   """Adds arguments related to disks for instances and instance-templates."""
 
   disk_device_name_help = GetDiskDeviceNameHelp(
       container_mount_enabled=container_mount_enabled)
 
-  AddBootDiskArgs(parser, enable_kms)
+  AddBootDiskArgs(
+      parser,
+      enable_kms,
+      include_kms_key_service_account=include_kms_key_service_account,
+  )
 
   disk_arg_spec = {
       'name': str,
@@ -702,7 +818,9 @@ def AddDiskArgs(parser,
       help=disk_help)
 
 
-def AddBootDiskArgs(parser, enable_kms=False):
+def AddBootDiskArgs(
+    parser, enable_kms=False, include_kms_key_service_account=False
+):
   """Adds boot disk args."""
   parser.add_argument(
       '--boot-disk-device-name',
@@ -772,9 +890,17 @@ def AddBootDiskArgs(parser, enable_kms=False):
     name = '--boot-disk-kms-key'
     kms_resource_args.AddKmsKeyResourceArg(
         parser, 'disk', flag_overrides=flag_overrides, name=name)
+    if include_kms_key_service_account:
+      parser.add_argument(
+          '--boot-disk-kms-key-service-account',
+          type=str,
+          help="""\
+          Email address of the service account to use to request boot disk protection with a KMS key.
+          """,
+      )
 
 
-def AddInstanceKmsArgs(parser):
+def AddInstanceKmsArgs(parser, include_kms_key_service_account=False):
   kms_flags = ['kms-key', 'kms-keyring', 'kms-location', 'kms-project']
   flag_overrides = dict([
       (flag, '--instance-' + flag) for flag in kms_flags
@@ -783,6 +909,14 @@ def AddInstanceKmsArgs(parser):
 
   kms_resource_args.AddKmsKeyResourceArg(
       parser, 'instance', flag_overrides=flag_overrides, name=name)
+  if include_kms_key_service_account:
+    parser.add_argument(
+        '--instance-kms-key-service-account',
+        type=str,
+        help="""\
+        Service account email to use to request instance protection with a KMS key.
+        """,
+    )
 
 
 def AddCreateDiskArgs(
@@ -800,6 +934,7 @@ def AddCreateDiskArgs(
     enable_confidential_compute=False,
     support_disk_labels=False,
     support_source_snapshot_region=False,
+    include_kms_key_service_account=False,
 ):
   """Adds create-disk argument for instances and instance-templates."""
 
@@ -986,6 +1121,8 @@ def AddCreateDiskArgs(
     spec['kms-project'] = str
     spec['kms-location'] = str
     spec['kms-keyring'] = str
+    if include_kms_key_service_account:
+      spec['kms-key-service-account'] = str
 
   if support_boot:
     spec['boot'] = arg_parsers.ArgBoolean()
@@ -3356,7 +3493,7 @@ def AddConfidentialComputeArgs(
     support_confidential_compute_type_tdx=False,
     support_snp_svsm=False,
     support_confidential_compute_type_cca=False,
-) -> None:
+):
   """Adds flags for confidential compute for instance."""
   if support_confidential_compute_type:
     choices = {
@@ -4193,7 +4330,7 @@ def AddInternalIPv6PrefixLengthArgs(parser):
   )
 
 
-def AddNetworkPerformanceConfigsArgs(parser):
+def AddNetworkPerformanceConfigsArgs(parser, support_external_ip_tier=False):
   """Adds config flags for advanced networking bandwidth tiers."""
 
   network_perf_config_help = """\
@@ -4205,13 +4342,24 @@ def AddNetworkPerformanceConfigsArgs(parser):
       outbound bandwidth from a VM, regardless of whether the traffic
       is going to internal IP or external IP destinations.
       The following tier values are allowed: [{tier_values}]
+      """
 
-      """.format(tier_values=','.join([
+  if support_external_ip_tier:
+    network_perf_config_help += """
+      *external-ip-egress-bandwidth-tier*::: The network performance tier for VMs.
+      The following tier values are allowed: [{tier_values}]
+      """
+
+  network_perf_config_help = network_perf_config_help.format(
+      tier_values=','.join([
           six.text_type(tier_val)
           for tier_val in constants.ADV_NETWORK_TIER_CHOICES
-      ]))
+      ])
+  )
 
   spec = {'total-egress-bandwidth-tier': str}
+  if support_external_ip_tier:
+    spec['external-ip-egress-bandwidth-tier'] = str
 
   parser.add_argument(
       '--network-performance-configs',
@@ -4236,6 +4384,23 @@ def ValidateNetworkPerformanceConfigsArgs(args):
                      six.text_type(tier_val)
                      for tier_val in constants.ADV_NETWORK_TIER_CHOICES
                  ])))
+
+    external_tier = config.get('external-ip-egress-bandwidth-tier', '').upper()
+    if (
+        external_tier
+        and external_tier not in constants.ADV_NETWORK_TIER_CHOICES
+    ):
+      raise exceptions.InvalidArgumentException(
+          '--network-performance-configs',
+          """Invalid external-ip-egress-bandwidth-tier tier value, "{tier}".
+             Tier value must be one of the following {tier_values}""".format(
+              tier=external_tier,
+              tier_values=','.join([
+                  str(tier_val)
+                  for tier_val in constants.ADV_NETWORK_TIER_CHOICES
+              ]),
+          ),
+      )
 
 
 def AddNodeProjectArgs(parser):
@@ -4347,7 +4512,7 @@ def AddRequestValidForDurationArgs(parser):
   )
 
 
-def AddWorkloadIdentityConfigArgs(parser):
+def AddWorkloadIdentityConfigArgs(parser, support_identity_type=False):
   """Adds arguments for configuring workload identity on instances.
   """
   parser.add_argument(
@@ -4364,6 +4529,20 @@ def AddWorkloadIdentityConfigArgs(parser):
       Enables or disables managed workload identity certificates on a VM.
       """,
   )
+  if support_identity_type:
+    parser.add_argument(
+        '--identity-type',
+        choices={
+            'AGENT_IDENTITY': 'Use an agent identity.',
+            'WORKLOAD_IDENTITY': 'Use a workload identity.',
+            'SERVICE_ACCOUNT': 'Use a service account.',
+            'IDENTITY_TYPE_UNSPECIFIED': 'Use an unspecified identity type.'
+        },
+        type=arg_utils.ChoiceToEnumName,
+        help="""\
+        Configures the identity type to use for the instance.
+        """,
+    )
 
 
 def AddMostDisruptiveAllowedActionArgs(parser):

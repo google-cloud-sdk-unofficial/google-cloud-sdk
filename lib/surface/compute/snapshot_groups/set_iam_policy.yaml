@@ -1,0 +1,37 @@
+release_tracks: [ALPHA, BETA]
+
+help_text:
+  brief: Set the IAM policy for a Compute Engine snapshot group.
+  description: |
+    Sets the IAM policy for the given snapshot group as defined in a JSON or YAML file.
+
+  examples: |
+    To read an IAM policy defined in a JSON file 'policy.json' and set it for the snapshot group `my-snapshot-group`, run:
+
+      $ {command} my-snapshot-group policy.json
+
+    See https://cloud.google.com/iam/docs/managing-policies for details of the
+    policy file format and contents.
+
+request:
+  collection: compute.snapshotGroups
+  use_relative_name: false
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.iam.hooks:UseMaxRequestedPolicyVersion:api_field=globalSetPolicyRequest.policy.version
+  BETA:
+    api_version: beta
+  ALPHA:
+    api_version: alpha
+  resource_method_params:
+    resource: '{snapshotGroup}'
+
+arguments:
+  resource:
+    help_text: The snapshot group to set the IAM policy for.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:snapshot_group
+
+iam:
+  set_iam_policy_request_path: globalSetPolicyRequest
+  message_type_overrides:
+    policy: Policy
+    set_iam_policy_request: ComputeSnapshotGroupsSetIamPolicyRequest

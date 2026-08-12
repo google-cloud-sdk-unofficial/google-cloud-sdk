@@ -21,9 +21,11 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 
 
-# Share settings only supported in alpha for now.
 API_VERSION_BY_RELEASE_TRACK = {
     base.ReleaseTrack.ALPHA: 'alpha',
+    base.ReleaseTrack.BETA: 'beta',
+    base.ReleaseTrack.GA: 'v1',
+    base.ReleaseTrack.PREVIEW: 'v1',
 }
 
 
@@ -43,7 +45,7 @@ def add_name_to_payload(resource_ref: Any, _, request_msg: Any) -> Any:
 def _get_messages(args: Any) -> Any:
   """Get messages module based on release track."""
   track = args.calliope_command.ReleaseTrack()
-  api_version = API_VERSION_BY_RELEASE_TRACK.get(track, 'alpha')
+  api_version = API_VERSION_BY_RELEASE_TRACK.get(track, 'v1')
   return apis.GetMessagesModule('compute', api_version)
 
 

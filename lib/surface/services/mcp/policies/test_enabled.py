@@ -13,18 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """services mcp policies test-enabled command."""
-from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.services import common_flags
-from googlecloudsdk.core import properties
-
-_PROJECT_RESOURCE = 'projects/%s'
-_FOLDER_RESOURCE = 'folders/%s'
-_ORGANIZATION_RESOURCE = 'organizations/%s'
-_SERVICE = 'services/%s'
 
 
 # TODO(b/321801975) make command public after suv2 launch.
+@base.Deprecate(
+    is_removed=False,
+    warning='MCP policies are not required and this command is no-op.',
+    error='MCP policies are not required and this command is no-op.',
+)
 @base.UniverseCompatible
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -62,31 +60,4 @@ class TestEnabled(base.Command):
     Returns:
       The enablement of the given service.
     """
-    resource = 'project'
-    if args.IsSpecified('folder'):
-      resource_name = _FOLDER_RESOURCE % args.folder
-      resource = 'folder'
-    elif args.IsSpecified('organization'):
-      resource_name = _ORGANIZATION_RESOURCE % args.organization
-      resource = 'organization'
-    elif args.IsSpecified('project'):
-      resource_name = _PROJECT_RESOURCE % args.project
-    else:
-      project = properties.VALUES.core.project.Get(required=True)
-      resource_name = _PROJECT_RESOURCE % project
-
-    response = serviceusage.TestMcpEnabled(
-        resource_name, _SERVICE % args.service
-    )
-
-    # If mcpEnableRules is empty that means service is not enabled.
-    if response.mcpEnableRules:
-      return (
-          f'MCP is ENABLED for Service {args.service} for the'
-          f' {resource} {resource_name}.'
-      )
-    else:
-      return (
-          f'MCP is NOT ENABLED for Service {args.service} for the'
-          f' {resource} {resource_name}.'
-      )
+    pass

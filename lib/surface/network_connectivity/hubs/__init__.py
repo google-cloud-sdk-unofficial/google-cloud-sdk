@@ -24,3 +24,5 @@ from googlecloudsdk.calliope import base
 )
 class Hubs(base.Group):
   """Manage Network Connectivity Center hubs."""
+
+  category = base.NETWORKING_CATEGORY

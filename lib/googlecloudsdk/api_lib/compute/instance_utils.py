@@ -41,6 +41,8 @@ _DEFAULT_DEVICE_NAME_CONTAINER_WARNING = (
     'Default device-name for disk name [{0}] will be [{0}] because it is being '
     'mounted to a container with [`--container-mount-disk`]')
 
+_SECONDS_PER_HOUR = 3600
+
 
 def GetCpuRamVmFamilyFromCustomName(name):
   """Gets the CPU and memory specs from the custom machine type name.
@@ -231,23 +233,38 @@ def CreateServiceAccountMessages(messages, scopes, service_account):
 
 
 def CreateWorkloadIdentityConfigMessage(
-    args, messages, support_workload_identity_config
+    args, messages, support_workload_identity_config, support_identity_type
 ):
   """Create workloadIdentityConfig message for VM."""
   if not support_workload_identity_config:
     return None
-  if not args.IsKnownAndSpecified(
-      'identity'
-  ) and not args.IsKnownAndSpecified('identity_certificate'):
+  if (
+      not args.IsKnownAndSpecified('identity')
+      and not args.IsKnownAndSpecified('identity_certificate')
+      and (
+          not support_identity_type
+          or not args.IsKnownAndSpecified('identity_type')
+      )
+  ):
     return None
-  return messages.WorkloadIdentityConfig(
-      identity=args.identity
-      if args.IsKnownAndSpecified('identity')
-      else None,
-      identityCertificateEnabled=args.identity_certificate
-      if args.IsKnownAndSpecified('identity_certificate')
-      else None,
-  )
+  kwargs = {}
+  if args.IsKnownAndSpecified('identity'):
+    kwargs['identity'] = args.identity
+  if args.IsKnownAndSpecified('identity_certificate'):
+    kwargs['identityCertificateEnabled'] = args.identity_certificate
+  if (
+      support_identity_type
+      and args.IsKnownAndSpecified('identity_type')
+      and hasattr(
+          messages.WorkloadIdentityConfig, 'IdentityTypeValueValuesEnum'
+      )
+  ):
+    kwargs['identityType'] = (
+        messages.WorkloadIdentityConfig.IdentityTypeValueValuesEnum(
+            args.identity_type
+        )
+    )
+  return messages.WorkloadIdentityConfig(**kwargs)
 
 
 def CreateOnHostMaintenanceMessage(messages, maintenance_policy):
@@ -284,6 +301,8 @@ def CreateSchedulingMessage(
     current_cpus=None,
     vsock_mode=None,
     expose_host_topology=None,
+    windows_license_optimization_mode=None,
+    latency_tolerant=None,
 ):
   """Creates scheduling message for VM.
 
@@ -311,6 +330,8 @@ def CreateSchedulingMessage(
     current_cpus: Current CPUs.
     vsock_mode: VSock mode.
     expose_host_topology: Whether to expose hashed host topology ID.
+    windows_license_optimization_mode: Windows license optimization mode.
+    latency_tolerant: Whether the VM is latency tolerant.
 
   Returns:
     Scheduling message object for the VM.
@@ -375,8 +396,13 @@ def CreateSchedulingMessage(
     scheduling.locationHint = location_hint
 
   if maintenance_freeze_duration:
+    if maintenance_freeze_duration % _SECONDS_PER_HOUR != 0:
+      raise calliope_exceptions.InvalidArgumentException(
+          '--maintenance-freeze-duration',
+          'Maintenance freeze duration must be in a whole number of hours.'
+      )
     scheduling.maintenanceFreezeDurationHours = (
-        maintenance_freeze_duration // 3600)
+        maintenance_freeze_duration // _SECONDS_PER_HOUR)
 
   if maintenance_interval:
     scheduling.maintenanceInterval = (
@@ -413,6 +439,19 @@ def CreateSchedulingMessage(
 
   if expose_host_topology is not None:
     scheduling.exposeHostTopology = expose_host_topology
+
+  if windows_license_optimization_mode is not None:
+    windows_license_optimization_mode_val = (
+        windows_license_optimization_mode.upper().replace('-', '_')
+    )
+    scheduling.windowsLicenseOptimizationMode = (
+        messages.Scheduling.WindowsLicenseOptimizationModeValueValuesEnum(
+            windows_license_optimization_mode_val
+        )
+    )
+
+  if latency_tolerant is not None:
+    scheduling.latencyTolerant = latency_tolerant
 
   return scheduling
 
@@ -813,6 +852,8 @@ def GetScheduling(
     support_preemption_notice_duration=False,
     support_vsock_mode=False,
     support_expose_host_topology=False,
+    support_windows_license_optimization_mode=False,
+    support_latency_tolerant=False,
 ):
   """Generates a Scheduling Message or None based on specified args.
 
@@ -837,6 +878,9 @@ def GetScheduling(
     support_vsock_mode: bool, whether vsock mode is supported.
     support_expose_host_topology: bool, whether expose host topology is
       supported.
+    support_windows_license_optimization_mode: bool, whether windows license
+      optimization mode is supported.
+    support_latency_tolerant: bool, whether latency tolerant is supported.
 
   Returns:
     A Scheduling message object, or None if no scheduling flags are specified.
@@ -951,8 +995,20 @@ def GetScheduling(
       'preemptible',
       'provisioning_model',
   ]
+
   if support_expose_host_topology:
     dests.append('expose_host_topology')
+
+  windows_license_optimization_mode = None
+  if (
+      support_windows_license_optimization_mode
+      and args.IsKnownAndSpecified('windows_license_optimization_mode')
+  ):
+    windows_license_optimization_mode = args.windows_license_optimization_mode
+
+  latency_tolerant = None
+  if support_latency_tolerant and args.IsKnownAndSpecified('latency_tolerant'):
+    latency_tolerant = args.latency_tolerant
 
   if (
       skip_defaults
@@ -969,6 +1025,8 @@ def GetScheduling(
       and not preemption_notice_duration
       and not vsock_mode
       and not current_cpus
+      and windows_license_optimization_mode is None
+      and latency_tolerant is None
   ):
     return None
 
@@ -996,6 +1054,8 @@ def GetScheduling(
       current_cpus=current_cpus,
       vsock_mode=vsock_mode,
       expose_host_topology=expose_host_topology,
+      windows_license_optimization_mode=windows_license_optimization_mode,
+      latency_tolerant=latency_tolerant,
   )
 
 
@@ -1269,6 +1329,14 @@ def GetNetworkPerformanceConfig(args, client):
     if total_tier:
       network_perf_configs.totalEgressBandwidthTier = client.messages.NetworkPerformanceConfig.TotalEgressBandwidthTierValueValuesEnum(
           total_tier)
+
+    external_tier = config.get('external-ip-egress-bandwidth-tier', '').upper()
+    if external_tier:
+      if hasattr(network_perf_configs, 'externalIpEgressBandwidthTier'):
+        network_perf_configs.externalIpEgressBandwidthTier = (
+            client.messages.NetworkPerformanceConfig
+            .ExternalIpEgressBandwidthTierValueValuesEnum(external_tier)
+        )
 
   return network_perf_configs
 

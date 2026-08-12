@@ -70,13 +70,14 @@ class RoutersCompleter(compute_completers.ListCommandCompleter):
     )
 
 
-def RouterArgument(required=True, plural=False):
+def RouterArgument(required=True, plural=False, custom_help=None):
   return compute_flags.ResourceArgument(
       resource_name='router',
       completer=RoutersCompleter,
       plural=plural,
       required=required,
       regional_collection='compute.routers',
+      short_help=custom_help,
       region_explanation=compute_flags.REGION_PROPERTY_EXPLANATION,
   )
 

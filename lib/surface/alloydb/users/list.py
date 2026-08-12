@@ -33,16 +33,24 @@ _USER_FORMAT = """
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.DefaultUniverseOnly
 class List(base.ListCommand):
   """Lists AlloyDB users in a given cluster."""
 
   detailed_help = {
-      'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
+      'DESCRIPTION': (
+          """\
+          {description}
+
+          Note: Users or roles configured with `NOLOGIN` are filtered out of the returned list.\n"""
+      ),
+      'EXAMPLES': (
+          """\
       To list users, run:
 
         $ {command} --cluster=my-cluster --region=us-central1
-      """,
+      """
+      ),
   }
 
   @staticmethod

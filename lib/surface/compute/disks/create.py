@@ -42,7 +42,6 @@ from googlecloudsdk.command_lib.compute.disks import create
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 from googlecloudsdk.command_lib.compute.resource_policies import flags as resource_flags
 from googlecloudsdk.command_lib.compute.resource_policies import util as resource_util
-from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
@@ -412,9 +411,7 @@ class Create(base.Command):
     _CommonArgs(messages, parser)
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
-    kms_resource_args.AddKmsKeyResourceArg(
-        parser, 'disk', region_fallthrough=True
-    )
+    disks_flags.AddKmsKeyArg(parser)
     disks_flags.AddEnableConfidentialComputeFlag(parser)
 
   def ParseLicenses(self, args):
@@ -895,9 +892,7 @@ class CreateBeta(Create):
     )
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
-    kms_resource_args.AddKmsKeyResourceArg(
-        parser, 'disk', region_fallthrough=True
-    )
+    disks_flags.AddKmsKeyArg(parser, include_kms_key_service_account=True)
     disks_flags.AddMultiWriterFlag(parser)
     disks_flags.AddEnableConfidentialComputeFlag(parser)
 
@@ -937,9 +932,7 @@ class CreateAlpha(CreateBeta):
     )
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
-    kms_resource_args.AddKmsKeyResourceArg(
-        parser, 'disk', region_fallthrough=True
-    )
+    disks_flags.AddKmsKeyArg(parser, include_kms_key_service_account=True)
     disks_flags.AddMultiWriterFlag(parser)
     disks_flags.AddEnableConfidentialComputeFlag(parser)
 

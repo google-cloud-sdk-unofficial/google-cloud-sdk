@@ -292,7 +292,9 @@ targets in the module will be run.
         type=int,
         help=(
             'Specify the total number of shards to create for uniform'
-            ' sharding. Required when `--sharding-option=uniform`.'
+            ' sharding. Required when `--sharding-option=uniform`. The valid'
+            ' range is `1` to `20` for physical devices and `1` to `200` for'
+            ' virtual devices.'
         ),
     )
     parser.add_argument(
@@ -357,11 +359,11 @@ targets in the module will be run.
     )
     parser.add_argument(
         '--instrumentation-timeout',
-        type=arg_parsers.Duration(lower_bound='1m', upper_bound='1h'),
+        type=arg_parsers.Duration(lower_bound='1m', upper_bound='3h'),
         help=(
             'Specify the maximum duration allowed for the instrumentation'
             ' test run (e.g., `10m`, `20s`, `1h`). The valid range is `1m` to'
-            ' `1h`. If not specified, defaults to `5m`.'
+            ' `3h`. If not specified, defaults to `5m`.'
         ),
     )
     parser.add_argument(
@@ -779,9 +781,8 @@ targets in the module will be run.
         f' [{location_ref.locationsId}].'
     )
 
-    log.status.Print(
-        f'Result files will be stored at'
-        f' [https://console.cloud.google.com/storage/browser/{bucket_name}/automation/sessions/{session_id}/].'
+    session_submit_ops.PrintResultFilesLink(
+        gcs_path, session_id, is_completed=False
     )
 
     if args.async_:

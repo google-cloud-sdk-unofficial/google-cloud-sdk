@@ -77,7 +77,8 @@ def GetIAP(iap_arg, messages, existing_iap_settings=None):
       return r
 
     if subarg in ('enabled', 'disabled', 'oauth2-client-id',
-                  'oauth2-client-secret'):
+                  'oauth2-client-secret',
+                  'oauth2-client-info-developer-email-address'):
       if subarg in iap_arg_parsed:
         raise exceptions.InvalidArgumentException(
             '--iap', 'Sub-argument %s specified multiple times' % _Repr(subarg))
@@ -114,6 +115,11 @@ def GetIAP(iap_arg, messages, existing_iap_settings=None):
       raise exceptions.InvalidArgumentException(
           '--iap', 'Both [oauth2-client-id] and [oauth2-client-secret] must be '
           'specified together')
+
+  if 'oauth2-client-info-developer-email-address' in iap_arg_parsed:
+    iap_settings.oauth2ClientInfo = messages.BackendServiceIAPOAuth2ClientInfo()
+    iap_settings.oauth2ClientInfo.developerEmailAddress = iap_arg_parsed.get(
+        'oauth2-client-info-developer-email-address')
 
   return iap_settings
 
@@ -890,7 +896,7 @@ def ApplyTlsSettingsArgs(
     project_name,
     location,
     release_track,
-) -> None:
+):
   """Applies the TlsSettings arguments to the specified backend service.
 
   If there are no arguments related to TlsSettings, the backend service remains
@@ -1091,3 +1097,26 @@ def WaitForOperation(resources, service, operation, backend_service_ref,
   operation_poller = poller.Poller(service, backend_service_ref)
   return waiter.WaitFor(operation_poller, operation_ref, message)
 
+
+def ApplyConsistentHashSettings(client, args, backend_service):
+  """Applies consistentHash related flags to the backend service message."""
+  if args.IsKnownAndSpecified('consistent_hash_minimum_ring_size'):
+    if backend_service.consistentHash is None:
+      backend_service.consistentHash = (
+          client.messages.ConsistentHashLoadBalancerSettings()
+      )
+    backend_service.consistentHash.minimumRingSize = (
+        args.consistent_hash_minimum_ring_size
+    )
+
+
+def ApplyCircuitBreakersSettings(client, args, backend_service):
+  """Applies CircuitBreakers related flags to the backend service message."""
+  if hasattr(args, 'circuit_breakers_max_requests') and args.IsSpecified(
+      'circuit_breakers_max_requests'
+  ):
+    if backend_service.circuitBreakers is None:
+      backend_service.circuitBreakers = client.messages.CircuitBreakers()
+    backend_service.circuitBreakers.maxRequests = (
+        args.circuit_breakers_max_requests
+    )

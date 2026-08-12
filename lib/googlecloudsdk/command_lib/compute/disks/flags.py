@@ -288,6 +288,41 @@ def _ParseSnapshotGroupReplicaZones(value):
     raise
 
 
+def AddSnapshotGroupParams(parser, hidden=False):
+  """Adds the --snapshot-group-params argument to the parser."""
+  parser.add_argument(
+      '--snapshot-group-params',
+      type=calliope_arg_parsers.ArgDict(
+          spec={
+              'type': str,
+              'replica-zones': _ParseSnapshotGroupReplicaZones,
+          }
+      ),
+      hidden=hidden,
+      help="""\
+      Parameters of the Snapshot Group to restore from. Allows specifying
+      the disk type and/or replica zones for the restored disks.
+      """,
+  )
+
+
+def AddSourceSnapshotGroup(parser, hidden=False):
+  """Adds the --source-snapshot-group argument to the parser."""
+  if hidden:
+    # TODO(b/539797120): Use ResourceArgument once it supports the hidden flag
+
+    parser.add_argument(
+        '--source-snapshot-group',
+        dest='source_snapshot_group',
+        hidden=True,
+        help='Source snapshot group used to create the disks.',
+        completer=SnapshotGroupsCompleter,
+        required=False,
+    )
+  else:
+    SOURCE_SNAPSHOT_GROUP_ARG.AddArgument(parser)
+
+
 def AddBulkCreateArgsAlpha(parser):
   """Adds bulk create specific arguments to parser."""
   parser.add_argument(
@@ -298,21 +333,11 @@ def AddBulkCreateArgsAlpha(parser):
       ''',
       # This argument is optional because we now support bulk insert from
       # multiple source types.
-      required=False)
-
-  parser.add_argument(
-      '--snapshot-group-params',
-      type=calliope_arg_parsers.ArgDict(
-          spec={
-              'type': str,
-              'replica-zones': _ParseSnapshotGroupReplicaZones,
-          }
-      ),
-      help="""\
-      Parameters of the Snapshot Group to restore from. Allows specifying
-      the disk type and/or replica zones for the restored disks.
-      """,
+      required=False
   )
+
+  AddSnapshotGroupParams(parser, hidden=False)
+  AddSourceSnapshotGroup(parser, hidden=False)
 
   help_text = """Target {0} of the created disks, which currently must be the same as the source {0}. {1}"""
   scope_parser = parser.add_mutually_exclusive_group(required=True)
@@ -359,6 +384,9 @@ def AddBulkCreateArgsBeta(parser: argparse.ArgumentParser) -> None:
           scope='region', explanation=compute_flags.REGION_PROPERTY_EXPLANATION
       ),
   )
+
+  AddSnapshotGroupParams(parser, hidden=True)
+  AddSourceSnapshotGroup(parser, hidden=True)
 
 
 def AddProvisionedIopsFlag(parser, arg_parsers):
@@ -605,9 +633,17 @@ STORAGE_POOL_ARG = compute_flags.ResourceArgument(
     scope_flags_usage=compute_flags.ScopeFlagsUsage.USE_EXISTING_SCOPE_FLAGS)
 
 
-def AddKmsKeyArg(parser):
+def AddKmsKeyArg(parser, include_kms_key_service_account=False):
   kms_resource_args.AddKmsKeyResourceArg(
       parser, 'disk', region_fallthrough=True)
+  if include_kms_key_service_account:
+    parser.add_argument(
+        '--kms-key-service-account',
+        type=str,
+        help="""\
+        Service account email to use when requesting encryption for the specified KMS key.
+        """,
+    )
 
 
 def AddSourceMachineImageNameArg(parser):

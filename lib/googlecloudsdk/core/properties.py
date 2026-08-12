@@ -884,6 +884,9 @@ class _SectionApiEndpointOverrides(_Section):
         'designcenter', command='gcloud design-center', hidden=True)
     self.developerconnect = self._Add(
         'developerconnect', command='gcloud developer-connect')
+    self.developerknowledge = self._Add(
+        'developerknowledge', command='gcloud developerknowledge', hidden=True
+    )
     self.devicerun = self._Add('devicerun', command='gcloud device-run')
     self.discovery = self._Add('discovery', hidden=True)
     self.dns = self._Add('dns', command='gcloud dns')

@@ -115,7 +115,6 @@ class CheckClusterHealth(_messages.Message):
   """
 
 
-
 class Cluster(_messages.Message):
   r"""A collection of virtual machines and connected resources forming a high-
   performance computing cluster capable of running large-scale, tightly
@@ -856,7 +855,6 @@ class CreateLoginNode(_messages.Message):
   """
 
 
-
 class CreateLustreInstance(_messages.Message):
   r"""When set in OperationStep, indicates that a new lustre instance should
   be created.
@@ -897,7 +895,6 @@ class CreateOrchestrator(_messages.Message):
   """
 
 
-
 class CreatePartition(_messages.Message):
   r"""When set in OperationStep, indicates that a partition should be created.
 
@@ -912,7 +909,6 @@ class CreatePrivateServiceAccess(_messages.Message):
   r"""When set in OperationStep, indicates that a new private service access
   should be created.
   """
-
 
 
 class CreateStorageBucket(_messages.Message):
@@ -955,7 +951,6 @@ class DeleteLoginNode(_messages.Message):
   """
 
 
-
 class DeleteLustreInstance(_messages.Message):
   r"""When set in OperationStep, indicates that a Lustre instance should be
   deleted.
@@ -996,7 +991,6 @@ class DeleteOrchestrator(_messages.Message):
   """
 
 
-
 class DeletePartition(_messages.Message):
   r"""When set in OperationStep, indicates that a partition should be deleted.
 
@@ -1011,7 +1005,6 @@ class DeletePrivateServiceAccess(_messages.Message):
   r"""When set in OperationStep, indicates private service access deletion
   step.
   """
-
 
 
 class DeleteStorageBucket(_messages.Message):
@@ -1057,7 +1050,6 @@ class Empty(_messages.Message):
   or the response type of an API method. For instance: service Foo { rpc
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
-
 
 
 class ExistingBucketConfig(_messages.Message):
@@ -2891,7 +2883,6 @@ class NewReservedInstancesConfig(_messages.Message):
   Fields:
     atmTags: Optional. Immutable. Unstable: Contact hypercompute-service-eng@
       before using.
-    machineType: Optional. Immutable. Deprecated: Do not use.
     networkTags: Optional. Immutable. A list of network tags to attach to the
       VM instances. A maximum of 64 network tags are allowed.
     reservation: Optional. Immutable. Name of the reservation from which VM
@@ -2905,7 +2896,6 @@ class NewReservedInstancesConfig(_messages.Message):
       block from which VM instances should be created, in the format `projects
       /{project}/zones/{zone}/reservations/{reservation}/reservationBlocks/{re
       servation_block}/reservationSubBlocks/{reservation_sub_block}`.
-    zone: Optional. Immutable. Deprecated: Do not use.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -2934,12 +2924,10 @@ class NewReservedInstancesConfig(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   atmTags = _messages.MessageField('AtmTagsValue', 1)
-  machineType = _messages.StringField(2)
-  networkTags = _messages.StringField(3, repeated=True)
-  reservation = _messages.StringField(4)
-  reservationBlock = _messages.StringField(5)
-  reservationSubBlock = _messages.StringField(6)
-  zone = _messages.StringField(7)
+  networkTags = _messages.StringField(2, repeated=True)
+  reservation = _messages.StringField(3)
+  reservationBlock = _messages.StringField(4)
+  reservationSubBlock = _messages.StringField(5)
 
 
 class NewSpotInstancesConfig(_messages.Message):
@@ -4526,7 +4514,6 @@ class UpdateLoginNode(_messages.Message):
   """
 
 
-
 class UpdateNodeset(_messages.Message):
   r"""When set in OperationStep, indicates that a nodeset should be updated.
 
@@ -4541,7 +4528,6 @@ class UpdateOrchestrator(_messages.Message):
   r"""When set in OperationStep, indicates that an orchestrator should be
   updated.
   """
-
 
 
 class UpdatePartition(_messages.Message):

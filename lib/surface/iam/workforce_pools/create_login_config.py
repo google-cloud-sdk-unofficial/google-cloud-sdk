@@ -138,3 +138,12 @@ class CreateLoginConfig(base.CreateCommand):
           properties.VALUES.auth.login_config_file,
           os.path.abspath(args.output_file),
       )
+      log.status.Print(
+          'Updated property [{prop}].'.format(
+              prop=properties.VALUES.auth.login_config_file
+          )
+      )
+      log.status.Print(
+          'gcloud auth login will now use the login configuration file [{path}]'
+          ' by default.'.format(path=os.path.abspath(args.output_file))
+      )

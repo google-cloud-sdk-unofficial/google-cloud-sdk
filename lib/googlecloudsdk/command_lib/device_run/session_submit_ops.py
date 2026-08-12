@@ -103,3 +103,41 @@ def WaitForSession(
   )
 
   return rows
+
+
+def PrintResultFilesLink(
+    gcs_uri: str, session_id: str, is_completed: bool = True
+):
+  """Prints the link to the GCS bucket where result files are stored.
+
+  Args:
+    gcs_uri: The GCS URI (e.g. 'gs://bucket/path').
+    session_id: The session ID.
+    is_completed: Whether the session is completed (changes the message tense).
+  """
+  if not gcs_uri:
+    return
+  try:
+    ref = storage_util.ObjectReference.FromUrl(gcs_uri, allow_empty_object=True)
+  except ValueError:
+    gcs_path = gcs_uri
+    if gcs_path.startswith('gs://'):
+      gcs_path = gcs_path[5:]
+    gcs_path = gcs_path.rstrip('/')
+  else:
+    if ref.name:
+      gcs_path = f'{ref.bucket}/{ref.name}'.rstrip('/')
+    else:
+      gcs_path = ref.bucket
+
+  message_prefix = (
+      'Result files are stored at'
+      if is_completed
+      else 'Result files will be stored at'
+  )
+
+  log.status.Print(
+      f'{message_prefix}'
+      f' [https://console.cloud.google.com/storage/browser/{gcs_path}/{session_id}/].'
+  )
+

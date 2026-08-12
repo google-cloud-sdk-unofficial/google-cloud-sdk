@@ -13024,7 +13024,7 @@ class GoogleCloudApigeeV1RuntimeSpecGenerationAddonConfig(_messages.Message):
 
 
 class GoogleCloudApigeeV1RuntimeTraceConfig(_messages.Message):
-  r"""NEXT ID: 11 RuntimeTraceConfig defines the configurations for
+  r"""NEXT ID: 13 RuntimeTraceConfig defines the configurations for
   distributed trace in an environment.
 
   Enums:
@@ -13032,6 +13032,11 @@ class GoogleCloudApigeeV1RuntimeTraceConfig(_messages.Message):
       trace captured using OpenCensus. An exporter sends traces to any backend
       that is capable of consuming them. Recorded spans can be exported by
       registered exporters.
+    OtelCollectorSecuritySchemeValueValuesEnum: Optional. Security scheme for
+      the outbound connection to the customer-owned OpenTelemetry Collector.
+      Only meaningful when `exporter` is `OPEN_TELEMETRY_COLLECTOR`. Runtime
+      consumers unaware of a value should treat it as
+      `OTEL_COLLECTOR_SECURITY_SCHEME_UNSPECIFIED` (== NONE).
     SpanSemanticsValueValuesEnum: Optional. The span semantics to use.
       Configuration Requirements (if `span_semantics` is `OTEL`): -
       `trace_protocol` must be `OTLP`.
@@ -13043,6 +13048,9 @@ class GoogleCloudApigeeV1RuntimeTraceConfig(_messages.Message):
       using OpenCensus. An exporter sends traces to any backend that is
       capable of consuming them. Recorded spans can be exported by registered
       exporters.
+    mTlsConfig: Optional. mTLS configuration for the OTel Collector endpoint.
+      Required when `otel_collector_security_scheme` is `MTLS`; must be absent
+      otherwise.
     name: Name of the trace config in the following format:
       `organizations/{org}/environment/{env}/traceConfig`
     openTelemetryProtocolEnabled: Optional. If `true`, the runtime uses
@@ -13052,6 +13060,11 @@ class GoogleCloudApigeeV1RuntimeTraceConfig(_messages.Message):
       `Exporter` is `OPEN_TELEMETRY_COLLECTOR`: - `endpoint` refers to a valid
       OTLP collector URL. - If `Exporter` is `CLOUD_TRACE`: - `endpoint`
       refers to a valid project ID Deprecated: Use trace_protocol instead.
+    otelCollectorSecurityScheme: Optional. Security scheme for the outbound
+      connection to the customer-owned OpenTelemetry Collector. Only
+      meaningful when `exporter` is `OPEN_TELEMETRY_COLLECTOR`. Runtime
+      consumers unaware of a value should treat it as
+      `OTEL_COLLECTOR_SECURITY_SCHEME_UNSPECIFIED` (== NONE).
     overrides: List of trace configuration overrides for spicific API proxies.
     revisionCreateTime: The timestamp that the revision was created or
       updated.
@@ -13085,6 +13098,25 @@ class GoogleCloudApigeeV1RuntimeTraceConfig(_messages.Message):
     OPEN_TELEMETRY_COLLECTOR = 3
     OPEN_TELEMETRY_CLOUD_TRACE = 4
 
+  class OtelCollectorSecuritySchemeValueValuesEnum(_messages.Enum):
+    r"""Optional. Security scheme for the outbound connection to the customer-
+    owned OpenTelemetry Collector. Only meaningful when `exporter` is
+    `OPEN_TELEMETRY_COLLECTOR`. Runtime consumers unaware of a value should
+    treat it as `OTEL_COLLECTOR_SECURITY_SCHEME_UNSPECIFIED` (== NONE).
+
+    Values:
+      OTEL_COLLECTOR_SECURITY_SCHEME_UNSPECIFIED: Unspecified. Behavior is
+        identical to NONE.
+      NONE: Default. Unauthenticated OTLP/HTTP export. Preserves today's
+        behavior byte-for-byte for existing configurations.
+      MTLS: Mutual TLS via customer PKI. Cert material is stored in Apigee
+        Keystores/Truststores and referenced by resource ID in `mtls_config`
+        (same mechanism as TargetServer.tls_info).
+    """
+    OTEL_COLLECTOR_SECURITY_SCHEME_UNSPECIFIED = 0
+    NONE = 1
+    MTLS = 2
+
   class SpanSemanticsValueValuesEnum(_messages.Enum):
     r"""Optional. The span semantics to use. Configuration Requirements (if
     `span_semantics` is `OTEL`): - `trace_protocol` must be `OTLP`.
@@ -13114,14 +13146,51 @@ class GoogleCloudApigeeV1RuntimeTraceConfig(_messages.Message):
 
   endpoint = _messages.StringField(1)
   exporter = _messages.EnumField('ExporterValueValuesEnum', 2)
-  name = _messages.StringField(3)
-  openTelemetryProtocolEnabled = _messages.BooleanField(4)
-  overrides = _messages.MessageField('GoogleCloudApigeeV1RuntimeTraceConfigOverride', 5, repeated=True)
-  revisionCreateTime = _messages.StringField(6)
-  revisionId = _messages.StringField(7)
-  samplingConfig = _messages.MessageField('GoogleCloudApigeeV1RuntimeTraceSamplingConfig', 8)
-  spanSemantics = _messages.EnumField('SpanSemanticsValueValuesEnum', 9)
-  traceProtocol = _messages.EnumField('TraceProtocolValueValuesEnum', 10)
+  mTlsConfig = _messages.MessageField('GoogleCloudApigeeV1RuntimeTraceConfigOtelMtlsConfig', 3)
+  name = _messages.StringField(4)
+  openTelemetryProtocolEnabled = _messages.BooleanField(5)
+  otelCollectorSecurityScheme = _messages.EnumField('OtelCollectorSecuritySchemeValueValuesEnum', 6)
+  overrides = _messages.MessageField('GoogleCloudApigeeV1RuntimeTraceConfigOverride', 7, repeated=True)
+  revisionCreateTime = _messages.StringField(8)
+  revisionId = _messages.StringField(9)
+  samplingConfig = _messages.MessageField('GoogleCloudApigeeV1RuntimeTraceSamplingConfig', 10)
+  spanSemantics = _messages.EnumField('SpanSemanticsValueValuesEnum', 11)
+  traceProtocol = _messages.EnumField('TraceProtocolValueValuesEnum', 12)
+
+
+class GoogleCloudApigeeV1RuntimeTraceConfigOtelMtlsConfig(_messages.Message):
+  r"""Runtime-side view of `TraceConfig.OtelMtlsConfig` for the outbound OTel
+  Collector mTLS connection. Shape mirrors `TlsInfoConfig` (in this same file,
+  above) exactly. The oneof discriminates between a direct keystore reference
+  and a `ref://`-indirected reference; both are surfaced on the wire without
+  flattening. The referenced keystore must also appear in
+  `EnvironmentConfig.keystores[]` so the underlying alias bytes are available
+  at runtime. Referential integrity is enforced at trace-config update time:
+  any PATCH that references a keystore not already present is rejected in the
+  same transaction that would persist the update, and keystore/alias/reference
+  deletion is blocked while a trace-config references it.
+
+  Fields:
+    keyAlias: Full alias resource name of the client-side key/cert alias.
+      Format: `organizations/{org}/environments/{env}/keystores/{keystore}/ali
+      ases/{alias}` Set when the customer supplied a plain keystore ID in
+      `TraceConfig.OtelMtlsConfig.key_store`.
+    keyAliasReference: Reference name and alias-id pair. Set when the customer
+      supplied a `ref://{referenceID}` URI in
+      `TraceConfig.OtelMtlsConfig.key_store`. Resolved via the References
+      catalog the same way as `TlsInfoConfig.key_alias_reference` in target-
+      server TLS. Reuses the top-level `KeyAliasReference` message defined for
+      `TlsInfoConfig` above; no new message.
+    trustStore: Full resource name of the truststore holding the CA(s) that
+      signed the OTel Collector's server certificate. Either a keystore or a
+      reference resource name, mirroring `TlsInfoConfig.trust_store` above:
+      `organizations/{org}/environments/{env}/keystores/{keystore}`
+      `organizations/{org}/environments/{env}/references/{reference}`
+  """
+
+  keyAlias = _messages.StringField(1)
+  keyAliasReference = _messages.MessageField('GoogleCloudApigeeV1KeyAliasReference', 2)
+  trustStore = _messages.StringField(3)
 
 
 class GoogleCloudApigeeV1RuntimeTraceConfigOverride(_messages.Message):
@@ -14967,6 +15036,10 @@ class GoogleCloudApigeeV1TraceConfig(_messages.Message):
       distributed trace captured using the chosen trace protocol. An exporter
       sends traces to any backend that is capable of consuming them. Recorded
       spans can be exported by registered exporters.
+    OtelCollectorSecuritySchemeValueValuesEnum: Optional. The security scheme
+      for the OTel Collector endpoint. Defaults to NONE (unauthenticated
+      OTLP/HTTP), preserving today's behavior for existing configurations.
+      Only applicable when `exporter` == OPEN_TELEMETRY_COLLECTOR.
     SpanSemanticsValueValuesEnum: Optional. The span semantics to use.
       Configuration Requirements (if span_semantics is OTEL): - trace_protocol
       must be OTLP.
@@ -14983,8 +15056,15 @@ class GoogleCloudApigeeV1TraceConfig(_messages.Message):
       captured using the chosen trace protocol. An exporter sends traces to
       any backend that is capable of consuming them. Recorded spans can be
       exported by registered exporters.
+    mtlsConfig: Optional. mTLS configuration for the OTel Collector endpoint.
+      Required when `otel_collector_security_scheme` == MTLS; must not be set
+      otherwise.
     openTelemetryProtocolEnabled: Optional. Deprecated: Use trace_protocol
       instead.
+    otelCollectorSecurityScheme: Optional. The security scheme for the OTel
+      Collector endpoint. Defaults to NONE (unauthenticated OTLP/HTTP),
+      preserving today's behavior for existing configurations. Only applicable
+      when `exporter` == OPEN_TELEMETRY_COLLECTOR.
     samplingConfig: Distributed trace configuration for all API proxies in an
       environment. You can also override the configuration for a specific API
       proxy using the distributed trace configuration overrides API.
@@ -15020,6 +15100,25 @@ class GoogleCloudApigeeV1TraceConfig(_messages.Message):
     OPEN_TELEMETRY_COLLECTOR = 3
     OPEN_TELEMETRY_CLOUD_TRACE = 4
 
+  class OtelCollectorSecuritySchemeValueValuesEnum(_messages.Enum):
+    r"""Optional. The security scheme for the OTel Collector endpoint.
+    Defaults to NONE (unauthenticated OTLP/HTTP), preserving today's behavior
+    for existing configurations. Only applicable when `exporter` ==
+    OPEN_TELEMETRY_COLLECTOR.
+
+    Values:
+      OTEL_COLLECTOR_SECURITY_SCHEME_UNSPECIFIED: Unspecified. Behavior is
+        identical to NONE.
+      NONE: Default. Unauthenticated OTLP/HTTP export. Preserves today's
+        behavior byte-for-byte for existing configurations.
+      MTLS: Mutual TLS via customer PKI. Cert material is stored in Apigee
+        Keystores/Truststores and referenced by resource ID in `mtls_config`
+        (same mechanism as TargetServer.tls_info).
+    """
+    OTEL_COLLECTOR_SECURITY_SCHEME_UNSPECIFIED = 0
+    NONE = 1
+    MTLS = 2
+
   class SpanSemanticsValueValuesEnum(_messages.Enum):
     r"""Optional. The span semantics to use. Configuration Requirements (if
     span_semantics is OTEL): - trace_protocol must be OTLP.
@@ -15053,10 +15152,53 @@ class GoogleCloudApigeeV1TraceConfig(_messages.Message):
 
   endpoint = _messages.StringField(1)
   exporter = _messages.EnumField('ExporterValueValuesEnum', 2)
-  openTelemetryProtocolEnabled = _messages.BooleanField(3)
-  samplingConfig = _messages.MessageField('GoogleCloudApigeeV1TraceSamplingConfig', 4)
-  spanSemantics = _messages.EnumField('SpanSemanticsValueValuesEnum', 5)
-  traceProtocol = _messages.EnumField('TraceProtocolValueValuesEnum', 6)
+  mtlsConfig = _messages.MessageField('GoogleCloudApigeeV1TraceConfigOtelMtlsConfig', 3)
+  openTelemetryProtocolEnabled = _messages.BooleanField(4)
+  otelCollectorSecurityScheme = _messages.EnumField('OtelCollectorSecuritySchemeValueValuesEnum', 5)
+  samplingConfig = _messages.MessageField('GoogleCloudApigeeV1TraceSamplingConfig', 6)
+  spanSemantics = _messages.EnumField('SpanSemanticsValueValuesEnum', 7)
+  traceProtocol = _messages.EnumField('TraceProtocolValueValuesEnum', 8)
+
+
+class GoogleCloudApigeeV1TraceConfigOtelMtlsConfig(_messages.Message):
+  r"""OtelMtlsConfig configures mutual TLS for the outbound OTel Collector
+  connection by referencing already-uploaded Keystore/Truststore aliases.
+  Key/cert material is uploaded via the existing Keystore Alias APIs (POST
+  .../keystores/{ks}/aliases), the same APIs used to configure mTLS for
+  `TargetServer.tls_info`. Only the resource IDs of those aliases live in this
+  message; no secret material is inlined into TraceConfig. Field shape mirrors
+  `TlsInfo` used by `TargetServer.tls_info`: - `key_store` and `trust_store`
+  accept either a plain keystore ID or a `ref://{referenceID}` URI (an
+  environment-scoped Reference whose `resource_type` is
+  `KeyStore`/`TrustStore`). References enable rotation without editing the
+  TraceConfig itself. - `key_alias` is the plain alias ID within `key_store`.
+  Fields that would normally appear on `TlsInfo` (enabled,
+  client_auth_enabled, protocols, enforce, ignore_validation_errors) are
+  intentionally omitted from this customer surface. The runtime enforces
+  secure defaults: - Mutual TLS is always required (both server AND client
+  cert exchanged). - Server certificate validation is always strict (no
+  ignoring errors). - TLS 1.2 and TLS 1.3 are enabled; older versions are
+  rejected.
+
+  Fields:
+    keyAlias: Required. Plain alias ID within `key_store` that contains the
+      client key/cert used for mTLS.
+    keyStore: Required. Keystore holding the client-side key/cert alias.
+      Accepts either a plain keystore ID (e.g. `my-keystore`) resolving to
+      `organizations/{org}/environments/{env}/keystores/{key_store}`, or a
+      reference URI of the form `ref://{referenceID}` that points to a
+      Reference whose `resource_type` is `KeyStore`.
+    trustStore: Required. Truststore holding the CA(s) that signed the OTel
+      Collector's server certificate. Accepts either a plain keystore ID (e.g.
+      `my-truststore`) resolving to
+      `organizations/{org}/environments/{env}/keystores/{trust_store}`, or a
+      reference URI of the form `ref://{referenceID}` that points to a
+      Reference whose `resource_type` is `KeyStore` (used as a truststore).
+  """
+
+  keyAlias = _messages.StringField(1)
+  keyStore = _messages.StringField(2)
+  trustStore = _messages.StringField(3)
 
 
 class GoogleCloudApigeeV1TraceConfigOverride(_messages.Message):

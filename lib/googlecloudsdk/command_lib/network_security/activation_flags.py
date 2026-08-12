@@ -18,9 +18,12 @@
 from googlecloudsdk.api_lib.network_security.firewall_endpoints import activation_api
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.calliope.concepts import deps as deps_lib
 from googlecloudsdk.calliope.concepts import multitype
+from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import properties
@@ -417,4 +420,31 @@ def AddBlockPartialHttpArg(
           " `--block-partial-http` to enable. To disable, use"
           " `--no-block-partial-http`."
       ),
+  )
+
+
+def AddKmsKeyArg(
+    parser: parser_arguments.ArgumentInterceptor,
+    release_track: base.ReleaseTrack,
+    hidden: bool = True,
+) -> None:
+  """Adds --kms-key flag for Firewall Plus endpoints.
+
+  Args:
+    parser: ArgumentInterceptor, An argparse parser.
+    release_track: base.ReleaseTrack, The release track of the command.
+    hidden: bool, Whether to hide this argument.
+  """
+  if release_track != base.ReleaseTrack.ALPHA:
+    return
+  permission_info = (
+      "The 'Network Security Service Agent' service account must hold"
+      " permission 'Cloud KMS CryptoKey Encrypter/Decrypter'"
+  )
+  kms_resource_args.AddKmsKeyResourceArg(
+      parser=parser,
+      resource="firewall endpoint",
+      permission_info=permission_info,
+      required=False,
+      hidden=hidden,
   )

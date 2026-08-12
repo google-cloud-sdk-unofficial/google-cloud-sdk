@@ -14,11 +14,14 @@
 # limitations under the License.
 """Utilities for the GCP Device Cloud (device-run) API."""
 
+from typing import Any
+
 from apitools.base.py import encoding
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import progress_tracker
 
 
@@ -270,3 +273,55 @@ def WaitForOperation(poller, operation_ref, message):
       tracker_update_func=_TrackerUpdateFunc,
   )
 
+
+class DeviceRunSessionPoller(waiter.OperationPoller):
+  """Implementation of OperationPoller for Device Run Sessions."""
+
+  def __init__(self, sessions_client: SessionsClient):
+    self.sessions_client = sessions_client
+
+  def IsDone(self, session: Any) -> bool:
+    status_type = (
+        str(session.sessionReport.status.statusType)
+        if session and session.sessionReport and session.sessionReport.status
+        else 'STATUS_TYPE_UNSPECIFIED'
+    )
+    return status_type == 'DONE'
+
+  def Poll(self, session_ref: resources.Resource) -> Any:
+    return self.sessions_client.Get(session_ref)
+
+  def GetResult(self, session: Any) -> Any:
+    return session
+
+
+def WaitForSession(
+    poller: DeviceRunSessionPoller,
+    session_ref: resources.Resource,
+    message: str,
+) -> Any:
+  """Waits for a Device Run session to complete, displaying progress messages."""
+  progress_message = ['']
+
+  def _DetailMessageCallback():
+    return progress_message[0]
+
+  def _TrackerUpdateFunc(unused_tracker, session, unused_status):
+    if (
+        session.sessionReport
+        and session.sessionReport.status
+        and session.sessionReport.status.progressMessages
+    ):
+      progress_message[0] = session.sessionReport.status.progressMessages[-1]
+
+  tracker = progress_tracker.ProgressTracker(
+      message,
+      detail_message_callback=_DetailMessageCallback,
+  )
+
+  return waiter.WaitFor(
+      poller,
+      session_ref,
+      custom_tracker=tracker,
+      tracker_update_func=_TrackerUpdateFunc,
+  )

@@ -68,6 +68,12 @@ class RevisionPrinter(cp.CustomPrinterBase):
     return None
 
   @staticmethod
+  def GetTerminationGracePeriod(record):
+    if record.termination_grace_period is not None:
+      return '{}s'.format(record.termination_grace_period)
+    return None
+
+  @staticmethod
   def GetMinInstances(record):
     return record.annotations.get(revision.MIN_SCALE_ANNOTATION, '')
 
@@ -168,6 +174,10 @@ class RevisionPrinter(cp.CustomPrinterBase):
             k8s_util.GetCloudSqlInstances(record.annotations),
         ),
         ('Timeout', RevisionPrinter.GetTimeout(record)),
+        (
+            'Termination Grace Period',
+            RevisionPrinter.GetTerminationGracePeriod(record),
+        ),
         ('VPC access', k8s_util.GetVpcNetwork(record.annotations)),
         ('CMEK', RevisionPrinter.GetCMEK(record)),
         ('HTTP/2 Enabled', RevisionPrinter.GetHttp2Enabled(record)),
@@ -181,7 +191,7 @@ class RevisionPrinter(cp.CustomPrinterBase):
             RevisionPrinter.GetSessionAffinity(record),
         ),
         ('Volumes', container_util.GetVolumes(record)),
-        ('Threat Detection', RevisionPrinter.GetThreatDetectionEnabled(record))
+        ('Threat Detection', RevisionPrinter.GetThreatDetectionEnabled(record)),
     ])
     return cp.Lines([container_util.GetContainers(record), cp.Labeled(labels)])
 

@@ -451,6 +451,10 @@ def _GetTemplateConfigurationChanges(
             gpu_zonal_redundancy=args.gpu_zonal_redundancy
         )
     )
+  if flags.FlagIsExplicitlySet(args, 'grace_period'):
+    changes.append(
+        config_changes.TerminationGracePeriodChanges.FromFlag(args.grace_period)
+    )
   # Cloud SQL changes
   if flags.HasCloudSQLChanges(args):
     changes.extend(_GetCloudSQLChanges(args))

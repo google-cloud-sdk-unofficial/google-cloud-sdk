@@ -17,16 +17,19 @@ class AISkillAnalysisOccurrence(_messages.Message):
   analysis.
 
   Enums:
-    MaxSeverityValueValuesEnum: Maximum severity found among findings.
+    MaxSeverityValueValuesEnum: Maximum severity found among findings. Per
+      scanner verdict details.
 
   Fields:
     findings: Findings produced by the analysis.
-    maxSeverity: Maximum severity found among findings.
+    maxSeverity: Maximum severity found among findings. Per scanner verdict
+      details.
+    perScannerVerdict: Per scanner verdict.
     skillName: Name of the skill that produced this analysis.
   """
 
   class MaxSeverityValueValuesEnum(_messages.Enum):
-    r"""Maximum severity found among findings.
+    r"""Maximum severity found among findings. Per scanner verdict details.
 
     Values:
       SEVERITY_UNSPECIFIED: Unspecified severity.
@@ -39,7 +42,8 @@ class AISkillAnalysisOccurrence(_messages.Message):
 
   findings = _messages.MessageField('Finding', 1, repeated=True)
   maxSeverity = _messages.EnumField('MaxSeverityValueValuesEnum', 2)
-  skillName = _messages.StringField(3)
+  perScannerVerdict = _messages.MessageField('PerScannerVerdict', 3)
+  skillName = _messages.StringField(4)
 
 
 class AliasContext(_messages.Message):
@@ -1870,6 +1874,126 @@ class Maintainer(_messages.Message):
   url = _messages.StringField(4)
 
 
+class MaliciousContentLLMResult(_messages.Message):
+  r"""Result of Malicious Content LLM scan.
+
+  Enums:
+    MaxSeverityValueValuesEnum: Tracks max severity found.
+    ScanStatusValueValuesEnum: Status of the scan.
+
+  Fields:
+    maxSeverity: Tracks max severity found.
+    scanStatus: Status of the scan.
+  """
+
+  class MaxSeverityValueValuesEnum(_messages.Enum):
+    r"""Tracks max severity found.
+
+    Values:
+      SEVERITY_UNSPECIFIED: Unspecified severity.
+      CRITICAL: Critical severity.
+      HIGH: High severity.
+    """
+    SEVERITY_UNSPECIFIED = 0
+    CRITICAL = 1
+    HIGH = 2
+
+  class ScanStatusValueValuesEnum(_messages.Enum):
+    r"""Status of the scan.
+
+    Values:
+      SCAN_STATUS_UNSPECIFIED: Unspecified scan status.
+      PERFORMED: Scan was performed.
+      NOT_PERFORMED: Scan was not performed.
+    """
+    SCAN_STATUS_UNSPECIFIED = 0
+    PERFORMED = 1
+    NOT_PERFORMED = 2
+
+  maxSeverity = _messages.EnumField('MaxSeverityValueValuesEnum', 1)
+  scanStatus = _messages.EnumField('ScanStatusValueValuesEnum', 2)
+
+
+class MaliciousContentStaticResult(_messages.Message):
+  r"""Result of Malicious Content Static scan.
+
+  Enums:
+    MaxSeverityValueValuesEnum: Tracks max severity found.
+    ScanStatusValueValuesEnum: Status of the scan.
+
+  Fields:
+    maxSeverity: Tracks max severity found.
+    scanStatus: Status of the scan.
+  """
+
+  class MaxSeverityValueValuesEnum(_messages.Enum):
+    r"""Tracks max severity found.
+
+    Values:
+      SEVERITY_UNSPECIFIED: Unspecified severity.
+      CRITICAL: Critical severity.
+      HIGH: High severity.
+    """
+    SEVERITY_UNSPECIFIED = 0
+    CRITICAL = 1
+    HIGH = 2
+
+  class ScanStatusValueValuesEnum(_messages.Enum):
+    r"""Status of the scan.
+
+    Values:
+      SCAN_STATUS_UNSPECIFIED: Unspecified scan status.
+      PERFORMED: Scan was performed.
+      NOT_PERFORMED: Scan was not performed.
+    """
+    SCAN_STATUS_UNSPECIFIED = 0
+    PERFORMED = 1
+    NOT_PERFORMED = 2
+
+  maxSeverity = _messages.EnumField('MaxSeverityValueValuesEnum', 1)
+  scanStatus = _messages.EnumField('ScanStatusValueValuesEnum', 2)
+
+
+class MalwareScanResult(_messages.Message):
+  r"""Result of Malware scan.
+
+  Enums:
+    ScanStatusValueValuesEnum: Status of the scan.
+    VerdictValueValuesEnum: Verdict of the scan.
+
+  Fields:
+    scanStatus: Status of the scan.
+    verdict: Verdict of the scan.
+  """
+
+  class ScanStatusValueValuesEnum(_messages.Enum):
+    r"""Status of the scan.
+
+    Values:
+      SCAN_STATUS_UNSPECIFIED: Unspecified scan status.
+      PERFORMED: Scan was performed.
+      NOT_PERFORMED: Scan was not performed.
+    """
+    SCAN_STATUS_UNSPECIFIED = 0
+    PERFORMED = 1
+    NOT_PERFORMED = 2
+
+  class VerdictValueValuesEnum(_messages.Enum):
+    r"""Verdict of the scan.
+
+    Values:
+      VERDICT_UNSPECIFIED: Unspecified verdict.
+      PASSED: Scanner passed.
+      FAILED: Scanner failed.
+    """
+    VERDICT_UNSPECIFIED = 0
+    PASSED = 1
+    FAILED = 2
+
+  scanStatus = _messages.EnumField('ScanStatusValueValuesEnum', 1)
+  verdict = _messages.EnumField('VerdictValueValuesEnum', 2)
+
+
 class Material(_messages.Message):
   r"""A Material object.
 
@@ -2485,6 +2609,22 @@ class PackageVersion(_messages.Message):
   licenses = _messages.StringField(1, repeated=True)
   name = _messages.StringField(2)
   version = _messages.StringField(3)
+
+
+class PerScannerVerdict(_messages.Message):
+  r"""A PerScannerVerdict object.
+
+  Fields:
+    maliciousContentLlmResult: Malicious Content LLM scan result.
+    maliciousContentStaticResult: Malicious Content Static scan result.
+    malwareScan: Malware scan result.
+    workspacePolicy: Workspace Policy scan result.
+  """
+
+  maliciousContentLlmResult = _messages.MessageField('MaliciousContentLLMResult', 1)
+  maliciousContentStaticResult = _messages.MessageField('MaliciousContentStaticResult', 2)
+  malwareScan = _messages.MessageField('MalwareScanResult', 3)
+  workspacePolicy = _messages.MessageField('WorkspacePolicyResult', 4)
 
 
 class ProjectRepoId(_messages.Message):
@@ -3891,6 +4031,46 @@ class WindowsUpdate(_messages.Message):
   lastPublishedTimestamp = _messages.StringField(5)
   supportUrl = _messages.StringField(6)
   title = _messages.StringField(7)
+
+
+class WorkspacePolicyResult(_messages.Message):
+  r"""Result of Workspace Policy scan.
+
+  Enums:
+    ScanStatusValueValuesEnum: Status of the scan.
+    VerdictValueValuesEnum: Verdict of the scan.
+
+  Fields:
+    scanStatus: Status of the scan.
+    verdict: Verdict of the scan.
+  """
+
+  class ScanStatusValueValuesEnum(_messages.Enum):
+    r"""Status of the scan.
+
+    Values:
+      SCAN_STATUS_UNSPECIFIED: Unspecified scan status.
+      PERFORMED: Scan was performed.
+      NOT_PERFORMED: Scan was not performed.
+    """
+    SCAN_STATUS_UNSPECIFIED = 0
+    PERFORMED = 1
+    NOT_PERFORMED = 2
+
+  class VerdictValueValuesEnum(_messages.Enum):
+    r"""Verdict of the scan.
+
+    Values:
+      VERDICT_UNSPECIFIED: Unspecified verdict.
+      PASSED: Scanner passed.
+      FAILED: Scanner failed.
+    """
+    VERDICT_UNSPECIFIED = 0
+    PASSED = 1
+    FAILED = 2
+
+  scanStatus = _messages.EnumField('ScanStatusValueValuesEnum', 1)
+  verdict = _messages.EnumField('VerdictValueValuesEnum', 2)
 
 
 encoding.AddCustomJsonFieldMapping(

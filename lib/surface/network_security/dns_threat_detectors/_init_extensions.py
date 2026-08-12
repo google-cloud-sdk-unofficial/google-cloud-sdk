@@ -21,11 +21,14 @@ from googlecloudsdk.calliope import base
 
 class DnsThreatDetectorsAlpha(base.Group):
   """Optional no-auto-generated code for ALPHA."""
+  category = base.NETWORK_SECURITY_CATEGORY
 
 
 class DnsThreatDetectorsBeta(base.Group):
   """Optional no-auto-generated code for BETA."""
+  category = base.NETWORK_SECURITY_CATEGORY
 
 
 class DnsThreatDetectorsGa(base.Group):
   """Optional no-auto-generated code for GA."""
+  category = base.NETWORK_SECURITY_CATEGORY

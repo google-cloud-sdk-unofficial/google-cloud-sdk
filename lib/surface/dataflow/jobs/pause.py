@@ -24,7 +24,6 @@ from googlecloudsdk.core import log
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
-@base.Hidden
 class Pause(base.Command):
   """Starts pausing all given jobs.
 
@@ -34,6 +33,17 @@ class Pause(base.Command):
   not successful, the job will remain in `JOB_STATE_RUNNING` state. If a job is
   already in the `JOB_STATE_PAUSED` state, the command will succeed and do
   nothing.
+
+  ## EXAMPLES
+
+  To pause a single job, run:
+
+    $ {command} 2000-01-02_03_04_05-12345678901234567890 --region=us-central1
+
+  To pause multiple jobs, run:
+
+    $ {command} 2000-01-02_03_04_05-12345678901234567890
+    2000-12-11_10_09_08-09876543210987654321 --region=us-central1
   """
 
   @staticmethod

@@ -865,17 +865,6 @@ class Deploy(base.Command):
 
     containers = self._ValidateAndGetContainers(args)
     deploy_from_source = self._ValidateAndGetDeployFromSource(containers)
-    if (
-        self.ReleaseTrack() == base.ReleaseTrack.ALPHA
-        and deploy_from_source
-        and not properties.VALUES.regional.endpoint_mode.IsExplicitlySet()
-        and not getattr(args, 'domain', None)
-    ):
-      properties.VALUES.SetInvocationValue(
-          properties.VALUES.regional.endpoint_mode,
-          properties.VALUES.regional.REGIONAL_PREFERRED,
-          None,
-      )
     is_local_build = validators.IsLocalBuildFromSource(
         self.ReleaseTrack(), deploy_from_source
     )
@@ -1249,6 +1238,7 @@ class AlphaDeploy(BetaDeploy):
     flags.AddConcurrencyUtilizationFlag(parser)
     flags.AddPresetFlags(parser)
     flags.AddSshFlag(parser)
+    flags.AddGracePeriodFlag(parser)
     concept_parsers.ConceptParser([
         presentation_specs.ResourcePresentationSpec(
             '--domain',

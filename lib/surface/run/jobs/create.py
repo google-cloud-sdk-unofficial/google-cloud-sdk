@@ -284,6 +284,7 @@ class AlphaCreate(BetaCreate):
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser)
+    flags.AddGracePeriodFlag(parser, object_to_shutdown='tasks')
     flags.AddRuntimeFlag(parser)
     flags.AddDelayExecutionFlag(parser)
     flags.IdentityCertificateFlag(hidden=True).AddToParser(parser)

@@ -23,3 +23,4 @@ from googlecloudsdk.calliope import base
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class DataSources(base.Group):
   """View Backup and DR data sources."""
+  category = base.STORAGE_CATEGORY

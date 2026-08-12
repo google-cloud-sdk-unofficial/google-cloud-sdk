@@ -47,7 +47,7 @@ class Describe(base.DescribeCommand):
       else:
         summary['platform'] = platform_str.capitalize()
     if device.hardwareType is not None:
-      summary['form'] = str(device.hardwareType)
+      summary['hardware_type'] = str(device.hardwareType)
     if device.formFactor is not None:
       summary['formFactor'] = str(device.formFactor)
     if device.primaryScreen:

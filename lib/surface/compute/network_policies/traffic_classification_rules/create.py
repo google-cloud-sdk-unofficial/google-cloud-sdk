@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   r"""Creates a Compute Engine network policy rule.
 
@@ -35,13 +35,15 @@ class Create(base.CreateCommand):
 
   NETWORK_POLICY_ARG: ClassVar[compute_flags.ResourceArgument]
 
+  support_address_groups = False
+
   @classmethod
   def Args(cls, parser):
     cls.NETWORK_POLICY_ARG = flags.NetworkPolicyRuleArgument(
         required=True, operation='create'
     )
     cls.NETWORK_POLICY_ARG.AddArgument(parser, operation_type='create')
-    flags.AddArgsAddRule(parser)
+    flags.AddArgsAddRule(parser, cls.support_address_groups)
     parser.display_info.AddCacheUpdater(flags.NetworkPoliciesCompleter)
 
   def Run(self, args):
@@ -56,6 +58,7 @@ class Create(base.CreateCommand):
     priority = None
     src_ip_ranges = []
     dest_ip_ranges = []
+    dest_address_groups = []
     layer4_configs = []
     target_service_accounts = []
     disabled = False
@@ -76,6 +79,8 @@ class Create(base.CreateCommand):
       src_ip_ranges = args.src_ip_ranges
     if args.IsSpecified('dest_ip_ranges'):
       dest_ip_ranges = args.dest_ip_ranges
+    if self.support_address_groups and args.IsSpecified('dest_address_groups'):
+      dest_address_groups = args.dest_address_groups
     if args.IsSpecified('layer4_configs'):
       layer4_configs = args.layer4_configs
     if args.IsSpecified('target_service_accounts'):
@@ -92,13 +97,23 @@ class Create(base.CreateCommand):
         layer4_configs, holder.client.messages
     )
 
-    matcher = (
-        holder.client.messages.NetworkPolicyTrafficClassificationRuleMatcher(
-            srcIpRanges=src_ip_ranges,
-            destIpRanges=dest_ip_ranges,
-            layer4Configs=layer4_config_list,
-        )
-    )
+    if self.support_address_groups:
+      matcher = (
+          holder.client.messages.NetworkPolicyTrafficClassificationRuleMatcher(
+              srcIpRanges=src_ip_ranges,
+              destIpRanges=dest_ip_ranges,
+              destAddressGroups=dest_address_groups,
+              layer4Configs=layer4_config_list,
+          )
+      )
+    else:
+      matcher = (
+          holder.client.messages.NetworkPolicyTrafficClassificationRuleMatcher(
+              srcIpRanges=src_ip_ranges,
+              destIpRanges=dest_ip_ranges,
+              layer4Configs=layer4_config_list,
+          )
+      )
 
     network_policy_rule = holder.client.messages.NetworkPolicyTrafficClassificationRule(
         priority=rules_utils.ConvertPriorityToInt(priority),
@@ -132,6 +147,16 @@ class Create(base.CreateCommand):
         traffic_class,
         messages.NetworkPolicyTrafficClassificationRuleAction.TrafficClassValueValuesEnum,
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  r"""Creates a Compute Engine network policy rule.
+
+  *{command}* is used to create network policy rules.
+  """
+
+  support_address_groups = True
 
 
 Create.detailed_help = {

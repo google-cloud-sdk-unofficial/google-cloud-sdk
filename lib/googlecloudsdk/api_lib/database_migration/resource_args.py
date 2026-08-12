@@ -177,6 +177,40 @@ def AddConnectionProfileResourceArg(parser, verb, positional=True):
       required=True).AddToParser(parser)
 
 
+def AddMysqlConnectionProfileResourceArg(parser, verb, positional=True):
+  """Add a resource argument for a database migration mysql cp.
+
+  Args:
+    parser: the parser for the command.
+    verb: str, the verb to describe the resource, such as 'to update'.
+    positional: bool, if True, means that the resource is a positional rather
+      than a flag.
+  """
+  if positional:
+    name = 'connection_profile'
+  else:
+    name = '--connection-profile'
+
+  resource_specs = [
+      presentation_specs.ResourcePresentationSpec(
+          name,
+          GetConnectionProfileResourceSpec(),
+          f'The connection profile {verb}.',
+          required=True,
+      ),
+      presentation_specs.ResourcePresentationSpec(
+          '--private-connection',
+          GetPrivateConnectionResourceSpec(),
+          'Resource ID of the private connection.',
+          flag_name_overrides={'region': ''},
+      ),
+  ]
+  concept_parsers.ConceptParser(
+      resource_specs,
+      command_level_fallthroughs={'--private-connection.region': ['--region']},
+  ).AddToParser(parser)
+
+
 def AddCloudSqlConnectionProfileResourceArgs(parser, verb):
   """Add resource arguments for a database migration CloudSQL connection profile.
 

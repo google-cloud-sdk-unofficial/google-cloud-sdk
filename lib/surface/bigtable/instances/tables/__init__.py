@@ -23,3 +23,5 @@ from googlecloudsdk.calliope import base
                     base.ReleaseTrack.ALPHA)
 class Tables(base.Group):
   """Query Cloud Bigtable tables."""
+
+  category = base.DATABASES_CATEGORY

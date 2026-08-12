@@ -27,9 +27,8 @@ properties:
       type: string
   flexShieldingRegions:
     description: |-
-      Whenever possible, content will be fetched from origin and cached in or
-      near the specified region. Best effort. You must specify exactly one
-      FlexShieldingRegion.
+      Content is fetched from the origin and cached in or near the specified
+      region. Specify exactly one flexible shielding region.
     type: array
     items:
       type: string
@@ -38,3 +37,4 @@ properties:
       - FLEX_SHIELDING_REGION_UNSPECIFIED
       - ME_CENTRAL1
       - US_EAST5
+      - EUROPE_WEST3

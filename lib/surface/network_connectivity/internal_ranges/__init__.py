@@ -21,3 +21,4 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class InternalRanges(base.Group):
   """Manage internal ranges."""
+  category = base.NETWORKING_CATEGORY

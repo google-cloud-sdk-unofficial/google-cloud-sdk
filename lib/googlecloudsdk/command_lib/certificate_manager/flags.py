@@ -91,7 +91,6 @@ def GetTags(parser):
       type=arg_parsers.ArgDict(),
       action=arg_parsers.UpdateAction,
       help='\n'.join(help_parts),
-      hidden=True,
   ).AddToParser(parser)
 
 

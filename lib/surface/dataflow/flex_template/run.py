@@ -20,6 +20,7 @@ from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataflow import dataflow_util
+from googlecloudsdk.command_lib.dataflow import flags
 from googlecloudsdk.core import properties
 
 
@@ -209,6 +210,8 @@ class Run(base.Command):
         help=('FlexRS goal for the flex template job.'),
         choices=['COST_OPTIMIZED', 'SPEED_OPTIMIZED'])
 
+    flags.AddEnableTurnkeyAlertsFlag(parser)
+
   def Run(self, args):
     """Runs the command.
 
@@ -233,18 +236,18 @@ class Run(base.Command):
         kms_key_name=args.dataflow_kms_key,
         staging_location=args.staging_location,
         temp_location=args.temp_location,
-        disable_public_ips=
-        properties.VALUES.dataflow.disable_public_ips.GetBool(),
+        disable_public_ips=properties.VALUES.dataflow.disable_public_ips.GetBool(),
         service_account_email=args.service_account_email,
         worker_region=args.worker_region,
         worker_zone=args.worker_zone,
-        enable_streaming_engine=
-        properties.VALUES.dataflow.enable_streaming_engine.GetBool(),
+        enable_streaming_engine=properties.VALUES.dataflow.enable_streaming_engine.GetBool(),
         additional_experiments=args.additional_experiments,
         additional_pipeline_options=args.additional_pipeline_options,
         additional_user_labels=args.additional_user_labels,
         streaming_update=args.update,
         transform_name_mappings=args.transform_name_mappings,
         flexrs_goal=args.flexrs_goal,
-        parameters=args.parameters)
+        parameters=args.parameters,
+        turnkey_alerts_enabled=args.enable_turnkey_alerts,
+    )
     return apis.Templates.CreateJobFromFlexTemplate(arguments)

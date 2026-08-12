@@ -3786,7 +3786,8 @@ class Backend(_messages.Message):
     BalancingModeValueValuesEnum: Specifies how to determine whether the
       backend of a load balancer can handle additional traffic or is fully
       loaded. For usage guidelines, see Connection balancing mode.  Backends
-      must use compatible balancing modes. For more information, see Supported
+      must use compatible balancing modes. Backends of a backend service may
+      use different balancing modes. For more information, see  Supported
       balancing modes and target capacity settings and Restrictions and
       guidance for instance groups.  Note: Currently, if you use the API to
       configure incompatible balancing modes, the configuration might be
@@ -3800,15 +3801,19 @@ class Backend(_messages.Message):
       first, based on RTT.    - DEFAULT:  If preferred backends don't have
       enough    capacity, backends in this layer would be used and traffic
       would be    assigned based on the load balancing algorithm you use. This
-      is the    default
+      is the    default    For global external Passthrough Network Load
+      Balancers, the following restrictions apply:        - At most one
+      backend can be marked as PREFERRED.    - PREFERRED and DEFAULT backends
+      cannot reside    in the same Cloud region.
     TrafficDurationValueValuesEnum:
 
   Fields:
     balancingMode: Specifies how to determine whether the backend of a load
       balancer can handle additional traffic or is fully loaded. For usage
       guidelines, see Connection balancing mode.  Backends must use compatible
-      balancing modes. For more information, see Supported balancing modes and
-      target capacity settings and Restrictions and guidance for instance
+      balancing modes. Backends of a backend service may use different
+      balancing modes. For more information, see  Supported balancing modes
+      and target capacity settings and Restrictions and guidance for instance
       groups.  Note: Currently, if you use the API to configure incompatible
       balancing modes, the configuration might be accepted even though it has
       no impact and is ignored. Specifically, Backend.maxUtilization is
@@ -3830,6 +3835,8 @@ class Backend(_messages.Message):
       property when you create the resource.
     failover: This field designates whether this is a failover backend. More
       than one failover backend can be configured for a given BackendService.
+      This field can only be used for a regional external Passthrough Network
+      Load Balancer or a regional internal Passthrough Network Load Balancer.
     group: The fully-qualified URL of aninstance group or network endpoint
       group (NEG) resource. To determine what types of backends a load
       balancer supports, see the [Backend services
@@ -3882,6 +3889,10 @@ class Backend(_messages.Message):
       - DEFAULT:  If preferred backends don't have enough    capacity,
       backends in this layer would be used and traffic would be    assigned
       based on the load balancing algorithm you use. This is the    default
+      For global external Passthrough Network Load Balancers, the following
+      restrictions apply:        - At most one backend can be marked as
+      PREFERRED.    - PREFERRED and DEFAULT backends cannot reside    in the
+      same Cloud region.
     service: Represents a service backend (e.g., Cloud Run service, PSC
       Service Attachment). e.g.
       "run.googleapis.com/projects/123456789/locations/us-
@@ -3896,10 +3907,11 @@ class Backend(_messages.Message):
     r"""Specifies how to determine whether the backend of a load balancer can
     handle additional traffic or is fully loaded. For usage guidelines, see
     Connection balancing mode.  Backends must use compatible balancing modes.
-    For more information, see Supported balancing modes and target capacity
-    settings and Restrictions and guidance for instance groups.  Note:
-    Currently, if you use the API to configure incompatible balancing modes,
-    the configuration might be accepted even though it has no impact and is
+    Backends of a backend service may use different balancing modes. For more
+    information, see  Supported balancing modes and target capacity settings
+    and Restrictions and guidance for instance groups.  Note: Currently, if
+    you use the API to configure incompatible balancing modes, the
+    configuration might be accepted even though it has no impact and is
     ignored. Specifically, Backend.maxUtilization is ignored when
     Backend.balancingMode is RATE. In the future, this incompatible
     combination will be rejected.
@@ -3924,7 +3936,10 @@ class Backend(_messages.Message):
     be    filled up to their capacity limits first, based on RTT.    -
     DEFAULT:  If preferred backends don't have enough    capacity, backends in
     this layer would be used and traffic would be    assigned based on the
-    load balancing algorithm you use. This is the    default
+    load balancing algorithm you use. This is the    default    For global
+    external Passthrough Network Load Balancers, the following restrictions
+    apply:        - At most one backend can be marked as PREFERRED.    -
+    PREFERRED and DEFAULT backends cannot reside    in the same Cloud region.
 
     Values:
       DEFAULT: No preference.
@@ -4277,18 +4292,18 @@ class BackendBucketCdnPolicy(_messages.Message):
 
   Enums:
     CacheModeValueValuesEnum: Specifies the cache setting for all responses
-      from this backend. The possible values are:USE_ORIGIN_HEADERS Requires
+      from this backend. The possible values are: USE_ORIGIN_HEADERS Requires
       the origin to set valid caching headers to cache content. Responses
       without these headers will not be cached at Google's edge, and will
       require a full trip to the origin on every request, potentially
-      impacting performance and increasing load on the origin
-      server.FORCE_CACHE_ALL Cache all content, ignoring any "private", "no-
-      store" or "no-cache" directives in Cache-Control response headers.
-      Warning: this may result in Cloud CDN caching private, per-user (user
-      identifiable) content.CACHE_ALL_STATIC Automatically cache static
-      content, including common image formats, media (video and audio), and
-      web assets (JavaScript and CSS). Requests and responses that are marked
-      as uncacheable, as well as dynamic content (including HTML), will not be
+      impacting performance and increasing load on the origin server.
+      FORCE_CACHE_ALL Cache all content, ignoring any "private", "no-store" or
+      "no-cache" directives in Cache-Control response headers. Warning: this
+      may result in Cloud CDN caching private, per-user (user identifiable)
+      content. CACHE_ALL_STATIC Automatically cache static content, including
+      common image formats, media (video and audio), and web assets
+      (JavaScript and CSS). Requests and responses that are marked as
+      uncacheable, as well as dynamic content (including HTML), will not be
       cached.  If no value is provided for cdnPolicy.cacheMode, it defaults to
       CACHE_ALL_STATIC.
 
@@ -4299,14 +4314,14 @@ class BackendBucketCdnPolicy(_messages.Message):
       cdnPolicy.cacheMode settings.
     cacheKeyPolicy: The CacheKeyPolicy for this CdnPolicy.
     cacheMode: Specifies the cache setting for all responses from this
-      backend. The possible values are:USE_ORIGIN_HEADERS Requires the origin
+      backend. The possible values are: USE_ORIGIN_HEADERS Requires the origin
       to set valid caching headers to cache content. Responses without these
       headers will not be cached at Google's edge, and will require a full
       trip to the origin on every request, potentially impacting performance
-      and increasing load on the origin server.FORCE_CACHE_ALL Cache all
+      and increasing load on the origin server. FORCE_CACHE_ALL Cache all
       content, ignoring any "private", "no-store" or "no-cache" directives in
       Cache-Control response headers. Warning: this may result in Cloud CDN
-      caching private, per-user (user identifiable) content.CACHE_ALL_STATIC
+      caching private, per-user (user identifiable) content. CACHE_ALL_STATIC
       Automatically cache static content, including common image formats,
       media (video and audio), and web assets (JavaScript and CSS). Requests
       and responses that are marked as uncacheable, as well as dynamic content
@@ -4385,14 +4400,14 @@ class BackendBucketCdnPolicy(_messages.Message):
 
   class CacheModeValueValuesEnum(_messages.Enum):
     r"""Specifies the cache setting for all responses from this backend. The
-    possible values are:USE_ORIGIN_HEADERS Requires the origin to set valid
+    possible values are: USE_ORIGIN_HEADERS Requires the origin to set valid
     caching headers to cache content. Responses without these headers will not
     be cached at Google's edge, and will require a full trip to the origin on
     every request, potentially impacting performance and increasing load on
-    the origin server.FORCE_CACHE_ALL Cache all content, ignoring any
+    the origin server. FORCE_CACHE_ALL Cache all content, ignoring any
     "private", "no-store" or "no-cache" directives in Cache-Control response
     headers. Warning: this may result in Cloud CDN caching private, per-user
-    (user identifiable) content.CACHE_ALL_STATIC Automatically cache static
+    (user identifiable) content. CACHE_ALL_STATIC Automatically cache static
     content, including common image formats, media (video and audio), and web
     assets (JavaScript and CSS). Requests and responses that are marked as
     uncacheable, as well as dynamic content (including HTML), will not be
@@ -5122,7 +5137,8 @@ class BackendService(_messages.Message):
       INTERNAL_SELF_MANAGED).
     LoadBalancingSchemeValueValuesEnum: Specifies the load balancer type. A
       backend service created for one type of load balancer cannot be used
-      with another. For more information, refer toChoosing a load balancer.
+      with another. For more information, refer to Backend services product
+      and scheme table.
     LocalityLbPolicyValueValuesEnum: The load balancing algorithm used within
       the scope of the locality. The possible values are:        -
       ROUND_ROBIN: This is a simple policy in which each healthy    backend is
@@ -5146,26 +5162,33 @@ class BackendService(_messages.Message):
       If set, the Backend Service responses are expected to contain non-
       standard    HTTP response header field Endpoint-Load-Metrics. The
       reported    metrics to use for computing the weights are specified via
-      thecustomMetrics field.        This field is applicable to either:
-      - A regional backend service with the service protocol set to HTTP,
-      HTTPS, HTTP2 or H2C, and load_balancing_scheme set to
-      INTERNAL_MANAGED.        - A global backend service with the
-      load_balancing_scheme set to INTERNAL_SELF_MANAGED, INTERNAL_MANAGED, or
-      EXTERNAL_MANAGED.            If sessionAffinity is not configured-that
-      is, if session    affinity remains at the default value of NONE-then the
-      default value for localityLbPolicy    is ROUND_ROBIN. If session
-      affinity is set to a value other    than NONE,    then the default value
-      for localityLbPolicy isMAGLEV.        Only ROUND_ROBIN and RING_HASH are
-      supported    when the backend service is referenced by a URL map that is
-      bound to    target gRPC proxy that has validateForProxyless field set to
-      true.        localityLbPolicy cannot be specified with haPolicy.
+      thecustomMetrics field.    - WEIGHTED_MAGLEV: Per-endpoint weighted load
+      balancing via    health check reported weights. If set, the backend
+      service must configure    an HTTP-based Health Check, and health check
+      replies are expected to    contain the non-standard HTTP response header
+      fieldX-Load-Balancing-Endpoint-Weight to specify the per-endpoint
+      weights. If set, load balancing is weighted based on the per-endpoint
+      weights reported in the last processed health check replies, as long as
+      every instance either reported a valid weight or had UNAVAILABLE_WEIGHT.
+      Otherwise, load balancing remains equal-weight.    This field is
+      applicable to either:        - A regional backend service with the
+      service protocol set to HTTP,    HTTPS, HTTP2 or H2C, and
+      load_balancing_scheme set to    INTERNAL_MANAGED.     - A global backend
+      service with the    load_balancing_scheme set to INTERNAL_SELF_MANAGED,
+      INTERNAL_MANAGED, or    EXTERNAL_MANAGED.    If sessionAffinity is not
+      configured-that is, if session affinity remains at the default value of
+      NONE-then the default value for localityLbPolicy is ROUND_ROBIN. If
+      session affinity is set to a value other than NONE, then the default
+      value for localityLbPolicy isMAGLEV.  Only ROUND_ROBIN and RING_HASH are
+      supported when the backend service is referenced by a URL map that is
+      bound to target gRPC proxy that has validateForProxyless field set to
+      true.  localityLbPolicy cannot be specified with haPolicy.
     ProtocolValueValuesEnum: The protocol this BackendService uses to
       communicate with backends.  Possible values are HTTP, HTTPS, HTTP2, H2C,
-      TCP, SSL, UDP or GRPC. depending on the chosen load balancer or Traffic
-      Director configuration. Refer to the documentation for the load
-      balancers or for Traffic Director for more information.  Must be set to
-      GRPC when the backend service is referenced by a URL map that is bound
-      to target gRPC proxy.
+      TCP, SSL, UDP, GRPC, or UNSPECIFIED, depending on the chosen load
+      balancer or Traffic Director configuration. Refer to  Load balancing
+      features for more information.  Must be set to GRPC when the backend
+      service is referenced by a URL map that is bound to target gRPC proxy.
     SessionAffinityValueValuesEnum: Type of session affinity to use. The
       default is NONE.  Only NONE and HEADER_FIELD are supported when the
       backend service is referenced by a URL map that is bound to target gRPC
@@ -5257,8 +5280,9 @@ class BackendService(_messages.Message):
       Balancers](https://cloud.google.com/load-
       balancing/docs/internal/failover-overview) and [external passthrough
       Network Load Balancers](https://cloud.google.com/load-
-      balancing/docs/network/networklb-failover-overview).  failoverPolicy
-      cannot be specified with haPolicy.
+      balancing/docs/network/networklb-failover-overview). failoverPolicy
+      cannot be specified with haPolicy.failoverPolicy cannot be used by
+      global external Passthrough Network Load Balancers.
     fingerprint: Fingerprint of this resource. A hash of the contents stored
       in this object. This field is used in optimistic locking. This field
       will be ignored when inserting a BackendService. An up-to-date
@@ -5282,9 +5306,10 @@ class BackendService(_messages.Message):
       connectionTrackingPolicy, and failoverPolicy.  haPolicy requires
       customers to be responsible for tracking backend endpoint health and
       electing a leader among the healthy endpoints. Therefore, haPolicy
-      cannot be specified with healthChecks.  haPolicy can only be specified
+      cannot be specified with healthChecks. haPolicy can only be specified
       for External Passthrough Network Load Balancers and Internal Passthrough
-      Network Load Balancers.
+      Network Load Balancers.haPolicy cannot be used by global external
+      Passthrough Network Load Balancers.
     healthChecks: The list of URLs to the healthChecks, httpHealthChecks
       (legacy), or httpsHealthChecks (legacy) resource for health checking
       this backend service. Not all backend services support legacy health
@@ -5323,7 +5348,7 @@ class BackendService(_messages.Message):
       compute#backendService for backend services.
     loadBalancingScheme: Specifies the load balancer type. A backend service
       created for one type of load balancer cannot be used with another. For
-      more information, refer toChoosing a load balancer.
+      more information, refer to Backend services product and scheme table.
     localityLbPolicies: A list of locality load-balancing policies to be used
       in order of preference. When you use localityLbPolicies, you must set at
       least one value for either the localityLbPolicies[].policy or the
@@ -5356,19 +5381,27 @@ class BackendService(_messages.Message):
       If set, the Backend Service responses are expected to contain non-
       standard    HTTP response header field Endpoint-Load-Metrics. The
       reported    metrics to use for computing the weights are specified via
-      thecustomMetrics field.        This field is applicable to either:
-      - A regional backend service with the service protocol set to HTTP,
-      HTTPS, HTTP2 or H2C, and load_balancing_scheme set to
-      INTERNAL_MANAGED.        - A global backend service with the
-      load_balancing_scheme set to INTERNAL_SELF_MANAGED, INTERNAL_MANAGED, or
-      EXTERNAL_MANAGED.            If sessionAffinity is not configured-that
-      is, if session    affinity remains at the default value of NONE-then the
-      default value for localityLbPolicy    is ROUND_ROBIN. If session
-      affinity is set to a value other    than NONE,    then the default value
-      for localityLbPolicy isMAGLEV.        Only ROUND_ROBIN and RING_HASH are
-      supported    when the backend service is referenced by a URL map that is
-      bound to    target gRPC proxy that has validateForProxyless field set to
-      true.        localityLbPolicy cannot be specified with haPolicy.
+      thecustomMetrics field.    - WEIGHTED_MAGLEV: Per-endpoint weighted load
+      balancing via    health check reported weights. If set, the backend
+      service must configure    an HTTP-based Health Check, and health check
+      replies are expected to    contain the non-standard HTTP response header
+      fieldX-Load-Balancing-Endpoint-Weight to specify the per-endpoint
+      weights. If set, load balancing is weighted based on the per-endpoint
+      weights reported in the last processed health check replies, as long as
+      every instance either reported a valid weight or had UNAVAILABLE_WEIGHT.
+      Otherwise, load balancing remains equal-weight.    This field is
+      applicable to either:        - A regional backend service with the
+      service protocol set to HTTP,    HTTPS, HTTP2 or H2C, and
+      load_balancing_scheme set to    INTERNAL_MANAGED.     - A global backend
+      service with the    load_balancing_scheme set to INTERNAL_SELF_MANAGED,
+      INTERNAL_MANAGED, or    EXTERNAL_MANAGED.    If sessionAffinity is not
+      configured-that is, if session affinity remains at the default value of
+      NONE-then the default value for localityLbPolicy is ROUND_ROBIN. If
+      session affinity is set to a value other than NONE, then the default
+      value for localityLbPolicy isMAGLEV.  Only ROUND_ROBIN and RING_HASH are
+      supported when the backend service is referenced by a URL map that is
+      bound to target gRPC proxy that has validateForProxyless field set to
+      true.  localityLbPolicy cannot be specified with haPolicy.
     logConfig: This field denotes the logging options for the load balancer
       traffic served by this backend service. If logging is enabled, logs will
       be exported to Stackdriver.
@@ -5441,12 +5474,11 @@ class BackendService(_messages.Message):
       NEGs. For internal passthrough Network Load Balancers and external
       passthrough Network Load Balancers, omit port_name.
     protocol: The protocol this BackendService uses to communicate with
-      backends.  Possible values are HTTP, HTTPS, HTTP2, H2C, TCP, SSL, UDP or
-      GRPC. depending on the chosen load balancer or Traffic Director
-      configuration. Refer to the documentation for the load balancers or for
-      Traffic Director for more information.  Must be set to GRPC when the
-      backend service is referenced by a URL map that is bound to target gRPC
-      proxy.
+      backends.  Possible values are HTTP, HTTPS, HTTP2, H2C, TCP, SSL, UDP,
+      GRPC, or UNSPECIFIED, depending on the chosen load balancer or Traffic
+      Director configuration. Refer to  Load balancing features for more
+      information.  Must be set to GRPC when the backend service is referenced
+      by a URL map that is bound to target gRPC proxy.
     region: Output only. [Output Only] URL of the region where the regional
       backend service resides. This field is not applicable to global backend
       services. You must specify this field as part of the HTTP request URL.
@@ -5573,7 +5605,7 @@ class BackendService(_messages.Message):
   class LoadBalancingSchemeValueValuesEnum(_messages.Enum):
     r"""Specifies the load balancer type. A backend service created for one
     type of load balancer cannot be used with another. For more information,
-    refer toChoosing a load balancer.
+    refer to Backend services product and scheme table.
 
     Values:
       EXTERNAL: Signifies that this will be used for classic Application Load
@@ -5623,19 +5655,26 @@ class BackendService(_messages.Message):
     the Backend Service responses are expected to contain non-standard    HTTP
     response header field Endpoint-Load-Metrics. The reported    metrics to
     use for computing the weights are specified via thecustomMetrics field.
-    This field is applicable to either:       - A regional backend service
-    with the service protocol set to HTTP,       HTTPS, HTTP2 or H2C, and
-    load_balancing_scheme set to       INTERNAL_MANAGED.        - A global
-    backend service with the       load_balancing_scheme set to
-    INTERNAL_SELF_MANAGED, INTERNAL_MANAGED, or       EXTERNAL_MANAGED.
-    If sessionAffinity is not configured-that is, if session    affinity
-    remains at the default value of NONE-then the    default value for
-    localityLbPolicy    is ROUND_ROBIN. If session affinity is set to a value
-    other    than NONE,    then the default value for localityLbPolicy
-    isMAGLEV.        Only ROUND_ROBIN and RING_HASH are supported    when the
-    backend service is referenced by a URL map that is bound to    target gRPC
-    proxy that has validateForProxyless field set to true.
-    localityLbPolicy cannot be specified with haPolicy.
+    - WEIGHTED_MAGLEV: Per-endpoint weighted load balancing via    health
+    check reported weights. If set, the backend service must configure    an
+    HTTP-based Health Check, and health check replies are expected to
+    contain the non-standard HTTP response header fieldX-Load-Balancing-
+    Endpoint-Weight to specify the per-endpoint    weights. If set, load
+    balancing is weighted based on the per-endpoint    weights reported in the
+    last processed health check replies, as long as    every instance either
+    reported a valid weight or had UNAVAILABLE_WEIGHT.    Otherwise, load
+    balancing remains equal-weight.    This field is applicable to either:
+    - A regional backend service with the service protocol set to HTTP,
+    HTTPS, HTTP2 or H2C, and load_balancing_scheme set to    INTERNAL_MANAGED.
+    - A global backend service with the    load_balancing_scheme set to
+    INTERNAL_SELF_MANAGED, INTERNAL_MANAGED, or    EXTERNAL_MANAGED.    If
+    sessionAffinity is not configured-that is, if session affinity remains at
+    the default value of NONE-then the default value for localityLbPolicy is
+    ROUND_ROBIN. If session affinity is set to a value other than NONE, then
+    the default value for localityLbPolicy isMAGLEV.  Only ROUND_ROBIN and
+    RING_HASH are supported when the backend service is referenced by a URL
+    map that is bound to target gRPC proxy that has validateForProxyless field
+    set to true.  localityLbPolicy cannot be specified with haPolicy.
 
     Values:
       INVALID_LB_POLICY: <no description>
@@ -5691,11 +5730,11 @@ class BackendService(_messages.Message):
 
   class ProtocolValueValuesEnum(_messages.Enum):
     r"""The protocol this BackendService uses to communicate with backends.
-    Possible values are HTTP, HTTPS, HTTP2, H2C, TCP, SSL, UDP or GRPC.
-    depending on the chosen load balancer or Traffic Director configuration.
-    Refer to the documentation for the load balancers or for Traffic Director
-    for more information.  Must be set to GRPC when the backend service is
-    referenced by a URL map that is bound to target gRPC proxy.
+    Possible values are HTTP, HTTPS, HTTP2, H2C, TCP, SSL, UDP, GRPC, or
+    UNSPECIFIED, depending on the chosen load balancer or Traffic Director
+    configuration. Refer to  Load balancing features for more information.
+    Must be set to GRPC when the backend service is referenced by a URL map
+    that is bound to target gRPC proxy.
 
     Values:
       GRPC: gRPC (available for Traffic Director).
@@ -6047,18 +6086,18 @@ class BackendServiceCdnPolicy(_messages.Message):
 
   Enums:
     CacheModeValueValuesEnum: Specifies the cache setting for all responses
-      from this backend. The possible values are:USE_ORIGIN_HEADERS Requires
+      from this backend. The possible values are: USE_ORIGIN_HEADERS Requires
       the origin to set valid caching headers to cache content. Responses
       without these headers will not be cached at Google's edge, and will
       require a full trip to the origin on every request, potentially
-      impacting performance and increasing load on the origin
-      server.FORCE_CACHE_ALL Cache all content, ignoring any "private", "no-
-      store" or "no-cache" directives in Cache-Control response headers.
-      Warning: this may result in Cloud CDN caching private, per-user (user
-      identifiable) content.CACHE_ALL_STATIC Automatically cache static
-      content, including common image formats, media (video and audio), and
-      web assets (JavaScript and CSS). Requests and responses that are marked
-      as uncacheable, as well as dynamic content (including HTML), will not be
+      impacting performance and increasing load on the origin server.
+      FORCE_CACHE_ALL Cache all content, ignoring any "private", "no-store" or
+      "no-cache" directives in Cache-Control response headers. Warning: this
+      may result in Cloud CDN caching private, per-user (user identifiable)
+      content. CACHE_ALL_STATIC Automatically cache static content, including
+      common image formats, media (video and audio), and web assets
+      (JavaScript and CSS). Requests and responses that are marked as
+      uncacheable, as well as dynamic content (including HTML), will not be
       cached.  If no value is provided for cdnPolicy.cacheMode, it defaults to
       CACHE_ALL_STATIC.
 
@@ -6069,14 +6108,14 @@ class BackendServiceCdnPolicy(_messages.Message):
       cdnPolicy.cacheMode settings.
     cacheKeyPolicy: The CacheKeyPolicy for this CdnPolicy.
     cacheMode: Specifies the cache setting for all responses from this
-      backend. The possible values are:USE_ORIGIN_HEADERS Requires the origin
+      backend. The possible values are: USE_ORIGIN_HEADERS Requires the origin
       to set valid caching headers to cache content. Responses without these
       headers will not be cached at Google's edge, and will require a full
       trip to the origin on every request, potentially impacting performance
-      and increasing load on the origin server.FORCE_CACHE_ALL Cache all
+      and increasing load on the origin server. FORCE_CACHE_ALL Cache all
       content, ignoring any "private", "no-store" or "no-cache" directives in
       Cache-Control response headers. Warning: this may result in Cloud CDN
-      caching private, per-user (user identifiable) content.CACHE_ALL_STATIC
+      caching private, per-user (user identifiable) content. CACHE_ALL_STATIC
       Automatically cache static content, including common image formats,
       media (video and audio), and web assets (JavaScript and CSS). Requests
       and responses that are marked as uncacheable, as well as dynamic content
@@ -6155,14 +6194,14 @@ class BackendServiceCdnPolicy(_messages.Message):
 
   class CacheModeValueValuesEnum(_messages.Enum):
     r"""Specifies the cache setting for all responses from this backend. The
-    possible values are:USE_ORIGIN_HEADERS Requires the origin to set valid
+    possible values are: USE_ORIGIN_HEADERS Requires the origin to set valid
     caching headers to cache content. Responses without these headers will not
     be cached at Google's edge, and will require a full trip to the origin on
     every request, potentially impacting performance and increasing load on
-    the origin server.FORCE_CACHE_ALL Cache all content, ignoring any
+    the origin server. FORCE_CACHE_ALL Cache all content, ignoring any
     "private", "no-store" or "no-cache" directives in Cache-Control response
     headers. Warning: this may result in Cloud CDN caching private, per-user
-    (user identifiable) content.CACHE_ALL_STATIC Automatically cache static
+    (user identifiable) content. CACHE_ALL_STATIC Automatically cache static
     content, including common image formats, media (video and audio), and web
     assets (JavaScript and CSS). Requests and responses that are marked as
     uncacheable, as well as dynamic content (including HTML), will not be
@@ -50923,10 +50962,28 @@ class ForwardingRule(_messages.Message):
       balancing products as described in [Load balancing
       features](https://cloud.google.com/load-balancing/docs/features#protocol
       s_from_the_load_balancer_to_the_backends).
-    AvailabilityGroupValueValuesEnum: [Output Only] Specifies the availability
-      group of the forwarding rule. This field is for use by global external
-      passthrough load balancers (load balancing scheme EXTERNAL_PASSTHROUGH)
-      and is set for the child forwarding rules only.
+    AvailabilityGroupValueValuesEnum: Output only. [Output Only] Specifies the
+      load balancing availability group, one of the two that collectively
+      provide high availability.  Specifies the availability group of the
+      forwarding rule. This field is for use by global external passthrough
+      load balancers (load balancing scheme EXTERNAL_PASSTHROUGH) and is set
+      for the child forwarding rules only. The possible values are:        -
+      AVAILABILITY_GROUP0: Set for the child forwarding rule    that is
+      programmed on the AVAILABILITY_GROUP0 load balancing    stack. The child
+      forwarding rule has the same IP protocol, port, and    backend service
+      settings as the parent forwarding rule, but has only one of    the two
+      IP addresses of the parent forwarding rule, the one with the    purpose
+      PASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP0.    - AVAILABILITY_GROUP1:
+      Set for the child forwarding rule    that is programmed on the
+      AVAILABILITY_GROUP1 load balancing    stack. The child forwarding rule
+      has the same IP protocol, port and backend    service settings as the
+      parent forwarding rule, but has only one of the two    IP addresses of
+      the parent forwarding rule, the one with the
+      purposePASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP1.    For each global
+      external Passthrough Network Load Balancer forwarding rule (a parent
+      forwarding rule) that you create, Google Cloud generates two output-only
+      child forwarding rules, one forAVAILABILITY_GROUP0 and one
+      forAVAILABILITY_GROUP1.
     ExternalManagedBackendBucketMigrationStateValueValuesEnum: Specifies the
       canary migration state for the backend buckets attached to this
       forwarding rule. Possible values are PREPARE, TEST_BY_PERCENTAGE, and
@@ -50945,8 +51002,8 @@ class ForwardingRule(_messages.Message):
     IpVersionValueValuesEnum: The IP Version that will be used by this
       forwarding rule.  Valid options are IPV4 or IPV6.
     LoadBalancingSchemeValueValuesEnum: Specifies the forwarding rule type.
-      For more information about forwarding rules, refer to Forwarding rule
-      concepts.
+      For more information, refer to  Forwarding rule product and scheme
+      table.
     NetworkTierValueValuesEnum: This signifies the networking tier used for
       configuring this load balancer and can only take the following
       values:PREMIUM, STANDARD.  For regional ForwardingRule, the valid values
@@ -50979,13 +51036,59 @@ class ForwardingRule(_messages.Message):
       ons/region/addresses/address-name * Partial URL or by name, as in:
       - projects/project_id/regions/region/addresses/address-name    -
       regions/region/addresses/address-name    - global/addresses/address-name
-      - address-name    The forwarding rule's target or backendService, and in
-      most cases, also the loadBalancingScheme, determine the type of IP
-      address that you can use. For detailed information, see [IP address
+      - address-name    The IP address can only be set at creation. Once set,
+      it cannot be updated.  The forwarding rule's target or backendService,
+      and in most cases, also the loadBalancingScheme, determine the type of
+      IP address that you can use. For detailed information, see [IP address
       specifications](https://cloud.google.com/load-balancing/docs/forwarding-
       rule-concepts#ip_address_specifications).  When reading an IPAddress,
-      the API always returns the IP address number.
-    IPAddresses: A string attribute.
+      the API always returns the IP address number.  When creating a global
+      external Passthrough Network Load Balancer forwarding rule (a parent
+      forwarding rule), you must use theIPAddresses field, but the Google
+      Cloud generated child forwarding rules set the IPAddress field instead.
+      Refer to theavailabilityGroup field for further details.
+    IPAddresses: IP addresses for which this forwarding rule accepts traffic.
+      All IP addresses must have the same IP version, IPv4 or IPv6. When a
+      client sends traffic that matches one of the specified IP addresses,
+      protocol and ports, the forwarding rule directs the traffic to the
+      referencedbackendService. All IP addresses are served by the same set of
+      backends, and they share the target capacities specified in the backend
+      service fairly.  Global external Passthrough Network Load Balancer
+      requires two IP addresses for each forwarding rule to provide high
+      availability when both IP addresses are used to serve client requests.
+      The two IP addresses must come from global IP pools that belong to two
+      distinct Availability Groups, represented by the
+      purposePASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP0
+      andPASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP1. TheIPAddresses field
+      specifies zero, one, or two IP addresses:        - If omitted, Google
+      Cloud assigns two ephemeral IP addresses, one from    each Availability
+      Group.    - If you specify one IP address that references an existing
+      static IP    address resource from one Availability Group, Google Cloud
+      assigns an    ephemeral IP address from the other Availability Group.
+      - If you specify two IP addresses that reference existing static IP
+      address resources, they are required to be from different Availability
+      Groups.    For global external Passthrough Network Load Balancer, each
+      IP address can be one of the following:        - A static or ephemeral
+      IPv4 address from a Google-owned IP pool.    - A static IPv4 address
+      from a global public delegated prefix.    - A static or ephemeral IPv6
+      /96 prefix from a Google-owned IP pool.    For global external
+      Passthrough Network Load Balancer, the two IP addresses can be of
+      different types. One IP address can be from a BYOIP prefix while the
+      other is from a Google-owned IP pool. One IP address can be static while
+      the other is ephemeral. However, both IP addresses must have the same IP
+      version, IPv4 or IPv6.  The IP addresses can only be set at creation and
+      cannot be updated.  When creating a global external Passthrough Network
+      Load Balancer forwarding rule (a parent forwarding rule), you must use
+      theIPAddresses field, but the Google Cloud-generated child forwarding
+      rules set the IPAddress field instead. Refer to theavailabilityGroup
+      field for further details.  Refer to the IPAddress field for the formats
+      that can be used to specify IP addresses while creating a forwarding
+      rule.  Because Passthrough Network Load Balancers do not terminate or
+      translate traffic, the backend stack types must be compatible with the
+      forwarding rule IP version:        - If the forwarding rule IP version
+      is IPv4, backends should be    configured as dual-stack or IPv4-only.
+      - If the forwarding rule IP version is IPv6, backends should be
+      configured as dual-stack or IPv6-only.
     IPProtocol: The IP protocol to which this rule applies.  For protocol
       forwarding, valid options are TCP, UDP, ESP,AH, SCTP, ICMP
       andL3_DEFAULT.  The valid IP protocols are different for different load
@@ -51016,26 +51119,49 @@ class ForwardingRule(_messages.Message):
       control whether the PSC endpoint can be accessed from another region.
     attachedExtensions: Output only. [Output Only]. The extensions that are
       attached to this ForwardingRule.
-    availabilityGroup: [Output Only] Specifies the availability group of the
-      forwarding rule. This field is for use by global external passthrough
-      load balancers (load balancing scheme EXTERNAL_PASSTHROUGH) and is set
-      for the child forwarding rules only.
+    availabilityGroup: Output only. [Output Only] Specifies the load balancing
+      availability group, one of the two that collectively provide high
+      availability.  Specifies the availability group of the forwarding rule.
+      This field is for use by global external passthrough load balancers
+      (load balancing scheme EXTERNAL_PASSTHROUGH) and is set for the child
+      forwarding rules only. The possible values are:        -
+      AVAILABILITY_GROUP0: Set for the child forwarding rule    that is
+      programmed on the AVAILABILITY_GROUP0 load balancing    stack. The child
+      forwarding rule has the same IP protocol, port, and    backend service
+      settings as the parent forwarding rule, but has only one of    the two
+      IP addresses of the parent forwarding rule, the one with the    purpose
+      PASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP0.    - AVAILABILITY_GROUP1:
+      Set for the child forwarding rule    that is programmed on the
+      AVAILABILITY_GROUP1 load balancing    stack. The child forwarding rule
+      has the same IP protocol, port and backend    service settings as the
+      parent forwarding rule, but has only one of the two    IP addresses of
+      the parent forwarding rule, the one with the
+      purposePASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP1.    For each global
+      external Passthrough Network Load Balancer forwarding rule (a parent
+      forwarding rule) that you create, Google Cloud generates two output-only
+      child forwarding rules, one forAVAILABILITY_GROUP0 and one
+      forAVAILABILITY_GROUP1.
     backendService: Identifies the backend service to which the forwarding
-      rule sends traffic. Required for internal and external passthrough
-      Network Load Balancers; must be omitted for all other load balancer
-      types.
+      rule sends traffic.  It is a required field for the following load
+      balancers:        - Internal passthrough Network Load Balancers    -
+      Backend service-based regional external passthrough Network Load
+      Balancers    - Global external passthrough Network Load Balancers    It
+      cannot be set by other load balancer types and protocol forwarding
+      rules.
     baseForwardingRule: Output only. [Output Only] The URL for the
       corresponding base forwarding rule. By base forwarding rule, we mean the
       forwarding rule that has the same IP address, protocol, and port
       settings with the current forwarding rule, but without sourceIPRanges
       specified. Always empty if the current forwarding rule does not have
       sourceIPRanges specified.
-    childForwardingRules: Output only. [Output Only] Applicable only to the
-      parent forwarding rule of global external passthrough load balancers.
-      This field contains the list of child forwarding rule URLs associated
-      with the parent forwarding rule: one for each availability group.
-      AVAILABILITY_GROUP0 will be the first element, and AVAILABILITY_GROUP1
-      will be the second element.
+    childForwardingRules: Output only. [Output Only] The resource URLs for the
+      child forwarding rules.  Applicable only to the parent forwarding rule
+      of global external passthrough load balancers. This field contains the
+      list of child forwarding rule URLs associated with the parent forwarding
+      rule: one for each availability group. AVAILABILITY_GROUP0 will be the
+      first element, and AVAILABILITY_GROUP1 will be the second element. Refer
+      to theavailabilityGroup field for further details. It cannot be set by
+      any other forwarding rules.
     creationTimestamp: Output only. [Output Only] Creation timestamp inRFC3339
       text format.
     description: An optional description of this resource. Provide this
@@ -51099,7 +51225,7 @@ class ForwardingRule(_messages.Message):
       thesetLabels method. Each label key/value pair must comply withRFC1035.
       Label values may be empty.
     loadBalancingScheme: Specifies the forwarding rule type.  For more
-      information about forwarding rules, refer to Forwarding rule concepts.
+      information, refer to  Forwarding rule product and scheme table.
     metadataFilters: Opaque filter criteria used by load balancer to restrict
       routing configuration to a limited set of xDS compliant clients. In
       their xDS requests to load balancer, xDS clients present node metadata.
@@ -51126,7 +51252,13 @@ class ForwardingRule(_messages.Message):
       cannot be a dash.  For Private Service Connect forwarding rules that
       forward traffic to Google APIs, the forwarding rule name must be a 1-20
       characters string with lowercase letters and numbers and must start with
-      a letter.
+      a letter.  For global external Passthrough Network Load Balancer
+      forwarding rules, the forwarding rule name must be 1-43 characters long.
+      For each global external Passthrough Network Load Balancer forwarding
+      rule (a parent forwarding rule) that you create, Google Cloud generates
+      two output-only child forwarding rules that are named by concatenating
+      the parent forwarding rule name with the `-ag0` and `-ag1` suffixes,
+      respectively. Refer to theavailabilityGroup field for further details.
     network: This field is not used for global external load balancing.  For
       internal passthrough Network Load Balancers, this field identifies the
       network that the load balanced IP should belong to for this forwarding
@@ -51144,9 +51276,10 @@ class ForwardingRule(_messages.Message):
       whether it should try to auto-generate a DNS zone or not. Non-PSC
       forwarding rules do not use this field. Once set, this field is not
       mutable.
-    parentForwardingRule: Output only. [Output Only] Applicable only to the
-      child forwarding rules of global external passthrough load balancers.
-      This field contains the URL of the parent forwarding rule.
+    parentForwardingRule: Output only. [Output Only] The resource URL for the
+      parent forwarding rule.  Applicable only to the child forwarding rules
+      of global external passthrough load balancers. This field contains the
+      URL of the parent forwarding rule.
     portRange: The ports, portRange, and allPorts fields are mutually
       exclusive. Only packets addressed to ports in the specified range will
       be forwarded to the backends configured with this forwarding rule.  The
@@ -51158,11 +51291,11 @@ class ForwardingRule(_messages.Message):
       protocol    forwarding, and Classic VPN.    - Some products have
       restrictions on what ports can be used. See     port specifications for
       details.    For external forwarding rules, two or more forwarding rules
-      cannot use the same [IPAddress, IPProtocol] pair, and cannot have
-      overlappingportRanges.  For internal forwarding rules within the same
-      VPC network, two or more forwarding rules cannot use the same
-      [IPAddress, IPProtocol] pair, and cannot have overlapping portRanges.
-      @pattern: \\d+(?:-\\d+)?
+      cannot use the same [IPAddress, IPProtocol] pair (specified inIPAddress,
+      IPAddresses, IPProtocol fields) if they have overlapping portRanges.
+      For internal forwarding rules within the same VPC network, two or more
+      forwarding rules cannot use the same [IPAddress, IPProtocol] pair, and
+      cannot have overlapping portRanges.  @pattern: \\d+(?:-\\d+)?
     ports: The ports, portRange, and allPorts fields are mutually exclusive.
       Only packets addressed to ports in the specified range will be forwarded
       to the backends configured with this forwarding rule.  The ports field
@@ -51174,10 +51307,11 @@ class ForwardingRule(_messages.Message):
       of up to five ports by number, separated by    commas. The ports can be
       contiguous or discontiguous.    For external forwarding rules, two or
       more forwarding rules cannot use the same [IPAddress, IPProtocol] pair
-      if they share at least one port number.  For internal forwarding rules
-      within the same VPC network, two or more forwarding rules cannot use the
-      same [IPAddress, IPProtocol] pair if they share at least one port
-      number.  @pattern: \\d+(?:-\\d+)?
+      (specified inIPAddress, IPAddresses, IPProtocol fields) if they share at
+      least one port number.  For internal forwarding rules within the same
+      VPC network, two or more forwarding rules cannot use the same
+      [IPAddress, IPProtocol] pair if they share at least one port number.
+      @pattern: \\d+(?:-\\d+)?
     pscConnectionId: [Output Only] The PSC connection id of the PSC forwarding
       rule.
     pscConnectionStatus: A PscConnectionStatusValueValuesEnum attribute.
@@ -51230,14 +51364,36 @@ class ForwardingRule(_messages.Message):
       apis - All supported Google APIs.                        -  For Private
       Service Connect forwarding rules that forward traffic to managed
       services, the target must be a service attachment. The target is not
-      mutable once set as a service attachment.
+      mutable once set as a service attachment.     The following load
+      balancers cannot set the target field (they should set the
+      backendService field instead):        - Internal passthrough Network
+      Load Balancers    - Backend service-based regional external passthrough
+      Network Load    Balancers    - Global external passthrough Network Load
+      Balancers
   """
 
   class AvailabilityGroupValueValuesEnum(_messages.Enum):
-    r"""[Output Only] Specifies the availability group of the forwarding rule.
-    This field is for use by global external passthrough load balancers (load
-    balancing scheme EXTERNAL_PASSTHROUGH) and is set for the child forwarding
-    rules only.
+    r"""Output only. [Output Only] Specifies the load balancing availability
+    group, one of the two that collectively provide high availability.
+    Specifies the availability group of the forwarding rule. This field is for
+    use by global external passthrough load balancers (load balancing scheme
+    EXTERNAL_PASSTHROUGH) and is set for the child forwarding rules only. The
+    possible values are:        - AVAILABILITY_GROUP0: Set for the child
+    forwarding rule    that is programmed on the AVAILABILITY_GROUP0 load
+    balancing    stack. The child forwarding rule has the same IP protocol,
+    port, and    backend service settings as the parent forwarding rule, but
+    has only one of    the two IP addresses of the parent forwarding rule, the
+    one with the    purpose PASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP0.
+    - AVAILABILITY_GROUP1: Set for the child forwarding rule    that is
+    programmed on the AVAILABILITY_GROUP1 load balancing    stack. The child
+    forwarding rule has the same IP protocol, port and backend    service
+    settings as the parent forwarding rule, but has only one of the two    IP
+    addresses of the parent forwarding rule, the one with the
+    purposePASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP1.    For each global
+    external Passthrough Network Load Balancer forwarding rule (a parent
+    forwarding rule) that you create, Google Cloud generates two output-only
+    child forwarding rules, one forAVAILABILITY_GROUP0 and one
+    forAVAILABILITY_GROUP1.
 
     Values:
       AVAILABILITY_GROUP0: <no description>
@@ -51310,8 +51466,8 @@ class ForwardingRule(_messages.Message):
     UNSPECIFIED_VERSION = 2
 
   class LoadBalancingSchemeValueValuesEnum(_messages.Enum):
-    r"""Specifies the forwarding rule type.  For more information about
-    forwarding rules, refer to Forwarding rule concepts.
+    r"""Specifies the forwarding rule type.  For more information, refer to
+    Forwarding rule product and scheme table.
 
     Values:
       EXTERNAL: <no description>
@@ -59812,7 +59968,7 @@ class Instance(_messages.Message):
       MEMORY is the total memory for this instance. Memory must be a multiple
       of 256 MB and must be supplied in MB (e.g. 5 GB of memory is 5120 MB):
       zones/zone/machineTypes/custom-CPUS-MEMORY   For example: zones/us-
-      central1-f/machineTypes/custom-4-5120 For a full list of restrictions,
+      central1-f/machineTypes/custom-4-5120  For a full list of restrictions,
       read theSpecifications for custom machine types.
     metadata: The metadata key/value pairs assigned to this instance. This
       includes metadata keys that were explicitly defined for the instance.
@@ -99833,11 +99989,13 @@ class SecurityPolicyRuleRateLimitOptions(_messages.Message):
       client,    which is resolved based on "userIpRequestHeaders" configured
       with the    security policy. If there is no "userIpRequestHeaders"
       configuration or    an IP address cannot be resolved from it, the key
-      type defaults toIP.   - TLS_JA4_FINGERPRINT: JA4 TLS/SSL fingerprint if
-      the client connects using HTTPS, HTTP/2 or HTTP/3. If not available, the
-      key type defaults to ALL.  For "fairshare" action, this value is limited
-      to ALL i.e. a single rate limit threshold is enforced for all the
-      requests matching the rule.
+      type defaults toIP.     - ASN: The autonomous system number of the
+      originating    client. If not available, the key type defaults toALL.
+      - TLS_JA4_FINGERPRINT: JA4 TLS/SSL fingerprint if the    client connects
+      using HTTPS, HTTP/2 or HTTP/3. If not available, the    key type
+      defaults to ALL.    For "fairshare" action, this value is limited to ALL
+      i.e. a single rate limit threshold is enforced for all the requests
+      matching the rule.
 
   Fields:
     banDurationSec: Can only be specified if the action for the rule is
@@ -99877,12 +100035,13 @@ class SecurityPolicyRuleRateLimitOptions(_messages.Message):
       USER_IP: The IP address of the originating client,    which is resolved
       based on "userIpRequestHeaders" configured with the    security policy.
       If there is no "userIpRequestHeaders" configuration or    an IP address
-      cannot be resolved from it, the key type defaults toIP.   -
-      TLS_JA4_FINGERPRINT: JA4 TLS/SSL fingerprint if the client connects
-      using HTTPS, HTTP/2 or HTTP/3. If not available, the key type defaults
-      to ALL.  For "fairshare" action, this value is limited to ALL i.e. a
-      single rate limit threshold is enforced for all the requests matching
-      the rule.
+      cannot be resolved from it, the key type defaults toIP.     - ASN: The
+      autonomous system number of the originating    client. If not available,
+      the key type defaults toALL.    - TLS_JA4_FINGERPRINT: JA4 TLS/SSL
+      fingerprint if the    client connects using HTTPS, HTTP/2 or HTTP/3. If
+      not available, the    key type defaults to ALL.    For "fairshare"
+      action, this value is limited to ALL i.e. a single rate limit threshold
+      is enforced for all the requests matching the rule.
     enforceOnKeyConfigs: If specified, any combination of values of
       enforce_on_key_type/enforce_on_key_name is treated as the key on which
       ratelimit threshold/action is enforced. You can specify up to 3
@@ -99933,15 +100092,18 @@ class SecurityPolicyRuleRateLimitOptions(_messages.Message):
     to ALL.     - USER_IP: The IP address of the originating client,    which
     is resolved based on "userIpRequestHeaders" configured with the
     security policy. If there is no "userIpRequestHeaders" configuration or
-    an IP address cannot be resolved from it, the key type defaults toIP.   -
-    TLS_JA4_FINGERPRINT: JA4 TLS/SSL fingerprint if the client connects using
-    HTTPS, HTTP/2 or HTTP/3. If not available, the key type defaults to ALL.
-    For "fairshare" action, this value is limited to ALL i.e. a single rate
-    limit threshold is enforced for all the requests matching the rule.
+    an IP address cannot be resolved from it, the key type defaults toIP.
+    - ASN: The autonomous system number of the originating    client. If not
+    available, the key type defaults toALL.    - TLS_JA4_FINGERPRINT: JA4
+    TLS/SSL fingerprint if the    client connects using HTTPS, HTTP/2 or
+    HTTP/3. If not available, the    key type defaults to ALL.    For
+    "fairshare" action, this value is limited to ALL i.e. a single rate limit
+    threshold is enforced for all the requests matching the rule.
 
     Values:
       ALL: <no description>
       ALL_IPS: <no description>
+      ASN: <no description>
       HTTP_COOKIE: <no description>
       HTTP_HEADER: <no description>
       HTTP_PATH: <no description>
@@ -99955,16 +100117,17 @@ class SecurityPolicyRuleRateLimitOptions(_messages.Message):
     """
     ALL = 0
     ALL_IPS = 1
-    HTTP_COOKIE = 2
-    HTTP_HEADER = 3
-    HTTP_PATH = 4
-    IP = 5
-    REGION_CODE = 6
-    SNI = 7
-    TLS_JA3_FINGERPRINT = 8
-    TLS_JA4_FINGERPRINT = 9
-    USER_IP = 10
-    XFF_IP = 11
+    ASN = 2
+    HTTP_COOKIE = 3
+    HTTP_HEADER = 4
+    HTTP_PATH = 5
+    IP = 6
+    REGION_CODE = 7
+    SNI = 8
+    TLS_JA3_FINGERPRINT = 9
+    TLS_JA4_FINGERPRINT = 10
+    USER_IP = 11
+    XFF_IP = 12
 
   banDurationSec = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   banThreshold = _messages.MessageField('SecurityPolicyRuleRateLimitOptionsThreshold', 2)
@@ -100009,9 +100172,11 @@ class SecurityPolicyRuleRateLimitOptionsEnforceOnKeyConfig(_messages.Message):
       client,    which is resolved based on "userIpRequestHeaders" configured
       with the    security policy. If there is no "userIpRequestHeaders"
       configuration    or an IP address cannot be resolved from it, the key
-      type defaults toIP.   - TLS_JA4_FINGERPRINT: JA4 TLS/SSL fingerprint if
-      the client connects using HTTPS, HTTP/2 or HTTP/3. If not available, the
-      key type defaults to ALL.
+      type defaults toIP.     - ASN: The autonomous system number of the
+      originating    client. If not available, the key type defaults toALL.
+      - TLS_JA4_FINGERPRINT: JA4 TLS/SSL fingerprint if the    client connects
+      using HTTPS, HTTP/2 or HTTP/3. If not available, the    key type
+      defaults to ALL.
 
   Fields:
     enforceOnKeyName: Rate limit key name applicable only for the following
@@ -100045,10 +100210,11 @@ class SecurityPolicyRuleRateLimitOptionsEnforceOnKeyConfig(_messages.Message):
       USER_IP: The IP address of the originating client,    which is resolved
       based on "userIpRequestHeaders" configured with the    security policy.
       If there is no "userIpRequestHeaders" configuration    or an IP address
-      cannot be resolved from it, the key type defaults toIP.   -
-      TLS_JA4_FINGERPRINT: JA4 TLS/SSL fingerprint if the client connects
-      using HTTPS, HTTP/2 or HTTP/3. If not available, the key type defaults
-      to ALL.
+      cannot be resolved from it, the key type defaults toIP.     - ASN: The
+      autonomous system number of the originating    client. If not available,
+      the key type defaults toALL.    - TLS_JA4_FINGERPRINT: JA4 TLS/SSL
+      fingerprint if the    client connects using HTTPS, HTTP/2 or HTTP/3. If
+      not available, the    key type defaults to ALL.
   """
 
   class EnforceOnKeyTypeValueValuesEnum(_messages.Enum):
@@ -100078,13 +100244,16 @@ class SecurityPolicyRuleRateLimitOptionsEnforceOnKeyConfig(_messages.Message):
     to ALL.     - USER_IP: The IP address of the originating client,    which
     is resolved based on "userIpRequestHeaders" configured with the
     security policy. If there is no "userIpRequestHeaders" configuration    or
-    an IP address cannot be resolved from it, the key type defaults toIP.   -
-    TLS_JA4_FINGERPRINT: JA4 TLS/SSL fingerprint if the client connects using
-    HTTPS, HTTP/2 or HTTP/3. If not available, the key type defaults to ALL.
+    an IP address cannot be resolved from it, the key type defaults toIP.
+    - ASN: The autonomous system number of the originating    client. If not
+    available, the key type defaults toALL.    - TLS_JA4_FINGERPRINT: JA4
+    TLS/SSL fingerprint if the    client connects using HTTPS, HTTP/2 or
+    HTTP/3. If not available, the    key type defaults to ALL.
 
     Values:
       ALL: <no description>
       ALL_IPS: <no description>
+      ASN: <no description>
       HTTP_COOKIE: <no description>
       HTTP_HEADER: <no description>
       HTTP_PATH: <no description>
@@ -100098,16 +100267,17 @@ class SecurityPolicyRuleRateLimitOptionsEnforceOnKeyConfig(_messages.Message):
     """
     ALL = 0
     ALL_IPS = 1
-    HTTP_COOKIE = 2
-    HTTP_HEADER = 3
-    HTTP_PATH = 4
-    IP = 5
-    REGION_CODE = 6
-    SNI = 7
-    TLS_JA3_FINGERPRINT = 8
-    TLS_JA4_FINGERPRINT = 9
-    USER_IP = 10
-    XFF_IP = 11
+    ASN = 2
+    HTTP_COOKIE = 3
+    HTTP_HEADER = 4
+    HTTP_PATH = 5
+    IP = 6
+    REGION_CODE = 7
+    SNI = 8
+    TLS_JA3_FINGERPRINT = 9
+    TLS_JA4_FINGERPRINT = 10
+    USER_IP = 11
+    XFF_IP = 12
 
   enforceOnKeyName = _messages.StringField(1)
   enforceOnKeyType = _messages.EnumField('EnforceOnKeyTypeValueValuesEnum', 2)
@@ -110155,7 +110325,7 @@ class TargetPool(_messages.Message):
     backupPool: The server-defined URL for the resource. This field is
       applicable only when the containing target pool is serving a forwarding
       rule as the primary pool, and its failoverRatio field is properly set to
-      a value between [0, 1].backupPool and failoverRatio together define the
+      a value between [0, 1]. backupPool and failoverRatio together define the
       fallback behavior of the primary target pool: if the ratio of the
       healthy instances in the primary pool is at or belowfailoverRatio,
       traffic arriving at the load-balanced IP will be directed to the backup

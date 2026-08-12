@@ -21,3 +21,5 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class MemoryLayers(base.Group):
   """Manage Cloud Bigtable memory layers."""
+
+  category = base.DATABASES_CATEGORY

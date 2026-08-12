@@ -34,6 +34,7 @@ from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.api_lib.run import revision
 from googlecloudsdk.api_lib.run import service
 from googlecloudsdk.api_lib.run import worker_pool
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import name_generator
@@ -2419,3 +2420,88 @@ class RemovePresetsChange(TemplateConfigChanger):
     if presets and self.clear_presets:
       del resource.annotations[service.PRESETS_ANNOTATION]
       return resource
+
+
+MAX_GRACE_PERIOD = '600s'
+GRACE_PERIOD_PARSER = arg_parsers.Duration(
+    lower_bound='0s', upper_bound=MAX_GRACE_PERIOD
+)
+
+
+def ParseTerminationGracePeriodFlag(
+    grace_period_str: str | None,
+) -> int | None:
+  """Parses a termination grace period flag string into seconds or None.
+
+  Accepts duration strings like '10s', '0s', '5m', or clearing values 'default'
+  or ''.
+
+  Args:
+    grace_period_str: str | None, the flag string value.
+
+  Returns:
+    int | None: The parsed seconds as an integer, or None if cleared or not set.
+  """
+  if not grace_period_str or grace_period_str == 'default':
+    return None
+  try:
+    parsed_seconds = GRACE_PERIOD_PARSER(grace_period_str)
+  except arg_parsers.ArgumentTypeError as e:
+    raise exceptions.ConfigurationError(str(e))
+  if parsed_seconds != int(parsed_seconds):
+    raise exceptions.ConfigurationError(
+        'Termination grace period must be a whole number of seconds.'
+    )
+  return int(parsed_seconds)
+
+
+@dataclasses.dataclass(frozen=True)
+class TerminationGracePeriodChanges(TemplateConfigChanger):
+  """Represents the user intent to update the termination grace period.
+
+  Attributes:
+    termination_grace_period: The grace period in seconds to set in the
+      template. If None, it is cleared (returns to default).
+  """
+
+  termination_grace_period: int | None = None
+
+  @classmethod
+  def FromFlag(
+      cls, grace_period_str: str | None
+  ) -> 'TerminationGracePeriodChanges':
+    return cls(ParseTerminationGracePeriodFlag(grace_period_str))
+
+  def Adjust(self, resource):
+    # For V1 KubernetesObject resources, assigning None to
+    # termination_grace_period clears the field and marks it for removal in
+    # the update patch/request.
+    resource.template.termination_grace_period = self.termination_grace_period
+    return resource
+
+
+@dataclasses.dataclass(frozen=True)
+class JobTaskTerminationGracePeriodChange(TemplateConfigChanger):
+  """Represents the user intent to update a job's task termination grace period.
+
+  Attributes:
+    termination_grace_period: The grace period in seconds to set in the job's
+      task template. If None, it is cleared (returns to default).
+  """
+
+  termination_grace_period: int | None = None
+
+  @classmethod
+  def FromFlag(
+      cls, grace_period_str: str | None
+  ) -> 'JobTaskTerminationGracePeriodChange':
+    return cls(ParseTerminationGracePeriodFlag(grace_period_str))
+
+  def Adjust(self, resource):
+    # For V1 KubernetesObject resources, assigning None to
+    # termination_grace_period clears the field and marks it for removal in
+    # the update patch/request.
+    resource.task_template.termination_grace_period = (
+        self.termination_grace_period
+    )
+    return resource

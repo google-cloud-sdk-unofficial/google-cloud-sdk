@@ -17026,7 +17026,8 @@ class GoogleCloudDialogflowV2Message(_messages.Message):
     ParticipantRoleValueValuesEnum: Output only. The role of the participant.
 
   Fields:
-    content: Required. The message content.
+    content: Optional. The message content. Only one of `content` and
+      `companion_query` should be set - not both.
     createTime: Output only. The time when the message was created in Contact
       Center AI.
     languageCode: Optional. The message language. This should be a
@@ -19961,9 +19962,10 @@ class GoogleCloudDialogflowV2TextInput(_messages.Message):
       for a list of the currently supported language codes. Note that queries
       in the same session do not necessarily need to specify the same
       language.
-    text: Required. The UTF-8 encoded natural language text to be processed.
+    text: Optional. The UTF-8 encoded natural language text to be processed.
       Text length must not exceed 256 characters for virtual agent
-      interactions.
+      interactions. Only one of `text` and `companion_query` should be set -
+      not both.
   """
 
   languageCode = _messages.StringField(1)
@@ -23642,7 +23644,8 @@ class GoogleCloudDialogflowV2beta1Message(_messages.Message):
     ParticipantRoleValueValuesEnum: Output only. The role of the participant.
 
   Fields:
-    content: Required. The message content.
+    content: Optional. The message content. Only one of `content` and
+      `companion_query` should be set - not both.
     createTime: Output only. The time when the message was created in Contact
       Center AI.
     languageCode: Optional. The message language. This should be a

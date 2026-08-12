@@ -22,3 +22,4 @@ from googlecloudsdk.calliope import base
 @base.DefaultUniverseOnly
 class ImageStreamingCache(base.Group):
   """Manage Artifact Registry image streaming caches."""
+  category = base.CI_CD_CATEGORY

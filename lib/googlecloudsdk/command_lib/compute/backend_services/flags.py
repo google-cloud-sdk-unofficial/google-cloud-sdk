@@ -530,6 +530,20 @@ def AddSubsettingSubsetSize(parser):
       """)
 
 
+def AddConsistentHashMinimumRingSize(parser):
+  parser.add_argument(
+      '--consistent-hash-minimum-ring-size',
+      type=arg_parsers.BoundedInt(lower_bound=1),
+      help="""\
+      The minimum number of virtual nodes to use for the hash ring when a
+      consistent hash load balancing policy or subsetting policy is in use.
+      Defaults to 1024. Larger ring sizes result in more granular load
+      distributions. If the number of hosts in the load balancing pool is larger
+      than the ring size, each host will be assigned a single virtual node.
+      """,
+  )
+
+
 def AddConnectionDrainingTimeout(parser):
   parser.add_argument(
       '--connection-draining-timeout',
@@ -866,15 +880,15 @@ def AddCompressionMode(parser):
       """)
 
 
-def AddIap(parser, help=None):  # pylint: disable=redefined-builtin
+def AddIap(parser, help=None, metavar=None):  # pylint: disable=redefined-builtin
   """Add support for --iap flag."""
   # We set this to str, but it's really an ArgDict.  See
   # backend_services_utils.GetIAP for the re-parse and rationale.
   return parser.add_argument(
       '--iap',
-      metavar=('disabled|enabled,['
-               'oauth2-client-id=OAUTH2-CLIENT-ID,'
-               'oauth2-client-secret=OAUTH2-CLIENT-SECRET]'),
+      metavar=metavar or ('disabled|enabled,['
+                          'oauth2-client-id=OAUTH2-CLIENT-ID,'
+                          'oauth2-client-secret=OAUTH2-CLIENT-SECRET]'),
       help=help or 'Specifies a list of settings for IAP service.')
 
 
@@ -1405,7 +1419,7 @@ def AddBackendServiceTlsSettings(
     parser,
     add_clear_argument=False,
     support_identity=False,
-) -> None:
+):
   """Adds a --tls-settings flag to the given parser."""
   group = parser.add_mutually_exclusive_group()
   help_text = """\
@@ -1608,5 +1622,17 @@ def AddHaPolicyLeaderFlags(parser, hidden=True):
       hidden=hidden,
       help="""\
       The name of the VM instance of the leader network endpoint.
+      """,
+  )
+
+
+def AddCircuitBreakersMaxRequests(parser):
+  """Adds the --circuit-breakers-max-requests flag to the parser."""
+  return parser.add_argument(
+      '--circuit-breakers-max-requests',
+      type=int,
+      help="""\
+      Maximum number of parallel requests that can be made to all instances in
+      the backend service cluster. Defaults to 1024.
       """,
   )

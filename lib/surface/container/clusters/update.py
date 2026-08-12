@@ -675,6 +675,12 @@ class Update(base.UpdateCommand):
     opts.dataplane_v2 = args.enable_dataplane_v2
     opts.autopilot_general_profile = args.autopilot_general_profile
     opts.enable_agent_sandbox = getattr(args, 'enable_agent_sandbox', None)
+    opts.jwt_authenticator_config = getattr(
+        args, 'jwt_authenticator_config', None
+    )
+    opts.clear_jwt_authenticator_config = getattr(
+        args, 'clear_jwt_authenticator_config', None
+    )
     return opts
 
   def Run(self, args):
@@ -1310,6 +1316,7 @@ class UpdateBeta(Update):
     flags.AddCrossConnectSubnetworksMutationFlags(group)
     flags.AddEnableServiceExternalIPs(group)
     flags.AddAuthenticatorSecurityGroupFlags(group)
+    flags.AddJwtAuthenticatorConfigFlag(group, hidden=True, is_update=True)
     flags.AddEnableGcfsFlag(group)
     flags.AddAutoprovisioningNetworkTagsUpdate(group)
     flags.AddEnableImageStreamingFlag(group)
@@ -1645,6 +1652,12 @@ class UpdateBeta(Update):
         args.node_pool_upgrade_concurrency_config
     )
     opts.linked_runners_mode = args.linked_runners_mode
+    opts.jwt_authenticator_config = getattr(
+        args, 'jwt_authenticator_config', None
+    )
+    opts.clear_jwt_authenticator_config = getattr(
+        args, 'clear_jwt_authenticator_config', None
+    )
     return opts
 
 
@@ -1726,6 +1739,7 @@ class UpdateAlpha(Update):
     flags.AddCrossConnectSubnetworksMutationFlags(group)
     flags.AddEnableServiceExternalIPs(group)
     flags.AddAuthenticatorSecurityGroupFlags(group)
+    flags.AddJwtAuthenticatorConfigFlag(group, hidden=True, is_update=True)
     flags.AddEnableGcfsFlag(group)
     flags.AddAutoprovisioningNetworkTagsUpdate(group)
     flags.AddEnableImageStreamingFlag(group)
@@ -2056,4 +2070,10 @@ class UpdateAlpha(Update):
         args.node_pool_upgrade_concurrency_config
     )
     opts.linked_runners_mode = args.linked_runners_mode
+    opts.jwt_authenticator_config = getattr(
+        args, 'jwt_authenticator_config', None
+    )
+    opts.clear_jwt_authenticator_config = getattr(
+        args, 'clear_jwt_authenticator_config', None
+    )
     return opts

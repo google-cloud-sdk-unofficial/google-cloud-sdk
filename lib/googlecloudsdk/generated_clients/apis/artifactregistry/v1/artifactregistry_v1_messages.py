@@ -4134,6 +4134,12 @@ class UploadGenericArtifactRequest(_messages.Message):
   The created file will have the resource name
   {parent}/files/package_id:version_id:filename.
 
+  Messages:
+    VersionAnnotationsValue: Optional. Client specified annotations to attach
+      to the version upon creation. This field is only applied if the Version
+      is created during this upload. If the Version already exists and this
+      field is set, the request will fail.
+
   Fields:
     filename: The name of the file of the generic artifact to be uploaded.
       E.g. `example-file.zip` The filename is limited to letters, numbers, and
@@ -4142,6 +4148,10 @@ class UploadGenericArtifactRequest(_messages.Message):
       does not exist, a new package will be created. The `package_id` should
       start and end with a letter or number, only contain letters, numbers,
       hyphens, underscores, and periods, and not exceed 256 characters.
+    versionAnnotations: Optional. Client specified annotations to attach to
+      the version upon creation. This field is only applied if the Version is
+      created during this upload. If the Version already exists and this field
+      is set, the request will fail.
     versionId: The ID of the version of the generic artifact. If the version
       does not exist, a new version will be created. The version_id must start
       and end with a letter or number, can only contain lowercase letters,
@@ -4150,9 +4160,39 @@ class UploadGenericArtifactRequest(_messages.Message):
       not allowed.
   """
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class VersionAnnotationsValue(_messages.Message):
+    r"""Optional. Client specified annotations to attach to the version upon
+    creation. This field is only applied if the Version is created during this
+    upload. If the Version already exists and this field is set, the request
+    will fail.
+
+    Messages:
+      AdditionalProperty: An additional property for a VersionAnnotationsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        VersionAnnotationsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a VersionAnnotationsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   filename = _messages.StringField(1)
   packageId = _messages.StringField(2)
-  versionId = _messages.StringField(3)
+  versionAnnotations = _messages.MessageField('VersionAnnotationsValue', 3)
+  versionId = _messages.StringField(4)
 
 
 class UploadGoModuleMediaResponse(_messages.Message):

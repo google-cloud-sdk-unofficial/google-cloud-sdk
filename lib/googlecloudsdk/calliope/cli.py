@@ -919,6 +919,16 @@ class CLI(object):
       if args.CONCEPTS is not None:
         args.CONCEPTS.Reset()
 
+      # Go verification hook
+      go_args_json = encoding.GetEncodedValue(os.environ, 'GOCLOUD_ARGS')
+      if go_args_json:
+        try:
+          # pylint: disable=g-import-not-at-top
+          from googlecloudsdk.core import gocloud_verifier
+          gocloud_verifier.Verify(args, go_args_json)
+        except Exception as e:  # pylint: disable=broad-except
+          log.debug('Go verification failed: %s', e)
+
       # -h|--help|--document are dispatched by parse_args and never get here.
 
       # Now that we have parsed the args, reload the settings so the flags will

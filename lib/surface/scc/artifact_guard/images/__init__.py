@@ -23,3 +23,4 @@ from googlecloudsdk.calliope import base
 @base.DefaultUniverseOnly
 class Images(base.Group):
   """Manage Artifact Guard image scanning."""
+  category = base.SECURITY_CATEGORY

@@ -12,20 +12,55 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Per-resource entry builders for the dbt -> Dataplex transform.
+r"""Per-resource entry builders for the dbt -> Dataplex transform.
 
 One entry is emitted per dbt resource of interest (project, model, source,
 seed, snapshot, group, exposure, metric, macro, semantic_model, saved_query,
 test). Every entry carries the universal ``dbt-node`` aspect plus its
-resource-specific aspect; models/sources/seeds additionally carry the optional
-``dbt-schema`` aspect, tests and source freshness carry ``dbt-data-quality``,
-and groups/exposures carry the ``contacts`` aspect required by their entry
-types. All aspect field names follow the canonical types verbatim (camelCase).
+resource-specific aspect; models/sources/seeds/snapshots additionally carry the
+core 1P ``schema`` aspect, tests and source freshness carry
+``dbt-data-quality``, and groups/exposures carry the ``contacts`` aspect
+required by their entry types. All aspect field names follow the canonical
+types verbatim (camelCase).
+
+Entries are also arranged into a hierarchy via ``parentEntry``, rooted at the
+project entry::
+
+  dbt-project                                the root
+  |- dbt-group                               -> project
+  |  |- model / seed / snapshot              -> its group, when declared
+  |  |  |- dbt-semantic-model                -> the model it describes
+  |  |  \- dbt-test                          -> the resource it tests
+  |  \- dbt-metric                           -> its group, when declared
+  |- dbt-source                              -> project
+  |  \- dbt-test                             -> the source it tests
+  |- model / seed / snapshot / dbt-metric    -> project, when ungrouped
+  |- dbt-macro / dbt-exposure                -> project
+  \- dbt-saved-query                         -> project
+
+Saved queries, metrics and exposures never nest under the resources they
+reference: each references N of them and an entry has exactly one parent, so
+nesting would assert a relationship dbt does not have. Those stay EntryLinks. A
+resource whose parent is ambiguous (a singular test spanning two models) or
+unresolvable (an ``attached_node`` naming a resource we don't emit) falls back
+to the project, which keeps the tree single-rooted and orphan-free.
+
+Entries are emitted parent-before-child. Batch ingestion does not require that
+(the server accepts a child whose parent arrives later in the same job), but
+resolving every parent against the already-emitted set is what guarantees no
+entry names a parent this job never creates: a dangling ``parentEntry`` is
+stored as given rather than rejected, leaving an entry that never surfaces in
+the hierarchy. ``parentEntry`` is modifiable on re-ingestion, so re-parenting a
+resource -- reassigning a model to another dbt group, say -- lands on the next
+import without recreating the entry.
 """
 
 from __future__ import annotations
 
+import collections
+from collections.abc import Callable
 import json
+import re
 from typing import Any
 
 from googlecloudsdk.command_lib.dataplex.dbt import aspects
@@ -61,18 +96,44 @@ def _set_if(data: dict[str, Any], key: str, value: Any) -> None:
     data[key] = value
 
 
+def _normalize_relation(relation: str | None) -> str:
+  """Strips an adapter's identifier quoting from a relation name."""
+  return re.sub(r'[`"\']', '', relation or '').strip().lower()
+
+
 def _add_schema_aspect(
     ctx: naming.Context,
     aspects_map: dict[str, Any],
-    columns: dict[str, Any],
-    type_key: str,
-    desc_key: str,
+    catalog_columns: dict[str, Any] | None,
+    node: dict[str, Any],
+    semantic: dict[str, str] | None = None,
+    resolve_target: Callable[[str], str | None] | None = None,
+    stale_aspects: set[str] | None = None,
 ) -> None:
-  """Adds a dbt-schema aspect to ``aspects_map`` when ``columns`` is set."""
-  if columns:
-    aspects_map[ctx.aspect_key('dbt-schema')] = (
-        aspects.schema_aspect_from_columns(ctx, columns, type_key, desc_key)
-    )
+  """Adds the core 1P ``schema`` aspect when the resource has any columns.
+
+  Args:
+    ctx: the naming.Context holding the naming coordinates for this run.
+    aspects_map: the entry's aspect map, updated in place.
+    catalog_columns: the catalog node/source ``columns`` mapping, or None.
+    node: the dbt resource, read for its manifest columns and constraints.
+    semantic: column name -> DIMENSION/MEASURE, from the semantic models.
+    resolve_target: maps a foreign key's raw ``to`` to a Dataplex entry name.
+    stale_aspects: updated in place with the schema aspect key when the schema
+      came from the manifest alone, so an update leaves a stored catalog-backed
+      schema as it is.
+  """
+  columns = aspects.merged_columns(catalog_columns, node.get('columns'))
+  if not columns:
+    return
+  aspects_map[ctx.schema_key()] = aspects.system_schema_aspect(
+      ctx, columns, node, semantic, resolve_target
+  )
+  # Without the catalog these columns are the YAML declaration alone: no data
+  # types, no nesting, and only the columns the author wrote down. A
+  # catalog-backed schema already in the entry must outrank that.
+  if stale_aspects is not None and not catalog_columns:
+    stale_aspects.add(ctx.schema_key())
 
 
 def _json_or_empty(value: Any) -> str:
@@ -98,9 +159,144 @@ def _json_or_empty(value: Any) -> str:
   return json.dumps(value, default=str)
 
 
-def _node_group(node: dict[str, Any]) -> str | None:
-  """Returns the group a node belongs to, declared top-level or under config."""
-  return node.get('group') or (node.get('config') or {}).get('group')
+# dbt `tags` and `meta` come from hand-written YAML, so a malformed project can
+# put a scalar or a list where a mapping belongs. Coerce rather than raise: one
+# bad resource should not abort the whole transform.
+def _as_list(value: Any) -> list[Any]:
+  """Returns ``value`` when it is a list, else an empty list."""
+  return value if isinstance(value, list) else []
+
+
+def _as_dict(value: Any) -> dict[str, Any]:
+  """Returns ``value`` when it is a dict, else an empty dict."""
+  return value if isinstance(value, dict) else {}
+
+
+def _compiled_code(node: dict[str, Any]) -> str:
+  """Returns a node's compiled SQL, clipped, or '' when it carries none.
+
+  Only a command that compiled the node writes ``compiled_code``; a parse-level
+  manifest (what ``dbt parse`` and ``dbt source freshness`` leave behind)
+  carries none, and that absence makes the whole payload a downgrade of one
+  built from a compiled manifest.
+
+  Args:
+    node: the dbt resource to read ``compiled_code`` from.
+
+  Returns:
+    The node's compiled SQL, clipped to ``naming.MAX_CODE_BYTES``, or '' when
+    the node carries none.
+  """
+  return _truncate_bytes(node.get('compiled_code'), naming.MAX_CODE_BYTES)
+
+
+def _set_code(data: dict[str, Any], node: dict[str, Any]) -> None:
+  """Copies a node's raw and compiled SQL onto an aspect payload."""
+  _set_if(
+      data,
+      'rawCode',
+      _truncate_bytes(node.get('raw_code'), naming.MAX_CODE_BYTES),
+  )
+  _set_if(data, 'compiledCode', _compiled_code(node))
+
+
+def _truncate(value: Any, limit: int) -> str:
+  """Renders ``value`` as a string clipped to ``limit`` UTF-16 code units.
+
+  The standard library has no UTF-16-aware truncation, so the length is taken
+  by encoding. ASCII -- nearly all dbt content, including the SQL bodies that
+  are three orders of magnitude longer than any other field here -- takes the
+  fast path where the two counts agree and no buffer is allocated.
+
+  Args:
+    value: the value to render; ``None`` becomes ''.
+    limit: the maximum length in UTF-16 code units.
+
+  Returns:
+    The rendered string, clipped so the server will accept it.
+  """
+  if value is None:
+    return ''
+  text = str(value)
+  if text.isascii():
+    return text[:limit]
+  # dbt content reaches us straight from JSON, which can carry an unpaired
+  # surrogate; surrogatepass keeps that from raising mid-transform.
+  encoded = text.encode('utf-16-le', 'surrogatepass')
+  if len(encoded) <= limit * 2:
+    return text
+  # A cut through a surrogate pair leaves half a character; drop it.
+  return encoded[: limit * 2].decode('utf-16-le', 'ignore')
+
+
+def _truncate_bytes(value: Any, limit: int) -> str:
+  """Renders ``value`` as a string clipped to ``limit`` UTF-8 bytes."""
+  if value is None:
+    return ''
+  text = str(value)
+  if text.isascii():
+    # One byte per character, so a character slice is already a byte slice.
+    return text[:limit]
+  encoded = text.encode('utf-8', 'surrogatepass')
+  if len(encoded) <= limit:
+    return text
+  return encoded[:limit].decode('utf-8', 'ignore')
+
+
+def _label_value(value: Any) -> str:
+  """Renders a dbt `meta` value as a Dataplex label value.
+
+  dbt `meta` is free-form YAML, so a value can be a scalar or a whole nested
+  structure. Scalars are rendered as themselves -- including ``0`` and
+  ``False``, which are values a reader wants to see, not absences -- and
+  anything else is JSON so the catalog does not end up holding a Python repr.
+
+  Args:
+    value: the dbt meta value.
+
+  Returns:
+    The label value, clipped to the Dataplex label limit.
+  """
+  if value is None:
+    text = ''
+  elif isinstance(value, str):
+    text = value
+  elif isinstance(value, (int, float, bool)):
+    text = str(value)
+  else:
+    text = json.dumps(value, default=str)
+  return _truncate(text, naming.MAX_LABEL_LENGTH)
+
+
+def _resource_labels(resource: dict[str, Any]) -> dict[str, str]:
+  """Builds entrySource.labels from a dbt resource's tags and meta.
+
+  dbt tags are a flat list, so each becomes a valueless label; `meta` is
+  already key/value. Both can be declared at the top level or under `config`,
+  and a resource may carry both, so the two sides are merged with the
+  top-level one winning.
+
+  Keys are passed through as the author wrote them. Dataplex validates label
+  keys and values for length only (EntryValidator.LABEL_KV_LENGTH_LIMIT).
+
+  Args:
+    resource: the dbt resource (node, source, exposure, ...).
+
+  Returns:
+    The label map, empty when the resource declares no tags or meta.
+  """
+  config = _as_dict(resource.get('config'))
+  labels = {}
+  for tag in _as_list(config.get('tags')) + _as_list(resource.get('tags')):
+    key = _truncate(tag, naming.MAX_LABEL_LENGTH)
+    if key:
+      labels[key] = ''
+  meta = {**_as_dict(config.get('meta')), **_as_dict(resource.get('meta'))}
+  for key, value in meta.items():
+    key = _truncate(key, naming.MAX_LABEL_LENGTH)
+    if key:
+      labels[key] = _label_value(value)
+  return labels
 
 
 def _entry(
@@ -109,27 +305,74 @@ def _entry(
     entry_type: str,
     aspects_map: dict[str, Any],
     fqn: str,
-    parent_entry_name: str | None = None,
+    display_name: str | None = None,
+    description: str | None = None,
+    labels: dict[str, str] | None = None,
+    stale_aspects: set[str] | None = None,
 ) -> dict[str, Any]:
-  """Wraps an aspect map in the entry record shared by every builder."""
+  """Wraps an aspect map in the entry record shared by every builder.
+
+  ``stale_aspects`` names aspects whose backing artifact was not part of this
+  run, so their payload here is a placeholder rather than an observation. They
+  stay in the aspect map -- an entry cannot be created without its required
+  aspects -- but are left out of ``aspectKeys``. Creation writes the whole map
+  and so still gets them.
+
+  How much that protects an existing value depends on the sync mode. Under
+  ``--aspects-only`` the write mask is ``aspectKeys`` exactly, so an unobserved
+  aspect keeps what is already stored. A full run's mask is ``aspectKeys``
+  unioned with the entry type's REQUIRED aspects, so a required one
+  (``dbt-model``, ``dbt-seed``, ``dbt-snapshot``, ``dbt-data-quality``) is
+  rewritten from the placeholder regardless -- only the optional ``schema``
+  aspect is genuinely held back.
+
+  Args:
+    ctx: the naming.Context holding the naming coordinates for this run.
+    unique_id: the dbt unique_id the entry is named from.
+    entry_type: short id of the entry's dbt entry type (e.g. ``dbt-model``).
+    aspects_map: the entry's aspects, keyed by aspect key.
+    fqn: the entry's fullyQualifiedName.
+    display_name: entrySource display name; omitted when None.
+    description: entrySource description; omitted when None.
+    labels: entrySource labels; omitted when None.
+    stale_aspects: aspect keys to leave out of ``aspectKeys``.
+
+  Returns:
+    An import item holding the entry record and its ``aspectKeys``.
+  """
+  entry_source = {
+      # While 'system' is defined in the EntryType, we must populate it here
+      # because the backend search service (searchEntries) does not perform
+      # fallback to EntryType and requires it to be populated in EntrySource
+      # to be indexed and filterable. platform is left unset for now.
+      'system': 'DBT',
+      'resource': fqn,
+  }
+  # dbt content is user-authored and unbounded, so clip to the EntrySource
+  # limits rather than letting the import job reject the whole entry.
+  _set_if(
+      entry_source,
+      'displayName',
+      _truncate(display_name, naming.MAX_DISPLAY_NAME_LENGTH),
+  )
+  _set_if(
+      entry_source,
+      'description',
+      _truncate(description, naming.MAX_DESCRIPTION_LENGTH),
+  )
+  _set_if(entry_source, 'labels', labels)
+  stale = stale_aspects or set()
   entry = {
       'name': ctx.entry_name(naming.entry_id(unique_id)),
       'entryType': ctx.entry_type(entry_type),
       'aspects': aspects_map,
       'fullyQualifiedName': fqn,
-      # Populate entrySource fields.
-      # While 'system' is defined in the EntryType, we must populate it here
-      # because the backend search service (searchEntries) does not perform
-      # fallback to EntryType and requires it to be populated in EntrySource
-      # to be indexed and filterable. platform is left unset for now.
-      'entrySource': {
-          'system': 'DBT',
-          'resource': fqn,
-      },
+      'entrySource': entry_source,
   }
-  if parent_entry_name:
-    entry['parentEntry'] = parent_entry_name
-  return {'entry': entry}
+  return {
+      'entry': entry,
+      'aspectKeys': sorted(k for k in aspects_map if k not in stale),
+  }
 
 
 def _project_unique_id(manifest: dict[str, Any]) -> str:
@@ -159,7 +402,12 @@ def _build_project_entry(
   }
   fqn = ctx.dbt_project_fqn(project_name)
   return _entry(
-      ctx, _project_unique_id(manifest), 'dbt-project', aspects_map, fqn
+      ctx,
+      _project_unique_id(manifest),
+      'dbt-project',
+      aspects_map,
+      fqn,
+      display_name=project_name,
   )
 
 
@@ -168,7 +416,8 @@ def _build_model_entry(
     unique_id: str,
     node: dict[str, Any],
     catalog_nodes: dict[str, Any],
-    parent_entry_name: str | None = None,
+    semantic: dict[str, str] | None = None,
+    resolve_target: Callable[[str], str | None] | None = None,
 ) -> dict[str, Any]:
   """Builds a dbt-model entry with node, model, schema and contract aspects."""
   config = node.get('config') or {}
@@ -186,12 +435,23 @@ def _build_model_entry(
   # ingests BigQuery dbt projects, so read the BigQuery keys.
   aspects.add_stat(model_data, 'rowCount', stats, 'num_rows')
   aspects.add_stat(model_data, 'byteCount', stats, 'num_bytes')
+  _set_code(model_data, node)
+  compiled = bool(_compiled_code(node))
 
   aspects_map = aspects.base_aspects(
       ctx, unique_id, node, 'model', 'dbt-model', model_data
   )
+  stale = set()
+  if not cat_node or not compiled:
+    stale.add(ctx.aspect_key('dbt-model'))
   _add_schema_aspect(
-      ctx, aspects_map, cat_node.get('columns', {}), 'type', 'comment'
+      ctx,
+      aspects_map,
+      cat_node.get('columns'),
+      node,
+      semantic,
+      resolve_target,
+      stale_aspects=stale,
   )
 
   contracts = aspects.model_contracts_aspect(ctx, node, enforced)
@@ -207,7 +467,10 @@ def _build_model_entry(
       'dbt-model',
       aspects_map,
       fqn,
-      parent_entry_name=parent_entry_name,
+      display_name=resource_name,
+      description=node.get('description'),
+      labels=_resource_labels(node),
+      stale_aspects=stale,
   )
 
 
@@ -227,6 +490,7 @@ def _build_source_entry(
     unique_id: str,
     src: dict[str, Any],
     sources_map: dict[str, Any],
+    catalog_sources: dict[str, Any],
 ) -> dict[str, Any]:
   """Builds a dbt-source entry (node, source, schema, freshness aspects)."""
   freshness = src.get('freshness') or {}
@@ -242,8 +506,10 @@ def _build_source_entry(
   aspects_map = aspects.base_aspects(
       ctx, unique_id, src, 'source', 'dbt-source', source_data
   )
+  cat_source = catalog_sources.get(unique_id) or {}
+  stale = set()
   _add_schema_aspect(
-      ctx, aspects_map, src.get('columns', {}), 'data_type', 'description'
+      ctx, aspects_map, cat_source.get('columns'), src, stale_aspects=stale
   )
 
   fresh_res = sources_map.get(unique_id, {})
@@ -262,7 +528,20 @@ def _build_source_entry(
   source_name = src.get('source_name') or ''
   table_name = src.get('identifier') or src.get('name') or ''
   fqn = ctx.dbt_source_fqn(project_name, source_name, table_name)
-  return _entry(ctx, unique_id, 'dbt-source', aspects_map, fqn)
+  table_label = src.get('name') or table_name
+  return _entry(
+      ctx,
+      unique_id,
+      'dbt-source',
+      aspects_map,
+      fqn,
+      display_name=(
+          f'{source_name}.{table_label}' if source_name else table_label
+      ),
+      description=src.get('description'),
+      labels=_resource_labels(src),
+      stale_aspects=stale,
+  )
 
 
 def _build_seed_entry(
@@ -270,6 +549,7 @@ def _build_seed_entry(
     unique_id: str,
     node: dict[str, Any],
     catalog_nodes: dict[str, Any],
+    resolve_target: Callable[[str], str | None] | None = None,
 ) -> dict[str, Any]:
   """Builds a dbt-seed entry with node, seed and optional schema aspects."""
   cat_node = catalog_nodes.get(unique_id) or {}
@@ -282,13 +562,33 @@ def _build_seed_entry(
   aspects_map = aspects.base_aspects(
       ctx, unique_id, node, 'seed', 'dbt-seed', seed_data
   )
+  # dbt-seed holds nothing but catalog stats, so without the catalog it is an
+  # empty payload -- exactly what must not be written over a populated one.
+  stale = set()
+  if not cat_node:
+    stale.add(ctx.aspect_key('dbt-seed'))
   _add_schema_aspect(
-      ctx, aspects_map, cat_node.get('columns', {}), 'type', 'comment'
+      ctx,
+      aspects_map,
+      cat_node.get('columns'),
+      node,
+      resolve_target=resolve_target,
+      stale_aspects=stale,
   )
   project_name = node.get('package_name') or _DEFAULT_PROJECT_NAME
   resource_name = node.get('name') or ''
   fqn = ctx.dbt_resource_fqn('dbt-seed', project_name, resource_name)
-  return _entry(ctx, unique_id, 'dbt-seed', aspects_map, fqn)
+  return _entry(
+      ctx,
+      unique_id,
+      'dbt-seed',
+      aspects_map,
+      fqn,
+      display_name=resource_name,
+      description=node.get('description'),
+      labels=_resource_labels(node),
+      stale_aspects=stale,
+  )
 
 
 def _render_unique_key(unique_key: Any) -> str:
@@ -314,9 +614,13 @@ def _render_unique_key(unique_key: Any) -> str:
 
 
 def _build_snapshot_entry(
-    ctx: naming.Context, unique_id: str, node: dict[str, Any]
+    ctx: naming.Context,
+    unique_id: str,
+    node: dict[str, Any],
+    catalog_nodes: dict[str, Any],
+    resolve_target: Callable[[str], str | None] | None = None,
 ) -> dict[str, Any]:
-  """Builds a dbt-snapshot entry with node and snapshot aspects."""
+  """Builds a dbt-snapshot entry with node, snapshot and schema aspects."""
   config = node.get('config') or {}
   raw_strategy = config.get('strategy') or ''
   strategy = _SNAPSHOT_STRATEGY_ENUM.get(raw_strategy.lower())
@@ -343,14 +647,38 @@ def _build_snapshot_entry(
       'targetSchema': node.get('schema') or '',
   }
   _set_if(data, 'strategy', strategy)
+  _set_code(data, node)
+  compiled = bool(_compiled_code(node))
 
   aspects_map = aspects.base_aspects(
       ctx, unique_id, node, 'snapshot', 'dbt-snapshot', data
   )
+  stale = set()
+  if not compiled:
+    stale.add(ctx.aspect_key('dbt-snapshot'))
+  cat_node = catalog_nodes.get(unique_id) or {}
+  _add_schema_aspect(
+      ctx,
+      aspects_map,
+      cat_node.get('columns'),
+      node,
+      resolve_target=resolve_target,
+      stale_aspects=stale,
+  )
   project_name = node.get('package_name') or _DEFAULT_PROJECT_NAME
   resource_name = node.get('name') or ''
   fqn = ctx.dbt_resource_fqn('dbt-snapshot', project_name, resource_name)
-  return _entry(ctx, unique_id, 'dbt-snapshot', aspects_map, fqn)
+  return _entry(
+      ctx,
+      unique_id,
+      'dbt-snapshot',
+      aspects_map,
+      fqn,
+      display_name=resource_name,
+      description=node.get('description'),
+      labels=_resource_labels(node),
+      stale_aspects=stale,
+  )
 
 
 def _build_group_entry(
@@ -382,7 +710,16 @@ def _build_group_entry(
   project_name = group.get('package_name') or _DEFAULT_PROJECT_NAME
   resource_name = group.get('name') or ''
   fqn = ctx.dbt_resource_fqn('dbt-group', project_name, resource_name)
-  return _entry(ctx, unique_id, 'dbt-group', aspects_map, fqn)
+  return _entry(
+      ctx,
+      unique_id,
+      'dbt-group',
+      aspects_map,
+      fqn,
+      display_name=resource_name,
+      description=group.get('description'),
+      labels=_resource_labels(group),
+  )
 
 
 def _build_exposure_entry(
@@ -416,7 +753,16 @@ def _build_exposure_entry(
   project_name = exposure.get('package_name') or _DEFAULT_PROJECT_NAME
   resource_name = exposure.get('name') or ''
   fqn = ctx.dbt_resource_fqn('dbt-exposure', project_name, resource_name)
-  return _entry(ctx, unique_id, 'dbt-exposure', aspects_map, fqn)
+  return _entry(
+      ctx,
+      unique_id,
+      'dbt-exposure',
+      aspects_map,
+      fqn,
+      display_name=exposure.get('label') or resource_name,
+      description=exposure.get('description'),
+      labels=_resource_labels(exposure),
+  )
 
 
 def _where_clause(where: Any) -> str:
@@ -450,7 +796,6 @@ def _build_metric_entry(
     ctx: naming.Context,
     unique_id: str,
     metric: dict[str, Any],
-    parent_entry_name: str | None = None,
 ) -> dict[str, Any]:
   """Builds a dbt-metric entry with node and metric aspects."""
   type_params = metric.get('type_params') or {}
@@ -487,7 +832,9 @@ def _build_metric_entry(
       'dbt-metric',
       aspects_map,
       fqn,
-      parent_entry_name=parent_entry_name,
+      display_name=metric.get('label') or resource_name,
+      description=metric.get('description'),
+      labels=_resource_labels(metric),
   )
 
 
@@ -517,14 +864,22 @@ def _build_macro_entry(
   project_name = macro.get('package_name') or _DEFAULT_PROJECT_NAME
   resource_name = macro.get('name') or ''
   fqn = ctx.dbt_resource_fqn('dbt-macro', project_name, resource_name)
-  return _entry(ctx, unique_id, 'dbt-macro', aspects_map, fqn)
+  return _entry(
+      ctx,
+      unique_id,
+      'dbt-macro',
+      aspects_map,
+      fqn,
+      display_name=resource_name,
+      description=macro.get('description'),
+      labels=_resource_labels(macro),
+  )
 
 
 def _build_semantic_model_entry(
     ctx: naming.Context,
     unique_id: str,
     sm: dict[str, Any],
-    parent_entry_name: str | None = None,
 ) -> dict[str, Any]:
   """Builds a dbt-semantic-model entry with node and semantic-model aspects."""
   relation = sm.get('node_relation') or {}
@@ -588,7 +943,9 @@ def _build_semantic_model_entry(
       'dbt-semantic-model',
       aspects_map,
       fqn,
-      parent_entry_name=parent_entry_name,
+      display_name=sm.get('label') or resource_name,
+      description=sm.get('description'),
+      labels=_resource_labels(sm),
   )
 
 
@@ -613,25 +970,71 @@ def _build_saved_query_entry(
         'alias': ex_config.get('alias') or '',
     })
 
+  sq_data = {
+      'queryMetrics': qp.get('metrics') or [],
+      'groupBy': qp.get('group_by') or [],
+      'whereClause': _where_clause(qp.get('where')),
+      'exports': exports,
+      'metadata': _json_or_empty((sq.get('config') or {}).get('meta')),
+      'orderBy': [
+          o if isinstance(o, str) else json.dumps(o, default=str)
+          for o in qp.get('order_by') or []
+      ],
+  }
+  limit = qp.get('limit')
+  if isinstance(limit, int) and not isinstance(limit, bool):
+    sq_data['limit'] = limit
+
   aspects_map = {
       ctx.aspect_key('dbt-node'): aspects.node_aspect(
           ctx, unique_id, sq, 'saved_query'
       ),
       ctx.aspect_key('dbt-saved-query'): aspects.make_aspect(
-          ctx.aspect_fqn('dbt-saved-query'),
-          {
-              'queryMetrics': qp.get('metrics') or [],
-              'groupBy': qp.get('group_by') or [],
-              'whereClause': _where_clause(qp.get('where')),
-              'exports': exports,
-              'metadata': _json_or_empty((sq.get('config') or {}).get('meta')),
-          },
+          ctx.aspect_fqn('dbt-saved-query'), sq_data
       ),
   }
   project_name = sq.get('package_name') or _DEFAULT_PROJECT_NAME
   resource_name = sq.get('name') or ''
   fqn = ctx.dbt_resource_fqn('dbt-saved-query', project_name, resource_name)
-  return _entry(ctx, unique_id, 'dbt-saved-query', aspects_map, fqn)
+  return _entry(
+      ctx,
+      unique_id,
+      'dbt-saved-query',
+      aspects_map,
+      fqn,
+      display_name=sq.get('label') or resource_name,
+      description=sq.get('description'),
+      labels=_resource_labels(sq),
+  )
+
+
+# The statuses dbt reports for a test
+# (dbt.artifacts.schemas.results.TestStatus). Every other command shares
+# run_results.json with a status drawn from a different enum -- notably
+# `dbt compile` and, before Fusion dropped the command, `dbt docs generate`,
+# both of which record every test as the RunStatus `success`. Reading that back
+# as a test outcome reports the whole suite as having succeeded whether or not
+# it ever ran, so a status outside this set is treated as "this run carries no
+# verdict for this test".
+_TEST_STATUSES = frozenset(['pass', 'fail', 'warn', 'error', 'skipped'])
+
+# dbt commands that never execute a test. `error` and `skipped` exist in both
+# enums, so the status alone cannot tell a compile-time outcome from a real
+# verdict; the command that wrote the file can.
+_NON_TESTING_COMMANDS = frozenset(['compile', 'docs', 'generate', 'parse'])
+
+
+def _run_carries_test_verdicts(run_results: dict[str, Any] | None) -> bool:
+  """Whether the command that wrote ``run_results`` could have run tests."""
+  which = ((run_results or {}).get('args') or {}).get('which')
+  return not (isinstance(which, str) and which.lower() in _NON_TESTING_COMMANDS)
+
+
+def _test_result(res: dict[str, Any]) -> dict[str, Any]:
+  """Returns ``res`` when it holds a genuine test verdict, else empty."""
+  status = res.get('status')
+  is_verdict = isinstance(status, str) and status.lower() in _TEST_STATUSES
+  return res if is_verdict else {}
 
 
 def _test_category(test_node: dict[str, Any]) -> str:
@@ -653,24 +1056,32 @@ def _build_test_entry(
   test_metadata = test_node.get('test_metadata') or {}
   kwargs = test_metadata.get('kwargs') or {}
   res = run_results_map.get(unique_id, {})
+  # res still supplies the compiled SQL even when it carries no verdict: a
+  # compile run's SQL is as good as a test run's, only its status is not.
+  verdict = _test_result(res)
 
   dq = {
       'columnName': (
           test_node.get('column_name') or kwargs.get('column_name') or ''
       ),
-      'sqlDefinition': (
-          test_node.get('compiled_code') or test_node.get('compiled_sql') or ''
+      # The compiled test SQL is written to run_results.json; the manifest node
+      # only carries it when the manifest was produced by `dbt compile`.
+      'sqlDefinition': _truncate_bytes(
+          res.get('compiled_code')
+          or test_node.get('compiled_code')
+          or test_node.get('compiled_sql'),
+          naming.MAX_CODE_BYTES,
       ),
       'severity': config.get('severity') or '',
       'storeFailures': bool(config.get('store_failures', False)),
-      'status': res.get('status') or '',
+      'status': verdict.get('status') or '',
       'testCategory': _test_category(test_node),
-      'message': res.get('message') or '',
+      'message': verdict.get('message') or '',
   }
-  failures = res.get('failures')
+  failures = verdict.get('failures')
   if isinstance(failures, int):
     dq['failures'] = failures
-  rows_affected = (res.get('adapter_response') or {}).get('rows_affected')
+  rows_affected = (verdict.get('adapter_response') or {}).get('rows_affected')
   if isinstance(rows_affected, int):
     dq['rowsAffected'] = rows_affected
 
@@ -682,13 +1093,26 @@ def _build_test_entry(
           ctx.aspect_fqn('dbt-data-quality'), dq
       ),
   }
+  stale = set() if verdict else {ctx.aspect_key('dbt-data-quality')}
   project_name = test_node.get('package_name') or _DEFAULT_PROJECT_NAME
   resource_name = test_node.get('name') or ''
   fqn = ctx.dbt_resource_fqn('dbt-test', project_name, resource_name)
-  return _entry(ctx, unique_id, 'dbt-test', aspects_map, fqn)
+  return _entry(
+      ctx,
+      unique_id,
+      'dbt-test',
+      aspects_map,
+      fqn,
+      display_name=resource_name,
+      description=test_node.get('description'),
+      labels=_resource_labels(test_node),
+      stale_aspects=stale,
+  )
 
 
-def _check_size_limits(unique_id: str, record: dict[str, Any]) -> None:
+def _check_size_limits(
+    ctx: naming.Context, unique_id: str, record: dict[str, Any]
+) -> None:
   """Fails the transform when an entry or aspect exceeds a Dataplex size limit.
 
   dbt resources carry arbitrary user content (compiled test SQL, macro bodies,
@@ -698,38 +1122,190 @@ def _check_size_limits(unique_id: str, record: dict[str, Any]) -> None:
   to GCS and an import job is started -- and point at the offending resource.
   See https://cloud.google.com/dataplex/docs/quotas#limits.
 
+  The schema aspect is the exception: a wide or deeply nested schema is normal
+  dbt output rather than a mistake, so it is trimmed to the column and byte
+  budgets and the resource is imported without its tail columns. Every other
+  aspect holds content we cannot shorten without losing its meaning, so those
+  still fail the run.
+
   Args:
+    ctx: the naming.Context holding the naming coordinates for this run.
     unique_id: the dbt unique_id of the resource, for the error message.
     record: the entry record built for the resource.
 
   Raises:
-    naming.TransformError: if an aspect exceeds the per-aspect limit or the
-      whole entry exceeds the per-entry limit.
+    naming.TransformError: if a non-schema aspect exceeds the per-aspect limit,
+      or the whole entry exceeds the per-entry limit.
   """
   entry = record['entry']
+  schema_key = ctx.schema_key()
+  schema = entry['aspects'].get(schema_key)
+  if schema:
+    fields = schema.get('data', {}).get('fields') or []
+    before = aspects.count_fields(fields)
+    fitted = aspects.fit_fields(
+        fields,
+        naming.MAX_SCHEMA_COLUMNS,
+        naming.MAX_SCHEMA_ASPECT_JSON_BYTES,
+    )
+    after = aspects.count_fields(fitted)
+    if after < before:
+      schema['data']['fields'] = fitted
+      log.warning(
+          f'dbt resource [{unique_id}] has a schema too large for the '
+          f'catalog; keeping {after} of {before} columns. The rest are '
+          'omitted from the schema aspect.'
+      )
   for key, aspect in entry['aspects'].items():
+    if key == schema_key:
+      continue
     aspect_bytes = len(json.dumps(aspect.get('data', {})).encode('utf-8'))
     if aspect_bytes > naming.MAX_ASPECT_JSON_BYTES:
       raise naming.TransformError(
-          'Aspect [{0}] on dbt resource [{1}] is {2} KB, over the {3} KB '
-          'per-aspect limit, and would be rejected by the import job. Reduce '
-          "the resource's content (e.g. compiled SQL, macro body, schema) and "
-          're-run.'.format(
-              key,
-              unique_id,
-              aspect_bytes // 1024,
-              naming.MAX_ASPECT_JSON_BYTES // 1024,
-          )
+          f'Aspect [{key}] on dbt resource [{unique_id}] is '
+          f'{aspect_bytes // 1024} KB, over the '
+          f'{naming.MAX_ASPECT_JSON_BYTES // 1024} KB per-aspect limit, and '
+          "would be rejected by the import job. Reduce the resource's content "
+          '(e.g. compiled SQL, macro body) and re-run.'
       )
   entry_bytes = len(json.dumps(entry).encode('utf-8'))
   if entry_bytes > naming.MAX_ENTRY_BYTES:
     raise naming.TransformError(
-        'dbt resource [{0}] builds a {1} KB entry, over the {2} KB entry size '
-        'limit, and would be rejected by the import job. Reduce the '
-        "resource's content and re-run.".format(
-            unique_id, entry_bytes // 1024, naming.MAX_ENTRY_BYTES // 1024
-        )
+        f'dbt resource [{unique_id}] builds a {entry_bytes // 1024} KB entry, '
+        f'over the {naming.MAX_ENTRY_BYTES // 1024} KB entry size limit, and '
+        "would be rejected by the import job. Reduce the resource's content "
+        'and re-run.'
     )
+
+
+# A semantic dimension/measure only labels a column when it names one plainly;
+# anything expression-shaped (`lower(x)`, `a + b`) is not a column reference.
+_PLAIN_COLUMN = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')
+
+
+def _semantic_columns(
+    manifest: dict[str, Any], model_uid_by_name: dict[str, str]
+) -> dict[str, dict[str, str]]:
+  """Indexes semantic dimensions/measures onto the columns they describe.
+
+  MetricFlow semantic models sit on top of exactly one physical model and label
+  its columns as dimensions or measures. That is the `semantic` field of the 1P
+  schema aspect, so the labels are carried across where a dimension/measure
+  plainly names a column. A column labelled both ways is left unlabelled rather
+  than guessed at.
+
+  The backing model is resolved with `described_model`, the same way the
+  parent entry and the defines-semantics link are, so all three agree.
+
+  Args:
+    manifest: the parsed dbt manifest.
+    model_uid_by_name: model name -> unique_id, from ``model_uids_by_name``.
+
+  Returns:
+    model unique_id -> {lowercased column name: 'DIMENSION' | 'MEASURE'}.
+  """
+  by_model: collections.defaultdict[str, dict[str, str]] = (
+      collections.defaultdict(dict)
+  )
+  for semantic_model in (manifest.get('semantic_models') or {}).values():
+    model_id = described_model(semantic_model, model_uid_by_name)
+    if not model_id:
+      continue
+    columns = by_model[model_id]
+    for role, items in (
+        ('DIMENSION', semantic_model.get('dimensions')),
+        ('MEASURE', semantic_model.get('measures')),
+    ):
+      for item in items or []:
+        column = (item or {}).get('expr') or (item or {}).get('name') or ''
+        if not _PLAIN_COLUMN.match(column):
+          continue
+        # Lowercased to match the columns, which merge case-insensitively.
+        column = column.lower()
+        if columns.setdefault(column, role) != role:
+          columns[column] = ''
+  return {
+      model_id: {c: role for c, role in columns.items() if role}
+      for model_id, columns in by_model.items()
+  }
+
+
+def _sole_dependency(node: dict[str, Any]) -> str | None:
+  """The node's single upstream dbt node, or None when it isn't exactly one."""
+  deps = (node.get('depends_on') or {}).get('nodes') or []
+  return deps[0] if len(deps) == 1 else None
+
+
+def model_uids_by_name(nodes: dict[str, Any]) -> dict[str, str]:
+  """Indexes the manifest's models by name, for resolving a ``ref()`` target.
+
+  Args:
+    nodes: the manifest ``nodes`` section.
+
+  Returns:
+    A dict of model name -> unique_id, over models only. A name carried by more
+    than one model (versioned models, or two packages defining the same name) is
+    left out rather than resolved to an arbitrary one of them.
+  """
+  index: dict[str, str] = {}
+  ambiguous = set()
+  for uid, node in nodes.items():
+    if node.get('resource_type') != 'model':
+      continue
+    name = node.get('name')
+    if not name:
+      continue
+    if name in index:
+      ambiguous.add(name)
+      continue
+    index[name] = uid
+  for name in ambiguous:
+    del index[name]
+  return index
+
+
+def described_model(
+    sm: dict[str, Any], model_uid_by_name: dict[str, str]
+) -> str | None:
+  """The unique_id of the one model a semantic model describes.
+
+  A semantic model declares its model as ``model: ref('orders')``. That is the
+  authoritative link; ``depends_on`` is derived and can pick up a second node
+  (a filter referencing another model, say), which would make the relationship
+  ambiguous even though dbt named it outright.
+
+  Args:
+    sm: the dbt semantic model.
+    model_uid_by_name: model name -> unique_id, from ``model_uids_by_name``.
+
+  Returns:
+    The backing model's unique_id, or None when it cannot be resolved.
+  """
+  declared = model_uid_by_name.get(naming.parse_ref(sm.get('model')) or '')
+  # A ``ref()`` carries only a short name, so accept the resolution only when
+  # dbt's own dependency graph agrees the semantic model reads that node.
+  if declared:
+    depends_on = (sm.get('depends_on') or {}).get('nodes') or []
+    if not depends_on or declared in depends_on:
+      return declared
+  return _sole_dependency(sm)
+
+
+def _test_parent_id(test_node: dict[str, Any]) -> str | None:
+  """The dbt resource a test hangs off, or None when it is ambiguous.
+
+  Generic tests (unique, not_null, ...) name their subject in
+  ``attached_node``. Singular tests do not, so fall back to their dependency
+  when there is exactly one -- a relationship test spanning two models has no
+  single owner and stays at the project root.
+
+  Args:
+    test_node: the dbt test node.
+
+  Returns:
+    The dbt unique_id of the tested resource, or None.
+  """
+  return test_node.get('attached_node') or _sole_dependency(test_node)
 
 
 def _index_by_unique_id(
@@ -755,21 +1331,6 @@ def _index_by_unique_id(
     if uid:
       index[uid] = row
   return index
-
-
-def _resolve_parent_group_entry(
-    ctx: naming.Context,
-    node: dict[str, Any],
-    group_uid_by_name: dict[str, str],
-) -> str | None:
-  """Resolves the parent group entry name for a node, if it belongs to one."""
-  group_name = _node_group(node)
-  if not group_name:
-    return None
-  group_uid = group_uid_by_name.get(group_name)
-  if not group_uid:
-    return None
-  return ctx.entry_name(naming.entry_id(group_uid))
 
 
 def build_entries(
@@ -806,15 +1367,67 @@ def build_entries(
   nodes = manifest.get('nodes') or {}
   manifest_sources = manifest.get('sources') or {}
   catalog_nodes = (catalog or {}).get('nodes') or {}
+  catalog_sources = (catalog or {}).get('sources') or {}
   group_map = manifest.get('group_map') or {}
   run_results_map = _index_by_unique_id((run_results or {}).get('results'))
+  if not _run_carries_test_verdicts(run_results):
+    # Keep the compiled SQL, drop the status: a command that ran no test still
+    # writes one, and `error` / `skipped` look like verdicts.
+    run_results_map = {
+        uid: {k: v for k, v in res.items() if k != 'status'}
+        for uid, res in run_results_map.items()
+    }
   sources_map = _index_by_unique_id((sources or {}).get('results'))
-
+  groups = manifest.get('groups') or {}
+  # dbt nodes name their group by name; the group entry is keyed by unique_id.
+  # A group without a name is skipped, so that an ungrouped node -- which also
+  # resolves to no name -- does not match it.
   group_uid_by_name = {
-      group.get('name'): uid
-      for uid, group in (manifest.get('groups') or {}).items()
+      group['name']: unique_id
+      for unique_id, group in groups.items()
       if group.get('name')
   }
+  by_type = {'model': [], 'seed': [], 'snapshot': [], 'test': []}
+  for unique_id, node in nodes.items():
+    bucket = by_type.get(node.get('resource_type'))
+    if bucket is not None:
+      bucket.append((unique_id, node))
+
+  # A foreign_key constraint's target reaches the manifest in one of two forms:
+  # the authored `to: ref('model')`, or -- once the model's contract is
+  # enforced, which is when dbt renders the constraint into DDL -- the resolved
+  # relation name (`` `project`.`dataset`.`model` ``). Both are indexed, since
+  # the 1P schema aspect wants a Dataplex entry name either way. Index by short
+  # name rather than rebuilding the unique_id, for the reasons in entry_links.
+  # Foreign key resolution is best effort: dbt's `to` is free text, so a target
+  # can be a ref(), a bare relation, a source() or something we don't model at
+  # all. Anything that does not resolve to exactly one node is left off the
+  # constraint rather than guessed at -- a wrong `referencedTable` reads as
+  # authoritative lineage, which is worse than none.
+  uid_by_name = {}
+  uid_by_relation = {}
+  ambiguous_names = set()
+  ambiguous_relations = set()
+  for unique_id, node in nodes.items():
+    if node.get('resource_type') not in ('model', 'seed', 'snapshot'):
+      continue
+    name = node.get('name')
+    if name:
+      # Versioned models share a name, as do two packages defining the same one.
+      if name in uid_by_name:
+        ambiguous_names.add(name)
+      else:
+        uid_by_name[name] = unique_id
+    relation = _normalize_relation(node.get('relation_name'))
+    if relation:
+      if relation in uid_by_relation:
+        ambiguous_relations.add(relation)
+      else:
+        uid_by_relation[relation] = unique_id
+  for name in ambiguous_names:
+    del uid_by_name[name]
+  for relation in ambiguous_relations:
+    del uid_by_relation[relation]
 
   entries = []
   # entry_id -> unique_id, tracked as entries are added. This hands entry_links
@@ -823,7 +1436,25 @@ def build_entries(
   # resources onto one id -- one would silently overwrite the other on import.
   ids = {}
 
-  def add(unique_id: str, record: dict[str, Any]) -> None:
+  # dbt unique_ids already emitted. `parentEntry` is validated against an
+  # existing entry at create time, so a parent is only attached once we have
+  # actually emitted it -- which the emission order below guarantees.
+  emitted = set()
+  project_id = _project_unique_id(manifest)
+
+  def add(
+      unique_id: str,
+      record: dict[str, Any],
+      parent_unique_id: str | None = None,
+  ) -> None:
+    # A parent that was never emitted -- an `attached_node` naming a resource
+    # type we don't emit, say -- would be a dangling reference that Dataplex
+    # rejects, so fall back to the project to keep the tree connected. The
+    # project itself is the root and takes no parent.
+    parent = parent_unique_id if parent_unique_id in emitted else project_id
+    if parent != unique_id:
+      record['entry']['parentEntry'] = ctx.entry_name(naming.entry_id(parent))
+    emitted.add(unique_id)
     entries.append(record)
     entry_id = naming.entry_id(unique_id)
     if len(entry_id) > naming.MAX_ENTRY_ID_LENGTH:
@@ -833,7 +1464,7 @@ def build_entries(
               entry_id, unique_id, naming.MAX_ENTRY_ID_LENGTH
           )
       )
-    _check_size_limits(unique_id, record)
+    _check_size_limits(ctx, unique_id, record)
     if entry_id in ids and ids[entry_id] != unique_id:
       log.warning(
           'Two dbt resources map to the same Dataplex entry id [{0}] ([{1}] '
@@ -843,63 +1474,103 @@ def build_entries(
       )
     ids[entry_id] = unique_id
 
-  add(_project_unique_id(manifest), _build_project_entry(ctx, manifest))
+  def group_uid(node: dict[str, Any]) -> str | None:
+    """The unique_id of the node's dbt group, when it declares one."""
+    name = node.get('group') or (node.get('config') or {}).get('group')
+    return group_uid_by_name.get(name) if name else None
 
-  for unique_id, node in nodes.items():
-    rt = node.get('resource_type')
-    if rt == 'model':
-      parent_name = _resolve_parent_group_entry(ctx, node, group_uid_by_name)
-      add(
-          unique_id,
-          _build_model_entry(
-              ctx,
-              unique_id,
-              node,
-              catalog_nodes,
-              parent_entry_name=parent_name,
-          ),
-      )
-    elif rt == 'seed':
-      add(unique_id, _build_seed_entry(ctx, unique_id, node, catalog_nodes))
-    elif rt == 'snapshot':
-      add(unique_id, _build_snapshot_entry(ctx, unique_id, node))
-    elif rt == 'test':
-      add(unique_id, _build_test_entry(ctx, unique_id, node, run_results_map))
+  def resolve_target(to: str) -> str | None:
+    """Maps a foreign key's raw `to` to its Dataplex entry name, if any."""
+    target = uid_by_name.get(naming.parse_ref(to) or '')
+    if not target:
+      target = uid_by_relation.get(_normalize_relation(to))
+    return ctx.entry_name(naming.entry_id(target)) if target else None
 
-  for unique_id, src in manifest_sources.items():
-    add(unique_id, _build_source_entry(ctx, unique_id, src, sources_map))
+  # Emission order is the hierarchy order: a parent is always written before
+  # its children so that `parentEntry` resolves at import time.
+  add(project_id, _build_project_entry(ctx, manifest))
 
-  for unique_id, group in (manifest.get('groups') or {}).items():
-    add(unique_id, _build_group_entry(ctx, unique_id, group, group_map))
-
-  for unique_id, exposure in (manifest.get('exposures') or {}).items():
-    add(unique_id, _build_exposure_entry(ctx, unique_id, exposure))
-
-  for unique_id, metric in (manifest.get('metrics') or {}).items():
-    parent_name = _resolve_parent_group_entry(ctx, metric, group_uid_by_name)
+  for unique_id, group in groups.items():
     add(
         unique_id,
-        _build_metric_entry(
-            ctx, unique_id, metric, parent_entry_name=parent_name
-        ),
+        _build_group_entry(ctx, unique_id, group, group_map),
+        project_id,
     )
+
+  for unique_id, src in manifest_sources.items():
+    add(
+        unique_id,
+        _build_source_entry(ctx, unique_id, src, sources_map, catalog_sources),
+        project_id,
+    )
+
+  for unique_id, exposure in (manifest.get('exposures') or {}).items():
+    add(unique_id, _build_exposure_entry(ctx, unique_id, exposure), project_id)
+
+  # A metric declares dbt group membership the same way a model does.
+  for unique_id, metric in (manifest.get('metrics') or {}).items():
+    add(
+        unique_id,
+        _build_metric_entry(ctx, unique_id, metric),
+        group_uid(metric),
+    )
+
+  for unique_id, sq in (manifest.get('saved_queries') or {}).items():
+    add(unique_id, _build_saved_query_entry(ctx, unique_id, sq), project_id)
 
   for unique_id, macro in (manifest.get('macros') or {}).items():
     # Only emit macros defined in the user's project (not imported packages).
     if macro.get('package_name') != project_name:
       continue
-    add(unique_id, _build_macro_entry(ctx, unique_id, macro))
+    add(unique_id, _build_macro_entry(ctx, unique_id, macro), project_id)
 
-  for unique_id, sm in (manifest.get('semantic_models') or {}).items():
-    parent_name = _resolve_parent_group_entry(ctx, sm, group_uid_by_name)
+  # Materialized resources nest under their dbt group when they declare one.
+  model_uid_by_name = model_uids_by_name(nodes)
+  semantic_columns = _semantic_columns(manifest, model_uid_by_name)
+  for unique_id, node in by_type['model']:
     add(
         unique_id,
-        _build_semantic_model_entry(
-            ctx, unique_id, sm, parent_entry_name=parent_name
+        _build_model_entry(
+            ctx,
+            unique_id,
+            node,
+            catalog_nodes,
+            semantic_columns.get(unique_id),
+            resolve_target,
         ),
+        group_uid(node),
+    )
+  for unique_id, node in by_type['seed']:
+    add(
+        unique_id,
+        _build_seed_entry(ctx, unique_id, node, catalog_nodes, resolve_target),
+        group_uid(node),
+    )
+  for unique_id, node in by_type['snapshot']:
+    add(
+        unique_id,
+        _build_snapshot_entry(
+            ctx, unique_id, node, catalog_nodes, resolve_target
+        ),
+        group_uid(node),
     )
 
-  for unique_id, sq in (manifest.get('saved_queries') or {}).items():
-    add(unique_id, _build_saved_query_entry(ctx, unique_id, sq))
+  # A semantic model describes exactly one physical model, which is the most
+  # informative parent; failing that, the group it declares, then the project.
+  for unique_id, sm in (manifest.get('semantic_models') or {}).items():
+    model_uid = described_model(sm, model_uid_by_name)
+    add(
+        unique_id,
+        _build_semantic_model_entry(ctx, unique_id, sm),
+        model_uid if model_uid in emitted else group_uid(sm),
+    )
+
+  # Tests hang off the resource they test.
+  for unique_id, node in by_type['test']:
+    add(
+        unique_id,
+        _build_test_entry(ctx, unique_id, node, run_results_map),
+        _test_parent_id(node),
+    )
 
   return entries, set(ids)

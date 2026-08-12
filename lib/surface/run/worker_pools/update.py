@@ -281,6 +281,7 @@ class AlphaUpdate(BetaUpdate):
   @classmethod
   def Args(cls, parser) -> None:
     cls.CommonArgs(parser)
+    flags.AddGracePeriodFlag(parser, object_to_shutdown='worker pool instances')
     flags.AddCpuUtilizationFlag(parser, hidden=True, resource_kind='workerPool')
     flags.AddWorkerPoolMinInstancesFlag(parser)
     flags.AddWorkerPoolMaxInstancesFlag(parser)

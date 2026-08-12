@@ -19,10 +19,14 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.ssl_policies import ssl_policies_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.ssl_policies import flags
 
 
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.PREVIEW
+)
 @base.UniverseCompatible
 class Update(base.UpdateCommand):
   """Update a Compute Engine SSL policy.
@@ -37,7 +41,7 @@ class Update(base.UpdateCommand):
   Network Load Balancers.
   """
 
-  SSL_POLICY_ARG = None
+  SSL_POLICY_ARG = None  # type: compute_flags.ResourceArgument
 
   @classmethod
   def Args(cls, parser):
@@ -56,7 +60,7 @@ class Update(base.UpdateCommand):
     ssl_policy_ref = self.SSL_POLICY_ARG.ResolveAsResource(
         args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
 
-    include_custom_features, custom_features = Update._GetCustomFeatures(args)
+    include_custom_features, custom_features = self._GetCustomFeatures(args)
     existing_ssl_policy = helper.Describe(ssl_policy_ref)
 
     patch_ssl_policy = helper.GetSslPolicyForPatch(
@@ -102,3 +106,52 @@ class Update(base.UpdateCommand):
     else:
       # Custom features will not be sent as part of the patch request.
       return (False, [])
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
+class UpdateAlpha(Update):
+  """Update a Compute Engine SSL policy.
+
+  *{command}* is used to update SSL policies.
+
+  An SSL policy specifies the server-side support for SSL features. An SSL
+  policy can be attached to a TargetHttpsProxy or a TargetSslProxy. This affects
+  connections between clients and the load balancer. SSL
+  policies do not affect the connection between the load balancers and the
+  backends. SSL policies are used by Application Load Balancers and proxy
+  Network Load Balancers.
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    super(UpdateAlpha, cls).Args(parser)
+    flags.GetTlsModeFlag().AddToParser(parser)
+
+  def Run(self, args):
+    """Issues the request to update a SSL policy."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    helper = ssl_policies_utils.SslPolicyHelper(holder)
+    ssl_policy_ref = self.SSL_POLICY_ARG.ResolveAsResource(
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL
+    )
+
+    include_custom_features, custom_features = self._GetCustomFeatures(args)
+    existing_ssl_policy = helper.Describe(ssl_policy_ref)
+
+    patch_ssl_policy = helper.GetSslPolicyForPatch(
+        fingerprint=existing_ssl_policy.fingerprint,
+        profile=args.profile,
+        min_tls_version=flags.ParseTlsVersion(args.min_tls_version),
+        custom_features=custom_features,
+        post_quantum_key_exchange=args.post_quantum_key_exchange,
+        tls_mode=args.tls_mode
+    )
+    operation_ref = helper.Patch(
+        ssl_policy_ref,
+        patch_ssl_policy,
+        include_custom_features and not custom_features
+    )
+    return helper.WaitForOperation(
+        ssl_policy_ref, operation_ref, 'Updating SSL policy'
+    )

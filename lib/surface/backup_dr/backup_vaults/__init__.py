@@ -23,3 +23,4 @@ from googlecloudsdk.calliope import base
 )
 class BackupVaults(base.Group):
   """Manage Backup and DR backup vaults."""
+  category = base.STORAGE_CATEGORY

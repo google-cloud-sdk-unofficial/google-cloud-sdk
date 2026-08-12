@@ -37,6 +37,7 @@ class DataprocV1(base_api.BaseApiClient):
         default_global_params=default_global_params,
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
+    self.projects_locations_attachments = self.ProjectsLocationsAttachmentsService(self)
     self.projects_locations_autoscalingPolicies = self.ProjectsLocationsAutoscalingPoliciesService(self)
     self.projects_locations_batches_sparkApplications = self.ProjectsLocationsBatchesSparkApplicationsService(self)
     self.projects_locations_batches = self.ProjectsLocationsBatchesService(self)
@@ -54,6 +55,151 @@ class DataprocV1(base_api.BaseApiClient):
     self.projects_regions_workflowTemplates = self.ProjectsRegionsWorkflowTemplatesService(self)
     self.projects_regions = self.ProjectsRegionsService(self)
     self.projects = self.ProjectsService(self)
+
+  class ProjectsLocationsAttachmentsService(base_api.BaseApiService):
+    """Service class for the projects_locations_attachments resource."""
+
+    _NAME = 'projects_locations_attachments'
+
+    def __init__(self, client):
+      super(DataprocV1.ProjectsLocationsAttachmentsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new Attachment in a given project and location.
+
+      Args:
+        request: (DataprocProjectsLocationsAttachmentsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/attachments',
+        http_method='POST',
+        method_id='dataproc.projects.locations.attachments.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['attachmentId', 'requestId'],
+        relative_path='v1/{+parent}/attachments',
+        request_field='attachment',
+        request_type_name='DataprocProjectsLocationsAttachmentsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single Attachment.
+
+      Args:
+        request: (DataprocProjectsLocationsAttachmentsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/attachments/{attachmentsId}',
+        http_method='DELETE',
+        method_id='dataproc.projects.locations.attachments.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='DataprocProjectsLocationsAttachmentsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single Attachment.
+
+      Args:
+        request: (DataprocProjectsLocationsAttachmentsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Attachment) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/attachments/{attachmentsId}',
+        http_method='GET',
+        method_id='dataproc.projects.locations.attachments.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='DataprocProjectsLocationsAttachmentsGetRequest',
+        response_type_name='Attachment',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists Attachments in a given project and location.
+
+      Args:
+        request: (DataprocProjectsLocationsAttachmentsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListAttachmentsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/attachments',
+        http_method='GET',
+        method_id='dataproc.projects.locations.attachments.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/attachments',
+        request_field='',
+        request_type_name='DataprocProjectsLocationsAttachmentsListRequest',
+        response_type_name='ListAttachmentsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single Attachment.
+
+      Args:
+        request: (DataprocProjectsLocationsAttachmentsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/attachments/{attachmentsId}',
+        http_method='PATCH',
+        method_id='dataproc.projects.locations.attachments.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1/{+name}',
+        request_field='attachment',
+        request_type_name='DataprocProjectsLocationsAttachmentsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
 
   class ProjectsLocationsAutoscalingPoliciesService(base_api.BaseApiService):
     """Service class for the projects_locations_autoscalingPolicies resource."""

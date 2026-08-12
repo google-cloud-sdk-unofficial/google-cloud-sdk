@@ -4250,7 +4250,8 @@ class Backend(_messages.Message):
     BalancingModeValueValuesEnum: Specifies how to determine whether the
       backend of a load balancer can handle additional traffic or is fully
       loaded. For usage guidelines, see Connection balancing mode.  Backends
-      must use compatible balancing modes. For more information, see Supported
+      must use compatible balancing modes. Backends of a backend service may
+      use different balancing modes. For more information, see  Supported
       balancing modes and target capacity settings and Restrictions and
       guidance for instance groups.  Note: Currently, if you use the API to
       configure incompatible balancing modes, the configuration might be
@@ -4264,15 +4265,19 @@ class Backend(_messages.Message):
       first, based on RTT.    - DEFAULT:  If preferred backends don't have
       enough    capacity, backends in this layer would be used and traffic
       would be    assigned based on the load balancing algorithm you use. This
-      is the    default
+      is the    default    For global external Passthrough Network Load
+      Balancers, the following restrictions apply:        - At most one
+      backend can be marked as PREFERRED.    - PREFERRED and DEFAULT backends
+      cannot reside    in the same Cloud region.
     TrafficDurationValueValuesEnum:
 
   Fields:
     balancingMode: Specifies how to determine whether the backend of a load
       balancer can handle additional traffic or is fully loaded. For usage
       guidelines, see Connection balancing mode.  Backends must use compatible
-      balancing modes. For more information, see Supported balancing modes and
-      target capacity settings and Restrictions and guidance for instance
+      balancing modes. Backends of a backend service may use different
+      balancing modes. For more information, see  Supported balancing modes
+      and target capacity settings and Restrictions and guidance for instance
       groups.  Note: Currently, if you use the API to configure incompatible
       balancing modes, the configuration might be accepted even though it has
       no impact and is ignored. Specifically, Backend.maxUtilization is
@@ -4294,6 +4299,8 @@ class Backend(_messages.Message):
       property when you create the resource.
     failover: This field designates whether this is a failover backend. More
       than one failover backend can be configured for a given BackendService.
+      This field can only be used for a regional external Passthrough Network
+      Load Balancer or a regional internal Passthrough Network Load Balancer.
     group: The fully-qualified URL of aninstance group or network endpoint
       group (NEG) resource. To determine what types of backends a load
       balancer supports, see the [Backend services
@@ -4346,6 +4353,10 @@ class Backend(_messages.Message):
       - DEFAULT:  If preferred backends don't have enough    capacity,
       backends in this layer would be used and traffic would be    assigned
       based on the load balancing algorithm you use. This is the    default
+      For global external Passthrough Network Load Balancers, the following
+      restrictions apply:        - At most one backend can be marked as
+      PREFERRED.    - PREFERRED and DEFAULT backends cannot reside    in the
+      same Cloud region.
     service: Represents a service backend (e.g., Cloud Run service, PSC
       Service Attachment). e.g.
       "run.googleapis.com/projects/123456789/locations/us-
@@ -4360,10 +4371,11 @@ class Backend(_messages.Message):
     r"""Specifies how to determine whether the backend of a load balancer can
     handle additional traffic or is fully loaded. For usage guidelines, see
     Connection balancing mode.  Backends must use compatible balancing modes.
-    For more information, see Supported balancing modes and target capacity
-    settings and Restrictions and guidance for instance groups.  Note:
-    Currently, if you use the API to configure incompatible balancing modes,
-    the configuration might be accepted even though it has no impact and is
+    Backends of a backend service may use different balancing modes. For more
+    information, see  Supported balancing modes and target capacity settings
+    and Restrictions and guidance for instance groups.  Note: Currently, if
+    you use the API to configure incompatible balancing modes, the
+    configuration might be accepted even though it has no impact and is
     ignored. Specifically, Backend.maxUtilization is ignored when
     Backend.balancingMode is RATE. In the future, this incompatible
     combination will be rejected.
@@ -4388,7 +4400,10 @@ class Backend(_messages.Message):
     be    filled up to their capacity limits first, based on RTT.    -
     DEFAULT:  If preferred backends don't have enough    capacity, backends in
     this layer would be used and traffic would be    assigned based on the
-    load balancing algorithm you use. This is the    default
+    load balancing algorithm you use. This is the    default    For global
+    external Passthrough Network Load Balancers, the following restrictions
+    apply:        - At most one backend can be marked as PREFERRED.    -
+    PREFERRED and DEFAULT backends cannot reside    in the same Cloud region.
 
     Values:
       DEFAULT: No preference.
@@ -4744,18 +4759,18 @@ class BackendBucketCdnPolicy(_messages.Message):
 
   Enums:
     CacheModeValueValuesEnum: Specifies the cache setting for all responses
-      from this backend. The possible values are:USE_ORIGIN_HEADERS Requires
+      from this backend. The possible values are: USE_ORIGIN_HEADERS Requires
       the origin to set valid caching headers to cache content. Responses
       without these headers will not be cached at Google's edge, and will
       require a full trip to the origin on every request, potentially
-      impacting performance and increasing load on the origin
-      server.FORCE_CACHE_ALL Cache all content, ignoring any "private", "no-
-      store" or "no-cache" directives in Cache-Control response headers.
-      Warning: this may result in Cloud CDN caching private, per-user (user
-      identifiable) content.CACHE_ALL_STATIC Automatically cache static
-      content, including common image formats, media (video and audio), and
-      web assets (JavaScript and CSS). Requests and responses that are marked
-      as uncacheable, as well as dynamic content (including HTML), will not be
+      impacting performance and increasing load on the origin server.
+      FORCE_CACHE_ALL Cache all content, ignoring any "private", "no-store" or
+      "no-cache" directives in Cache-Control response headers. Warning: this
+      may result in Cloud CDN caching private, per-user (user identifiable)
+      content. CACHE_ALL_STATIC Automatically cache static content, including
+      common image formats, media (video and audio), and web assets
+      (JavaScript and CSS). Requests and responses that are marked as
+      uncacheable, as well as dynamic content (including HTML), will not be
       cached.  If no value is provided for cdnPolicy.cacheMode, it defaults to
       CACHE_ALL_STATIC.
 
@@ -4766,14 +4781,14 @@ class BackendBucketCdnPolicy(_messages.Message):
       cdnPolicy.cacheMode settings.
     cacheKeyPolicy: The CacheKeyPolicy for this CdnPolicy.
     cacheMode: Specifies the cache setting for all responses from this
-      backend. The possible values are:USE_ORIGIN_HEADERS Requires the origin
+      backend. The possible values are: USE_ORIGIN_HEADERS Requires the origin
       to set valid caching headers to cache content. Responses without these
       headers will not be cached at Google's edge, and will require a full
       trip to the origin on every request, potentially impacting performance
-      and increasing load on the origin server.FORCE_CACHE_ALL Cache all
+      and increasing load on the origin server. FORCE_CACHE_ALL Cache all
       content, ignoring any "private", "no-store" or "no-cache" directives in
       Cache-Control response headers. Warning: this may result in Cloud CDN
-      caching private, per-user (user identifiable) content.CACHE_ALL_STATIC
+      caching private, per-user (user identifiable) content. CACHE_ALL_STATIC
       Automatically cache static content, including common image formats,
       media (video and audio), and web assets (JavaScript and CSS). Requests
       and responses that are marked as uncacheable, as well as dynamic content
@@ -4852,14 +4867,14 @@ class BackendBucketCdnPolicy(_messages.Message):
 
   class CacheModeValueValuesEnum(_messages.Enum):
     r"""Specifies the cache setting for all responses from this backend. The
-    possible values are:USE_ORIGIN_HEADERS Requires the origin to set valid
+    possible values are: USE_ORIGIN_HEADERS Requires the origin to set valid
     caching headers to cache content. Responses without these headers will not
     be cached at Google's edge, and will require a full trip to the origin on
     every request, potentially impacting performance and increasing load on
-    the origin server.FORCE_CACHE_ALL Cache all content, ignoring any
+    the origin server. FORCE_CACHE_ALL Cache all content, ignoring any
     "private", "no-store" or "no-cache" directives in Cache-Control response
     headers. Warning: this may result in Cloud CDN caching private, per-user
-    (user identifiable) content.CACHE_ALL_STATIC Automatically cache static
+    (user identifiable) content. CACHE_ALL_STATIC Automatically cache static
     content, including common image formats, media (video and audio), and web
     assets (JavaScript and CSS). Requests and responses that are marked as
     uncacheable, as well as dynamic content (including HTML), will not be
@@ -5589,7 +5604,8 @@ class BackendService(_messages.Message):
       INTERNAL_SELF_MANAGED).
     LoadBalancingSchemeValueValuesEnum: Specifies the load balancer type. A
       backend service created for one type of load balancer cannot be used
-      with another. For more information, refer toChoosing a load balancer.
+      with another. For more information, refer to Backend services product
+      and scheme table.
     LocalityLbPolicyValueValuesEnum: The load balancing algorithm used within
       the scope of the locality. The possible values are:        -
       ROUND_ROBIN: This is a simple policy in which each healthy    backend is
@@ -5613,26 +5629,33 @@ class BackendService(_messages.Message):
       If set, the Backend Service responses are expected to contain non-
       standard    HTTP response header field Endpoint-Load-Metrics. The
       reported    metrics to use for computing the weights are specified via
-      thecustomMetrics field.        This field is applicable to either:
-      - A regional backend service with the service protocol set to HTTP,
-      HTTPS, HTTP2 or H2C, and load_balancing_scheme set to
-      INTERNAL_MANAGED.        - A global backend service with the
-      load_balancing_scheme set to INTERNAL_SELF_MANAGED, INTERNAL_MANAGED, or
-      EXTERNAL_MANAGED.            If sessionAffinity is not configured-that
-      is, if session    affinity remains at the default value of NONE-then the
-      default value for localityLbPolicy    is ROUND_ROBIN. If session
-      affinity is set to a value other    than NONE,    then the default value
-      for localityLbPolicy isMAGLEV.        Only ROUND_ROBIN and RING_HASH are
-      supported    when the backend service is referenced by a URL map that is
-      bound to    target gRPC proxy that has validateForProxyless field set to
-      true.        localityLbPolicy cannot be specified with haPolicy.
+      thecustomMetrics field.    - WEIGHTED_MAGLEV: Per-endpoint weighted load
+      balancing via    health check reported weights. If set, the backend
+      service must configure    an HTTP-based Health Check, and health check
+      replies are expected to    contain the non-standard HTTP response header
+      fieldX-Load-Balancing-Endpoint-Weight to specify the per-endpoint
+      weights. If set, load balancing is weighted based on the per-endpoint
+      weights reported in the last processed health check replies, as long as
+      every instance either reported a valid weight or had UNAVAILABLE_WEIGHT.
+      Otherwise, load balancing remains equal-weight.    This field is
+      applicable to either:        - A regional backend service with the
+      service protocol set to HTTP,    HTTPS, HTTP2 or H2C, and
+      load_balancing_scheme set to    INTERNAL_MANAGED.     - A global backend
+      service with the    load_balancing_scheme set to INTERNAL_SELF_MANAGED,
+      INTERNAL_MANAGED, or    EXTERNAL_MANAGED.    If sessionAffinity is not
+      configured-that is, if session affinity remains at the default value of
+      NONE-then the default value for localityLbPolicy is ROUND_ROBIN. If
+      session affinity is set to a value other than NONE, then the default
+      value for localityLbPolicy isMAGLEV.  Only ROUND_ROBIN and RING_HASH are
+      supported when the backend service is referenced by a URL map that is
+      bound to target gRPC proxy that has validateForProxyless field set to
+      true.  localityLbPolicy cannot be specified with haPolicy.
     ProtocolValueValuesEnum: The protocol this BackendService uses to
       communicate with backends.  Possible values are HTTP, HTTPS, HTTP2, H2C,
-      TCP, SSL, UDP or GRPC. depending on the chosen load balancer or Traffic
-      Director configuration. Refer to the documentation for the load
-      balancers or for Traffic Director for more information.  Must be set to
-      GRPC when the backend service is referenced by a URL map that is bound
-      to target gRPC proxy.
+      TCP, SSL, UDP, GRPC, or UNSPECIFIED, depending on the chosen load
+      balancer or Traffic Director configuration. Refer to  Load balancing
+      features for more information.  Must be set to GRPC when the backend
+      service is referenced by a URL map that is bound to target gRPC proxy.
     SessionAffinityValueValuesEnum: Type of session affinity to use. The
       default is NONE.  Only NONE and HEADER_FIELD are supported when the
       backend service is referenced by a URL map that is bound to target gRPC
@@ -5726,8 +5749,9 @@ class BackendService(_messages.Message):
       Balancers](https://cloud.google.com/load-
       balancing/docs/internal/failover-overview) and [external passthrough
       Network Load Balancers](https://cloud.google.com/load-
-      balancing/docs/network/networklb-failover-overview).  failoverPolicy
-      cannot be specified with haPolicy.
+      balancing/docs/network/networklb-failover-overview). failoverPolicy
+      cannot be specified with haPolicy.failoverPolicy cannot be used by
+      global external Passthrough Network Load Balancers.
     fingerprint: Fingerprint of this resource. A hash of the contents stored
       in this object. This field is used in optimistic locking. This field
       will be ignored when inserting a BackendService. An up-to-date
@@ -5751,9 +5775,10 @@ class BackendService(_messages.Message):
       connectionTrackingPolicy, and failoverPolicy.  haPolicy requires
       customers to be responsible for tracking backend endpoint health and
       electing a leader among the healthy endpoints. Therefore, haPolicy
-      cannot be specified with healthChecks.  haPolicy can only be specified
+      cannot be specified with healthChecks. haPolicy can only be specified
       for External Passthrough Network Load Balancers and Internal Passthrough
-      Network Load Balancers.
+      Network Load Balancers.haPolicy cannot be used by global external
+      Passthrough Network Load Balancers.
     healthChecks: The list of URLs to the healthChecks, httpHealthChecks
       (legacy), or httpsHealthChecks (legacy) resource for health checking
       this backend service. Not all backend services support legacy health
@@ -5792,7 +5817,7 @@ class BackendService(_messages.Message):
       compute#backendService for backend services.
     loadBalancingScheme: Specifies the load balancer type. A backend service
       created for one type of load balancer cannot be used with another. For
-      more information, refer toChoosing a load balancer.
+      more information, refer to Backend services product and scheme table.
     localityLbPolicies: A list of locality load-balancing policies to be used
       in order of preference. When you use localityLbPolicies, you must set at
       least one value for either the localityLbPolicies[].policy or the
@@ -5825,19 +5850,27 @@ class BackendService(_messages.Message):
       If set, the Backend Service responses are expected to contain non-
       standard    HTTP response header field Endpoint-Load-Metrics. The
       reported    metrics to use for computing the weights are specified via
-      thecustomMetrics field.        This field is applicable to either:
-      - A regional backend service with the service protocol set to HTTP,
-      HTTPS, HTTP2 or H2C, and load_balancing_scheme set to
-      INTERNAL_MANAGED.        - A global backend service with the
-      load_balancing_scheme set to INTERNAL_SELF_MANAGED, INTERNAL_MANAGED, or
-      EXTERNAL_MANAGED.            If sessionAffinity is not configured-that
-      is, if session    affinity remains at the default value of NONE-then the
-      default value for localityLbPolicy    is ROUND_ROBIN. If session
-      affinity is set to a value other    than NONE,    then the default value
-      for localityLbPolicy isMAGLEV.        Only ROUND_ROBIN and RING_HASH are
-      supported    when the backend service is referenced by a URL map that is
-      bound to    target gRPC proxy that has validateForProxyless field set to
-      true.        localityLbPolicy cannot be specified with haPolicy.
+      thecustomMetrics field.    - WEIGHTED_MAGLEV: Per-endpoint weighted load
+      balancing via    health check reported weights. If set, the backend
+      service must configure    an HTTP-based Health Check, and health check
+      replies are expected to    contain the non-standard HTTP response header
+      fieldX-Load-Balancing-Endpoint-Weight to specify the per-endpoint
+      weights. If set, load balancing is weighted based on the per-endpoint
+      weights reported in the last processed health check replies, as long as
+      every instance either reported a valid weight or had UNAVAILABLE_WEIGHT.
+      Otherwise, load balancing remains equal-weight.    This field is
+      applicable to either:        - A regional backend service with the
+      service protocol set to HTTP,    HTTPS, HTTP2 or H2C, and
+      load_balancing_scheme set to    INTERNAL_MANAGED.     - A global backend
+      service with the    load_balancing_scheme set to INTERNAL_SELF_MANAGED,
+      INTERNAL_MANAGED, or    EXTERNAL_MANAGED.    If sessionAffinity is not
+      configured-that is, if session affinity remains at the default value of
+      NONE-then the default value for localityLbPolicy is ROUND_ROBIN. If
+      session affinity is set to a value other than NONE, then the default
+      value for localityLbPolicy isMAGLEV.  Only ROUND_ROBIN and RING_HASH are
+      supported when the backend service is referenced by a URL map that is
+      bound to target gRPC proxy that has validateForProxyless field set to
+      true.  localityLbPolicy cannot be specified with haPolicy.
     logConfig: This field denotes the logging options for the load balancer
       traffic served by this backend service. If logging is enabled, logs will
       be exported to Stackdriver.
@@ -5910,12 +5943,11 @@ class BackendService(_messages.Message):
       NEGs. For internal passthrough Network Load Balancers and external
       passthrough Network Load Balancers, omit port_name.
     protocol: The protocol this BackendService uses to communicate with
-      backends.  Possible values are HTTP, HTTPS, HTTP2, H2C, TCP, SSL, UDP or
-      GRPC. depending on the chosen load balancer or Traffic Director
-      configuration. Refer to the documentation for the load balancers or for
-      Traffic Director for more information.  Must be set to GRPC when the
-      backend service is referenced by a URL map that is bound to target gRPC
-      proxy.
+      backends.  Possible values are HTTP, HTTPS, HTTP2, H2C, TCP, SSL, UDP,
+      GRPC, or UNSPECIFIED, depending on the chosen load balancer or Traffic
+      Director configuration. Refer to  Load balancing features for more
+      information.  Must be set to GRPC when the backend service is referenced
+      by a URL map that is bound to target gRPC proxy.
     region: Output only. [Output Only] URL of the region where the regional
       backend service resides. This field is not applicable to global backend
       services. You must specify this field as part of the HTTP request URL.
@@ -6044,7 +6076,7 @@ class BackendService(_messages.Message):
   class LoadBalancingSchemeValueValuesEnum(_messages.Enum):
     r"""Specifies the load balancer type. A backend service created for one
     type of load balancer cannot be used with another. For more information,
-    refer toChoosing a load balancer.
+    refer to Backend services product and scheme table.
 
     Values:
       EXTERNAL: Signifies that this will be used for classic Application Load
@@ -6094,19 +6126,26 @@ class BackendService(_messages.Message):
     the Backend Service responses are expected to contain non-standard    HTTP
     response header field Endpoint-Load-Metrics. The reported    metrics to
     use for computing the weights are specified via thecustomMetrics field.
-    This field is applicable to either:       - A regional backend service
-    with the service protocol set to HTTP,       HTTPS, HTTP2 or H2C, and
-    load_balancing_scheme set to       INTERNAL_MANAGED.        - A global
-    backend service with the       load_balancing_scheme set to
-    INTERNAL_SELF_MANAGED, INTERNAL_MANAGED, or       EXTERNAL_MANAGED.
-    If sessionAffinity is not configured-that is, if session    affinity
-    remains at the default value of NONE-then the    default value for
-    localityLbPolicy    is ROUND_ROBIN. If session affinity is set to a value
-    other    than NONE,    then the default value for localityLbPolicy
-    isMAGLEV.        Only ROUND_ROBIN and RING_HASH are supported    when the
-    backend service is referenced by a URL map that is bound to    target gRPC
-    proxy that has validateForProxyless field set to true.
-    localityLbPolicy cannot be specified with haPolicy.
+    - WEIGHTED_MAGLEV: Per-endpoint weighted load balancing via    health
+    check reported weights. If set, the backend service must configure    an
+    HTTP-based Health Check, and health check replies are expected to
+    contain the non-standard HTTP response header fieldX-Load-Balancing-
+    Endpoint-Weight to specify the per-endpoint    weights. If set, load
+    balancing is weighted based on the per-endpoint    weights reported in the
+    last processed health check replies, as long as    every instance either
+    reported a valid weight or had UNAVAILABLE_WEIGHT.    Otherwise, load
+    balancing remains equal-weight.    This field is applicable to either:
+    - A regional backend service with the service protocol set to HTTP,
+    HTTPS, HTTP2 or H2C, and load_balancing_scheme set to    INTERNAL_MANAGED.
+    - A global backend service with the    load_balancing_scheme set to
+    INTERNAL_SELF_MANAGED, INTERNAL_MANAGED, or    EXTERNAL_MANAGED.    If
+    sessionAffinity is not configured-that is, if session affinity remains at
+    the default value of NONE-then the default value for localityLbPolicy is
+    ROUND_ROBIN. If session affinity is set to a value other than NONE, then
+    the default value for localityLbPolicy isMAGLEV.  Only ROUND_ROBIN and
+    RING_HASH are supported when the backend service is referenced by a URL
+    map that is bound to target gRPC proxy that has validateForProxyless field
+    set to true.  localityLbPolicy cannot be specified with haPolicy.
 
     Values:
       INVALID_LB_POLICY: <no description>
@@ -6162,11 +6201,11 @@ class BackendService(_messages.Message):
 
   class ProtocolValueValuesEnum(_messages.Enum):
     r"""The protocol this BackendService uses to communicate with backends.
-    Possible values are HTTP, HTTPS, HTTP2, H2C, TCP, SSL, UDP or GRPC.
-    depending on the chosen load balancer or Traffic Director configuration.
-    Refer to the documentation for the load balancers or for Traffic Director
-    for more information.  Must be set to GRPC when the backend service is
-    referenced by a URL map that is bound to target gRPC proxy.
+    Possible values are HTTP, HTTPS, HTTP2, H2C, TCP, SSL, UDP, GRPC, or
+    UNSPECIFIED, depending on the chosen load balancer or Traffic Director
+    configuration. Refer to  Load balancing features for more information.
+    Must be set to GRPC when the backend service is referenced by a URL map
+    that is bound to target gRPC proxy.
 
     Values:
       ALL: ALL includes TCP, UDP, ICMP, ESP, AH and SCTP. Note that this
@@ -6523,18 +6562,18 @@ class BackendServiceCdnPolicy(_messages.Message):
 
   Enums:
     CacheModeValueValuesEnum: Specifies the cache setting for all responses
-      from this backend. The possible values are:USE_ORIGIN_HEADERS Requires
+      from this backend. The possible values are: USE_ORIGIN_HEADERS Requires
       the origin to set valid caching headers to cache content. Responses
       without these headers will not be cached at Google's edge, and will
       require a full trip to the origin on every request, potentially
-      impacting performance and increasing load on the origin
-      server.FORCE_CACHE_ALL Cache all content, ignoring any "private", "no-
-      store" or "no-cache" directives in Cache-Control response headers.
-      Warning: this may result in Cloud CDN caching private, per-user (user
-      identifiable) content.CACHE_ALL_STATIC Automatically cache static
-      content, including common image formats, media (video and audio), and
-      web assets (JavaScript and CSS). Requests and responses that are marked
-      as uncacheable, as well as dynamic content (including HTML), will not be
+      impacting performance and increasing load on the origin server.
+      FORCE_CACHE_ALL Cache all content, ignoring any "private", "no-store" or
+      "no-cache" directives in Cache-Control response headers. Warning: this
+      may result in Cloud CDN caching private, per-user (user identifiable)
+      content. CACHE_ALL_STATIC Automatically cache static content, including
+      common image formats, media (video and audio), and web assets
+      (JavaScript and CSS). Requests and responses that are marked as
+      uncacheable, as well as dynamic content (including HTML), will not be
       cached.  If no value is provided for cdnPolicy.cacheMode, it defaults to
       CACHE_ALL_STATIC.
 
@@ -6545,14 +6584,14 @@ class BackendServiceCdnPolicy(_messages.Message):
       cdnPolicy.cacheMode settings.
     cacheKeyPolicy: The CacheKeyPolicy for this CdnPolicy.
     cacheMode: Specifies the cache setting for all responses from this
-      backend. The possible values are:USE_ORIGIN_HEADERS Requires the origin
+      backend. The possible values are: USE_ORIGIN_HEADERS Requires the origin
       to set valid caching headers to cache content. Responses without these
       headers will not be cached at Google's edge, and will require a full
       trip to the origin on every request, potentially impacting performance
-      and increasing load on the origin server.FORCE_CACHE_ALL Cache all
+      and increasing load on the origin server. FORCE_CACHE_ALL Cache all
       content, ignoring any "private", "no-store" or "no-cache" directives in
       Cache-Control response headers. Warning: this may result in Cloud CDN
-      caching private, per-user (user identifiable) content.CACHE_ALL_STATIC
+      caching private, per-user (user identifiable) content. CACHE_ALL_STATIC
       Automatically cache static content, including common image formats,
       media (video and audio), and web assets (JavaScript and CSS). Requests
       and responses that are marked as uncacheable, as well as dynamic content
@@ -6631,14 +6670,14 @@ class BackendServiceCdnPolicy(_messages.Message):
 
   class CacheModeValueValuesEnum(_messages.Enum):
     r"""Specifies the cache setting for all responses from this backend. The
-    possible values are:USE_ORIGIN_HEADERS Requires the origin to set valid
+    possible values are: USE_ORIGIN_HEADERS Requires the origin to set valid
     caching headers to cache content. Responses without these headers will not
     be cached at Google's edge, and will require a full trip to the origin on
     every request, potentially impacting performance and increasing load on
-    the origin server.FORCE_CACHE_ALL Cache all content, ignoring any
+    the origin server. FORCE_CACHE_ALL Cache all content, ignoring any
     "private", "no-store" or "no-cache" directives in Cache-Control response
     headers. Warning: this may result in Cloud CDN caching private, per-user
-    (user identifiable) content.CACHE_ALL_STATIC Automatically cache static
+    (user identifiable) content. CACHE_ALL_STATIC Automatically cache static
     content, including common image formats, media (video and audio), and web
     assets (JavaScript and CSS). Requests and responses that are marked as
     uncacheable, as well as dynamic content (including HTML), will not be
@@ -10245,6 +10284,7 @@ class Commitment(_messages.Message):
       NETWORK_OPTIMIZED_U4S: CUD bucket for NETWORK_OPTIMIZED_U4S machines.
       STORAGE_OPTIMIZED_Z3: <no description>
       STORAGE_OPTIMIZED_Z4D: CUD bucket for Z4D machines.
+      STORAGE_OPTIMIZED_Z4M: CUD bucket for Z4M (bare metal) machines.
       TYPE_UNSPECIFIED: Note for internal users: When adding a new enum Type
         for v1, make sure to also add it in the comment for the `optional Type
         type` definition. This ensures that the public documentation displays
@@ -10300,7 +10340,8 @@ class Commitment(_messages.Message):
     NETWORK_OPTIMIZED_U4S = 47
     STORAGE_OPTIMIZED_Z3 = 48
     STORAGE_OPTIMIZED_Z4D = 49
-    TYPE_UNSPECIFIED = 50
+    STORAGE_OPTIMIZED_Z4M = 50
+    TYPE_UNSPECIFIED = 51
 
   autoRenew = _messages.BooleanField(1)
   category = _messages.EnumField('CategoryValueValuesEnum', 2)
@@ -39697,6 +39738,22 @@ class ComputeRegionSslPoliciesDeleteRequest(_messages.Message):
   sslPolicy = _messages.StringField(4, required=True)
 
 
+class ComputeRegionSslPoliciesGetIamPolicyRequest(_messages.Message):
+  r"""A ComputeRegionSslPoliciesGetIamPolicyRequest object.
+
+  Fields:
+    optionsRequestedPolicyVersion: Requested IAM Policy version.
+    project: Project ID for this request.
+    region: The name of the region for this request.
+    resource: Name or id of the resource for this request.
+  """
+
+  optionsRequestedPolicyVersion = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  project = _messages.StringField(2, required=True)
+  region = _messages.StringField(3, required=True)
+  resource = _messages.StringField(4, required=True)
+
+
 class ComputeRegionSslPoliciesGetRequest(_messages.Message):
   r"""A ComputeRegionSslPoliciesGetRequest object.
 
@@ -39905,6 +39962,23 @@ class ComputeRegionSslPoliciesPatchRequest(_messages.Message):
   requestId = _messages.StringField(3)
   sslPolicy = _messages.StringField(4, required=True)
   sslPolicyResource = _messages.MessageField('SslPolicy', 5)
+
+
+class ComputeRegionSslPoliciesSetIamPolicyRequest(_messages.Message):
+  r"""A ComputeRegionSslPoliciesSetIamPolicyRequest object.
+
+  Fields:
+    project: Project ID for this request.
+    region: The name of the region for this request.
+    regionSetPolicyRequest: A RegionSetPolicyRequest resource to be passed as
+      the request body.
+    resource: Name or id of the resource for this request.
+  """
+
+  project = _messages.StringField(1, required=True)
+  region = _messages.StringField(2, required=True)
+  regionSetPolicyRequest = _messages.MessageField('RegionSetPolicyRequest', 3)
+  resource = _messages.StringField(4, required=True)
 
 
 class ComputeRegionSslPoliciesTestIamPermissionsRequest(_messages.Message):
@@ -41159,6 +41233,29 @@ class ComputeReservationConsumedInstancesListRequest(_messages.Message):
   reservation = _messages.StringField(6, required=True)
   returnPartialSuccess = _messages.BooleanField(7)
   zone = _messages.StringField(8, required=True)
+
+
+class ComputeReservationSlotsGetHealthRequest(_messages.Message):
+  r"""A ComputeReservationSlotsGetHealthRequest object.
+
+  Fields:
+    parentName: The name of the parent reservation, parent block and parent
+      sub-block. In the format of reservations/{reservation_name}/reservationB
+      locks/{reservation_block_name}/reservationSubBlocks/{reservation_sub_blo
+      ck_name}
+    project: Project ID for this request.
+    requestId: An optional request ID to identify requests.
+    reservationSlot: The name of the reservation slot. Name should conform to
+      RFC1035 or be a resource ID.
+    zone: Name of the zone for this request. Zone name should conform to
+      RFC1035.
+  """
+
+  parentName = _messages.StringField(1, required=True)
+  project = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  reservationSlot = _messages.StringField(4, required=True)
+  zone = _messages.StringField(5, required=True)
 
 
 class ComputeReservationSlotsGetRequest(_messages.Message):
@@ -42660,6 +42757,10 @@ class ComputeRoutersDeleteRequest(_messages.Message):
   r"""A ComputeRoutersDeleteRequest object.
 
   Fields:
+    etag: ETag for optimistic concurrency control as described by AIP 154.
+      Used to prevent conflicting updates. If provided, the request will
+      succeed only if the etag matches the current etag of the router;
+      otherwise, the request fails with an ABORTED error.
     project: Project ID for this request.
     region: Name of the region for this request.
     requestId: An optional request ID to identify requests. Specify a unique
@@ -42675,10 +42776,11 @@ class ComputeRoutersDeleteRequest(_messages.Message):
     router: Name of the Router resource to delete.
   """
 
-  project = _messages.StringField(1, required=True)
-  region = _messages.StringField(2, required=True)
-  requestId = _messages.StringField(3)
-  router = _messages.StringField(4, required=True)
+  etag = _messages.StringField(1)
+  project = _messages.StringField(2, required=True)
+  region = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+  router = _messages.StringField(5, required=True)
 
 
 class ComputeRoutersDeleteRoutePolicyRequest(_messages.Message):
@@ -45153,6 +45255,20 @@ class ComputeSslPoliciesDeleteRequest(_messages.Message):
   sslPolicy = _messages.StringField(3, required=True)
 
 
+class ComputeSslPoliciesGetIamPolicyRequest(_messages.Message):
+  r"""A ComputeSslPoliciesGetIamPolicyRequest object.
+
+  Fields:
+    optionsRequestedPolicyVersion: Requested IAM Policy version.
+    project: Project ID for this request.
+    resource: Name or id of the resource for this request.
+  """
+
+  optionsRequestedPolicyVersion = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  project = _messages.StringField(2, required=True)
+  resource = _messages.StringField(3, required=True)
+
+
 class ComputeSslPoliciesGetRequest(_messages.Message):
   r"""A ComputeSslPoliciesGetRequest object.
 
@@ -45351,6 +45467,21 @@ class ComputeSslPoliciesPatchRequest(_messages.Message):
   requestId = _messages.StringField(2)
   sslPolicy = _messages.StringField(3, required=True)
   sslPolicyResource = _messages.MessageField('SslPolicy', 4)
+
+
+class ComputeSslPoliciesSetIamPolicyRequest(_messages.Message):
+  r"""A ComputeSslPoliciesSetIamPolicyRequest object.
+
+  Fields:
+    globalSetPolicyRequest: A GlobalSetPolicyRequest resource to be passed as
+      the request body.
+    project: Project ID for this request.
+    resource: Name or id of the resource for this request.
+  """
+
+  globalSetPolicyRequest = _messages.MessageField('GlobalSetPolicyRequest', 1)
+  project = _messages.StringField(2, required=True)
+  resource = _messages.StringField(3, required=True)
 
 
 class ComputeSslPoliciesTestIamPermissionsRequest(_messages.Message):
@@ -56433,10 +56564,28 @@ class ForwardingRule(_messages.Message):
       balancing products as described in [Load balancing
       features](https://cloud.google.com/load-balancing/docs/features#protocol
       s_from_the_load_balancer_to_the_backends).
-    AvailabilityGroupValueValuesEnum: [Output Only] Specifies the availability
-      group of the forwarding rule. This field is for use by global external
-      passthrough load balancers (load balancing scheme EXTERNAL_PASSTHROUGH)
-      and is set for the child forwarding rules only.
+    AvailabilityGroupValueValuesEnum: Output only. [Output Only] Specifies the
+      load balancing availability group, one of the two that collectively
+      provide high availability.  Specifies the availability group of the
+      forwarding rule. This field is for use by global external passthrough
+      load balancers (load balancing scheme EXTERNAL_PASSTHROUGH) and is set
+      for the child forwarding rules only. The possible values are:        -
+      AVAILABILITY_GROUP0: Set for the child forwarding rule    that is
+      programmed on the AVAILABILITY_GROUP0 load balancing    stack. The child
+      forwarding rule has the same IP protocol, port, and    backend service
+      settings as the parent forwarding rule, but has only one of    the two
+      IP addresses of the parent forwarding rule, the one with the    purpose
+      PASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP0.    - AVAILABILITY_GROUP1:
+      Set for the child forwarding rule    that is programmed on the
+      AVAILABILITY_GROUP1 load balancing    stack. The child forwarding rule
+      has the same IP protocol, port and backend    service settings as the
+      parent forwarding rule, but has only one of the two    IP addresses of
+      the parent forwarding rule, the one with the
+      purposePASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP1.    For each global
+      external Passthrough Network Load Balancer forwarding rule (a parent
+      forwarding rule) that you create, Google Cloud generates two output-only
+      child forwarding rules, one forAVAILABILITY_GROUP0 and one
+      forAVAILABILITY_GROUP1.
     ExternalManagedBackendBucketMigrationStateValueValuesEnum: Specifies the
       canary migration state for the backend buckets attached to this
       forwarding rule. Possible values are PREPARE, TEST_BY_PERCENTAGE, and
@@ -56455,8 +56604,8 @@ class ForwardingRule(_messages.Message):
     IpVersionValueValuesEnum: The IP Version that will be used by this
       forwarding rule.  Valid options are IPV4 or IPV6.
     LoadBalancingSchemeValueValuesEnum: Specifies the forwarding rule type.
-      For more information about forwarding rules, refer to Forwarding rule
-      concepts.
+      For more information, refer to  Forwarding rule product and scheme
+      table.
     NetworkTierValueValuesEnum: This signifies the networking tier used for
       configuring this load balancer and can only take the following
       values:PREMIUM, STANDARD.  For regional ForwardingRule, the valid values
@@ -56489,13 +56638,59 @@ class ForwardingRule(_messages.Message):
       ons/region/addresses/address-name * Partial URL or by name, as in:
       - projects/project_id/regions/region/addresses/address-name    -
       regions/region/addresses/address-name    - global/addresses/address-name
-      - address-name    The forwarding rule's target or backendService, and in
-      most cases, also the loadBalancingScheme, determine the type of IP
-      address that you can use. For detailed information, see [IP address
+      - address-name    The IP address can only be set at creation. Once set,
+      it cannot be updated.  The forwarding rule's target or backendService,
+      and in most cases, also the loadBalancingScheme, determine the type of
+      IP address that you can use. For detailed information, see [IP address
       specifications](https://cloud.google.com/load-balancing/docs/forwarding-
       rule-concepts#ip_address_specifications).  When reading an IPAddress,
-      the API always returns the IP address number.
-    IPAddresses: A string attribute.
+      the API always returns the IP address number.  When creating a global
+      external Passthrough Network Load Balancer forwarding rule (a parent
+      forwarding rule), you must use theIPAddresses field, but the Google
+      Cloud generated child forwarding rules set the IPAddress field instead.
+      Refer to theavailabilityGroup field for further details.
+    IPAddresses: IP addresses for which this forwarding rule accepts traffic.
+      All IP addresses must have the same IP version, IPv4 or IPv6. When a
+      client sends traffic that matches one of the specified IP addresses,
+      protocol and ports, the forwarding rule directs the traffic to the
+      referencedbackendService. All IP addresses are served by the same set of
+      backends, and they share the target capacities specified in the backend
+      service fairly.  Global external Passthrough Network Load Balancer
+      requires two IP addresses for each forwarding rule to provide high
+      availability when both IP addresses are used to serve client requests.
+      The two IP addresses must come from global IP pools that belong to two
+      distinct Availability Groups, represented by the
+      purposePASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP0
+      andPASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP1. TheIPAddresses field
+      specifies zero, one, or two IP addresses:        - If omitted, Google
+      Cloud assigns two ephemeral IP addresses, one from    each Availability
+      Group.    - If you specify one IP address that references an existing
+      static IP    address resource from one Availability Group, Google Cloud
+      assigns an    ephemeral IP address from the other Availability Group.
+      - If you specify two IP addresses that reference existing static IP
+      address resources, they are required to be from different Availability
+      Groups.    For global external Passthrough Network Load Balancer, each
+      IP address can be one of the following:        - A static or ephemeral
+      IPv4 address from a Google-owned IP pool.    - A static IPv4 address
+      from a global public delegated prefix.    - A static or ephemeral IPv6
+      /96 prefix from a Google-owned IP pool.    For global external
+      Passthrough Network Load Balancer, the two IP addresses can be of
+      different types. One IP address can be from a BYOIP prefix while the
+      other is from a Google-owned IP pool. One IP address can be static while
+      the other is ephemeral. However, both IP addresses must have the same IP
+      version, IPv4 or IPv6.  The IP addresses can only be set at creation and
+      cannot be updated.  When creating a global external Passthrough Network
+      Load Balancer forwarding rule (a parent forwarding rule), you must use
+      theIPAddresses field, but the Google Cloud-generated child forwarding
+      rules set the IPAddress field instead. Refer to theavailabilityGroup
+      field for further details.  Refer to the IPAddress field for the formats
+      that can be used to specify IP addresses while creating a forwarding
+      rule.  Because Passthrough Network Load Balancers do not terminate or
+      translate traffic, the backend stack types must be compatible with the
+      forwarding rule IP version:        - If the forwarding rule IP version
+      is IPv4, backends should be    configured as dual-stack or IPv4-only.
+      - If the forwarding rule IP version is IPv6, backends should be
+      configured as dual-stack or IPv6-only.
     IPProtocol: The IP protocol to which this rule applies.  For protocol
       forwarding, valid options are TCP, UDP, ESP,AH, SCTP, ICMP
       andL3_DEFAULT.  The valid IP protocols are different for different load
@@ -56526,26 +56721,49 @@ class ForwardingRule(_messages.Message):
       control whether the PSC endpoint can be accessed from another region.
     attachedExtensions: Output only. [Output Only]. The extensions that are
       attached to this ForwardingRule.
-    availabilityGroup: [Output Only] Specifies the availability group of the
-      forwarding rule. This field is for use by global external passthrough
-      load balancers (load balancing scheme EXTERNAL_PASSTHROUGH) and is set
-      for the child forwarding rules only.
+    availabilityGroup: Output only. [Output Only] Specifies the load balancing
+      availability group, one of the two that collectively provide high
+      availability.  Specifies the availability group of the forwarding rule.
+      This field is for use by global external passthrough load balancers
+      (load balancing scheme EXTERNAL_PASSTHROUGH) and is set for the child
+      forwarding rules only. The possible values are:        -
+      AVAILABILITY_GROUP0: Set for the child forwarding rule    that is
+      programmed on the AVAILABILITY_GROUP0 load balancing    stack. The child
+      forwarding rule has the same IP protocol, port, and    backend service
+      settings as the parent forwarding rule, but has only one of    the two
+      IP addresses of the parent forwarding rule, the one with the    purpose
+      PASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP0.    - AVAILABILITY_GROUP1:
+      Set for the child forwarding rule    that is programmed on the
+      AVAILABILITY_GROUP1 load balancing    stack. The child forwarding rule
+      has the same IP protocol, port and backend    service settings as the
+      parent forwarding rule, but has only one of the two    IP addresses of
+      the parent forwarding rule, the one with the
+      purposePASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP1.    For each global
+      external Passthrough Network Load Balancer forwarding rule (a parent
+      forwarding rule) that you create, Google Cloud generates two output-only
+      child forwarding rules, one forAVAILABILITY_GROUP0 and one
+      forAVAILABILITY_GROUP1.
     backendService: Identifies the backend service to which the forwarding
-      rule sends traffic. Required for internal and external passthrough
-      Network Load Balancers; must be omitted for all other load balancer
-      types.
+      rule sends traffic.  It is a required field for the following load
+      balancers:        - Internal passthrough Network Load Balancers    -
+      Backend service-based regional external passthrough Network Load
+      Balancers    - Global external passthrough Network Load Balancers    It
+      cannot be set by other load balancer types and protocol forwarding
+      rules.
     baseForwardingRule: Output only. [Output Only] The URL for the
       corresponding base forwarding rule. By base forwarding rule, we mean the
       forwarding rule that has the same IP address, protocol, and port
       settings with the current forwarding rule, but without sourceIPRanges
       specified. Always empty if the current forwarding rule does not have
       sourceIPRanges specified.
-    childForwardingRules: Output only. [Output Only] Applicable only to the
-      parent forwarding rule of global external passthrough load balancers.
-      This field contains the list of child forwarding rule URLs associated
-      with the parent forwarding rule: one for each availability group.
-      AVAILABILITY_GROUP0 will be the first element, and AVAILABILITY_GROUP1
-      will be the second element.
+    childForwardingRules: Output only. [Output Only] The resource URLs for the
+      child forwarding rules.  Applicable only to the parent forwarding rule
+      of global external passthrough load balancers. This field contains the
+      list of child forwarding rule URLs associated with the parent forwarding
+      rule: one for each availability group. AVAILABILITY_GROUP0 will be the
+      first element, and AVAILABILITY_GROUP1 will be the second element. Refer
+      to theavailabilityGroup field for further details. It cannot be set by
+      any other forwarding rules.
     creationTimestamp: Output only. [Output Only] Creation timestamp inRFC3339
       text format.
     description: An optional description of this resource. Provide this
@@ -56609,7 +56827,7 @@ class ForwardingRule(_messages.Message):
       thesetLabels method. Each label key/value pair must comply withRFC1035.
       Label values may be empty.
     loadBalancingScheme: Specifies the forwarding rule type.  For more
-      information about forwarding rules, refer to Forwarding rule concepts.
+      information, refer to  Forwarding rule product and scheme table.
     metadataFilters: Opaque filter criteria used by load balancer to restrict
       routing configuration to a limited set of xDS compliant clients. In
       their xDS requests to load balancer, xDS clients present node metadata.
@@ -56636,7 +56854,13 @@ class ForwardingRule(_messages.Message):
       cannot be a dash.  For Private Service Connect forwarding rules that
       forward traffic to Google APIs, the forwarding rule name must be a 1-20
       characters string with lowercase letters and numbers and must start with
-      a letter.
+      a letter.  For global external Passthrough Network Load Balancer
+      forwarding rules, the forwarding rule name must be 1-43 characters long.
+      For each global external Passthrough Network Load Balancer forwarding
+      rule (a parent forwarding rule) that you create, Google Cloud generates
+      two output-only child forwarding rules that are named by concatenating
+      the parent forwarding rule name with the `-ag0` and `-ag1` suffixes,
+      respectively. Refer to theavailabilityGroup field for further details.
     network: This field is not used for global external load balancing.  For
       internal passthrough Network Load Balancers, this field identifies the
       network that the load balanced IP should belong to for this forwarding
@@ -56654,9 +56878,10 @@ class ForwardingRule(_messages.Message):
       whether it should try to auto-generate a DNS zone or not. Non-PSC
       forwarding rules do not use this field. Once set, this field is not
       mutable.
-    parentForwardingRule: Output only. [Output Only] Applicable only to the
-      child forwarding rules of global external passthrough load balancers.
-      This field contains the URL of the parent forwarding rule.
+    parentForwardingRule: Output only. [Output Only] The resource URL for the
+      parent forwarding rule.  Applicable only to the child forwarding rules
+      of global external passthrough load balancers. This field contains the
+      URL of the parent forwarding rule.
     portRange: The ports, portRange, and allPorts fields are mutually
       exclusive. Only packets addressed to ports in the specified range will
       be forwarded to the backends configured with this forwarding rule.  The
@@ -56668,11 +56893,11 @@ class ForwardingRule(_messages.Message):
       protocol    forwarding, and Classic VPN.    - Some products have
       restrictions on what ports can be used. See     port specifications for
       details.    For external forwarding rules, two or more forwarding rules
-      cannot use the same [IPAddress, IPProtocol] pair, and cannot have
-      overlappingportRanges.  For internal forwarding rules within the same
-      VPC network, two or more forwarding rules cannot use the same
-      [IPAddress, IPProtocol] pair, and cannot have overlapping portRanges.
-      @pattern: \\d+(?:-\\d+)?
+      cannot use the same [IPAddress, IPProtocol] pair (specified inIPAddress,
+      IPAddresses, IPProtocol fields) if they have overlapping portRanges.
+      For internal forwarding rules within the same VPC network, two or more
+      forwarding rules cannot use the same [IPAddress, IPProtocol] pair, and
+      cannot have overlapping portRanges.  @pattern: \\d+(?:-\\d+)?
     ports: The ports, portRange, and allPorts fields are mutually exclusive.
       Only packets addressed to ports in the specified range will be forwarded
       to the backends configured with this forwarding rule.  The ports field
@@ -56684,10 +56909,11 @@ class ForwardingRule(_messages.Message):
       of up to five ports by number, separated by    commas. The ports can be
       contiguous or discontiguous.    For external forwarding rules, two or
       more forwarding rules cannot use the same [IPAddress, IPProtocol] pair
-      if they share at least one port number.  For internal forwarding rules
-      within the same VPC network, two or more forwarding rules cannot use the
-      same [IPAddress, IPProtocol] pair if they share at least one port
-      number.  @pattern: \\d+(?:-\\d+)?
+      (specified inIPAddress, IPAddresses, IPProtocol fields) if they share at
+      least one port number.  For internal forwarding rules within the same
+      VPC network, two or more forwarding rules cannot use the same
+      [IPAddress, IPProtocol] pair if they share at least one port number.
+      @pattern: \\d+(?:-\\d+)?
     pscConnectionId: [Output Only] The PSC connection id of the PSC forwarding
       rule.
     pscConnectionStatus: A PscConnectionStatusValueValuesEnum attribute.
@@ -56740,14 +56966,36 @@ class ForwardingRule(_messages.Message):
       apis - All supported Google APIs.                        -  For Private
       Service Connect forwarding rules that forward traffic to managed
       services, the target must be a service attachment. The target is not
-      mutable once set as a service attachment.
+      mutable once set as a service attachment.     The following load
+      balancers cannot set the target field (they should set the
+      backendService field instead):        - Internal passthrough Network
+      Load Balancers    - Backend service-based regional external passthrough
+      Network Load    Balancers    - Global external passthrough Network Load
+      Balancers
   """
 
   class AvailabilityGroupValueValuesEnum(_messages.Enum):
-    r"""[Output Only] Specifies the availability group of the forwarding rule.
-    This field is for use by global external passthrough load balancers (load
-    balancing scheme EXTERNAL_PASSTHROUGH) and is set for the child forwarding
-    rules only.
+    r"""Output only. [Output Only] Specifies the load balancing availability
+    group, one of the two that collectively provide high availability.
+    Specifies the availability group of the forwarding rule. This field is for
+    use by global external passthrough load balancers (load balancing scheme
+    EXTERNAL_PASSTHROUGH) and is set for the child forwarding rules only. The
+    possible values are:        - AVAILABILITY_GROUP0: Set for the child
+    forwarding rule    that is programmed on the AVAILABILITY_GROUP0 load
+    balancing    stack. The child forwarding rule has the same IP protocol,
+    port, and    backend service settings as the parent forwarding rule, but
+    has only one of    the two IP addresses of the parent forwarding rule, the
+    one with the    purpose PASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP0.
+    - AVAILABILITY_GROUP1: Set for the child forwarding rule    that is
+    programmed on the AVAILABILITY_GROUP1 load balancing    stack. The child
+    forwarding rule has the same IP protocol, port and backend    service
+    settings as the parent forwarding rule, but has only one of the two    IP
+    addresses of the parent forwarding rule, the one with the
+    purposePASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP1.    For each global
+    external Passthrough Network Load Balancer forwarding rule (a parent
+    forwarding rule) that you create, Google Cloud generates two output-only
+    child forwarding rules, one forAVAILABILITY_GROUP0 and one
+    forAVAILABILITY_GROUP1.
 
     Values:
       AVAILABILITY_GROUP0: <no description>
@@ -56822,8 +57070,8 @@ class ForwardingRule(_messages.Message):
     UNSPECIFIED_VERSION = 2
 
   class LoadBalancingSchemeValueValuesEnum(_messages.Enum):
-    r"""Specifies the forwarding rule type.  For more information about
-    forwarding rules, refer to Forwarding rule concepts.
+    r"""Specifies the forwarding rule type.  For more information, refer to
+    Forwarding rule product and scheme table.
 
     Values:
       EXTERNAL: <no description>
@@ -59232,6 +59480,106 @@ class GetAsyncReplicationStatusResponse(_messages.Message):
   etag = _messages.StringField(2)
 
 
+class GetHealthOperationMetadata(_messages.Message):
+  r"""Metadata for GetHealth operations.
+
+  Fields:
+    healthInfo: Output only. The health information.
+  """
+
+  healthInfo = _messages.MessageField('GetHealthOperationMetadataHealthInfo', 1)
+
+
+class GetHealthOperationMetadataHealthInfo(_messages.Message):
+  r"""Health information.
+
+  Enums:
+    AvailabilitySloStatusValueValuesEnum: Output only. The availability SLO
+      status.
+    HealthStatusValueValuesEnum: Output only. The health status.
+    RepairCategoryValueValuesEnum: Output only. The repair category.
+    UnhealthyReasonValueValuesEnum: Output only. The reason for unhealthy
+      status.
+
+  Fields:
+    availabilitySloStatus: Output only. The availability SLO status.
+    healthStatus: Output only. The health status.
+    repairCategory: Output only. The repair category.
+    unhealthyReason: Output only. The reason for unhealthy status.
+    updateTime: Output only. The time when health info was updated.
+  """
+
+  class AvailabilitySloStatusValueValuesEnum(_messages.Enum):
+    r"""Output only. The availability SLO status.
+
+    Values:
+      AVAILABILITY_SLO_STATUS_IN_SLO: The slot availability is in SLO.
+      AVAILABILITY_SLO_STATUS_OUT_OF_SLO: The slot availability is out of SLO.
+      AVAILABILITY_SLO_STATUS_SLO_UNKNOWN: The slot availability is unknown.
+      AVAILABILITY_SLO_STATUS_UNSPECIFIED: Unspecified availability SLO
+        status.
+    """
+    AVAILABILITY_SLO_STATUS_IN_SLO = 0
+    AVAILABILITY_SLO_STATUS_OUT_OF_SLO = 1
+    AVAILABILITY_SLO_STATUS_SLO_UNKNOWN = 2
+    AVAILABILITY_SLO_STATUS_UNSPECIFIED = 3
+
+  class HealthStatusValueValuesEnum(_messages.Enum):
+    r"""Output only. The health status.
+
+    Values:
+      HEALTH_STATUS_HEALTHY: The reservation slot is healthy.
+      HEALTH_STATUS_UNHEALTHY: The reservation slot is unhealthy.
+      HEALTH_STATUS_UNSPECIFIED: Unspecified health status.
+    """
+    HEALTH_STATUS_HEALTHY = 0
+    HEALTH_STATUS_UNHEALTHY = 1
+    HEALTH_STATUS_UNSPECIFIED = 2
+
+  class RepairCategoryValueValuesEnum(_messages.Enum):
+    r"""Output only. The repair category.
+
+    Values:
+      REPAIR_CATEGORY_CRITICAL_FAILURE: The repair is because of critical
+        failures, that are scoped outside emergent maintenance
+      REPAIR_CATEGORY_EMERGENT_MAINTENANCE: The repair is because of an
+        emergent maintenance
+      REPAIR_CATEGORY_PLANNED_MAINTENANCE: The repair is because of a planned
+        maintenance
+      REPAIR_CATEGORY_UNSPECIFIED: <no description>
+      REPAIR_CATEGORY_USER_REPORTED_FAULT: The repair is because of a user
+        reported fault
+    """
+    REPAIR_CATEGORY_CRITICAL_FAILURE = 0
+    REPAIR_CATEGORY_EMERGENT_MAINTENANCE = 1
+    REPAIR_CATEGORY_PLANNED_MAINTENANCE = 2
+    REPAIR_CATEGORY_UNSPECIFIED = 3
+    REPAIR_CATEGORY_USER_REPORTED_FAULT = 4
+
+  class UnhealthyReasonValueValuesEnum(_messages.Enum):
+    r"""Output only. The reason for unhealthy status.
+
+    Values:
+      UNHEALTHY_REASON_PENDING_USER_APPROVAL: The slot is unhealthy because
+        there is a pending repair, waiting for customer approval
+      UNHEALTHY_REASON_REPAIRING: The slot is unhealthy because repair is in
+        progress
+      UNHEALTHY_REASON_UNSCHEDULABLE: The slot is unhealthy because a vm
+        cannot be scheduled on it, and no repairs are running on the slot
+      UNHEALTHY_REASON_UNSPECIFIED: Unspecified unhealthy reason.
+    """
+    UNHEALTHY_REASON_PENDING_USER_APPROVAL = 0
+    UNHEALTHY_REASON_REPAIRING = 1
+    UNHEALTHY_REASON_UNSCHEDULABLE = 2
+    UNHEALTHY_REASON_UNSPECIFIED = 3
+
+  availabilitySloStatus = _messages.EnumField('AvailabilitySloStatusValueValuesEnum', 1)
+  healthStatus = _messages.EnumField('HealthStatusValueValuesEnum', 2)
+  repairCategory = _messages.EnumField('RepairCategoryValueValuesEnum', 3)
+  unhealthyReason = _messages.EnumField('UnhealthyReasonValueValuesEnum', 4)
+  updateTime = _messages.StringField(5)
+
+
 class GetOwnerInstanceResponse(_messages.Message):
   r"""A GetOwnerInstanceResponse object.
 
@@ -60895,14 +61243,9 @@ class HaController(_messages.Message):
   r"""HaController handles failover for a VM Instance.
 
   Enums:
-    FailoverCapacityValueValuesEnum: Capacity guarantee settings for the event
-      of a failover. This determines whether capacity is guaranteed to be
-      available in the zones used by the HaController. Deprecated: This field
-      is deprecated and has no effect.
     FailoverInitiationValueValuesEnum: Indicates how failover should be
       initiated.
-    SecondaryZoneCapacityValueValuesEnum: Indicates the capacity guarantees in
-      the secondary zone.
+    StateValueValuesEnum: Output only. The current state of the HA Controller.
 
   Messages:
     ZoneConfigurationsValue: Map of zone configurations Key: name of the zone
@@ -60917,10 +61260,6 @@ class HaController(_messages.Message):
       RFC3339 text format.
     description: An optional description of this resource. Provide this
       property when you create the resource.
-    failoverCapacity: Capacity guarantee settings for the event of a failover.
-      This determines whether capacity is guaranteed to be available in the
-      zones used by the HaController. Deprecated: This field is deprecated and
-      has no effect.
     failoverInitiation: Indicates how failover should be initiated.
     id: Output only. [Output Only] The unique identifier for the resource.
       This identifier is defined by the server.
@@ -60946,30 +61285,15 @@ class HaController(_messages.Message):
     region: Output only. [Output Only] URL of the region where the resource
       resides. You must specify this field as part of the HTTP request URL. It
       is not settable as a field in the request body.
-    secondaryZoneCapacity: Indicates the capacity guarantees in the secondary
-      zone.
     selfLink: Output only. [Output only] Server-defined URL for the resource.
     selfLinkWithId: Output only. [Output Only] Server-defined URL for this
       resource with the resource id.
+    state: Output only. The current state of the HA Controller.
     status: Output only. [Output Only] Status information for the HaController
       resource.
     zoneConfigurations: Map of zone configurations Key: name of the zone
       Value: ZoneConfiguration
   """
-
-  class FailoverCapacityValueValuesEnum(_messages.Enum):
-    r"""Capacity guarantee settings for the event of a failover. This
-    determines whether capacity is guaranteed to be available in the zones
-    used by the HaController. Deprecated: This field is deprecated and has no
-    effect.
-
-    Values:
-      BEST_EFFORT_CAPACITY: Failover will attempt to allocate resources in the
-        secondary zone at the time of failover.
-      FAILOVER_CAPACITY_UNSPECIFIED: <no description>
-    """
-    BEST_EFFORT_CAPACITY = 0
-    FAILOVER_CAPACITY_UNSPECIFIED = 1
 
   class FailoverInitiationValueValuesEnum(_messages.Enum):
     r"""Indicates how failover should be initiated.
@@ -60982,16 +61306,39 @@ class HaController(_messages.Message):
     FAILOVER_INITIATION_UNSPECIFIED = 0
     MANUAL_ONLY = 1
 
-  class SecondaryZoneCapacityValueValuesEnum(_messages.Enum):
-    r"""Indicates the capacity guarantees in the secondary zone.
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current state of the HA Controller.
 
     Values:
-      BEST_EFFORT: Failover will succeed only if at the time of failover the
-        secondary zone has enough capacity to host the instance.
-      SECONDARY_ZONE_CAPACITY_UNSPECIFIED: <no description>
+      ACTIVE: The HA Controller is active and ready to perform failover.
+      CREATING: The HA Controller is being created.
+      DELETING: The HA Controller is being deleted.
+      FAILOVER_IN_PROGRESS: The HA Controller is in the process of failing
+        over.
+      FAILOVER_UNAVAILABLE: The HA Controller is not ready to perform
+        failover.
+      MULTI_ZONE_FAILURE: The HA Controller requires a failover operation to
+        be performed but the secondary zone is not available to failover to.
+      PENDING_FAILOVER: The HA Controller requires a failover operation to be
+        performed.
+      STARTING: The HA Controller is being started.
+      STATE_UNSPECIFIED: Unspecified state.
+      STOPPED: The HA Controller is stopped.
+      STOPPING: The HA Controller is being stopped.
+      UPDATING: The HA Controller is being updated.
     """
-    BEST_EFFORT = 0
-    SECONDARY_ZONE_CAPACITY_UNSPECIFIED = 1
+    ACTIVE = 0
+    CREATING = 1
+    DELETING = 2
+    FAILOVER_IN_PROGRESS = 3
+    FAILOVER_UNAVAILABLE = 4
+    MULTI_ZONE_FAILURE = 5
+    PENDING_FAILOVER = 6
+    STARTING = 7
+    STATE_UNSPECIFIED = 8
+    STOPPED = 9
+    STOPPING = 10
+    UPDATING = 11
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class ZoneConfigurationsValue(_messages.Message):
@@ -61023,19 +61370,18 @@ class HaController(_messages.Message):
   backendServices = _messages.StringField(1, repeated=True)
   creationTimestamp = _messages.StringField(2)
   description = _messages.StringField(3)
-  failoverCapacity = _messages.EnumField('FailoverCapacityValueValuesEnum', 4)
-  failoverInitiation = _messages.EnumField('FailoverInitiationValueValuesEnum', 5)
-  id = _messages.IntegerField(6, variant=_messages.Variant.UINT64)
-  instanceName = _messages.StringField(7)
-  kind = _messages.StringField(8, default='compute#HaController')
-  name = _messages.StringField(9)
-  networkingAutoConfiguration = _messages.MessageField('HaControllerNetworkingAutoConfiguration', 10)
-  region = _messages.StringField(11)
-  secondaryZoneCapacity = _messages.EnumField('SecondaryZoneCapacityValueValuesEnum', 12)
-  selfLink = _messages.StringField(13)
-  selfLinkWithId = _messages.StringField(14)
-  status = _messages.MessageField('HaControllerStatus', 15)
-  zoneConfigurations = _messages.MessageField('ZoneConfigurationsValue', 16)
+  failoverInitiation = _messages.EnumField('FailoverInitiationValueValuesEnum', 4)
+  id = _messages.IntegerField(5, variant=_messages.Variant.UINT64)
+  instanceName = _messages.StringField(6)
+  kind = _messages.StringField(7, default='compute#HaController')
+  name = _messages.StringField(8)
+  networkingAutoConfiguration = _messages.MessageField('HaControllerNetworkingAutoConfiguration', 9)
+  region = _messages.StringField(10)
+  selfLink = _messages.StringField(11)
+  selfLinkWithId = _messages.StringField(12)
+  state = _messages.EnumField('StateValueValuesEnum', 13)
+  status = _messages.MessageField('HaControllerStatus', 14)
+  zoneConfigurations = _messages.MessageField('ZoneConfigurationsValue', 15)
 
 
 class HaControllerNetworkingAutoConfiguration(_messages.Message):
@@ -61160,6 +61506,7 @@ class HaControllerStatusFailoverProgress(_messages.Message):
     failoverCompleteTimestamp: Output only. [Output Only] Timestamp of the
       failover completion. Filled only if the failover is completed, in
       lastFailoverInfo.
+    failoverDuration: Output only. The duration of the last failover.
     failoverTrigger: Output only. [Output Only] Indicates if failover has been
       triggered automatically or manually.
     failoverTriggerTimestamp: Output only. [Output Only] Timestamp of the last
@@ -61183,9 +61530,10 @@ class HaControllerStatusFailoverProgress(_messages.Message):
     MANUAL = 2
 
   failoverCompleteTimestamp = _messages.StringField(1)
-  failoverTrigger = _messages.EnumField('FailoverTriggerValueValuesEnum', 2)
-  failoverTriggerTimestamp = _messages.StringField(3)
-  lastFailoverAttempt = _messages.MessageField('HaControllerStatusFailoverProgressLastFailoverAttempt', 4)
+  failoverDuration = _messages.StringField(2)
+  failoverTrigger = _messages.EnumField('FailoverTriggerValueValuesEnum', 3)
+  failoverTriggerTimestamp = _messages.StringField(4)
+  lastFailoverAttempt = _messages.MessageField('HaControllerStatusFailoverProgressLastFailoverAttempt', 5)
 
 
 class HaControllerStatusFailoverProgressLastFailoverAttempt(_messages.Message):
@@ -66968,6 +67316,8 @@ class Instance(_messages.Message):
   Messages:
     LabelsValue: Labels to apply to this instance. These can be later modified
       by the setLabels method.
+    ManagementInterfacesValue: Map of management interfaces. Keys must be
+      valid RFC1035 names and at most 63 characters long.
     PartnerMetadataValue: Partner Metadata assigned to the instance. A map
       from a subdomain (namespace) to entries map.
     ServiceIntegrationSpecsValue: Mapping of user-defined keys to
@@ -67052,8 +67402,10 @@ class Instance(_messages.Message):
       MEMORY is the total memory for this instance. Memory must be a multiple
       of 256 MB and must be supplied in MB (e.g. 5 GB of memory is 5120 MB):
       zones/zone/machineTypes/custom-CPUS-MEMORY   For example: zones/us-
-      central1-f/machineTypes/custom-4-5120 For a full list of restrictions,
+      central1-f/machineTypes/custom-4-5120  For a full list of restrictions,
       read theSpecifications for custom machine types.
+    managementInterfaces: Map of management interfaces. Keys must be valid
+      RFC1035 names and at most 63 characters long.
     metadata: The metadata key/value pairs assigned to this instance. This
       includes metadata keys that were explicitly defined for the instance.
     minCpuPlatform: Specifies aminimum CPU platform for the VM instance.
@@ -67267,6 +67619,33 @@ class Instance(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   @encoding.MapUnrecognizedFields('additionalProperties')
+  class ManagementInterfacesValue(_messages.Message):
+    r"""Map of management interfaces. Keys must be valid RFC1035 names and at
+    most 63 characters long.
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        ManagementInterfacesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        ManagementInterfacesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ManagementInterfacesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A InstanceManagementInterface attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('InstanceManagementInterface', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
   class PartnerMetadataValue(_messages.Message):
     r"""Partner Metadata assigned to the instance. A map from a subdomain
     (namespace) to entries map.
@@ -67345,40 +67724,41 @@ class Instance(_messages.Message):
   lastSuspendedTimestamp = _messages.StringField(24)
   localSsdEncryptionMode = _messages.EnumField('LocalSsdEncryptionModeValueValuesEnum', 25)
   machineType = _messages.StringField(26)
-  metadata = _messages.MessageField('Metadata', 27)
-  minCpuPlatform = _messages.StringField(28)
-  name = _messages.StringField(29)
-  networkInterfaces = _messages.MessageField('NetworkInterface', 30, repeated=True)
-  networkPerformanceConfig = _messages.MessageField('NetworkPerformanceConfig', 31)
-  params = _messages.MessageField('InstanceParams', 32)
-  partnerMetadata = _messages.MessageField('PartnerMetadataValue', 33)
-  postKeyRevocationActionType = _messages.EnumField('PostKeyRevocationActionTypeValueValuesEnum', 34)
-  preservedStateSizeGb = _messages.IntegerField(35)
-  privateIpv6GoogleAccess = _messages.EnumField('PrivateIpv6GoogleAccessValueValuesEnum', 36)
-  reservationAffinity = _messages.MessageField('ReservationAffinity', 37)
-  resourcePolicies = _messages.StringField(38, repeated=True)
-  resourceStatus = _messages.MessageField('ResourceStatus', 39)
-  satisfiesPzi = _messages.BooleanField(40)
-  satisfiesPzs = _messages.BooleanField(41)
-  scheduling = _messages.MessageField('Scheduling', 42)
-  secureTags = _messages.StringField(43, repeated=True)
-  selfLink = _messages.StringField(44)
-  selfLinkWithId = _messages.StringField(45)
-  serviceAccounts = _messages.MessageField('ServiceAccount', 46, repeated=True)
-  serviceIntegrationSpecs = _messages.MessageField('ServiceIntegrationSpecsValue', 47)
-  shieldedInstanceConfig = _messages.MessageField('ShieldedInstanceConfig', 48)
-  shieldedInstanceIntegrityPolicy = _messages.MessageField('ShieldedInstanceIntegrityPolicy', 49)
-  shieldedVmConfig = _messages.MessageField('ShieldedVmConfig', 50)
-  shieldedVmIntegrityPolicy = _messages.MessageField('ShieldedVmIntegrityPolicy', 51)
-  sourceMachineImage = _messages.StringField(52)
-  sourceMachineImageEncryptionKey = _messages.MessageField('CustomerEncryptionKey', 53)
-  startRestricted = _messages.BooleanField(54)
-  status = _messages.EnumField('StatusValueValuesEnum', 55)
-  statusMessage = _messages.StringField(56)
-  tags = _messages.MessageField('Tags', 57)
-  upcomingMaintenance = _messages.MessageField('UpcomingMaintenance', 58)
-  workloadIdentityConfig = _messages.MessageField('WorkloadIdentityConfig', 59)
-  zone = _messages.StringField(60)
+  managementInterfaces = _messages.MessageField('ManagementInterfacesValue', 27)
+  metadata = _messages.MessageField('Metadata', 28)
+  minCpuPlatform = _messages.StringField(29)
+  name = _messages.StringField(30)
+  networkInterfaces = _messages.MessageField('NetworkInterface', 31, repeated=True)
+  networkPerformanceConfig = _messages.MessageField('NetworkPerformanceConfig', 32)
+  params = _messages.MessageField('InstanceParams', 33)
+  partnerMetadata = _messages.MessageField('PartnerMetadataValue', 34)
+  postKeyRevocationActionType = _messages.EnumField('PostKeyRevocationActionTypeValueValuesEnum', 35)
+  preservedStateSizeGb = _messages.IntegerField(36)
+  privateIpv6GoogleAccess = _messages.EnumField('PrivateIpv6GoogleAccessValueValuesEnum', 37)
+  reservationAffinity = _messages.MessageField('ReservationAffinity', 38)
+  resourcePolicies = _messages.StringField(39, repeated=True)
+  resourceStatus = _messages.MessageField('ResourceStatus', 40)
+  satisfiesPzi = _messages.BooleanField(41)
+  satisfiesPzs = _messages.BooleanField(42)
+  scheduling = _messages.MessageField('Scheduling', 43)
+  secureTags = _messages.StringField(44, repeated=True)
+  selfLink = _messages.StringField(45)
+  selfLinkWithId = _messages.StringField(46)
+  serviceAccounts = _messages.MessageField('ServiceAccount', 47, repeated=True)
+  serviceIntegrationSpecs = _messages.MessageField('ServiceIntegrationSpecsValue', 48)
+  shieldedInstanceConfig = _messages.MessageField('ShieldedInstanceConfig', 49)
+  shieldedInstanceIntegrityPolicy = _messages.MessageField('ShieldedInstanceIntegrityPolicy', 50)
+  shieldedVmConfig = _messages.MessageField('ShieldedVmConfig', 51)
+  shieldedVmIntegrityPolicy = _messages.MessageField('ShieldedVmIntegrityPolicy', 52)
+  sourceMachineImage = _messages.StringField(53)
+  sourceMachineImageEncryptionKey = _messages.MessageField('CustomerEncryptionKey', 54)
+  startRestricted = _messages.BooleanField(55)
+  status = _messages.EnumField('StatusValueValuesEnum', 56)
+  statusMessage = _messages.StringField(57)
+  tags = _messages.MessageField('Tags', 58)
+  upcomingMaintenance = _messages.MessageField('UpcomingMaintenance', 59)
+  workloadIdentityConfig = _messages.MessageField('WorkloadIdentityConfig', 60)
+  zone = _messages.StringField(61)
 
 
 class InstanceAggregatedList(_messages.Message):
@@ -72273,6 +72653,86 @@ class InstanceManagedByIgmErrorManagedInstanceError(_messages.Message):
 
   code = _messages.StringField(1)
   message = _messages.StringField(2)
+
+
+class InstanceManagementInterface(_messages.Message):
+  r"""Represents Out-of-Band (OOB) Host Management Interface configuration
+  details for direct host control.
+
+  Enums:
+    StateValueValuesEnum: Output only. [Output Only] The current state of the
+      management interface endpoint.
+    TypeValueValuesEnum: Required. The type of management service this
+      interface provides. Supported types include HOST_MANAGEMENT for direct
+      host control.
+
+  Fields:
+    authenticationConfig: The authentication configuration for secure
+      connection.
+    ipv4Address: The IPv4 internal IP address assigned to this management
+      interface endpoint. This address will be used by the customer to route
+      traffic to the management interface.
+    ipv6Address: The IPv6 internal IP address assigned to this management
+      interface endpoint. This address will be used by the customer to route
+      traffic to the management interface if IPv6 is supported and configured.
+    network: The URL of the VPC network to which the management interface
+      endpoint is attached. The customer must ensure that this network is
+      correctly configured for routing to the instance.
+    state: Output only. [Output Only] The current state of the management
+      interface endpoint.
+    subnetwork: The URL of the subnetwork from which to assign the IP address
+      for the endpoint. The subnetwork must belong to the specified network
+      and have available IP addresses.
+    type: Required. The type of management service this interface provides.
+      Supported types include HOST_MANAGEMENT for direct host control.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. [Output Only] The current state of the management
+    interface endpoint.
+
+    Values:
+      ACTIVE: Endpoint is active and ready.
+      INACTIVE: Endpoint is inactive or failed.
+      PENDING: Endpoint is pending creation.
+      STATE_UNSPECIFIED: State unspecified.
+    """
+    ACTIVE = 0
+    INACTIVE = 1
+    PENDING = 2
+    STATE_UNSPECIFIED = 3
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""Required. The type of management service this interface provides.
+    Supported types include HOST_MANAGEMENT for direct host control.
+
+    Values:
+      HOST_MANAGEMENT: Host management type.
+      TYPE_UNSPECIFIED: Type unspecified.
+    """
+    HOST_MANAGEMENT = 0
+    TYPE_UNSPECIFIED = 1
+
+  authenticationConfig = _messages.MessageField('InstanceManagementInterfaceAuthenticationConfig', 1)
+  ipv4Address = _messages.StringField(2)
+  ipv6Address = _messages.StringField(3)
+  network = _messages.StringField(4)
+  state = _messages.EnumField('StateValueValuesEnum', 5)
+  subnetwork = _messages.StringField(6)
+  type = _messages.EnumField('TypeValueValuesEnum', 7)
+
+
+class InstanceManagementInterfaceAuthenticationConfig(_messages.Message):
+  r"""Authentication configuration for the management interface, typically
+  using mTLS.
+
+  Fields:
+    trustConfig: Required. Resource name of the Cloud Certificate Manager
+      TrustConfig used to validate client certificates for mTLS. Format:
+      projects/{project}/locations/{location}/trustConfigs/{trust_config}
+  """
+
+  trustConfig = _messages.StringField(1)
 
 
 class InstanceMoveRequest(_messages.Message):
@@ -87119,6 +87579,14 @@ class NetworkInterface(_messages.Message):
       or not. If enabled, also indicates the version of IGMP supported.
     internalIpv6PrefixLength: The prefix length of the primary internal IPv6
       range.
+    internalNicLoadBalancingIpv6Address: [Output Only] This field specifies
+      the internal IPv6 network address assigned to the CX9 Network Interface
+      Card, which facilitates the routing of traffic between NICs. For any
+      single CX9 Network Interface Card, the identical
+      internalNicLoadBalancingIpv6Address is assigned across all four
+      associated ports.
+    internalNicLoadBalancingIpv6PrefixLength: [Output Only] The prefix length
+      of the internal IPv6 Nic load balancing prefix.
     ipv6AccessConfigs: An array of IPv6 access configurations for this
       interface. Currently, only one IPv6 access config, DIRECT_IPV6, is
       supported. If there is no ipv6AccessConfig specified, then this instance
@@ -87255,24 +87723,26 @@ class NetworkInterface(_messages.Message):
   fingerprint = _messages.BytesField(6)
   igmpQuery = _messages.EnumField('IgmpQueryValueValuesEnum', 7)
   internalIpv6PrefixLength = _messages.IntegerField(8, variant=_messages.Variant.INT32)
-  ipv6AccessConfigs = _messages.MessageField('AccessConfig', 9, repeated=True)
-  ipv6AccessType = _messages.EnumField('Ipv6AccessTypeValueValuesEnum', 10)
-  ipv6Address = _messages.StringField(11)
-  kind = _messages.StringField(12, default='compute#networkInterface')
-  macAddress = _messages.StringField(13)
-  name = _messages.StringField(14)
-  nat64Eligible = _messages.BooleanField(15)
-  network = _messages.StringField(16)
-  networkAttachment = _messages.StringField(17)
-  networkIP = _messages.StringField(18)
-  nicType = _messages.EnumField('NicTypeValueValuesEnum', 19)
-  parentNicName = _messages.StringField(20)
-  queueCount = _messages.IntegerField(21, variant=_messages.Variant.INT32)
-  serviceClassId = _messages.StringField(22)
-  stackType = _messages.EnumField('StackTypeValueValuesEnum', 23)
-  subinterfaces = _messages.MessageField('NetworkInterfaceSubInterface', 24, repeated=True)
-  subnetwork = _messages.StringField(25)
-  vlan = _messages.IntegerField(26, variant=_messages.Variant.INT32)
+  internalNicLoadBalancingIpv6Address = _messages.StringField(9)
+  internalNicLoadBalancingIpv6PrefixLength = _messages.IntegerField(10, variant=_messages.Variant.INT32)
+  ipv6AccessConfigs = _messages.MessageField('AccessConfig', 11, repeated=True)
+  ipv6AccessType = _messages.EnumField('Ipv6AccessTypeValueValuesEnum', 12)
+  ipv6Address = _messages.StringField(13)
+  kind = _messages.StringField(14, default='compute#networkInterface')
+  macAddress = _messages.StringField(15)
+  name = _messages.StringField(16)
+  nat64Eligible = _messages.BooleanField(17)
+  network = _messages.StringField(18)
+  networkAttachment = _messages.StringField(19)
+  networkIP = _messages.StringField(20)
+  nicType = _messages.EnumField('NicTypeValueValuesEnum', 21)
+  parentNicName = _messages.StringField(22)
+  queueCount = _messages.IntegerField(23, variant=_messages.Variant.INT32)
+  serviceClassId = _messages.StringField(24)
+  stackType = _messages.EnumField('StackTypeValueValuesEnum', 25)
+  subinterfaces = _messages.MessageField('NetworkInterfaceSubInterface', 26, repeated=True)
+  subnetwork = _messages.StringField(27)
+  vlan = _messages.IntegerField(28, variant=_messages.Variant.INT32)
 
 
 class NetworkInterfaceSubInterface(_messages.Message):
@@ -92649,6 +93119,8 @@ class Operation(_messages.Message):
       networkFirewallPolicies.addRule and
       regionNetworkFirewallPolicies.addRule methods if not explicitly provided
       by the user.
+    getHealthOperationMetadata: Output only. [Output Only] Metadata for
+      GetHealth operations.
     getVersionOperationMetadata: A GetVersionOperationMetadata attribute.
     httpErrorMessage: [Output Only] If the operation fails, this field
       contains the HTTP error message that was returned, such as `NOT FOUND`.
@@ -92919,29 +93391,30 @@ class Operation(_messages.Message):
   endTime = _messages.StringField(4)
   error = _messages.MessageField('ErrorValue', 5)
   firewallPolicyRuleOperationMetadata = _messages.MessageField('FirewallPolicyRuleOperationMetadata', 6)
-  getVersionOperationMetadata = _messages.MessageField('GetVersionOperationMetadata', 7)
-  httpErrorMessage = _messages.StringField(8)
-  httpErrorStatusCode = _messages.IntegerField(9, variant=_messages.Variant.INT32)
-  id = _messages.IntegerField(10, variant=_messages.Variant.UINT64)
-  insertTime = _messages.StringField(11)
-  instancesBulkInsertOperationMetadata = _messages.MessageField('InstancesBulkInsertOperationMetadata', 12)
-  kind = _messages.StringField(13, default='compute#operation')
-  name = _messages.StringField(14)
-  operationGroupId = _messages.StringField(15)
-  operationType = _messages.StringField(16)
-  progress = _messages.IntegerField(17, variant=_messages.Variant.INT32)
-  region = _messages.StringField(18)
-  selfLink = _messages.StringField(19)
-  selfLinkWithId = _messages.StringField(20)
-  setCommonInstanceMetadataOperationMetadata = _messages.MessageField('SetCommonInstanceMetadataOperationMetadata', 21)
-  startTime = _messages.StringField(22)
-  status = _messages.EnumField('StatusValueValuesEnum', 23)
-  statusMessage = _messages.StringField(24)
-  targetId = _messages.IntegerField(25, variant=_messages.Variant.UINT64)
-  targetLink = _messages.StringField(26)
-  user = _messages.StringField(27)
-  warnings = _messages.MessageField('WarningsValueListEntry', 28, repeated=True)
-  zone = _messages.StringField(29)
+  getHealthOperationMetadata = _messages.MessageField('GetHealthOperationMetadata', 7)
+  getVersionOperationMetadata = _messages.MessageField('GetVersionOperationMetadata', 8)
+  httpErrorMessage = _messages.StringField(9)
+  httpErrorStatusCode = _messages.IntegerField(10, variant=_messages.Variant.INT32)
+  id = _messages.IntegerField(11, variant=_messages.Variant.UINT64)
+  insertTime = _messages.StringField(12)
+  instancesBulkInsertOperationMetadata = _messages.MessageField('InstancesBulkInsertOperationMetadata', 13)
+  kind = _messages.StringField(14, default='compute#operation')
+  name = _messages.StringField(15)
+  operationGroupId = _messages.StringField(16)
+  operationType = _messages.StringField(17)
+  progress = _messages.IntegerField(18, variant=_messages.Variant.INT32)
+  region = _messages.StringField(19)
+  selfLink = _messages.StringField(20)
+  selfLinkWithId = _messages.StringField(21)
+  setCommonInstanceMetadataOperationMetadata = _messages.MessageField('SetCommonInstanceMetadataOperationMetadata', 22)
+  startTime = _messages.StringField(23)
+  status = _messages.EnumField('StatusValueValuesEnum', 24)
+  statusMessage = _messages.StringField(25)
+  targetId = _messages.IntegerField(26, variant=_messages.Variant.UINT64)
+  targetLink = _messages.StringField(27)
+  user = _messages.StringField(28)
+  warnings = _messages.MessageField('WarningsValueListEntry', 29, repeated=True)
+  zone = _messages.StringField(30)
 
 
 class OperationAggregatedList(_messages.Message):
@@ -107640,6 +108113,10 @@ class Router(_messages.Message):
       property when you create the resource.
     encryptedInterconnectRouter: Indicates if a router is dedicated for use
       with encrypted VLAN attachments (interconnectAttachments).
+    etag: ETag for optimistic concurrency control as described by AIP 154.
+      Used to prevent conflicting updates. If provided, the request will
+      succeed only if the etag matches the current etag of the router;
+      otherwise, the request fails with an ABORTED error.
     id: [Output Only] The unique identifier for the resource. This identifier
       is defined by the server.
     interfaces: Router interfaces. To create a BGP peer that uses a router
@@ -107676,18 +108153,19 @@ class Router(_messages.Message):
   creationTimestamp = _messages.StringField(3)
   description = _messages.StringField(4)
   encryptedInterconnectRouter = _messages.BooleanField(5)
-  id = _messages.IntegerField(6, variant=_messages.Variant.UINT64)
-  interfaces = _messages.MessageField('RouterInterface', 7, repeated=True)
-  kind = _messages.StringField(8, default='compute#router')
-  md5AuthenticationKeys = _messages.MessageField('RouterMd5AuthenticationKey', 9, repeated=True)
-  name = _messages.StringField(10)
-  nats = _messages.MessageField('RouterNat', 11, repeated=True)
-  nccGateway = _messages.StringField(12)
-  network = _messages.StringField(13)
-  params = _messages.MessageField('RouterParams', 14)
-  region = _messages.StringField(15)
-  selfLink = _messages.StringField(16)
-  selfLinkWithId = _messages.StringField(17)
+  etag = _messages.StringField(6)
+  id = _messages.IntegerField(7, variant=_messages.Variant.UINT64)
+  interfaces = _messages.MessageField('RouterInterface', 8, repeated=True)
+  kind = _messages.StringField(9, default='compute#router')
+  md5AuthenticationKeys = _messages.MessageField('RouterMd5AuthenticationKey', 10, repeated=True)
+  name = _messages.StringField(11)
+  nats = _messages.MessageField('RouterNat', 12, repeated=True)
+  nccGateway = _messages.StringField(13)
+  network = _messages.StringField(14)
+  params = _messages.MessageField('RouterParams', 15)
+  region = _messages.StringField(16)
+  selfLink = _messages.StringField(17)
+  selfLinkWithId = _messages.StringField(18)
 
 
 class RouterAdvertisedIpRange(_messages.Message):
@@ -112192,11 +112670,13 @@ class SecurityPolicyRuleRateLimitOptions(_messages.Message):
       client,    which is resolved based on "userIpRequestHeaders" configured
       with the    security policy. If there is no "userIpRequestHeaders"
       configuration or    an IP address cannot be resolved from it, the key
-      type defaults toIP.   - TLS_JA4_FINGERPRINT: JA4 TLS/SSL fingerprint if
-      the client connects using HTTPS, HTTP/2 or HTTP/3. If not available, the
-      key type defaults to ALL.  For "fairshare" action, this value is limited
-      to ALL i.e. a single rate limit threshold is enforced for all the
-      requests matching the rule.
+      type defaults toIP.     - ASN: The autonomous system number of the
+      originating    client. If not available, the key type defaults toALL.
+      - TLS_JA4_FINGERPRINT: JA4 TLS/SSL fingerprint if the    client connects
+      using HTTPS, HTTP/2 or HTTP/3. If not available, the    key type
+      defaults to ALL.    For "fairshare" action, this value is limited to ALL
+      i.e. a single rate limit threshold is enforced for all the requests
+      matching the rule.
 
   Fields:
     banDurationSec: Can only be specified if the action for the rule is
@@ -112236,12 +112716,13 @@ class SecurityPolicyRuleRateLimitOptions(_messages.Message):
       USER_IP: The IP address of the originating client,    which is resolved
       based on "userIpRequestHeaders" configured with the    security policy.
       If there is no "userIpRequestHeaders" configuration or    an IP address
-      cannot be resolved from it, the key type defaults toIP.   -
-      TLS_JA4_FINGERPRINT: JA4 TLS/SSL fingerprint if the client connects
-      using HTTPS, HTTP/2 or HTTP/3. If not available, the key type defaults
-      to ALL.  For "fairshare" action, this value is limited to ALL i.e. a
-      single rate limit threshold is enforced for all the requests matching
-      the rule.
+      cannot be resolved from it, the key type defaults toIP.     - ASN: The
+      autonomous system number of the originating    client. If not available,
+      the key type defaults toALL.    - TLS_JA4_FINGERPRINT: JA4 TLS/SSL
+      fingerprint if the    client connects using HTTPS, HTTP/2 or HTTP/3. If
+      not available, the    key type defaults to ALL.    For "fairshare"
+      action, this value is limited to ALL i.e. a single rate limit threshold
+      is enforced for all the requests matching the rule.
     enforceOnKeyConfigs: If specified, any combination of values of
       enforce_on_key_type/enforce_on_key_name is treated as the key on which
       ratelimit threshold/action is enforced. You can specify up to 3
@@ -112294,15 +112775,18 @@ class SecurityPolicyRuleRateLimitOptions(_messages.Message):
     to ALL.     - USER_IP: The IP address of the originating client,    which
     is resolved based on "userIpRequestHeaders" configured with the
     security policy. If there is no "userIpRequestHeaders" configuration or
-    an IP address cannot be resolved from it, the key type defaults toIP.   -
-    TLS_JA4_FINGERPRINT: JA4 TLS/SSL fingerprint if the client connects using
-    HTTPS, HTTP/2 or HTTP/3. If not available, the key type defaults to ALL.
-    For "fairshare" action, this value is limited to ALL i.e. a single rate
-    limit threshold is enforced for all the requests matching the rule.
+    an IP address cannot be resolved from it, the key type defaults toIP.
+    - ASN: The autonomous system number of the originating    client. If not
+    available, the key type defaults toALL.    - TLS_JA4_FINGERPRINT: JA4
+    TLS/SSL fingerprint if the    client connects using HTTPS, HTTP/2 or
+    HTTP/3. If not available, the    key type defaults to ALL.    For
+    "fairshare" action, this value is limited to ALL i.e. a single rate limit
+    threshold is enforced for all the requests matching the rule.
 
     Values:
       ALL: <no description>
       ALL_IPS: <no description>
+      ASN: <no description>
       HTTP_COOKIE: <no description>
       HTTP_HEADER: <no description>
       HTTP_PATH: <no description>
@@ -112316,16 +112800,17 @@ class SecurityPolicyRuleRateLimitOptions(_messages.Message):
     """
     ALL = 0
     ALL_IPS = 1
-    HTTP_COOKIE = 2
-    HTTP_HEADER = 3
-    HTTP_PATH = 4
-    IP = 5
-    REGION_CODE = 6
-    SNI = 7
-    TLS_JA3_FINGERPRINT = 8
-    TLS_JA4_FINGERPRINT = 9
-    USER_IP = 10
-    XFF_IP = 11
+    ASN = 2
+    HTTP_COOKIE = 3
+    HTTP_HEADER = 4
+    HTTP_PATH = 5
+    IP = 6
+    REGION_CODE = 7
+    SNI = 8
+    TLS_JA3_FINGERPRINT = 9
+    TLS_JA4_FINGERPRINT = 10
+    USER_IP = 11
+    XFF_IP = 12
 
   banDurationSec = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   banThreshold = _messages.MessageField('SecurityPolicyRuleRateLimitOptionsThreshold', 2)
@@ -112371,9 +112856,11 @@ class SecurityPolicyRuleRateLimitOptionsEnforceOnKeyConfig(_messages.Message):
       client,    which is resolved based on "userIpRequestHeaders" configured
       with the    security policy. If there is no "userIpRequestHeaders"
       configuration    or an IP address cannot be resolved from it, the key
-      type defaults toIP.   - TLS_JA4_FINGERPRINT: JA4 TLS/SSL fingerprint if
-      the client connects using HTTPS, HTTP/2 or HTTP/3. If not available, the
-      key type defaults to ALL.
+      type defaults toIP.     - ASN: The autonomous system number of the
+      originating    client. If not available, the key type defaults toALL.
+      - TLS_JA4_FINGERPRINT: JA4 TLS/SSL fingerprint if the    client connects
+      using HTTPS, HTTP/2 or HTTP/3. If not available, the    key type
+      defaults to ALL.
 
   Fields:
     enforceOnKeyName: Rate limit key name applicable only for the following
@@ -112407,10 +112894,11 @@ class SecurityPolicyRuleRateLimitOptionsEnforceOnKeyConfig(_messages.Message):
       USER_IP: The IP address of the originating client,    which is resolved
       based on "userIpRequestHeaders" configured with the    security policy.
       If there is no "userIpRequestHeaders" configuration    or an IP address
-      cannot be resolved from it, the key type defaults toIP.   -
-      TLS_JA4_FINGERPRINT: JA4 TLS/SSL fingerprint if the client connects
-      using HTTPS, HTTP/2 or HTTP/3. If not available, the key type defaults
-      to ALL.
+      cannot be resolved from it, the key type defaults toIP.     - ASN: The
+      autonomous system number of the originating    client. If not available,
+      the key type defaults toALL.    - TLS_JA4_FINGERPRINT: JA4 TLS/SSL
+      fingerprint if the    client connects using HTTPS, HTTP/2 or HTTP/3. If
+      not available, the    key type defaults to ALL.
   """
 
   class EnforceOnKeyTypeValueValuesEnum(_messages.Enum):
@@ -112440,13 +112928,16 @@ class SecurityPolicyRuleRateLimitOptionsEnforceOnKeyConfig(_messages.Message):
     to ALL.     - USER_IP: The IP address of the originating client,    which
     is resolved based on "userIpRequestHeaders" configured with the
     security policy. If there is no "userIpRequestHeaders" configuration    or
-    an IP address cannot be resolved from it, the key type defaults toIP.   -
-    TLS_JA4_FINGERPRINT: JA4 TLS/SSL fingerprint if the client connects using
-    HTTPS, HTTP/2 or HTTP/3. If not available, the key type defaults to ALL.
+    an IP address cannot be resolved from it, the key type defaults toIP.
+    - ASN: The autonomous system number of the originating    client. If not
+    available, the key type defaults toALL.    - TLS_JA4_FINGERPRINT: JA4
+    TLS/SSL fingerprint if the    client connects using HTTPS, HTTP/2 or
+    HTTP/3. If not available, the    key type defaults to ALL.
 
     Values:
       ALL: <no description>
       ALL_IPS: <no description>
+      ASN: <no description>
       HTTP_COOKIE: <no description>
       HTTP_HEADER: <no description>
       HTTP_PATH: <no description>
@@ -112460,16 +112951,17 @@ class SecurityPolicyRuleRateLimitOptionsEnforceOnKeyConfig(_messages.Message):
     """
     ALL = 0
     ALL_IPS = 1
-    HTTP_COOKIE = 2
-    HTTP_HEADER = 3
-    HTTP_PATH = 4
-    IP = 5
-    REGION_CODE = 6
-    SNI = 7
-    TLS_JA3_FINGERPRINT = 8
-    TLS_JA4_FINGERPRINT = 9
-    USER_IP = 10
-    XFF_IP = 11
+    ASN = 2
+    HTTP_COOKIE = 3
+    HTTP_HEADER = 4
+    HTTP_PATH = 5
+    IP = 6
+    REGION_CODE = 7
+    SNI = 8
+    TLS_JA3_FINGERPRINT = 9
+    TLS_JA4_FINGERPRINT = 10
+    USER_IP = 11
+    XFF_IP = 12
 
   enforceOnKeyName = _messages.StringField(1)
   enforceOnKeyType = _messages.EnumField('EnforceOnKeyTypeValueValuesEnum', 2)
@@ -122905,7 +123397,7 @@ class TargetPool(_messages.Message):
     backupPool: The server-defined URL for the resource. This field is
       applicable only when the containing target pool is serving a forwarding
       rule as the primary pool, and its failoverRatio field is properly set to
-      a value between [0, 1].backupPool and failoverRatio together define the
+      a value between [0, 1]. backupPool and failoverRatio together define the
       fallback behavior of the primary target pool: if the ratio of the
       healthy instances in the primary pool is at or belowfailoverRatio,
       traffic arriving at the load-balanced IP will be directed to the backup

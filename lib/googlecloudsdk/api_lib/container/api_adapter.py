@@ -1469,6 +1469,8 @@ class UpdateClusterOptions(object):
       enable_scheduled_upgrades=None,
       disable_scheduled_upgrades=None,
       node_creation_mode=None,
+      jwt_authenticator_config=None,
+      clear_jwt_authenticator_config=None,
   ):
     self.version = version
     self.update_master = bool(update_master)
@@ -1721,6 +1723,8 @@ class UpdateClusterOptions(object):
     self.enable_scheduled_upgrades = enable_scheduled_upgrades
     self.disable_scheduled_upgrades = disable_scheduled_upgrades
     self.node_creation_mode = node_creation_mode
+    self.jwt_authenticator_config = jwt_authenticator_config
+    self.clear_jwt_authenticator_config = clear_jwt_authenticator_config
 
 
 class SetMasterAuthOptions(object):
@@ -10444,6 +10448,20 @@ class V1Beta1Adapter(V1Adapter):
           desiredScheduleUpgradeConfig=self.messages.ScheduleUpgradeConfig(
               enabled=False
           )
+      )
+    if options.jwt_authenticator_config is not None:
+      if update is None:
+        update = self.messages.ClusterUpdate()
+      update.desiredJwtAuthenticatorConfig = (
+          util.LoadJwtAuthenticatorConfigFromYaml(
+              options.jwt_authenticator_config, self.messages
+          )
+      )
+    elif options.clear_jwt_authenticator_config:
+      if update is None:
+        update = self.messages.ClusterUpdate()
+      update.desiredJwtAuthenticatorConfig = (
+          self.messages.JWTAuthenticatorConfig()
       )
     return update
 

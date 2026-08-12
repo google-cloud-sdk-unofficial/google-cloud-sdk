@@ -29,6 +29,8 @@ class RetiredResources(base.Group):
   A retired resource represents a deleted key version.
   """
 
+  category = base.IDENTITY_AND_SECURITY_CATEGORY
+
   @classmethod
   def Args(cls, parser):
     parser.display_info.AddUriFunc(

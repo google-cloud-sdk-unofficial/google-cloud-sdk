@@ -80,6 +80,16 @@ properties:
       format: `projects/{project}/locations/{location}/authzPolicies/{authz_
       policy}`.
     type: string
+  policyProfile:
+    description: |-
+      Optional. Immutable. Defines the type of authorization being performed. If
+      not specified, `REQUEST_AUTHZ` is applied. This field cannot be changed
+      once AuthzPolicy is created.
+    type: string
+    enum:
+    - CONTENT_AUTHZ
+    - POLICY_PROFILE_UNSPECIFIED
+    - REQUEST_AUTHZ
   target:
     description: |-
       Specifies the set of resources to which this policy should be applied

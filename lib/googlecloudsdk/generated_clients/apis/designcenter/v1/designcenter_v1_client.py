@@ -645,6 +645,33 @@ class DesigncenterV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Export(self, request, global_params=None):
+      r"""Exports Terraform files for an application template revision. The generated modules can have remote sources or local sources downloaded from remote. This is an ASYNCHRONOUS operation that returns a Long Running Operation.
+
+      Args:
+        request: (DesigncenterProjectsLocationsSpacesApplicationTemplatesRevisionsExportRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Export')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Export.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/spaces/{spacesId}/applicationTemplates/{applicationTemplatesId}/revisions/{revisionsId}:export',
+        http_method='POST',
+        method_id='designcenter.projects.locations.spaces.applicationTemplates.revisions.export',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:export',
+        request_field='exportApplicationTemplateRevisionIaCRequest',
+        request_type_name='DesigncenterProjectsLocationsSpacesApplicationTemplatesRevisionsExportRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Generate(self, request, global_params=None):
       r"""Generates Terraform files for an application template revision. This is a SYNCHRONOUS operation and returns the generated IaC directly in the response. It does NOT download external module sources; it only uses remote sources.
 
@@ -878,6 +905,33 @@ class DesigncenterV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='DesigncenterProjectsLocationsSpacesApplicationTemplatesDeleteRequest',
         response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def Export(self, request, global_params=None):
+      r"""Exports Terraform files for an application template. The generated modules can have remote sources or local sources downloaded from remote. This is an ASYNCHRONOUS operation that returns a Long Running Operation.
+
+      Args:
+        request: (DesigncenterProjectsLocationsSpacesApplicationTemplatesExportRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Export')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Export.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/spaces/{spacesId}/applicationTemplates/{applicationTemplatesId}:export',
+        http_method='POST',
+        method_id='designcenter.projects.locations.spaces.applicationTemplates.export',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:export',
+        request_field='exportApplicationTemplateIaCRequest',
+        request_type_name='DesigncenterProjectsLocationsSpacesApplicationTemplatesExportRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

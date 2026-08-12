@@ -29,3 +29,4 @@ class Vms(base.Group):
   instances.
   VM Migration API must be enabled in your project.
   """
+  category = base.SOLUTIONS_CATEGORY

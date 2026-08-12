@@ -18,6 +18,7 @@
 import textwrap
 
 import apitools
+from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.api_lib.util import exceptions as api_lib_exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet.config_management import command
@@ -30,81 +31,10 @@ from googlecloudsdk.core import yaml
 from googlecloudsdk.core.console import console_io
 
 
-# TODO(b/468375060) : Add beta track to alpha class and delete this beta class.
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Enable(features_base.EnableCommand,
              features_base.UpdateCommand,
              command.Common):
-  """Enable the Config Management feature.
-
-  Enable the Config Management feature in a fleet.
-
-  `{command}` without flags creates the Config Management feature or no-ops if
-  the feature already exists.
-
-  ## EXAMPLES
-
-  To enable the Config Management feature, run:
-
-    $ {command}
-  """
-  feature_name = 'configmanagement'
-
-  @classmethod
-  def Args(cls, parser):
-    parser.add_argument(
-        '--fleet-default-member-config',
-        help=('Path to YAML file that contains the [fleet-default membership'
-              ' configuration]('
-              'https://cloud.google.com/kubernetes-engine/fleet-management/docs'
-              '/manage-features) to enable with a new feature.'
-              ' This file shares the syntax of the `--config` flag on the'
-              ' `apply` command: see recognized fields [here]('
-              'https://docs.cloud.google.com/kubernetes-engine/config-sync/docs/reference/gcloud-apply-fields).'
-              ' Errors if the Policy Controller or Hierarchy Controller field'
-              ' is set.'
-              ' This flag will also enable or update the fleet-default'
-              ' membership configuration on an existing feature.'
-              ' See the `apply` command for how to sync a membership to the'
-              ' fleet-default membership configuration.')
-    )
-
-  def Run(self, args):
-    try:
-      _ = self.enable_feature_with_fdc(args)
-    except apitools.base.py.exceptions.HttpError as e:
-      # Do not show stack trace to user.
-      raise api_lib_exceptions.HttpException(e, error_format='{message}')
-
-  def enable_feature_with_fdc(self, args):
-    """Enable feature and fleet-default membership configuration, if specified.
-
-    Args:
-      args: Command arguments.
-    Returns:
-      Enabled or updated GKE Hub Feature.
-    """
-    feature = self.messages.Feature()
-    # Empty string still counts as setting the flag.
-    if args.fleet_default_member_config is not None:
-      spec = self.parse_config_management(args.fleet_default_member_config)
-      feature.fleetDefaultMemberConfig = (
-          self.messages.CommonFleetDefaultMemberConfigSpec(
-              configmanagement=spec
-          )
-      )
-      try:
-        return self.Update(['fleet_default_member_config'], feature)
-      except exceptions.Error as e:
-        if str(e) != str(self.FeatureNotEnabledError()):
-          raise
-    return self.Enable(feature)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class EnableAlpha(features_base.EnableCommand,
-                  features_base.UpdateCommand,
-                  command.Common):
   """Enable the Config Management feature.
 
   Enable the Config Management feature in a fleet.
@@ -122,6 +52,7 @@ class EnableAlpha(features_base.EnableCommand,
 
   @classmethod
   def Args(cls, parser):
+    v1_api_version = util.VERSION_MAP[cls.ReleaseTrack()]
     parser.add_argument(
         '--fleet-default-member-config',
         help=textwrap.dedent(
@@ -130,7 +61,7 @@ class EnableAlpha(features_base.EnableCommand,
             [fleet-default membership configuration](https://docs.cloud.google.com/kubernetes-engine/fleet-management/docs/manage-features)
             to create the feature with. Errors if the feature already exists.
             Accepts the same schema as the `MembershipSpec`
-            [API field](https://docs.cloud.google.com/kubernetes-engine/fleet-management/docs/reference/rpc/google.cloud.gkehub.configmanagement.v1alpha#google.cloud.gkehub.configmanagement.v1alpha.MembershipSpec).
+            [API field](https://docs.cloud.google.com/kubernetes-engine/fleet-management/docs/reference/rpc/google.cloud.gkehub.configmanagement.{v1_api_version}#google.cloud.gkehub.configmanagement.{v1_api_version}.MembershipSpec).
             Provides the additional field-handling documented at
             https://docs.cloud.google.com/kubernetes-engine/config-sync/docs/reference/gcloud-configuration-field-behavior.
             Use the `update` command to update the fleet-default membership
@@ -171,7 +102,9 @@ class EnableAlpha(features_base.EnableCommand,
         raise exceptions.Error(
             '--fleet-default-member-config'
             f' [{args.fleet_default_member_config}] is not a YAML mapping node.'
-            ' See --help for examples'
+            ' See'
+            ' https://docs.cloud.google.com/kubernetes-engine/config-sync/docs/reference/gcloud-configuration-field-behavior#example_configuration_files'
+            ' for examples'
         )
       is_apply_spec = yaml_data.get('applySpecVersion')
       if is_apply_spec:

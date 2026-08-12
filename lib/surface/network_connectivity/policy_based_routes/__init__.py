@@ -24,3 +24,4 @@ from googlecloudsdk.calliope import base
 )
 class PolicyBasedRoutes(base.Group):
   """Manage Policy-based Routes."""
+  category = base.NETWORKING_CATEGORY

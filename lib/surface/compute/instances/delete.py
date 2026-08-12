@@ -94,20 +94,16 @@ class Delete(base.DeleteCommand):
 
     flags.INSTANCES_ARG.AddArgument(parser, operation_type='delete')
 
-    if (
-        cls.ReleaseTrack() == base.ReleaseTrack.ALPHA
-        or cls.ReleaseTrack() == base.ReleaseTrack.BETA
-    ):
-      parser.add_argument(
-          '--no-graceful-shutdown',
-          action='store_true',
-          default=None,
-          help=(
-              'Deletes the instance immediately without gracefully shutting it'
-              ' down. If a graceful shutdown is in progress, then the instance'
-              ' is forcefully stopped and deleted.'
-          ),
-      )
+    parser.add_argument(
+        '--no-graceful-shutdown',
+        action='store_true',
+        default=None,
+        help=(
+            'Deletes the instance immediately without gracefully shutting it'
+            ' down. If a graceful shutdown is in progress, then the instance'
+            ' is forcefully stopped and deleted.'
+        ),
+    )
 
     parser.display_info.AddCacheUpdater(completers.InstancesCompleter)
 
@@ -252,17 +248,9 @@ class Delete(base.DeleteCommand):
 
     delete_requests = []
     for ref in refs:
-      if (
-          self.ReleaseTrack() == base.ReleaseTrack.ALPHA
-          or self.ReleaseTrack() == base.ReleaseTrack.BETA
-      ):
-        request_protobuf = client.messages.ComputeInstancesDeleteRequest(
-            **ref.AsDict(), noGracefulShutdown=args.no_graceful_shutdown
-        )
-      else:
-        request_protobuf = client.messages.ComputeInstancesDeleteRequest(
-            **ref.AsDict()
-        )
+      request_protobuf = client.messages.ComputeInstancesDeleteRequest(
+          **ref.AsDict(), noGracefulShutdown=args.no_graceful_shutdown
+      )
       delete_requests.append((client.apitools_client.instances, 'Delete',
                               request_protobuf))
 

@@ -4230,9 +4230,9 @@ class WorkflowConfig(_messages.Message):
       If left unspecified, the default is `UTC`.
     updateTime: Output only. The timestamp of when the WorkflowConfig was last
       updated.
-    workflowTriggerConfig: Optional. Optional trigger configuration for this
-      workflow. If present, the workflow will be triggered based on the
-      specified triggers.
+    workflowTriggerConfig: Optional. Trigger configuration for this workflow.
+      If present, the workflow will be triggered based on the specified
+      triggers.
   """
 
   createTime = _messages.StringField(1)
@@ -4404,7 +4404,7 @@ class WorkflowTriggerConfig(_messages.Message):
       triggered until conditions are met.
     minExecutionDuration: Optional. Minimum duration between two consecutive
       executions. If not specified, the workflow will be executed every time
-      trigger conditions are met and no ongoing workflow execution.
+      trigger conditions are met and there is no ongoing workflow execution.
     recentTriggerEvaluationRecords: Output only. Records of the 10 most recent
       trigger evaluations, ordered in descending order of `evaluation_time`.
       Updated whenever the service evaluates the trigger conditions (via

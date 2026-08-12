@@ -866,6 +866,28 @@ class BetaFilestoreAdapter(AlphaFilestoreAdapter):
       )
     return source_backupdr_backup
 
+  def _ParseRestoreConfigFromFileshare(
+      self, file_share, source_backup=None, source_backupdr_backup=None
+  ):
+    """Parses and validates the restoreConfig field from file_share."""
+    restore_paths = file_share.get('restore-path-patterns')
+    if not restore_paths:
+      return None
+
+    if source_backup is None and source_backupdr_backup is None:
+      raise InvalidArgumentError(
+          "If 'restore-path-patterns' is specified, either 'source-backup'"
+          " or 'source-backupdr-backup' must also be specified."
+      )
+
+    if len(restore_paths) > 1:
+      raise InvalidArgumentError(
+          "Currently, only one path is allowed in"
+          " 'restore-path-patterns'."
+      )
+
+    return self.messages.RestoreConfig(pathPatterns=restore_paths)
+
   def ParseManagedADIntoInstance(self, instance, managed_ad):
     """Parses managed-ad configs into an instance message.
 
@@ -994,12 +1016,18 @@ class BetaFilestoreAdapter(AlphaFilestoreAdapter):
       nfs_export_options = FilestoreClient.MakeNFSExportOptionsMsgBeta(
           self.messages, file_share.get('nfs-export-options', [])
       )
+      restore_config = self._ParseRestoreConfigFromFileshare(
+          file_share,
+          source_backup=source_backup,
+          source_backupdr_backup=source_backupdr_backup,
+      )
       file_share_config = self.messages.FileShareConfig(
           name=file_share.get('name'),
           capacityGb=utils.BytesToGb(file_share.get('capacity')),
           sourceBackup=source_backup,
           sourceBackupdrBackup=source_backupdr_backup,
           nfsExportOptions=nfs_export_options,
+          restoreConfig=restore_config,
       )
       instance.fileShares.append(file_share_config)
 

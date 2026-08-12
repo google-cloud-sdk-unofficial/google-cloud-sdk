@@ -21,3 +21,4 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Config(base.Group):
   """Manage Cloud Bigtable instance configurations."""
+  category = base.DATABASES_CATEGORY

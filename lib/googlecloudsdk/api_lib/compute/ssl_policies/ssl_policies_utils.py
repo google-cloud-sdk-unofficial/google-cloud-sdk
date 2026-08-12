@@ -39,8 +39,16 @@ class SslPolicyHelper(object):
   def _messages(self):
     return self._compute_client.messages
 
-  def GetSslPolicyForInsert(self, name, description, profile, min_tls_version,
-                            custom_features, post_quantum_key_exchange=None):
+  def GetSslPolicyForInsert(
+      self,
+      name,
+      description,
+      profile,
+      min_tls_version,
+      custom_features,
+      post_quantum_key_exchange=None,
+      tls_mode=None
+  ):
     """Returns the SslPolicy message for an insert request.
 
     Args:
@@ -56,6 +64,8 @@ class SslPolicyHelper(object):
       post_quantum_key_exchange: String representing the support state of the
         post quantum key exchange of the SSL policy. Can be one of 'DEFAULT',
         'ENABLED' or 'DEFERRED'.
+      tls_mode: String representing the TLS mode. Can be one of 'SIMPLE' or
+        'MUTUAL'.
 
     Returns:
       The SslPolicy message object that can be used in an insert request.
@@ -71,14 +81,23 @@ class SslPolicyHelper(object):
       ssl_policy.postQuantumKeyExchange = (
           self._messages.SslPolicy.PostQuantumKeyExchangeValueValuesEnum(
               post_quantum_key_exchange))
+    if tls_mode is not None and hasattr(self._messages, 'ServerTlsSettings'):
+      if ssl_policy.tlsSettings is None:
+        ssl_policy.tlsSettings = self._messages.ServerTlsSettings()
+      ssl_policy.tlsSettings.tlsMode = (
+          self._messages.ServerTlsSettings.TlsModeValueValuesEnum(tls_mode)
+      )
     return ssl_policy
 
-  def GetSslPolicyForPatch(self,
-                           fingerprint,
-                           profile=None,
-                           min_tls_version=None,
-                           custom_features=None,
-                           post_quantum_key_exchange=None):
+  def GetSslPolicyForPatch(
+      self,
+      fingerprint,
+      profile=None,
+      min_tls_version=None,
+      custom_features=None,
+      post_quantum_key_exchange=None,
+      tls_mode=None
+  ):
     """Returns the SslPolicy message for a patch request.
 
     Args:
@@ -93,6 +112,8 @@ class SslPolicyHelper(object):
       post_quantum_key_exchange: String representing the support state of the
         post quantum key exchange of the SSL policy. Can be one of 'DEFAULT',
         'ENABLED' or 'DEFERRED'.
+      tls_mode: String representing the TLS mode. Can be one of 'SIMPLE' or
+        'MUTUAL'.
     """
     messages = self._messages
     ssl_policy = messages.SslPolicy(fingerprint=fingerprint)
@@ -107,6 +128,12 @@ class SslPolicyHelper(object):
       ssl_policy.postQuantumKeyExchange = (
           messages.SslPolicy.PostQuantumKeyExchangeValueValuesEnum(
               post_quantum_key_exchange))
+    if tls_mode is not None and hasattr(messages, 'ServerTlsSettings'):
+      if ssl_policy.tlsSettings is None:
+        ssl_policy.tlsSettings = messages.ServerTlsSettings()
+      ssl_policy.tlsSettings.tlsMode = (
+          messages.ServerTlsSettings.TlsModeValueValuesEnum(tls_mode)
+      )
     return ssl_policy
 
   def WaitForOperation(self, ssl_policy_ref, operation_ref, wait_message):
@@ -241,8 +268,11 @@ class SslPolicyHelper(object):
       List of strings representing the list of available features.
     """
     if region:
-      request = self._messages.ComputeRegionSslPoliciesListAvailableFeaturesRequest(
-          project=project, region=region)
+      request = (
+          self._messages.ComputeRegionSslPoliciesListAvailableFeaturesRequest(
+              project=project, region=region
+          )
+      )
       return self._client.regionSslPolicies.ListAvailableFeatures(
           request).features
 

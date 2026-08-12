@@ -24,3 +24,4 @@ from googlecloudsdk.calliope import base
 @base.DefaultUniverseOnly
 class Operation(base.Group):
   """Manage Backup and DR operations."""
+  category = base.STORAGE_CATEGORY

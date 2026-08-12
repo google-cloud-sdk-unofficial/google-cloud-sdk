@@ -42,15 +42,14 @@ def Create(database_ref, creator_role=None):
   """
   client = _GetClientInstance('spanner', 'v1', None)
   msgs = apis.GetMessagesModule('spanner', 'v1')
-  if creator_role is None:
-    req = msgs.SpannerProjectsInstancesDatabasesSessionsCreateRequest(
-        database=database_ref.RelativeName())
-  else:
-    create_session_request = msgs.CreateSessionRequest(
-        session=msgs.Session(creatorRole=creator_role))
-    req = msgs.SpannerProjectsInstancesDatabasesSessionsCreateRequest(
-        createSessionRequest=create_session_request,
-        database=database_ref.RelativeName())
+  session = msgs.Session(multiplexed=True)
+  if creator_role is not None:
+    session.creatorRole = creator_role
+  create_session_request = msgs.CreateSessionRequest(session=session)
+  req = msgs.SpannerProjectsInstancesDatabasesSessionsCreateRequest(
+      createSessionRequest=create_session_request,
+      database=database_ref.RelativeName(),
+  )
   return client.projects_instances_databases_sessions.Create(req)
 
 
@@ -189,7 +188,7 @@ def _GetPartitionedDmlTransaction(session_ref):
   return msgs.TransactionSelector(id=resp.id)
 
 
-def Commit(session_ref, mutations, transaction_id=None):
+def Commit(session_ref, mutations, transaction_id=None, precommit_token=None):
   """Commit a transaction through a session.
 
   In Cloud Spanner, each session can have at most one active transaction at a
@@ -201,28 +200,47 @@ def Commit(session_ref, mutations, transaction_id=None):
   Args:
     session_ref: Session, through which the transaction would be committed.
     mutations: A list of mutations, each represents a modification to one or
-        more Cloud Spanner rows.
+      more Cloud Spanner rows.
     transaction_id: An optional string for the transaction id.
+    precommit_token: An optional MultiplexedSessionPrecommitToken.
 
   Returns:
-    The Cloud Spanner timestamp at which the transaction committed.
+    The CommitResponse.
+
+  Raises:
+    SystemError: Failed to commit transaction.
   """
   client = apis.GetClientInstance('spanner', 'v1')
   msgs = apis.GetMessagesModule('spanner', 'v1')
 
-  if transaction_id is not None:
+  # We typically expect at most one retry of the Commit operation due to a new
+  # precommit token being generated. Bound the number of retries to 3 to avoid
+  # potentially infinite retries.
+  for _ in range(4):
+    commit_request = msgs.CommitRequest(mutations=mutations)
+    if transaction_id is not None:
+      commit_request.transactionId = transaction_id
+    else:
+      commit_request.singleUseTransaction = msgs.TransactionOptions(
+          readWrite=msgs.ReadWrite()
+      )
+
+    if precommit_token is not None:
+      commit_request.precommitToken = precommit_token
+
     req = msgs.SpannerProjectsInstancesDatabasesSessionsCommitRequest(
-        session=session_ref.RelativeName(),
-        commitRequest=msgs.CommitRequest(
-            mutations=mutations, transactionId=transaction_id))
+        session=session_ref.RelativeName(), commitRequest=commit_request
+    )
+
+    resp = client.projects_instances_databases_sessions.Commit(req)
+
+    if resp.precommitToken is not None:
+      precommit_token = resp.precommitToken
+      continue
+
+    return resp
   else:
-    req = msgs.SpannerProjectsInstancesDatabasesSessionsCommitRequest(
-        session=session_ref.RelativeName(),
-        commitRequest=msgs.CommitRequest(
-            mutations=mutations,
-            singleUseTransaction=msgs.TransactionOptions(
-                readWrite=msgs.ReadWrite())))
-  return client.projects_instances_databases_sessions.Commit(req)
+    raise SystemError('Failed to commit transaction.')
 
 
 class MutationFactory(object):

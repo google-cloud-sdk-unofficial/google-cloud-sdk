@@ -50,7 +50,6 @@ DETAILED_HELP = {
 def _AlphaArgs(parser):
   disks_flags.AddBulkCreateArgsAlpha(parser)
   disks_flags.SOURCE_INSTANT_SNAPSHOT_GROUP_ARG.AddArgument(parser)
-  disks_flags.SOURCE_SNAPSHOT_GROUP_ARG.AddArgument(parser)
 
 
 def _BetaArgs(parser):
@@ -173,7 +172,7 @@ class BulkCreate(base.Command):
               sourceInstantSnapshotGroup=isg_ref.SelfLink(),
           )
         else:
-          # source-snapshot-group is only available in Alpha.
+          # source-snapshot-group is only available in Alpha and Beta.
           if hasattr(args, 'source_snapshot_group'):
             ssg_ref = disks_flags.SOURCE_SNAPSHOT_GROUP_ARG.ResolveAsResource(
                 args,

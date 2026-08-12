@@ -20,3 +20,4 @@ from googlecloudsdk.calliope import base
 @base.DefaultUniverseOnly
 class IntelligenceFindings(base.Group):
   """Findings for Cloud Storage usage."""
+  category = base.STORAGE_CATEGORY

@@ -317,17 +317,14 @@ class Init(base.Command):
       )
       try:
         insert_sample_data(appname, database_id, session_ref)
+        return textwrap.dedent("""\
+            Initialization done for your Spanner database.
+            """)
       except Exception:
         raise SystemError(
             'Failed to insert data for the database. Please fallback to '
             'manually insert.'
         )
-      else:
-        return textwrap.dedent("""\
-            Initialization done for your Spanner database.
-            """)
-      finally:
-        database_sessions.Delete(session_ref)
     else:
       backend_args = '{appname} --instance-id={instance_id}'.format(
           appname=appname, instance_id=instance_id

@@ -96,6 +96,10 @@ class Execute(base.Command):
       )
     # No output by default, can be overridden by --format
     parser.display_info.AddFormat('none')
+    # --task-timeout is an execution override for task timeout. Note that
+    # --grace-period (termination grace period) is configured on the job task
+    # template via `jobs create`/`jobs update` rather than as a per-execution
+    # override.
     flags.AddTaskTimeoutFlags(parser, for_execution_overrides=True)
     flags.AddTasksFlag(parser, for_execution_overrides=True)
 

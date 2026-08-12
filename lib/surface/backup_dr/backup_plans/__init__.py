@@ -23,3 +23,4 @@ from googlecloudsdk.calliope import base
 )
 class BackupPlans(base.Group):
   """Manage Backup and DR backup plans."""
+  category = base.STORAGE_CATEGORY

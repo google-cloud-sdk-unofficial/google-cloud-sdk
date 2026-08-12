@@ -42,7 +42,9 @@ class UploadNamedSet(base.SilentCommand):
   @classmethod
   def Args(cls, parser):
     UploadNamedSet.ROUTER_ARG = flags.RouterArgument()
-    UploadNamedSet.ROUTER_ARG.AddArgument(parser, operation_type='upload')
+    UploadNamedSet.ROUTER_ARG.AddArgument(
+        parser, operation_type='upload the named set to'
+    )
     parser.add_argument(
         '--set-name', help='Name of the named set to add/replace.'
     )
@@ -138,7 +140,7 @@ UploadNamedSet.detailed_help = {
           *{command}* uploads a named set into a Compute Engine router.
   """,
     'EXAMPLES': """\
-          To upload named set configuration from YAML file `my-set.yaml` to router `my-router` in region `us-central1`, run:
+          To upload a named set from YAML file `my-set.yaml` to router `my-router` in region `us-central1`, run:
 
               $ {command} my-router --region=us-central1 --file-name=my-set.yaml
 

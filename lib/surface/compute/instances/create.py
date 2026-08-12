@@ -123,6 +123,7 @@ def _CommonArgs(
     support_preemption_notice_duration=False,
     support_enable_vpc_scoped_dns=False,
     support_workload_identity_config=False,
+    support_identity_type=False,
     support_alias_ipv6_ranges=False,
     support_dns64_eligible=False,
     support_nat64_eligible=False,
@@ -130,10 +131,17 @@ def _CommonArgs(
     support_standard_tier=False,
     support_local_ssd_encryption_mode=False,
     support_expose_host_topology=False,
+    include_kms_key_service_account=False,
+    support_external_ip_tier=False,
 ):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
-  instances_flags.AddDiskArgs(parser, enable_regional, enable_kms=enable_kms)
+  instances_flags.AddDiskArgs(
+      parser,
+      enable_regional,
+      enable_kms=enable_kms,
+      include_kms_key_service_account=include_kms_key_service_account,
+  )
   instances_flags.AddCreateDiskArgs(
       parser,
       enable_kms=enable_kms,
@@ -147,6 +155,7 @@ def _CommonArgs(
       enable_confidential_compute=support_enable_confidential_compute,
       support_disk_labels=support_disk_labels,
       support_source_snapshot_region=support_source_snapshot_region,
+      include_kms_key_service_account=include_kms_key_service_account,
   )
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAddressArgs(
@@ -213,7 +222,9 @@ def _CommonArgs(
   instances_flags.AddIpv6NetworkTierArgs(
       parser, support_standard_tier=support_standard_tier
   )
-  instances_flags.AddNetworkPerformanceConfigsArgs(parser)
+  instances_flags.AddNetworkPerformanceConfigsArgs(
+      parser, support_external_ip_tier=support_external_ip_tier
+  )
   instances_flags.AddInstanceTerminationActionVmArgs(parser)
   instances_flags.AddIPv6AddressArgs(parser)
   instances_flags.AddIPv6PrefixLengthArgs(parser)
@@ -275,7 +286,9 @@ def _CommonArgs(
     instances_flags.AddLocalSsdEncryptionModeArgs(parser)
 
   if support_instance_kms:
-    instances_flags.AddInstanceKmsArgs(parser)
+    instances_flags.AddInstanceKmsArgs(
+        parser, include_kms_key_service_account=include_kms_key_service_account
+    )
 
   if support_max_run_duration:
     instances_flags.AddMaxRunDurationVmArgs(parser)
@@ -296,7 +309,9 @@ def _CommonArgs(
   if support_skip_guest_os_shutdown:
     instances_flags.AddSkipGuestOsShutdownArgs(parser)
   if support_workload_identity_config:
-    instances_flags.AddWorkloadIdentityConfigArgs(parser)
+    instances_flags.AddWorkloadIdentityConfigArgs(
+        parser, support_identity_type=support_identity_type
+    )
   instances_flags.AddRequestValidForDurationArgs(parser)
 
 
@@ -347,7 +362,7 @@ class Create(base.CreateCommand):
   _support_enable_confidential_compute = True
   _support_specific_then_x_affinity = False
   _support_any_reservation_then_fail_affinity = False
-  _support_graceful_shutdown = False
+  _support_graceful_shutdown = True
   _support_igmp_query = True
   _support_watchdog_timer = False
   _support_disk_labels = False
@@ -357,11 +372,14 @@ class Create(base.CreateCommand):
   _support_preemption_notice_duration = False
   _support_enable_vpc_scoped_dns = False
   _support_workload_identity_config = True
+  _support_identity_type = False
   _support_alias_ipv6_ranges = False
   _support_dns64_eligible = False
   _support_nat64_eligible = False
   _support_vsock_mode = False
   _support_expose_host_topology = False
+  _support_external_ip_tier = False
+  _support_windows_license_optimization_mode = False
 
   @classmethod
   def Args(cls, parser):
@@ -394,11 +412,13 @@ class Create(base.CreateCommand):
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
         support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
         support_workload_identity_config=cls._support_workload_identity_config,
+        support_identity_type=cls._support_identity_type,
         support_alias_ipv6_ranges=cls._support_alias_ipv6_ranges,
         support_dns64_eligible=cls._support_dns64_eligible,
         support_nat64_eligible=cls._support_nat64_eligible,
         support_vsock_mode=cls._support_vsock_mode,
         support_local_ssd_encryption_mode=cls._support_local_ssd_encryption_mode,
+        support_external_ip_tier=cls._support_external_ip_tier,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()
@@ -476,6 +496,12 @@ class Create(base.CreateCommand):
         support_preemption_notice_duration=self._support_preemption_notice_duration,
         support_vsock_mode=self._support_vsock_mode,
         support_expose_host_topology=self._support_expose_host_topology,
+        support_windows_license_optimization_mode=getattr(
+            self, '_support_windows_license_optimization_mode', False
+        ),
+        support_latency_tolerant=getattr(
+            self, '_support_latency_tolerant', False
+        ),
     )
     tags = instance_utils.GetTags(args, compute_client)
     labels = instance_utils.GetLabels(args, compute_client)
@@ -539,6 +565,7 @@ class Create(base.CreateCommand):
             args,
             compute_client.messages,
             self._support_workload_identity_config,
+            self._support_identity_type,
         )
     )
 
@@ -911,7 +938,6 @@ class CreateBeta(Create):
   _support_enable_confidential_compute = True
   _support_specific_then_x_affinity = True
   _support_any_reservation_then_fail_affinity = True
-  _support_graceful_shutdown = True
   _support_igmp_query = True
   _support_watchdog_timer = False
   _support_disk_labels = True
@@ -921,6 +947,7 @@ class CreateBeta(Create):
   _support_preemption_notice_duration = True
   _support_enable_vpc_scoped_dns = False
   _support_workload_identity_config = True
+  _support_identity_type = False
   _support_alias_ipv6_ranges = True
   _support_dns64_eligible = False
   _support_nat64_eligible = False
@@ -972,12 +999,14 @@ class CreateBeta(Create):
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
         support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
         support_workload_identity_config=cls._support_workload_identity_config,
+        support_identity_type=cls._support_identity_type,
         support_alias_ipv6_ranges=cls._support_alias_ipv6_ranges,
         support_dns64_eligible=cls._support_dns64_eligible,
-        support_nat64_eligible=cls._support_nat64_eligible,
         support_vsock_mode=cls._support_vsock_mode,
         support_local_ssd_encryption_mode=cls._support_local_ssd_encryption_mode,
         support_standard_tier=True,
+        include_kms_key_service_account=True,
+        support_external_ip_tier=cls._support_external_ip_tier,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()
@@ -989,6 +1018,7 @@ class CreateBeta(Create):
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArg(
         parser, utils.COMPUTE_BETA_API_VERSION)
+    instances_flags.AddMaintenanceFreezeDurationArgs(parser)
     instances_flags.AddConfidentialComputeArgs(
         parser,
         support_confidential_compute_type=cls._support_confidential_compute_type,
@@ -1052,7 +1082,6 @@ class CreateAlpha(CreateBeta):
   _support_specific_then_x_affinity = True
   _support_any_reservation_then_fail_affinity = True
   _support_ipv6_only = True
-  _support_graceful_shutdown = True
   _support_igmp_query = True
   _support_watchdog_timer = True
   _support_disk_labels = True
@@ -1061,11 +1090,15 @@ class CreateAlpha(CreateBeta):
   _support_preemption_notice_duration = True
   _support_enable_vpc_scoped_dns = True
   _support_workload_identity_config = True
+  _support_identity_type = True
   _support_vsock_mode = True
   _support_dns64_eligible = True
   _support_nat64_eligible = True
   _support_alias_ipv6_ranges = True
   _support_expose_host_topology = True
+  _support_external_ip_tier = True
+  _support_windows_license_optimization_mode = True
+  _support_latency_tolerant = True
 
   @classmethod
   def Args(cls, parser):
@@ -1102,6 +1135,7 @@ class CreateAlpha(CreateBeta):
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
         support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
         support_workload_identity_config=cls._support_workload_identity_config,
+        support_identity_type=cls._support_identity_type,
         support_alias_ipv6_ranges=cls._support_alias_ipv6_ranges,
         support_dns64_eligible=cls._support_dns64_eligible,
         support_nat64_eligible=cls._support_nat64_eligible,
@@ -1109,6 +1143,8 @@ class CreateAlpha(CreateBeta):
         support_local_ssd_encryption_mode=cls._support_local_ssd_encryption_mode,
         support_standard_tier=True,
         support_expose_host_topology=cls._support_expose_host_topology,
+        include_kms_key_service_account=True,
+        support_external_ip_tier=cls._support_external_ip_tier,
     )
 
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
@@ -1144,6 +1180,8 @@ class CreateAlpha(CreateBeta):
         parser,
         support_flex_start=True,
     )
+    instances_flags.AddWindowsLicenseOptimizationMode(parser)
+    instances_flags.AddLatencyTolerantArgs(parser)
     partner_metadata_utils.AddPartnerMetadataArgs(parser)
 
 

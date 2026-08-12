@@ -11,3 +11,6 @@ properties:
   identityCertificateEnabled:
     description: Whether to enable identity certificate.
     type: boolean
+  identityType:
+    description: The identity type of the instance.
+    type: enum

@@ -26,10 +26,21 @@ from googlecloudsdk.core import resources
 KMS_HELP_URL = ('https://cloud.google.com/compute/docs/disks/'
                 'customer-managed-encryption')
 _KMS_ARGS = [
-    'kms-key', 'kms-keyring', 'kms-location', 'kms-project',
-    'boot-disk-kms-key', 'boot-disk-kms-keyring', 'boot-disk-kms-location',
-    'boot-disk-kms-project', 'instance-kms-key', 'instance-kms-keyring',
-    'instance-kms-location', 'instance-kms-project'
+    'kms-key',
+    'kms-keyring',
+    'kms-location',
+    'kms-project',
+    'kms-key-service-account',
+    'boot-disk-kms-key',
+    'boot-disk-kms-keyring',
+    'boot-disk-kms-location',
+    'boot-disk-kms-project',
+    'boot-disk-kms-key-service-account',
+    'instance-kms-key',
+    'instance-kms-keyring',
+    'instance-kms-location',
+    'instance-kms-project',
+    'instance-kms-key-service-account',
 ]
 
 
@@ -94,7 +105,11 @@ def _DictToMessage(args, messages):
   key = _DictToKmsKey(args)
   if not key:
     return None
-  return messages.CustomerEncryptionKey(kmsKeyName=key.RelativeName())
+  kms_key_service_account = args.get('kms-key-service-account')
+  return messages.CustomerEncryptionKey(
+      kmsKeyName=key.RelativeName(),
+      kmsKeyServiceAccount=kms_key_service_account,
+  )
 
 
 def MaybeGetKmsKey(args,
@@ -130,11 +145,38 @@ def MaybeGetKmsKey(args,
   if flag in _GetSpecifiedKmsArgs(args) and not key:
     raise calliope_exceptions.InvalidArgumentException(
         flag, 'KMS cryptokey resource was not fully specified.')
+
+  if boot_disk_prefix:
+    sa_flag = '--boot-disk-kms-key-service-account'
+  elif instance_prefix:
+    sa_flag = '--instance-kms-key-service-account'
+  else:
+    sa_flag = '--kms-key-service-account'
+
+  if sa_flag in _GetSpecifiedKmsArgs(args) and not key:
+    raise calliope_exceptions.InvalidArgumentException(
+        sa_flag, 'requires [{}] to be specified.'.format(flag)
+    )
   if key:
     if current_value:
       raise calliope_exceptions.ConflictingArgumentsException(
           '--csek-key-file', *_GetSpecifiedKmsArgs(args))
-    return messages.CustomerEncryptionKey(kmsKeyName=key.RelativeName())
+
+    if boot_disk_prefix:
+      kms_key_service_account = getattr(
+          args, 'boot_disk_kms_key_service_account', None
+      )
+    elif instance_prefix:
+      kms_key_service_account = getattr(
+          args, 'instance_kms_key_service_account', None
+      )
+    else:
+      kms_key_service_account = getattr(args, 'kms_key_service_account', None)
+
+    return messages.CustomerEncryptionKey(
+        kmsKeyName=key.RelativeName(),
+        kmsKeyServiceAccount=kms_key_service_account,
+    )
   return current_value
 
 

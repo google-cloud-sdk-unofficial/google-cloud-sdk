@@ -36,11 +36,13 @@
       help_text: |
         Type of the DNS authorization.
     - arg_name: tags
-      hidden: true
       api_field: dnsAuthorization.tags.additionalProperties
       metavar: KEY=VALUE
       help_text: |
-        List of tag KEY=VALUE pairs to add.
+        List of tags KEY=VALUE pairs to bind. Each item must be expressed as
+        `<tag-key-namespaced-name>=<tag-value-short-name>`.
+
+        Example: `123/environment=production,123/costCenter=marketing`
       type:
         arg_dict:
           flatten: true

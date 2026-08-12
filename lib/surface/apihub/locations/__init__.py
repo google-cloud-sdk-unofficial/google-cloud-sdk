@@ -17,8 +17,17 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
-@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class LocationsAlpha(base.Group):
-    """Location-scoped operations for API Hub."""
+  """Location-scoped operations for API Hub."""
+
+  category = base.UNCATEGORIZED_CATEGORY
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+class LocationsGa(base.Group):
+  """Location-scoped operations for API Hub."""
+
+  category = base.UNCATEGORIZED_CATEGORY

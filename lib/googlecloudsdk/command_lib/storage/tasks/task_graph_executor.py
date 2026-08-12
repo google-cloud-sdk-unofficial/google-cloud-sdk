@@ -45,6 +45,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import transport
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.credentials import creds_context_managers
+from googlecloudsdk.core.util import encoding
 from googlecloudsdk.core.util import platforms
 from six.moves import queue
 
@@ -65,6 +66,10 @@ else:
     multiprocessing_context = multiprocessing.get_context(method=_method)
   else:
     _should_force_spawn = (
+        # When running under Go embedding Python, fork is unsafe due to the
+        # inherently multi-threaded Go runtime: b/520064868#comment2.
+        encoding.GetEncodedValue(os.environ, 'CLOUDSDK_FROM_GOCLOUD') == '1'
+        or
         # On MacOS, fork is unsafe: https://bugs.python.org/issue33725. The
         # default start method is spawn on versions >= 3.8, but we need to set
         # it explicitly for older versions.

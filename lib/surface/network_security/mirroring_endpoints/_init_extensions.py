@@ -21,11 +21,14 @@ from googlecloudsdk.calliope import base
 
 class MirroringEndpointsAlpha(base.Group):
   """Optional no-auto-generated code for ALPHA."""
+  category = base.NETWORK_SECURITY_CATEGORY
 
 
 class MirroringEndpointsBeta(base.Group):
   """Optional no-auto-generated code for BETA."""
+  category = base.NETWORK_SECURITY_CATEGORY
 
 
 class MirroringEndpointsGa(base.Group):
   """Optional no-auto-generated code for GA."""
+  category = base.NETWORK_SECURITY_CATEGORY

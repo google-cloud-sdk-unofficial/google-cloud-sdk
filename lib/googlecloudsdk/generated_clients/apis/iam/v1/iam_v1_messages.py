@@ -1051,6 +1051,23 @@ class IamLocationsWorkforcePoolsProvidersScimTenantsDeleteRequest(_messages.Mess
   name = _messages.StringField(2, required=True)
 
 
+class IamLocationsWorkforcePoolsProvidersScimTenantsGetIamPolicyRequest(_messages.Message):
+  r"""A IamLocationsWorkforcePoolsProvidersScimTenantsGetIamPolicyRequest
+  object.
+
+  Fields:
+    getIamPolicyRequest: A GetIamPolicyRequest resource to be passed as the
+      request body.
+    resource: REQUIRED: The resource for which the policy is being requested.
+      See [Resource
+      names](https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+  """
+
+  getIamPolicyRequest = _messages.MessageField('GetIamPolicyRequest', 1)
+  resource = _messages.StringField(2, required=True)
+
+
 class IamLocationsWorkforcePoolsProvidersScimTenantsGetRequest(_messages.Message):
   r"""A IamLocationsWorkforcePoolsProvidersScimTenantsGetRequest object.
 
@@ -1106,6 +1123,23 @@ class IamLocationsWorkforcePoolsProvidersScimTenantsPatchRequest(_messages.Messa
   workforcePoolProviderScimTenant = _messages.MessageField('WorkforcePoolProviderScimTenant', 3)
 
 
+class IamLocationsWorkforcePoolsProvidersScimTenantsSetIamPolicyRequest(_messages.Message):
+  r"""A IamLocationsWorkforcePoolsProvidersScimTenantsSetIamPolicyRequest
+  object.
+
+  Fields:
+    resource: REQUIRED: The resource for which the policy is being specified.
+      See [Resource
+      names](https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+    setIamPolicyRequest: A SetIamPolicyRequest resource to be passed as the
+      request body.
+  """
+
+  resource = _messages.StringField(1, required=True)
+  setIamPolicyRequest = _messages.MessageField('SetIamPolicyRequest', 2)
+
+
 class IamLocationsWorkforcePoolsProvidersScimTenantsSuggestClaimMappingRequest(_messages.Message):
   r"""A
   IamLocationsWorkforcePoolsProvidersScimTenantsSuggestClaimMappingRequest
@@ -1139,6 +1173,24 @@ class IamLocationsWorkforcePoolsProvidersScimTenantsSuggestClaimMappingRequest(_
 
   intendedScimUsage = _messages.EnumField('IntendedScimUsageValueValuesEnum', 1)
   parent = _messages.StringField(2, required=True)
+
+
+class IamLocationsWorkforcePoolsProvidersScimTenantsTestIamPermissionsRequest(_messages.Message):
+  r"""A
+  IamLocationsWorkforcePoolsProvidersScimTenantsTestIamPermissionsRequest
+  object.
+
+  Fields:
+    resource: REQUIRED: The resource for which the policy detail is being
+      requested. See [Resource
+      names](https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+    testIamPermissionsRequest: A TestIamPermissionsRequest resource to be
+      passed as the request body.
+  """
+
+  resource = _messages.StringField(1, required=True)
+  testIamPermissionsRequest = _messages.MessageField('TestIamPermissionsRequest', 2)
 
 
 class IamLocationsWorkforcePoolsProvidersScimTenantsTokensCreateRequest(_messages.Message):

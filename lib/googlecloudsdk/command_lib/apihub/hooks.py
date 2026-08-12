@@ -190,8 +190,8 @@ def ProcessMcpToolsFromFile(unused_ref, args, request):
     tools.append(tool)
 
   # The request object here is the gcloud-generated request wrapper
-  # (ApihubProjectsLocationsConfigureAndDeployServerRequest), which embeds
-  # the actual request body as
+  # (ApihubProjectsLocationsServersConfigureAndDeployServerRequest), which
+  # embeds the actual request body as
   # googleCloudApihubV1ConfigureAndDeployServerRequest.
   body = request.googleCloudApihubV1ConfigureAndDeployServerRequest
   if body is None:

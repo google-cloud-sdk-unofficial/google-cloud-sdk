@@ -64,10 +64,12 @@ class Client:
   Attributes:
     release_track: The release track of the API.
     messages: API messages class, The Firewall Plus API messages.
+    project_scope: bool, whether the client is project-scoped.
   """
 
   def __init__(self, release_track, project_scope=False):
     self.release_track = release_track
+    self.project_scope = project_scope
     self._client = GetClientInstance(release_track)
     self.messages = GetMessagesModule(release_track)
     self._resource_parser = resources.Registry()
@@ -260,8 +262,48 @@ class Client:
       wildfire_analysis_action=None,
       enable_wildfire_analysis_logging=None,
       block_partial_http=None,
+      kms_key=None,
   ):
-    """Calls the CreateEndpoint API."""
+    """Calls the CreateEndpoint API.
+
+    Args:
+      name: str, ID of the firewall endpoint.
+      parent: str, parent resource path.
+      description: str, description of the firewall endpoint.
+      billing_project_id: str, billing project ID.
+      enable_jumbo_frames: bool, whether to enable jumbo frames.
+      endpoint_type: str, type of endpoint.
+      target_firewall_attachment: str, target firewall attachment.
+      labels: LabelsValue, labels for the firewall endpoint.
+      enable_wildfire: bool, whether to enable wildfire.
+      wildfire_region: str, wildfire region.
+      content_cloud_region: str, content cloud region.
+      wildfire_lookup_timeout: int, wildfire lookup timeout.
+      wildfire_lookup_action: str, wildfire lookup action.
+      wildfire_analysis_timeout: int, wildfire analysis timeout.
+      wildfire_analysis_action: str, wildfire analysis action.
+      enable_wildfire_analysis_logging: bool, whether to enable wildfire
+        analysis logging.
+      block_partial_http: bool, whether to block partial http.
+      kms_key: str, Cloud KMS cryptokey resource name.
+
+    Returns:
+      Operation ref to track the long-running process.
+    """
+
+    if kms_key:
+      if not self.project_scope:
+        raise ValueError(
+            'KMS key can only be specified for project-level firewall'
+            ' endpoints.'
+        )
+      try:
+        self._resource_parser.Parse(
+            kms_key,
+            collection='cloudkms.projects.locations.keyRings.cryptoKeys',
+        )
+      except resources.Error as e:
+        raise ValueError('Invalid KMS key: {0}'.format(e)) from e
 
     third_party_endpoint_settings = self._ParseThirdPartyEndpointSettings(
         target_firewall_attachment
@@ -300,6 +342,8 @@ class Client:
           wildfire_analysis_action_str=wildfire_analysis_action,
           enable_wildfire_analysis_logging=enable_wildfire_analysis_logging,
       )
+    if self.release_track == base.ReleaseTrack.ALPHA and kms_key:
+      endpoint.kmsKey = kms_key
     create_request = self._create_request(
         firewallEndpoint=endpoint, firewallEndpointId=name, parent=parent
     )

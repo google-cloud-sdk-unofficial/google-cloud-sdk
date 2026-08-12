@@ -20,3 +20,5 @@ from googlecloudsdk.calliope import base
 
 class Instances(base.Group):
   """Manage Cloud Bigtable instances."""
+
+  category = base.DATABASES_CATEGORY

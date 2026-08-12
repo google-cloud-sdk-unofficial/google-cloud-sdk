@@ -18,7 +18,7 @@ import enum
 
 
 BASE_URL = 'https://ftp.googleapis.com/v1alpha/'
-DOCS_URL = 'https://cloud.google.com/'
+DOCS_URL = 'https://docs.cloud.google.com/cloud-ftp'
 
 
 class Collections(enum.Enum):

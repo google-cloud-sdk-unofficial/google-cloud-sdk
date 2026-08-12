@@ -259,6 +259,7 @@ class AlphaUpdate(BetaUpdate):
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser)
+    flags.AddGracePeriodFlag(parser, object_to_shutdown='tasks')
     flags.IdentityCertificateFlag(hidden=True).AddToParser(parser)
     flags.IdentityTypeFlag(hidden=True).AddToParser(parser)
     flags.FunctionalTypeFlag(hidden=True).AddToParser(parser)

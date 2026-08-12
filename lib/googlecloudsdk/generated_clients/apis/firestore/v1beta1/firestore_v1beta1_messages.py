@@ -3190,11 +3190,16 @@ class Value(_messages.Message):
     NullValueValueValuesEnum: A null value.
 
   Fields:
-    arrayValue: An array value. Cannot directly contain another array value,
-      though can contain a map which contains another array.
+    arrayValue: An array value. In Standard edition databases, an array value
+      cannot directly contain another array value, though it can contain a map
+      which contains another array. In Enterprise edition databases, an array
+      value can contain another array value.
     booleanValue: A boolean value.
-    bytesValue: A bytes value. Must not exceed 1 MiB - 89 bytes. Only the
-      first 1,500 bytes are considered by queries.
+    bytesValue: A bytes value. In Standard edition databases: * The value must
+      not exceed 1 MiB - 89 bytes. * Only the first 1,500 bytes are considered
+      by queries. In Enterprise edition databases, there is no limit on the
+      size of the value. However, it is still subject to document and index
+      entry size limits.
     doubleValue: A double value.
     fieldReferenceValue: Value which references a field. This is considered
       relative (vs absolute) since it only refers to a field and not a field
@@ -3212,9 +3217,12 @@ class Value(_messages.Message):
     referenceValue: A reference to a document. For example:
       `projects/{project_id}/databases/{database_id}/documents/{document_path}
       `.
-    stringValue: A string value. The string, represented as UTF-8, must not
-      exceed 1 MiB - 89 bytes. Only the first 1,500 bytes of the UTF-8
-      representation are considered by queries.
+    stringValue: A string value. In Standard edition databases: * The string,
+      represented as UTF-8, must not exceed 1 MiB - 89 bytes. * Only the first
+      1,500 bytes of the UTF-8 representation are considered by queries. In
+      Enterprise edition databases, there is no limit on the size of the
+      value. However, it is still subject to document and index entry size
+      limits.
     timestampValue: A timestamp value. Precise only to microseconds. When
       stored, any additional precision is rounded down.
     variableReferenceValue: Pointer to a variable defined elsewhere in a

@@ -21,3 +21,5 @@ from googlecloudsdk.calliope import base
 @base.UniverseCompatible
 class LogicalViews(base.Group):
   """Manage Bigtable logical views."""
+
+  category = base.DATABASES_CATEGORY

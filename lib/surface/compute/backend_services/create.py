@@ -63,11 +63,20 @@ def _ResolveProtocol(messages, args, default='HTTP'):
                                                          default)
 
 
-def AddIapFlag(parser):
+def AddIapFlag(parser, alpha=False):
   # TODO(b/34479878): It would be nice if the auto-generated help text were
   # a bit better so we didn't need to be quite so verbose here.
+  metavar = None
+  if alpha:
+    metavar = (
+        'disabled|enabled,['
+        'oauth2-client-id=OAUTH2-CLIENT-ID,'
+        'oauth2-client-secret=OAUTH2-CLIENT-SECRET,'
+        'oauth2-client-info-developer-email-address=DEVELOPER-EMAIL-ADDRESS]'
+    )
   flags.AddIap(
       parser,
+      metavar=metavar,
       help="""\
       Configure Identity Aware Proxy (IAP) for external HTTP(S) load balancing.
       You can configure IAP to be `enabled` or `disabled` (default). If enabled,
@@ -110,6 +119,7 @@ class CreateHelper(object):
       support_allow_multinetwork,
       support_identity,
       support_external_passthrough,
+      support_iap_alpha=False,
   ):
     """Add flags to create a backend service to the parser."""
 
@@ -150,7 +160,7 @@ class CreateHelper(object):
     flags.AddCacheKeyIncludeQueryString(parser, default=True)
     flags.AddCacheKeyQueryStringList(parser)
     flags.AddCacheKeyExtendedCachingArgs(parser)
-    AddIapFlag(parser)
+    AddIapFlag(parser, alpha=support_iap_alpha)
     parser.display_info.AddCacheUpdater(flags.BackendServicesCompleter)
     signed_url_flags.AddSignedUrlCacheMaxAge(parser, required=False)
 
@@ -172,6 +182,8 @@ class CreateHelper(object):
     cdn_flags.AddCdnPolicyArgs(parser, 'backend service')
 
     flags.AddConnectionTrackingPolicy(parser)
+    flags.AddConsistentHashMinimumRingSize(parser)
+    flags.AddCircuitBreakersMaxRequests(parser)
     flags.AddCompressionMode(parser)
     flags.AddIpAddressSelectionPolicy(parser)
     flags.AddBackendServiceCustomMetrics(parser)
@@ -262,6 +274,12 @@ class CreateHelper(object):
           client.messages.BackendService.CompressionModeValueValuesEnum(
               args.compression_mode))
 
+    backend_services_utils.ApplyConsistentHashSettings(
+        client, args, backend_service
+    )
+    backend_services_utils.ApplyCircuitBreakersSettings(
+        client, args, backend_service
+    )
     backend_services_utils.ApplySubsettingArgs(
         client, args, backend_service, self._support_subsetting_subset_size
     )
@@ -402,6 +420,12 @@ class CreateHelper(object):
           for binding_name in args.service_bindings
       ]
 
+    backend_services_utils.ApplyConsistentHashSettings(
+        client, args, backend_service
+    )
+    backend_services_utils.ApplyCircuitBreakersSettings(
+        client, args, backend_service
+    )
     backend_services_utils.ApplySubsettingArgs(
         client, args, backend_service, self._support_subsetting_subset_size
     )
@@ -582,6 +606,7 @@ class CreateGA(base.CreateCommand):
   _support_allow_multinetwork = False
   _support_identity = False
   _support_external_passthrough = False
+  _support_iap_alpha = False
 
   @classmethod
   def Args(cls, parser):
@@ -593,6 +618,7 @@ class CreateGA(base.CreateCommand):
         support_allow_multinetwork=cls._support_allow_multinetwork,
         support_identity=cls._support_identity,
         support_external_passthrough=cls._support_external_passthrough,
+        support_iap_alpha=cls._support_iap_alpha,
     )
 
   def Run(self, args):
@@ -660,3 +686,4 @@ class CreateAlpha(CreateBeta):
   _support_allow_multinetwork = True
   _support_identity = True
   _support_external_passthrough = True
+  _support_iap_alpha = True

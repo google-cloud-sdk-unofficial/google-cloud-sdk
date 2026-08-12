@@ -202,9 +202,24 @@ class CreateBeta(Create):
 
   _SUPPORT_DISK_FILTERING = True
 
+  @classmethod
+  def Args(cls, parser):
+    super(CreateBeta, cls).Args(parser)
+    parser.add_argument(
+        '--kms-key-service-account',
+        type=str,
+        help="""\
+        Service account being used for the encryption request for the given KMS key.
+        """,
+    )
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
   """Create a Compute Engine machine image."""
 
   _SUPPORT_DISK_FILTERING = True
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateAlpha, cls).Args(parser)

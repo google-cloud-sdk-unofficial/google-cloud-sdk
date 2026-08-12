@@ -1244,6 +1244,8 @@ class Component(_messages.Message):
     apis: Output only. APIs required to be enabled to deploy the component, in
       the form of "*.googleapis.com".
     applicationInfo: Optional. The application associated with the component.
+    applicationTemplateRevisionUri: Optional. The application template
+      revision used to generate the component.
     componentParameterSchema: Output only. The component parameter schema,
       which includes possible parameter values. values.
     connectionsParameters: Output only. The connection parameters of the
@@ -1267,17 +1269,18 @@ class Component(_messages.Message):
 
   apis = _messages.StringField(1, repeated=True)
   applicationInfo = _messages.MessageField('ComponentApplicationInfo', 2)
-  componentParameterSchema = _messages.MessageField('ComponentParameterSchema', 3, repeated=True)
-  connectionsParameters = _messages.MessageField('ConnectionParameters', 4, repeated=True)
-  createTime = _messages.StringField(5)
-  displayName = _messages.StringField(6)
-  inputVariableAliases = _messages.MessageField('InputVariableAlias', 7, repeated=True)
-  name = _messages.StringField(8)
-  parameters = _messages.MessageField('Parameter', 9, repeated=True)
-  roles = _messages.StringField(10, repeated=True)
-  sharedTemplateRevisionUri = _messages.StringField(11)
-  updateTime = _messages.StringField(12)
-  useAsRootModule = _messages.BooleanField(13)
+  applicationTemplateRevisionUri = _messages.StringField(3)
+  componentParameterSchema = _messages.MessageField('ComponentParameterSchema', 4, repeated=True)
+  connectionsParameters = _messages.MessageField('ConnectionParameters', 5, repeated=True)
+  createTime = _messages.StringField(6)
+  displayName = _messages.StringField(7)
+  inputVariableAliases = _messages.MessageField('InputVariableAlias', 8, repeated=True)
+  name = _messages.StringField(9)
+  parameters = _messages.MessageField('Parameter', 10, repeated=True)
+  roles = _messages.StringField(11, repeated=True)
+  sharedTemplateRevisionUri = _messages.StringField(12)
+  updateTime = _messages.StringField(13)
+  useAsRootModule = _messages.BooleanField(14)
 
 
 class ComponentApplicationInfo(_messages.Message):
@@ -2312,6 +2315,20 @@ class DesigncenterProjectsLocationsSpacesApplicationTemplatesDeleteRequest(_mess
   name = _messages.StringField(2, required=True)
 
 
+class DesigncenterProjectsLocationsSpacesApplicationTemplatesExportRequest(_messages.Message):
+  r"""A DesigncenterProjectsLocationsSpacesApplicationTemplatesExportRequest
+  object.
+
+  Fields:
+    exportApplicationTemplateIaCRequest: A ExportApplicationTemplateIaCRequest
+      resource to be passed as the request body.
+    name: Required. The name of the application template.
+  """
+
+  exportApplicationTemplateIaCRequest = _messages.MessageField('ExportApplicationTemplateIaCRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
 class DesigncenterProjectsLocationsSpacesApplicationTemplatesGenerateAssessmentReportRequest(_messages.Message):
   r"""A DesigncenterProjectsLocationsSpacesApplicationTemplatesGenerateAssessm
   entReportRequest object.
@@ -2534,6 +2551,21 @@ class DesigncenterProjectsLocationsSpacesApplicationTemplatesRevisionsDeleteRequ
   """
 
   name = _messages.StringField(1, required=True)
+
+
+class DesigncenterProjectsLocationsSpacesApplicationTemplatesRevisionsExportRequest(_messages.Message):
+  r"""A DesigncenterProjectsLocationsSpacesApplicationTemplatesRevisionsExport
+  Request object.
+
+  Fields:
+    exportApplicationTemplateRevisionIaCRequest: A
+      ExportApplicationTemplateRevisionIaCRequest resource to be passed as the
+      request body.
+    name: Required. The name of the application template revision.
+  """
+
+  exportApplicationTemplateRevisionIaCRequest = _messages.MessageField('ExportApplicationTemplateRevisionIaCRequest', 1)
+  name = _messages.StringField(2, required=True)
 
 
 class DesigncenterProjectsLocationsSpacesApplicationTemplatesRevisionsGenerateRequest(_messages.Message):
@@ -3714,6 +3746,63 @@ class Environment(_messages.Message):
 
   environment = _messages.StringField(1)
   type = _messages.EnumField('TypeValueValuesEnum', 2)
+
+
+class ExportApplicationTemplateIaCRequest(_messages.Message):
+  r"""Request message for ExportApplicationTemplateIaC method.
+
+  Fields:
+    artifactLocation: Optional. Specifies the destination for the generated
+      IaC, which can be Cloud Storage or a Developer Connect repository.
+      Default is Google Cloud Storage.
+    exportIacConfig: Optional. Configuration for exporting IaC.
+  """
+
+  artifactLocation = _messages.MessageField('ArtifactLocation', 1)
+  exportIacConfig = _messages.MessageField('ExportIaCConfig', 2)
+
+
+class ExportApplicationTemplateRevisionIaCRequest(_messages.Message):
+  r"""Request message for ExportApplicationTemplateRevisionIaC method.
+
+  Fields:
+    artifactLocation: Optional. Specifies the destination for the generated
+      IaC, which can be Cloud Storage or a Developer Connect repository.
+      Default is Google Cloud Storage.
+    exportIacConfig: Optional. Configuration for exporting IaC.
+  """
+
+  artifactLocation = _messages.MessageField('ArtifactLocation', 1)
+  exportIacConfig = _messages.MessageField('ExportIaCConfig', 2)
+
+
+class ExportIaCConfig(_messages.Message):
+  r"""Configuration for exporting a resource as IAC.
+
+  Enums:
+    IacFormatValueValuesEnum: Optional. IaC format of the export. Default is
+      [IACFormat.TERRAFORM].
+
+  Fields:
+    iacFormat: Optional. IaC format of the export. Default is
+      [IACFormat.TERRAFORM].
+    tfConfig: Optional. Configuration on how to handle terraform IaC export.
+  """
+
+  class IacFormatValueValuesEnum(_messages.Enum):
+    r"""Optional. IaC format of the export. Default is [IACFormat.TERRAFORM].
+
+    Values:
+      IAC_FORMAT_UNSPECIFIED: IaC format is unspecified.
+      TERRAFORM: IaC format is Terraform.
+      HELM: IaC format is HELM.
+    """
+    IAC_FORMAT_UNSPECIFIED = 0
+    TERRAFORM = 1
+    HELM = 2
+
+  iacFormat = _messages.EnumField('IacFormatValueValuesEnum', 1)
+  tfConfig = _messages.MessageField('TerraformConfig', 2)
 
 
 class Expr(_messages.Message):
@@ -5647,6 +5736,8 @@ class SerializedComponent(_messages.Message):
     apis: Optional. APIs required to be enabled to deploy the component, in
       the form of "*.googleapis.com".
     applicationInfo: Optional. The application associated with the component.
+    applicationTemplateRevisionUri: Optional. The application template
+      revision used to generate the component.
     componentParameterSchema: Output only. The component parameter schema,
       which includes possible parameter values.
     connections: Optional. The component connections.
@@ -5669,16 +5760,17 @@ class SerializedComponent(_messages.Message):
 
   apis = _messages.StringField(1, repeated=True)
   applicationInfo = _messages.MessageField('ComponentApplicationInfo', 2)
-  componentParameterSchema = _messages.MessageField('ComponentParameterSchema', 3, repeated=True)
-  connections = _messages.MessageField('SerializedConnection', 4, repeated=True)
-  connectionsParameters = _messages.MessageField('ConnectionParameters', 5, repeated=True)
-  displayName = _messages.StringField(6)
-  inputVariableAliases = _messages.MessageField('InputVariableAlias', 7, repeated=True)
-  parameters = _messages.MessageField('Parameter', 8, repeated=True)
-  roles = _messages.StringField(9, repeated=True)
-  sharedTemplateRevisionUri = _messages.StringField(10)
-  uri = _messages.StringField(11)
-  useAsRootModule = _messages.BooleanField(12)
+  applicationTemplateRevisionUri = _messages.StringField(3)
+  componentParameterSchema = _messages.MessageField('ComponentParameterSchema', 4, repeated=True)
+  connections = _messages.MessageField('SerializedConnection', 5, repeated=True)
+  connectionsParameters = _messages.MessageField('ConnectionParameters', 6, repeated=True)
+  displayName = _messages.StringField(7)
+  inputVariableAliases = _messages.MessageField('InputVariableAlias', 8, repeated=True)
+  parameters = _messages.MessageField('Parameter', 9, repeated=True)
+  roles = _messages.StringField(10, repeated=True)
+  sharedTemplateRevisionUri = _messages.StringField(11)
+  uri = _messages.StringField(12)
+  useAsRootModule = _messages.BooleanField(13)
 
 
 class SerializedConnection(_messages.Message):
@@ -6509,6 +6601,17 @@ class TerraformBlueprintUiMetadata(_messages.Message):
   terraformUiOutput = _messages.MessageField('TerraformUiOutput', 2)
 
 
+class TerraformConfig(_messages.Message):
+  r"""Configuration for exporting a resource as Terraform IAC.
+
+  Fields:
+    tfModuleConfig: Optional. Configuration on how terraform module should be
+      handled during export.
+  """
+
+  tfModuleConfig = _messages.MessageField('TerraformModuleConfig', 1)
+
+
 class TerraformError(_messages.Message):
   r"""Errors encountered during actuation using Terraform
 
@@ -6568,6 +6671,21 @@ class TerraformInputConnections(_messages.Message):
   cftTemplateVersion = _messages.StringField(2)
   inputPath = _messages.StringField(3)
   outputVar = _messages.StringField(4)
+
+
+class TerraformModuleConfig(_messages.Message):
+  r"""Configuration on how terraform module should be handled during export.
+
+  Fields:
+    gitProxyEnabled: Optional. This is typically only valid for 3P components
+      if ingested via devconnect URI. Typically, for 1P components, since they
+      are sourced from public git repos, this field is not applicable.
+    localReferencesEnabled: Optional. If set, all the dependent modules will
+      be downloaded from the target repository and referenced locally.
+  """
+
+  gitProxyEnabled = _messages.BooleanField(1)
+  localReferencesEnabled = _messages.BooleanField(2)
 
 
 class TerraformOutput(_messages.Message):

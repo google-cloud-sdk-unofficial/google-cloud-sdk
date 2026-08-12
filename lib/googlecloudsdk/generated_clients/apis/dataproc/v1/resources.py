@@ -38,6 +38,17 @@ class Collections(enum.Enum):
       ['projectsId', 'locationsId'],
       True
   )
+  PROJECTS_LOCATIONS_ATTACHMENTS = (
+      'projects.locations.attachments',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/attachments/'
+              '{attachmentsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_AUTOSCALINGPOLICIES = (
       'projects.locations.autoscalingPolicies',
       '{+name}',

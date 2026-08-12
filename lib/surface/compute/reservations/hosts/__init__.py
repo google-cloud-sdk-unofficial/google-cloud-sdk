@@ -24,6 +24,8 @@ from googlecloudsdk.calliope import base
 class Hosts(base.Group):
   """Read Compute Engine reservation hosts."""
 
+  category = base.COMPUTE_CATEGORY
+
 
 Hosts.detailed_help = {
     'DESCRIPTION': (

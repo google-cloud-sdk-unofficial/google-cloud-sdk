@@ -70,6 +70,7 @@ class Create(base.CreateCommand):
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
     labels_util.AddCreateLabelsFlags(parser)
+    activation_flags.AddKmsKeyArg(parser, cls.ReleaseTrack(), hidden=True)
     if cls.ReleaseTrack() in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
       activation_flags.AddEnableWildfireArg(parser)
       activation_flags.AddWildfireRegionArg(parser)
@@ -106,6 +107,20 @@ class Create(base.CreateCommand):
         args, client.messages.FirewallEndpoint.LabelsValue
     )
 
+    kms_ref = (
+        args.CONCEPTS.kms_key.Parse()
+        if hasattr(args.CONCEPTS, 'kms_key')
+        else None
+    )
+    kms_key = kms_ref.RelativeName() if kms_ref else None
+
+    if kms_key and not project_scoped:
+      raise exceptions.InvalidArgumentException(
+          '--kms-key',
+          'KMS key cannot be specified for organization-scoped firewall'
+          ' endpoints.',
+      )
+
     is_async = args.async_
     max_wait = datetime.timedelta(seconds=args.max_wait)
 
@@ -133,6 +148,7 @@ class Create(base.CreateCommand):
             args, 'enable_wildfire_analysis_logging', None
         ),
         block_partial_http=getattr(args, 'block_partial_http', None),
+        kms_key=kms_key,
     )
     # Return the in-progress operation if async is requested.
     if is_async:

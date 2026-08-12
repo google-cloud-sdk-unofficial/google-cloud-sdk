@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   r"""Updates a Compute Engine network policy rule.
 
@@ -35,18 +35,21 @@ class Update(base.UpdateCommand):
 
   NETWORK_POLICY_ARG: ClassVar[compute_flags.ResourceArgument]
 
+  support_address_groups = False
+
   @classmethod
   def Args(cls, parser):
     cls.NETWORK_POLICY_ARG = flags.NetworkPolicyRuleArgument(
         required=True, operation='update'
     )
     cls.NETWORK_POLICY_ARG.AddArgument(parser)
-    flags.AddArgsUpdateRule(parser)
+    flags.AddArgsUpdateRule(parser, cls.support_address_groups)
 
   def Run(self, args):
     clearable_arg_name_to_field_name = {
         'src_ip_ranges': 'match.srcIpRanges',
         'dest_ip_ranges': 'match.destIpRanges',
+        'dest_address_groups': 'match.destAddressGroups',
         'target_secure_tags': 'targetSecureTags',
     }
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -58,6 +61,7 @@ class Update(base.UpdateCommand):
     priority = rules_utils.ConvertPriorityToInt(args.priority)
     src_ip_ranges = []
     dest_ip_ranges = []
+    dest_address_groups = []
     layer4_config_list = []
     target_service_accounts = []
     disabled = None
@@ -90,6 +94,9 @@ class Update(base.UpdateCommand):
     if args.IsSpecified('dest_ip_ranges'):
       dest_ip_ranges = args.dest_ip_ranges
       should_setup_match = True
+    if self.support_address_groups and args.IsSpecified('dest_address_groups'):
+      dest_address_groups = args.dest_address_groups
+      should_setup_match = True
     if args.IsSpecified('layer4_configs'):
       should_setup_match = True
       layer4_config_list = rules_utils.ParseLayer4Configs(
@@ -109,13 +116,19 @@ class Update(base.UpdateCommand):
       )
 
     if should_setup_match:
-      matcher = (
-          holder.client.messages.NetworkPolicyTrafficClassificationRuleMatcher(
-              srcIpRanges=src_ip_ranges,
-              destIpRanges=dest_ip_ranges,
-              layer4Configs=layer4_config_list,
-          )
-      )
+      if self.support_address_groups:
+        matcher = holder.client.messages.NetworkPolicyTrafficClassificationRuleMatcher(
+            srcIpRanges=src_ip_ranges,
+            destIpRanges=dest_ip_ranges,
+            destAddressGroups=dest_address_groups,
+            layer4Configs=layer4_config_list,
+        )
+      else:
+        matcher = holder.client.messages.NetworkPolicyTrafficClassificationRuleMatcher(
+            srcIpRanges=src_ip_ranges,
+            destIpRanges=dest_ip_ranges,
+            layer4Configs=layer4_config_list,
+        )
     else:
       matcher = None
 
@@ -160,6 +173,16 @@ class Update(base.UpdateCommand):
         traffic_class,
         messages.NetworkPolicyTrafficClassificationRuleAction.TrafficClassValueValuesEnum,
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  r"""Updates a Compute Engine network policy rule.
+
+  *{command}* is used to update network policy rules.
+  """
+
+  support_address_groups = True
 
 
 Update.detailed_help = {

@@ -22,3 +22,5 @@ from googlecloudsdk.calliope import base
                     base.ReleaseTrack.ALPHA)
 class HotTablets(base.Group):
   """Manage Cloud Bigtable hot tablets."""
+
+  category = base.DATABASES_CATEGORY

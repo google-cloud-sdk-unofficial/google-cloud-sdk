@@ -1326,6 +1326,34 @@ def AddTimeoutFlag(parser):
   )
 
 
+def _TerminationGracePeriodValue(value):
+  """Returns True if value is a whole number of seconds between 0 and 600s, 'default', or empty string."""
+  try:
+    config_changes.ParseTerminationGracePeriodFlag(value)
+    return True
+  except serverless_exceptions.ConfigurationError:
+    return False
+
+
+def AddGracePeriodFlag(parser, object_to_shutdown='instances'):
+  """Add a grace period flag."""
+  parser.add_argument(
+      '--grace-period',
+      type=arg_parsers.CustomFunctionValidator(
+          _TerminationGracePeriodValue,
+          'must be a duration between 0s and 600s or "default".',
+      ),
+      help=(
+          'The duration between SIGTERM and SIGKILL when shutting down '
+          f'{object_to_shutdown}. For example, "10s", "5m". If you don\'t '
+          'specify a unit, seconds is assumed. For example, "10" is 10 '
+          'seconds. Specify 0s to skip SIGTERM and force kill immediately. '
+          'Leave unspecified or specify "default" to revert back to the '
+          'default value.'
+      ),
+  )
+
+
 def AddServiceAccountFlag(parser):
   """Add the --service-account flag."""
   help_text = (
@@ -3636,6 +3664,10 @@ def GetServiceConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
     changes.append(config_changes.ConcurrencyChanges.FromFlag(args.concurrency))
   if 'timeout' in args and args.timeout:
     changes.append(config_changes.TimeoutChanges(timeout=args.timeout))
+  if FlagIsExplicitlySet(args, 'grace_period'):
+    changes.append(
+        config_changes.TerminationGracePeriodChanges.FromFlag(args.grace_period)
+    )
   if 'update_annotations' in args and args.update_annotations:
     for key, value in args.update_annotations.items():
       changes.append(config_changes.SetAnnotationChange(key, value))
@@ -3821,6 +3853,12 @@ def GetJobConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
     changes.append(config_changes.JobMaxRetriesChange(args.max_retries))
   if FlagIsExplicitlySet(args, 'task_timeout'):
     changes.append(config_changes.JobTaskTimeoutChange(args.task_timeout))
+  if FlagIsExplicitlySet(args, 'grace_period'):
+    changes.append(
+        config_changes.JobTaskTerminationGracePeriodChange.FromFlag(
+            args.grace_period
+        )
+    )
   if 'gpu_type' in args and args.gpu_type:
     changes.append(config_changes.GpuTypeChange(gpu_type=args.gpu_type))
 
@@ -3853,6 +3891,8 @@ def GetInstanceConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
     changes.append(_GetIngressChanges(args))
   if FlagIsExplicitlySet(args, 'port'):
     changes.append(config_changes.ContainerPortChange(port=args.port))
+  if FlagIsExplicitlySet(args, 'use_http2'):
+    changes.append(config_changes.ContainerPortChange(use_http2=args.use_http2))
   if FlagIsExplicitlySet(args, 'invoker_iam_check'):
     changes.append(
         config_changes.InvokerIamChange(
@@ -3864,6 +3904,10 @@ def GetInstanceConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
   if FlagIsExplicitlySet(args, 'default_url'):
     changes.append(
         config_changes.DefaultUrlChange(default_url=args.default_url)
+    )
+  if FlagIsExplicitlySet(args, 'grace_period'):
+    changes.append(
+        config_changes.TerminationGracePeriodChanges.FromFlag(args.grace_period)
     )
   if FlagIsExplicitlySet(args, 'restart_policy'):
     changes.append(

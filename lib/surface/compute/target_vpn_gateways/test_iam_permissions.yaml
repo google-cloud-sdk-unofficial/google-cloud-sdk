@@ -1,0 +1,29 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Test IAM permissions for a Compute Engine target VPN gateway.
+    description: |
+      Returns permissions that a caller has on the specified target VPN gateway.
+    examples: |
+      To test if the caller has 'compute.targetVpnGateways.get' permission on a target VPN gateway, run:
+
+        $ {command} my-target-vpn-gateway --region=REGION --permissions=compute.targetVpnGateways.get
+
+  request:
+    collection: compute.targetVpnGateways
+    api_version: alpha
+    method: testIamPermissions
+    use_relative_name: false
+
+  command_type: GENERIC
+
+  arguments:
+    resource:
+      help_text: The target VPN gateway for which to test permissions.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:target_vpn_gateway
+    params:
+    - arg_name: permissions
+      api_field: testPermissionsRequest.permissions
+      required: true
+      repeated: true
+      help_text: |-
+        Permissions to be tested.

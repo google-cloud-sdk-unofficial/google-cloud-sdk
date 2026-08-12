@@ -305,8 +305,6 @@ def _GetComputeMachineType(
     return compute_resource.config.newOnDemandInstances.machineType
   if compute_resource.config.newSpotInstances:
     return compute_resource.config.newSpotInstances.machineType
-  if compute_resource.config.newReservedInstances:
-    return compute_resource.config.newReservedInstances.machineType
   if compute_resource.config.newFlexStartInstances:
     return compute_resource.config.newFlexStartInstances.machineType
   raise ClusterDirectorError("Compute instances type not supported.")
@@ -319,10 +317,14 @@ def _GetComputeMachineTypeFromCluster(
   if cluster:
     compute_resources = _ConvertMessageToDict(cluster.computeResources)
     if compute_id in compute_resources:
+      if compute_resources[compute_id].config.newReservedInstances:
+        return None
       return _GetComputeMachineType(compute_id, compute_resources)
   if use_existing_cluster and existing_cluster:
     compute_resources = _ConvertMessageToDict(existing_cluster.computeResources)
     if compute_id in compute_resources:
+      if compute_resources[compute_id].config.newReservedInstances:
+        return None
       return _GetComputeMachineType(compute_id, compute_resources)
   raise ClusterDirectorError(
       f"Compute instances with id={compute_id} not found."
@@ -331,13 +333,15 @@ def _GetComputeMachineTypeFromCluster(
 
 def _GetComputeMachineTypeFromArgs(args, compute_id):
   """Returns the compute machine type from args."""
+  if args.IsSpecified("reserved_instances"):
+    for instance in args.reserved_instances:
+      if instance.get("id") == compute_id:
+        return None
   instances = []
   if args.IsSpecified("on_demand_instances"):
     instances.extend(args.on_demand_instances)
   if args.IsSpecified("spot_instances"):
     instances.extend(args.spot_instances)
-  if args.IsSpecified("reserved_instances"):
-    instances.extend(args.reserved_instances)
   if args.IsSpecified("flex_start_instances"):
     instances.extend(args.flex_start_instances)
   for instance in instances:
@@ -507,6 +511,13 @@ def MakeClusterSlurmOrchestrator(
     login_node = args.slurm_login_node
     machine_type = login_node.get("machineType")
     storage_configs = default_storage_configs
+    if "storageConfigs" in login_node:
+      storage_configs = [
+          message_module.StorageConfig(
+              id=sc.get("id"), localMount=sc.get("localMount")
+          )
+          for sc in login_node.get("storageConfigs")
+      ]
     slurm.loginNodes = message_module.SlurmLoginNodes(
         count=login_node.get("count", 1),
         machineType=machine_type,

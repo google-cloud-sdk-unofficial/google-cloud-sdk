@@ -21,3 +21,5 @@ from googlecloudsdk.calliope import base
 
 class Clusters(base.Group):
   """Manage Cloud Bigtable clusters."""
+
+  category = base.DATABASES_CATEGORY

@@ -36,7 +36,7 @@ class AddNamedSet(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     AddNamedSet.ROUTER_ARG = flags.RouterArgument()
-    AddNamedSet.ROUTER_ARG.AddArgument(parser, operation_type='insert')
+    AddNamedSet.ROUTER_ARG.AddArgument(parser, operation_type='update')
     parser.add_argument(
         '--set-name',
         help="""Name of the named set to add.""",

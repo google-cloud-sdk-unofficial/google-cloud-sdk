@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 @base.DefaultUniverseOnly
 class Folders(base.Group):
   """Manage Cloud Storage folders."""
+  category = base.STORAGE_CATEGORY
 
   def Filter(self, context, args):
     # TODO(b/190541521):  Determine if command group works with project number

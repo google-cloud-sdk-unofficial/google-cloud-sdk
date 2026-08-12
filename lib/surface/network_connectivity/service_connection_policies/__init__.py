@@ -21,3 +21,4 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class ServiceConnectionPolicies(base.Group):
   """Manage Service Connection Policies."""
+  category = base.NETWORKING_CATEGORY

@@ -23,3 +23,5 @@ from googlecloudsdk.calliope import base
                     base.ReleaseTrack.GA)
 class Backups(base.Group):
   """Manage Cloud Bigtable backups."""
+
+  category = base.DATABASES_CATEGORY

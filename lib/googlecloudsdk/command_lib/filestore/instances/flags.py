@@ -567,12 +567,21 @@ def AddNetworkArg(parser, api_version):
   )
 
 
+class HiddenArgList(arg_parsers.ArgList):
+  """Subclass of ArgList to hide it in the help text."""
+
+  @property
+  def hidden(self):
+    return True
+
+
 def AddFileShareArg(
     parser,
     api_version,
     include_snapshot_flags=False,
     include_backup_flags=False,
     include_backupdr_flags=False,
+    include_restore_path_patterns_flags=False,
     clear_nfs_export_options_required=False,
     required=True,
 ):
@@ -585,6 +594,8 @@ def AddFileShareArg(
     include_backup_flags: bool, whether to include --source-backup flags.
     include_backupdr_flags: bool, whether to include --source-backupdr-backup
     flag.
+    include_restore_path_patterns_flags: bool, whether to include
+      --restore-path-patterns flags.
     clear_nfs_export_options_required: bool, whether to include
       --clear-nfs-export-options flags.
     required: bool, passthrough to parser.add_argument.
@@ -748,6 +759,11 @@ that this file share has been restored from.
   if include_backupdr_flags:
     spec['source-backupdr-backup'] = str
 
+  if include_restore_path_patterns_flags:
+    spec['restore-path-patterns'] = HiddenArgList(
+        element_type=str, custom_delim_char=':'
+    )
+
   file_share_help = file_share_help[api_version]
   if clear_nfs_export_options_required:
     required = True
@@ -866,6 +882,9 @@ def AddInstanceCreateArgs(parser, api_version):
       ),
       include_backup_flags=True,
       include_backupdr_flags=api_version != filestore_client.ALPHA_API_VERSION,
+      include_restore_path_patterns_flags=(
+          api_version == filestore_client.BETA_API_VERSION
+      ),
   )
   if api_version in [
       filestore_client.BETA_API_VERSION,

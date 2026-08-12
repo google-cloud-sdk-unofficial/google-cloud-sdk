@@ -155,10 +155,11 @@ class Run(base.Command):
         arguments specified in the .Args() method.
       airflow_version: String, an Airflow semantic version.
     """
-    # Value is the lowest Airflow version for which this command needs to bypass
-    # the confirmation prompt.
+    # Range of Airflow versions for which this command needs to bypass
+    # the confirmation prompt. Range is including min_version and excluding
+    # max_version. None means never bypass.
     prompting_subcommands = {
-        'backfill': '1.10.6',
+        'backfill': ('1.10.6', '3.0.0'),
         'delete_dag': None,
         ('dags', 'backfill'): None,
         ('dags', 'delete'): None,
@@ -180,12 +181,17 @@ class Run(base.Command):
       else:
         return False
 
-      return (prompting_subcommands[s] is None or
-              image_versions_command_util.CompareVersions(
-                  airflow_version, prompting_subcommands[s]) >= 0)
+      return prompting_subcommands[
+          s
+      ] is None or image_versions_command_util.IsVersionInRange(
+          airflow_version,
+          prompting_subcommands[s][0],
+          prompting_subcommands[s][1],
+      )
 
-    if (_IsPromptingSubcommand(subcommand_two_level) and
-        set(args.cmd_args or []).isdisjoint({'-y', '--yes'})):
+    if _IsPromptingSubcommand(subcommand_two_level) and set(
+        args.cmd_args or []
+    ).isdisjoint({'-y', '--yes'}):
       args.cmd_args = args.cmd_args or []
       args.cmd_args.append('--yes')
 

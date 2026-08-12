@@ -637,6 +637,76 @@ class AttachedDiskConfig(_messages.Message):
   provisionedThroughput = _messages.IntegerField(4)
 
 
+class Attachment(_messages.Message):
+  r"""Message describing Attachment object
+
+  Enums:
+    StateValueValuesEnum: Output only. The current state of the attachment.
+
+  Messages:
+    LabelsValue: Optional. Labels as key value pairs
+
+  Fields:
+    createTime: Output only. The time when the attachment was created.
+    gkeCluster: Required. Immutable. The GKE cluster resource name. Format:
+      projects/{project}/locations/{location}/clusters/{cluster}
+    labels: Optional. Labels as key value pairs
+    name: Identifier. The resource name of the attachment, in the format:
+      projects/{project}/locations/{location}/attachments/{attachment}
+    state: Output only. The current state of the attachment.
+    updateTime: Output only. The time when the attachment was last updated.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current state of the attachment.
+
+    Values:
+      STATE_UNSPECIFIED: The attachment state is unknown.
+      CREATING: The attachment is being created.
+      ACTIVE: The attachment is active and ready for use.
+      UPDATING: The attachment is being updated.
+      DELETING: The attachment is being deleted.
+      FAILED: The attachment creation or update failed.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+    UPDATING = 3
+    DELETING = 4
+    FAILED = 5
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels as key value pairs
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  gkeCluster = _messages.StringField(2)
+  labels = _messages.MessageField('LabelsValue', 3)
+  name = _messages.StringField(4)
+  state = _messages.EnumField('StateValueValuesEnum', 5)
+  updateTime = _messages.StringField(6)
+
+
 class AttachmentOperationMetadata(_messages.Message):
   r"""Metadata describing the Attachment operation.
 
@@ -2049,6 +2119,123 @@ class DataprocMetricConfig(_messages.Message):
   """
 
   metrics = _messages.MessageField('Metric', 1, repeated=True)
+
+
+class DataprocProjectsLocationsAttachmentsCreateRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsAttachmentsCreateRequest object.
+
+  Fields:
+    attachment: A Attachment resource to be passed as the request body.
+    attachmentId: Required. The ID to use for the attachment, which will
+      become the final component of the attachment's resource name.
+    parent: Required. The parent resource where this attachment will be
+      created. Format: projects/{project}/locations/{location}
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request.For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate
+      commitments.The request ID must be a valid UUID with the exception that
+      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  attachment = _messages.MessageField('Attachment', 1)
+  attachmentId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class DataprocProjectsLocationsAttachmentsDeleteRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsAttachmentsDeleteRequest object.
+
+  Fields:
+    name: Required. The name of the attachment to delete. Format:
+      projects/{project}/locations/{location}/attachments/{attachment}
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request.For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate
+      commitments.The request ID must be a valid UUID with the exception that
+      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class DataprocProjectsLocationsAttachmentsGetRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsAttachmentsGetRequest object.
+
+  Fields:
+    name: Required. The name of the attachment to retrieve. Format:
+      projects/{project}/locations/{location}/attachments/{attachment}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class DataprocProjectsLocationsAttachmentsListRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsAttachmentsListRequest object.
+
+  Fields:
+    filter: Optional. Filtering results
+    orderBy: Optional. Hint for how to order the results
+    pageSize: Optional. The maximum number of attachments to return in each
+      response. The service may return fewer than this value. If unspecified,
+      the server will pick an appropriate default of 20. The maximum allowed
+      value is 1000; values above 1000 will be coerced to 1000.
+    pageToken: Optional. A page token, received from a previous
+      ListAttachments call. Provide this to retrieve the subsequent page.
+    parent: Required. The parent, which owns this collection of attachments.
+      Format: projects/{project}/locations/{location}
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class DataprocProjectsLocationsAttachmentsPatchRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsAttachmentsPatchRequest object.
+
+  Fields:
+    attachment: A Attachment resource to be passed as the request body.
+    name: Identifier. The resource name of the attachment, in the format:
+      projects/{project}/locations/{location}/attachments/{attachment}
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request.For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate
+      commitments.The request ID must be a valid UUID with the exception that
+      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the Attachment resource by the update. The fields
+      specified in the update_mask are relative to the resource, not the full
+      request. A field will be overwritten if it is in the mask. If the user
+      does not provide a mask then all fields present in the request will be
+      overwritten.
+  """
+
+  attachment = _messages.MessageField('Attachment', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
 
 
 class DataprocProjectsLocationsAutoscalingPoliciesCreateRequest(_messages.Message):
@@ -7636,6 +7823,21 @@ class LifecycleConfig(_messages.Message):
   idleStopTtl = _messages.StringField(7)
 
 
+class ListAttachmentsResponse(_messages.Message):
+  r"""Message for response to listing Attachments
+
+  Fields:
+    attachments: The list of Attachment
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  attachments = _messages.MessageField('Attachment', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListAutoscalingPoliciesResponse(_messages.Message):
   r"""A response to a request to list autoscaling policies in a project.
 
@@ -7980,9 +8182,9 @@ class Metric(_messages.Message):
       metrics#custom_metrics) to collect for the metric course (for the SPARK
       metric source (any Spark metric
       (https://spark.apache.org/docs/latest/monitoring.html#metrics) can be
-      specified).Provide metrics in the following format: METRIC_SOURCE:
-      INSTANCE:GROUP:METRIC Use camelcase as appropriate.Examples:
-      yarn:ResourceManager:QueueMetrics:AppsCompleted
+      specified).Provide metrics in the following
+      format:METRIC_SOURCE:INSTANCE :GROUP:METRIC Use camelcase as
+      appropriate.Examples: yarn:ResourceManager:QueueMetrics:AppsCompleted
       spark:driver:DAGScheduler:job.allJobs
       sparkHistoryServer:JVM:Memory:NonHeapMemoryUsage.committed
       hiveserver2:JVM:Memory:NonHeapMemoryUsage.used Notes: Only the specified

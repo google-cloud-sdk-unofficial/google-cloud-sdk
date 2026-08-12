@@ -3,8 +3,6 @@ $schema: "http://json-schema.org/draft-06/schema#"
 title: networkservices v1beta1 AgentGateway export schema
 description: A gcloud export/import command YAML validation schema.
 type: object
-required:
-- protocols
 additionalProperties: false
 properties:
   COMMENT:
@@ -53,7 +51,7 @@ properties:
     description: Network configuration for the AgentGateway.
     $ref: AgentGatewayNetworkConfig.yaml
   protocols:
-    description: List of protocols supported by an Agent Gateway
+    description: Deprecated.
     type: array
     items:
       type: string
@@ -64,8 +62,8 @@ properties:
     description: |-
       A list of Agent registries containing the agents, MCP servers and
       tools governed by the Agent Gateway. Note: Currently limited to
-      project-scoped registries Must be of format `//agentregistry.googleapi
-      s.com/projects/{project}/locations/{location}/
+      project-scoped registries Must be of format `//agentregistry.
+      googleapis.com/projects/{project}/locations/{location}/`
     type: array
     items:
       type: string

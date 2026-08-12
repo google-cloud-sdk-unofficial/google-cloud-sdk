@@ -160,8 +160,9 @@ class Retryer(object):
       args: a sequence of positional arguments to be passed to func.
       kwargs: a dictionary of positional arguments to be passed to func.
       should_retry_if: func(exc_type, exc_value, exc_traceback, state) that
-          returns True or False.
-      sleep_ms: int or iterable for how long to wait between trials.
+        returns True or False.
+      sleep_ms: int, iterable, or func(exc_type, exc_val, exc_tb, state)->int
+        for how long to wait between trials in ms.
 
     Returns:
       Whatever the function returns.
@@ -191,8 +192,21 @@ class Retryer(object):
         return should_retry_if(exc_info[0], exc_info[1], exc_info[2], state)
       should_retry = ShouldRetryFunc
 
+    if callable(sleep_ms):
+
+      def ShouldSleepFunc(try_func_result, state):
+        exc_info = try_func_result[1]
+        if exc_info is None:
+          return 0
+        return sleep_ms(exc_info[0], exc_info[1], exc_info[2], state)
+
+      sleep_ms_arg = ShouldSleepFunc
+    else:
+      sleep_ms_arg = sleep_ms
+
     result, exc_info = self.RetryOnResult(
-        TryFunc, should_retry_if=should_retry, sleep_ms=sleep_ms)
+        TryFunc, should_retry_if=should_retry, sleep_ms=sleep_ms_arg
+    )
     if exc_info:
       # Exception that was not retried was raised. Re-raise.
       exceptions.reraise(exc_info[1], tb=exc_info[2])
@@ -207,8 +221,9 @@ class Retryer(object):
       args: a sequence of arguments to be passed to func.
       kwargs: a dictionary of positional arguments to be passed to func.
       should_retry_if: result to retry on or func(result, RetryerState) that
-          returns True or False if we should retry or not.
-      sleep_ms: int or iterable, for how long to wait between trials.
+        returns True or False if we should retry or not.
+      sleep_ms: int, iterable, or func(result, RetryerState)->int for how long
+        to wait between trials in ms.
 
     Returns:
       Whatever the function returns.
@@ -227,7 +242,9 @@ class Retryer(object):
     else:
       should_retry = lambda x, s: x == should_retry_if
 
-    if isinstance(sleep_ms, collections_abc.Iterable):
+    if callable(sleep_ms):
+      sleep_gen = None
+    elif isinstance(sleep_ms, collections_abc.Iterable):
       sleep_gen = iter(sleep_ms)
     else:
       sleep_gen = itertools.repeat(sleep_ms)
@@ -235,12 +252,18 @@ class Retryer(object):
     while True:
       result = func(*args, **kwargs)
       time_passed_ms = _GetCurrentTimeMs() - start_time_ms
-      try:
-        sleep_from_gen = next(sleep_gen)
-      except StopIteration:
-        time_to_wait_ms = -1
+      if callable(sleep_ms):
+        time_to_wait_ms = sleep_ms(
+            result, RetryerState(retrial, time_passed_ms, 0)
+        )
       else:
-        time_to_wait_ms = self._GetTimeToWait(retrial, sleep_from_gen)
+        try:
+          sleep_from_gen = next(sleep_gen)
+        except StopIteration:
+          time_to_wait_ms = -1
+        else:
+          time_to_wait_ms = self._GetTimeToWait(retrial, sleep_from_gen)
+
       state = RetryerState(retrial, time_passed_ms, time_to_wait_ms)
 
       if not should_retry(result, state):
@@ -317,4 +340,3 @@ def _GetCurrentTimeMs():
 
 def _SleepMs(time_to_wait_ms):
   time.sleep(time_to_wait_ms / 1000.0)
-

@@ -173,17 +173,15 @@ class Query(base.Command):
     )
     read_only_options = self.ParseReadOnlyOptions(args)
     session = CreateSession(args, args.database_role)
-    try:
-      return database_sessions.ExecuteSql(
-          args.sql,
-          args.query_mode,
-          session,
-          read_only_options,
-          request_options,
-          args.enable_partitioned_dml,
-          args.timeout)
-    finally:
-      database_sessions.Delete(session)
+    return database_sessions.ExecuteSql(
+        args.sql,
+        args.query_mode,
+        session,
+        read_only_options,
+        request_options,
+        args.enable_partitioned_dml,
+        args.timeout,
+    )
 
   def ParseReadOnlyOptions(self, args):
     """Parses the options for a read-only request from command line arguments.

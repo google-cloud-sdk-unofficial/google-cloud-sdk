@@ -72,6 +72,7 @@ class Update(base.UpdateCommand):
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)
     flags.AddWorkloadIdentityConfigArgs(parser)
     flags.AddMostDisruptiveAllowedActionArgs(parser)
+    flags.AddGracefulShutdownArgs(parser)
 
   def Run(self, args):
     return self._Run(args)
@@ -174,7 +175,10 @@ class Update(base.UpdateCommand):
 
     # Update instance fields requiring restart.
     instance_update_operation_ref = None
-    if specified_restart_only_args:
+    specified_workload_identity_args = list(specified_restart_only_args)
+    if hasattr(args, 'identity_type') and args.IsSpecified('identity_type'):
+      specified_workload_identity_args.append('identity_type')
+    if specified_workload_identity_args:
       instance_update_operation_ref = (
           self._GetUpdateInstanceRefRequiringRestart(
               instance_ref, args, holder, most_disruptive_allowed_action,
@@ -524,7 +528,7 @@ class Update(base.UpdateCommand):
   def _UpdateWorkloadIdentityConfig(self, args, instance, messages):
     create_config = False
     if instance.workloadIdentityConfig is None:
-      for arg in ['identity', 'identity_certificate']:
+      for arg in ['identity', 'identity_certificate', 'identity_type']:
         if hasattr(args, arg) and args.IsSpecified(arg):
           create_config = True
           break
@@ -538,6 +542,18 @@ class Update(base.UpdateCommand):
     ):
       instance.workloadIdentityConfig.identityCertificateEnabled = (
           args.identity_certificate
+      )
+    if (
+        hasattr(args, 'identity_type')
+        and args.IsSpecified('identity_type')
+        and hasattr(
+            messages.WorkloadIdentityConfig, 'IdentityTypeValueValuesEnum'
+        )
+    ):
+      instance.workloadIdentityConfig.identityType = (
+          messages.WorkloadIdentityConfig.IdentityTypeValueValuesEnum(
+              args.identity_type
+          )
       )
 
   def _GetUpdateInstanceRefRequiringRestart(self, instance_ref, args, holder,
@@ -612,7 +628,7 @@ class UpdateAlpha(UpdateBeta):
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)
     partner_metadata_utils.AddPartnerMetadataArgs(parser)
     flags.AddGracefulShutdownArgs(parser)
-    flags.AddWorkloadIdentityConfigArgs(parser)
+    flags.AddWorkloadIdentityConfigArgs(parser, support_identity_type=True)
     flags.AddMostDisruptiveAllowedActionArgs(parser)
     flags.AddMinimalActionArgs(parser)
     flags.AddExposeHostTopologyArg(parser)

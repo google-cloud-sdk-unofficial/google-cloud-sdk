@@ -21,11 +21,14 @@ from googlecloudsdk.calliope import base
 
 class MulticloudDataTransferConfigsAlpha(base.Group):
   """Optional no-auto-generated code for ALPHA."""
+  category = base.NETWORKING_CATEGORY
 
 
 class MulticloudDataTransferConfigsBeta(base.Group):
   """Optional no-auto-generated code for BETA."""
+  category = base.NETWORKING_CATEGORY
 
 
 class MulticloudDataTransferConfigsGa(base.Group):
   """Optional no-auto-generated code for GA."""
+  category = base.NETWORKING_CATEGORY

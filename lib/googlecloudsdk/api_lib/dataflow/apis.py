@@ -423,35 +423,39 @@ class TemplateArguments:
   streaming_update = None
   transform_name_mappings = None
   flexrs_goal = None
+  turnkey_alerts_enabled = None
 
-  def __init__(self,
-               project_id=None,
-               region_id=None,
-               job_name=None,
-               gcs_location=None,
-               zone=None,
-               max_workers=None,
-               num_workers=None,
-               network=None,
-               subnetwork=None,
-               worker_machine_type=None,
-               launcher_machine_type=None,
-               launcher_vm_timeout_secs=None,
-               staging_location=None,
-               temp_location=None,
-               kms_key_name=None,
-               disable_public_ips=None,
-               parameters=None,
-               service_account_email=None,
-               worker_region=None,
-               worker_zone=None,
-               enable_streaming_engine=None,
-               additional_experiments=None,
-               additional_pipeline_options=None,
-               additional_user_labels=None,
-               streaming_update=None,
-               transform_name_mappings=None,
-               flexrs_goal=None):
+  def __init__(
+      self,
+      project_id=None,
+      region_id=None,
+      job_name=None,
+      gcs_location=None,
+      zone=None,
+      max_workers=None,
+      num_workers=None,
+      network=None,
+      subnetwork=None,
+      worker_machine_type=None,
+      launcher_machine_type=None,
+      launcher_vm_timeout_secs=None,
+      staging_location=None,
+      temp_location=None,
+      kms_key_name=None,
+      disable_public_ips=None,
+      parameters=None,
+      service_account_email=None,
+      worker_region=None,
+      worker_zone=None,
+      enable_streaming_engine=None,
+      additional_experiments=None,
+      additional_pipeline_options=None,
+      additional_user_labels=None,
+      streaming_update=None,
+      transform_name_mappings=None,
+      flexrs_goal=None,
+      turnkey_alerts_enabled=None,
+  ):
     self.project_id = project_id
     self.region_id = region_id
     self.job_name = job_name
@@ -479,6 +483,7 @@ class TemplateArguments:
     self.streaming_update = streaming_update
     self.transform_name_mappings = transform_name_mappings
     self.flexrs_goal = flexrs_goal
+    self.turnkey_alerts_enabled = turnkey_alerts_enabled
 
 
 class Templates:
@@ -547,6 +552,17 @@ class Templates:
     return GetClientInstance().projects_locations_flexTemplates
 
   @staticmethod
+  def _ApplyTurnkeyAlertsLabel(template_args):
+    """Applies turnkey alerts user label to template arguments."""
+    turnkey_alerts_enabled = template_args.turnkey_alerts_enabled
+    if turnkey_alerts_enabled is not None:
+      if template_args.additional_user_labels is None:
+        template_args.additional_user_labels = {}
+      template_args.additional_user_labels['goog-turnkey-alerts'] = (
+          'true' if turnkey_alerts_enabled else 'false'
+      )
+
+  @staticmethod
   def Create(template_args=None):
     """Calls the Dataflow Templates.CreateFromJob method.
 
@@ -571,6 +587,9 @@ class Templates:
     ip_configuration = ip_private if template_args.disable_public_ips else None
     user_labels_value = GetMessagesModule(
     ).RuntimeEnvironment.AdditionalUserLabelsValue
+
+    Templates._ApplyTurnkeyAlertsLabel(template_args)
+
     user_labels_list = Templates.__ConvertDictArguments(
         template_args.additional_user_labels,
         user_labels_value)
@@ -660,6 +679,25 @@ class Templates:
     ip_private = ip_configuration_enum.WORKER_IP_PRIVATE
     ip_configuration = ip_private if template_args.disable_public_ips else None
 
+    user_labels_value = (
+        GetMessagesModule().RuntimeEnvironment.AdditionalUserLabelsValue
+    )
+    Templates._ApplyTurnkeyAlertsLabel(template_args)
+
+    user_labels_list = Templates.__ConvertDictArguments(
+        template_args.additional_user_labels, user_labels_value
+    )
+    additional_user_labels = None
+    if user_labels_list:
+      additional_user_labels = user_labels_value(
+          additionalProperties=user_labels_list
+      )
+    parameters_value = None
+    if params_list:
+      parameters_value = Templates.LAUNCH_TEMPLATE_PARAMETERS_VALUE(
+          additionalProperties=params_list
+      )
+
     body = Templates.LAUNCH_TEMPLATE_PARAMETERS(
         environment=GetMessagesModule().RuntimeEnvironment(
             serviceAccountEmail=template_args.service_account_email,
@@ -674,6 +712,7 @@ class Templates:
             ipConfiguration=ip_configuration,
             workerRegion=template_args.worker_region,
             workerZone=template_args.worker_zone,
+            additionalUserLabels=additional_user_labels,
             enableStreamingEngine=template_args.enable_streaming_engine,
             additionalExperiments=(
                 template_args.additional_experiments
@@ -682,8 +721,7 @@ class Templates:
             ),
         ),
         jobName=template_args.job_name,
-        parameters=Templates.LAUNCH_TEMPLATE_PARAMETERS_VALUE(
-            additionalProperties=params_list) if params_list else None,
+        parameters=parameters_value,
         update=streaming_update,
         transformNameMapping=transform_mappings,
     )
@@ -1364,6 +1402,9 @@ class Templates:
                 additionalProperties=transform_mapping_list
             )
         )
+
+    Templates._ApplyTurnkeyAlertsLabel(template_args)
+
     launch_options_list = []
     if template_args.launcher_vm_timeout_secs:
       launch_options_list.append(

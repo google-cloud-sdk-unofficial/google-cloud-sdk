@@ -511,6 +511,63 @@ class CancelOperationRequest(_messages.Message):
   r"""The request message for Operations.CancelOperation."""
 
 
+class CatalogReport(_messages.Message):
+  r"""Aggregated report at the catalog level.
+
+  Enums:
+    CatalogTypeValueValuesEnum: The type of catalog.
+
+  Messages:
+    DatabaseReportsValue: A map of database names to their respective reports.
+
+  Fields:
+    catalog: The name of the catalog (format: projects/*/catalogs/*).
+    catalogType: The type of catalog.
+    databaseReports: A map of database names to their respective reports.
+  """
+
+  class CatalogTypeValueValuesEnum(_messages.Enum):
+    r"""The type of catalog.
+
+    Values:
+      CATALOG_TYPE_UNSPECIFIED: The catalog type is unspecified.
+      HIVE: BigLake Metastore Hive catalog.
+      ICEBERG: BigLake Metastore Iceberg REST catalog.
+    """
+    CATALOG_TYPE_UNSPECIFIED = 0
+    HIVE = 1
+    ICEBERG = 2
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class DatabaseReportsValue(_messages.Message):
+    r"""A map of database names to their respective reports.
+
+    Messages:
+      AdditionalProperty: An additional property for a DatabaseReportsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type DatabaseReportsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a DatabaseReportsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A DatabaseReport attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('DatabaseReport', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  catalog = _messages.StringField(1)
+  catalogType = _messages.EnumField('CatalogTypeValueValuesEnum', 2)
+  databaseReports = _messages.MessageField('DatabaseReportsValue', 3)
+
+
 class CatalogSummary(_messages.Message):
   r"""Summary of results for a specific destination catalog.
 
@@ -777,6 +834,51 @@ class DatabaseDump(_messages.Message):
   type = _messages.EnumField('TypeValueValuesEnum', 4)
 
 
+class DatabaseReport(_messages.Message):
+  r"""Aggregated report at the database level.
+
+  Messages:
+    TableReportsValue: A map of table names to their respective reports.
+
+  Fields:
+    database: The name of the database.
+    executionPlan: The discovered intent for the database (what we found and
+      what we planned).
+    executionResult: The actual outcome of the database migration.
+    tableReports: A map of table names to their respective reports.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class TableReportsValue(_messages.Message):
+    r"""A map of table names to their respective reports.
+
+    Messages:
+      AdditionalProperty: An additional property for a TableReportsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type TableReportsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a TableReportsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A TableReport attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('TableReport', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  database = _messages.StringField(1)
+  executionPlan = _messages.MessageField('ExecutionPlan', 2)
+  executionResult = _messages.MessageField('ExecutionResult', 3)
+  tableReports = _messages.MessageField('TableReportsValue', 4)
+
+
 class DatabaseSummary(_messages.Message):
   r"""Summary of results for a specific database in a catalog.
 
@@ -949,6 +1051,105 @@ class ErrorDetails(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   details = _messages.MessageField('DetailsValue', 1)
+
+
+class ExecutionPlan(_messages.Message):
+  r"""Represents the migration plan for a specific resource (e.g. Database,
+  Table).
+
+  Enums:
+    ActionValueValuesEnum: The action that will be taken for a resource during
+      migration.
+
+  Messages:
+    DiffsValue: A map of field names to their respective value diff.
+
+  Fields:
+    action: The action that will be taken for a resource during migration.
+    diffs: A map of field names to their respective value diff.
+    reason: A human-readable string explaining why the action was chosen.
+  """
+
+  class ActionValueValuesEnum(_messages.Enum):
+    r"""The action that will be taken for a resource during migration.
+
+    Values:
+      ACTION_UNSPECIFIED: The action is unspecified.
+      CREATE: Resource missing; will be created.
+      UPDATE: Resource exists at the target, but differs from the source; will
+        be updated.
+      SKIP: Resource exists at the target; no changes will be made.
+      DEPENDENCY_FAILURE: Resource cannot be migrated due to a dependency
+        failure (e.g., parent resource missing).
+      ERROR: Resource cannot be migrated due to an error during discovery.
+    """
+    ACTION_UNSPECIFIED = 0
+    CREATE = 1
+    UPDATE = 2
+    SKIP = 3
+    DEPENDENCY_FAILURE = 4
+    ERROR = 5
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class DiffsValue(_messages.Message):
+    r"""A map of field names to their respective value diff.
+
+    Messages:
+      AdditionalProperty: An additional property for a DiffsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type DiffsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a DiffsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A ValueDiff attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('ValueDiff', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  action = _messages.EnumField('ActionValueValuesEnum', 1)
+  diffs = _messages.MessageField('DiffsValue', 2)
+  reason = _messages.StringField(3)
+
+
+class ExecutionResult(_messages.Message):
+  r"""Represents the actual migration result for a specific resource (e.g.
+  Database, Table).
+
+  Enums:
+    StateValueValuesEnum: Output only. The state of the migration for a
+      resource.
+
+  Fields:
+    errorMessage: Description of the error if the state is FAILED.
+    remediation: Remediation steps for the error if the state is FAILED.
+    state: Output only. The state of the migration for a resource.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the migration for a resource.
+
+    Values:
+      STATE_UNSPECIFIED: The state is unspecified.
+      SUCCEEDED: The resource was migrated successfully.
+      FAILED: The resource failed to migrate.
+      SKIPPED: The resource was skipped and will not be migrated.
+    """
+    STATE_UNSPECIFIED = 0
+    SUCCEEDED = 1
+    FAILED = 2
+    SKIPPED = 3
+
+  errorMessage = _messages.StringField(1)
+  remediation = _messages.StringField(2)
+  state = _messages.EnumField('StateValueValuesEnum', 3)
 
 
 class ExportMetadataRequest(_messages.Message):
@@ -2968,6 +3169,21 @@ class MigrationExecution(_messages.Message):
   stateMessage = _messages.StringField(8)
 
 
+class MigrationReport(_messages.Message):
+  r"""Report containing the results of a migration run. This report is
+  generated at the specified path in the BigLakeMetastoreMigrationConfig after
+  the backfill is complete, or when a dry run is executed.
+
+  Fields:
+    catalogReports: Output only. Detailed results for each catalog involved in
+      the migration.
+    summary: Output only. High-level summary of the migration results.
+  """
+
+  catalogReports = _messages.MessageField('CatalogReport', 1, repeated=True)
+  summary = _messages.MessageField('MigrationSummary', 2)
+
+
 class MigrationSummary(_messages.Message):
   r"""Summary of the migration results.
 
@@ -3185,6 +3401,40 @@ class OperationMetadata(_messages.Message):
   statusMessage = _messages.StringField(5)
   target = _messages.StringField(6)
   verb = _messages.StringField(7)
+
+
+class PartitionReport(_messages.Message):
+  r"""Partition migration report for a Hive table.
+
+  Enums:
+    StateValueValuesEnum: Output only. The state of the partition migration.
+
+  Fields:
+    partitionFailedCount: The number of partitions that failed to migrate at
+      the target.
+    partitionSuccessCount: The number of partitions successfully migrated at
+      the target.
+    state: Output only. The state of the partition migration.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the partition migration.
+
+    Values:
+      STATE_UNSPECIFIED: The state is unspecified.
+      SUCCEEDED: All partitions migrated successfully at the target.
+      PARTIALLY_SUCCEEDED: Some partitions migrated successfully at the
+        target, but others failed.
+      FAILED: All partitions failed to migrate at the target.
+    """
+    STATE_UNSPECIFIED = 0
+    SUCCEEDED = 1
+    PARTIALLY_SUCCEEDED = 2
+    FAILED = 3
+
+  partitionFailedCount = _messages.IntegerField(1)
+  partitionSuccessCount = _messages.IntegerField(2)
+  state = _messages.EnumField('StateValueValuesEnum', 3)
 
 
 class Policy(_messages.Message):
@@ -3923,6 +4173,28 @@ class StatusProto(_messages.Message):
   space = _messages.StringField(5)
 
 
+class TableReport(_messages.Message):
+  r"""Aggregated report at the table level.
+
+  Fields:
+    executionPlan: The discovered intent for the table (what we found and what
+      we planned).
+    executionResult: The actual outcome of the table migration.
+    partitionDiscoveredCount: The total number of partitions identified at the
+      source during discovery. This is only relevant for Hive Partitioned
+      tables.
+    partitionReport: Report containing the results of partition migration for
+      this table. This is only relevant for Hive Partitioned tables.
+    table: The name of the table.
+  """
+
+  executionPlan = _messages.MessageField('ExecutionPlan', 1)
+  executionResult = _messages.MessageField('ExecutionResult', 2)
+  partitionDiscoveredCount = _messages.IntegerField(3)
+  partitionReport = _messages.MessageField('PartitionReport', 4)
+  table = _messages.StringField(5)
+
+
 class TableSummary(_messages.Message):
   r"""Aggregated summary of results for all tables in a database.
 
@@ -4057,6 +4329,19 @@ class TestIamPermissionsResponse(_messages.Message):
   """
 
   permissions = _messages.StringField(1, repeated=True)
+
+
+class ValueDiff(_messages.Message):
+  r"""A field-level metadata mismatch for a resource between the source and
+  target.
+
+  Fields:
+    sourceValue: The value of the field at the source.
+    targetValue: The value of the field at the target.
+  """
+
+  sourceValue = _messages.StringField(1)
+  targetValue = _messages.StringField(2)
 
 
 encoding.AddCustomJsonFieldMapping(

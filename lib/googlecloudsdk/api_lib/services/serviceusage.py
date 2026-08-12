@@ -43,8 +43,7 @@ _REVERSE_CLOSURE = '/reverseClosure'
 _CONSUMER_SERVICE_RESOURCE = '%s/services/%s'
 _CONSUMER_POLICY_DEFAULT = '/consumerPolicies/%s'
 _MCP_POLICY_DEFAULT = '/mcpPolicies/%s'
-# MCPListFilter is the filter for listing services with MCP endpoint.
-_MCP_LIST_FILTER = 'mcp_server:urls'
+
 _EFFECTIVE_POLICY = '/effectivePolicy'
 _EFFECTIVE_MCP_POLICY = '/effectiveMcpPolicy'
 _GOOGLE_CATEGORY_RESOURCE = 'categories/google'
@@ -519,43 +518,6 @@ def UpdateConsumerPolicyV2Alpha(
         'Provide the --force flag if you wish to force disable services.'
     )
     exceptions.ReraiseError(e, exceptions.Error)
-
-
-def UpdateMcpPolicy(policy, name, force=False, validateonly=False):
-  """Make API call to update a MCP policy.
-
-  Args:
-    policy: The MCP policy to update.
-    name: The resource name of the MCP policy. Currently supported format
-      '{resource_type}/{resource_name}/mcpPolicies/default. For example,
-      'projects/100/mcpPolicies/default'.
-    force: Disable service with usage within last 30 days or disable recently
-      enabled service.(not supported during MVP.)
-    validateonly: If set, validate the request and preview the result but do not
-      actually commit it. The default is false.(not supported during MVP.)
-
-  Raises:
-    exceptions.class UpdateMcpPolicyException: when getting a
-      MCP policy fails.
-    apitools_exceptions.HttpError: Another miscellaneous error with the service.
-
-  Returns:
-    The MCP policy
-  """
-  client = _GetClientInstance(_V2BETA_VERSION)
-  messages = client.MESSAGES_MODULE
-
-  request = messages.ServiceusageMcpPoliciesPatchRequest(
-      mcpPolicy=policy, name=name, force=force, validateOnly=validateonly
-  )
-
-  try:
-    return client.mcpPolicies.Patch(request)
-  except (
-      apitools_exceptions.HttpForbiddenError,
-      apitools_exceptions.HttpNotFoundError,
-  ) as e:
-    exceptions.ReraiseError(e, exceptions.UpdateMcpPolicyException)
 
 
 def UpdateConsumerPolicyV2Beta(
@@ -1181,70 +1143,6 @@ def AddEnableRule(
     exceptions.ReraiseError(e, exceptions.EnableServiceException)
 
 
-def AddMcpEnableRule(
-    service: str,
-    project: str,
-    folder: str = None,
-    organization: str = None,
-):
-  """Make API call to enable a specific service in mcp policy.
-
-  Args:
-    service: The identifier of the service to enable, for example
-      'serviceusage.googleapis.com'.
-    project: The project for which to enable the service.
-    folder: The folder for which to enable the service.
-    organization: The organization for which to enable the service.
-
-  Raises:
-    exceptions.EnableServiceException: when enabling API fails.
-    apitools_exceptions.HttpError: Another miscellaneous error with the service.
-
-  Returns:
-    The result of the operation
-  """
-  client = _GetClientInstance(version=_V2BETA_VERSION)
-  messages = client.MESSAGES_MODULE
-
-  resource_name = _PROJECT_RESOURCE % project
-
-  if folder:
-    resource_name = _FOLDER_RESOURCE % folder
-
-  if organization:
-    resource_name = _ORGANIZATION_RESOURCE % organization
-
-  policy_name = resource_name + _MCP_POLICY_DEFAULT % 'default'
-
-  try:
-    policy = GetMcpPolicy(policy_name)
-
-    if policy.mcpEnableRules:
-      for mcp_service in policy.mcpEnableRules[0].mcpServices:
-        if mcp_service.service == _SERVICE_RESOURCE % service:
-          log.warning(f'The service {service} is already enabled for MCP.')
-          return None
-
-      policy.mcpEnableRules[0].mcpServices.append(
-          messages.McpService(service=_SERVICE_RESOURCE % service)
-      )
-    else:
-      policy.mcpEnableRules.append(
-          messages.McpEnableRule(
-              mcpServices=[
-                  messages.McpService(service=_SERVICE_RESOURCE % service)
-              ]
-          )
-      )
-
-    return UpdateMcpPolicy(policy, policy_name)
-  except (
-      apitools_exceptions.HttpForbiddenError,
-      apitools_exceptions.HttpNotFoundError,
-  ) as e:
-    exceptions.ReraiseError(e, exceptions.EnableMcpServiceException)
-
-
 def RemoveEnableRule(
     project: str,
     services: List[str],
@@ -1382,73 +1280,6 @@ def RemoveEnableRule(
     log.status.Print(
         'Provide the --force flag if you wish to force disable services.'
     )
-    exceptions.ReraiseError(e, exceptions.Error)
-
-
-def RemoveMcpEnableRule(
-    project: str,
-    service: str,
-    mcp_policy_name: str = 'default',
-    folder: str = None,
-    organization: str = None,
-):
-  """Make API call to disable a service for MCP.
-
-  Args:
-    project: The project for which to disable the service for MCP.
-    service: The service to disable for MCP, for example
-      'serviceusage.googleapis.com'.
-    mcp_policy_name: Name of MCP policy. The default name is "default".
-    folder: The folder for which to disable the service.
-    organization: The organization for which to disable the service.
-
-  Raises:
-    exceptions.EnableMcpServiceException: when disabling API fails.
-    apitools_exceptions.HttpError: Another miscellaneous error with the service.
-
-  Returns:
-    The result of the operation
-  """
-
-  resource_name = _PROJECT_RESOURCE % project
-
-  if folder:
-    resource_name = _FOLDER_RESOURCE % folder
-
-  if organization:
-    resource_name = _ORGANIZATION_RESOURCE % organization
-
-  policy_name = resource_name + _MCP_POLICY_DEFAULT % mcp_policy_name
-
-  try:
-    policy = GetMcpPolicy(policy_name)
-
-    already_disabled = True
-
-    updated_mcp_policy = copy.deepcopy(policy)
-    updated_mcp_policy.mcpEnableRules.clear()
-
-    if policy.mcpEnableRules:
-      for mcp_enable_rule in policy.mcpEnableRules:
-        rule = copy.deepcopy(mcp_enable_rule)
-        for mcp_service in rule.mcpServices:
-          if mcp_service.service == _SERVICE_RESOURCE % service:
-            already_disabled = False
-            rule.mcpServices.remove(mcp_service)
-        if rule.mcpServices:
-          updated_mcp_policy.mcpEnableRules.append(rule)
-
-    if already_disabled:
-      log.warning(f'The service {service} is not enabled for MCP.')
-      return None
-
-    return UpdateMcpPolicy(updated_mcp_policy, policy_name)
-  except (
-      apitools_exceptions.HttpForbiddenError,
-      apitools_exceptions.HttpNotFoundError,
-  ) as e:
-    exceptions.ReraiseError(e, exceptions.EnableMcpServiceException)
-  except apitools_exceptions.HttpBadRequestError as e:
     exceptions.ReraiseError(e, exceptions.Error)
 
 
@@ -1670,93 +1501,6 @@ def ListServicesV2Beta(
       apitools_exceptions.HttpNotFoundError,
   ) as e:
     exceptions.ReraiseError(e, exceptions.ListServicesException)
-
-
-def ListMcpServicesV2Beta(
-    project: str,
-    enabled: bool,
-    page_size: int,
-    limit: int,
-    folder: str = None,
-    organization: str = None,
-):
-  """Make API call to list services.
-
-  Args:
-    project: The project for which to list MCP services.
-    enabled: List only enabled  MCP services.
-    page_size: The page size to list.
-    limit: The max number of services to display.
-    folder: The folder for which to list MCP services.
-    organization: The organization for which to list MCP services.
-
-  Raises:
-    exceptions.ListMcpServicesException: when listing MCP services
-    fails.
-    apitools_exceptions.HttpError: Another miscellaneous error with the service.
-
-  Returns:
-    The list of MCP services
-  """
-
-  resource_name = _PROJECT_RESOURCE % project
-  if folder:
-    resource_name = _FOLDER_RESOURCE % folder
-
-  if organization:
-    resource_name = _ORGANIZATION_RESOURCE % organization
-
-  service_to_endpoint = {}
-  parent = []
-  try:
-    if enabled:
-      policy_name = resource_name + _EFFECTIVE_POLICY
-      effective_policy = GetEffectivePolicyV2Beta(policy_name)
-
-      for rules in effective_policy.enableRules:
-        for service in rules.services:
-          parent.append(f'{resource_name}/{service}')
-
-      for value in range(0, len(parent), 20):
-        response = BatchGetServiceV2Beta(
-            resource_name, parent[value : value + 20]
-        )
-        for service_state in response.services:
-          if limit == 0:
-            break
-          service_name = '/'.join(service_state.name.split('/')[2:])
-          # Only return services that have MCP endpoints.
-          if (
-              service_state.service.mcpServer
-              and service_state.service.mcpServer.urls
-          ):
-            service_to_endpoint[service_name] = (
-                service_state.service.mcpServer.urls[0]
-            )
-          limit -= 1
-
-    else:
-      for public_service in _ListPublicServices(
-          page_size, _MCP_LIST_FILTER, limit
-      ):
-        service_to_endpoint[public_service.name] = (
-            public_service.mcpServer.urls[0]
-        )
-    result = []
-    service_info = collections.namedtuple(
-        'ServiceList', ['name', 'mcp_endpoint']
-    )
-    for service in service_to_endpoint:
-      result.append(
-          service_info(name=service, mcp_endpoint=service_to_endpoint[service])
-      )
-
-    return result
-  except (
-      apitools_exceptions.HttpForbiddenError,
-      apitools_exceptions.HttpNotFoundError,
-  ) as e:
-    exceptions.ReraiseError(e, exceptions.ListMcpServicesException)
 
 
 def ListServices(project, enabled, page_size, limit):

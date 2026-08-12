@@ -14,6 +14,7 @@
 # limitations under the License.
 """Worker Pool Revision specific printer."""
 
+import typing
 
 from googlecloudsdk.api_lib.run import container_resource
 from googlecloudsdk.api_lib.run import revision
@@ -53,6 +54,13 @@ class WorkerPoolRevisionPrinter(cp.CustomPrinterBase):
     return cmek_name
 
   @staticmethod
+  def GetTerminationGracePeriod(
+      record: revision.Revision) -> typing.Optional[str]:
+    if record.termination_grace_period is not None:
+      return '{}s'.format(record.termination_grace_period)
+    return None
+
+  @staticmethod
   def GetThreatDetectionEnabled(record):
     return k8s_util.GetThreatDetectionEnabled(record)
 
@@ -63,6 +71,10 @@ class WorkerPoolRevisionPrinter(cp.CustomPrinterBase):
         (
             'SQL connections',
             k8s_util.GetCloudSqlInstances(record.annotations),
+        ),
+        (
+            'Termination Grace Period',
+            WorkerPoolRevisionPrinter.GetTerminationGracePeriod(record),
         ),
         ('VPC access', k8s_util.GetVpcNetwork(record.annotations)),
         ('CMEK', WorkerPoolRevisionPrinter.GetCMEK(record)),

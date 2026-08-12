@@ -21,3 +21,5 @@ from googlecloudsdk.calliope import base
 @base.UniverseCompatible
 class MaterializedViews(base.Group):
   """Manage Bigtable materialized views."""
+
+  category = base.DATABASES_CATEGORY

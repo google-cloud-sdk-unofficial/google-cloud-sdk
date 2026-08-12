@@ -163,6 +163,7 @@ class Create(base.Command):
   _support_preemption_notice_duration = False
   _support_instance_flexibility_policy = True
   _support_workload_identity_config = True
+  _support_identity_type = False
   _support_instance_selection_min_cpu_platform = False
   _support_vsock_mode = False
   _support_expose_host_topology = False
@@ -183,12 +184,14 @@ class Create(base.Command):
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
         support_any_reservation_then_fail_affinity=cls._support_any_reservation_then_fail_affinity,
         support_watchdog_timer=cls._support_watchdog_timer,
+        support_graceful_shutdown=cls._support_graceful_shutdown,
         support_flex_start=cls._support_flex_start,
         support_source_snapshot_region=cls._support_source_snapshot_region,
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
         support_instance_flexibility_policy=cls._support_instance_flexibility_policy,
         support_workload_identity_config=cls._support_workload_identity_config,
+        support_identity_type=cls._support_identity_type,
         support_instance_selection_min_cpu_platform=cls._support_instance_selection_min_cpu_platform,
         support_vsock_mode=cls._support_vsock_mode,
         support_expose_host_topology=cls._support_expose_host_topology,
@@ -238,6 +241,7 @@ class Create(base.Command):
         self._support_preemption_notice_duration,
         self._support_instance_flexibility_policy,
         self._support_workload_identity_config,
+        self._support_identity_type,
         self._support_instance_selection_min_cpu_platform,
         support_vsock_mode=self._support_vsock_mode,
         support_expose_host_topology=self._support_expose_host_topology,
@@ -381,14 +385,13 @@ class CreateBeta(Create):
   _support_custom_hostnames = True
   _support_specific_then_x_affinity = True
   _support_any_reservation_then_fail_affinity = True
-  _support_watchdog_timer = False
-  _support_graceful_shutdown = True
   _support_flex_start = False
   _support_source_snapshot_region = False
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = True
   _support_instance_flexibility_policy = True
   _support_workload_identity_config = True
+  _support_identity_type = False
   _support_instance_selection_min_cpu_platform = False
 
   @classmethod
@@ -412,8 +415,10 @@ class CreateBeta(Create):
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
         support_instance_flexibility_policy=cls._support_instance_flexibility_policy,
         support_workload_identity_config=cls._support_workload_identity_config,
+        support_identity_type=cls._support_identity_type,
         support_instance_selection_min_cpu_platform=cls._support_instance_selection_min_cpu_platform,
         support_vsock_mode=cls._support_vsock_mode,
+        include_kms_key_service_account=True,
     )
     cls.AddSourceInstanceTemplate(parser)
 
@@ -436,13 +441,13 @@ class CreateAlpha(Create):
   _support_specific_then_x_affinity = True
   _support_any_reservation_then_fail_affinity = True
   _support_watchdog_timer = True
-  _support_graceful_shutdown = True
   _support_flex_start = False
   _support_source_snapshot_region = True
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = True
   _support_instance_flexibility_policy = True
   _support_workload_identity_config = True
+  _support_identity_type = True
   _support_instance_selection_min_cpu_platform = True
   _support_vsock_mode = True
   _support_expose_host_topology = True
@@ -468,9 +473,11 @@ class CreateAlpha(Create):
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
         support_instance_flexibility_policy=cls._support_instance_flexibility_policy,
         support_workload_identity_config=cls._support_workload_identity_config,
+        support_identity_type=cls._support_identity_type,
         support_instance_selection_min_cpu_platform=cls._support_instance_selection_min_cpu_platform,
         support_vsock_mode=cls._support_vsock_mode,
         support_expose_host_topology=cls._support_expose_host_topology,
+        include_kms_key_service_account=True,
     )
 
     cls.AddSourceInstanceTemplate(parser)

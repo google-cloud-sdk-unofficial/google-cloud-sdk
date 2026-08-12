@@ -21,3 +21,5 @@ from googlecloudsdk.calliope import base
 
 class AuthorizedViews(base.Group):
   """Manage Cloud Bigtable Authorized Views."""
+
+  category = base.DATABASES_CATEGORY

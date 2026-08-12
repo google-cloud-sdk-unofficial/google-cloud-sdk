@@ -14,16 +14,18 @@
 # limitations under the License.
 """Activate a pending certificate authority."""
 
-
 from googlecloudsdk.api_lib.privateca import base as privateca_base
 from googlecloudsdk.api_lib.privateca import request_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.privateca import create_utils
 from googlecloudsdk.command_lib.privateca import flags
+from googlecloudsdk.command_lib.privateca import iam
 from googlecloudsdk.command_lib.privateca import operations
 from googlecloudsdk.command_lib.privateca import pem_utils
 from googlecloudsdk.command_lib.privateca import resource_args
+from googlecloudsdk.command_lib.util.concepts import concept_parsers
+from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
@@ -34,16 +36,40 @@ from googlecloudsdk.core.util import files
 class Activate(base.SilentCommand):
   r"""Activate a subordinate certificate authority awaiting user activation.
 
+  This command activates a subordinate Certificate Authority (CA) that has
+  been created but is awaiting activation. To activate a CA either provide the
+  path to an already-created PEM CA certificate and issuer chain, or specify
+  the issuer's CA Pool to create the CA certificate now.
+
   ## EXAMPLES
 
   To activate a subordinate CA named 'server-tls-1' in the location 'us-west1'
-
   and CA Pool 'server-tls-pool' using a PEM certificate chain in 'chain.crt':
 
     $ {command} server-tls-1 \
       --location=us-west1 \
       --pool=server-tls-pool \
       --pem-chain=./chain.crt
+
+  To activate a subordinate CA named 'server-tls-1' in the location 'us-west1'
+  and CA Pool 'server-tls-pool' using an issuer CA Pool 'issuer-pool' in the
+  same location:
+
+    $ {command} server-tls-1 \
+      --location=us-west1 \
+      --pool=server-tls-pool \
+      --issuer-pool=issuer-pool
+
+  To activate a subordinate CA named 'server-tls-1' in the location 'us-west1'
+  and CA Pool 'server-tls-pool' using a specific issuer CA 'issuer-ca-1' in the
+  issuer CA Pool 'issuer-pool' in location 'us-east1':
+
+    $ {command} server-tls-1 \
+      --location=us-west1 \
+      --pool=server-tls-pool \
+      --issuer-pool=issuer-pool \
+      --issuer-location=us-east1 \
+      --issuer-ca=issuer-ca-1
   """
 
   def __init__(self, *args, **kwargs):
@@ -54,15 +80,52 @@ class Activate(base.SilentCommand):
   @staticmethod
   def Args(parser):
     resource_args.AddCertAuthorityPositionalResourceArg(parser, 'to activate')
+
+    activation_group = parser.add_group(
+        mutex=True,
+        required=True,
+        help='The activation method for the subordinate CA.',
+    )
+
     base.Argument(
         '--pem-chain',
-        required=True,
         help=(
             'A file containing a list of PEM-encoded certificates, starting '
             'with the current CA certificate and ending with the root CA '
             'certificate.'
         ),
-    ).AddToParser(parser)
+    ).AddToParser(activation_group)
+
+    issuing_resource_group = activation_group.add_group(
+        mutex=False,
+        help='The issuing resource used for this CA certificate.',
+    )
+
+    base.Argument(
+        '--issuer-ca',
+        help=(
+            'The Certificate Authority ID of the CA to issue the subordinate '
+            'CA certificate from. This ID is optional. If omitted, '
+            'any available ENABLED CA in the issuing CA pool will be chosen.'
+        ),
+        required=False,
+    ).AddToParser(issuing_resource_group)
+
+    concept_parsers.ConceptParser([
+        presentation_specs.ResourcePresentationSpec(
+            '--issuer-pool',
+            resource_args.CreateCaPoolResourceSpec('Issuer'),
+            'The issuing CA Pool to use, if it is on Certificate Authority'
+            ' Service.',
+            prefixes=True,
+            required=False,
+            flag_name_overrides={
+                'location': '--issuer-location',
+            },
+            group=issuing_resource_group,
+        ),
+    ]).AddToParser(parser)
+
     flags.AddAutoEnableFlag(parser)
 
   def _ParsePemChainFromFile(self, pem_chain_file):
@@ -138,11 +201,52 @@ class Activate(base.SilentCommand):
     )
 
   def Run(self, args):
+    resource_args.ValidateResourceIsCompleteIfSpecified(args, 'issuer_pool')
     client = privateca_base.GetClientInstance(api_version='v1')
     messages = privateca_base.GetMessagesModule(api_version='v1')
     ca_ref = args.CONCEPTS.certificate_authority.Parse()
 
-    pem_cert, pem_chain = self._ParsePemChainFromFile(args.pem_chain)
+    if args.IsSpecified('pem_chain'):
+      pem_cert, pem_chain = self._ParsePemChainFromFile(args.pem_chain)
+    else:
+      issuer_ref = args.CONCEPTS.issuer_pool.Parse()
+      if not issuer_ref:
+        raise exceptions.RequiredArgumentException(
+            '--issuer-pool',
+            'Issuer pool is required for first-party activation.',
+        )
+
+      ca = client.projects_locations_caPools_certificateAuthorities.Get(
+          messages.PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesGetRequest(
+              name=ca_ref.RelativeName()
+          )
+      )
+
+      if (
+          ca.state
+          != messages.CertificateAuthority.StateValueValuesEnum.AWAITING_USER_ACTIVATION
+      ):
+        raise exceptions.InvalidArgumentException(
+            'CERTIFICATE_AUTHORITY',
+            'Certificate Authority [{}] is not in PENDING_ACTIVATION state'
+            ' (current state is {}).'.format(ca_ref.Name(), ca.state),
+        )
+
+      iam.CheckCreateCertificatePermissions(issuer_ref)
+
+      issuer_ca = args.issuer_ca if args.IsSpecified('issuer_ca') else None
+      create_utils.ValidateIssuingPool(issuer_ref.RelativeName(), issuer_ca)
+
+      csr_response = client.projects_locations_caPools_certificateAuthorities.Fetch(
+          messages.PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesFetchRequest(
+              name=ca_ref.RelativeName()
+          )
+      )
+      csr = csr_response.pemCsr
+
+      ca_certificate = create_utils.SignCsr(issuer_ref, csr, issuer_ca, ca)
+      pem_cert = ca_certificate.pemCertificate
+      pem_chain = ca_certificate.pemCertificateChain
 
     operation = client.projects_locations_caPools_certificateAuthorities.Activate(
         messages.PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesActivateRequest(

@@ -41,6 +41,7 @@ def _Args(
     supports_force_create=False,
     support_user_licenses=False,
     supports_rollout_override=False,
+    include_kms_key_service_account=False,
 ):
   """Set Args based on Release Track."""
   # GA Args
@@ -63,6 +64,14 @@ def _Args(
   image_utils.AddGuestOsFeaturesArg(parser, messages)
   image_utils.AddArchitectureArg(parser, messages)
   kms_resource_args.AddKmsKeyResourceArg(parser, 'image')
+  if include_kms_key_service_account:
+    parser.add_argument(
+        '--kms-key-service-account',
+        type=str,
+        help="""\
+        Service account being used for the encryption request for the given KMS key.
+        """,
+    )
   flags.AddSourceDiskProjectFlag(parser)
 
   parser.add_argument(
@@ -354,6 +363,7 @@ class CreateBeta(Create):
         supports_force_create=True,
         support_user_licenses=True,
         supports_rollout_override=False,
+        include_kms_key_service_account=True,
     )
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
@@ -375,6 +385,7 @@ class CreateAlpha(Create):
         supports_force_create=True,
         support_user_licenses=True,
         supports_rollout_override=True,
+        include_kms_key_service_account=True,
     )
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 

@@ -29,13 +29,17 @@ from googlecloudsdk.command_lib.compute.resource_policies import flags as mainte
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-def AddDiskArgsForBulk(parser):
+def AddDiskArgsForBulk(parser, include_kms_key_service_account=False):
   """Adds arguments related to disks for bulk insert."""
 
   disk_device_name_help = instances_flags.GetDiskDeviceNameHelp(
       container_mount_enabled=False
   )
-  instances_flags.AddBootDiskArgs(parser, enable_kms=True)
+  instances_flags.AddBootDiskArgs(
+      parser,
+      enable_kms=True,
+      include_kms_key_service_account=include_kms_key_service_account,
+  )
 
   disk_arg_spec = {
       'name': str,
@@ -418,9 +422,11 @@ def AddCommonBulkInsertArgs(
     support_preemption_notice_duration=False,
     support_instance_flexibility_policy=False,
     support_workload_identity_config=False,
+    support_identity_type=False,
     support_instance_selection_min_cpu_platform=False,
     support_vsock_mode=False,
     support_expose_host_topology=False,
+    include_kms_key_service_account=False,
 ):
   """Registers parser args common to all tracks.
 
@@ -447,7 +453,9 @@ def AddCommonBulkInsertArgs(
       supported.
   """
   metadata_utils.AddMetadataArgs(parser)
-  AddDiskArgsForBulk(parser)
+  AddDiskArgsForBulk(
+      parser, include_kms_key_service_account=include_kms_key_service_account
+  )
   instances_flags.AddCreateDiskArgs(
       parser,
       enable_kms=True,
@@ -456,6 +464,7 @@ def AddCommonBulkInsertArgs(
       include_name=False,
       support_boot=True,
       support_source_snapshot_region=support_source_snapshot_region,
+      include_kms_key_service_account=include_kms_key_service_account,
   )
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAcceleratorArgs(parser)
@@ -586,7 +595,9 @@ def AddCommonBulkInsertArgs(
         support_instance_selection_min_cpu_platform=support_instance_selection_min_cpu_platform,
     )
   if support_workload_identity_config:
-    instances_flags.AddWorkloadIdentityConfigArgs(parser)
+    instances_flags.AddWorkloadIdentityConfigArgs(
+        parser, support_identity_type=support_identity_type
+    )
 
 
 def ValidateBulkCreateArgs(args):

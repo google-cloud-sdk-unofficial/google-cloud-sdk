@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Baseline blueprint and quickstart configuration definitions for creation."""
+"""Baseline reference architecture and quickstart configuration definitions for creation."""
 
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ import uuid
 
 from googlecloudsdk.command_lib.cluster_director.clusters import errors
 
-BLUEPRINT_DEFINITIONS = {
+REFERENCE_ARCHITECTURE_DEFINITIONS = {
     "quickstart": {
         "computeResources": {
             "quickstart-fleet": {
@@ -218,10 +218,12 @@ def ApplyReferenceArchitecture(
     )
 
   if quickstart:
-    spec = BLUEPRINT_DEFINITIONS.get("quickstart")
+    spec = REFERENCE_ARCHITECTURE_DEFINITIONS.get("quickstart")
     label = "--quickstart-cluster"
   else:
-    spec = cast(Dict[str, Any], BLUEPRINT_DEFINITIONS.get(ref_arch))
+    spec = cast(
+        Dict[str, Any], REFERENCE_ARCHITECTURE_DEFINITIONS.get(ref_arch)
+    )
     label = f"'{ref_arch}'"
 
   if not spec:
@@ -278,6 +280,7 @@ def _ApplySpec(
       specified_zone or f"{cluster_ref.locationsId}-b"
   )  # Default zone if not specified.
   ri_zone = zone
+  is_flex_start = False
   default_compute_id = _SafeAppend(prefix, "-compute")
   compute_id = default_compute_id
 
@@ -326,6 +329,7 @@ def _ApplySpec(
       )
 
     elif "newFlexStartInstances" in config_spec:
+      is_flex_start = True
       spec_flex = config_spec["newFlexStartInstances"]
       if not args.IsSpecified("flex_start_instances"):
         args.flex_start_instances = [{
@@ -403,12 +407,16 @@ def _ApplySpec(
   # 4. Create Node Sets and Partitions
   node_count = spec.get("nodeCount", 1)
   if not args.IsSpecified("slurm_node_sets"):
-    args.slurm_node_sets = [{
+    node_set = {
         "id": _SafeAppend(prefix, "ns"),
         "computeId": compute_id,
         "type": "gce",
-        "staticNodeCount": node_count,
-    }]
+    }
+    if is_flex_start:
+      node_set["maxDynamicNodeCount"] = node_count
+    else:
+      node_set["staticNodeCount"] = node_count
+    args.slurm_node_sets = [node_set]
     _SetSpecified(args, "slurm_node_sets", "--slurm-node-sets")
   if not args.IsSpecified("slurm_partitions"):
     partition_id = _SafeAppend(prefix, "partition")

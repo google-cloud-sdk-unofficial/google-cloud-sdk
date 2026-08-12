@@ -464,6 +464,33 @@ class OrgFirewallPolicy(object):
       return self._compute_client.MakeRequests(requests)[0]
     return requests
 
+  def _MakeTestIamPermissionsRequestTuple(self, permissions, fp_id=None):
+    test_req = self._messages.TestPermissionsRequest(
+        permissions=permissions
+    )
+    request = self._messages.ComputeFirewallPoliciesTestIamPermissionsRequest(
+        resource=fp_id or self.ref.Name(),
+        testPermissionsRequest=test_req,
+    )
+
+    return (
+        self._client.firewallPolicies,
+        'TestIamPermissions',
+        request,
+    )
+
+  def TestIamPermissions(
+      self, permissions, fp_id=None, only_generate_request=False
+  ):
+    requests = [
+        self._MakeTestIamPermissionsRequestTuple(permissions, fp_id=fp_id)
+    ]
+
+    if not only_generate_request:
+      return self._compute_client.MakeRequests(requests)[0]
+
+    return requests
+
   def ForceStartProgressiveRollout(
       self,
       firewall_policy=None,

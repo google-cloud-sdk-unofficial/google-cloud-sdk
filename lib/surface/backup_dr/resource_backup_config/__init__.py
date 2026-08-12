@@ -23,3 +23,4 @@ from googlecloudsdk.calliope import base
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class ResourceBackupConfig(base.Group):
   """Show protection summary for resources in a particular location and project."""
+  category = base.STORAGE_CATEGORY

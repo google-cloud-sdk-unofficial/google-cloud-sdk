@@ -45,6 +45,7 @@ import os
 import re
 from typing import Any
 
+from googlecloudsdk.command_lib.dataplex.dbt import aspects
 from googlecloudsdk.command_lib.dataplex.dbt import entry_builders
 from googlecloudsdk.command_lib.dataplex.dbt import entry_links
 from googlecloudsdk.command_lib.dataplex.dbt import naming
@@ -69,8 +70,12 @@ OPTIONAL_ARTIFACTS = (CATALOG_FILE, RUN_RESULTS_FILE, SOURCES_FILE)
 SUPPORTED_MANIFEST_SCHEMA_VERSIONS = frozenset(['v10', 'v11', 'v12'])
 
 # Re-exported so callers importing this module reach the entry link type FQNs
-# (used to scope the import job) without importing entry_links directly.
-LinkTypeFqns = entry_links.LinkTypeFqns  # pylint: disable=invalid-name
+# and the aspect types those links carry (both used to scope the import job)
+# without importing entry_links directly.
+# pylint: disable=invalid-name
+LinkTypeFqns = entry_links.LinkTypeFqns
+LinkAspectTypeFqns = entry_links.LinkAspectTypeFqns
+# pylint: enable=invalid-name
 
 
 # Re-exported so callers keep raising/catching ``transform.TransformError``.
@@ -196,6 +201,62 @@ def MaterializedBigQueryDatasets(  # pylint: disable=invalid-name
   return entry_links.materialized_bigquery_datasets(manifest)
 
 
+def _count_untyped(fields: list[dict[str, Any]]) -> tuple[int, int]:
+  """Counts (untyped, total) columns in a 1P schema aspect's field tree."""
+  untyped = total = 0
+  for field in fields:
+    total += 1
+    if field.get('dataType') == aspects.UNKNOWN_DATA_TYPE:
+      untyped += 1
+    nested_untyped, nested_total = _count_untyped(field.get('fields') or [])
+    untyped += nested_untyped
+    total += nested_total
+  return untyped, total
+
+
+def _warn_on_untyped_columns(
+    ctx: naming.Context, entries: list[dict[str, Any]]
+) -> None:
+  """Warns when dbt supplied no data type for some columns.
+
+  Column types reach the artifacts only through catalog.json, which only
+  `dbt docs generate` writes, and only for relations that already exist in the
+  warehouse. A project that was never built -- or whose docs were generated
+  before it was built -- therefore yields typeless columns. dbt itself logs
+  nothing in that case, so this is the only signal the user gets.
+
+  Args:
+    ctx: the naming.Context holding the naming coordinates for this run.
+    entries: the entry records built from the artifacts.
+  """
+  schema_key = ctx.schema_key()
+  untyped = total = resources = 0
+  for record in entries:
+    aspect = (record['entry'].get('aspects') or {}).get(schema_key)
+    if not aspect:
+      continue
+    entry_untyped, entry_total = _count_untyped(
+        aspect.get('data', {}).get('fields') or []
+    )
+    if entry_untyped:
+      resources += 1
+    untyped += entry_untyped
+    total += entry_total
+  if not untyped:
+    return
+  log.warning(
+      '{0} of {1} columns across {2} dbt resource(s) have no data type and are '
+      'recorded as [{3}]. Column types come from catalog.json, which only '
+      '`dbt docs generate` writes, and only for models that already exist in '
+      'the warehouse. Run `dbt build && dbt docs generate` (same profile and '
+      'target, and without --select, --no-compile or --empty-catalog), then '
+      're-run this command. Ephemeral models never materialize, so their '
+      'columns can only be typed by declaring data_type in schema.yml.'.format(
+          untyped, total, resources, aspects.UNKNOWN_DATA_TYPE
+      )
+  )
+
+
 def GenerateImportFile(  # pylint: disable=invalid-name
     artifacts_path: str,
     output_path: str,
@@ -230,14 +291,16 @@ def GenerateImportFile(  # pylint: disable=invalid-name
     linkable_datasets: the BigQuery (database, schema) datasets to emit
       materializes-to links for (dbt node -> physical @bigquery table entry) --
       the datasets known to live in the import location, since entry links are
-      same-region and the @bigquery entries are named there. When None
-      (or with include_entry_links=False), no materializes-to links are emitted.
+      same-region and the @bigquery entries are named there. When None (or with
+      include_entry_links=False), no materializes-to links are emitted.
 
   Returns:
-    A dict summary: {'entries': int, 'entry_links': int, 'output': str,
-    'bigquery_projects': list[str]} -- bigquery_projects are the BigQuery
-    projects materializes-to links reference (for the import job scope); empty
-    unless linkable_datasets was given.
+    A dict summary: {'entries': int, 'entry_links': int,
+    'schema_join_links': int, 'output': str, 'bigquery_projects': list[str]}.
+    bigquery_projects are the BigQuery projects materializes-to links reference
+    (for the import job scope); empty unless linkable_datasets was given.
+    schema_join_links lets the caller keep the separately-permissioned
+    schema-join aspect type out of scope when no link carries it.
 
   Raises:
     TransformError: if a required artifact is missing or malformed, or if an
@@ -264,6 +327,7 @@ def GenerateImportFile(  # pylint: disable=invalid-name
   entries, known_ids = entry_builders.build_entries(
       ctx, manifest, catalog, run_results, sources
   )
+  _warn_on_untyped_columns(ctx, entries)
   links = []
   if include_entry_links:
     links = entry_links.build_entry_links(
@@ -283,6 +347,13 @@ def GenerateImportFile(  # pylint: disable=invalid-name
   return {
       'entries': len(entries),
       'entry_links': len(links),
+      'schema_join_links': sum(
+          1
+          for item in links
+          if (item.get('entryLink') or {})
+          .get('entryLinkType', '')
+          .endswith('/schema-join')
+      ),
       'output': output_path,
       'bigquery_projects': bigquery_projects,
   }

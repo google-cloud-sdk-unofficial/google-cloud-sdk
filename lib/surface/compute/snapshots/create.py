@@ -26,7 +26,6 @@ from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import resource_manager_tags_utils
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.snapshots import flags as snap_flags
-from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -92,18 +91,14 @@ def _GAArgs(parser):
 def _BetaArgs(parser):
   _GAArgs(parser)
   snap_flags.AddScopeArg(parser)
-  kms_resource_args.AddKmsKeyResourceArg(
-      parser, 'snapshot', region_fallthrough=True
-  )
+  snap_flags.AddKmsKeyArg(parser, include_kms_key_service_account=True)
 
 
 def _AlphaArgs(parser):
   _GAArgs(parser)
   snap_flags.AddMaxRetentionDays(parser)
   snap_flags.AddScopeArg(parser)
-  kms_resource_args.AddKmsKeyResourceArg(
-      parser, 'snapshot', region_fallthrough=True
-  )
+  snap_flags.AddKmsKeyArg(parser, include_kms_key_service_account=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)

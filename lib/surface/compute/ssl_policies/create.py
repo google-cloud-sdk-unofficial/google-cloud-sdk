@@ -22,6 +22,9 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.ssl_policies import flags
 
 
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.PREVIEW
+)
 @base.UniverseCompatible
 class Create(base.CreateCommand):
   """Create a new Compute Engine SSL policy.
@@ -70,3 +73,48 @@ class Create(base.CreateCommand):
     operation_ref = helper.Create(ssl_policy_ref, ssl_policy_to_insert)
     return helper.WaitForOperation(ssl_policy_ref, operation_ref,
                                    'Creating SSL policy')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
+class CreateAlpha(Create):
+  """Create a new Compute Engine SSL policy.
+
+  *{command}* creates a new SSL policy.
+
+  An SSL policy specifies the server-side support for SSL features. An SSL
+  policy can be attached to a TargetHttpsProxy or a TargetSslProxy. This affects
+  connections between clients and the load balancer. SSL
+  policies do not affect the connection between the load balancers and the
+  backends. SSL policies are used by Application Load Balancers and proxy
+  Network Load Balancers.
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateAlpha, cls).Args(parser)
+    flags.GetTlsModeFlag().AddToParser(parser)
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    helper = ssl_policies_utils.SslPolicyHelper(holder)
+    ssl_policy_ref = self.SSL_POLICY_ARG.ResolveAsResource(
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL
+    )
+    custom_features = (
+        args.custom_features if args.IsSpecified('custom_features') else []
+    )
+
+    ssl_policy_to_insert = helper.GetSslPolicyForInsert(
+        name=ssl_policy_ref.Name(),
+        description=args.description,
+        profile=args.profile,
+        min_tls_version=flags.ParseTlsVersion(args.min_tls_version),
+        custom_features=custom_features,
+        post_quantum_key_exchange=args.post_quantum_key_exchange,
+        tls_mode=args.tls_mode
+    )
+    operation_ref = helper.Create(ssl_policy_ref, ssl_policy_to_insert)
+    return helper.WaitForOperation(
+        ssl_policy_ref, operation_ref, 'Creating SSL policy'
+    )

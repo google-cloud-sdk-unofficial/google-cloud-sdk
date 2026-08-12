@@ -21,13 +21,12 @@ from typing import Any, Optional, Set, Tuple
 
 from googlecloudsdk.api_lib.util import messages as messages_util
 from googlecloudsdk.calliope.concepts import concepts
-from googlecloudsdk.command_lib.cluster_director.clusters import _blueprints
 from googlecloudsdk.command_lib.cluster_director.clusters import _compute
 from googlecloudsdk.command_lib.cluster_director.clusters import _networks
 from googlecloudsdk.command_lib.cluster_director.clusters import _orchestrator
+from googlecloudsdk.command_lib.cluster_director.clusters import _reference_architectures
 from googlecloudsdk.command_lib.cluster_director.clusters import _storage
 from googlecloudsdk.command_lib.cluster_director.clusters import errors
-
 from googlecloudsdk.command_lib.cluster_director.clusters import flag_types
 from googlecloudsdk.command_lib.util.apis import yaml_data
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
@@ -88,7 +87,7 @@ class ClusterUtil:
     ref_arch = getattr(self.args, "reference_architecture", None)
     quickstart = getattr(self.args, "quickstart_cluster", False)
     if ref_arch or quickstart:
-      _blueprints.ApplyReferenceArchitecture(
+      _reference_architectures.ApplyReferenceArchitecture(
           self.args, self.message_module, self.cluster_ref
       )
 

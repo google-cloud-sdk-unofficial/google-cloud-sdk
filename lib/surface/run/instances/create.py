@@ -55,6 +55,7 @@ Container Flags
       flags.ImageArg(image=EXAMPLE_INSTANCE_IMAGE, required=False)
   )
   group.AddArgument(flags.PortArg())
+  group.AddArgument(flags.Http2Flag())
   group.AddArgument(flags.MutexEnvVarsFlags(release_track=release_track))
   group.AddArgument(flags.MemoryFlag())
   group.AddArgument(flags.CpuFlag())
@@ -163,6 +164,7 @@ class Create(base.Command):
   @staticmethod
   def Args(parser):
     Create.CommonArgs(parser)
+    flags.AddGracePeriodFlag(parser)
     container_args = ContainerArgGroup()
     container_parser.AddContainerFlags(parser, container_args)
 

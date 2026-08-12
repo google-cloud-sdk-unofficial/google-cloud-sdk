@@ -24,3 +24,4 @@ from googlecloudsdk.calliope import base
 )
 class RolloutSequences(base.Group):
   """Create and manage rollout sequences."""
+  category = base.COMPUTE_CATEGORY

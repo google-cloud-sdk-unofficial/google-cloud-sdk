@@ -23,3 +23,4 @@ from googlecloudsdk.calliope import base
 )
 class BackupPlanAssociations(base.Group):
   """Manage Backup and DR backup plan associations."""
+  category = base.STORAGE_CATEGORY

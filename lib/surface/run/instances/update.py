@@ -54,6 +54,7 @@ def ContainerArgGroup(release_track=base.ReleaseTrack.ALPHA):
   flags_to_add = [
       flags.ImageArg(image=_EXAMPLE_INSTANCE_IMAGE, required=False),
       flags.PortArg(),
+      flags.Http2Flag(),
       flags.MutexEnvVarsFlags(release_track=release_track),
       flags.MemoryFlag(),
       flags.CpuFlag(),
@@ -133,6 +134,7 @@ class AlphaUpdate(base.Command):
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser)
+    flags.AddGracePeriodFlag(parser)
     container_args = ContainerArgGroup()
     container_parser.AddContainerFlags(parser, container_args)
     flags.RemoveContainersFlag().AddToParser(parser)

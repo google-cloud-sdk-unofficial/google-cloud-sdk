@@ -4201,7 +4201,7 @@ class GoogleIdentityAccesscontextmanagerV1Modifier(_messages.Message):
   r"""Modifier to apply to the API requests.
 
   Fields:
-    addRequestHeader: Adds additional HTTP request headers.
+    addRequestHeader: Adds an additional HTTP request header.
   """
 
   addRequestHeader = _messages.MessageField('GoogleIdentityAccesscontextmanagerV1AddRequestHeader', 1)
@@ -4271,7 +4271,7 @@ class GoogleIdentityAccesscontextmanagerV1ServicePattern(_messages.Message):
     modifiers: Modifiers to apply to the requests that match the URL pattern.
     pattern: URL pattern to allow. Only patterns of ".googleapis.com/*",
       "www.googleapis.com//*" and "*.appspot.com/* forms are supported, where
-      should be alphanumerical name.
+      should be an alphanumeric name.
     service: Supported service to allow.
   """
 
@@ -4430,8 +4430,8 @@ class GoogleIdentityAccesscontextmanagerV1VpcAccessibleServices(_messages.Messag
     r"""ServicePatternsEnforcementScopesValueListEntryValuesEnum enum type.
 
     Values:
-      SERVICE_PATTERNS_ENFORCEMENT_SCOPE_UNSPECIFIED: Default value. This can
-        not be used.
+      SERVICE_PATTERNS_ENFORCEMENT_SCOPE_UNSPECIFIED: Default value. This
+        cannot be used.
       GOOGLE_APIS_VIA_PRIVATE_PATH: Enables VPC Accessible Services
         enforcement for all APIs (including unsupported APIs) for Private
         Google Access configured with Private VIP and Private Service Connect

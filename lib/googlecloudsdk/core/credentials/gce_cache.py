@@ -12,8 +12,35 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Caching logic for checking if we're on GCE."""
+"""Caching logic for checking if we are on Google Compute Engine (GCE).
 
+This module checks if gcloud runs on a GCE virtual machine. The check sends an
+HTTP GET request to the GCE metadata server. Because HTTP requests are slow and
+can fail during startup, this module caches the residency result in memory and
+on disk for 10 minutes.
+
+To prevent authentication failures and latency regressions across different
+environments, the caching and retry logic obeys these rules:
+1. SMBIOS check: Before HTTP probing, the module checks Linux kernel DMI
+   files (/sys/class/dmi/id/...) or Windows registry SMBIOS information as a
+   residency heuristic.
+2. Adaptive retry budget:
+   a. If SMBIOS indicates GCE, HTTP metadata probes allow 5 retries (6 total
+      attempts) to handle startup delays and proxy initialization.
+   b. If SMBIOS does not indicate GCE or is unreadable, HTTP metadata probes
+      allow 3 retries (4 total attempts).
+3. Selective backoff:
+   a. HTTP 429 (Too Many Requests) and 503 (Service Unavailable) errors use an
+      exponential backoff delay between retries to allow metadata proxy queues
+      to drain.
+   b. Socket timeouts and connection errors retry immediately without adding
+      extra backoff sleep on top of the probe socket timeout.
+4. Consistent disk caching: The module writes the residency result to disk for
+   10 minutes across all paths to prevent repeated checks.
+
+For more information on GCE residency detection, see:
+https://cloud.google.com/compute/docs/instances/detect-compute-engine
+"""
 
 import http.client
 import os
@@ -38,6 +65,11 @@ if ssl is not None:
   SslCertificateError = getattr(ssl, 'CertificateError', None)
 
 _GCE_CACHE_MAX_AGE = 10 * 60  # 10 minutes
+_GCE_SMBIOS_MAX_RETRIALS = 5
+_DEFAULT_MAX_RETRIALS = 3
+_HTTP_ERROR_INITIAL_SLEEP_SEC = 0.5
+_HTTP_ERROR_EXPONENTIAL_SLEEP_MULTIPLIER = 1.5
+_BACKOFF_HTTP_ERROR_CODES = (429, 503)
 
 # Depending on how a firewall/ NAT behaves, we can have different
 # exceptions at different levels in the networking stack when trying to
@@ -62,6 +94,19 @@ def _ShouldRetryMetadataServerConnection(exc_type, exc_value, exc_traceback,
     return False
 
   return True
+
+
+def _GetMetadataServerSleepMs(exc_type, exc_value, exc_traceback, state):
+  """Calculates sleep time in ms for retriable metadata server HTTP errors."""
+  del exc_type, exc_traceback
+  if isinstance(exc_value, urllib.error.HTTPError):
+    if exc_value.code in _BACKOFF_HTTP_ERROR_CODES:
+      retrial = state.retrial if state is not None else 0
+      sleep_sec = _HTTP_ERROR_INITIAL_SLEEP_SEC * (
+          _HTTP_ERROR_EXPONENTIAL_SLEEP_MULTIPLIER**retrial
+      )
+      return int(sleep_sec * 1000)
+  return 0
 
 
 class _OnGCECache(object):
@@ -121,24 +166,61 @@ class _OnGCECache(object):
 
     return self.CheckServerRefreshAllCaches()
 
+  def _IsGceSmbios(self):
+    """Checks if SMBIOS data indicates a Google Compute Engine host.
+
+    Returns:
+      bool, True if Linux DMI sysfs or Windows registry SMBIOS data indicates
+      Google, False otherwise.
+    """
+    if os.name == 'nt':
+      return self._IsGceSmbiosWindows()
+    return self._IsGceSmbiosLinux()
+
+  def _IsGceSmbiosWindows(self):
+    """Checks Windows registry SMBIOS information for GCE residency."""
+    try:
+      from six.moves import winreg  # pylint: disable=g-import-not-at-top
+
+      with winreg.OpenKey(
+          winreg.HKEY_LOCAL_MACHINE,
+          r'HARDWARE\DESCRIPTION\System\BIOS',
+      ) as key:
+        manufacturer, _ = winreg.QueryValueEx(key, 'SystemManufacturer')
+        product_name, _ = winreg.QueryValueEx(key, 'SystemProductName')
+        if 'Google' in str(manufacturer) or 'Google' in str(product_name):
+          return True
+    except (ImportError, OSError, IOError, AttributeError):
+      pass
+    return False
+
+  def _IsGceSmbiosLinux(self):
+    """Checks Linux sysfs DMI files for GCE residency via google-auth."""
+    try:
+      from google.auth import compute_engine  # pylint: disable=g-import-not-at-top
+
+      return compute_engine.detect_gce_residency_linux()
+    except (ImportError, AttributeError):
+      return False
+
   def CheckServerRefreshAllCaches(self):
-    """Checks the metadata server and refreshes all caches."""
+    """Checks the metadata server and refreshes all caches.
+
+    This method checks SMBIOS data inside _CheckServer to set the retry budget
+    for HTTP probes. It writes the residency result to disk and memory for 10
+    minutes.
+
+    Returns:
+      bool, True if running on GCE, False otherwise.
+    """
     try:
       on_gce = self._CheckServer()
       log.debug('On GCE from server: %s', on_gce)
-      self._WriteDisk(on_gce)
     except _POSSIBLE_ERRORS_GCE_METADATA_CONNECTION as e:  # pylint: disable=catching-non-exception
       log.debug('Failed to check metadata server: %s', e)
-      # Only write False to disk if the error is a definitive DNS failure
-      # (socket.gaierror).  Transient connection errors (e.g., refused/timeout)
-      # are not written to disk to prevent cache poisoning during startup races
-      # (see b/529362127).
-      if isinstance(e, urllib.error.URLError) and isinstance(
-          e.reason, socket.gaierror
-      ):
-        self._WriteDisk(False)
       on_gce = False
 
+    self._WriteDisk(on_gce)
     self._WriteMemory(on_gce, time.time() + _GCE_CACHE_MAX_AGE)
     return on_gce
 
@@ -181,17 +263,35 @@ class _OnGCECache(object):
         # exist.
         log.debug('Failed to write GCE cache file: %s', e)
 
-  @retry.RetryOnException(
-      max_retrials=3,
-      should_retry_if=_ShouldRetryMetadataServerConnection,
-      sleep_ms=500,
-      exponential_sleep_multiplier=2,
-  )
-  def _CheckServer(self):
-    return gce_read.ReadNoProxy(
-        gce_read.GOOGLE_GCE_METADATA_NUMERIC_PROJECT_URI,
-        properties.VALUES.compute.gce_metadata_check_timeout_sec.GetInt(),
-    ).isdigit()
+  def _CheckServer(self, max_retrials=None):
+    """Probes the metadata server with retries.
+
+    Args:
+      max_retrials: int or None, maximum number of total attempts on connection
+        error. If None, set dynamically based on SMBIOS residency checks.
+
+    Returns:
+      bool, True if the metadata server responds with a numeric project ID.
+    """
+    if max_retrials is None:
+      max_retrials = (
+          _GCE_SMBIOS_MAX_RETRIALS
+          if self._IsGceSmbios()
+          else _DEFAULT_MAX_RETRIALS
+      )
+
+    @retry.RetryOnException(
+        max_retrials=max_retrials,
+        should_retry_if=_ShouldRetryMetadataServerConnection,
+        sleep_ms=_GetMetadataServerSleepMs,
+    )
+    def _TryCheckServer():
+      return gce_read.ReadNoProxy(
+          gce_read.GOOGLE_GCE_METADATA_NUMERIC_PROJECT_URI,
+          properties.VALUES.compute.gce_metadata_check_timeout_sec.GetInt(),
+      ).isdigit()
+
+    return _TryCheckServer()
 
 
 # Since a module is initialized only once, this is effective a singleton
