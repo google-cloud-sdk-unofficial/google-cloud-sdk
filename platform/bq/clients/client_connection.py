@@ -219,6 +219,15 @@ def UpdateConnection(
           'iamRoleId'
       ):
         update_mask.append('aws.access_role.iam_role_id')
+      # TODO(b/541415543): Remove deprecated field: s3_service_directory_service
+      if aws_properties.get('s3ServiceDirectoryService'):
+        if not aws_properties.get('serviceDirectoryService'):
+          aws_properties['serviceDirectoryService'] = aws_properties[
+              's3ServiceDirectoryService'
+          ]
+
+      if aws_properties.get('serviceDirectoryService'):
+        update_mask.append('aws.service_directory_service')
       if aws_properties.get('s3ServiceDirectoryService'):
         update_mask.append('aws.s3_service_directory_service')
     else:
@@ -238,6 +247,8 @@ def UpdateConnection(
         update_mask.append('azure.customer_tenant_id')
       if azure_properties.get('federatedApplicationClientId'):
         update_mask.append('azure.federated_application_client_id')
+      if azure_properties.get('serviceDirectoryService'):
+        update_mask.append('azure.service_directory_service')
 
   elif connection_type == 'SQL_DATA_SOURCE':
     if properties:

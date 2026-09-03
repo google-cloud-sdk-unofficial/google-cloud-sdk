@@ -36,7 +36,6 @@ DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
-@base.Hidden
 class Resume(base.Command):
   """Resume a Cloud Composer environment."""
 

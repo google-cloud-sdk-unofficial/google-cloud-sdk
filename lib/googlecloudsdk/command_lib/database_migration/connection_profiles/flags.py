@@ -39,6 +39,7 @@ def AddDisplayNameFlag(parser):
 
 def AddDatabaseParamsFlags(
     parser,
+    require_user=True,
     require_password=True,
     require_host_port=True,
     with_database_name=False,
@@ -56,10 +57,10 @@ def AddDatabaseParamsFlags(
     )
     AddEnableIamAuthenticationFlag(authentication_group, for_create=True)
     builtin_auth_group = authentication_group.add_group()
-    AddUsernameFlag(builtin_auth_group, required=True)
+    AddUsernameFlag(builtin_auth_group, required=require_user)
     AddPasswordFlagGroup(builtin_auth_group, required=require_password)
   else:
-    AddUsernameFlag(database_params_group, required=True)
+    AddUsernameFlag(database_params_group, required=require_user)
     AddPasswordFlagGroup(database_params_group, required=require_password)
   AddHostFlag(
       database_params_group,
@@ -132,8 +133,8 @@ def AddHostFlag(
   if support_optional_host_port:
     help_text += """
 
-    For PostgreSQL destination profiles with Cloud SQL or AlloyDB, this flag is
-    optional if the instance or cluster is provided.
+    For PostgreSQL or MySQL destination profiles with Cloud SQL or AlloyDB, this
+    flag is optional if the instance or cluster is provided.
     """
 
   help_text += """
@@ -162,8 +163,8 @@ def AddPortFlag(parser, required=False, support_optional_host_port=False):
   if support_optional_host_port:
     help_text += """
 
-    For PostgreSQL destination profiles with Cloud SQL or AlloyDB, this flag is
-    optional if the instance or cluster is provided.
+    For PostgreSQL or MySQL destination profiles with Cloud SQL or AlloyDB, this
+    flag is optional if the instance or cluster is provided.
     """
   parser.add_argument('--port', help=help_text, required=required, type=int)
 

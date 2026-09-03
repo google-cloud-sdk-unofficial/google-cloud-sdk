@@ -1775,6 +1775,12 @@ class WorkstationCluster(_messages.Message):
     annotations: Optional. Client-specified annotations.
     conditions: Output only. Status conditions describing the workstation
       cluster's current state.
+    consoleBaseUrl: Optional. Specifies a custom base URL for the Google Cloud
+      Console. This field is intended to be user-configurable to support data
+      residency for Cloud Workstations users. This will be used generally for
+      user journeys where users need to go to the Cloud Console from Code OSS.
+      When the Auth and Launch URLs are unset, this will be used as the base
+      URL for those endpoints if set.
     controlPlaneIp: Output only. The private IP address of the control plane
       for this workstation cluster. Workstation VMs need access to this IP
       address to work with the service, so make sure that your firewall rules
@@ -1911,27 +1917,28 @@ class WorkstationCluster(_messages.Message):
 
   annotations = _messages.MessageField('AnnotationsValue', 1)
   conditions = _messages.MessageField('Status', 2, repeated=True)
-  controlPlaneIp = _messages.StringField(3)
-  createTime = _messages.StringField(4)
-  degraded = _messages.BooleanField(5)
-  deleteTime = _messages.StringField(6)
-  displayName = _messages.StringField(7)
-  domainConfig = _messages.MessageField('DomainConfig', 8)
-  etag = _messages.StringField(9)
-  gatewayConfig = _messages.MessageField('GatewayConfig', 10)
-  labels = _messages.MessageField('LabelsValue', 11)
-  name = _messages.StringField(12)
-  network = _messages.StringField(13)
-  privateClusterConfig = _messages.MessageField('PrivateClusterConfig', 14)
-  reconciling = _messages.BooleanField(15)
-  satisfiesPzi = _messages.BooleanField(16)
-  satisfiesPzs = _messages.BooleanField(17)
-  subnetwork = _messages.StringField(18)
-  tags = _messages.MessageField('TagsValue', 19)
-  uid = _messages.StringField(20)
-  updateTime = _messages.StringField(21)
-  workstationAuthorizationUrl = _messages.StringField(22)
-  workstationLaunchUrl = _messages.StringField(23)
+  consoleBaseUrl = _messages.StringField(3)
+  controlPlaneIp = _messages.StringField(4)
+  createTime = _messages.StringField(5)
+  degraded = _messages.BooleanField(6)
+  deleteTime = _messages.StringField(7)
+  displayName = _messages.StringField(8)
+  domainConfig = _messages.MessageField('DomainConfig', 9)
+  etag = _messages.StringField(10)
+  gatewayConfig = _messages.MessageField('GatewayConfig', 11)
+  labels = _messages.MessageField('LabelsValue', 12)
+  name = _messages.StringField(13)
+  network = _messages.StringField(14)
+  privateClusterConfig = _messages.MessageField('PrivateClusterConfig', 15)
+  reconciling = _messages.BooleanField(16)
+  satisfiesPzi = _messages.BooleanField(17)
+  satisfiesPzs = _messages.BooleanField(18)
+  subnetwork = _messages.StringField(19)
+  tags = _messages.MessageField('TagsValue', 20)
+  uid = _messages.StringField(21)
+  updateTime = _messages.StringField(22)
+  workstationAuthorizationUrl = _messages.StringField(23)
+  workstationLaunchUrl = _messages.StringField(24)
 
 
 class WorkstationConfig(_messages.Message):
@@ -2028,10 +2035,11 @@ class WorkstationConfig(_messages.Message):
     idleAction: Optional. The action to take when the workstation has been
       idle for the duration specified in idle_timeout. Defaults to STOP.
     idleTimeout: Optional. Number of seconds to wait before automatically
-      stopping a workstation after it last received user traffic. A value of
-      `"0s"` indicates that Cloud Workstations VMs created with this
-      configuration should never time out due to idleness. Provide
-      [duration](https://developers.google.com/protocol-
+      stopping or suspending a workstation after it last received user
+      traffic. See idle_action to configure whether to stop or suspend idle
+      workstations. A value of `"0s"` indicates that Cloud Workstations VMs
+      created with this configuration should never time out due to idleness.
+      Provide [duration](https://developers.google.com/protocol-
       buffers/docs/reference/google.protobuf#duration) terminated by `s` for
       seconds-for example, `"7200s"` (2 hours). The default is `"1200s"` (20
       minutes).
@@ -2068,15 +2076,17 @@ class WorkstationConfig(_messages.Message):
       so that security updates can be applied upon restart. The idle_timeout
       and running_timeout fields are independent of each other. Note that the
       running_timeout field stops workstations after the specified time,
-      regardless of whether or not the workstations are idle. Provide duration
-      terminated by `s` for seconds-for example, `"54000s"` (15 hours).
-      Defaults to `"43200s"` (12 hours). A value of `"0s"` indicates that
-      workstations using this configuration should never time out. If
-      encryption_key is set, it must be greater than `"0s"` and less than
-      `"86400s"` (24 hours). Warning: A value of `"0s"` indicates that Cloud
-      Workstations VMs created with this configuration have no maximum running
-      time. This is strongly discouraged because you incur costs and will not
-      pick up security updates.
+      regardless of whether or not the workstations are idle. Note: This
+      timeout applies to workstations in the following states: * STATE_RUNNING
+      * STATE_SUSPENDED Suspending a workstation does not reset this timeout.
+      Provide duration terminated by `s` for seconds-for example, `"54000s"`
+      (15 hours). Defaults to `"43200s"` (12 hours). A value of `"0s"`
+      indicates that workstations using this configuration should never time
+      out. If encryption_key is set, it must be greater than `"0s"` and less
+      than `"86400s"` (24 hours). Warning: A value of `"0s"` indicates that
+      Cloud Workstations VMs created with this configuration have no maximum
+      running time. This is strongly discouraged because you incur costs and
+      will not pick up security updates.
     satisfiesPzi: Output only. Reserved for future use.
     satisfiesPzs: Output only. Reserved for future use.
     uid: Output only. A system-assigned unique identifier for this workstation

@@ -31,6 +31,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 class DatabaseFailover(base.Command):
   """Run a database failover operation."""
 

@@ -100,6 +100,8 @@ from .types.revision import ListRevisionsRequest
 from .types.revision import ListRevisionsResponse
 from .types.revision import Revision
 from .types.revision_template import RevisionTemplate
+from .types.sandbox import SandboxConfiguration
+from .types.sandbox import SandboxTemplate
 from .types.service import CreateServiceRequest
 from .types.service import DeleteServiceRequest
 from .types.service import GetServiceRequest
@@ -228,6 +230,8 @@ __all__ = (
 'RevisionTemplate',
 'RevisionsClient',
 'RunJobRequest',
+'SandboxConfiguration',
+'SandboxTemplate',
 'SecretKeySelector',
 'SecretVolumeSource',
 'Service',

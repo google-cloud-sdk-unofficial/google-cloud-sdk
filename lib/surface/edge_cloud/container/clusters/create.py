@@ -81,6 +81,7 @@ class Create(base.CreateCommand):
     container_flags.AddZoneStorageKMSKey(parser)
     container_flags.AddContainerDefaultRuntimeClass(parser)
     container_flags.AddEnableGoogleGroupAuthentication(parser)
+    container_flags.AddControlPlaneNodeSystemPartitionSize(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -153,4 +154,3 @@ class CreateAlpha(Create):
     container_flags.AddEnableClusterIsolation(parser)
     container_flags.AddEnableRemoteBackup(parser)
     container_flags.AddEnableRobinCNS(parser)
-    container_flags.AddControlPlaneNodeSystemPartitionSize(parser)

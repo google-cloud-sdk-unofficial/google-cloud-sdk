@@ -83,6 +83,65 @@ class CleanupIpamAdminScopeRequest(_messages.Message):
   requestId = _messages.StringField(1)
 
 
+class CloudnumberregistryOrganizationsLocationsOperationsCancelRequest(_messages.Message):
+  r"""A CloudnumberregistryOrganizationsLocationsOperationsCancelRequest
+  object.
+
+  Fields:
+    cancelOperationRequest: A CancelOperationRequest resource to be passed as
+      the request body.
+    name: The name of the operation resource to be cancelled.
+  """
+
+  cancelOperationRequest = _messages.MessageField('CancelOperationRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class CloudnumberregistryOrganizationsLocationsOperationsDeleteRequest(_messages.Message):
+  r"""A CloudnumberregistryOrganizationsLocationsOperationsDeleteRequest
+  object.
+
+  Fields:
+    name: The name of the operation resource to be deleted.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class CloudnumberregistryOrganizationsLocationsOperationsGetRequest(_messages.Message):
+  r"""A CloudnumberregistryOrganizationsLocationsOperationsGetRequest object.
+
+  Fields:
+    name: The name of the operation resource.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class CloudnumberregistryOrganizationsLocationsOperationsListRequest(_messages.Message):
+  r"""A CloudnumberregistryOrganizationsLocationsOperationsListRequest object.
+
+  Fields:
+    filter: The standard list filter.
+    name: The name of the operation's parent resource.
+    pageSize: The standard list page size.
+    pageToken: The standard list page token.
+    returnPartialSuccess: When set to `true`, operations that are reachable
+      are returned as normal, and those that are unreachable are returned in
+      the ListOperationsResponse.unreachable field. This can only be `true`
+      when reading across collections. For example, when `parent` is set to
+      `"projects/example/locations/-"`. This field is not supported by default
+      and will result in an `UNIMPLEMENTED` error if set unless explicitly
+      documented otherwise in service or product specific documentation.
+  """
+
+  filter = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  returnPartialSuccess = _messages.BooleanField(5)
+
+
 class CloudnumberregistryOrganizationsLocationsOrgNumberRegistriesCreateRequest(_messages.Message):
   r"""A
   CloudnumberregistryOrganizationsLocationsOrgNumberRegistriesCreateRequest
@@ -1886,6 +1945,8 @@ class RegistryBook(_messages.Message):
     claimedScopes: Optional. List of scopes claimed by the RegistryBook. In
       Preview, Only project scope is supported. Each scope is in the format of
       projects/{project}. Each scope can only be claimed once.
+    claimedScopesInfo: Output only. Detailed scope information corresponding
+      to each entry in `claimed_scopes`.
     createTime: Output only. The time at which the RegistryBook was created.
     isDefault: Output only. Whether the RegistryBook is the default one.
     labels: Optional. User-defined labels.
@@ -1920,11 +1981,28 @@ class RegistryBook(_messages.Message):
 
   aggregatedData = _messages.MessageField('AggregatedData', 1)
   claimedScopes = _messages.StringField(2, repeated=True)
-  createTime = _messages.StringField(3)
-  isDefault = _messages.BooleanField(4)
-  labels = _messages.MessageField('LabelsValue', 5)
-  name = _messages.StringField(6)
-  updateTime = _messages.StringField(7)
+  claimedScopesInfo = _messages.MessageField('ScopeInfo', 3, repeated=True)
+  createTime = _messages.StringField(4)
+  isDefault = _messages.BooleanField(5)
+  labels = _messages.MessageField('LabelsValue', 6)
+  name = _messages.StringField(7)
+  updateTime = _messages.StringField(8)
+
+
+class ScopeInfo(_messages.Message):
+  r"""Details of a scope (e.g. project or folder).
+
+  Fields:
+    displayName: Output only. Human-readable display title of the scope shown
+      in Console (e.g. "My Cloud Project"). Used for UI display.
+    id: Output only. Programmatic string identifier of the scope (e.g. GCP
+      Project ID "my-project-id"). Used for API and code logic.
+    name: Output only. Resource name of the scope, e.g. "projects/1234567890".
+  """
+
+  displayName = _messages.StringField(1)
+  id = _messages.StringField(2)
+  name = _messages.StringField(3)
 
 
 class SearchIpResourcesRequest(_messages.Message):
@@ -1949,8 +2027,10 @@ class SearchIpResourcesRequest(_messages.Message):
       AIP-160-like format. It has some limitations. You can only specify top
       level conjunctions or attribute level negations. Each restriction can
       only be used once except the attribute restriction. The available
-      restrictions for Ranges are: - `realm`: The Realm name to search in. -
-      `ip_address`: The IP address to search for within Ranges. -
+      restrictions for Ranges are: - `resource_id`: The resource ID to search
+      for within Ranges (only substring matching using the format
+      `resource_id="*value*"` is supported). - `realm`: The Realm name to
+      search in. - `ip_address`: The IP address to search for within Ranges. -
       `ip_version`: The IP version to filter by (e.g., "IPV4", "IPV6"). -
       `parent_range`: The parent Range of the Range to search for. -
       `attribute_text`: The attribute text to search for within Ranges. -
@@ -1960,9 +2040,9 @@ class SearchIpResourcesRequest(_messages.Message):
       "USER"). Only one of attribute_text or multiple attribute filters can be
       specified. Examples: - `realm=test-realm` - `realm=test-realm AND
       ip_address=10.0.0.0` - `realm=test-realm AND ip_version=IPV6` -
-      `realm=test-realm AND attribute_text=test` - `ip_address=10.0.0.0 AND
-      attribute:(key1=value1) AND attribute:(key2=value2)` -
-      `attribute_text=test AND
+      `realm=test-realm AND resource_id="*my-range*"` - `realm=test-realm AND
+      attribute_text=test` - `ip_address=10.0.0.0 AND attribute:(key1=value1)
+      AND attribute:(key2=value2)` - `attribute_text=test AND
       parent_range=projects/123/locations/global/discoveredRanges/test-parent-
       range` - `management_type=CNR`
     searchResourceTypes: Optional. The type of resources to search for. If not

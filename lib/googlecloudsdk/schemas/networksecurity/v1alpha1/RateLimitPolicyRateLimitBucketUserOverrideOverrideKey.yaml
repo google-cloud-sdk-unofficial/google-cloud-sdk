@@ -1,0 +1,59 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networksecurity v1alpha1 RateLimitPolicyRateLimitBucketUserOverrideOverrideKey
+  export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  httpHeaders:
+    description: |-
+      Specifies the HTTP headers if the rate limit bucket keys contain keys of
+      type HTTP_HEADER. Number of headers and header names must match the rate
+      limit bucket key.
+    type: array
+    items:
+      $ref: RateLimitPolicyRateLimitBucketUserOverrideOverrideKeyHttpHeader.yaml
+  httpPath:
+    description: |-
+      Specifies the HTTP path if the rate limit bucket keys contain a key of
+      type HTTP_PATH.
+    type: string
+  mcpTool:
+    description: |-
+      Specifies the MCP tool if the rate limit bucket keys contain a key of
+      type MCP_TOOL.
+    type: string
+  principals:
+    description: |-
+      Specifies the principals if the rate limit bucket keys contain keys of
+      PRINCIPAL. Number of principals and principal types must match the
+      rate limit bucket key.
+    type: array
+    items:
+      $ref: RateLimitPolicyRateLimitBucketUserOverrideOverrideKeyPrincipal.yaml
+  sourceIp:
+    description: |-
+      Specifies the source IP if the rate limit bucket keys contain a
+      key of type SOURCE_IP.
+    type: string

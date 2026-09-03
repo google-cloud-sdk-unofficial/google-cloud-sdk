@@ -18,6 +18,7 @@
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class Operations(base.Group):
   """Manage Cloud Composer operations."""
 

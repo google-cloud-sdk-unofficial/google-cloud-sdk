@@ -34,6 +34,7 @@ from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import yaml
+from googlecloudsdk.core.cache import cache_update_ops
 from googlecloudsdk.core.resource import resource_printer
 from googlecloudsdk.core.util import pkg_resources
 import six
@@ -1024,6 +1025,10 @@ class CacheCommand(six.with_metaclass(abc.ABCMeta, Command)):
     super(CacheCommand, self).__init__(*args, **kwargs)
     self._uri_cache_enabled = True
 
+  def GetCacheOp(self, cache_updater=None):
+    """Returns the cache update operation for this command."""
+    return None
+
 
 class ListCommand(six.with_metaclass(abc.ABCMeta, CacheCommand)):
   """A command that pretty-prints all resources."""
@@ -1044,6 +1049,10 @@ class ListCommand(six.with_metaclass(abc.ABCMeta, CacheCommand)):
     URI_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(properties.VALUES.core.default_format.Get())
 
+  def GetCacheOp(self, cache_updater=None):
+    """Returns the cache update operation for this command."""
+    return cache_update_ops.ReplaceCacheOp(cache_updater)
+
   def Epilog(self, resources_were_displayed):
     """Called after resources are displayed if the default format was used.
 
@@ -1057,13 +1066,25 @@ class ListCommand(six.with_metaclass(abc.ABCMeta, CacheCommand)):
 class CreateCommand(CacheCommand, SilentCommand):
   """A command that creates resources."""
 
+  def GetCacheOp(self, cache_updater=None):
+    """Returns the cache update operation for this command."""
+    return cache_update_ops.AddToCacheOp(cache_updater)
+
 
 class DeleteCommand(CacheCommand, SilentCommand):
   """A command that deletes resources."""
 
+  def GetCacheOp(self, cache_updater=None):
+    """Returns the cache update operation for this command."""
+    return cache_update_ops.DeleteFromCacheOp(cache_updater)
+
 
 class RestoreCommand(CacheCommand, SilentCommand):
   """A command that restores resources."""
+
+  def GetCacheOp(self, cache_updater=None):
+    """Returns the cache update operation for this command."""
+    return cache_update_ops.AddToCacheOp(cache_updater)
 
 
 class UpdateCommand(SilentCommand):

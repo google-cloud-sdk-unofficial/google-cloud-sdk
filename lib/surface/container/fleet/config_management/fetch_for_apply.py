@@ -27,7 +27,7 @@ from googlecloudsdk.core.util import semver
 
 @base.Deprecate(
     is_removed=False,
-    # TODO(b/435530306): Include beta release track in warning message.
+    # TODO(b/424636129): Include beta release track in warning message.
     warning=(
         'This command is deprecated and will be removed in an upcoming release.'
         " Please use the new `describe` command's `--view=config` flag in the"

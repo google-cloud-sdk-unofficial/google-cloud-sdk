@@ -81,8 +81,8 @@ class StorageBatchOperationsApi:
     prefix_list_set = included_object_prefixes is not None
     if bool(manifest_location) == prefix_list_set:
       raise errors.StorageBatchOperationsApiError(
-          "Exactly one of manifest-location or included-object-prefixes must be"
-          " specified."
+          "Exactly one of '--manifest-location' or '--included-object-prefixes'"
+          " must be specified."
       )
     job = self.messages.Job(
         description=description,
@@ -243,10 +243,10 @@ class StorageBatchOperationsApi:
         valid_classes = (
             self.messages.RewriteObject.StorageClassValueValuesEnum.to_dict().keys()
         )
+        valid_classes_str = ", ".join(sorted(valid_classes))
         raise errors.StorageBatchOperationsApiError(
-            "Invalid value for storage-class:"
-            f' {rewrite_object_dict["storage-class"]}. Must be one of'
-            f" {valid_classes}."
+            f"The storage class '{rewrite_object_dict['storage-class']}' is"
+            f" invalid. Specify one of: {valid_classes_str}."
         ) from exc
     job.rewriteObject = rewrite_object
 
@@ -298,9 +298,10 @@ class StorageBatchOperationsApi:
             valid_modes = (
                 self.messages.ObjectRetention.RetentionModeValueValuesEnum.to_dict().keys()
             )
+            valid_modes_str = ", ".join(sorted(valid_modes))
             raise errors.StorageBatchOperationsApiError(
-                f"Invalid value for retention-mode: {value}. Must be one of"
-                f" {valid_modes}."
+                f"The retention mode '{value}' is invalid. Specify one of:"
+                f" {valid_modes_str}."
             ) from exc
       else:
         custom_metadata_value.additionalProperties.append(
@@ -365,7 +366,8 @@ class StorageBatchOperationsApi:
     remove_entities = set_object_acls_dict.get("remove_entities")
     if not grants and not remove_entities:
       raise errors.StorageBatchOperationsApiError(
-          "At least one of grants or remove_entities must be specified."
+          "At least one of 'grants' or 'remove_entities' must be specified in"
+          " the object ACL configuration."
       )
 
     updates_kwargs = {}
@@ -484,7 +486,11 @@ class StorageBatchOperationsApi:
       self._modify_job_set_object_acls(job, args.set_object_acls_from_file)
     else:
       raise errors.StorageBatchOperationsApiError(
-          "Exactly one transformation must be specified."
+          "A transformation must be specified for the batch job. Specify"
+          " exactly one transformation flag (e.g., '--delete-objects',"
+          " '--put-object-hold', '--put-metadata', '--put-kms-key',"
+          " '--rewrite-objects', '--update-object-custom-context', or"
+          " '--set-object-acls-from-file')."
       )
 
     if args.log_actions and args.log_action_states:
@@ -493,8 +499,8 @@ class StorageBatchOperationsApi:
       )
     elif args.log_actions or args.log_action_states:
       raise errors.StorageBatchOperationsApiError(
-          "Both --log-actions and --log-action-states are required for a"
-          " complete log config."
+          "Both '--log-actions' and '--log-action-states' must be specified to"
+          " configure job logging."
       )
     return self._create_job(batch_job_name, job)
 

@@ -38,6 +38,13 @@ def _AddCommonDeleteInstancesArgs(parser):
   instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
       parser)
   mig_flags.AddGracefulValidationArg(parser)
+  parser.add_argument(
+      '--no-graceful-shutdown',
+      default=False,
+      action='store_true',
+      help="""
+        End an ongoing graceful shutdown, or delete the specified instances without graceful shutdown.""",
+  )
 
 
 @base.ReleaseTracks(
@@ -80,6 +87,9 @@ class DeleteInstances(base.Command):
     else:
       raise ValueError('Unknown reference type {0}'.format(
           igm_ref.Collection()))
+
+    if args.IsSpecified('no_graceful_shutdown'):
+      request.noGracefulShutdown = args.no_graceful_shutdown
 
     skip_instances_on_validation_error = (
         args.IsSpecified('skip_instances_on_validation_error')

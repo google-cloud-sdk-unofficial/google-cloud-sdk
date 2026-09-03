@@ -57,6 +57,7 @@ from googlecloudsdk.generated_clients.gapic_clients.run_v2.services.revisions im
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import condition
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import k8s_min
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import revision
+from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import sandbox
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import status
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import vendor_settings
 from .transports.base import RevisionsTransport, DEFAULT_CLIENT_INFO

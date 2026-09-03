@@ -19,9 +19,22 @@ import re
 
 
 def GetSerialConsoleLog(compute_client, compute_message, instance, project,
-                        zone):
+                        zone, port=1):
+  """Retrieves the serial console output for an instance.
+
+  Args:
+    compute_client: The apitools client for Compute.
+    compute_message: The apitools message module.
+    instance: str, the instance name.
+    project: str, the project name.
+    zone: str, the zone name.
+    port: int, the serial port number (default 1).
+
+  Returns:
+    str, the serial port output contents.
+  """
   req = compute_message.ComputeInstancesGetSerialPortOutputRequest(
-      instance=instance, project=project, port=1, start=0, zone=zone)
+      instance=instance, project=project, port=port, start=0, zone=zone)
   return compute_client.instances.GetSerialPortOutput(req).contents
 
 

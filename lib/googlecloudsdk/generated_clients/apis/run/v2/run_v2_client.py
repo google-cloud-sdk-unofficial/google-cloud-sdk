@@ -1330,15 +1330,15 @@ class RunV2(base_api.BaseApiClient):
           'Upload': base_api.ApiUploadInfo(
               accept=['*/*'],
               max_size=262144000,
-              resumable_multipart=True,
-              resumable_path='/resumable/upload/v2/{+parent}:uploadSource',
+              resumable_multipart=None,
+              resumable_path=None,
               simple_multipart=True,
               simple_path='/upload/v2/{+parent}:uploadSource',
           ),
           }
 
     def Upload(self, request, global_params=None, upload=None):
-      r"""Uploads a source archive to a Google Cloud Storage bucket through Cloud Run. The uploaded source object should be used for Cloud Run resource deployments. User is responsible for managing the lifecycle of the uploaded object.
+      r"""Uploads a source archive to a Google Cloud Storage bucket through Cloud Run. The uploaded source object should be used for Cloud Run resource deployments. User is responsible for managing the lifecycle of the uploaded object. If uploading through the Cloud Run API to Cloud Storage is not desired, you can use the IAM Deny Policy to deny the `run.locations.uploadSource` permission for all principals.
 
       Args:
         request: (RunProjectsLocationsSourceUploadsUploadRequest) input message

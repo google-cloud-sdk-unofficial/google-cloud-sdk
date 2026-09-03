@@ -67,7 +67,8 @@ class Boot(base_classes.BaseCommand):
   {command} analyzes the serial console output of a Compute Engine
   virtual machine instance to detect boot issues.
 
-  This command is currently only supported for Linux instances.
+  Windows instances are diagnosed from serial port 2 (the Special
+  Administration Console), where Windows reports boot-manager failures.
   """
 
   detailed_help = {
@@ -75,7 +76,8 @@ class Boot(base_classes.BaseCommand):
           *{command}* analyzes the serial console output of a Compute Engine
           virtual machine instance to detect boot issues.
 
-          This command is currently only supported for Linux instances.
+          Windows instances are diagnosed from serial port 2 (the Special
+          Administration Console), where Windows reports boot-manager failures.
           """,
       'EXAMPLES': """\
           To analyze the boot logs of an instance named 'my-instance' in zone 'us-central1-a', run:
@@ -117,10 +119,7 @@ class Boot(base_classes.BaseCommand):
       raise BootDiagnosticError(msg) from e
 
     # Check status
-    if _IsInstanceWindows(instance):
-      raise BootDiagnosticError(
-          'Instance [{0}] is a Windows instance. This command currently '
-          'supports Linux instances only.'.format(self.instance_name))
+    is_windows = _IsInstanceWindows(instance)
 
     if instance.status != MESSAGES.Instance.StatusValueValuesEnum.RUNNING:
       raise BootDiagnosticError(
@@ -132,10 +131,11 @@ class Boot(base_classes.BaseCommand):
     # empty buffer early
     log.status.Print(
         'Checking boot status for [{0}]...'.format(self.instance_name))
+    port = 2 if is_windows else 1
     try:
       sc_log = ssh_troubleshooter_utils.GetSerialConsoleLog(
           client.apitools_client, MESSAGES, self.instance_name,
-          instance_ref.project, instance_ref.zone)
+          instance_ref.project, instance_ref.zone, port=port)
     except apitools_exceptions.HttpError as e:
       raise BootDiagnosticError(
           'Failed to retrieve serial port output. Please ensure that '
@@ -150,7 +150,7 @@ class Boot(base_classes.BaseCommand):
 
     project_obj = MESSAGES.Project(name=instance_ref.project)
     troubleshooter = vm_boot_troubleshooter.VMBootTroubleshooter(
-        project_obj, instance_ref.zone, instance)
+        project_obj, instance_ref.zone, instance, is_windows=is_windows)
 
     return troubleshooter.FindBootIssues(sc_log=sc_log)
 

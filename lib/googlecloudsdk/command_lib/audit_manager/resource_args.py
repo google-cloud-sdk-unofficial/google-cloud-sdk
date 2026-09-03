@@ -29,6 +29,12 @@ def FolderAttributeConfig():
   )
 
 
+def OrganizationAttributeConfig():
+  return concepts.ResourceParameterAttributeConfig(
+      name='organization', help_text='The organization for the {resource}.'
+  )
+
+
 def OperationAttributeConfig():
   return concepts.ResourceParameterAttributeConfig(
       name='operation', help_text='The operation for the {resource}.'
@@ -52,4 +58,14 @@ def GetOperationResourceSpecByFolder():
       operationDetailsId=OperationAttributeConfig(),
       locationsId=LocationAttributeConfig(),
       foldersId=FolderAttributeConfig(),
+  )
+
+
+def GetOperationResourceSpecByOrganization():
+  return concepts.ResourceSpec(
+      'auditmanager.organizations.locations.operationDetails',
+      resource_name='operation',
+      operationDetailsId=OperationAttributeConfig(),
+      locationsId=LocationAttributeConfig(),
+      organizationsId=OrganizationAttributeConfig(),
   )

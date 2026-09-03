@@ -18,6 +18,7 @@
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class Environments(base.Group):
   """Create and manage Cloud Composer environments.
 

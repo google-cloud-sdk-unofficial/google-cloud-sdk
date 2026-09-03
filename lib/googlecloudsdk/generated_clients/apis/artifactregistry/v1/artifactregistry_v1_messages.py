@@ -4546,13 +4546,17 @@ class VulnerabilityScanningConfig(_messages.Message):
 
   Enums:
     EnablementConfigValueValuesEnum: Optional. Config for whether this
-      repository has vulnerability scanning disabled.
+      repository has vulnerability scanning disabled. When unset
+      (ENABLEMENT_CONFIG_UNSPECIFIED), this is treated as INHERITED for Docker
+      repositories and DISABLED for non-Docker repositories.
     EnablementStateValueValuesEnum: Output only. State of feature enablement,
       combining repository enablement config and API enablement state.
 
   Fields:
     enablementConfig: Optional. Config for whether this repository has
-      vulnerability scanning disabled.
+      vulnerability scanning disabled. When unset
+      (ENABLEMENT_CONFIG_UNSPECIFIED), this is treated as INHERITED for Docker
+      repositories and DISABLED for non-Docker repositories.
     enablementState: Output only. State of feature enablement, combining
       repository enablement config and API enablement state.
     enablementStateReason: Output only. Reason for the repository state.
@@ -4562,15 +4566,15 @@ class VulnerabilityScanningConfig(_messages.Message):
 
   class EnablementConfigValueValuesEnum(_messages.Enum):
     r"""Optional. Config for whether this repository has vulnerability
-    scanning disabled.
+    scanning disabled. When unset (ENABLEMENT_CONFIG_UNSPECIFIED), this is
+    treated as INHERITED for Docker repositories and DISABLED for non-Docker
+    repositories.
 
     Values:
-      ENABLEMENT_CONFIG_UNSPECIFIED: Not set. This will be treated as
-        INHERITED for Docker repositories and DISABLED for non-Docker
-        repositories.
-      INHERITED: Scanning is Enabled, but dependent on API enablement.
-      DISABLED: No automatic vulnerability scanning will be performed for this
-        repository.
+      ENABLEMENT_CONFIG_UNSPECIFIED: Unspecified enablement configuration.
+      INHERITED: Enables the feature, but is dependent on parent API
+        enablement.
+      DISABLED: Disables the feature for this repository.
     """
     ENABLEMENT_CONFIG_UNSPECIFIED = 0
     INHERITED = 1

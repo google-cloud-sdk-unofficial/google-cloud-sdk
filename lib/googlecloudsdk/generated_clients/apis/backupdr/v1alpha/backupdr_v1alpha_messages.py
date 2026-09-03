@@ -1450,29 +1450,12 @@ class BackupRule(_messages.Message):
 class BackupSelectionConfig(_messages.Message):
   r"""Configuration for selecting a backup.
 
-  Enums:
-    SelectionCriteriaValueValuesEnum: Optional. The backup selection criteria.
-      Defaults to LATEST when unspecified.
-
   Fields:
-    selectionCriteria: Optional. The backup selection criteria. Defaults to
-      LATEST when unspecified.
-    source: Required. Immutable. The fully qualified URI of the source.
+    dataSource: Required. Immutable. The fully qualified URI of the backupdr
+      data source.
   """
 
-  class SelectionCriteriaValueValuesEnum(_messages.Enum):
-    r"""Optional. The backup selection criteria. Defaults to LATEST when
-    unspecified.
-
-    Values:
-      BACKUP_SELECTION_CRITERIA_UNSPECIFIED: Selection criteria not specified.
-      LATEST: Select the latest backup.
-    """
-    BACKUP_SELECTION_CRITERIA_UNSPECIFIED = 0
-    LATEST = 1
-
-  selectionCriteria = _messages.EnumField('SelectionCriteriaValueValuesEnum', 1)
-  source = _messages.StringField(2)
+  dataSource = _messages.StringField(1)
 
 
 class BackupVault(_messages.Message):
@@ -3747,6 +3730,7 @@ class CleanupPhaseInfo(_messages.Message):
   Fields:
     cleanupDuration: Output only. Time taken to perform the cleanup of
       restored resource.
+    cleanupTime: Output only. The time when the resources will be cleaned up.
     endTime: Output only. End time of the phase.
     error: Output only. Error details if the phase failed.
     failureCleanupRule: Output only. Snapshot of cleanup rule provided for
@@ -3762,42 +3746,31 @@ class CleanupPhaseInfo(_messages.Message):
 
     Values:
       PHASE_STATE_UNSPECIFIED: Phase state is not set.
-      NOT_STARTED: This phase has not started yet.
+      PENDING: This phase is pending execution.
       RUNNING: The phase is actively executing.
       SUCCEEDED: The phase completed successfully.
       FAILED: The phase encountered an error and failed.
       TIMED_OUT: The phase timed out.
       SKIPPED: The phase was skipped.
+      WAITING: The phase is waiting to be executed.
     """
     PHASE_STATE_UNSPECIFIED = 0
-    NOT_STARTED = 1
+    PENDING = 1
     RUNNING = 2
     SUCCEEDED = 3
     FAILED = 4
     TIMED_OUT = 5
     SKIPPED = 6
+    WAITING = 7
 
   cleanupDuration = _messages.StringField(1)
-  endTime = _messages.StringField(2)
-  error = _messages.MessageField('Status', 3)
-  failureCleanupRule = _messages.MessageField('CleanupRule', 4)
-  phaseState = _messages.EnumField('PhaseStateValueValuesEnum', 5)
-  startTime = _messages.StringField(6)
-  successCleanupRule = _messages.MessageField('CleanupRule', 7)
-
-
-class CleanupRule(_messages.Message):
-  r"""`CleanupRule` defines the specific cleanup action.
-
-  Fields:
-    cleanupDelay: Optional. Duration after restore finishes when cleanup
-      triggers. Delay must be at most 30 days (2592000 seconds).
-    skipCleanup: Optional. If set to true, the restored resource will not be
-      cleaned up.
-  """
-
-  cleanupDelay = _messages.StringField(1)
-  skipCleanup = _messages.BooleanField(2)
+  cleanupTime = _messages.StringField(2)
+  endTime = _messages.StringField(3)
+  error = _messages.MessageField('Status', 4)
+  failureCleanupRule = _messages.MessageField('RestoreVerificationCleanupRule', 5)
+  phaseState = _messages.EnumField('PhaseStateValueValuesEnum', 6)
+  startTime = _messages.StringField(7)
+  successCleanupRule = _messages.MessageField('RestoreVerificationCleanupRule', 8)
 
 
 class CloudSqlInstanceBackupPlanAssociationProperties(_messages.Message):
@@ -6569,47 +6542,6 @@ class OperationMetadata(_messages.Message):
   verb = _messages.StringField(8)
 
 
-class PendingCleanupPhaseInfo(_messages.Message):
-  r"""Info for Pending Cleanup phase execution.
-
-  Enums:
-    PhaseStateValueValuesEnum: Output only. The state of this phase.
-
-  Fields:
-    cleanupTime: Output only. The time when the resources will be cleaned up.
-    endTime: Output only. End time of the phase.
-    error: Output only. Error details if the phase failed.
-    phaseState: Output only. The state of this phase.
-    startTime: Output only. Start time of the phase.
-  """
-
-  class PhaseStateValueValuesEnum(_messages.Enum):
-    r"""Output only. The state of this phase.
-
-    Values:
-      PHASE_STATE_UNSPECIFIED: Phase state is not set.
-      NOT_STARTED: This phase has not started yet.
-      RUNNING: The phase is actively executing.
-      SUCCEEDED: The phase completed successfully.
-      FAILED: The phase encountered an error and failed.
-      TIMED_OUT: The phase timed out.
-      SKIPPED: The phase was skipped.
-    """
-    PHASE_STATE_UNSPECIFIED = 0
-    NOT_STARTED = 1
-    RUNNING = 2
-    SUCCEEDED = 3
-    FAILED = 4
-    TIMED_OUT = 5
-    SKIPPED = 6
-
-  cleanupTime = _messages.StringField(1)
-  endTime = _messages.StringField(2)
-  error = _messages.MessageField('Status', 3)
-  phaseState = _messages.EnumField('PhaseStateValueValuesEnum', 4)
-  startTime = _messages.StringField(5)
-
-
 class PitrSettings(_messages.Message):
   r"""Point in time recovery settings of the backup configuration resource.
 
@@ -6765,20 +6697,22 @@ class PostRestorePhaseInfo(_messages.Message):
 
     Values:
       PHASE_STATE_UNSPECIFIED: Phase state is not set.
-      NOT_STARTED: This phase has not started yet.
+      PENDING: This phase is pending execution.
       RUNNING: The phase is actively executing.
       SUCCEEDED: The phase completed successfully.
       FAILED: The phase encountered an error and failed.
       TIMED_OUT: The phase timed out.
       SKIPPED: The phase was skipped.
+      WAITING: The phase is waiting to be executed.
     """
     PHASE_STATE_UNSPECIFIED = 0
-    NOT_STARTED = 1
+    PENDING = 1
     RUNNING = 2
     SUCCEEDED = 3
     FAILED = 4
     TIMED_OUT = 5
     SKIPPED = 6
+    WAITING = 7
 
   cloudRunExecution = _messages.StringField(1)
   endTime = _messages.StringField(2)
@@ -6823,20 +6757,22 @@ class PreRestorePhaseInfo(_messages.Message):
 
     Values:
       PHASE_STATE_UNSPECIFIED: Phase state is not set.
-      NOT_STARTED: This phase has not started yet.
+      PENDING: This phase is pending execution.
       RUNNING: The phase is actively executing.
       SUCCEEDED: The phase completed successfully.
       FAILED: The phase encountered an error and failed.
       TIMED_OUT: The phase timed out.
       SKIPPED: The phase was skipped.
+      WAITING: The phase is waiting to be executed.
     """
     PHASE_STATE_UNSPECIFIED = 0
-    NOT_STARTED = 1
+    PENDING = 1
     RUNNING = 2
     SUCCEEDED = 3
     FAILED = 4
     TIMED_OUT = 5
     SKIPPED = 6
+    WAITING = 7
 
   cloudRunExecution = _messages.StringField(1)
   endTime = _messages.StringField(2)
@@ -6853,6 +6789,8 @@ class PreparePhaseInfo(_messages.Message):
     PhaseStateValueValuesEnum: Output only. The state of this phase.
 
   Fields:
+    backup: Output only. The source backup used for the restore. The fully
+      qualified URI of the backupdr backup.
     backupSelectionConfig: Output only. Snapshot of config used in this
       execution.
     endTime: Output only. End time of the phase.
@@ -6862,7 +6800,6 @@ class PreparePhaseInfo(_messages.Message):
     phaseState: Output only. The state of this phase.
     restoreVerificationPlanAssociation: Output only. The restore verification
       plan association associated with the execution.
-    sourceBackup: Output only. The source backup used for the restore.
     startTime: Output only. Start time of the phase.
   """
 
@@ -6871,28 +6808,30 @@ class PreparePhaseInfo(_messages.Message):
 
     Values:
       PHASE_STATE_UNSPECIFIED: Phase state is not set.
-      NOT_STARTED: This phase has not started yet.
+      PENDING: This phase is pending execution.
       RUNNING: The phase is actively executing.
       SUCCEEDED: The phase completed successfully.
       FAILED: The phase encountered an error and failed.
       TIMED_OUT: The phase timed out.
       SKIPPED: The phase was skipped.
+      WAITING: The phase is waiting to be executed.
     """
     PHASE_STATE_UNSPECIFIED = 0
-    NOT_STARTED = 1
+    PENDING = 1
     RUNNING = 2
     SUCCEEDED = 3
     FAILED = 4
     TIMED_OUT = 5
     SKIPPED = 6
+    WAITING = 7
 
-  backupSelectionConfig = _messages.MessageField('BackupSelectionConfig', 1)
-  endTime = _messages.StringField(2)
-  error = _messages.MessageField('Status', 3)
-  isBackupExplicitlyPassed = _messages.BooleanField(4)
-  phaseState = _messages.EnumField('PhaseStateValueValuesEnum', 5)
-  restoreVerificationPlanAssociation = _messages.StringField(6)
-  sourceBackup = _messages.StringField(7)
+  backup = _messages.StringField(1)
+  backupSelectionConfig = _messages.MessageField('BackupSelectionConfig', 2)
+  endTime = _messages.StringField(3)
+  error = _messages.MessageField('Status', 4)
+  isBackupExplicitlyPassed = _messages.BooleanField(5)
+  phaseState = _messages.EnumField('PhaseStateValueValuesEnum', 6)
+  restoreVerificationPlanAssociation = _messages.StringField(7)
   startTime = _messages.StringField(8)
 
 
@@ -7145,20 +7084,22 @@ class RestorePhaseInfo(_messages.Message):
 
     Values:
       PHASE_STATE_UNSPECIFIED: Phase state is not set.
-      NOT_STARTED: This phase has not started yet.
+      PENDING: This phase is pending execution.
       RUNNING: The phase is actively executing.
       SUCCEEDED: The phase completed successfully.
       FAILED: The phase encountered an error and failed.
       TIMED_OUT: The phase timed out.
       SKIPPED: The phase was skipped.
+      WAITING: The phase is waiting to be executed.
     """
     PHASE_STATE_UNSPECIFIED = 0
-    NOT_STARTED = 1
+    PENDING = 1
     RUNNING = 2
     SUCCEEDED = 3
     FAILED = 4
     TIMED_OUT = 5
     SKIPPED = 6
+    WAITING = 7
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class RestorePropertiesValue(_messages.Message):
@@ -7350,7 +7291,6 @@ class RestoreTemplateExecution(_messages.Message):
     cleanupPhaseInfo: Output only. Info for the cleanup phase.
     createTime: Output only. Create time of the execution.
     name: Identifier. Resource name of the execution.
-    pendingCleanupPhaseInfo: Output only. Info for the pending cleanup phase.
     phase: Output only. The current active phase.
     postRestorePhaseInfo: Output only. Info for the post-restore phase.
     preRestorePhaseInfo: Output only. Info for the pre-restore phase.
@@ -7375,9 +7315,8 @@ class RestoreTemplateExecution(_messages.Message):
       RESTORING: Restoring the resource.
       EXECUTING_POST_RESTORE_ACTION: Executing post-restore action.
       VERIFYING: Verifying the restored resource.
-      CLEANUP_PENDING: Cleanup is pending.
       CLEANING_UP: Cleaning up resources.
-      FINISHED: Execution finished.
+      COMPLETED: Execution completed.
     """
     EXECUTION_PHASE_UNSPECIFIED = 0
     PREPARING = 1
@@ -7385,9 +7324,8 @@ class RestoreTemplateExecution(_messages.Message):
     RESTORING = 3
     EXECUTING_POST_RESTORE_ACTION = 4
     VERIFYING = 5
-    CLEANUP_PENDING = 6
-    CLEANING_UP = 7
-    FINISHED = 8
+    CLEANING_UP = 6
+    COMPLETED = 7
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. State of the execution.
@@ -7420,17 +7358,30 @@ class RestoreTemplateExecution(_messages.Message):
   cleanupPhaseInfo = _messages.MessageField('CleanupPhaseInfo', 1)
   createTime = _messages.StringField(2)
   name = _messages.StringField(3)
-  pendingCleanupPhaseInfo = _messages.MessageField('PendingCleanupPhaseInfo', 4)
-  phase = _messages.EnumField('PhaseValueValuesEnum', 5)
-  postRestorePhaseInfo = _messages.MessageField('PostRestorePhaseInfo', 6)
-  preRestorePhaseInfo = _messages.MessageField('PreRestorePhaseInfo', 7)
-  preparePhaseInfo = _messages.MessageField('PreparePhaseInfo', 8)
-  resourceType = _messages.StringField(9)
-  restorePhaseInfo = _messages.MessageField('RestorePhaseInfo', 10)
-  state = _messages.EnumField('StateValueValuesEnum', 11)
-  type = _messages.EnumField('TypeValueValuesEnum', 12)
-  updateTime = _messages.StringField(13)
-  verificationPhaseInfo = _messages.MessageField('VerificationPhaseInfo', 14)
+  phase = _messages.EnumField('PhaseValueValuesEnum', 4)
+  postRestorePhaseInfo = _messages.MessageField('PostRestorePhaseInfo', 5)
+  preRestorePhaseInfo = _messages.MessageField('PreRestorePhaseInfo', 6)
+  preparePhaseInfo = _messages.MessageField('PreparePhaseInfo', 7)
+  resourceType = _messages.StringField(8)
+  restorePhaseInfo = _messages.MessageField('RestorePhaseInfo', 9)
+  state = _messages.EnumField('StateValueValuesEnum', 10)
+  type = _messages.EnumField('TypeValueValuesEnum', 11)
+  updateTime = _messages.StringField(12)
+  verificationPhaseInfo = _messages.MessageField('VerificationPhaseInfo', 13)
+
+
+class RestoreVerificationCleanupRule(_messages.Message):
+  r"""Defines the specific cleanup action.
+
+  Fields:
+    cleanupDelay: Optional. Duration after restore finishes when cleanup
+      triggers. Delay must be at most 30 days (2592000 seconds).
+    skipCleanup: Optional. If set to true, the restored resource will not be
+      cleaned up.
+  """
+
+  cleanupDelay = _messages.StringField(1)
+  skipCleanup = _messages.BooleanField(2)
 
 
 class RuleConfigInfo(_messages.Message):
@@ -8128,20 +8079,22 @@ class VerificationPhaseInfo(_messages.Message):
 
     Values:
       PHASE_STATE_UNSPECIFIED: Phase state is not set.
-      NOT_STARTED: This phase has not started yet.
+      PENDING: This phase is pending execution.
       RUNNING: The phase is actively executing.
       SUCCEEDED: The phase completed successfully.
       FAILED: The phase encountered an error and failed.
       TIMED_OUT: The phase timed out.
       SKIPPED: The phase was skipped.
+      WAITING: The phase is waiting to be executed.
     """
     PHASE_STATE_UNSPECIFIED = 0
-    NOT_STARTED = 1
+    PENDING = 1
     RUNNING = 2
     SUCCEEDED = 3
     FAILED = 4
     TIMED_OUT = 5
     SKIPPED = 6
+    WAITING = 7
 
   cloudRunExecution = _messages.StringField(1)
   endTime = _messages.StringField(2)

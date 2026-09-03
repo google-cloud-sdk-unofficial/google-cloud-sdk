@@ -36,6 +36,12 @@ help_text = textwrap.dedent("""\
 
       $ {command} my-lakehouse-catalog --catalog-type=lakehouse --default-location=gs://my-bucket
     """)
+# TODO(b/539807179): Uncomment when --kms-key flag visibility is updated.
+# To create a catalog `my-lakehouse-catalog` with CMEK encryption, run:
+#
+#   $ {command} my-lakehouse-catalog --catalog-type=lakehouse
+#     --default-location=gs://my-bucket
+#     --kms-key=projects/my-project/locations/us-central1/keyRings/my-ring/cryptoKeys/my-key
 
 help_text_preview = textwrap.dedent("""\
     To create a unity federated catalog `my-federated-catalog`, run:
@@ -178,6 +184,12 @@ class CreateCatalog(base.CreateCommand):
           messages.RestrictedLocationsConfig(
               restricted_locations=args.restricted_locations
           )
+      )
+
+    kms_key = arguments.GetAndValidateKmsKeyName(args)
+    if kms_key:
+      catalog.encryption_configuration = messages.EncryptionConfiguration(
+          kms_key_name=kms_key
       )
 
     if self._support_federated_catalog and args.catalog_type == 'federated':

@@ -30,7 +30,7 @@ _DETAILED_HELP = frozendict.frozendict({'EXAMPLES': textwrap.dedent("""\
         """)})
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class DeleteUserWorkloadsSecret(base.Command):
   """Delete a user workloads Secret."""
 

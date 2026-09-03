@@ -1892,120 +1892,6 @@ class Instance(_messages.Message):
   tier = _messages.EnumField('TierValueValuesEnum', 30)
 
 
-class InstanceTemplate(_messages.Message):
-  r"""InstanceTemplate representation of a Cloud Filestore volume pool
-  instance template.
-
-  Enums:
-    BackendTypeValueValuesEnum: Optional. Backend type.
-    ProtocolValueValuesEnum: Optional. File protocol.
-    TierValueValuesEnum: Optional. Tier of the instance.
-
-  Messages:
-    LabelsValue: Optional. Instance labels.
-
-  Fields:
-    backendType: Optional. Backend type.
-    capacityGb: Optional. Capacity in GB.
-    labels: Optional. Instance labels.
-    networks: Optional. Network configurations.
-    performanceConfig: Optional. Performance configuration.
-    protocol: Optional. File protocol.
-    requestOverrides: Optional. Request overrides in JSON format.
-    tier: Optional. Tier of the instance.
-  """
-
-  class BackendTypeValueValuesEnum(_messages.Enum):
-    r"""Optional. Backend type.
-
-    Values:
-      BACKEND_TYPE_UNSPECIFIED: Backend type not set.
-      COMPUTE_BASED_BACKEND: Instance is backed by Compute.
-      FILESTORE_BACKEND: Instance is backed by Filestore.
-    """
-    BACKEND_TYPE_UNSPECIFIED = 0
-    COMPUTE_BASED_BACKEND = 1
-    FILESTORE_BACKEND = 2
-
-  class ProtocolValueValuesEnum(_messages.Enum):
-    r"""Optional. File protocol.
-
-    Values:
-      FILE_PROTOCOL_UNSPECIFIED: FILE_PROTOCOL_UNSPECIFIED serves a "not set"
-        default value when a FileProtocol is a separate field in a message.
-      NFS_V3: NFS 3.0.
-      NFS_V4_1: NFS 4.1.
-    """
-    FILE_PROTOCOL_UNSPECIFIED = 0
-    NFS_V3 = 1
-    NFS_V4_1 = 2
-
-  class TierValueValuesEnum(_messages.Enum):
-    r"""Optional. Tier of the instance.
-
-    Values:
-      TIER_UNSPECIFIED: Not set.
-      STANDARD: STANDARD tier. BASIC_HDD is the preferred term for this tier.
-      PREMIUM: PREMIUM tier. BASIC_SSD is the preferred term for this tier.
-      BASIC_HDD: BASIC instances offer a maximum capacity of 63.9 TB.
-        BASIC_HDD is an alias for STANDARD Tier, offering economical
-        performance backed by HDD.
-      BASIC_SSD: BASIC instances offer a maximum capacity of 63.9 TB.
-        BASIC_SSD is an alias for PREMIUM Tier, and offers improved
-        performance backed by SSD.
-      HIGH_SCALE_SSD: HIGH_SCALE instances offer expanded capacity and
-        performance scaling capabilities.
-      ENTERPRISE: ENTERPRISE instances offer the features and availability
-        needed for mission-critical workloads.
-      ZONAL: ZONAL instances offer expanded capacity and performance scaling
-        capabilities.
-      REGIONAL: REGIONAL instances offer the features and availability needed
-        for mission-critical workloads.
-    """
-    TIER_UNSPECIFIED = 0
-    STANDARD = 1
-    PREMIUM = 2
-    BASIC_HDD = 3
-    BASIC_SSD = 4
-    HIGH_SCALE_SSD = 5
-    ENTERPRISE = 6
-    ZONAL = 7
-    REGIONAL = 8
-
-  @encoding.MapUnrecognizedFields('additionalProperties')
-  class LabelsValue(_messages.Message):
-    r"""Optional. Instance labels.
-
-    Messages:
-      AdditionalProperty: An additional property for a LabelsValue object.
-
-    Fields:
-      additionalProperties: Additional properties of type LabelsValue
-    """
-
-    class AdditionalProperty(_messages.Message):
-      r"""An additional property for a LabelsValue object.
-
-      Fields:
-        key: Name of the additional property.
-        value: A string attribute.
-      """
-
-      key = _messages.StringField(1)
-      value = _messages.StringField(2)
-
-    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
-
-  backendType = _messages.EnumField('BackendTypeValueValuesEnum', 1)
-  capacityGb = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  labels = _messages.MessageField('LabelsValue', 3)
-  networks = _messages.MessageField('NetworkConfig', 4, repeated=True)
-  performanceConfig = _messages.MessageField('PerformanceConfig', 5)
-  protocol = _messages.EnumField('ProtocolValueValuesEnum', 6)
-  requestOverrides = _messages.StringField(7)
-  tier = _messages.EnumField('TierValueValuesEnum', 8)
-
-
 class LdapConfig(_messages.Message):
   r"""LdapConfig contains all the parameters for connecting to LDAP servers.
 
@@ -3419,61 +3305,25 @@ class Volume(_messages.Message):
 class VolumePool(_messages.Message):
   r"""VolumePool representation of a Cloud Filestore volume pool.
 
-  Enums:
-    StateValueValuesEnum: Output only. The volume pool state.
-
   Messages:
     LabelsValue: Optional. Resource labels to represent user provided
       metadata.
 
   Fields:
+    activeVolumeIops: Optional. The number of IOPs provisioned per active
+      volume.
     createTime: Output only. The time when the volume pool was created.
+    defaultVolumeQuotaMib: Optional. The default quota per volume in MiB.
+      Default: 1024 MiB.
     description: Optional. A description of the volume pool with 2048
       characters or less.
-    instanceListPageSize: Optional. The page size to use when listing
-      instances.
-    instanceNamePrefix: Optional. Instance name prefix.
-    instanceTemplate: Optional. Instance template details.
     labels: Optional. Resource labels to represent user provided metadata.
-    maxAcquireCandidates: Optional. The maximum number of candidates to fetch
-      when acquiring a volume.
-    maxInstances: Optional. Maximum number of instances to create.
-    maxPendingInstanceCreations: Optional. The maximum number of pending
-      instance creation requests.
-    maxPendingVolumeCreationsPerInstance: Optional. The maximum number of
-      pending volume creation requests per instance.
-    maxPendingVolumeDeletionsPerInstance: Optional. The maximum number of
-      pending volume deletion requests per instance.
-    maxVolumesPerInstance: Optional. Maximum number of volumes per instance.
-    minAvailableVolumes: Optional. Minimum number of available volumes to
-      maintain.
-    minInstances: Optional. Minimum number of instances to create.
     name: Identifier. The resource name of the volume pool, in the format
       `projects/{project}/locations/{location}/volumePools/{volume_pool}`.
-    negbaInstanceRatio: Optional. The ratio of Negba instances to maintain in
-      the volume pool, between 0 and 1.
-    operationPollLimit: Optional. The maximum number of operations to poll in
-      a single reconciliation run.
-    state: Output only. The volume pool state.
-    uniqueId: Output only. Unique ID of the resource, as defined by CCFE.
-    volumeBatchSize: Optional. The number of volumes to create in a single
-      batch.
-    volumeSizeMb: Optional. Volume size in MiB.
+    network: Required. The VPC network to which the VolumePool should be
+      attached. Only Private Service Connect (PSC) is supported.
+    uid: Output only. System-assigned unique identifier for the volume pool.
   """
-
-  class StateValueValuesEnum(_messages.Enum):
-    r"""Output only. The volume pool state.
-
-    Values:
-      STATE_UNSPECIFIED: State not set.
-      READY: Volume pool is ready for use.
-      DELETING: Volume pool is being deleted.
-      INVALID: Volume pool is in an invalid state.
-    """
-    STATE_UNSPECIFIED = 0
-    READY = 1
-    DELETING = 2
-    INVALID = 3
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
@@ -3499,27 +3349,14 @@ class VolumePool(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  createTime = _messages.StringField(1)
-  description = _messages.StringField(2)
-  instanceListPageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  instanceNamePrefix = _messages.StringField(4)
-  instanceTemplate = _messages.MessageField('InstanceTemplate', 5)
-  labels = _messages.MessageField('LabelsValue', 6)
-  maxAcquireCandidates = _messages.IntegerField(7, variant=_messages.Variant.INT32)
-  maxInstances = _messages.IntegerField(8, variant=_messages.Variant.INT32)
-  maxPendingInstanceCreations = _messages.IntegerField(9, variant=_messages.Variant.INT32)
-  maxPendingVolumeCreationsPerInstance = _messages.IntegerField(10, variant=_messages.Variant.INT32)
-  maxPendingVolumeDeletionsPerInstance = _messages.IntegerField(11, variant=_messages.Variant.INT32)
-  maxVolumesPerInstance = _messages.IntegerField(12, variant=_messages.Variant.INT32)
-  minAvailableVolumes = _messages.IntegerField(13, variant=_messages.Variant.INT32)
-  minInstances = _messages.IntegerField(14, variant=_messages.Variant.INT32)
-  name = _messages.StringField(15)
-  negbaInstanceRatio = _messages.FloatField(16, variant=_messages.Variant.FLOAT)
-  operationPollLimit = _messages.IntegerField(17, variant=_messages.Variant.INT32)
-  state = _messages.EnumField('StateValueValuesEnum', 18)
-  uniqueId = _messages.StringField(19)
-  volumeBatchSize = _messages.IntegerField(20, variant=_messages.Variant.INT32)
-  volumeSizeMb = _messages.IntegerField(21, variant=_messages.Variant.INT32)
+  activeVolumeIops = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  createTime = _messages.StringField(2)
+  defaultVolumeQuotaMib = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  description = _messages.StringField(4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  name = _messages.StringField(6)
+  network = _messages.StringField(7)
+  uid = _messages.StringField(8)
 
 
 class WeeklyCycle(_messages.Message):

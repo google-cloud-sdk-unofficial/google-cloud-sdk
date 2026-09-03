@@ -20,6 +20,7 @@ import os
 import re
 import sys
 import textwrap
+from typing import Any, Dict, Optional
 
 from googlecloudsdk.calliope import walker
 from googlecloudsdk.core import config
@@ -212,7 +213,12 @@ class FlagOrPositional(Argument):
     dest: str, The destination attribute name.
   """
 
-  def __init__(self, arg, name):
+  def __init__(
+      self,
+      arg: Any,
+      name: str,
+      resource_metadata: Optional[Dict[str, Any]] = None,
+  ) -> None:
 
     super(FlagOrPositional, self).__init__(arg)
     self.category = getattr(arg, LOOKUP_CATEGORY, '')
@@ -237,6 +243,8 @@ class FlagOrPositional(Argument):
     else:
       self.value = self.name.lstrip('-').replace('-', '_').upper()
     self._Scrub()
+    if resource_metadata:
+      self.attr['resource_spec'] = resource_metadata
 
   def _Scrub(self):
     """Scrubs private paths in the default value and description.
@@ -272,10 +280,15 @@ class Flag(FlagOrPositional):
     action: str, The argparse action class name.
   """
 
-  def __init__(self, flag, name):
+  def __init__(
+      self,
+      flag: Any,
+      name: str,
+      resource_metadata: Optional[Dict[str, Any]] = None,
+  ) -> None:
     from googlecloudsdk.calliope import arg_parsers
 
-    super(Flag, self).__init__(flag, name)
+    super(Flag, self).__init__(flag, name, resource_metadata=resource_metadata)
     self.choices = []
     self.is_global = flag.is_global
     self.action = None
@@ -352,9 +365,16 @@ class Flag(FlagOrPositional):
 class Positional(FlagOrPositional):
   """Positional info."""
 
-  def __init__(self, positional, name):
+  def __init__(
+      self,
+      positional: Any,
+      name: str,
+      resource_metadata: Optional[Dict[str, Any]] = None,
+  ) -> None:
 
-    super(Positional, self).__init__(positional, name)
+    super(Positional, self).__init__(
+        positional, name, resource_metadata=resource_metadata
+    )  # pylint: disable=line-too-long
     self.is_positional = True
     if positional.nargs is None:
       self.nargs = '1'
@@ -378,20 +398,33 @@ class Group(Argument):
 class Constraint(Group):
   """Argument constraint group info."""
 
-  def __init__(self, group):
+  def __init__(
+      self,
+      group: Any,
+      argument_resource_map: Optional[Dict[str, Dict[str, Any]]] = None,
+  ) -> None:
+    argument_resource_map = argument_resource_map or {}
     order = []
     for arg in group.arguments:
       if arg.is_group:
-        constraint = Constraint(arg)
+        constraint = Constraint(
+            arg, argument_resource_map=argument_resource_map
+        )
         order.append((constraint._key, constraint))  # pylint: disable=protected-access, _key must not be serialized
       elif arg.is_positional:
         name = arg.dest.replace('_', '-')
-        order.append(('', Positional(arg, name)))
+        res_meta = argument_resource_map.get(name) or argument_resource_map.get(
+            arg.dest
+        )
+        order.append(('', Positional(arg, name, resource_metadata=res_meta)))
       else:
         for name in arg.option_strings:
           if name.startswith('--'):
             name = name.replace('_', '-')
-            flag = Flag(arg, name)
+            res_meta = argument_resource_map.get(
+                name
+            ) or argument_resource_map.get(arg.dest)
+            flag = Flag(arg, name, resource_metadata=res_meta)
             flag.alternative_names = [
                 alt for alt in arg.option_strings if alt != name
             ]
@@ -494,6 +527,72 @@ class Command(object):
       parent.commands[self.name] = self
     args = command.ai
 
+    available_command_args = set()
+    for arg in getattr(args, 'flag_args', []):
+      for name in getattr(arg, 'option_strings', []):
+        available_command_args.add(name)
+        available_command_args.add(name.replace('_', '-'))
+    for arg in getattr(args, 'ancestor_flag_args', []):
+      for name in getattr(arg, 'option_strings', []):
+        available_command_args.add(name)
+        available_command_args.add(name.replace('_', '-'))
+    for arg in getattr(args, 'positional_args', []):
+      dest = getattr(arg, 'dest', '')
+      if dest:
+        available_command_args.add(dest)
+        available_command_args.add(dest.replace('_', '-'))
+
+    argument_resource_map = {}
+    concept_handler = getattr(args, 'concept_handler', None)
+    if concept_handler:
+      from googlecloudsdk.calliope.concepts import deps
+
+      for concept_details in concept_handler._all_concepts:
+        info = concept_details['concept_info']
+        resource_spec = getattr(info, 'concept_spec', None)
+        if resource_spec and getattr(resource_spec, 'collection', None):
+          collection = resource_spec.collection
+          template = None
+          collection_info = getattr(resource_spec, '_collection_info', None)
+          if collection_info:
+            template = collection_info.flat_paths.get('', collection_info.path)
+          anchor = getattr(info, 'presentation_name', None)
+          fallthroughs_map = getattr(info, 'fallthroughs_map', {})
+          for attr_name, arg_name in six.iteritems(info.attribute_to_args_map):
+            param_name = None
+            try:
+              param_name = resource_spec.ParamName(attr_name)
+            except (ValueError, AttributeError):
+              pass
+            attr_fallthroughs = fallthroughs_map.get(attr_name, [])
+            prop_fallthroughs = []
+            flag_fallthroughs = []
+            for f in attr_fallthroughs:
+              if isinstance(f, deps.PropertyFallthrough):
+                prop_fallthroughs.append(str(f.property))
+              elif isinstance(f, deps.ArgFallthrough):
+                if f.arg_name in available_command_args:
+                  flag_fallthroughs.append(f.arg_name)
+              elif isinstance(f, deps.FullySpecifiedAnchorFallthrough):
+                for sub_f in getattr(f, '_fallthroughs', []):
+                  if isinstance(sub_f, deps.ArgFallthrough):
+                    if sub_f.arg_name in available_command_args:
+                      flag_fallthroughs.append(sub_f.arg_name)
+                  elif isinstance(sub_f, deps.PropertyFallthrough):
+                    prop_fallthroughs.append(str(sub_f.property))
+            res_metadata = {'collection': collection}
+            if template:
+              res_metadata['template'] = template
+            if anchor:
+              res_metadata['anchor'] = anchor
+            if param_name:
+              res_metadata['parameter'] = param_name
+            if prop_fallthroughs:
+              res_metadata['fallthroughs'] = prop_fallthroughs
+            if flag_fallthroughs:
+              res_metadata['flag_fallthroughs'] = flag_fallthroughs
+            argument_resource_map[arg_name] = res_metadata
+
     # Collect the command specific flags.
     for arg in args.flag_args:
       for name in arg.option_strings:
@@ -502,7 +601,10 @@ class Command(object):
           if name != '--help' and self.__Ancestor(name):
             continue
           name = name.replace('_', '-')
-          flag = Flag(arg, name)
+          res_meta = argument_resource_map.get(
+              name
+          ) or argument_resource_map.get(arg.dest)
+          flag = Flag(arg, name, resource_metadata=res_meta)
           flag.alternative_names = [
               alt for alt in arg.option_strings if alt != name
           ]
@@ -513,17 +615,25 @@ class Command(object):
       for name in arg.option_strings:
         if name.startswith('--'):
           name = name.replace('_', '-')
-          flag = Flag(arg, name)
+          res_meta = argument_resource_map.get(
+              name
+          ) or argument_resource_map.get(arg.dest)
+          flag = Flag(arg, name, resource_metadata=res_meta)
           self.flags[flag.name] = flag
 
     # Collect the positionals.
     for arg in args.positional_args:
       name = arg.dest.replace('_', '-')
-      positional = Positional(arg, name)
+      res_meta = argument_resource_map.get(name) or argument_resource_map.get(
+          arg.dest
+      )
+      positional = Positional(arg, name, resource_metadata=res_meta)
       self.positionals.append(positional)
 
     # Collect the arg group constraints.
-    self.constraints = Constraint(args)
+    self.constraints = Constraint(
+        args, argument_resource_map=argument_resource_map
+    )
 
   def __Ancestor(self, flag):
     """Determines if flag is provided by an ancestor command.

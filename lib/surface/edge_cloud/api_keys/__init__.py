@@ -19,7 +19,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class EdgeCloudApiKey(base.Group):
   """Read and manipulate API keys for Google Distributed Cloud."""
   category = base.GDCC_ZONE_CATEGORY

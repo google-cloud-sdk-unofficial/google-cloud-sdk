@@ -1755,3 +1755,113 @@ def AddSecuritySettingsFlags(parser, add_clear_argument=False):
         help='Clears the current set of backend service security settings.',
     )
 
+
+def AddOutlierDetectionFlags(parser, add_clear_argument=False):
+  """Adds arguments for configuring outlier detection on backend services.
+
+  Args:
+    parser: The argparse parser to add the flags to.
+    add_clear_argument: Boolean indicating whether to add the
+      --no-outlier-detection flag to clear settings.
+  """
+  group = parser.add_group(
+      help=(
+          'Settings controlling the eviction of unhealthy hosts from the load'
+          ' balancing pool for the backend service.'
+      )
+  )
+  group.add_argument(
+      '--outlier-detection-consecutive-errors',
+      type=arg_parsers.BoundedInt(lower_bound=0),
+      help="""\
+      Number of consecutive errors before a backend endpoint is ejected from
+      the load balancing pool. Defaults to 5.
+      """,
+  )
+  group.add_argument(
+      '--outlier-detection-interval',
+      type=arg_parsers.Duration(),
+      help="""\
+      Time interval between ejection analysis sweeps. Defaults to 1 second.
+      """,
+  )
+  group.add_argument(
+      '--outlier-detection-base-ejection-time',
+      type=arg_parsers.Duration(),
+      help="""\
+      The base time during which a backend endpoint is ejected. Defaults to
+      30000ms/30s.
+      """,
+  )
+  group.add_argument(
+      '--outlier-detection-max-ejection-percent',
+      type=arg_parsers.BoundedInt(lower_bound=0, upper_bound=100),
+      help="""\
+      Maximum percentage of backend endpoints in the load balancing pool that
+      can be ejected if the ejection conditions are met. Defaults to 50%.
+      """,
+  )
+  group.add_argument(
+      '--outlier-detection-enforcing-consecutive-errors',
+      type=arg_parsers.BoundedInt(lower_bound=0, upper_bound=100),
+      help="""\
+      The percentage chance that a backend endpoint will be ejected when an
+      outlier status is detected through consecutive 5xx. Defaults to 0.
+      """,
+  )
+  group.add_argument(
+      '--outlier-detection-enforcing-success-rate',
+      type=arg_parsers.BoundedInt(lower_bound=0, upper_bound=100),
+      help="""\
+      The percentage chance that a backend endpoint will be ejected when an
+      outlier status is detected through success rate statistics. Defaults to 100.
+      """,
+  )
+  group.add_argument(
+      '--outlier-detection-success-rate-minimum-hosts',
+      type=arg_parsers.BoundedInt(lower_bound=0),
+      help="""\
+      The number of backend endpoints in the load balancing pool that must have
+      enough request volume to detect success rate outliers. Defaults to 5.
+      """,
+  )
+  group.add_argument(
+      '--outlier-detection-success-rate-request-volume',
+      type=arg_parsers.BoundedInt(lower_bound=0),
+      help="""\
+      The minimum number of total requests that must be collected in one
+      interval to include this backend endpoint in success rate based outlier
+      detection. Defaults to 100.
+      """,
+  )
+  group.add_argument(
+      '--outlier-detection-success-rate-stdev-factor',
+      type=arg_parsers.BoundedInt(lower_bound=0),
+      help="""\
+      This factor is used to determine the ejection threshold for success rate
+      outlier ejection. (factor divided by 1000). Defaults to 1900.
+      """,
+  )
+  group.add_argument(
+      '--outlier-detection-consecutive-gateway-failure',
+      type=arg_parsers.BoundedInt(lower_bound=0),
+      help="""\
+      The number of consecutive gateway failures (502, 503, 504) before a
+      consecutive gateway failure ejection occurs. Defaults to 3.
+      """,
+  )
+  group.add_argument(
+      '--outlier-detection-enforcing-consecutive-gateway-failure',
+      type=arg_parsers.BoundedInt(lower_bound=0, upper_bound=100),
+      help="""\
+      The percentage chance that a backend endpoint will be ejected when an
+      outlier status is detected through consecutive gateway failures. Defaults
+      to 100.
+      """,
+  )
+  if add_clear_argument:
+    parser.add_argument(
+        '--no-outlier-detection',
+        action='store_true',
+        help='Clears currently set backend service outlier detection settings.',
+    )

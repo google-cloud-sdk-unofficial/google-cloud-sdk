@@ -263,6 +263,26 @@ def _HumanReadableByteAmountValidator(size_string):
     raise InvalidValueError(str(e))
 
 
+def _UserAgentHeaderValueValidator(value):
+  """Validates user-agent header values to prevent header injection."""
+  if value is None:
+    return
+  if not isinstance(value, six.string_types):
+    raise InvalidValueError('Value must be a string.')
+  if not value.strip():
+    raise InvalidValueError('Value cannot be empty or whitespace only.')
+  if re.search(r'[\r\n\0]', value):
+    raise InvalidValueError(
+        'Value cannot contain newline or control characters.'
+    )
+  try:
+    value.encode('ascii')
+  except (UnicodeEncodeError, UnicodeDecodeError) as exc:
+    raise InvalidValueError(
+        'Value must contain only ASCII characters.'
+    ) from exc
+
+
 def IsInternalUserCheck():
   """Checks if the current user is an internal Google user.
 
@@ -1030,6 +1050,11 @@ class _SectionApiEndpointOverrides(_Section):
     )
     self.servicehealth = self._Add(
         'servicehealth', command='gcloud servicehealth'
+    )
+    self.softwaredeliverytrust = self._Add(
+        'softwaredeliverytrust',
+        command='gcloud software-delivery-trust',
+        hidden=True,
     )
     self.transcoder = self._Add(
         'transcoder', command='gcloud transcoder', hidden=True
@@ -3298,7 +3323,11 @@ class _SectionMetrics(_Section):
 
   def __init__(self):
     super(_SectionMetrics, self).__init__('metrics', hidden=True)
-    self.environment = self._Add('environment', hidden=True)
+    self.environment = self._Add(
+        'environment',
+        validator=_UserAgentHeaderValueValidator,
+        hidden=True,
+    )
     self.environment_version = self._Add('environment_version', hidden=True)
     self.command_name = self._Add('command_name', internal=True)
 
@@ -3309,6 +3338,15 @@ class _SectionMetrics(_Section):
 
     self.agent_name = self._Add(
         'agent_name', hidden=True, callbacks=[GetAgentName]
+    )
+    self.request_attribution = self._Add(
+        'request_attribution',
+        validator=_UserAgentHeaderValueValidator,
+        help_text=(
+            'Attribution string to include in the User-Agent header for'
+            ' requests made by gcloud.'
+        ),
+        hidden=True,
     )
 
 
@@ -3670,6 +3708,23 @@ class _SectionServiceHealth(_Section):
     )
 
 
+class _SectionSoftwareDeliveryTrust(_Section):
+  """Contains the properties for the 'softwaredeliverytrust' section."""
+
+  def __init__(self):
+    super(_SectionSoftwareDeliveryTrust, self).__init__(
+        'softwaredeliverytrust', hidden=True
+    )
+    self.location = self._Add(
+        'location',
+        help_text=(
+            'Default location to use when working with Software Delivery Trust'
+            ' resources. When a `--location` flag is required but not provided,'
+            ' the command will fall back to this value, if set.'
+        ),
+    )
+
+
 class _SectionSpanner(_Section):
   """Contains the properties for the 'spanner' section."""
 
@@ -3859,7 +3914,7 @@ class _SectionStorage(_Section):
 
     self.use_mrd_bidi_downloads = self._AddBool(
         'use_mrd_bidi_downloads',
-        default=False,
+        default=True,
         hidden=True,
         help_text=(
             'If True, gcloud storage will use the MRD-based gRPC bidi'
@@ -3880,10 +3935,13 @@ class _SectionStorage(_Section):
     self.use_nic_isolation = self._AddBool(
         'use_nic_isolation',
         default=False,
-        hidden=True,
         help_text=(
-            'If True, gcloud storage will pin worker processes to specific'
-            ' CPUs to isolate them from NIC interrupts.'
+            'If True, gcloud storage sets CPU affinity to isolate 10% of'
+            ' CPU cores from network hardware interrupts on machines with > 16'
+            ' cores (Linux only). Enable this for high-bandwidth transfers'
+            ' (such as with RAPID storage) to reduce CPU contention between'
+            ' processes used by gcloud parallelism and network interrupts,'
+            ' maximizing throughput.'
         ),
     )
 
@@ -4947,6 +5005,7 @@ class _Sections(object):
       'run': '_SectionRun',
       'secrets': '_SectionSecrets',
       'servicehealth': '_SectionServiceHealth',
+      'softwaredeliverytrust': '_SectionSoftwareDeliveryTrust',
       'spanner': '_SectionSpanner',
       'storage': '_SectionStorage',
       'survey': '_SectionSurvey',

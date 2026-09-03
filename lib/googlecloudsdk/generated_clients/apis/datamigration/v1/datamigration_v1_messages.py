@@ -5802,7 +5802,7 @@ class MySqlConnectionProfile(_messages.Message):
   Fields:
     cloudSqlId: If the source is a Cloud SQL database, use this field to
       provide the Cloud SQL instance ID of the source.
-    forwardSshConnectivity: Forward SSH tunnel connectivity.
+    forwardSshConnectivity: Is not supported for MySQL.
     host: Required. The IP or hostname of the source MySQL database.
     password: Required. Input only. The password for the user that Database
       Migration Service will be using to connect to the database. This field
@@ -5812,6 +5812,7 @@ class MySqlConnectionProfile(_messages.Message):
       stored.
     port: Required. The network port of the source MySQL database.
     privateConnectivity: Private connectivity.
+    privateServiceConnectConnectivity: Private Service Connect connectivity.
     ssl: SSL configuration for the destination to connect to the source
       database.
     staticServiceIpConnectivity: Static Service IP connectivity.
@@ -5827,9 +5828,10 @@ class MySqlConnectionProfile(_messages.Message):
   passwordSet = _messages.BooleanField(5)
   port = _messages.IntegerField(6, variant=_messages.Variant.INT32)
   privateConnectivity = _messages.MessageField('PrivateConnectivity', 7)
-  ssl = _messages.MessageField('SslConfig', 8)
-  staticServiceIpConnectivity = _messages.MessageField('StaticServiceIpConnectivity', 9)
-  username = _messages.StringField(10)
+  privateServiceConnectConnectivity = _messages.MessageField('PrivateServiceConnectConnectivity', 8)
+  ssl = _messages.MessageField('SslConfig', 9)
+  staticServiceIpConnectivity = _messages.MessageField('StaticServiceIpConnectivity', 10)
+  username = _messages.StringField(11)
 
 
 class MySqlHomogeneousConfig(_messages.Message):
@@ -6249,7 +6251,7 @@ class PostgreSqlConnectionProfile(_messages.Message):
       stored.
     port: Required. The network port of the source PostgreSQL database.
     privateConnectivity: Private connectivity.
-    privateServiceConnectConnectivity: Private service connect connectivity.
+    privateServiceConnectConnectivity: Private Service Connect connectivity.
     ssl: SSL configuration for the destination to connect to the source
       database.
     staticIpConnectivity: Static ip connectivity data (default, no additional

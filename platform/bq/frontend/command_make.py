@@ -634,6 +634,35 @@ class Make(bigquery_command.BigqueryCmd):
         'Used in conjunction with --reservation_assignment.',
         flag_values=fv,
     )
+    flags.DEFINE_string(
+        'condition',
+        None,
+        'Common Expression Language (CEL) expression that defines the'
+        ' matching criteria for this assignment. The expression must resolve'
+        ' to a boolean value.'
+        '\nFormat:'
+        '\n--condition=\'{"expression": "<CEL expression>", "title": "<title>",'
+        ' "description": "<description>"}\''
+        '\nExample:'
+        '\n--condition=\'{"expression": "job.label[\\"env\\"]==\\"prod\\"",'
+        ' "title": "Prod Jobs", "description": "Matches prod jobs"}\''
+        '\nUsed in conjunction with --reservation_assignment.'
+        '\nSee https://cel.dev/ for more details.',
+        flag_values=fv,
+    )
+    flags.DEFINE_integer(
+        'precedence',
+        0,
+        'Priority precedence for this assignment. Used to resolve ambiguity'
+        ' when multiple assignments match a single job.'
+        '\nHigher numerical values represent higher priority (e.g., 20 is'
+        ' evaluated before 10).'
+        '\nWhen a CEL expression is specified, it is recommended to enter'
+        ' precedence explicitly to avoid collisions in the same assignee'
+        ' scope.'
+        '\nUsed in conjunction with --reservation_assignment.',
+        flag_values=fv,
+    )
     flags.DEFINE_enum(
         'edition',
         None,
@@ -686,6 +715,7 @@ class Make(bigquery_command.BigqueryCmd):
         ' --reservation.',
         flag_values=fv,
     )
+    self.parent_group_flag = frontend_flags.define_parent_group(fv)
     flags.DEFINE_boolean(
         'connection', None, 'Create a connection.', flag_values=fv
     )
@@ -717,17 +747,24 @@ class Make(bigquery_command.BigqueryCmd):
     )
     # TODO(b/532772672): Use absl.flags validators to ensure
     # connection-specific flags (e.g. iam_role_id,
-    # s3_service_directory_service, tenant_id) are only set when
+    # service_directory_service, tenant_id) are only set when
     # connection_type matches.
     flags.DEFINE_string(
         'iam_role_id', None, '[Experimental] IAM role id.', flag_values=fv
     )
     flags.DEFINE_string(
-        's3_service_directory_service',
+        'service_directory_service',
         None,
         '[Experimental] Service directory resource name for routing traffic'
         ' over a private network connection through Cross-Cloud Interconnect'
-        ' for AWS connections.',
+        ' for BQ cross-cloud connections.',
+        flag_values=fv,
+    )
+    # TODO(b/541415543): Remove deprecated field: s3_service_directory_service
+    flags.DEFINE_string(
+        's3_service_directory_service',
+        None,
+        '[Deprecated] Alias for --service_directory_service.',
         flag_values=fv,
     )
     # TODO(b/231712311): look into cleaning up this flag now that only federated
@@ -1004,6 +1041,10 @@ class Make(bigquery_command.BigqueryCmd):
           --job_type=QUERY --assignee_type=FOLDER --assignee_id=123
       bq mk --reservation_assignment --reservation_id=project:us.dev
           --job_type=QUERY --assignee_type=ORGANIZATION --assignee_id=456
+      bq mk --reservation_assignment --reservation_id=project:us.dev
+          --job_type=QUERY --assignee_type=ORGANIZATION --assignee_id=456
+          --precedence=10 --condition='{"expression":
+          "job.label[\"env\"]==\"prod\""}'
       bq mk --reservation_group --project_id=project --location=us
           reservation_group_name
       bq mk --connection --connection_type='CLOUD_SQL'
@@ -1152,6 +1193,8 @@ class Make(bigquery_command.BigqueryCmd):
             scheduling_policy_max_slots=self.scheduling_policy_max_slots,
             scheduling_policy_concurrency=self.scheduling_policy_concurrency,
             principal=self.principal_flag.value,
+            precedence=self.precedence,
+            condition=self.condition,
         )
         reference = bq_client_utils.GetReservationAssignmentReference(
             id_fallbacks=client, path=object_info['name']
@@ -1170,9 +1213,15 @@ class Make(bigquery_command.BigqueryCmd):
             identifier=identifier,
             default_location=bq_flags.LOCATION.value,
         )
+        self.parent_group = (
+            self.parent_group_flag.value
+            if self.parent_group_flag.present
+            else None
+        )
         object_info = client_reservation.CreateReservationGroup(
             reservation_group_client=client.GetReservationApiClient(),
             reference=reference,
+            parent_group=self.parent_group,
         )
         frontend_utils.PrintObjectInfo(
             object_info, reference, custom_format='show'
@@ -1293,28 +1342,39 @@ class Make(bigquery_command.BigqueryCmd):
           props_dict.update(
               bq_processor_utils.MakeAccessRoleProperties(self.iam_role_id)
           )
+        # TODO(b/541415543): Remove deprecated field:
+        # s3_service_directory_service
         if self.s3_service_directory_service:
-          props_dict['s3ServiceDirectoryService'] = (
-              self.s3_service_directory_service
+          print(
+              'Warning: --s3_service_directory_service is deprecated and will'
+              ' be removed in future versions. Use --service_directory_service'
+              ' instead.'
           )
+          if not self.service_directory_service:
+            self.service_directory_service = self.s3_service_directory_service
+        if self.service_directory_service:
+          props_dict['serviceDirectoryService'] = self.service_directory_service
         if not self.federated_aws:
           raise app.UsageError('Non-federated AWS connections are deprecated.')
-      elif self.connection_type == 'Azure' and self.tenant_id:
-        if self.federated_azure:
-          if not self.federated_app_client_id:
-            raise app.UsageError(
-                'Must specify --federated_app_client_id for federated Azure '
-                'connections.'
-            )
-          props_dict.update(
-              bq_processor_utils.MakeAzureFederatedAppClientAndTenantIdProperties(
-                  self.tenant_id, self.federated_app_client_id
+      elif self.connection_type == 'Azure':
+        if self.tenant_id:
+          if self.federated_azure:
+            if not self.federated_app_client_id:
+              raise app.UsageError(
+                  'Must specify --federated_app_client_id for federated Azure '
+                  'connections.'
               )
-          )
-        else:
-          props_dict.update(
-              bq_processor_utils.MakeTenantIdProperties(self.tenant_id)
-          )
+            props_dict.update(
+                bq_processor_utils.MakeAzureFederatedAppClientAndTenantIdProperties(
+                    self.tenant_id, self.federated_app_client_id
+                )
+            )
+          else:
+            props_dict.update(
+                bq_processor_utils.MakeTenantIdProperties(self.tenant_id)
+            )
+        if self.service_directory_service:
+          props_dict['serviceDirectoryService'] = self.service_directory_service
 
       self.properties = (
           json.dumps(props_dict) if props_dict else self.properties

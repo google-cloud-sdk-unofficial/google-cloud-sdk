@@ -80,27 +80,39 @@ IDENTITY_FLAG = base.Argument(
 def IdentityCertificateFlag(hidden=False):
   return base.Argument(
       '--identity-certificate',
-      help='Enables workload certificates using managed workload identity.',
+      help=(
+          'Enables automatic provisioning of identity certificates from the'
+          ' trust domain into the container environment. These certificates'
+          ' are used to request certificate-bound access tokens for secure'
+          ' service-to-service communication.'
+      ),
       action=arg_parsers.StoreTrueFalseAction,
       hidden=hidden,
   )
 
 
+_ALPHA_IDENTITY_TYPE_CHOICES = {
+    'service-account': 'Uses a service account.',
+    'workload-identity': 'Uses a managed identity.',
+    'agent-identity': 'Assigns a SPIFFE agent identity.',
+}
+
 _IDENTITY_TYPE_CHOICES = {
-    'SERVICE-ACCOUNT': 'Use a service account.',
-    'WORKLOAD-IDENTITY': 'Use a managed workload identity.',
-    'AGENT-IDENTITY': 'Use an agent identity.',
+    'service-account': 'Uses a service account.',
+    'agent-identity': 'Assigns a SPIFFE agent identity.',
 }
 
 
-def IdentityTypeFlag(hidden=False):
+def IdentityTypeFlag(release_track=base.ReleaseTrack.GA, hidden=False):
+  """Returns the --identity-type flag."""
+  if release_track == base.ReleaseTrack.ALPHA:
+    choices = _ALPHA_IDENTITY_TYPE_CHOICES
+  else:
+    choices = _IDENTITY_TYPE_CHOICES
   return base.ChoiceArgument(
       '--identity-type',
-      choices=[x.lower() for x in _IDENTITY_TYPE_CHOICES],
-      help_str=(
-          'Configures the type of identity to be used by the resource. Allowed'
-          ' values: service-account, workload-identity, agent-identity.'
-      ),
+      choices=choices,
+      help_str='Configures the type of identity assigned to the resource.',
       hidden=hidden,
   )
 
@@ -125,18 +137,37 @@ AMBIENT_NETWORKING_FLAG = base.ChoiceArgument(
 )
 
 _FUNCTIONAL_TYPE_CHOICES = {
-    'AGENT': 'Use an agent.',
-    'MCP-SERVER': 'Use a MCP server.',
+    'agent': (
+        'Registers the resource as an AI agent in Agent Registry. Requires'
+        ' --identity-type=agent-identity.'
+    ),
+    'mcp-server': (
+        'Registers the resource as a Model Context Protocol (MCP) server in'
+        ' Agent Registry.'
+    ),
+}
+
+_JOB_FUNCTIONAL_TYPE_CHOICES = {
+    'agent': (
+        'Registers the resource as an AI agent in Agent Registry. Requires'
+        ' --identity-type=agent-identity.'
+    ),
 }
 
 
-def FunctionalTypeFlag(hidden=False):
+def FunctionalTypeFlag(resource='service', hidden=False):
+  """Returns the --functional-type flag."""
+  if resource == 'job':
+    choices = _JOB_FUNCTIONAL_TYPE_CHOICES
+  else:
+    choices = _FUNCTIONAL_TYPE_CHOICES
   return base.ChoiceArgument(
       '--functional-type',
-      choices=[x.lower() for x in _FUNCTIONAL_TYPE_CHOICES],
+      choices=choices,
       help_str=(
-          'Specifies the function of the workload for Agent Registry. Allowed'
-          ' values: agent, mcp-server.'
+          'Specifies the function of the resource for automatic registration in'
+          ' Agent Registry. Once configured on a resource, this property is'
+          ' immutable and cannot be changed or cleared.'
       ),
       hidden=hidden,
   )
@@ -5317,13 +5348,16 @@ def SourceAndImageFlags(
       group.AddArgument(NoBuildArg())
     if local_build_enabled and release_track == base.ReleaseTrack.ALPHA:
       group.AddArgument(LocalBuildArg())
-    if IsUploadLaunchStage(release_track):
+    if IsRunUploadSupported(release_track):
       group.AddArgument(RunUploadFlag())
   return group
 
 
-def IsUploadLaunchStage(release_track):
-  return release_track in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+def IsRunUploadSupported(release_track):
+  return properties.IsDefaultUniverse() and release_track in (
+      base.ReleaseTrack.ALPHA,
+      base.ReleaseTrack.BETA,
+  )
 
 
 def ContainerFlag():

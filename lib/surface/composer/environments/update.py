@@ -43,7 +43,7 @@ Cannot specify --{opt} with Composer 1.X.
 """
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):
   """Update properties of a Cloud Composer environment."""
@@ -559,7 +559,7 @@ class Update(base.Command):
         release_track=self.ReleaseTrack())
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
   """Update properties of a Cloud Composer environment."""
@@ -598,7 +598,7 @@ class UpdateBeta(Update):
         release_track=self.ReleaseTrack())
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
   """Update properties of a Cloud Composer environment."""

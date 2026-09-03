@@ -38,6 +38,7 @@ class CloudresourcemanagerV3(base_api.BaseApiClient):
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
     self.effectiveTags = self.EffectiveTagsService(self)
+    self.folders_boundaries = self.FoldersBoundariesService(self)
     self.folders_capabilities = self.FoldersCapabilitiesService(self)
     self.folders_capabilityConfigs = self.FoldersCapabilityConfigsService(self)
     self.folders_effectiveSettings = self.FoldersEffectiveSettingsService(self)
@@ -48,6 +49,7 @@ class CloudresourcemanagerV3(base_api.BaseApiClient):
     self.locations_tagBindingCollections = self.LocationsTagBindingCollectionsService(self)
     self.locations = self.LocationsService(self)
     self.operations = self.OperationsService(self)
+    self.organizations_boundaries = self.OrganizationsBoundariesService(self)
     self.organizations_capabilityConfigs = self.OrganizationsCapabilityConfigsService(self)
     self.organizations_effectiveSettings = self.OrganizationsEffectiveSettingsService(self)
     self.organizations_settings = self.OrganizationsSettingsService(self)
@@ -95,6 +97,151 @@ class CloudresourcemanagerV3(base_api.BaseApiClient):
         request_field='',
         request_type_name='CloudresourcemanagerEffectiveTagsListRequest',
         response_type_name='ListEffectiveTagsResponse',
+        supports_download=False,
+    )
+
+  class FoldersBoundariesService(base_api.BaseApiService):
+    """Service class for the folders_boundaries resource."""
+
+    _NAME = 'folders_boundaries'
+
+    def __init__(self, client):
+      super(CloudresourcemanagerV3.FoldersBoundariesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a Boundary under a parent Folder or Organization. Creating a Boundary triggers the creation of a Management Project if one is not supplied.
+
+      Args:
+        request: (CloudresourcemanagerFoldersBoundariesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/folders/{foldersId}/boundaries',
+        http_method='POST',
+        method_id='cloudresourcemanager.folders.boundaries.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['boundaryId'],
+        relative_path='v3/{+parent}/boundaries',
+        request_field='boundary',
+        request_type_name='CloudresourcemanagerFoldersBoundariesCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes the Boundary identified by the specified `name` (for example, `folders/123456789/boundaries/my-boundary`).
+
+      Args:
+        request: (CloudresourcemanagerFoldersBoundariesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/folders/{foldersId}/boundaries/{boundariesId}',
+        http_method='DELETE',
+        method_id='cloudresourcemanager.folders.boundaries.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v3/{+name}',
+        request_field='',
+        request_type_name='CloudresourcemanagerFoldersBoundariesDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Retrieves the Boundary identified by the specified `name` (for example, `folders/123456789/boundaries/my-boundary`).
+
+      Args:
+        request: (CloudresourcemanagerFoldersBoundariesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Boundary) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/folders/{foldersId}/boundaries/{boundariesId}',
+        http_method='GET',
+        method_id='cloudresourcemanager.folders.boundaries.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v3/{+name}',
+        request_field='',
+        request_type_name='CloudresourcemanagerFoldersBoundariesGetRequest',
+        response_type_name='Boundary',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists Boundaries that are direct children of the specified organization or folder resource.
+
+      Args:
+        request: (CloudresourcemanagerFoldersBoundariesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListBoundariesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/folders/{foldersId}/boundaries',
+        http_method='GET',
+        method_id='cloudresourcemanager.folders.boundaries.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v3/{+parent}/boundaries',
+        request_field='',
+        request_type_name='CloudresourcemanagerFoldersBoundariesListRequest',
+        response_type_name='ListBoundariesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the `display_name` and `resource_filter.tag_filter.tag_value` of the Boundary identified by the specified `name` (for example, `folders/123456789/boundaries/my-boundary`).
+
+      Args:
+        request: (CloudresourcemanagerFoldersBoundariesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/folders/{foldersId}/boundaries/{boundariesId}',
+        http_method='PATCH',
+        method_id='cloudresourcemanager.folders.boundaries.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v3/{+name}',
+        request_field='boundary',
+        request_type_name='CloudresourcemanagerFoldersBoundariesPatchRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 
@@ -552,6 +699,33 @@ class CloudresourcemanagerV3(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def GetBoundaryConfig(self, request, global_params=None):
+      r"""Retrieves the BoundaryConfig identified by the specified `name` (for example, `folders/123456789/boundaryConfig`).
+
+      Args:
+        request: (CloudresourcemanagerFoldersGetBoundaryConfigRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (BoundaryConfig) The response message.
+      """
+      config = self.GetMethodConfig('GetBoundaryConfig')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetBoundaryConfig.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/folders/{foldersId}/boundaryConfig',
+        http_method='GET',
+        method_id='cloudresourcemanager.folders.getBoundaryConfig',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v3/{+name}',
+        request_field='',
+        request_type_name='CloudresourcemanagerFoldersGetBoundaryConfigRequest',
+        response_type_name='BoundaryConfig',
+        supports_download=False,
+    )
+
     def GetIamPolicy(self, request, global_params=None):
       r"""Gets the access control policy for a folder. The returned policy may be empty if no such policy or resource exists. The `resource` field should be the folder's resource name, for example: "folders/1234". The caller must have `resourcemanager.folders.getIamPolicy` permission on the identified folder.
 
@@ -762,6 +936,33 @@ class CloudresourcemanagerV3(base_api.BaseApiClient):
         relative_path='v3/{+name}:undelete',
         request_field='undeleteFolderRequest',
         request_type_name='CloudresourcemanagerFoldersUndeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def UpdateBoundaryConfig(self, request, global_params=None):
+      r"""Updates the BoundaryConfig identified by the specified `name` (for example, `folders/123456789/boundaryConfig`).
+
+      Args:
+        request: (CloudresourcemanagerFoldersUpdateBoundaryConfigRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('UpdateBoundaryConfig')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    UpdateBoundaryConfig.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/folders/{foldersId}/boundaryConfig',
+        http_method='PATCH',
+        method_id='cloudresourcemanager.folders.updateBoundaryConfig',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v3/{+name}',
+        request_field='boundaryConfig',
+        request_type_name='CloudresourcemanagerFoldersUpdateBoundaryConfigRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -1026,6 +1227,151 @@ class CloudresourcemanagerV3(base_api.BaseApiClient):
         relative_path='v3/{+name}',
         request_field='',
         request_type_name='CloudresourcemanagerOperationsGetRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class OrganizationsBoundariesService(base_api.BaseApiService):
+    """Service class for the organizations_boundaries resource."""
+
+    _NAME = 'organizations_boundaries'
+
+    def __init__(self, client):
+      super(CloudresourcemanagerV3.OrganizationsBoundariesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a Boundary under a parent Folder or Organization. Creating a Boundary triggers the creation of a Management Project if one is not supplied.
+
+      Args:
+        request: (CloudresourcemanagerOrganizationsBoundariesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/organizations/{organizationsId}/boundaries',
+        http_method='POST',
+        method_id='cloudresourcemanager.organizations.boundaries.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['boundaryId'],
+        relative_path='v3/{+parent}/boundaries',
+        request_field='boundary',
+        request_type_name='CloudresourcemanagerOrganizationsBoundariesCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes the Boundary identified by the specified `name` (for example, `folders/123456789/boundaries/my-boundary`).
+
+      Args:
+        request: (CloudresourcemanagerOrganizationsBoundariesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/organizations/{organizationsId}/boundaries/{boundariesId}',
+        http_method='DELETE',
+        method_id='cloudresourcemanager.organizations.boundaries.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v3/{+name}',
+        request_field='',
+        request_type_name='CloudresourcemanagerOrganizationsBoundariesDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Retrieves the Boundary identified by the specified `name` (for example, `folders/123456789/boundaries/my-boundary`).
+
+      Args:
+        request: (CloudresourcemanagerOrganizationsBoundariesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Boundary) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/organizations/{organizationsId}/boundaries/{boundariesId}',
+        http_method='GET',
+        method_id='cloudresourcemanager.organizations.boundaries.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v3/{+name}',
+        request_field='',
+        request_type_name='CloudresourcemanagerOrganizationsBoundariesGetRequest',
+        response_type_name='Boundary',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists Boundaries that are direct children of the specified organization or folder resource.
+
+      Args:
+        request: (CloudresourcemanagerOrganizationsBoundariesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListBoundariesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/organizations/{organizationsId}/boundaries',
+        http_method='GET',
+        method_id='cloudresourcemanager.organizations.boundaries.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v3/{+parent}/boundaries',
+        request_field='',
+        request_type_name='CloudresourcemanagerOrganizationsBoundariesListRequest',
+        response_type_name='ListBoundariesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the `display_name` and `resource_filter.tag_filter.tag_value` of the Boundary identified by the specified `name` (for example, `folders/123456789/boundaries/my-boundary`).
+
+      Args:
+        request: (CloudresourcemanagerOrganizationsBoundariesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/organizations/{organizationsId}/boundaries/{boundariesId}',
+        http_method='PATCH',
+        method_id='cloudresourcemanager.organizations.boundaries.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v3/{+name}',
+        request_field='boundary',
+        request_type_name='CloudresourcemanagerOrganizationsBoundariesPatchRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -1367,6 +1713,33 @@ class CloudresourcemanagerV3(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def GetBoundaryConfig(self, request, global_params=None):
+      r"""Retrieves the BoundaryConfig identified by the specified `name` (for example, `folders/123456789/boundaryConfig`).
+
+      Args:
+        request: (CloudresourcemanagerOrganizationsGetBoundaryConfigRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (BoundaryConfig) The response message.
+      """
+      config = self.GetMethodConfig('GetBoundaryConfig')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetBoundaryConfig.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/organizations/{organizationsId}/boundaryConfig',
+        http_method='GET',
+        method_id='cloudresourcemanager.organizations.getBoundaryConfig',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v3/{+name}',
+        request_field='',
+        request_type_name='CloudresourcemanagerOrganizationsGetBoundaryConfigRequest',
+        response_type_name='BoundaryConfig',
+        supports_download=False,
+    )
+
     def GetIamPolicy(self, request, global_params=None):
       r"""Gets the access control policy for an organization resource. The policy may be empty if no such policy or resource exists. The `resource` field should be the organization's resource name, for example: "organizations/123". Authorization requires the IAM permission `resourcemanager.organizations.getIamPolicy` on the specified organization.
 
@@ -1471,6 +1844,33 @@ class CloudresourcemanagerV3(base_api.BaseApiClient):
         request_field='testIamPermissionsRequest',
         request_type_name='CloudresourcemanagerOrganizationsTestIamPermissionsRequest',
         response_type_name='TestIamPermissionsResponse',
+        supports_download=False,
+    )
+
+    def UpdateBoundaryConfig(self, request, global_params=None):
+      r"""Updates the BoundaryConfig identified by the specified `name` (for example, `folders/123456789/boundaryConfig`).
+
+      Args:
+        request: (CloudresourcemanagerOrganizationsUpdateBoundaryConfigRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('UpdateBoundaryConfig')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    UpdateBoundaryConfig.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/organizations/{organizationsId}/boundaryConfig',
+        http_method='PATCH',
+        method_id='cloudresourcemanager.organizations.updateBoundaryConfig',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v3/{+name}',
+        request_field='boundaryConfig',
+        request_type_name='CloudresourcemanagerOrganizationsUpdateBoundaryConfigRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

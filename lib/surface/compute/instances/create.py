@@ -381,6 +381,7 @@ class Create(base.CreateCommand):
   _support_expose_host_topology = False
   _support_external_ip_tier = False
   _support_windows_license_optimization_mode = False
+  _support_current_memory = False
 
   @classmethod
   def Args(cls, parser):
@@ -504,6 +505,7 @@ class Create(base.CreateCommand):
         support_latency_tolerant=getattr(
             self, '_support_latency_tolerant', False
         ),
+        support_current_memory=getattr(self, '_support_current_memory', False),
     )
     tags = instance_utils.GetTags(args, compute_client)
     labels = instance_utils.GetLabels(args, compute_client)
@@ -1105,6 +1107,7 @@ class CreateAlpha(CreateBeta):
   _support_external_ip_tier = True
   _support_windows_license_optimization_mode = True
   _support_latency_tolerant = True
+  _support_current_memory = True
 
   @classmethod
   def Args(cls, parser):
@@ -1182,6 +1185,7 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddIPv6PrefixLengthAlphaArgs(parser)
     instances_flags.AddAvailabilityDomainAgrs(parser)
     instances_flags.AddCurrentCpusArgs(parser)
+    instances_flags.AddCurrentMemoryArgs(parser)
     instances_flags.AddPerformanceMonitoringUnitArgs(parser)
     instances_flags.AddProvisioningModelVmArgs(
         parser,

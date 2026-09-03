@@ -6011,6 +6011,9 @@ class BackendService(_messages.Message):
       be specified when the load balancing scheme is set toINTERNAL, or when
       the load balancing scheme is set toEXTERNAL and haPolicy fastIpMove is
       enabled.
+    networkAttachment: Optional. The URL of the network attachment that this
+      resource belongs to.projects/{project}/regions/{region_name}/networkAtta
+      chments/{network_attachment_name}.
     networkPassThroughLbTrafficPolicy: Configures traffic steering properties
       of internal passthrough Network Load Balancers.
       networkPassThroughLbTrafficPolicy cannot be specified with haPolicy.
@@ -6075,6 +6078,11 @@ class BackendService(_messages.Message):
     serviceBindings: URLs of networkservices.ServiceBinding resources.  Can
       only be set if load balancing scheme is INTERNAL_SELF_MANAGED. If set,
       lists of backends and health checks must be both empty.
+    serviceClassId: Optional. The service class ID associated with this
+      resource. Producer Service's Service class ID for the region of this
+      backend service. Can only be used with network_attachment. It is not
+      possible to use on its own; however, network_attachment can be used
+      without service_class_id.
     serviceLbPolicy: URL to networkservices.ServiceLbPolicy resource.  Can
       only be set if load balancing scheme is EXTERNAL_MANAGED,
       INTERNAL_MANAGED or INTERNAL_SELF_MANAGED for a global backend service,
@@ -6453,26 +6461,28 @@ class BackendService(_messages.Message):
   metadatas = _messages.MessageField('MetadatasValue', 33)
   name = _messages.StringField(34)
   network = _messages.StringField(35)
-  networkPassThroughLbTrafficPolicy = _messages.MessageField('BackendServiceNetworkPassThroughLbTrafficPolicy', 36)
-  orchestrationInfo = _messages.MessageField('BackendServiceOrchestrationInfo', 37)
-  outlierDetection = _messages.MessageField('OutlierDetection', 38)
-  params = _messages.MessageField('BackendServiceParams', 39)
-  port = _messages.IntegerField(40, variant=_messages.Variant.INT32)
-  portName = _messages.StringField(41)
-  protocol = _messages.EnumField('ProtocolValueValuesEnum', 42)
-  region = _messages.StringField(43)
-  securityPolicy = _messages.StringField(44)
-  securitySettings = _messages.MessageField('SecuritySettings', 45)
-  selfLink = _messages.StringField(46)
-  selfLinkWithId = _messages.StringField(47)
-  serviceBindings = _messages.StringField(48, repeated=True)
-  serviceLbPolicy = _messages.StringField(49)
-  sessionAffinity = _messages.EnumField('SessionAffinityValueValuesEnum', 50)
-  strongSessionAffinityCookie = _messages.MessageField('BackendServiceHttpCookie', 51)
-  subsetting = _messages.MessageField('Subsetting', 52)
-  timeoutSec = _messages.IntegerField(53, variant=_messages.Variant.INT32)
-  tlsSettings = _messages.MessageField('BackendServiceTlsSettings', 54)
-  usedBy = _messages.MessageField('BackendServiceUsedBy', 55, repeated=True)
+  networkAttachment = _messages.StringField(36)
+  networkPassThroughLbTrafficPolicy = _messages.MessageField('BackendServiceNetworkPassThroughLbTrafficPolicy', 37)
+  orchestrationInfo = _messages.MessageField('BackendServiceOrchestrationInfo', 38)
+  outlierDetection = _messages.MessageField('OutlierDetection', 39)
+  params = _messages.MessageField('BackendServiceParams', 40)
+  port = _messages.IntegerField(41, variant=_messages.Variant.INT32)
+  portName = _messages.StringField(42)
+  protocol = _messages.EnumField('ProtocolValueValuesEnum', 43)
+  region = _messages.StringField(44)
+  securityPolicy = _messages.StringField(45)
+  securitySettings = _messages.MessageField('SecuritySettings', 46)
+  selfLink = _messages.StringField(47)
+  selfLinkWithId = _messages.StringField(48)
+  serviceBindings = _messages.StringField(49, repeated=True)
+  serviceClassId = _messages.StringField(50)
+  serviceLbPolicy = _messages.StringField(51)
+  sessionAffinity = _messages.EnumField('SessionAffinityValueValuesEnum', 52)
+  strongSessionAffinityCookie = _messages.MessageField('BackendServiceHttpCookie', 53)
+  subsetting = _messages.MessageField('Subsetting', 54)
+  timeoutSec = _messages.IntegerField(55, variant=_messages.Variant.INT32)
+  tlsSettings = _messages.MessageField('BackendServiceTlsSettings', 56)
+  usedBy = _messages.MessageField('BackendServiceUsedBy', 57, repeated=True)
 
 
 class BackendServiceAggregatedList(_messages.Message):
@@ -9392,14 +9402,13 @@ class CalendarModeAdviceResponse(_messages.Message):
 
 
 class CalendarModeExtensionAdviceRequest(_messages.Message):
-  r"""A request to recommend the best duration for extending an existing
-  Future Reservation in CALENDAR mode, that is equal or less than the
-  specified extension duration.
+  r"""A request to recommend the maximum duration for extending an existing
+  future reservation in calendar mode. The recommended duration is shorter
+  than or equal to the specified extension duration.
 
   Fields:
-    endTimeNotLaterThan: Required. The desired end time after the Future
-      Reservation is extended.
-    futureReservation: Required. Reference to the Future Reservation, in the
+    endTimeNotLaterThan: Required. The desired end time for the extension.
+    futureReservation: Required. Reference to the future reservation, in the
       format: projects/{project}/zones/{zone}/futureReservations/{name} Full
       URIs that include hostnames (like compute.googleapis.com or
       www.googleapis.com) are also supported.
@@ -9410,22 +9419,20 @@ class CalendarModeExtensionAdviceRequest(_messages.Message):
 
 
 class CalendarModeExtensionAdviceResponse(_messages.Message):
-  r"""A response containing the recommended duration to extend a Future
-  Reservation in CALENDAR mode based on the available capacity during the
+  r"""A response that contains the recommended duration for extending a future
+  reservation in calendar mode based on available capacity during the
   extension period.
 
   Fields:
-    endTime: The recommended end time for the extension, which will either be
-      the end time requested by the caller or the longest alternative for
-      which there is sufficient capacity. If extension is not possible, this
-      field will be empty, and not_recommended_reason will be populated
-      instead.
-    notRecommendedReason: Information regarding the reason why the Future
-      Reservation cannot be extended at all. If a recommendation is provided,
-      whether that is the requested end time or an alternative, this field
-      will be empty.
-    recommendationId: Unique id of the recommendation, a UUID string generated
-      by the API.
+    endTime: The recommended end time for the extension, which is either the
+      end time requested by the caller or the longest alternative with
+      sufficient capacity. If the extension is not possible, this field is
+      empty, and notRecommendedReason is populated instead.
+    notRecommendedReason: The reason why the future reservation can't be
+      extended. If a recommendation is provided, whether for the requested end
+      time or an alternative, this field is empty.
+    recommendationId: The unique ID of the recommendation, which is a UUID
+      string generated by the API.
   """
 
   endTime = _messages.StringField(1)
@@ -9440,10 +9447,9 @@ class CalendarModeExtensionAdviceResponseNotRecommendedReason(_messages.Message)
     StatusValueValuesEnum: Status of recommendation.
 
   Fields:
-    details: Details (human readable) describing why the recommendation was
-      not provided. For example, if the status is CONDITION_NOT_MET, then this
-      field will contain information about why the requested extension
-      duration is not eligible.
+    details: Human-readable details describing why the recommendation wasn't
+      provided. For example, if the status is CONDITIONS_NOT_MET, this field
+      explains why the requested extension duration isn't possible.
     status: Status of recommendation.
   """
 
@@ -9451,7 +9457,7 @@ class CalendarModeExtensionAdviceResponseNotRecommendedReason(_messages.Message)
     r"""Status of recommendation.
 
     Values:
-      CONDITIONS_NOT_MET: The requested extension window does not meet the
+      CONDITIONS_NOT_MET: The requested extension window doesn't meet the
         required conditions.
       NOT_RECOMMENDED_REASON_STATUS_UNSPECIFIED: Default value, unused.
       NO_CAPACITY: There is no available capacity for the extension to be
@@ -50978,20 +50984,20 @@ class ConfidentialInstanceConfig(_messages.Message):
     r"""Defines the type of technology used by the confidential instance.
 
     Values:
+      BMSAI: Bare Metal Secure AI.
       CCA: Arm Confidential Compute Architecture.
       CONFIDENTIAL_INSTANCE_TYPE_UNSPECIFIED: No type specified. Do not use
         this value.
       SEV: AMD Secure Encrypted Virtualization.
       SEV_SNP: AMD Secure Encrypted Virtualization - Secure Nested Paging.
       TDX: Intel Trust Domain eXtension.
-      BMSAI: Bare Metal Secure AI.
     """
-    CCA = 0
-    CONFIDENTIAL_INSTANCE_TYPE_UNSPECIFIED = 1
-    SEV = 2
-    SEV_SNP = 3
-    TDX = 4
-    BMSAI = 5
+    BMSAI = 0
+    CCA = 1
+    CONFIDENTIAL_INSTANCE_TYPE_UNSPECIFIED = 2
+    SEV = 3
+    SEV_SNP = 4
+    TDX = 5
 
   confidentialInstanceType = _messages.EnumField('ConfidentialInstanceTypeValueValuesEnum', 1)
   confidentialParavisorConfig = _messages.MessageField('ConfidentialParavisorConfig', 2)
@@ -57042,6 +57048,9 @@ class ForwardingRule(_messages.Message):
       be used. If neither subnetwork nor this field is specified, the default
       network will be used.  For Private Service Connect forwarding rules that
       forward traffic to Google APIs, a network must be provided.
+    networkAttachment: Optional. The URL of the network attachment that this
+      resource belongs to.projects/{project}/regions/{region_name}/networkAtta
+      chments/{network_attachment_name}.
     networkTier: This signifies the networking tier used for configuring this
       load balancer and can only take the following values:PREMIUM, STANDARD.
       For regional ForwardingRule, the valid values are PREMIUM andSTANDARD.
@@ -57098,6 +57107,10 @@ class ForwardingRule(_messages.Message):
     selfLink: [Output Only] Server-defined URL for the resource.
     selfLinkWithId: Output only. [Output Only] Server-defined URL for this
       resource with the resource id.
+    serviceClassId: Optional. Producer Service's Service class ID for the
+      region of this forwarding rule. Can only be used with
+      network_attachment. It is not possible to use on its own; however,
+      network_attachment can be used without service_class_id.
     serviceDirectoryRegistrations: Service Directory resources to register
       this forwarding rule with. Currently, only supports a single Service
       Directory resource.
@@ -57368,22 +57381,24 @@ class ForwardingRule(_messages.Message):
   metadataFilters = _messages.MessageField('MetadataFilter', 25, repeated=True)
   name = _messages.StringField(26)
   network = _messages.StringField(27)
-  networkTier = _messages.EnumField('NetworkTierValueValuesEnum', 28)
-  noAutomateDnsZone = _messages.BooleanField(29)
-  parentForwardingRule = _messages.StringField(30)
-  portRange = _messages.StringField(31)
-  ports = _messages.StringField(32, repeated=True)
-  pscConnectionId = _messages.IntegerField(33, variant=_messages.Variant.UINT64)
-  pscConnectionStatus = _messages.EnumField('PscConnectionStatusValueValuesEnum', 34)
-  region = _messages.StringField(35)
-  selfLink = _messages.StringField(36)
-  selfLinkWithId = _messages.StringField(37)
-  serviceDirectoryRegistrations = _messages.MessageField('ForwardingRuleServiceDirectoryRegistration', 38, repeated=True)
-  serviceLabel = _messages.StringField(39)
-  serviceName = _messages.StringField(40)
-  sourceIpRanges = _messages.StringField(41, repeated=True)
-  subnetwork = _messages.StringField(42)
-  target = _messages.StringField(43)
+  networkAttachment = _messages.StringField(28)
+  networkTier = _messages.EnumField('NetworkTierValueValuesEnum', 29)
+  noAutomateDnsZone = _messages.BooleanField(30)
+  parentForwardingRule = _messages.StringField(31)
+  portRange = _messages.StringField(32)
+  ports = _messages.StringField(33, repeated=True)
+  pscConnectionId = _messages.IntegerField(34, variant=_messages.Variant.UINT64)
+  pscConnectionStatus = _messages.EnumField('PscConnectionStatusValueValuesEnum', 35)
+  region = _messages.StringField(36)
+  selfLink = _messages.StringField(37)
+  selfLinkWithId = _messages.StringField(38)
+  serviceClassId = _messages.StringField(39)
+  serviceDirectoryRegistrations = _messages.MessageField('ForwardingRuleServiceDirectoryRegistration', 40, repeated=True)
+  serviceLabel = _messages.StringField(41)
+  serviceName = _messages.StringField(42)
+  sourceIpRanges = _messages.StringField(43, repeated=True)
+  subnetwork = _messages.StringField(44)
+  target = _messages.StringField(45)
 
 
 class ForwardingRuleAggregatedList(_messages.Message):
@@ -58049,11 +58064,13 @@ class FutureReservation(_messages.Message):
     r"""ConfidentialComputeTypeValueValuesEnum enum type.
 
     Values:
+      CONFIDENTIAL_COMPUTE_TYPE_BMSAI: Bare Metal Secure AI.
       CONFIDENTIAL_COMPUTE_TYPE_TDX: Intel Trust Domain Extensions.
       CONFIDENTIAL_COMPUTE_TYPE_UNSPECIFIED: <no description>
     """
-    CONFIDENTIAL_COMPUTE_TYPE_TDX = 0
-    CONFIDENTIAL_COMPUTE_TYPE_UNSPECIFIED = 1
+    CONFIDENTIAL_COMPUTE_TYPE_BMSAI = 0
+    CONFIDENTIAL_COMPUTE_TYPE_TDX = 1
+    CONFIDENTIAL_COMPUTE_TYPE_UNSPECIFIED = 2
 
   class DeploymentTypeValueValuesEnum(_messages.Enum):
     r"""Type of the deployment requested as part of future reservation.
@@ -59720,7 +59737,7 @@ class GetHealthOperationMetadataHealthInfo(_messages.Message):
         emergent maintenance
       REPAIR_CATEGORY_PLANNED_MAINTENANCE: The repair is because of a planned
         maintenance
-      REPAIR_CATEGORY_UNSPECIFIED: <no description>
+      REPAIR_CATEGORY_UNSPECIFIED: Unspecified repair category.
       REPAIR_CATEGORY_USER_REPORTED_FAULT: The repair is because of a user
         reported fault
     """
@@ -60959,8 +60976,8 @@ class GuestOsFeature(_messages.Message):
       MULTI_IP_SUBNET    - UEFI_COMPATIBLE    - GVNIC    - SEV_CAPABLE    -
       SUSPEND_RESUME_COMPATIBLE    - SEV_LIVE_MIGRATABLE_V2    -
       SEV_SNP_CAPABLE    - TDX_CAPABLE    - IDPF    - SNP_SVSM_CAPABLE    -
-      CCA_CAPABLE   For more information, see Enabling guest operating system
-      features.
+      CCA_CAPABLE    - SUSPEND_SAFE_FPR   For more information, see Enabling
+      guest operating system features.
 
   Fields:
     type: The ID of a supported feature. To add multiple values, use commas to
@@ -60969,8 +60986,8 @@ class GuestOsFeature(_messages.Message):
       UEFI_COMPATIBLE    - GVNIC    - SEV_CAPABLE    -
       SUSPEND_RESUME_COMPATIBLE    - SEV_LIVE_MIGRATABLE_V2    -
       SEV_SNP_CAPABLE    - TDX_CAPABLE    - IDPF    - SNP_SVSM_CAPABLE    -
-      CCA_CAPABLE   For more information, see Enabling guest operating system
-      features.
+      CCA_CAPABLE    - SUSPEND_SAFE_FPR   For more information, see Enabling
+      guest operating system features.
   """
 
   class TypeValueValuesEnum(_messages.Enum):
@@ -60979,11 +60996,13 @@ class GuestOsFeature(_messages.Message):
     VIRTIO_SCSI_MULTIQUEUE    - WINDOWS    - MULTI_IP_SUBNET    -
     UEFI_COMPATIBLE    - GVNIC    - SEV_CAPABLE    - SUSPEND_RESUME_COMPATIBLE
     - SEV_LIVE_MIGRATABLE_V2    - SEV_SNP_CAPABLE    - TDX_CAPABLE    - IDPF
-    - SNP_SVSM_CAPABLE    - CCA_CAPABLE   For more information, see Enabling
-    guest operating system features.
+    - SNP_SVSM_CAPABLE    - CCA_CAPABLE    - SUSPEND_SAFE_FPR   For more
+    information, see Enabling guest operating system features.
 
     Values:
       BARE_METAL_LINUX_COMPATIBLE: <no description>
+      BMSAI_CAPABLE: Indicates the guest OS is capable of Bare Metal Secure AI
+        (BMSAI) confidential computing.
       CCA_CAPABLE: <no description>
       FEATURE_TYPE_UNSPECIFIED: <no description>
       GVNIC: <no description>
@@ -60995,27 +61014,31 @@ class GuestOsFeature(_messages.Message):
       SEV_LIVE_MIGRATABLE_V2: <no description>
       SEV_SNP_CAPABLE: <no description>
       SNP_SVSM_CAPABLE: <no description>
+      SUSPEND_SAFE_FPR: Indicates the guest OS is safe for free page reporting
+        (FPR) during suspend.
       TDX_CAPABLE: <no description>
       UEFI_COMPATIBLE: <no description>
       VIRTIO_SCSI_MULTIQUEUE: <no description>
       WINDOWS: <no description>
     """
     BARE_METAL_LINUX_COMPATIBLE = 0
-    CCA_CAPABLE = 1
-    FEATURE_TYPE_UNSPECIFIED = 2
-    GVNIC = 3
-    IDPF = 4
-    MULTI_IP_SUBNET = 5
-    SECURE_BOOT = 6
-    SEV_CAPABLE = 7
-    SEV_LIVE_MIGRATABLE = 8
-    SEV_LIVE_MIGRATABLE_V2 = 9
-    SEV_SNP_CAPABLE = 10
-    SNP_SVSM_CAPABLE = 11
-    TDX_CAPABLE = 12
-    UEFI_COMPATIBLE = 13
-    VIRTIO_SCSI_MULTIQUEUE = 14
-    WINDOWS = 15
+    BMSAI_CAPABLE = 1
+    CCA_CAPABLE = 2
+    FEATURE_TYPE_UNSPECIFIED = 3
+    GVNIC = 4
+    IDPF = 5
+    MULTI_IP_SUBNET = 6
+    SECURE_BOOT = 7
+    SEV_CAPABLE = 8
+    SEV_LIVE_MIGRATABLE = 9
+    SEV_LIVE_MIGRATABLE_V2 = 10
+    SEV_SNP_CAPABLE = 11
+    SNP_SVSM_CAPABLE = 12
+    SUSPEND_SAFE_FPR = 13
+    TDX_CAPABLE = 14
+    UEFI_COMPATIBLE = 15
+    VIRTIO_SCSI_MULTIQUEUE = 16
+    WINDOWS = 17
 
   type = _messages.EnumField('TypeValueValuesEnum', 1)
 
@@ -84221,7 +84244,7 @@ class ManagementInterface(_messages.Message):
     StateValueValuesEnum:
     TypeValueValuesEnum: Required. The type of management service this
       interface provides. Supported types include NMX-C for partition
-      management, gNMI for switch monitoring, and TPU slice management.
+      management and gNMI for switch monitoring.
 
   Fields:
     authenticationConfig: A AuthenticationConfig attribute.
@@ -84239,8 +84262,8 @@ class ManagementInterface(_messages.Message):
       for the endpoint. The subnetwork must belong to the specified network
       and have available IP addresses.
     type: Required. The type of management service this interface provides.
-      Supported types include NMX-C for partition management, gNMI for switch
-      monitoring, and TPU slice management.
+      Supported types include NMX-C for partition management and gNMI for
+      switch monitoring.
   """
 
   class StateValueValuesEnum(_messages.Enum):
@@ -84259,19 +84282,17 @@ class ManagementInterface(_messages.Message):
 
   class TypeValueValuesEnum(_messages.Enum):
     r"""Required. The type of management service this interface provides.
-    Supported types include NMX-C for partition management, gNMI for switch
-    monitoring, and TPU slice management.
+    Supported types include NMX-C for partition management and gNMI for switch
+    monitoring.
 
     Values:
       TYPE_NVLINK_PARTITION_MANAGEMENT: <no description>
       TYPE_NVLINK_SWITCH_MONITORING: <no description>
-      TYPE_TPU_SLICE_MANAGEMENT: <no description>
       TYPE_UNSPECIFIED: <no description>
     """
     TYPE_NVLINK_PARTITION_MANAGEMENT = 0
     TYPE_NVLINK_SWITCH_MONITORING = 1
-    TYPE_TPU_SLICE_MANAGEMENT = 2
-    TYPE_UNSPECIFIED = 3
+    TYPE_UNSPECIFIED = 2
 
   authenticationConfig = _messages.MessageField('AuthenticationConfig', 1)
   ipv4Address = _messages.StringField(2)
@@ -93326,8 +93347,8 @@ class Operation(_messages.Message):
       networkFirewallPolicies.addRule and
       regionNetworkFirewallPolicies.addRule methods if not explicitly provided
       by the user.
-    getHealthOperationMetadata: Output only. [Output Only] Metadata for
-      GetHealth operations.
+    getHealthOperationMetadata: Output only. Metadata for GetHealth
+      operations.
     getVersionOperationMetadata: A GetVersionOperationMetadata attribute.
     httpErrorMessage: [Output Only] If the operation fails, this field
       contains the HTTP error message that was returned, such as `NOT FOUND`.
@@ -102830,11 +102851,13 @@ class Reservation(_messages.Message):
     r"""ConfidentialComputeTypeValueValuesEnum enum type.
 
     Values:
+      CONFIDENTIAL_COMPUTE_TYPE_BMSAI: Bare Metal Secure AI.
       CONFIDENTIAL_COMPUTE_TYPE_TDX: Intel Trust Domain Extensions.
       CONFIDENTIAL_COMPUTE_TYPE_UNSPECIFIED: <no description>
     """
-    CONFIDENTIAL_COMPUTE_TYPE_TDX = 0
-    CONFIDENTIAL_COMPUTE_TYPE_UNSPECIFIED = 1
+    CONFIDENTIAL_COMPUTE_TYPE_BMSAI = 0
+    CONFIDENTIAL_COMPUTE_TYPE_TDX = 1
+    CONFIDENTIAL_COMPUTE_TYPE_UNSPECIFIED = 2
 
   class DeploymentTypeValueValuesEnum(_messages.Enum):
     r"""Specifies the deployment strategy for this reservation.
@@ -106392,6 +106415,9 @@ class ResourceStatusPhysicalHostTopology(_messages.Message):
     host: [Output Only] The ID of the host on which the running instance is
       located. Instances on the same host experience the lowest possible
       network latency.
+    machine: Output only. [Output Only] The ID of the machine on which the
+      running instance is located. It is only populated for machines which
+      have multiple hosts.
     subblock: [Output Only] The ID of the sub-block in which the running
       instance is located. Instances in the same sub-block experience lower
       network latency than instances in the same block.
@@ -106401,7 +106427,8 @@ class ResourceStatusPhysicalHostTopology(_messages.Message):
   block = _messages.StringField(2)
   cluster = _messages.StringField(3)
   host = _messages.StringField(4)
-  subblock = _messages.StringField(5)
+  machine = _messages.StringField(5)
+  subblock = _messages.StringField(6)
 
 
 class ResourceStatusPhysicalHostTopologyAdditionalAttributes(_messages.Message):

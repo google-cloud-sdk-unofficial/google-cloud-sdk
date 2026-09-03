@@ -260,7 +260,7 @@ information on how to structure KEYs and VALUEs, run
       parser.add_argument_group())
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create and initialize a Cloud Composer environment.
@@ -793,7 +793,7 @@ class Create(base.Command):
                                         is_composer_v1)
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create and initialize a Cloud Composer environment.
@@ -813,7 +813,6 @@ class CreateBeta(Create):
     parser.add_argument(
         '--enable-development-mode',
         action='store_true',
-        hidden=True,
         help='Whether to build a development-mode environment.',
     )
 
@@ -1000,7 +999,7 @@ def AddComposer3Flags(parser, release_track):
     )
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
   """Create and initialize a Cloud Composer environment.

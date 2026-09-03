@@ -94,6 +94,7 @@ class ComputeV1(base_api.BaseApiClient):
     self.organizationSecurityPolicies = self.OrganizationSecurityPoliciesService(self)
     self.packetMirrorings = self.PacketMirroringsService(self)
     self.previewFeatures = self.PreviewFeaturesService(self)
+    self.projectViews = self.ProjectViewsService(self)
     self.projects = self.ProjectsService(self)
     self.publicAdvertisedPrefixes = self.PublicAdvertisedPrefixesService(self)
     self.publicDelegatedPrefixes = self.PublicDelegatedPrefixesService(self)
@@ -14324,6 +14325,49 @@ a PreviewFeature.
         supports_download=False,
     )
 
+  class ProjectViewsService(base_api.BaseApiService):
+    """Service class for the projectViews resource."""
+
+    _NAME = 'projectViews'
+
+    def __init__(self, client):
+      super(ComputeV1.ProjectViewsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Returns the specified global ProjectViews resource, with a regional.
+context.
+This regional API endpoint reads resource metadata from regional
+read-only replicas. Because changes are copied to these regional replicas
+asynchronously, for real-time resource reads or any write operations
+(creating, updating, or deleting resources), use the global
+[projects.get](https://cloud.google.com/compute/docs/reference/rest/v1/projects/get)
+endpoint.
+
+      Args:
+        request: (ComputeProjectViewsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ProjectView) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.projectViews.get',
+        ordered_params=['project', 'region'],
+        path_params=['project', 'region'],
+        query_params=[],
+        relative_path='projects/{project}/regions/{region}/projectViews',
+        request_field='',
+        request_type_name='ComputeProjectViewsGetRequest',
+        response_type_name='ProjectView',
+        supports_download=False,
+    )
+
   class ProjectsService(base_api.BaseApiService):
     """Service class for the projects resource."""
 
@@ -22263,6 +22307,33 @@ Replaces any existing policy.
         request_field='',
         request_type_name='ComputeReservationSlotsGetRequest',
         response_type_name='ReservationSlotsGetResponse',
+        supports_download=False,
+    )
+
+    def GetHealth(self, request, global_params=None):
+      r"""Get health info on a reservation slot.
+
+      Args:
+        request: (ComputeReservationSlotsGetHealthRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('GetHealth')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetHealth.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}/reservationSubBlocks/{reservationSubBlocksId}/reservationSlots/{reservationSlot}/getHealth',
+        http_method='POST',
+        method_id='compute.reservationSlots.getHealth',
+        ordered_params=['project', 'zone', 'parentName', 'reservationSlot'],
+        path_params=['parentName', 'project', 'reservationSlot', 'zone'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/zones/{zone}/{+parentName}/reservationSlots/{reservationSlot}/getHealth',
+        request_field='',
+        request_type_name='ComputeReservationSlotsGetHealthRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

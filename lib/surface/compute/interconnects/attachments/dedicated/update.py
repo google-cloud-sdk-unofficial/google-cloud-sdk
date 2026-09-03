@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.interconnects.attachments import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute.interconnects import flags as interconnect_flags
 from googlecloudsdk.command_lib.compute.interconnects.attachments import flags as attachment_flags
 from googlecloudsdk.command_lib.util.args import labels_util
 
@@ -44,9 +45,22 @@ class Update(base.UpdateCommand):
     return client.InterconnectAttachment(
         attachment_ref, compute_client=holder.client)
 
+  def _GetInterconnectRef(self, args, holder):
+    if args.interconnect is not None:
+      return self.INTERCONNECT_ARG.ResolveAsResource(
+          args, holder.resources
+      )
+    return None
+
   @classmethod
   def Args(cls, parser):
-
+    cls.INTERCONNECT_ARG = (
+        interconnect_flags.InterconnectArgumentForOtherResource(
+            'The interconnect for the interconnect attachment',
+            required=False,
+        )
+    )
+    cls.INTERCONNECT_ARG.AddArgument(parser)
     cls.INTERCONNECT_ATTACHMENT_ARG = (
         attachment_flags.InterconnectAttachmentArgument())
     cls.INTERCONNECT_ATTACHMENT_ARG.AddArgument(parser, operation_type='patch')
@@ -62,10 +76,13 @@ class Update(base.UpdateCommand):
     attachment_flags.AddCandidateCustomerRouterIpv6Address(parser)
 
   def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     interconnect_attachment = self._get_attachment(args)
+    interconnect_ref = self._GetInterconnectRef(args, holder)
     admin_enabled = attachment_flags.GetAdminEnabledFlag(args)
     return interconnect_attachment.Patch(
         description=args.description,
+        interconnect=interconnect_ref,
         admin_enabled=admin_enabled,
         bandwidth=getattr(args, 'bandwidth', None),
         mtu=getattr(args, 'mtu', None),
@@ -105,6 +122,7 @@ class UpdateBeta(Update):
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     interconnect_attachment = self._get_attachment(args)
+    interconnect_ref = self._GetInterconnectRef(args, holder)
 
     labels = None
     label_fingerprint = None
@@ -120,6 +138,7 @@ class UpdateBeta(Update):
 
     return interconnect_attachment.Patch(
         description=args.description,
+        interconnect=interconnect_ref,
         admin_enabled=admin_enabled,
         labels=labels,
         label_fingerprint=label_fingerprint,

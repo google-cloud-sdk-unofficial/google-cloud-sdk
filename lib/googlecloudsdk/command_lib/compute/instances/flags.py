@@ -4477,6 +4477,18 @@ def AddCurrentCpusArgs(parser):
   )
 
 
+def AddCurrentMemoryArgs(parser):
+  """Adds the --current-memory flag to the parser."""
+  parser.add_argument(
+      '--current-memory',
+      type=arg_parsers.BinarySize(lower_bound='0', default_unit='MB'),
+      help="""\
+      Current amount of memory available for VM. Unset means default
+      amount of memory of the current machine type.
+      """,
+  )
+
+
 def AddTurboModeArgs(parser):
   parser.add_argument(
       '--turbo-mode',

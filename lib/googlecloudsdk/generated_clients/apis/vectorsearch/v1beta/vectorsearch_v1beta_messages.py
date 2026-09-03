@@ -1189,9 +1189,9 @@ class GoogleCloudVectorsearchV1betaSemanticSearch(_messages.Message):
     searchHint: Optional. Sets the search hint. If no strategy is specified,
       the service will use an index if one is available, and fall back to KNN
       search otherwise.
-    searchText: Required. The query text, which is used to generate an
+    searchText: Optional. The query text, which is used to generate an
       embedding according to the embedding model specified in the collection
-      config.
+      config. Required when using the text search mode.
     taskType: Optional. The task type of the query embedding. Must be
       specified for text-only embedding models, see Not needed for multi modal
       embedding models, see

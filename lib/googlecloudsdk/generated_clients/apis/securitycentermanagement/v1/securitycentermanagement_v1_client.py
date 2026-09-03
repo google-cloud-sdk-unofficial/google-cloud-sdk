@@ -52,6 +52,8 @@ class SecuritycentermanagementV1(base_api.BaseApiClient):
     self.organizations_locations_securityHealthAnalyticsCustomModules = self.OrganizationsLocationsSecurityHealthAnalyticsCustomModulesService(self)
     self.organizations_locations = self.OrganizationsLocationsService(self)
     self.organizations = self.OrganizationsService(self)
+    self.projects_locations_clusters_securityCenterServices = self.ProjectsLocationsClustersSecurityCenterServicesService(self)
+    self.projects_locations_clusters = self.ProjectsLocationsClustersService(self)
     self.projects_locations_effectiveEventThreatDetectionCustomModules = self.ProjectsLocationsEffectiveEventThreatDetectionCustomModulesService(self)
     self.projects_locations_effectiveSecurityHealthAnalyticsCustomModules = self.ProjectsLocationsEffectiveSecurityHealthAnalyticsCustomModulesService(self)
     self.projects_locations_eventThreatDetectionCustomModules = self.ProjectsLocationsEventThreatDetectionCustomModulesService(self)
@@ -1477,6 +1479,80 @@ class SecuritycentermanagementV1(base_api.BaseApiClient):
 
     def __init__(self, client):
       super(SecuritycentermanagementV1.OrganizationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class ProjectsLocationsClustersSecurityCenterServicesService(base_api.BaseApiService):
+    """Service class for the projects_locations_clusters_securityCenterServices resource."""
+
+    _NAME = 'projects_locations_clusters_securityCenterServices'
+
+    def __init__(self, client):
+      super(SecuritycentermanagementV1.ProjectsLocationsClustersSecurityCenterServicesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Gets service settings for the specified Security Command Center service.
+
+      Args:
+        request: (SecuritycentermanagementProjectsLocationsClustersSecurityCenterServicesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SecurityCenterService) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}/securityCenterServices/{securityCenterServicesId}',
+        http_method='GET',
+        method_id='securitycentermanagement.projects.locations.clusters.securityCenterServices.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['showEligibleModulesOnly'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='SecuritycentermanagementProjectsLocationsClustersSecurityCenterServicesGetRequest',
+        response_type_name='SecurityCenterService',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates a Security Command Center service using the given update mask.
+
+      Args:
+        request: (SecuritycentermanagementProjectsLocationsClustersSecurityCenterServicesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SecurityCenterService) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}/securityCenterServices/{securityCenterServicesId}',
+        http_method='PATCH',
+        method_id='securitycentermanagement.projects.locations.clusters.securityCenterServices.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask', 'validateOnly'],
+        relative_path='v1/{+name}',
+        request_field='securityCenterService',
+        request_type_name='SecuritycentermanagementProjectsLocationsClustersSecurityCenterServicesPatchRequest',
+        response_type_name='SecurityCenterService',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsClustersService(base_api.BaseApiService):
+    """Service class for the projects_locations_clusters resource."""
+
+    _NAME = 'projects_locations_clusters'
+
+    def __init__(self, client):
+      super(SecuritycentermanagementV1.ProjectsLocationsClustersService, self).__init__(client)
       self._upload_configs = {
           }
 

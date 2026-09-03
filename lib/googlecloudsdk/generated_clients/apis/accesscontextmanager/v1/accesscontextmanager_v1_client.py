@@ -41,10 +41,12 @@ class AccesscontextmanagerV1(base_api.BaseApiClient):
     self.accessPolicies_authorizedOrgsDescs = self.AccessPoliciesAuthorizedOrgsDescsService(self)
     self.accessPolicies_servicePerimeters = self.AccessPoliciesServicePerimetersService(self)
     self.accessPolicies = self.AccessPoliciesService(self)
+    self.folders = self.FoldersService(self)
     self.operations = self.OperationsService(self)
     self.organizations_gcpUserAccessBindings = self.OrganizationsGcpUserAccessBindingsService(self)
     self.organizations = self.OrganizationsService(self)
     self.permissions = self.PermissionsService(self)
+    self.projects = self.ProjectsService(self)
     self.services = self.ServicesService(self)
 
   class AccessPoliciesAccessLevelsService(base_api.BaseApiService):
@@ -841,6 +843,43 @@ class AccesscontextmanagerV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class FoldersService(base_api.BaseApiService):
+    """Service class for the folders resource."""
+
+    _NAME = 'folders'
+
+    def __init__(self, client):
+      super(AccesscontextmanagerV1.FoldersService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def LookupConfiguredServicePerimeter(self, request, global_params=None):
+      r"""Looks up the configured service perimeter for a given resource Format: ['projects/{projectNumber}', 'folders/{folderNumber}'].
+
+      Args:
+        request: (AccesscontextmanagerFoldersLookupConfiguredServicePerimeterRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (LookupConfiguredServicePerimeterResponse) The response message.
+      """
+      config = self.GetMethodConfig('LookupConfiguredServicePerimeter')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    LookupConfiguredServicePerimeter.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/folders/{foldersId}:lookupConfiguredServicePerimeter',
+        http_method='GET',
+        method_id='accesscontextmanager.folders.lookupConfiguredServicePerimeter',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=[],
+        relative_path='v1/{+resource}:lookupConfiguredServicePerimeter',
+        request_field='',
+        request_type_name='AccesscontextmanagerFoldersLookupConfiguredServicePerimeterRequest',
+        response_type_name='LookupConfiguredServicePerimeterResponse',
+        supports_download=False,
+    )
+
   class OperationsService(base_api.BaseApiService):
     """Service class for the operations resource."""
 
@@ -1147,6 +1186,43 @@ class AccesscontextmanagerV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='AccesscontextmanagerPermissionsListRequest',
         response_type_name='ListSupportedPermissionsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsService(base_api.BaseApiService):
+    """Service class for the projects resource."""
+
+    _NAME = 'projects'
+
+    def __init__(self, client):
+      super(AccesscontextmanagerV1.ProjectsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def LookupConfiguredServicePerimeter(self, request, global_params=None):
+      r"""Looks up the configured service perimeter for a given resource Format: ['projects/{projectNumber}', 'folders/{folderNumber}'].
+
+      Args:
+        request: (AccesscontextmanagerProjectsLookupConfiguredServicePerimeterRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (LookupConfiguredServicePerimeterResponse) The response message.
+      """
+      config = self.GetMethodConfig('LookupConfiguredServicePerimeter')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    LookupConfiguredServicePerimeter.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}:lookupConfiguredServicePerimeter',
+        http_method='GET',
+        method_id='accesscontextmanager.projects.lookupConfiguredServicePerimeter',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=[],
+        relative_path='v1/{+resource}:lookupConfiguredServicePerimeter',
+        request_field='',
+        request_type_name='AccesscontextmanagerProjectsLookupConfiguredServicePerimeterRequest',
+        response_type_name='LookupConfiguredServicePerimeterResponse',
         supports_download=False,
     )
 

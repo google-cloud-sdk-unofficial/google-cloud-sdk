@@ -173,6 +173,87 @@ class BooleanValue(_messages.Message):
   value = _messages.BooleanField(1)
 
 
+class Boundary(_messages.Message):
+  r"""A Boundary is a collection of projects defined by a filtering criteria
+  on an organization or a folder.
+
+  Enums:
+    StateValueValuesEnum: Output only. The lifecycle state of the Boundary.
+
+  Fields:
+    createTime: Output only. The creation time of the Boundary.
+    displayName: Optional. Human-readable display name of the Boundary. When
+      present it must be between 4 to 30 characters. Allowed characters are:
+      lowercase and uppercase letters, numbers, hyphen, single-quote, double-
+      quote, space, and exclamation point. Example: `My Production Boundary`
+    etag: This checksum is computed by the server based on the value of other
+      fields, and may be sent on update and delete requests to ensure the
+      client has an up-to-date value before proceeding.
+    managementProject: Output only. The Management Project associated with
+      this boundary. If not provided during Boundary creation, a management
+      project will be automatically created. Cannot be modified after Boundary
+      creation. Format: `projects/{project_number}` Example:
+      `projects/123456789012`
+    name: Identifier. The unique resource name of the Boundary. Format: -
+      `organizations/{organization_id}/boundaries/{boundary_id}` -
+      `folders/{folder_id}/boundaries/{boundary_id}` Example:
+      `folders/123456789/boundaries/my-boundary`
+    resourceFilter: Optional. The filter defining the criteria for descendant
+      projects to be included in the Boundary. Descendant projects are
+      dynamically included in the Boundary based on this filter.
+    state: Output only. The lifecycle state of the Boundary.
+    updateTime: Output only. The most recent time this Boundary was modified.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The lifecycle state of the Boundary.
+
+    Values:
+      STATE_UNSPECIFIED: Unspecified state.
+      CREATING: Boundary is being created.
+      ACTIVE: Boundary is operational, and the management project is fully
+        active.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+
+  createTime = _messages.StringField(1)
+  displayName = _messages.StringField(2)
+  etag = _messages.StringField(3)
+  managementProject = _messages.StringField(4)
+  name = _messages.StringField(5)
+  resourceFilter = _messages.MessageField('ResourceFilter', 6)
+  state = _messages.EnumField('StateValueValuesEnum', 7)
+  updateTime = _messages.StringField(8)
+
+
+class BoundaryConfig(_messages.Message):
+  r"""A BoundaryConfig defines the common configurations regarding Boundaries
+  defined under a parent CRM node (Folder or Organization), such as the
+  partitioning tag key.
+
+  Fields:
+    etag: This checksum is computed by the server based on the value of other
+      fields, and may be sent on update requests to ensure the client has an
+      up-to-date value before proceeding.
+    name: Identifier. The unique resource name of the BoundaryConfig. Format:
+      - `organizations/{organization}/boundaryConfig` -
+      `folders/{folder}/boundaryConfig` Example:
+      `folders/123456789/boundaryConfig`
+    tagKey: Optional. The namespaced name of the tag key. Format:
+      `{parent_id}/{tag_key_short_name}` Example: `123456789012/env` (where
+      123456789012 is the organization ID).
+    updateTime: Output only. The most recent time this BoundaryConfig was
+      modified.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2)
+  tagKey = _messages.StringField(3)
+  updateTime = _messages.StringField(4)
+
+
 class Capability(_messages.Message):
   r"""Representation of a Capability.
 
@@ -306,6 +387,89 @@ class CloudresourcemanagerFetchResourceSemanticsRequest(_messages.Message):
   """
 
   fullResourceName = _messages.StringField(1)
+
+
+class CloudresourcemanagerFoldersBoundariesCreateRequest(_messages.Message):
+  r"""A CloudresourcemanagerFoldersBoundariesCreateRequest object.
+
+  Fields:
+    boundary: A Boundary resource to be passed as the request body.
+    boundaryId: Required. The user-assigned ID for the Boundary, which will
+      become the final component of the Boundary's resource name. Must be
+      unique within the parent resource. It must be 6 to 30 lowercase ASCII
+      letters, digits, or hyphens. It must start with a letter. Trailing
+      hyphens are prohibited. Example: `my-boundary-123`
+    parent: Required. The parent resource under which the Boundary will be
+      created. Format: `organizations/{organization_id}` or
+      `folders/{folder_id}`
+  """
+
+  boundary = _messages.MessageField('Boundary', 1)
+  boundaryId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class CloudresourcemanagerFoldersBoundariesDeleteRequest(_messages.Message):
+  r"""A CloudresourcemanagerFoldersBoundariesDeleteRequest object.
+
+  Fields:
+    name: Required. The name of the Boundary to delete. Format:
+      `organizations/{organization_id}/boundaries/{boundary_id}` or
+      `folders/{folder_id}/boundaries/{boundary_id}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class CloudresourcemanagerFoldersBoundariesGetRequest(_messages.Message):
+  r"""A CloudresourcemanagerFoldersBoundariesGetRequest object.
+
+  Fields:
+    name: Required. The name of the Boundary to retrieve. Format:
+      `organizations/{organization_id}/boundaries/{boundary_id}` or
+      `folders/{folder_id}/boundaries/{boundary_id}` Example:
+      `folders/123456789/boundaries/my-boundary`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class CloudresourcemanagerFoldersBoundariesListRequest(_messages.Message):
+  r"""A CloudresourcemanagerFoldersBoundariesListRequest object.
+
+  Fields:
+    pageSize: Optional. The maximum number of Boundaries to return in the
+      response. The service may return fewer Boundaries than requested. If
+      unspecified, at most 100 Boundaries will be returned. The maximum value
+      is 100; values above 100 will be coerced to 100.
+    pageToken: Optional. A pagination token received from a previous call to
+      `ListBoundaries` that indicates from where listing should continue.
+      Provide this to retrieve the subsequent page.
+    parent: Required. The name of the parent resource whose Boundaries are
+      being listed. Format: `organizations/{organization_id}` or
+      `folders/{folder_id}`
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class CloudresourcemanagerFoldersBoundariesPatchRequest(_messages.Message):
+  r"""A CloudresourcemanagerFoldersBoundariesPatchRequest object.
+
+  Fields:
+    boundary: A Boundary resource to be passed as the request body.
+    name: Identifier. The unique resource name of the Boundary. Format: -
+      `organizations/{organization_id}/boundaries/{boundary_id}` -
+      `folders/{folder_id}/boundaries/{boundary_id}` Example:
+      `folders/123456789/boundaries/my-boundary`
+    updateMask: Optional. The list of fields to update.
+  """
+
+  boundary = _messages.MessageField('Boundary', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
 
 
 class CloudresourcemanagerFoldersCapabilitiesGetRequest(_messages.Message):
@@ -445,6 +609,19 @@ class CloudresourcemanagerFoldersEffectiveSettingsGetRequest(_messages.Message):
   Fields:
     name: Required. The name of the effective setting to get, example
       projects/123/effectiveSettings/iam.projectCreatorRoles.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class CloudresourcemanagerFoldersGetBoundaryConfigRequest(_messages.Message):
+  r"""A CloudresourcemanagerFoldersGetBoundaryConfigRequest object.
+
+  Fields:
+    name: Required. The name of the BoundaryConfig to retrieve. Format:
+      `organizations/{organization}/boundaryConfig` or
+      `folders/{folder}/boundaryConfig` Example:
+      `folders/123456789/boundaryConfig`
   """
 
   name = _messages.StringField(1, required=True)
@@ -674,6 +851,24 @@ class CloudresourcemanagerFoldersUndeleteRequest(_messages.Message):
   undeleteFolderRequest = _messages.MessageField('UndeleteFolderRequest', 2)
 
 
+class CloudresourcemanagerFoldersUpdateBoundaryConfigRequest(_messages.Message):
+  r"""A CloudresourcemanagerFoldersUpdateBoundaryConfigRequest object.
+
+  Fields:
+    boundaryConfig: A BoundaryConfig resource to be passed as the request
+      body.
+    name: Identifier. The unique resource name of the BoundaryConfig. Format:
+      - `organizations/{organization}/boundaryConfig` -
+      `folders/{folder}/boundaryConfig` Example:
+      `folders/123456789/boundaryConfig`
+    updateMask: Optional. The list of fields to update.
+  """
+
+  boundaryConfig = _messages.MessageField('BoundaryConfig', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
+
+
 class CloudresourcemanagerGoogleCloudResourcemanagerV2alpha1FolderOperation(_messages.Message):
   r"""Metadata describing a long running folder operation
 
@@ -842,6 +1037,89 @@ class CloudresourcemanagerOperationsGetRequest(_messages.Message):
   name = _messages.StringField(1, required=True)
 
 
+class CloudresourcemanagerOrganizationsBoundariesCreateRequest(_messages.Message):
+  r"""A CloudresourcemanagerOrganizationsBoundariesCreateRequest object.
+
+  Fields:
+    boundary: A Boundary resource to be passed as the request body.
+    boundaryId: Required. The user-assigned ID for the Boundary, which will
+      become the final component of the Boundary's resource name. Must be
+      unique within the parent resource. It must be 6 to 30 lowercase ASCII
+      letters, digits, or hyphens. It must start with a letter. Trailing
+      hyphens are prohibited. Example: `my-boundary-123`
+    parent: Required. The parent resource under which the Boundary will be
+      created. Format: `organizations/{organization_id}` or
+      `folders/{folder_id}`
+  """
+
+  boundary = _messages.MessageField('Boundary', 1)
+  boundaryId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class CloudresourcemanagerOrganizationsBoundariesDeleteRequest(_messages.Message):
+  r"""A CloudresourcemanagerOrganizationsBoundariesDeleteRequest object.
+
+  Fields:
+    name: Required. The name of the Boundary to delete. Format:
+      `organizations/{organization_id}/boundaries/{boundary_id}` or
+      `folders/{folder_id}/boundaries/{boundary_id}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class CloudresourcemanagerOrganizationsBoundariesGetRequest(_messages.Message):
+  r"""A CloudresourcemanagerOrganizationsBoundariesGetRequest object.
+
+  Fields:
+    name: Required. The name of the Boundary to retrieve. Format:
+      `organizations/{organization_id}/boundaries/{boundary_id}` or
+      `folders/{folder_id}/boundaries/{boundary_id}` Example:
+      `folders/123456789/boundaries/my-boundary`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class CloudresourcemanagerOrganizationsBoundariesListRequest(_messages.Message):
+  r"""A CloudresourcemanagerOrganizationsBoundariesListRequest object.
+
+  Fields:
+    pageSize: Optional. The maximum number of Boundaries to return in the
+      response. The service may return fewer Boundaries than requested. If
+      unspecified, at most 100 Boundaries will be returned. The maximum value
+      is 100; values above 100 will be coerced to 100.
+    pageToken: Optional. A pagination token received from a previous call to
+      `ListBoundaries` that indicates from where listing should continue.
+      Provide this to retrieve the subsequent page.
+    parent: Required. The name of the parent resource whose Boundaries are
+      being listed. Format: `organizations/{organization_id}` or
+      `folders/{folder_id}`
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class CloudresourcemanagerOrganizationsBoundariesPatchRequest(_messages.Message):
+  r"""A CloudresourcemanagerOrganizationsBoundariesPatchRequest object.
+
+  Fields:
+    boundary: A Boundary resource to be passed as the request body.
+    name: Identifier. The unique resource name of the Boundary. Format: -
+      `organizations/{organization_id}/boundaries/{boundary_id}` -
+      `folders/{folder_id}/boundaries/{boundary_id}` Example:
+      `folders/123456789/boundaries/my-boundary`
+    updateMask: Optional. The list of fields to update.
+  """
+
+  boundary = _messages.MessageField('Boundary', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
+
+
 class CloudresourcemanagerOrganizationsCapabilityConfigsCreateRequest(_messages.Message):
   r"""A CloudresourcemanagerOrganizationsCapabilityConfigsCreateRequest
   object.
@@ -940,6 +1218,19 @@ class CloudresourcemanagerOrganizationsEffectiveSettingsGetRequest(_messages.Mes
   Fields:
     name: Required. The name of the effective setting to get, example
       projects/123/effectiveSettings/iam.projectCreatorRoles.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class CloudresourcemanagerOrganizationsGetBoundaryConfigRequest(_messages.Message):
+  r"""A CloudresourcemanagerOrganizationsGetBoundaryConfigRequest object.
+
+  Fields:
+    name: Required. The name of the BoundaryConfig to retrieve. Format:
+      `organizations/{organization}/boundaryConfig` or
+      `folders/{folder}/boundaryConfig` Example:
+      `folders/123456789/boundaryConfig`
   """
 
   name = _messages.StringField(1, required=True)
@@ -1090,6 +1381,24 @@ class CloudresourcemanagerOrganizationsTestIamPermissionsRequest(_messages.Messa
 
   resource = _messages.StringField(1, required=True)
   testIamPermissionsRequest = _messages.MessageField('TestIamPermissionsRequest', 2)
+
+
+class CloudresourcemanagerOrganizationsUpdateBoundaryConfigRequest(_messages.Message):
+  r"""A CloudresourcemanagerOrganizationsUpdateBoundaryConfigRequest object.
+
+  Fields:
+    boundaryConfig: A BoundaryConfig resource to be passed as the request
+      body.
+    name: Identifier. The unique resource name of the BoundaryConfig. Format:
+      - `organizations/{organization}/boundaryConfig` -
+      `folders/{folder}/boundaryConfig` Example:
+      `folders/123456789/boundaryConfig`
+    updateMask: Optional. The list of fields to update.
+  """
+
+  boundaryConfig = _messages.MessageField('BoundaryConfig', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
 
 
 class CloudresourcemanagerProjectsCapabilityConfigsCreateRequest(_messages.Message):
@@ -2381,6 +2690,28 @@ class Lien(_messages.Message):
   restrictions = _messages.StringField(6, repeated=True)
 
 
+class ListBoundariesResponse(_messages.Message):
+  r"""A page of the response received from the ListBoundaries method. A
+  paginated response where more pages are available has `next_page_token` set.
+  This token can be used in a subsequent request to retrieve the next page.
+  NOTE: A response may contain fewer elements than the request `page_size` and
+  still have a `next_page_token`.
+
+  Fields:
+    boundaries: The list of Boundaries under the parent. This list can be
+      paginated.
+    nextPageToken: Pagination token. If the result set is too large to fit in
+      a single response, this token is returned. It encodes the position of
+      the current result cursor. Feeding this value into a new list request
+      with the `page_token` parameter gives the next page of the results. When
+      `next_page_token` is not filled in, there is no next page and the list
+      returned is the last page in the result set.
+  """
+
+  boundaries = _messages.MessageField('Boundary', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
 class ListCapabilityConfigsResponse(_messages.Message):
   r"""A page of the response received from the ListCapabilityConfigs method. A
   paginated response where more pages are available has `next_page_token` set.
@@ -3005,6 +3336,16 @@ class ProjectCreationStatus(_messages.Message):
   ready = _messages.BooleanField(3)
 
 
+class ResourceFilter(_messages.Message):
+  r"""Filter to define the criteria for including projects in the Boundary.
+
+  Fields:
+    tagFilter: A tag based filter. A project must match it to be included.
+  """
+
+  tagFilter = _messages.MessageField('TagFilter', 1)
+
+
 class SearchFoldersResponse(_messages.Message):
   r"""The response message for searching folders.
 
@@ -3356,6 +3697,23 @@ class TagBindingCollection(_messages.Message):
   fullResourceName = _messages.StringField(2)
   name = _messages.StringField(3)
   tags = _messages.MessageField('TagsValue', 4)
+
+
+class TagFilter(_messages.Message):
+  r"""Matches projects based on a specific tag key and a specific tag value.
+
+  Fields:
+    tagKey: Required. Immutable. The namespaced name of the tag key. Format:
+      `{parent_id}/{tag_key_short_name}` Example: `123456789012/env` (where
+      123456789012 is the organization ID).
+    tagValue: Required. The allowed value for the tag key. A project matches
+      this tag filter if its effective tag value for the given `tag_key`
+      matches this value. Format: short name of the tag value. Example:
+      `production` or `staging`.
+  """
+
+  tagKey = _messages.StringField(1)
+  tagValue = _messages.StringField(2)
 
 
 class TagHold(_messages.Message):

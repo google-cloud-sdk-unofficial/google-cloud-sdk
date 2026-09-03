@@ -253,14 +253,14 @@ class AiModel(_messages.Message):
     deploymentPlatform: The platform on which the model is deployed.
     displayName: The user defined display name of model. Ex. baseline-
       classification-model
-    domain: The domain of the model, for example, "image-classification".
-    library: The name of the model library, for example, "transformers".
-    location: The region in which the model is used, for example, "us-
-      central1".
-    name: The name of the AI model, for example, "gemini:1.0.0".
-    publisher: The publisher of the model, for example, "google" or "nvidia".
-    usageCategory: The purpose of the model, for example, "Inteference" or
-      "Training".
+    domain: The domain of the model, for example, `image-classification`.
+    library: The name of the model library, for example, `transformers`.
+    location: The region in which the model is used, for example, `us-
+      central1`.
+    name: The name of the AI model, for example, `gemini:1.0.0`.
+    publisher: The publisher of the model, for example, `google` or `nvidia`.
+    usageCategory: The purpose of the model, for example, `Inference` or
+      `Training`.
   """
 
   class DeploymentPlatformValueValuesEnum(_messages.Enum):
@@ -268,9 +268,9 @@ class AiModel(_messages.Message):
 
     Values:
       DEPLOYMENT_PLATFORM_UNSPECIFIED: Unspecified deployment platform.
-      VERTEX_AI: Vertex AI.
+      VERTEX_AI: Gemini Enterprise Agent Platform.
       GKE: Google Kubernetes Engine.
-      GCE: Google Compute Engine.
+      GCE: Compute Engine.
       FINE_TUNED_MODEL: Fine tuned model.
     """
     DEPLOYMENT_PLATFORM_UNSPECIFIED = 0
@@ -4624,13 +4624,13 @@ class GoogleCloudSecuritycenterV2AiModel(_messages.Message):
     deploymentPlatform: The platform on which the model is deployed.
     displayName: The user defined display name of model. Ex. baseline-
       classification-model
-    domain: The domain of the model, for example, "image-classification".
-    library: The name of the model library, for example, "transformers".
-    location: The region in which the model is used, for example, "us-
-      central1".
-    name: The name of the AI model, for example, "gemini:1.0.0".
-    publisher: The publisher of the model, for example, "google" or "nvidia".
-    usageCategory: The purpose of the model, for example, "Inteference" or
+    domain: The domain of the model, for example, `image-classification`.
+    library: The name of the model library, for example, `transformers`.
+    location: The region in which the model is used, for example, `us-
+      central1`.
+    name: The name of the AI model, for example, `gemini:1.0.0`.
+    publisher: The publisher of the model, for example, `google` or `nvidia`.
+    usageCategory: The purpose of the model, for example, "Inference" or
       "Training".
   """
 
@@ -4639,9 +4639,9 @@ class GoogleCloudSecuritycenterV2AiModel(_messages.Message):
 
     Values:
       DEPLOYMENT_PLATFORM_UNSPECIFIED: Unspecified deployment platform.
-      VERTEX_AI: Vertex AI.
+      VERTEX_AI: Gemini Enterprise Agent Platform.
       GKE: Google Kubernetes Engine.
-      GCE: Google Compute Engine.
+      GCE: Compute Engine.
       FINE_TUNED_MODEL: Fine tuned model.
     """
     DEPLOYMENT_PLATFORM_UNSPECIFIED = 0

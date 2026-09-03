@@ -2168,9 +2168,8 @@ class DlpProjectsLocationsContentPoliciesCreateRequest(_messages.Message):
       GooglePrivacyDlpV2CreateContentPolicyRequest resource to be passed as
       the request body.
     parent: Required. Parent resource name. The format of this value varies
-      depending on the scope of the request (project or organization): +
-      Projects scope: `projects/{project_id}/locations/{location_id}` +
-      Organizations scope: `organizations/{org_id}/locations/{location_id}`
+      depending on the scope of the request (project): + Projects scope:
+      `projects/{project_id}/locations/{location_id}`
   """
 
   googlePrivacyDlpV2CreateContentPolicyRequest = _messages.MessageField('GooglePrivacyDlpV2CreateContentPolicyRequest', 1)
@@ -2208,8 +2207,7 @@ class DlpProjectsLocationsContentPoliciesListRequest(_messages.Message):
     pageToken: Optional. Page token from a previous page to return the next
       set of results. If set, all other request fields must match the original
       request.
-    parent: Required. Resource name of the organization or project, for
-      example, `organizations/433245324/locations/europe` or
+    parent: Required. Resource name of the project, for example,
       `projects/project-id/locations/asia`.
   """
 
@@ -4986,7 +4984,11 @@ class GooglePrivacyDlpV2ConversationMessage(_messages.Message):
     MessageTypeValueValuesEnum: The type of message.
 
   Fields:
-    content: The contents of this message.
+    content: Deprecated: Use `message_parts` instead. The contents of this
+      message. Only one of `content` and `message_parts` can be set.
+    messageParts: Optional. The parts of the message. Restricted to being at
+      most a single text item. Only one of `content` and `message_parts` can
+      be set.
     messageType: The type of message.
     participantId: Optional. The identifier of the participant, for example
       'test-user' or 'gemini'. The participant ID can contain lowercase
@@ -5010,8 +5012,9 @@ class GooglePrivacyDlpV2ConversationMessage(_messages.Message):
     CONTEXT = 2
 
   content = _messages.StringField(1)
-  messageType = _messages.EnumField('MessageTypeValueValuesEnum', 2)
-  participantId = _messages.StringField(3)
+  messageParts = _messages.MessageField('GooglePrivacyDlpV2MessagePart', 2, repeated=True)
+  messageType = _messages.EnumField('MessageTypeValueValuesEnum', 3)
+  participantId = _messages.StringField(4)
 
 
 class GooglePrivacyDlpV2CreateConnectionRequest(_messages.Message):
@@ -9776,6 +9779,16 @@ class GooglePrivacyDlpV2Manual(_messages.Message):
   finished.
   """
 
+
+
+class GooglePrivacyDlpV2MessagePart(_messages.Message):
+  r"""A part of a conversation message.
+
+  Fields:
+    text: String content for text-based messages.
+  """
+
+  text = _messages.StringField(1)
 
 
 class GooglePrivacyDlpV2MetadataKeyValueExpression(_messages.Message):

@@ -402,3 +402,19 @@ def AddInstanceFlexibilityPolicyArgs(parser):
       metavar="INSTANCE_SELECTION",
       action="append",
   )
+
+
+def AddEndTimeFlag(parser):
+  """Add the --end-time flag."""
+  parser.add_argument(
+      "--end-time",
+      type=arg_parsers.Datetime.Parse,
+      required=True,
+      help="""
+        The new end time for the future reservation after the extension is applied.
+
+        Example:
+
+          gcloud compute advice calendar-mode-extension --end-time=2026-08-30T00:00:00Z
+      """,
+  )

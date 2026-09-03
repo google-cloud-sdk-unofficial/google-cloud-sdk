@@ -197,7 +197,10 @@ class Replace(base.Command):
       )
 
       header = operation + ' job...'
-      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      if self.ReleaseTrack() in (
+          base.ReleaseTrack.ALPHA,
+          base.ReleaseTrack.BETA,
+      ):
         if is_create:
           new_job = client.ValidateJobBeforeCreate(job_ref, changes)
           with progress_tracker.StagedProgressTracker(

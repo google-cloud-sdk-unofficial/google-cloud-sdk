@@ -6335,7 +6335,7 @@ class DataplexV1(base_api.BaseApiClient):
         method_id='dataplex.projects.locations.searchEntries',
         ordered_params=['name'],
         path_params=['name'],
-        query_params=['orderBy', 'pageSize', 'pageToken', 'query', 'scope', 'semanticSearch'],
+        query_params=['contexts', 'orderBy', 'pageSize', 'pageToken', 'query', 'scope', 'semanticSearch'],
         relative_path='v1/{+name}:searchEntries',
         request_field='',
         request_type_name='DataplexProjectsLocationsSearchEntriesRequest',

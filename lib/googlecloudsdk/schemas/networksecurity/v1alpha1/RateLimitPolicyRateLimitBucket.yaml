@@ -1,0 +1,57 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networksecurity v1alpha1 RateLimitPolicyRateLimitBucket export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- defaultLimit
+- keys
+- name
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  defaultLimit:
+    description: |-
+      Specifies the default limit to apply for this rate limit bucket.
+    $ref: RateLimitPolicyRateLimitBucketLimit.yaml
+  dryRun:
+    description: Specifies whether the rate limit bucket is in dry-run mode.
+    type: boolean
+  keys:
+    description: |-
+      Specifies the keys to use for rate limiting. At least one key is required.
+      If multiple keys are specified, the keys will be combined and used as a
+      single key.
+    type: array
+    items:
+      $ref: RateLimitPolicyRateLimitBucketKey.yaml
+  name:
+    description: |-
+      Specifies the name of the rate limit bucket. Name will be used to
+      reference the bucket in the RateLimitAction.
+    type: string
+  userOverrides:
+    description: |-
+      Specifies a list of user overrides to apply to the rate limit bucket.
+    type: array
+    items:
+      $ref: RateLimitPolicyRateLimitBucketUserOverride.yaml

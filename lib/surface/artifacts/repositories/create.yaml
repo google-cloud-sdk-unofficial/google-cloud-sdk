@@ -106,6 +106,19 @@
       hidden: true
       help_text: |
         Enable generating attestation with verifiable signature on imported files in remote repositories.
+    - arg_name: dependency-confusion-protection
+      api_field: repository.virtualRepositoryConfig.mergeStrategy
+      hidden: true
+      default: null
+      action: store_true
+      help_text: |
+        (Virtual Repositories only) Enable Dependency Confusion Protection on the Virtual Repository.
+        When enabled, package lookups return results only from the highest-priority upstream that has a match,
+        instead of merging results from all upstreams.
+      choices:
+      - arg_value: true
+        enum_value: DEPENDENCY_CONFUSION_PROTECTION
+        help_text: Enable Dependency Confusion Protection.
     - arg_name: alternative-hostname
       api_field: repository.networkConfig.alternativeHostname
       hidden: true

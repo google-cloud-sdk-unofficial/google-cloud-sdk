@@ -10898,6 +10898,9 @@ class RegionalMulticastConsumerAssociation(_messages.Message):
       multicast consumer association was created.
     description: Optional. An optional text description of the regional
       multicast consumer association.
+    hybridSpokes: Optional. Network Connectivity Center (NCC) hybrid spokes
+      associated with this regional consumer association. Format:
+      `projects/{project}/locations/{location}/spokes/{spoke}`.
     labels: Optional. Labels as key-value pairs
     name: Identifier. The resource name of the regional multicast consumer
       association. Use the following format:
@@ -10945,13 +10948,14 @@ class RegionalMulticastConsumerAssociation(_messages.Message):
 
   createTime = _messages.StringField(1)
   description = _messages.StringField(2)
-  labels = _messages.MessageField('LabelsValue', 3)
-  name = _messages.StringField(4)
-  network = _messages.StringField(5)
-  regionalMulticastDomainActivation = _messages.StringField(6)
-  state = _messages.MessageField('MulticastResourceState', 7)
-  uniqueId = _messages.StringField(8)
-  updateTime = _messages.StringField(9)
+  hybridSpokes = _messages.StringField(3, repeated=True)
+  labels = _messages.MessageField('LabelsValue', 4)
+  name = _messages.StringField(5)
+  network = _messages.StringField(6)
+  regionalMulticastDomainActivation = _messages.StringField(7)
+  state = _messages.MessageField('MulticastResourceState', 8)
+  uniqueId = _messages.StringField(9)
+  updateTime = _messages.StringField(10)
 
 
 class RegionalMulticastDomainActivation(_messages.Message):
@@ -11285,6 +11289,9 @@ class RegionalMulticastProducerAssociation(_messages.Message):
       multicast producer association was created.
     description: Optional. An optional text description of the regional
       multicast producer association.
+    hybridSpokes: Optional. Network Connectivity Center (NCC) hybrid spokes
+      associated with this regional producer association. Format:
+      `projects/{project}/locations/{location}/spokes/{spoke}`.
     labels: Optional. Labels as key-value pairs
     name: Identifier. The resource name of the regional multicast producer
       association. Use the following format:
@@ -11332,13 +11339,14 @@ class RegionalMulticastProducerAssociation(_messages.Message):
 
   createTime = _messages.StringField(1)
   description = _messages.StringField(2)
-  labels = _messages.MessageField('LabelsValue', 3)
-  name = _messages.StringField(4)
-  network = _messages.StringField(5)
-  regionalMulticastDomainActivation = _messages.StringField(6)
-  state = _messages.MessageField('MulticastResourceState', 7)
-  uniqueId = _messages.StringField(8)
-  updateTime = _messages.StringField(9)
+  hybridSpokes = _messages.StringField(3, repeated=True)
+  labels = _messages.MessageField('LabelsValue', 4)
+  name = _messages.StringField(5)
+  network = _messages.StringField(6)
+  regionalMulticastDomainActivation = _messages.StringField(7)
+  state = _messages.MessageField('MulticastResourceState', 8)
+  uniqueId = _messages.StringField(9)
+  updateTime = _messages.StringField(10)
 
 
 class RetryFilterPerRouteConfig(_messages.Message):
@@ -11613,12 +11621,18 @@ class ServiceBindingSource(_messages.Message):
   from.
 
   Fields:
+    serviceExtensions: Optional. A list of Service Extension resources
+      attached to the ServiceBinding. Each Service Extension reference should
+      match the pattern: `projects/*/locations/*/extensionBindings/`. The
+      location of the Extension Binding must match the location of the
+      ServiceBinding.
     services: Optional. A list of resources attached to the ServiceBinding.
       The resources can be TargetHttpProxy or TargetHttpsProxy. The location
       of the resources must match the location of the ServiceBinding.
   """
 
-  services = _messages.StringField(1, repeated=True)
+  serviceExtensions = _messages.StringField(1, repeated=True)
+  services = _messages.StringField(2, repeated=True)
 
 
 class ServiceLbPolicy(_messages.Message):

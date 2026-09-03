@@ -87,7 +87,7 @@ class Add(base.CreateCommand):
           )
         elif is_parent_organization:
           command_prefix = (
-              'gcloud resource-manager organizations add-iam-policy-binding'
+              'gcloud organizations add-iam-policy-binding'
           )
         else:
           command_prefix = 'gcloud projects add-iam-policy-binding'

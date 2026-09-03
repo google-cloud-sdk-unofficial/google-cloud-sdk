@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
   help_text:
     brief: Describe a Google Distributed Cloud zone.
     description: Displays details about a specific Google Distributed Cloud zone.
@@ -16,6 +16,8 @@
     method: get
     ALPHA:
       api_version: v1alpha
+    GA:
+      api_version: v1
     modify_request_hooks:
     - googlecloudsdk.command_lib.edge_cloud.zone.hooks:SetNameForZoneDescribe
   arguments:

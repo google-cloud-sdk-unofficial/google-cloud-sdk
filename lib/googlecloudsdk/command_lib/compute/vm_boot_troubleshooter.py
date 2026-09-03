@@ -38,6 +38,15 @@ _BOOT_SESSION_MARKERS = [
     r'Linux version \d',
 ]
 
+# Markers that begin a new Windows boot session on GCE serial port 2 (SAC/EMS),
+# ordered by boot stage (earliest first). BdsDxe prints on every UEFI boot
+# before Windows Boot Manager executes; <machine-info> is the SAC banner emitted
+# once the OS kernel initializes SAC.
+_WINDOWS_BOOT_SESSION_MARKERS = [
+    r'BdsDxe: starting Boot',
+    r'<machine-info>',
+]
+
 
 VM_BOOT_PATTERNS = [
     'Security Violation',
@@ -270,10 +279,32 @@ _BOOT_CAUSE_CHECKS = [
 ]
 
 
+# Windows Boot Manager (BCD) failure: boot configuration missing, corrupt,
+# or pointing at an inaccessible boot device.
+# 0xc000000e = corpus (disk-restore case), 0xc0000001 = live bcdedit-break case.
+# Note: Healthy Windows port-2 buffers contain the literal "Windows Boot
+# Manager" (firmware BdsDxe lines), so pattern anchors must match failure
+# literals only, never the title alone.
+WINDOWS_BOOT_MANAGER_PATTERNS = [
+    r'0xc000000e(?![0-9a-fA-F])',
+    r'0xc0000001(?![0-9a-fA-F])',
+    r"A required device isn't connected or can't be accessed",
+    r'Windows failed to start',
+]
+WINDOWS_BOOT_MANAGER_MESSAGE = (
+    "Windows Boot Manager could not start Windows ('Windows failed to start'): "
+    'the Boot Configuration Data is missing, corrupt, or points at an '
+    'inaccessible boot device. The status code on the serial console (port 2) '
+    'identifies the specific cause. Repair the boot configuration offline by '
+    'attaching the boot disk to a recovery VM: '
+    'https://cloud.google.com/compute/docs/troubleshooting/'
+    'troubleshooting-windows#offline-repair\n')
+
+
 BootFinding = collections.namedtuple('BootFinding', ['cause', 'message'])
 
 
-def _FilterSessionLogToLastBoot(sc_log):
+def _FilterSessionLogToLastBoot(sc_log, is_windows=False):
   """Filters the serial log down to the last boot session.
 
   The serial console buffer persists across in-place reboots, so errors
@@ -290,13 +321,17 @@ def _FilterSessionLogToLastBoot(sc_log):
   cannot resurface a stale session.
 
   Args:
-    sc_log: str, the full serial console (port 1) contents.
+    sc_log: str, the full serial console contents.
+    is_windows: bool, whether the instance is a Windows instance.
 
   Returns:
     str, the log content belonging to the most recent boot session, or
     the full log when no boot session marker is present.
   """
-  for marker in _BOOT_SESSION_MARKERS:
+  markers = (
+      _WINDOWS_BOOT_SESSION_MARKERS if is_windows else _BOOT_SESSION_MARKERS
+  )
+  for marker in markers:
     if matches := list(re.finditer(marker, sc_log)):
       return sc_log[matches[-1].start():]
   return sc_log
@@ -309,12 +344,14 @@ class VMBootTroubleshooter(ssh_troubleshooter.SshTroubleshooter):
     project: The project object.
     zone: str, the zone name.
     instance: The instance object.
+    is_windows: bool, whether the instance is a Windows instance.
   """
 
-  def __init__(self, project, zone, instance):
+  def __init__(self, project, zone, instance, is_windows=False):
     self.project = project
     self.zone = zone
     self.instance = instance
+    self.is_windows = is_windows
     self.compute_client = apis.GetClientInstance(_API_COMPUTE_CLIENT_NAME,
                                                  _API_CLIENT_VERSION_V1)
     self.compute_message = apis.GetMessagesModule(_API_COMPUTE_CLIENT_NAME,
@@ -331,23 +368,32 @@ class VMBootTroubleshooter(ssh_troubleshooter.SshTroubleshooter):
     """Analyze serial console log and return detected boot issues.
 
     Args:
-      sc_log: str, the serial console log content. If None, it will be fetched.
+      sc_log: str, the serial console log content. If None, it will be fetched
+        from port 2 for Windows or port 1 for Linux.
 
     Returns:
       list[BootFinding]: A list of BootFinding namedtuples containing the
         detected boot issues.
     """
     if sc_log is None:
+      port = 2 if self.is_windows else 1
       sc_log = ssh_troubleshooter_utils.GetSerialConsoleLog(
           self.compute_client, self.compute_message, self.instance.name,
-          self.project.name, self.zone)
+          self.project.name, self.zone, port=port)
 
     # Scope matching to the current boot: the buffer survives in-place
     # reboots, and failures from an already-fixed boot must not be
     # reported as the current root cause.
-    sc_log = _FilterSessionLogToLastBoot(sc_log)
+    sc_log = _FilterSessionLogToLastBoot(sc_log, is_windows=self.is_windows)
 
     findings = []
+    if self.is_windows:
+      if ssh_troubleshooter_utils.SearchPatternErrorInLog(
+          WINDOWS_BOOT_MANAGER_PATTERNS, sc_log):
+        findings.append(
+            BootFinding('windows_boot_manager', WINDOWS_BOOT_MANAGER_MESSAGE))
+      return findings
+
     # Cause-specific boot failures first, so we report the real root cause
     # and a targeted fix instead of a generic "check your logs" message.
     for patterns, key, message in _BOOT_CAUSE_CHECKS:

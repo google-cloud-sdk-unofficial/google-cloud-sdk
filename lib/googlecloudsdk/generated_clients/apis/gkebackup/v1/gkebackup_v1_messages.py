@@ -127,9 +127,10 @@ class BDRBackupPlanJobLog(_messages.Message):
 
 class BDRBackupRestoreJobLog(_messages.Message):
   r"""Log entry for Backup and Restore Job for resources using BackupPlan
-  based protection. Next Id: 26
+  based protection. Next Id: 27
 
   Fields:
+    autoProtectionPolicy: The auto-protection policy that created the backup.
     backupConsistencyTime: Backup consistency time.
     backupName: Full resource name of the backup created in backup jobs and
       used in restore jobs.
@@ -164,31 +165,32 @@ class BDRBackupRestoreJobLog(_messages.Message):
     targetResourceType: The target resource type for restore jobs.
   """
 
-  backupConsistencyTime = _messages.StringField(1)
-  backupName = _messages.StringField(2)
-  backupPlanName = _messages.StringField(3)
-  backupRetentionDays = _messages.IntegerField(4, variant=_messages.Variant.INT32)
-  backupRule = _messages.StringField(5)
-  backupVaultName = _messages.StringField(6)
-  dataSourceName = _messages.StringField(7)
-  endTime = _messages.StringField(8)
-  errorCode = _messages.IntegerField(9, variant=_messages.Variant.INT32)
-  errorMessage = _messages.StringField(10)
-  errorType = _messages.StringField(11)
-  incrementalBackupSizeGib = _messages.FloatField(12)
-  jobCategory = _messages.StringField(13)
-  jobId = _messages.StringField(14)
-  jobStatus = _messages.StringField(15)
-  recoveryPointTime = _messages.StringField(16)
-  resourceType = _messages.StringField(17)
-  restoreResourceLocation = _messages.StringField(18)
-  restoreResourceName = _messages.StringField(19)
-  sourceResourceId = _messages.StringField(20)
-  sourceResourceLocation = _messages.StringField(21)
-  sourceResourceName = _messages.StringField(22)
-  startTime = _messages.StringField(23)
-  storageTier = _messages.StringField(24)
-  targetResourceType = _messages.StringField(25)
+  autoProtectionPolicy = _messages.StringField(1)
+  backupConsistencyTime = _messages.StringField(2)
+  backupName = _messages.StringField(3)
+  backupPlanName = _messages.StringField(4)
+  backupRetentionDays = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  backupRule = _messages.StringField(6)
+  backupVaultName = _messages.StringField(7)
+  dataSourceName = _messages.StringField(8)
+  endTime = _messages.StringField(9)
+  errorCode = _messages.IntegerField(10, variant=_messages.Variant.INT32)
+  errorMessage = _messages.StringField(11)
+  errorType = _messages.StringField(12)
+  incrementalBackupSizeGib = _messages.FloatField(13)
+  jobCategory = _messages.StringField(14)
+  jobId = _messages.StringField(15)
+  jobStatus = _messages.StringField(16)
+  recoveryPointTime = _messages.StringField(17)
+  resourceType = _messages.StringField(18)
+  restoreResourceLocation = _messages.StringField(19)
+  restoreResourceName = _messages.StringField(20)
+  sourceResourceId = _messages.StringField(21)
+  sourceResourceLocation = _messages.StringField(22)
+  sourceResourceName = _messages.StringField(23)
+  startTime = _messages.StringField(24)
+  storageTier = _messages.StringField(25)
+  targetResourceType = _messages.StringField(26)
 
 
 class Backup(_messages.Message):

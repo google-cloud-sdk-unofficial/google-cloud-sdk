@@ -823,6 +823,15 @@ def CreateCatalog(catalog_id, catalog_msg, primary_location=None):
     }
 
   if (
+      hasattr(catalog_msg, 'encryption_configuration')
+      and catalog_msg.encryption_configuration
+      and catalog_msg.encryption_configuration.kms_key_name
+  ):
+    body['encryption-configuration'] = {
+        'kms-key-name': catalog_msg.encryption_configuration.kms_key_name
+    }
+
+  if (
       hasattr(catalog_msg, 'federated_catalog_options')
       and catalog_msg.federated_catalog_options
   ):

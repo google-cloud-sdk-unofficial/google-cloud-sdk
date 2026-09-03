@@ -21,6 +21,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import local_build
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
@@ -148,7 +149,7 @@ def ValidateUploadThroughRunApi(deploy_from_source, release_track):
   if not deploy_from_source or len(deploy_from_source) != 1:
     return False
   container = next(iter(deploy_from_source.items()))[1]
-  if not flags.IsUploadLaunchStage(release_track) or not container.IsSpecified(
+  if not flags.IsRunUploadSupported(release_track) or not container.IsSpecified(
       'run_upload'
   ):
     return
@@ -197,16 +198,28 @@ def IsNoBuildFromSource(release_track, build_from_source):
   return container.IsSpecified('no_build')
 
 
-def IsLocalBuildFromSource(release_track, build_from_source):
+def HasValidLocalBuildFromSource(release_track, build_from_source):
   """Checks if this is a local build source deployment."""
   if release_track != base.ReleaseTrack.ALPHA:
     return False
   if not build_from_source:
     return False
-  return any(
-      hasattr(container, 'local_build') and container.IsSpecified('local_build')
+  local_build_containers = [
+      container
       for container in build_from_source.values()
-  )
+      if flags.FlagIsExplicitlySet(container, 'local_build')
+  ]
+
+  if len(local_build_containers) > 1:
+    raise c_exceptions.InvalidArgumentException(
+        '--local-build',
+        'At most one container can be built locally.',
+    )
+
+  if local_build_containers:
+    local_build.ValidateLocalBuildSource(local_build_containers[0].source)
+
+  return bool(local_build_containers)
 
 
 def ValidateServiceNameFromImage(image_uri, service_id):

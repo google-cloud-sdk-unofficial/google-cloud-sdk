@@ -63,6 +63,11 @@ class Upgrade(base.Command):
             upgradeType=flag_parser.UpgradeType(),
             version=flag_parser.Version(),
             force=flag_parser.Force(),
+            ignoreMaintenancePolicies=flag_parser.IgnoreMaintenancePolicies(),
+            ignoreClusterDisruptionBudgets=flag_parser.IgnoreClusterDisruptionBudgets(),
+            soakDurationOverrideAllStages=flag_parser.SoakDurationOverrideAllStages(),
+            soakDurationOverridePerStage=flag_parser.SoakDurationOverridePerStage(),
+            patchOnly=flag_parser.PatchOnly(),
         ),
     )
 

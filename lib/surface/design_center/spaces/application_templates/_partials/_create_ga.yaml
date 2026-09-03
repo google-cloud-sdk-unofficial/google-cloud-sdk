@@ -139,6 +139,16 @@
           help_text: |-
             The SaaS names. Format for each SaaS:
             projects/{project}/locations/{location}/saas/{saas}
+    - arg_name: inputs-as-root-module-variables
+      api_field: applicationTemplate.inputsAsRootModuleVariables
+      action: store_true
+      required: false
+      type: bool
+      hidden: true
+      help_text: |-
+        If true, exposes all inputs as root module variables.
+        This is only supported for STANDARD composition type templates.
+      default: null
   request:
     api_version: v1
     collection:

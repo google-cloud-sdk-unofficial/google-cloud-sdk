@@ -1,0 +1,13 @@
+# proto-file: devtools/build_cleaner/proto/actions.proto
+# proto-message: ActionSpecs
+
+# Check that all source files and scenario test files are consumed by a BUILD rule.
+action_spec {
+  action: CHECK_FILE_USAGE
+  file_usage_params {
+    source_strictness: NO_MISSING
+    source_selector {
+      source_regex: ".*[.](py|java|cc|h|proto|kt|js|ts)$|.*\\.scenario\\.yaml$"
+    }
+  }
+}

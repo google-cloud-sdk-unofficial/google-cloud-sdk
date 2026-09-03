@@ -34,6 +34,16 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  FOLDERS_BOUNDARIES = (
+      'folders.boundaries',
+      '{+name}',
+      {
+          '':
+              'folders/{foldersId}/boundaries/{boundariesId}',
+      },
+      ['name'],
+      True
+  )
   FOLDERS_CAPABILITIES = (
       'folders.capabilities',
       '{+name}',
@@ -129,6 +139,16 @@ class Collections(enum.Enum):
       {
           '':
               'organizations/{organizationsId}',
+      },
+      ['name'],
+      True
+  )
+  ORGANIZATIONS_BOUNDARIES = (
+      'organizations.boundaries',
+      '{+name}',
+      {
+          '':
+              'organizations/{organizationsId}/boundaries/{boundariesId}',
       },
       ['name'],
       True

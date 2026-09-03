@@ -27,11 +27,27 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
-@base.Hidden
+DETAILED_HELP = {
+    'EXAMPLES': (
+        """\
+        To create a blue-green deployment named `my-deployment` from source instance `my-instance` in region `us-central1`:
+
+          $ {command} my-deployment --source-instance=my-instance --region=us-central1
+
+        To create a blue-green deployment with a target database version for a major version upgrade:
+
+          $ {command} my-deployment --source-instance=my-instance --target-database-version=POSTGRES_15 --region=us-central1
+        """
+    ),
+}
+
+
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Creates a Cloud SQL blue-green deployment."""
+
+  detailed_help = DETAILED_HELP
 
   @classmethod
   def Args(cls, parser: argparse.ArgumentParser) -> None:

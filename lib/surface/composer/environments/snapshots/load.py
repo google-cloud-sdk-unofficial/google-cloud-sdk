@@ -34,6 +34,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 class LoadSnapshot(base.Command):
   """Load a snapshot into the environment."""
 

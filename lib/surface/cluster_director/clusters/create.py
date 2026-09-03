@@ -71,22 +71,22 @@ DETAILED_HELP = {
     "EXAMPLES": textwrap.dedent("""
         To create a cluster `my-cluster` in location `us-central1` with granular flags, run the following example:
 
-        $ {command} my-cluster --location us-central1 \
-        --description "My cluster description" \
-        --labels env=prod,client=gcloud-cli \
-        --create-network name=network0 \
-        --create-filestores name=locations/us-central1-a/instances/filestore0,tier=ZONAL,capacityGb={filestoreSize},fileshare={fileshare} \
-        --filestores locations/us-central1-a/instances/filestore1 \
-        --create-buckets name=bucket0 \
-        --buckets bucket1 \
-        --create-lustres name=locations/us-central1-a/instances/lustre0,capacityGb={lustreSize},filesystem={filesystem} \
-        --lustres locations/us-central1-a/instances/lustre1 \
-        --reserved-instances id=compute0,reservation=zones/us-central1-a/reservations/{reservation} \
-        --slurm-login-node machineType={machineType},zone=us-central1-a \
-        --slurm-node-sets id=nodeset0,computeId=compute0 \
-        --slurm-partitions id=partition0,nodesetIds=[nodeset0] \
-        --slurm-default-partition partition0 \
-        --format json
+        $ {command} my-cluster --location=us-central1 \
+        --description="My cluster description" \
+        --labels=env=prod,client=gcloud-cli \
+        --create-network=name=network0 \
+        --create-filestores=name=locations/us-central1-a/instances/filestore0,tier=ZONAL,capacityGb={filestoreSize},fileshare={fileshare} \
+        --filestores=locations/us-central1-a/instances/filestore1 \
+        --create-buckets=name=bucket0 \
+        --buckets=bucket1 \
+        --create-lustres=name=locations/us-central1-a/instances/lustre0,capacityGb={lustreSize},filesystem={filesystem} \
+        --lustres=locations/us-central1-a/instances/lustre1 \
+        --reserved-instances=id=compute0,reservation=zones/us-central1-a/reservations/{reservation} \
+        --slurm-login-node=machineType={machineType},zone=us-central1-a \
+        --slurm-node-sets=id=nodeset0,computeId=compute0 \
+        --slurm-partitions=id=partition0,nodesetIds=[nodeset0] \
+        --slurm-default-partition=partition0 \
+        --format=json
 
         To create a cluster `my-cluster` in location `us-central1` with config in JSON string format run the following example:
 
@@ -98,11 +98,11 @@ DETAILED_HELP = {
 
         To create a cluster `my-cluster` in location `us-central1` using the quickstart setup with default cluster parameters, run the following example:
 
-        $ {command} my-cluster --location=us-central1 --quickstart-cluster --create-network name=network0
+        $ {command} my-cluster --location=us-central1 --quickstart-cluster --create-network=name=network0
 
         To create a cluster `my-cluster` in location `us-central1` using a pre-defined reference architecture choice (such as `g4-flex-start`), run the following example:
 
-        $ {command} my-cluster --location=us-central1 --reference-architecture=g4-flex-start --create-network name=network0
+        $ {command} my-cluster --location=us-central1 --reference-architecture=g4-flex-start --create-network=name=network0
         """),
 }
 

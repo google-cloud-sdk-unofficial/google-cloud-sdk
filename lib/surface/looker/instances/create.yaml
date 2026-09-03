@@ -84,6 +84,50 @@
         arg_value: core-trial-embed
         help_text: |
           An embed trial edition of Looker (Google Cloud core) product.
+      - enum_value: LOOKER_CORE_S_ANNUAL
+        arg_value: core-s-annual
+        help_text: |
+          A Subscription Standard Annual edition of Looker (Google Cloud core) product. Intended for a single-team project or a standalone startup.
+      - enum_value: LOOKER_CORE_M_ANNUAL
+        arg_value: core-m-annual
+        help_text: |
+          A Subscription Enterprise Annual edition of Looker (Google Cloud core) product. Designed for medium-sized ongoing business use cases.
+      - enum_value: LOOKER_CORE_L_ANNUAL
+        arg_value: core-l-annual
+        help_text: |
+          A Subscription Enterprise Plus Annual edition of Looker (Google Cloud core) product. For enterprise-sized rollouts involving large-scale implementations.
+      - enum_value: LOOKER_CORE_XL_ANNUAL
+        arg_value: core-xl-annual
+        help_text: |
+          A Subscription Enterprise Ultra Annual edition of Looker (Google Cloud core) product. This is the largest tier for massive enterprise deployments.
+      - enum_value: LOOKER_CORE_NONPROD_M_ANNUAL
+        arg_value: nonprod-core-m-annual
+        help_text: |
+          A Non-prod Subscription Enterprise Annual edition of Looker (Google Cloud core) product. Designed for medium-sized ongoing business use cases.
+      - enum_value: LOOKER_CORE_NONPROD_L_ANNUAL
+        arg_value: nonprod-core-l-annual
+        help_text: |
+          A Non-prod Subscription Enterprise Plus Annual edition of Looker (Google Cloud core) product. For enterprise-sized rollouts involving large-scale implementations.
+      - enum_value: LOOKER_CORE_NONPROD_XL_ANNUAL
+        arg_value: nonprod-core-xl-annual
+        help_text: |
+          A Non-prod Subscription Enterprise Ultra Annual edition of Looker (Google Cloud core) product. This is the largest tier for massive enterprise deployments.
+      - enum_value: LOOKER_CORE_TRIAL_S_ANNUAL
+        arg_value: core-trial-s-annual
+        help_text: |
+          A Subscription Trial Standard Annual edition of Looker (Google Cloud core) product. Intended for a single-team project or a standalone startup.
+      - enum_value: LOOKER_CORE_TRIAL_M_ANNUAL
+        arg_value: core-trial-m-annual
+        help_text: |
+          A Subscription Trial Enterprise Annual edition of Looker (Google Cloud core) product. Designed for medium-sized ongoing business use cases.
+      - enum_value: LOOKER_CORE_TRIAL_L_ANNUAL
+        arg_value: core-trial-l-annual
+        help_text: |
+          A Subscription Trial Enterprise Plus Annual edition of Looker (Google Cloud core) product. For enterprise-sized rollouts involving large-scale implementations.
+      - enum_value: LOOKER_CORE_TRIAL_XL_ANNUAL
+        arg_value: core-trial-xl-annual
+        help_text: |
+          A Subscription Trial Enterprise Ultra Annual edition of Looker (Google Cloud core) product. This is the largest tier for massive enterprise deployments.
     # Flags - Public IP
     - arg_name: public-ip-enabled
       api_field: instance.publicIpEnabled

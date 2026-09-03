@@ -74,6 +74,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_CDNEDGEEXTENSIONS = (
+      'projects.locations.cdnEdgeExtensions',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'cdnEdgeExtensions/{cdnEdgeExtensionsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_EDGECACHEKEYSETS = (
       'projects.locations.edgeCacheKeysets',
       '{+name}',

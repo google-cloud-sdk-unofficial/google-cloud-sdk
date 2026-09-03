@@ -21,7 +21,22 @@ from googlecloudsdk.command_lib.composer import resource_args
 from googlecloudsdk.core import log
 
 
-@base.DefaultUniverseOnly
+DETAILED_HELP = {
+    'EXAMPLES': (
+        """\
+          To list the suggested Cloud Composer image version upgrades for an environment named ``env-1'', run:
+
+            $ {command} env-1
+
+          To list the suggested Cloud Composer image version upgrades for an environment named ``env-1'' in location ``us-central1'', run:
+
+            $ {command} env-1 --location=us-central1
+        """
+    )
+}
+
+
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class ListUpgrades(base.ListCommand):
@@ -33,6 +48,8 @@ class ListUpgrades(base.ListCommand):
   * Composer 'default' flag
   * List of supported python versions
   """
+
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
@@ -48,4 +65,5 @@ class ListUpgrades(base.ListCommand):
     env_ref = args.CONCEPTS.environment.Parse()
     log.status.Print('Fetching list of suggested upgrades...')
     return image_versions_command_util.ListImageVersionUpgrades(
-        env_ref, release_track=self.ReleaseTrack())
+        env_ref, release_track=self.ReleaseTrack()
+    )

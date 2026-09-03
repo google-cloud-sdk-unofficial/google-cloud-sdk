@@ -1,2 +1,2 @@
 #!/usr/bin/env python
-__version__ = "3.18"
+__version__ = "3.19"

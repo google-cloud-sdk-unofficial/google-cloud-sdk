@@ -953,13 +953,12 @@ class AuthzPolicyAuthzRuleToRequestOperationMCPMethod(_messages.Message):
   r"""Describes a set of MCP methods to match against.
 
   Fields:
-    name: Required. The MCP method to match against. Allowed values are as
-      follows: 1. `tools`, `prompts`, `resources` - these will match against
-      all sub methods under the respective methods. 2. `prompts/list`,
-      `tools/list`, `resources/list`, `resources/templates/list` 3.
-      `prompts/get`, `tools/call`, `resources/subscribe`,
-      `resources/unsubscribe`, `resources/read` Params cannot be specified for
-      categories 1 and 2.
+    name: Required. The MCP method to match against. Allowed values include:
+      1. `tools`, `prompts`, `resources` - these will match against all sub
+      methods under the respective methods. 2. `prompts/list`, `tools/list`,
+      `resources/list`, `resources/templates/list` 3. `prompts/get`,
+      `tools/call`, `resources/subscribe`, `resources/unsubscribe`,
+      `resources/read` Params cannot be specified for categories 1 and 2.
     params: Optional. A list of MCP method parameters to match against. The
       match can be one of exact, prefix, suffix, or contains (substring
       match). Matches are always case sensitive unless the ignoreCase is set.
@@ -1023,9 +1022,9 @@ class AuthzPolicyTarget(_messages.Message):
       balancing scheme. Required only when targeting forwarding rules. If
       targeting Secure Web Proxy, this field must be `INTERNAL_MANAGED` or not
       specified. Must not be specified when targeting Agent Gateway. Supported
-      values: `INTERNAL_MANAGED` and `EXTERNAL_MANAGED`. For more information,
-      refer to [Backend services overview](https://cloud.google.com/load-
-      balancing/docs/backend-service).
+      values include `INTERNAL_MANAGED` and `EXTERNAL_MANAGED`. For more
+      information, refer to [Backend services
+      overview](https://cloud.google.com/load-balancing/docs/backend-service).
 
   Fields:
     loadBalancingScheme: Optional. All gateways and forwarding rules
@@ -1033,9 +1032,9 @@ class AuthzPolicyTarget(_messages.Message):
       balancing scheme. Required only when targeting forwarding rules. If
       targeting Secure Web Proxy, this field must be `INTERNAL_MANAGED` or not
       specified. Must not be specified when targeting Agent Gateway. Supported
-      values: `INTERNAL_MANAGED` and `EXTERNAL_MANAGED`. For more information,
-      refer to [Backend services overview](https://cloud.google.com/load-
-      balancing/docs/backend-service).
+      values include `INTERNAL_MANAGED` and `EXTERNAL_MANAGED`. For more
+      information, refer to [Backend services
+      overview](https://cloud.google.com/load-balancing/docs/backend-service).
     resources: Required. A list of references to the Forwarding Rules, Secure
       Web Proxy Gateways, or Agent Gateways on which this policy will be
       applied.
@@ -1046,7 +1045,7 @@ class AuthzPolicyTarget(_messages.Message):
     and extensions must share the same load balancing scheme. Required only
     when targeting forwarding rules. If targeting Secure Web Proxy, this field
     must be `INTERNAL_MANAGED` or not specified. Must not be specified when
-    targeting Agent Gateway. Supported values: `INTERNAL_MANAGED` and
+    targeting Agent Gateway. Supported values include `INTERNAL_MANAGED` and
     `EXTERNAL_MANAGED`. For more information, refer to [Backend services
     overview](https://cloud.google.com/load-balancing/docs/backend-service).
 
@@ -1583,6 +1582,9 @@ class FirewallEndpoint(_messages.Message):
     description: Optional. Description of the firewall endpoint. Max length
       2048 characters.
     endpointSettings: Optional. Settings for the endpoint.
+    explicitPrivateServiceConnectAttachment: Output only. The resource name of
+      the explicit PSC Attachment. Format:
+      projects/{project}/regions/{region}/serviceAttachments/{id}
     firstPartyEndpointSettings: Optional. Firewall endpoint settings for first
       party firewall endpoints.
     jumboFramesEnabled: Optional. Immutable. Deprecated: Indicates whether
@@ -1664,19 +1666,20 @@ class FirewallEndpoint(_messages.Message):
   createTime = _messages.StringField(4)
   description = _messages.StringField(5)
   endpointSettings = _messages.MessageField('FirewallEndpointEndpointSettings', 6)
-  firstPartyEndpointSettings = _messages.MessageField('FirstPartyEndpointSettings', 7)
-  jumboFramesEnabled = _messages.BooleanField(8)
-  kmsKey = _messages.StringField(9)
-  labels = _messages.MessageField('LabelsValue', 10)
-  name = _messages.StringField(11)
-  reconciling = _messages.BooleanField(12)
-  satisfiesPzi = _messages.BooleanField(13)
-  satisfiesPzs = _messages.BooleanField(14)
-  state = _messages.EnumField('StateValueValuesEnum', 15)
-  thirdPartyEndpointSettings = _messages.MessageField('ThirdPartyEndpointSettings', 16)
-  type = _messages.EnumField('TypeValueValuesEnum', 17)
-  updateTime = _messages.StringField(18)
-  wildfireSettings = _messages.MessageField('FirewallEndpointWildfireSettings', 19)
+  explicitPrivateServiceConnectAttachment = _messages.StringField(7)
+  firstPartyEndpointSettings = _messages.MessageField('FirstPartyEndpointSettings', 8)
+  jumboFramesEnabled = _messages.BooleanField(9)
+  kmsKey = _messages.StringField(10)
+  labels = _messages.MessageField('LabelsValue', 11)
+  name = _messages.StringField(12)
+  reconciling = _messages.BooleanField(13)
+  satisfiesPzi = _messages.BooleanField(14)
+  satisfiesPzs = _messages.BooleanField(15)
+  state = _messages.EnumField('StateValueValuesEnum', 16)
+  thirdPartyEndpointSettings = _messages.MessageField('ThirdPartyEndpointSettings', 17)
+  type = _messages.EnumField('TypeValueValuesEnum', 18)
+  updateTime = _messages.StringField(19)
+  wildfireSettings = _messages.MessageField('FirewallEndpointWildfireSettings', 20)
 
 
 class FirewallEndpointAssociation(_messages.Message):

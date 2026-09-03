@@ -170,6 +170,58 @@ class RolloutSequenceFlags:
             ' first stage of the sequence.'
         ),
     )
+    if self.release_track in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
+      self.parser.add_argument(
+          '--ignore-maintenance-policies',
+          action='store_true',
+          default=False,
+          help=textwrap.dedent("""\
+              If set, the rollout will ignore any maintenance policies
+              (Maintenance Windows and Maintenance Exclusions) set on the
+              clusters.
+          """),
+      )
+      self.parser.add_argument(
+          '--ignore-cluster-disruption-budgets',
+          action='store_true',
+          default=False,
+          help=textwrap.dedent("""\
+              If set, the rollout will ignore the disruption budgets
+              of the clusters.
+          """),
+      )
+      soak_override_group = self.parser.add_mutually_exclusive_group(
+          required=False
+      )
+      soak_override_group.add_argument(
+          '--soak-duration-overrides-per-stage',
+          type=arg_parsers.ArgDict(value_type=arg_parsers.Duration()),
+          default=None,
+          metavar='STAGE_NUMBER=DURATION',
+          help=textwrap.dedent("""\
+              Overrides the soak duration for specific stages of the rollout,
+              in the format STAGE_NUMBER=DURATION (e.g., 1=1h,2=30m).
+          """),
+      )
+      soak_override_group.add_argument(
+          '--soak-duration-override-all-stages',
+          type=arg_parsers.Duration(),
+          default=None,
+          help=textwrap.dedent("""\
+              Overrides the soak duration for all stages of the rollout.
+          """),
+      )
+    if self.release_track in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
+      self.parser.add_argument(
+          '--patch-only',
+          action='store_true',
+          default=False,
+          help=textwrap.dedent("""\
+              If set, the rollout will only upgrade clusters that are already on
+              the minor version of the target version, but are on an earlier
+              patch version.
+          """),
+      )
 
   def AddRolloutSequenceResourceArg(self):
     fleet_resources.AddRolloutSequenceResourceArg(
@@ -423,3 +475,49 @@ class RolloutSequenceFlagParser:
   def Force(self) -> bool:
     """Parses force flag."""
     return getattr(self.args, 'force', False)
+
+  def IgnoreMaintenancePolicies(self) -> bool:
+    """Parses ignore-maintenance-policies flag."""
+    return getattr(self.args, 'ignore_maintenance_policies', False)
+
+  def IgnoreClusterDisruptionBudgets(self) -> bool:
+    """Parses ignore-disruption-budgets flag."""
+    return getattr(self.args, 'ignore_cluster_disruption_budgets', False)
+
+  def SoakDurationOverrideAllStages(self) -> str | None:
+    """Parses soak-duration-override-all-stages flag."""
+    duration_sec = getattr(self.args, 'soak_duration_override_all_stages', None)
+    if duration_sec is None:
+      return None
+    return f'{duration_sec}s'
+
+  def SoakDurationOverridePerStage(
+      self,
+  ) -> (
+      fleet_messages_alpha.PerStageSoakDurationOverrides
+      | fleet_messages_beta.PerStageSoakDurationOverrides
+      | None
+  ):
+    """Parses soak-duration-overrides-per-stage flag."""
+    val_dict = getattr(self.args, 'soak_duration_overrides_per_stage', None)
+    if not val_dict:
+      return None
+    overrides = []
+    for stage, duration_sec in sorted(val_dict.items()):
+      overrides.append(
+          self.messages.PerStageSoakDurationOverrides.StageOverridesValue.AdditionalProperty(
+              key=str(stage), value=f'{duration_sec}s'
+          )
+      )
+    overrides_val = (
+        self.messages.PerStageSoakDurationOverrides.StageOverridesValue(
+            additionalProperties=overrides
+        )
+    )
+    return self.messages.PerStageSoakDurationOverrides(
+        stageOverrides=overrides_val
+    )
+
+  def PatchOnly(self) -> bool:
+    """Parses patch only flag."""
+    return getattr(self.args, 'patch_only', False)

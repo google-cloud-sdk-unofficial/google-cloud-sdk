@@ -4268,6 +4268,9 @@ class DataplexProjectsLocationsSearchEntriesRequest(_messages.Message):
   r"""A DataplexProjectsLocationsSearchEntriesRequest object.
 
   Fields:
+    contexts: Optional. Specifies the scope of the context in which the search
+      will be performed. This scope will also be used to perform IAM checks,
+      which if passing, will return all resources in the scope.
     name: Required. The project to which the request should be attributed in
       the following form: projects/{project}/locations/global.
     orderBy: Optional. Specifies the ordering of results. Supported values
@@ -4290,13 +4293,14 @@ class DataplexProjectsLocationsSearchEntriesRequest(_messages.Message):
       keywords.
   """
 
-  name = _messages.StringField(1, required=True)
-  orderBy = _messages.StringField(2)
-  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(4)
-  query = _messages.StringField(5)
-  scope = _messages.StringField(6)
-  semanticSearch = _messages.BooleanField(7)
+  contexts = _messages.StringField(1, repeated=True)
+  name = _messages.StringField(2, required=True)
+  orderBy = _messages.StringField(3)
+  pageSize = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(5)
+  query = _messages.StringField(6)
+  scope = _messages.StringField(7)
+  semanticSearch = _messages.BooleanField(8)
 
 
 class Empty(_messages.Message):
@@ -4511,10 +4515,13 @@ class GoogleCloudDataplexV1ApproveChangeRequestRequest(_messages.Message):
   r"""Request message for ApproveChangeRequest.
 
   Fields:
+    comment: Optional. The comment or reason for approving the ChangeRequest.
+      Maximum length is 1024 characters.
     etag: Optional. The etag of the ChangeRequest.
   """
 
-  etag = _messages.StringField(1)
+  comment = _messages.StringField(1)
+  etag = _messages.StringField(2)
 
 
 class GoogleCloudDataplexV1Aspect(_messages.Message):
@@ -5269,6 +5276,9 @@ class GoogleCloudDataplexV1ChangeRequest(_messages.Message):
     resource: Output only. The full resource name of the target resource to be
       modified. Example: //dataplex.googleapis.com/projects/my-
       project/locations/us-central1/entryGroups/my-group/entries/my-entry
+    reviewerComment: Output only. The comment provided by the reviewer when
+      approving or rejecting the ChangeRequest. Maximum length is 1024
+      characters.
     state: Output only. The current state of the ChangeRequest.
     uid: Output only. System generated globally unique ID for the
       ChangeRequest.
@@ -5382,13 +5392,14 @@ class GoogleCloudDataplexV1ChangeRequest(_messages.Message):
   name = _messages.StringField(19)
   rejectionComment = _messages.StringField(20)
   resource = _messages.StringField(21)
-  state = _messages.EnumField('StateValueValuesEnum', 22)
-  uid = _messages.StringField(23)
-  updateEntry = _messages.MessageField('GoogleCloudDataplexV1UpdateEntryRequest', 24)
-  updateGlossary = _messages.MessageField('GoogleCloudDataplexV1UpdateGlossaryRequest', 25)
-  updateGlossaryCategory = _messages.MessageField('GoogleCloudDataplexV1UpdateGlossaryCategoryRequest', 26)
-  updateGlossaryTerm = _messages.MessageField('GoogleCloudDataplexV1UpdateGlossaryTermRequest', 27)
-  updateTime = _messages.StringField(28)
+  reviewerComment = _messages.StringField(22)
+  state = _messages.EnumField('StateValueValuesEnum', 23)
+  uid = _messages.StringField(24)
+  updateEntry = _messages.MessageField('GoogleCloudDataplexV1UpdateEntryRequest', 25)
+  updateGlossary = _messages.MessageField('GoogleCloudDataplexV1UpdateGlossaryRequest', 26)
+  updateGlossaryCategory = _messages.MessageField('GoogleCloudDataplexV1UpdateGlossaryCategoryRequest', 27)
+  updateGlossaryTerm = _messages.MessageField('GoogleCloudDataplexV1UpdateGlossaryTermRequest', 28)
+  updateTime = _messages.StringField(29)
 
 
 class GoogleCloudDataplexV1ContactIdentity(_messages.Message):
@@ -6077,13 +6088,30 @@ class GoogleCloudDataplexV1DataDocumentationResultField(_messages.Message):
 class GoogleCloudDataplexV1DataDocumentationResultQuery(_messages.Message):
   r"""A sample SQL query in data documentation.
 
+  Enums:
+    SqlDialectValueValuesEnum: Output only. The SQL dialect of the query.
+
   Fields:
     description: Output only. The description for the query.
     sql: Output only. The SQL query string which can be executed.
+    sqlDialect: Output only. The SQL dialect of the query.
   """
+
+  class SqlDialectValueValuesEnum(_messages.Enum):
+    r"""Output only. The SQL dialect of the query.
+
+    Values:
+      SQL_DIALECT_UNSPECIFIED: SQL dialect unspecified.
+      GOOGLE_SQL: Google SQL dialect.
+      SPARK_SQL: Spark SQL dialect.
+    """
+    SQL_DIALECT_UNSPECIFIED = 0
+    GOOGLE_SQL = 1
+    SPARK_SQL = 2
 
   description = _messages.StringField(1)
   sql = _messages.StringField(2)
+  sqlDialect = _messages.EnumField('SqlDialectValueValuesEnum', 3)
 
 
 class GoogleCloudDataplexV1DataDocumentationResultSchema(_messages.Message):
@@ -6191,6 +6219,9 @@ class GoogleCloudDataplexV1DataDocumentationSpec(_messages.Message):
 
   Enums:
     GenerationScopesValueListEntryValuesEnum:
+    SqlDialectValueValuesEnum: Optional. The SQL dialect to use in the
+      generated SQL queries. If not specified, the default dialect is Google
+      SQL.
 
   Fields:
     catalogPublishingEnabled: Optional. Whether to publish result to Dataplex
@@ -6199,6 +6230,8 @@ class GoogleCloudDataplexV1DataDocumentationSpec(_messages.Message):
       documentation to generate. Any component that is required to generate
       the specified components will also be generated. If no generation scope
       is specified, all available documentation components will be generated.
+    sqlDialect: Optional. The SQL dialect to use in the generated SQL queries.
+      If not specified, the default dialect is Google SQL.
   """
 
   class GenerationScopesValueListEntryValuesEnum(_messages.Enum):
@@ -6221,8 +6254,22 @@ class GoogleCloudDataplexV1DataDocumentationSpec(_messages.Message):
     SQL_QUERIES = 3
     BUSINESS_GLOSSARY_TERM_ASSOCIATIONS = 4
 
+  class SqlDialectValueValuesEnum(_messages.Enum):
+    r"""Optional. The SQL dialect to use in the generated SQL queries. If not
+    specified, the default dialect is Google SQL.
+
+    Values:
+      SQL_DIALECT_UNSPECIFIED: SQL dialect unspecified.
+      GOOGLE_SQL: Google SQL dialect.
+      SPARK_SQL: Spark SQL dialect.
+    """
+    SQL_DIALECT_UNSPECIFIED = 0
+    GOOGLE_SQL = 1
+    SPARK_SQL = 2
+
   catalogPublishingEnabled = _messages.BooleanField(1)
   generationScopes = _messages.EnumField('GenerationScopesValueListEntryValuesEnum', 2, repeated=True)
+  sqlDialect = _messages.EnumField('SqlDialectValueValuesEnum', 3)
 
 
 class GoogleCloudDataplexV1DataDomain(_messages.Message):
@@ -9266,6 +9313,37 @@ class GoogleCloudDataplexV1EntryLinkEvent(_messages.Message):
   resource = _messages.StringField(3)
 
 
+class GoogleCloudDataplexV1EntryLinkTypeEvent(_messages.Message):
+  r"""Payload associated with EntryLinkType related log events.
+
+  Enums:
+    EventTypeValueValuesEnum: The type of the event.
+
+  Fields:
+    entryLinkTypeId: Name of the resource.
+    eventType: The type of the event.
+    message: The log message.
+  """
+
+  class EventTypeValueValuesEnum(_messages.Enum):
+    r"""The type of the event.
+
+    Values:
+      EVENT_TYPE_UNSPECIFIED: An unspecified event type.
+      ENTRY_LINK_TYPE_CREATE: EntryLinkType create event.
+      ENTRY_LINK_TYPE_UPDATE: EntryLinkType update event.
+      ENTRY_LINK_TYPE_DELETE: EntryLinkType delete event.
+    """
+    EVENT_TYPE_UNSPECIFIED = 0
+    ENTRY_LINK_TYPE_CREATE = 1
+    ENTRY_LINK_TYPE_UPDATE = 2
+    ENTRY_LINK_TYPE_DELETE = 3
+
+  entryLinkTypeId = _messages.StringField(1)
+  eventType = _messages.EnumField('EventTypeValueValuesEnum', 2)
+  message = _messages.StringField(3)
+
+
 class GoogleCloudDataplexV1EntrySource(_messages.Message):
   r"""Information related to the source system of the data resource that is
   represented by the entry.
@@ -11484,10 +11562,7 @@ class GoogleCloudDataplexV1QueryCatalogRequest(_messages.Message):
     maxResults: Optional. The maximum number of rows of data to return per
       page of results. Defaults to 1000. In addition to this limit, responses
       are also limited to 10 MB.
-    pageToken: Optional. If provided, subsequent page is returned.
     query: GoogleSQL query to execute.
-    referenceId: Reference to a query executed beforehand. Results can only be
-      fetched up to 24h after the query was triggered.
     scopes: Optional. One "organizations/" or multiple "projects/". Providing
       a mixture, or more than one org is an error.Defaults to the org of the
       project in the "name" if empty.
@@ -11497,11 +11572,9 @@ class GoogleCloudDataplexV1QueryCatalogRequest(_messages.Message):
   """
 
   maxResults = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(2)
-  query = _messages.StringField(3)
-  referenceId = _messages.StringField(4)
-  scopes = _messages.StringField(5, repeated=True)
-  timeout = _messages.StringField(6)
+  query = _messages.StringField(2)
+  scopes = _messages.StringField(3, repeated=True)
+  timeout = _messages.StringField(4)
 
 
 class GoogleCloudDataplexV1QueryCatalogResponse(_messages.Message):
@@ -11510,13 +11583,10 @@ class GoogleCloudDataplexV1QueryCatalogResponse(_messages.Message):
   Fields:
     done: If true, the query has completed and query_result is populated.
     queryResult: Results of the query, set only if done is true.
-    referenceId: A unique ID for this query, can be used to fetch results once
-      the query completes.
   """
 
   done = _messages.BooleanField(1)
   queryResult = _messages.MessageField('GoogleCloudDataplexV1QueryCatalogResponseQueryResult', 2)
-  referenceId = _messages.StringField(3)
 
 
 class GoogleCloudDataplexV1QueryCatalogResponseQueryResult(_messages.Message):
@@ -11526,8 +11596,6 @@ class GoogleCloudDataplexV1QueryCatalogResponseQueryResult(_messages.Message):
     RowsValueListEntry: A RowsValueListEntry object.
 
   Fields:
-    nextPageToken: Used to fetch next page of results in subsequent calls.
-      Empty if there are no more results.
     rows: Results of the query.
     totalRows: The total number of rows in the result (not just current page).
   """
@@ -11557,9 +11625,8 @@ class GoogleCloudDataplexV1QueryCatalogResponseQueryResult(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  nextPageToken = _messages.StringField(1)
-  rows = _messages.MessageField('RowsValueListEntry', 2, repeated=True)
-  totalRows = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  rows = _messages.MessageField('RowsValueListEntry', 1, repeated=True)
+  totalRows = _messages.IntegerField(2, variant=_messages.Variant.INT32)
 
 
 class GoogleCloudDataplexV1RejectChangeRequestRequest(_messages.Message):

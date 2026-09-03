@@ -1470,6 +1470,20 @@ class StopWorkstationRequest(_messages.Message):
   validateOnly = _messages.BooleanField(2)
 
 
+class SuspendWorkstationRequest(_messages.Message):
+  r"""Request message for SuspendWorkstation.
+
+  Fields:
+    etag: Optional. If set, the request will be rejected if the latest version
+      of the workstation on the server does not have this ETag.
+    validateOnly: Optional. If set, validate the request and preview the
+      result, but do not actually apply it.
+  """
+
+  etag = _messages.StringField(1)
+  validateOnly = _messages.BooleanField(2)
+
+
 class TestIamPermissionsRequest(_messages.Message):
   r"""Request message for `TestIamPermissions` method.
 
@@ -1562,12 +1576,16 @@ class Workstation(_messages.Message):
       STATE_STOPPING: The workstation is being stopped.
       STATE_STOPPED: The workstation is stopped and will not be able to
         receive requests until it is started.
+      STATE_SUSPENDING: The workstation is being suspended.
+      STATE_SUSPENDED: The workstation is suspended.
     """
     STATE_UNSPECIFIED = 0
     STATE_STARTING = 1
     STATE_RUNNING = 2
     STATE_STOPPING = 3
     STATE_STOPPED = 4
+    STATE_SUSPENDING = 5
+    STATE_SUSPENDED = 6
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AnnotationsValue(_messages.Message):
@@ -1849,6 +1867,11 @@ class WorkstationConfig(_messages.Message):
   (IAM)](https://cloud.google.com/iam/docs/overview) rules to grant access to
   teams or to individual developers.
 
+  Enums:
+    IdleActionValueValuesEnum: Optional. The action to take when the
+      workstation has been idle for the duration specified in idle_timeout.
+      Defaults to STOP.
+
   Messages:
     AnnotationsValue: Optional. Client-specified annotations.
     LabelsValue: Optional.
@@ -1916,11 +1939,14 @@ class WorkstationConfig(_messages.Message):
       allows workstation users to share access to either their entire
       workstation, or individual ports. Defaults to false.
     host: Optional. Runtime host for the workstation.
+    idleAction: Optional. The action to take when the workstation has been
+      idle for the duration specified in idle_timeout. Defaults to STOP.
     idleTimeout: Optional. Number of seconds to wait before automatically
-      stopping a workstation after it last received user traffic. A value of
-      `"0s"` indicates that Cloud Workstations VMs created with this
-      configuration should never time out due to idleness. Provide
-      [duration](https://developers.google.com/protocol-
+      stopping or suspending a workstation after it last received user
+      traffic. See idle_action to configure whether to stop or suspend idle
+      workstations. A value of `"0s"` indicates that Cloud Workstations VMs
+      created with this configuration should never time out due to idleness.
+      Provide [duration](https://developers.google.com/protocol-
       buffers/docs/reference/google.protobuf#duration) terminated by `s` for
       seconds-for example, `"7200s"` (2 hours). The default is `"1200s"` (20
       minutes).
@@ -1957,20 +1983,35 @@ class WorkstationConfig(_messages.Message):
       so that security updates can be applied upon restart. The idle_timeout
       and running_timeout fields are independent of each other. Note that the
       running_timeout field stops workstations after the specified time,
-      regardless of whether or not the workstations are idle. Provide duration
-      terminated by `s` for seconds-for example, `"54000s"` (15 hours).
-      Defaults to `"43200s"` (12 hours). A value of `"0s"` indicates that
-      workstations using this configuration should never time out. If
-      encryption_key is set, it must be greater than `"0s"` and less than
-      `"86400s"` (24 hours). Warning: A value of `"0s"` indicates that Cloud
-      Workstations VMs created with this configuration have no maximum running
-      time. This is strongly discouraged because you incur costs and will not
-      pick up security updates.
+      regardless of whether or not the workstations are idle. Note: This
+      timeout applies to workstations in the following states: * STATE_RUNNING
+      * STATE_SUSPENDED Suspending a workstation does not reset this timeout.
+      Provide duration terminated by `s` for seconds-for example, `"54000s"`
+      (15 hours). Defaults to `"43200s"` (12 hours). A value of `"0s"`
+      indicates that workstations using this configuration should never time
+      out. If encryption_key is set, it must be greater than `"0s"` and less
+      than `"86400s"` (24 hours). Warning: A value of `"0s"` indicates that
+      Cloud Workstations VMs created with this configuration have no maximum
+      running time. This is strongly discouraged because you incur costs and
+      will not pick up security updates.
     uid: Output only. A system-assigned unique identifier for this workstation
       configuration.
     updateTime: Output only. Time when this workstation configuration was most
       recently updated.
   """
+
+  class IdleActionValueValuesEnum(_messages.Enum):
+    r"""Optional. The action to take when the workstation has been idle for
+    the duration specified in idle_timeout. Defaults to STOP.
+
+    Values:
+      IDLE_ACTION_UNSPECIFIED: Defaults to STOP.
+      STOP: Stop the workstation after idle_timeout.
+      SUSPEND: Suspend the workstation after idle_timeout.
+    """
+    IDLE_ACTION_UNSPECIFIED = 0
+    STOP = 1
+    SUSPEND = 2
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AnnotationsValue(_messages.Message):
@@ -2038,17 +2079,18 @@ class WorkstationConfig(_messages.Message):
   etag = _messages.StringField(13)
   grantWorkstationAdminRoleOnCreate = _messages.BooleanField(14)
   host = _messages.MessageField('Host', 15)
-  idleTimeout = _messages.StringField(16)
-  labels = _messages.MessageField('LabelsValue', 17)
-  maxUsableWorkstations = _messages.IntegerField(18, variant=_messages.Variant.INT32)
-  name = _messages.StringField(19)
-  persistentDirectories = _messages.MessageField('PersistentDirectory', 20, repeated=True)
-  readinessChecks = _messages.MessageField('ReadinessCheck', 21, repeated=True)
-  reconciling = _messages.BooleanField(22)
-  replicaZones = _messages.StringField(23, repeated=True)
-  runningTimeout = _messages.StringField(24)
-  uid = _messages.StringField(25)
-  updateTime = _messages.StringField(26)
+  idleAction = _messages.EnumField('IdleActionValueValuesEnum', 16)
+  idleTimeout = _messages.StringField(17)
+  labels = _messages.MessageField('LabelsValue', 18)
+  maxUsableWorkstations = _messages.IntegerField(19, variant=_messages.Variant.INT32)
+  name = _messages.StringField(20)
+  persistentDirectories = _messages.MessageField('PersistentDirectory', 21, repeated=True)
+  readinessChecks = _messages.MessageField('ReadinessCheck', 22, repeated=True)
+  reconciling = _messages.BooleanField(23)
+  replicaZones = _messages.StringField(24, repeated=True)
+  runningTimeout = _messages.StringField(25)
+  uid = _messages.StringField(26)
+  updateTime = _messages.StringField(27)
 
 
 class WorkstationPersistentDirectory(_messages.Message):
@@ -2605,6 +2647,20 @@ class WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWorkstat
 
   name = _messages.StringField(1, required=True)
   stopWorkstationRequest = _messages.MessageField('StopWorkstationRequest', 2)
+
+
+class WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWorkstationsSuspendRequest(_messages.Message):
+  r"""A WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWork
+  stationsSuspendRequest object.
+
+  Fields:
+    name: Required. Name of the workstation to suspend.
+    suspendWorkstationRequest: A SuspendWorkstationRequest resource to be
+      passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  suspendWorkstationRequest = _messages.MessageField('SuspendWorkstationRequest', 2)
 
 
 class WorkstationsProjectsLocationsWorkstationClustersWorkstationConfigsWorkstationsTestIamPermissionsRequest(_messages.Message):

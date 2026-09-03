@@ -15,7 +15,6 @@ import bq_utils
 from auth import gcloud_credential_loader
 from utils import bq_error
 
-
 GoogleAuthCredentialsUnionType = Union[
     google_oauth2.Credentials,
     service_account.Credentials,

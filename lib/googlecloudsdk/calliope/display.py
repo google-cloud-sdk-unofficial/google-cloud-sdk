@@ -139,23 +139,14 @@ class Displayer(object):
 
   def _AddUriCacheTap(self):
     """Taps a resource Uri cache updater into self.resources if needed."""
-
-    from googlecloudsdk.calliope import base  # pylint: disable=g-import-not-at-top, circular dependency
-
     if self._cache_updater == cache_update_ops.NoCacheUpdater:
       return
 
+    get_cache_op = getattr(self._command, 'GetCacheOp', None)
+
     if not self._cache_updater:
-      # pylint: disable=protected-access
-      if not isinstance(
-          self._command,
-          (
-              base.CreateCommand,
-              base.DeleteCommand,
-              base.ListCommand,
-              base.RestoreCommand,
-          ),
-      ):
+      is_cache_command = get_cache_op is not None and get_cache_op() is not None
+      if not is_cache_command:
         return
       if 'AddCacheUpdater' in properties.VALUES.core.lint.Get():
         # pylint: disable=protected-access
@@ -169,14 +160,12 @@ class Displayer(object):
     if any([self._GetFlag(flag) for flag in self._CORRUPT_FLAGS]):
       return
 
-    # pylint: disable=protected-access
-    if isinstance(self._command, (base.CreateCommand, base.RestoreCommand)):
-      cache_update_op = cache_update_ops.AddToCacheOp(self._cache_updater)
-    elif isinstance(self._command, base.DeleteCommand):
-      cache_update_op = cache_update_ops.DeleteFromCacheOp(self._cache_updater)
-    elif isinstance(self._command, base.ListCommand):
-      cache_update_op = cache_update_ops.ReplaceCacheOp(self._cache_updater)
-    else:
+    cache_update_op = (
+        get_cache_op(self._cache_updater) if get_cache_op else None
+    )
+
+    if not cache_update_op:
+      # pylint: disable=protected-access
       raise CommandShouldntHaveAddCacheUpdater(
           'Cache updater [{}] not expected for [{}] `{}`.'.format(
               module_util.GetModulePath(self._cache_updater),

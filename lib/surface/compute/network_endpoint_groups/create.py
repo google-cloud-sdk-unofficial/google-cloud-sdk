@@ -74,7 +74,7 @@ class Create(base.CreateCommand):
   detailed_help = DETAILED_HELP
   support_neg_type = False
   support_serverless_deployment = False
-  support_dedicated_backend = False
+  support_dedicated_backend = True
 
   @classmethod
   def Args(cls, parser):

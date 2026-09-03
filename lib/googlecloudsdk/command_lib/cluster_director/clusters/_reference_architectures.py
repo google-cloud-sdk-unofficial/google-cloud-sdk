@@ -280,6 +280,21 @@ def _GetSpecifiedComputeResources(args: Any) -> Dict[str, List[Any]]:
   return specified
 
 
+def _HasSpecifiedStorageResources(args: Any) -> bool:
+  """Returns True if the user specified any storage resources."""
+  for flag in [
+      "create_filestores",
+      "filestores",
+      "create_lustres",
+      "lustres",
+      "create_buckets",
+      "buckets",
+  ]:
+    if args.IsSpecified(flag):
+      return True
+  return False
+
+
 def _ApplySpec(
     args: Any,
     message_module: Any,
@@ -401,42 +416,45 @@ def _ApplySpec(
         ri_zone = primary_compute.get("zone") or zone
 
   # 2. Process Storage Resources from Spec
-  storage_resources = spec.get("storageResources", {})
-  for _, storage_spec in storage_resources.items():
-    st_config = storage_spec.get("config", {})
-    if "newLustre" in st_config:
-      spec_lustre = st_config["newLustre"]
-      if not args.IsSpecified("create_lustres"):
-        lustre_id = _SafeAppend(prefix, "-lustre")
-        # Sanitize prefix for filesystem name: only alphanumeric, lowercase,
-        # max 6 chars (to leave 2 for 'fs').
-        sanitized_prefix = re.sub(r"[^a-zA-Z0-9]", "", prefix).lower()
-        fs_name = sanitized_prefix[:6] + "fs"
-        args.create_lustres = [{
-            "id": _SafeAppend(prefix, "-scratch-disk"),
-            "name": f"locations/{ri_zone}/instances/{lustre_id}",
-            "capacityGb": spec_lustre["capacityGb"],
-            "perUnitStorageThroughput": spec_lustre["perUnitStorageThroughput"],
-            "filesystem": fs_name,
-        }]
-        _SetSpecified(args, "create_lustres", "--create-lustres")
+  if not _HasSpecifiedStorageResources(args):
+    storage_resources = spec.get("storageResources", {})
+    for _, storage_spec in storage_resources.items():
+      st_config = storage_spec.get("config", {})
+      if "newLustre" in st_config:
+        spec_lustre = st_config["newLustre"]
+        if not args.IsSpecified("create_lustres"):
+          lustre_id = _SafeAppend(prefix, "-lustre")
+          # Sanitize prefix for filesystem name: only alphanumeric, lowercase,
+          # max 6 chars (to leave 2 for 'fs').
+          sanitized_prefix = re.sub(r"[^a-zA-Z0-9]", "", prefix).lower()
+          fs_name = sanitized_prefix[:6] + "fs"
+          args.create_lustres = [{
+              "id": _SafeAppend(prefix, "-scratch-disk"),
+              "name": f"locations/{ri_zone}/instances/{lustre_id}",
+              "capacityGb": spec_lustre["capacityGb"],
+              "perUnitStorageThroughput": spec_lustre[
+                  "perUnitStorageThroughput"
+              ],
+              "filesystem": fs_name,
+          }]
+          _SetSpecified(args, "create_lustres", "--create-lustres")
 
-    elif "newFilestore" in st_config:
-      spec_filestore = st_config["newFilestore"]
-      if not args.IsSpecified("create_filestores"):
-        tier_enum = message_module.NewFilestoreConfig.TierValueValuesEnum(
-            spec_filestore["tier"]
-        )
-        fileshare_spec = spec_filestore.get("fileShares", [{}])[0]
-        filestore_id = _SafeAppend(prefix, "-filestore")
-        args.create_filestores = [{
-            "id": _SafeAppend(prefix, "-filestore-disk"),
-            "name": f"locations/{ri_zone}/instances/{filestore_id}",
-            "capacityGb": fileshare_spec.get("capacityGb"),
-            "fileshare": fileshare_spec.get("fileShare"),
-            "tier": tier_enum,
-        }]
-        _SetSpecified(args, "create_filestores", "--create-filestores")
+      elif "newFilestore" in st_config:
+        spec_filestore = st_config["newFilestore"]
+        if not args.IsSpecified("create_filestores"):
+          tier_enum = message_module.NewFilestoreConfig.TierValueValuesEnum(
+              spec_filestore["tier"]
+          )
+          fileshare_spec = spec_filestore.get("fileShares", [{}])[0]
+          filestore_id = _SafeAppend(prefix, "-filestore")
+          args.create_filestores = [{
+              "id": _SafeAppend(prefix, "-filestore-disk"),
+              "name": f"locations/{ri_zone}/instances/{filestore_id}",
+              "capacityGb": fileshare_spec.get("capacityGb"),
+              "fileshare": fileshare_spec.get("fileShare"),
+              "tier": tier_enum,
+          }]
+          _SetSpecified(args, "create_filestores", "--create-filestores")
 
   # 3. Create Network if not specified
   if not args.IsSpecified("network") and not args.IsSpecified("create_network"):

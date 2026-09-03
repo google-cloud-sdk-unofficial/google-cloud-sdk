@@ -359,14 +359,21 @@ def SynthesizeBootstrapAddr(response, cluster):
   # The fully qualified name will always be consistent. We also have to use the
   # fully qualifed name instead of the resource directly to support both
   # `describe` and `list`.
-  name = cluster.split("/")[5]
-  location = cluster.split("/")[3]
-  project = core.properties.VALUES.core.project.Get()
-  domain_prefixed_project = project.split(":")
-  if len(domain_prefixed_project) == 2:
-    project = f"{domain_prefixed_project[1]}.{domain_prefixed_project[0]}"
-  bootstrap = f"bootstrap.{name}.{location}.managedkafka.{project}.cloud.goog"
   synthesized = core.resource.resource_projector.MakeSerializable(response)
+  # Use the bootstrap address provided by the API.
+  # Fall back to synthesizing the legacy format if it is not present.
+  if getattr(response, "bootstrapAddress", None):
+    bootstrap = response.bootstrapAddress
+  else:
+    name = cluster.split("/")[5]
+    location = cluster.split("/")[3]
+    project = core.properties.VALUES.core.project.Get()
+    domain_prefixed_project = project.split(":")
+    if len(domain_prefixed_project) == 2:
+      project = f"{domain_prefixed_project[1]}.{domain_prefixed_project[0]}"
+    bootstrap = f"bootstrap.{name}.{location}.managedkafka.{project}.cloud.goog"
+
+  # Overwrite the proto-extracted string to append the ports
   synthesized["bootstrapAddress"] = f"{bootstrap}:{SASL_PORT}"
   if hasattr(response, "tlsConfig") and response.tlsConfig:
     synthesized["bootstrapAddressMTLS"] = f"{bootstrap}:{MTLS_PORT}"

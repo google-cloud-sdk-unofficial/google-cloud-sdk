@@ -659,6 +659,28 @@ To disable Default Compute Class in an existing cluster, explicitly set flag
   )
 
 
+def AddDefaultComputeClassFlag(
+    parser: parser_arguments.ArgumentInterceptor, hidden: bool = True
+) -> None:
+  """Adds default compute class flag to parser.
+
+  Default compute class flag is --default-compute-class.
+
+  Args:
+    parser: A given parser.
+    hidden: If true, suppress help text for added options.
+  """
+  parser.add_argument(
+      '--default-compute-class',
+      required=False,
+      default=None,
+      help="""\
+Sets the default compute class for the cluster.
+      """,
+      hidden=hidden,
+  )
+
+
 def AddHPAProfilesFlag(parser, hidden=False):
   """Adds workload autoscaling profiles flag to parser.
 

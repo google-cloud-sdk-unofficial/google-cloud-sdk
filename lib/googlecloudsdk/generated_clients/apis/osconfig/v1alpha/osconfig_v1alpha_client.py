@@ -59,7 +59,7 @@ class OsconfigV1alpha(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Get OS policies compliance data for the specified Compute Engine VM instance.
+      r"""Deprecated: Use GetOSPolicyAssignmentReport instead. Get OS policies compliance data for the specified Compute Engine VM instance.
 
       Args:
         request: (OsconfigProjectsLocationsInstanceOSPoliciesCompliancesGetRequest) input message
@@ -86,7 +86,7 @@ class OsconfigV1alpha(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""List OS policies compliance data for all Compute Engine VM instances in the specified zone.
+      r"""Deprecated: Use ListOSPolicyAssignmentReports instead. List OS policies compliance data for all Compute Engine VM instances in the specified zone.
 
       Args:
         request: (OsconfigProjectsLocationsInstanceOSPoliciesCompliancesListRequest) input message

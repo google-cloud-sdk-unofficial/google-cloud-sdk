@@ -27,6 +27,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 class FetchDatabaseProperties(base.Command):
   """Fetch database properties."""
 

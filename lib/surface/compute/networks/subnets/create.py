@@ -698,7 +698,7 @@ class Create(base.CreateCommand):
   _include_peer_migration_purpose = True
   _include_ipv6_secondary_ranges = False
   _include_ipv6_network_tier = False
-  _include_arp_broadcasting = False
+  _include_arp_broadcasting = True
 
   detailed_help = _DetailedHelp()
 

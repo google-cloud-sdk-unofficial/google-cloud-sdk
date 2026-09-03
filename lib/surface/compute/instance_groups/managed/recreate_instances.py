@@ -32,8 +32,16 @@ def _AddArgs(parser):
       metavar='INSTANCE',
       required=True,
       help='Names of instances to recreate.')
+  parser.add_argument(
+      '--no-graceful-shutdown',
+      default=False,
+      action='store_true',
+      help="""
+        End an ongoing graceful shutdown, or recreate the specified instances without graceful shutdown.""",
+  )
 
 
+@base.UniverseCompatible
 class RecreateInstances(base.Command):
   """Recreate instances managed by a managed instance group."""
 
@@ -81,6 +89,9 @@ class RecreateInstances(base.Command):
     else:
       raise ValueError('Unknown reference type {0}'.format(
           igm_ref.Collection()))
+
+    if args.IsSpecified('no_graceful_shutdown'):
+      request.noGracefulShutdown = args.no_graceful_shutdown
 
     return instance_groups_utils.SendInstancesRequestsAndPostProcessOutputs(
         api_holder=holder,

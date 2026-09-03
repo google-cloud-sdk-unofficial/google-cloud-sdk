@@ -79,7 +79,9 @@ class Validate(calliope_base.Command):
     work_dir = pathlib.Path.cwd()
 
     # 1. Collect all variables from substitutions file and environment variables
-    external_vars = yaml_processor.collect_external_vars(args, work_dir)
+    external_vars = yaml_processor.collect_external_vars(
+        args=args, bundle_path=work_dir
+    )
 
     # 2. Setup validation contexts based on provided arguments.
     # Each context contains an environment, combined variables, pipeline paths,

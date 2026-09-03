@@ -23,6 +23,7 @@ from googlecloudsdk.command_lib.composer import resource_args
 from googlecloudsdk.command_lib.composer import storage_util
 
 
+@base.UniverseCompatible
 class Import(base.Command):
   """Import plugins from local storage or Cloud Storage into an environment.
 

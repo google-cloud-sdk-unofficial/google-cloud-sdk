@@ -1,0 +1,44 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networksecurity v1alpha1 RateLimitPolicyRateLimitRulePrincipal export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- principal
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  principal:
+    description: |-
+      Matches a non-empty string against the principal value based on the
+      principal_selector.
+    $ref: RateLimitPolicyRateLimitRuleStringMatch.yaml
+  principalSelector:
+    description: |-
+      Decides what principal value the principal rule will match against. If not
+      specified, defaults to CLIENT_CERT_URI_SAN.
+    type: string
+    enum:
+    - CLIENT_CERT_COMMON_NAME
+    - CLIENT_CERT_DNS_NAME_SAN
+    - CLIENT_CERT_URI_SAN
+    - PRINCIPAL_SELECTOR_UNSPECIFIED

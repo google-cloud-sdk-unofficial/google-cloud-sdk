@@ -133,7 +133,7 @@ class AddLayer7DdosDefenseThresholdConfigHelper(object):
           required=False,
           metavar='type=TYPE[,value=VALUE][,enableEachUniqueValue=ENABLE_EACH_UNIQUE_VALUE];...',
           help=(
-              'Specify up to 2 configs matching a specifc type/value of'
+              'Specify up to 2 configs matching a specific type/value of'
               ' traffic.'
           ),
       )

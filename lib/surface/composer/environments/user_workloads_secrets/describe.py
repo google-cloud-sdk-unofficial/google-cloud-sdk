@@ -29,7 +29,7 @@ _DETAILED_HELP = frozendict.frozendict({'EXAMPLES': textwrap.dedent("""\
         """)})
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class DescribeUserWorkloadsSecret(base.Command):
   """Get details about a user workloads Secret."""
 

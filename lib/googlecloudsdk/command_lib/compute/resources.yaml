@@ -76,6 +76,16 @@ composite_health_check:
     attribute_name: composite_health_check
     help: The name of the Google Compute Engine composite health check.
 
+dhcp_options_config:
+  name: dhcp options config
+  collection: compute.dhcpOptionsConfigs
+  attributes:
+  - *project
+  - *region
+  - parameter_name: dhcpOptionsConfig
+    attribute_name: dhcp_options_config
+    help: The name of the Google Compute Engine DHCP options config.
+
 address:
   name: address
   collection: compute.addresses

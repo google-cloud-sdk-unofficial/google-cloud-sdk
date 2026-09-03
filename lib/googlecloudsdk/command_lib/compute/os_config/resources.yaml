@@ -111,25 +111,35 @@ instance:
     help: |
       Compute Engine VM instance.
 
+# 'name: Compute Engine VM instance' preserves INSTANCE positional argument and help
+# text while enabling declarative resource parsing and regional routing.
 vulnerability_report:
-  name: vulnerability_report
+  name: Compute Engine VM instance
   collection: osconfig.projects.locations.instances.vulnerabilityReports
   attributes:
   - *project
   - *location
   - *instance
-  help: |
-    Vulnerability report for the {resource}.
 
 inventory:
-  name: inventory
+  name: Compute Engine VM instance
   collection: osconfig.projects.locations.instances.inventories
   attributes:
   - *project
   - *location
   - *instance
-  help: |
-    Inventory of the {resource}.
+
+instance_os_policies_compliance:
+  name: Compute Engine VM instance
+  collection: osconfig.projects.locations.instanceOSPoliciesCompliances
+  attributes:
+  - *project
+  - *location
+  - &instance_os_policies_compliance
+    parameter_name: instanceOSPoliciesCompliancesId
+    attribute_name: instance
+    help: |
+      Compute Engine VM instance.
 
 # Create OS policy assignment is a separate resource due to
 #   the requirement of the request_id_field in the create method.

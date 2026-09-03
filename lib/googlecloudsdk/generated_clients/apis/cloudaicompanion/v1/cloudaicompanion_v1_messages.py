@@ -3007,16 +3007,18 @@ class GeminiInBigQueryConversationalAnalyticsSetting(_messages.Message):
   r"""Message describing Setting for Conversational Analytics.
 
   Fields:
+    bqaaEnabled: Optional. Whether to enable BigQuery Agent Analytics (BQAA).
     feedbackEnabled: Optional. Whether to enable feedback.
     loggingEnabled: Optional. Whether to enable logging.
     metricsEnabled: Optional. Whether to enable metrics.
     tracesEnabled: Optional. Whether to enable traces.
   """
 
-  feedbackEnabled = _messages.BooleanField(1)
-  loggingEnabled = _messages.BooleanField(2)
-  metricsEnabled = _messages.BooleanField(3)
-  tracesEnabled = _messages.BooleanField(4)
+  bqaaEnabled = _messages.BooleanField(1)
+  feedbackEnabled = _messages.BooleanField(2)
+  loggingEnabled = _messages.BooleanField(3)
+  metricsEnabled = _messages.BooleanField(4)
+  tracesEnabled = _messages.BooleanField(5)
 
 
 class GibqObservabilitySetting(_messages.Message):

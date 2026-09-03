@@ -25787,6 +25787,20 @@ class ComputePreviewFeaturesUpdateRequest(_messages.Message):
   requestId = _messages.StringField(4)
 
 
+class ComputeProjectViewsGetRequest(_messages.Message):
+  r"""A ComputeProjectViewsGetRequest object.
+
+  Fields:
+    project: Required. Project ID for this request. This is part of the URL
+      path.
+    region: Required. Name of the region for this request. This is part of the
+      URL path.
+  """
+
+  project = _messages.StringField(1, required=True)
+  region = _messages.StringField(2, required=True)
+
+
 class ComputeProjectsDisableXpnHostRequest(_messages.Message):
   r"""A ComputeProjectsDisableXpnHostRequest object.
 
@@ -34568,6 +34582,29 @@ class ComputeReservationBlocksTestIamPermissionsRequest(_messages.Message):
   zone = _messages.StringField(5, required=True)
 
 
+class ComputeReservationSlotsGetHealthRequest(_messages.Message):
+  r"""A ComputeReservationSlotsGetHealthRequest object.
+
+  Fields:
+    parentName: The name of the parent reservation, parent block and parent
+      sub-block. In the format of reservations/{reservation_name}/reservationB
+      locks/{reservation_block_name}/reservationSubBlocks/{reservation_sub_blo
+      ck_name}
+    project: Project ID for this request.
+    requestId: An optional request ID to identify requests.
+    reservationSlot: The name of the reservation slot. Name should conform to
+      RFC1035 or be a resource ID.
+    zone: Name of the zone for this request. Zone name should conform to
+      RFC1035.
+  """
+
+  parentName = _messages.StringField(1, required=True)
+  project = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  reservationSlot = _messages.StringField(4, required=True)
+  zone = _messages.StringField(5, required=True)
+
+
 class ComputeReservationSlotsGetRequest(_messages.Message):
   r"""A ComputeReservationSlotsGetRequest object.
 
@@ -43147,20 +43184,20 @@ class ConfidentialInstanceConfig(_messages.Message):
     r"""Defines the type of technology used by the confidential instance.
 
     Values:
+      BMSAI: Bare Metal Secure AI.
       CCA: Arm Confidential Compute Architecture.
       CONFIDENTIAL_INSTANCE_TYPE_UNSPECIFIED: No type specified. Do not use
         this value.
       SEV: AMD Secure Encrypted Virtualization.
       SEV_SNP: AMD Secure Encrypted Virtualization - Secure Nested Paging.
       TDX: Intel Trust Domain eXtension.
-      BMSAI: Bare Metal Secure AI.
     """
-    CCA = 0
-    CONFIDENTIAL_INSTANCE_TYPE_UNSPECIFIED = 1
-    SEV = 2
-    SEV_SNP = 3
-    TDX = 4
-    BMSAI = 5
+    BMSAI = 0
+    CCA = 1
+    CONFIDENTIAL_INSTANCE_TYPE_UNSPECIFIED = 2
+    SEV = 3
+    SEV_SNP = 4
+    TDX = 5
 
   confidentialInstanceType = _messages.EnumField('ConfidentialInstanceTypeValueValuesEnum', 1)
   enableConfidentialCompute = _messages.BooleanField(2)
@@ -48847,11 +48884,13 @@ class FutureReservation(_messages.Message):
     r"""ConfidentialComputeTypeValueValuesEnum enum type.
 
     Values:
+      CONFIDENTIAL_COMPUTE_TYPE_BMSAI: Bare Metal Secure AI.
       CONFIDENTIAL_COMPUTE_TYPE_TDX: Intel Trust Domain Extensions.
       CONFIDENTIAL_COMPUTE_TYPE_UNSPECIFIED: <no description>
     """
-    CONFIDENTIAL_COMPUTE_TYPE_TDX = 0
-    CONFIDENTIAL_COMPUTE_TYPE_UNSPECIFIED = 1
+    CONFIDENTIAL_COMPUTE_TYPE_BMSAI = 0
+    CONFIDENTIAL_COMPUTE_TYPE_TDX = 1
+    CONFIDENTIAL_COMPUTE_TYPE_UNSPECIFIED = 2
 
   class DeploymentTypeValueValuesEnum(_messages.Enum):
     r"""Type of the deployment requested as part of future reservation.
@@ -50402,6 +50441,106 @@ class GRPCTLSHealthCheck(_messages.Message):
   portSpecification = _messages.EnumField('PortSpecificationValueValuesEnum', 3)
 
 
+class GetHealthOperationMetadata(_messages.Message):
+  r"""Metadata for GetHealth operations.
+
+  Fields:
+    healthInfo: Output only. The health information.
+  """
+
+  healthInfo = _messages.MessageField('GetHealthOperationMetadataHealthInfo', 1)
+
+
+class GetHealthOperationMetadataHealthInfo(_messages.Message):
+  r"""Health information.
+
+  Enums:
+    AvailabilitySloStatusValueValuesEnum: Output only. The availability SLO
+      status.
+    HealthStatusValueValuesEnum: Output only. The health status.
+    RepairCategoryValueValuesEnum: Output only. The repair category.
+    UnhealthyReasonValueValuesEnum: Output only. The reason for unhealthy
+      status.
+
+  Fields:
+    availabilitySloStatus: Output only. The availability SLO status.
+    healthStatus: Output only. The health status.
+    repairCategory: Output only. The repair category.
+    unhealthyReason: Output only. The reason for unhealthy status.
+    updateTime: Output only. The time when health info was updated.
+  """
+
+  class AvailabilitySloStatusValueValuesEnum(_messages.Enum):
+    r"""Output only. The availability SLO status.
+
+    Values:
+      AVAILABILITY_SLO_STATUS_IN_SLO: The slot availability is in SLO.
+      AVAILABILITY_SLO_STATUS_OUT_OF_SLO: The slot availability is out of SLO.
+      AVAILABILITY_SLO_STATUS_SLO_UNKNOWN: The slot availability is unknown.
+      AVAILABILITY_SLO_STATUS_UNSPECIFIED: Unspecified availability SLO
+        status.
+    """
+    AVAILABILITY_SLO_STATUS_IN_SLO = 0
+    AVAILABILITY_SLO_STATUS_OUT_OF_SLO = 1
+    AVAILABILITY_SLO_STATUS_SLO_UNKNOWN = 2
+    AVAILABILITY_SLO_STATUS_UNSPECIFIED = 3
+
+  class HealthStatusValueValuesEnum(_messages.Enum):
+    r"""Output only. The health status.
+
+    Values:
+      HEALTH_STATUS_HEALTHY: The reservation slot is healthy.
+      HEALTH_STATUS_UNHEALTHY: The reservation slot is unhealthy.
+      HEALTH_STATUS_UNSPECIFIED: Unspecified health status.
+    """
+    HEALTH_STATUS_HEALTHY = 0
+    HEALTH_STATUS_UNHEALTHY = 1
+    HEALTH_STATUS_UNSPECIFIED = 2
+
+  class RepairCategoryValueValuesEnum(_messages.Enum):
+    r"""Output only. The repair category.
+
+    Values:
+      REPAIR_CATEGORY_CRITICAL_FAILURE: The repair is because of critical
+        failures, that are scoped outside emergent maintenance
+      REPAIR_CATEGORY_EMERGENT_MAINTENANCE: The repair is because of an
+        emergent maintenance
+      REPAIR_CATEGORY_PLANNED_MAINTENANCE: The repair is because of a planned
+        maintenance
+      REPAIR_CATEGORY_UNSPECIFIED: Unspecified repair category.
+      REPAIR_CATEGORY_USER_REPORTED_FAULT: The repair is because of a user
+        reported fault
+    """
+    REPAIR_CATEGORY_CRITICAL_FAILURE = 0
+    REPAIR_CATEGORY_EMERGENT_MAINTENANCE = 1
+    REPAIR_CATEGORY_PLANNED_MAINTENANCE = 2
+    REPAIR_CATEGORY_UNSPECIFIED = 3
+    REPAIR_CATEGORY_USER_REPORTED_FAULT = 4
+
+  class UnhealthyReasonValueValuesEnum(_messages.Enum):
+    r"""Output only. The reason for unhealthy status.
+
+    Values:
+      UNHEALTHY_REASON_PENDING_USER_APPROVAL: The slot is unhealthy because
+        there is a pending repair, waiting for customer approval
+      UNHEALTHY_REASON_REPAIRING: The slot is unhealthy because repair is in
+        progress
+      UNHEALTHY_REASON_UNSCHEDULABLE: The slot is unhealthy because a vm
+        cannot be scheduled on it, and no repairs are running on the slot
+      UNHEALTHY_REASON_UNSPECIFIED: Unspecified unhealthy reason.
+    """
+    UNHEALTHY_REASON_PENDING_USER_APPROVAL = 0
+    UNHEALTHY_REASON_REPAIRING = 1
+    UNHEALTHY_REASON_UNSCHEDULABLE = 2
+    UNHEALTHY_REASON_UNSPECIFIED = 3
+
+  availabilitySloStatus = _messages.EnumField('AvailabilitySloStatusValueValuesEnum', 1)
+  healthStatus = _messages.EnumField('HealthStatusValueValuesEnum', 2)
+  repairCategory = _messages.EnumField('RepairCategoryValueValuesEnum', 3)
+  unhealthyReason = _messages.EnumField('UnhealthyReasonValueValuesEnum', 4)
+  updateTime = _messages.StringField(5)
+
+
 class GetVersionOperationMetadata(_messages.Message):
   r"""A GetVersionOperationMetadata object.
 
@@ -51267,8 +51406,8 @@ class GuestOsFeature(_messages.Message):
       MULTI_IP_SUBNET    - UEFI_COMPATIBLE    - GVNIC    - SEV_CAPABLE    -
       SUSPEND_RESUME_COMPATIBLE    - SEV_LIVE_MIGRATABLE_V2    -
       SEV_SNP_CAPABLE    - TDX_CAPABLE    - IDPF    - SNP_SVSM_CAPABLE    -
-      CCA_CAPABLE   For more information, see Enabling guest operating system
-      features.
+      CCA_CAPABLE    - SUSPEND_SAFE_FPR   For more information, see Enabling
+      guest operating system features.
 
   Fields:
     type: The ID of a supported feature. To add multiple values, use commas to
@@ -51277,8 +51416,8 @@ class GuestOsFeature(_messages.Message):
       UEFI_COMPATIBLE    - GVNIC    - SEV_CAPABLE    -
       SUSPEND_RESUME_COMPATIBLE    - SEV_LIVE_MIGRATABLE_V2    -
       SEV_SNP_CAPABLE    - TDX_CAPABLE    - IDPF    - SNP_SVSM_CAPABLE    -
-      CCA_CAPABLE   For more information, see Enabling guest operating system
-      features.
+      CCA_CAPABLE    - SUSPEND_SAFE_FPR   For more information, see Enabling
+      guest operating system features.
   """
 
   class TypeValueValuesEnum(_messages.Enum):
@@ -51287,11 +51426,13 @@ class GuestOsFeature(_messages.Message):
     VIRTIO_SCSI_MULTIQUEUE    - WINDOWS    - MULTI_IP_SUBNET    -
     UEFI_COMPATIBLE    - GVNIC    - SEV_CAPABLE    - SUSPEND_RESUME_COMPATIBLE
     - SEV_LIVE_MIGRATABLE_V2    - SEV_SNP_CAPABLE    - TDX_CAPABLE    - IDPF
-    - SNP_SVSM_CAPABLE    - CCA_CAPABLE   For more information, see Enabling
-    guest operating system features.
+    - SNP_SVSM_CAPABLE    - CCA_CAPABLE    - SUSPEND_SAFE_FPR   For more
+    information, see Enabling guest operating system features.
 
     Values:
       BARE_METAL_LINUX_COMPATIBLE: <no description>
+      BMSAI_CAPABLE: Indicates the guest OS is capable of Bare Metal Secure AI
+        (BMSAI) confidential computing.
       CCA_CAPABLE: <no description>
       FEATURE_TYPE_UNSPECIFIED: <no description>
       GVNIC: <no description>
@@ -51303,27 +51444,31 @@ class GuestOsFeature(_messages.Message):
       SEV_LIVE_MIGRATABLE_V2: <no description>
       SEV_SNP_CAPABLE: <no description>
       SNP_SVSM_CAPABLE: <no description>
+      SUSPEND_SAFE_FPR: Indicates the guest OS is safe for free page reporting
+        (FPR) during suspend.
       TDX_CAPABLE: <no description>
       UEFI_COMPATIBLE: <no description>
       VIRTIO_SCSI_MULTIQUEUE: <no description>
       WINDOWS: <no description>
     """
     BARE_METAL_LINUX_COMPATIBLE = 0
-    CCA_CAPABLE = 1
-    FEATURE_TYPE_UNSPECIFIED = 2
-    GVNIC = 3
-    IDPF = 4
-    MULTI_IP_SUBNET = 5
-    SECURE_BOOT = 6
-    SEV_CAPABLE = 7
-    SEV_LIVE_MIGRATABLE = 8
-    SEV_LIVE_MIGRATABLE_V2 = 9
-    SEV_SNP_CAPABLE = 10
-    SNP_SVSM_CAPABLE = 11
-    TDX_CAPABLE = 12
-    UEFI_COMPATIBLE = 13
-    VIRTIO_SCSI_MULTIQUEUE = 14
-    WINDOWS = 15
+    BMSAI_CAPABLE = 1
+    CCA_CAPABLE = 2
+    FEATURE_TYPE_UNSPECIFIED = 3
+    GVNIC = 4
+    IDPF = 5
+    MULTI_IP_SUBNET = 6
+    SECURE_BOOT = 7
+    SEV_CAPABLE = 8
+    SEV_LIVE_MIGRATABLE = 9
+    SEV_LIVE_MIGRATABLE_V2 = 10
+    SEV_SNP_CAPABLE = 11
+    SNP_SVSM_CAPABLE = 12
+    SUSPEND_SAFE_FPR = 13
+    TDX_CAPABLE = 14
+    UEFI_COMPATIBLE = 15
+    VIRTIO_SCSI_MULTIQUEUE = 16
+    WINDOWS = 17
 
   type = _messages.EnumField('TypeValueValuesEnum', 1)
 
@@ -77376,6 +77521,8 @@ class Operation(_messages.Message):
       value is inRFC3339 text format.
     error: [Output Only] If errors are generated during processing of the
       operation, this field will be populated.
+    getHealthOperationMetadata: Output only. Metadata for GetHealth
+      operations.
     getVersionOperationMetadata: A GetVersionOperationMetadata attribute.
     httpErrorMessage: [Output Only] If the operation fails, this field
       contains the HTTP error message that was returned, such as `NOT FOUND`.
@@ -77643,28 +77790,29 @@ class Operation(_messages.Message):
   description = _messages.StringField(3)
   endTime = _messages.StringField(4)
   error = _messages.MessageField('ErrorValue', 5)
-  getVersionOperationMetadata = _messages.MessageField('GetVersionOperationMetadata', 6)
-  httpErrorMessage = _messages.StringField(7)
-  httpErrorStatusCode = _messages.IntegerField(8, variant=_messages.Variant.INT32)
-  id = _messages.IntegerField(9, variant=_messages.Variant.UINT64)
-  insertTime = _messages.StringField(10)
-  instancesBulkInsertOperationMetadata = _messages.MessageField('InstancesBulkInsertOperationMetadata', 11)
-  kind = _messages.StringField(12, default='compute#operation')
-  name = _messages.StringField(13)
-  operationGroupId = _messages.StringField(14)
-  operationType = _messages.StringField(15)
-  progress = _messages.IntegerField(16, variant=_messages.Variant.INT32)
-  region = _messages.StringField(17)
-  selfLink = _messages.StringField(18)
-  setCommonInstanceMetadataOperationMetadata = _messages.MessageField('SetCommonInstanceMetadataOperationMetadata', 19)
-  startTime = _messages.StringField(20)
-  status = _messages.EnumField('StatusValueValuesEnum', 21)
-  statusMessage = _messages.StringField(22)
-  targetId = _messages.IntegerField(23, variant=_messages.Variant.UINT64)
-  targetLink = _messages.StringField(24)
-  user = _messages.StringField(25)
-  warnings = _messages.MessageField('WarningsValueListEntry', 26, repeated=True)
-  zone = _messages.StringField(27)
+  getHealthOperationMetadata = _messages.MessageField('GetHealthOperationMetadata', 6)
+  getVersionOperationMetadata = _messages.MessageField('GetVersionOperationMetadata', 7)
+  httpErrorMessage = _messages.StringField(8)
+  httpErrorStatusCode = _messages.IntegerField(9, variant=_messages.Variant.INT32)
+  id = _messages.IntegerField(10, variant=_messages.Variant.UINT64)
+  insertTime = _messages.StringField(11)
+  instancesBulkInsertOperationMetadata = _messages.MessageField('InstancesBulkInsertOperationMetadata', 12)
+  kind = _messages.StringField(13, default='compute#operation')
+  name = _messages.StringField(14)
+  operationGroupId = _messages.StringField(15)
+  operationType = _messages.StringField(16)
+  progress = _messages.IntegerField(17, variant=_messages.Variant.INT32)
+  region = _messages.StringField(18)
+  selfLink = _messages.StringField(19)
+  setCommonInstanceMetadataOperationMetadata = _messages.MessageField('SetCommonInstanceMetadataOperationMetadata', 20)
+  startTime = _messages.StringField(21)
+  status = _messages.EnumField('StatusValueValuesEnum', 22)
+  statusMessage = _messages.StringField(23)
+  targetId = _messages.IntegerField(24, variant=_messages.Variant.UINT64)
+  targetLink = _messages.StringField(25)
+  user = _messages.StringField(26)
+  warnings = _messages.MessageField('WarningsValueListEntry', 27, repeated=True)
+  zone = _messages.StringField(28)
 
 
 class OperationAggregatedList(_messages.Message):
@@ -80071,6 +80219,21 @@ class Project(_messages.Message):
   usageExportLocation = _messages.MessageField('UsageExportLocation', 13)
   vmDnsSetting = _messages.EnumField('VmDnsSettingValueValuesEnum', 14)
   xpnProjectStatus = _messages.EnumField('XpnProjectStatusValueValuesEnum', 15)
+
+
+class ProjectView(_messages.Message):
+  r"""Represents a ProjectView resource.  A ProjectView resource contains
+  read-only project data which is available globally.
+
+  Fields:
+    project: The project data. The returned Project data does not contain
+      regional or zonal quota usage data. Global quota limits are present. For
+      accurate, real-time quota usage numbers, query the global [projects.get]
+      (https://cloud.google.com/compute/docs/reference/rest/v1/projects/get)
+      endpoint.
+  """
+
+  project = _messages.MessageField('Project', 1)
 
 
 class ProjectsDisableXpnResourceRequest(_messages.Message):
@@ -84283,11 +84446,13 @@ class Reservation(_messages.Message):
     r"""ConfidentialComputeTypeValueValuesEnum enum type.
 
     Values:
+      CONFIDENTIAL_COMPUTE_TYPE_BMSAI: Bare Metal Secure AI.
       CONFIDENTIAL_COMPUTE_TYPE_TDX: Intel Trust Domain Extensions.
       CONFIDENTIAL_COMPUTE_TYPE_UNSPECIFIED: <no description>
     """
-    CONFIDENTIAL_COMPUTE_TYPE_TDX = 0
-    CONFIDENTIAL_COMPUTE_TYPE_UNSPECIFIED = 1
+    CONFIDENTIAL_COMPUTE_TYPE_BMSAI = 0
+    CONFIDENTIAL_COMPUTE_TYPE_TDX = 1
+    CONFIDENTIAL_COMPUTE_TYPE_UNSPECIFIED = 2
 
   class DeploymentTypeValueValuesEnum(_messages.Enum):
     r"""Specifies the deployment strategy for this reservation.

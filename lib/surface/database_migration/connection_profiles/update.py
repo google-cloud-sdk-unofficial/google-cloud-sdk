@@ -60,7 +60,9 @@ class _Update(object):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
     """
-    resource_args.AddConnectionProfileResourceArg(parser, 'to update')
+    resource_args.AddConnectionProfileResourceArg(
+        parser, 'to update', with_connectivity=True
+    )
 
     cp_flags.AddDisplayNameFlag(parser)
     cp_flags.AddUsernameFlag(parser)

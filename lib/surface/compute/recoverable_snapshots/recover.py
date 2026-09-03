@@ -21,7 +21,7 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.recoverable_snapshots import flags as recoverable_snapshots_flags
 
 
-def _AlphaArgs(parser):
+def _Args(parser):
   Recover.RecoverableSnapshotArg = (
       recoverable_snapshots_flags.MakeRecoverableSnapshotArg(plural=False)
   )
@@ -35,15 +35,14 @@ def _AlphaArgs(parser):
   )
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class Recover(base.Command):
   """Recovers a Compute Engine recoverable snapshot."""
 
   @staticmethod
   def Args(parser):
-    _AlphaArgs(parser)
+    _Args(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

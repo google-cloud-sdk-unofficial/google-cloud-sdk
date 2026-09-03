@@ -45,8 +45,9 @@ def get_job_id_and_parent_string_from_resource_name(resource_name):
     return match.group(1), match.group(2)
   else:
     raise errors.StorageBatchOperationsApiError(
-        "Resource name invalid. Please make sure project, location, and job ID"
-        " are all provided."
+        f"The resource name '{resource_name}' is invalid. The resource name"
+        " must follow the format"
+        " 'projects/{project}/locations/{location}/jobs/{job_id}'."
     )
 
 
@@ -70,8 +71,8 @@ def parse_custom_contexts_file(file_path):
     for _, value in parsed_custom_contexts.items():
       if not isinstance(value, dict):
         raise errors.StorageBatchOperationsApiError(
-            "Invalid format for specified contexts file. Each top-level"
-            " value must be a dictionary."
+            "The contexts file format is invalid. Each top-level value must be"
+            " a dictionary mapping keys to values."
         )
     # Convert the parsed content respect the API message. Unknown fields will
     # be ignored.
@@ -83,6 +84,6 @@ def parse_custom_contexts_file(file_path):
   except (storage_errors.InvalidUrlError, AttributeError, TypeError) as e:
     print("error: ", e)
     raise errors.StorageBatchOperationsApiError(
-        "Error while parsing the specified contexts file, please ensure that"
-        " specified file exists and is valid: {}".format(e),
+        f"Failed to parse the contexts file '{file_path}': {e}. Ensure that"
+        " the file exists, is readable, and contains valid JSON or YAML."
     )

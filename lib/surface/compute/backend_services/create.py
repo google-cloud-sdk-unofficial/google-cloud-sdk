@@ -209,6 +209,7 @@ class CreateHelper(object):
     flags.AddConsistentHashHttpHeaderName(parser)
     flags.AddConsistentHashMinimumRingSize(parser)
     flags.AddCircuitBreakersMaxRequests(parser)
+    flags.AddOutlierDetectionFlags(parser)
     flags.AddCompressionMode(parser)
     flags.AddIpAddressSelectionPolicy(parser)
     flags.AddBackendServiceCustomMetrics(parser)
@@ -301,6 +302,9 @@ class CreateHelper(object):
         client, args, backend_service
     )
     backend_services_utils.ApplyCircuitBreakersSettings(
+        client, args, backend_service
+    )
+    backend_services_utils.ApplyOutlierDetectionArgs(
         client, args, backend_service
     )
     backend_services_utils.ApplySubsettingArgs(
@@ -455,6 +459,9 @@ class CreateHelper(object):
         client, args, backend_service
     )
     backend_services_utils.ApplyCircuitBreakersSettings(
+        client, args, backend_service
+    )
+    backend_services_utils.ApplyOutlierDetectionArgs(
         client, args, backend_service
     )
     backend_services_utils.ApplySubsettingArgs(

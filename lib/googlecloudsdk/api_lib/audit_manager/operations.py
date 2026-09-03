@@ -29,27 +29,43 @@ class OperationsClient(object):
         api_version=api_version, client=client
     )
 
-  def Get(self, name: str, is_parent_folder: bool):
+  def Get(
+      self,
+      name: str,
+      is_parent_folder: bool,
+      is_parent_organization: bool,
+  ):
     """Describe an Audit Manager operation.
 
     Args:
       name: The name of the Audit Operation being described.
       is_parent_folder: Whether the parent is folder and not project.
+      is_parent_organization: Whether the parent is organization and not
+        project.
 
     Returns:
       Described audit operation resource.
     """
-    service = (
-        self.client.folders_locations_operationDetails
-        if is_parent_folder
-        else self.client.projects_locations_operationDetails
-    )
+    if is_parent_folder and is_parent_organization:
+      raise ValueError(
+          'is_parent_folder and is_parent_organization are mutually exclusive.'
+      )
 
-    req = (
-        self.messages.AuditmanagerFoldersLocationsOperationDetailsGetRequest()
-        if is_parent_folder
-        else self.messages.AuditmanagerProjectsLocationsOperationDetailsGetRequest()
-    )
+    if is_parent_folder:
+      service = self.client.folders_locations_operationDetails
+      req = (
+          self.messages.AuditmanagerFoldersLocationsOperationDetailsGetRequest()
+      )
+    elif is_parent_organization:
+      service = self.client.organizations_locations_operationDetails
+      req = (
+          self.messages.AuditmanagerOrganizationsLocationsOperationDetailsGetRequest()
+      )
+    else:
+      service = self.client.projects_locations_operationDetails
+      req = (
+          self.messages.AuditmanagerProjectsLocationsOperationDetailsGetRequest()
+      )
 
     req.name = name
     return service.Get(req)

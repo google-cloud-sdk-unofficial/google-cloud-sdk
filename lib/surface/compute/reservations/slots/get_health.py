@@ -43,7 +43,9 @@ class GetHealthPoller(poller.Poller):
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class GetHealth(base.Command):
   """Get the health of a reservation slot."""
 

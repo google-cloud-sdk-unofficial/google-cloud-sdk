@@ -3359,6 +3359,30 @@ class Orchestrator(_messages.Message):
   slurm = _messages.MessageField('SlurmOrchestrator', 2)
 
 
+class PreemptParameters(_messages.Message):
+  r"""Preempt parameters for Slurm configuration.
+
+  Fields:
+    minExemptPriority: Optional. Priority threshold below which jobs are
+      eligible for preemption.
+    reclaimLicenses: Optional. Preempt to reclaim licenses.
+    reorderCount: Optional. Number of reorder attempts.
+    sendUserSignal: Optional. Send --signal at preemption.
+    strictOrder: Optional. Reorder tested job to front (cons_tres).
+    suspendGraceTime: Optional. Grace period (seconds) for job suspension
+      under PreemptMode=SUSPEND.
+    youngestFirst: Optional. Preempt younger jobs first.
+  """
+
+  minExemptPriority = _messages.StringField(1)
+  reclaimLicenses = _messages.BooleanField(2)
+  reorderCount = _messages.StringField(3)
+  sendUserSignal = _messages.BooleanField(4)
+  strictOrder = _messages.BooleanField(5)
+  suspendGraceTime = _messages.StringField(6)
+  youngestFirst = _messages.BooleanField(7)
+
+
 class ProfileSession(_messages.Message):
   r"""Represents a single profiling session.
 
@@ -3609,6 +3633,37 @@ class ResourcePolicyConfig(_messages.Message):
   acceleratorTopology = _messages.StringField(1)
 
 
+class SchedulerParameters(_messages.Message):
+  r"""Parameters used to control various scheduling behaviors.
+
+  Fields:
+    bfBusyNodes: Optional. Prefer busy nodes during backfill (cons_tres).
+    bfContinue: Optional. Resume backfill after lock release.
+    bfInterval: Optional. Seconds between backfill cycles.
+    bfMaxJobPart: Optional. Per-partition backfill job cap.
+    bfMaxJobTest: Optional. Max jobs evaluated per backfill cycle.
+    bfMaxJobUser: Optional. Per-user backfill job cap.
+    bfMinAgeReserve: Optional. Job age (seconds) before it can reserve
+      resources.
+    bfResolution: Optional. Backfill time resolution (seconds).
+    bfWindow: Optional. Minutes of backfill scheduling look-ahead.
+    defaultQueueDepth: Optional. Main scheduler jobs considered per cycle.
+    noholdOnPrologFail: Optional. Don't hold jobs on prolog script failure.
+  """
+
+  bfBusyNodes = _messages.BooleanField(1)
+  bfContinue = _messages.BooleanField(2)
+  bfInterval = _messages.StringField(3)
+  bfMaxJobPart = _messages.StringField(4)
+  bfMaxJobTest = _messages.StringField(5)
+  bfMaxJobUser = _messages.StringField(6)
+  bfMinAgeReserve = _messages.StringField(7)
+  bfResolution = _messages.StringField(8)
+  bfWindow = _messages.StringField(9)
+  defaultQueueDepth = _messages.StringField(10)
+  noholdOnPrologFail = _messages.BooleanField(11)
+
+
 class ServiceAccount(_messages.Message):
   r"""Service account email and scopes
 
@@ -3662,6 +3717,7 @@ class SlurmConfig(_messages.Message):
       they are considered for preemption.
     preemptMode: Optional. Specifies the mechanism used to preempt jobs or
       enable gang scheduling.
+    preemptParameters: Optional. Preempt parameters for Slurm configuration.
     preemptType: Optional. Specifies the plugin used to identify which jobs
       can be preempted in order to start a pending job.
     priorityType: Optional. Specifies the plugin to be used in establishing a
@@ -3694,6 +3750,8 @@ class SlurmConfig(_messages.Message):
       which exit with the specified values, with these jobs being held until
       released manually by the user. Default is empty. Corresponds to
       RequeueExitHold.
+    schedulerParameters: Optional. Parameters used to control various
+      scheduling behaviors.
   """
 
   class AccountingStorageEnforceFlagsValueListEntryValuesEnum(_messages.Enum):
@@ -3865,19 +3923,21 @@ class SlurmConfig(_messages.Message):
   healthCheckProgram = _messages.StringField(5)
   preemptExemptTime = _messages.StringField(6)
   preemptMode = _messages.EnumField('PreemptModeValueListEntryValuesEnum', 7, repeated=True)
-  preemptType = _messages.EnumField('PreemptTypeValueValuesEnum', 8)
-  priorityType = _messages.EnumField('PriorityTypeValueValuesEnum', 9)
-  priorityWeightAge = _messages.IntegerField(10)
-  priorityWeightAssoc = _messages.IntegerField(11)
-  priorityWeightFairshare = _messages.IntegerField(12)
-  priorityWeightJobSize = _messages.IntegerField(13)
-  priorityWeightPartition = _messages.IntegerField(14)
-  priorityWeightQos = _messages.IntegerField(15)
-  priorityWeightTres = _messages.StringField(16)
-  prologEpilogTimeout = _messages.StringField(17)
-  prologFlags = _messages.EnumField('PrologFlagsValueListEntryValuesEnum', 18, repeated=True)
-  requeueExitCodes = _messages.IntegerField(19, repeated=True)
-  requeueHoldExitCodes = _messages.IntegerField(20, repeated=True)
+  preemptParameters = _messages.MessageField('PreemptParameters', 8)
+  preemptType = _messages.EnumField('PreemptTypeValueValuesEnum', 9)
+  priorityType = _messages.EnumField('PriorityTypeValueValuesEnum', 10)
+  priorityWeightAge = _messages.IntegerField(11)
+  priorityWeightAssoc = _messages.IntegerField(12)
+  priorityWeightFairshare = _messages.IntegerField(13)
+  priorityWeightJobSize = _messages.IntegerField(14)
+  priorityWeightPartition = _messages.IntegerField(15)
+  priorityWeightQos = _messages.IntegerField(16)
+  priorityWeightTres = _messages.StringField(17)
+  prologEpilogTimeout = _messages.StringField(18)
+  prologFlags = _messages.EnumField('PrologFlagsValueListEntryValuesEnum', 19, repeated=True)
+  requeueExitCodes = _messages.IntegerField(20, repeated=True)
+  requeueHoldExitCodes = _messages.IntegerField(21, repeated=True)
+  schedulerParameters = _messages.MessageField('SchedulerParameters', 22)
 
 
 class SlurmLoginNodes(_messages.Message):
@@ -3963,6 +4023,27 @@ class SlurmLoginNodes(_messages.Message):
   zone = _messages.StringField(12)
 
 
+class SlurmNodeConfig(_messages.Message):
+  r"""Slurm configuration for nodes in a nodeset.
+
+  Fields:
+    coreSpecCount: Optional. Number of physical cores reserved for system use.
+    cpuSpecList: Optional. Comma-separated list of Slurm abstract CPU IDs
+      reserved for system use.
+    features: Optional. Comma-separated list of arbitrary strings indicative of
+      some characteristic associated with the node.
+    memSpecLimit: Optional. Amount of RealMemory, in mebibytes, reserved for
+      system use.
+    weight: Optional. Weight of the nodes in the nodeset.
+  """
+
+  coreSpecCount = _messages.StringField(1)
+  cpuSpecList = _messages.StringField(2)
+  features = _messages.StringField(3)
+  memSpecLimit = _messages.StringField(4)
+  weight = _messages.StringField(5)
+
+
 class SlurmNodeDetails(_messages.Message):
   r"""Slurm-specific details for a Node.
 
@@ -3994,6 +4075,7 @@ class SlurmNodeSet(_messages.Message):
       runs. Must match a key in the cluster's compute_resources.
     computeInstance: Optional. If set, indicates that the nodeset should be
       backed by Compute Engine instances.
+    config: Optional. Slurm configuration for nodes in this nodeset.
     containerNodePool: Optional. If set, indicates that the nodeset should be
       backed by a Kubernetes Engine node pool.
     enablePublicIps: Optional. Whether compute node instances should be
@@ -4039,16 +4121,17 @@ class SlurmNodeSet(_messages.Message):
 
   computeId = _messages.StringField(1)
   computeInstance = _messages.MessageField('ComputeInstanceSlurmNodeSet', 2)
-  containerNodePool = _messages.MessageField('ContainerNodePoolSlurmNodeSet', 3)
-  enablePublicIps = _messages.BooleanField(4)
-  enabledHealthChecks = _messages.EnumField('EnabledHealthChecksValueListEntryValuesEnum', 5, repeated=True)
-  healthChecks = _messages.MessageField('HealthChecks', 6)
-  id = _messages.StringField(7)
-  maxDynamicNodeCount = _messages.IntegerField(8)
-  resourcePolicyConfig = _messages.MessageField('ResourcePolicyConfig', 9)
-  serviceAccount = _messages.MessageField('ServiceAccount', 10)
-  staticNodeCount = _messages.IntegerField(11)
-  storageConfigs = _messages.MessageField('StorageConfig', 12, repeated=True)
+  config = _messages.MessageField('SlurmNodeConfig', 3)
+  containerNodePool = _messages.MessageField('ContainerNodePoolSlurmNodeSet', 4)
+  enablePublicIps = _messages.BooleanField(5)
+  enabledHealthChecks = _messages.EnumField('EnabledHealthChecksValueListEntryValuesEnum', 6, repeated=True)
+  healthChecks = _messages.MessageField('HealthChecks', 7)
+  id = _messages.StringField(8)
+  maxDynamicNodeCount = _messages.IntegerField(9)
+  resourcePolicyConfig = _messages.MessageField('ResourcePolicyConfig', 10)
+  serviceAccount = _messages.MessageField('ServiceAccount', 11)
+  staticNodeCount = _messages.IntegerField(12)
+  storageConfigs = _messages.MessageField('StorageConfig', 13, repeated=True)
 
 
 class SlurmOrchestrator(_messages.Message):
@@ -4106,6 +4189,7 @@ class SlurmPartition(_messages.Message):
   run.
 
   Fields:
+    config: Optional. Slurm configuration for the partition.
     exclusive: Optional. Unstable: Contact hypercompute-service-eng@ before
       using.
     id: Required. ID of the partition, which is how users will identify it.
@@ -4116,9 +4200,61 @@ class SlurmPartition(_messages.Message):
       Values must match SlurmNodeSet.id.
   """
 
-  exclusive = _messages.BooleanField(1)
-  id = _messages.StringField(2)
-  nodeSetIds = _messages.StringField(3, repeated=True)
+  config = _messages.MessageField('SlurmPartitionConfig', 1)
+  exclusive = _messages.BooleanField(2)
+  id = _messages.StringField(3)
+  nodeSetIds = _messages.StringField(4, repeated=True)
+
+
+class SlurmPartitionConfig(_messages.Message):
+  r"""Slurm configuration for the partition.
+
+  Fields:
+    allowAccounts: Optional. Comma-separated list of accounts allowed to run
+      jobs in this partition.
+    allowQos: Optional. Comma-separated list of QOS allowed to run jobs in
+      this partition.
+    defMemPerCpu: Optional. Default real memory size available per allocated
+      CPU in megabytes.
+    defaultTime: Optional. Default job run time limit for the partition.
+    denyAccounts: Optional. Comma-separated list of accounts denied from
+      running jobs in this partition.
+    denyQos: Optional. Comma-separated list of QOS denied from running jobs in
+      this partition.
+    exclusiveUser: Optional. Controls whether nodes are dedicated to a single
+      user.
+    graceTime: Optional. Grace time in seconds for job preemption.
+    maxNodes: Optional. Maximum count of nodes which may be allocated to any
+      single job.
+    maxTime: Optional. Maximum job run time limit for the partition.
+    overSubscribe: Optional. Controls whether nodes or CPUs can be
+      oversubscribed by multiple jobs.
+    overTimeLimit: Optional. Number of minutes by which a job can exceed its
+      time limit before being canceled.
+    preemptMode: Optional. Mechanism used to preempt jobs in this partition.
+    priorityJobFactor: Optional. Priority job factor for the partition.
+    priorityTier: Optional. Priority tier for the partition.
+    qos: Optional. Specific QOS for the partition.
+    tresBillingWeights: Optional. TRES billing weights for the partition.
+  """
+
+  allowAccounts = _messages.StringField(1)
+  allowQos = _messages.StringField(2)
+  defMemPerCpu = _messages.StringField(3)
+  defaultTime = _messages.StringField(4)
+  denyAccounts = _messages.StringField(5)
+  denyQos = _messages.StringField(6)
+  exclusiveUser = _messages.StringField(7)
+  graceTime = _messages.StringField(8)
+  maxNodes = _messages.StringField(9)
+  maxTime = _messages.StringField(10)
+  overSubscribe = _messages.StringField(11)
+  overTimeLimit = _messages.StringField(12)
+  preemptMode = _messages.StringField(13)
+  priorityJobFactor = _messages.StringField(14)
+  priorityTier = _messages.StringField(15)
+  qos = _messages.StringField(16)
+  tresBillingWeights = _messages.StringField(17)
 
 
 class SlurmWorkloadDetails(_messages.Message):

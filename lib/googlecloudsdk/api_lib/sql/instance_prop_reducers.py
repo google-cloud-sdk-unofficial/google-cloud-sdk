@@ -17,6 +17,7 @@
 
 import argparse
 import datetime
+from typing import Any, Optional
 
 from googlecloudsdk.api_lib.sql import api_util as common_api_util
 from googlecloudsdk.api_lib.sql import constants
@@ -721,52 +722,85 @@ def SemiManagedConfig(
     backup_enabled=None,
     insights_enabled=None,
     insights_gcs_uri=None,
+    patch_enabled=None,
+    patch_database_gcs_uri=None,
 ):
   """Generates the semi-managed instance configuration.
 
   Args:
-    sql_messages: module, The messages module that should be used.
-    gce_instances: list of strings, the GCE instance names.
-    sql_account: string, SQL account.
-    sql_account_secret_name: string, Secret Manager secret name for SQL account.
-    windows_service_account: string, Windows service account.
-    windows_service_account_secret_name: string, Secret Manager secret name for
-      Windows service account.
-    replication_enabled: boolean, Enable AlwaysOn Availability Group.
-    backup_enabled: boolean, Enable backup config.
-    insights_enabled: boolean, Enable insights config.
-    insights_gcs_uri: string, GCS URI for insights config.
+    sql_messages: The messages module that should be used.
+    gce_instances: The GCE instance names.
+    sql_account: SQL account.
+    sql_account_secret_name: Secret Manager secret name for SQL account.
+    windows_service_account: Windows service account.
+    windows_service_account_secret_name: Secret Manager secret name for Windows
+      service account.
+    replication_enabled: Enable AlwaysOn Availability Group.
+    backup_enabled: Enable backup config.
+    insights_enabled: Enable insights config.
+    insights_gcs_uri: GCS URI for insights config.
+    patch_enabled: Enable patch config.
+    patch_database_gcs_uri: GCS URI for patch config.
 
   Returns:
     sql_messages.SemiManagedConfig object.
   """
+  kwargs = {}
   if gce_instances:
     if isinstance(gce_instances, str):
       gce_instances = [gce_instances]
-    gce_instances = [x.strip() for x in gce_instances if x.strip()]
+    kwargs['gceInstances'] = [x.strip() for x in gce_instances if x.strip()]
+  if sql_account is not None:
+    kwargs['sqlAccount'] = sql_account
+  if sql_account_secret_name is not None:
+    kwargs['sqlAccountSecretName'] = sql_account_secret_name
+  if windows_service_account is not None:
+    kwargs['windowsServiceAccount'] = windows_service_account
+  if windows_service_account_secret_name is not None:
+    kwargs['windowsServiceAccountSecretName'] = (
+        windows_service_account_secret_name
+    )
+  if replication_enabled is not None:
+    kwargs['enableReplication'] = replication_enabled
 
-  backup_config = None
   if backup_enabled is not None:
-    backup_config = sql_messages.SemiManagedBackupConfig(enabled=backup_enabled)
-
-  insights_config = None
-  if insights_enabled is not None or insights_gcs_uri is not None:
-    enabled_val = True if insights_enabled is None else insights_enabled
-    insights_config = sql_messages.SemiManagedInsightsConfig(
-        enabled=enabled_val,
-        gcsUri=insights_gcs_uri,
+    kwargs['backupConfig'] = sql_messages.SemiManagedBackupConfig(
+        enabled=backup_enabled
     )
 
-  return sql_messages.SemiManagedConfig(
-      gceInstances=gce_instances,
-      sqlAccount=sql_account,
-      sqlAccountSecretName=sql_account_secret_name,
-      windowsServiceAccount=windows_service_account,
-      windowsServiceAccountSecretName=windows_service_account_secret_name,
-      enableReplication=replication_enabled,
-      backupConfig=backup_config,
-      insightsConfig=insights_config,
-  )
+  if insights_gcs_uri is not None or insights_enabled is not None:
+    if insights_gcs_uri is not None:
+      is_enabled = (
+          bool(insights_gcs_uri.strip())
+          if insights_enabled is None
+          else insights_enabled
+      )
+      kwargs['insightsConfig'] = sql_messages.SemiManagedInsightsConfig(
+          enabled=is_enabled,
+          gcsUri=insights_gcs_uri if is_enabled else '',
+      )
+    elif insights_enabled is not None:
+      kwargs['insightsConfig'] = sql_messages.SemiManagedInsightsConfig(
+          enabled=insights_enabled,
+      )
+
+  if patch_database_gcs_uri is not None or patch_enabled is not None:
+    if patch_database_gcs_uri is not None:
+      is_enabled = (
+          bool(patch_database_gcs_uri.strip())
+          if patch_enabled is None
+          else patch_enabled
+      )
+      kwargs['patchConfig'] = sql_messages.SemiManagedPatchConfig(
+          enabled=is_enabled,
+          gcsUri=patch_database_gcs_uri if is_enabled else '',
+      )
+    elif patch_enabled is not None:
+      kwargs['patchConfig'] = sql_messages.SemiManagedPatchConfig(
+          enabled=patch_enabled,
+      )
+
+  return sql_messages.SemiManagedConfig(**kwargs)
 
 
 def PrivateNetworkUrl(network):
@@ -919,6 +953,58 @@ def PasswordPolicy(
     password_policy.enablePasswordPolicy = enable_password_policy
 
   return password_policy
+
+
+def SqlServerPasswordValidationPolicy(
+    sql_messages: Any,
+    sql_server_password_policy_min_length: Optional[int] = None,
+    sql_server_password_policy_history_length: Optional[int] = None,
+    sql_server_password_policy_minimum_age: Optional[int] = None,
+    sql_server_password_policy_maximum_age: Optional[int] = None,
+    sql_server_enable_password_policy: Optional[bool] = None,
+    clear_sql_server_password_policy: bool = False,
+) -> Optional[Any]:
+  """Generates or clears SQL Server password validation policy for the instance.
+
+  Args:
+    sql_messages: The messages module that should be used.
+    sql_server_password_policy_min_length: Minimum number of characters allowed.
+    sql_server_password_policy_history_length: Number of previous passwords that
+      cannot be reused.
+    sql_server_password_policy_minimum_age: Minimum interval at which password
+      can be changed.
+    sql_server_password_policy_maximum_age: Maximum duration after which
+      password expires.
+    sql_server_enable_password_policy: True if password validation policy is
+      enabled.
+    clear_sql_server_password_policy: True if clear existing password policy.
+
+  Returns:
+    The generated SQL Server password validation policy, or None.
+  """
+  should_generate_policy = any([
+      sql_server_password_policy_min_length is not None,
+      sql_server_password_policy_history_length is not None,
+      sql_server_password_policy_minimum_age is not None,
+      sql_server_password_policy_maximum_age is not None,
+      sql_server_enable_password_policy is not None,
+  ])
+  if not should_generate_policy or clear_sql_server_password_policy:
+    return None
+
+  policy = sql_messages.SqlServerPasswordValidationPolicy()
+  if sql_server_password_policy_min_length is not None:
+    policy.passwordMinimumLength = sql_server_password_policy_min_length
+  if sql_server_password_policy_history_length is not None:
+    policy.passwordHistoryLength = sql_server_password_policy_history_length
+  if sql_server_password_policy_minimum_age is not None:
+    policy.passwordMinimumAge = f'{sql_server_password_policy_minimum_age}s'
+  if sql_server_password_policy_maximum_age is not None:
+    policy.passwordMaximumAge = f'{sql_server_password_policy_maximum_age}s'
+  if sql_server_enable_password_policy is not None:
+    policy.enablePasswordPolicy = sql_server_enable_password_policy
+
+  return policy
 
 
 def PscAutoConnections(

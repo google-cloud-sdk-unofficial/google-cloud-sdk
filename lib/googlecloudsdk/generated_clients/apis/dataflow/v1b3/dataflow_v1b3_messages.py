@@ -1289,6 +1289,7 @@ class DataflowProjectsJobsAggregatedRequest(_messages.Message):
     pageToken: Set this to the 'next_page_token' field of a previous response
       to request additional results in a long list.
     projectId: The project which owns the jobs.
+    regionalFanoutRequested: Optional.
     view: Deprecated. ListJobs always returns summaries now. Use GetJob for
       other JobViews.
   """
@@ -1343,7 +1344,8 @@ class DataflowProjectsJobsAggregatedRequest(_messages.Message):
   pageSize = _messages.IntegerField(4, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(5)
   projectId = _messages.StringField(6, required=True)
-  view = _messages.EnumField('ViewValueValuesEnum', 7)
+  regionalFanoutRequested = _messages.BooleanField(7)
+  view = _messages.EnumField('ViewValueValuesEnum', 8)
 
 
 class DataflowProjectsJobsCreateRequest(_messages.Message):
@@ -1507,6 +1509,7 @@ class DataflowProjectsJobsListRequest(_messages.Message):
     pageToken: Set this to the 'next_page_token' field of a previous response
       to request additional results in a long list.
     projectId: The project which owns the jobs.
+    regionalFanoutRequested: Optional.
     view: Deprecated. ListJobs always returns summaries now. Use GetJob for
       other JobViews.
   """
@@ -1561,7 +1564,8 @@ class DataflowProjectsJobsListRequest(_messages.Message):
   pageSize = _messages.IntegerField(4, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(5)
   projectId = _messages.StringField(6, required=True)
-  view = _messages.EnumField('ViewValueValuesEnum', 7)
+  regionalFanoutRequested = _messages.BooleanField(7)
+  view = _messages.EnumField('ViewValueValuesEnum', 8)
 
 
 class DataflowProjectsJobsMessagesListRequest(_messages.Message):
@@ -2161,6 +2165,7 @@ class DataflowProjectsLocationsJobsListRequest(_messages.Message):
     pageToken: Set this to the 'next_page_token' field of a previous response
       to request additional results in a long list.
     projectId: The project which owns the jobs.
+    regionalFanoutRequested: Optional.
     view: Deprecated. ListJobs always returns summaries now. Use GetJob for
       other JobViews.
   """
@@ -2215,7 +2220,8 @@ class DataflowProjectsLocationsJobsListRequest(_messages.Message):
   pageSize = _messages.IntegerField(4, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(5)
   projectId = _messages.StringField(6, required=True)
-  view = _messages.EnumField('ViewValueValuesEnum', 7)
+  regionalFanoutRequested = _messages.BooleanField(7)
+  view = _messages.EnumField('ViewValueValuesEnum', 8)
 
 
 class DataflowProjectsLocationsJobsMessagesListRequest(_messages.Message):

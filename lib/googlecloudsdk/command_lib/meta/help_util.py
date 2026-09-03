@@ -306,11 +306,12 @@ class HelpUpdater(object):
 
       with TimeIt('Creating walker'):
         walker = self._generator(
-            self._cli, temp_dir, pb.SetProgress, restrict=restrict)
+            self._cli, temp_dir, progress_callback=pb.SetProgress,
+            restrict=restrict)
 
       start = time.time()
       pb.Start()
-      walker.Walk(hidden=True)
+      walker.Walk(hidden=self._hidden)
       pb.Finish()
       elapsed_time = time.time() - start
       log.info(
@@ -385,8 +386,8 @@ class HelpUpdater(object):
     """Print a list of help text files that are distinct from source, if any."""
     with file_utils.TemporaryDirectory() as temp_dir:
       walker = self._generator(
-          self._cli, temp_dir, None, restrict=restrict)
-      walker.Walk(hidden=True)
+          self._cli, temp_dir, restrict=restrict)
+      walker.Walk(hidden=self._hidden)
       diff = HelpAccumulator(restrict=restrict)
       DirDiff(self._directory, temp_dir, diff)
       return sorted(diff.GetChanges())

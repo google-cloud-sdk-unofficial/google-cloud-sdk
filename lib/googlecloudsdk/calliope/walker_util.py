@@ -89,7 +89,8 @@ class DevSiteGenerator(walker.Walker):
         restricts the walk to the 'gcloud topic' and 'gcloud alpha test'
         commands/groups.
     """
-    super(DevSiteGenerator, self).__init__(cli, restrict=restrict)
+    super(DevSiteGenerator, self).__init__(
+        cli, progress_callback=progress_callback, restrict=restrict)
     self._directory = directory
     files.MakeDir(self._directory)
     self._need_section_tag = []
@@ -427,7 +428,8 @@ class DocumentGenerator(walker.Walker):
     _suffix: The output file suffix.
   """
 
-  def __init__(self, cli, directory, style, suffix, restrict=None):
+  def __init__(self, cli, directory, style, suffix, progress_callback=None,
+               restrict=None):
     """Constructor.
 
     Args:
@@ -435,12 +437,15 @@ class DocumentGenerator(walker.Walker):
       directory: The manpage output directory path name.
       style: The document style.
       suffix: The generate document file suffix. None for .<SECTION>.
+      progress_callback: f(float), The function to call to update the progress
+        bar or None for no progress bar.
       restrict: Restricts the walk to the command/group dotted paths in this
         list. For example, restrict=['gcloud.alpha.test', 'gcloud.topic']
         restricts the walk to the 'gcloud topic' and 'gcloud alpha test'
         commands/groups.
     """
-    super(DocumentGenerator, self).__init__(cli, restrict=restrict)
+    super(DocumentGenerator, self).__init__(
+        cli, progress_callback=progress_callback, restrict=restrict)
     self._directory = directory
     self._style = style
     self._suffix = suffix
@@ -551,7 +556,7 @@ class HtmlGenerator(DocumentGenerator):
 
   def _GenerateHtmlNav(self, directory, cli, hidden, restrict):
     """Generates html nav files in directory."""
-    tree = CommandTreeGenerator(cli).Walk(hidden, restrict)
+    tree = CommandTreeGenerator(cli).Walk(hidden=hidden, restrict=restrict)
     with files.FileWriter(os.path.join(directory, '_menu_.html')) as out:
       self.WriteHtmlMenu(tree, out)
     for file_name in _HELP_HTML_DATA_FILES:
@@ -583,6 +588,7 @@ class HtmlGenerator(DocumentGenerator):
         directory=directory,
         style='html',
         suffix='.html',
+        progress_callback=progress_callback,
         restrict=restrict,
     )
     self._GenerateHtmlNav(directory, cli, hidden, restrict)
@@ -618,7 +624,8 @@ class ManPageGenerator(DocumentGenerator):
     section_subdir = self._SECTION_FORMAT.format(section=1)
     section_dir = os.path.join(directory, section_subdir)
     super(ManPageGenerator, self).__init__(
-        cli, directory=section_dir, style='man', suffix='.1', restrict=restrict
+        cli, directory=section_dir, style='man', suffix='.1',
+        progress_callback=progress_callback, restrict=restrict
     )
 
 
@@ -647,6 +654,7 @@ class LinterGenerator(DocumentGenerator):
         directory=directory,
         style='linter',
         suffix='.json',
+        progress_callback=progress_callback,
         restrict=restrict,
     )
 

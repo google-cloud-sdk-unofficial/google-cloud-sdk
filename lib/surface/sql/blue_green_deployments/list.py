@@ -27,11 +27,23 @@ from googlecloudsdk.command_lib.sql import flags as sql_flags
 from googlecloudsdk.core import properties
 
 
-@base.Hidden
+DETAILED_HELP = {
+    'EXAMPLES': (
+        """\
+        To list all blue-green deployments in region `us-central1`:
+
+          $ {command} --region=us-central1
+        """
+    ),
+}
+
+
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """Lists Cloud SQL blue-green deployments."""
+
+  detailed_help = DETAILED_HELP
 
   @classmethod
   def Args(cls, parser: argparse.ArgumentParser) -> None:

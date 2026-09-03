@@ -14,7 +14,6 @@
 # limitations under the License.
 """Common utility functions for Image Version validation."""
 
-
 import collections
 import re
 
@@ -31,8 +30,9 @@ MIN_UPGRADEABLE_COMPOSER_VER = '1.0.0'
 # Required for version comparisons
 COMPOSER_LATEST_VERSION_PLACEHOLDER = '2.1.12'
 
-UpgradeValidator = collections.namedtuple('UpgradeValidator',
-                                          ['upgrade_valid', 'error'])
+UpgradeValidator = collections.namedtuple(
+    'UpgradeValidator', ['upgrade_valid', 'error']
+)
 
 # Major version that is used as a replacement for the 'latest' alias.
 COMPOSER_LATEST_MAJOR_VERSION = 2
@@ -62,10 +62,12 @@ class _ImageVersionItem(object):
       self.airflow_ver = airflow_ver
 
     # Determines the state of aliases
-    self.composer_contains_alias = re.match(composer_version_alias_regex,
-                                            self.composer_ver)
-    self.airflow_contains_alias = re.match(airflow_version_alias_regex,
-                                           self.airflow_ver)
+    self.composer_contains_alias = re.match(
+        composer_version_alias_regex, self.composer_ver
+    )
+    self.airflow_contains_alias = re.match(
+        airflow_version_alias_regex, self.airflow_ver
+    )
 
   def GetImageVersionString(self):
     return 'composer-{}-airflow-{}'.format(self.composer_ver, self.airflow_ver)
@@ -78,31 +80,32 @@ def ListImageVersionUpgrades(env_ref, release_track=base.ReleaseTrack.GA):
   cur_image_version_id = env_details.config.softwareConfig.imageVersion
   cur_python_version = env_details.config.softwareConfig.pythonVersion
 
-  return _BuildUpgradeCandidateList(proj_location_ref, cur_image_version_id,
-                                    cur_python_version, release_track)
+  return _BuildUpgradeCandidateList(
+      proj_location_ref, cur_image_version_id, cur_python_version, release_track
+  )
 
 
-def IsValidImageVersionUpgrade(cur_image_version_str,
-                               image_version_id):
+def IsValidImageVersionUpgrade(cur_image_version_str, image_version_id):
   """Checks if image version candidate is a valid upgrade for environment."""
 
   # Checks for the use of an alias and confirms that a valid airflow upgrade has
   # been requested.
-  cur_image_ver = _ImageVersionItem(
-      image_ver=cur_image_version_str)
+  cur_image_ver = _ImageVersionItem(image_ver=cur_image_version_str)
 
-  is_composer3 = IsVersionComposer3Compatible(
-      cur_image_version_str
-  )
+  is_composer3 = IsVersionComposer3Compatible(cur_image_version_str)
   if not is_composer3 and not (
       CompareVersions(MIN_UPGRADEABLE_COMPOSER_VER, cur_image_ver.composer_ver)
       <= 0
   ):
     raise InvalidImageVersionError(
-        'This environment does not support upgrades.')
+        'This environment does not support upgrades.'
+    )
   return _ValidateCandidateImageVersionId(
       cur_image_version_str,
-      image_version_id)
+      image_version_id,
+      # For Composer 3 we allow image version downgrades (rollbacks).
+      validate_airflow_downgrade=not is_composer3,
+  )
 
 
 def ImageVersionFromAirflowVersion(new_airflow_version, cur_image_version=None):
@@ -118,8 +121,8 @@ def ImageVersionFromAirflowVersion(new_airflow_version, cur_image_version=None):
   )
 
   return _ImageVersionItem(
-      composer_ver=composer_ver,
-      airflow_ver=new_airflow_version).GetImageVersionString()
+      composer_ver=composer_ver, airflow_ver=new_airflow_version
+  ).GetImageVersionString()
 
 
 def IsImageVersionStringComposerV1(image_version):
@@ -226,8 +229,8 @@ def IsVersionComposer3Compatible(image_version):
       if composer_version == 'latest':
         composer_version = COMPOSER_LATEST_VERSION_PLACEHOLDER
       return IsVersionInRange(
-          composer_version, flags.MIN_COMPOSER3_VERSION, None,
-          True)
+          composer_version, flags.MIN_COMPOSER3_VERSION, None, True
+      )
   return False
 
 
@@ -297,17 +300,21 @@ def IsVersionInRange(version, range_from, range_to, loose=False):
     True if given version is in range, otherwise False.
   """
   compare_fn = CompareLooseVersions if loose else CompareVersions
-  return ((range_from is None or compare_fn(range_from, version) <= 0) and
-          (range_to is None or compare_fn(version, range_to) < 0))
+  return (range_from is None or compare_fn(range_from, version) <= 0) and (
+      range_to is None or compare_fn(version, range_to) < 0
+  )
 
 
-def _BuildUpgradeCandidateList(location_ref,
-                               image_version_id,
-                               python_version,
-                               release_track=base.ReleaseTrack.GA):
+def _BuildUpgradeCandidateList(
+    location_ref,
+    image_version_id,
+    python_version,
+    release_track=base.ReleaseTrack.GA,
+):
   """Builds a list of eligible image version upgrades."""
   image_version_service = image_version_api_util.ImageVersionService(
-      release_track)
+      release_track
+  )
   image_version_item = _ImageVersionItem(image_version_id)
 
   available_upgrades = []
@@ -330,7 +337,8 @@ def _BuildUpgradeCandidateList(location_ref,
         available_upgrades.append(version)
   else:
     raise InvalidImageVersionError(
-        'This environment does not support upgrades.')
+        'This environment does not support upgrades.'
+    )
 
   return available_upgrades
 
@@ -366,13 +374,16 @@ def _IsComposerMajorOnlyVersionUpgradeCompatible(parsed_curr, parsed_cand):
 
 
 def _ValidateCandidateImageVersionId(
-    current_image_version_id, candidate_image_version_id
+    current_image_version_id,
+    candidate_image_version_id,
+    validate_airflow_downgrade=True,
 ):
   """Determines if candidate version is a valid upgrade from current version.
 
   Args:
     current_image_version_id: current image version
     candidate_image_version_id: image version requested for upgrade
+    validate_airflow_downgrade: whether to validate Airflow version downgrade
 
   Returns:
     UpgradeValidator namedtuple containing True and None error message if
@@ -381,17 +392,18 @@ def _ValidateCandidateImageVersionId(
   """
   upgrade_validator = UpgradeValidator(True, None)
   if current_image_version_id == candidate_image_version_id:
-    error_message = ('Existing and requested image versions are equal ({}). '
-                     'Select image version newer than current to perform '
-                     'upgrade.').format(current_image_version_id)
+    error_message = (
+        'Existing and requested image versions are equal ({}). '
+        'Select image version newer than current to perform '
+        'upgrade.'
+    ).format(current_image_version_id)
     upgrade_validator = UpgradeValidator(False, error_message)
 
   parsed_curr = _ImageVersionItem(image_ver=current_image_version_id)
   parsed_cand = _ImageVersionItem(image_ver=candidate_image_version_id)
 
   has_alias_or_major_only_composer_ver = (
-      parsed_cand.composer_contains_alias
-      or parsed_curr.composer_contains_alias
+      parsed_cand.composer_contains_alias or parsed_curr.composer_contains_alias
   )
 
   # Checks Composer versions.
@@ -399,18 +411,19 @@ def _ValidateCandidateImageVersionId(
     upgrade_validator = _IsComposerMajorOnlyVersionUpgradeCompatible(
         parsed_curr, parsed_cand
     )
-  elif (
-      upgrade_validator.upgrade_valid
-  ):
+  elif upgrade_validator.upgrade_valid:
     upgrade_validator = _IsVersionUpgradeCompatible(
         parsed_curr.composer_ver, parsed_cand.composer_ver, 'Composer'
     )
 
   # Checks Airflow versions.
   if upgrade_validator.upgrade_valid and not parsed_cand.airflow_contains_alias:
-    upgrade_validator = _IsVersionUpgradeCompatible(parsed_curr.airflow_ver,
-                                                    parsed_cand.airflow_ver,
-                                                    'Airflow')
+    upgrade_validator = _IsVersionUpgradeCompatible(
+        parsed_curr.airflow_ver,
+        parsed_cand.airflow_ver,
+        'Airflow',
+        validate_downgrade=validate_airflow_downgrade,
+    )
 
   # Leaves the validity check to the Composer backend request validation.
   return upgrade_validator
@@ -426,9 +439,10 @@ def _VersionStrToLooseVersion(version_str):
   return semver.LooseVersion(version_str)
 
 
-def _IsVersionUpgradeCompatible(cur_version, candidate_version,
-                                image_version_part):
-  """Validates whether version candidate is greater than or equal to current.
+def _IsVersionUpgradeCompatible(
+    cur_version, candidate_version, image_version_part, validate_downgrade=True
+):
+  """Validates whether version candidate is compatible for upgrade.
 
   Applicable both for Airflow and Composer version upgrades. Composer supports
   both Airflow and self MINOR and PATCH-level upgrades.
@@ -438,6 +452,7 @@ def _IsVersionUpgradeCompatible(cur_version, candidate_version,
     candidate_version: candidate 'x.y.z' version
     image_version_part: part of image to be validated. Must be either 'Airflow'
       or 'Composer'
+    validate_downgrade: whether to validate downgrade of version
 
   Returns:
     UpgradeValidator namedtuple containing boolean value whether selected image
@@ -448,23 +463,25 @@ def _IsVersionUpgradeCompatible(cur_version, candidate_version,
   curr_semantic_version = _VersionStrToSemanticVersion(cur_version)
   cand_semantic_version = _VersionStrToSemanticVersion(candidate_version)
 
-  if curr_semantic_version > cand_semantic_version:
-    error_message = ('Upgrade cannot decrease {composer_or_airflow1}\'s '
-                     'version. Current {composer_or_airflow2} version: '
-                     '{cur_version}, requested {composer_or_airflow3} version: '
-                     '{req_version}.').format(
-                         composer_or_airflow1=image_version_part,
-                         composer_or_airflow2=image_version_part,
-                         cur_version=cur_version,
-                         composer_or_airflow3=image_version_part,
-                         req_version=candidate_version)
+  if validate_downgrade and curr_semantic_version > cand_semantic_version:
+    error_message = (
+        "Upgrade cannot decrease {composer_or_airflow1}'s "
+        'version. Current {composer_or_airflow2} version: '
+        '{cur_version}, requested {composer_or_airflow3} version: '
+        '{req_version}.'
+    ).format(
+        composer_or_airflow1=image_version_part,
+        composer_or_airflow2=image_version_part,
+        cur_version=cur_version,
+        composer_or_airflow3=image_version_part,
+        req_version=candidate_version,
+    )
     return UpgradeValidator(False, error_message)
 
   # Allow only version upgrades only between Composer 2 and Composer 3.
   if (
-      (curr_semantic_version.major != 2 or cand_semantic_version.major != 3)
-      and curr_semantic_version.major != cand_semantic_version.major
-  ):
+      curr_semantic_version.major != 2 or cand_semantic_version.major != 3
+  ) and curr_semantic_version.major != cand_semantic_version.major:
     error_message = (
         "Upgrades between different {}'s major versions are not"
         ' supported. Current major version {}, requested major '

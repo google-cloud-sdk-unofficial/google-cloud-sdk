@@ -22,22 +22,21 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.recoverable_snapshots import flags
 
 
-def _AlphaArgs(parser):
+def _Args(parser):
   Describe.RecoverableSnapshotArg = (
       flags.MakeRecoverableSnapshotArg()
   )
   Describe.RecoverableSnapshotArg.AddArgument(parser, operation_type='describe')
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine recoverable snapshot."""
 
   @staticmethod
   def Args(parser):
-    _AlphaArgs(parser)
+    _Args(parser)
 
   def Run(self, args):
     return self._Run(args)

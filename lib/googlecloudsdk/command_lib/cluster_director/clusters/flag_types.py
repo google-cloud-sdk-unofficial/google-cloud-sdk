@@ -297,6 +297,15 @@ class FlagTypes:
         repeated=True,
     )
 
+  def _GetSlurmNodeConfigSpec(self) -> dict[str, Any]:
+    return {
+        "cpuSpecList": str,
+        "features": str,
+        "memSpecLimit": str,
+        "weight": str,
+        "coreSpecCount": str,
+    }
+
   def GetSlurmNodeSetsObject(self) -> arg_parsers.ArgObject:
     """Returns an ArgObject for parsing Slurm Node Sets configurations."""
     if self.is_alpha:
@@ -306,6 +315,10 @@ class FlagTypes:
               "computeId": str,
               "staticNodeCount": int,
               "maxDynamicNodeCount": int,
+              "config": arg_parsers.ArgObject(
+                  spec=self._GetSlurmNodeConfigSpec(),
+                  enable_shorthand=True,
+              ),
               "computeInstance": arg_parsers.ArgObject(
                   spec={
                       "startupScript": str,
@@ -359,11 +372,37 @@ class FlagTypes:
           disable_key_description=True,
       )
 
+  def _GetSlurmPartitionConfigSpec(self) -> dict[str, Any]:
+    return {
+        "defMemPerCpu": str,
+        "maxNodes": str,
+        "overSubscribe": str,
+        "priorityTier": str,
+        "priorityJobFactor": str,
+        "allowAccounts": str,
+        "allowQos": str,
+        "denyAccounts": str,
+        "denyQos": str,
+        "exclusiveUser": str,
+        "qos": str,
+        "tresBillingWeights": str,
+        "graceTime": str,
+        "defaultTime": str,
+        "maxTime": str,
+        "overTimeLimit": str,
+        "preemptMode": str,
+    }
+
   def _GetSlurmPartitionSpec(self) -> dict[str, Any]:
     spec = {
         "id": str,
         "nodeSetIds": arg_parsers.ArgObject(value_type=str, repeated=True),
     }
+    if self.is_alpha:
+      spec["config"] = arg_parsers.ArgObject(
+          spec=self._GetSlurmPartitionConfigSpec(),
+          enable_shorthand=True,
+      )
     return spec
 
   def GetSlurmPartitionsObject(self) -> arg_parsers.ArgObject:

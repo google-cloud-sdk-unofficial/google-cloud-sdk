@@ -19,9 +19,8 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
 )
-@base.Hidden
 @base.DefaultUniverseOnly
 class SnapshotRecycleBinPolicy(base.Group):
   """Update and describe Compute Engine snapshot recycle bin policy."""

@@ -14,6 +14,7 @@
 # limitations under the License.
 """Deploy a container to Cloud Run."""
 
+import contextlib
 import copy
 import enum
 import json
@@ -21,6 +22,7 @@ import logging
 import os
 import os.path
 import re
+import tempfile
 from typing import Any, Mapping
 
 from googlecloudsdk.api_lib.run import api_enabler
@@ -883,15 +885,12 @@ class Deploy(base.Command):
 
     containers = self._ValidateAndGetContainers(args)
     source_container = self._ValidateAndGetSourceContainer(containers)
-    is_local_build = validators.IsLocalBuildFromSource(
+    is_local_build = validators.HasValidLocalBuildFromSource(
         self.ReleaseTrack(), source_container
     )
     is_no_build_from_source = validators.IsNoBuildFromSource(
         self.ReleaseTrack(), source_container
     )
-
-    local_build_changes = []
-    local_build_dir = None
 
     service_ref = args.CONCEPTS.service.Parse()
     flags.ValidateResource(service_ref)
@@ -961,6 +960,8 @@ class Deploy(base.Command):
     source_bucket = None
     skip_build = False
     upload_through_run_api = False
+    local_build_changes = []
+
     if source_container:
       upload_through_run_api = sources.ShouldUploadThroughRunApi(
           source_container, self.ReleaseTrack()
@@ -970,7 +971,11 @@ class Deploy(base.Command):
         conn_context,
         skip_activation_prompt=skip_activation_prompt,
         custom_check_response_func=custom_check_response,
-    ) as operations:
+    ) as operations, (
+        tempfile.TemporaryDirectory()
+        if is_local_build
+        else contextlib.nullcontext()
+    ) as local_build_dir:
       service = operations.GetService(service_ref)
       if is_local_build:
         container_name, container_args = next(
@@ -979,6 +984,7 @@ class Deploy(base.Command):
             if getattr(c, 'local_build', False)
         )
         local_build.ValidateLocalBuildSource(container_args.source)
+        maker_path = local_build.GetUniversalMakerPath()
         with progress_tracker.StagedProgressTracker(
             'Building application locally...',
             [stages._LocalBuildStage()],  # pylint: disable=protected-access
@@ -987,9 +993,13 @@ class Deploy(base.Command):
         ) as local_tracker:
           local_tracker.StartStage(stages.LOCAL_BUILD_STAGE_KEY)
           try:
-            local_build_changes, local_build_base_image, local_build_dir = (
+            local_build_changes, local_build_base_image, inferred_runtime = (
                 local_build.PerformLocalBuild(
-                    container_name, container_args, tracker=local_tracker
+                    container_name,
+                    container_args,
+                    local_build_dir,
+                    maker_path,
+                    tracker=local_tracker,
                 )
             )
             base_image = local_build_base_image
@@ -999,6 +1009,11 @@ class Deploy(base.Command):
             if not local_tracker.IsComplete(stages.LOCAL_BUILD_STAGE_KEY):
               local_tracker.FailStage(stages.LOCAL_BUILD_STAGE_KEY, e)
             raise e
+
+        if flags.FlagIsExplicitlySet(container_args, 'base_image'):
+          local_build.WarnOrPromptOnBaseImageMismatch(
+              inferred_runtime, container_args.base_image
+          )
 
       # Build an image from source if source specified
       if is_no_build_from_source or is_local_build:
@@ -1012,9 +1027,8 @@ class Deploy(base.Command):
           deploy_from_source_container_name = (
               service.template.container.name or ''
           )
-        if is_local_build and local_build_dir is not None:
-          source = local_build_dir.name
-          build_changes.extend(local_build_changes)
+        if is_local_build:
+          source = local_build_dir
         else:
           source = container_args.source
         source_bucket = self._GetSourceBucketFromZipDeploySourceLocation(
@@ -1055,26 +1069,12 @@ class Deploy(base.Command):
             skip_build_sa_permission_check=is_alpha_source_deploy_build,
         )
       # Deploy a container with an image
-      saved_cmd, saved_args_val = None, None
-      if is_local_build and source_container:
-        _, container_args = next(iter(source_container.items()))
-        if not flags.FlagIsExplicitlySet(container_args, 'command'):
-          saved_cmd = getattr(container_args, 'command', None)
-          container_args.command = None
-        if not flags.FlagIsExplicitlySet(container_args, 'args'):
-          saved_args_val = getattr(container_args, 'args', None)
-          container_args.args = None
-
       changes = self._GetBaseChanges(args)
-
-      if is_local_build and source_container:
-        _, container_args = next(iter(source_container.items()))
-        if saved_cmd is not None:
-          container_args.command = saved_cmd
-        if saved_args_val is not None:
-          container_args.args = saved_args_val
-
+      # Add legacy submitBuild changes
       changes.extend(build_changes)
+      # Add local build changes
+      changes.extend(local_build_changes)
+
       allow_unauth = self.GetAllowUnauth(args, operations, service_ref, service)
       resource_change_validators.ValidateClearVpcConnector(service, args)
       if service:  # Service has been deployed before
@@ -1096,6 +1096,9 @@ class Deploy(base.Command):
           changes.append(config_changes.SandboxChange(constants.GEN2))
 
       messages_util.MaybeLogDefaultGpuTypeMessage(args, service)
+      warning_msg = messages_util.GetAutoscalingAnnotationsWarning(service)
+      if warning_msg:
+        pretty_print.Info(f'{{bold}}[Warning]{{reset}} {warning_msg}\n')
       pretty_print.Info(
           messages_util.GetStartDeployMessage(
               conn_context, service_ref, operation_message
@@ -1193,29 +1196,22 @@ class Deploy(base.Command):
           return released_service, records
 
       try:
-        try:
+        service, records = _ReleaseService(changes)
+      except exceptions.HttpError as e:
+        if flags.ShouldRetryNoZonalRedundancy(args, str(e)):
+          changes.append(
+              config_changes.GpuZonalRedundancyChange(
+                  gpu_zonal_redundancy=False
+              )
+          )
           service, records = _ReleaseService(changes)
-        except exceptions.HttpError as e:
-          if flags.ShouldRetryNoZonalRedundancy(args, str(e)):
-            changes.append(
-                config_changes.GpuZonalRedundancyChange(
-                    gpu_zonal_redundancy=False
-                )
-            )
-            service, records = _ReleaseService(changes)
-          else:
-            raise e
+        else:
+          raise e
 
-        self._DisplaySuccessMessage(
-            service, args, allow_unauth, operations, service_ref, records
-        )
-        return service
-      finally:
-        if local_build_dir is not None:
-          try:
-            local_build_dir.cleanup()
-          except Exception:  # pylint: disable=broad-exception-caught
-            pass
+      self._DisplaySuccessMessage(
+          service, args, allow_unauth, operations, service_ref, records
+      )
+      return service
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -1234,6 +1230,9 @@ class BetaDeploy(Deploy):
 
     # Flags specific to managed CR
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
+    flags.IdentityCertificateFlag().AddToParser(parser)
+    flags.IdentityTypeFlag(release_track=cls.ReleaseTrack()).AddToParser(parser)
+    flags.FunctionalTypeFlag(resource='service').AddToParser(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(
         parser, container_args, cls.ReleaseTrack()
@@ -1264,8 +1263,8 @@ class AlphaDeploy(BetaDeploy):
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.IDENTITY_FLAG.AddToParser(parser)
     flags.IdentityCertificateFlag().AddToParser(parser)
-    flags.IdentityTypeFlag().AddToParser(parser)
-    flags.FunctionalTypeFlag().AddToParser(parser)
+    flags.IdentityTypeFlag(release_track=cls.ReleaseTrack()).AddToParser(parser)
+    flags.FunctionalTypeFlag(resource='service').AddToParser(parser)
     flags.MESH_DATAPLANE_FLAG.AddToParser(parser)
     flags.AMBIENT_NETWORKING_FLAG.AddToParser(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())

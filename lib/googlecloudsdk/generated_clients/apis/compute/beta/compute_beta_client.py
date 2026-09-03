@@ -536,6 +536,35 @@ resources.
         supports_download=False,
     )
 
+    def CalendarModeExtension(self, request, global_params=None):
+      r"""Advises on whether extending an existing future reservation is possible.
+based on the desired extension end time. If capacity isn't available for
+the entire requested duration, the method recommends the longest possible
+extension.
+
+      Args:
+        request: (ComputeAdviceCalendarModeExtensionRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (CalendarModeExtensionAdviceResponse) The response message.
+      """
+      config = self.GetMethodConfig('CalendarModeExtension')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    CalendarModeExtension.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.advice.calendarModeExtension',
+        ordered_params=['project', 'region'],
+        path_params=['project', 'region'],
+        query_params=[],
+        relative_path='projects/{project}/regions/{region}/advice/calendarModeExtension',
+        request_field='calendarModeExtensionAdviceRequest',
+        request_type_name='ComputeAdviceCalendarModeExtensionRequest',
+        response_type_name='CalendarModeExtensionAdviceResponse',
+        supports_download=False,
+    )
+
     def Capacity(self, request, global_params=None):
       r"""Advice on making real-time decisions (such as choosing zone or.
 machine types) during deployment to maximize your chances of obtaining
@@ -25004,6 +25033,33 @@ Replaces any existing policy.
         request_field='',
         request_type_name='ComputeReservationSlotsGetRequest',
         response_type_name='ReservationSlotsGetResponse',
+        supports_download=False,
+    )
+
+    def GetHealth(self, request, global_params=None):
+      r"""Get health info on a reservation slot.
+
+      Args:
+        request: (ComputeReservationSlotsGetHealthRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('GetHealth')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetHealth.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}/reservationSubBlocks/{reservationSubBlocksId}/reservationSlots/{reservationSlot}/getHealth',
+        http_method='POST',
+        method_id='compute.reservationSlots.getHealth',
+        ordered_params=['project', 'zone', 'parentName', 'reservationSlot'],
+        path_params=['parentName', 'project', 'reservationSlot', 'zone'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/zones/{zone}/{+parentName}/reservationSlots/{reservationSlot}/getHealth',
+        request_field='',
+        request_type_name='ComputeReservationSlotsGetHealthRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

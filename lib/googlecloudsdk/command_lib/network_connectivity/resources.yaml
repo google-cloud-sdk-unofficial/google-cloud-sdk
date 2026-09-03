@@ -262,3 +262,15 @@ remote_transport_profile:
     parameter_name: remoteTransportProfilesId
     attribute_name: remote_transport_profile
     help: Id of the remoteTransportProfile.
+
+macsecKeyGroup:
+  name: macsecKeyGroup
+  collection: networkconnectivity.projects.locations.interconnectKeyGroups
+  request_id_field: interconnectKeyGroupId
+  attributes:
+  - *project
+  - *region
+  - &macsecKeyGroup
+    parameter_name: interconnectKeyGroupsId
+    attribute_name: macsec_key_group
+    help: Id of the macsecKeyGroup.

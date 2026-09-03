@@ -3637,8 +3637,13 @@ class StorageObjectsComposeRequest(_messages.Message):
       endpoints#encoding).
     destinationPredefinedAcl: Apply a predefined set of access controls to the
       destination object.
-    dropContextGroups: Specifies which groups of Object Contexts from the
-      source object(s) should be dropped from the destination object.
+    dropContextGroups: Specifies which object context groups to drop from the
+      source object(s) during a compose operation. The accepted value is
+      'custom'. Destination contexts behave as follows: - When request body
+      contexts are provided, they override all source contexts. - When no
+      request body contexts are provided, source contexts are preserved unless
+      'dropContextGroups' contains 'custom', in which case all contexts are
+      dropped.
     ifGenerationMatch: Makes the operation conditional on whether the object's
       current generation matches the given value. Setting to 0 makes the
       operation succeed only if there are no live versions of the object.
@@ -4351,8 +4356,13 @@ class StorageObjectsRewriteRequest(_messages.Message):
       endpoints#encoding).
     destinationPredefinedAcl: Apply a predefined set of access controls to the
       destination object.
-    dropContextGroups: Specifies which groups of Object Contexts from the
-      source object should be dropped from the destination object.
+    dropContextGroups: Specifies which object context groups to drop from the
+      source object during a copy operation. The accepted value is 'custom'.
+      Destination contexts behave as follows: - When request body contexts are
+      provided, they override all source contexts. - When no request body
+      contexts are provided, source contexts are preserved unless
+      'dropContextGroups' contains 'custom', in which case all contexts are
+      dropped.
     ifGenerationMatch: Makes the operation conditional on whether the object's
       current generation matches the given value. Setting to 0 makes the
       operation succeed only if there are no live versions of the object.

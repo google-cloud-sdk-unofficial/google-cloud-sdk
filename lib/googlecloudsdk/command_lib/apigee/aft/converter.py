@@ -45,12 +45,12 @@ with Apigee UI emissions.
 import io
 import posixpath
 import re
-from typing import Optional, Any
+from typing import Any, Optional
 import xml.etree.ElementTree as ET
 import zipfile
 
 from googlecloudsdk.command_lib.apigee.aft import models
-
+from googlecloudsdk.core import log
 
 # ---- Bundle safety bounds (Backward direction) ----
 
@@ -348,16 +348,58 @@ def _populate_flow(flow_el: ET.Element, flow: models.Flow):
   if mode not in ('Request', 'Response'):
     mode = 'Request'
   wrapper = ET.SubElement(flow_el, mode)
-  for step in flow.steps or []:
-    step_el = ET.SubElement(wrapper, 'Step')
+  _add_steps(wrapper, flow.steps)
+
+
+def _add_steps(parent: ET.Element, steps: Optional[list[models.Step]]):
+  """Appends a <Step> child to `parent` for each entry in `steps`.
+
+  Args:
+    parent: The element to append to -- a <Request>/<Response> wrapper for a
+      pipeline flow, or the rule element itself for a fault rule.
+    steps: The steps to write. None and [] are both treated as "no steps",
+      leaving `parent` childless, because `models.Flow.steps` is optional in the
+      AFT YAML schema.
+  """
+  for step in steps or []:
+    step_el = ET.SubElement(parent, 'Step')
     _sub_text(step_el, 'Name', step.name)
     if step.condition is not None:
       _sub_text(step_el, 'Condition', step.condition)
 
 
+def _populate_fault_rule(rule_el: ET.Element, rule: models.Flow):
+  """Writes the <Condition>/<Step> children of a fault rule element.
+
+  Unlike a pipeline flow, a fault rule has no request/response phase: by the
+  time it runs, the request is already over. Apigee therefore expects <Step>
+  as a *direct* child of <FaultRule>/<DefaultFaultRule>, not wrapped in a
+  <Request>/<Response> element.
+
+  `models.FaultRule` inherits `mode` from `models.Flow`, so it is possible to
+  set it, but it is meaningless here; setting it is warned about and ignored.
+
+  Args:
+    rule_el: The XML element representing the fault rule.
+    rule: The fault rule model.
+  """
+  if rule.mode:
+    log.warning(
+        'Ignoring mode %r on fault rule %r: a fault rule has no request or '
+        'response phase, so its steps always run directly. Remove the `mode` '
+        'field.',
+        rule.mode,
+        rule.name,
+    )
+  if rule.condition:
+    _sub_text(rule_el, 'Condition', rule.condition)
+  _add_steps(rule_el, rule.steps)
+
+
 def _add_fault_rules(
     parent: ET.Element,
-    fault_rules: list[models.FaultRule],
+    # A plain `Flow`: `always_enforce` is only meaningful on the default rule.
+    fault_rules: list[models.Flow],
     default_fault_rule: Optional[models.FaultRule],
 ):
   """Appends <FaultRules> and <DefaultFaultRule> children to `parent`."""
@@ -365,14 +407,14 @@ def _add_fault_rules(
     frs_el = ET.SubElement(parent, 'FaultRules')
     for rule in fault_rules:
       rule_el = ET.SubElement(frs_el, 'FaultRule', attrib={'name': rule.name})
-      _populate_flow(rule_el, rule)
+      _populate_fault_rule(rule_el, rule)
   if default_fault_rule is not None:
     dfr_el = ET.SubElement(
         parent, 'DefaultFaultRule', attrib={'name': default_fault_rule.name}
     )
     if default_fault_rule.always_enforce:
       _sub_text(dfr_el, 'AlwaysEnforce', 'true')
-    _populate_flow(dfr_el, default_fault_rule)
+    _populate_fault_rule(dfr_el, default_fault_rule)
 
 
 # ---- XML serialization helpers ----
@@ -576,17 +618,56 @@ def _parse_named_flow(flow_el: ET.Element) -> models.Flow:
   for child in flow_el:
     if child.tag in ('Request', 'Response'):
       mode = child.tag
-      for step_el in child.findall('Step'):
-        step = models.Step()
-        name_el = step_el.find('Name')
-        if name_el is not None and name_el.text is not None:
-          step.name = name_el.text
-        cond = step_el.find('Condition')
-        if cond is not None and cond.text is not None:
-          step.condition = cond.text
-        steps.append(step)
+      steps.extend(_parse_step(el) for el in child.findall('Step'))
   flow = models.Flow(name=name, mode=mode, steps=steps)
   cond_el = flow_el.find('Condition')
+  if cond_el is not None and cond_el.text is not None:
+    flow.condition = cond_el.text
+  return flow
+
+
+def _parse_step(step_el: ET.Element) -> models.Step:
+  """Parses a single <Step> element."""
+  step = models.Step()
+  name_el = step_el.find('Name')
+  if name_el is not None and name_el.text is not None:
+    step.name = name_el.text
+  cond = step_el.find('Condition')
+  if cond is not None and cond.text is not None:
+    step.condition = cond.text
+  return step
+
+
+def _parse_fault_rule(rule_el: ET.Element) -> models.Flow:
+  """Parses a <FaultRule> / <DefaultFaultRule> element.
+
+  Apigee places <Step> directly under the rule, so that is what is read here.
+  Steps wrapped in a <Request>/<Response> element are also accepted, so that
+  a bundle in that shape round-trips instead of silently losing its steps.
+  `mode` is left unset either way -- it does not apply to a fault rule.
+
+  Args:
+    rule_el: The XML element representing the fault rule.
+
+  Returns:
+    A `models.Flow` holding the rule's name, condition, and steps.
+  """
+  name_attr = rule_el.get('name')
+  # `name=` is optional on a fault rule, so fall back to the tag name. It
+  # must not be left unset: Forward writes it into `attrib={'name': ...}`,
+  # where a None fails to serialize.
+  name = rule_el.tag if name_attr is None else name_attr
+  step_els = rule_el.findall('Step')
+  if not step_els:
+    for phase in ('Request', 'Response'):
+      phase_el = rule_el.find(phase)
+      if phase_el is not None and phase_el.findall('Step'):
+        step_els = phase_el.findall('Step')
+        break
+  flow = models.Flow(
+      name=name, mode=None, steps=[_parse_step(el) for el in step_els]
+  )
+  cond_el = rule_el.find('Condition')
   if cond_el is not None and cond_el.text is not None:
     flow.condition = cond_el.text
   return flow
@@ -617,17 +698,28 @@ def _parse_flows(root: ET.Element) -> list[models.Flow]:
 
 def _parse_fault_rules(
     root: ET.Element,
-) -> tuple[list[models.FaultRule], Optional[models.FaultRule]]:
-  """Returns (fault_rules, default_fault_rule) parsed from `root`'s children."""
+) -> tuple[list[models.Flow], Optional[models.FaultRule]]:
+  """Returns (fault_rules, default_fault_rule) parsed from `root`'s children.
+
+  A <FaultRule> parses to a plain `Flow`, matching `ProxyEndpoint.fault_rules`
+  and `ProxyTarget.fault_rules`. Only <DefaultFaultRule> becomes a `FaultRule`,
+  because `always_enforce` (<AlwaysEnforce>) is only valid on that element.
+
+  Args:
+    root: The <ProxyEndpoint>/<TargetEndpoint> element to read.
+
+  Returns:
+    The parsed fault rules, and the default fault rule if one is present.
+  """
   fault_rules = []
   frs_container = root.find('FaultRules')
   if frs_container is not None:
     for el in frs_container.findall('FaultRule'):
-      fault_rules.append(_parse_named_flow(el))
+      fault_rules.append(_parse_fault_rule(el))
   default_rule = None
   dfr_el = root.find('DefaultFaultRule')
   if dfr_el is not None:
-    base_flow = _parse_named_flow(dfr_el)
+    base_flow = _parse_fault_rule(dfr_el)
     default_rule = models.FaultRule(
         name=base_flow.name,
         mode=base_flow.mode,

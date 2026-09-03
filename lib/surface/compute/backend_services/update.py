@@ -228,6 +228,7 @@ class UpdateHelper(object):
     flags.AddConsistentHashHttpHeaderName(parser)
     flags.AddConsistentHashMinimumRingSize(parser)
     flags.AddCircuitBreakersMaxRequests(parser)
+    flags.AddOutlierDetectionFlags(parser, add_clear_argument=True)
     flags.AddCompressionMode(parser)
 
     flags.AddServiceLoadBalancingPolicy(parser, required=False, is_update=True)
@@ -348,6 +349,9 @@ class UpdateHelper(object):
     )
     backend_services_utils.ApplyCircuitBreakersSettings(
         client, args, replacement
+    )
+    backend_services_utils.ApplyOutlierDetectionArgs(
+        client, args, replacement, cleared_fields
     )
     backend_services_utils.ApplySubsettingArgs(
         client, args, replacement, self._support_subsetting_subset_size
@@ -578,9 +582,24 @@ class UpdateHelper(object):
         args.IsSpecified('security_settings_aws_v4_access_key_version'),
         args.IsSpecified('security_settings_aws_v4_origin_region'),
         args.IsSpecified('no_security_settings'),
+        args.IsSpecified('no_outlier_detection'),
+        args.IsSpecified('outlier_detection_consecutive_errors'),
+        args.IsSpecified('outlier_detection_interval'),
+        args.IsSpecified('outlier_detection_base_ejection_time'),
+        args.IsSpecified('outlier_detection_max_ejection_percent'),
+        args.IsSpecified('outlier_detection_enforcing_consecutive_errors'),
+        args.IsSpecified('outlier_detection_enforcing_success_rate'),
+        args.IsSpecified('outlier_detection_success_rate_minimum_hosts'),
+        args.IsSpecified('outlier_detection_success_rate_request_volume'),
+        args.IsSpecified('outlier_detection_success_rate_stdev_factor'),
+        args.IsSpecified('outlier_detection_consecutive_gateway_failure'),
+        args.IsSpecified(
+            'outlier_detection_enforcing_consecutive_gateway_failure'
+        ),
     ]):
       raise compute_exceptions.UpdatePropertyError(
-          'At least one property must be modified.')
+          'At least one property must be modified.'
+      )
 
   def GetSetRequest(self, client, backend_service_ref, replacement):
     """Returns a backend service patch request."""

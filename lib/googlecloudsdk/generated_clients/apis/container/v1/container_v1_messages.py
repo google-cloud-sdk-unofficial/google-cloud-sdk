@@ -3645,10 +3645,12 @@ class DefaultComputeClassConfig(_messages.Message):
   r"""DefaultComputeClassConfig defines default compute class configuration.
 
   Fields:
+    computeClass: Optional. Name of the default compute class.
     enabled: Enables default compute class.
   """
 
-  enabled = _messages.BooleanField(1)
+  computeClass = _messages.StringField(1)
+  enabled = _messages.BooleanField(2)
 
 
 class DefaultSnatStatus(_messages.Message):

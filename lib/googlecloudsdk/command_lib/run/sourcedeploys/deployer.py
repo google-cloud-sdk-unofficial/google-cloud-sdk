@@ -479,7 +479,7 @@ def _SubmitBuild(
           build_log_url=build_log_url
       ),
   )
-  response_dict = _PollUntilBuildCompletes(build_op_ref, region)
+  response_dict = _PollUntilBuildCompletes(build_op_ref, build_region)
   return response_dict, build_log_url, build_response.baseImageUri
 
 

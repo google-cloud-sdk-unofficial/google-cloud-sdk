@@ -497,7 +497,10 @@ class Deploy(calliope_base.Command):
 
     try:
       external_vars = yaml_processor.collect_external_vars(
-          args, bundle_dir, enforce_clean=True
+          args=args,
+          bundle_path=bundle_dir,
+          enforce_clean=True,
+          bundle_name=bundle_name,
       )
       parsed_deployment, combined_variables, environment_model = (
           yaml_processor.parse_deployment(

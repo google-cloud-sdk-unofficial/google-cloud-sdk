@@ -29,8 +29,7 @@ def _CommonArgs(parser):
       )""")
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List Compute Engine recoverable snapshots."""

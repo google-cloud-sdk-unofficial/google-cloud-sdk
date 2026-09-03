@@ -29,11 +29,27 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
-@base.Hidden
+DETAILED_HELP = {
+    'EXAMPLES': (
+        """\
+        To delete a blue-green deployment named `my-deployment` in region `us-central1`:
+
+          $ {command} my-deployment --region=us-central1
+
+        To delete a blue-green deployment and delete the old source instance after a successful switchover:
+
+          $ {command} my-deployment --region=us-central1 --delete-old-source
+        """
+    ),
+}
+
+
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Deletes a Cloud SQL blue-green deployment."""
+
+  detailed_help = DETAILED_HELP
 
   @classmethod
   def Args(cls, parser: argparse.ArgumentParser) -> None:

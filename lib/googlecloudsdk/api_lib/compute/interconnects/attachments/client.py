@@ -235,11 +235,20 @@ class InterconnectAttachment(object):
       candidate_customer_router_ipv6_address=None,
       geneve_vni=None,
       default_appliance_ip_address=None,
+      interconnect=None,
   ):
     """Make an interconnect attachment patch request."""
+    interconnect_self_link = None
+    if interconnect is not None:
+      interconnect_self_link = (
+          interconnect.SelfLink()
+          if hasattr(interconnect, 'SelfLink')
+          else interconnect
+      )
     interconnect_attachment = self._messages.InterconnectAttachment(
         name=self.ref.Name(),
         description=description,
+        interconnect=interconnect_self_link,
         adminEnabled=admin_enabled,
         bandwidth=bandwidth,
         partnerMetadata=partner_metadata)
@@ -566,6 +575,7 @@ class InterconnectAttachment(object):
   def Patch(
       self,
       description='',
+      interconnect=None,
       admin_enabled=None,
       bandwidth=None,
       partner_name=None,
@@ -622,6 +632,7 @@ class InterconnectAttachment(object):
             candidate_customer_router_ipv6_address,
             geneve_vni,
             default_appliance_ip_address,
+            interconnect=interconnect,
         )
     ]
     if not only_generate_request:

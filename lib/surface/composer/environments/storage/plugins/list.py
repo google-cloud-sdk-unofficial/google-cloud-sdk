@@ -30,6 +30,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 class List(base.Command):
   """List the plugins for a Cloud Composer environment."""
 

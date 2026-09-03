@@ -18,6 +18,7 @@
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class Plugins(base.Group):
   """Manage plugins for Cloud Composer environments.
 

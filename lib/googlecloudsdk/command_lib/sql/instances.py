@@ -768,6 +768,27 @@ class _BaseInstances(object):
           enable_password_policy=args.enable_password_policy,
       )
 
+    sql_server_password_policy = reducers.SqlServerPasswordValidationPolicy(
+        sql_messages,
+        sql_server_password_policy_min_length=getattr(
+            args, 'sql_server_password_policy_min_length', None
+        ),
+        sql_server_password_policy_history_length=getattr(
+            args, 'sql_server_password_policy_history_length', None
+        ),
+        sql_server_password_policy_minimum_age=getattr(
+            args, 'sql_server_password_policy_minimum_age', None
+        ),
+        sql_server_password_policy_maximum_age=getattr(
+            args, 'sql_server_password_policy_maximum_age', None
+        ),
+        sql_server_enable_password_policy=getattr(
+            args, 'sql_server_enable_password_policy', None
+        ),
+    )
+    if sql_server_password_policy is not None:
+      settings.sqlServerPasswordValidationPolicy = sql_server_password_policy
+
     settings.sqlServerAuditConfig = reducers.SqlServerAuditConfig(
         sql_messages,
         args.audit_bucket_path,
@@ -997,6 +1018,30 @@ class _BaseInstances(object):
         enable_password_policy=args.enable_password_policy,
     )
 
+    settings.sqlServerPasswordValidationPolicy = (
+        reducers.SqlServerPasswordValidationPolicy(
+            sql_messages,
+            sql_server_password_policy_min_length=getattr(
+                args, 'sql_server_password_policy_min_length', None
+            ),
+            sql_server_password_policy_history_length=getattr(
+                args, 'sql_server_password_policy_history_length', None
+            ),
+            sql_server_password_policy_minimum_age=getattr(
+                args, 'sql_server_password_policy_minimum_age', None
+            ),
+            sql_server_password_policy_maximum_age=getattr(
+                args, 'sql_server_password_policy_maximum_age', None
+            ),
+            sql_server_enable_password_policy=getattr(
+                args, 'sql_server_enable_password_policy', None
+            ),
+            clear_sql_server_password_policy=args.IsKnownAndSpecified(
+                'clear_sql_server_password_policy'
+            ),
+        )
+    )
+
     settings.sqlServerAuditConfig = reducers.SqlServerAuditConfig(
         sql_messages,
         bucket=args.audit_bucket_path,
@@ -1218,8 +1263,8 @@ class _BaseInstances(object):
         ),
         'enable_semi_managed_replication': 'replication_enabled',
         'enable_semi_managed_backup': 'backup_enabled',
-        'enable_semi_managed_insights': 'insights_enabled',
         'semi_managed_insights_gcs_uri': 'insights_gcs_uri',
+        'semi_managed_patch_database_gcs_uri': 'patch_database_gcs_uri',
     }
     kwargs = {
         param: getattr(args, flag)
@@ -1485,6 +1530,29 @@ class _BaseInstances(object):
                 cmekSourceLogEncryptionEnforced=enforce_cmek_log,
             )
         )
+
+    semi_managed_params = {
+        'gce_instances': 'gce_instances',
+        'sql_account': 'sql_account',
+        'sql_account_secret_name': 'sql_account_secret_name',
+        'windows_service_account': 'windows_service_account',
+        'windows_service_account_secret_name': (
+            'windows_service_account_secret_name'
+        ),
+        'enable_semi_managed_replication': 'replication_enabled',
+        'enable_semi_managed_backup': 'backup_enabled',
+        'semi_managed_insights_gcs_uri': 'insights_gcs_uri',
+        'semi_managed_patch_database_gcs_uri': 'patch_database_gcs_uri',
+    }
+    kwargs = {
+        param: getattr(args, flag)
+        for flag, param in semi_managed_params.items()
+        if args.IsKnownAndSpecified(flag)
+    }
+    if kwargs:
+      instance_resource.semiManagedConfig = reducers.SemiManagedConfig(
+          sql_messages, **kwargs
+      )
 
     return instance_resource
 

@@ -36,7 +36,7 @@ _DETAILED_HELP = frozendict.frozendict({'EXAMPLES': textwrap.dedent("""\
         """)})
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class ListUserWorkloadsConfigMaps(base.Command):
   """List user workloads ConfigMaps."""
 

@@ -487,7 +487,9 @@ class Update(base.UpdateCommand):
     flags.AddAutoIpamFlag(group, is_update=True)
     flags.AddEnableLegacyLustrePortFlag(group, hidden=False)
     flags.AddDisableMultiNicLustreFlag(group)
-    flags.AddEnableDefaultComputeClassFlag(group)
+    group_default_compute_class = group.add_group()
+    flags.AddEnableDefaultComputeClassFlag(group_default_compute_class)
+    flags.AddDefaultComputeClassFlag(group_default_compute_class)
     flags.AddNetworkTierFlag(group)
     flags.AddControlPlaneEgressFlag(group)
     flags.AddAutopilotPrivilegedAdmissionFlag(group)
@@ -666,6 +668,7 @@ class Update(base.UpdateCommand):
     opts.enable_legacy_lustre_port = args.enable_legacy_lustre_port
     opts.disable_multi_nic_lustre = args.disable_multi_nic_lustre
     opts.enable_default_compute_class = args.enable_default_compute_class
+    opts.default_compute_class = args.default_compute_class
     opts.network_tier = args.network_tier
     opts.control_plane_egress_mode = args.control_plane_egress
     opts.managed_otel_scope = args.managed_otel_scope
@@ -1406,7 +1409,9 @@ class UpdateBeta(Update):
     flags.AddAutoIpamFlag(group, is_update=True)
     flags.AddEnableLegacyLustrePortFlag(group, hidden=False)
     flags.AddDisableMultiNicLustreFlag(group)
-    flags.AddEnableDefaultComputeClassFlag(group)
+    group_default_compute_class = group.add_group()
+    flags.AddEnableDefaultComputeClassFlag(group_default_compute_class)
+    flags.AddDefaultComputeClassFlag(group_default_compute_class)
     group_fleet_flags = group.add_group()
     flags.AddFleetProjectFlag(group_fleet_flags, is_update=True)
     flags.AddMembershipTypeFlags(group_fleet_flags, is_update=True)
@@ -1645,6 +1650,7 @@ class UpdateBeta(Update):
     opts.enable_legacy_lustre_port = args.enable_legacy_lustre_port
     opts.disable_multi_nic_lustre = args.disable_multi_nic_lustre
     opts.enable_default_compute_class = args.enable_default_compute_class
+    opts.default_compute_class = args.default_compute_class
     opts.network_tier = args.network_tier
     opts.control_plane_egress_mode = args.control_plane_egress
     opts.managed_otel_scope = args.managed_otel_scope
@@ -1830,7 +1836,9 @@ class UpdateAlpha(Update):
     flags.AddAutoIpamFlag(group, is_update=True)
     flags.AddEnableLegacyLustrePortFlag(group, hidden=False)
     flags.AddDisableMultiNicLustreFlag(group)
-    flags.AddEnableDefaultComputeClassFlag(group)
+    group_default_compute_class = group.add_group()
+    flags.AddEnableDefaultComputeClassFlag(group_default_compute_class)
+    flags.AddDefaultComputeClassFlag(group_default_compute_class)
     group_fleet_flags = group.add_group()
     flags.AddFleetProjectFlag(group_fleet_flags, is_update=True)
     flags.AddMembershipTypeFlags(group_fleet_flags, is_update=True)
@@ -2065,6 +2073,7 @@ class UpdateAlpha(Update):
     opts.enable_legacy_lustre_port = args.enable_legacy_lustre_port
     opts.disable_multi_nic_lustre = args.disable_multi_nic_lustre
     opts.enable_default_compute_class = args.enable_default_compute_class
+    opts.default_compute_class = args.default_compute_class
     opts.network_tier = args.network_tier
     opts.control_plane_egress_mode = args.control_plane_egress
     opts.managed_otel_scope = args.managed_otel_scope

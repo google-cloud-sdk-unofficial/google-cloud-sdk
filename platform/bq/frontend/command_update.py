@@ -253,6 +253,35 @@ class Update(bigquery_command.BigqueryCmd):
         'idle slots from other reservations.',
         flag_values=fv,
     )
+    flags.DEFINE_string(
+        'condition',
+        None,
+        'Common Expression Language (CEL) expression that defines the'
+        ' matching criteria for this assignment. The expression must resolve'
+        ' to a boolean value.'
+        '\nFormat:'
+        '\n--condition=\'{"expression": "<CEL expression>", "title": "<title>",'
+        ' "description": "<description>"}\''
+        '\nExample:'
+        '\n--condition=\'{"expression": "job.label[\\"env\\"]==\\"prod\\"",'
+        ' "title": "Prod Jobs", "description": "Matches prod jobs"}\''
+        '\nUsed in conjunction with --reservation_assignment.'
+        '\nSee https://cel.dev/ for more details.',
+        flag_values=fv,
+    )
+    flags.DEFINE_integer(
+        'precedence',
+        None,
+        'Priority precedence for this assignment. Used to resolve ambiguity'
+        ' when multiple assignments match a single job.'
+        '\nHigher numerical values represent higher priority (e.g., 20 is'
+        ' evaluated before 10).'
+        '\nWhen a CEL expression is specified, it is recommended to enter'
+        ' precedence explicitly to avoid collisions in the same assignee'
+        ' scope.'
+        '\nUsed in conjunction with --reservation_assignment.',
+        flag_values=fv,
+    )
     flags.DEFINE_integer(
         'max_concurrency',
         None,
@@ -655,17 +684,24 @@ class Update(bigquery_command.BigqueryCmd):
     )
     # TODO(b/532772672): Use absl.flags validators to ensure
     # connection-specific flags (e.g. iam_role_id,
-    # s3_service_directory_service, tenant_id) are only set when
+    # service_directory_service, tenant_id) are only set when
     # connection_type matches.
     flags.DEFINE_string(
         'iam_role_id', None, '[Experimental] IAM role id.', flag_values=fv
     )
     flags.DEFINE_string(
-        's3_service_directory_service',
+        'service_directory_service',
         None,
         '[Experimental] Service directory resource name for routing traffic'
         ' over a private network connection through Cross-Cloud Interconnect'
-        ' for AWS connections.',
+        ' for BQ cross-cloud connections.',
+        flag_values=fv,
+    )
+    # TODO(b/541415543): Remove deprecated field: s3_service_directory_service
+    flags.DEFINE_string(
+        's3_service_directory_service',
+        None,
+        '[Deprecated] Alias for --service_directory_service.',
         flag_values=fv,
     )
     # TODO(b/231712311): look into cleaning up this flag now that only federated
@@ -777,6 +813,13 @@ class Update(bigquery_command.BigqueryCmd):
         ]),
         flag_values=fv,
     )
+    flags.DEFINE_boolean(
+        'reservation_group',
+        None,
+        'Updates a reservation group described by this identifier.',
+        flag_values=fv,
+    )
+    self.parent_group_flag = frontend_flags.define_parent_group(fv)
 
     self._ProcessCommandRc(fv)
 
@@ -823,6 +866,11 @@ class Update(bigquery_command.BigqueryCmd):
       bq update --reservation_assignment
           --destination_reservation_id=proj:US.new_reservation
           proj:US.old_reservation.assignment_id
+      bq update --reservation_assignment
+          --destination_reservation_id=proj:US.new_reservation
+          proj:US.old_reservation.assignment_id
+          --precedence=10
+          --condition='{"expression": "job.label[\"env\"]==\"prod\""}'
       bq update --connection_credential='{"username":"u", "password":"p"}'
         --location=US --project_id=my-project existing_connection
       bq update --row_access_policy --policy_id=existing_policy
@@ -936,6 +984,30 @@ class Update(bigquery_command.BigqueryCmd):
         raise bq_error.BigqueryError(
             "Failed to update reservation '%s': %s" % (identifier, e)
         )
+    elif self.reservation_group:
+      try:
+        reference = bq_client_utils.GetReservationGroupReference(
+            id_fallbacks=client,
+            identifier=identifier,
+            default_location=bq_flags.LOCATION.value,
+        )
+        self.parent_group = (
+            self.parent_group_flag.value
+            if self.parent_group_flag.present
+            else None
+        )
+        object_info = client_reservation.UpdateReservationGroup(
+            reservation_group_client=client.GetReservationApiClient(),
+            reference=reference,
+            parent_group=self.parent_group,
+        )
+        frontend_utils.PrintObjectInfo(
+            object_info, reference, custom_format='show'
+        )
+      except BaseException as e:
+        raise bq_error.BigqueryError(
+            "Failed to update reservation group '%s': %s" % (identifier, e)
+        )
     elif self.capacity_commitment:
       try:
         if self.split and self.merge:
@@ -1028,6 +1100,8 @@ class Update(bigquery_command.BigqueryCmd):
             self.priority is not None
             or self.scheduling_policy_max_slots is not None
             or self.scheduling_policy_concurrency is not None
+            or self.precedence is not None
+            or self.condition is not None
         ):
           object_info = client_reservation.UpdateReservationAssignment(
               client=client.GetReservationApiClient(),
@@ -1035,10 +1109,14 @@ class Update(bigquery_command.BigqueryCmd):
               priority=self.priority,
               scheduling_policy_max_slots=self.scheduling_policy_max_slots,
               scheduling_policy_concurrency=self.scheduling_policy_concurrency,
+              precedence=self.precedence,
+              condition=self.condition,
           )
         else:
           raise bq_error.BigqueryError(
               'Either --destination_reservation_id, --priority, '
+              '--precedence,'
+              ' --condition,'
               ' --scheduling_policy_max_slots, or'
               ' --scheduling_policy_concurrency must be specified.'
           )
@@ -1077,10 +1155,18 @@ class Update(bigquery_command.BigqueryCmd):
           aws_props.update(
               bq_processor_utils.MakeAccessRoleProperties(self.iam_role_id)
           )
+        # TODO(b/541415543): Remove deprecated field:
+        # s3_service_directory_service
         if self.s3_service_directory_service:
-          aws_props['s3ServiceDirectoryService'] = (
-              self.s3_service_directory_service
+          print(
+              'Warning: --s3_service_directory_service is deprecated and will'
+              ' be removed in future versions. Use --service_directory_service'
+              ' instead.'
           )
+          if not self.service_directory_service:
+            self.service_directory_service = self.s3_service_directory_service
+        if self.service_directory_service:
+          aws_props['serviceDirectoryService'] = self.service_directory_service
         if aws_props:
           self.properties = json.dumps(aws_props)
       elif self.connection_type == 'Azure':
@@ -1100,6 +1186,10 @@ class Update(bigquery_command.BigqueryCmd):
         elif self.tenant_id:
           azure_props.update(
               bq_processor_utils.MakeTenantIdProperties(self.tenant_id)
+          )
+        if self.service_directory_service:
+          azure_props['serviceDirectoryService'] = (
+              self.service_directory_service
           )
         if azure_props:
           self.properties = json.dumps(azure_props)

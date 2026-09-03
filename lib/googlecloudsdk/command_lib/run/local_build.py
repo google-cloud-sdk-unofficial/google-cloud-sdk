@@ -25,13 +25,13 @@ from typing import Any, Dict, List, Optional, Tuple
 from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import flags
-from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import stages
 from googlecloudsdk.core import config
 from googlecloudsdk.core import log
 from googlecloudsdk.core import metrics
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.updater import update_manager
+from googlecloudsdk.core.util import encoding
 from googlecloudsdk.core.util import files
 
 _LOCAL_BUILD_LOG_FILENAME = 'gcloud_local_build.log'
@@ -115,6 +115,10 @@ def GetUniversalMakerPath() -> str:
   Raises:
     c_exceptions.ToolException: If the SDK root or binary is not found.
   """
+  env_maker_path = encoding.GetEncodedValue(os.environ, 'UNIVERSAL_MAKER_PATH')
+  if env_maker_path and os.path.isfile(env_maker_path):
+    return env_maker_path
+
   update_manager.UpdateManager.EnsureInstalledAndRestart(['universal-maker'])
   sdk_root = config.Paths().sdk_root
   if not sdk_root:
@@ -210,7 +214,7 @@ def RunUniversalMaker(
       )
 
 
-def _WarnOrPromptOnBaseImageMismatch(
+def WarnOrPromptOnBaseImageMismatch(
     inferred_runtime: str, base_image: str
 ) -> None:
   """Prompts or warns the user when explicit base image differs from local runtime.
@@ -249,21 +253,28 @@ def _WarnOrPromptOnBaseImageMismatch(
 
 
 def PerformLocalBuild(
-    container_name: str, container_args: Any, tracker: Optional[Any] = None
-) -> Tuple[List[Any], str, tempfile.TemporaryDirectory[str]]:
+    container_name: str,
+    container_args: Any,
+    local_build_dir: str,
+    maker_path: Optional[str] = None,
+    tracker: Optional[Any] = None,
+) -> Tuple[List[Any], str, Optional[str]]:
   """Orchestrates the local build flow in an isolated temporary directory.
 
   Args:
     container_name: str, name of the container being built (empty for primary).
     container_args: argparse.Namespace, the container-level arguments.
+    local_build_dir: the directory to use for the local build.
+    maker_path: str, optional path to the universal-maker binary.
     tracker: ProgressTracker, optional progress tracker for status display.
 
   Returns:
-    tuple: (local_build_changes, local_build_base_image, local_build_dir)
-      - local_build_changes (list): The list of ConfigChanger objects to apply.
+    tuple: (local_build_changes, local_build_base_image,
+    inferred_runtime)
+      - local_build_changes (list): The list of ConfigChanger objects to
+      apply.
       - local_build_base_image (str): The inferred base image runtime.
-      - local_build_dir (TemporaryDirectory): The directory containing the copy,
-        which MUST be kept alive until deployment is complete.
+      - inferred_runtime (str): The runtime version detected by universal-maker.
 
   Raises:
     LocalBuildFailedError: If build execution fails.
@@ -273,137 +284,119 @@ def PerformLocalBuild(
   source_dir = container_args.source
   ValidateLocalBuildSource(source_dir)
 
-  maker_path = GetUniversalMakerPath()
+  if not maker_path:
+    maker_path = GetUniversalMakerPath()
 
-  pretty_print.Info('Building application locally...')
-
-  local_build_dir = tempfile.TemporaryDirectory()
   try:
-    try:
-      shutil.copytree(
-          source_dir,
-          local_build_dir.name,
-          dirs_exist_ok=True,
-          ignore=shutil.ignore_patterns('.git', '.hg', '.svn'),
+    shutil.copytree(
+        source_dir,
+        local_build_dir,
+        dirs_exist_ok=True,
+        ignore=shutil.ignore_patterns('.git', '.hg', '.svn'),
+    )
+  except Exception as e:
+    raise c_exceptions.ToolException(
+        'Failed to copy source directory to temporary build directory: {}'
+        .format(e)
+    )
+
+  try:
+    build_output = RunUniversalMaker(
+        maker_path, local_build_dir, tracker=tracker
+    )
+  except LocalBuildFailedError as e:
+    if tracker:
+      tracker.FailStage(
+          stages.LOCAL_BUILD_STAGE_KEY,
+          e,
+          message=(
+              'Local build failed and logs are available at [ file://{} ].'
+              .format(
+                  os.path.join(tempfile.gettempdir(), _LOCAL_BUILD_LOG_FILENAME)
+              )
+          ),
       )
-    except Exception as e:
-      raise c_exceptions.ToolException(
-          'Failed to copy source directory to temporary build directory: {}'
-          .format(e)
-      )
+    else:
+      log.error(e)
+    raise
 
-    try:
-      build_output = RunUniversalMaker(
-          maker_path, local_build_dir.name, tracker=tracker
-      )
-    except LocalBuildFailedError as e:
-      if tracker:
-        tracker.FailStage(
-            stages.LOCAL_BUILD_STAGE_KEY,
-            e,
-            message=(
-                'Local build failed and logs are available at [ file://{} ].'
-                .format(
-                    os.path.join(
-                        tempfile.gettempdir(), _LOCAL_BUILD_LOG_FILENAME
-                    )
-                )
-            ),
-        )
-      else:
-        log.error(e)
-      raise
+  inferred_command = build_output.get('command')
+  # build_output can contain explicit null values for 'args' and 'envVars'
+  # which parse as None. Using 'or' ensures they default to empty iterables.
+  inferred_args = build_output.get('args') or []
+  inferred_runtime = build_output.get('runtime')
+  inferred_env_vars = build_output.get('envVars') or {}
 
-    inferred_command = build_output.get('command')
-    inferred_args = build_output.get('args', [])
-    inferred_runtime = build_output.get('runtime')
-    inferred_env_vars = build_output.get('envVars', {})
+  if not inferred_runtime:
+    raise c_exceptions.ToolException(
+        'Universal Maker did not detect a valid runtime.'
+    )
 
-    if not inferred_runtime:
-      raise c_exceptions.ToolException(
-          'Universal Maker did not detect a valid runtime.'
-      )
+  local_build_changes = []
 
-    local_build_changes = []
-
-    # Pass container_name only if it is a valid sidecar name (non-empty)
-    c_name = container_name if container_name else None
-
-    # Apply inferred command and args atomically (Approach B).
-    # If the user explicitly sets --command, it suppresses inferred args
-    # to match standard OCI semantics (overriding ENTRYPOINT clears CMD).
-    if not flags.FlagIsExplicitlySet(container_args, 'command'):
-      if inferred_command:
-        container_args.command = [inferred_command]
-        local_build_changes.append(
-            config_changes.ContainerCommandChange(
-                [inferred_command], container_name=c_name
-            )
-        )
-      if inferred_args and not flags.FlagIsExplicitlySet(
-          container_args, 'args'
-      ):
-        container_args.args = inferred_args
-        local_build_changes.append(
-            config_changes.ContainerArgsChange(
-                inferred_args, container_name=c_name
-            )
-        )
-
-    # Filter out inferred env vars that are explicitly overridden on the CLI
-    cli_env_vars = {}
-    for flag in ('set_env_vars', 'update_env_vars'):
-      val = getattr(container_args, flag, None)
-      if val:
-        cli_env_vars.update(val)
-
-    cli_removed_vars = set(getattr(container_args, 'remove_env_vars', []) or [])
-
-    filtered_env_vars = {
-        k: v
-        for k, v in inferred_env_vars.items()
-        if k not in cli_env_vars and k not in cli_removed_vars
-    }
-
-    if filtered_env_vars:
+  # Apply inferred command and args atomically (Approach B).
+  # If the user explicitly sets --command, it suppresses inferred args
+  # to match standard OCI semantics (overriding ENTRYPOINT clears CMD).
+  if not flags.FlagIsExplicitlySet(container_args, 'command'):
+    if inferred_command:
       local_build_changes.append(
-          config_changes.EnvVarLiteralChanges(
-              updates=filtered_env_vars,
-              clear_others=False,
-              container_name=c_name,
+          config_changes.ContainerCommandChange(
+              [inferred_command], container_name=container_name
+          )
+      )
+    if inferred_args and not flags.FlagIsExplicitlySet(container_args, 'args'):
+      local_build_changes.append(
+          config_changes.ContainerArgsChange(
+              inferred_args, container_name=container_name
           )
       )
 
-    if not flags.FlagIsExplicitlySet(container_args, 'base_image'):
-      container_args.base_image = inferred_runtime
-      container_args.clear_base_image = False
-      local_build_base_image = inferred_runtime
-      if not container_name:
-        local_build_changes.append(
-            config_changes.IngressContainerBaseImagesAnnotationChange(
-                base_image=local_build_base_image
-            )
+  # Filter out inferred env vars that are explicitly overridden on the CLI
+  cli_env_vars = {}
+  for flag in ('set_env_vars', 'update_env_vars'):
+    val = getattr(container_args, flag, None)
+    if val:
+      cli_env_vars.update(val)
+
+  cli_removed_vars = set(getattr(container_args, 'remove_env_vars', []) or [])
+
+  filtered_env_vars = {
+      k: v
+      for k, v in inferred_env_vars.items()
+      if k not in cli_env_vars and k not in cli_removed_vars
+  }
+
+  if filtered_env_vars:
+    local_build_changes.append(
+        config_changes.EnvVarLiteralChanges(
+            updates=filtered_env_vars,
+            clear_others=False,
+            container_name=container_name,
         )
-    else:
-      local_build_base_image = container_args.base_image
-      _WarnOrPromptOnBaseImageMismatch(inferred_runtime, local_build_base_image)
+    )
 
-    # Redirect the source directory to our built temporary directory
-    container_args.source = local_build_dir.name
+  if not flags.FlagIsExplicitlySet(container_args, 'base_image'):
+    local_build_base_image = inferred_runtime
+    local_build_changes.append(
+        config_changes.BaseImagesAnnotationChange(
+            updates={container_name: inferred_runtime}
+        )
+    )
+  else:
+    local_build_base_image = container_args.base_image
 
-    # Log inferred metadata ONLY if it is actually applied (not overridden)
-    log.debug('Inferred runtime: %s', inferred_runtime)
-    if inferred_command and not flags.FlagIsExplicitlySet(
-        container_args, 'command'
-    ):
-      cmd_str = ' '.join([inferred_command] + (inferred_args or []))
-      log.debug('Inferred entrypoint: %s', cmd_str)
-    if filtered_env_vars:
-      vars_str = ', '.join(f'{k}={v}' for k, v in filtered_env_vars.items())
-      log.debug('Inferred environment variables: %s', vars_str)
+  # Redirect the source directory to our built temporary directory
+  container_args.source = local_build_dir
 
-    return local_build_changes, local_build_base_image, local_build_dir
+  # Log inferred metadata ONLY if it is actually applied (not overridden)
+  log.debug('Inferred runtime: %s', inferred_runtime)
+  if inferred_command and not flags.FlagIsExplicitlySet(
+      container_args, 'command'
+  ):
+    cmd_str = ' '.join([inferred_command] + (inferred_args or []))
+    log.debug('Inferred entrypoint: %s', cmd_str)
+  if filtered_env_vars:
+    vars_str = ', '.join(f'{k}={v}' for k, v in filtered_env_vars.items())
+    log.debug('Inferred environment variables: %s', vars_str)
 
-  except Exception:  # pylint: disable=broad-exception-caught
-    local_build_dir.cleanup()
-    raise
+  return local_build_changes, local_build_base_image, inferred_runtime

@@ -230,7 +230,7 @@ def _AddAptGroupArguments(parser):
       '--apt-excludes',
       metavar='APT_EXCLUDES',
       type=arg_parsers.ArgList(),
-      help="""List of packages to exclude from update.""",
+      help="""List of Apt packages to exclude from update.""",
   )
   mutually_exclusive_group.add_argument(
       '--apt-exclusive-packages',

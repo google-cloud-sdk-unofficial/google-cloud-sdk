@@ -40,12 +40,12 @@ SINGLE_FILE_LOW_CPU_SLICED_OBJECT_DOWNLOAD_MAX_COMPONENTS = 8
 SINGLE_FILE_HIGH_CPU_SLICED_OBJECT_DOWNLOAD_MAX_COMPONENTS = 16
 
 
-BIDI_COMPONENT_SIZE = '1GiB'
-BIDI_SLICED_OBJECT_DOWNLOAD_THRESHOLD = '1GiB'
+# These configurations are set only for bidi-multi-file workloads.
+BIDI_CONFIG_THRESHOLD = 48
 BIDI_THREAD_COUNT = 1
-BIDI_MULTI_FILE_MAX_COMPONENTS = 10
-BIDI_MAX_PROCESS_COUNT_MULTI_FILE = 64
-BIDI_MAX_PROCESS_COUNT_SINGLE_FILE = 16
+BIDI_MAX_COMPONENTS = 5
+BIDI_PROCESS_COUNT_RATIO = 0.75
+BIDI_MAX_PROCESS_COUNT_CAP = 96
 
 
 def _set_if_not_user_set(property_name, value):
@@ -59,49 +59,44 @@ def detect_and_set_best_config(
     is_estimated_multi_file_workload, is_bidi_workload=False
 ):
   """Determines best app config based on system and workload."""
-  if (
-      is_bidi_workload
-      and properties.VALUES.storage.use_mrd_bidi_downloads.GetBool()
-  ):
-    cpu_count = multiprocessing.cpu_count()
-    _set_if_not_user_set('thread_count', BIDI_THREAD_COUNT)
-    _set_if_not_user_set(
-        'sliced_object_download_component_size', BIDI_COMPONENT_SIZE
-    )
-    _set_if_not_user_set(
-        'sliced_object_download_threshold',
-        BIDI_SLICED_OBJECT_DOWNLOAD_THRESHOLD,
-    )
-
-    if is_estimated_multi_file_workload:
-      _set_if_not_user_set(
-          'process_count', min(cpu_count, BIDI_MAX_PROCESS_COUNT_MULTI_FILE)
-      )
-      _set_if_not_user_set(
-          'sliced_object_download_max_components',
-          BIDI_MULTI_FILE_MAX_COMPONENTS,
-      )
-    else:
-      _set_if_not_user_set(
-          'process_count', min(cpu_count, BIDI_MAX_PROCESS_COUNT_SINGLE_FILE)
-      )
-      _set_if_not_user_set(
-          'sliced_object_download_max_components',
-          min(cpu_count, BIDI_MAX_PROCESS_COUNT_SINGLE_FILE),
-      )
-    return
-
+  cpu_count = multiprocessing.cpu_count()
+  _set_if_not_user_set('sliced_object_download_component_size', COMPONENT_SIZE)
   if is_estimated_multi_file_workload:
-    _set_if_not_user_set('sliced_object_download_component_size',
-                         COMPONENT_SIZE)
-    _set_if_not_user_set('sliced_object_download_max_components',
-                         MULTI_FILE_SLICED_OBJECT_DOWNLOAD_MAX_COMPONENTS)
-    if multiprocessing.cpu_count() < 4:
+    if cpu_count < 4:
       log.info('Using low CPU count, multi-file workload config.')
       _set_if_not_user_set('process_count', MULTI_FILE_LOW_CPU_PROCESS_COUNT)
       _set_if_not_user_set('thread_count', MULTI_FILE_LOW_CPU_THREAD_COUNT)
-      _set_if_not_user_set('sliced_object_download_threshold',
-                           MULTI_FILE_LOW_CPU_SLICED_OBJECT_DOWNLOAD_THRESHOLD)
+      _set_if_not_user_set(
+          'sliced_object_download_threshold',
+          MULTI_FILE_LOW_CPU_SLICED_OBJECT_DOWNLOAD_THRESHOLD,
+      )
+      _set_if_not_user_set(
+          'sliced_object_download_max_components',
+          MULTI_FILE_SLICED_OBJECT_DOWNLOAD_MAX_COMPONENTS,
+      )
+    elif (
+        cpu_count >= BIDI_CONFIG_THRESHOLD
+        and is_bidi_workload
+        and properties.VALUES.storage.use_mrd_bidi_downloads.GetBool()
+    ):
+      log.info(
+          f'Using high CPU count: {cpu_count}, bidi multi-file workload config.'
+      )
+      _set_if_not_user_set(
+          'process_count',
+          min(
+              BIDI_MAX_PROCESS_COUNT_CAP,
+              int(cpu_count * BIDI_PROCESS_COUNT_RATIO),
+          ),
+      )
+      _set_if_not_user_set('thread_count', BIDI_THREAD_COUNT)
+      _set_if_not_user_set(
+          'sliced_object_download_max_components', BIDI_MAX_COMPONENTS
+      )
+      _set_if_not_user_set(
+          'sliced_object_download_threshold',
+          MULTI_FILE_HIGH_CPU_SLICED_OBJECT_DOWNLOAD_THRESHOLD,
+      )
     else:
       log.info('Using high CPU count, multi-file workload config.')
       _set_if_not_user_set('process_count', MULTI_FILE_HIGH_CPU_PROCESS_COUNT)
@@ -109,12 +104,14 @@ def detect_and_set_best_config(
       _set_if_not_user_set(
           'sliced_object_download_threshold',
           MULTI_FILE_HIGH_CPU_SLICED_OBJECT_DOWNLOAD_THRESHOLD)
+      _set_if_not_user_set(
+          'sliced_object_download_max_components',
+          MULTI_FILE_SLICED_OBJECT_DOWNLOAD_MAX_COMPONENTS,
+      )
   else:
     _set_if_not_user_set('sliced_object_download_threshold',
                          SINGLE_FILE_SLICED_OBJECT_DOWNLOAD_THRESHOLD)
-    _set_if_not_user_set('sliced_object_download_component_size',
-                         COMPONENT_SIZE)
-    if multiprocessing.cpu_count() < 8:
+    if cpu_count < 8:
       log.info('Using low CPU count, single-file workload config.')
       _set_if_not_user_set('process_count', SINGLE_FILE_LOW_CPU_PROCESS_COUNT)
       _set_if_not_user_set('thread_count', SINGLE_FILE_THREAD_COUNT)

@@ -27,6 +27,14 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core.resource import resource_printer
 
 
+def _GetFormatter(
+    release_track: base.ReleaseTrack,
+) -> type[worker_pool_printer.WorkerPoolPrinter]:
+  if release_track == base.ReleaseTrack.ALPHA:
+    return worker_pool_printer.WorkerPoolPrinterAlpha
+  return worker_pool_printer.WorkerPoolPrinter
+
+
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.Command):
@@ -57,7 +65,7 @@ class Describe(base.Command):
   }
 
   @staticmethod
-  def CommonArgs(parser):
+  def CommonArgs(parser, release_track=base.ReleaseTrack.GA):
     flags.AddRegionArg(parser)
     worker_pool_presentation = presentation_specs.ResourcePresentationSpec(
         'WORKER_POOL',
@@ -70,9 +78,10 @@ class Describe(base.Command):
         parser
     )
 
+    formatter = _GetFormatter(release_track)
     resource_printer.RegisterFormatter(
         worker_pool_printer.WORKER_POOL_PRINTER_FORMAT,
-        worker_pool_printer.WorkerPoolPrinter,
+        formatter,
     )
     parser.display_info.AddFormat(
         worker_pool_printer.WORKER_POOL_PRINTER_FORMAT
@@ -84,7 +93,7 @@ class Describe(base.Command):
 
   @staticmethod
   def Args(parser):
-    Describe.CommonArgs(parser)
+    Describe.CommonArgs(parser, release_track=base.ReleaseTrack.GA)
 
   def _ConnectionContext(self, args):
     return connection_context.GetConnectionContext(
@@ -105,7 +114,20 @@ class Describe(base.Command):
     return worker_pool
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.RegionalEndpointsSupported
 class BetaDescribe(Describe):
   """Obtain details about a given worker-pool."""
+
+  @staticmethod
+  def Args(parser):
+    Describe.CommonArgs(parser, release_track=base.ReleaseTrack.BETA)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaDescribe(BetaDescribe):
+  """Obtain details about a given worker-pool."""
+
+  @staticmethod
+  def Args(parser):
+    Describe.CommonArgs(parser, release_track=base.ReleaseTrack.ALPHA)

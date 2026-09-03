@@ -17,6 +17,8 @@
 
 from googlecloudsdk.api_lib.biglake import util
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 
 
 def AddDescriptionArg(parser):
@@ -90,6 +92,36 @@ def AddTableRegisterArgs(parser):
   )
 
 
+def AddKmsKeyResourceArg(parser, resource='catalog', hidden=True):
+  """Adds argument for Cloud KMS key."""
+  kms_resource_args.AddKmsKeyResourceArg(
+      parser,
+      resource,
+      permission_info=(
+          'The BigQuery encryption service account'
+          ' (bq-<project_number>@bigquery-encryption.iam.gserviceaccount.com)'
+          " must hold permission 'Cloud KMS CryptoKey Encrypter/Decrypter'"
+      ),
+      hidden=hidden,
+  )
+
+
+def GetAndValidateKmsKeyName(args):
+  """Parse the KMS key resource arg and return the fully qualified resource name."""
+  kms_ref = args.CONCEPTS.kms_key.Parse()
+  if kms_ref:
+    return kms_ref.RelativeName()
+  for keyword in ['kms-key', 'kms-keyring', 'kms-location', 'kms-project']:
+    if getattr(args, keyword.replace('-', '_'), None):
+      raise exceptions.InvalidArgumentException(
+          '--kms-project --kms-location --kms-keyring --kms-key',
+          'Specify fully qualified KMS key ID with --kms-key, or use '
+          'combination of --kms-project, --kms-location, --kms-keyring and '
+          '--kms-key to specify the key ID in pieces.',
+      )
+  return None
+
+
 def AddCatalogsCreateArgs(parser):
   """Adds arguments for creating catalogs."""
   parser.add_argument(
@@ -104,6 +136,7 @@ def AddCatalogsCreateArgs(parser):
   AddDescriptionArg(parser)
   AddRestrictedLocationsArg(parser)
   AddDefaultLocationArg(parser)
+  AddKmsKeyResourceArg(parser)
 
 
 def AddServiceDirectoryNameArg(parser):

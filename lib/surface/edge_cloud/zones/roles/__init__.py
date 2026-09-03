@@ -19,7 +19,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class EdgeCloudZoneRoles(base.Group):
   """Manage roles for Google Distributed Cloud Zones."""
   category = base.GDCC_ZONE_CATEGORY

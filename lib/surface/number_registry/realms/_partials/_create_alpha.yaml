@@ -59,7 +59,7 @@
           Linklocal traffic.
     - arg_name: management-type
       api_field: realm.managementType
-      required: true
+      required: false
       help_text: |-
         Management type of the Realm.
       choices:

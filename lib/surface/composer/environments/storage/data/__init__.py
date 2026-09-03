@@ -18,6 +18,7 @@
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class Data(base.Group):
   """Manage data for Cloud Composer environments.
 

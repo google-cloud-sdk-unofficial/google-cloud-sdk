@@ -377,13 +377,42 @@ class ConnectionProfilesClient(object):
     )
 
     if args.IsKnownAndSpecified('private_connection'):
-      private_connectivity = args.CONCEPTS.private_connection.Parse()
-      connection_profile_obj.privateConnectivity = (
-          self.messages.PrivateConnectivity(
-              privateConnection=private_connectivity.RelativeName()
-          )
-      )
-
+      if hasattr(connection_profile_obj, 'privateConnectivity'):
+        private_connectivity = args.CONCEPTS.private_connection.Parse()
+        connection_profile_obj.privateConnectivity = (
+            self.messages.PrivateConnectivity(
+                privateConnection=private_connectivity.RelativeName()
+            )
+        )
+    elif args.IsKnownAndSpecified('forward_ssh_hostname'):
+      if hasattr(connection_profile_obj, 'forwardSshConnectivity'):
+        connection_profile_obj.forwardSshConnectivity = (
+            self._GetForwardSshTunnelConnectivity(args)
+        )
+    elif args.IsKnownAndSpecified('static_ip_connectivity'):
+      if hasattr(connection_profile_obj, 'staticServiceIpConnectivity'):
+        connection_profile_obj.staticServiceIpConnectivity = (
+            self.messages.StaticServiceIpConnectivity()
+            if hasattr(self.messages, 'StaticServiceIpConnectivity')
+            else {}
+        )
+      elif hasattr(connection_profile_obj, 'staticIpConnectivity'):
+        connection_profile_obj.staticIpConnectivity = {}
+    elif args.IsKnownAndSpecified('psc_service_attachment'):
+      if hasattr(connection_profile_obj, 'privateServiceConnectConnectivity'):
+        psc_ref = args.CONCEPTS.psc_service_attachment.Parse()
+        connection_profile_obj.privateServiceConnectConnectivity = (
+            self.messages.PrivateServiceConnectConnectivity(
+                serviceAttachment=psc_ref.RelativeName()
+            )
+        )
+      elif hasattr(connection_profile_obj, 'pscInterfaceConfig'):
+        psc_ref = args.CONCEPTS.psc_service_attachment.Parse()
+        connection_profile_obj.pscInterfaceConfig = (
+            self.messages.PscInterfaceConfig(
+                networkAttachment=psc_ref.RelativeName()
+            )
+        )
     return connection_profile_obj
 
   def _UpdateMySqlConnectionProfile(
@@ -405,6 +434,43 @@ class ConnectionProfilesClient(object):
       connection_profile.mysql.cloudSqlId = args.GetValue(
           self._InstanceArgName())
       update_fields.append('mysql.instance')
+    if args.IsKnownAndSpecified('private_connection'):
+      if hasattr(connection_profile.mysql, 'privateConnectivity'):
+        private_connectivity = args.CONCEPTS.private_connection.Parse()
+        connection_profile.mysql.privateConnectivity = (
+            self.messages.PrivateConnectivity(
+                privateConnection=private_connectivity.RelativeName()
+            )
+        )
+        update_fields.append('mysql.private_connectivity')
+    elif args.IsKnownAndSpecified('static_ip_connectivity'):
+      if hasattr(connection_profile.mysql, 'staticServiceIpConnectivity'):
+        connection_profile.mysql.staticServiceIpConnectivity = (
+            self.messages.StaticServiceIpConnectivity()
+            if hasattr(self.messages, 'StaticServiceIpConnectivity')
+            else {}
+        )
+        update_fields.append('mysql.static_service_ip_connectivity')
+      elif hasattr(connection_profile.mysql, 'staticIpConnectivity'):
+        connection_profile.mysql.staticIpConnectivity = {}
+        update_fields.append('mysql.static_ip_connectivity')
+    elif args.IsKnownAndSpecified('psc_service_attachment'):
+      if hasattr(connection_profile.mysql, 'privateServiceConnectConnectivity'):
+        psc_ref = args.CONCEPTS.psc_service_attachment.Parse()
+        connection_profile.mysql.privateServiceConnectConnectivity = (
+            self.messages.PrivateServiceConnectConnectivity(
+                serviceAttachment=psc_ref.RelativeName()
+            )
+        )
+        update_fields.append('mysql.private_service_connect_connectivity')
+      elif hasattr(connection_profile.mysql, 'pscInterfaceConfig'):
+        psc_ref = args.CONCEPTS.psc_service_attachment.Parse()
+        connection_profile.mysql.pscInterfaceConfig = (
+            self.messages.PscInterfaceConfig(
+                networkAttachment=psc_ref.RelativeName()
+            )
+        )
+        update_fields.append('mysql.psc_interface_config')
     self._UpdateMySqlSslConfig(connection_profile, args, update_fields)
 
   def _UpdatePostgreSqlSslConfig(self, connection_profile, args, update_fields):
@@ -537,6 +603,25 @@ class ConnectionProfilesClient(object):
     if self._api_version == 'v1' and args.IsSpecified('alloydb_cluster'):
       connection_profile.postgresql.alloydbClusterId = args.alloydb_cluster
       update_fields.append('postgresql.alloydb_cluster')
+    if args.IsKnownAndSpecified('private_connection'):
+      private_connectivity = args.CONCEPTS.private_connection.Parse()
+      connection_profile.postgresql.privateConnectivity = (
+          self.messages.PrivateConnectivity(
+              privateConnection=private_connectivity.RelativeName()
+          )
+      )
+      update_fields.append('postgresql.private_connectivity')
+    elif args.IsKnownAndSpecified('static_ip_connectivity'):
+      connection_profile.postgresql.staticIpConnectivity = {}
+      update_fields.append('postgresql.static_ip_connectivity')
+    elif args.IsKnownAndSpecified('psc_service_attachment'):
+      psc_ref = args.CONCEPTS.psc_service_attachment.Parse()
+      connection_profile.postgresql.privateServiceConnectConnectivity = (
+          self.messages.PrivateServiceConnectConnectivity(
+              serviceAttachment=psc_ref.RelativeName()
+          )
+      )
+      update_fields.append('postgresql.private_service_connect_connectivity')
     self._UpdatePostgreSqlSslConfig(connection_profile, args, update_fields)
 
   def _UpdateOracleSslConfig(self, connection_profile, args, update_fields):
@@ -564,6 +649,18 @@ class ConnectionProfilesClient(object):
     if args.IsSpecified('database_service'):
       connection_profile.oracle.databaseService = args.database_service
       update_fields.append('oracle.databaseService')
+    if args.IsKnownAndSpecified('private_connection'):
+      private_connectivity_ref = args.CONCEPTS.private_connection.Parse()
+      if private_connectivity_ref:
+        connection_profile.oracle.privateConnectivity = (
+            self.messages.PrivateConnectivity(
+                privateConnection=private_connectivity_ref.RelativeName()
+            )
+        )
+        update_fields.append('oracle.private_connectivity')
+    elif args.IsKnownAndSpecified('static_ip_connectivity'):
+      connection_profile.oracle.staticServiceIpConnectivity = {}
+      update_fields.append('oracle.static_service_ip_connectivity')
     self._UpdateOracleSslConfig(connection_profile, args, update_fields)
 
   def _UpdateSqlServerSslConfigServerOnly(
@@ -649,6 +746,25 @@ class ConnectionProfilesClient(object):
         )
       connection_profile.sqlserver.backups = self._GetSqlServerBackups(args)
       update_fields.append('sqlserver.backups')
+    if args.IsKnownAndSpecified('private_connection'):
+      private_connectivity = args.CONCEPTS.private_connection.Parse()
+      connection_profile.sqlserver.privateConnectivity = (
+          self.messages.PrivateConnectivity(
+              privateConnection=private_connectivity.RelativeName()
+          )
+      )
+      update_fields.append('sqlserver.private_connectivity')
+    elif args.IsKnownAndSpecified('static_ip_connectivity'):
+      connection_profile.sqlserver.staticIpConnectivity = {}
+      update_fields.append('sqlserver.static_ip_connectivity')
+    elif args.IsKnownAndSpecified('psc_service_attachment'):
+      psc_ref = args.CONCEPTS.psc_service_attachment.Parse()
+      connection_profile.sqlserver.privateServiceConnectConnectivity = (
+          self.messages.PrivateServiceConnectConnectivity(
+              serviceAttachment=psc_ref.RelativeName()
+          )
+      )
+      update_fields.append('sqlserver.private_service_connect_connectivity')
     self._UpdateSqlServerSslConfig(connection_profile, args, update_fields)
 
   def _GetProvider(self, cp_type, provider):

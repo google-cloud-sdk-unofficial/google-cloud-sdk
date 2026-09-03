@@ -2352,6 +2352,112 @@ def AddPasswordPolicyPasswordExpirationDuration(parser):
   )
 
 
+def AddSqlServerEnablePasswordPolicy(
+    parser: Any, show_negated_in_help: bool = False, hidden: bool = True
+) -> None:
+  """Add the flag to enable SQL Server password policy."""
+  kwargs = _GetKwargsForBoolFlag(show_negated_in_help)
+  parser.add_argument(
+      '--sql-server-enable-password-policy',
+      required=False,
+      help=(
+          'Enables password policy on SQL Server local logins. Must be set to'
+          ' true for any SQL Server password policy settings to take effect.'
+      ),
+      hidden=hidden,
+      **kwargs
+  )
+
+
+def AddSqlServerPasswordPolicyMinLength(
+    parser: Any, hidden: bool = True
+) -> None:
+  """Add the flag to specify SQL Server password policy min length."""
+  parser.add_argument(
+      '--sql-server-password-policy-min-length',
+      type=int,
+      required=False,
+      default=None,
+      help=(
+          'Minimum number of characters required for passwords on SQL Server'
+          ' local logins.'
+      ),
+      hidden=hidden,
+  )
+
+
+def AddSqlServerPasswordPolicyHistoryLength(
+    parser: Any, hidden: bool = True
+) -> None:
+  """Add the flag to specify SQL Server password policy history length."""
+  parser.add_argument(
+      '--sql-server-password-policy-history-length',
+      type=arg_parsers.BoundedInt(lower_bound=1, upper_bound=24),
+      required=False,
+      default=None,
+      help=(
+          'Number of previous passwords that cannot be reused on SQL Server'
+          ' local logins. Valid range is 1 to 24.'
+      ),
+      hidden=hidden,
+  )
+
+
+def AddSqlServerPasswordPolicyMinimumAge(
+    parser: Any, hidden: bool = True
+) -> None:
+  """Add the flag to specify SQL Server password policy minimum age."""
+  parser.add_argument(
+      '--sql-server-password-policy-minimum-age',
+      default=None,
+      type=arg_parsers.Duration(lower_bound='1s'),
+      required=False,
+      help=(
+          'Minimum duration that must pass before a password can be changed on'
+          ' SQL Server local logins. Must be specified in whole days (for'
+          ' example, 1d for 1 day). See `gcloud topic datetimes` for'
+          ' information on duration formats.'
+      ),
+      hidden=hidden,
+  )
+
+
+def AddSqlServerPasswordPolicyMaximumAge(
+    parser: Any, hidden: bool = True
+) -> None:
+  """Add the flag to specify SQL Server password policy maximum age."""
+  parser.add_argument(
+      '--sql-server-password-policy-maximum-age',
+      default=None,
+      type=arg_parsers.Duration(lower_bound='1s'),
+      required=False,
+      help=(
+          'Maximum duration that a password remains valid before it expires on'
+          ' SQL Server local logins. Must be specified in whole days (for'
+          ' example, 90d for 90 days). See `gcloud topic datetimes` for'
+          ' information on duration formats.'
+      ),
+      hidden=hidden,
+  )
+
+
+def AddSqlServerClearPasswordPolicy(
+    parser: Any, show_negated_in_help: bool = False, hidden: bool = True
+) -> None:
+  """Add the flag to clear SQL Server password policy."""
+  kwargs = _GetKwargsForBoolFlag(show_negated_in_help)
+  parser.add_argument(
+      '--clear-sql-server-password-policy',
+      required=False,
+      help=(
+          'Clears existing SQL Server password policy configurations from the'
+          ' instance.'
+      ),
+      hidden=hidden,
+      **kwargs
+  )
+
+
 def AddPasswordPolicyEnableFailedAttemptsCheck(
     parser, show_negated_in_help=True
 ):
@@ -3836,20 +3942,23 @@ def AddSemiManagedSqlServer(
       help='Enable backup configuration for semi-managed instance.',
   )
   parser.add_argument(
-      '--enable-semi-managed-insights',
-      required=False,
-      hidden=hidden,
-      action=arg_parsers.StoreTrueFalseAction,
-      help='Enable Query Insights configuration for semi-managed instance.',
-  )
-  parser.add_argument(
       '--semi-managed-insights-gcs-uri',
       required=False,
       type=str,
       hidden=hidden,
       help=(
           'Cloud Storage GCS path to store Query Insights data for'
-          ' semi-managed instance.'
+          ' semi-managed instance. An empty value disables Query Insights.'
+      ),
+  )
+  parser.add_argument(
+      '--semi-managed-patch-database-gcs-uri',
+      required=False,
+      type=str,
+      hidden=hidden,
+      help=(
+          'Cloud Storage GCS path to store database patch files for'
+          ' semi-managed instance. An empty value disables patch capability.'
       ),
   )
 

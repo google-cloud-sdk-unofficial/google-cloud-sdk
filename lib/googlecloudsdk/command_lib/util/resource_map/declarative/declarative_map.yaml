@@ -4128,10 +4128,12 @@ networkconnectivity:
     supported_apis:
     - v1
     - v1alpha1
+    - v1beta
   projects.locations:
     supported_apis:
     - v1
     - v1alpha1
+    - v1beta
   projects.locations.global.hubs:
     supported_apis:
     - v1
@@ -4139,6 +4141,9 @@ networkconnectivity:
   projects.locations.global.policyBasedRoutes:
     supported_apis:
     - v1
+  projects.locations.interconnectKeyGroups:
+    supported_apis:
+    - v1beta
   projects.locations.internalRanges:
     supported_apis:
     - v1alpha1

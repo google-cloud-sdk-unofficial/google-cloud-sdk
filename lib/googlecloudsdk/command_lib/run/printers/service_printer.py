@@ -18,6 +18,7 @@
 import json
 
 from googlecloudsdk.api_lib.run import service
+from googlecloudsdk.command_lib.run import messages_util
 from googlecloudsdk.command_lib.run import threat_detection_util as crtd_util
 from googlecloudsdk.command_lib.run.printers import k8s_object_printer_util as k8s_util
 from googlecloudsdk.command_lib.run.printers import revision_printer
@@ -177,10 +178,14 @@ class ServicePrinter(cp.CustomPrinterBase):
   def Transform(self, record):
     """Transform a service into the output structure of marker classes."""
     service_settings = self._GetServiceSettings(record)
-    lines = [
-        self.BuildHeader(record),
-        k8s_util.GetLabels(record.labels),
-    ]
+    lines = [self.BuildHeader(record)]
+    warning_msg = messages_util.GetAutoscalingAnnotationsWarning(record)
+    if warning_msg:
+      lines.extend([
+          ' ',
+          console_attr.GetConsoleAttr().Emphasize('[Warning] ') + warning_msg,
+      ])
+    lines.append(k8s_util.GetLabels(record.labels))
     lines.extend([
         ' ',
         traffic_printer.TransformRouteFields(record),

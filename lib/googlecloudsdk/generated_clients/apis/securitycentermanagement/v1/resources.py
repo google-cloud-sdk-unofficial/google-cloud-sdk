@@ -198,6 +198,24 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_CLUSTERS = (
+      'projects.locations.clusters',
+      'projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}',
+      {},
+      ['projectsId', 'locationsId', 'clustersId'],
+      True
+  )
+  PROJECTS_LOCATIONS_CLUSTERS_SECURITYCENTERSERVICES = (
+      'projects.locations.clusters.securityCenterServices',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/clusters/'
+              '{clustersId}/securityCenterServices/{securityCenterServicesId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_EFFECTIVEEVENTTHREATDETECTIONCUSTOMMODULES = (
       'projects.locations.effectiveEventThreatDetectionCustomModules',
       '{+name}',

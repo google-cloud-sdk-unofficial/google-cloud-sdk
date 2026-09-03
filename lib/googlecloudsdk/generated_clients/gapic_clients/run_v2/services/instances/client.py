@@ -62,6 +62,7 @@ from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import containe
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import instance
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import instance as gcr_instance
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import k8s_min
+from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import sandbox
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import vendor_settings
 from .transports.base import InstancesTransport, DEFAULT_CLIENT_INFO
 from .transports.grpc import InstancesGrpcTransport

@@ -1194,9 +1194,9 @@ def AddSlurmConfig(
       help=textwrap.dedent(f"""
         Parameters to define slurm cluster config.
 
-        For example --{flag_name} healthCheckInterval=10,healthCheckNodeState=IDLE,healthCheckProgram=/usr/bin/true
+        For example --{flag_name} defMemPerCpu=2048,healthCheckInterval=10,schedulerParameters.bfBusyNodes=true,preemptParameters.youngestFirst=true
       """),
-      type=flag_types.SLURM_CONFIG_TYPE,
+      type=arg_parsers.ArgDict(),
       hidden=hidden,
   )
 

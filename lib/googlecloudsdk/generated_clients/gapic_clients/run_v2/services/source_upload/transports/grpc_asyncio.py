@@ -322,11 +322,13 @@ class SourceUploadGrpcAsyncIOTransport(SourceUploadTransport):
             Awaitable[source_upload.UploadSourceResponse]]:
         r"""Return a callable for the upload source method over gRPC.
 
-        Uploads a source archive to a Google Cloud Storage
-        bucket through Cloud Run. The uploaded source object
-        should be used for Cloud Run resource deployments. User
-        is responsible for managing the lifecycle of the
-        uploaded object.
+        Uploads a source archive to a Google Cloud Storage bucket
+        through Cloud Run. The uploaded source object should be used for
+        Cloud Run resource deployments. User is responsible for managing
+        the lifecycle of the uploaded object. If uploading through the
+        Cloud Run API to Cloud Storage is not desired, you can use the
+        IAM Deny Policy to deny the ``run.locations.uploadSource``
+        permission for all principals.
 
         Returns:
             Callable[[~.UploadSourceRequest],

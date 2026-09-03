@@ -38,6 +38,17 @@ class Collections(enum.Enum):
       ['organizationsId', 'locationsId'],
       True
   )
+  ORGANIZATIONS_LOCATIONS_OPERATIONS = (
+      'organizations.locations.operations',
+      '{+name}',
+      {
+          '':
+              'organizations/{organizationsId}/locations/{locationsId}/'
+              'operations/{operationsId}',
+      },
+      ['name'],
+      True
+  )
   ORGANIZATIONS_LOCATIONS_ORGNUMBERREGISTRIES = (
       'organizations.locations.orgNumberRegistries',
       '{+name}',

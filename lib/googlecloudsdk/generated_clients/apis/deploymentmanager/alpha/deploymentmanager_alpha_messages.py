@@ -1795,7 +1795,7 @@ class GetHealthOperationMetadataHealthInfo(_messages.Message):
     r"""Output only. The repair category.
 
     Values:
-      REPAIR_CATEGORY_UNSPECIFIED: <no description>
+      REPAIR_CATEGORY_UNSPECIFIED: Unspecified repair category.
       REPAIR_CATEGORY_PLANNED_MAINTENANCE: The repair is because of a planned
         maintenance
       REPAIR_CATEGORY_EMERGENT_MAINTENANCE: The repair is because of an
@@ -2193,8 +2193,8 @@ class Operation(_messages.Message):
       networkFirewallPolicies.addRule and
       regionNetworkFirewallPolicies.addRule methods if not explicitly provided
       by the user.
-    getHealthOperationMetadata: Output only. [Output Only] Metadata for
-      GetHealth operations.
+    getHealthOperationMetadata: Output only. Metadata for GetHealth
+      operations.
     getVersionOperationMetadata: A GetVersionOperationMetadata attribute.
     httpErrorMessage: [Output Only] If the operation fails, this field
       contains the HTTP error message that was returned, such as `NOT FOUND`.

@@ -34,6 +34,11 @@ help_text = textwrap.dedent("""\
 
       $ {command} my-lakehouse-catalog --catalog-type=lakehouse --restricted-locations=gs://my-bucket1,gs://my-bucket2
     """)
+# TODO(b/539807179): Uncomment when --kms-key flag visibility is updated.
+# To update the Cloud KMS key of a catalog `my-catalog`, run:
+#
+#   $ {command} my-catalog
+#     --kms-key=projects/my-project/locations/us-central1/keyRings/my-ring/cryptoKeys/my-new-key
 
 help_text_alpha = textwrap.dedent("""\
     To update the refresh interval and namespace filters for a federated catalog `my-federated-catalog`, run:
@@ -61,6 +66,7 @@ class UpdateCatalog(base.UpdateCommand):
   def Args(cls, parser):
     flags.AddCatalogResourceArg(parser, 'to update')
     arguments.AddDescriptionArg(parser)
+    arguments.AddKmsKeyResourceArg(parser)
     util.GetCredentialModeEnumMapper(
         cls.ReleaseTrack()
     ).choice_arg.AddToParser(parser)
@@ -155,6 +161,9 @@ class UpdateCatalog(base.UpdateCommand):
     if args.IsSpecified('description'):
       update_mask.append('description')
       description = args.description
+    kms_key = arguments.GetAndValidateKmsKeyName(args)
+    if kms_key:
+      update_mask.append('encryption_configuration.kms_key_name')
 
     get_request = messages.BiglakeIcebergV1RestcatalogExtensionsProjectsCatalogsGetRequest(
         name=catalog_name
@@ -271,6 +280,10 @@ class UpdateCatalog(base.UpdateCommand):
         credential_mode=credential_mode,
         description=description,
     )
+    if kms_key:
+      catalog.encryption_configuration = messages.EncryptionConfiguration(
+          kms_key_name=kms_key
+      )
 
     if self._support_federated_catalog:
       if (

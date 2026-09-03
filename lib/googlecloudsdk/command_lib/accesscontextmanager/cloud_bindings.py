@@ -644,11 +644,7 @@ def _ProcessSessionSettingsInScopedAccessSettings(req):
     ).total_seconds
     max_session_length = iso_duration.Duration(days=1)
     # TODO(b/486106966): Investigate if we can do a better check for v1alpha.
-    if (
-        properties.VALUES.access_context_manager.enable_gcsl.GetBool()
-        and scope
-        and scope.clientScope
-    ):
+    if scope and scope.clientScope:
       if has_federated_principal:
         if (
             scope.clientScope.restrictedClientApplication
@@ -757,15 +753,14 @@ def _ValidateRestrictedProjectScope(args, req):
         )
   if has_restricted_project:
     # federated_principal must be used with restricted project scope.
-    if properties.VALUES.access_context_manager.enable_gcsl.GetBool():
-      if hasattr(args, 'federated_principal') and not args.IsKnownAndSpecified(
-          'federated_principal'
-      ):
-        raise calliope_exceptions.InvalidArgumentException(
-            '--binding-file',
-            'When using a restricted project scope, --federated-principal must'
-            ' be specified.',
-        )
+    if hasattr(args, 'federated_principal') and not args.IsKnownAndSpecified(
+        'federated_principal'
+    ):
+      raise calliope_exceptions.InvalidArgumentException(
+          '--binding-file',
+          'When using a restricted project scope, --federated-principal must'
+          ' be specified.',
+      )
 
 
 def ProcessScopedAccessSettings(unused_ref, args, req):
@@ -896,8 +891,8 @@ class GcpUserAccessBindingStructureValidator:
           client_scope.restrictedClientApplication
       )
       if (
-          properties.VALUES.access_context_manager.enable_gcsl.GetBool()
-          and hasattr(client_scope, 'restrictedProject')
+          hasattr(client_scope, 'restrictedProject')
+          and client_scope.restrictedProject
       ):
         self._ValidateProject(client_scope.restrictedProject)
 
@@ -982,12 +977,6 @@ class GcpUserAccessBindingStructureValidator:
     unrecognized_fields_set = set(message.all_unrecognized_fields())
     message_type = type(message)
     valid_fields_list = [f.name for f in message_type.all_fields()]
-    if message_type.__name__ == 'ClientScope':
-      if not properties.VALUES.access_context_manager.enable_gcsl.GetBool():
-        if 'restrictedProject' in valid_fields_list:
-          valid_fields_list.remove('restrictedProject')
-        if hasattr(message, 'restrictedProject') and message.restrictedProject:
-          unrecognized_fields_set.add('restrictedProject')
 
     if unrecognized_fields_set:
       raise InvalidFormatError(

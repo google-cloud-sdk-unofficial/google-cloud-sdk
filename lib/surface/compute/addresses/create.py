@@ -26,8 +26,13 @@ import ipaddr
 from six.moves import zip  # pylint: disable=redefined-builtin
 
 
-def _Args(cls, parser, support_psc_google_apis,
-          support_passthrough_lb_availability_groups):
+def _Args(
+    cls,
+    parser,
+    support_psc_google_apis,
+    support_passthrough_lb_availability_groups,
+    support_network_attachment=False,
+):
   """Argument parsing."""
 
   cls.ADDRESSES_ARG = flags.AddressArgument(required=False)
@@ -51,6 +56,9 @@ def _Args(cls, parser, support_psc_google_apis,
   cls.NETWORK_ARG = flags.NetworkArgument()
   cls.NETWORK_ARG.AddArgument(parser)
   flags.AddIpCollectionGroup(parser)
+
+  if support_network_attachment:
+    flags.AddNetworkAttachmentGroup(parser)
 
 
 @base.UniverseCompatible
@@ -107,6 +115,7 @@ class Create(base.CreateCommand):
 
   _support_psc_google_apis = True
   _support_passthrough_lb_availability_groups = False
+  _support_network_attachment = False
 
   @classmethod
   def Args(cls, parser):
@@ -115,7 +124,10 @@ class Create(base.CreateCommand):
         parser,
         support_psc_google_apis=cls._support_psc_google_apis,
         support_passthrough_lb_availability_groups=(
-            cls._support_passthrough_lb_availability_groups))
+            cls._support_passthrough_lb_availability_groups
+        ),
+        support_network_attachment=cls._support_network_attachment,
+    )
 
   def ConstructNetworkTier(self, messages, args):
     if args.network_tier:
@@ -376,6 +388,22 @@ class Create(base.CreateCommand):
     elif args.IsSpecified('internal_range'):
       address_msg.ipCollection = args.internal_range
 
+    if self._support_network_attachment:
+      if args.IsSpecified('network_attachment'):
+        if address_ref.Collection() == 'compute.globalAddresses':
+          raise exceptions.BadArgumentException(
+              '--network-attachment',
+              '[--network-attachment] may not be specified for global'
+              ' addresses.',
+          )
+        address_msg.networkAttachment = args.network_attachment
+        address_msg.addressType = (
+            messages.Address.AddressTypeValueValuesEnum.INTERNAL
+        )
+
+      if args.IsSpecified('service_class_id'):
+        address_msg.serviceClassId = args.service_class_id
+
     return address_msg
 
 
@@ -512,3 +540,4 @@ class CreateAlpha(CreateBeta):
 
   _support_psc_google_apis = True
   _support_passthrough_lb_availability_groups = True
+  _support_network_attachment = True

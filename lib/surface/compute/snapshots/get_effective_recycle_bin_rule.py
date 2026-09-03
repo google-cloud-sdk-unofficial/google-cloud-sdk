@@ -21,8 +21,7 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.snapshots import flags
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class GetEffectiveRecycleBinRule(base.DescribeCommand):
   """Get the effective recycle bin rule for a Compute Engine snapshot."""

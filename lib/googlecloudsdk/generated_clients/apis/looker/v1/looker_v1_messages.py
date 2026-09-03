@@ -124,7 +124,6 @@ class Empty(_messages.Message):
   """
 
 
-
 class EncryptionConfig(_messages.Message):
   r"""Encryption configuration (i.e. CMEK).
 
@@ -393,6 +392,28 @@ class Instance(_messages.Message):
       LOOKER_CORE_TRIAL_ENTERPRISE: Represents the Looker Core Trial
         Enterprise edition.
       LOOKER_CORE_TRIAL_EMBED: Represents the Looker Core Trial Embed edition.
+      LOOKER_CORE_S_ANNUAL: Represents the Looker Core Standard Annual
+        edition.
+      LOOKER_CORE_M_ANNUAL: Represents the Looker Core Enterprise Annual
+        edition.
+      LOOKER_CORE_L_ANNUAL: Represents the Looker Core Enterprise Plus Annual
+        edition.
+      LOOKER_CORE_XL_ANNUAL: Represents the Looker Core Enterprise Ultra
+        Annual edition.
+      LOOKER_CORE_NONPROD_M_ANNUAL: Represents the Looker Core Nonprod
+        Enterprise Annual edition.
+      LOOKER_CORE_NONPROD_L_ANNUAL: Represents the Looker Core Nonprod
+        Enterprise Plus Annual edition.
+      LOOKER_CORE_NONPROD_XL_ANNUAL: Represents the Looker Core Nonprod
+        Enterprise Ultra Annual edition.
+      LOOKER_CORE_TRIAL_S_ANNUAL: Represents the Looker Core Trial Standard
+        Annual edition.
+      LOOKER_CORE_TRIAL_M_ANNUAL: Represents the Looker Core Trial Enterprise
+        Annual edition.
+      LOOKER_CORE_TRIAL_L_ANNUAL: Represents the Looker Core Trial Enterprise
+        Plus Annual edition.
+      LOOKER_CORE_TRIAL_XL_ANNUAL: Represents the Looker Core Trial Enterprise
+        Ultra Annual edition.
     """
     PLATFORM_EDITION_UNSPECIFIED = 0
     LOOKER_CORE_TRIAL = 1
@@ -406,6 +427,17 @@ class Instance(_messages.Message):
     LOOKER_CORE_TRIAL_STANDARD = 9
     LOOKER_CORE_TRIAL_ENTERPRISE = 10
     LOOKER_CORE_TRIAL_EMBED = 11
+    LOOKER_CORE_S_ANNUAL = 12
+    LOOKER_CORE_M_ANNUAL = 13
+    LOOKER_CORE_L_ANNUAL = 14
+    LOOKER_CORE_XL_ANNUAL = 15
+    LOOKER_CORE_NONPROD_M_ANNUAL = 16
+    LOOKER_CORE_NONPROD_L_ANNUAL = 17
+    LOOKER_CORE_NONPROD_XL_ANNUAL = 18
+    LOOKER_CORE_TRIAL_S_ANNUAL = 19
+    LOOKER_CORE_TRIAL_M_ANNUAL = 20
+    LOOKER_CORE_TRIAL_L_ANNUAL = 21
+    LOOKER_CORE_TRIAL_XL_ANNUAL = 22
 
   class ReleaseChannelValueValuesEnum(_messages.Enum):
     r"""Optional. The selected release channel for the instance.

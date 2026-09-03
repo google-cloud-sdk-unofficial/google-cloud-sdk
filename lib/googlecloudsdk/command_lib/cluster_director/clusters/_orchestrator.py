@@ -23,10 +23,12 @@ import os
 import re
 from typing import Any
 
+from apitools.base.py import encoding
 from googlecloudsdk.api_lib.util import messages as messages_util
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.cluster_director.clusters import _validator
 from googlecloudsdk.command_lib.cluster_director.clusters import errors
+from googlecloudsdk.command_lib.cluster_director.clusters import slurm_parser
 from googlecloudsdk.core.util import files
 
 ClusterDirectorError = errors.ClusterDirectorError
@@ -360,6 +362,12 @@ def _MakeSlurmPartition(message_module, partition):
   )
   if hasattr(slurm_partition, "exclusive"):
     slurm_partition.exclusive = partition.get("exclusive")
+  if partition.get("config") is not None and hasattr(
+      message_module, "SlurmPartitionConfig"
+  ):
+    slurm_partition.config = messages_util.DictToMessageWithErrorCheck(
+        partition.get("config"), message_module.SlurmPartitionConfig
+    )
   return slurm_partition
 
 
@@ -482,6 +490,14 @@ def _MakeSlurmNodeSet(
       slurm_node_set.computeId = node_set.get("computeId")
     slurm_node_set.computeInstance = compute_instance
 
+  if node_set.get("config") is not None and hasattr(
+      message_module, "SlurmNodeConfig"
+  ):
+    _validator.ValidateSlurmNodeConfig(node_set.get("config"))
+    slurm_node_set.config = messages_util.DictToMessageWithErrorCheck(
+        node_set.get("config"), message_module.SlurmNodeConfig
+    )
+
   return slurm_node_set
 
 
@@ -574,8 +590,13 @@ def MakeClusterSlurmOrchestrator(
   if args.IsKnownAndSpecified("slurm_task_epilog_scripts"):
     slurm.taskEpilogBashScripts = args.slurm_task_epilog_scripts
   if args.IsKnownAndSpecified("slurm_config"):
+    parsed_slurm_config = slurm_parser.ParseSlurmConfigDict(args.slurm_config)
+    known_fields = {f.name for f in message_module.SlurmConfig.all_fields()}
+    direct_fields = {
+        k: v for k, v in parsed_slurm_config.items() if k in known_fields
+    }
     slurm.config = messages_util.DictToMessageWithErrorCheck(
-        args.slurm_config, message_module.SlurmConfig
+        direct_fields, message_module.SlurmConfig
     )
   if args.IsKnownAndSpecified("slurm_disable_health_check_program"):
     slurm.disableHealthCheckProgram = args.slurm_disable_health_check_program
@@ -787,6 +808,21 @@ def MakeClusterSlurmOrchestratorPatch(
           slurm.loginNodes.storageConfigs = custom_storage_configs
           update_mask.add("orchestrator.slurm.login_nodes")
 
+      if "config" in node_set:
+        node_config = node_set.get("config")
+        if not node_config:
+          existing_node_set.config = None
+        else:
+          _validator.ValidateSlurmNodeConfig(node_config)
+          if not existing_node_set.config and hasattr(
+              message_module, "SlurmNodeConfig"
+          ):
+            existing_node_set.config = message_module.SlurmNodeConfig()
+          if existing_node_set.config:
+            for k, v in node_config.items():
+              if hasattr(existing_node_set.config, k):
+                setattr(existing_node_set.config, k, None if v == "" else v)
+
       slurm_node_sets[node_set_id] = existing_node_set
       is_node_sets_updated = True
   if args.IsSpecified("add_slurm_node_sets"):
@@ -865,6 +901,19 @@ def MakeClusterSlurmOrchestratorPatch(
       if "exclusive" in partition:
         if hasattr(existing_partition, "exclusive"):
           existing_partition.exclusive = partition.get("exclusive")
+      if "config" in partition:
+        partition_config = partition.get("config")
+        if not partition_config:
+          existing_partition.config = None
+        else:
+          if not existing_partition.config and hasattr(
+              message_module, "SlurmPartitionConfig"
+          ):
+            existing_partition.config = message_module.SlurmPartitionConfig()
+          if existing_partition.config:
+            for k, v in partition_config.items():
+              if hasattr(existing_partition.config, k):
+                setattr(existing_partition.config, k, None if v == "" else v)
       slurm_partitions[partition_id] = existing_partition
       is_partitions_updated = True
   if args.IsSpecified("add_slurm_partitions"):
@@ -1088,6 +1137,59 @@ def MakeClusterSlurmOrchestratorPatch(
     if is_task_epilog_updated:
       slurm.taskEpilogBashScripts = task_epilog_scripts
       update_mask.add("orchestrator.slurm.task_epilog_bash_scripts")
+
+  if args.IsKnownAndSpecified("update_slurm_config"):
+
+    if not args.update_slurm_config:
+      slurm.config = None
+      update_mask.add("orchestrator.slurm.config")
+    else:
+      parsed_slurm_config = slurm_parser.ParseSlurmConfigDict(
+          args.update_slurm_config
+      )
+      if not parsed_slurm_config:
+        slurm.config = None
+        update_mask.add("orchestrator.slurm.config")
+      else:
+        existing_config_dict = {}
+        if (
+            existing_cluster
+            and existing_cluster.orchestrator
+            and existing_cluster.orchestrator.slurm
+            and existing_cluster.orchestrator.slurm.config
+        ):
+          existing_config_dict = encoding.MessageToDict(
+              existing_cluster.orchestrator.slurm.config
+          )
+        for k, v in parsed_slurm_config.items():
+          if not v:
+            existing_config_dict.pop(k, None)
+          elif isinstance(v, dict):
+            merged_subdict = dict(existing_config_dict.get(k, {}))
+            for sub_k, sub_v in v.items():
+              if not sub_v:
+                merged_subdict.pop(sub_k, None)
+              else:
+                merged_subdict[sub_k] = sub_v
+            if not merged_subdict:
+              existing_config_dict.pop(k, None)
+            else:
+              existing_config_dict[k] = merged_subdict
+          else:
+            existing_config_dict[k] = v
+        known_fields = {f.name for f in message_module.SlurmConfig.all_fields()}
+        direct_fields = {
+            k: v for k, v in existing_config_dict.items() if k in known_fields
+        }
+        slurm.config = messages_util.DictToMessageWithErrorCheck(
+            direct_fields, message_module.SlurmConfig
+        )
+        update_mask.add("orchestrator.slurm.config")
+  if args.IsKnownAndSpecified("update_slurm_disable_health_check_program"):
+    slurm.disableHealthCheckProgram = (
+        args.update_slurm_disable_health_check_program
+    )
+    update_mask.add("orchestrator.slurm.disable_health_check_program")
 
   # Validate that all slurm node sets have identical storage configurations
   final_node_sets = None

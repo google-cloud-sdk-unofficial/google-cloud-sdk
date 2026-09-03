@@ -55,11 +55,19 @@ class Describe(base.DescribeCommand):
         result.concept_type.name
         == 'auditmanager.folders.locations.operationDetails'
     )
+    is_organization_parent = (
+        result.concept_type.name
+        == 'auditmanager.organizations.locations.operationDetails'
+    )
 
     client = operations.OperationsClient(api_version=self.api_version)
 
     try:
-      return client.Get(resource.RelativeName(), is_folder_parent)
+      return client.Get(
+          resource.RelativeName(),
+          is_folder_parent,
+          is_organization_parent,
+      )
     except apitools_exceptions.HttpError as error:
       exc = exception_utils.AuditManagerError(error)
       core_exceptions.reraise(exc)

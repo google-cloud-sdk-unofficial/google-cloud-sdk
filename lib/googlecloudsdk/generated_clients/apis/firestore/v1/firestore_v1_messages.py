@@ -3877,7 +3877,8 @@ class GoogleFirestoreAdminV1SearchGeoSpec(_messages.Message):
 
   Fields:
     geoJsonIndexingDisabled: Optional. Disables geoJSON indexing for the
-      field. By default, geoJSON points are indexed.
+      field. By default, geoJSON points are indexed. Firestore GeoPoints are
+      indexed regardless of the value of this field.
   """
 
   geoJsonIndexingDisabled = _messages.BooleanField(1)

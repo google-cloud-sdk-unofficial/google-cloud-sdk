@@ -1736,10 +1736,18 @@ MAP = _ApiDefMap({
         ),
     },
     'developerknowledge': {
+        'v1': (
+            ('googlecloudsdk.generated_clients.apis.developerknowledge.v1', 'developerknowledge_v1_client.DeveloperknowledgeV1', 'developerknowledge_v1_messages', 'https://developerknowledge.googleapis.com/'),
+            None,
+            True,
+            True,
+            '',
+            {},
+        ),
         'v1alpha': (
             ('googlecloudsdk.generated_clients.apis.developerknowledge.v1alpha', 'developerknowledge_v1alpha_client.DeveloperknowledgeV1alpha', 'developerknowledge_v1alpha_messages', 'https://developerknowledge.googleapis.com/'),
             None,
-            True,
+            False,
             True,
             '',
             {},
@@ -3556,6 +3564,16 @@ MAP = _ApiDefMap({
             ('googlecloudsdk.generated_clients.apis.serviceusage.v2beta', 'serviceusage_v2beta_client.ServiceusageV2beta', 'serviceusage_v2beta_messages', 'https://serviceusage.googleapis.com/'),
             None,
             False,
+            True,
+            '',
+            {},
+        ),
+    },
+    'softwaredeliverytrust': {
+        'v1alpha': (
+            ('googlecloudsdk.generated_clients.apis.softwaredeliverytrust.v1alpha', 'softwaredeliverytrust_v1alpha_client.SoftwaredeliverytrustV1alpha', 'softwaredeliverytrust_v1alpha_messages', 'https://softwaredeliverytrust.googleapis.com/'),
+            None,
+            True,
             True,
             '',
             {},

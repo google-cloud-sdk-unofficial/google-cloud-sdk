@@ -915,6 +915,7 @@ class CreateClusterOptions(object):
       enable_legacy_lustre_port=None,
       disable_multi_nic_lustre=None,
       enable_default_compute_class=None,
+      default_compute_class=None,
       enable_k8s_certs_via_dns=None,
       boot_disk_provisioned_iops=None,
       boot_disk_provisioned_throughput=None,
@@ -1244,6 +1245,7 @@ class CreateClusterOptions(object):
     self.enable_legacy_lustre_port = enable_legacy_lustre_port
     self.disable_multi_nic_lustre = disable_multi_nic_lustre
     self.enable_default_compute_class = enable_default_compute_class
+    self.default_compute_class = default_compute_class
     self.enable_k8s_certs_via_dns = enable_k8s_certs_via_dns
     self.boot_disk_provisioned_iops = boot_disk_provisioned_iops
     self.boot_disk_provisioned_throughput = boot_disk_provisioned_throughput
@@ -1461,6 +1463,7 @@ class UpdateClusterOptions(object):
       enable_legacy_lustre_port=None,
       disable_multi_nic_lustre=None,
       enable_default_compute_class=None,
+      default_compute_class=None,
       enable_k8s_certs_via_dns=None,
       boot_disk_provisioned_iops=None,
       boot_disk_provisioned_throughput=None,
@@ -1715,6 +1718,7 @@ class UpdateClusterOptions(object):
     self.enable_legacy_lustre_port = enable_legacy_lustre_port
     self.disable_multi_nic_lustre = disable_multi_nic_lustre
     self.enable_default_compute_class = enable_default_compute_class
+    self.default_compute_class = default_compute_class
     self.enable_k8s_certs_via_dns = enable_k8s_certs_via_dns
     self.boot_disk_provisioned_iops = boot_disk_provisioned_iops
     self.boot_disk_provisioned_throughput = boot_disk_provisioned_throughput
@@ -4571,12 +4575,20 @@ class APIAdapter(object):
     else:
       autoscaling.enableNodeAutoprovisioning = options.enable_autoprovisioning
 
-    if options.enable_default_compute_class is not None:
-      autoscaling.defaultComputeClassConfig = (
-          self.messages.DefaultComputeClassConfig(
-              enabled=options.enable_default_compute_class,
-          )
-      )
+    if (
+        options.enable_default_compute_class is not None
+        or options.default_compute_class is not None
+    ):
+      default_compute_class_config = self.messages.DefaultComputeClassConfig()
+      if options.enable_default_compute_class is not None:
+        default_compute_class_config.enabled = (
+            options.enable_default_compute_class
+        )
+      if options.default_compute_class is not None:
+        default_compute_class_config.computeClass = (
+            options.default_compute_class
+        )
+      autoscaling.defaultComputeClassConfig = default_compute_class_config
     resource_limits = []
     if options.autoprovisioning_config_file is not None:
       util.ValidateAutoprovisioningConfigFile(
@@ -10783,12 +10795,20 @@ class V1Beta1Adapter(V1Adapter):
           cluster.autoscaling.defaultComputeClassConfig
       )
 
-    if options.enable_default_compute_class is not None:
-      autoscaling.defaultComputeClassConfig = (
-          self.messages.DefaultComputeClassConfig(
-              enabled=options.enable_default_compute_class
-          )
-      )
+    if (
+        options.enable_default_compute_class is not None
+        or options.default_compute_class is not None
+    ):
+      default_compute_class_config = self.messages.DefaultComputeClassConfig()
+      if options.enable_default_compute_class is not None:
+        default_compute_class_config.enabled = (
+            options.enable_default_compute_class
+        )
+      if options.default_compute_class is not None:
+        default_compute_class_config.computeClass = (
+            options.default_compute_class
+        )
+      autoscaling.defaultComputeClassConfig = default_compute_class_config
 
     resource_limits = []
     if options.autoprovisioning_config_file is not None:
@@ -11553,6 +11573,9 @@ class V1Alpha1Adapter(V1Beta1Adapter):
       autoscaling.enableNodeAutoprovisioning = (
           cluster.autoscaling.enableNodeAutoprovisioning
       )
+      autoscaling.defaultComputeClassConfig = (
+          cluster.autoscaling.defaultComputeClassConfig
+      )
 
     resource_limits = []
     if options.autoprovisioning_config_file is not None:
@@ -11679,12 +11702,20 @@ class V1Alpha1Adapter(V1Beta1Adapter):
           options
       )
 
-    if options.enable_default_compute_class is not None:
-      autoscaling.defaultComputeClassConfig = (
-          self.messages.DefaultComputeClassConfig(
-              enabled=options.enable_default_compute_class
-          )
-      )
+    if (
+        options.enable_default_compute_class is not None
+        or options.default_compute_class is not None
+    ):
+      default_compute_class_config = self.messages.DefaultComputeClassConfig()
+      if options.enable_default_compute_class is not None:
+        default_compute_class_config.enabled = (
+            options.enable_default_compute_class
+        )
+      if options.default_compute_class is not None:
+        default_compute_class_config.computeClass = (
+            options.default_compute_class
+        )
+      autoscaling.defaultComputeClassConfig = default_compute_class_config
 
     if options.autopilot_general_profile is not None:
       autopilot_general_profile_enum = _GetAutopilotGeneralProfileEnum(
@@ -13131,5 +13162,6 @@ def _ClusterAutoscalingOptionsChanged(options):
       _NAPOptionsChanged(options)
       or options.autoscaling_profile is not None
       or options.enable_default_compute_class is not None
+      or options.default_compute_class is not None
       or options.autopilot_general_profile is not None
   )

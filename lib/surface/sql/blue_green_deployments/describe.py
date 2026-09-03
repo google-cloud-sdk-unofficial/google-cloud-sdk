@@ -25,11 +25,27 @@ from googlecloudsdk.command_lib.sql import flags as sql_flags
 from googlecloudsdk.core import properties
 
 
-@base.Hidden
+DETAILED_HELP = {
+    'EXAMPLES': (
+        """\
+        To describe a blue-green deployment named `my-deployment` in region `us-central1`:
+
+          $ {command} my-deployment --region=us-central1
+
+        To describe a blue-green deployment and display configuration differences between source and target instances:
+
+          $ {command} my-deployment --region=us-central1 --show-config-diff
+        """
+    ),
+}
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   """Retrieves information about a Cloud SQL blue-green deployment."""
+
+  detailed_help = DETAILED_HELP
 
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)

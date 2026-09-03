@@ -76,7 +76,6 @@ class ClusterDirectorBeta(extensions.ClusterDirectorBeta):
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class ClusterDirectorGa(extensions.ClusterDirectorGa):
   """Manage Cluster Director resources.
 

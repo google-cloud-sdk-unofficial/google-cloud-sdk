@@ -54,6 +54,7 @@ class ArchiveType(enum.Enum):
 @dataclasses.dataclass(frozen=True)
 class UploadedSource(object):
   """Represents an uploaded source in GCS."""
+
   bucket: str
   name: str
   generation: int
@@ -106,17 +107,23 @@ def UploadThroughCloudRun(
       upload = transfer.Upload.FromFile(
           archive_path, mime_type='application/gzip'
       )
-      response = run_client.projects_locations_sourceUploads.Upload(
-          request, upload=upload
-      )
+      try:
+        response = run_client.projects_locations_sourceUploads.Upload(
+            request, upload=upload
+        )
+      finally:
+        upload.stream.close()
   else:
     archive_path = source_to_upload
     upload = transfer.Upload.FromFile(
         archive_path, mime_type='application/gzip'
     )
-    response = run_client.projects_locations_sourceUploads.Upload(
-        request, upload=upload
-    )
+    try:
+      response = run_client.projects_locations_sourceUploads.Upload(
+          request, upload=upload
+      )
+    finally:
+      upload.stream.close()
 
   return UploadedSource(
       response.cloudStorageSource.bucket,
@@ -214,7 +221,7 @@ def GetSourceSizeBytes(source_path: str) -> int:
 
 def ShouldUploadThroughRunApi(deploy_from_source, release_track) -> bool:
   """Returns True if the source should be uploaded via Cloud Run Upload Source API."""
-  if not flags.IsUploadLaunchStage(release_track):
+  if not flags.IsRunUploadSupported(release_track):
     return False
 
   if not deploy_from_source:

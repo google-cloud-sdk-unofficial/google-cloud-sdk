@@ -42,6 +42,7 @@ class AuditReportsClient(object):
       report_format: str,
       gcs_uri: str,
       is_parent_folder: bool,
+      is_parent_organization: bool,
   ):
     """Generate an Audit Report.
 
@@ -53,26 +54,37 @@ class AuditReportsClient(object):
       gcs_uri: Destination Cloud storage bucket where report and evidence must
         be uploaded.
       is_parent_folder: Whether the parent is folder and not project.
+      is_parent_organization: Whether the parent is organization and not
+        project.
 
     Returns:
       Described audit operation resource.
     """
-    service = (
-        self.client.folders_locations_auditReports
-        if is_parent_folder
-        else self.client.projects_locations_auditReports
-    )
+    if is_parent_folder and is_parent_organization:
+      raise ValueError(
+          'is_parent_folder and is_parent_organization are mutually exclusive.'
+      )
 
     inner_req = self.messages.GenerateAuditReportRequest()
     inner_req.complianceFramework = compliance_framework
     inner_req.reportFormat = self.report_format_map[report_format]
     inner_req.gcsUri = gcs_uri
 
-    req = (
-        self.messages.AuditmanagerFoldersLocationsAuditReportsGenerateRequest()
-        if is_parent_folder
-        else self.messages.AuditmanagerProjectsLocationsAuditReportsGenerateRequest()
-    )
+    if is_parent_folder:
+      service = self.client.folders_locations_auditReports
+      req = (
+          self.messages.AuditmanagerFoldersLocationsAuditReportsGenerateRequest()
+      )
+    elif is_parent_organization:
+      service = self.client.organizations_locations_auditReports
+      req = (
+          self.messages.AuditmanagerOrganizationsLocationsAuditReportsGenerateRequest()
+      )
+    else:
+      service = self.client.projects_locations_auditReports
+      req = (
+          self.messages.AuditmanagerProjectsLocationsAuditReportsGenerateRequest()
+      )
 
     req.scope = scope
     req.generateAuditReportRequest = inner_req

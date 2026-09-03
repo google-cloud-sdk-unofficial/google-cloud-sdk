@@ -37,6 +37,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 class Delete(base.DeleteCommand):
   """Delete one or more Cloud Composer environments.
 

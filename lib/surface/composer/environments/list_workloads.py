@@ -33,7 +33,7 @@ The operation is not supported for given environment. Composer version {composer
 """
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class ListWorkloads(base.Command):
   """List Composer workloads, supported in Composer 3 environments or greater."""
 

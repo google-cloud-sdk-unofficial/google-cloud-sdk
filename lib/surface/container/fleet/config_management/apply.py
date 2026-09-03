@@ -41,7 +41,7 @@ EXAMPLES = r"""
 """
 
 
-# TODO(b/433355766): Add disclaimer once update command is in beta.
+# TODO(b/424638144): Add disclaimer once update command is in beta.
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class Apply(fleet_base.UpdateCommand, mf_base.UpdateCommand, command.Common):

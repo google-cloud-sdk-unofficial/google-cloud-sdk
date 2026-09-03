@@ -31,6 +31,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 class List(base.Command):
   """List the DAG files for a Cloud Composer environment."""
 

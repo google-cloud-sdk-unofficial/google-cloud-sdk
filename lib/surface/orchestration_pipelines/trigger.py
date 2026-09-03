@@ -99,6 +99,15 @@ class Trigger(calliope_base.Command):
           ),
       }
 
+    if dags[0].dagId.startswith("ERROR__"):
+      return {
+          "result": "failed",
+          "reason": (
+              "The pipeline is in ERROR state. Please fix the pipeline"
+              " and try again."
+          ),
+      }
+
     # 2. Trigger the pipeline.
     log.status.Print(f"Triggering pipeline run for {dags[0].dagId}...")
     dag_ref = resources.REGISTRY.ParseRelativeName(

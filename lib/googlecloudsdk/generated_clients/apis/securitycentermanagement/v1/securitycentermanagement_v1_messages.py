@@ -1132,12 +1132,13 @@ class SecurityCenterService(_messages.Message):
       nterServices/{service}` *
       `folders/{folder}/locations/{location}/securityCenterServices/{service}`
       * `projects/{project}/locations/{location}/securityCenterServices/{servi
-      ce}` The following values are valid for `{service}`: * `container-
-      threat-detection` * `event-threat-detection` * `security-health-
-      analytics` * `vm-threat-detection` * `web-security-scanner` * `vm-
-      threat-detection-aws` * `cloud-run-threat-detection` * `external-
-      exposure` * `vm-manager` * `ec2-vulnerability-assessment` * `gce-
-      vulnerability-assessment` * `azure-vulnerability-assessment` *
+      ce}` * `projects/{project}/locations/{location}/clusters/{cluster}/secur
+      ityCenterServices/{service}` The following values are valid for
+      `{service}`: * `container-threat-detection` * `event-threat-detection` *
+      `security-health-analytics` * `vm-threat-detection` * `web-security-
+      scanner` * `vm-threat-detection-aws` * `cloud-run-threat-detection` *
+      `external-exposure` * `vm-manager` * `ec2-vulnerability-assessment` *
+      `gce-vulnerability-assessment` * `azure-vulnerability-assessment` *
       `notebook-security-scanner` * `artifact-analysis` * `agent-engine-
       threat-detection`
     serviceConfig: Optional. Additional service-specific configuration. Not
@@ -1569,13 +1570,15 @@ class SecuritycentermanagementFoldersLocationsSecurityCenterServicesGetRequest(_
       n}/securityCenterServices/{service} *
       folders/{folder}/locations/{location}/securityCenterServices/{service} *
       projects/{project}/locations/{location}/securityCenterServices/{service}
-      The following values are valid for `{service}`: * `container-threat-
-      detection` * `event-threat-detection` * `security-health-analytics` *
-      `vm-threat-detection` * `web-security-scanner` * `vm-threat-detection-
-      aws` * `cloud-run-threat-detection` * `external-exposure` * `vm-manager`
-      * `ec2-vulnerability-assessment` * `gce-vulnerability-assessment` *
-      `azure-vulnerability-assessment` * `notebook-security-scanner` *
-      `artifact-analysis` * `agent-engine-threat-detection`
+      * projects/{project}/locations/{location}/clusters/{cluster}/securityCen
+      terServices/{service} The following values are valid for `{service}`: *
+      `container-threat-detection` * `event-threat-detection` * `security-
+      health-analytics` * `vm-threat-detection` * `web-security-scanner` *
+      `vm-threat-detection-aws` * `cloud-run-threat-detection` * `external-
+      exposure` * `vm-manager` * `ec2-vulnerability-assessment` * `gce-
+      vulnerability-assessment` * `azure-vulnerability-assessment` *
+      `notebook-security-scanner` * `artifact-analysis` * `agent-engine-
+      threat-detection`
     showEligibleModulesOnly: Optional. Indicates whether to show only modules
       that are available in your Security Command Center service tier. By
       default, all modules are shown.
@@ -1624,12 +1627,13 @@ class SecuritycentermanagementFoldersLocationsSecurityCenterServicesPatchRequest
       nterServices/{service}` *
       `folders/{folder}/locations/{location}/securityCenterServices/{service}`
       * `projects/{project}/locations/{location}/securityCenterServices/{servi
-      ce}` The following values are valid for `{service}`: * `container-
-      threat-detection` * `event-threat-detection` * `security-health-
-      analytics` * `vm-threat-detection` * `web-security-scanner` * `vm-
-      threat-detection-aws` * `cloud-run-threat-detection` * `external-
-      exposure` * `vm-manager` * `ec2-vulnerability-assessment` * `gce-
-      vulnerability-assessment` * `azure-vulnerability-assessment` *
+      ce}` * `projects/{project}/locations/{location}/clusters/{cluster}/secur
+      ityCenterServices/{service}` The following values are valid for
+      `{service}`: * `container-threat-detection` * `event-threat-detection` *
+      `security-health-analytics` * `vm-threat-detection` * `web-security-
+      scanner` * `vm-threat-detection-aws` * `cloud-run-threat-detection` *
+      `external-exposure` * `vm-manager` * `ec2-vulnerability-assessment` *
+      `gce-vulnerability-assessment` * `azure-vulnerability-assessment` *
       `notebook-security-scanner` * `artifact-analysis` * `agent-engine-
       threat-detection`
     securityCenterService: A SecurityCenterService resource to be passed as
@@ -2142,13 +2146,15 @@ class SecuritycentermanagementOrganizationsLocationsSecurityCenterServicesGetReq
       n}/securityCenterServices/{service} *
       folders/{folder}/locations/{location}/securityCenterServices/{service} *
       projects/{project}/locations/{location}/securityCenterServices/{service}
-      The following values are valid for `{service}`: * `container-threat-
-      detection` * `event-threat-detection` * `security-health-analytics` *
-      `vm-threat-detection` * `web-security-scanner` * `vm-threat-detection-
-      aws` * `cloud-run-threat-detection` * `external-exposure` * `vm-manager`
-      * `ec2-vulnerability-assessment` * `gce-vulnerability-assessment` *
-      `azure-vulnerability-assessment` * `notebook-security-scanner` *
-      `artifact-analysis` * `agent-engine-threat-detection`
+      * projects/{project}/locations/{location}/clusters/{cluster}/securityCen
+      terServices/{service} The following values are valid for `{service}`: *
+      `container-threat-detection` * `event-threat-detection` * `security-
+      health-analytics` * `vm-threat-detection` * `web-security-scanner` *
+      `vm-threat-detection-aws` * `cloud-run-threat-detection` * `external-
+      exposure` * `vm-manager` * `ec2-vulnerability-assessment` * `gce-
+      vulnerability-assessment` * `azure-vulnerability-assessment` *
+      `notebook-security-scanner` * `artifact-analysis` * `agent-engine-
+      threat-detection`
     showEligibleModulesOnly: Optional. Indicates whether to show only modules
       that are available in your Security Command Center service tier. By
       default, all modules are shown.
@@ -2195,12 +2201,13 @@ class SecuritycentermanagementOrganizationsLocationsSecurityCenterServicesPatchR
       nterServices/{service}` *
       `folders/{folder}/locations/{location}/securityCenterServices/{service}`
       * `projects/{project}/locations/{location}/securityCenterServices/{servi
-      ce}` The following values are valid for `{service}`: * `container-
-      threat-detection` * `event-threat-detection` * `security-health-
-      analytics` * `vm-threat-detection` * `web-security-scanner` * `vm-
-      threat-detection-aws` * `cloud-run-threat-detection` * `external-
-      exposure` * `vm-manager` * `ec2-vulnerability-assessment` * `gce-
-      vulnerability-assessment` * `azure-vulnerability-assessment` *
+      ce}` * `projects/{project}/locations/{location}/clusters/{cluster}/secur
+      ityCenterServices/{service}` The following values are valid for
+      `{service}`: * `container-threat-detection` * `event-threat-detection` *
+      `security-health-analytics` * `vm-threat-detection` * `web-security-
+      scanner` * `vm-threat-detection-aws` * `cloud-run-threat-detection` *
+      `external-exposure` * `vm-manager` * `ec2-vulnerability-assessment` *
+      `gce-vulnerability-assessment` * `azure-vulnerability-assessment` *
       `notebook-security-scanner` * `artifact-analysis` * `agent-engine-
       threat-detection`
     securityCenterService: A SecurityCenterService resource to be passed as
@@ -2384,6 +2391,74 @@ class SecuritycentermanagementOrganizationsLocationsSecurityHealthAnalyticsCusto
 
   parent = _messages.StringField(1, required=True)
   simulateSecurityHealthAnalyticsCustomModuleRequest = _messages.MessageField('SimulateSecurityHealthAnalyticsCustomModuleRequest', 2)
+
+
+class SecuritycentermanagementProjectsLocationsClustersSecurityCenterServicesGetRequest(_messages.Message):
+  r"""A SecuritycentermanagementProjectsLocationsClustersSecurityCenterService
+  sGetRequest object.
+
+  Fields:
+    name: Required. The Security Command Center service to retrieve, in one of
+      the following formats: * organizations/{organization}/locations/{locatio
+      n}/securityCenterServices/{service} *
+      folders/{folder}/locations/{location}/securityCenterServices/{service} *
+      projects/{project}/locations/{location}/securityCenterServices/{service}
+      * projects/{project}/locations/{location}/clusters/{cluster}/securityCen
+      terServices/{service} The following values are valid for `{service}`: *
+      `container-threat-detection` * `event-threat-detection` * `security-
+      health-analytics` * `vm-threat-detection` * `web-security-scanner` *
+      `vm-threat-detection-aws` * `cloud-run-threat-detection` * `external-
+      exposure` * `vm-manager` * `ec2-vulnerability-assessment` * `gce-
+      vulnerability-assessment` * `azure-vulnerability-assessment` *
+      `notebook-security-scanner` * `artifact-analysis` * `agent-engine-
+      threat-detection`
+    showEligibleModulesOnly: Optional. Indicates whether to show only modules
+      that are available in your Security Command Center service tier. By
+      default, all modules are shown.
+  """
+
+  name = _messages.StringField(1, required=True)
+  showEligibleModulesOnly = _messages.BooleanField(2)
+
+
+class SecuritycentermanagementProjectsLocationsClustersSecurityCenterServicesPatchRequest(_messages.Message):
+  r"""A SecuritycentermanagementProjectsLocationsClustersSecurityCenterService
+  sPatchRequest object.
+
+  Fields:
+    name: Identifier. The name of the service, in one of the following
+      formats: * `organizations/{organization}/locations/{location}/securityCe
+      nterServices/{service}` *
+      `folders/{folder}/locations/{location}/securityCenterServices/{service}`
+      * `projects/{project}/locations/{location}/securityCenterServices/{servi
+      ce}` * `projects/{project}/locations/{location}/clusters/{cluster}/secur
+      ityCenterServices/{service}` The following values are valid for
+      `{service}`: * `container-threat-detection` * `event-threat-detection` *
+      `security-health-analytics` * `vm-threat-detection` * `web-security-
+      scanner` * `vm-threat-detection-aws` * `cloud-run-threat-detection` *
+      `external-exposure` * `vm-manager` * `ec2-vulnerability-assessment` *
+      `gce-vulnerability-assessment` * `azure-vulnerability-assessment` *
+      `notebook-security-scanner` * `artifact-analysis` * `agent-engine-
+      threat-detection`
+    securityCenterService: A SecurityCenterService resource to be passed as
+      the request body.
+    updateMask: Optional. Required. The fields to update. Accepts the
+      following values: * `intended_enablement_state` * `modules` If omitted,
+      then all eligible fields are updated.
+    validateOnly: Optional. When set to `true`, the request will be validated
+      (including IAM checks), but no service will be updated. An `OK` response
+      indicates that the request is valid, while an error response indicates
+      that the request is invalid. If the request is valid, a subsequent
+      request to update the service could still fail for one of the following
+      reasons: * The state of your cloud resources changed; for example, you
+      lost a required IAM permission * An error occurred during update of the
+      service Defaults to `false`.
+  """
+
+  name = _messages.StringField(1, required=True)
+  securityCenterService = _messages.MessageField('SecurityCenterService', 2)
+  updateMask = _messages.StringField(3)
+  validateOnly = _messages.BooleanField(4)
 
 
 class SecuritycentermanagementProjectsLocationsEffectiveEventThreatDetectionCustomModulesGetRequest(_messages.Message):
@@ -2744,13 +2819,15 @@ class SecuritycentermanagementProjectsLocationsSecurityCenterServicesGetRequest(
       n}/securityCenterServices/{service} *
       folders/{folder}/locations/{location}/securityCenterServices/{service} *
       projects/{project}/locations/{location}/securityCenterServices/{service}
-      The following values are valid for `{service}`: * `container-threat-
-      detection` * `event-threat-detection` * `security-health-analytics` *
-      `vm-threat-detection` * `web-security-scanner` * `vm-threat-detection-
-      aws` * `cloud-run-threat-detection` * `external-exposure` * `vm-manager`
-      * `ec2-vulnerability-assessment` * `gce-vulnerability-assessment` *
-      `azure-vulnerability-assessment` * `notebook-security-scanner` *
-      `artifact-analysis` * `agent-engine-threat-detection`
+      * projects/{project}/locations/{location}/clusters/{cluster}/securityCen
+      terServices/{service} The following values are valid for `{service}`: *
+      `container-threat-detection` * `event-threat-detection` * `security-
+      health-analytics` * `vm-threat-detection` * `web-security-scanner` *
+      `vm-threat-detection-aws` * `cloud-run-threat-detection` * `external-
+      exposure` * `vm-manager` * `ec2-vulnerability-assessment` * `gce-
+      vulnerability-assessment` * `azure-vulnerability-assessment` *
+      `notebook-security-scanner` * `artifact-analysis` * `agent-engine-
+      threat-detection`
     showEligibleModulesOnly: Optional. Indicates whether to show only modules
       that are available in your Security Command Center service tier. By
       default, all modules are shown.
@@ -2799,12 +2876,13 @@ class SecuritycentermanagementProjectsLocationsSecurityCenterServicesPatchReques
       nterServices/{service}` *
       `folders/{folder}/locations/{location}/securityCenterServices/{service}`
       * `projects/{project}/locations/{location}/securityCenterServices/{servi
-      ce}` The following values are valid for `{service}`: * `container-
-      threat-detection` * `event-threat-detection` * `security-health-
-      analytics` * `vm-threat-detection` * `web-security-scanner` * `vm-
-      threat-detection-aws` * `cloud-run-threat-detection` * `external-
-      exposure` * `vm-manager` * `ec2-vulnerability-assessment` * `gce-
-      vulnerability-assessment` * `azure-vulnerability-assessment` *
+      ce}` * `projects/{project}/locations/{location}/clusters/{cluster}/secur
+      ityCenterServices/{service}` The following values are valid for
+      `{service}`: * `container-threat-detection` * `event-threat-detection` *
+      `security-health-analytics` * `vm-threat-detection` * `web-security-
+      scanner` * `vm-threat-detection-aws` * `cloud-run-threat-detection` *
+      `external-exposure` * `vm-manager` * `ec2-vulnerability-assessment` *
+      `gce-vulnerability-assessment` * `azure-vulnerability-assessment` *
       `notebook-security-scanner` * `artifact-analysis` * `agent-engine-
       threat-detection`
     securityCenterService: A SecurityCenterService resource to be passed as

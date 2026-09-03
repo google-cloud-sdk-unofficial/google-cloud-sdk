@@ -19,7 +19,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class EdgeCloudProject(base.Group):
   """Google Distributed Cloud Connected Project gcloud commands."""
   category = base.GDCC_ZONE_CATEGORY

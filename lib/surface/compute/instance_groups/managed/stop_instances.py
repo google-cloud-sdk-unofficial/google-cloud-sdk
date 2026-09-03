@@ -53,6 +53,13 @@ class StopInstances(base.Command):
         help="""
           Immediately stop the specified instances, skipping the initial
           delay, if one is specified in the standby policy.""")
+    parser.add_argument(
+        '--no-graceful-shutdown',
+        default=False,
+        action='store_true',
+        help="""
+          End an ongoing graceful shutdown, or stop the specified instances without graceful shutdown.""",
+    )
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
 
@@ -95,6 +102,9 @@ class StopInstances(base.Command):
         request.instanceGroupManagersStopInstancesRequest.forceStop = args.force
       else:
         request.regionInstanceGroupManagersStopInstancesRequest.forceStop = args.force
+
+    if args.IsSpecified('no_graceful_shutdown'):
+      request.noGracefulShutdown = args.no_graceful_shutdown
 
     return instance_groups_utils.SendInstancesRequestsAndPostProcessOutputs(
         api_holder=holder,

@@ -15,6 +15,7 @@
 """Shared resource flags for Cloud Composer commands."""
 
 
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.calliope.concepts import deps
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
@@ -22,6 +23,8 @@ from googlecloudsdk.core import properties
 
 
 def LocationAttributeConfig(fallthroughs_enabled=True):
+  if arg_parsers.ArgRequiredInUniverse():
+    fallthroughs_enabled = False
   fallthroughs = ([
       deps.PropertyFallthrough(properties.VALUES.composer.location)
   ] if fallthroughs_enabled else [])
@@ -32,6 +35,8 @@ def LocationAttributeConfig(fallthroughs_enabled=True):
 
 
 def EnvironmentLocationAttributeConfig(fallthroughs_enabled=True):
+  if arg_parsers.ArgRequiredInUniverse():
+    fallthroughs_enabled = False
   fallthroughs = ([
       deps.PropertyFallthrough(properties.VALUES.composer.location)
   ] if fallthroughs_enabled else [])
@@ -42,6 +47,8 @@ def EnvironmentLocationAttributeConfig(fallthroughs_enabled=True):
 
 
 def OperationLocationAttributeConfig(fallthroughs_enabled=True):
+  if arg_parsers.ArgRequiredInUniverse():
+    fallthroughs_enabled = False
   fallthroughs = ([
       deps.PropertyFallthrough(properties.VALUES.composer.location)
   ] if fallthroughs_enabled else [])

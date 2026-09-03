@@ -1550,6 +1550,9 @@ class DatabaseInstance(_messages.Message):
       database instance. `EXTERNAL`: A database server that is not managed by
       Google. This property is read-only; use the `tier` property in the
       `settings` object to determine the database type.
+    DatabaseCenterIntegrationValueValuesEnum: Optional. State of the Database
+      Center integration for this instance. When unspecified, Database Center
+      integration is enabled by default.
     DatabaseVersionValueValuesEnum: The database engine type and version. The
       `databaseVersion` field cannot be changed after instance creation.
     InstalledVersionValueValuesEnum: Stores the current database version
@@ -1590,6 +1593,9 @@ class DatabaseInstance(_messages.Message):
       Monitoring API instead. Please see [this
       announcement](https://groups.google.com/d/msg/google-cloud-sql-
       announce/I_7-F9EBhT0/BtvFtdFeAgAJ) for details.
+    databaseCenterIntegration: Optional. State of the Database Center
+      integration for this instance. When unspecified, Database Center
+      integration is enabled by default.
     databaseCenterIntegrationEnabled: Optional. If true, instance metadata is
       sent to the Database Center. If false, instance metadata is not sent to
       the Database Center.
@@ -1717,6 +1723,21 @@ class DatabaseInstance(_messages.Message):
     SECOND_GEN = 2
     EXTERNAL = 3
     SEMI_MANAGED = 4
+
+  class DatabaseCenterIntegrationValueValuesEnum(_messages.Enum):
+    r"""Optional. State of the Database Center integration for this instance.
+    When unspecified, Database Center integration is enabled by default.
+
+    Values:
+      DATABASE_CENTER_INTEGRATION_UNSPECIFIED: Default value. The integration
+        state is unspecified. When unspecified, Database Center integration is
+        enabled by default.
+      ENABLED: Database Center integration is enabled.
+      DISABLED: Database Center integration is disabled.
+    """
+    DATABASE_CENTER_INTEGRATION_UNSPECIFIED = 0
+    ENABLED = 1
+    DISABLED = 2
 
   class DatabaseVersionValueValuesEnum(_messages.Enum):
     r"""The database engine type and version. The `databaseVersion` field
@@ -2158,58 +2179,59 @@ class DatabaseInstance(_messages.Message):
   connectionName = _messages.StringField(4)
   createTime = _messages.StringField(5)
   currentDiskSize = _messages.IntegerField(6)
-  databaseCenterIntegrationEnabled = _messages.BooleanField(7)
-  databaseInstalledVersion = _messages.StringField(8)
-  databaseVersion = _messages.EnumField('DatabaseVersionValueValuesEnum', 9)
-  deploymentInfo = _messages.MessageField('BlueGreenDeploymentInfo', 10)
-  diskEncryptionConfiguration = _messages.MessageField('DiskEncryptionConfiguration', 11)
-  diskEncryptionStatus = _messages.MessageField('DiskEncryptionStatus', 12)
-  dnsName = _messages.StringField(13)
-  dnsNames = _messages.MessageField('DnsNameMapping', 14, repeated=True)
-  etag = _messages.StringField(15)
-  failoverReplica = _messages.MessageField('FailoverReplicaValue', 16)
-  gceZone = _messages.StringField(17)
-  geminiConfig = _messages.MessageField('GeminiInstanceConfig', 18)
-  includeReplicasForMajorVersionUpgrade = _messages.BooleanField(19)
-  installedVersion = _messages.EnumField('InstalledVersionValueValuesEnum', 20)
-  instanceType = _messages.EnumField('InstanceTypeValueValuesEnum', 21)
-  ipAddresses = _messages.MessageField('IpMapping', 22, repeated=True)
-  ipv6Address = _messages.StringField(23)
-  kind = _messages.StringField(24)
-  maintenanceVersion = _messages.StringField(25)
-  majorVersionUpgradeIncludesReplicas = _messages.BooleanField(26)
-  masterInstanceName = _messages.StringField(27)
-  maxDiskSize = _messages.IntegerField(28)
-  name = _messages.StringField(29)
-  nodeCount = _messages.IntegerField(30, variant=_messages.Variant.INT32)
-  nodes = _messages.MessageField('PoolNodeConfig', 31, repeated=True)
-  onPremisesConfiguration = _messages.MessageField('OnPremisesConfiguration', 32)
-  outOfDiskReport = _messages.MessageField('SqlOutOfDiskReport', 33)
-  primaryDnsName = _messages.StringField(34)
-  project = _messages.StringField(35)
-  pscServiceAttachmentLink = _messages.StringField(36)
-  region = _messages.StringField(37)
-  replicaConfiguration = _messages.MessageField('ReplicaConfiguration', 38)
-  replicaNames = _messages.StringField(39, repeated=True)
-  replicationCluster = _messages.MessageField('ReplicationCluster', 40)
-  rootPassword = _messages.StringField(41)
-  satisfiesPzi = _messages.BooleanField(42)
-  satisfiesPzs = _messages.BooleanField(43)
-  scheduledMaintenance = _messages.MessageField('SqlScheduledMaintenance', 44)
-  secondaryGceZone = _messages.StringField(45)
-  selfLink = _messages.StringField(46)
-  semiManagedConfig = _messages.MessageField('SemiManagedConfig', 47)
-  serverCaCert = _messages.MessageField('SslCert', 48)
-  serviceAccountEmailAddress = _messages.StringField(49)
-  settings = _messages.MessageField('Settings', 50)
-  sourceInstanceNames = _messages.StringField(51, repeated=True)
-  sqlNetworkArchitecture = _messages.EnumField('SqlNetworkArchitectureValueValuesEnum', 52)
-  state = _messages.EnumField('StateValueValuesEnum', 53)
-  suspensionReason = _messages.EnumField('SuspensionReasonValueListEntryValuesEnum', 54, repeated=True)
-  switchTransactionLogsToCloudStorageEnabled = _messages.BooleanField(55)
-  tags = _messages.MessageField('TagsValue', 56)
-  upgradableDatabaseVersions = _messages.MessageField('AvailableDatabaseVersion', 57, repeated=True)
-  writeEndpoint = _messages.StringField(58)
+  databaseCenterIntegration = _messages.EnumField('DatabaseCenterIntegrationValueValuesEnum', 7)
+  databaseCenterIntegrationEnabled = _messages.BooleanField(8)
+  databaseInstalledVersion = _messages.StringField(9)
+  databaseVersion = _messages.EnumField('DatabaseVersionValueValuesEnum', 10)
+  deploymentInfo = _messages.MessageField('BlueGreenDeploymentInfo', 11)
+  diskEncryptionConfiguration = _messages.MessageField('DiskEncryptionConfiguration', 12)
+  diskEncryptionStatus = _messages.MessageField('DiskEncryptionStatus', 13)
+  dnsName = _messages.StringField(14)
+  dnsNames = _messages.MessageField('DnsNameMapping', 15, repeated=True)
+  etag = _messages.StringField(16)
+  failoverReplica = _messages.MessageField('FailoverReplicaValue', 17)
+  gceZone = _messages.StringField(18)
+  geminiConfig = _messages.MessageField('GeminiInstanceConfig', 19)
+  includeReplicasForMajorVersionUpgrade = _messages.BooleanField(20)
+  installedVersion = _messages.EnumField('InstalledVersionValueValuesEnum', 21)
+  instanceType = _messages.EnumField('InstanceTypeValueValuesEnum', 22)
+  ipAddresses = _messages.MessageField('IpMapping', 23, repeated=True)
+  ipv6Address = _messages.StringField(24)
+  kind = _messages.StringField(25)
+  maintenanceVersion = _messages.StringField(26)
+  majorVersionUpgradeIncludesReplicas = _messages.BooleanField(27)
+  masterInstanceName = _messages.StringField(28)
+  maxDiskSize = _messages.IntegerField(29)
+  name = _messages.StringField(30)
+  nodeCount = _messages.IntegerField(31, variant=_messages.Variant.INT32)
+  nodes = _messages.MessageField('PoolNodeConfig', 32, repeated=True)
+  onPremisesConfiguration = _messages.MessageField('OnPremisesConfiguration', 33)
+  outOfDiskReport = _messages.MessageField('SqlOutOfDiskReport', 34)
+  primaryDnsName = _messages.StringField(35)
+  project = _messages.StringField(36)
+  pscServiceAttachmentLink = _messages.StringField(37)
+  region = _messages.StringField(38)
+  replicaConfiguration = _messages.MessageField('ReplicaConfiguration', 39)
+  replicaNames = _messages.StringField(40, repeated=True)
+  replicationCluster = _messages.MessageField('ReplicationCluster', 41)
+  rootPassword = _messages.StringField(42)
+  satisfiesPzi = _messages.BooleanField(43)
+  satisfiesPzs = _messages.BooleanField(44)
+  scheduledMaintenance = _messages.MessageField('SqlScheduledMaintenance', 45)
+  secondaryGceZone = _messages.StringField(46)
+  selfLink = _messages.StringField(47)
+  semiManagedConfig = _messages.MessageField('SemiManagedConfig', 48)
+  serverCaCert = _messages.MessageField('SslCert', 49)
+  serviceAccountEmailAddress = _messages.StringField(50)
+  settings = _messages.MessageField('Settings', 51)
+  sourceInstanceNames = _messages.StringField(52, repeated=True)
+  sqlNetworkArchitecture = _messages.EnumField('SqlNetworkArchitectureValueValuesEnum', 53)
+  state = _messages.EnumField('StateValueValuesEnum', 54)
+  suspensionReason = _messages.EnumField('SuspensionReasonValueListEntryValuesEnum', 55, repeated=True)
+  switchTransactionLogsToCloudStorageEnabled = _messages.BooleanField(56)
+  tags = _messages.MessageField('TagsValue', 57)
+  upgradableDatabaseVersions = _messages.MessageField('AvailableDatabaseVersion', 58, repeated=True)
+  writeEndpoint = _messages.StringField(59)
 
 
 class DatabasesListResponse(_messages.Message):
@@ -8535,13 +8557,11 @@ class SqlWorkloadCapturesListRequest(_messages.Message):
   Fields:
     instance: Required. Cloud SQL instance ID. This does not include the
       project ID.
-    location: Optional. Region of the Cloud SQL instance.
     project: Required. Project ID of the project that contains the instance.
   """
 
   instance = _messages.StringField(1, required=True)
-  location = _messages.StringField(2)
-  project = _messages.StringField(3, required=True)
+  project = _messages.StringField(2, required=True)
 
 
 class SqlWorkloadCapturesStartReplayRequest(_messages.Message):
@@ -8549,13 +8569,11 @@ class SqlWorkloadCapturesStartReplayRequest(_messages.Message):
   Cloud SQL instance where the recorded SQL queries are executed).
 
   Fields:
-    location: Optional. Region of the Cloud SQL instance.
     startWorkloadReplayContext: Optional. Contains details about the start
       workload replay operation.
   """
 
-  location = _messages.StringField(1)
-  startWorkloadReplayContext = _messages.MessageField('StartWorkloadReplayContext', 2)
+  startWorkloadReplayContext = _messages.MessageField('StartWorkloadReplayContext', 1)
 
 
 class SqlWorkloadCapturesStartRequest(_messages.Message):
@@ -8563,39 +8581,33 @@ class SqlWorkloadCapturesStartRequest(_messages.Message):
   workload).
 
   Fields:
-    location: Optional. Region of the Cloud SQL instance.
     startWorkloadCaptureContext: Optional. Contains details about the start
       workload capture operation.
   """
 
-  location = _messages.StringField(1)
-  startWorkloadCaptureContext = _messages.MessageField('StartWorkloadCaptureContext', 2)
+  startWorkloadCaptureContext = _messages.MessageField('StartWorkloadCaptureContext', 1)
 
 
 class SqlWorkloadCapturesStopReplayRequest(_messages.Message):
   r"""Request to stop executing a captured workload on a replay instance.
 
   Fields:
-    location: Optional. Region of the Cloud SQL instance.
     stopWorkloadReplayContext: Optional. Contains details about the stop
       workload replay operation.
   """
 
-  location = _messages.StringField(1)
-  stopWorkloadReplayContext = _messages.MessageField('StopWorkloadReplayContext', 2)
+  stopWorkloadReplayContext = _messages.MessageField('StopWorkloadReplayContext', 1)
 
 
 class SqlWorkloadCapturesStopRequest(_messages.Message):
   r"""Request to stop recording traffic from the primary instance.
 
   Fields:
-    location: Optional. Region of the Cloud SQL instance.
     stopWorkloadCaptureContext: Optional. Contains details about the stop
       workload capture operation.
   """
 
-  location = _messages.StringField(1)
-  stopWorkloadCaptureContext = _messages.MessageField('StopWorkloadCaptureContext', 2)
+  stopWorkloadCaptureContext = _messages.MessageField('StopWorkloadCaptureContext', 1)
 
 
 class SslCert(_messages.Message):

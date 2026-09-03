@@ -620,11 +620,13 @@ class SourceUploadClient(metaclass=SourceUploadClientMeta):
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
             metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> source_upload.UploadSourceResponse:
-        r"""Uploads a source archive to a Google Cloud Storage
-        bucket through Cloud Run. The uploaded source object
-        should be used for Cloud Run resource deployments. User
-        is responsible for managing the lifecycle of the
-        uploaded object.
+        r"""Uploads a source archive to a Google Cloud Storage bucket
+        through Cloud Run. The uploaded source object should be used for
+        Cloud Run resource deployments. User is responsible for managing
+        the lifecycle of the uploaded object. If uploading through the
+        Cloud Run API to Cloud Storage is not desired, you can use the
+        IAM Deny Policy to deny the ``run.locations.uploadSource``
+        permission for all principals.
 
         .. code-block:: python
 

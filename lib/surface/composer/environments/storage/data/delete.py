@@ -33,6 +33,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 class Delete(base.Command):
   """Delete data from an Cloud Composer environment's Cloud Storage bucket.
   """

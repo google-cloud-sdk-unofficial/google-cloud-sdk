@@ -3937,8 +3937,8 @@ class ResourceRecord(_messages.Message):
     TypeValueValuesEnum: Resource record type. Example: `AAAA`.
 
   Fields:
-    name: Relative name of the object affected by this record. Only applicable
-      for `CNAME` records. Example: 'www'.
+    name: Name of the resource record relative to its apex domain, e.g. `www`
+      for `www.example.com`. Omitted for apex records.
     rrdata: Data for this record. Values vary by record type, as defined in
       RFC 1035 (section 5) and RFC 1034 (section 3.6.1).
     type: Resource record type. Example: `AAAA`.

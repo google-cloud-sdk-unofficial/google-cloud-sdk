@@ -596,6 +596,7 @@ def ParseCreateOptionsBase(
       enable_pod_snapshots=enable_pod_snapshots,
       enable_agent_sandbox=enable_agent_sandbox,
       enable_default_compute_class=get_default('enable_default_compute_class'),
+      default_compute_class=get_default('default_compute_class'),
       enable_k8s_certs_via_dns=get_default('enable_k8s_certs_via_dns'),
       boot_disk_provisioned_iops=get_default('boot_disk_provisioned_iops'),
       boot_disk_provisioned_throughput=get_default(
@@ -889,6 +890,7 @@ flags_to_add = {
             p, hidden=True
         ),
         'enableDefaultComputeClass': flags.AddEnableDefaultComputeClassFlag,
+        'defaultComputeClass': flags.AddDefaultComputeClassFlag,
         'enableK8sCertsViaDns': flags.AddEnableK8sCertsViaDnsFlag,
         'networkTier': flags.AddNetworkTierFlag,
         'controlPlaneEgress': flags.AddControlPlaneEgressFlag,
@@ -1129,6 +1131,7 @@ flags_to_add = {
         'enableLegacyLustrePort': flags.AddEnableLegacyLustrePortFlag,
         'disableMultiNicLustre': flags.AddDisableMultiNicLustreFlag,
         'enableDefaultComputeClass': flags.AddEnableDefaultComputeClassFlag,
+        'defaultComputeClass': flags.AddDefaultComputeClassFlag,
         'enableK8sCertsViaDns': flags.AddEnableK8sCertsViaDnsFlag,
         'networkTier': flags.AddNetworkTierFlag,
         'controlPlaneEgress': flags.AddControlPlaneEgressFlag,
@@ -1385,6 +1388,7 @@ flags_to_add = {
         'enableLegacyLustrePort': flags.AddEnableLegacyLustrePortFlag,
         'disableMultiNicLustre': flags.AddDisableMultiNicLustreFlag,
         'enableDefaultComputeClass': flags.AddEnableDefaultComputeClassFlag,
+        'defaultComputeClass': flags.AddDefaultComputeClassFlag,
         'enableK8sCertsViaDns': flags.AddEnableK8sCertsViaDnsFlag,
         'networkTier': flags.AddNetworkTierFlag,
         'controlPlaneEgress': flags.AddControlPlaneEgressFlag,
@@ -1796,6 +1800,7 @@ class CreateBeta(Create):
     ops.enable_default_compute_class = get_default(
         'enable_default_compute_class'
     )
+    ops.default_compute_class = get_default('default_compute_class')
     ops.enable_k8s_certs_via_dns = get_default('enable_k8s_certs_via_dns')
     ops.control_plane_egress_mode = get_default('control_plane_egress')
     ops.gpudirect_strategy = get_default('gpudirect_strategy')
@@ -1979,6 +1984,7 @@ class CreateAlpha(Create):
     ops.enable_default_compute_class = get_default(
         'enable_default_compute_class'
     )
+    ops.default_compute_class = get_default('default_compute_class')
     ops.enable_k8s_certs_via_dns = get_default('enable_k8s_certs_via_dns')
     ops.control_plane_egress_mode = get_default('control_plane_egress')
     ops.gpudirect_strategy = get_default('gpudirect_strategy')

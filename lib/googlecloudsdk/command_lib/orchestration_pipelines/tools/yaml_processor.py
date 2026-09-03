@@ -731,7 +731,11 @@ def load_environment(
 
 
 def collect_external_vars(
-    args: Any, bundle_path: pathlib.Path, enforce_clean: bool = False
+    *,
+    args: Any,
+    bundle_path: pathlib.Path,
+    enforce_clean: bool = False,
+    bundle_name: str | None = None,
 ) -> Dict[str, Any]:
   """Collects external variables from environment, file, and args."""
   external_vars = {}
@@ -757,7 +761,6 @@ def collect_external_vars(
   if substitutions:
     external_vars.update(substitutions)
 
-  # 4. Collect special values (COMMIT_SHA)
   if getattr(args, "rollback", False) and getattr(args, "version", None):
     if "COMMIT_SHA" in external_vars:
       log.warning(
@@ -773,6 +776,9 @@ def collect_external_vars(
         bundle_path=bundle_path,
         is_local=getattr(args, "local", False),
     )
+
+  if "BUNDLE_ID" not in external_vars:
+    external_vars["BUNDLE_ID"] = bundle_name or bundle_path.name
 
   return external_vars
 
@@ -797,7 +803,7 @@ def add_substitution_flags(parser: Any) -> None:
 def load_environment_with_args(args: Any) -> deployment_model.EnvironmentModel:
   """Loads the environment configuration based on command-line arguments."""
   bundle_path = pathlib.Path.cwd()
-  external_vars = collect_external_vars(args, bundle_path)
+  external_vars = collect_external_vars(args=args, bundle_path=bundle_path)
   deployment_path = bundle_path / DEPLOYMENT_FILE_NAME
   return load_environment(str(deployment_path), args.environment, external_vars)
 

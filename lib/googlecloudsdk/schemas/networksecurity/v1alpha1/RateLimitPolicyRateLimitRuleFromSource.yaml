@@ -1,0 +1,40 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networksecurity v1alpha1 RateLimitPolicyRateLimitRuleFromSource export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- principals
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  principals:
+    description: |-
+      Contains a list of identities derived from the client's certificate. This
+      field does not match on a request unless frontend mutual TLS is enabled
+      for the Gateway and the client certificate is successfully validated by
+      mTLS. Each identity is a string whose value is matched against a list of
+      URI SANs, DNS Name SANs, or the common name in the client's certificate. A
+      match happens when any principal matches with the rule.
+    type: array
+    items:
+      $ref: RateLimitPolicyRateLimitRulePrincipal.yaml

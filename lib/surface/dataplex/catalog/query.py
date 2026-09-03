@@ -66,12 +66,7 @@ class Query(base.Command):
         'The location for the query.',
         required=False,
     ).AddToParser(parser)
-    group = parser.add_argument_group(mutex=True, required=True)
-    group.add_argument('--query', help='The SQL query string.')
-    group.add_argument(
-        '--reference-id',
-        help='The reference ID from a previous query to fetch results.',
-    )
+    parser.add_argument('--query', required=True, help='The SQL query string.')
     parser.add_argument(
         '--scopes',
         type=arg_parsers.ArgList(),
@@ -87,14 +82,6 @@ class Query(base.Command):
         '--timeout',
         type=arg_parsers.Duration(lower_bound='10s', upper_bound='200s'),
         help='The timeout for query execution. Default 10s, min 10s, max 200s.',
-    )
-    parser.add_argument(
-        '--page-token',
-        help=(
-            'Page token received from a previous QueryCatalog call. Provide '
-            'this together with the referenceId parameter to retrieve the '
-            'subsequent page.'
-        ),
     )
     parser.add_argument(
         '--max-results',
@@ -116,11 +103,9 @@ class Query(base.Command):
         name=location_ref.RelativeName(),
         googleCloudDataplexV1QueryCatalogRequest=messages.GoogleCloudDataplexV1QueryCatalogRequest(
             query=args.query,
-            referenceId=args.reference_id,
             scopes=args.scopes or [],
             timeout=timeout_str,
             maxResults=args.max_results,
-            pageToken=args.page_token,
         ),
     )
 
@@ -146,10 +131,7 @@ class Query(base.Command):
       request_format = 'table'
 
     if not getattr(result, 'done', True):
-      log.status.Print(
-          f'Query with reference ID [{getattr(result, "referenceId", "")}] is'
-          ' still running.'
-      )
+      log.status.Print('Query is still running.')
       log.status.flush()
       if request_format == 'table':
         resource_printer.Print(result, 'yaml')
@@ -185,14 +167,6 @@ class Query(base.Command):
         fmt = 'table(' + ', '.join(escaped_keys) + ')'
 
       resource_printer.Print(dict_rows, fmt)
-
-      next_page = getattr(query_result, 'nextPageToken', None)
-      if next_page:
-        log.warning(
-            "Output is truncated. Use --page-token='%s' to retrieve the"
-            ' next page.',
-            next_page,
-        )
       return
 
     # Pass raw response when explicit format is not intercepted.

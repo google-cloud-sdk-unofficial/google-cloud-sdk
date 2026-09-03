@@ -53,6 +53,7 @@ from cloudsdk.google.protobuf import timestamp_pb2  # type: ignore
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.services.tasks import pagers
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import condition
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import k8s_min
+from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import sandbox
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import task
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import vendor_settings
 from .transports.base import TasksTransport, DEFAULT_CLIENT_INFO

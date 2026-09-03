@@ -45,6 +45,13 @@ class Delete(base.DeleteCommand):
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGERS_ARG.AddArgument(
         parser, operation_type='delete')
     base.ASYNC_FLAG.AddToParser(parser)
+    parser.add_argument(
+        '--no-graceful-shutdown',
+        default=False,
+        action='store_true',
+        help="""
+          Delete the managed instance group without graceful shutdown.""",
+    )
 
   def _GenerateAutoscalerDeleteRequests(self, holder, project, mig_requests):
     """Generates Delete requestes for autoscalers attached to instance groups.
@@ -107,7 +114,7 @@ class Delete(base.DeleteCommand):
     else:
       return None
 
-  def _CreateDeleteRequests(self, client, igm_refs):
+  def _CreateDeleteRequests(self, client, igm_refs, no_graceful_shutdown=None):
     """Returns a list of delete messages for instance group managers."""
 
     messages = client.MESSAGES_MODULE
@@ -128,6 +135,9 @@ class Delete(base.DeleteCommand):
       else:
         raise ValueError('Unknown reference type {0}'.format(ref.Collection()))
 
+      if no_graceful_shutdown is not None:
+        request.noGracefulShutdown = no_graceful_shutdown
+
       requests.append((service, 'Delete', request))
     return requests
 
@@ -146,8 +156,17 @@ class Delete(base.DeleteCommand):
     utils.PromptForDeletion(
         igm_refs, scope_name=scope_name, prompt_title=None)
 
-    requests = list(self._CreateDeleteRequests(
-        holder.client.apitools_client, igm_refs))
+    no_graceful_shutdown = (
+        args.no_graceful_shutdown
+        if args.IsSpecified('no_graceful_shutdown')
+        else None
+    )
+
+    requests = list(
+        self._CreateDeleteRequests(
+            holder.client.apitools_client, igm_refs, no_graceful_shutdown
+        )
+    )
 
     resources = []
     # Delete autoscalers first.

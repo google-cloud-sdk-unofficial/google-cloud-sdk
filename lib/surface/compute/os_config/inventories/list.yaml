@@ -17,7 +17,6 @@
       api_version: v1alpha
     GA:
       api_version: v1
-    disable_resource_check: true
     modify_request_hooks:
     - googlecloudsdk.command_lib.compute.os_config.inventories.declarative:SetParentOnListRequestHook
     - googlecloudsdk.command_lib.compute.os_config.declarative:SetDefaultPageSizeRequestHook:default_page_size=25
@@ -28,12 +27,12 @@
     - googlecloudsdk.command_lib.compute.os_config.inventories.declarative:CreateTableViewResponseHook
 
   arguments:
+    resource:
+      help_text: Location in which to list inventories.
+      spec: !REF googlecloudsdk.command_lib.compute.os_config.resources:location
+      is_parent_resource: true
+      override_resource_collection: true
     params:
-    - arg_name: location
-      help_text: |
-        Location of the Compute Engine VM instances to list. If not specified, the property
-        `compute/zone` is used. For details on setting properties,
-        see: https://cloud.google.com/sdk/docs/properties
     - api_field: view
       help_text: |
         Specifies what information should be included in the

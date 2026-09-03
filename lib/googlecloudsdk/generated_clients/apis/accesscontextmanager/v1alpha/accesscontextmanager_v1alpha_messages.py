@@ -682,6 +682,18 @@ class AccesscontextmanagerAccessPoliciesTestIamPermissionsRequest(_messages.Mess
   testIamPermissionsRequest = _messages.MessageField('TestIamPermissionsRequest', 2)
 
 
+class AccesscontextmanagerFoldersLookupConfiguredServicePerimeterRequest(_messages.Message):
+  r"""A AccesscontextmanagerFoldersLookupConfiguredServicePerimeterRequest
+  object.
+
+  Fields:
+    resource: Required. The Resource to resolve (e.g. "projects/123",
+      "folders/456").
+  """
+
+  resource = _messages.StringField(1, required=True)
+
+
 class AccesscontextmanagerOperationsGetRequest(_messages.Message):
   r"""A AccesscontextmanagerOperationsGetRequest object.
 
@@ -804,6 +816,18 @@ class AccesscontextmanagerPermissionsListRequest(_messages.Message):
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(2)
+
+
+class AccesscontextmanagerProjectsLookupConfiguredServicePerimeterRequest(_messages.Message):
+  r"""A AccesscontextmanagerProjectsLookupConfiguredServicePerimeterRequest
+  object.
+
+  Fields:
+    resource: Required. The Resource to resolve (e.g. "projects/123",
+      "folders/456").
+  """
+
+  resource = _messages.StringField(1, required=True)
 
 
 class AccesscontextmanagerServicesGetRequest(_messages.Message):
@@ -1852,6 +1876,31 @@ class ListSupportedServicesResponse(_messages.Message):
 
   nextPageToken = _messages.StringField(1)
   supportedServices = _messages.MessageField('SupportedService', 2, repeated=True)
+
+
+class LookupConfiguredServicePerimeterResponse(_messages.Message):
+  r"""A configured service perimeter returned by Access Context Manager.
+
+  Fields:
+    restrictedResource: The resource (e.g. "projects/123", "folders/456") that
+      directly owns/is restricted by the enforced perimeter.
+    restrictedResourceDryRun: The resource (e.g. "projects/123",
+      "folders/456") that directly owns/is restricted by the dry-run
+      perimeter.
+    servicePerimeter: Fully qualified name of the configured enforced
+      perimeter. Format:
+      `accessPolicies/{policy_id}/servicePerimeters/{perimeter_name}` This
+      field is empty if no enforced perimeter applies.
+    servicePerimeterDryRun: Fully qualified name of the configured dry-run
+      perimeter. Format:
+      `accessPolicies/{policy_id}/servicePerimeters/{perimeter_name}` This
+      field is empty if no dry-run perimeter configuration applies.
+  """
+
+  restrictedResource = _messages.StringField(1)
+  restrictedResourceDryRun = _messages.StringField(2)
+  servicePerimeter = _messages.StringField(3)
+  servicePerimeterDryRun = _messages.StringField(4)
 
 
 class MethodSelector(_messages.Message):

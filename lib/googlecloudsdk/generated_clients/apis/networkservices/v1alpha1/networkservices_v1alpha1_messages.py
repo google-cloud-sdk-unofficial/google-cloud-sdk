@@ -1178,6 +1178,92 @@ class CancelOperationRequest(_messages.Message):
   r"""The request message for Operations.CancelOperation."""
 
 
+class CdnEdgeExtension(_messages.Message):
+  r"""`CdnEdgeExtension` is a resource that lets the extension service modify
+  the headers of both requests to the cache and responses from the cache
+  served by an [`EdgeCacheService`](https://cloud.google.com/media-
+  cdn/docs/reference/rest/v1/projects.locations.edgeCacheServices).
+
+  Messages:
+    LabelsValue: Optional. Set of labels associated with the
+      `CdnEdgeExtension` resource. The format must comply with [the
+      requirements for labels](https://cloud.google.com/compute/docs/labeling-
+      resources#requirements) for Google Cloud resources.
+
+  Fields:
+    createTime: Output only. The timestamp when the resource was created.
+    description: Optional. A human-readable description of the resource.
+    extensionChains: Required. A set of ordered extension chains that contain
+      the match conditions and extensions to execute. Match conditions for
+      each extension chain are evaluated in sequence for a given request. The
+      first extension chain that has a condition that matches the request is
+      executed. Any subsequent extension chains do not execute. Limited to 5
+      extension chains per resource.
+    labels: Optional. Set of labels associated with the `CdnEdgeExtension`
+      resource. The format must comply with [the requirements for
+      labels](https://cloud.google.com/compute/docs/labeling-
+      resources#requirements) for Google Cloud resources.
+    name: Required. Identifier. Name of the `CdnEdgeExtension` resource in the
+      following format: `projects/{project}/locations/{location}/cdnEdgeExtens
+      ions/{cdn_edge_extension}`.
+    target: Required. Specifies the set of resources to which this extension
+      should be applied to.
+    updateTime: Output only. The timestamp when the resource was updated.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Set of labels associated with the `CdnEdgeExtension`
+    resource. The format must comply with [the requirements for
+    labels](https://cloud.google.com/compute/docs/labeling-
+    resources#requirements) for Google Cloud resources.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  extensionChains = _messages.MessageField('ExtensionChain', 3, repeated=True)
+  labels = _messages.MessageField('LabelsValue', 4)
+  name = _messages.StringField(5)
+  target = _messages.MessageField('CdnEdgeExtensionTarget', 6)
+  updateTime = _messages.StringField(7)
+
+
+class CdnEdgeExtensionTarget(_messages.Message):
+  r"""Specifies the set of targets to which `CdnEdgeExtension` should be
+  applied to.
+
+  Fields:
+    resources: Required. A list of references to the resources that are
+      targeted by `CdnEdgeExtension`. Types of resources supported:
+      `EdgeCacheService`. The format must be the full resource name of
+      [EdgeCacheService](https://cloud.google.com/media-
+      cdn/docs/reference/rest/v1/projects.locations.edgeCacheServices) in the
+      following format: `//networkservices.googleapis.com/projects/{project}/l
+      ocations/{location}/edgeCacheServices/{edgeCacheService}`.
+  """
+
+  resources = _messages.StringField(1, repeated=True)
+
+
 class Connection(_messages.Message):
   r"""VPC connectivity information.
 
@@ -5106,6 +5192,21 @@ class ListAuthzExtensionsResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class ListCdnEdgeExtensionsResponse(_messages.Message):
+  r"""Message for response to listing `CdnEdgeExtension` resources.
+
+  Fields:
+    cdnEdgeExtensions: The list of `CdnEdgeExtension` resources.
+    nextPageToken: A token identifying a page of results that the server
+      returns.
+    unreachable: Locations that could not be reached.
+  """
+
+  cdnEdgeExtensions = _messages.MessageField('CdnEdgeExtension', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListEdgeCacheKeysetsResponse(_messages.Message):
   r"""The response returned by the `ListEdgeCacheKeysets` method.
 
@@ -7673,6 +7774,124 @@ class NetworkservicesProjectsLocationsAuthzExtensionsPatchRequest(_messages.Mess
   """
 
   authzExtension = _messages.MessageField('AuthzExtension', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
+
+
+class NetworkservicesProjectsLocationsCdnEdgeExtensionsCreateRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsCdnEdgeExtensionsCreateRequest object.
+
+  Fields:
+    cdnEdgeExtension: A CdnEdgeExtension resource to be passed as the request
+      body.
+    cdnEdgeExtensionId: Required. User-provided ID of the `CdnEdgeExtension`
+      resource to be created.
+    parent: Required. The parent resource of the `CdnEdgeExtension` resource.
+      Must be in the format `projects/{project}/locations/{location}`.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      can ignore the request if it has already been completed. The server
+      guarantees that for 60 minutes since the first request. For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server ignores the second request This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+  """
+
+  cdnEdgeExtension = _messages.MessageField('CdnEdgeExtension', 1)
+  cdnEdgeExtensionId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class NetworkservicesProjectsLocationsCdnEdgeExtensionsDeleteRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsCdnEdgeExtensionsDeleteRequest object.
+
+  Fields:
+    name: Required. The name of the `CdnEdgeExtension` resource to delete.
+      Must be in the format `projects/{project}/locations/{location}/cdnEdgeEx
+      tensions/{cdn_edge_extension}`.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      can ignore the request if it has already been completed. The server
+      guarantees that for 60 minutes after the first request. For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server ignores the second request This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class NetworkservicesProjectsLocationsCdnEdgeExtensionsGetRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsCdnEdgeExtensionsGetRequest object.
+
+  Fields:
+    name: Required. A name of the `CdnEdgeExtension` resource to get. Must be
+      in the format `projects/{project}/locations/{location}/cdnEdgeExtensions
+      /{cdn_edge_extension}`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworkservicesProjectsLocationsCdnEdgeExtensionsListRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsCdnEdgeExtensionsListRequest object.
+
+  Fields:
+    filter: Optional. Filtering results.
+    orderBy: Optional. Hint about how to order the results.
+    pageSize: Optional. Requested page size. The server might return fewer
+      items than requested. If unspecified, the server picks an appropriate
+      default.
+    pageToken: Optional. A token identifying a page of results that the server
+      returns.
+    parent: Required. The project and location from which the
+      `CdnEdgeExtension` resources are listed. These values are specified in
+      the following format: `projects/{project}/locations/{location}`.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class NetworkservicesProjectsLocationsCdnEdgeExtensionsPatchRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsCdnEdgeExtensionsPatchRequest object.
+
+  Fields:
+    cdnEdgeExtension: A CdnEdgeExtension resource to be passed as the request
+      body.
+    name: Required. Identifier. Name of the `CdnEdgeExtension` resource in the
+      following format: `projects/{project}/locations/{location}/cdnEdgeExtens
+      ions/{cdn_edge_extension}`.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      can ignore the request if it has already been completed. The server
+      guarantees that for 60 minutes since the first request. For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server ignores the second request This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. Used to specify the fields to be overwritten in the
+      `CdnEdgeExtension` resource by the update. The fields specified in the
+      `update_mask` are relative to the resource, not the full request. A
+      field is overwritten if it is in the mask. If the user does not specify
+      a mask, then all fields are overwritten.
+  """
+
+  cdnEdgeExtension = _messages.MessageField('CdnEdgeExtension', 1)
   name = _messages.StringField(2, required=True)
   requestId = _messages.StringField(3)
   updateMask = _messages.StringField(4)
@@ -13749,6 +13968,9 @@ class RegionalMulticastConsumerAssociation(_messages.Message):
       multicast consumer association was created.
     description: Optional. An optional text description of the regional
       multicast consumer association.
+    hybridSpokes: Optional. Network Connectivity Center (NCC) hybrid spokes
+      associated with this regional consumer association. Format:
+      `projects/{project}/locations/{location}/spokes/{spoke}`.
     labels: Optional. Labels as key-value pairs
     name: Identifier. The resource name of the regional multicast consumer
       association. Use the following format:
@@ -13796,13 +14018,14 @@ class RegionalMulticastConsumerAssociation(_messages.Message):
 
   createTime = _messages.StringField(1)
   description = _messages.StringField(2)
-  labels = _messages.MessageField('LabelsValue', 3)
-  name = _messages.StringField(4)
-  network = _messages.StringField(5)
-  regionalMulticastDomainActivation = _messages.StringField(6)
-  state = _messages.MessageField('MulticastResourceState', 7)
-  uniqueId = _messages.StringField(8)
-  updateTime = _messages.StringField(9)
+  hybridSpokes = _messages.StringField(3, repeated=True)
+  labels = _messages.MessageField('LabelsValue', 4)
+  name = _messages.StringField(5)
+  network = _messages.StringField(6)
+  regionalMulticastDomainActivation = _messages.StringField(7)
+  state = _messages.MessageField('MulticastResourceState', 8)
+  uniqueId = _messages.StringField(9)
+  updateTime = _messages.StringField(10)
 
 
 class RegionalMulticastDomainActivation(_messages.Message):
@@ -14136,6 +14359,9 @@ class RegionalMulticastProducerAssociation(_messages.Message):
       multicast producer association was created.
     description: Optional. An optional text description of the regional
       multicast producer association.
+    hybridSpokes: Optional. Network Connectivity Center (NCC) hybrid spokes
+      associated with this regional producer association. Format:
+      `projects/{project}/locations/{location}/spokes/{spoke}`.
     labels: Optional. Labels as key-value pairs
     name: Identifier. The resource name of the regional multicast producer
       association. Use the following format:
@@ -14183,13 +14409,14 @@ class RegionalMulticastProducerAssociation(_messages.Message):
 
   createTime = _messages.StringField(1)
   description = _messages.StringField(2)
-  labels = _messages.MessageField('LabelsValue', 3)
-  name = _messages.StringField(4)
-  network = _messages.StringField(5)
-  regionalMulticastDomainActivation = _messages.StringField(6)
-  state = _messages.MessageField('MulticastResourceState', 7)
-  uniqueId = _messages.StringField(8)
-  updateTime = _messages.StringField(9)
+  hybridSpokes = _messages.StringField(3, repeated=True)
+  labels = _messages.MessageField('LabelsValue', 4)
+  name = _messages.StringField(5)
+  network = _messages.StringField(6)
+  regionalMulticastDomainActivation = _messages.StringField(7)
+  state = _messages.MessageField('MulticastResourceState', 8)
+  uniqueId = _messages.StringField(9)
+  updateTime = _messages.StringField(10)
 
 
 class RetryFilterPerRouteConfig(_messages.Message):
@@ -14464,12 +14691,18 @@ class ServiceBindingSource(_messages.Message):
   from.
 
   Fields:
+    serviceExtensions: Optional. A list of Service Extension resources
+      attached to the ServiceBinding. Each Service Extension reference should
+      match the pattern: `projects/*/locations/*/extensionBindings/`. The
+      location of the Extension Binding must match the location of the
+      ServiceBinding.
     services: Optional. A list of resources attached to the ServiceBinding.
       The resources can be TargetHttpProxy or TargetHttpsProxy. The location
       of the resources must match the location of the ServiceBinding.
   """
 
-  services = _messages.StringField(1, repeated=True)
+  serviceExtensions = _messages.StringField(1, repeated=True)
+  services = _messages.StringField(2, repeated=True)
 
 
 class ServiceGraph(_messages.Message):

@@ -2670,7 +2670,6 @@ class DataBoostReadLocalWrites(_messages.Message):
   """
 
 
-
 class DropRowRangeRequest(_messages.Message):
   r"""Request message for
   google.bigtable.admin.v2.BigtableTableAdmin.DropRowRange
@@ -2692,7 +2691,6 @@ class Empty(_messages.Message):
   or the response type of an API method. For instance: service Foo { rpc
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
-
 
 
 class EncryptionConfig(_messages.Message):
@@ -2815,7 +2813,6 @@ class GenerateConsistencyTokenRequest(_messages.Message):
   r"""Request message for
   google.bigtable.admin.v2.BigtableTableAdmin.GenerateConsistencyToken
   """
-
 
 
 class GenerateConsistencyTokenResponse(_messages.Message):
@@ -3001,12 +2998,10 @@ class GoogleBigtableAdminV2TypeAggregateHyperLogLogPlusPlusUniqueCount(_messages
   """
 
 
-
 class GoogleBigtableAdminV2TypeAggregateMax(_messages.Message):
   r"""Computes the max of the input values. Allowed input: `Int64` State: same
   as input
   """
-
 
 
 class GoogleBigtableAdminV2TypeAggregateMin(_messages.Message):
@@ -3015,12 +3010,10 @@ class GoogleBigtableAdminV2TypeAggregateMin(_messages.Message):
   """
 
 
-
 class GoogleBigtableAdminV2TypeAggregateSum(_messages.Message):
   r"""Computes the sum of the input values. Allowed input: `Int64` State: same
   as input
   """
-
 
 
 class GoogleBigtableAdminV2TypeArray(_messages.Message):
@@ -3116,7 +3109,6 @@ class GoogleBigtableAdminV2TypeGeography(_messages.Message):
   """
 
 
-
 class GoogleBigtableAdminV2TypeInt32(_messages.Message):
   r"""Int32 Values of type `Int32` are stored in `Value.int_value`.
 
@@ -3148,13 +3140,11 @@ class GoogleBigtableAdminV2TypeInt32EncodingBigEndianBytes(_messages.Message):
   """
 
 
-
 class GoogleBigtableAdminV2TypeInt32EncodingOrderedCodeBytes(_messages.Message):
   r"""Encodes the value in a variable length binary format of up to 5 bytes.
   Values that are closer to zero use fewer bytes. Sorted mode: all values are
   supported. Distinct mode: all values are supported.
   """
-
 
 
 class GoogleBigtableAdminV2TypeInt64(_messages.Message):
@@ -3198,7 +3188,6 @@ class GoogleBigtableAdminV2TypeInt64EncodingOrderedCodeBytes(_messages.Message):
   Values that are closer to zero use fewer bytes. Sorted mode: all values are
   supported. Distinct mode: all values are supported.
   """
-
 
 
 class GoogleBigtableAdminV2TypeMap(_messages.Message):
@@ -3356,12 +3345,10 @@ class GoogleBigtableAdminV2TypeStructEncodingOrderedCodeBytes(_messages.Message)
   """
 
 
-
 class GoogleBigtableAdminV2TypeStructEncodingSingleton(_messages.Message):
   r"""Uses the encoding of `fields[0].type` as-is. Only valid if `fields.size
   == 1`. This encoding does not support `DESC` field ordering.
   """
-
 
 
 class GoogleBigtableAdminV2TypeStructField(_messages.Message):
@@ -4018,7 +4005,6 @@ class MemoryConfig(_messages.Message):
   """
 
 
-
 class MemoryLayer(_messages.Message):
   r"""The memory layer of a cluster. A memory layer serves reads from memory
   without hitting the backing persistent data store.
@@ -4483,13 +4469,28 @@ class RestoreTableRequest(_messages.Message):
   Fields:
     backup: Name of the backup from which to restore. Values are of the form
       `projects//instances//clusters//backups/`.
+    table: Optional. Properties of the table to be restored. Only the fields
+      specified in update_mask will be used to set the restored table's
+      properties.
     tableId: Required. The id of the table to create and restore to. This
       table must not already exist. The `table_id` appended to `parent` forms
       the full table name of the form `projects//instances//tables/`.
+    updateMask: Optional. The list of fields to set on the new table. A mask
+      specifying which fields (e.g. `deletion_protection`) in the `table`
+      field should be set. This mask is relative to the `table` field, not to
+      the request message. The wildcard (*) path is currently not supported.
+      Currently RestoreTable only supports the following fields for
+      modification: * `deletion_protection`: Defaults to `false` if not set. *
+      `automated_backup_policy`: Defaults to no automated backup policy if not
+      set. Output-only fields in the mask will be ignored. If any other field
+      not listed above is included in `update_mask`, it will result in an
+      INVALID_ARGUMENT error.
   """
 
   backup = _messages.StringField(1)
-  tableId = _messages.StringField(2)
+  table = _messages.MessageField('Table', 2)
+  tableId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
 
 
 class RowAffinity(_messages.Message):
@@ -4503,7 +4504,6 @@ class RowAffinity(_messages.Message):
   clusters specified in the cluster group cannot be deleted unless removed
   from the cluster group.
   """
-
 
 
 class SchemaBundle(_messages.Message):
@@ -4669,7 +4669,6 @@ class StandardReadRemoteWrites(_messages.Message):
   r"""Checks that all writes before the consistency token was generated are
   replicated in every cluster and readable.
   """
-
 
 
 class Status(_messages.Message):
@@ -5106,7 +5105,6 @@ class UndeleteTableRequest(_messages.Message):
   r"""Request message for
   google.bigtable.admin.v2.BigtableTableAdmin.UndeleteTable
   """
-
 
 
 class Union(_messages.Message):

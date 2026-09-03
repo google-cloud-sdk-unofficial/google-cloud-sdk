@@ -157,11 +157,29 @@ class BiglakeDeltasharingV1alphaProjectsCatalogsSharesSchemasTablesListRequest(_
   parent = _messages.StringField(3, required=True)
 
 
+class CrossCloudCacheOptions(_messages.Message):
+  r"""Configuration options for cross-cloud caching of data and metadata
+  files.
+
+  Fields:
+    enabled: Optional. Specifies whether cross-cloud caching of data and
+      metadata files is enabled. This only affects queries through BigQuery.
+      If this value is `true`, read data and metadata are stored in a cache,
+      which can increase performance and decrease network egress costs for
+      cross-cloud queries. If this value is `false`, cross-cloud caching is
+      disabled.
+  """
+
+  enabled = _messages.BooleanField(1)
+
+
 class DeltaSharingCatalog(_messages.Message):
   r"""Represents a DeltaSharing catalog.
 
   Fields:
     createTime: Output only. The creation time of the catalog.
+    encryptionConfiguration: Optional. Custom encryption configuration (e.g.,
+      Cloud KMS keys).
     federatedCatalogOptions: Optional. Configuration options for federated
       catalogs.
     location: Required. Immutable. The user-provided GCP location of the
@@ -180,14 +198,15 @@ class DeltaSharingCatalog(_messages.Message):
   """
 
   createTime = _messages.StringField(1)
-  federatedCatalogOptions = _messages.MessageField('FederatedCatalogOptions', 2)
-  location = _messages.StringField(3)
-  name = _messages.StringField(4)
-  refreshOptions = _messages.MessageField('RefreshOptions', 5)
-  refreshStatus = _messages.MessageField('RefreshStatus', 6)
-  sapConfig = _messages.MessageField('SapConfig', 7)
-  serviceAccount = _messages.StringField(8)
-  updateTime = _messages.StringField(9)
+  encryptionConfiguration = _messages.MessageField('EncryptionConfiguration', 2)
+  federatedCatalogOptions = _messages.MessageField('FederatedCatalogOptions', 3)
+  location = _messages.StringField(4)
+  name = _messages.StringField(5)
+  refreshOptions = _messages.MessageField('RefreshOptions', 6)
+  refreshStatus = _messages.MessageField('RefreshStatus', 7)
+  sapConfig = _messages.MessageField('SapConfig', 8)
+  serviceAccount = _messages.StringField(9)
+  updateTime = _messages.StringField(10)
 
 
 class DeltaSharingSchema(_messages.Message):
@@ -240,17 +259,32 @@ class Empty(_messages.Message):
 
 
 
+class EncryptionConfiguration(_messages.Message):
+  r"""Custom encryption configuration (e.g., Cloud KMS keys).
+
+  Fields:
+    kmsKeyName: Optional. Optional Cloud KMS key name for encryption of
+      resources in the catalog. Format: projects/{project}/locations/{location
+      }/keyRings/{keyRing}/cryptoKeys/{cryptoKey}
+  """
+
+  kmsKeyName = _messages.StringField(1)
+
+
 class FederatedCatalogOptions(_messages.Message):
   r"""Configuration options for federated catalog.
 
   Fields:
+    crossCloudCacheOptions: Optional. Configuration options for cross-cloud
+      caching of data and metadata files.
     serviceDirectoryName: Optional. The service directory resource name for
       routing traffic over a private network connection through Cross-Cloud
       Interconnect, in the format `projects/{project_id}/locations/{location_i
       d}/namespaces/{namespace_id}/services/{service_id}`.
   """
 
-  serviceDirectoryName = _messages.StringField(1)
+  crossCloudCacheOptions = _messages.MessageField('CrossCloudCacheOptions', 1)
+  serviceDirectoryName = _messages.StringField(2)
 
 
 class ListDeltaSharingCatalogsResponse(_messages.Message):

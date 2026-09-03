@@ -18,6 +18,7 @@
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class Storage(base.Group):
   """Manage Cloud Storage objects stored as part of Cloud Composer environments.
 

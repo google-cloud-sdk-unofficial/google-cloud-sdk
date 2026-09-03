@@ -1885,6 +1885,7 @@ class MaliciousContentLLMResult(_messages.Message):
     maxSeverity: Tracks max severity found.
     modelId: The base name of the model that performed the scan.
     scanStatus: Status of the scan.
+    tokenUsage: Telemetry metrics tracking token usage for the AI scan.
   """
 
   class MaxSeverityValueValuesEnum(_messages.Enum):
@@ -1914,6 +1915,7 @@ class MaliciousContentLLMResult(_messages.Message):
   maxSeverity = _messages.EnumField('MaxSeverityValueValuesEnum', 1)
   modelId = _messages.StringField(2)
   scanStatus = _messages.EnumField('ScanStatusValueValuesEnum', 3)
+  tokenUsage = _messages.MessageField('TokenUsage', 4)
 
 
 class MaliciousContentStaticResult(_messages.Message):
@@ -3726,6 +3728,24 @@ class Subject(_messages.Message):
 
   digest = _messages.MessageField('DigestValue', 1)
   name = _messages.StringField(2)
+
+
+class TokenUsage(_messages.Message):
+  r"""Token usage associated with an AI scan.
+
+  Fields:
+    cacheCount: Cache matched tokens for implicit cache.
+    candidateCount: Tokens in the model response.
+    promptCount: Tokens in the user request.
+    thinkingCount: Tokens in the thinking output.
+    toolUsePromptCount: Prompt tokens for using tools.
+  """
+
+  cacheCount = _messages.IntegerField(1)
+  candidateCount = _messages.IntegerField(2)
+  promptCount = _messages.IntegerField(3)
+  thinkingCount = _messages.IntegerField(4)
+  toolUsePromptCount = _messages.IntegerField(5)
 
 
 class UpgradeDistribution(_messages.Message):

@@ -26,6 +26,7 @@ from cloudsdk.google.protobuf import timestamp_pb2  # type: ignore
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import condition
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import container_status
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import k8s_min
+from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import sandbox
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import vendor_settings
 
 
@@ -401,6 +402,8 @@ class Instance(proto.Message):
         containers (MutableSequence[googlecloudsdk.generated_clients.gapic_clients.run_v2.types.Container]):
             Required. Holds the single container that
             defines the unit of execution for this Instance.
+        sandboxes (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.SandboxConfiguration):
+            Optional. Configuration for sandboxes.
         volumes (MutableSequence[googlecloudsdk.generated_clients.gapic_clients.run_v2.types.Volume]):
             A list of Volumes to make available to
             containers.
@@ -600,6 +603,11 @@ class Instance(proto.Message):
         proto.MESSAGE,
         number=20,
         message=k8s_min.Container,
+    )
+    sandboxes: sandbox.SandboxConfiguration = proto.Field(
+        proto.MESSAGE,
+        number=34,
+        message=sandbox.SandboxConfiguration,
     )
     volumes: MutableSequence[k8s_min.Volume] = proto.RepeatedField(
         proto.MESSAGE,

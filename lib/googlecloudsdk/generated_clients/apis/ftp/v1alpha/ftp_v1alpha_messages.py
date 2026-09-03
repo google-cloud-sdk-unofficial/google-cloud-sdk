@@ -791,6 +791,10 @@ class Server(_messages.Message):
     internalConfig: Configuration for internal access.
     labels: Optional. Labels as key value pairs
     name: Identifier. name of resource
+    satisfiesPzi: Output only. Whether the Server satisfies Physical Zone
+      Isolation (PZI) requirements.
+    satisfiesPzs: Output only. Whether the Server satisfies Physical Zone
+      Separation (PZS) requirements.
     serviceAgent: Output only. Service agent used to access the customer
       bucket.
     state: Output only. The state of the server.
@@ -865,9 +869,11 @@ class Server(_messages.Message):
   internalConfig = _messages.MessageField('InternalServerConfig', 6)
   labels = _messages.MessageField('LabelsValue', 7)
   name = _messages.StringField(8)
-  serviceAgent = _messages.StringField(9)
-  state = _messages.EnumField('StateValueValuesEnum', 10)
-  updateTime = _messages.StringField(11)
+  satisfiesPzi = _messages.BooleanField(9)
+  satisfiesPzs = _messages.BooleanField(10)
+  serviceAgent = _messages.StringField(11)
+  state = _messages.EnumField('StateValueValuesEnum', 12)
+  updateTime = _messages.StringField(13)
 
 
 class ServerCredential(_messages.Message):

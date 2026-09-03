@@ -22,8 +22,7 @@ from googlecloudsdk.command_lib.compute.recoverable_snapshots import flags
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class SetIamPolicy(base.Command):
   """Set the IAM policy binding for a Compute Engine recoverable snapshot."""

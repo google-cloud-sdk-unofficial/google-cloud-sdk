@@ -157,7 +157,9 @@ def GetKMSKeyResourceSpec(resource_name='kms-key'):
   )
 
 
-def AddConnectionProfileResourceArg(parser, verb, positional=True):
+def AddConnectionProfileResourceArg(
+    parser, verb, positional=True, with_connectivity=False
+):
   """Add a resource argument for a database migration connection profile.
 
   Args:
@@ -165,49 +167,57 @@ def AddConnectionProfileResourceArg(parser, verb, positional=True):
     verb: str, the verb to describe the resource, such as 'to update'.
     positional: bool, if True, means that the resource is a positional rather
       than a flag.
+    with_connectivity: bool, if True, includes connectivity resource args.
   """
   if positional:
     name = 'connection_profile'
   else:
     name = '--connection-profile'
-  concept_parsers.ConceptParser.ForResource(
-      name,
-      GetConnectionProfileResourceSpec(),
-      'The connection profile {}.'.format(verb),
-      required=True).AddToParser(parser)
 
+  if not with_connectivity:
+    concept_parsers.ConceptParser.ForResource(
+        name,
+        GetConnectionProfileResourceSpec(),
+        'The connection profile {}.'.format(verb),
+        required=True,
+    ).AddToParser(parser)
+    return
 
-def AddMysqlConnectionProfileResourceArg(parser, verb, positional=True):
-  """Add a resource argument for a database migration mysql cp.
-
-  Args:
-    parser: the parser for the command.
-    verb: str, the verb to describe the resource, such as 'to update'.
-    positional: bool, if True, means that the resource is a positional rather
-      than a flag.
-  """
-  if positional:
-    name = 'connection_profile'
-  else:
-    name = '--connection-profile'
+  connectivity_parser = parser.add_group(mutex=True)
+  connectivity_parser.add_argument(
+      '--static-ip-connectivity',
+      action='store_true',
+      help="""use static ip connectivity""",
+  )
 
   resource_specs = [
       presentation_specs.ResourcePresentationSpec(
           name,
           GetConnectionProfileResourceSpec(),
-          f'The connection profile {verb}.',
+          'The connection profile {}.'.format(verb),
           required=True,
+      ),
+      presentation_specs.ResourcePresentationSpec(
+          '--psc-service-attachment',
+          GetServiceAttachmentResourceSpec(),
+          'Resource ID of the service attachment.',
+          flag_name_overrides={'region': ''},
+          group=connectivity_parser,
       ),
       presentation_specs.ResourcePresentationSpec(
           '--private-connection',
           GetPrivateConnectionResourceSpec(),
           'Resource ID of the private connection.',
           flag_name_overrides={'region': ''},
+          group=connectivity_parser,
       ),
   ]
   concept_parsers.ConceptParser(
       resource_specs,
-      command_level_fallthroughs={'--private-connection.region': ['--region']},
+      command_level_fallthroughs={
+          '--psc-service-attachment.region': ['--region'],
+          '--private-connection.region': ['--region'],
+      },
   ).AddToParser(parser)
 
 
@@ -349,6 +359,60 @@ def AddOracleConnectionProfileResourceArg(parser,
       command_level_fallthroughs={
           '--private-connection.region': ['--region']
       }).AddToParser(parser)
+
+
+def AddMysqlConnectionProfileResourceArg(parser, verb, positional=True):
+  """Add a resource argument for a database migration mysql cp.
+
+  Args:
+    parser: the parser for the command.
+    verb: str, the verb to describe the resource, such as 'to update'.
+    positional: bool, if True, means that the resource is a positional rather
+      than a flag.
+  """
+  if positional:
+    name = 'connection_profile'
+  else:
+    name = '--connection-profile'
+
+  connectivity_parser = parser.add_group(mutex=True)
+  connectivity_parser.add_argument(
+      '--static-ip-connectivity',
+      action='store_true',
+      help="""use static ip connectivity""",
+  )
+
+  AddForwardSshConnectivityGroup(connectivity_parser, hidden=True)
+
+  resource_specs = [
+      presentation_specs.ResourcePresentationSpec(
+          name,
+          GetConnectionProfileResourceSpec(),
+          'The connection profile {}.'.format(verb),
+          required=True,
+      ),
+      presentation_specs.ResourcePresentationSpec(
+          '--psc-service-attachment',
+          GetServiceAttachmentResourceSpec(),
+          'Resource ID of the service attachment.',
+          flag_name_overrides={'region': ''},
+          group=connectivity_parser,
+      ),
+      presentation_specs.ResourcePresentationSpec(
+          '--private-connection',
+          GetPrivateConnectionResourceSpec(),
+          'Resource ID of the private connection.',
+          flag_name_overrides={'region': ''},
+          group=connectivity_parser,
+      ),
+  ]
+  concept_parsers.ConceptParser(
+      resource_specs,
+      command_level_fallthroughs={
+          '--psc-service-attachment.region': ['--region'],
+          '--private-connection.region': ['--region'],
+      },
+  ).AddToParser(parser)
 
 
 def AddSqlServerConnectionProfileResourceArg(parser,

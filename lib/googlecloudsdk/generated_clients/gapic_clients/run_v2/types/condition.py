@@ -268,6 +268,9 @@ class Condition(proto.Message):
             DELAYED_START_PENDING (6):
                 A delayed execution is waiting for a start
                 time.
+            DELAYED_EXECUTION_EXCEEDING_DURATION_LIMIT (7):
+                A delayed execution exceeded the maximum
+                runtime duration.
         """
         EXECUTION_REASON_UNDEFINED = 0
         JOB_STATUS_SERVICE_POLLING_ERROR = 1
@@ -276,6 +279,7 @@ class Condition(proto.Message):
         CANCELLING = 4
         DELETED = 5
         DELAYED_START_PENDING = 6
+        DELAYED_EXECUTION_EXCEEDING_DURATION_LIMIT = 7
 
     class InstanceReason(proto.Enum):
         r"""Reasons specific to Instance resource.

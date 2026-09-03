@@ -6,7 +6,7 @@ project:
   - &project
     parameter_name: projectsId
     attribute_name: project
-    help: The project id of the {resource} resource.
+    help: Project ID of the {resource} resource.
     property: core/project
   disable_auto_completers: true
 location:
@@ -18,5 +18,5 @@ location:
   - &location
     parameter_name: locationsId
     attribute_name: location
-    help: The location id of the {resource} resource.
+    help: Location ID of the {resource} resource.
   disable_auto_completers: true

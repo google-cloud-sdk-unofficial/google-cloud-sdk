@@ -341,7 +341,6 @@ def AddControlPlaneNodeStorageSchema(parser):
 def AddControlPlaneNodeSystemPartitionSize(parser):
   parser.add_argument(
       '--control-plane-node-system-partition-size-gib',
-      hidden=True,
       type=int,
       choices=[100, 300],
       help="""

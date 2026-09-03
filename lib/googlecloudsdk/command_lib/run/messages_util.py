@@ -17,6 +17,8 @@
 
 from googlecloudsdk.api_lib.run import container_resource
 from googlecloudsdk.api_lib.run import k8s_object
+from googlecloudsdk.api_lib.run import revision
+from googlecloudsdk.api_lib.run import service as service_lib
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
@@ -370,3 +372,51 @@ def LogInstancePostDeploymentMessages(instance, region, release_track):
           f' instances update {instance.name} --no-invoker-iam-check'
           f' --region {region}'
       )
+
+
+def GetAutoscalingAnnotationsWarning(service):
+  """Returns a warning message if a service has autoscaling annotations set on service annotations.
+
+  Args:
+    service: googlecloudsdk.api_lib.run.service.Service | None, Service for
+      which to check service-level autoscaling annotations.
+
+  Returns:
+    str | None, Warning message if autoscaling annotations are set, else None.
+  """
+  if (
+      not service
+      or not hasattr(service, 'annotations')
+      or not service.annotations
+  ):
+    return None
+  has_max_scale = revision.MAX_SCALE_ANNOTATION in service.annotations
+  has_min_scale = revision.MIN_SCALE_ANNOTATION in service.annotations
+
+  keys = []
+  service_keys = []
+  if has_max_scale:
+    keys.append(revision.MAX_SCALE_ANNOTATION)
+    service_keys.append(service_lib.SERVICE_MAX_SCALE_ANNOTATION)
+  if has_min_scale:
+    keys.append(revision.MIN_SCALE_ANNOTATION)
+    service_keys.append(service_lib.SERVICE_MIN_SCALE_ANNOTATION)
+
+  if not keys:
+    return None
+
+  keys_str = ' and '.join(keys)
+  service_keys_str = ' and '.join(service_keys)
+  key_phrase = (
+      'incorrect annotation keys. Update them to'
+      if len(keys) > 1
+      else 'an incorrect annotation key. Update it to'
+  )
+  doc_topic = 'max-instances#set' if has_max_scale else 'min-instances#setting'
+  url = f'https://docs.cloud.google.com/run/docs/configuring/{doc_topic}-service-level'
+
+  return (
+      f'This service has {keys_str} in its annotations. If you intend to'
+      f' configure service-level auto-scaling, you are using {key_phrase}'
+      f' {service_keys_str}. See {url} for details.'
+  )

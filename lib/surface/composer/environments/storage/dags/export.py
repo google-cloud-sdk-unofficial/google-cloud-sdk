@@ -23,6 +23,7 @@ from googlecloudsdk.command_lib.composer import resource_args
 from googlecloudsdk.command_lib.composer import storage_util
 
 
+@base.UniverseCompatible
 class Export(base.Command):
   """Export DAGs from an environment into local storage or Cloud Storage.
 

@@ -197,3 +197,15 @@ def ValidateBootDisk(machine_type: str, boot_disk: dict[str, Any]) -> None:
     raise ClusterDirectorError(
         f"{disk_type} disk type cannot be used by {machine_type} machine type."
     )
+
+
+def ValidateSlurmNodeConfig(node_config: dict[str, Any]) -> None:
+  """Validates Slurm node config."""
+  if not node_config:
+    return
+  if node_config.get("cpuSpecList") and node_config.get("coreSpecCount"):
+    raise ClusterDirectorError(
+        "Cannot specify both 'cpuSpecList' and 'coreSpecCount' in Slurm node"
+        " config."
+    )
+

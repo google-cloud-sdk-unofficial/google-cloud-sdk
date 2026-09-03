@@ -261,8 +261,39 @@ def AppendRepoDataToRequest(repo_ref, repo_args, request):
 
 
 def AppendUpstreamPoliciesToRequest(repo_ref, repo_args, request):
-  """Adds upstream policies to CreateRepositoryRequest."""
+  """Adds upstream policies and merge strategy to a repository request.
+
+  Parses upstream policies from the --upstream-policy-file flag and appends
+  them to the request's VirtualRepositoryConfig. Also validates that
+  --dependency-confusion-protection is only used with virtual repositories.
+
+  Args:
+    repo_ref: The repository resource reference.
+    repo_args: The parsed command-line arguments.
+    request: The CreateRepositoryRequest or PatchRepositoryRequest to modify.
+
+  Returns:
+    The modified request with upstream policies applied.
+
+  Raises:
+    InvalidInputValueError: If --dependency-confusion-protection is used with
+      a non-virtual repository, or if the upstream policy file contains
+      invalid entries.
+  """
   messages = _GetMessagesForResource(repo_ref)
+  # Validate --dependency-confusion-protection is only used with
+  # virtual repositories.
+  if (
+      hasattr(repo_args, "dependency_confusion_protection")
+      and repo_args.dependency_confusion_protection
+  ):
+    repo_mode = request.repository.mode
+    mode_enum = messages.Repository.ModeValueValuesEnum
+    if repo_mode != mode_enum.VIRTUAL_REPOSITORY:
+      raise ar_exceptions.InvalidInputValueError(
+          "--dependency-confusion-protection can only be used with virtual "
+          "repositories (--mode=VIRTUAL-REPOSITORY)."
+      )
   if repo_args.upstream_policy_file:
     if isinstance(
         request,
@@ -275,9 +306,10 @@ def AppendUpstreamPoliciesToRequest(repo_ref, repo_args, request):
         repo_args.upstream_policy_file, binary=False
     )
     policies = json.loads(content)
-    request.repository.virtualRepositoryConfig = (
-        messages.VirtualRepositoryConfig()
-    )
+    if not request.repository.virtualRepositoryConfig:
+      request.repository.virtualRepositoryConfig = (
+          messages.VirtualRepositoryConfig()
+      )
     request.repository.virtualRepositoryConfig.upstreamPolicies = []
     for policy in policies:
       if all(key in policy for key in ("id", "priority", "repository")):

@@ -248,6 +248,9 @@ class Update(base.Command):
     with serverless_operations.Connect(conn_context) as client:
       service = client.GetService(service_ref)
       messages_util.MaybeLogDefaultGpuTypeMessage(args, service)
+      warning_msg = messages_util.GetAutoscalingAnnotationsWarning(service)
+      if warning_msg:
+        pretty_print.Info(f'{{bold}}[Warning]{{reset}} {warning_msg}\n')
       changes = self._GetBaseChanges(args, service)
       resource_change_validators.ValidateClearVpcConnector(service, args)
       has_latest = (
@@ -392,6 +395,9 @@ class BetaUpdate(Update):
 
     # Flags specific to managed CR
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
+    flags.IdentityCertificateFlag().AddToParser(parser)
+    flags.IdentityTypeFlag(release_track=cls.ReleaseTrack()).AddToParser(parser)
+    flags.FunctionalTypeFlag(resource='service').AddToParser(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(
         parser, container_args, cls.ReleaseTrack()
@@ -418,8 +424,11 @@ class AlphaUpdate(BetaUpdate):
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.IDENTITY_FLAG.AddToParser(parser)
     flags.IdentityCertificateFlag().AddToParser(parser)
-    flags.IdentityTypeFlag().AddToParser(parser)
-    flags.FunctionalTypeFlag().AddToParser(parser)
+    # TODO(b/553660195): Clean up track parameterization for multi-region.
+    flags.IdentityTypeFlag(
+        release_track=cls.ReleaseTrack() or base.ReleaseTrack.ALPHA
+    ).AddToParser(parser)
+    flags.FunctionalTypeFlag(resource='service').AddToParser(parser)
     flags.MESH_DATAPLANE_FLAG.AddToParser(parser)
     flags.AMBIENT_NETWORKING_FLAG.AddToParser(parser)
     flags.AddOverflowScalingFlag(parser)

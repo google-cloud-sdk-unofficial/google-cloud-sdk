@@ -25,7 +25,7 @@
     examples: |-
       To find free IP ranges in a custom range `my-custom-range` run:
 
-      $ {command} my-custom-range --location=global --cidr_prefix_length=24 --range-count=1
+      $ {command} my-custom-range --location=global --cidr-prefix-length=24 --range-count=1
   arguments:
     params:
     - help_text: |-

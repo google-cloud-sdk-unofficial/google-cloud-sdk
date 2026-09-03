@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: List Google Distributed Cloud API keys.
@@ -12,6 +12,8 @@
     collection: edgecontainer.projects.locations.apiKeys
     ALPHA:
       api_version: v1alpha
+    GA:
+      api_version: v1
 
   response:
     id_field: name

@@ -1,0 +1,50 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networksecurity v1alpha1 RateLimitPolicyRateLimitBucketCountLimit export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+required:
+- count
+- interval
+- intervalUnit
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  count:
+    description: |-
+      Specifies the maximum number of costs allowed in the specified interval.
+      Must be non-negative.
+    type: integer
+  interval:
+    description: |-
+      Specifies the interval in units for which the count limit is enforced.
+      Must be positive.
+    type: integer
+  intervalUnit:
+    description: Specifies the unit of the interval. Defaults to MINUTES.
+    type: string
+    enum:
+    - DAYS
+    - HOURS
+    - INTERVAL_UNIT_UNSPECIFIED
+    - MINUTES
+    - SECONDS

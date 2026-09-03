@@ -647,7 +647,7 @@ def configure_formatter(
         formatter.AddColumns(('condition',))
 
   elif reference_type == bq_id_utils.ApiClientHelper.ReservationGroupReference:
-    formatter.AddColumns(('name',))
+    formatter.AddColumns(('name', 'parentGroup', 'creationTime', 'updateTime'))
   elif reference_type == bq_id_utils.ApiClientHelper.ConnectionReference:
     formatter.AddColumns((
         'name',
@@ -1333,6 +1333,24 @@ def format_reservation_group_info(
           reservationGroupId=reservation_group_id,
       )
       result[key] = reference.__str__()
+    elif key == 'parentGroup':
+      # 'name' and 'parentGroup' are both reservation group resource names that
+      # need to be formatted in the same way.
+      # TODO(b/481752042): clean up duplicate code when parentGroup is launched.
+      try:
+        project_id, location, group_id = (
+            bq_client_utils.ParseReservationGroupPath(value)
+        )
+        reference = (
+            bq_id_utils.ApiClientHelper.ReservationGroupReference.Create(
+                projectId=project_id,
+                location=location,
+                reservationGroupId=group_id,
+            )
+        )
+        result[key] = reference.__str__()
+      except bq_error.BigqueryError:
+        result[key] = value
     else:
       result[key] = value
   return result

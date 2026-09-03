@@ -36,7 +36,6 @@ DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
-@base.Hidden
 class Hibernate(base.Command):
   """Hibernate a Cloud Composer environment."""
 

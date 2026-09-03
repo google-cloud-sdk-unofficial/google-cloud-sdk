@@ -30,6 +30,7 @@ class HelpOutOfDateError(exceptions.Error):
   """Help documents out of date for --test."""
 
 
+@base.UniverseCompatible
 class GenerateHelpDocs(base.Command):
   """Generate and/or update help document directories.
 
@@ -126,7 +127,7 @@ class GenerateHelpDocs(base.Command):
       if not args.update:
         generator(
             self._cli_power_users_only, directory, restrict=restrict_dir
-        ).Walk(hidden, restrict_dir)
+        ).Walk(hidden, restrict=restrict_dir)
       elif help_util.HelpUpdater(
           self._cli_power_users_only, directory, generator,
           test=args.test, hidden=hidden).Update(restrict_dir):

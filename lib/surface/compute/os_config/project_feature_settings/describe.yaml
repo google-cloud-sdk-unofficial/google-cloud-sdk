@@ -18,7 +18,6 @@
 
   request:
     api_version: v1
-    disable_resource_check: true
     collection: osconfig.projects.locations.global
     method: getProjectFeatureSettings
     modify_request_hooks:

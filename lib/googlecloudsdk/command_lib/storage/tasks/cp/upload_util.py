@@ -142,8 +142,7 @@ def get_digesters(source_resource, destination_resource):
       }
     return {}
 
-  if (source_resource.md5_hash or
-      cloud_api.Capability.CLIENT_SIDE_HASH_VALIDATION in capabilities or
+  if (cloud_api.Capability.CLIENT_SIDE_HASH_VALIDATION in capabilities or
       check_hashes == properties.CheckHashes.NEVER):
     return {}
   return {hash_util.HashAlgorithm.MD5: hashing.get_md5()}

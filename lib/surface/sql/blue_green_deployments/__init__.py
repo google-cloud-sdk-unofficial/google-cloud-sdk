@@ -17,11 +17,14 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class BlueGreenDeployments(base.Group):
-  """Blue-green deployment is a strategy that minimizes database downtime when you make changes, like major version upgrades, by copying a production environment to a separate, synchronized staging environment.
+  """Provide commands for managing Cloud SQL blue-green deployments.
+
+  Blue-green deployment is a strategy that minimizes database downtime when you
+  make changes, like major version upgrades, by copying a production environment
+  to a separate, synchronized staging environment.
 
   With blue-green deployments, you can make changes to a staging
   environment-the green environment-without affecting the production
@@ -33,3 +36,4 @@ class BlueGreenDeployments(base.Group):
   environment, testing, switching over, and cleaning up old resources in Cloud
   SQL.
   """
+  category = base.DATABASES_CATEGORY

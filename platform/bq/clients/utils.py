@@ -488,6 +488,41 @@ def ParseConnectionPath(
   return (project_id, location, connection_id)
 
 
+def ParseCondition(condition: str) -> Dict[str, str]:
+  r"""Create condition json object from string.
+
+  Args:
+    condition: A json string that contains the CEL expression and optionally the
+      title, and description.
+
+  Returns:
+    The Expr (as a json object) of format:
+    {
+        "expression": "job.label['env']==prod",
+        "description": "your description",
+        "title": "your title"
+    }
+
+  Raises:
+    bq_error.BigqueryError: If parsing the condition from the string failed.
+  """
+
+  condition_dict = {}
+  try:
+    condition_dict = json.loads(condition)
+  except json.JSONDecodeError as exc:
+    raise bq_error.BigqueryError(
+        f'Json string is malformed for "condition": {condition}'
+    ) from exc
+  except Exception as exc:
+    raise bq_error.BigqueryError(
+        f'Failed to parse "condition": {condition}'
+    ) from exc
+  if not isinstance(condition_dict, dict) or 'expression' not in condition_dict:
+    raise bq_error.BigqueryError(
+        f'"expression" is a required field for "condition" flag. {condition}'
+    )
+  return condition_dict
 
 
 def ReadTableConstrants(table_constraints: str):

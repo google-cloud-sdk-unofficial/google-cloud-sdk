@@ -45,7 +45,7 @@ EXP_BACKOFF_MULTIPLIER = 1.75
 POLL_JITTER_SECONDS = 0.5
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class Run(base.Command):
   """Run an Airflow sub-command remotely in a Cloud Composer environment.
 

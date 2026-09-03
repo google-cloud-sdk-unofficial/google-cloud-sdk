@@ -3991,10 +3991,12 @@ class DefaultComputeClassConfig(_messages.Message):
   r"""DefaultComputeClassConfig defines default compute class configuration.
 
   Fields:
+    computeClass: Optional. Name of the default compute class.
     enabled: Enables default compute class.
   """
 
-  enabled = _messages.BooleanField(1)
+  computeClass = _messages.StringField(1)
+  enabled = _messages.BooleanField(2)
 
 
 class DefaultSnatStatus(_messages.Message):
@@ -6111,10 +6113,14 @@ class MaintenanceExclusionOptions(_messages.Message):
       NO_MINOR_OR_NODE_UPGRADES: NO_MINOR_OR_NODE_UPGRADES excludes all minor
         upgrades for the cluster, and also exclude all node pool upgrades.
         Only control plane patches are allowed.
+      NO_TARGET_NODE_VERSION_UPDATE: NO_TARGET_NODE_VERSION_UPDATE excludes
+        target node version updates but allows clusters to be upgraded to
+        target node version.
     """
     NO_UPGRADES = 0
     NO_MINOR_UPGRADES = 1
     NO_MINOR_OR_NODE_UPGRADES = 2
+    NO_TARGET_NODE_VERSION_UPDATE = 3
 
   endTimeBehavior = _messages.EnumField('EndTimeBehaviorValueValuesEnum', 1)
   scope = _messages.EnumField('ScopeValueValuesEnum', 2)

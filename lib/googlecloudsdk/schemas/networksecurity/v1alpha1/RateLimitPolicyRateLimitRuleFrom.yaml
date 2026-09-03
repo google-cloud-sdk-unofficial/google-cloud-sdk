@@ -1,0 +1,41 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networksecurity v1alpha1 RateLimitPolicyRateLimitRuleFrom export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  notSource:
+    description: |-
+      Describes the negated properties of request source. Matches requests from
+      source that does not match the criteria specified in this field. At least
+      one of source or not_source must be specified.
+    $ref: RateLimitPolicyRateLimitRuleFromSource.yaml
+  source:
+    description: |-
+      Describes the properties of a request's source. At least one of source or
+      not_source must be specified. A match occurs when ANY fields in either
+      source or not_source matches the request. Within a single source, the
+      match follows OR semantics across fields and AND semantics within a single
+      field.
+    $ref: RateLimitPolicyRateLimitRuleFromSource.yaml

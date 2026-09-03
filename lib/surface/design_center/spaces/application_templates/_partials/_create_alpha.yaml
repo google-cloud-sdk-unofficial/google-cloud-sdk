@@ -45,6 +45,10 @@
       Or create a YAML or JSON file with the parameters and run the following file example:
 
         $ {command} my-app-template --space=my-space --project=my-project --location=us-central1 --application-parameters=my-parameters.yaml
+
+      To create the application template `my-app-template` with inputs mapped as root module variables, run:
+
+        $ {command} my-app-template --space=my-space --project=my-project --location=us-central1 --inputs-as-root-module-variables
   arguments:
     params:
     - help_text: |-
@@ -139,6 +143,15 @@
           help_text: |-
             The SaaS names. Format for each SaaS:
             projects/{project}/locations/{location}/saas/{saas}
+    - arg_name: inputs-as-root-module-variables
+      api_field: applicationTemplate.inputsAsRootModuleVariables
+      action: store_true
+      required: false
+      type: bool
+      help_text: |-
+        If true, exposes all inputs as root module variables.
+        This is only supported for STANDARD composition type templates.
+      default: null
   request:
     api_version: v1alpha
     collection:

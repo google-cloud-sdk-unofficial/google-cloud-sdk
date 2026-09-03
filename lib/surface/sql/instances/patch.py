@@ -158,6 +158,8 @@ def _GetConfirmedClearedFields(args, patch_instance, original_instance):
     cleared_fields.append('settings.denyMaintenancePeriods')
   if args.clear_password_policy:
     cleared_fields.append('settings.passwordValidationPolicy')
+  if getattr(args, 'clear_sql_server_password_policy', False):
+    cleared_fields.append('settings.sqlServerPasswordValidationPolicy')
   if args.IsKnownAndSpecified('clear_allowed_psc_projects'):
     cleared_fields.append(
         'settings.ipConfiguration.pscConfig.allowedConsumerProjects'
@@ -299,6 +301,12 @@ def AddBaseArgs(parser):
   flags.AddPasswordPolicyPasswordChangeInterval(parser)
   flags.AddPasswordPolicyEnablePasswordPolicy(parser)
   flags.AddPasswordPolicyClearPasswordPolicy(parser)
+  flags.AddSqlServerEnablePasswordPolicy(parser)
+  flags.AddSqlServerPasswordPolicyMinLength(parser)
+  flags.AddSqlServerPasswordPolicyHistoryLength(parser)
+  flags.AddSqlServerPasswordPolicyMinimumAge(parser)
+  flags.AddSqlServerPasswordPolicyMaximumAge(parser)
+  flags.AddSqlServerClearPasswordPolicy(parser)
   parser.add_argument(
       '--pricing-plan',
       '-p',
@@ -401,6 +409,7 @@ def AddAlphaArgs(parser):
   flags.AddMsdtcEnabled(parser, hidden=True)
   flags.AddMsdtcRpcAuthMode(parser, hidden=True)
   flags.AddMsdtcHostMappings(parser, hidden=True)
+  flags.AddSemiManagedSqlServer(parser, hidden=True)
   flags.AddEnforceCmekLogEncryptionAtSource(parser, hidden=True)
 
 

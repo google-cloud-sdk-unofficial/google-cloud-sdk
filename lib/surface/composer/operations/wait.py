@@ -31,6 +31,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 class Wait(base.SilentCommand):
   """Wait for asynchronous operation to complete."""
 

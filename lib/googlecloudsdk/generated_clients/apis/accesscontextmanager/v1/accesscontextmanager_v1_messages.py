@@ -665,6 +665,18 @@ class AccesscontextmanagerAccessPoliciesTestIamPermissionsRequest(_messages.Mess
   testIamPermissionsRequest = _messages.MessageField('TestIamPermissionsRequest', 2)
 
 
+class AccesscontextmanagerFoldersLookupConfiguredServicePerimeterRequest(_messages.Message):
+  r"""A AccesscontextmanagerFoldersLookupConfiguredServicePerimeterRequest
+  object.
+
+  Fields:
+    resource: Required. The Resource to resolve (e.g. "projects/123",
+      "folders/456").
+  """
+
+  resource = _messages.StringField(1, required=True)
+
+
 class AccesscontextmanagerOperationsCancelRequest(_messages.Message):
   r"""A AccesscontextmanagerOperationsCancelRequest object.
 
@@ -832,6 +844,18 @@ class AccesscontextmanagerPermissionsListRequest(_messages.Message):
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(2)
+
+
+class AccesscontextmanagerProjectsLookupConfiguredServicePerimeterRequest(_messages.Message):
+  r"""A AccesscontextmanagerProjectsLookupConfiguredServicePerimeterRequest
+  object.
+
+  Fields:
+    resource: Required. The Resource to resolve (e.g. "projects/123",
+      "folders/456").
+  """
+
+  resource = _messages.StringField(1, required=True)
 
 
 class AccesscontextmanagerServicesGetRequest(_messages.Message):
@@ -1214,8 +1238,8 @@ class ClientScope(_messages.Message):
   Fields:
     restrictedClientApplication: Optional. The application that is subject to
       this binding's scope.
-    restrictedProject: Optional. The GCP project that is subject to this
-      binding's scope.
+    restrictedProject: Optional. The Google Cloud project that is subject to
+      this binding's scope.
   """
 
   restrictedClientApplication = _messages.MessageField('Application', 1)
@@ -1625,13 +1649,8 @@ class GcpUserAccessBinding(_messages.Message):
       "organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N"
     principal: Optional. Immutable. The principal that is subject to the
       access policies in this policy binding.
-    restrictedClientApplications: Optional. Deprecated: Use
-      `scoped_access_settings` instead. A list of applications that are
-      subject to this binding's restrictions. If the list is empty, the
-      binding restrictions will universally apply to all applications.
     scopedAccessSettings: Optional. A list of scoped access settings that set
-      this binding's restrictions on a subset of applications. This field
-      cannot be set if restricted_client_applications is set.
+      this binding's restrictions on a subset of applications.
     sessionSettings: Optional. The Google Cloud session length (GCSL) policy
       for the group key.
   """
@@ -1641,9 +1660,8 @@ class GcpUserAccessBinding(_messages.Message):
   groupKey = _messages.StringField(3)
   name = _messages.StringField(4)
   principal = _messages.MessageField('Principal', 5)
-  restrictedClientApplications = _messages.MessageField('Application', 6, repeated=True)
-  scopedAccessSettings = _messages.MessageField('ScopedAccessSettings', 7, repeated=True)
-  sessionSettings = _messages.MessageField('SessionSettings', 8)
+  scopedAccessSettings = _messages.MessageField('ScopedAccessSettings', 6, repeated=True)
+  sessionSettings = _messages.MessageField('SessionSettings', 7)
 
 
 class GcpUserAccessBindingOperationMetadata(_messages.Message):
@@ -1922,6 +1940,31 @@ class ListSupportedServicesResponse(_messages.Message):
   supportedServices = _messages.MessageField('SupportedService', 2, repeated=True)
 
 
+class LookupConfiguredServicePerimeterResponse(_messages.Message):
+  r"""A configured service perimeter returned by Access Context Manager.
+
+  Fields:
+    restrictedResource: The resource (e.g. "projects/123", "folders/456") that
+      directly owns/is restricted by the enforced perimeter.
+    restrictedResourceDryRun: The resource (e.g. "projects/123",
+      "folders/456") that directly owns/is restricted by the dry-run
+      perimeter.
+    servicePerimeter: Fully qualified name of the configured enforced
+      perimeter. Format:
+      `accessPolicies/{policy_id}/servicePerimeters/{perimeter_name}` This
+      field is empty if no enforced perimeter applies.
+    servicePerimeterDryRun: Fully qualified name of the configured dry-run
+      perimeter. Format:
+      `accessPolicies/{policy_id}/servicePerimeters/{perimeter_name}` This
+      field is empty if no dry-run perimeter configuration applies.
+  """
+
+  restrictedResource = _messages.StringField(1)
+  restrictedResourceDryRun = _messages.StringField(2)
+  servicePerimeter = _messages.StringField(3)
+  servicePerimeterDryRun = _messages.StringField(4)
+
+
 class MethodSelector(_messages.Message):
   r"""An allowed method or permission of a service specified in ApiOperation.
 
@@ -2182,13 +2225,19 @@ class Principal(_messages.Message):
   set to create an access binding.
 
   Fields:
-    federatedPrincipal: Immutable. IAM federated principal name to assign
-      policies to workforce/workload federated identities. Can be principal
-      set or single principal, here are some examples: Single principal: princ
-      ipal://iam.googleapis.com/projects/{project_number}/locations/global/wor
-      kloadIdentityPools/{pool_id}/subject/{subject_attribute_value}
-      PrincipalSet: principalSet://iam.googleapis.com/projects/{project_number
-      }/locations/global/workloadIdentityPools/{pool_id}/*
+    federatedPrincipal: Immutable. The IAM principal identifier of the
+      federated workforce or workload to assign the policy to. Examples
+      include the following: * Single principal: `principal://iam.googleapis.c
+      om/projects/{project_number}/locations/global/workloadIdentityPools/{poo
+      l_id}/subject/{subject_attribute_value}` * All workloads in a workload
+      identity pool: `principalSet://iam.googleapis.com/projects/{project_numb
+      er}/locations/global/workloadIdentityPools/{pool_id}/*` * All Workforce
+      Pools in a Google Cloud organization: `principalSet://cloudresourcemanag
+      er.googleapis.com/organizations/{organization_id}/type/WorkforcePool`
+      Bindings created for all Workforce Pools in a Google Cloud organization
+      support only `scoped_access_settings` with the `restricted_project`
+      client scope and active `session_settings`. No other configurations are
+      allowed.
     serviceAccount: Immutable. Service account email used to assign policies
       to a specific service account. If a service account is subject to
       multiple policies (e.g., if there is a policy for all service accounts
@@ -2220,18 +2269,16 @@ class PrivateServiceConnectEndpoint(_messages.Message):
 
 
 class Project(_messages.Message):
-  r"""A GCP project which contains applications and resources that users can
-  access.
+  r"""A Google Cloud project which contains applications and resources that
+  users can access.
 
   Fields:
-    name: The GCP project resource name. Format: "projects/{project_number}"
-      (Only the numeric project name variation is supported). Example:
-      "projects/1234567890"
-    projectNumber: Deprecated: Use `name` instead.
+    name: The Google Cloud project resource name. Format:
+      `projects/{project_number}`. Only the project number is supported.
+      Example: `projects/1234567890`
   """
 
   name = _messages.StringField(1)
-  projectNumber = _messages.StringField(2)
 
 
 class ReplaceAccessLevelsRequest(_messages.Message):
@@ -2470,11 +2517,11 @@ class SessionSettings(_messages.Message):
       Cloud apps.
     sessionLength: Optional. The session length. Setting this field to zero
       allows for sessions that are active indefinitely. Also, setting
-      `session_length_enabled` to false disregards session limits, which means
-      that sessions never expire. If use_oidc_max_age is true, for OIDC apps,
-      the session length will be the minimum of this field and the OIDC
-      max_age param. If this field is set to zero, `session_length_enabled`
-      must be set to false or left unset.
+      `session_length_enabled` to `false` disregards session limits, which
+      means that sessions never expire. If `use_oidc_max_age` is `true`, for
+      OIDC apps, the session length will be the minimum of this field and the
+      OIDC `max_age` param. If this field is set to zero,
+      `session_length_enabled` must be set to `false` or left unset.
     sessionLengthEnabled: Optional. This field enables or disables Google
       Cloud session length. When false, all fields set above will be
       disregarded and the session length is basically infinite. If

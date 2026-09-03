@@ -186,7 +186,10 @@ class Update(base.Command):
           return job_, execution_
 
       try:
-        if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+        if self.ReleaseTrack() in (
+            base.ReleaseTrack.ALPHA,
+            base.ReleaseTrack.BETA,
+        ):
           new_job = operations.ValidateJobBeforeUpdate(job_ref, changes)
           job, execution = _UpdateJob(changes, new_job)
         else:
@@ -246,6 +249,9 @@ class BetaUpdate(Update):
   def Args(cls, parser):
     cls.CommonArgs(parser)
     flags.AddDelayExecutionFlag(parser)
+    flags.IdentityCertificateFlag().AddToParser(parser)
+    flags.IdentityTypeFlag(release_track=cls.ReleaseTrack()).AddToParser(parser)
+    flags.FunctionalTypeFlag(resource='job').AddToParser(parser)
     container_args = ContainerArgGroup(release_track=base.ReleaseTrack.BETA)
     container_parser.AddContainerFlags(
         parser, container_args, cls.ReleaseTrack()
@@ -261,9 +267,9 @@ class AlphaUpdate(BetaUpdate):
   def Args(cls, parser):
     cls.CommonArgs(parser)
     flags.AddGracePeriodFlag(parser, object_to_shutdown='tasks')
-    flags.IdentityCertificateFlag(hidden=True).AddToParser(parser)
-    flags.IdentityTypeFlag(hidden=True).AddToParser(parser)
-    flags.FunctionalTypeFlag(hidden=True).AddToParser(parser)
+    flags.IdentityCertificateFlag().AddToParser(parser)
+    flags.IdentityTypeFlag(release_track=cls.ReleaseTrack()).AddToParser(parser)
+    flags.FunctionalTypeFlag(resource='job').AddToParser(parser)
     container_args = ContainerArgGroup(release_track=base.ReleaseTrack.ALPHA)
     container_parser.AddContainerFlags(
         parser, container_args, cls.ReleaseTrack()

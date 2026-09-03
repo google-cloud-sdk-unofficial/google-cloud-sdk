@@ -35,6 +35,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 class SaveSnapshot(base.Command):
   """Save a snapshot of the environment."""
 

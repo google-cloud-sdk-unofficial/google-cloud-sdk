@@ -903,6 +903,9 @@ class Environment(_messages.Message):
   r"""An environment for running orchestration tasks.
 
   Enums:
+    ModeValueValuesEnum: Optional. Selects the environment mode that
+      determines what settings are customizable and what features are
+      available in the environment.
     StateValueValuesEnum: The current state of the environment.
 
   Messages:
@@ -922,6 +925,8 @@ class Environment(_messages.Message):
       to regexp: \p{Ll}\p{Lo}{0,62} * Values must conform to regexp:
       [\p{Ll}\p{Lo}\p{N}_-]{0,63} * Both keys and values are additionally
       constrained to be <= 128 bytes in size.
+    mode: Optional. Selects the environment mode that determines what settings
+      are customizable and what features are available in the environment.
     name: Identifier. The resource name of the environment, in the form:
       "projects/{projectId}/locations/{locationId}/environments/{environmentId
       }" EnvironmentId must start with a lowercase letter followed by up to 63
@@ -937,6 +942,22 @@ class Environment(_messages.Message):
       created.
   """
 
+  class ModeValueValuesEnum(_messages.Enum):
+    r"""Optional. Selects the environment mode that determines what settings
+    are customizable and what features are available in the environment.
+
+    Values:
+      MODE_UNSPECIFIED: Represents the default mode, which allows full
+        customization of the environment. It should be used for all production
+        and customized test environments.
+      DEVELOPMENT: Represents the development mode, which has constraints on
+        the environment configuration, but offers an additional feature
+        (environment hibernation). It should be used only for test
+        environments.
+    """
+    MODE_UNSPECIFIED = 0
+    DEVELOPMENT = 1
+
   class StateValueValuesEnum(_messages.Enum):
     r"""The current state of the environment.
 
@@ -947,6 +968,8 @@ class Environment(_messages.Message):
         for use.
       UPDATING: The environment is being updated. It remains usable but cannot
         receive additional update requests or be deleted at this time.
+      HIBERNATED: The environment is currently hibernated. It does not run any
+        DAGs.
       DELETING: The environment is undergoing deletion. It cannot be used.
       ERROR: The environment has encountered an error and cannot be used.
     """
@@ -954,8 +977,9 @@ class Environment(_messages.Message):
     CREATING = 1
     RUNNING = 2
     UPDATING = 3
-    DELETING = 4
-    ERROR = 5
+    HIBERNATED = 4
+    DELETING = 5
+    ERROR = 6
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
@@ -989,13 +1013,14 @@ class Environment(_messages.Message):
   config = _messages.MessageField('EnvironmentConfig', 1)
   createTime = _messages.StringField(2)
   labels = _messages.MessageField('LabelsValue', 3)
-  name = _messages.StringField(4)
-  satisfiesPzi = _messages.BooleanField(5)
-  satisfiesPzs = _messages.BooleanField(6)
-  state = _messages.EnumField('StateValueValuesEnum', 7)
-  storageConfig = _messages.MessageField('StorageConfig', 8)
-  updateTime = _messages.StringField(9)
-  uuid = _messages.StringField(10)
+  mode = _messages.EnumField('ModeValueValuesEnum', 4)
+  name = _messages.StringField(5)
+  satisfiesPzi = _messages.BooleanField(6)
+  satisfiesPzs = _messages.BooleanField(7)
+  state = _messages.EnumField('StateValueValuesEnum', 8)
+  storageConfig = _messages.MessageField('StorageConfig', 9)
+  updateTime = _messages.StringField(10)
+  uuid = _messages.StringField(11)
 
 
 class EnvironmentConfig(_messages.Message):
@@ -1719,6 +1744,8 @@ class OperationMetadata(_messages.Message):
       DATABASE_FAILOVER: Triggers failover of environment's Cloud SQL instance
         (only for highly resilient environments).
       MIGRATE: Migrates resource to a new major version.
+      HIBERNATE: Hibernates a resource.
+      RESUME: Resumes a resource.
     """
     TYPE_UNSPECIFIED = 0
     CREATE = 1
@@ -1729,6 +1756,8 @@ class OperationMetadata(_messages.Message):
     LOAD_SNAPSHOT = 6
     DATABASE_FAILOVER = 7
     MIGRATE = 8
+    HIBERNATE = 9
+    RESUME = 10
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. The current operation state.

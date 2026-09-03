@@ -42,6 +42,7 @@ class AuditScopesClient(object):
       compliance_standard: str,
       report_format: str,
       is_parent_folder: bool,
+      is_parent_organization: bool,
   ):
     """Generate an Audit Scope.
 
@@ -51,25 +52,36 @@ class AuditScopesClient(object):
         generated.
       report_format: The format in which the audit scope should be generated.
       is_parent_folder: Whether the parent is folder and not project.
+      is_parent_organization: Whether the parent is organization and not
+        project.
 
     Returns:
       Described audit scope resource.
     """
-    service = (
-        self.client.folders_locations_auditScopeReports
-        if is_parent_folder
-        else self.client.projects_locations_auditScopeReports
-    )
+    if is_parent_folder and is_parent_organization:
+      raise ValueError(
+          'is_parent_folder and is_parent_organization are mutually exclusive.'
+      )
 
     inner_req = self.messages.GenerateAuditScopeReportRequest()
     inner_req.complianceStandard = compliance_standard
     inner_req.reportFormat = self.report_format_map[report_format]
 
-    req = (
-        self.messages.AuditmanagerFoldersLocationsAuditScopeReportsGenerateRequest()
-        if is_parent_folder
-        else self.messages.AuditmanagerProjectsLocationsAuditScopeReportsGenerateRequest()
-    )
+    if is_parent_folder:
+      service = self.client.folders_locations_auditScopeReports
+      req = (
+          self.messages.AuditmanagerFoldersLocationsAuditScopeReportsGenerateRequest()
+      )
+    elif is_parent_organization:
+      service = self.client.organizations_locations_auditScopeReports
+      req = (
+          self.messages.AuditmanagerOrganizationsLocationsAuditScopeReportsGenerateRequest()
+      )
+    else:
+      service = self.client.projects_locations_auditScopeReports
+      req = (
+          self.messages.AuditmanagerProjectsLocationsAuditScopeReportsGenerateRequest()
+      )
 
     req.scope = scope
     req.generateAuditScopeReportRequest = inner_req

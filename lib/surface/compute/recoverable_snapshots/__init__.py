@@ -27,7 +27,7 @@ DETAILED_HELP = {  # Dict[str, str]
 
 @base.Hidden
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class RecoverableSnapshots(base.Group):
   """Recover, list, describe and delete Compute Engine recoverable snapshots."""
 

@@ -756,13 +756,12 @@ class AuthzPolicyAuthzRuleToRequestOperationMCPMethod(_messages.Message):
   r"""Describes a set of MCP methods to match against.
 
   Fields:
-    name: Required. The MCP method to match against. Allowed values are as
-      follows: 1. `tools`, `prompts`, `resources` - these will match against
-      all sub methods under the respective methods. 2. `prompts/list`,
-      `tools/list`, `resources/list`, `resources/templates/list` 3.
-      `prompts/get`, `tools/call`, `resources/subscribe`,
-      `resources/unsubscribe`, `resources/read` Params cannot be specified for
-      categories 1 and 2.
+    name: Required. The MCP method to match against. Allowed values include:
+      1. `tools`, `prompts`, `resources` - these will match against all sub
+      methods under the respective methods. 2. `prompts/list`, `tools/list`,
+      `resources/list`, `resources/templates/list` 3. `prompts/get`,
+      `tools/call`, `resources/subscribe`, `resources/unsubscribe`,
+      `resources/read` Params cannot be specified for categories 1 and 2.
     params: Optional. A list of MCP method parameters to match against. The
       match can be one of exact, prefix, suffix, or contains (substring
       match). Matches are always case sensitive unless the ignoreCase is set.
@@ -826,9 +825,9 @@ class AuthzPolicyTarget(_messages.Message):
       balancing scheme. Required only when targeting forwarding rules. If
       targeting Secure Web Proxy, this field must be `INTERNAL_MANAGED` or not
       specified. Must not be specified when targeting Agent Gateway. Supported
-      values: `INTERNAL_MANAGED` and `EXTERNAL_MANAGED`. For more information,
-      refer to [Backend services overview](https://cloud.google.com/load-
-      balancing/docs/backend-service).
+      values include `INTERNAL_MANAGED` and `EXTERNAL_MANAGED`. For more
+      information, refer to [Backend services
+      overview](https://cloud.google.com/load-balancing/docs/backend-service).
 
   Fields:
     loadBalancingScheme: Optional. All gateways and forwarding rules
@@ -836,9 +835,9 @@ class AuthzPolicyTarget(_messages.Message):
       balancing scheme. Required only when targeting forwarding rules. If
       targeting Secure Web Proxy, this field must be `INTERNAL_MANAGED` or not
       specified. Must not be specified when targeting Agent Gateway. Supported
-      values: `INTERNAL_MANAGED` and `EXTERNAL_MANAGED`. For more information,
-      refer to [Backend services overview](https://cloud.google.com/load-
-      balancing/docs/backend-service).
+      values include `INTERNAL_MANAGED` and `EXTERNAL_MANAGED`. For more
+      information, refer to [Backend services
+      overview](https://cloud.google.com/load-balancing/docs/backend-service).
     resources: Required. A list of references to the Forwarding Rules, Secure
       Web Proxy Gateways, or Agent Gateways on which this policy will be
       applied.
@@ -849,7 +848,7 @@ class AuthzPolicyTarget(_messages.Message):
     and extensions must share the same load balancing scheme. Required only
     when targeting forwarding rules. If targeting Secure Web Proxy, this field
     must be `INTERNAL_MANAGED` or not specified. Must not be specified when
-    targeting Agent Gateway. Supported values: `INTERNAL_MANAGED` and
+    targeting Agent Gateway. Supported values include `INTERNAL_MANAGED` and
     `EXTERNAL_MANAGED`. For more information, refer to [Backend services
     overview](https://cloud.google.com/load-balancing/docs/backend-service).
 

@@ -1452,19 +1452,13 @@ class WorkerPoolPubSubScalingChange(config_changes.NonTemplateConfigChanger):
         raise exceptions.ConfigurationError(
             'Subscription must be specified when enabling Pub/Sub scaling.'
         )
-      if not target:
-        raise exceptions.ConfigurationError(
-            'Target value must be specified when enabling Pub/Sub scaling.'
-        )
-
       qualified_subscription = _QualifySubscription(sub, project)
-      scaling = vendor_settings.PubSubScaling(
-          subscription=qualified_subscription,
-          target_value=target,
-          metric_name=(
-              vendor_settings.PubSubScaling.PubSubMetric.NUM_UNACKED_MESSAGES
-          ),
-      )
+      kwargs = {
+          'subscription': qualified_subscription,
+      }
+      if target is not None:
+        kwargs['target_value'] = target
+      scaling = vendor_settings.PubSubScaling(**kwargs)
       new_scalings.append(scaling)
 
     resource.scaling.pubsub_scalings = new_scalings

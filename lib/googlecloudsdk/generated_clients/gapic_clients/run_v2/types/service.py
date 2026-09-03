@@ -418,6 +418,12 @@ class Service(proto.Message):
             audiences are encoded in the token and used to
             authenticate requests. For more information, see
             https://cloud.google.com/run/docs/configuring/custom-audiences.
+        durable_execution (bool):
+            Optional. Immutable. Indicates whether the
+            Service has durable execution enabled. This
+            field is immutable once the Service is created.
+
+            This field is a member of `oneof`_ ``_durable_execution``.
         observed_generation (int):
             Output only. The generation of this Service currently
             serving traffic. See comments in ``reconciling`` for
@@ -638,6 +644,11 @@ class Service(proto.Message):
     custom_audiences: MutableSequence[str] = proto.RepeatedField(
         proto.STRING,
         number=37,
+    )
+    durable_execution: bool = proto.Field(
+        proto.BOOL,
+        number=44,
+        optional=True,
     )
     observed_generation: int = proto.Field(
         proto.INT64,

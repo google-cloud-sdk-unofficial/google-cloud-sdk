@@ -129,6 +129,8 @@ def GetBodyForCreateReservationAssignment(
     scheduling_policy_max_slots: Optional[int] = None,
     scheduling_policy_concurrency: Optional[int] = None,
     principal: Optional[str] = None,
+    precedence: Optional[int] = 0,
+    condition: Optional[str] = None,
 ) -> Dict[str, Any]:
   """Creates a reservation assignment for a given project/folder/organization.
 
@@ -145,6 +147,8 @@ def GetBodyForCreateReservationAssignment(
     principal: IAM Principal Identifier (v2 format) of a user to specify more
       specific reservation routing for. Only users and service accounts are
       supported at the moment.
+    precedence: Precedence of the reservation assignment.
+    condition: Filter condition for the reservation assignment.
 
   Returns:
     ReservationAssignment object that was created.
@@ -190,6 +194,11 @@ def GetBodyForCreateReservationAssignment(
     ] = scheduling_policy_concurrency
   if principal is not None:
     reservation_assignment['principal'] = principal
+  reservation_assignment['precedence'] = precedence
+  if condition is not None:
+    reservation_assignment['condition'] = bq_client_utils.ParseCondition(
+        condition
+    )
   return reservation_assignment
 
 
@@ -836,6 +845,8 @@ def CreateReservationAssignment(
     scheduling_policy_max_slots: Optional[int] = None,
     scheduling_policy_concurrency: Optional[int] = None,
     principal: Optional[str] = None,
+    precedence: Optional[int] = 0,
+    condition: Optional[str] = None,
 ):
   """Creates a reservation assignment for a given project/folder/organization.
 
@@ -854,6 +865,13 @@ def CreateReservationAssignment(
     principal: IAM Principal Identifier (v2 format) of a user to specify more
       specific reservation routing for. Only users and service accounts are
       supported at the moment.
+    precedence: Priority precedence for this assignment. Used to resolve
+      ambiguity when multiple assignments match a single job. Higher numerical
+      values represent higher priority (e.g., 20 is evaluated before 10). If
+      unspecified, it defaults to 0.
+    condition: Common Expression Language (CEL) expression that defines the
+      matching criteria for this assignment. The expression must resolve to a
+      boolean value.
 
   Returns:
     ReservationAssignment object that was created.
@@ -870,6 +888,8 @@ def CreateReservationAssignment(
       scheduling_policy_max_slots,
       scheduling_policy_concurrency,
       principal,
+      precedence,
+      condition,
   )
   parent = (
       f'projects/{reference.projectId}/locations/{reference.location}/'
@@ -940,6 +960,8 @@ def UpdateReservationAssignment(
     priority: Optional[str] = None,
     scheduling_policy_max_slots: Optional[int] = None,
     scheduling_policy_concurrency: Optional[int] = None,
+    precedence: Optional[int] = None,
+    condition: Optional[str] = None,
 ) -> Dict[str, Any]:
   """Updates reservation assignment.
 
@@ -949,6 +971,12 @@ def UpdateReservationAssignment(
     priority: Default job priority for this assignment.
     scheduling_policy_max_slots: Max slots for the scheduling policy.
     scheduling_policy_concurrency: Concurrency for the scheduling policy.
+    precedence: Priority precedence for this assignment. Used to resolve
+      ambiguity when multiple assignments match a single job. Higher numerical
+      values represent higher priority (e.g., 20 is evaluated before 10).
+    condition: Common Expression Language (CEL) expression that defines the
+      matching criteria for this assignment. The expression must resolve to a
+      boolean value.
 
   Returns:
     Reservation assignment object that was updated.
@@ -976,6 +1004,14 @@ def UpdateReservationAssignment(
         'concurrency'
     ] = scheduling_policy_concurrency
     update_mask += 'scheduling_policy.concurrency,'
+  if precedence is not None:
+    reservation_assignment['precedence'] = precedence
+    update_mask += 'precedence,'
+  if condition is not None:
+    reservation_assignment['condition'] = bq_client_utils.ParseCondition(
+        condition
+    )
+    update_mask += 'condition,'
 
   return (
       client.projects()
@@ -1104,6 +1140,7 @@ def SearchAllReservationAssignments(
 def CreateReservationGroup(
     reservation_group_client: discovery.Resource,
     reference: bq_id_utils.ApiClientHelper.ReservationGroupReference,
+    parent_group: Optional[str] = None,
 ) -> Dict[str, Any]:
   """Creates a reservation group with the given reservation group reference.
 
@@ -1123,6 +1160,13 @@ def CreateReservationGroup(
       reference.location,
   )
   reservation_group = {}
+  if parent_group:
+    if reference:
+      reservation_group['parentGroup'] = FormatReservationGroupPath(
+          reference.projectId, reference.location, parent_group
+      )
+    else:
+      reservation_group['parentGroup'] = parent_group
   return (
       reservation_group_client.projects()
       .locations()
@@ -1136,6 +1180,40 @@ def CreateReservationGroup(
   )
 
 
+def UpdateReservationGroup(
+    reservation_group_client: discovery.Resource,
+    reference: bq_id_utils.ApiClientHelper.ReservationGroupReference,
+    parent_group: Optional[str],
+) -> Dict[str, Any]:
+  """Updates the parent of a Reservation Group.
+
+  Args:
+    reservation_group_client: The BigQuery Reservation API client.
+    reference: The ReservationGroupReference object.
+    parent_group: The new full resource name of the parent group.
+
+  Returns:
+    The updated reservation group object from the API.
+  """
+  reservation_group = {}
+  update_mask = ''
+  if parent_group is not None:
+    if reference:
+      reservation_group['parentGroup'] = FormatReservationGroupPath(
+          reference.projectId, reference.location, parent_group
+      )
+    else:
+      reservation_group['parentGroup'] = parent_group
+    update_mask += 'parent_group'
+  return (
+      reservation_group_client.projects()
+      .locations()
+      .reservationGroups()
+      .patch(
+          name=reference.path(), body=reservation_group, updateMask=update_mask
+      )
+      .execute()
+  )
 
 
 def ListReservationGroups(

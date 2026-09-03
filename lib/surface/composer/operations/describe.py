@@ -30,6 +30,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 class Describe(base.DescribeCommand):
   """Get details about an asynchronous operation."""
 

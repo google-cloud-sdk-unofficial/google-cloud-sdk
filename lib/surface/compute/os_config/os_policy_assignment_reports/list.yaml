@@ -22,7 +22,6 @@
 
   request:
     collection: osconfig.projects.locations.instances.osPolicyAssignments.reports
-    disable_resource_check: true
     ALPHA:
       api_version: v1alpha
     modify_request_hooks:
@@ -36,10 +35,12 @@
 
   arguments:
     exclude: ['uri']
+    resource:
+      help_text: Location of the OS policy assignment reports to list.
+      spec: !REF googlecloudsdk.command_lib.compute.os_config.resources:location
+      is_parent_resource: true
+      override_resource_collection: true
     params:
-    - arg_name: location
-      help_text: |
-          Location of the OS policy assignment reports to list, will default to the user's compute/zone property if not specified.
     - group:
         help_text: Specify which instance or OS policy assignment to list reports for.
         mutex: true

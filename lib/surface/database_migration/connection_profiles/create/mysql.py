@@ -53,8 +53,16 @@ class _MySQL(object):
 
     cp_flags.AddNoAsyncFlag(parser)
     cp_flags.AddDisplayNameFlag(parser)
-    cp_flags.AddDatabaseParamsFlags(parser, require_password=False)
+    cp_flags.AddDatabaseParamsFlags(
+        parser,
+        require_user=False,
+        require_password=False,
+        require_host_port=False,
+        support_optional_host_port=True,
+        include_cloudsql=True,
+    )
     cp_flags.AddProviderFlag(parser)
+    cp_flags.AddRoleFlag(parser)
     flags.AddLabelsCreateFlags(parser)
 
   def Run(self, args):
@@ -70,6 +78,8 @@ class _MySQL(object):
     """
     connection_profile_ref = args.CONCEPTS.connection_profile.Parse()
     parent_ref = connection_profile_ref.Parent().RelativeName()
+
+    cp_flags.ValidateHostPortFlags(args, support_optional_host_port=True)
 
     if args.prompt_for_password:
       args.password = console_io.PromptPassword('Please Enter Password: ')
@@ -112,5 +122,3 @@ class MySQLGA(_MySQL, base.Command):
   def Args(parser):
     _MySQL.Args(parser)
     cp_flags.AddSslConfigGroup(parser, base.ReleaseTrack.GA)
-    cp_flags.AddCloudSQLInstanceFlag(parser)
-    cp_flags.AddRoleFlag(parser)

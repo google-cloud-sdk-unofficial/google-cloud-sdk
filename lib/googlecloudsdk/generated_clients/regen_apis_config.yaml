@@ -309,8 +309,6 @@ apis:
     v1:
       discovery_doc: biglake_v1.json
       default: true
-      skip:
-        bug: b/533507184
     delta_v1:
       discovery_doc: biglake_delta_v1.json
       default: false
@@ -1006,10 +1004,15 @@ apis:
   developerknowledge:
     v1alpha:
       discovery_doc: developerknowledge_v1alpha.json
-      default: true
       resources:
         v1alpha:
           path: v1alpha
+    v1:
+      discovery_doc: developerknowledge_v1.json
+      default: true
+      resources:
+        v1:
+          path: v1
   devicerun:
     v1alpha:
       discovery_doc: devicerun_v1alpha.json
@@ -1832,8 +1835,6 @@ apis:
     v2:
       discovery_doc: run_v2.json
       gcloud_gapic_library: google/cloud/run/v2:run_v2_py
-      skip:
-        bug: b/543860500
   runtimeconfig:
     v1beta1:
       discovery_doc: runtimeconfig_v1beta1.json
@@ -1979,6 +1980,10 @@ apis:
     v1:
       discovery_doc: source_v1.json
       mtls_endpoint_override: https://source.mtls.googleapis.com/
+  softwaredeliverytrust:
+    v1alpha:
+      discovery_doc: softwaredeliverytrust_v1alpha.json
+      default: true
   sourcerepo:
     v1:
       discovery_doc: sourcerepo_v1.json
@@ -2987,6 +2992,9 @@ canonical_surfaces:
   source:
     name: source
     hidden: true
+  softwaredeliverytrust:
+    name: softwaredeliverytrust
+    command: software-delivery-trust
   sourcerepo:
     name: sourcerepo
     command: source

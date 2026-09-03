@@ -5,7 +5,7 @@
   "name": "bigquery",
   "canonicalName": "Bigquery",
   "version": "v2",
-  "revision": "20260812",
+  "revision": "20260827",
   "title": "BigQuery API",
   "description": "A data platform for customers to create, manage, share and query data.",
   "ownerDomain": "google.com",
@@ -2845,7 +2845,8 @@
             "Encoded as a string.",
             "Encoded as a list with types matching Type.array_type.",
             "Encoded as a list with fields of type Type.struct_type[i]. List is used because a JSON object cannot have duplicate field names.",
-            "Encoded as a pair with types matching range_element_type. Pairs must begin with \"[\", end with \")\", and be separated by \", \"."
+            "Encoded as a pair with types matching range_element_type. Pairs must begin with \"[\", end with \")\", and be separated by \", \".",
+            "Encoded as a string."
           ],
           "enum": [
             "TYPE_KIND_UNSPECIFIED",
@@ -2865,7 +2866,8 @@
             "JSON",
             "ARRAY",
             "STRUCT",
-            "RANGE"
+            "RANGE",
+            "UUID"
           ]
         },
         "arrayElementType": {
@@ -8196,6 +8198,28 @@
           "description": "Optional. Maximum number of requests that a Python UDF instance can handle concurrently. If absent or if `0`, the default concurrency value is used. For more information, see [Configure container limits for Python UDFs](https:\/\/cloud.google.com\/bigquery\/docs\/user-defined-functions-python#configure-container-limits).",
           "type": "string",
           "format": "int64"
+        },
+        "volumeMounts": {
+          "description": "Optional. List of volume mounts for the Python UDF container that executes the managed function.",
+          "type": "array",
+          "items": {
+            "$ref": "ExternalVolumeMount"
+          }
+        }
+      }
+    },
+    "ExternalVolumeMount": {
+      "id": "ExternalVolumeMount",
+      "description": "Configuration of a volume mount for the Python UDF container that executes the managed function.",
+      "type": "object",
+      "properties": {
+        "sourcePath": {
+          "description": "Optional. The absolute path of the source to be mounted, only support Google Cloud Storage bucket or folder now. Eg: gs:\/\/bucket-xxx for Google Cloud Storage bucket, gs:\/\/bucket-xxx\/folder1\/folder2 for Google Cloud Storage folder.",
+          "type": "string"
+        },
+        "mountPath": {
+          "description": "Optional. The absolute path within the container where the volume should be mounted.",
+          "type": "string"
         }
       }
     },

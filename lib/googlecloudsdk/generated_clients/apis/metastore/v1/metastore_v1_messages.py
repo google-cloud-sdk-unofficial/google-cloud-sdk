@@ -3348,6 +3348,11 @@ class StartMigrationRequest(_messages.Message):
 
   Fields:
     migrationExecution: Required. The configuration details for the migration.
+    migrationExecutionId: Optional. The ID to use for the migration execution,
+      which will become the final component of the migration execution's
+      resource name. If not specified, a UUID will be generated.This value
+      must be between 2 and 63 characters long inclusive, begin with a letter,
+      end with a letter or number, and valid characters are a-z0-9-.
     requestId: Optional. A request ID. Specify a unique request ID to allow
       the server to ignore the request if it has completed. The server will
       ignore subsequent requests that provide a duplicate request ID for at
@@ -3360,7 +3365,8 @@ class StartMigrationRequest(_messages.Message):
   """
 
   migrationExecution = _messages.MessageField('MigrationExecution', 1)
-  requestId = _messages.StringField(2)
+  migrationExecutionId = _messages.StringField(2)
+  requestId = _messages.StringField(3)
 
 
 class Status(_messages.Message):

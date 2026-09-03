@@ -95,6 +95,29 @@ def NetworkArgument():
       """)
 
 
+def AddNetworkAttachment(parser, required=False):
+  """Adds the network-attachment flag."""
+  parser.add_argument(
+      '--network-attachment',
+      required=required,
+      help="""\
+      Regional network attachment resource in which the address(es) should be
+      reserved.
+
+      This is used to reserve an internal IP address for a PSC interface.
+      """,
+  )
+
+
+def AddNetworkAttachmentGroup(parser):
+  """Adds network attachment and service class ID flags in an argument group."""
+  group = parser.add_group(help="""\
+      Flags for reserving an address with a network attachment.
+      """)
+  AddNetworkAttachment(group, required=True)
+  AddServiceClassId(group)
+
+
 def AddAddresses(parser):
   """Adds the Addresses flag."""
   parser.add_argument(
@@ -194,6 +217,20 @@ def AddIPv6EndPointType(parser):
       help="""\
         The endpoint type of the external IPv6 address to be reserved.
       """)
+
+
+def AddServiceClassId(parser):
+  parser.add_argument(
+      '--service-class-id',
+      help="""\
+      Regional Service Class ID of the producer service associated with the
+      address.
+
+      This is used in conjunction with `--network-attachment` to authorize address
+      reservation based on the service class. Can only be specified if
+      `--network-attachment` is also specified.
+      """,
+  )
 
 
 def AddPurpose(
@@ -296,5 +333,3 @@ def AddIpCollectionGroup(parser, required=False):
   group = parser.add_mutually_exclusive_group(required=required)
   IpCollectionArgument().AddArgument(parser, group)
   InternalRangeArgument(group)
-
-

@@ -54,7 +54,7 @@ POLL_JITTER_SECONDS = 0.5
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class Run(base.Command):
   """List all PyPI modules installed in an Airflow worker."""
 
@@ -190,7 +190,7 @@ class Run(base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class RunBeta(Run):
   """List all PyPI modules installed in an Airflow worker.
 

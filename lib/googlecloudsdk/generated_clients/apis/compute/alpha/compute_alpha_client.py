@@ -716,10 +716,10 @@ resources.
     )
 
     def CalendarModeExtension(self, request, global_params=None):
-      r"""Advise on whether extending an existing Future Reservation is possible.
-based on the desired extension end time. If capacity is not available for
-the entire requested duration, the method will recommend the longest
-possible extension.
+      r"""Advises on whether extending an existing future reservation is possible.
+based on the desired extension end time. If capacity isn't available for
+the entire requested duration, the method recommends the longest possible
+extension.
 
       Args:
         request: (ComputeAdviceCalendarModeExtensionRequest) input message

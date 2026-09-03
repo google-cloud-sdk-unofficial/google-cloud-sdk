@@ -30,7 +30,7 @@ _DETAILED_HELP = frozendict.frozendict({'EXAMPLES': textwrap.dedent("""\
         """)})
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class UpdateUserWorkloadsSecret(base.Command):
   """Update a user workloads Secret."""
 

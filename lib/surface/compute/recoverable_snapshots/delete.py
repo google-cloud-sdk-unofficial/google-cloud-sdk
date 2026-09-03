@@ -38,7 +38,7 @@ DETAILED_HELP = {
 }
 
 
-def _AlphaArgs(parser):
+def _Args(parser):
   """A helper function to build args for Alpha API version."""
   Delete.RecoverableSnapshotArg = flags.MakeRecoverableSnapshotArg(
       plural=True
@@ -46,8 +46,7 @@ def _AlphaArgs(parser):
   Delete.RecoverableSnapshotArg.AddArgument(parser, operation_type='delete')
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class Delete(base.DeleteCommand):
   """Delete Compute Engine recoverable snapshots.
@@ -58,7 +57,7 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    _AlphaArgs(parser)
+    _Args(parser)
 
   def Run(self, args):
     return self._Run(args)

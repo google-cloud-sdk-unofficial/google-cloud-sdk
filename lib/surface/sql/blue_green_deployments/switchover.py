@@ -26,11 +26,23 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
-@base.Hidden
+DETAILED_HELP = {
+    'EXAMPLES': (
+        """\
+        To switch over a blue-green deployment named `my-deployment` in region `us-central1`:
+
+          $ {command} my-deployment --region=us-central1
+        """
+    ),
+}
+
+
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Switchover(base.Command):
   """Performs switchover for a Cloud SQL blue-green deployment."""
+
+  detailed_help = DETAILED_HELP
 
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)

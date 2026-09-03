@@ -31,6 +31,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 class List(base.Command):
   """List the data for a Cloud Composer environment."""
 

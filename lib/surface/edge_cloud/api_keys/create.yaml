@@ -1,11 +1,11 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: Create a Google Distributed Cloud API key.
     description: Creates a Google Distributed Cloud API key.
     examples: |
-      # To create a service-account-bound API key in a specific Google Distributed Cloud zone
-      # that is valid for two hours and restricted to specific API methods, run:
+      To create a service-account-bound API key in a specific Google Distributed Cloud zone that is valid for two hours and restricted to specific API methods, run:
+
       $ {command} my-api-key --location=us-central1 --project=my-project \
         --zone=us-central1-edge-zone1 \
         --service-account=my-sa \
@@ -15,7 +15,10 @@
 
   request:
     collection: edgecontainer.projects.locations.apiKeys
-    api_version: v1alpha
+    ALPHA:
+      api_version: v1alpha
+    GA:
+      api_version: v1
     method: create
     modify_request_hooks:
     - googlecloudsdk.command_lib.edge_cloud.api_key.hooks:ConstructServiceAccountName

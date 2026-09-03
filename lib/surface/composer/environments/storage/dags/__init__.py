@@ -18,6 +18,7 @@
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class Dags(base.Group):
   """Manage DAGs for Cloud Composer environments.
 

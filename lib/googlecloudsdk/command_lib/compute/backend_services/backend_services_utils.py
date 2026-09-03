@@ -1221,3 +1221,84 @@ def ApplyCircuitBreakersSettings(client, args, backend_service):
     backend_service.circuitBreakers.maxRequests = (
         args.circuit_breakers_max_requests
     )
+
+
+def ApplyOutlierDetectionArgs(
+    client, args, backend_service, cleared_fields=None
+):
+  """Applies OutlierDetection related flags to the backend service message.
+
+  Args:
+    client: The compute client holder containing messages.
+    args: The argparse namespaces containing parsed argument values.
+    backend_service: The BackendService message to populate.
+    cleared_fields: List of fields to be cleared on the server side.
+  """
+  if args.IsKnownAndSpecified('no_outlier_detection'):
+    backend_service.outlierDetection = None
+    if cleared_fields is not None:
+      cleared_fields.append('outlierDetection')
+    return
+
+  od_flag_names = [
+      'outlier_detection_consecutive_errors',
+      'outlier_detection_interval',
+      'outlier_detection_base_ejection_time',
+      'outlier_detection_max_ejection_percent',
+      'outlier_detection_enforcing_consecutive_errors',
+      'outlier_detection_enforcing_success_rate',
+      'outlier_detection_success_rate_minimum_hosts',
+      'outlier_detection_success_rate_request_volume',
+      'outlier_detection_success_rate_stdev_factor',
+      'outlier_detection_consecutive_gateway_failure',
+      'outlier_detection_enforcing_consecutive_gateway_failure',
+  ]
+  has_any_od_flag = any(
+      args.IsKnownAndSpecified(f) for f in od_flag_names
+  )
+  if not has_any_od_flag:
+    return
+
+  od = (
+      backend_service.outlierDetection
+      if backend_service.outlierDetection
+      else client.messages.OutlierDetection()
+  )
+
+  if args.IsKnownAndSpecified('outlier_detection_interval'):
+    od.interval = client.messages.Duration(
+        seconds=args.outlier_detection_interval
+    )
+  if args.IsKnownAndSpecified('outlier_detection_base_ejection_time'):
+    od.baseEjectionTime = client.messages.Duration(
+        seconds=args.outlier_detection_base_ejection_time
+    )
+
+  od_fields = {
+      'outlier_detection_consecutive_errors': 'consecutiveErrors',
+      'outlier_detection_max_ejection_percent': 'maxEjectionPercent',
+      'outlier_detection_enforcing_consecutive_errors': (
+          'enforcingConsecutiveErrors'
+      ),
+      'outlier_detection_enforcing_success_rate': 'enforcingSuccessRate',
+      'outlier_detection_success_rate_minimum_hosts': (
+          'successRateMinimumHosts'
+      ),
+      'outlier_detection_success_rate_request_volume': (
+          'successRateRequestVolume'
+      ),
+      'outlier_detection_success_rate_stdev_factor': (
+          'successRateStdevFactor'
+      ),
+      'outlier_detection_consecutive_gateway_failure': (
+          'consecutiveGatewayFailure'
+      ),
+      'outlier_detection_enforcing_consecutive_gateway_failure': (
+          'enforcingConsecutiveGatewayFailure'
+      ),
+  }
+  for flag_name, field_name in od_fields.items():
+    if args.IsKnownAndSpecified(flag_name):
+      setattr(od, field_name, getattr(args, flag_name))
+
+  backend_service.outlierDetection = od

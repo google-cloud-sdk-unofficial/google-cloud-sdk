@@ -303,6 +303,7 @@ def CreateSchedulingMessage(
     expose_host_topology=None,
     windows_license_optimization_mode=None,
     latency_tolerant=None,
+    current_memory_mb=None,
 ):
   """Creates scheduling message for VM.
 
@@ -332,6 +333,7 @@ def CreateSchedulingMessage(
     expose_host_topology: Whether to expose hashed host topology ID.
     windows_license_optimization_mode: Windows license optimization mode.
     latency_tolerant: Whether the VM is latency tolerant.
+    current_memory_mb: Current memory in MB.
 
   Returns:
     Scheduling message object for the VM.
@@ -417,6 +419,9 @@ def CreateSchedulingMessage(
 
   if current_cpus:
     scheduling.currentCpus = current_cpus
+
+  if current_memory_mb is not None:
+    scheduling.currentMemoryMb = current_memory_mb
 
   if discard_local_ssds_at_termination_timestamp is not None:
     scheduling.onInstanceStopAction = messages.SchedulingOnInstanceStopAction(
@@ -862,6 +867,7 @@ def GetScheduling(
     support_expose_host_topology=False,
     support_windows_license_optimization_mode=False,
     support_latency_tolerant=False,
+    support_current_memory=False,
 ):
   """Generates a Scheduling Message or None based on specified args.
 
@@ -889,6 +895,7 @@ def GetScheduling(
     support_windows_license_optimization_mode: bool, whether windows license
       optimization mode is supported.
     support_latency_tolerant: bool, whether latency tolerant is supported.
+    support_current_memory: bool, whether current memory is supported.
 
   Returns:
     A Scheduling message object, or None if no scheduling flags are specified.
@@ -1018,6 +1025,12 @@ def GetScheduling(
   if support_latency_tolerant and args.IsKnownAndSpecified('latency_tolerant'):
     latency_tolerant = args.latency_tolerant
 
+  current_memory_mb = None
+  if support_current_memory and args.IsKnownAndSpecified(
+      'current_memory'
+  ):
+    current_memory_mb = args.current_memory // (1024 * 1024)
+
   if (
       skip_defaults
       and not IsAnySpecified(args, *dests)
@@ -1035,6 +1048,7 @@ def GetScheduling(
       and not current_cpus
       and windows_license_optimization_mode is None
       and latency_tolerant is None
+      and current_memory_mb is None
   ):
     return None
 
@@ -1064,6 +1078,7 @@ def GetScheduling(
       expose_host_topology=expose_host_topology,
       windows_license_optimization_mode=windows_license_optimization_mode,
       latency_tolerant=latency_tolerant,
+      current_memory_mb=current_memory_mb,
   )
 
 

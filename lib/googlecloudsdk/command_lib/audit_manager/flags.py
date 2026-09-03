@@ -33,10 +33,15 @@ def GetFolderParam(args):
   return f'--folder {args.folder}'
 
 
-def GetProjectOrFolderParam(args):
+def GetOrganizationParam(args):
+  return f'--organization {args.organization}'
+
+
+def GetProjectOrFolderOrOrganizationParam(args):
+  if args.organization is not None:
+    return GetOrganizationParam(args)
   if args.folder is None:
     return GetProjectParam(args)
-
   return GetFolderParam(args)
 
 
@@ -57,6 +62,7 @@ def AddDescribeOperationFlags(parser):
   spec = multitype.MultitypeResourceSpec(
       'operation',
       resource_args.GetOperationResourceSpecByFolder(),
+      resource_args.GetOperationResourceSpecByOrganization(),
       resource_args.GetOperationResourceSpecByProject(),
       allow_inactive=True,
   )

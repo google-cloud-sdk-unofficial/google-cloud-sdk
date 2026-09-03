@@ -18,6 +18,7 @@
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class Snapshots(base.Group):
   """Save and load snapshots of environment.
 

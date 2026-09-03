@@ -641,6 +641,12 @@ def MakeUserAgentString(cmd_path=None):
   architecture = GetAndCacheArchitecture(user_platform)
   agent_name = agents.DetectAIAgent()
   agent_fragment = ' agent-name/{}'.format(agent_name) if agent_name else ''
+  request_attribution = properties.VALUES.metrics.request_attribution.Get()
+  attribution_fragment = (
+      ' {}'.format(request_attribution.strip())
+      if request_attribution and request_attribution.strip()
+      else ''
+  )
 
   return (
       'gcloud/{version}'
@@ -658,6 +664,7 @@ def MakeUserAgentString(cmd_path=None):
       ' term/{term}'
       ' {gcloud_mcp_metrics}'
       ' {ua_fragment}'
+      '{attribution_fragment}'
   ).format(
       version=config.CLOUD_SDK_VERSION.replace(' ', '_'),
       agent_fragment=agent_fragment,
@@ -676,6 +683,7 @@ def MakeUserAgentString(cmd_path=None):
       from_script=console_io.IsRunFromShellScript(),
       term=console_attr.GetConsoleAttr().GetTermIdentifier(),
       gcloud_mcp_metrics=GetValidMCPMetricsString(),
+      attribution_fragment=attribution_fragment,
   )
 
 

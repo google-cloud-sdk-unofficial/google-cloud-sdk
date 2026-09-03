@@ -30,7 +30,7 @@ _DETAILED_HELP = frozendict.frozendict({'EXAMPLES': textwrap.dedent("""\
         """)})
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class DeleteUserWorkloadsConfigMap(base.Command):
   """Delete a user workloads ConfigMap."""
 

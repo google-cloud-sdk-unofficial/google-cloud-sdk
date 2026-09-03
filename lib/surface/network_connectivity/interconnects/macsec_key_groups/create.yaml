@@ -1,0 +1,30 @@
+- release_tracks: [BETA]
+  hidden: true
+
+  help_text:
+    brief: Create a new MACsec key group.
+    description: Create a new MACsec key group with the given name.
+    examples: |
+      To create a MACsec key group with the name 'my-key-group' in region 'us-central1':
+
+        $ {command} my-key-group --region=us-central1 --description="My MACsec key group"
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:macsecKeyGroup
+      help_text: Name of the MACsec key group to be created.
+    params:
+    - arg_name: description
+      api_field: googleCloudNetworkconnectivityV1betaInterconnectKeyGroup.description
+      help_text: Description of the MACsec key group.
+    labels:
+      api_field: googleCloudNetworkconnectivityV1betaInterconnectKeyGroup.labels
+
+  async:
+    collection: networkconnectivity.projects.locations.operations
+
+  request:
+    BETA:
+      api_version: v1beta
+    collection: networkconnectivity.projects.locations.interconnectKeyGroups
+    method: create

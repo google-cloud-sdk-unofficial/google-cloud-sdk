@@ -98,6 +98,10 @@ from .revision import (
 from .revision_template import (
     RevisionTemplate,
 )
+from .sandbox import (
+    SandboxConfiguration,
+    SandboxTemplate,
+)
 from .service import (
     CreateServiceRequest,
     DeleteServiceRequest,
@@ -221,6 +225,8 @@ __all__ = (
     'ListRevisionsResponse',
     'Revision',
     'RevisionTemplate',
+    'SandboxConfiguration',
+    'SandboxTemplate',
     'CreateServiceRequest',
     'DeleteServiceRequest',
     'GetServiceRequest',

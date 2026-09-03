@@ -35,7 +35,7 @@ DETAILED_HELP = {
           - Update the cluster specs through `patch` cluster request.
         - Use --config with cluster specs and --update-mask flags, both in JSON format.
           - Map and repeated fields update requires existing and new values.
-          - For e.g. if we want to update a cluster to add a new nodeset, then we will use the update_mask "orchestrator.slurm.node_sets", and the patch cluster must include all the existing nodesets as well as the new one.
+          - For example, to update a cluster to add a new nodeset, use the update mask "orchestrator.slurm.node_sets", and the patch cluster must include all existing nodesets as well as the new one.
 
         Please refer to the examples below for more details.
         """),
@@ -44,51 +44,51 @@ DETAILED_HELP = {
 
         Add labels, compute instances, slurm node sets, slurm partitions and update description and default partition:
 
-        $ {command} my-cluster --location us-central1-a \
-        --description "My updated cluster description" \
-        --add-labels env=prod,client=gcloud-cli \
-        --add-on-demand-instances id=compute1,zone=us-central1-a,machineType=n2-standard-2 \
-        --add-reserved-instances id=compute2,reservation=zones/us-central1-a/reservations/{reservation} \
-        --add-spot-instances id=compute3,zone=us-central1-a,machineType=n2-standard-2 \
-        --add-dws-flex-instances id=compute4,zone=us-central1-a,machineType=a4-highgpu-8g,maxDuration=10000s \
-        --add-new-lustre-instances lustre=locations/us-central1-a/instances/lustre1,capacityGb=1024,filesystem=lustre1 \
-        --add-lustre-instances locations/us-central1-a/instances/lustre0 \
-        --add-slurm-node-sets id=nodeset1,computeId=compute1 \
-        --add-slurm-node-sets id=nodeset2,computeId=compute2 \
-        --add-slurm-node-sets id=nodeset3,computeId=compute3 \
-        --add-slurm-node-sets id=nodeset4,computeId=compute4 \
-        --add-slurm-partitions id=partition1,nodesetIds=[nodeset1] \
-        --add-slurm-partitions id=partition2,nodesetIds=[nodeset2,nodeset3,nodeset4] \
-        --slurm-default-partition partition1
+        $ {command} my-cluster --location=us-central1-a \
+        --description="My updated cluster description" \
+        --add-labels=env=prod,client=gcloud-cli \
+        --add-on-demand-instances=id=compute1,zone=us-central1-a,machineType=n2-standard-2 \
+        --add-reserved-instances=id=compute2,reservation=zones/us-central1-a/reservations/{reservation} \
+        --add-spot-instances=id=compute3,zone=us-central1-a,machineType=n2-standard-2 \
+        --add-flex-start-instances=id=compute4,zone=us-central1-a,machineType=a4-highgpu-8g,maxDuration=10000s \
+        --add-new-lustre-instances=lustre=locations/us-central1-a/instances/lustre1,capacityGb=1024,filesystem=lustre1 \
+        --add-lustre-instances=locations/us-central1-a/instances/lustre0 \
+        --add-slurm-node-sets=id=nodeset1,computeId=compute1 \
+        --add-slurm-node-sets=id=nodeset2,computeId=compute2 \
+        --add-slurm-node-sets=id=nodeset3,computeId=compute3 \
+        --add-slurm-node-sets=id=nodeset4,computeId=compute4 \
+        --add-slurm-partitions=id=partition1,nodesetIds=[nodeset1] \
+        --add-slurm-partitions=id=partition2,nodesetIds=[nodeset2,nodeset3,nodeset4] \
+        --slurm-default-partition=partition1
 
         Update slurm node sets and slurm partitions:
 
-        $ {command} my-cluster --location us-central1-a \
-        --update-slurm-node-sets id=nodeset1,staticNodeCount=2,maxDynamicNodeCount=10 \
-        --update-slurm-partitions id=partition1,nodesetIds=[nodeset0],exclusive=true
+        $ {command} my-cluster --location=us-central1-a \
+        --update-slurm-node-sets=id=nodeset1,staticNodeCount=2,maxDynamicNodeCount=10 \
+        --update-slurm-partitions=id=partition1,nodesetIds=[nodeset0],exclusive=true
 
         Remove slurm node sets, slurm partitions and compute instances and update default partition:
 
-        $ {command} my-cluster --location us-central1-a \
-        --slurm-default-partition partition0 \
-        --remove-labels env,client \
-        --remove-lustre-instances locations/us-central1-a/instances/lustre0 \
-        --remove-slurm-partitions partition1 \
-        --remove-slurm-partitions partition2 \
-        --remove-slurm-node-sets nodeset1 \
-        --remove-slurm-node-sets nodeset2 \
-        --remove-slurm-node-sets nodeset3 \
-        --remove-slurm-node-sets nodeset4 \
-        --remove-on-demand-instances compute1 \
-        --remove-reserved-instances compute2 \
-        --remove-spot-instances compute3 \
-        --remove-dws-flex-instances compute4
+        $ {command} my-cluster --location=us-central1-a \
+        --slurm-default-partition=partition0 \
+        --remove-labels=env,client \
+        --remove-lustre-instances=locations/us-central1-a/instances/lustre0 \
+        --remove-slurm-partitions=partition1 \
+        --remove-slurm-partitions=partition2 \
+        --remove-slurm-node-sets=nodeset1 \
+        --remove-slurm-node-sets=nodeset2 \
+        --remove-slurm-node-sets=nodeset3 \
+        --remove-slurm-node-sets=nodeset4 \
+        --remove-on-demand-instances=compute1 \
+        --remove-reserved-instances=compute2 \
+        --remove-spot-instances=compute3 \
+        --remove-flex-start-instances=compute4
 
         Add and remove slurm prolog/epilog scripts:
 
-        $ {command} my-cluster --location us-central1-a \
-        --add-slurm-prolog-scripts script1.sh \
-        --remove-slurm-epilog-scripts script2.sh
+        $ {command} my-cluster --location=us-central1-a \
+        --add-slurm-prolog-scripts=script1.sh \
+        --remove-slurm-epilog-scripts=script2.sh
 
         Or cluster `my-cluster` in location `us-central1-a` with config JSON run the following JSON example:
 
@@ -96,11 +96,11 @@ DETAILED_HELP = {
 
         Or create a JSON file `my-cluster-config.json` with the cluster specs and run the following file example:
 
-        $ {command} my-cluster --location=us-central1-a --update-mask=labels --config-from-file=my-cluster-config.json
+        $ {command} my-cluster --location=us-central1-a --update-mask=labels --config=my-cluster-config.json
 
         Or create a JSON file with the update mask and run the following file example:
 
-        $ {command} my-cluster --location=us-central1-a --update-mask-from-file=my-update-mask.json --config-from-file=my-cluster-config.json
+        $ {command} my-cluster --location=us-central1-a --update-mask=my-update-mask.json --config=my-cluster-config.json
         """),
 }
 

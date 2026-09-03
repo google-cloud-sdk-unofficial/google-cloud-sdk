@@ -1563,6 +1563,16 @@ class CloudkmsProjectsLocationsKeyRingsCryptoKeysUpdatePrimaryVersionRequest(_me
   updateCryptoKeyPrimaryVersionRequest = _messages.MessageField('UpdateCryptoKeyPrimaryVersionRequest', 2)
 
 
+class CloudkmsProjectsLocationsKeyRingsDeleteRequest(_messages.Message):
+  r"""A CloudkmsProjectsLocationsKeyRingsDeleteRequest object.
+
+  Fields:
+    name: Required. The name of the KeyRing to delete.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
 class CloudkmsProjectsLocationsKeyRingsGetIamPolicyRequest(_messages.Message):
   r"""A CloudkmsProjectsLocationsKeyRingsGetIamPolicyRequest object.
 
