@@ -33,7 +33,7 @@ from googlecloudsdk.core.credentials import store
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Proxy(base.BinaryBackedCommand):
   """Proxy an instance to localhost authenticating as the active account or with the specified token.
 

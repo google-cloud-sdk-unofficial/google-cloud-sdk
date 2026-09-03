@@ -71,14 +71,24 @@ def _BuildStartArgsForDocker(args):
   gateway_args = []
   # Some arguments must be specified after the image name.
   # If any are specified, we must specify the executable.
+
   enable_fault_injection = getattr(args, 'enable_fault_injection', False)
   print_notices = getattr(args, 'print_notices', False)
-  if enable_fault_injection or print_notices:
+  remote_functions_host_port = getattr(args, 'remote_functions_host_port', None)
+  if enable_fault_injection or print_notices or remote_functions_host_port:
     gateway_args.extend(['./gateway_main', '--hostname', '0.0.0.0'])
     if enable_fault_injection:
       gateway_args.append('--enable_fault_injection')
     if print_notices:
       gateway_args.append('--notices')
+    if remote_functions_host_port:
+      if remote_functions_host_port.port:
+        val = '{}:{}'.format(
+            remote_functions_host_port.host, remote_functions_host_port.port
+        )
+      else:
+        val = remote_functions_host_port.host
+      gateway_args.extend(['--remote_functions_host_port', val])
 
   return execution_utils.ArgsForExecutableTool(*(docker_args + gateway_args))
 
@@ -110,6 +120,15 @@ def _BuildStartArgsForNativeExecutable(args):
     native_args.append('--enable_fault_injection')
   if getattr(args, 'print_notices', False):
     native_args.append('--notices')
+  remote_functions_host_port = getattr(args, 'remote_functions_host_port', None)
+  if remote_functions_host_port:
+    if remote_functions_host_port.port:
+      val = '{}:{}'.format(
+          remote_functions_host_port.host, remote_functions_host_port.port
+      )
+    else:
+      val = remote_functions_host_port.host
+    native_args.extend(['--remote_functions_host_port', val])
   return execution_utils.ArgsForExecutableTool(*native_args)
 
 

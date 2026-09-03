@@ -1,8 +1,9 @@
 # file.py -- Safe access to git files
 # Copyright (C) 2010 Google, Inc.
 #
+# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 # Dulwich is dual-licensed under the Apache License, Version 2.0 and the GNU
-# General Public License as public by the Free Software Foundation; version 2.0
+# General Public License as published by the Free Software Foundation; version 2.0
 # or (at your option) any later version. You can redistribute it and/or
 # modify it under the terms of either of these two licenses.
 #
@@ -23,10 +24,10 @@
 import os
 import sys
 import warnings
-from typing import ClassVar, Set
+from typing import ClassVar, Union
 
 
-def ensure_dir_exists(dirname):
+def ensure_dir_exists(dirname) -> None:
     """Ensure a directory exists, creating if necessary."""
     try:
         os.makedirs(dirname)
@@ -34,31 +35,20 @@ def ensure_dir_exists(dirname):
         pass
 
 
-def _fancy_rename(oldname, newname):
+def _fancy_rename(oldname, newname) -> None:
     """Rename file with temporary backup file to rollback if rename fails."""
     if not os.path.exists(newname):
-        try:
-            os.rename(oldname, newname)
-        except OSError:
-            raise
+        os.rename(oldname, newname)
         return
 
     # Defer the tempfile import since it pulls in a lot of other things.
     import tempfile
 
     # destination file exists
-    try:
-        (fd, tmpfile) = tempfile.mkstemp(".tmp", prefix=oldname, dir=".")
-        os.close(fd)
-        os.remove(tmpfile)
-    except OSError:
-        # either file could not be created (e.g. permission problem)
-        # or could not be deleted (e.g. rude virus scanner)
-        raise
-    try:
-        os.rename(newname, tmpfile)
-    except OSError:
-        raise  # no rename occurred
+    (fd, tmpfile) = tempfile.mkstemp(".tmp", prefix=oldname, dir=".")
+    os.close(fd)
+    os.remove(tmpfile)
+    os.rename(newname, tmpfile)
     try:
         os.rename(oldname, newname)
     except OSError:
@@ -67,7 +57,9 @@ def _fancy_rename(oldname, newname):
     os.remove(tmpfile)
 
 
-def GitFile(filename, mode="rb", bufsize=-1, mask=0o644):
+def GitFile(
+    filename: Union[str, bytes, os.PathLike], mode="rb", bufsize=-1, mask=0o644
+):
     """Create a file object that obeys the git file locking protocol.
 
     Returns: a builtin file object or a _GitFile object
@@ -115,7 +107,7 @@ class _GitFile:
         released. Typically this will happen in a finally block.
     """
 
-    PROXY_PROPERTIES: ClassVar[Set[str]] = {
+    PROXY_PROPERTIES: ClassVar[set[str]] = {
         "closed",
         "encoding",
         "errors",
@@ -124,7 +116,7 @@ class _GitFile:
         "newlines",
         "softspace",
     }
-    PROXY_METHODS: ClassVar[Set[str]] = {
+    PROXY_METHODS: ClassVar[set[str]] = {
         "__iter__",
         "flush",
         "fileno",
@@ -139,10 +131,13 @@ class _GitFile:
         "writelines",
     }
 
-    def __init__(self, filename, mode, bufsize, mask) -> None:
-        self._filename = filename
+    def __init__(
+        self, filename: Union[str, bytes, os.PathLike], mode, bufsize, mask
+    ) -> None:
+        # Convert PathLike to str/bytes for our internal use
+        self._filename: Union[str, bytes] = os.fspath(filename)
         if isinstance(self._filename, bytes):
-            self._lockfilename = self._filename + b".lock"
+            self._lockfilename: Union[str, bytes] = self._filename + b".lock"
         else:
             self._lockfilename = self._filename + ".lock"
         try:
@@ -159,7 +154,7 @@ class _GitFile:
         for method in self.PROXY_METHODS:
             setattr(self, method, getattr(self._file, method))
 
-    def abort(self):
+    def abort(self) -> None:
         """Close and discard the lockfile without overwriting the target.
 
         If the file is already closed, this is a no-op.
@@ -174,7 +169,7 @@ class _GitFile:
             # The file may have been removed already, which is ok.
             self._closed = True
 
-    def close(self):
+    def close(self) -> None:
         """Close this file, saving the lockfile over the original.
 
         Note: If this method fails, it will attempt to delete the lockfile.
@@ -207,7 +202,7 @@ class _GitFile:
 
     def __del__(self) -> None:
         if not getattr(self, "_closed", True):
-            warnings.warn("unclosed %r" % self, ResourceWarning, stacklevel=2)
+            warnings.warn(f"unclosed {self!r}", ResourceWarning, stacklevel=2)
             self.abort()
 
     def __enter__(self):

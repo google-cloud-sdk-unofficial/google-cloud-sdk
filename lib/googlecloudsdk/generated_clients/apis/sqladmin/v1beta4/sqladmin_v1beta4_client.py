@@ -50,6 +50,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
     self.sslCerts = self.SslCertsService(self)
     self.tiers = self.TiersService(self)
     self.users = self.UsersService(self)
+    self.workloadCaptures = self.WorkloadCapturesService(self)
 
   class BackupRunsService(base_api.BaseApiService):
     """Service class for the backupRuns resource."""
@@ -571,7 +572,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.databases.delete',
         ordered_params=['project', 'instance', 'database'],
         path_params=['database', 'instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/databases/{database}',
         request_field='',
         request_type_name='SqlDatabasesDeleteRequest',
@@ -597,7 +598,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.databases.get',
         ordered_params=['project', 'instance', 'database'],
         path_params=['database', 'instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/databases/{database}',
         request_field='',
         request_type_name='SqlDatabasesGetRequest',
@@ -609,7 +610,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
       r"""Inserts a resource containing information about a database inside a Cloud SQL instance. **Note:** You can't modify the default character set and collation.
 
       Args:
-        request: (Database) input message
+        request: (SqlDatabasesInsertRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
       Returns:
         (Operation) The response message.
@@ -623,10 +624,10 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.databases.insert',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/databases',
-        request_field='<request>',
-        request_type_name='Database',
+        request_field='database',
+        request_type_name='SqlDatabasesInsertRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -649,7 +650,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.databases.list',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/databases',
         request_field='',
         request_type_name='SqlDatabasesListRequest',
@@ -675,7 +676,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.databases.patch',
         ordered_params=['project', 'instance', 'database'],
         path_params=['database', 'instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/databases/{database}',
         request_field='databaseResource',
         request_type_name='SqlDatabasesPatchRequest',
@@ -701,7 +702,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.databases.update',
         ordered_params=['project', 'instance', 'database'],
         path_params=['database', 'instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/databases/{database}',
         request_field='databaseResource',
         request_type_name='SqlDatabasesUpdateRequest',
@@ -773,7 +774,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.ListEntraIdCertificates',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/listEntraIdCertificates',
         request_field='',
         request_type_name='SqlInstancesListEntraIdCertificatesRequest',
@@ -799,7 +800,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.ListServerCertificates',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/listServerCertificates',
         request_field='',
         request_type_name='SqlInstancesListServerCertificatesRequest',
@@ -825,7 +826,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.RotateEntraIdCertificate',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/rotateEntraIdCertificate',
         request_field='instancesRotateEntraIdCertificateRequest',
         request_type_name='SqlInstancesRotateEntraIdCertificateRequest',
@@ -851,7 +852,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.RotateServerCertificate',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/rotateServerCertificate',
         request_field='instancesRotateServerCertificateRequest',
         request_type_name='SqlInstancesRotateServerCertificateRequest',
@@ -877,7 +878,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.acquireSsrsLease',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/acquireSsrsLease',
         request_field='instancesAcquireSsrsLeaseRequest',
         request_type_name='SqlInstancesAcquireSsrsLeaseRequest',
@@ -903,7 +904,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.addEntraIdCertificate',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/addEntraIdCertificate',
         request_field='',
         request_type_name='SqlInstancesAddEntraIdCertificateRequest',
@@ -955,7 +956,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.addServerCa',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/addServerCa',
         request_field='',
         request_type_name='SqlInstancesAddServerCaRequest',
@@ -981,7 +982,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.addServerCertificate',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/addServerCertificate',
         request_field='',
         request_type_name='SqlInstancesAddServerCertificateRequest',
@@ -1007,7 +1008,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.clone',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/clone',
         request_field='instancesCloneRequest',
         request_type_name='SqlInstancesCloneRequest',
@@ -1033,7 +1034,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.delete',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=['enableFinalBackup', 'finalBackupDescription', 'finalBackupExpiryTime', 'finalBackupTtlDays', 'retainBackups', 'retainBackupsExpiryTime', 'retainBackupsTtlDays', 'skipFinalBackup'],
+        query_params=['enableFinalBackup', 'finalBackupDescription', 'finalBackupExpiryTime', 'finalBackupTtlDays', 'location', 'retainBackups', 'retainBackupsExpiryTime', 'retainBackupsTtlDays', 'skipFinalBackup'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}',
         request_field='',
         request_type_name='SqlInstancesDeleteRequest',
@@ -1059,7 +1060,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.demote',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/demote',
         request_field='instancesDemoteRequest',
         request_type_name='SqlInstancesDemoteRequest',
@@ -1085,7 +1086,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.demoteMaster',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/demoteMaster',
         request_field='instancesDemoteMasterRequest',
         request_type_name='SqlInstancesDemoteMasterRequest',
@@ -1111,11 +1112,37 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.executeSql',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/executeSql',
         request_field='executeSqlPayload',
         request_type_name='SqlInstancesExecuteSqlRequest',
         response_type_name='SqlInstancesExecuteSqlResponse',
+        supports_download=False,
+    )
+
+    def ExecuteSqlReadOnly(self, request, global_params=None):
+      r"""Execute SQL statements in read-only mode.
+
+      Args:
+        request: (SqlInstancesExecuteSqlReadOnlyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SqlInstancesExecuteSqlReadOnlyResponse) The response message.
+      """
+      config = self.GetMethodConfig('ExecuteSqlReadOnly')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ExecuteSqlReadOnly.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='sql.instances.executeSqlReadOnly',
+        ordered_params=['project', 'instance'],
+        path_params=['instance', 'project'],
+        query_params=['location'],
+        relative_path='sql/v1beta4/projects/{project}/instances/{instance}/executeSqlReadOnly',
+        request_field='executeSqlReadOnlyPayload',
+        request_type_name='SqlInstancesExecuteSqlReadOnlyRequest',
+        response_type_name='SqlInstancesExecuteSqlReadOnlyResponse',
         supports_download=False,
     )
 
@@ -1137,7 +1164,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.export',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/export',
         request_field='instancesExportRequest',
         request_type_name='SqlInstancesExportRequest',
@@ -1163,7 +1190,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.failover',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/failover',
         request_field='instancesFailoverRequest',
         request_type_name='SqlInstancesFailoverRequest',
@@ -1189,7 +1216,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.get',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}',
         request_field='',
         request_type_name='SqlInstancesGetRequest',
@@ -1215,7 +1242,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.import',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/import',
         request_field='instancesImportRequest',
         request_type_name='SqlInstancesImportRequest',
@@ -1241,7 +1268,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.insert',
         ordered_params=['project'],
         path_params=['project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances',
         request_field='databaseInstance',
         request_type_name='SqlInstancesInsertRequest',
@@ -1267,37 +1294,11 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.list',
         ordered_params=['project'],
         path_params=['project'],
-        query_params=['filter', 'maxResults', 'pageToken'],
+        query_params=['filter', 'location', 'maxResults', 'pageToken'],
         relative_path='sql/v1beta4/projects/{project}/instances',
         request_field='',
         request_type_name='SqlInstancesListRequest',
         response_type_name='InstancesListResponse',
-        supports_download=False,
-    )
-
-    def ListCapturedWorkloads(self, request, global_params=None):
-      r"""Lists all captured workloads associated with the instance.
-
-      Args:
-        request: (SqlInstancesListCapturedWorkloadsRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (InstancesListCapturedWorkloadsResponse) The response message.
-      """
-      config = self.GetMethodConfig('ListCapturedWorkloads')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    ListCapturedWorkloads.method_config = lambda: base_api.ApiMethodInfo(
-        http_method='GET',
-        method_id='sql.instances.listCapturedWorkloads',
-        ordered_params=['project', 'instance'],
-        path_params=['instance', 'project'],
-        query_params=[],
-        relative_path='sql/v1beta4/projects/{project}/instances/{instance}/capturedWorkloads',
-        request_field='',
-        request_type_name='SqlInstancesListCapturedWorkloadsRequest',
-        response_type_name='InstancesListCapturedWorkloadsResponse',
         supports_download=False,
     )
 
@@ -1319,7 +1320,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.listServerCas',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/listServerCas',
         request_field='',
         request_type_name='SqlInstancesListServerCasRequest',
@@ -1345,7 +1346,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.patch',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=['enforcePsaWriteEndpoint', 'reconcilePscNetworking', 'reconcilePscNetworkingForce'],
+        query_params=['enforcePsaWriteEndpoint', 'location', 'reconcilePscNetworking', 'reconcilePscNetworkingForce'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}',
         request_field='databaseInstance',
         request_type_name='SqlInstancesPatchRequest',
@@ -1398,7 +1399,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.preCheckMajorVersionUpgrade',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/preCheckMajorVersionUpgrade',
         request_field='instancesPreCheckMajorVersionUpgradeRequest',
         request_type_name='SqlInstancesPreCheckMajorVersionUpgradeRequest',
@@ -1424,7 +1425,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.promoteReplica',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=['failover'],
+        query_params=['failover', 'location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/promoteReplica',
         request_field='',
         request_type_name='SqlInstancesPromoteReplicaRequest',
@@ -1450,7 +1451,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.reencrypt',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/reencrypt',
         request_field='instancesReencryptRequest',
         request_type_name='SqlInstancesReencryptRequest',
@@ -1476,7 +1477,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.releaseSsrsLease',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/releaseSsrsLease',
         request_field='',
         request_type_name='SqlInstancesReleaseSsrsLeaseRequest',
@@ -1528,7 +1529,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.resetSslConfig',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=['mode'],
+        query_params=['location', 'mode'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/resetSslConfig',
         request_field='',
         request_type_name='SqlInstancesResetSslConfigRequest',
@@ -1554,7 +1555,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.restart',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/restart',
         request_field='',
         request_type_name='SqlInstancesRestartRequest',
@@ -1580,7 +1581,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.restoreBackup',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/restoreBackup',
         request_field='instancesRestoreBackupRequest',
         request_type_name='SqlInstancesRestoreBackupRequest',
@@ -1606,7 +1607,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.rotateServerCa',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/rotateServerCa',
         request_field='instancesRotateServerCaRequest',
         request_type_name='SqlInstancesRotateServerCaRequest',
@@ -1632,62 +1633,10 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.startReplica',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/startReplica',
         request_field='',
         request_type_name='SqlInstancesStartReplicaRequest',
-        response_type_name='Operation',
-        supports_download=False,
-    )
-
-    def StartWorkloadCapture(self, request, global_params=None):
-      r"""Starts capturing the SQL queries, transactions, and other operations executed on the primary instance. This traffic is securely stored and forms a "captured workload". This workload can be replayed later on a different instance to safely test performance impacts, database upgrades, configuration changes etc. before applying them to production.
-
-      Args:
-        request: (SqlInstancesStartWorkloadCaptureRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (Operation) The response message.
-      """
-      config = self.GetMethodConfig('StartWorkloadCapture')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    StartWorkloadCapture.method_config = lambda: base_api.ApiMethodInfo(
-        http_method='POST',
-        method_id='sql.instances.startWorkloadCapture',
-        ordered_params=['project', 'instance'],
-        path_params=['instance', 'project'],
-        query_params=[],
-        relative_path='sql/v1beta4/projects/{project}/instances/{instance}:startWorkloadCapture',
-        request_field='sqlInstancesStartWorkloadCaptureRequest',
-        request_type_name='SqlInstancesStartWorkloadCaptureRequest',
-        response_type_name='Operation',
-        supports_download=False,
-    )
-
-    def StartWorkloadReplay(self, request, global_params=None):
-      r"""Starts executing a captured workload on a separate Cloud SQL instance provisioned for workload replay. This target instance simulates the production environment without affecting the primary instance.
-
-      Args:
-        request: (SqlInstancesStartWorkloadReplayRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (Operation) The response message.
-      """
-      config = self.GetMethodConfig('StartWorkloadReplay')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    StartWorkloadReplay.method_config = lambda: base_api.ApiMethodInfo(
-        http_method='POST',
-        method_id='sql.instances.startWorkloadReplay',
-        ordered_params=['project', 'instance'],
-        path_params=['instance', 'project'],
-        query_params=[],
-        relative_path='sql/v1beta4/projects/{project}/instances/{instance}:startWorkloadReplay',
-        request_field='sqlInstancesStartWorkloadReplayRequest',
-        request_type_name='SqlInstancesStartWorkloadReplayRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -1710,62 +1659,10 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.stopReplica',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/stopReplica',
         request_field='',
         request_type_name='SqlInstancesStopReplicaRequest',
-        response_type_name='Operation',
-        supports_download=False,
-    )
-
-    def StopWorkloadCapture(self, request, global_params=None):
-      r"""Stops capturing the query traffic and related operations executed on the primary instance.
-
-      Args:
-        request: (SqlInstancesStopWorkloadCaptureRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (Operation) The response message.
-      """
-      config = self.GetMethodConfig('StopWorkloadCapture')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    StopWorkloadCapture.method_config = lambda: base_api.ApiMethodInfo(
-        http_method='POST',
-        method_id='sql.instances.stopWorkloadCapture',
-        ordered_params=['project', 'instance'],
-        path_params=['instance', 'project'],
-        query_params=[],
-        relative_path='sql/v1beta4/projects/{project}/instances/{instance}:stopWorkloadCapture',
-        request_field='sqlInstancesStopWorkloadCaptureRequest',
-        request_type_name='SqlInstancesStopWorkloadCaptureRequest',
-        response_type_name='Operation',
-        supports_download=False,
-    )
-
-    def StopWorkloadReplay(self, request, global_params=None):
-      r"""Stops executing a captured workload on the separate Cloud SQL instance.
-
-      Args:
-        request: (SqlInstancesStopWorkloadReplayRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (Operation) The response message.
-      """
-      config = self.GetMethodConfig('StopWorkloadReplay')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    StopWorkloadReplay.method_config = lambda: base_api.ApiMethodInfo(
-        http_method='POST',
-        method_id='sql.instances.stopWorkloadReplay',
-        ordered_params=['project', 'instance'],
-        path_params=['instance', 'project'],
-        query_params=[],
-        relative_path='sql/v1beta4/projects/{project}/instances/{instance}:stopWorkloadReplay',
-        request_field='sqlInstancesStopWorkloadReplayRequest',
-        request_type_name='SqlInstancesStopWorkloadReplayRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -1788,7 +1685,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.switchover',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=['dbTimeout'],
+        query_params=['dbTimeout', 'location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/switchover',
         request_field='',
         request_type_name='SqlInstancesSwitchoverRequest',
@@ -1814,7 +1711,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.truncateLog',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/truncateLog',
         request_field='instancesTruncateLogRequest',
         request_type_name='SqlInstancesTruncateLogRequest',
@@ -1840,7 +1737,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.instances.update',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=['enforcePsaWriteEndpoint'],
+        query_params=['enforcePsaWriteEndpoint', 'location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}',
         request_field='databaseInstance',
         request_type_name='SqlInstancesUpdateRequest',
@@ -1964,7 +1861,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.projects.instances.getDiskShrinkConfig',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/getDiskShrinkConfig',
         request_field='',
         request_type_name='SqlProjectsInstancesGetDiskShrinkConfigRequest',
@@ -1990,7 +1887,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.projects.instances.getLatestRecoveryTime',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=['sourceInstanceDeletionTime'],
+        query_params=['location', 'sourceInstanceDeletionTime'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/getLatestRecoveryTime',
         request_field='',
         request_type_name='SqlProjectsInstancesGetLatestRecoveryTimeRequest',
@@ -2016,7 +1913,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.projects.instances.performDiskShrink',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/performDiskShrink',
         request_field='performDiskShrinkContext',
         request_type_name='SqlProjectsInstancesPerformDiskShrinkRequest',
@@ -2042,7 +1939,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.projects.instances.rescheduleMaintenance',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/rescheduleMaintenance',
         request_field='sqlInstancesRescheduleMaintenanceRequestBody',
         request_type_name='SqlProjectsInstancesRescheduleMaintenanceRequest',
@@ -2166,7 +2063,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.sslCerts.createEphemeral',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/createEphemeral',
         request_field='sslCertsCreateEphemeralRequest',
         request_type_name='SqlSslCertsCreateEphemeralRequest',
@@ -2342,7 +2239,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.users.delete',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=['host', 'name'],
+        query_params=['host', 'location', 'name'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/users',
         request_field='',
         request_type_name='SqlUsersDeleteRequest',
@@ -2368,7 +2265,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.users.get',
         ordered_params=['project', 'instance', 'name'],
         path_params=['instance', 'name', 'project'],
-        query_params=['host'],
+        query_params=['host', 'location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/users/{name}',
         request_field='',
         request_type_name='SqlUsersGetRequest',
@@ -2380,7 +2277,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
       r"""Creates a new user in a Cloud SQL instance.
 
       Args:
-        request: (User) input message
+        request: (SqlUsersInsertRequest) input message
         global_params: (StandardQueryParameters, default: None) global arguments
       Returns:
         (Operation) The response message.
@@ -2394,10 +2291,10 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.users.insert',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/users',
-        request_field='<request>',
-        request_type_name='User',
+        request_field='user',
+        request_type_name='SqlUsersInsertRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -2420,7 +2317,7 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.users.list',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=[],
+        query_params=['location'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/users',
         request_field='',
         request_type_name='SqlUsersListRequest',
@@ -2446,10 +2343,150 @@ class SqladminV1beta4(base_api.BaseApiClient):
         method_id='sql.users.update',
         ordered_params=['project', 'instance'],
         path_params=['instance', 'project'],
-        query_params=['databaseRoles', 'host', 'name', 'revokeExistingRoles', 'revokeExistingServerRoles', 'serverRoles'],
+        query_params=['databaseRoles', 'host', 'location', 'name', 'revokeExistingRoles', 'revokeExistingServerRoles', 'serverRoles'],
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/users',
         request_field='user',
         request_type_name='SqlUsersUpdateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class WorkloadCapturesService(base_api.BaseApiService):
+    """Service class for the workloadCaptures resource."""
+
+    _NAME = 'workloadCaptures'
+
+    def __init__(self, client):
+      super(SqladminV1beta4.WorkloadCapturesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def List(self, request, global_params=None):
+      r"""Lists all captured workloads associated with the instance.
+
+      Args:
+        request: (SqlWorkloadCapturesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (WorkloadCapturesListResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='sql.workloadCaptures.list',
+        ordered_params=['project', 'instance'],
+        path_params=['instance', 'project'],
+        query_params=['location'],
+        relative_path='sql/v1beta4/projects/{project}/instances/{instance}/workloadCaptures',
+        request_field='',
+        request_type_name='SqlWorkloadCapturesListRequest',
+        response_type_name='WorkloadCapturesListResponse',
+        supports_download=False,
+    )
+
+    def Start(self, request, global_params=None):
+      r"""Starts capturing the SQL queries, transactions, and other operations executed on the primary instance. This traffic is securely stored and forms a "captured workload". This workload can be replayed later on a different instance to safely test performance impacts, database upgrades, configuration changes etc. before applying them to production.
+
+      Args:
+        request: (SqlWorkloadCapturesStartRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Start')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Start.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='sql.workloadCaptures.start',
+        ordered_params=['project', 'instance'],
+        path_params=['instance', 'project'],
+        query_params=[],
+        relative_path='sql/v1beta4/projects/{project}/instances/{instance}/workloadCaptures:start',
+        request_field='sqlWorkloadCapturesStartRequest',
+        request_type_name='SqlWorkloadCapturesStartRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def StartReplay(self, request, global_params=None):
+      r"""Starts executing a captured workload on a separate Cloud SQL instance provisioned for workload replay. This target instance simulates the production environment without affecting the primary instance.
+
+      Args:
+        request: (SqlWorkloadCapturesStartReplayRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('StartReplay')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    StartReplay.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='sql.workloadCaptures.startReplay',
+        ordered_params=['project', 'instance', 'workloadId'],
+        path_params=['instance', 'project', 'workloadId'],
+        query_params=[],
+        relative_path='sql/v1beta4/projects/{project}/instances/{instance}/workloadCaptures/{workloadId}:startReplay',
+        request_field='sqlWorkloadCapturesStartReplayRequest',
+        request_type_name='SqlWorkloadCapturesStartReplayRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Stop(self, request, global_params=None):
+      r"""Stops capturing the query traffic and related operations executed on the primary instance.
+
+      Args:
+        request: (SqlWorkloadCapturesStopRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Stop')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Stop.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='sql.workloadCaptures.stop',
+        ordered_params=['project', 'instance'],
+        path_params=['instance', 'project'],
+        query_params=[],
+        relative_path='sql/v1beta4/projects/{project}/instances/{instance}/workloadCaptures:stop',
+        request_field='sqlWorkloadCapturesStopRequest',
+        request_type_name='SqlWorkloadCapturesStopRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def StopReplay(self, request, global_params=None):
+      r"""Stops executing a captured workload on the separate Cloud SQL instance.
+
+      Args:
+        request: (SqlWorkloadCapturesStopReplayRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('StopReplay')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    StopReplay.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='sql.workloadCaptures.stopReplay',
+        ordered_params=['project', 'instance', 'workloadId'],
+        path_params=['instance', 'project', 'workloadId'],
+        query_params=[],
+        relative_path='sql/v1beta4/projects/{project}/instances/{instance}/workloadCaptures/{workloadId}:stopReplay',
+        request_field='sqlWorkloadCapturesStopReplayRequest',
+        request_type_name='SqlWorkloadCapturesStopReplayRequest',
         response_type_name='Operation',
         supports_download=False,
     )

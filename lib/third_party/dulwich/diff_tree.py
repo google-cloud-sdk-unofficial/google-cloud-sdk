@@ -1,8 +1,9 @@
 # diff_tree.py -- Utilities for diffing files and trees.
 # Copyright (C) 2010 Google, Inc.
 #
+# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 # Dulwich is dual-licensed under the Apache License, Version 2.0 and the GNU
-# General Public License as public by the Free Software Foundation; version 2.0
+# General Public License as published by the Free Software Foundation; version 2.0
 # or (at your option) any later version. You can redistribute it and/or
 # modify it under the terms of either of these two licenses.
 #
@@ -22,11 +23,13 @@
 
 import stat
 from collections import defaultdict, namedtuple
+from collections.abc import Iterator
 from io import BytesIO
 from itertools import chain
-from typing import Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Callable, Optional, TypeVar
 
-from .objects import S_ISGITLINK, Tree, TreeEntry
+from .object_store import BaseObjectStore
+from .objects import S_ISGITLINK, ObjectID, ShaFile, Tree, TreeEntry
 
 # TreeChange type constants.
 CHANGE_ADD = "add"
@@ -43,23 +46,23 @@ _NULL_ENTRY = TreeEntry(None, None, None)
 _MAX_SCORE = 100
 RENAME_THRESHOLD = 60
 MAX_FILES = 200
-REWRITE_THRESHOLD = None
+REWRITE_THRESHOLD: Optional[int] = None
 
 
 class TreeChange(namedtuple("TreeChange", ["type", "old", "new"])):
     """Named tuple a single change between two trees."""
 
     @classmethod
-    def add(cls, new):
+    def add(cls, new: TreeEntry) -> "TreeChange":
         return cls(CHANGE_ADD, _NULL_ENTRY, new)
 
     @classmethod
-    def delete(cls, old):
+    def delete(cls, old: TreeEntry) -> "TreeChange":
         return cls(CHANGE_DELETE, old, _NULL_ENTRY)
 
 
-def _tree_entries(path: str, tree: Tree) -> List[TreeEntry]:
-    result: List[TreeEntry] = []
+def _tree_entries(path: bytes, tree: Tree) -> list[TreeEntry]:
+    result: list[TreeEntry] = []
     if not tree:
         return result
     for entry in tree.iteritems(name_order=True):
@@ -67,7 +70,9 @@ def _tree_entries(path: str, tree: Tree) -> List[TreeEntry]:
     return result
 
 
-def _merge_entries(path, tree1, tree2):
+def _merge_entries(
+    path: bytes, tree1: Tree, tree2: Tree
+) -> list[tuple[TreeEntry, TreeEntry]]:
     """Merge the entries of two trees.
 
     Args:
@@ -108,14 +113,20 @@ def _merge_entries(path, tree1, tree2):
     return result
 
 
-def _is_tree(entry):
+def _is_tree(entry: TreeEntry) -> bool:
     mode = entry.mode
     if mode is None:
         return False
     return stat.S_ISDIR(mode)
 
 
-def walk_trees(store, tree1_id, tree2_id, prune_identical=False):
+def walk_trees(
+    store: BaseObjectStore,
+    tree1_id: Optional[ObjectID],
+    tree2_id: Optional[ObjectID],
+    prune_identical: bool = False,
+    paths: Optional[list[bytes]] = None,
+) -> Iterator[tuple[TreeEntry, TreeEntry]]:
     """Recursively walk all the entries of two trees.
 
     Iteration is depth-first pre-order, as in e.g. os.walk.
@@ -125,6 +136,7 @@ def walk_trees(store, tree1_id, tree2_id, prune_identical=False):
       tree1_id: The SHA of the first Tree object to iterate, or None.
       tree2_id: The SHA of the second Tree object to iterate, or None.
       prune_identical: If True, identical subtrees will not be walked.
+      paths: Optional list of paths to filter to (as bytes).
 
     Returns:
       Iterator over Pairs of TreeEntry objects for each pair of entries
@@ -135,8 +147,8 @@ def walk_trees(store, tree1_id, tree2_id, prune_identical=False):
     """
     # This could be fairly easily generalized to >2 trees if we find a use
     # case.
-    mode1 = tree1_id and stat.S_IFDIR or None
-    mode2 = tree2_id and stat.S_IFDIR or None
+    mode1 = (tree1_id and stat.S_IFDIR) or None
+    mode2 = (tree2_id and stat.S_IFDIR) or None
     todo = [(TreeEntry(b"", mode1, tree1_id), TreeEntry(b"", mode2, tree2_id))]
     while todo:
         entry1, entry2 = todo.pop()
@@ -145,28 +157,85 @@ def walk_trees(store, tree1_id, tree2_id, prune_identical=False):
         if prune_identical and is_tree1 and is_tree2 and entry1 == entry2:
             continue
 
-        tree1 = is_tree1 and store[entry1.sha] or None
-        tree2 = is_tree2 and store[entry2.sha] or None
+        tree1 = (is_tree1 and store[entry1.sha]) or None
+        tree2 = (is_tree2 and store[entry2.sha]) or None
         path = entry1.path or entry2.path
-        todo.extend(reversed(_merge_entries(path, tree1, tree2)))
-        yield entry1, entry2
+
+        # If we have path filters, check if we should process this tree
+        if paths is not None and (is_tree1 or is_tree2):
+            # Special case for root tree
+            if path == b"":
+                should_recurse = True
+            else:
+                # Check if any of our filter paths could be under this tree
+                should_recurse = False
+                for filter_path in paths:
+                    if filter_path == path:
+                        # Exact match - we want this directory itself
+                        should_recurse = True
+                        break
+                    elif filter_path.startswith(path + b"/"):
+                        # Filter path is under this directory
+                        should_recurse = True
+                        break
+                    elif path.startswith(filter_path + b"/"):
+                        # This directory is under a filter path
+                        should_recurse = True
+                        break
+            if not should_recurse:
+                # Skip this tree entirely
+                continue
+
+        # Ensure trees are Tree objects before merging
+        if tree1 is not None and not isinstance(tree1, Tree):
+            tree1 = None
+        if tree2 is not None and not isinstance(tree2, Tree):
+            tree2 = None
+
+        if tree1 is not None or tree2 is not None:
+            # Use empty trees for None values
+            if tree1 is None:
+                tree1 = Tree()
+            if tree2 is None:
+                tree2 = Tree()
+            todo.extend(reversed(_merge_entries(path, tree1, tree2)))
+
+        # Only yield entries that match our path filters
+        if paths is None:
+            yield entry1, entry2
+        else:
+            # Check if this entry matches any of our filters
+            for filter_path in paths:
+                if path == filter_path:
+                    # Exact match
+                    yield entry1, entry2
+                    break
+                elif path.startswith(filter_path + b"/"):
+                    # This entry is under a filter directory
+                    yield entry1, entry2
+                    break
+                elif filter_path.startswith(path + b"/") and (is_tree1 or is_tree2):
+                    # This is a parent directory of a filter path
+                    yield entry1, entry2
+                    break
 
 
-def _skip_tree(entry, include_trees):
+def _skip_tree(entry: TreeEntry, include_trees: bool) -> TreeEntry:
     if entry.mode is None or (not include_trees and stat.S_ISDIR(entry.mode)):
         return _NULL_ENTRY
     return entry
 
 
 def tree_changes(
-    store,
-    tree1_id,
-    tree2_id,
-    want_unchanged=False,
-    rename_detector=None,
-    include_trees=False,
-    change_type_same=False,
-):
+    store: BaseObjectStore,
+    tree1_id: Optional[ObjectID],
+    tree2_id: Optional[ObjectID],
+    want_unchanged: bool = False,
+    rename_detector: Optional["RenameDetector"] = None,
+    include_trees: bool = False,
+    change_type_same: bool = False,
+    paths: Optional[list[bytes]] = None,
+) -> Iterator[TreeChange]:
     """Find the differences between the contents of two trees.
 
     Args:
@@ -179,6 +248,7 @@ def tree_changes(
       rename_detector: RenameDetector object for detecting renames.
       change_type_same: Whether to report change types in the same
         entry or as delete+add.
+      paths: Optional list of paths to filter to (as bytes).
 
     Returns:
       Iterator over TreeChange instances for each change between the
@@ -194,7 +264,7 @@ def tree_changes(
         return
 
     entries = walk_trees(
-        store, tree1_id, tree2_id, prune_identical=(not want_unchanged)
+        store, tree1_id, tree2_id, prune_identical=(not want_unchanged), paths=paths
     )
     for entry1, entry2 in entries:
         if entry1 == entry2 and not want_unchanged:
@@ -227,18 +297,27 @@ def tree_changes(
         yield TreeChange(change_type, entry1, entry2)
 
 
-def _all_eq(seq, key, value):
+T = TypeVar("T")
+U = TypeVar("U")
+
+
+def _all_eq(seq: list[T], key: Callable[[T], U], value: U) -> bool:
     for e in seq:
         if key(e) != value:
             return False
     return True
 
 
-def _all_same(seq, key):
+def _all_same(seq: list[Any], key: Callable[[Any], Any]) -> bool:
     return _all_eq(seq[1:], key, key(seq[0]))
 
 
-def tree_changes_for_merge(store, parent_tree_ids, tree_id, rename_detector=None):
+def tree_changes_for_merge(
+    store: BaseObjectStore,
+    parent_tree_ids: list[ObjectID],
+    tree_id: ObjectID,
+    rename_detector: Optional["RenameDetector"] = None,
+) -> Iterator[list[Optional[TreeChange]]]:
     """Get the tree changes for a merge tree relative to all its parents.
 
     Args:
@@ -264,7 +343,7 @@ def tree_changes_for_merge(store, parent_tree_ids, tree_id, rename_detector=None
         for t in parent_tree_ids
     ]
     num_parents = len(parent_tree_ids)
-    changes_by_path: Dict[str, List[Optional[TreeChange]]] = defaultdict(
+    changes_by_path: dict[str, list[Optional[TreeChange]]] = defaultdict(
         lambda: [None] * num_parents
     )
 
@@ -277,10 +356,10 @@ def tree_changes_for_merge(store, parent_tree_ids, tree_id, rename_detector=None
                 path = change.new.path
             changes_by_path[path][i] = change
 
-    def old_sha(c):
+    def old_sha(c: TreeChange) -> Optional[ObjectID]:
         return c.old.sha
 
-    def change_type(c):
+    def change_type(c: TreeChange) -> str:
         return c.type
 
     # Yield only conflicting changes.
@@ -302,7 +381,7 @@ def tree_changes_for_merge(store, parent_tree_ids, tree_id, rename_detector=None
 _BLOCK_SIZE = 64
 
 
-def _count_blocks(obj):
+def _count_blocks(obj: ShaFile) -> dict[int, int]:
     """Count the blocks in an object.
 
     Splits the data into blocks either on lines or <=64-byte chunks of lines.
@@ -313,7 +392,7 @@ def _count_blocks(obj):
     Returns:
       A dict of block hashcode -> total bytes occurring.
     """
-    block_counts: Dict[int, int] = defaultdict(int)
+    block_counts: dict[int, int] = defaultdict(int)
     block = BytesIO()
     n = 0
 
@@ -324,10 +403,10 @@ def _count_blocks(obj):
     block_getvalue = block.getvalue
 
     for c in chain.from_iterable(obj.as_raw_chunks()):
-        c = c.to_bytes(1, "big")
-        block_write(c)
+        cb = c.to_bytes(1, "big")
+        block_write(cb)
         n += 1
-        if c == b"\n" or n == _BLOCK_SIZE:
+        if cb == b"\n" or n == _BLOCK_SIZE:
             value = block_getvalue()
             block_counts[hash(value)] += len(value)
             block_seek(0)
@@ -339,7 +418,7 @@ def _count_blocks(obj):
     return block_counts
 
 
-def _common_bytes(blocks1, blocks2):
+def _common_bytes(blocks1: dict[int, int], blocks2: dict[int, int]) -> int:
     """Count the number of common bytes in two block count dicts.
 
     Args:
@@ -361,7 +440,11 @@ def _common_bytes(blocks1, blocks2):
     return score
 
 
-def _similarity_score(obj1, obj2, block_cache=None):
+def _similarity_score(
+    obj1: ShaFile,
+    obj2: ShaFile,
+    block_cache: Optional[dict[ObjectID, dict[int, int]]] = None,
+) -> int:
     """Compute a similarity score for two objects.
 
     Args:
@@ -389,7 +472,7 @@ def _similarity_score(obj1, obj2, block_cache=None):
     return int(float(common_bytes) * _MAX_SCORE / max_size)
 
 
-def _tree_change_key(entry):
+def _tree_change_key(entry: TreeChange) -> tuple[bytes, bytes]:
     # Sort by old path then new path. If only one exists, use it for both keys.
     path1 = entry.old.path
     path2 = entry.new.path
@@ -403,13 +486,18 @@ def _tree_change_key(entry):
 class RenameDetector:
     """Object for handling rename detection between two trees."""
 
+    _adds: list[TreeChange]
+    _deletes: list[TreeChange]
+    _changes: list[TreeChange]
+    _candidates: list[tuple[int, TreeChange]]
+
     def __init__(
         self,
-        store,
-        rename_threshold=RENAME_THRESHOLD,
-        max_files=MAX_FILES,
-        rewrite_threshold=REWRITE_THRESHOLD,
-        find_copies_harder=False,
+        store: BaseObjectStore,
+        rename_threshold: int = RENAME_THRESHOLD,
+        max_files: Optional[int] = MAX_FILES,
+        rewrite_threshold: Optional[int] = REWRITE_THRESHOLD,
+        find_copies_harder: bool = False,
     ) -> None:
         """Initialize the rename detector.
 
@@ -435,12 +523,12 @@ class RenameDetector:
         self._find_copies_harder = find_copies_harder
         self._want_unchanged = False
 
-    def _reset(self):
+    def _reset(self) -> None:
         self._adds = []
         self._deletes = []
         self._changes = []
 
-    def _should_split(self, change):
+    def _should_split(self, change: TreeChange) -> bool:
         if (
             self._rewrite_threshold is None
             or change.type != CHANGE_MODIFY
@@ -451,7 +539,7 @@ class RenameDetector:
         new_obj = self._store[change.new.sha]
         return _similarity_score(old_obj, new_obj) < self._rewrite_threshold
 
-    def _add_change(self, change):
+    def _add_change(self, change: TreeChange) -> None:
         if change.type == CHANGE_ADD:
             self._adds.append(change)
         elif change.type == CHANGE_DELETE:
@@ -470,7 +558,9 @@ class RenameDetector:
         else:
             self._changes.append(change)
 
-    def _collect_changes(self, tree1_id, tree2_id):
+    def _collect_changes(
+        self, tree1_id: Optional[ObjectID], tree2_id: Optional[ObjectID]
+    ) -> None:
         want_unchanged = self._find_copies_harder or self._want_unchanged
         for change in tree_changes(
             self._store,
@@ -481,11 +571,11 @@ class RenameDetector:
         ):
             self._add_change(change)
 
-    def _prune(self, add_paths, delete_paths):
+    def _prune(self, add_paths: set[bytes], delete_paths: set[bytes]) -> None:
         self._adds = [a for a in self._adds if a.new.path not in add_paths]
         self._deletes = [d for d in self._deletes if d.old.path not in delete_paths]
 
-    def _find_exact_renames(self):
+    def _find_exact_renames(self) -> None:
         add_map = defaultdict(list)
         for add in self._adds:
             add_map[add.new.sha].append(add.new)
@@ -506,7 +596,7 @@ class RenameDetector:
                 if is_delete:
                     delete_paths.add(old.path)
                 add_paths.add(new.path)
-                new_type = is_delete and CHANGE_RENAME or CHANGE_COPY
+                new_type = (is_delete and CHANGE_RENAME) or CHANGE_COPY
                 self._changes.append(TreeChange(new_type, old, new))
 
             num_extra_adds = len(sha_adds) - len(sha_deletes)
@@ -518,10 +608,14 @@ class RenameDetector:
                     self._changes.append(TreeChange(CHANGE_COPY, old, new))
         self._prune(add_paths, delete_paths)
 
-    def _should_find_content_renames(self):
+    def _should_find_content_renames(self) -> bool:
+        if self._max_files is None:
+            return True
         return len(self._adds) * len(self._deletes) <= self._max_files**2
 
-    def _rename_type(self, check_paths, delete, add):
+    def _rename_type(
+        self, check_paths: bool, delete: TreeChange, add: TreeChange
+    ) -> str:
         if check_paths and delete.old.path == add.new.path:
             # If the paths match, this must be a split modify, so make sure it
             # comes out as a modify.
@@ -533,7 +627,7 @@ class RenameDetector:
             return CHANGE_COPY
         return CHANGE_RENAME
 
-    def _find_content_rename_candidates(self):
+    def _find_content_rename_candidates(self) -> None:
         candidates = self._candidates = []
         # TODO: Optimizations:
         #  - Compare object sizes before counting blocks.
@@ -562,7 +656,7 @@ class RenameDetector:
                     rename = TreeChange(new_type, delete.old, add.new)
                     candidates.append((-score, rename))
 
-    def _choose_content_renames(self):
+    def _choose_content_renames(self) -> None:
         # Sort scores from highest to lowest, but keep names in ascending
         # order.
         self._candidates.sort()
@@ -586,7 +680,7 @@ class RenameDetector:
             self._changes.append(change)
         self._prune(add_paths, delete_paths)
 
-    def _join_modifies(self):
+    def _join_modifies(self) -> None:
         if self._rewrite_threshold is None:
             return
 
@@ -604,7 +698,7 @@ class RenameDetector:
         self._deletes = [a for a in self._deletes if a.new.path not in modifies]
         self._changes += modifies.values()
 
-    def _sorted_changes(self):
+    def _sorted_changes(self) -> list[TreeChange]:
         result = []
         result.extend(self._adds)
         result.extend(self._deletes)
@@ -612,14 +706,18 @@ class RenameDetector:
         result.sort(key=_tree_change_key)
         return result
 
-    def _prune_unchanged(self):
+    def _prune_unchanged(self) -> None:
         if self._want_unchanged:
             return
         self._deletes = [d for d in self._deletes if d.type != CHANGE_UNCHANGED]
 
     def changes_with_renames(
-        self, tree1_id, tree2_id, want_unchanged=False, include_trees=False
-    ):
+        self,
+        tree1_id: Optional[ObjectID],
+        tree2_id: Optional[ObjectID],
+        want_unchanged: bool = False,
+        include_trees: bool = False,
+    ) -> list[TreeChange]:
         """Iterate TreeChanges between two tree SHAs, with rename detection."""
         self._reset()
         self._want_unchanged = want_unchanged
@@ -637,19 +735,27 @@ class RenameDetector:
 _is_tree_py = _is_tree
 _merge_entries_py = _merge_entries
 _count_blocks_py = _count_blocks
-try:
-    # Try to import C versions
-    from dulwich._diff_tree import (  # type: ignore
-        _count_blocks,
-        _is_tree,
-        _merge_entries,
-    )
-except ImportError:
+
+if TYPE_CHECKING:
+    # For type checking, use the Python implementations
+    pass
+else:
+    # At runtime, try to import Rust extensions
     try:
-        from dulwich.crates.diff_tree._diff_tree import (  # type: ignore
-            _count_blocks,
-            _is_tree,
-            _merge_entries,
+        # Try to import Rust versions
+        from dulwich._diff_tree import (
+            _count_blocks as _rust_count_blocks,
         )
+        from dulwich._diff_tree import (
+            _is_tree as _rust_is_tree,
+        )
+        from dulwich._diff_tree import (
+            _merge_entries as _rust_merge_entries,
+        )
+
+        # Override with Rust versions
+        _count_blocks = _rust_count_blocks
+        _is_tree = _rust_is_tree
+        _merge_entries = _rust_merge_entries
     except ImportError:
         pass

@@ -24,6 +24,56 @@ DOCS_URL = 'https://cloud.google.com/dataflow'
 class Collections(enum.Enum):
   """Collections for all supported apis."""
 
+  FOLDERS = (
+      'folders',
+      'folders/{foldersId}',
+      {},
+      ['foldersId'],
+      True
+  )
+  FOLDERS_LOCATIONS = (
+      'folders.locations',
+      'folders/{foldersId}/locations/{locationsId}',
+      {},
+      ['foldersId', 'locationsId'],
+      True
+  )
+  FOLDERS_LOCATIONS_CONFIGSTORESETTINGS = (
+      'folders.locations.configStoreSettings',
+      '{+name}',
+      {
+          '':
+              'folders/{foldersId}/locations/{locationsId}/'
+              'configStoreSettings/{configStoreSettingsId}',
+      },
+      ['name'],
+      True
+  )
+  ORGANIZATIONS = (
+      'organizations',
+      'organizations/{organizationsId}',
+      {},
+      ['organizationsId'],
+      True
+  )
+  ORGANIZATIONS_LOCATIONS = (
+      'organizations.locations',
+      'organizations/{organizationsId}/locations/{locationsId}',
+      {},
+      ['organizationsId', 'locationsId'],
+      True
+  )
+  ORGANIZATIONS_LOCATIONS_CONFIGSTORESETTINGS = (
+      'organizations.locations.configStoreSettings',
+      '{+name}',
+      {
+          '':
+              'organizations/{organizationsId}/locations/{locationsId}/'
+              'configStoreSettings/{configStoreSettingsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS = (
       'projects',
       'projects/{projectId}',
@@ -53,6 +103,17 @@ class Collections(enum.Enum):
       'projects/{projectId}/locations/{location}',
       {},
       ['projectId', 'location'],
+      True
+  )
+  PROJECTS_LOCATIONS_CONFIGSTORESETTINGS = (
+      'projects.locations.configStoreSettings',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'configStoreSettings/{configStoreSettingsId}',
+      },
+      ['name'],
       True
   )
   PROJECTS_LOCATIONS_DEPLOYMENTS = (

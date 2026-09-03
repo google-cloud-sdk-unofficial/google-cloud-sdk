@@ -1438,6 +1438,17 @@ class InstancesBulkInsertOperationMetadata(_messages.Message):
   perLocationStatus = _messages.MessageField('PerLocationStatusValue', 2)
 
 
+class InstancesTroubleshootOperationMetadata(_messages.Message):
+  r"""[Output Only] Operation metadata for instances.troubleshoot.
+
+  Fields:
+    troubleshootOutput: Output only. [Output Only] Serialized output of the
+      troubleshooting diagnostic run.
+  """
+
+  troubleshootOutput = _messages.StringField(1)
+
+
 class LocalizedMessage(_messages.Message):
   r"""Provides a localized error message that is safe to return to the user
   which can be attached to an RPC error.
@@ -1551,6 +1562,8 @@ class Operation(_messages.Message):
       value is in RFC3339 text format.
     instancesBulkInsertOperationMetadata: A
       InstancesBulkInsertOperationMetadata attribute.
+    instancesTroubleshootOperationMetadata: Output only. [Output Only]
+      Operation metadata for instances.troubleshoot.
     kind: Output only. [Output Only] Type of the resource. Always
       `compute#operation` for Operation resources.
     name: [Output Only] Name of the operation.
@@ -1861,24 +1874,25 @@ class Operation(_messages.Message):
   id = _messages.IntegerField(12, variant=_messages.Variant.UINT64)
   insertTime = _messages.StringField(13)
   instancesBulkInsertOperationMetadata = _messages.MessageField('InstancesBulkInsertOperationMetadata', 14)
-  kind = _messages.StringField(15, default='compute#operation')
-  name = _messages.StringField(16)
-  operationGroupId = _messages.StringField(17)
-  operationType = _messages.StringField(18)
-  progress = _messages.IntegerField(19, variant=_messages.Variant.INT32)
-  region = _messages.StringField(20)
-  selfLink = _messages.StringField(21)
-  selfLinkWithId = _messages.StringField(22)
-  setAutoscalerLinkOperationMetadata = _messages.MessageField('SetAutoscalerLinkOperationMetadata', 23)
-  setCommonInstanceMetadataOperationMetadata = _messages.MessageField('SetCommonInstanceMetadataOperationMetadata', 24)
-  startTime = _messages.StringField(25)
-  status = _messages.EnumField('StatusValueValuesEnum', 26)
-  statusMessage = _messages.StringField(27)
-  targetId = _messages.IntegerField(28, variant=_messages.Variant.UINT64)
-  targetLink = _messages.StringField(29)
-  user = _messages.StringField(30)
-  warnings = _messages.MessageField('WarningsValueListEntry', 31, repeated=True)
-  zone = _messages.StringField(32)
+  instancesTroubleshootOperationMetadata = _messages.MessageField('InstancesTroubleshootOperationMetadata', 15)
+  kind = _messages.StringField(16, default='compute#operation')
+  name = _messages.StringField(17)
+  operationGroupId = _messages.StringField(18)
+  operationType = _messages.StringField(19)
+  progress = _messages.IntegerField(20, variant=_messages.Variant.INT32)
+  region = _messages.StringField(21)
+  selfLink = _messages.StringField(22)
+  selfLinkWithId = _messages.StringField(23)
+  setAutoscalerLinkOperationMetadata = _messages.MessageField('SetAutoscalerLinkOperationMetadata', 24)
+  setCommonInstanceMetadataOperationMetadata = _messages.MessageField('SetCommonInstanceMetadataOperationMetadata', 25)
+  startTime = _messages.StringField(26)
+  status = _messages.EnumField('StatusValueValuesEnum', 27)
+  statusMessage = _messages.StringField(28)
+  targetId = _messages.IntegerField(29, variant=_messages.Variant.UINT64)
+  targetLink = _messages.StringField(30)
+  user = _messages.StringField(31)
+  warnings = _messages.MessageField('WarningsValueListEntry', 32, repeated=True)
+  zone = _messages.StringField(33)
 
 
 class OperationDetails(_messages.Message):

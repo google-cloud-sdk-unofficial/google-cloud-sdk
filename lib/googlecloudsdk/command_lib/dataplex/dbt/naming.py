@@ -67,16 +67,19 @@ MAX_DISPLAY_NAME_LENGTH = 500
 MAX_DESCRIPTION_LENGTH = 2000
 MAX_LABEL_LENGTH = 128
 
-# Short emitter key -> entryLinkType id. The fully-qualified name is built per
+# entryLinkType ids the transform emits. The fully-qualified name is built per
 # run against the resolved system-types project via ``Context.link_type_fqn``.
-LINK_TYPE_IDS: dict[str, str] = {
-    'depends_on': 'depends-on-lineage-imported',
-    'schema_join': 'schema-join',
-    'materializes_to': 'represents',
-    'consumed_by': 'depends-on-imported',
-    'defines_semantics_for': 'represents',
-    'derives_from': 'depends-on-imported',
-}
+# An edge is typed by what it asserts, not by where it came from: DEPENDS_ON
+# for a flow of data, REFERENCE for an association drawn from metadata.
+DEPENDS_ON_LINK_TYPE = 'depends-on'
+REFERENCE_LINK_TYPE = 'reference'
+SCHEMA_JOIN_LINK_TYPE = 'schema-join'
+
+LINK_TYPE_IDS: tuple[str, ...] = (
+    DEPENDS_ON_LINK_TYPE,
+    REFERENCE_LINK_TYPE,
+    SCHEMA_JOIN_LINK_TYPE,
+)
 
 
 def entry_id(unique_id: str) -> str:
@@ -285,8 +288,8 @@ class Context:
     """Returns the `schema-join` aspect's key for a link's aspect map."""
     return f'{self.system_project}.{self.types_location}.schema-join'
 
-  def link_type_fqn(self, short_name: str) -> str:
+  def link_type_fqn(self, link_type_id: str) -> str:
     """Returns the full resource name of a core entry link type."""
     return 'projects/{0}/locations/{1}/entryLinkTypes/{2}'.format(
-        self.system_project, self.types_location, LINK_TYPE_IDS[short_name]
+        self.system_project, self.types_location, link_type_id
     )

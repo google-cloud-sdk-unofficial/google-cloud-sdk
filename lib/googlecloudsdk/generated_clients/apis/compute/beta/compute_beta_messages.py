@@ -12709,6 +12709,193 @@ class ComputeCrossSiteNetworksPatchRequest(_messages.Message):
   validateOnly = _messages.BooleanField(6)
 
 
+class ComputeDhcpOptionsConfigsDeleteRequest(_messages.Message):
+  r"""A ComputeDhcpOptionsConfigsDeleteRequest object.
+
+  Fields:
+    dhcpOptionsConfig: Name of the DhcpOptionsConfig resource to delete.
+    project: Project ID for this request.
+    region: Name of the region of this request.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.  For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server can check if original operation with the same request ID was
+      received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments.  The request
+      ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000). end_interface:
+      MixerMutationRequestBuilder
+  """
+
+  dhcpOptionsConfig = _messages.StringField(1, required=True)
+  project = _messages.StringField(2, required=True)
+  region = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class ComputeDhcpOptionsConfigsGetRequest(_messages.Message):
+  r"""A ComputeDhcpOptionsConfigsGetRequest object.
+
+  Fields:
+    dhcpOptionsConfig: Name of the DhcpOptionsConfig resource to return.
+    project: Project ID for this request.
+    region: Name of the region of this request.
+  """
+
+  dhcpOptionsConfig = _messages.StringField(1, required=True)
+  project = _messages.StringField(2, required=True)
+  region = _messages.StringField(3, required=True)
+
+
+class ComputeDhcpOptionsConfigsInsertRequest(_messages.Message):
+  r"""A ComputeDhcpOptionsConfigsInsertRequest object.
+
+  Fields:
+    dhcpOptionsConfig: A DhcpOptionsConfig resource to be passed as the
+      request body.
+    project: Project ID for this request.
+    region: Name of the region of this request.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.  For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server can check if original operation with the same request ID was
+      received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments.  The request
+      ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000). end_interface:
+      MixerMutationRequestBuilder
+  """
+
+  dhcpOptionsConfig = _messages.MessageField('DhcpOptionsConfig', 1)
+  project = _messages.StringField(2, required=True)
+  region = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class ComputeDhcpOptionsConfigsListRequest(_messages.Message):
+  r"""A ComputeDhcpOptionsConfigsListRequest object.
+
+  Fields:
+    filter: A filter expression that filters resources listed in the response.
+      Most Compute resources support two types of filter expressions:
+      expressions that support regular expressions and expressions that follow
+      API improvement proposal AIP-160. These two types of filter expressions
+      cannot be mixed in one request.  If you want to use AIP-160, your
+      expression must specify the field name, an operator, and the value that
+      you want to use for filtering. The value must be a string, a number, or
+      a boolean. The operator must be either `=`, `!=`, `>`, `<`, `<=`, `>=`
+      or `:`.  For example, if you are filtering Compute Engine instances, you
+      can exclude instances named `example-instance` by specifying `name !=
+      example-instance`.  The `:*` comparison can be used to test whether a
+      key has been defined. For example, to find all objects with `owner`
+      label use: ``` labels.owner:* ```  You can also filter nested fields.
+      For example, you could specify `scheduling.automaticRestart = false` to
+      include instances only if they are not scheduled for automatic restarts.
+      You can use filtering on nested fields to filter based onresource
+      labels.  To filter on multiple expressions, provide each separate
+      expression within parentheses. For example: ```
+      (scheduling.automaticRestart = true) (cpuPlatform = "Intel Skylake") ```
+      By default, each expression is an `AND` expression. However, you can
+      include `AND` and `OR` expressions explicitly. For example: ```
+      (cpuPlatform = "Intel Skylake") OR (cpuPlatform = "Intel Broadwell") AND
+      (scheduling.automaticRestart = true) ```  If you want to use a regular
+      expression, use the `eq` (equal) or `ne` (not equal) operator against a
+      single un-parenthesized expression with or without quotes or against
+      multiple parenthesized expressions. Examples:  `fieldname eq unquoted
+      literal` `fieldname eq 'single quoted literal'` `fieldname eq "double
+      quoted literal"` `(fieldname1 eq literal) (fieldname2 ne "literal")`
+      The literal value is interpreted as a regular expression using GoogleRE2
+      library syntax. The literal value must match the entire field.  For
+      example, to filter for instances that do not end with name "instance",
+      you would use `name ne .*instance`.  You cannot combine constraints on
+      multiple fields using regular expressions.
+    maxResults: The maximum number of results per page that should be
+      returned. If the number of available results is larger than
+      `maxResults`, Compute Engine returns a `nextPageToken` that can be used
+      to get the next page of results in subsequent list requests. Acceptable
+      values are `0` to `500`, inclusive. (Default: `500`)
+    orderBy: Sorts list results by a certain order. By default, results are
+      returned in alphanumerical order based on the resource name.  You can
+      also sort results in descending order based on the creation timestamp
+      using `orderBy="creationTimestamp desc"`. This sorts results based on
+      the `creationTimestamp` field in reverse chronological order (newest
+      result first). Use this to sort resources like operations so that the
+      newest operation is returned first.  Currently, only sorting by `name`
+      or `creationTimestamp desc` is supported.
+    pageToken: Specifies a page token to use. Set `pageToken` to the
+      `nextPageToken` returned by a previous list request to get the next page
+      of results.
+    project: Project ID for this request.
+    region: Name of the region of this request.
+    returnPartialSuccess: Opt-in for partial success behavior which provides
+      partial results in case of failure. The default value is false.  For
+      example, when partial success behavior is enabled, aggregatedList for a
+      single zone scope either returns all resources in the zone or no
+      resources, with an error code.
+  """
+
+  filter = _messages.StringField(1)
+  maxResults = _messages.IntegerField(2, variant=_messages.Variant.UINT32, default=500)
+  orderBy = _messages.StringField(3)
+  pageToken = _messages.StringField(4)
+  project = _messages.StringField(5, required=True)
+  region = _messages.StringField(6, required=True)
+  returnPartialSuccess = _messages.BooleanField(7)
+
+
+class ComputeDhcpOptionsConfigsPatchRequest(_messages.Message):
+  r"""A ComputeDhcpOptionsConfigsPatchRequest object.
+
+  Fields:
+    dhcpOptionsConfig: Name of the DhcpOptionsConfig resource to patch.
+    dhcpOptionsConfigResource: A DhcpOptionsConfig resource to be passed as
+      the request body.
+    project: Project ID for this request.
+    region: Name of the region for this request.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.  For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server can check if original operation with the same request ID was
+      received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments.  The request
+      ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000). end_interface:
+      MixerMutationRequestBuilder
+    updateMask: update_mask indicates fields to be updated as part of this
+      request.
+  """
+
+  dhcpOptionsConfig = _messages.StringField(1, required=True)
+  dhcpOptionsConfigResource = _messages.MessageField('DhcpOptionsConfig', 2)
+  project = _messages.StringField(3, required=True)
+  region = _messages.StringField(4, required=True)
+  requestId = _messages.StringField(5)
+  updateMask = _messages.StringField(6)
+
+
+class ComputeDhcpOptionsConfigsTestIamPermissionsRequest(_messages.Message):
+  r"""A ComputeDhcpOptionsConfigsTestIamPermissionsRequest object.
+
+  Fields:
+    project: Project ID for this request.
+    region: The name of the region for this request.
+    resource: Name or id of the resource for this request.
+    testPermissionsRequest: A TestPermissionsRequest resource to be passed as
+      the request body.
+  """
+
+  project = _messages.StringField(1, required=True)
+  region = _messages.StringField(2, required=True)
+  resource = _messages.StringField(3, required=True)
+  testPermissionsRequest = _messages.MessageField('TestPermissionsRequest', 4)
+
+
 class ComputeDiskSettingsGetRequest(_messages.Message):
   r"""A ComputeDiskSettingsGetRequest object.
 
@@ -15383,6 +15570,33 @@ class ComputeGlobalForwardingRulesTestIamPermissionsRequest(_messages.Message):
   project = _messages.StringField(1, required=True)
   resource = _messages.StringField(2, required=True)
   testPermissionsRequest = _messages.MessageField('TestPermissionsRequest', 3)
+
+
+class ComputeGlobalFrontendSettingsGetRequest(_messages.Message):
+  r"""A ComputeGlobalFrontendSettingsGetRequest object.
+
+  Fields:
+    project: A string attribute.
+  """
+
+  project = _messages.StringField(1, required=True)
+
+
+class ComputeGlobalFrontendSettingsPatchRequest(_messages.Message):
+  r"""A ComputeGlobalFrontendSettingsPatchRequest object.
+
+  Fields:
+    globalFrontendSettings: A GlobalFrontendSettings resource to be passed as
+      the request body.
+    project: A string attribute.
+    requestId: A string attribute.
+    updateMask: e.g., "type"
+  """
+
+  globalFrontendSettings = _messages.MessageField('GlobalFrontendSettings', 1)
+  project = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
 
 
 class ComputeGlobalNetworkEndpointGroupsAttachNetworkEndpointsRequest(_messages.Message):
@@ -27112,6 +27326,40 @@ class ComputeOrganizationSecurityPoliciesRemoveRuleRequest(_messages.Message):
   securityPolicy = _messages.StringField(3, required=True)
 
 
+class ComputeOrganizationSnapshotRecycleBinPolicyGetRequest(_messages.Message):
+  r"""A ComputeOrganizationSnapshotRecycleBinPolicyGetRequest object.
+
+  Fields:
+    organization: Organization ID for this request.
+  """
+
+  organization = _messages.StringField(1, required=True)
+
+
+class ComputeOrganizationSnapshotRecycleBinPolicyPatchRequest(_messages.Message):
+  r"""A ComputeOrganizationSnapshotRecycleBinPolicyPatchRequest object.
+
+  Fields:
+    organization: Organization ID for this request.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.  For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server can check if original operation with the same request ID was
+      received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments.  The request
+      ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+    snapshotRecycleBinPolicy: A SnapshotRecycleBinPolicy resource to be passed
+      as the request body.
+  """
+
+  organization = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  snapshotRecycleBinPolicy = _messages.MessageField('SnapshotRecycleBinPolicy', 3)
+
+
 class ComputePacketMirroringsAggregatedListRequest(_messages.Message):
   r"""A ComputePacketMirroringsAggregatedListRequest object.
 
@@ -28420,6 +28668,184 @@ class ComputePublicDelegatedPrefixesWithdrawRequest(_messages.Message):
   publicDelegatedPrefix = _messages.StringField(2, required=True)
   region = _messages.StringField(3, required=True)
   requestId = _messages.StringField(4)
+
+
+class ComputeRecoverableSnapshotsDeleteRequest(_messages.Message):
+  r"""A ComputeRecoverableSnapshotsDeleteRequest object.
+
+  Fields:
+    project: Project ID for this request.
+    recoverableSnapshot: Name of the recoverable Snapshot resource to delete.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.  For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server can check if original operation with the same request ID was
+      received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments.  The request
+      ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  project = _messages.StringField(1, required=True)
+  recoverableSnapshot = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+
+
+class ComputeRecoverableSnapshotsGetIamPolicyRequest(_messages.Message):
+  r"""A ComputeRecoverableSnapshotsGetIamPolicyRequest object.
+
+  Fields:
+    optionsRequestedPolicyVersion: Requested IAM Policy version.
+    project: Project ID for this request.
+    resource: Name or id of the resource for this request.
+  """
+
+  optionsRequestedPolicyVersion = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  project = _messages.StringField(2, required=True)
+  resource = _messages.StringField(3, required=True)
+
+
+class ComputeRecoverableSnapshotsGetRequest(_messages.Message):
+  r"""A ComputeRecoverableSnapshotsGetRequest object.
+
+  Fields:
+    project: Project ID for this request.
+    recoverableSnapshot: Name of the Snapshot resource to return.
+  """
+
+  project = _messages.StringField(1, required=True)
+  recoverableSnapshot = _messages.StringField(2, required=True)
+
+
+class ComputeRecoverableSnapshotsListRequest(_messages.Message):
+  r"""A ComputeRecoverableSnapshotsListRequest object.
+
+  Fields:
+    filter: A filter expression that filters resources listed in the response.
+      Most Compute resources support two types of filter expressions:
+      expressions that support regular expressions and expressions that follow
+      API improvement proposal AIP-160. These two types of filter expressions
+      cannot be mixed in one request.  If you want to use AIP-160, your
+      expression must specify the field name, an operator, and the value that
+      you want to use for filtering. The value must be a string, a number, or
+      a boolean. The operator must be either `=`, `!=`, `>`, `<`, `<=`, `>=`
+      or `:`.  For example, if you are filtering Compute Engine instances, you
+      can exclude instances named `example-instance` by specifying `name !=
+      example-instance`.  The `:*` comparison can be used to test whether a
+      key has been defined. For example, to find all objects with `owner`
+      label use: ``` labels.owner:* ```  You can also filter nested fields.
+      For example, you could specify `scheduling.automaticRestart = false` to
+      include instances only if they are not scheduled for automatic restarts.
+      You can use filtering on nested fields to filter based onresource
+      labels.  To filter on multiple expressions, provide each separate
+      expression within parentheses. For example: ```
+      (scheduling.automaticRestart = true) (cpuPlatform = "Intel Skylake") ```
+      By default, each expression is an `AND` expression. However, you can
+      include `AND` and `OR` expressions explicitly. For example: ```
+      (cpuPlatform = "Intel Skylake") OR (cpuPlatform = "Intel Broadwell") AND
+      (scheduling.automaticRestart = true) ```  If you want to use a regular
+      expression, use the `eq` (equal) or `ne` (not equal) operator against a
+      single un-parenthesized expression with or without quotes or against
+      multiple parenthesized expressions. Examples:  `fieldname eq unquoted
+      literal` `fieldname eq 'single quoted literal'` `fieldname eq "double
+      quoted literal"` `(fieldname1 eq literal) (fieldname2 ne "literal")`
+      The literal value is interpreted as a regular expression using GoogleRE2
+      library syntax. The literal value must match the entire field.  For
+      example, to filter for instances that do not end with name "instance",
+      you would use `name ne .*instance`.  You cannot combine constraints on
+      multiple fields using regular expressions.
+    maxResults: The maximum number of results per page that should be
+      returned. If the number of available results is larger than
+      `maxResults`, Compute Engine returns a `nextPageToken` that can be used
+      to get the next page of results in subsequent list requests. Acceptable
+      values are `0` to `500`, inclusive. (Default: `500`)
+    orderBy: Sorts list results by a certain order. By default, results are
+      returned in alphanumerical order based on the resource name.  You can
+      also sort results in descending order based on the creation timestamp
+      using `orderBy="creationTimestamp desc"`. This sorts results based on
+      the `creationTimestamp` field in reverse chronological order (newest
+      result first). Use this to sort resources like operations so that the
+      newest operation is returned first.  Currently, only sorting by `name`
+      or `creationTimestamp desc` is supported.
+    pageToken: Specifies a page token to use. Set `pageToken` to the
+      `nextPageToken` returned by a previous list request to get the next page
+      of results.
+    project: Project ID for this request.
+    returnPartialSuccess: Opt-in for partial success behavior which provides
+      partial results in case of failure. The default value is false.  For
+      example, when partial success behavior is enabled, aggregatedList for a
+      single zone scope either returns all resources in the zone or no
+      resources, with an error code.
+  """
+
+  filter = _messages.StringField(1)
+  maxResults = _messages.IntegerField(2, variant=_messages.Variant.UINT32, default=500)
+  orderBy = _messages.StringField(3)
+  pageToken = _messages.StringField(4)
+  project = _messages.StringField(5, required=True)
+  returnPartialSuccess = _messages.BooleanField(6)
+
+
+class ComputeRecoverableSnapshotsRecoverRequest(_messages.Message):
+  r"""A ComputeRecoverableSnapshotsRecoverRequest object.
+
+  Fields:
+    project: Project Id of the request
+    recoverableSnapshot: Name of the recoverable resource to recover
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.  For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server can check if original operation with the same request ID was
+      received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments.  The request
+      ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+    snapshotName: Optional. Name of the snapshot after the recovery The name
+      will be 1-63 characters long, and comply withRFC1035. Specifically, the
+      name will be 1-63 characters long and match the regular expression
+      `[a-z]([-a-z0-9]*[a-z0-9])?` which means the first character will be a
+      lowercase letter, and all following characters can be a dash, lowercase
+      letter, or digit, except the last character, which cannot be a dash.
+  """
+
+  project = _messages.StringField(1, required=True)
+  recoverableSnapshot = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  snapshotName = _messages.StringField(4)
+
+
+class ComputeRecoverableSnapshotsSetIamPolicyRequest(_messages.Message):
+  r"""A ComputeRecoverableSnapshotsSetIamPolicyRequest object.
+
+  Fields:
+    globalSetPolicyRequest: A GlobalSetPolicyRequest resource to be passed as
+      the request body.
+    project: Project ID for this request.
+    resource: Name or id of the resource for this request.
+  """
+
+  globalSetPolicyRequest = _messages.MessageField('GlobalSetPolicyRequest', 1)
+  project = _messages.StringField(2, required=True)
+  resource = _messages.StringField(3, required=True)
+
+
+class ComputeRecoverableSnapshotsTestIamPermissionsRequest(_messages.Message):
+  r"""A ComputeRecoverableSnapshotsTestIamPermissionsRequest object.
+
+  Fields:
+    project: Project ID for this request.
+    resource: Name or id of the resource for this request.
+    testPermissionsRequest: A TestPermissionsRequest resource to be passed as
+      the request body.
+  """
+
+  project = _messages.StringField(1, required=True)
+  resource = _messages.StringField(2, required=True)
+  testPermissionsRequest = _messages.MessageField('TestPermissionsRequest', 3)
 
 
 class ComputeRegionAutoscalersDeleteRequest(_messages.Message):
@@ -40687,6 +41113,40 @@ class ComputeSnapshotGroupsTestIamPermissionsRequest(_messages.Message):
   testPermissionsRequest = _messages.MessageField('TestPermissionsRequest', 3)
 
 
+class ComputeSnapshotRecycleBinPolicyGetRequest(_messages.Message):
+  r"""A ComputeSnapshotRecycleBinPolicyGetRequest object.
+
+  Fields:
+    project: Project ID for this request.
+  """
+
+  project = _messages.StringField(1, required=True)
+
+
+class ComputeSnapshotRecycleBinPolicyPatchRequest(_messages.Message):
+  r"""A ComputeSnapshotRecycleBinPolicyPatchRequest object.
+
+  Fields:
+    project: Project ID for this request.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.  For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server can check if original operation with the same request ID was
+      received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments.  The request
+      ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+    snapshotRecycleBinPolicy: A SnapshotRecycleBinPolicy resource to be passed
+      as the request body.
+  """
+
+  project = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  snapshotRecycleBinPolicy = _messages.MessageField('SnapshotRecycleBinPolicy', 3)
+
+
 class ComputeSnapshotSettingsGetRequest(_messages.Message):
   r"""A ComputeSnapshotSettingsGetRequest object.
 
@@ -40826,6 +41286,19 @@ class ComputeSnapshotsDeleteRequest(_messages.Message):
   project = _messages.StringField(1, required=True)
   requestId = _messages.StringField(2)
   snapshot = _messages.StringField(3, required=True)
+
+
+class ComputeSnapshotsGetEffectiveRecycleBinRuleRequest(_messages.Message):
+  r"""A ComputeSnapshotsGetEffectiveRecycleBinRuleRequest object.
+
+  Fields:
+    project: Project ID for this request.
+    snapshot: Name of the Snapshot resource to get the effective recycle bin
+      rule for.
+  """
+
+  project = _messages.StringField(1, required=True)
+  snapshot = _messages.StringField(2, required=True)
 
 
 class ComputeSnapshotsGetIamPolicyRequest(_messages.Message):
@@ -46352,12 +46825,14 @@ class ConfidentialInstanceConfig(_messages.Message):
       SEV: AMD Secure Encrypted Virtualization.
       SEV_SNP: AMD Secure Encrypted Virtualization - Secure Nested Paging.
       TDX: Intel Trust Domain eXtension.
+      BMSAI: Bare Metal Secure AI.
     """
     CCA = 0
     CONFIDENTIAL_INSTANCE_TYPE_UNSPECIFIED = 1
     SEV = 2
     SEV_SNP = 3
     TDX = 4
+    BMSAI = 5
 
   confidentialInstanceType = _messages.EnumField('ConfidentialInstanceTypeValueValuesEnum', 1)
   enableConfidentialCompute = _messages.BooleanField(2)
@@ -46935,6 +47410,328 @@ class DeprecationStatus(_messages.Message):
   replacement = _messages.StringField(4)
   state = _messages.EnumField('StateValueValuesEnum', 5)
   stateOverride = _messages.MessageField('RolloutPolicy', 6)
+
+
+class DhcpOptionsConfig(_messages.Message):
+  r"""A standalone, regional API resource that encapsulates a set of user-
+  defined DHCP configurations.
+
+  Messages:
+    AssociationsValue: Mapping of user-defined keys to DhcpOptionsConfig to
+      Network associations.
+
+  Fields:
+    associations: Mapping of user-defined keys to DhcpOptionsConfig to Network
+      associations.
+    bootFileIpv4Name: The file path and name of the boot image/file on the
+      TFTP server that the client VM guest OS should download and execute
+      during network boot. Used when the standard DHCP header 'file' field is
+      overloaded. Corresponds to DHCPv4 Option 67.
+    bootFileIpv6Parameters: A list of UTF-8 encoded parameter strings to be
+      passed as arguments to the bootloader program or OS kernel after
+      downloading the boot file. Corresponds to DHCPv6 Option 60.
+    bootFileIpv6Url: The Uniform Resource Locator (URL) specifying the
+      protocol, server address, and file path of the boot file that the client
+      VM guest OS should download and execute for network boot (e.g.,
+      'tftp://[2001:db8::1]/bootx64.efi' or 'http://[2001:db8::1]/boot.img').
+      Corresponds to DHCPv6 Option 59.
+    creationTimestamp: Output only. [Output Only] Creation timestamp inRFC3339
+      text format.
+    description: An optional description of this resource. Provide this
+      property when you create the resource.
+    dnsSearchPaths: An ordered list of domain suffixes (search paths) that the
+      client VM guest OS should append to resolve hostnames that are not fully
+      qualified. Applies to both DHCPv4 Option 119 and DHCPv6 Option 24.
+    domainName: The domain name that the client VM guest OS should use when
+      resolving hostnames via DNS (e.g., 'example.com'). It defines the
+      default domain suffix for the client. Corresponds to DHCPv4 Option 15.
+    id: Output only. [Output Only] The unique identifier for the resource
+      type. The server generates this identifier.
+    kind: Output only. [Output Only] Type of the resource.
+      Alwayscompute#dhcpOptionsConfig for dhcp options configs.
+    leaseTimeSec: The duration, in seconds, of the IPv4 address lease offered
+      by the DHCP server to the client VM guest OS. Corresponds to DHCPv4
+      Option 51.
+    name: Name of the resource. Provided by the client when the resource is
+      created. The name must be 1-63 characters long, and comply withRFC1035.
+      Specifically, the name must be 1-63 characters long and match the
+      regular expression `[a-z]([-a-z0-9]*[a-z0-9])?` which means the first
+      character must be a lowercase letter, and all following characters must
+      be a dash, lowercase letter, or digit, except the last character, which
+      cannot be a dash.
+    ntpServerIpv4Addresses: An ordered list of IPv4 addresses of Network Time
+      Protocol (NTP) servers available to the client VM guest OS for system
+      clock synchronization, listed in order of preference. Corresponds to
+      DHCPv4 Option 42.
+    ntpServerIpv6Addresses: An ordered list of IPv6 addresses of Network Time
+      Protocol (NTP) servers available to the client VM guest OS for system
+      clock synchronization. Corresponds to DHCPv6 Option 56.
+    region: Output only. [Output Only] URL of the region where the resource
+      resides.
+    selfLink: Output only. [Output Only] Server-defined URL for the resource.
+    tftpServerIpv4Addresses: An ordered list of one or more IPv4 addresses of
+      TFTP servers. Provides server redundancy and failover support, and is
+      generally prioritized by clients over the single hostname specified in
+      Option 66. Corresponds to DHCPv4 Option 150.
+    tftpServerIpv4Name: The hostname or IP address of the Trivial File
+      Transfer Protocol (TFTP) server from which the client VM guest OS can
+      download boot files. Typically used in network booting (PXE) when the
+      standard DHCP header 'sname' field is overloaded. Corresponds to DHCPv4
+      Option 66.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AssociationsValue(_messages.Message):
+    r"""Mapping of user-defined keys to DhcpOptionsConfig to Network
+    associations.
+
+    Messages:
+      AdditionalProperty: An additional property for a AssociationsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type AssociationsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AssociationsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A DhcpOptionsConfigAssociation attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('DhcpOptionsConfigAssociation', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  associations = _messages.MessageField('AssociationsValue', 1)
+  bootFileIpv4Name = _messages.StringField(2)
+  bootFileIpv6Parameters = _messages.StringField(3, repeated=True)
+  bootFileIpv6Url = _messages.StringField(4)
+  creationTimestamp = _messages.StringField(5)
+  description = _messages.StringField(6)
+  dnsSearchPaths = _messages.StringField(7, repeated=True)
+  domainName = _messages.StringField(8)
+  id = _messages.IntegerField(9, variant=_messages.Variant.UINT64)
+  kind = _messages.StringField(10, default='compute#dhcpOptionsConfig')
+  leaseTimeSec = _messages.IntegerField(11)
+  name = _messages.StringField(12)
+  ntpServerIpv4Addresses = _messages.StringField(13, repeated=True)
+  ntpServerIpv6Addresses = _messages.StringField(14, repeated=True)
+  region = _messages.StringField(15)
+  selfLink = _messages.StringField(16)
+  tftpServerIpv4Addresses = _messages.StringField(17, repeated=True)
+  tftpServerIpv4Name = _messages.StringField(18)
+
+
+class DhcpOptionsConfigAssociation(_messages.Message):
+  r"""Association represents the relationship between a DHCP options config
+  and a network. Association represents the relationship between a DHCP
+  options config and a network.
+
+  Enums:
+    StateValueValuesEnum: Output only. [Output Only] State of the association.
+
+  Fields:
+    network: Required. The target network this DHCP option is attached to. You
+      can specify this as a full or partial URL. For example, the following
+      are all valid URLs:              - https://www.googleapis.com/compute/v1
+      /projects/project/global/networks/network          -
+      projects/project/global/networks/network
+    networkId: Output only. [Output Only] The server-defined ID of the
+      associated Network.
+    state: Output only. [Output Only] State of the association.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. [Output Only] State of the association.
+
+    Values:
+      ACTIVE: The association is active and the DHCP configuration is applied.
+      ORPHANED: The association is orphaned (the network has been deleted).
+      STATE_UNSPECIFIED: Default value. This value is unused.
+    """
+    ACTIVE = 0
+    ORPHANED = 1
+    STATE_UNSPECIFIED = 2
+
+  network = _messages.StringField(1)
+  networkId = _messages.IntegerField(2, variant=_messages.Variant.UINT64)
+  state = _messages.EnumField('StateValueValuesEnum', 3)
+
+
+class DhcpOptionsConfigList(_messages.Message):
+  r"""A DhcpOptionsConfigList object.
+
+  Messages:
+    WarningValue: [Output Only] Informational warning message.
+
+  Fields:
+    etag: Server-defined ETag for optimistic concurrency control.
+    id: [Output Only] Unique identifier for the resource; defined by the
+      server.
+    items: A list of DhcpOptionsConfig resources.
+    kind: Output only. [Output Only] Type of the resource.
+      Alwayscompute#dhcpOptionsConfigList for a list of dhcp options configs.
+    nextPageToken: [Output Only] This token allows you to get the next page of
+      results for list requests. If the number of results is larger
+      thanmaxResults, use the nextPageToken as a value for the query parameter
+      pageToken in the next list request. Subsequent list requests will have
+      their own nextPageToken to continue paging through the results.
+    selfLink: [Output Only] Server-defined URL for this resource.
+    unreachables: Output only. [Output Only] Unreachable resources.
+      end_interface: MixerListResponseWithEtagBuilder
+    warning: [Output Only] Informational warning message.
+  """
+
+  class WarningValue(_messages.Message):
+    r"""[Output Only] Informational warning message.
+
+    Enums:
+      CodeValueValuesEnum: [Output Only] A warning code, if applicable. For
+        example, Compute Engine returns NO_RESULTS_ON_PAGE if there are no
+        results in the response.
+
+    Messages:
+      DataValueListEntry: A DataValueListEntry object.
+
+    Fields:
+      code: [Output Only] A warning code, if applicable. For example, Compute
+        Engine returns NO_RESULTS_ON_PAGE if there are no results in the
+        response.
+      data: [Output Only] Metadata about this warning in key: value format.
+        For example:  "data": [   {    "key": "scope",    "value": "zones/us-
+        east1-d"   }]
+      message: [Output Only] A human-readable description of the warning code.
+    """
+
+    class CodeValueValuesEnum(_messages.Enum):
+      r"""[Output Only] A warning code, if applicable. For example, Compute
+      Engine returns NO_RESULTS_ON_PAGE if there are no results in the
+      response.
+
+      Values:
+        CLEANUP_FAILED: Warning about failed cleanup of transient changes made
+          by a failed operation.
+        DEPRECATED_RESOURCE_USED: A link to a deprecated resource was created.
+        DEPRECATED_TYPE_USED: When deploying and at least one of the resources
+          has a type marked as deprecated
+        DISK_SIZE_LARGER_THAN_IMAGE_SIZE: The user created a boot disk that is
+          larger than image size.
+        EXPERIMENTAL_TYPE_USED: When deploying and at least one of the
+          resources has a type marked as experimental
+        EXTERNAL_API_WARNING: Warning that is present in an external api call
+        FIELD_VALUE_OVERRIDEN: Warning that value of a field has been
+          overridden. Deprecated unused field.
+        INJECTED_KERNELS_DEPRECATED: The operation involved use of an injected
+          kernel, which is deprecated.
+        INVALID_HEALTH_CHECK_FOR_DYNAMIC_WIEGHTED_LB: A WEIGHTED_MAGLEV
+          backend service is associated with a health check that is not of
+          type HTTP/HTTPS/HTTP2.
+        LARGE_DEPLOYMENT_WARNING: When deploying a deployment with a
+          exceedingly large number of resources
+        LIST_OVERHEAD_QUOTA_EXCEED: Resource can't be retrieved due to list
+          overhead quota exceed which captures the amount of resources
+          filtered out by user-defined list filter.
+        MISSING_TYPE_DEPENDENCY: A resource depends on a missing type
+        NEXT_HOP_ADDRESS_NOT_ASSIGNED: The route's nextHopIp address is not
+          assigned to an instance on the network.
+        NEXT_HOP_CANNOT_IP_FORWARD: The route's next hop instance cannot ip
+          forward.
+        NEXT_HOP_INSTANCE_HAS_NO_IPV6_INTERFACE: The route's nextHopInstance
+          URL refers to an instance that does not have an ipv6 interface on
+          the same network as the route.
+        NEXT_HOP_INSTANCE_NOT_FOUND: The route's nextHopInstance URL refers to
+          an instance that does not exist.
+        NEXT_HOP_INSTANCE_NOT_ON_NETWORK: The route's nextHopInstance URL
+          refers to an instance that is not on the same network as the route.
+        NEXT_HOP_NOT_RUNNING: The route's next hop instance does not have a
+          status of RUNNING.
+        NOT_CRITICAL_ERROR: Error which is not critical. We decided to
+          continue the process despite the mentioned error.
+        NO_RESULTS_ON_PAGE: No results are present on a particular list page.
+        PARTIAL_SUCCESS: Success is reported, but some results may be missing
+          due to errors
+        QUOTA_INFO_UNAVAILABLE: Quota information is not available to client
+          requests (e.g: regions.list).
+        REQUIRED_TOS_AGREEMENT: The user attempted to use a resource that
+          requires a TOS they have not accepted.
+        RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING: Warning that a resource is
+          in use.
+        RESOURCE_NOT_DELETED: One or more of the resources set to auto-delete
+          could not be deleted because they were in use.
+        SCHEMA_VALIDATION_IGNORED: When a resource schema validation is
+          ignored.
+        SINGLE_INSTANCE_PROPERTY_TEMPLATE: Instance template used in instance
+          group manager is valid as such, but its application does not make a
+          lot of sense, because it allows only single instance in instance
+          group.
+        UNDECLARED_PROPERTIES: When undeclared properties in the schema are
+          present
+        UNREACHABLE: A given scope cannot be reached.
+      """
+      CLEANUP_FAILED = 0
+      DEPRECATED_RESOURCE_USED = 1
+      DEPRECATED_TYPE_USED = 2
+      DISK_SIZE_LARGER_THAN_IMAGE_SIZE = 3
+      EXPERIMENTAL_TYPE_USED = 4
+      EXTERNAL_API_WARNING = 5
+      FIELD_VALUE_OVERRIDEN = 6
+      INJECTED_KERNELS_DEPRECATED = 7
+      INVALID_HEALTH_CHECK_FOR_DYNAMIC_WIEGHTED_LB = 8
+      LARGE_DEPLOYMENT_WARNING = 9
+      LIST_OVERHEAD_QUOTA_EXCEED = 10
+      MISSING_TYPE_DEPENDENCY = 11
+      NEXT_HOP_ADDRESS_NOT_ASSIGNED = 12
+      NEXT_HOP_CANNOT_IP_FORWARD = 13
+      NEXT_HOP_INSTANCE_HAS_NO_IPV6_INTERFACE = 14
+      NEXT_HOP_INSTANCE_NOT_FOUND = 15
+      NEXT_HOP_INSTANCE_NOT_ON_NETWORK = 16
+      NEXT_HOP_NOT_RUNNING = 17
+      NOT_CRITICAL_ERROR = 18
+      NO_RESULTS_ON_PAGE = 19
+      PARTIAL_SUCCESS = 20
+      QUOTA_INFO_UNAVAILABLE = 21
+      REQUIRED_TOS_AGREEMENT = 22
+      RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING = 23
+      RESOURCE_NOT_DELETED = 24
+      SCHEMA_VALIDATION_IGNORED = 25
+      SINGLE_INSTANCE_PROPERTY_TEMPLATE = 26
+      UNDECLARED_PROPERTIES = 27
+      UNREACHABLE = 28
+
+    class DataValueListEntry(_messages.Message):
+      r"""A DataValueListEntry object.
+
+      Fields:
+        key: [Output Only] A key that provides more detail on the warning
+          being returned. For example, for warnings where there are no results
+          in a list request for a particular zone, this key might be scope and
+          the key value might be the zone name. Other examples might be a key
+          indicating a deprecated resource and a suggested replacement, or a
+          warning about invalid network settings (for example, if an instance
+          attempts to perform IP forwarding but is not enabled for IP
+          forwarding).
+        value: [Output Only] A warning data value corresponding to the key.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    code = _messages.EnumField('CodeValueValuesEnum', 1)
+    data = _messages.MessageField('DataValueListEntry', 2, repeated=True)
+    message = _messages.StringField(3)
+
+  etag = _messages.StringField(1)
+  id = _messages.StringField(2)
+  items = _messages.MessageField('DhcpOptionsConfig', 3, repeated=True)
+  kind = _messages.StringField(4, default='compute#dhcpOptionsConfigList')
+  nextPageToken = _messages.StringField(5)
+  selfLink = _messages.StringField(6)
+  unreachables = _messages.StringField(7, repeated=True)
+  warning = _messages.MessageField('WarningValue', 8)
 
 
 class Disk(_messages.Message):
@@ -54118,6 +54915,60 @@ class GlobalAddressesMoveRequest(_messages.Message):
 
   description = _messages.StringField(1)
   destinationAddress = _messages.StringField(2)
+
+
+class GlobalFrontendSettings(_messages.Message):
+  r"""Represents the Global Frontend Bundle settings for a single project.
+
+  Enums:
+    BundleTypeValueValuesEnum: Customer-settable bundle type.
+
+  Fields:
+    bundleType: Customer-settable bundle type.
+    creationTimestamp: Output only. [Output Only] Creation timestamp in
+      RFC3339 text format.
+    description: Output only. [Output Only] An optional description of this
+      resource.
+    etag: Output only. For optimistic locking
+    id: Output only. [Output Only] The unique identifier for the resource.
+      This identifier is defined by the server.
+    name: Output only. OUTPUT_ONLY fields [Output Only] Name of the resource.
+      Must be 1-63 characters long and match the regular expression
+      `[a-z]([-a-z0-9]*[a-z0-9])?` which means the first character must be a
+      lowercase letter, and all following characters must be a dash, lowercase
+      letter, or digit, except the last character, which cannot be a dash.
+    selfLink: Output only. [Output Only] Server-defined URL for the resource.
+  """
+
+  class BundleTypeValueValuesEnum(_messages.Enum):
+    r"""Customer-settable bundle type.
+
+    Values:
+      BUNDLE_TYPE_UNSPECIFIED: Bundling is not active
+      GLOBAL_FRONT_END: Standard Global Frontend bundle
+      INDIVIDUAL: Ala Carte mode
+    """
+    BUNDLE_TYPE_UNSPECIFIED = 0
+    GLOBAL_FRONT_END = 1
+    INDIVIDUAL = 2
+
+  bundleType = _messages.EnumField('BundleTypeValueValuesEnum', 1)
+  creationTimestamp = _messages.StringField(2)
+  description = _messages.StringField(3)
+  etag = _messages.StringField(4)
+  id = _messages.IntegerField(5, variant=_messages.Variant.UINT64)
+  name = _messages.StringField(6)
+  selfLink = _messages.StringField(7)
+
+
+class GlobalFrontendSettingsPatchResponse(_messages.Message):
+  r"""Response to an UpdateGlobalFrontendSettingsRequest.
+
+  Fields:
+    operation: A Operation attribute.
+  """
+
+  operation = _messages.MessageField('Operation', 1)
 
 
 class GlobalNetworkEndpointGroupsAttachEndpointsRequest(_messages.Message):
@@ -67822,6 +68673,8 @@ class Interconnect(_messages.Message):
       requested by the customer.
     satisfiesPzs: Output only. [Output Only] Reserved for future use.
     selfLink: Output only. [Output Only] Server-defined URL for the resource.
+    selfLinkWithId: Output only. Server-defined URL for this resource with the
+      resource id.
     state: Output only. [Output Only] The current state of Interconnect
       functionality, which can take one of the following values:        -
       ACTIVE: The Interconnect is valid, turned up and ready to use.
@@ -68005,9 +68858,10 @@ class Interconnect(_messages.Message):
   requestedLinkCount = _messages.IntegerField(32, variant=_messages.Variant.INT32)
   satisfiesPzs = _messages.BooleanField(33)
   selfLink = _messages.StringField(34)
-  state = _messages.EnumField('StateValueValuesEnum', 35)
-  subzone = _messages.EnumField('SubzoneValueValuesEnum', 36)
-  wireGroups = _messages.StringField(37, repeated=True)
+  selfLinkWithId = _messages.StringField(35)
+  state = _messages.EnumField('StateValueValuesEnum', 36)
+  subzone = _messages.EnumField('SubzoneValueValuesEnum', 37)
+  wireGroups = _messages.StringField(38, repeated=True)
 
 
 class InterconnectApplicationAwareInterconnect(_messages.Message):
@@ -71366,9 +72220,15 @@ class InterconnectLocationCrossSiteInterconnectInfo(_messages.Message):
     city: Output only. The remote location for Cross-Site Interconnect wires.
       This specifies an InterconnectLocation city (metropolitan area
       designator), which itself may match multiple InterconnectLocations.
+    maxDynamicPathBandwidthGbps: Output only. The maximum unmetered bandwidth
+      for dynamic paths allowable per WireGroup for this metro.
+    maxFixedPathBandwidthGbps: Output only. The maximum unmetered bandwidth
+      for fixed paths allowable per WireGroup for this metro.
   """
 
   city = _messages.StringField(1)
+  maxDynamicPathBandwidthGbps = _messages.IntegerField(2)
+  maxFixedPathBandwidthGbps = _messages.IntegerField(3)
 
 
 class InterconnectLocationList(_messages.Message):
@@ -74475,10 +75335,9 @@ class ManagedInstance(_messages.Message):
       process of being verified.
     InstanceStatusValueValuesEnum: Output only. [Output Only] The status of
       the instance. This field is empty when the instance does not exist.
-    TargetStatusValueValuesEnum: Output only. [Output Only] The eventual
-      status of the instance. The instance group manager will not be
-      identified as stable till each managed instance reaches its
-      targetStatus.
+    TargetStatusValueValuesEnum: Output only. The eventual status of the
+      instance. The instance group manager will not be identified as stable
+      till each managed instance reaches its targetStatus.
 
   Fields:
     allInstancesConfig: Output only. [Output Only] Current all-instances
@@ -74528,9 +75387,9 @@ class ManagedInstance(_messages.Message):
     shutdownDetails: Output only. Specifies the graceful shutdown details if
       the instance is in `PENDING_STOP` state or there is a programmed stop
       scheduled.
-    targetStatus: Output only. [Output Only] The eventual status of the
-      instance. The instance group manager will not be identified as stable
-      till each managed instance reaches its targetStatus.
+    targetStatus: Output only. The eventual status of the instance. The
+      instance group manager will not be identified as stable till each
+      managed instance reaches its targetStatus.
     version: Output only. [Output Only] Intended version of this instance.
   """
 
@@ -74647,23 +75506,25 @@ class ManagedInstance(_messages.Message):
     TERMINATED = 11
 
   class TargetStatusValueValuesEnum(_messages.Enum):
-    r"""Output only. [Output Only] The eventual status of the instance. The
-    instance group manager will not be identified as stable till each managed
-    instance reaches its targetStatus.
+    r"""Output only. The eventual status of the instance. The instance group
+    manager will not be identified as stable till each managed instance
+    reaches its targetStatus.
 
     Values:
       ABANDONED: The managed instance will eventually be ABANDONED, i.e.
         dissociated from the managed instance group.
       DELETED: The managed instance will eventually be DELETED.
+      INVALID: Only present to map the STATUS_INVALID value.
       RUNNING: The managed instance will eventually reach status RUNNING.
       STOPPED: The managed instance will eventually reach status TERMINATED.
       SUSPENDED: The managed instance will eventually reach status SUSPENDED.
     """
     ABANDONED = 0
     DELETED = 1
-    RUNNING = 2
-    STOPPED = 3
-    SUSPENDED = 4
+    INVALID = 2
+    RUNNING = 3
+    STOPPED = 4
+    SUSPENDED = 5
 
   allInstancesConfig = _messages.MessageField('ManagedInstanceAllInstancesConfig', 1)
   currentAction = _messages.EnumField('CurrentActionValueValuesEnum', 2)
@@ -88804,6 +89665,480 @@ class QuotaExceededInfo(_messages.Message):
   limitName = _messages.StringField(4)
   metricName = _messages.StringField(5)
   rolloutStatus = _messages.EnumField('RolloutStatusValueValuesEnum', 6)
+
+
+class RecoverableSnapshot(_messages.Message):
+  r"""Represents a RecoverableSnapshot resource.  A RecoverableSnapshot
+  represents a snapshot in recycle bin.
+
+  Enums:
+    StatusValueValuesEnum: Output only. [Output Only] Status of the
+      recoverable snapshot.
+
+  Fields:
+    creationTimestamp: Output only. [Output Only] Creation timestamp inRFC3339
+      text format.
+    description: Optional. An optional description of this resource.
+    id: Output only. [Output Only] The unique identifier for the resource.
+      This identifier is defined by the server.
+    kind: Output only. [Output Only] Type of the resource.
+      Alwayscompute#recoverableSnapshot for RecoverableSnapshot resources.
+    name: Output only. Identifier. Name of the recoverable snapshot generated
+      on the deletion of the snapshot. The name will be 1-63 characters long,
+      and comply withRFC1035. Specifically, the name will be 1-63 characters
+      long and match the regular expression `[a-z]([-a-z0-9]*[a-z0-9])?` which
+      means the first character will be a lowercase letter, and all following
+      characters can be a dash, lowercase letter, or digit, except the last
+      character, which cannot be a dash.
+    originalResource: Output only. Output Only] The original snapshot
+      resource.
+    purgeTimestamp: Output only. [Output Only] Purge timestamp of recoverable
+      snapshot inRFC3339 text format.
+    satisfiesPzi: Output only. [Output Only] Reserved for future use.
+    satisfiesPzs: Output only. [Output Only] Reserved for future use.
+    selfLink: Output only. [Output Only] Server-defined URL for the resource.
+    selfLinkWithId: Output only. [Output Only] Server-defined URL for this
+      resource's resource id.
+    status: Output only. [Output Only] Status of the recoverable snapshot.
+  """
+
+  class StatusValueValuesEnum(_messages.Enum):
+    r"""Output only. [Output Only] Status of the recoverable snapshot.
+
+    Values:
+      CREATING: Recoverable Snapshot creation is in progress.
+      DELETING: Recovered Snapshot is currently being deleted.
+      FAILED: Recoverable Snapshot creation failed.
+      READY: Recoverable Snapshot has been created successfully.
+      RECOVERING: Recoverable Snapshot is currently being recovered.
+      UNKNOWN: <no description>
+    """
+    CREATING = 0
+    DELETING = 1
+    FAILED = 2
+    READY = 3
+    RECOVERING = 4
+    UNKNOWN = 5
+
+  creationTimestamp = _messages.StringField(1)
+  description = _messages.StringField(2)
+  id = _messages.IntegerField(3, variant=_messages.Variant.UINT64)
+  kind = _messages.StringField(4, default='compute#recoverableSnapshot')
+  name = _messages.StringField(5)
+  originalResource = _messages.MessageField('RecoverableSnapshotOriginalSnapshot', 6)
+  purgeTimestamp = _messages.StringField(7)
+  satisfiesPzi = _messages.BooleanField(8)
+  satisfiesPzs = _messages.BooleanField(9)
+  selfLink = _messages.StringField(10)
+  selfLinkWithId = _messages.StringField(11)
+  status = _messages.EnumField('StatusValueValuesEnum', 12)
+
+
+class RecoverableSnapshotList(_messages.Message):
+  r"""A RecoverableSnapshotList object.
+
+  Messages:
+    WarningValue: [Output Only] Informational warning message.
+
+  Fields:
+    etag: A string attribute.
+    id: [Output Only] Unique identifier for the resource; defined by the
+      server.
+    items: A list of RecoverableSnapshots resources.
+    kind: Output only. [Output Only] Type of resource.
+      Alwayscompute#recoverableSnapshotList for lists of recoverablesnapshots.
+    nextPageToken: [Output Only] This token allows you to get the next page of
+      results for list requests. If the number of results is larger
+      thanmaxResults, use the nextPageToken as a value for the query parameter
+      pageToken in the next list request. Subsequent list requests will have
+      their own nextPageToken to continue paging through the results.
+    selfLink: Output only. [Output Only] Server-defined URL for this resource.
+    unreachables: Output only. [Output Only] Unreachable resources.
+      end_interface: MixerListResponseWithEtagBuilder
+    warning: [Output Only] Informational warning message.
+  """
+
+  class WarningValue(_messages.Message):
+    r"""[Output Only] Informational warning message.
+
+    Enums:
+      CodeValueValuesEnum: [Output Only] A warning code, if applicable. For
+        example, Compute Engine returns NO_RESULTS_ON_PAGE if there are no
+        results in the response.
+
+    Messages:
+      DataValueListEntry: A DataValueListEntry object.
+
+    Fields:
+      code: [Output Only] A warning code, if applicable. For example, Compute
+        Engine returns NO_RESULTS_ON_PAGE if there are no results in the
+        response.
+      data: [Output Only] Metadata about this warning in key: value format.
+        For example:  "data": [   {    "key": "scope",    "value": "zones/us-
+        east1-d"   }]
+      message: [Output Only] A human-readable description of the warning code.
+    """
+
+    class CodeValueValuesEnum(_messages.Enum):
+      r"""[Output Only] A warning code, if applicable. For example, Compute
+      Engine returns NO_RESULTS_ON_PAGE if there are no results in the
+      response.
+
+      Values:
+        CLEANUP_FAILED: Warning about failed cleanup of transient changes made
+          by a failed operation.
+        DEPRECATED_RESOURCE_USED: A link to a deprecated resource was created.
+        DEPRECATED_TYPE_USED: When deploying and at least one of the resources
+          has a type marked as deprecated
+        DISK_SIZE_LARGER_THAN_IMAGE_SIZE: The user created a boot disk that is
+          larger than image size.
+        EXPERIMENTAL_TYPE_USED: When deploying and at least one of the
+          resources has a type marked as experimental
+        EXTERNAL_API_WARNING: Warning that is present in an external api call
+        FIELD_VALUE_OVERRIDEN: Warning that value of a field has been
+          overridden. Deprecated unused field.
+        INJECTED_KERNELS_DEPRECATED: The operation involved use of an injected
+          kernel, which is deprecated.
+        INVALID_HEALTH_CHECK_FOR_DYNAMIC_WIEGHTED_LB: A WEIGHTED_MAGLEV
+          backend service is associated with a health check that is not of
+          type HTTP/HTTPS/HTTP2.
+        LARGE_DEPLOYMENT_WARNING: When deploying a deployment with a
+          exceedingly large number of resources
+        LIST_OVERHEAD_QUOTA_EXCEED: Resource can't be retrieved due to list
+          overhead quota exceed which captures the amount of resources
+          filtered out by user-defined list filter.
+        MISSING_TYPE_DEPENDENCY: A resource depends on a missing type
+        NEXT_HOP_ADDRESS_NOT_ASSIGNED: The route's nextHopIp address is not
+          assigned to an instance on the network.
+        NEXT_HOP_CANNOT_IP_FORWARD: The route's next hop instance cannot ip
+          forward.
+        NEXT_HOP_INSTANCE_HAS_NO_IPV6_INTERFACE: The route's nextHopInstance
+          URL refers to an instance that does not have an ipv6 interface on
+          the same network as the route.
+        NEXT_HOP_INSTANCE_NOT_FOUND: The route's nextHopInstance URL refers to
+          an instance that does not exist.
+        NEXT_HOP_INSTANCE_NOT_ON_NETWORK: The route's nextHopInstance URL
+          refers to an instance that is not on the same network as the route.
+        NEXT_HOP_NOT_RUNNING: The route's next hop instance does not have a
+          status of RUNNING.
+        NOT_CRITICAL_ERROR: Error which is not critical. We decided to
+          continue the process despite the mentioned error.
+        NO_RESULTS_ON_PAGE: No results are present on a particular list page.
+        PARTIAL_SUCCESS: Success is reported, but some results may be missing
+          due to errors
+        QUOTA_INFO_UNAVAILABLE: Quota information is not available to client
+          requests (e.g: regions.list).
+        REQUIRED_TOS_AGREEMENT: The user attempted to use a resource that
+          requires a TOS they have not accepted.
+        RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING: Warning that a resource is
+          in use.
+        RESOURCE_NOT_DELETED: One or more of the resources set to auto-delete
+          could not be deleted because they were in use.
+        SCHEMA_VALIDATION_IGNORED: When a resource schema validation is
+          ignored.
+        SINGLE_INSTANCE_PROPERTY_TEMPLATE: Instance template used in instance
+          group manager is valid as such, but its application does not make a
+          lot of sense, because it allows only single instance in instance
+          group.
+        UNDECLARED_PROPERTIES: When undeclared properties in the schema are
+          present
+        UNREACHABLE: A given scope cannot be reached.
+      """
+      CLEANUP_FAILED = 0
+      DEPRECATED_RESOURCE_USED = 1
+      DEPRECATED_TYPE_USED = 2
+      DISK_SIZE_LARGER_THAN_IMAGE_SIZE = 3
+      EXPERIMENTAL_TYPE_USED = 4
+      EXTERNAL_API_WARNING = 5
+      FIELD_VALUE_OVERRIDEN = 6
+      INJECTED_KERNELS_DEPRECATED = 7
+      INVALID_HEALTH_CHECK_FOR_DYNAMIC_WIEGHTED_LB = 8
+      LARGE_DEPLOYMENT_WARNING = 9
+      LIST_OVERHEAD_QUOTA_EXCEED = 10
+      MISSING_TYPE_DEPENDENCY = 11
+      NEXT_HOP_ADDRESS_NOT_ASSIGNED = 12
+      NEXT_HOP_CANNOT_IP_FORWARD = 13
+      NEXT_HOP_INSTANCE_HAS_NO_IPV6_INTERFACE = 14
+      NEXT_HOP_INSTANCE_NOT_FOUND = 15
+      NEXT_HOP_INSTANCE_NOT_ON_NETWORK = 16
+      NEXT_HOP_NOT_RUNNING = 17
+      NOT_CRITICAL_ERROR = 18
+      NO_RESULTS_ON_PAGE = 19
+      PARTIAL_SUCCESS = 20
+      QUOTA_INFO_UNAVAILABLE = 21
+      REQUIRED_TOS_AGREEMENT = 22
+      RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING = 23
+      RESOURCE_NOT_DELETED = 24
+      SCHEMA_VALIDATION_IGNORED = 25
+      SINGLE_INSTANCE_PROPERTY_TEMPLATE = 26
+      UNDECLARED_PROPERTIES = 27
+      UNREACHABLE = 28
+
+    class DataValueListEntry(_messages.Message):
+      r"""A DataValueListEntry object.
+
+      Fields:
+        key: [Output Only] A key that provides more detail on the warning
+          being returned. For example, for warnings where there are no results
+          in a list request for a particular zone, this key might be scope and
+          the key value might be the zone name. Other examples might be a key
+          indicating a deprecated resource and a suggested replacement, or a
+          warning about invalid network settings (for example, if an instance
+          attempts to perform IP forwarding but is not enabled for IP
+          forwarding).
+        value: [Output Only] A warning data value corresponding to the key.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    code = _messages.EnumField('CodeValueValuesEnum', 1)
+    data = _messages.MessageField('DataValueListEntry', 2, repeated=True)
+    message = _messages.StringField(3)
+
+  etag = _messages.StringField(1)
+  id = _messages.StringField(2)
+  items = _messages.MessageField('RecoverableSnapshot', 3, repeated=True)
+  kind = _messages.StringField(4, default='compute#recoverableSnapshotList')
+  nextPageToken = _messages.StringField(5)
+  selfLink = _messages.StringField(6)
+  unreachables = _messages.StringField(7, repeated=True)
+  warning = _messages.MessageField('WarningValue', 8)
+
+
+class RecoverableSnapshotOriginalSnapshot(_messages.Message):
+  r"""A RecoverableSnapshotOriginalSnapshot object.
+
+  Enums:
+    ArchitectureValueValuesEnum: Output only. [Output Only] The architecture
+      of the snapshot. Valid values are ARM64 or X86_64.
+    SnapshotTypeValueValuesEnum: Indicates the type of the snapshot.
+    StorageBytesStatusValueValuesEnum: Output only. [Deprecated] Instead,
+      check the storageBytes field. After snapshot creation, the
+      storageBytesStatus field is alwaysUP_TO_DATE. [Output Only] An indicator
+      whether storageBytes is in a stable state or it is being adjusted as a
+      result of shared storage reallocation. This status can either be unset,
+      meaning the snapshot is being created, or UP_TO_DATE, meaning the size
+      of the snapshot is up-to-date.
+
+  Messages:
+    LabelsValue: Labels to apply to this snapshot. These can be later modified
+      by the setLabels method. Label values may be empty.
+
+  Fields:
+    architecture: Output only. [Output Only] The architecture of the snapshot.
+      Valid values are ARM64 or X86_64.
+    autoCreated: Output only. [Output Only] Set to true if snapshots are
+      automatically created by applying resource policy on the target disk.
+    chainName: Creates the new snapshot in the snapshot chain labeled with the
+      specified name. The chain name must be 1-63 characters long and comply
+      with RFC1035. This is an uncommon option only for advanced service
+      owners who needs to create separate snapshot chains, for example, for
+      chargeback tracking. When you describe your snapshot resource, this
+      field is visible only if it has a non-empty value.
+    creationSizeBytes: Output only. [Output Only] Size in bytes of the
+      snapshot at creation time.
+    creationTimestamp: Output only. [Output Only] Creation timestamp inRFC3339
+      text format.
+    deletionTimestamp: Output only. [Output Only] Deletion timestamp of
+      snapshot inRFC3339 text format.
+    description: An optional description of this resource.
+    diskSizeGb: Output only. [Output Only] Size of the source disk, specified
+      in GB.
+    downloadBytes: Output only. [Output Only] Number of bytes downloaded to
+      restore a snapshot to a disk.
+    enableConfidentialCompute: Output only. Whether this snapshot is created
+      from a confidential compute mode disk. [Output Only]: This field is not
+      set by user, but from source disk.
+    guestOsFeatures: Output only. [Output Only] A list of features to enable
+      on the guest operating system. Applicable only for bootable images. Read
+      Enabling guest operating system features to see a list of available
+      options.
+    id: Output only. [Output Only] The unique identifier for the original
+      snapshot. This identifier is defined by the server.
+    labelFingerprint: A fingerprint for the labels being applied to this
+      snapshot, which is essentially a hash of the labels set used for
+      optimistic locking. The fingerprint is initially generated by Compute
+      Engine and changes after every request to modify or update labels. You
+      must always provide an up-to-date fingerprint hash in order to update or
+      change labels, otherwise the request will fail with error412
+      conditionNotMet.  To see the latest fingerprint, make a get() request to
+      retrieve a snapshot.
+    labels: Labels to apply to this snapshot. These can be later modified by
+      the setLabels method. Label values may be empty.
+    licenseCodes: Output only. [Output Only] Integer license codes indicating
+      which licenses are attached to this snapshot.
+    licenses: Output only. [Output Only] A list of public visible licenses
+      that apply to this snapshot.
+    maxRetentionDays: Number of days the snapshot should be retained before
+      being deleted automatically.
+    name: Name of the original snapshot provided by the client. The name must
+      be 1-63 characters long, and comply with RFC1035. Specifically, the name
+      must be 1-63 characters long and match the regular expression
+      `[a-z]([-a-z0-9]*[a-z0-9])?` which means the first character must be a
+      lowercase letter, and all following characters must be a dash, lowercase
+      letter, or digit, except the last character, which cannot be a dash.
+    region: Output only. [Output Only] URL of the region where the snapshot
+      resides. Only applicable for regional snapshots.
+    satisfiesPzi: Output only. Reserved for future use.
+    satisfiesPzs: Output only. [Output Only] Reserved for future use.
+    selfLink: Output only. [Output Only] Server-defined URL for the resource.
+    selfLinkWithId: Output only. [Output Only] Server-defined URL for this
+      resource's resource id.
+    snapshotEncryptionKey: Encrypts the snapshot using acustomer-supplied
+      encryption key.  After you encrypt a snapshot using a customer-supplied
+      key, you must provide the same key if you use the snapshot later. For
+      example, you must provide the encryption key when you create a disk from
+      the encrypted snapshot in a future request.  Customer-supplied
+      encryption keys do not protect access to metadata of the snapshot.  If
+      you do not provide an encryption key when creating the snapshot, then
+      the snapshot will be encrypted using an automatically generated key and
+      you do not need to provide a key to use the snapshot later.
+    snapshotGroupId: Output only. [Output Only] The unique ID of the snapshot
+      group that this snapshot belongs to. The usage of snapshot group feature
+      is restricted.
+    snapshotGroupName: Output only. [Output only] The snapshot group that this
+      snapshot belongs to. The usage of snapshot group feature is restricted.
+    snapshotType: Indicates the type of the snapshot.
+    sourceDisk: The source disk used to create this snapshot.
+    sourceDiskEncryptionKey: The customer-supplied encryption key of the
+      source disk. Required if the source disk is protected by a customer-
+      supplied encryption key.
+    sourceDiskForRecoveryCheckpoint: The source disk whose recovery checkpoint
+      will be used to create this snapshot.
+    sourceDiskId: Output only. [Output Only] The ID value of the disk used to
+      create this snapshot
+    sourceInstantSnapshot: The source instant snapshot used to create this
+      snapshot.
+    sourceInstantSnapshotEncryptionKey: Customer provided encryption key when
+      creating Snapshot from Instant Snapshot.
+    sourceInstantSnapshotId: Output only. [Output Only] The unique ID of the
+      instant snapshot used to create this snapshot. This value identifies the
+      exact instant snapshot that was used to create this persistent disk. For
+      example, if you created the persistent disk from an instant snapshot
+      that was later deleted and recreated under the same name, the source
+      instant snapshot ID would identify the exact instant snapshot that was
+      used.
+    sourceSnapshotSchedulePolicy: Output only. [Output Only] URL of the
+      resource policy which created this scheduled snapshot.
+    sourceSnapshotSchedulePolicyId: Output only. [Output Only] ID of the
+      resource policy which created this scheduled snapshot.
+    storageBytes: Output only. [Output Only] A size of the storage used by the
+      snapshot.
+    storageBytesStatus: Output only. [Deprecated] Instead, check the
+      storageBytes field. After snapshot creation, the storageBytesStatus
+      field is alwaysUP_TO_DATE. [Output Only] An indicator whether
+      storageBytes is in a stable state or it is being adjusted as a result of
+      shared storage reallocation. This status can either be unset, meaning
+      the snapshot is being created, or UP_TO_DATE, meaning the size of the
+      snapshot is up-to-date.
+    storageLocations: Cloud Storage bucket storage location of the snapshot
+      (regional or multi-regional).
+  """
+
+  class ArchitectureValueValuesEnum(_messages.Enum):
+    r"""Output only. [Output Only] The architecture of the snapshot. Valid
+    values are ARM64 or X86_64.
+
+    Values:
+      ARCHITECTURE_UNSPECIFIED: Default value indicating Architecture is not
+        set.
+      ARM64: Machines with architecture ARM64
+      X86_64: Machines with architecture X86_64
+    """
+    ARCHITECTURE_UNSPECIFIED = 0
+    ARM64 = 1
+    X86_64 = 2
+
+  class SnapshotTypeValueValuesEnum(_messages.Enum):
+    r"""Indicates the type of the snapshot.
+
+    Values:
+      ARCHIVE: <no description>
+      STANDARD: <no description>
+    """
+    ARCHIVE = 0
+    STANDARD = 1
+
+  class StorageBytesStatusValueValuesEnum(_messages.Enum):
+    r"""Output only. [Deprecated] Instead, check the storageBytes field. After
+    snapshot creation, the storageBytesStatus field is alwaysUP_TO_DATE.
+    [Output Only] An indicator whether storageBytes is in a stable state or it
+    is being adjusted as a result of shared storage reallocation. This status
+    can either be unset, meaning the snapshot is being created, or UP_TO_DATE,
+    meaning the size of the snapshot is up-to-date.
+
+    Values:
+      UPDATING: <no description>
+      UP_TO_DATE: <no description>
+    """
+    UPDATING = 0
+    UP_TO_DATE = 1
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Labels to apply to this snapshot. These can be later modified by the
+    setLabels method. Label values may be empty.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  architecture = _messages.EnumField('ArchitectureValueValuesEnum', 1)
+  autoCreated = _messages.BooleanField(2)
+  chainName = _messages.StringField(3)
+  creationSizeBytes = _messages.IntegerField(4)
+  creationTimestamp = _messages.StringField(5)
+  deletionTimestamp = _messages.StringField(6)
+  description = _messages.StringField(7)
+  diskSizeGb = _messages.IntegerField(8)
+  downloadBytes = _messages.IntegerField(9)
+  enableConfidentialCompute = _messages.BooleanField(10)
+  guestOsFeatures = _messages.MessageField('GuestOsFeature', 11, repeated=True)
+  id = _messages.IntegerField(12, variant=_messages.Variant.UINT64)
+  labelFingerprint = _messages.BytesField(13)
+  labels = _messages.MessageField('LabelsValue', 14)
+  licenseCodes = _messages.IntegerField(15, repeated=True)
+  licenses = _messages.StringField(16, repeated=True)
+  maxRetentionDays = _messages.IntegerField(17, variant=_messages.Variant.INT32)
+  name = _messages.StringField(18)
+  region = _messages.StringField(19)
+  satisfiesPzi = _messages.BooleanField(20)
+  satisfiesPzs = _messages.BooleanField(21)
+  selfLink = _messages.StringField(22)
+  selfLinkWithId = _messages.StringField(23)
+  snapshotEncryptionKey = _messages.MessageField('CustomerEncryptionKey', 24)
+  snapshotGroupId = _messages.StringField(25)
+  snapshotGroupName = _messages.StringField(26)
+  snapshotType = _messages.EnumField('SnapshotTypeValueValuesEnum', 27)
+  sourceDisk = _messages.StringField(28)
+  sourceDiskEncryptionKey = _messages.MessageField('CustomerEncryptionKey', 29)
+  sourceDiskForRecoveryCheckpoint = _messages.StringField(30)
+  sourceDiskId = _messages.StringField(31)
+  sourceInstantSnapshot = _messages.StringField(32)
+  sourceInstantSnapshotEncryptionKey = _messages.MessageField('CustomerEncryptionKey', 33)
+  sourceInstantSnapshotId = _messages.StringField(34)
+  sourceSnapshotSchedulePolicy = _messages.StringField(35)
+  sourceSnapshotSchedulePolicyId = _messages.StringField(36)
+  storageBytes = _messages.IntegerField(37)
+  storageBytesStatus = _messages.EnumField('StorageBytesStatusValueValuesEnum', 38)
+  storageLocations = _messages.StringField(39, repeated=True)
 
 
 class Reference(_messages.Message):
@@ -103050,6 +104385,124 @@ class SnapshotParams(_messages.Message):
   resourceManagerTags = _messages.MessageField('ResourceManagerTagsValue', 1)
 
 
+class SnapshotRecycleBinPolicy(_messages.Message):
+  r"""Represents the singleton resource Snapshot Recycle Bin Policy that
+  configures the retention duration for snapshots in the recycle bin.  You can
+  configure the retention duration for snapshots in the recycle bin at the
+  project or organization level. If you configure the policy at the
+  organization level, all projects in that organization will share the same
+  policy. If you configure the policy at the project level it will be merged
+  with org level policy (if any) and the snapshots in that project will use
+  that policy.
+
+  Messages:
+    RulesValue: The rules for the snapshot recycle bin policy. The key is
+      either 'default' or namespacedName of the TagValue which can be in the
+      format: `{organization_id}/{tag_key_short_name}/{tag_value_short_name}`
+      or `{project_id}/{tag_key_short_name}/{tag_value_short_name}` or
+      `{project_number}/{tag_key_short_name}/{tag_value_short_name}`. The
+      default rule is applied if snapshots do not have any of these tags.  The
+      value is the rule for the key.
+    SystemRulesValue: Output only. The system rules for snapshot recycle bin
+      policy. Defines the default rule that applies if no customer-defined
+      rule matches.
+
+  Fields:
+    rules: The rules for the snapshot recycle bin policy. The key is either
+      'default' or namespacedName of the TagValue which can be in the format:
+      `{organization_id}/{tag_key_short_name}/{tag_value_short_name}` or
+      `{project_id}/{tag_key_short_name}/{tag_value_short_name}` or
+      `{project_number}/{tag_key_short_name}/{tag_value_short_name}`. The
+      default rule is applied if snapshots do not have any of these tags.  The
+      value is the rule for the key.
+    systemRules: Output only. The system rules for snapshot recycle bin
+      policy. Defines the default rule that applies if no customer-defined
+      rule matches.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class RulesValue(_messages.Message):
+    r"""The rules for the snapshot recycle bin policy. The key is either
+    'default' or namespacedName of the TagValue which can be in the format:
+    `{organization_id}/{tag_key_short_name}/{tag_value_short_name}` or
+    `{project_id}/{tag_key_short_name}/{tag_value_short_name}` or
+    `{project_number}/{tag_key_short_name}/{tag_value_short_name}`. The
+    default rule is applied if snapshots do not have any of these tags.  The
+    value is the rule for the key.
+
+    Messages:
+      AdditionalProperty: An additional property for a RulesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type RulesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a RulesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A SnapshotRecycleBinPolicyRule attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('SnapshotRecycleBinPolicyRule', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class SystemRulesValue(_messages.Message):
+    r"""Output only. The system rules for snapshot recycle bin policy. Defines
+    the default rule that applies if no customer-defined rule matches.
+
+    Messages:
+      AdditionalProperty: An additional property for a SystemRulesValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type SystemRulesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a SystemRulesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A SnapshotRecycleBinPolicyRule attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('SnapshotRecycleBinPolicyRule', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  rules = _messages.MessageField('RulesValue', 1)
+  systemRules = _messages.MessageField('SystemRulesValue', 2)
+
+
+class SnapshotRecycleBinPolicyRule(_messages.Message):
+  r"""A rule that defines the retention policy for snapshots in the recycle
+  bin.
+
+  Fields:
+    standardSnapshots: The rule config for standard snapshots.
+  """
+
+  standardSnapshots = _messages.MessageField('SnapshotRecycleBinPolicyRuleRuleConfig', 1)
+
+
+class SnapshotRecycleBinPolicyRuleRuleConfig(_messages.Message):
+  r"""The rule config for snapshots in the recycle bin.
+
+  Fields:
+    retentionDurationDays: The retention duration for snapshots in the recycle
+      bin after which the snapshots are automatically deleted from recycle
+      bin.
+  """
+
+  retentionDurationDays = _messages.IntegerField(1)
+
+
 class SnapshotSettings(_messages.Message):
   r"""A SnapshotSettings object.
 
@@ -103227,6 +104680,17 @@ class SnapshotUpdateKmsKeyRequest(_messages.Message):
   """
 
   kmsKeyName = _messages.StringField(1)
+
+
+class SnapshotsGetEffectiveRecycleBinRuleResponse(_messages.Message):
+  r"""A SnapshotsGetEffectiveRecycleBinRuleResponse object.
+
+  Fields:
+    retentionDurationDays: The retention duration of the snapshot in recycle
+      bin.
+  """
+
+  retentionDurationDays = _messages.IntegerField(1)
 
 
 class SnapshotsScopedList(_messages.Message):

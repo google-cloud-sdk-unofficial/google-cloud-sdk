@@ -1,0 +1,35 @@
+- release_tracks: [ALPHA, BETA]
+  hidden: true
+
+  help_text:
+    brief: List Backup and DR binding matching resources.
+    description: List Backup and DR binding matching resources.
+    examples: |-
+      To list binding matching resources, run:
+
+        $ {command} --auto-protection-policy-binding=my-binding --location=us-central1 --auto-protection-policy=my-policy
+
+  request:
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
+    collection: backupdr.projects.locations.autoProtectionPolicies.bindings.matchingResources
+    method: list
+
+  arguments:
+    resource:
+      help_text: The binding matching resources.
+      spec: !REF googlecloudsdk.command_lib.backupdr.resources:autoProtectionPolicyBinding
+      is_positional: false
+
+  output:
+    format: |
+      table(
+        name.basename():label=ID,
+        resource:label=TARGET_RESOURCE,
+        autoProtectionDetails.state:label=STATE,
+        autoProtectionDetails.backupPlanAssociation:label=BACKUP_PLAN_ASSOCIATION,
+        autoProtectionDetails.dataSource:label=DATA_SOURCE,
+        lastEvaluationTime:label=LAST_EVALUATION_TIME
+      )

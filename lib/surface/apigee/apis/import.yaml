@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   is_python_command: true
   hints:
     read_only: false
@@ -19,3 +19,28 @@
       Each import creates a new API proxy revision rather than overwriting an
       existing one. Deploy the new revision to an environment with
       `gcloud apigee apis deploy`.
+
+      ### Troubleshooting
+      If the command cannot find an Apigee organization for the active project,
+      that project has no associated Apigee organization. Pass `--organization`,
+      set the active project to one that has an Apigee organization, or give the
+      full API proxy name (for example,
+      ``organizations/my-org/apis/helloworld'').
+
+      If the command fails with a permissions error, the account cannot create
+      API proxies. Grant a role such as `roles/apigee.apiAdmin` on the
+      organization.
+
+      If `--from-template` cannot read a feature file, the feature file is not in
+      the template directory. Keep the template and its feature files in the same
+      directory. Feature paths are resolved relative to the template file.
+
+      If `--from-template` fails with "Failed to parse YAML" or a schema error
+      (for example, "missing required top-level 'gateway' field"), the template
+      or a feature file is not valid. Set the required `gateway` and
+      `schemaVersion` fields to supported values (for example, `gateway: apigee`
+      and `schemaVersion: 1.0.0`), and remove fields that are not in the schema.
+
+      If `--from-bundle` reports an invalid bundle, the ZIP does not contain the
+      proxy configuration under an `apiproxy/` directory. Repackage the ZIP so
+      that the `apiproxy/` directory is at the root.

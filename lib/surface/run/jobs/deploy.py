@@ -394,6 +394,7 @@ class BetaDeploy(Deploy):
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser)
+    flags.AddDelayExecutionFlag(parser)
     container_args = ContainerArgGroup(release_track=base.ReleaseTrack.BETA)
     container_parser.AddContainerFlags(
         parser, container_args, cls.ReleaseTrack()

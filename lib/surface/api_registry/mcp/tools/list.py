@@ -33,7 +33,7 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Deprecate(
-    is_removed=False,
+    is_removed=True,
     warning=(
         'The `gcloud alpha api-registry mcp tools list` command is deprecated'
         ' and will be removed in a future release.'
@@ -79,7 +79,7 @@ class ListAlpha(base.ListCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.Deprecate(
-    is_removed=False,
+    is_removed=True,
     warning=(
         'The `gcloud beta api-registry mcp tools list` command is deprecated'
         ' and will be removed in a future release.'

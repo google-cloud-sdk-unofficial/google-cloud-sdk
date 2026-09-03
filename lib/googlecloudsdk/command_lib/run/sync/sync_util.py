@@ -20,7 +20,9 @@ import os
 
 from googlecloudsdk.api_lib.run import ssh as run_ssh
 from googlecloudsdk.command_lib.run import stages
+from googlecloudsdk.command_lib.run.sync import log_tailer
 from googlecloudsdk.command_lib.run.sync import polling_watcher
+from googlecloudsdk.command_lib.run.sync import ssh_util
 from googlecloudsdk.command_lib.run.sync import sync_rule_util
 from googlecloudsdk.command_lib.run.sync import syncer as syncer_lib
 from googlecloudsdk.core.console import progress_tracker
@@ -58,23 +60,37 @@ class Sync:
         sync_rules = sync_rule_util.GenerateRules(self.abs_source_dir)
         tracker.CompleteStage(stages.SYNC_RULES)
 
+        tracker.StartStage(stages.FETCH_PROJECT_DETAILS)
+        ssh_session = ssh_util.MultiplexedSshSession(
+            self.args, self.workload_type
+        )
+        stack.enter_context(ssh_session)
+        tracker.CompleteStage(stages.FETCH_PROJECT_DETAILS)
+
         is_buildpack = not os.path.exists(
             os.path.join(self.abs_source_dir, 'Dockerfile')
         )
         syncer_instance = syncer_lib.CloudRunSyncer(
-            self.args,
-            self.workload_type,
+            self.args.deployment_name,
             is_buildpack,
-            tracker,
+            ssh_session,
         )
-        stack.enter_context(syncer_instance)
 
         tracker.StartStage(stages.ESTABLISH_CONNECTION)
-        syncer_instance.PrimeSshConnection()
+        ssh_session.PrimeConnection()
         tracker.CompleteStage(stages.ESTABLISH_CONNECTION)
 
-      polling_watcher.PollingWatcher(
-          self.abs_source_dir,
-          sync_rules,
-          syncer_instance,
-      ).Watch()
+      tailer = None
+      if getattr(self.args, 'tail_logs', False):
+        tailer = log_tailer.LogTailer(ssh_session)
+        tailer.Start()
+
+      try:
+        polling_watcher.PollingWatcher(
+            self.abs_source_dir,
+            sync_rules,
+            syncer_instance,
+        ).Watch()
+      finally:
+        if tailer:
+          tailer.Stop()

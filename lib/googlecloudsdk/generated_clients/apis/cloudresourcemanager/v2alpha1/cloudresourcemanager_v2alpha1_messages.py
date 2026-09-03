@@ -377,6 +377,20 @@ class CloudresourcemanagerGoogleCloudResourcemanagerV2beta1FolderOperation(_mess
   sourceParent = _messages.StringField(4)
 
 
+class CreateBoundaryMetadata(_messages.Message):
+  r"""A status object which is used as the `metadata` field for the Operation
+  returned by CreateBoundary. Currently empty.
+  """
+
+
+
+class CreateCapabilityConfigMetadata(_messages.Message):
+  r"""A status object which is used as the `metadata` field for the Operation
+  returned by CreateCapabilityConfig. Currently empty.
+  """
+
+
+
 class CreateFolderMetadata(_messages.Message):
   r"""Metadata pertaining to the Folder creation process.
 
@@ -418,6 +432,20 @@ class CreateTagKeyMetadata(_messages.Message):
 
 class CreateTagValueMetadata(_messages.Message):
   r"""Runtime operation information for creating a TagValue."""
+
+
+class DeleteBoundaryMetadata(_messages.Message):
+  r"""A status object which is used as the `metadata` field for the Operation
+  returned by DeleteBoundary. Currently empty.
+  """
+
+
+
+class DeleteCapabilityConfigMetadata(_messages.Message):
+  r"""A status object which is used as the `metadata` field for the Operation
+  returned by DeleteCapabilityConfig. Currently empty.
+  """
+
 
 
 class DeleteFolderMetadata(_messages.Message):
@@ -1089,6 +1117,27 @@ class UndeleteOrganizationMetadata(_messages.Message):
 class UndeleteProjectMetadata(_messages.Message):
   r"""A status object which is used as the `metadata` field for the Operation
   returned by `UndeleteProject`.
+  """
+
+
+
+class UpdateBoundaryConfigMetadata(_messages.Message):
+  r"""A status object which is used as the `metadata` field for the Operation
+  returned by UpdateBoundaryConfig. Currently empty.
+  """
+
+
+
+class UpdateBoundaryMetadata(_messages.Message):
+  r"""A status object which is used as the `metadata` field for the Operation
+  returned by UpdateBoundary. Currently empty.
+  """
+
+
+
+class UpdateCapabilityConfigMetadata(_messages.Message):
+  r"""A status object which is used as the `metadata` field for the Operation
+  returned by UpdateCapabilityConfig. Currently empty.
   """
 
 

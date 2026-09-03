@@ -6,6 +6,7 @@ The Developer Knowledge API provides access to Google's developer knowledge.
 
 from apitools.base.protorpclite import messages as _messages
 from apitools.base.py import encoding
+from apitools.base.py import extra_types
 
 
 package = 'developerknowledge'
@@ -106,6 +107,34 @@ class AnswerReference(_messages.Message):
   documentReference = _messages.MessageField('DocumentReference', 1)
 
 
+class ApiReference(_messages.Message):
+  r"""An ApiReference represents a symbol in an API, such as a class or
+  method.
+
+  Fields:
+    dataSource: Output only. Specifies the data source of the reference data.
+      Example data source: `maven.org`
+    description: Output only. Provides a description of the reference data.
+    name: Identifier. Contains the resource name of the reference data.
+      Format: `apiReferences/{uri_without_scheme}` Example:
+      `apiReferences/maven.org/com.google.jukebox.v1/methods/GetArtist`
+    title: Output only. Provides the title of the reference data.
+    updateTime: Output only. Represents the timestamp when the reference data
+      or its metadata was last updated.
+    uri: Output only. Provides the URI of the reference data, such as
+      `maven.org/com.google.jukebox.v1/methods/GetArtist`.
+    yamlContent: The reference data represented as a DocFX YAML string.
+  """
+
+  dataSource = _messages.StringField(1)
+  description = _messages.StringField(2)
+  name = _messages.StringField(3)
+  title = _messages.StringField(4)
+  updateTime = _messages.StringField(5)
+  uri = _messages.StringField(6)
+  yamlContent = _messages.MessageField('TypedString', 7)
+
+
 class BatchGetDocumentsResponse(_messages.Message):
   r"""Response message for DeveloperKnowledge.BatchGetDocuments.
 
@@ -125,6 +154,18 @@ class CitationSource(_messages.Message):
   """
 
   referenceIndex = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+
+
+class DeveloperknowledgeApiReferencesGetRequest(_messages.Message):
+  r"""A DeveloperknowledgeApiReferencesGetRequest object.
+
+  Fields:
+    name: Required. Specifies the name of the reference data to retrieve.
+      Format: `apiReferences/{uri_without_scheme}` Example:
+      `apiReferences/maven.org/com.google.jukebox.v1/methods/GetArtist`
+  """
+
+  name = _messages.StringField(1, required=True)
 
 
 class DeveloperknowledgeDocumentsBatchGetRequest(_messages.Message):
@@ -276,6 +317,52 @@ class DeveloperknowledgeDocumentsSearchDocumentChunksRequest(_messages.Message):
   query = _messages.StringField(4)
 
 
+class DeveloperknowledgeLookupRequest(_messages.Message):
+  r"""A DeveloperknowledgeLookupRequest object.
+
+  Enums:
+    DocumentReadOptionsViewValueValuesEnum: Optional. Specifies the
+      DocumentView to use when retrieving Document resources, if applicable.
+
+  Fields:
+    documentReadOptions_view: Optional. Specifies the DocumentView to use when
+      retrieving Document resources, if applicable.
+    names: Required. Specifies the names of the resources to retrieve. A
+      maximum of 20 resources can be retrieved in a batch. The documents are
+      returned in the same order as the `names` in the request. Format:
+      `documents/{uri_without_scheme}` or `apiReferences/{uri_without_scheme}`
+      Example: `documents/docs.cloud.google.com/storage/docs/creating-buckets`
+      or `apiReferences/maven.org/com.google.jukebox.v1/methods/GetArtist`
+      Each name must not exceed 500 characters; values longer than 500
+      characters will result in an `INVALID_ARGUMENT` error.
+  """
+
+  class DocumentReadOptionsViewValueValuesEnum(_messages.Enum):
+    r"""Optional. Specifies the DocumentView to use when retrieving Document
+    resources, if applicable.
+
+    Values:
+      DOCUMENT_VIEW_UNSPECIFIED: The default / unset value. See each API
+        method for its default value if DocumentView is not specified.
+      DOCUMENT_VIEW_BASIC: Includes only the basic metadata fields: - `name` -
+        `uri` - `data_source` - `title` - `description` - `update_time` -
+        `view` - `content_length_bytes` This is the default of view for
+        DeveloperKnowledge.SearchDocumentChunks.
+      DOCUMENT_VIEW_FULL: Includes all Document fields.
+      DOCUMENT_VIEW_CONTENT: Includes the `DOCUMENT_VIEW_BASIC` fields and the
+        `content` field. This is the default of view for
+        DeveloperKnowledge.GetDocument and
+        DeveloperKnowledge.BatchGetDocuments.
+    """
+    DOCUMENT_VIEW_UNSPECIFIED = 0
+    DOCUMENT_VIEW_BASIC = 1
+    DOCUMENT_VIEW_FULL = 2
+    DOCUMENT_VIEW_CONTENT = 3
+
+  documentReadOptions_view = _messages.EnumField('DocumentReadOptionsViewValueValuesEnum', 1)
+  names = _messages.StringField(2, repeated=True)
+
+
 class DeveloperknowledgeSearchRequest(_messages.Message):
   r"""A DeveloperknowledgeSearchRequest object.
 
@@ -311,10 +398,10 @@ class DeveloperknowledgeSearchRequest(_messages.Message):
       "https://docs.cloud.google.com/release-notes"` The `filter` string must
       not exceed 500 characters; values longer than 500 characters will result
       in an `INVALID_ARGUMENT` error.
-    pageSize: Specifies the maximum number of results to return. The service
-      may return fewer than this value. If unspecified, at most 5 results will
-      be returned. The maximum value is 100; values above 100 will be coerced
-      to 100.
+    pageSize: Optional. Specifies the maximum number of results to return. The
+      service may return fewer than this value. If unspecified, at most 20
+      results will be returned. The maximum value is 100; values above 100
+      will be coerced to 100.
     pageToken: Optional. Contains a page token, received from a previous
       `Search` call. Provide this to retrieve the subsequent page.
     query: Required. Provides the raw query string provided by the user, such
@@ -433,6 +520,62 @@ class DocumentReference(_messages.Message):
   documentChunk = _messages.MessageField('DocumentChunk', 1)
 
 
+class LookupResponse(_messages.Message):
+  r"""Response message for DeveloperKnowledge.Lookup.
+
+  Fields:
+    results: Contains the lookup results for the given names. Each
+      LookupResult corresponds to the same index in the LookupRequest.names
+      field and contains either the requested resource or a google.rpc.Status
+      error.
+  """
+
+  results = _messages.MessageField('LookupResult', 1, repeated=True)
+
+
+class LookupResult(_messages.Message):
+  r"""A LookupResult represents a developer knowledge resource returned by
+  DeveloperKnowledge.Lookup.
+
+  Enums:
+    ResourceTypeValueValuesEnum: Specifies the type of resource contained in
+      this lookup result, e.g. RESOURCE_TYPE_DOCUMENT.
+
+  Fields:
+    apiReference: The API reference data contained in this lookup result.
+    document: The document contained in this lookup result.
+    error: The error that occurred while retrieving the resource, if any.
+    name: Contains the resource name returned in this lookup result. This
+      corresponds to one of the resources requested in LookupRequest.names.
+    resourceType: Specifies the type of resource contained in this lookup
+      result, e.g. RESOURCE_TYPE_DOCUMENT.
+  """
+
+  class ResourceTypeValueValuesEnum(_messages.Enum):
+    r"""Specifies the type of resource contained in this lookup result, e.g.
+    RESOURCE_TYPE_DOCUMENT.
+
+    Values:
+      RESOURCE_TYPE_UNSPECIFIED: An unspecified resource type.
+      RESOURCE_TYPE_DOCUMENT: The Document resource type. A Document
+        represents a page of documentation in the Developer Knowledge corpus,
+        like the page at https://docs.cloud.google.com/storage/docs/creating-
+        buckets.
+      RESOURCE_TYPE_API_REFERENCE: The ApiReference resource type. An
+        ApiReference represents a symbol in an API or library, like a class or
+        method.
+    """
+    RESOURCE_TYPE_UNSPECIFIED = 0
+    RESOURCE_TYPE_DOCUMENT = 1
+    RESOURCE_TYPE_API_REFERENCE = 2
+
+  apiReference = _messages.MessageField('ApiReference', 1)
+  document = _messages.MessageField('Document', 2)
+  error = _messages.MessageField('Status', 3)
+  name = _messages.StringField(4)
+  resourceType = _messages.EnumField('ResourceTypeValueValuesEnum', 5)
+
+
 class SearchDocumentChunksResponse(_messages.Message):
   r"""Response message for DeveloperKnowledge.SearchDocumentChunks.
 
@@ -479,6 +622,7 @@ class SearchResult(_messages.Message):
       this search result, e.g. RESOURCE_TYPE_DOCUMENT.
 
   Fields:
+    apiReference: The API reference data contained in this search result.
     documentChunk: The document chunk contained in this search result. Use the
       DocumentChunk.parent field with DeveloperKnowledge.GetDocument or
       DeveloperKnowledge.BatchGetDocuments to retrieve the full document
@@ -500,13 +644,18 @@ class SearchResult(_messages.Message):
         represents a page of documentation in the Developer Knowledge corpus,
         like the page at https://docs.cloud.google.com/storage/docs/creating-
         buckets.
+      RESOURCE_TYPE_API_REFERENCE: The ApiReference resource type. An
+        ApiReference represents a symbol in an API or library, like a class or
+        method.
     """
     RESOURCE_TYPE_UNSPECIFIED = 0
     RESOURCE_TYPE_DOCUMENT = 1
+    RESOURCE_TYPE_API_REFERENCE = 2
 
-  documentChunk = _messages.MessageField('DocumentChunk', 1)
-  relevanceScore = _messages.FloatField(2)
-  resourceType = _messages.EnumField('ResourceTypeValueValuesEnum', 3)
+  apiReference = _messages.MessageField('ApiReference', 1)
+  documentChunk = _messages.MessageField('DocumentChunk', 2)
+  relevanceScore = _messages.FloatField(3)
+  resourceType = _messages.EnumField('ResourceTypeValueValuesEnum', 4)
 
 
 class StandardQueryParameters(_messages.Message):
@@ -572,9 +721,77 @@ class StandardQueryParameters(_messages.Message):
   upload_protocol = _messages.StringField(12)
 
 
+class Status(_messages.Message):
+  r"""The `Status` type defines a logical error model that is suitable for
+  different programming environments, including REST APIs and RPC APIs. It is
+  used by [gRPC](https://github.com/grpc). Each `Status` message contains
+  three pieces of data: error code, error message, and error details. You can
+  find out more about this error model and how to work with it in the [API
+  Design Guide](https://cloud.google.com/apis/design/errors).
+
+  Messages:
+    DetailsValueListEntry: A DetailsValueListEntry object.
+
+  Fields:
+    code: The status code, which should be an enum value of google.rpc.Code.
+    details: A list of messages that carry the error details. There is a
+      common set of message types for APIs to use.
+    message: A developer-facing error message, which should be in English. Any
+      user-facing error message should be localized and sent in the
+      google.rpc.Status.details field, or localized by the client.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class DetailsValueListEntry(_messages.Message):
+    r"""A DetailsValueListEntry object.
+
+    Messages:
+      AdditionalProperty: An additional property for a DetailsValueListEntry
+        object.
+
+    Fields:
+      additionalProperties: Properties of the object. Contains field @type
+        with type URL.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a DetailsValueListEntry object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  code = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  details = _messages.MessageField('DetailsValueListEntry', 2, repeated=True)
+  message = _messages.StringField(3)
+
+
+class TypedString(_messages.Message):
+  r"""A TypedString represents a string value with a MIME type and length in
+  bytes.
+
+  Fields:
+    mimeType: Specifies the MIME type of the data represented by the string.
+    value: The string value.
+    valueLengthBytes: The length of the `value` field in bytes.
+  """
+
+  mimeType = _messages.StringField(1)
+  value = _messages.StringField(2)
+  valueLengthBytes = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+
+
 encoding.AddCustomJsonFieldMapping(
     StandardQueryParameters, 'f__xgafv', '$.xgafv')
 encoding.AddCustomJsonEnumMapping(
     StandardQueryParameters.FXgafvValueValuesEnum, '_1', '1')
 encoding.AddCustomJsonEnumMapping(
     StandardQueryParameters.FXgafvValueValuesEnum, '_2', '2')
+encoding.AddCustomJsonFieldMapping(
+    DeveloperknowledgeLookupRequest, 'documentReadOptions_view', 'documentReadOptions.view')

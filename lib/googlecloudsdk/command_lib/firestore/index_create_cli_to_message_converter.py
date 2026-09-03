@@ -14,16 +14,33 @@
 # limitations under the License.
 """CLI to message converter utilities for Firestore index create commands."""
 
+from apitools.base.py import encoding
 from googlecloudsdk.api_lib.firestore import api_utils as fs_api_utils
-from googlecloudsdk.command_lib.firestore import flags
 
 
-def _BuildEnumMessage(enum_class, cli_val):
-  """Maps a parsed CLI value safely to its corresponding proto Enum class."""
-  if not cli_val:
-    return None
-  enum_name = cli_val.upper().replace('-', '_')
-  return enum_class(enum_name)
+def _KebabToCamel(s):
+  """Converts a kebab-case string to camelCase."""
+  parts = s.split('-')
+  return parts[0] + ''.join(p.title() for p in parts[1:])
+
+
+def _KebabToCamelKeysDict(d):
+  """Recursively converts dict keys to camelCase."""
+  if isinstance(d, dict):
+    return {
+        _KebabToCamel(k): _KebabToCamelKeysDict(v)
+        for k, v in d.items()
+        if v is not None
+    }
+
+  if isinstance(d, list):
+    return [_KebabToCamelKeysDict(v) for v in d if v is not None]
+
+  return d
+
+
+def _NormalizeEnum(s):
+  return s.upper().replace('-', '_') if s else None
 
 
 def BuildIndexMessage(
@@ -37,117 +54,23 @@ def BuildIndexMessage(
 ):
   """Builds a GoogleFirestoreAdminV1Index message from parsed arguments."""
   messages = fs_api_utils.GetMessages()
-  fields = [_BuildIndexFieldMessage(messages, fc) for fc in field_configs]
 
-  index = messages.GoogleFirestoreAdminV1Index(
-      fields=fields,
-      queryScope=_BuildEnumMessage(
-          messages.GoogleFirestoreAdminV1Index.QueryScopeValueValuesEnum,
-          query_scope,
-      ),
-      apiScope=_BuildEnumMessage(
-          messages.GoogleFirestoreAdminV1Index.ApiScopeValueValuesEnum,
-          api_scope,
-      ),
-      density=_BuildEnumMessage(
-          messages.GoogleFirestoreAdminV1Index.DensityValueValuesEnum,
-          density,
-      ),
-      multikey=multikey,
-      unique=unique,
-      searchIndexOptions=_BuildSearchIndexOptionsMessage(
-          messages, search_index_options
-      ),
-  )
+  # Coerece keys to match proto casing.
+  fields = _KebabToCamelKeysDict(field_configs)
 
-  return index
+  # Coerce top level enums to match proto enum casing. Nested enums are
+  # normalized during parsing.
+  index_dict = {
+      'queryScope': _NormalizeEnum(query_scope),
+      'apiScope': _NormalizeEnum(api_scope),
+      'density': _NormalizeEnum(density),
+      'multikey': multikey,
+      'unique': unique,
+      'searchIndexOptions': _KebabToCamelKeysDict(search_index_options),
+      'fields': fields,
+  }
 
-
-def _BuildSearchIndexOptionsMessage(messages, search_index_options):
-  """Maps parsed search index options to a GoogleFirestoreAdminV1SearchIndexOptions message."""
-  if not search_index_options:
-    return None
-
-  return messages.GoogleFirestoreAdminV1SearchIndexOptions(
-      textLanguage=search_index_options.get(
-          flags.SEARCH_INDEX_OPTIONS_TEXT_LANGUAGE
-      ),
-      textLanguageOverrideFieldPath=search_index_options.get(
-          flags.SEARCH_INDEX_OPTIONS_TEXT_LANGUAGE_OVERRIDE_FIELD_PATH
-      ),
-  )
-
-
-def _BuildIndexFieldMessage(messages, fc):
-  """Maps a parsed field config dict to a GoogleFirestoreAdminV1IndexField message."""
-  return messages.GoogleFirestoreAdminV1IndexField(
-      fieldPath=fc.get(flags.FIELD_CONFIG_FIELD_PATH),
-      order=_BuildEnumMessage(
-          messages.GoogleFirestoreAdminV1IndexField.OrderValueValuesEnum,
-          fc.get(flags.FIELD_CONFIG_ORDER),
-      ),
-      arrayConfig=_BuildEnumMessage(
-          messages.GoogleFirestoreAdminV1IndexField.ArrayConfigValueValuesEnum,
-          fc.get(flags.FIELD_CONFIG_ARRAY_CONFIG),
-      ),
-      vectorConfig=_BuildVectorConfigMessage(
-          messages, fc.get(flags.FIELD_CONFIG_VECTOR_CONFIG)
-      ),
-      searchConfig=_BuildSearchConfigMessage(
-          messages, fc.get(flags.FIELD_CONFIG_SEARCH_CONFIG)
-      ),
-  )
-
-
-def _BuildVectorConfigMessage(messages, vector_config):
-  """Maps parsed vector config data to a GoogleFirestoreAdminV1VectorConfig message."""
-  if not vector_config:
-    return None
-
-  flat_config = None
-  if flags.FIELD_CONFIG_FLAT in vector_config:
-    flat_config = messages.GoogleFirestoreAdminV1FlatIndex()
-
-  return messages.GoogleFirestoreAdminV1VectorConfig(
-      dimension=vector_config.get(flags.FIELD_CONFIG_DIMENSION),
-      flat=flat_config,
-  )
-
-
-def _BuildSearchConfigMessage(messages, search_config):
-  """Maps parsed search config data to a GoogleFirestoreAdminV1SearchConfig message."""
-  if not search_config:
-    return None
-
-  text_spec = None
-  if flags.FIELD_CONFIG_TEXT_SPEC in search_config:
-    index_specs = [
-        messages.GoogleFirestoreAdminV1SearchTextIndexSpec(
-            indexType=_BuildEnumMessage(
-                messages.GoogleFirestoreAdminV1SearchTextIndexSpec.IndexTypeValueValuesEnum,
-                spec.get(flags.FIELD_CONFIG_INDEX_TYPE),
-            ),
-            matchType=_BuildEnumMessage(
-                messages.GoogleFirestoreAdminV1SearchTextIndexSpec.MatchTypeValueValuesEnum,
-                spec.get(flags.FIELD_CONFIG_MATCH_TYPE),
-            ),
-        )
-        for spec in search_config[flags.FIELD_CONFIG_TEXT_SPEC].get(
-            flags.FIELD_CONFIG_INDEX_SPECS, []
-        )
-    ]
-    text_spec = messages.GoogleFirestoreAdminV1SearchTextSpec(
-        indexSpecs=index_specs
-    )
-
-  geo_spec = None
-  if flags.FIELD_CONFIG_GEO_SPEC in search_config:
-    geo_spec = messages.GoogleFirestoreAdminV1SearchGeoSpec(
-        geoJsonIndexingDisabled=search_config[flags.FIELD_CONFIG_GEO_SPEC].get(
-            flags.FIELD_CONFIG_GEO_JSON_INDEXING_DISABLED
-        )
-    )
-
-  return messages.GoogleFirestoreAdminV1SearchConfig(
-      textSpec=text_spec, geoSpec=geo_spec
+  clean_dict = _KebabToCamelKeysDict(index_dict)
+  return encoding.DictToMessage(
+      clean_dict, messages.GoogleFirestoreAdminV1Index
   )

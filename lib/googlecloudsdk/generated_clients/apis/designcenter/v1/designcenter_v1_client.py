@@ -1459,7 +1459,7 @@ class DesigncenterV1(base_api.BaseApiClient):
     )
 
     def RecommendIAMRoles(self, request, global_params=None):
-      r"""Gets recommended roles for an application.
+      r"""Gets recommended IAM roles for an application. Evaluates the infrastructure resources defined by an application (including its template configuration and parameters) to determine the set of IAM roles and Google Cloud APIs required for deployment across target projects. The operation is asynchronous and returns a `google.longrunning.Operation`. Upon completion, the operation result contains a `RecommendIAMRolesResponse` with project-level IAM role and API recommendations.
 
       Args:
         request: (DesigncenterProjectsLocationsSpacesApplicationsRecommendIAMRolesRequest) input message

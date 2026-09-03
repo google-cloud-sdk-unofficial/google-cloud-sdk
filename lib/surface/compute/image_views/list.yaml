@@ -1,0 +1,36 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: List Compute Engine image-view resources.
+    description: |
+      *{command}* lists Compute Engine image-view resources in a given
+      project and region.
+    examples: |
+      To list all image-view resources in a project in region `us-central1`:
+
+        $ {command} --region=us-central1
+
+      To list all image-view resources with a specific source disk in region `us-central1`:
+
+        $ {command} --region=us-central1 --filter="image.sourceDisk:test-disk-us-central1-ir1"
+
+  request:
+    collection: compute.imageViews
+    ALPHA:
+      api_version: alpha
+    method: list
+
+  arguments:
+    resource:
+      help_text: The region of the image-view resources to list.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:region
+      is_positional: false
+
+  output:
+    format: |
+      table(
+        image.name:label=NAME,
+        image.selfLink.map().scope(projects).segment(0):label=PROJECT,
+        image.deprecated.state:label=DEPRECATED,
+        image.status:label=STATUS
+      )

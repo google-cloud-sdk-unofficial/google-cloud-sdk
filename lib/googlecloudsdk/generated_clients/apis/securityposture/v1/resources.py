@@ -33,9 +33,12 @@ class Collections(enum.Enum):
   )
   ORGANIZATIONS_LOCATIONS = (
       'organizations.locations',
-      'organizations/{organizationsId}/locations/{locationsId}',
-      {},
-      ['organizationsId', 'locationsId'],
+      '{+name}',
+      {
+          '':
+              'organizations/{organizationsId}/locations/{locationsId}',
+      },
+      ['name'],
       True
   )
   ORGANIZATIONS_LOCATIONS_OPERATIONS = (
@@ -111,23 +114,6 @@ class Collections(enum.Enum):
           '':
               'organizations/{organizationsId}/locations/{locationsId}/'
               'reports/{reportsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS = (
-      'projects',
-      'projects/{projectsId}',
-      {},
-      ['projectsId'],
-      True
-  )
-  PROJECTS_LOCATIONS = (
-      'projects.locations',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}',
       },
       ['name'],
       True

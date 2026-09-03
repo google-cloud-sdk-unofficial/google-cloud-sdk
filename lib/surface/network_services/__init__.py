@@ -12,20 +12,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command group for Network Services."""
-
+"""Manage Network Services resources."""
 
 from googlecloudsdk.calliope import base
+from surface.network_services import _init_extensions as extensions
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
-class NetworkServices(base.Group):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class NetworkServicesAlpha(extensions.NetworkServicesAlpha):
   """Manage Network Services resources."""
 
-  category = base.NETWORKING_CATEGORY
 
-  def Filter(self, context, args):
-    # TODO(b/190537939):  Determine if command group works with project number
-    base.RequireProjectID(args)
-    del context, args
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class NetworkServicesBeta(extensions.NetworkServicesBeta):
+  """Manage Network Services resources."""
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class NetworkServicesGa(extensions.NetworkServicesGa):
+  """Manage Network Services resources."""

@@ -554,10 +554,11 @@ def CreateConfidentialParavisorConfigMessage(args, messages, support_snp_svsm):
 def CreateConfidentialInstanceMessage(
     messages,
     args,
-    support_confidential_compute_type,
-    support_confidential_compute_type_tdx,
-    support_snp_svsm,
-    support_confidential_compute_type_cca,
+    support_confidential_compute_type=False,
+    support_confidential_compute_type_tdx=False,
+    support_snp_svsm=False,
+    support_confidential_compute_type_cca=False,
+    support_confidential_compute_type_bmsai=False,
 ):
   """Create confidentialInstanceConfig message for VM."""
   confidential_instance_config_msg = None
@@ -588,6 +589,13 @@ def CreateConfidentialInstanceMessage(
     if (
         not support_confidential_compute_type_cca
         and args.confidential_compute_type == 'CCA'
+    ):
+      enable_confidential_compute = None
+      confidential_instance_type = None
+
+    if (
+        not support_confidential_compute_type_bmsai
+        and args.confidential_compute_type == 'BMSAI'
     ):
       enable_confidential_compute = None
       confidential_instance_type = None

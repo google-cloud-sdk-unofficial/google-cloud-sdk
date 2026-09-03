@@ -2984,6 +2984,7 @@ class Empty(_messages.Message):
   """
 
 
+
 class FailureInfo(_messages.Message):
   r"""A fatal problem encountered during the execution of the build.
 
@@ -4538,6 +4539,7 @@ class ReceiveTriggerWebhookResponse(_messages.Message):
   r"""ReceiveTriggerWebhookResponse [Experimental] is the response object for
   the ReceiveTriggerWebhook method.
   """
+
 
 
 class RemoveBitbucketServerConnectedRepositoryRequest(_messages.Message):

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -61,6 +61,12 @@
       help_text: |-
         User-specified service account used to perform the transfer.
         If unspecified, the Managed Lustre service agent is used.
+
+        Use one of the following formats:
+
+        * `{EMAIL_ADDRESS_OR_UNIQUE_ID}`
+        * `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS_OR_UNIQUE_ID}`
+        * `projects/-/serviceAccounts/{EMAIL_ADDRESS_OR_UNIQUE_ID}`
       is_positional: false
       is_primary_resource: false
       resource_spec: !REF googlecloudsdk.command_lib.lustre.v1_resources:projects_service_accounts

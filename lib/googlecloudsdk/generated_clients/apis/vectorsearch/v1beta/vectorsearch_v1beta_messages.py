@@ -1468,9 +1468,10 @@ class GoogleCloudVectorsearchV1betaVertexEmbeddingConfig(_messages.Message):
       multi modal embedding models, see https://docs.cloud.google.com/gemini-
       enterprise-agent-platform/models/embeddings/get-multimodal-
       embeddings#specify-task-instructions
-    textTemplate: Required. Required: Text template for the input to the
-      model. The template must contain one or more references to fields in the
+    textTemplate: Optional. Text template for the input to the model. The
+      template must contain one or more references to fields in the
       DataObject, e.g.: "Movie Title: {title} ---- Movie Plot: {plot}".
+      Required when using the text-only path.
   """
 
   class TaskTypeValueValuesEnum(_messages.Enum):

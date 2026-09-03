@@ -1,0 +1,34 @@
+- release_tracks: [ALPHA, BETA, GA]
+  help_text:
+    brief: Test IAM permissions for a Compute Engine composite health check.
+    description: |
+      Returns permissions that a caller has on the specified composite health check.
+    examples: |
+      To test if the caller has 'compute.regionCompositeHealthChecks.get' permission on a composite health check `my-composite-health-check` in region `us-central1`, run:
+
+        $ {command} my-composite-health-check --region=us-central1 --permissions=compute.regionCompositeHealthChecks.get
+
+  request:
+    ALPHA:
+      api_version: alpha
+    BETA:
+      api_version: beta
+    GA:
+      api_version: v1
+    collection: compute.regionCompositeHealthChecks
+    use_relative_name: false
+    method: testIamPermissions
+
+  command_type: GENERIC
+
+  arguments:
+    resource:
+      help_text: The composite health check for which to test permissions.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:composite_health_check
+    params:
+    - arg_name: permissions
+      api_field: testPermissionsRequest.permissions
+      required: true
+      repeated: true
+      help_text: |-
+        Permissions to be tested.

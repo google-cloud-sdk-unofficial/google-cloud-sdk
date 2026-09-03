@@ -68,6 +68,9 @@ class AllocationPolicy(_messages.Message):
 
   Fields:
     instance: Deprecated: please use instances[0].policy instead.
+    instanceFlexibilityPolicy: Optional. The instance flexibility policy for
+      the job. This configuration overrides the `instances` configuration.
+      Only allowed in job level. Not allowed in task group level.
     instanceTemplates: Deprecated: please use instances[0].template instead.
     instances: Describe instances that can be created by this
       AllocationPolicy. Only instances[0] is supported now.
@@ -163,16 +166,17 @@ class AllocationPolicy(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   instance = _messages.MessageField('InstancePolicy', 1)
-  instanceTemplates = _messages.StringField(2, repeated=True)
-  instances = _messages.MessageField('InstancePolicyOrTemplate', 3, repeated=True)
-  labels = _messages.MessageField('LabelsValue', 4)
-  location = _messages.MessageField('LocationPolicy', 5)
-  network = _messages.MessageField('NetworkPolicy', 6)
-  placement = _messages.MessageField('PlacementPolicy', 7)
-  provisioningModels = _messages.EnumField('ProvisioningModelsValueListEntryValuesEnum', 8, repeated=True)
-  serviceAccount = _messages.MessageField('ServiceAccount', 9)
-  serviceAccountEmail = _messages.StringField(10)
-  tags = _messages.StringField(11, repeated=True)
+  instanceFlexibilityPolicy = _messages.MessageField('InstanceFlexibilityPolicy', 2)
+  instanceTemplates = _messages.StringField(3, repeated=True)
+  instances = _messages.MessageField('InstancePolicyOrTemplate', 4, repeated=True)
+  labels = _messages.MessageField('LabelsValue', 5)
+  location = _messages.MessageField('LocationPolicy', 6)
+  network = _messages.MessageField('NetworkPolicy', 7)
+  placement = _messages.MessageField('PlacementPolicy', 8)
+  provisioningModels = _messages.EnumField('ProvisioningModelsValueListEntryValuesEnum', 9, repeated=True)
+  serviceAccount = _messages.MessageField('ServiceAccount', 10)
+  serviceAccountEmail = _messages.StringField(11)
+  tags = _messages.StringField(12, repeated=True)
 
 
 class AttachedDisk(_messages.Message):
@@ -934,6 +938,72 @@ class GCS(_messages.Message):
   remotePath = _messages.StringField(1)
 
 
+class InstanceFlexibilityPolicy(_messages.Message):
+  r"""Allows creating VMs from multiple types of machines. Instance
+  flexibility configuration overrides instances configuration.
+
+  Messages:
+    InstanceSelectionsValue: Required. Named instance selections configuring
+      properties that the group will use when creating new VMs. The map key is
+      a user-specified name for the instance selection. The key must be 1-63
+      characters long, and comply with
+      [RFC1035](https://www.ietf.org/rfc/rfc1035.txt). Specifically, the key
+      must consist of lowercase letters, numbers, and hyphens. The first
+      character must be a lowercase letter, and the last character must be a
+      lowercase letter or number. The maximum number of instance selections is
+      50. Exceeding this limit results in a validation error with code
+      `INVALID_ARGUMENT`.
+
+  Fields:
+    instanceSelections: Required. Named instance selections configuring
+      properties that the group will use when creating new VMs. The map key is
+      a user-specified name for the instance selection. The key must be 1-63
+      characters long, and comply with
+      [RFC1035](https://www.ietf.org/rfc/rfc1035.txt). Specifically, the key
+      must consist of lowercase letters, numbers, and hyphens. The first
+      character must be a lowercase letter, and the last character must be a
+      lowercase letter or number. The maximum number of instance selections is
+      50. Exceeding this limit results in a validation error with code
+      `INVALID_ARGUMENT`.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class InstanceSelectionsValue(_messages.Message):
+    r"""Required. Named instance selections configuring properties that the
+    group will use when creating new VMs. The map key is a user-specified name
+    for the instance selection. The key must be 1-63 characters long, and
+    comply with [RFC1035](https://www.ietf.org/rfc/rfc1035.txt). Specifically,
+    the key must consist of lowercase letters, numbers, and hyphens. The first
+    character must be a lowercase letter, and the last character must be a
+    lowercase letter or number. The maximum number of instance selections is
+    50. Exceeding this limit results in a validation error with code
+    `INVALID_ARGUMENT`.
+
+    Messages:
+      AdditionalProperty: An additional property for a InstanceSelectionsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        InstanceSelectionsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a InstanceSelectionsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A InstanceSelection attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('InstanceSelection', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  instanceSelections = _messages.MessageField('InstanceSelectionsValue', 1)
+
+
 class InstancePolicy(_messages.Message):
   r"""InstancePolicy describes an instance type and resources attached to each
   VM created by this InstancePolicy.
@@ -1040,6 +1110,31 @@ class InstancePolicyOrTemplate(_messages.Message):
   installOpsAgent = _messages.BooleanField(3)
   instanceTemplate = _messages.StringField(4)
   policy = _messages.MessageField('InstancePolicy', 5)
+
+
+class InstanceSelection(_messages.Message):
+  r"""Defines an instance selection for a given instance flexibility policy.
+
+  Fields:
+    disks: Optional. List of disks to be attached to instances created from
+      this selection. They override the disks specified in the instance
+      properties. (e.g., overriding `boot` disk type to Hyperdisk for 4th-gen
+      machine types)
+    machineTypes: Required. The Compute Engine machine type IDs. Only the
+      machine type ID is supported, such as `n1-standard-16`. Full or partial
+      URLs are not accepted. The total maximum number of machine types across
+      all instance selections is 200. Exceeding this limit results in a
+      validation error with code `INVALID_ARGUMENT`.
+    rank: Optional. Indicates the preference of this instance selection. Lower
+      number means higher preference. First try is to create a VM based on the
+      machine-type with lowest rank and fallback to next rank based on
+      availability. Machine types and instance selections with the same rank
+      have the same preference.
+  """
+
+  disks = _messages.MessageField('AttachedDisk', 1, repeated=True)
+  machineTypes = _messages.StringField(2, repeated=True)
+  rank = _messages.IntegerField(3, variant=_messages.Variant.INT32)
 
 
 class InstanceStatus(_messages.Message):

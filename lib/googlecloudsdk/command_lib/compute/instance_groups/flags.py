@@ -14,8 +14,8 @@
 # limitations under the License.
 """Flags and helpers for the compute instance groups commands."""
 
-
 import enum
+import os
 import textwrap
 from typing import List
 
@@ -29,6 +29,10 @@ from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups.managed import flags as mig_flags
 from googlecloudsdk.command_lib.util import completers
+from googlecloudsdk.core import properties
+from googlecloudsdk.core.console import console_attr
+from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.util import encoding
 import six
 
 
@@ -320,6 +324,81 @@ def CreateGroupReference(client, resources, args):
       args, resources, default_scope=default_scope,
       scope_lister=scope_lister)
 
+_ACTION_COLOR_MAP = {
+    'CREATING_ATOMICALLY': 'blue',
+    'CREATING_IN_BULK': 'blue',
+    'QUEUING': 'blue',
+    'ABANDONING': 'yellow',
+    'ADOPTING': 'yellow',
+    'CREATING': 'yellow',
+    'CREATING_WITHOUT_RETRIES': 'yellow',
+    'DELETING': 'yellow',
+    'RECREATING': 'yellow',
+    'REFRESHING': 'yellow',
+    'RESTARTING': 'yellow',
+    'RESTARTING_IN_PLACE': 'yellow',
+    'RESUMING': 'yellow',
+    'STARTING': 'yellow',
+    'STOPPING': 'yellow',
+    'SUSPENDING': 'yellow',
+    'VERIFYING': 'yellow',
+}
+_STATUS_COLOR_MAP = {
+    'RUNNING': 'green',
+    'PENDING': 'blue',
+    'PENDING_STOP': 'blue',
+    'DEPROVISIONING': 'yellow',
+    'PROVISIONING': 'yellow',
+    'REPAIRING': 'yellow',
+    'STAGING': 'yellow',
+    'STOPPING': 'yellow',
+    'SUSPENDING': 'yellow',
+    'TERMINATED': 'red',
+}
+_HEALTH_STATE_COLOR_MAP = {
+    'HEALTHY': 'green',
+    'UNKNOWN': 'blue',
+    'DRAINING': 'yellow',
+    'TIMEOUT': 'red',
+    'UNHEALTHY': 'red',
+}
+
+
+def _Colorize(text, color):
+  """Returns Colorizer object if colorization is enabled, otherwise plain text."""
+  if not text or not color:
+    return text
+  if properties.VALUES.core.disable_color.GetBool():
+    return text
+  if encoding.GetEncodedValue(os.environ, 'NO_COLOR'):
+    return text
+  if not console_io.IsInteractive(output=True):
+    return text
+  return console_attr.Colorizer(text, color)
+
+
+def _TransformAction(instance):
+  """Transforms the currentAction field with colorization."""
+  action = instance.get('currentAction', '')
+  color = _ACTION_COLOR_MAP.get(action)
+  return _Colorize(action, color)
+
+
+def _TransformStatus(instance):
+  """Transforms the instanceStatus field with colorization."""
+  status = instance.get('instanceStatus', '')
+  color = _STATUS_COLOR_MAP.get(status)
+  return _Colorize(status, color)
+
+
+def _TransformHealthState(instance):
+  """Transforms the detailedHealthState field with colorization."""
+  health_list = instance.get('instanceHealth', [])
+  if not health_list: return ''
+  health_state = health_list[0].get('detailedHealthState', '')
+  color = _HEALTH_STATE_COLOR_MAP.get(health_state)
+  return _Colorize(health_state, color)
+
 
 _LIST_INSTANCES_FORMAT = """\
         table(name:label=NAME,
@@ -354,9 +433,9 @@ _LIST_INSTANCES_FORMAT_BETA = """\
 _LIST_INSTANCES_FORMAT_ALPHA = """\
         table(name:label=NAME,
               instance.scope().segment(0):label=ZONE,
-              instanceStatus:label=STATUS,
-              instanceHealth[0].detailedHealthState:label=HEALTH_STATE,
-              currentAction:label=ACTION,
+              colorizedStatus():label=STATUS,
+              colorizedHealthState():label=HEALTH_STATE,
+              colorizedAction():label=ACTION,
               preservedState():label=PRESERVED_STATE,
               version.instanceTemplate.basename():label=INSTANCE_TEMPLATE,
               version.name:label=VERSION_NAME,
@@ -529,6 +608,9 @@ def GetListInstancesOutputWithDynamicFields(
 def AddListInstancesOutputFormat(parser, release_track=base.ReleaseTrack.GA):
   parser.display_info.AddTransforms({
       'preservedState': _TransformPreservedState,
+      'colorizedStatus': _TransformStatus,
+      'colorizedHealthState': _TransformHealthState,
+      'colorizedAction': _TransformAction,
   })
   parser.display_info.AddFormat(
       _RELEASE_TRACK_TO_LIST_INSTANCES_FORMAT[release_track])

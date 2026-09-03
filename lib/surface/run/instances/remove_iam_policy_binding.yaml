@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: Remove IAM policy binding of a Cloud Run instance.
     description: |
@@ -7,7 +7,7 @@
 
     examples: |
       To remove an IAM policy binding for the role of 'roles/run.viewer' for the user 'test-user@gmail.com'
-      with servcie 'my-instance' and region 'us-central1', run:
+      with instance 'my-instance' and region 'us-central1', run:
 
         $ {command} my-instance --region='us-central1' --member='user:test-user@gmail.com' --role='roles/run.viewer'
 

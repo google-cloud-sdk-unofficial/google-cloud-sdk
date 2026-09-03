@@ -20,7 +20,7 @@ from googlecloudsdk.command_lib.services import common_flags
 
 # TODO(b/321801975) make command public after suv2 launch.
 @base.Deprecate(
-    is_removed=False,
+    is_removed=True,
     warning='MCP policies are not required and this command is no-op.',
     error='MCP policies are not required and this command is no-op.',
 )

@@ -102,7 +102,7 @@ def _GetAvailableRegions(
 
 @base.UniverseCompatible
 @base.RegionalEndpointsSupported
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.Command):
   """Create a Cloud Run instance."""
 

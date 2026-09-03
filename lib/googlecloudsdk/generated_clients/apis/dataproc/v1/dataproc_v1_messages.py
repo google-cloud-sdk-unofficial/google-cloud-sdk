@@ -598,11 +598,11 @@ class AttachedDiskConfig(_messages.Message):
   r"""Specifies the config of attached disk options for single VM instance.
 
   Enums:
-    DiskTypeValueValuesEnum: Optional. Disk type.
+    DiskTypeValueValuesEnum: Optional. Deprecated: Use type instead.
 
   Fields:
     diskSizeGb: Optional. Disk size in GB.
-    diskType: Optional. Disk type.
+    diskType: Optional. Deprecated: Use type instead.
     provisionedIops: Optional. Indicates how many IOPS to provision for the
       attached disk. This sets the number of I/O operations per second that
       the disk can handle. See
@@ -613,17 +613,22 @@ class AttachedDiskConfig(_messages.Message):
       per second that the disk can handle. See
       https://cloud.google.com/compute/docs/disks/hyperdisks#hyperdisk-
       features
+    type: Optional. Attached disk type. Currently only supports Hyperdisks.
+      See https://cloud.google.com/compute/docs/disks/hyperdisks. Note:
+      Hyperdisk Balanced High Availability is not supported.Allowed values
+      are: hyperdisk-balanced hyperdisk-extreme hyperdisk-ml hyperdisk-
+      throughput
   """
 
   class DiskTypeValueValuesEnum(_messages.Enum):
-    r"""Optional. Disk type.
+    r"""Optional. Deprecated: Use type instead.
 
     Values:
-      DISK_TYPE_UNSPECIFIED: Required unspecified disk type.
-      HYPERDISK_BALANCED: Hyperdisk Balanced disk type.
-      HYPERDISK_EXTREME: Hyperdisk Extreme disk type.
-      HYPERDISK_ML: Hyperdisk ML disk type.
-      HYPERDISK_THROUGHPUT: Hyperdisk Throughput disk type.
+      DISK_TYPE_UNSPECIFIED: Disk type is not specified.
+      HYPERDISK_BALANCED: Hyperdisk Balanced.
+      HYPERDISK_EXTREME: Hyperdisk Extreme.
+      HYPERDISK_ML: Hyperdisk ML.
+      HYPERDISK_THROUGHPUT: Hyperdisk Throughput.
     """
     DISK_TYPE_UNSPECIFIED = 0
     HYPERDISK_BALANCED = 1
@@ -635,6 +640,7 @@ class AttachedDiskConfig(_messages.Message):
   diskType = _messages.EnumField('DiskTypeValueValuesEnum', 2)
   provisionedIops = _messages.IntegerField(3)
   provisionedThroughput = _messages.IntegerField(4)
+  type = _messages.StringField(5)
 
 
 class Attachment(_messages.Message):
@@ -1338,6 +1344,21 @@ class BuildInfo(_messages.Message):
 
 class CancelJobRequest(_messages.Message):
   r"""A request to cancel a job."""
+
+
+class CancelKubernetesJobRequest(_messages.Message):
+  r"""Message for cancelling a KubernetesJob
+
+  Fields:
+    requestId: Optional. A unique ID used to identify the request. Specify a
+      unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request.The request ID must be a valid UUID with the exception that zero
+      UUID is not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  requestId = _messages.StringField(1)
 
 
 class Cluster(_messages.Message):
@@ -3119,6 +3140,106 @@ class DataprocProjectsLocationsBatchesSparkApplicationsWriteRequest(_messages.Me
 
   name = _messages.StringField(1, required=True)
   writeSparkApplicationContextRequest = _messages.MessageField('WriteSparkApplicationContextRequest', 2)
+
+
+class DataprocProjectsLocationsKubernetesJobsCancelRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsKubernetesJobsCancelRequest object.
+
+  Fields:
+    cancelKubernetesJobRequest: A CancelKubernetesJobRequest resource to be
+      passed as the request body.
+    name: Required. The name of the job to cancel. Format:
+      projects/{project}/locations/{location}/kubernetesJobs/{kubernetes_job}
+  """
+
+  cancelKubernetesJobRequest = _messages.MessageField('CancelKubernetesJobRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class DataprocProjectsLocationsKubernetesJobsCreateRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsKubernetesJobsCreateRequest object.
+
+  Fields:
+    kubernetesJob: A KubernetesJob resource to be passed as the request body.
+    kubernetesJobId: Required. The ID to use for the KubernetesJob, which will
+      become the final component of the KubernetesJob's resource name.
+    parent: Required. Value for parent.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request.For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate
+      commitments.The request ID must be a valid UUID with the exception that
+      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  kubernetesJob = _messages.MessageField('KubernetesJob', 1)
+  kubernetesJobId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class DataprocProjectsLocationsKubernetesJobsDeleteRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsKubernetesJobsDeleteRequest object.
+
+  Fields:
+    name: Required. Name of the resource
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request.For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate
+      commitments.The request ID must be a valid UUID with the exception that
+      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class DataprocProjectsLocationsKubernetesJobsGetRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsKubernetesJobsGetRequest object.
+
+  Fields:
+    name: Required. Name of the resource
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class DataprocProjectsLocationsKubernetesJobsListRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsKubernetesJobsListRequest object.
+
+  Fields:
+    filter: Optional. A filter for the KubernetesJobs to return in the
+      response. Example: * kubernetes_job_id * create_time
+    orderBy: Optional. Hint for how to order the results.Currently the only
+      supported sort orders are unspecified (empty) and create_time desc to
+      sort by most recently created jobs first.See
+      https://google.aip.dev/132#ordering for more details.
+    pageSize: Optional. The maximum number of KubernetesJobs to return in each
+      response. The service may return fewer than this value. If unspecified,
+      the server will pick an appropriate default of 20. The maximum allowed
+      value is 1000; values above 1000 will be coerced to 1000.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Parent value for ListKubernetesJobsRequest in the
+      format: projects/{project}/locations/{location}
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
 
 
 class DataprocProjectsLocationsOperationsCancelRequest(_messages.Message):
@@ -7690,6 +7811,230 @@ class KubernetesClusterConfig(_messages.Message):
   kubernetesSoftwareConfig = _messages.MessageField('KubernetesSoftwareConfig', 4)
 
 
+class KubernetesJob(_messages.Message):
+  r"""Message describing KubernetesJob object
+
+  Messages:
+    LabelsValue: Optional. The labels to associate with this job. Label keys
+      must contain 1 to 63 characters, and must conform to RFC 1035
+      (https://www.ietf.org/rfc/rfc1035.txt). Label values may be empty, but,
+      if present, must contain 1 to 63 characters, and must conform to RFC
+      1035 (https://www.ietf.org/rfc/rfc1035.txt). No more than 32 labels can
+      be associated with a job.
+
+  Fields:
+    createTime: Output only. Create time stamp.
+    environmentConfig: Optional. The environment configuration for job
+      execution.This includes things like managed spark version, custom image
+      etc..
+    errorDetails: Output only. Error details.
+    executionConfig: Optional. The execution configuration for the job.
+    jobState: Output only. The state of the job.
+    labels: Optional. The labels to associate with this job. Label keys must
+      contain 1 to 63 characters, and must conform to RFC 1035
+      (https://www.ietf.org/rfc/rfc1035.txt). Label values may be empty, but,
+      if present, must contain 1 to 63 characters, and must conform to RFC
+      1035 (https://www.ietf.org/rfc/rfc1035.txt). No more than 32 labels can
+      be associated with a job.
+    name: Identifier. The resource name of the kubernetes job, in the format:
+      projects/{project}/locations/{location}/kubernetesJobs/{kubernetes_job}
+    pySparkJob: Optional. A job to execute a PySpark job.
+    sparkJob: Optional. A job to execute a Spark job.
+    sparkRJob: Optional. A job to execute a SparkR job.
+    sparkSqlJob: Optional. A job to execute a SparkSql job.
+    updateTime: Output only. Update time stamp.
+    virtualCluster: Optional. The virtual cluster.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. The labels to associate with this job. Label keys must
+    contain 1 to 63 characters, and must conform to RFC 1035
+    (https://www.ietf.org/rfc/rfc1035.txt). Label values may be empty, but, if
+    present, must contain 1 to 63 characters, and must conform to RFC 1035
+    (https://www.ietf.org/rfc/rfc1035.txt). No more than 32 labels can be
+    associated with a job.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  environmentConfig = _messages.MessageField('KubernetesJobEnvironmentConfig', 2)
+  errorDetails = _messages.MessageField('Status', 3)
+  executionConfig = _messages.MessageField('KubernetesJobExecutionConfig', 4)
+  jobState = _messages.MessageField('KubernetesJobState', 5)
+  labels = _messages.MessageField('LabelsValue', 6)
+  name = _messages.StringField(7)
+  pySparkJob = _messages.MessageField('PySparkJob', 8)
+  sparkJob = _messages.MessageField('SparkJob', 9)
+  sparkRJob = _messages.MessageField('SparkRJob', 10)
+  sparkSqlJob = _messages.MessageField('SparkSqlJob', 11)
+  updateTime = _messages.StringField(12)
+  virtualCluster = _messages.StringField(13)
+
+
+class KubernetesJobEnvironmentConfig(_messages.Message):
+  r"""KubernetesJobEnvironmentConfig specifies the environment configuration
+  for the job.
+
+  Messages:
+    PropertiesValue: Optional. The cluster properties to set.Property keys are
+      specified in prefix:property format, for example
+      spark:spark.executor.instances.These properties will be passed as is to
+      the kubernetes pod during execution.For more information, see Cluster
+      properties (https://cloud.google.com/dataproc/docs/concepts/cluster-
+      properties).
+
+  Fields:
+    imageUri: Optional. The custom image URI. If empty a default image
+      associated with the version will be used.
+    properties: Optional. The cluster properties to set.Property keys are
+      specified in prefix:property format, for example
+      spark:spark.executor.instances.These properties will be passed as is to
+      the kubernetes pod during execution.For more information, see Cluster
+      properties (https://cloud.google.com/dataproc/docs/concepts/cluster-
+      properties).
+    version: Optional. The managed spark(formerly dataproc) version.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class PropertiesValue(_messages.Message):
+    r"""Optional. The cluster properties to set.Property keys are specified in
+    prefix:property format, for example spark:spark.executor.instances.These
+    properties will be passed as is to the kubernetes pod during execution.For
+    more information, see Cluster properties
+    (https://cloud.google.com/dataproc/docs/concepts/cluster-properties).
+
+    Messages:
+      AdditionalProperty: An additional property for a PropertiesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type PropertiesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a PropertiesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  imageUri = _messages.StringField(1)
+  properties = _messages.MessageField('PropertiesValue', 2)
+  version = _messages.StringField(3)
+
+
+class KubernetesJobExecutionConfig(_messages.Message):
+  r"""KubernetesJobExecutionConfig contains the execution configuration for a
+  Kubernetes job.
+
+  Fields:
+    driverConfig: Optional. Pod-level configurations for the driver.
+    executorConfig: Optional. Pod-level configurations for the executor.
+    lifecycleConfig: Optional. Execution configs related to either GKE or
+      Managed Spark execution.
+    zonalAffinityConfig: Optional. Configuration for the zonal affinity
+      feature.
+  """
+
+  driverConfig = _messages.MessageField('KubernetesPodConfig', 1)
+  executorConfig = _messages.MessageField('KubernetesPodConfig', 2)
+  lifecycleConfig = _messages.MessageField('KubernetesJobLifecycleConfig', 3)
+  zonalAffinityConfig = _messages.MessageField('ZonalAffinityConfig', 4)
+
+
+class KubernetesJobLifecycleConfig(_messages.Message):
+  r"""KubernetesJobLifecycleConfig contains the lifecycle configuration for a
+  Kubernetes job.
+
+  Fields:
+    expireTime: Optional. The exact time when the job should expire.
+    maxRetryCount: Optional. Maximum retry count.
+    ttl: Optional. Input only. The time to live (TTL) duration for the job.
+  """
+
+  expireTime = _messages.StringField(1)
+  maxRetryCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  ttl = _messages.StringField(3)
+
+
+class KubernetesJobState(_messages.Message):
+  r"""KubernetesJobState represents the state of a Kubernetes job.
+
+  Enums:
+    StateValueValuesEnum: Output only. A state message specifying the overall
+      job state.
+
+  Fields:
+    errorDetails: Output only. Error details.
+    state: Output only. A state message specifying the overall job state.
+    stateDetails: Output only. Details about the state.
+    stateStartTime: Output only. The time when this state was entered.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. A state message specifying the overall job state.
+
+    Values:
+      STATE_UNSPECIFIED: The state is unspecified or unknown.
+      PENDING: The job is pending.
+      CREATING: The job is being created.
+      RUNNING: The job is running.
+      CANCELLING: The job is being cancelled.
+      SUCCEEDED: The job succeeded.
+      FAILED: The job failed.
+      CANCELLED: The job was cancelled.
+    """
+    STATE_UNSPECIFIED = 0
+    PENDING = 1
+    CREATING = 2
+    RUNNING = 3
+    CANCELLING = 4
+    SUCCEEDED = 5
+    FAILED = 6
+    CANCELLED = 7
+
+  errorDetails = _messages.MessageField('Status', 1)
+  state = _messages.EnumField('StateValueValuesEnum', 2)
+  stateDetails = _messages.StringField(3)
+  stateStartTime = _messages.StringField(4)
+
+
+class KubernetesPodConfig(_messages.Message):
+  r"""Pod related configurations that are specific to Managed Spark on GKE.
+
+  Fields:
+    computeClass: Optional. The compute class for launching the pod.
+    nodePool: Optional. The node pool where pods should be launched.
+  """
+
+  computeClass = _messages.StringField(1)
+  nodePool = _messages.StringField(2)
+
+
 class KubernetesSoftwareConfig(_messages.Message):
   r"""The software configuration for this Dataproc cluster running on
   Kubernetes.
@@ -7899,6 +8244,21 @@ class ListJobsResponse(_messages.Message):
   """
 
   jobs = _messages.MessageField('Job', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListKubernetesJobsResponse(_messages.Message):
+  r"""Message for response to listing KubernetesJobs
+
+  Fields:
+    kubernetesJobs: The list of KubernetesJob
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  kubernetesJobs = _messages.MessageField('KubernetesJob', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
   unreachable = _messages.StringField(3, repeated=True)
 
@@ -13844,6 +14204,19 @@ class YarnDriverRunner(_messages.Message):
 
   memoryMb = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   vcores = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+
+
+class ZonalAffinityConfig(_messages.Message):
+  r"""Configuration for the zonal affinity feature.Setting this config
+  implicitly enables the feature to prefer executor pods in the same zone as
+  the driver pod.
+
+  Fields:
+    enabled: Optional. If enabled this tries to launch driver/executors in the
+      same zone.
+  """
+
+  enabled = _messages.BooleanField(1)
 
 
 encoding.AddCustomJsonFieldMapping(

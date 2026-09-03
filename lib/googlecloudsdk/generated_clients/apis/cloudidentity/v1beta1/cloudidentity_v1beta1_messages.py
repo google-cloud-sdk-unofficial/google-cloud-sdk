@@ -38,6 +38,21 @@ class AddIdpCredentialRequest(_messages.Message):
   pemData = _messages.StringField(1)
 
 
+class AllowlistedDomain(_messages.Message):
+  r"""This resource object defines a domain that has been designated as
+  allowlisted.
+
+  Fields:
+    domain: Required. Immutable. Name of the domain that is in the allowlist.
+      e.g. "google.com"
+    name: Output only. Identifier. Resource name of the domain in the
+      allowlist e.g. "allowlistedDomains/0184mhaj1smlusv"
+  """
+
+  domain = _messages.StringField(1)
+  name = _messages.StringField(2)
+
+
 class AndroidAttributes(_messages.Message):
   r"""Resource representing the Android specific attributes of a Device.
 
@@ -675,6 +690,47 @@ class ClientState(_messages.Message):
   name = _messages.StringField(10)
   ownerType = _messages.EnumField('OwnerTypeValueValuesEnum', 11)
   scoreReason = _messages.StringField(12)
+
+
+class CloudidentityAllowlistedDomainsDeleteRequest(_messages.Message):
+  r"""A CloudidentityAllowlistedDomainsDeleteRequest object.
+
+  Fields:
+    name: Required. Specifies the [resource name](https://google.aip.dev/122)
+      of the domain to delete.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class CloudidentityAllowlistedDomainsGetRequest(_messages.Message):
+  r"""A CloudidentityAllowlistedDomainsGetRequest object.
+
+  Fields:
+    name: Required. Specifies the [resource name](https://google.aip.dev/122)
+      of the domain to retrieve.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class CloudidentityAllowlistedDomainsListRequest(_messages.Message):
+  r"""A CloudidentityAllowlistedDomainsListRequest object.
+
+  Fields:
+    filter: Optional. Provides an optional filter for list results. Currently,
+      only exact matches on the domain are supported, such as "domain =
+      'google.com'", with no composite conditions.
+    pageSize: Optional. Specifies the requested page size. If unspecified, the
+      service returns at most 5000 domains. The maximum value is 5000; values
+      above 5000 coerce to 5000. The limits can change over time.
+    pageToken: Optional. Identifies a token from a previous page of results,
+      if any.
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
 
 
 class CloudidentityCustomersUserinvitationsCancelRequest(_messages.Message):
@@ -3855,6 +3911,20 @@ class IsInvitableUserResponse(_messages.Message):
   """
 
   isInvitableUser = _messages.BooleanField(1)
+
+
+class ListAllowlistedDomainsResponse(_messages.Message):
+  r"""Response message for AllowlistedDomainsService.ListAllowlistedDomains.
+
+  Fields:
+    allowlistedDomains: Contains the list of domains in the allowlist. There
+      is no defined ordering of domains within a result.
+    nextPageToken: Contains the next page token if the result is not
+      exhaustive. If there are no more results, this token is empty.
+  """
+
+  allowlistedDomains = _messages.MessageField('AllowlistedDomain', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
 
 
 class ListClientStatesResponse(_messages.Message):

@@ -13,7 +13,7 @@ class SecuritycentermanagementV1(base_api.BaseApiClient):
   MTLS_BASE_URL = 'https://securitycentermanagement.mtls.googleapis.com/'
 
   _PACKAGE = 'securitycentermanagement'
-  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform']
+  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/securitycenter']
   _VERSION = 'v1'
   _CLIENT_ID = 'CLIENT_ID'
   _CLIENT_SECRET = 'CLIENT_SECRET'

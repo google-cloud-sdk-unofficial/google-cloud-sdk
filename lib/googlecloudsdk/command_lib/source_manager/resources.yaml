@@ -48,3 +48,15 @@ repository:
     attribute_name: repository
     help: Secure Source Manager repository.
   disable_auto_completers: false
+
+pull_request:
+  name: pull_request
+  collection: securesourcemanager.projects.locations.repositories.pullRequests
+  attributes:
+  - *location
+  - *repository
+  - &pull_request
+    parameter_name: pullRequestsId
+    attribute_name: pull_request
+    help: Secure Source Manager pull request.
+  disable_auto_completers: false

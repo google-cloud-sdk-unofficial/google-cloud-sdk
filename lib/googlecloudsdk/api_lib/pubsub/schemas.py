@@ -63,21 +63,39 @@ class SchemasClient(object):
     self.messages = messages or GetMessagesModule(client)
     self._service = self.client.projects_schemas
 
-  def Commit(self, schema_ref, schema_definition, schema_type):
+  def Commit(
+      self,
+      schema_ref,
+      schema_type,
+      schema_definition=None,
+      definition_descriptor_file=None,
+      root_message_name=None,
+  ):
     """Commits a revision for a Schema.
 
     Args:
       schema_ref: The full schema_path.
-      schema_definition: The new schema definition to commit.
       schema_type: The type of the schema (avro or protocol-buffer).
+      schema_definition: The new schema definition to commit.
+      definition_descriptor_file: Binary content of precompiled
+        FileDescriptorSet.
+      root_message_name: Name of the root message type.
 
     Returns:
-    Schema: the committed Schema revision
+      Schema: the committed Schema revision
     """
+    compiled_proto_schema = None
+    if definition_descriptor_file and root_message_name:
+      compiled_proto_schema = self.messages.CompiledProtoSchema(
+          compiledBytes=definition_descriptor_file,
+          rootMessage=root_message_name,
+      )
+
     schema = self.messages.Schema(
         name=schema_ref,
         type=ParseSchemaType(self.messages, schema_type),
         definition=schema_definition,
+        compiledProtoSchema=compiled_proto_schema,
     )
     commit_req = self.messages.PubsubProjectsSchemasCommitRequest(
         commitSchemaRequest=self.messages.CommitSchemaRequest(schema=schema),

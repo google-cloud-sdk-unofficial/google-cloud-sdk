@@ -13,7 +13,6 @@ bq: google-cloud-cli
 cbt: google-cloud-cli-cbt
 cloud-build-local: google-cloud-cli-cloud-build-local
 cloud-run-proxy: google-cloud-cli-cloud-run-proxy
-cloud_sql_proxy: unavailable
 cloud-sql-proxy: unavailable
 run-compose: google-cloud-cli-run-compose
 universal-maker: google-cloud-cli-universal-maker

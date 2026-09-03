@@ -61,7 +61,10 @@ def _DescribeServiceAccount(service_account_email):
 
 
 def ValidateBuildServiceAccountAndPromptWarning(
-    project_id, region, build_service_account=None
+    project_id,
+    region,
+    build_service_account=None,
+    skip_build_sa_permission_check=False,
 ):
   """Util to validate the default build service account permission.
 
@@ -72,6 +75,8 @@ def ValidateBuildServiceAccountAndPromptWarning(
     region: region to deploy the service.
     build_service_account: user provided build service account. It will be None,
       if user doesn't provide it.
+    skip_build_sa_permission_check: whether to skip the build service account
+      permission check.
 
   Raises:
     ServiceAccountError: if the build service account is disabled/not
@@ -82,6 +87,8 @@ def ValidateBuildServiceAccountAndPromptWarning(
     build_service_account = _GetDefaultBuildServiceAccount(project_id, region)
   service_account_email = _ExtractServiceAccountEmail(build_service_account)
 
+  if skip_build_sa_permission_check:
+    return
   try:
     if not re.match(_LEGACY_BUILD_SA_FORMAT, service_account_email):
       build_service_account_description = _DescribeServiceAccount(

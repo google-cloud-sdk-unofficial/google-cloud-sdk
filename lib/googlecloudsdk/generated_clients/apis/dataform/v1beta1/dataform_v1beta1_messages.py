@@ -4635,6 +4635,12 @@ class Workspace(_messages.Message):
     createTime: Output only. The timestamp of when the workspace was created.
     dataEncryptionState: Output only. A data encryption state of a Git
       repository if this Workspace is protected by a KMS key.
+    depth: Optional. Input only. Immutable. The maximum depth of the Git
+      repository to checkout for this workspace. If defined and greater than
+      0, the Git repository will be created as a shallow clone with the given
+      depth, otherwise a full clone will be performed. This field is available
+      only for GitHub, Gitlab and 1p repositories with enabled branch
+      management.
     disableMoves: Optional. If set to true, workspaces will not be moved if
       its linked Repository is moved. Instead, it will be deleted.
     enableBranchManagement: Immutable. Controls the enablement of branch
@@ -4651,16 +4657,21 @@ class Workspace(_messages.Message):
     privateResourceMetadata: Output only. Metadata indicating whether this
       resource is user-scoped. For `Workspace` resources, the `user_scoped`
       field is always `true`.
+    shallow: Output only. If set to true, the workspace was created as a
+      shallow clone. Will be set to true if the depth field is set to a value
+      greater than 0, otherwise it will be set to false.
   """
 
   createTime = _messages.StringField(1)
   dataEncryptionState = _messages.MessageField('DataEncryptionState', 2)
-  disableMoves = _messages.BooleanField(3)
-  enableBranchManagement = _messages.BooleanField(4)
-  internalMetadata = _messages.StringField(5)
-  name = _messages.StringField(6)
-  originalBranch = _messages.StringField(7)
-  privateResourceMetadata = _messages.MessageField('PrivateResourceMetadata', 8)
+  depth = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  disableMoves = _messages.BooleanField(4)
+  enableBranchManagement = _messages.BooleanField(5)
+  internalMetadata = _messages.StringField(6)
+  name = _messages.StringField(7)
+  originalBranch = _messages.StringField(8)
+  privateResourceMetadata = _messages.MessageField('PrivateResourceMetadata', 9)
+  shallow = _messages.BooleanField(10)
 
 
 class WorkspaceCompilationOverrides(_messages.Message):

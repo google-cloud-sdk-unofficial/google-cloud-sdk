@@ -25,12 +25,6 @@ properties:
     description: Unknown API fields that cannot be imported.
     items:
       type: string
-  agentConnectivityTemplate:
-    description: |-
-      The resource name of the AgentConnectivityTemplate. Format:
-      projects/{project}/locations/{locatio
-      n}/agentConnectivityTemplates/{template}
-    type: string
   description:
     description: |-
       A free-text description of the resource. Max length 1024 characters.
@@ -48,6 +42,12 @@ properties:
   labels:
     description: Set of label tags associated with the AgentGateway resource.
     $ref: LabelsValue.yaml
+  agentConnectivityTemplate:
+    description: |-
+      The resource name of the AgentConnectivityTemplate.
+      Format:
+      `projects/*/locations/*/agentConnectivityTemplates/*`.
+    type: string
   name:
     description: |-
       Identifier. Name of the AgentGateway resource. It matches pattern

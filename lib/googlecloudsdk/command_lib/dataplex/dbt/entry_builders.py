@@ -439,11 +439,12 @@ def _build_model_entry(
       'materializationType': config.get('materialized') or '',
   }
   # BigQuery's dbt catalog reports table stats under the `num_rows` /
-  # `num_bytes` stat keys (see the dbt-bigquery catalog macro); other adapters
-  # use different names (e.g. Snowflake's `row_count` / `bytes`). This connector
-  # ingests BigQuery dbt projects, so read the BigQuery keys.
+  # `num_bytes` (or `bytes` for Fusion and dbt Core v2) stat keys
+  # (see the dbt-bigquery catalog macro); other adapters use different names
+  # (e.g. Snowflake's `row_count` / `bytes`). Currently only BigQuery is
+  # supported.
   aspects.add_stat(model_data, 'rowCount', stats, 'num_rows')
-  aspects.add_stat(model_data, 'byteCount', stats, 'num_bytes')
+  aspects.add_stat(model_data, 'byteCount', stats, 'num_bytes', 'bytes')
   _set_code(model_data, node)
   compiled = bool(_compiled_code(node))
 
@@ -570,9 +571,8 @@ def _build_seed_entry(
   cat_node = catalog_nodes.get(unique_id) or {}
   stats = cat_node.get('stats') or {}
   seed_data = {}
-  # See _build_model_entry: BigQuery dbt catalogs key these num_rows/num_bytes.
   aspects.add_stat(seed_data, 'rowCount', stats, 'num_rows')
-  aspects.add_stat(seed_data, 'byteCount', stats, 'num_bytes')
+  aspects.add_stat(seed_data, 'byteCount', stats, 'num_bytes', 'bytes')
 
   aspects_map = aspects.base_aspects(
       ctx, unique_id, node, 'seed', 'dbt-seed', seed_data

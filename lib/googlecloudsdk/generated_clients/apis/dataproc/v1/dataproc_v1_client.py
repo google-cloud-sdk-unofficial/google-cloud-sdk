@@ -41,6 +41,7 @@ class DataprocV1(base_api.BaseApiClient):
     self.projects_locations_autoscalingPolicies = self.ProjectsLocationsAutoscalingPoliciesService(self)
     self.projects_locations_batches_sparkApplications = self.ProjectsLocationsBatchesSparkApplicationsService(self)
     self.projects_locations_batches = self.ProjectsLocationsBatchesService(self)
+    self.projects_locations_kubernetesJobs = self.ProjectsLocationsKubernetesJobsService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
     self.projects_locations_sessionTemplates = self.ProjectsLocationsSessionTemplatesService(self)
     self.projects_locations_sessions_sparkApplications = self.ProjectsLocationsSessionsSparkApplicationsService(self)
@@ -1281,6 +1282,151 @@ class DataprocV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='DataprocProjectsLocationsBatchesListRequest',
         response_type_name='ListBatchesResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsKubernetesJobsService(base_api.BaseApiService):
+    """Service class for the projects_locations_kubernetesJobs resource."""
+
+    _NAME = 'projects_locations_kubernetesJobs'
+
+    def __init__(self, client):
+      super(DataprocV1.ProjectsLocationsKubernetesJobsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Cancel(self, request, global_params=None):
+      r"""Starts a job cancellation request.
+
+      Args:
+        request: (DataprocProjectsLocationsKubernetesJobsCancelRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Cancel')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Cancel.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/kubernetesJobs/{kubernetesJobsId}:cancel',
+        http_method='POST',
+        method_id='dataproc.projects.locations.kubernetesJobs.cancel',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:cancel',
+        request_field='cancelKubernetesJobRequest',
+        request_type_name='DataprocProjectsLocationsKubernetesJobsCancelRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new KubernetesJob in a given project and location.
+
+      Args:
+        request: (DataprocProjectsLocationsKubernetesJobsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/kubernetesJobs',
+        http_method='POST',
+        method_id='dataproc.projects.locations.kubernetesJobs.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['kubernetesJobId', 'requestId'],
+        relative_path='v1/{+parent}/kubernetesJobs',
+        request_field='kubernetesJob',
+        request_type_name='DataprocProjectsLocationsKubernetesJobsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single KubernetesJob.
+
+      Args:
+        request: (DataprocProjectsLocationsKubernetesJobsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/kubernetesJobs/{kubernetesJobsId}',
+        http_method='DELETE',
+        method_id='dataproc.projects.locations.kubernetesJobs.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='DataprocProjectsLocationsKubernetesJobsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single KubernetesJob.
+
+      Args:
+        request: (DataprocProjectsLocationsKubernetesJobsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (KubernetesJob) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/kubernetesJobs/{kubernetesJobsId}',
+        http_method='GET',
+        method_id='dataproc.projects.locations.kubernetesJobs.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='DataprocProjectsLocationsKubernetesJobsGetRequest',
+        response_type_name='KubernetesJob',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists KubernetesJobs in a given project and location.
+
+      Args:
+        request: (DataprocProjectsLocationsKubernetesJobsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListKubernetesJobsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/kubernetesJobs',
+        http_method='GET',
+        method_id='dataproc.projects.locations.kubernetesJobs.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/kubernetesJobs',
+        request_field='',
+        request_type_name='DataprocProjectsLocationsKubernetesJobsListRequest',
+        response_type_name='ListKubernetesJobsResponse',
         supports_download=False,
     )
 

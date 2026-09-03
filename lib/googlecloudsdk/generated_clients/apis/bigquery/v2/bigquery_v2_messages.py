@@ -3886,6 +3886,8 @@ class ExternalRuntimeOptions(_messages.Message):
       onnection_id}"```
     runtimeVersion: Optional. Language runtime version. Example:
       `python-3.11`.
+    volumeMounts: Optional. List of volume mounts for the Python UDF container
+      that executes the managed function.
   """
 
   containerCpu = _messages.FloatField(1)
@@ -3894,6 +3896,7 @@ class ExternalRuntimeOptions(_messages.Message):
   maxBatchingRows = _messages.IntegerField(4)
   runtimeConnection = _messages.StringField(5)
   runtimeVersion = _messages.StringField(6)
+  volumeMounts = _messages.MessageField('ExternalVolumeMount', 7, repeated=True)
 
 
 class ExternalServiceCost(_messages.Message):
@@ -3928,6 +3931,23 @@ class ExternalServiceCost(_messages.Message):
   externalService = _messages.StringField(4)
   reservedSlotCount = _messages.IntegerField(5)
   slotMs = _messages.IntegerField(6)
+
+
+class ExternalVolumeMount(_messages.Message):
+  r"""Configuration of a volume mount for the Python UDF container that
+  executes the managed function.
+
+  Fields:
+    mountPath: Optional. The absolute path within the container where the
+      volume should be mounted.
+    sourcePath: Optional. The absolute path of the source to be mounted, only
+      support Google Cloud Storage bucket or folder now. Eg: gs://bucket-xxx
+      for Google Cloud Storage bucket, gs://bucket-xxx/folder1/folder2 for
+      Google Cloud Storage folder.
+  """
+
+  mountPath = _messages.StringField(1)
+  sourcePath = _messages.StringField(2)
 
 
 class FeatureValue(_messages.Message):
@@ -4060,8 +4080,10 @@ class GenAiStats(_messages.Message):
 
   Fields:
     errorStats: Job level error stats across all GenAi functions
-    functionStats: Function level stats for GenAi Functions. See
-      https://docs.cloud.google.com/bigquery/docs/generative-ai-overview
+    functionStats: Function level stats for GenAI Functions. For more
+      information, see [Generative AI
+      overview](https://docs.cloud.google.com/bigquery/docs/generative-ai-
+      overview).
   """
 
   errorStats = _messages.MessageField('GenAiErrorStats', 1)
@@ -9014,6 +9036,7 @@ class StandardSqlDataType(_messages.Message):
         is used because a JSON object cannot have duplicate field names.
       RANGE: Encoded as a pair with types matching range_element_type. Pairs
         must begin with "[", end with ")", and be separated by ", ".
+      UUID: Encoded as a string.
     """
     TYPE_KIND_UNSPECIFIED = 0
     INT64 = 1
@@ -9033,6 +9056,7 @@ class StandardSqlDataType(_messages.Message):
     ARRAY = 15
     STRUCT = 16
     RANGE = 17
+    UUID = 18
 
   arrayElementType = _messages.MessageField('StandardSqlDataType', 1)
   rangeElementType = _messages.MessageField('StandardSqlDataType', 2)

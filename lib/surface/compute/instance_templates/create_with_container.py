@@ -88,7 +88,14 @@ def _Args(
   instances_flags.AddImageArgs(parser)
   instances_flags.AddMinCpuPlatformArgs(parser, release_track)
   instances_flags.AddNetworkTierArgs(parser, instance=True)
-  instances_flags.AddConfidentialComputeArgs(parser)
+  instances_flags.AddConfidentialComputeArgs(
+      parser,
+      support_confidential_compute_type=True,
+      support_confidential_compute_type_tdx=True,
+      support_snp_svsm=False,
+      support_confidential_compute_type_cca=True,
+      support_confidential_compute_type_bmsai=True,
+  )
   instances_flags.AddShieldedInstanceConfigArgs(parser)
   instances_flags.AddIPv6AddressArgs(parser)
   instances_flags.AddIPv6PrefixLengthArgs(parser)
@@ -429,6 +436,7 @@ class CreateWithContainer(base.CreateCommand):
             support_confidential_compute_type=True,
             support_confidential_compute_type_tdx=True,
             support_confidential_compute_type_cca=True,
+            support_confidential_compute_type_bmsai=True,
         )
     )
     workload_identity_config = (
@@ -587,6 +595,7 @@ class CreateWithContainerBeta(CreateWithContainer):
             support_confidential_compute_type=True,
             support_confidential_compute_type_tdx=True,
             support_confidential_compute_type_cca=True,
+            support_confidential_compute_type_bmsai=True,
         )
     )
     guest_accelerators = (
@@ -753,6 +762,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
             support_confidential_compute_type=True,
             support_confidential_compute_type_tdx=True,
             support_confidential_compute_type_cca=True,
+            support_confidential_compute_type_bmsai=True,
         )
     )
     guest_accelerators = (

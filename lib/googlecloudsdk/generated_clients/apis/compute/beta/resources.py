@@ -66,6 +66,14 @@ class Collections(enum.Enum):
       ['project', 'crossSiteNetwork'],
       True
   )
+  DHCPOPTIONSCONFIGS = (
+      'dhcpOptionsConfigs',
+      'projects/{project}/regions/{region}/dhcpOptionsConfigs/'
+      '{dhcpOptionsConfig}',
+      {},
+      ['project', 'region', 'dhcpOptionsConfig'],
+      True
+  )
   DISKSETTINGS = (
       'diskSettings',
       'projects/{project}/zones/{zone}/diskSettings',
@@ -134,6 +142,13 @@ class Collections(enum.Enum):
       'projects/{project}/global/forwardingRules/{forwardingRule}',
       {},
       ['project', 'forwardingRule'],
+      True
+  )
+  GLOBALFRONTENDSETTINGS = (
+      'globalFrontendSettings',
+      'projects/{project}/global/globalFrontendSettings',
+      {},
+      ['project'],
       True
   )
   GLOBALNETWORKENDPOINTGROUPS = (
@@ -466,6 +481,17 @@ class Collections(enum.Enum):
       ['securityPolicy'],
       True
   )
+  ORGANIZATIONSNAPSHOTRECYCLEBINPOLICY = (
+      'organizationSnapshotRecycleBinPolicy',
+      '{+organization}/global/snapshotRecycleBinPolicy',
+      {
+          '':
+              'organizations/{organizationsId}/global/'
+              'snapshotRecycleBinPolicy',
+      },
+      ['organization'],
+      True
+  )
   ORGANIZATIONS = (
       'organizations',
       'organizations/{organizationsId}',
@@ -518,6 +544,13 @@ class Collections(enum.Enum):
       '{publicDelegatedPrefix}',
       {},
       ['project', 'region', 'publicDelegatedPrefix'],
+      True
+  )
+  RECOVERABLESNAPSHOTS = (
+      'recoverableSnapshots',
+      'projects/{project}/global/recoverableSnapshots/{recoverableSnapshot}',
+      {},
+      ['project', 'recoverableSnapshot'],
       True
   )
   REGIONACCELERATORTYPES = (
@@ -907,6 +940,13 @@ class Collections(enum.Enum):
       'projects/{project}/global/snapshotGroups/{snapshotGroup}',
       {},
       ['project', 'snapshotGroup'],
+      True
+  )
+  SNAPSHOTRECYCLEBINPOLICY = (
+      'snapshotRecycleBinPolicy',
+      'projects/{project}/global/snapshotRecycleBinPolicy',
+      {},
+      ['project'],
       True
   )
   SNAPSHOTSETTINGS = (

@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections.abc import MutableMapping
 import re
 import warnings
+from collections.abc import MutableMapping
 from datetime import datetime
+from graphlib import CycleError, TopologicalSorter
 
 from cloudsdk.google.protobuf.descriptor import Descriptor, FieldDescriptor
 from cloudsdk.google.protobuf.message import Message
@@ -333,7 +334,9 @@ class PipelineValidator:
             if value.startswith(('"', "'")) or value.endswith(('"', "'")):
                 if len(value) < 2 or value[0] != value[-1]:
                     raise ValueError("mismatched quote boundaries.")
-                raise ValueError("value should not be wrapped in literal quotes.")
+                raise ValueError(
+                    "value should not be wrapped in literal quotes."
+                )
 
             # General error for quotes anywhere else
             raise ValueError("field contains invalid quote characters.")
@@ -383,7 +386,9 @@ class PipelineValidator:
             return
 
         action_name_map = {}  # Maps action name to its index in the pipeline.
-        all_dependencies = []  # Stores tuples of (dependency_name, action_index, action_type, action_name).
+        all_dependencies = (
+            []
+        )  # Stores tuples of (dependency_name, action_index, action_type, action_name).
 
         for i, action_wrapper in enumerate(pipeline.actions):
             action_type = action_wrapper.WhichOneof("action")
@@ -407,18 +412,28 @@ class PipelineValidator:
                     all_dependencies.append((dep, i, action_type, action_name))
 
         # 2. Check for undefined dependencies
-        action_names_set = set(action_name_map.keys())
+        action_names = action_name_map.keys()
+        action_to_dependencies = {action: [] for action in action_names}
         for (
             dep_name,
             action_index,
             action_type,
             action_name,
         ) in all_dependencies:
-            if dep_name not in action_names_set:
+            action_to_dependencies[action_name].append(dep_name)
+            if dep_name not in action_names:
                 raise ValueError(
                     f"Error for field 'actions[{action_index}].{action_type}.depends_on': "
                     f"Action '{action_name}' depends on undefined action '{dep_name}'."
                 )
+
+        # 3. Check for cycle
+        try:
+            ts = TopologicalSorter(action_to_dependencies)
+            ts.prepare()
+        except CycleError as e:
+            cycle_path = " -> ".join(e.args[1])
+            raise ValueError(f"Circular dependency detected: {cycle_path}")
 
     @staticmethod
     def _is_map_field(field: FieldDescriptor) -> bool:

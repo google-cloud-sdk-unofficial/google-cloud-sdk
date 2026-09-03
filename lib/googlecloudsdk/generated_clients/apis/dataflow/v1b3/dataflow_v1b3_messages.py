@@ -421,6 +421,30 @@ class ConcatPosition(_messages.Message):
   position = _messages.MessageField('Position', 2)
 
 
+class ConfigStoreSetting(_messages.Message):
+  r"""A ConfigStoreSetting resource.
+
+  Fields:
+    name: Identifier. The resource name of the setting.
+    value: Required. The dynamic value of the setting.
+  """
+
+  name = _messages.StringField(1)
+  value = _messages.MessageField('ConfigStoreSettingValue', 2)
+
+
+class ConfigStoreSettingValue(_messages.Message):
+  r"""Represents a dynamically typed value.
+
+  Fields:
+    boolValue: Represents a boolean value.
+    stringValue: Represents a string value.
+  """
+
+  boolValue = _messages.BooleanField(1)
+  stringValue = _messages.StringField(2)
+
+
 class ContainerSpec(_messages.Message):
   r"""Container Spec.
 
@@ -980,6 +1004,69 @@ class DataflowFlexTemplateConfig(_messages.Message):
   transformNameMappings = _messages.MessageField('TransformNameMappingsValue', 5)
 
 
+class DataflowFoldersLocationsConfigStoreSettingsCreateRequest(_messages.Message):
+  r"""A DataflowFoldersLocationsConfigStoreSettingsCreateRequest object.
+
+  Fields:
+    configStoreSetting: A ConfigStoreSetting resource to be passed as the
+      request body.
+    configStoreSettingId: Required. The ID to use for the setting.
+    parent: Required. The parent resource where this setting will be created.
+  """
+
+  configStoreSetting = _messages.MessageField('ConfigStoreSetting', 1)
+  configStoreSettingId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class DataflowFoldersLocationsConfigStoreSettingsDeleteRequest(_messages.Message):
+  r"""A DataflowFoldersLocationsConfigStoreSettingsDeleteRequest object.
+
+  Fields:
+    name: Required. The name of the ConfigStoreSetting to delete.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class DataflowFoldersLocationsConfigStoreSettingsGetRequest(_messages.Message):
+  r"""A DataflowFoldersLocationsConfigStoreSettingsGetRequest object.
+
+  Fields:
+    name: Required. The name of the ConfigStoreSetting to retrieve.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class DataflowFoldersLocationsConfigStoreSettingsListRequest(_messages.Message):
+  r"""A DataflowFoldersLocationsConfigStoreSettingsListRequest object.
+
+  Fields:
+    pageSize: Optional. The maximum number of settings to return.
+    pageToken: Optional. A page token, received from a previous
+      `ListConfigStoreSettings` call.
+    parent: Required. The parent resource whose settings are being listed.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class DataflowFoldersLocationsConfigStoreSettingsResolveRequest(_messages.Message):
+  r"""A DataflowFoldersLocationsConfigStoreSettingsResolveRequest object.
+
+  Fields:
+    name: Required. The name of the setting to resolve.
+    resolveConfigStoreSettingRequest: A ResolveConfigStoreSettingRequest
+      resource to be passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  resolveConfigStoreSettingRequest = _messages.MessageField('ResolveConfigStoreSettingRequest', 2)
+
+
 class DataflowGaugeValue(_messages.Message):
   r"""The gauge value of a metric.
 
@@ -1014,6 +1101,70 @@ class DataflowHistogramValue(_messages.Message):
   bucketOptions = _messages.MessageField('BucketOptions', 2)
   count = _messages.IntegerField(3)
   outlierStats = _messages.MessageField('OutlierStats', 4)
+
+
+class DataflowOrganizationsLocationsConfigStoreSettingsCreateRequest(_messages.Message):
+  r"""A DataflowOrganizationsLocationsConfigStoreSettingsCreateRequest object.
+
+  Fields:
+    configStoreSetting: A ConfigStoreSetting resource to be passed as the
+      request body.
+    configStoreSettingId: Required. The ID to use for the setting.
+    parent: Required. The parent resource where this setting will be created.
+  """
+
+  configStoreSetting = _messages.MessageField('ConfigStoreSetting', 1)
+  configStoreSettingId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class DataflowOrganizationsLocationsConfigStoreSettingsDeleteRequest(_messages.Message):
+  r"""A DataflowOrganizationsLocationsConfigStoreSettingsDeleteRequest object.
+
+  Fields:
+    name: Required. The name of the ConfigStoreSetting to delete.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class DataflowOrganizationsLocationsConfigStoreSettingsGetRequest(_messages.Message):
+  r"""A DataflowOrganizationsLocationsConfigStoreSettingsGetRequest object.
+
+  Fields:
+    name: Required. The name of the ConfigStoreSetting to retrieve.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class DataflowOrganizationsLocationsConfigStoreSettingsListRequest(_messages.Message):
+  r"""A DataflowOrganizationsLocationsConfigStoreSettingsListRequest object.
+
+  Fields:
+    pageSize: Optional. The maximum number of settings to return.
+    pageToken: Optional. A page token, received from a previous
+      `ListConfigStoreSettings` call.
+    parent: Required. The parent resource whose settings are being listed.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class DataflowOrganizationsLocationsConfigStoreSettingsResolveRequest(_messages.Message):
+  r"""A DataflowOrganizationsLocationsConfigStoreSettingsResolveRequest
+  object.
+
+  Fields:
+    name: Required. The name of the setting to resolve.
+    resolveConfigStoreSettingRequest: A ResolveConfigStoreSettingRequest
+      resource to be passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  resolveConfigStoreSettingRequest = _messages.MessageField('ResolveConfigStoreSettingRequest', 2)
 
 
 class DataflowProjectsCatalogTemplatesCommitRequest(_messages.Message):
@@ -1554,6 +1705,69 @@ class DataflowProjectsJobsWorkItemsReportStatusRequest(_messages.Message):
   jobId = _messages.StringField(1, required=True)
   projectId = _messages.StringField(2, required=True)
   reportWorkItemStatusRequest = _messages.MessageField('ReportWorkItemStatusRequest', 3)
+
+
+class DataflowProjectsLocationsConfigStoreSettingsCreateRequest(_messages.Message):
+  r"""A DataflowProjectsLocationsConfigStoreSettingsCreateRequest object.
+
+  Fields:
+    configStoreSetting: A ConfigStoreSetting resource to be passed as the
+      request body.
+    configStoreSettingId: Required. The ID to use for the setting.
+    parent: Required. The parent resource where this setting will be created.
+  """
+
+  configStoreSetting = _messages.MessageField('ConfigStoreSetting', 1)
+  configStoreSettingId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class DataflowProjectsLocationsConfigStoreSettingsDeleteRequest(_messages.Message):
+  r"""A DataflowProjectsLocationsConfigStoreSettingsDeleteRequest object.
+
+  Fields:
+    name: Required. The name of the ConfigStoreSetting to delete.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class DataflowProjectsLocationsConfigStoreSettingsGetRequest(_messages.Message):
+  r"""A DataflowProjectsLocationsConfigStoreSettingsGetRequest object.
+
+  Fields:
+    name: Required. The name of the ConfigStoreSetting to retrieve.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class DataflowProjectsLocationsConfigStoreSettingsListRequest(_messages.Message):
+  r"""A DataflowProjectsLocationsConfigStoreSettingsListRequest object.
+
+  Fields:
+    pageSize: Optional. The maximum number of settings to return.
+    pageToken: Optional. A page token, received from a previous
+      `ListConfigStoreSettings` call.
+    parent: Required. The parent resource whose settings are being listed.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class DataflowProjectsLocationsConfigStoreSettingsResolveRequest(_messages.Message):
+  r"""A DataflowProjectsLocationsConfigStoreSettingsResolveRequest object.
+
+  Fields:
+    name: Required. The name of the setting to resolve.
+    resolveConfigStoreSettingRequest: A ResolveConfigStoreSettingRequest
+      resource to be passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  resolveConfigStoreSettingRequest = _messages.MessageField('ResolveConfigStoreSettingRequest', 2)
 
 
 class DataflowProjectsLocationsDeploymentsCreateRequest(_messages.Message):
@@ -4824,6 +5038,19 @@ class Linear(_messages.Message):
   width = _messages.FloatField(3)
 
 
+class ListConfigStoreSettingsResponse(_messages.Message):
+  r"""Response message for ListConfigStoreSettings.
+
+  Fields:
+    configStoreSettings: The list of ConfigStoreSettings.
+    nextPageToken: A token that can be sent as `page_token` to retrieve the
+      next page.
+  """
+
+  configStoreSettings = _messages.MessageField('ConfigStoreSetting', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
 class ListDeploymentRevisionsResponse(_messages.Message):
   r"""Response of a request to list `Cloud Dataflow job deployment revisions`.
 
@@ -6080,6 +6307,22 @@ class ReportedParallelism(_messages.Message):
 
   isInfinite = _messages.BooleanField(1)
   value = _messages.FloatField(2)
+
+
+class ResolveConfigStoreSettingRequest(_messages.Message):
+  r"""Request message for ResolveConfigStoreSetting."""
+
+
+class ResolveConfigStoreSettingResponse(_messages.Message):
+  r"""Response message for ResolveConfigStoreSetting.
+
+  Fields:
+    choices: The list of settings that were considered during resolution.
+    setting: The dry-run setting result.
+  """
+
+  choices = _messages.MessageField('ConfigStoreSetting', 1, repeated=True)
+  setting = _messages.MessageField('ConfigStoreSetting', 2)
 
 
 class ResourceUtilizationReport(_messages.Message):

@@ -1,8 +1,9 @@
 # hooks.py -- for dealing with git hooks
 # Copyright (C) 2012-2013 Jelmer Vernooij and others.
 #
+# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 # Dulwich is dual-licensed under the Apache License, Version 2.0 and the GNU
-# General Public License as public by the Free Software Foundation; version 2.0
+# General Public License as published by the Free Software Foundation; version 2.0
 # or (at your option) any later version. You can redistribute it and/or
 # modify it under the terms of either of these two licenses.
 #
@@ -86,32 +87,25 @@ class ShellHook(Hook):
 
     def execute(self, *args):
         """Execute the hook with given args."""
-        import sys
-        print("DEBUG HOOK EXECUTE START:", self.name, self.filepath, self.cwd, file=sys.stderr)
         if len(args) != self.numparam:
             raise HookError(
-                "Hook %s executed with wrong number of args. \
-                            Expected %d. Saw %d. args: %s"
-                % (self.name, self.numparam, len(args), args)
+                f"Hook {self.name} executed with wrong number of args. Expected {self.numparam}. Saw {len(args)}. args: {args}"
             )
 
         if self.pre_exec_callback is not None:
             args = self.pre_exec_callback(*args)
 
         try:
-            cmd = [os.path.relpath(self.filepath, self.cwd), *list(args)]
-            print("DEBUG HOOK CALLING:", cmd, "cwd=", self.cwd, file=sys.stderr)
-            ret = subprocess.call(cmd, cwd=self.cwd)
-            print("DEBUG HOOK CALL RET:", ret, file=sys.stderr)
+            ret = subprocess.call(
+                [os.path.relpath(self.filepath, self.cwd), *list(args)], cwd=self.cwd
+            )
             if ret != 0:
                 if self.post_exec_callback is not None:
                     self.post_exec_callback(0, *args)
-                raise HookError(
-                    "Hook %s exited with non-zero status %d" % (self.name, ret)
-                )
+                raise HookError(f"Hook {self.name} exited with non-zero status {ret}")
             if self.post_exec_callback is not None:
                 return self.post_exec_callback(1, *args)
-        except OSError:  # no file. silent failure.
+        except FileNotFoundError:  # no file. silent failure.
             if self.post_exec_callback is not None:
                 self.post_exec_callback(0, *args)
 

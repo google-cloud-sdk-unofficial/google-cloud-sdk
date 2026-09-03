@@ -435,7 +435,7 @@ def AddKmsKeyArg(
     release_track: base.ReleaseTrack, The release track of the command.
     hidden: bool, Whether to hide this argument.
   """
-  if release_track != base.ReleaseTrack.ALPHA:
+  if release_track not in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
     return
   permission_info = (
       "The 'Network Security Service Agent' service account must hold"

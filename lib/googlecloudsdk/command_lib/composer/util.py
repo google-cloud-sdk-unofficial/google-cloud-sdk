@@ -83,40 +83,40 @@ class SupportedAirflowVersion(collections.namedtuple(
 
 
 SUBCOMMAND_ALLOWLIST = {
-    'backfill': SupportedAirflowVersion(from_version=None, to_version=None),
+    'backfill': SupportedAirflowVersion(from_version=None, to_version='3.4.0'),
     'clear': SupportedAirflowVersion(from_version=None, to_version='2.0.0'),
     'config': SupportedAirflowVersion(
         from_version='2.11.0',
-        to_version=None,
+        to_version='3.4.0',
         allowed_nested_subcommands={
             'lint': SupportedAirflowVersion(
-                from_version='2.11.0', to_version=None
+                from_version='2.11.0', to_version='3.4.0'
             ),
         },
     ),
     'connections': SupportedAirflowVersion(
-        from_version=None, to_version='3.3.0'
+        from_version=None, to_version='3.4.0'
     ),
     'db': SupportedAirflowVersion(
         from_version='2.3.0',
-        to_version='3.0.0',
+        to_version='3.4.0',
         allowed_nested_subcommands={
             'check': SupportedAirflowVersion(
-                from_version='2.3.0', to_version='3.0.0'
+                from_version='2.3.0', to_version='3.4.0'
             ),
             'trim': SupportedAirflowVersion(
-                from_version='2.6.3', to_version='3.0.0'
+                from_version='2.6.3', to_version='3.4.0'
             ),
         },
     ),
     'dag_state': SupportedAirflowVersion(from_version=None, to_version='2.0.0'),
-    'dags': SupportedAirflowVersion(from_version='1.10.14', to_version='3.3.0'),
+    'dags': SupportedAirflowVersion(from_version='1.10.14', to_version='3.4.0'),
     'delete_dag': SupportedAirflowVersion(
         from_version='1.10.1', to_version='2.0.0'
     ),
-    'kerberos': SupportedAirflowVersion(from_version=None, to_version='3.3.0'),
+    'kerberos': SupportedAirflowVersion(from_version=None, to_version='3.4.0'),
     'kubernetes': SupportedAirflowVersion(
-        from_version='2.1.4', to_version='3.3.0'
+        from_version='2.1.4', to_version='3.4.0'
     ),
     'list_dag_runs': SupportedAirflowVersion(
         from_version='1.10.2', to_version='2.0.0'
@@ -134,13 +134,13 @@ SUBCOMMAND_ALLOWLIST = {
     'pause': SupportedAirflowVersion(from_version=None, to_version='2.0.0'),
     'pool': SupportedAirflowVersion(from_version=None, to_version='2.0.0'),
     'pools': SupportedAirflowVersion(
-        from_version='1.10.14', to_version='3.3.0'
+        from_version='1.10.14', to_version='3.4.0'
     ),
     'render': SupportedAirflowVersion(from_version=None, to_version='2.0.0'),
-    'roles': SupportedAirflowVersion(from_version='2.0.0', to_version='3.3.0'),
+    'roles': SupportedAirflowVersion(from_version='2.0.0', to_version='3.4.0'),
     'run': SupportedAirflowVersion(from_version=None, to_version='2.0.0'),
     'sync-perm': SupportedAirflowVersion(
-        from_version='1.10.14', to_version='3.3.0'
+        from_version='1.10.14', to_version='3.4.0'
     ),
     'sync_perm': SupportedAirflowVersion(
         from_version='1.10.2', to_version='2.0.0'
@@ -152,7 +152,7 @@ SUBCOMMAND_ALLOWLIST = {
         from_version=None, to_version='2.0.0'
     ),
     'tasks': SupportedAirflowVersion(
-        from_version='1.10.14', to_version='3.3.0'
+        from_version='1.10.14', to_version='3.4.0'
     ),
     'test': SupportedAirflowVersion(from_version=None, to_version='2.0.0'),
     'trigger_dag': SupportedAirflowVersion(
@@ -163,10 +163,10 @@ SUBCOMMAND_ALLOWLIST = {
         from_version='1.10.15', to_version='2.0.0'
     ),
     'users': SupportedAirflowVersion(
-        from_version='1.10.14', to_version='3.3.0'
+        from_version='1.10.14', to_version='3.4.0'
     ),
-    'variables': SupportedAirflowVersion(from_version=None, to_version='3.3.0'),
-    'version': SupportedAirflowVersion(from_version=None, to_version='3.3.0'),
+    'variables': SupportedAirflowVersion(from_version=None, to_version='3.4.0'),
+    'version': SupportedAirflowVersion(from_version=None, to_version='3.4.0'),
 }
 # Code paths are prohibited from being included in this file.
 # LINT.ThenChange()

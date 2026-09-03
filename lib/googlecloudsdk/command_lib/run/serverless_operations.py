@@ -95,7 +95,7 @@ class UnknownAPIError(exceptions.Error):
 def Connect(
     conn_context,
     skip_activation_prompt=False,
-    should_retry_if_disabled=True,
+    custom_check_response_func=None,
 ):
   """Provide a ServerlessOperations instance to use.
 
@@ -109,8 +109,8 @@ def Connect(
       the run.googleapis.com service was enabled. If this is true, we skip
       prompting the user to enable the service because they should have already
       been prompted if the API wasn't activated.
-    should_retry_if_disabled: bool that should be true if we want to retry the
-      request when the API is disabled.
+    custom_check_response_func: optional custom check_response callback to use
+      for checking API errors instead of the default CheckResponse.
 
   Yields:
     A ServerlessOperations instance.
@@ -127,16 +127,14 @@ def Connect(
       conn_context.api_version,
       skip_activation_prompt=skip_activation_prompt,
       location=conn_context.region,
-      should_retry_if_disabled=should_retry_if_disabled,
   )
   # pylint: enable=protected-access
 
   with conn_context as conn_info:
-    if conn_context.supports_one_platform:
-      response_func = apis.CheckResponse(
-          skip_activation_prompt,
-          should_retry_if_disabled=should_retry_if_disabled,
-      )
+    if custom_check_response_func is not None:
+      response_func = custom_check_response_func
+    elif conn_context.supports_one_platform:
+      response_func = apis.CheckResponse(skip_activation_prompt)
     else:
       response_func = None
     # pylint: disable=protected-access
@@ -1006,7 +1004,6 @@ class ServerlessOperations(object):
               source_to_upload=build_source,
               region=region,
               service_ref=service_ref,
-              release_track=release_track,
               kms_key=kms_key,
               skip_build=skip_build,
           )

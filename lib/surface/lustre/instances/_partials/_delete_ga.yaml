@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -53,6 +53,15 @@
 
         The request ID must be a valid UUID with the exception that zero UUID is
         not supported (00000000-0000-0000-0000-000000000000).
+    - arg_name: force
+      api_field: force
+      action: store_true
+      required: false
+      type: bool
+      help_text: |-
+        If set to true, any sub-resources from this instance will also be deleted.
+        Otherwise, the request will only work if the instance has no sub-resources.
+      default: null
   request:
     api_version: v1
     collection:

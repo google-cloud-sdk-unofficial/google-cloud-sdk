@@ -18,7 +18,7 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.config import completers
-from googlecloudsdk.core import config
+from googlecloudsdk.core import config_sqlite_store
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.configurations import named_configs
@@ -154,7 +154,9 @@ class Delete(base.SilentCommand):
           configuration_name
       )
       named_configs.ConfigurationStore.DeleteConfig(configuration_name)
-      config_store_to_delete = config.GetConfigStore(configuration_name)
+      config_store_to_delete = config_sqlite_store.GetConfigStore(
+          configuration_name
+      )
       config_store_to_delete.DeleteConfig()
       try:
         self._DeleteUniverseDescriptor(delete_config_universe_domain)

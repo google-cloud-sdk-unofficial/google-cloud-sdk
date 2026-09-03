@@ -426,7 +426,12 @@ class Cluster(_messages.Message):
       the `NodeType`).
     nodeTypeId: Optional. Deprecated: The canonical identifier of node types
       (`NodeType`) in this cluster. For example: standard-72.
-    placementGroup: Optional. The placement group for the management cluster.
+    placementGroup: Optional. The identifier of the placement group for
+      cluster nodes. A placement group is an internal Google identifier for a
+      group of resources that are physically located within the same fault
+      domain. If provided, nodes for this cluster are placed within the
+      specified placement group. If this field is omitted, the system selects
+      an appropriate placement group.
     state: Output only. State of the resource.
     stretchedClusterConfig: Optional. Configuration of a stretched cluster.
       Required for clusters that belong to a STRETCHED private cloud.
@@ -1837,7 +1842,12 @@ class ManagementCluster(_messages.Message):
       the `NodeType`).
     nodeTypeId: Optional. Deprecated: The canonical identifier of node types
       (`NodeType`) in this cluster. For example: standard-72.
-    placementGroup: Optional. The placement group for the cluster.
+    placementGroup: Optional. The identifier of the placement group for
+      management cluster nodes. A placement group is an internal Google
+      identifier for a group of resources that are physically located within
+      the same fault domain. If provided, nodes for this cluster are placed
+      within the specified placement group. If this field is omitted, the
+      system selects an appropriate placement group.
     stretchedClusterConfig: Optional. Configuration of a stretched cluster.
       Required for STRETCHED private clouds.
     vsanType: Optional. Immutable. The vSAN type of the cluster.
@@ -3428,15 +3438,23 @@ class StretchedClusterConfig(_messages.Message):
       example: `projects/{project}/locations/europe-west3-a` or `europe-
       west3-a`, where `{project}` can either be a project number or a project
       ID.
-    preferredLocationPlacementGroup: Optional. Placement group for the
-      preferred location.
+    preferredLocationPlacementGroup: Optional. The identifier of the placement
+      group for preferred location cluster nodes. A placement group is an
+      internal Google identifier for a group of resources that are physically
+      located within the same fault domain. If provided, nodes for this
+      cluster are placed within the specified placement group. If this field
+      is omitted, the system selects an appropriate placement group.
     secondaryLocation: Required. Additional zone for a higher level of
       availability and load balancing. Specify the resource name or ID of a
       zone that belongs to the region of the private cloud. For example:
       `projects/{project}/locations/europe-west3-b` or `europe-west3-b`, where
       `{project}` can either be a project number or a project ID.
-    secondaryLocationPlacementGroup: Optional. Placement group for the
-      secondary location.
+    secondaryLocationPlacementGroup: Optional. The identifier of the placement
+      group for secondary location cluster nodes. A placement group is an
+      internal Google identifier for a group of resources that are physically
+      located within the same fault domain. If provided, nodes for this
+      cluster are placed within the specified placement group. If this field
+      is omitted, the system selects an appropriate placement group.
   """
 
   preferredLocation = _messages.StringField(1)

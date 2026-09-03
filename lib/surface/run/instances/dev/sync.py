@@ -100,14 +100,19 @@ class Sync(base.Command):
   detailed_help = {
       'DESCRIPTION': (
           """\
-          Syncs the local workspace to Cloud Run Instance.
+          Syncs local workspace files to a Cloud Run Instance and streams
+          container logs concurrently.
           """
       ),
       'EXAMPLES': (
           """\
-          To sync the local workspace to a Cloud Run Instance:
+          To sync the local workspace to a Cloud Run Instance with live log streaming:
 
               $ {command} my-instance --source=.
+
+          To sync without tailing container logs:
+
+              $ {command} my-instance --source=. --no-tail-logs
           """
       ),
   }
@@ -115,6 +120,7 @@ class Sync(base.Command):
   @classmethod
   def CommonArgs(cls, parser):
     flags.DevSyncCleanupFlag(parser)
+    flags.DevSyncTailLogsFlag(parser)
     parser.add_argument(
         '--iap-tunnel-url-override',
         hidden=True,

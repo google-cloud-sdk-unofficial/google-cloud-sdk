@@ -37,6 +37,9 @@ class CloudnumberregistryV1alpha(base_api.BaseApiClient):
         default_global_params=default_global_params,
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
+    self.organizations_locations_orgNumberRegistries = self.OrganizationsLocationsOrgNumberRegistriesService(self)
+    self.organizations_locations = self.OrganizationsLocationsService(self)
+    self.organizations = self.OrganizationsService(self)
     self.projects_locations_customRanges = self.ProjectsLocationsCustomRangesService(self)
     self.projects_locations_discoveredRanges = self.ProjectsLocationsDiscoveredRangesService(self)
     self.projects_locations_ipamAdminScopes = self.ProjectsLocationsIpamAdminScopesService(self)
@@ -45,6 +48,144 @@ class CloudnumberregistryV1alpha(base_api.BaseApiClient):
     self.projects_locations_registryBooks = self.ProjectsLocationsRegistryBooksService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects = self.ProjectsService(self)
+
+  class OrganizationsLocationsOrgNumberRegistriesService(base_api.BaseApiService):
+    """Service class for the organizations_locations_orgNumberRegistries resource."""
+
+    _NAME = 'organizations_locations_orgNumberRegistries'
+
+    def __init__(self, client):
+      super(CloudnumberregistryV1alpha.OrganizationsLocationsOrgNumberRegistriesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new OrgNumberRegistry in a given organization and location.
+
+      Args:
+        request: (CloudnumberregistryOrganizationsLocationsOrgNumberRegistriesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/organizations/{organizationsId}/locations/{locationsId}/orgNumberRegistries',
+        http_method='POST',
+        method_id='cloudnumberregistry.organizations.locations.orgNumberRegistries.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['orgNumberRegistryId', 'requestId'],
+        relative_path='v1alpha/{+parent}/orgNumberRegistries',
+        request_field='orgNumberRegistry',
+        request_type_name='CloudnumberregistryOrganizationsLocationsOrgNumberRegistriesCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single OrgNumberRegistry.
+
+      Args:
+        request: (CloudnumberregistryOrganizationsLocationsOrgNumberRegistriesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/organizations/{organizationsId}/locations/{locationsId}/orgNumberRegistries/{orgNumberRegistriesId}',
+        http_method='DELETE',
+        method_id='cloudnumberregistry.organizations.locations.orgNumberRegistries.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='CloudnumberregistryOrganizationsLocationsOrgNumberRegistriesDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single OrgNumberRegistry.
+
+      Args:
+        request: (CloudnumberregistryOrganizationsLocationsOrgNumberRegistriesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (OrgNumberRegistry) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/organizations/{organizationsId}/locations/{locationsId}/orgNumberRegistries/{orgNumberRegistriesId}',
+        http_method='GET',
+        method_id='cloudnumberregistry.organizations.locations.orgNumberRegistries.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='CloudnumberregistryOrganizationsLocationsOrgNumberRegistriesGetRequest',
+        response_type_name='OrgNumberRegistry',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists OrgNumberRegistries in a given organization and location.
+
+      Args:
+        request: (CloudnumberregistryOrganizationsLocationsOrgNumberRegistriesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListOrgNumberRegistriesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/organizations/{organizationsId}/locations/{locationsId}/orgNumberRegistries',
+        http_method='GET',
+        method_id='cloudnumberregistry.organizations.locations.orgNumberRegistries.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/orgNumberRegistries',
+        request_field='',
+        request_type_name='CloudnumberregistryOrganizationsLocationsOrgNumberRegistriesListRequest',
+        response_type_name='ListOrgNumberRegistriesResponse',
+        supports_download=False,
+    )
+
+  class OrganizationsLocationsService(base_api.BaseApiService):
+    """Service class for the organizations_locations resource."""
+
+    _NAME = 'organizations_locations'
+
+    def __init__(self, client):
+      super(CloudnumberregistryV1alpha.OrganizationsLocationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class OrganizationsService(base_api.BaseApiService):
+    """Service class for the organizations resource."""
+
+    _NAME = 'organizations'
+
+    def __init__(self, client):
+      super(CloudnumberregistryV1alpha.OrganizationsService, self).__init__(client)
+      self._upload_configs = {
+          }
 
   class ProjectsLocationsCustomRangesService(base_api.BaseApiService):
     """Service class for the projects_locations_customRanges resource."""

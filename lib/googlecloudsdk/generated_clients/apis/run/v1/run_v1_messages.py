@@ -1889,6 +1889,10 @@ class GoogleDevtoolsCloudbuildV1GitSourceDependency(_messages.Message):
     depth: Optional. How much history should be fetched for the build (default
       1, -1 for all history).
     destPath: Required. Where should the files be placed on the worker.
+    fetchTags: Optional. True if remote tags should be fetched too (default
+      false). Note: when depth is 1 (default), git fetch only retrieves tags
+      pointing to commits within the shallow boundary. Set depth to -1 to
+      fetch all historical tags.
     recurseSubmodules: Optional. True if submodules should be fetched too
       (default false).
     repository: Required. The kind of repo (url or dev connect).
@@ -1897,9 +1901,10 @@ class GoogleDevtoolsCloudbuildV1GitSourceDependency(_messages.Message):
 
   depth = _messages.IntegerField(1)
   destPath = _messages.StringField(2)
-  recurseSubmodules = _messages.BooleanField(3)
-  repository = _messages.MessageField('GoogleDevtoolsCloudbuildV1GitSourceRepository', 4)
-  revision = _messages.StringField(5)
+  fetchTags = _messages.BooleanField(3)
+  recurseSubmodules = _messages.BooleanField(4)
+  repository = _messages.MessageField('GoogleDevtoolsCloudbuildV1GitSourceRepository', 5)
+  revision = _messages.StringField(6)
 
 
 class GoogleDevtoolsCloudbuildV1GitSourceRepository(_messages.Message):
@@ -2993,6 +2998,8 @@ class InstanceSpec(_messages.Message):
       key to a value which matches a node.
     restartPolicy: Optional. Restart policy for the Instance. Allowable values
       are 'Always', 'OnFailure', or 'Never'.
+    sandboxes: Optional. Sandbox configuration that can be launched through
+      the `sandbox` CLI.
     serviceAccountName: Optional. Email address of the IAM service account
       associated with the Instance. The service account represents the
       identity of the running container, and determines what permissions the
@@ -3034,9 +3041,10 @@ class InstanceSpec(_messages.Message):
   containers = _messages.MessageField('Container', 1, repeated=True)
   nodeSelector = _messages.MessageField('NodeSelectorValue', 2)
   restartPolicy = _messages.StringField(3)
-  serviceAccountName = _messages.StringField(4)
-  terminationGracePeriodSeconds = _messages.IntegerField(5)
-  volumes = _messages.MessageField('Volume', 6, repeated=True)
+  sandboxes = _messages.MessageField('SandboxConfiguration', 4)
+  serviceAccountName = _messages.StringField(5)
+  terminationGracePeriodSeconds = _messages.IntegerField(6)
+  volumes = _messages.MessageField('Volume', 7, repeated=True)
 
 
 class InstanceSplit(_messages.Message):
@@ -3528,7 +3536,7 @@ class ObjectMeta(_messages.Message):
       will be different depending on the resource type. *
       `autoscaling.knative.dev/maxScale`: Revision. *
       `autoscaling.knative.dev/minScale`: Revision. *
-      `run.googleapis.com/base-images`: Service, Revision. *
+      `run.googleapis.com/base-images`: Service, Revision . *
       `run.googleapis.com/binary-authorization-breakglass`: Service, Job, *
       `run.googleapis.com/binary-authorization`: Service, Job, Execution. *
       `run.googleapis.com/build-base-image`: Service. *
@@ -3580,7 +3588,7 @@ class ObjectMeta(_messages.Message):
       will be different depending on the resource type. *
       `autoscaling.knative.dev/maxScale`: Revision. *
       `autoscaling.knative.dev/minScale`: Revision. *
-      `run.googleapis.com/base-images`: Service, Revision. *
+      `run.googleapis.com/base-images`: Service, Revision . *
       `run.googleapis.com/binary-authorization-breakglass`: Service, Job, *
       `run.googleapis.com/binary-authorization`: Service, Job, Execution. *
       `run.googleapis.com/build-base-image`: Service. *
@@ -3663,7 +3671,7 @@ class ObjectMeta(_messages.Message):
     restricted, and the accepted annotations will be different depending on
     the resource type. * `autoscaling.knative.dev/maxScale`: Revision. *
     `autoscaling.knative.dev/minScale`: Revision. * `run.googleapis.com/base-
-    images`: Service, Revision. * `run.googleapis.com/binary-authorization-
+    images`: Service, Revision . * `run.googleapis.com/binary-authorization-
     breakglass`: Service, Job, * `run.googleapis.com/binary-authorization`:
     Service, Job, Execution. * `run.googleapis.com/build-base-image`: Service.
     * `run.googleapis.com/build-enable-automatic-updates`: Service. *
@@ -4096,6 +4104,8 @@ class RevisionSpec(_messages.Message):
     nodeSelector: Optional. The Node Selector configuration. Map of selector
       key to a value which matches a node.
     runtimeClassName: Optional. Runtime. Leave unset for default.
+    sandboxes: Optional. Sandbox configuration that can be launched through
+      the `sandbox` CLI.
     serviceAccountName: Email address of the IAM service account associated
       with the revision of the service. The service account represents the
       identity of the running revision, and determines what permissions the
@@ -4142,10 +4152,11 @@ class RevisionSpec(_messages.Message):
   imagePullSecrets = _messages.MessageField('LocalObjectReference', 4, repeated=True)
   nodeSelector = _messages.MessageField('NodeSelectorValue', 5)
   runtimeClassName = _messages.StringField(6)
-  serviceAccountName = _messages.StringField(7)
-  terminationGracePeriodSeconds = _messages.IntegerField(8)
-  timeoutSeconds = _messages.IntegerField(9, variant=_messages.Variant.INT32)
-  volumes = _messages.MessageField('Volume', 10, repeated=True)
+  sandboxes = _messages.MessageField('SandboxConfiguration', 7)
+  serviceAccountName = _messages.StringField(8)
+  terminationGracePeriodSeconds = _messages.IntegerField(9)
+  timeoutSeconds = _messages.IntegerField(10, variant=_messages.Variant.INT32)
+  volumes = _messages.MessageField('Volume', 11, repeated=True)
 
 
 class RevisionStatus(_messages.Message):
@@ -5854,6 +5865,44 @@ class RunProjectsLocationsWorkerpoolsTestIamPermissionsRequest(_messages.Message
   testIamPermissionsRequest = _messages.MessageField('TestIamPermissionsRequest', 2)
 
 
+class SandboxConfiguration(_messages.Message):
+  r"""Configuration for sandboxes.
+
+  Fields:
+    templates: Required. Sandbox templates that can be launched through the
+      `sandbox` CLI.
+  """
+
+  templates = _messages.MessageField('SandboxTemplate', 1, repeated=True)
+
+
+class SandboxTemplate(_messages.Message):
+  r"""Template for a single sandbox.
+
+  Fields:
+    args: Optional. Arguments to the entrypoint. The docker image's CMD is
+      used if this is not provided.
+    command: Optional. Entrypoint array. Not executed within a shell. The
+      docker image's ENTRYPOINT is used if this is not provided.
+    env: Optional. List of environment variables to set in the sandbox.
+    image: Required. Name of the container image in Dockerhub or Artifact
+      Registry. If the host is not provided, Dockerhub is assumed.
+    name: Required. Name of the sandbox specified as a DNS_LABEL (RFC 1123).
+    volumeMounts: Optional. Volume to mount into the container's filesystem.
+    workingDir: Optional. Container's working directory. If not specified, the
+      container runtime's default will be used, which might be configured in
+      the container image.
+  """
+
+  args = _messages.StringField(1, repeated=True)
+  command = _messages.StringField(2, repeated=True)
+  env = _messages.MessageField('EnvVar', 3, repeated=True)
+  image = _messages.StringField(4)
+  name = _messages.StringField(5)
+  volumeMounts = _messages.MessageField('VolumeMount', 6, repeated=True)
+  workingDir = _messages.StringField(7)
+
+
 class SecretEnvSource(_messages.Message):
   r"""Not supported by Cloud Run. SecretEnvSource selects a Secret to populate
   the environment variables with. The contents of the target Secret's Data
@@ -6321,6 +6370,8 @@ class TaskSpec(_messages.Message):
       this job failed. Defaults to 3.
     nodeSelector: Optional. The Node Selector configuration. Map of selector
       key to a value which matches a node.
+    sandboxes: Optional. Sandbox configuration that can be launched through
+      the `sandbox` CLI.
     serviceAccountName: Optional. Email address of the IAM service account
       associated with the task of a job execution. The service account
       represents the identity of the running task, and determines what
@@ -6366,10 +6417,11 @@ class TaskSpec(_messages.Message):
   containers = _messages.MessageField('Container', 1, repeated=True)
   maxRetries = _messages.IntegerField(2, variant=_messages.Variant.INT32)
   nodeSelector = _messages.MessageField('NodeSelectorValue', 3)
-  serviceAccountName = _messages.StringField(4)
-  terminationGracePeriodSeconds = _messages.IntegerField(5)
-  timeoutSeconds = _messages.IntegerField(6)
-  volumes = _messages.MessageField('Volume', 7, repeated=True)
+  sandboxes = _messages.MessageField('SandboxConfiguration', 4)
+  serviceAccountName = _messages.StringField(5)
+  terminationGracePeriodSeconds = _messages.IntegerField(6)
+  timeoutSeconds = _messages.IntegerField(7)
+  volumes = _messages.MessageField('Volume', 8, repeated=True)
 
 
 class TaskStatus(_messages.Message):

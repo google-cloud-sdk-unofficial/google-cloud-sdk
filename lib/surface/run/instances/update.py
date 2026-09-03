@@ -75,8 +75,8 @@ def ContainerArgGroup(release_track=base.ReleaseTrack.ALPHA):
 
 @base.UniverseCompatible
 @base.RegionalEndpointsSupported
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaUpdate(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class Update(base.Command):
   """Update a Cloud Run instance."""
 
   detailed_help = {

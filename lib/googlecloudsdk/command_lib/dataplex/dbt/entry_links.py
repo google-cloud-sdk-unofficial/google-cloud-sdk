@@ -14,28 +14,32 @@
 # limitations under the License.
 """EntryLink drafting for the dbt -> Dataplex transform.
 
-The functions here construct EntryLink records that capture lineage and
-semantic relationships between dbt entries. They are emitted by default;
+The functions here construct EntryLink records that capture the relationships
+between dbt entries. They are emitted by default;
 ``transform.GenerateImportFile`` skips them only when
 ``include_entry_links=False`` (exposed as ``--no-include-entry-links`` on the
-``metadata-jobs create`` command). The dbt entry link types (represents,
-depends-on-lineage-imported, depends-on-imported) are first-party system types
-under the corresponding environment-specific system project (e.g.,
-dataplex-staging-types), which is separate from the project hosting the dbt
-aspect / entry types (e.g., dataplex-staging-3p-types).
+``metadata-jobs create`` command). The entry link types are first-party system
+types under the corresponding
+environment-specific system project (e.g., dataplex-staging-types), which is
+separate from the project hosting the dbt aspect / entry types (e.g.,
+dataplex-staging-3p-types).
 
-``represents`` links are used for both:
-1. Physical mapping: dbt model/seed/snapshot ->
-   the physical @bigquery table entry. These are emitted only when
-   ``build_entry_links(linkable_datasets=...)`` names the datasets to link.
-   Entry links are same-region, so the @bigquery entries are named in the
-   import location (``ctx.eg_location``); a link only resolves for a dataset
-   that actually lives there, so the caller passes the set of co-located
-   datasets.
-2. Semantic mapping: dbt semantic model -> dbt model.
+An edge is typed by what it asserts, never by where it came from:
 
-All other edges (lineage and external consumption) are derived purely from the
-manifest.
+* ``depends-on`` -- a flow of data. Both ends hold data (model, seed, snapshot,
+  source), or the dependent is an exposure consuming it.
+* ``reference`` -- an association drawn from metadata: a test to the model it
+  validates, a semantic model to the model it describes, a metric to the
+  semantic model it is computed over, and a dbt node to the physical @bigquery
+  table it materializes to.
+* ``schema-join`` -- joinable columns, from a dbt ``relationships`` test.
+
+Physical @bigquery references are emitted only when
+``build_entry_links(linkable_datasets=...)`` names the datasets to link. Entry
+links are same-region, so the @bigquery entries are named in the import location
+(``ctx.eg_location``); a link only resolves for a dataset that actually lives
+there, so the caller passes the set of co-located datasets. Every other edge is
+derived purely from the manifest's ``parent_map``.
 """
 
 from __future__ import annotations
@@ -45,7 +49,6 @@ from collections import abc
 import hashlib
 from typing import Any, TypedDict
 
-from googlecloudsdk.command_lib.dataplex.dbt import entry_builders
 from googlecloudsdk.command_lib.dataplex.dbt import naming
 
 # dbt manifest top-level sections this module reads. Each of these (except
@@ -75,12 +78,10 @@ def LinkTypeFqns(  # pylint: disable=invalid-name
   Returns:
     A list of fully-qualified entryLinkType resource names.
   """
-  # Several short keys share one consolidated type id (materializes_to and
-  # defines_semantics_for are both `represents`), so dedupe before scoping.
   return [
       f'projects/{system_project}/locations/{types_location}/'
       f'entryLinkTypes/{link_id}'
-      for link_id in sorted(set(naming.LINK_TYPE_IDS.values()))
+      for link_id in sorted(naming.LINK_TYPE_IDS)
   ]
 
 
@@ -141,7 +142,7 @@ EntryLinkRecord = TypedDict('EntryLinkRecord', {'entryLink': _EntryLinkBody})
 
 
 def _link_id(
-    link_type_short: str,
+    link_type_id: str,
     source_fully_qualified_name: str,
     target_fully_qualified_name: str,
 ) -> str:
@@ -150,13 +151,12 @@ def _link_id(
           'utf-8'
       )
   ).hexdigest()[:16]
-  link_type_id = naming.LINK_TYPE_IDS[link_type_short]
   return f'{link_type_id}-{digest}'
 
 
 def _entry_link(
     ctx: naming.Context,
-    link_type_short: str,
+    link_type_id: str,
     source_fully_qualified_name: str,
     target_fully_qualified_name: str,
     *,
@@ -169,7 +169,7 @@ def _entry_link(
 
   Args:
     ctx: the naming.Context holding the naming coordinates for this run.
-    link_type_short: the short link key (e.g. 'depends_on').
+    link_type_id: the entryLinkType id (e.g. 'depends-on').
     source_fully_qualified_name: resource name of the SOURCE entry.
     target_fully_qualified_name: resource name of the TARGET entry.
     source_path: optional column path on the source entry.
@@ -184,7 +184,7 @@ def _entry_link(
     An EntryLink record.
   """
   entry_link_id = _link_id(
-      link_type_short, source_fully_qualified_name, target_fully_qualified_name
+      link_type_id, source_fully_qualified_name, target_fully_qualified_name
   )
   ref_type = 'UNSPECIFIED' if undirected else None
   source_ref: _EntryReference = {
@@ -204,7 +204,7 @@ def _entry_link(
           f'projects/{ctx.eg_project}/locations/{ctx.eg_location}/'
           f'entryGroups/{ctx.entry_group}/entryLinks/{entry_link_id}'
       ),
-      'entryLinkType': ctx.link_type_fqn(link_type_short),
+      'entryLinkType': ctx.link_type_fqn(link_type_id),
       'entryReferences': [source_ref, target_ref],
   }
   if aspects:
@@ -256,27 +256,94 @@ def _sql_name(node: dict[str, Any]) -> str:
   return f'`{table}`' if table else ''
 
 
-def _emit_depends_on(
+# Manifest sections whose resources can appear in ``parent_map``.
+_DEPENDENCY_GRAPH_SECTIONS = (
+    _NODES,
+    _SOURCES,
+    _METRICS,
+    _EXPOSURES,
+    _SEMANTIC_MODELS,
+    _SAVED_QUERIES,
+)
+
+# dbt resource types whose entries hold data. An edge into one of these is a
+# flow of data; an edge into anything else (a metric, a semantic model, another
+# test) asserts a relationship read off the metadata instead.
+_DATA_BEARING_RESOURCE_TYPES = frozenset(
+    ['model', 'seed', 'snapshot', 'source']
+)
+
+# dbt resource types that consume data. Data-bearing resources read from their
+# upstreams; an exposure (a dashboard, an ML model) consumes without producing.
+# A test reads rows too, but it asserts a property of a model rather than
+# deriving anything from it, so it is deliberately excluded.
+_DATA_CONSUMING_RESOURCE_TYPES = _DATA_BEARING_RESOURCE_TYPES | frozenset(
+    ['exposure']
+)
+
+
+def _resource_types_by_uid(
+    manifest: abc.Mapping[str, Any],
+) -> dict[str, str]:
+  """Maps each dbt unique_id in the dependency graph to its resource type.
+
+  ``parent_map`` names resources by unique_id alone, and the link type depends
+  on what the two endpoints are. Every manifest section carries an explicit
+  ``resource_type``, so read it rather than splitting the unique_id, whose
+  layout varies by resource (a source is ``source.<pkg>.<source>.<table>``).
+
+  Args:
+    manifest: the parsed dbt manifest.json.
+
+  Returns:
+    A dict of dbt unique_id -> resource type (e.g. 'model', 'exposure').
+  """
+  resource_types: dict[str, str] = {}
+  for section in _DEPENDENCY_GRAPH_SECTIONS:
+    for uid, resource in (manifest.get(section) or {}).items():
+      if isinstance(resource, dict) and resource.get('resource_type'):
+        resource_types[uid] = resource['resource_type']
+  return resource_types
+
+
+def _dependency_link_type(
+    dependent_resource_type: str | None,
+    dependency_resource_type: str | None,
+) -> str:
+  """Returns the entryLinkType id for one ``parent_map`` edge.
+
+  Args:
+    dependent_resource_type: resource type of the dependent (the SOURCE).
+    dependency_resource_type: resource type of the dependency (the TARGET).
+
+  Returns:
+    ``depends-on`` when data moves from the dependency to the dependent,
+    ``reference`` otherwise.
+  """
+  if (
+      dependency_resource_type in _DATA_BEARING_RESOURCE_TYPES
+      and dependent_resource_type in _DATA_CONSUMING_RESOURCE_TYPES
+  ):
+    return naming.DEPENDS_ON_LINK_TYPE
+  return naming.REFERENCE_LINK_TYPE
+
+
+def _emit_dependencies(
     ctx: naming.Context, manifest: abc.Mapping[str, Any], known_ids: set[str]
 ) -> list[EntryLinkRecord]:
-  """Emits ``depends-on`` entry links (dependent -> dependency) from parent_map.
+  """Emits one entry link per ``parent_map`` edge, typed by its endpoints.
 
   The link is directed source -> target, where "the source entry depends on
   the target entry" (see the ``depends-on`` entryLinkType definition).
-  ``parent_map`` maps each node to the nodes it depends on (its parents), so
-  the SOURCE is the map key (the dependent) and each TARGET is a value (the
-  dependency). Tests are included: a test depends on the model(s) it
-  validates, emitted as ``test -> model``.
+  ``parent_map`` maps each resource to the resources it depends on (its
+  parents), so the SOURCE is the map key (the dependent) and each TARGET is a
+  value (the dependency).
 
-  ``parent_map`` covers every dbt dependency, so some of the directed pairs it
-  yields are ALSO emitted as a more specific typed edge elsewhere -- e.g. a
-  model feeding an exposure appears here as ``depends-on`` and again in
-  ``_emit_consumed_by`` as ``consumed-by`` (likewise ``derives-from`` for
-  metrics/saved_queries and ``defines-semantics-for`` for semantic models).
-  This overlap is intentional: ``depends-on`` is the generic lineage layer and
-  the typed edges are the semantic layer, so a consumer can use whichever it
-  wants. The two are distinguished by ``entryLinkType``; a graph consumer that
-  ignores the type will see the pair twice and must dedupe by type.
+  ``parent_map`` is the whole dbt dependency graph, and it mixes two kinds of
+  edge: data moving between relations (``model -> source``) and a resource
+  describing or validating another (``test -> model``,
+  ``metric -> semantic_model``). ``_dependency_link_type`` separates them, so
+  each pair is emitted exactly once under the type that fits it.
 
   Args:
     ctx: the naming.Context holding the naming coordinates for this run.
@@ -287,6 +354,7 @@ def _emit_depends_on(
     A list of EntryLink records.
   """
   out: list[EntryLinkRecord] = []
+  resource_types = _resource_types_by_uid(manifest)
   parent_map = manifest.get(_PARENT_MAP) or {}
   for dependent_uid, dependency_uids in parent_map.items():
     dependent_id = naming.entry_id(dependent_uid)
@@ -300,7 +368,10 @@ def _emit_depends_on(
       out.append(
           _entry_link(
               ctx,
-              'depends_on',
+              _dependency_link_type(
+                  resource_types.get(dependent_uid),
+                  resource_types.get(dependency_uid),
+              ),
               dependent_fully_qualified_name,
               ctx.entry_name(dependency_id),
           )
@@ -343,101 +414,6 @@ def _index_uid_by_key(
   for key in ambiguous:
     del index[key]
   return index
-
-
-def _emit_consumed_by(
-    ctx: naming.Context, manifest: abc.Mapping[str, Any], known_ids: set[str]
-) -> list[EntryLinkRecord]:
-  """exposure entry -> Upstream dbt resource (depends-on-imported)."""
-  out: list[EntryLinkRecord] = []
-  for exp_uid, exposure in (manifest.get(_EXPOSURES) or {}).items():
-    exp_id = naming.entry_id(exp_uid)
-    if exp_id not in known_ids:
-      continue
-    exp_fqn = ctx.entry_name(exp_id)
-    for up_uid in (exposure.get('depends_on') or {}).get('nodes') or []:
-      up_id = naming.entry_id(up_uid)
-      if up_id not in known_ids:
-        continue
-      out.append(
-          _entry_link(
-              ctx,
-              'consumed_by',
-              exp_fqn,
-              ctx.entry_name(up_id),
-          )
-      )
-  return out
-
-
-def _emit_defines_semantics_for(
-    ctx: naming.Context, manifest: abc.Mapping[str, Any], known_ids: set[str]
-) -> list[EntryLinkRecord]:
-  """Emits represents links from semantic models to their backing model.
-
-  A semantic model represents exactly one model, which dbt names outright as
-  ``model: ref('orders')``. Fanning out over ``depends_on`` instead would claim
-  the semantic model represents every node it touches -- a filter referencing a
-  second model, say -- so only the declared model is linked. This is the same
-  resolution ``entry_builders`` uses to pick the semantic model's parent entry.
-
-  Args:
-    ctx: the naming.Context holding the naming coordinates for this run.
-    manifest: the parsed dbt manifest.json.
-    known_ids: the set of Dataplex entry ids the transform emitted.
-
-  Returns:
-    One represents link per semantic model whose backing model resolves.
-  """
-  out: list[EntryLinkRecord] = []
-  model_uid_by_name = entry_builders.model_uids_by_name(
-      manifest.get(_NODES) or {}
-  )
-  for sm_uid, sm in (manifest.get(_SEMANTIC_MODELS) or {}).items():
-    sm_id = naming.entry_id(sm_uid)
-    if sm_id not in known_ids:
-      continue
-    model_uid = entry_builders.described_model(sm, model_uid_by_name)
-    if not model_uid:
-      continue
-    model_id = naming.entry_id(model_uid)
-    if model_id not in known_ids:
-      continue
-    out.append(
-        _entry_link(
-            ctx,
-            'defines_semantics_for',
-            ctx.entry_name(sm_id),
-            ctx.entry_name(model_id),
-        )
-    )
-  return out
-
-
-def _emit_derives_from(
-    ctx: naming.Context, manifest: abc.Mapping[str, Any], known_ids: set[str]
-) -> list[EntryLinkRecord]:
-  """metric or saved_query -> upstream metric / semantic_model."""
-  out: list[EntryLinkRecord] = []
-  for top_key in (_METRICS, _SAVED_QUERIES):
-    for uid, node in (manifest.get(top_key) or {}).items():
-      d_id = naming.entry_id(uid)
-      if d_id not in known_ids:
-        continue
-      d_fqn = ctx.entry_name(d_id)
-      for up_uid in (node.get('depends_on') or {}).get('nodes') or []:
-        u_id = naming.entry_id(up_uid)
-        if u_id not in known_ids:
-          continue
-        out.append(
-            _entry_link(
-                ctx,
-                'derives_from',
-                d_fqn,
-                ctx.entry_name(u_id),
-            )
-        )
-  return out
 
 
 # DBT resource types that materialize to a physical BigQuery table.
@@ -598,7 +574,7 @@ def _emit_schema_join(
     out.append(
         _entry_link(
             ctx,
-            'schema_join',
+            naming.SCHEMA_JOIN_LINK_TYPE,
             first_entry_fqn,
             second_entry_fqn,
             aspects=aspects,
@@ -656,13 +632,17 @@ def materialized_bigquery_datasets(
   }
 
 
-def _emit_materializes_to(
+def _emit_physical_reference(
     ctx: naming.Context,
     manifest: abc.Mapping[str, Any],
     known_ids: set[str],
     linkable_datasets: set[tuple[str, str]],
 ) -> list[EntryLinkRecord]:
-  """Emits represents (physical) links from dbt nodes to their @bigquery tables.
+  """Emits ``reference`` links from dbt nodes to their @bigquery tables.
+
+  The dbt node and the BigQuery table describe the same relation from two
+  sides, which the manifest states outright -- no data moves along this edge,
+  so it is a ``reference`` rather than a ``depends-on``.
 
   The target is the Dataplex system @bigquery entry for the BigQuery table dbt
   writes. Entry links are same-region, so the @bigquery entry is named in the
@@ -670,8 +650,8 @@ def _emit_materializes_to(
   dataset actually lives there, hence the ``linkable_datasets`` filter. The
   physical entry must already be cataloged (BigQuery metadata is auto-ingested
   into Dataplex); if it is absent the import reports that link as an error and
-  continues. ``represents`` disables the target permission check, so
-  read-only access to the physical table is sufficient.
+  continues. ``reference`` disables the target permission check, so read-only
+  access to the physical table is sufficient.
 
   Args:
     ctx: the naming.Context holding the naming coordinates for this run.
@@ -681,7 +661,7 @@ def _emit_materializes_to(
       link (the datasets known to live in the import location).
 
   Returns:
-    A list of represents (physical) EntryLink records.
+    A list of physical ``reference`` EntryLink records.
   """
   out: list[EntryLinkRecord] = []
   for uid, node in (manifest.get(_NODES) or {}).items():
@@ -700,7 +680,7 @@ def _emit_materializes_to(
     out.append(
         _entry_link(
             ctx,
-            'materializes_to',
+            naming.REFERENCE_LINK_TYPE,
             ctx.entry_name(d_id),
             _get_bigquery_entry_name(
                 ctx.eg_location, database, schema, table
@@ -716,7 +696,7 @@ def build_entry_links(
     known_ids: set[str],
     linkable_datasets: set[tuple[str, str]] | None = None,
 ) -> list[EntryLinkRecord]:
-  """Builds all EntryLink records (lineage + semantic edges).
+  """Builds all EntryLink records (data-flow + metadata edges).
 
   NOTE: only called when include_entry_links=True.
 
@@ -725,23 +705,20 @@ def build_entry_links(
     manifest: the parsed dbt manifest.json.
     known_ids: the set of Dataplex entry ids the transform emitted; edges that
       reference an id outside this set are dropped.
-    linkable_datasets: the BigQuery (database, schema) datasets to emit
-      represents (physical) links for -- those known to live in the import
-      location (@bigquery entries are named there, as entry links are
-      same-region). When None, no physical links are emitted.
+    linkable_datasets: the BigQuery (database, schema) datasets to emit physical
+      ``reference`` links for -- those known to live in the import location
+      (@bigquery entries are named there, as entry links are same-region). When
+      None, no physical links are emitted.
 
   Returns:
-    A list of EntryLink records for the resolvable lineage / semantic edges.
+    A list of EntryLink records for the resolvable edges.
   """
   links: list[EntryLinkRecord] = []
-  links.extend(_emit_depends_on(ctx, manifest, known_ids))
-  links.extend(_emit_consumed_by(ctx, manifest, known_ids))
-  links.extend(_emit_defines_semantics_for(ctx, manifest, known_ids))
-  links.extend(_emit_derives_from(ctx, manifest, known_ids))
+  links.extend(_emit_dependencies(ctx, manifest, known_ids))
   # TODO(b/546009331): Implement schema-join emission once the backend-side
   # issue is resolved.
   if linkable_datasets is not None:
     links.extend(
-        _emit_materializes_to(ctx, manifest, known_ids, linkable_datasets)
+        _emit_physical_reference(ctx, manifest, known_ids, linkable_datasets)
     )
   return links

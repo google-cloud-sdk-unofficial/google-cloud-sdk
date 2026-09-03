@@ -857,6 +857,33 @@ class StorageV2(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+    def CreateAuthSession(self, request, global_params=None):
+      r"""Establishes an auth session for high-performance reading/writing.
+
+      Args:
+        request: (StorageProjectsBucketsCreateAuthSessionRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (CreateAuthSessionResponse) The response message.
+      """
+      config = self.GetMethodConfig('CreateAuthSession')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    CreateAuthSession.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/buckets/{bucketsId}:createAuthSession',
+        http_method='POST',
+        method_id='storage.projects.buckets.createAuthSession',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=[],
+        relative_path='v2/{+resource}:createAuthSession',
+        request_field='createAuthSessionRequest',
+        request_type_name='StorageProjectsBucketsCreateAuthSessionRequest',
+        response_type_name='CreateAuthSessionResponse',
+        supports_download=False,
+    )
+
     def GetReplicationStatus(self, request, global_params=None):
       r"""Returns the replication status for a given dual-region bucket.
 

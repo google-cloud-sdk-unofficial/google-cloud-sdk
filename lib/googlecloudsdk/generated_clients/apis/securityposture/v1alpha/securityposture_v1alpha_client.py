@@ -986,6 +986,33 @@ class SecuritypostureV1alpha(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+    def Get(self, request, global_params=None):
+      r"""Gets information about a location.
+
+      Args:
+        request: (SecuritypostureOrganizationsLocationsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Location) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/organizations/{organizationsId}/locations/{locationsId}',
+        http_method='GET',
+        method_id='securityposture.organizations.locations.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='SecuritypostureOrganizationsLocationsGetRequest',
+        response_type_name='Location',
+        supports_download=False,
+    )
+
     def GetIacValidationFailureCriteria(self, request, global_params=None):
       r"""Gets the IaCValidationFailureCriteria singleton resource.
 
@@ -1037,6 +1064,33 @@ class SecuritypostureV1alpha(base_api.BaseApiClient):
         request_field='',
         request_type_name='SecuritypostureOrganizationsLocationsGetIacValidationReportMetricsRequest',
         response_type_name='IaCValidationReportMetrics',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists information about the supported locations for this service. This method lists locations based on the resource scope provided in the ListLocationsRequest.name field: * **Global locations**: If `name` is empty, the method lists the public locations available to all projects. * **Project-specific locations**: If `name` follows the format `projects/{project}`, the method lists locations visible to that specific project. This includes public, private, or other project-specific locations enabled for the project. For gRPC and client library implementations, the resource name is passed as the `name` field. For direct service calls, the resource name is incorporated into the request path based on the specific service implementation and version.
+
+      Args:
+        request: (SecuritypostureOrganizationsLocationsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListLocationsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/organizations/{organizationsId}/locations',
+        http_method='GET',
+        method_id='securityposture.organizations.locations.list',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['extraLocationTypes', 'filter', 'includeUnrevealedLocations', 'pageSize', 'pageToken'],
+        relative_path='v1alpha/{+name}/locations',
+        request_field='',
+        request_type_name='SecuritypostureOrganizationsLocationsListRequest',
+        response_type_name='ListLocationsResponse',
         supports_download=False,
     )
 

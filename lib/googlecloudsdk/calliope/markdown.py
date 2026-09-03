@@ -23,6 +23,7 @@ import textwrap
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import usage_text
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.universe_descriptor import universe_descriptor
@@ -916,7 +917,8 @@ class MarkdownGenerator(six.with_metaclass(abc.ABCMeta, object)):
       disable_header: Disable printing the section header if True.
     """
     excluded_sections = set(
-        self._final_sections + ['NOTES', 'UNIVERSE ADDITIONAL INFO']
+        self._final_sections
+        + ['NOTES', 'UNIVERSE ADDITIONAL INFO']
     )
     for section in sorted(self._sections):
       if section.isupper() and section not in excluded_sections:
@@ -1227,14 +1229,16 @@ class CommandMarkdownGenerator(MarkdownGenerator):
     _subgroups: The dict of subgroup help indexed by subcommand name.
   """
 
-  def __init__(self, command):
+  def __init__(self, command, style='text'):
     """Constructor.
 
     Args:
       command: A calliope._CommandCommon instance. Help is extracted from this
         calliope command, group or topic.
+      style: The target render style.
     """
     self._command = command
+    self._style = style
     command.LoadAllSubElements()
     # pylint: disable=protected-access
     self._root_command = command._TopCLIElement()
@@ -1257,9 +1261,47 @@ class CommandMarkdownGenerator(MarkdownGenerator):
       # Fail gracefully if we cannot resolve the guidance.
       pass
 
+    self._AddProjectionKeysSection()
+
     self._subcommands = command.GetSubCommandHelps()
     self._subgroups = command.GetSubGroupHelps()
     self._sort_top_level_args = command.ai.sort_args
+
+  def _AddProjectionKeysSection(self) -> None:
+    """Appends PROJECTION KEYS section to help document if verifiable."""
+    if self._style != 'projections':
+      return
+    try:
+      # pylint: disable=g-import-not-at-top
+      from googlecloudsdk.core.resource import resource_schema
+
+      response_type = resource_schema.GetCommandResponseSchema(self._command)
+      if not response_type:
+        return
+
+      schema_text = resource_schema.FormatNormalizedSchema(response_type)
+      if not schema_text:
+        return
+
+      self._sections['PROJECTION KEYS'] = (
+          'Available fields for *--filter* and *--format* flags. Do not include'
+          ' top-level message names in key paths (use `displayName`, not'
+          ' `Workstation.displayName`).\n\nExamples:\n  * Table: '
+          ' *--format="table(field1, field2.subField)"*\n  * Filter:'
+          ' *--filter="field1:value AND field2.subField=value"*\n\nFor more'
+          ' details, see:\n  * [gcloud topic'
+          ' filters](https://cloud.google.com/sdk/gcloud/reference/topic/filters)\n'
+          '  * [gcloud topic'
+          ' formats](https://cloud.google.com/sdk/gcloud/reference/topic/formats)\n\n```\n'
+          + schema_text
+          + '\n```\n'
+      )
+    except Exception as e:  # pylint: disable=broad-except
+      log.debug(
+          'Failed to add PROJECTION KEYS section for command [%s]: %s',
+          self._command,
+          e,
+      )
 
   def _SetSectionHelp(self, name, lines):
     """Sets section name help composed of lines.
@@ -1304,13 +1346,14 @@ class CommandMarkdownGenerator(MarkdownGenerator):
     return self._command.GetNotesHelpSection(self._sections.get('NOTES'))
 
 
-def Markdown(command):
+def Markdown(command, style='text'):
   """Generates and returns the help markdown document for command.
 
   Args:
     command: The CommandCommon command instance.
+    style: The target render style.
 
   Returns:
     The markdown document string.
   """
-  return CommandMarkdownGenerator(command).Generate()
+  return CommandMarkdownGenerator(command, style=style).Generate()

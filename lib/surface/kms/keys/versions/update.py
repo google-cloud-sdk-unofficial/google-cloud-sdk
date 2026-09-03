@@ -20,17 +20,23 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kms import exceptions as kms_exceptions
 from googlecloudsdk.command_lib.kms import flags
 from googlecloudsdk.command_lib.kms import maps
+from googlecloudsdk.core import properties
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   r"""Update a key version.
 
-  {command} can be used to update the key versions. Updates can be made to the
-  the key versions's state (enabling or disabling it), to its external key
-  URI (if the key version has protection level EXTERNAL), or to its ekm
-  connection key path (if the key version has protection level EXTERNAL_VPC).
+  {command} can be used to update the key versions. For keys of any protection
+  level, you can update the key version's state to enable or disable it.
+
+  For external keys, you can update the protection level to transition between
+  the `external` and `external-vpc` protection levels. For key versions with the
+  `external` protection level, you can also update the external key URI. For key
+  versions with the `external-vpc` protection level, you can also update the
+  ekm connection key path or the crypto key backend.
 
   ## EXAMPLES
 
@@ -65,14 +71,41 @@ class Update(base.UpdateCommand):
                   --keyring=fellowship \
                   --key=bilbo \
                   --ekm-connection-key-path=v0/some/key/path
+
+  The following command updates the protection level to `external` and
+  the external key URI of version 8 of key `frodo` within keyring
+  `fellowship` and location `us-east1`:
+
+    $ {command} 8 --location=us-east1 \
+                  --keyring=fellowship \
+                  --key=frodo \
+                  --protection-level=external \
+                  --external-key-uri=https://example.kms/v0/some/key/path
+
+  The following command updates the protection level to `external-vpc`, sets the
+  crypto key backend, and sets the ekm connection key path of version 8 of key
+  `bilbo` within keyring `fellowship` and location `us-east1`:
+
+    $ {command} 8 --location=us-east1 \
+                  --keyring=fellowship \
+                  --key=bilbo \
+                  --protection-level=external-vpc \
+                  --crypto-key-backend="projects/$(gcloud config get project)/locations/us-east1/ekmConnections/eagles" \
+                  --ekm-connection-key-path=v0/some/key/path
   """
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     flags.AddKeyVersionResourceArgument(parser, 'to describe')
     flags.AddExternalKeyUriFlag(parser)
-    flags.AddEkmConnectionKeyPathFlag(parser)
+    flags.AddCryptoKeyVersionEkmConnectionKeyPathFlag(parser)
     flags.AddStateFlag(parser)
+    if properties.IsDefaultUniverse() and cls.ReleaseTrack() in [
+        base.ReleaseTrack.ALPHA,
+        base.ReleaseTrack.BETA,
+    ]:
+      flags.AddCryptoKeyVersionProtectionLevelFlag(parser)
+      flags.AddCryptoKeyVersionBackendFlag(parser)
 
   def ProcessFlags(self, args):
     fields_to_update = []
@@ -84,12 +117,20 @@ class Update(base.UpdateCommand):
           'externalProtectionLevelOptions.ekmConnectionKeyPath')
     if args.state:
       fields_to_update.append('state')
+    if getattr(args, 'protection_level', None):
+      fields_to_update.append('protectionLevel')
+    if getattr(args, 'crypto_key_backend', None):
+      fields_to_update.append(
+          'externalProtectionLevelOptions.ekmConnectionBackendOverride'
+      )
 
     # Raise an exception when no update field is specified.
     if not fields_to_update:
       raise kms_exceptions.UpdateError(
           'An error occurred: --external-key-uri or --ekm-connection-key-path'
-          ' or --state must be specified.')
+          ' or --state or --protection-level or --crypto-key-backend must be'
+          ' specified.'
+      )
 
     return fields_to_update
 
@@ -97,33 +138,56 @@ class Update(base.UpdateCommand):
     # pylint: disable=line-too-long
     version_ref = flags.ParseCryptoKeyVersionName(args)
 
+    protection_level = None
+    if getattr(args, 'protection_level', None):
+      protection_level = (
+          messages.CryptoKeyVersion.ProtectionLevelValueValuesEnum.lookup_by_name(
+              args.protection_level.upper().replace('-', '_')
+          )
+      )
+
     req = messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsPatchRequest(
         name=version_ref.RelativeName(),
         cryptoKeyVersion=messages.CryptoKeyVersion(
             state=maps.CRYPTO_KEY_VERSION_STATE_MAPPER.GetEnumForChoice(
-                args.state),
-            externalProtectionLevelOptions=messages
-            .ExternalProtectionLevelOptions(
+                args.state
+            ),
+            protectionLevel=protection_level,
+            externalProtectionLevelOptions=messages.ExternalProtectionLevelOptions(
                 externalKeyUri=args.external_key_uri,
-                ekmConnectionKeyPath=args.ekm_connection_key_path)))
+                ekmConnectionKeyPath=args.ekm_connection_key_path,
+                ekmConnectionBackendOverride=getattr(
+                    args, 'crypto_key_backend', None
+                ),
+            ),
+        ),
+    )
 
     req.updateMask = ','.join(fields_to_update)
 
     return req
 
-  def CheckKeyIsExternal(self, key_version, messages):
-    if (key_version.protectionLevel !=
-        messages.CryptoKeyVersion.ProtectionLevelValueValuesEnum.EXTERNAL):
+  def CheckKeyIsExternal(self, key_version, messages, protection_level):
+    if (
+        key_version.protectionLevel
+        != messages.CryptoKeyVersion.ProtectionLevelValueValuesEnum.EXTERNAL
+        and protection_level != 'external'
+    ):
       raise kms_exceptions.UpdateError(
           'External key URI updates are only available for key versions '
-          'with EXTERNAL protection level')
+          'with EXTERNAL protection level'
+      )
 
-  def CheckKeyIsExternalVpc(self, key_version, messages):
-    if (key_version.protectionLevel !=
-        messages.CryptoKeyVersion.ProtectionLevelValueValuesEnum.EXTERNAL_VPC):
+  def CheckKeyIsExternalVpc(self, key_version, messages, protection_level):
+    if (
+        key_version.protectionLevel
+        != messages.CryptoKeyVersion.ProtectionLevelValueValuesEnum.EXTERNAL_VPC
+        and protection_level != 'external-vpc'
+    ):
       raise kms_exceptions.UpdateError(
           'EkmConnection key path updates are only available for key versions '
-          'with EXTERNAL_VPC protection level')
+          'with EXTERNAL_VPC protection level'
+      )
 
   def Run(self, args):
     # pylint: disable=line-too-long
@@ -139,12 +203,15 @@ class Update(base.UpdateCommand):
         .CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsGetRequest(
             name=version_ref.RelativeName()))
 
+    protection_level = getattr(args, 'protection_level', None)
+    crypto_key_backend = getattr(args, 'crypto_key_backend', None)
+
     # Check that this key version's ProtectionLevel is EXTERNAL
     if args.external_key_uri:
-      self.CheckKeyIsExternal(key_version, messages)
+      self.CheckKeyIsExternal(key_version, messages, protection_level)
 
-    if args.ekm_connection_key_path:
-      self.CheckKeyIsExternalVpc(key_version, messages)
+    if args.ekm_connection_key_path or crypto_key_backend:
+      self.CheckKeyIsExternalVpc(key_version, messages, protection_level)
 
     # Make update request
     update_req = self.CreateRequest(args, messages, fields_to_update)

@@ -14,11 +14,9 @@
 # limitations under the License.
 """Command to delete a Cloud FTP server."""
 
-from googlecloudsdk.api_lib.storage import ftp
+from googlecloudsdk.api_lib.storage import ftp_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage.ftp import operations_util
-from googlecloudsdk.command_lib.storage.ftp import servers_util
-from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
@@ -50,14 +48,7 @@ class Delete(base.Command):
         'SERVER_ID',
         help='The ID of the FTP server to delete.',
     )
-    parser.add_argument(
-        '--async',
-        action='store_true',
-        dest='async_',
-        help=(
-            'Return immediately, without waiting for the operation to complete.'
-        ),
-    )
+
     parser.add_argument(
         '--location',
         required=True,
@@ -72,20 +63,11 @@ class Delete(base.Command):
         cancel_on_no=True,
     )
 
-    client = ftp.FtpClient()
-    server_name = servers_util.GetServerResourceName(
-        args.location, args.SERVER_ID
-    )
-
-    op = client.DeleteServer(server_name)
-
-    if args.async_:
-      log.status.Print('Delete request issued for: [{}]'.format(args.SERVER_ID))
-      log.status.Print('Check operation [{}] for status.'.format(op.name))
-      return op
+    client = ftp_api.FtpApi()
+    op = client.DeleteServer(args.location, args.SERVER_ID)
 
     op_ref = operations_util.GetOperationRef(op.name)
-    return operations_util.WaitForOperation(
+    client.WaitForOperation(
         op_ref,
         'Waiting for server [{}] to be deleted'.format(args.SERVER_ID),
         result_service=None,

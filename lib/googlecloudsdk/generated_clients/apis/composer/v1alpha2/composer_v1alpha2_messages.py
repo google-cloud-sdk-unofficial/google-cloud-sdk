@@ -297,9 +297,10 @@ class ComposerProjectsLocationsEnvironmentsDagsDagRunsListRequest(_messages.Mess
       '-', the response will contain the runs of all DAGs.
     runsCountPerDag: Optional. If set to value greater than 0, the cross-DAG
       list mode will be used and response will contain the specified number of
-      last DAG runs for selected DAGs. Pagination is not supported if this
-      field is set. Sort order is descending by DAG run execution_date if this
-      field is set. Filter is supported.
+      last DAG runs for selected DAGs. If this field is set to a value greater
+      than 0: * effective `page_size` needs to be at least as large as
+      `runs_count_per_dag`. * The order of the returned DAG runs is
+      unspecified. * `filter` is supported.
   """
 
   filter = _messages.StringField(1)
@@ -1952,7 +1953,7 @@ class ListImportErrorsResponse(_messages.Message):
   r"""Response to `ListImportErrorsRequest`.
 
   Fields:
-    importErrors: List of DAGs with statistics.
+    importErrors: List of import errors.
     nextPageToken: The page token used to query for the next page if one
       exists.
   """

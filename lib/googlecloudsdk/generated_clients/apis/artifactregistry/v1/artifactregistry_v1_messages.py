@@ -4513,13 +4513,31 @@ class Version(_messages.Message):
 class VirtualRepositoryConfig(_messages.Message):
   r"""Virtual repository configuration.
 
+  Enums:
+    MergeStrategyValueValuesEnum: Optional. Merge strategy for the Virtual
+      Repository.
+
   Fields:
+    mergeStrategy: Optional. Merge strategy for the Virtual Repository.
     upstreamPolicies: Policies that configure the upstream artifacts
       distributed by the Virtual Repository. Upstream policies cannot be set
       on a standard repository.
   """
 
-  upstreamPolicies = _messages.MessageField('UpstreamPolicy', 1, repeated=True)
+  class MergeStrategyValueValuesEnum(_messages.Enum):
+    r"""Optional. Merge strategy for the Virtual Repository.
+
+    Values:
+      MERGE_STRATEGY_UNSPECIFIED: Default. Merges results from all upstreams
+        (legacy behavior).
+      DEPENDENCY_CONFUSION_PROTECTION: Uses ReadFirst strategy - returns
+        results only from the highest-priority upstream that has a match.
+    """
+    MERGE_STRATEGY_UNSPECIFIED = 0
+    DEPENDENCY_CONFUSION_PROTECTION = 1
+
+  mergeStrategy = _messages.EnumField('MergeStrategyValueValuesEnum', 1)
+  upstreamPolicies = _messages.MessageField('UpstreamPolicy', 2, repeated=True)
 
 
 class VulnerabilityScanningConfig(_messages.Message):

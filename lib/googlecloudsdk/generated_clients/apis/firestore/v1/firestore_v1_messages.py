@@ -594,6 +594,7 @@ class Empty(_messages.Message):
   """
 
 
+
 class ExecutePipelineRequest(_messages.Message):
   r"""The request for Firestore.ExecutePipeline.
 
@@ -1426,6 +1427,27 @@ class FirestoreProjectsDatabasesDocumentsCreateDocumentRequest(_messages.Message
       `projects/{project_id}/databases/{database_id}/documents` or `projects/{
       project_id}/databases/{database_id}/documents/chatrooms/{chatroom_id}`
     requestOptions_requestTags: Optional. The request tags for the request.
+      Request tags are user-provided strings used for usage monitoring, cost
+      management, and observability. Callers can associate custom application
+      context (such as component, microservice, feature name, or operation
+      type) with database requests. These tags are collected and aggregated in
+      usage and monitoring reports, allowing billable operations and usage
+      metrics to be sliced and analyzed by tag. These tags *only* show up in
+      monitoring and are visible in administrative operations (such as usage
+      reports). They do not affect data storage, query semantics, or request
+      execution. Cardinality and Best Practices: - Request tags are most
+      effective when using a bounded set of distinct values (e.g., fewer than
+      100 distinct tags across an entire database). Using a large number of
+      distinct tags may result in tags being omitted from top usage
+      dashboards. - Use structured identifiers (for example: `app=cart`,
+      `env=prod`, `service=checkout`) and avoid high-cardinality values such
+      as UUIDs, request IDs, timestamps, user IDs, or document keys. - Do not
+      include sensitive data or personally identifiable information (PII) in
+      request tags, as they show up in administrative monitoring. The tags are
+      processed as follows: - Leading and trailing whitespace is trimmed. -
+      Empty tags (after trimming) are filtered out. - Truncated to a maximum
+      of 510 characters. - Deduplicated within the same request. - Limited to
+      a maximum of 50 tags per request (excess tags are silently discarded).
   """
 
   collectionId = _messages.StringField(1, required=True)
@@ -1449,6 +1471,27 @@ class FirestoreProjectsDatabasesDocumentsDeleteRequest(_messages.Message):
       format: `projects/{project_id}/databases/{database_id}/documents/{docume
       nt_path}`.
     requestOptions_requestTags: Optional. The request tags for the request.
+      Request tags are user-provided strings used for usage monitoring, cost
+      management, and observability. Callers can associate custom application
+      context (such as component, microservice, feature name, or operation
+      type) with database requests. These tags are collected and aggregated in
+      usage and monitoring reports, allowing billable operations and usage
+      metrics to be sliced and analyzed by tag. These tags *only* show up in
+      monitoring and are visible in administrative operations (such as usage
+      reports). They do not affect data storage, query semantics, or request
+      execution. Cardinality and Best Practices: - Request tags are most
+      effective when using a bounded set of distinct values (e.g., fewer than
+      100 distinct tags across an entire database). Using a large number of
+      distinct tags may result in tags being omitted from top usage
+      dashboards. - Use structured identifiers (for example: `app=cart`,
+      `env=prod`, `service=checkout`) and avoid high-cardinality values such
+      as UUIDs, request IDs, timestamps, user IDs, or document keys. - Do not
+      include sensitive data or personally identifiable information (PII) in
+      request tags, as they show up in administrative monitoring. The tags are
+      processed as follows: - Leading and trailing whitespace is trimmed. -
+      Empty tags (after trimming) are filtered out. - Truncated to a maximum
+      of 510 characters. - Deduplicated within the same request. - Limited to
+      a maximum of 50 tags per request (excess tags are silently discarded).
   """
 
   currentDocument_exists = _messages.BooleanField(1)
@@ -1485,6 +1528,27 @@ class FirestoreProjectsDatabasesDocumentsGetRequest(_messages.Message):
       Point-in-Time Recovery is enabled, can additionally be a whole minute
       timestamp within the past 7 days.
     requestOptions_requestTags: Optional. The request tags for the request.
+      Request tags are user-provided strings used for usage monitoring, cost
+      management, and observability. Callers can associate custom application
+      context (such as component, microservice, feature name, or operation
+      type) with database requests. These tags are collected and aggregated in
+      usage and monitoring reports, allowing billable operations and usage
+      metrics to be sliced and analyzed by tag. These tags *only* show up in
+      monitoring and are visible in administrative operations (such as usage
+      reports). They do not affect data storage, query semantics, or request
+      execution. Cardinality and Best Practices: - Request tags are most
+      effective when using a bounded set of distinct values (e.g., fewer than
+      100 distinct tags across an entire database). Using a large number of
+      distinct tags may result in tags being omitted from top usage
+      dashboards. - Use structured identifiers (for example: `app=cart`,
+      `env=prod`, `service=checkout`) and avoid high-cardinality values such
+      as UUIDs, request IDs, timestamps, user IDs, or document keys. - Do not
+      include sensitive data or personally identifiable information (PII) in
+      request tags, as they show up in administrative monitoring. The tags are
+      processed as follows: - Leading and trailing whitespace is trimmed. -
+      Empty tags (after trimming) are filtered out. - Truncated to a maximum
+      of 510 characters. - Deduplicated within the same request. - Limited to
+      a maximum of 50 tags per request (excess tags are silently discarded).
     transaction: Reads the document in a transaction.
   """
 
@@ -1551,6 +1615,27 @@ class FirestoreProjectsDatabasesDocumentsListDocumentsRequest(_messages.Message)
       Firestore will only list documents nested immediately under the parent.
       Requests with `recursive` may not specify `show_missing`.
     requestOptions_requestTags: Optional. The request tags for the request.
+      Request tags are user-provided strings used for usage monitoring, cost
+      management, and observability. Callers can associate custom application
+      context (such as component, microservice, feature name, or operation
+      type) with database requests. These tags are collected and aggregated in
+      usage and monitoring reports, allowing billable operations and usage
+      metrics to be sliced and analyzed by tag. These tags *only* show up in
+      monitoring and are visible in administrative operations (such as usage
+      reports). They do not affect data storage, query semantics, or request
+      execution. Cardinality and Best Practices: - Request tags are most
+      effective when using a bounded set of distinct values (e.g., fewer than
+      100 distinct tags across an entire database). Using a large number of
+      distinct tags may result in tags being omitted from top usage
+      dashboards. - Use structured identifiers (for example: `app=cart`,
+      `env=prod`, `service=checkout`) and avoid high-cardinality values such
+      as UUIDs, request IDs, timestamps, user IDs, or document keys. - Do not
+      include sensitive data or personally identifiable information (PII) in
+      request tags, as they show up in administrative monitoring. The tags are
+      processed as follows: - Leading and trailing whitespace is trimmed. -
+      Empty tags (after trimming) are filtered out. - Truncated to a maximum
+      of 510 characters. - Deduplicated within the same request. - Limited to
+      a maximum of 50 tags per request (excess tags are silently discarded).
     showMissing: If the list should show missing documents. A document is
       missing if it does not exist, but there are sub-documents nested
       underneath it. When true, such missing documents will be returned with a
@@ -1610,6 +1695,27 @@ class FirestoreProjectsDatabasesDocumentsListRequest(_messages.Message):
       Firestore will only list documents nested immediately under the parent.
       Requests with `recursive` may not specify `show_missing`.
     requestOptions_requestTags: Optional. The request tags for the request.
+      Request tags are user-provided strings used for usage monitoring, cost
+      management, and observability. Callers can associate custom application
+      context (such as component, microservice, feature name, or operation
+      type) with database requests. These tags are collected and aggregated in
+      usage and monitoring reports, allowing billable operations and usage
+      metrics to be sliced and analyzed by tag. These tags *only* show up in
+      monitoring and are visible in administrative operations (such as usage
+      reports). They do not affect data storage, query semantics, or request
+      execution. Cardinality and Best Practices: - Request tags are most
+      effective when using a bounded set of distinct values (e.g., fewer than
+      100 distinct tags across an entire database). Using a large number of
+      distinct tags may result in tags being omitted from top usage
+      dashboards. - Use structured identifiers (for example: `app=cart`,
+      `env=prod`, `service=checkout`) and avoid high-cardinality values such
+      as UUIDs, request IDs, timestamps, user IDs, or document keys. - Do not
+      include sensitive data or personally identifiable information (PII) in
+      request tags, as they show up in administrative monitoring. The tags are
+      processed as follows: - Leading and trailing whitespace is trimmed. -
+      Empty tags (after trimming) are filtered out. - Truncated to a maximum
+      of 510 characters. - Deduplicated within the same request. - Limited to
+      a maximum of 50 tags per request (excess tags are silently discarded).
     showMissing: If the list should show missing documents. A document is
       missing if it does not exist, but there are sub-documents nested
       underneath it. When true, such missing documents will be returned with a
@@ -1676,6 +1782,27 @@ class FirestoreProjectsDatabasesDocumentsPatchRequest(_messages.Message):
       `projects/{project_id}/databases/{database_id}/documents/{document_path}
       `.
     requestOptions_requestTags: Optional. The request tags for the request.
+      Request tags are user-provided strings used for usage monitoring, cost
+      management, and observability. Callers can associate custom application
+      context (such as component, microservice, feature name, or operation
+      type) with database requests. These tags are collected and aggregated in
+      usage and monitoring reports, allowing billable operations and usage
+      metrics to be sliced and analyzed by tag. These tags *only* show up in
+      monitoring and are visible in administrative operations (such as usage
+      reports). They do not affect data storage, query semantics, or request
+      execution. Cardinality and Best Practices: - Request tags are most
+      effective when using a bounded set of distinct values (e.g., fewer than
+      100 distinct tags across an entire database). Using a large number of
+      distinct tags may result in tags being omitted from top usage
+      dashboards. - Use structured identifiers (for example: `app=cart`,
+      `env=prod`, `service=checkout`) and avoid high-cardinality values such
+      as UUIDs, request IDs, timestamps, user IDs, or document keys. - Do not
+      include sensitive data or personally identifiable information (PII) in
+      request tags, as they show up in administrative monitoring. The tags are
+      processed as follows: - Leading and trailing whitespace is trimmed. -
+      Empty tags (after trimming) are filtered out. - Truncated to a maximum
+      of 510 characters. - Deduplicated within the same request. - Limited to
+      a maximum of 50 tags per request (excess tags are silently discarded).
     updateMask_fieldPaths: The list of field paths in the mask. See
       Document.fields for a field path syntax reference.
   """
@@ -2499,6 +2626,7 @@ class GoogleFirestoreAdminV1DailyRecurrence(_messages.Message):
   """
 
 
+
 class GoogleFirestoreAdminV1Database(_messages.Message):
   r"""A Cloud Firestore Database.
 
@@ -2640,9 +2768,8 @@ class GoogleFirestoreAdminV1Database(_messages.Message):
     DISABLED = 2
 
   class ConcurrencyModeValueValuesEnum(_messages.Enum):
-    r"""The default concurrency control mode to use for this database.
-
-    If unspecified in a CreateDatabase request, this will default based on the
+    r"""The default concurrency control mode to use for this database. If
+    unspecified in a CreateDatabase request, this will default based on the
     database edition: Optimistic for Enterprise and Pessimistic for all other
     databases. While transactions can explicitly specify their own concurrency
     mode, this setting defines the default behavior when left unspecified.
@@ -2697,7 +2824,6 @@ class GoogleFirestoreAdminV1Database(_messages.Message):
 
   class FirestoreDataAccessModeValueValuesEnum(_messages.Enum):
     r"""Optional. The Firestore API data access mode to use for this database.
-
     If not set on write: - the default value is DATA_ACCESS_MODE_DISABLED for
     Enterprise edition. - the default value is DATA_ACCESS_MODE_ENABLED for
     Standard edition.
@@ -2714,11 +2840,10 @@ class GoogleFirestoreAdminV1Database(_messages.Message):
     DATA_ACCESS_MODE_DISABLED = 2
 
   class MongodbCompatibleDataAccessModeValueValuesEnum(_messages.Enum):
-    r"""Optional.
-
-    The MongoDB compatible API data access mode to use for this database. If not
-    set on write, the default value is DATA_ACCESS_MODE_ENABLED for Enterprise
-    edition. The value is always DATA_ACCESS_MODE_DISABLED for Standard edition.
+    r"""Optional. The MongoDB compatible API data access mode to use for this
+    database. If not set on write, the default value is
+    DATA_ACCESS_MODE_ENABLED for Enterprise edition. The value is always
+    DATA_ACCESS_MODE_DISABLED for Standard edition.
 
     Values:
       DATA_ACCESS_MODE_UNSPECIFIED: Not Used.
@@ -2819,17 +2944,11 @@ class GoogleFirestoreAdminV1Database(_messages.Message):
   freeTierLimited = _messages.BooleanField(12)
   keyPrefix = _messages.StringField(13)
   locationId = _messages.StringField(14)
-  mongodbCompatibleDataAccessMode = _messages.EnumField(
-      'MongodbCompatibleDataAccessModeValueValuesEnum', 15
-  )
+  mongodbCompatibleDataAccessMode = _messages.EnumField('MongodbCompatibleDataAccessModeValueValuesEnum', 15)
   name = _messages.StringField(16)
-  pointInTimeRecoveryEnablement = _messages.EnumField(
-      'PointInTimeRecoveryEnablementValueValuesEnum', 17
-  )
+  pointInTimeRecoveryEnablement = _messages.EnumField('PointInTimeRecoveryEnablementValueValuesEnum', 17)
   previousId = _messages.StringField(18)
-  realtimeUpdatesMode = _messages.EnumField(
-      'RealtimeUpdatesModeValueValuesEnum', 19
-  )
+  realtimeUpdatesMode = _messages.EnumField('RealtimeUpdatesModeValueValuesEnum', 19)
   sourceInfo = _messages.MessageField('GoogleFirestoreAdminV1SourceInfo', 20)
   tags = _messages.MessageField('TagsValue', 21)
   type = _messages.EnumField('TypeValueValuesEnum', 22)
@@ -2843,6 +2962,7 @@ class GoogleFirestoreAdminV1DatabaseScope(_messages.Message):
   database are visible to the Change Stream. One Database scope Change Stream
   is allowed per database.
   """
+
 
 
 class GoogleFirestoreAdminV1DeleteDatabaseMetadata(_messages.Message):
@@ -3076,6 +3196,7 @@ class GoogleFirestoreAdminV1FlatIndex(_messages.Message):
   """
 
 
+
 class GoogleFirestoreAdminV1GoogleDefaultEncryptionOptions(_messages.Message):
   r"""The configuration options for using Google default encryption."""
 
@@ -3158,7 +3279,6 @@ class GoogleFirestoreAdminV1ImportDocumentsRequest(_messages.Message):
 
 class GoogleFirestoreAdminV1Index(_messages.Message):
   r"""Cloud Firestore indexes enable simple and complex queries against
-
   documents in a database. In Standard edition databases, single-field indexes
   are managed using the google.firestore.admin.v1.Field resource, and
   composite indexes are managed using the google.firestore.admin.v1.Index
@@ -3843,6 +3963,7 @@ class GoogleFirestoreAdminV1SourceEncryptionOptions(_messages.Message):
   """
 
 
+
 class GoogleFirestoreAdminV1SourceInfo(_messages.Message):
   r"""Information about the provenance of this database.
 
@@ -3981,7 +4102,6 @@ class GoogleFirestoreAdminV1UpdateDatabaseMetadata(_messages.Message):
       CANCELLED: Request has finished being cancelled after user called
         google.longrunning.Operations.CancelOperation.
     """
-
     OPERATION_STATE_UNSPECIFIED = 0
     INITIALIZING = 1
     PROCESSING = 2
@@ -4729,7 +4849,28 @@ class RequestOptions(_messages.Message):
   r"""Options for a request.
 
   Fields:
-    requestTags: Optional. The request tags for the request.
+    requestTags: Optional. The request tags for the request. Request tags are
+      user-provided strings used for usage monitoring, cost management, and
+      observability. Callers can associate custom application context (such as
+      component, microservice, feature name, or operation type) with database
+      requests. These tags are collected and aggregated in usage and
+      monitoring reports, allowing billable operations and usage metrics to be
+      sliced and analyzed by tag. These tags *only* show up in monitoring and
+      are visible in administrative operations (such as usage reports). They
+      do not affect data storage, query semantics, or request execution.
+      Cardinality and Best Practices: - Request tags are most effective when
+      using a bounded set of distinct values (e.g., fewer than 100 distinct
+      tags across an entire database). Using a large number of distinct tags
+      may result in tags being omitted from top usage dashboards. - Use
+      structured identifiers (for example: `app=cart`, `env=prod`,
+      `service=checkout`) and avoid high-cardinality values such as UUIDs,
+      request IDs, timestamps, user IDs, or document keys. - Do not include
+      sensitive data or personally identifiable information (PII) in request
+      tags, as they show up in administrative monitoring. The tags are
+      processed as follows: - Leading and trailing whitespace is trimmed. -
+      Empty tags (after trimming) are filtered out. - Truncated to a maximum
+      of 510 characters. - Deduplicated within the same request. - Limited to
+      a maximum of 50 tags per request (excess tags are silently discarded).
   """
 
   requestTags = _messages.StringField(1, repeated=True)

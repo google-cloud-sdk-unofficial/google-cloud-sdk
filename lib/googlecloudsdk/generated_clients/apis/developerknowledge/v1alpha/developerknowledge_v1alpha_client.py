@@ -37,8 +37,46 @@ class DeveloperknowledgeV1alpha(base_api.BaseApiClient):
         default_global_params=default_global_params,
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
+    self.apiReferences = self.ApiReferencesService(self)
     self.documents = self.DocumentsService(self)
     self.v1alpha = self.V1alphaService(self)
+
+  class ApiReferencesService(base_api.BaseApiService):
+    """Service class for the apiReferences resource."""
+
+    _NAME = 'apiReferences'
+
+    def __init__(self, client):
+      super(DeveloperknowledgeV1alpha.ApiReferencesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Retrieves the reference data for an API symbol, such as a class or method.
+
+      Args:
+        request: (DeveloperknowledgeApiReferencesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ApiReference) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/apiReferences/{apiReferencesId}',
+        http_method='GET',
+        method_id='developerknowledge.apiReferences.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='DeveloperknowledgeApiReferencesGetRequest',
+        response_type_name='ApiReference',
+        supports_download=False,
+    )
 
   class DocumentsService(base_api.BaseApiService):
     """Service class for the documents resource."""
@@ -162,6 +200,32 @@ class DeveloperknowledgeV1alpha(base_api.BaseApiClient):
         request_field='<request>',
         request_type_name='AnswerQueryRequest',
         response_type_name='AnswerQueryResponse',
+        supports_download=False,
+    )
+
+    def Lookup(self, request, global_params=None):
+      r"""Retrieves multiple developer knowledge resources by name, such as documents or reference data for API symbols.
+
+      Args:
+        request: (DeveloperknowledgeLookupRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (LookupResponse) The response message.
+      """
+      config = self.GetMethodConfig('Lookup')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Lookup.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='developerknowledge.lookup',
+        ordered_params=[],
+        path_params=[],
+        query_params=['documentReadOptions_view', 'names'],
+        relative_path='v1alpha:lookup',
+        request_field='',
+        request_type_name='DeveloperknowledgeLookupRequest',
+        response_type_name='LookupResponse',
         supports_download=False,
     )
 

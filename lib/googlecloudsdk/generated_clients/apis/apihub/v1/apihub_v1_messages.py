@@ -2389,15 +2389,15 @@ class GoogleCloudApihubV1Api(_messages.Message):
 
   Fields:
     apiFunctionalRequirements: Optional. The api functional requirements
-      associated with the API resource. Carinality is 1 for this attribute.
+      associated with the API resource. Cardinality is 1 for this attribute.
       This maps to the following system defined attribute:
       `projects/{project}/locations/{location}/attributes/system-api-
       functional-requirements` attribute. The value of the attribute should be
       a proper URI, and in case of Cloud Storage URI, it should point to a
       Cloud Storage object, not a directory.
     apiRequirements: Optional. The api requirement doc associated with the API
-      resource. Carinality is 1 for this attribute. This maps to the following
-      system defined attribute:
+      resource. Cardinality is 1 for this attribute. This maps to the
+      following system defined attribute:
       `projects/{project}/locations/{location}/attributes/system-api-
       requirements` attribute. The value of the attribute should be a proper
       URI, and in case of Cloud Storage URI, it should point to a Cloud
@@ -2410,7 +2410,7 @@ class GoogleCloudApihubV1Api(_messages.Message):
       API. All values should be from the list of allowed values defined for
       the attribute.
     apiTechnicalRequirements: Optional. The api technical requirements
-      associated with the API resource. Carinality is 1 for this attribute.
+      associated with the API resource. Cardinality is 1 for this attribute.
       This maps to the following system defined attribute:
       `projects/{project}/locations/{location}/attributes/system-api-
       technical-requirements` attribute. The value of the attribute should be

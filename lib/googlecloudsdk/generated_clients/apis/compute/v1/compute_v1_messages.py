@@ -43153,12 +43153,14 @@ class ConfidentialInstanceConfig(_messages.Message):
       SEV: AMD Secure Encrypted Virtualization.
       SEV_SNP: AMD Secure Encrypted Virtualization - Secure Nested Paging.
       TDX: Intel Trust Domain eXtension.
+      BMSAI: Bare Metal Secure AI.
     """
     CCA = 0
     CONFIDENTIAL_INSTANCE_TYPE_UNSPECIFIED = 1
     SEV = 2
     SEV_SNP = 3
     TDX = 4
+    BMSAI = 5
 
   confidentialInstanceType = _messages.EnumField('ConfidentialInstanceTypeValueValuesEnum', 1)
   enableConfidentialCompute = _messages.BooleanField(2)
@@ -63325,6 +63327,8 @@ class Interconnect(_messages.Message):
       requested by the customer.
     satisfiesPzs: Output only. [Output Only] Reserved for future use.
     selfLink: Output only. [Output Only] Server-defined URL for the resource.
+    selfLinkWithId: Output only. Server-defined URL for this resource with the
+      resource id.
     state: Output only. [Output Only] The current state of Interconnect
       functionality, which can take one of the following values:        -
       ACTIVE: The Interconnect is valid, turned up and ready to use.
@@ -63508,9 +63512,10 @@ class Interconnect(_messages.Message):
   requestedLinkCount = _messages.IntegerField(32, variant=_messages.Variant.INT32)
   satisfiesPzs = _messages.BooleanField(33)
   selfLink = _messages.StringField(34)
-  state = _messages.EnumField('StateValueValuesEnum', 35)
-  subzone = _messages.EnumField('SubzoneValueValuesEnum', 36)
-  wireGroups = _messages.StringField(37, repeated=True)
+  selfLinkWithId = _messages.StringField(35)
+  state = _messages.EnumField('StateValueValuesEnum', 36)
+  subzone = _messages.EnumField('SubzoneValueValuesEnum', 37)
+  wireGroups = _messages.StringField(38, repeated=True)
 
 
 class InterconnectApplicationAwareInterconnect(_messages.Message):
@@ -66869,9 +66874,15 @@ class InterconnectLocationCrossSiteInterconnectInfo(_messages.Message):
     city: Output only. The remote location for Cross-Site Interconnect wires.
       This specifies an InterconnectLocation city (metropolitan area
       designator), which itself may match multiple InterconnectLocations.
+    maxDynamicPathBandwidthGbps: Output only. The maximum unmetered bandwidth
+      for dynamic paths allowable per WireGroup for this metro.
+    maxFixedPathBandwidthGbps: Output only. The maximum unmetered bandwidth
+      for fixed paths allowable per WireGroup for this metro.
   """
 
   city = _messages.StringField(1)
+  maxDynamicPathBandwidthGbps = _messages.IntegerField(2)
+  maxFixedPathBandwidthGbps = _messages.IntegerField(3)
 
 
 class InterconnectLocationList(_messages.Message):
@@ -69611,6 +69622,9 @@ class ManagedInstance(_messages.Message):
       process of being verified.
     InstanceStatusValueValuesEnum: Output only. [Output Only] The status of
       the instance. This field is empty when the instance does not exist.
+    TargetStatusValueValuesEnum: Output only. The eventual status of the
+      instance. The instance group manager will not be identified as stable
+      till each managed instance reaches its targetStatus.
 
   Fields:
     currentAction: Output only. [Output Only] The current action that the
@@ -69658,6 +69672,9 @@ class ManagedInstance(_messages.Message):
     shutdownDetails: Output only. Specifies the graceful shutdown details if
       the instance is in `PENDING_STOP` state or there is a programmed stop
       scheduled.
+    targetStatus: Output only. The eventual status of the instance. The
+      instance group manager will not be identified as stable till each
+      managed instance reaches its targetStatus.
     version: Output only. [Output Only] Intended version of this instance.
   """
 
@@ -69768,6 +69785,27 @@ class ManagedInstance(_messages.Message):
     SUSPENDING = 10
     TERMINATED = 11
 
+  class TargetStatusValueValuesEnum(_messages.Enum):
+    r"""Output only. The eventual status of the instance. The instance group
+    manager will not be identified as stable till each managed instance
+    reaches its targetStatus.
+
+    Values:
+      ABANDONED: The managed instance will eventually be ABANDONED, i.e.
+        dissociated from the managed instance group.
+      DELETED: The managed instance will eventually be DELETED.
+      INVALID: Only present to map the STATUS_INVALID value.
+      RUNNING: The managed instance will eventually reach status RUNNING.
+      STOPPED: The managed instance will eventually reach status TERMINATED.
+      SUSPENDED: The managed instance will eventually reach status SUSPENDED.
+    """
+    ABANDONED = 0
+    DELETED = 1
+    INVALID = 2
+    RUNNING = 3
+    STOPPED = 4
+    SUSPENDED = 5
+
   currentAction = _messages.EnumField('CurrentActionValueValuesEnum', 1)
   id = _messages.IntegerField(2, variant=_messages.Variant.UINT64)
   instance = _messages.StringField(3)
@@ -69780,7 +69818,8 @@ class ManagedInstance(_messages.Message):
   propertiesFromFlexibilityPolicy = _messages.MessageField('ManagedInstancePropertiesFromFlexibilityPolicy', 10)
   scheduling = _messages.MessageField('ManagedInstanceScheduling', 11)
   shutdownDetails = _messages.MessageField('ManagedInstanceShutdownDetails', 12)
-  version = _messages.MessageField('ManagedInstanceVersion', 13)
+  targetStatus = _messages.EnumField('TargetStatusValueValuesEnum', 13)
+  version = _messages.MessageField('ManagedInstanceVersion', 14)
 
 
 class ManagedInstanceInstanceHealth(_messages.Message):

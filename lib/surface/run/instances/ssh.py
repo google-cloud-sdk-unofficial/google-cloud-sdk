@@ -19,7 +19,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import ssh_command
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.Hidden
 @base.DefaultUniverseOnly
 class Ssh(ssh_command.BaseSshCommand):

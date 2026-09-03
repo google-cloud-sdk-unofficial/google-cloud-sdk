@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@
             arg_name: custom-oauth-config
             clearable: true
             required: false
-            hidden: true
             help_text: |-
               Message for a customized OAuth config.
             params:
@@ -61,6 +60,30 @@
                 Client secret of the OAuth application.
                 It will be provided as plain text, but encrypted and stored in developer
                 connect. As INPUT_ONLY field, it will not be included in the output.
+            - group:
+                api_field: accountConnector.customOauthConfig.serviceDirectoryConfig
+                required: false
+                help_text: |-
+                  ServiceDirectoryConfig represents Service Directory configuration for a
+                  connection.
+                params:
+                - arg_name: custom-oauth-config-service-directory
+                  help_text: |-
+                    The Service Directory service name.
+                    Format:
+                    projects/{project}/locations/{location}/namespaces/{namespace}/services/{service}.
+                  is_positional: false
+                  is_primary_resource: false
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_locations_namespaces_services
+                  resource_method_params:
+                    accountConnector.customOauthConfig.serviceDirectoryConfig.service: '{__relative_name__}'
+                  required: false
+            - arg_name: custom-oauth-config-ssl-ca-certificate
+              api_field: accountConnector.customOauthConfig.sslCaCertificate
+              required: false
+              repeated: false
+              help_text: |-
+                SSL certificate to use for requests to a private service.
             - arg_name: custom-oauth-config-pkce-disabled
               api_field: accountConnector.customOauthConfig.pkceDisabled
               action: store_true_false
@@ -148,7 +171,6 @@
         arg_name: proxy-config
         clearable: true
         required: false
-        hidden: true
         help_text: |-
           Proxy configuration.
         params:
@@ -199,8 +221,11 @@
     api_version: v1
     collection:
     - developerconnect.projects.locations.accountConnectors
+    static_fields:
+      updateMask: '*'
   async:
     collection:
     - developerconnect.projects.locations.operations
   update:
     read_modify_update: true
+    disable_auto_field_mask: true

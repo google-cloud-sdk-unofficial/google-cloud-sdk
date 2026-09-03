@@ -1279,6 +1279,7 @@ def BuildConfidentialInstanceConfigMessage(
     support_confidential_compute_type_tdx=False,
     support_snp_svsm=False,
     support_confidential_compute_type_cca=False,
+    support_confidential_compute_type_bmsai=False,
 ):
   """Builds a confidential instance configuration message."""
   return instance_utils.CreateConfidentialInstanceMessage(
@@ -1288,6 +1289,7 @@ def BuildConfidentialInstanceConfigMessage(
       support_confidential_compute_type_tdx,
       support_snp_svsm,
       support_confidential_compute_type_cca,
+      support_confidential_compute_type_bmsai,
   )
 
 

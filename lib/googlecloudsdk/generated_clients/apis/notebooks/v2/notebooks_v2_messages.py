@@ -2221,14 +2221,19 @@ class VmImage(_messages.Message):
   Fields:
     family: Optional. Use this VM image family to find the image; the newest
       image in this family will be used.
+    imageDescription: Output only. A human-readable description of the image
+      running on the instance (for example, "Debian 11, Python 3.10"), derived
+      at read time from the image release configuration (the source of truth).
+      Set to "Custom" for unrecognized boot-disk images.
     name: Optional. Use VM image name to find the image.
     project: Required. The name of the Google Cloud project that this VM image
       belongs to. Format: `{project_id}`
   """
 
   family = _messages.StringField(1)
-  name = _messages.StringField(2)
-  project = _messages.StringField(3)
+  imageDescription = _messages.StringField(2)
+  name = _messages.StringField(3)
+  project = _messages.StringField(4)
 
 
 encoding.AddCustomJsonFieldMapping(

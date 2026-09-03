@@ -39,9 +39,9 @@ from googlecloudsdk.core.console import progress_tracker
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.RegionalEndpointsSupported
-class AlphaReplace(base.Command):
+class Replace(base.Command):
   """Create or replace an instance from a YAML instance specification."""
 
   detailed_help = {

@@ -536,10 +536,13 @@ class Hook(_messages.Message):
       PUSH: Push events are triggered when pushing to the repository.
       PULL_REQUEST: Pull request events are triggered when a pull request is
         opened, closed, reopened, or edited.
+      PULL_REQUEST_COMMENT: Triggers when a general comment is added, edited,
+        or deleted on a pull request.
     """
     UNSPECIFIED = 0
     PUSH = 1
     PULL_REQUEST = 2
+    PULL_REQUEST_COMMENT = 3
 
   createTime = _messages.StringField(1)
   disabled = _messages.BooleanField(2)
@@ -738,6 +741,8 @@ class Instance(_messages.Message):
       for the instance, must be unique for a project_number and location_id
       combination.
     privateConfig: Optional. Private settings for private instance.
+    satisfiesPzi: Output only. Reserved for future use.
+    satisfiesPzs: Output only. Reserved for future use.
     state: Output only. Current state of the instance.
     stateNote: Output only. An optional field providing information about the
       current instance state.
@@ -815,10 +820,12 @@ class Instance(_messages.Message):
   labels = _messages.MessageField('LabelsValue', 4)
   name = _messages.StringField(5)
   privateConfig = _messages.MessageField('PrivateConfig', 6)
-  state = _messages.EnumField('StateValueValuesEnum', 7)
-  stateNote = _messages.EnumField('StateNoteValueValuesEnum', 8)
-  updateTime = _messages.StringField(9)
-  workforceIdentityFederationConfig = _messages.MessageField('WorkforceIdentityFederationConfig', 10)
+  satisfiesPzi = _messages.BooleanField(7)
+  satisfiesPzs = _messages.BooleanField(8)
+  state = _messages.EnumField('StateValueValuesEnum', 9)
+  stateNote = _messages.EnumField('StateNoteValueValuesEnum', 10)
+  updateTime = _messages.StringField(11)
+  workforceIdentityFederationConfig = _messages.MessageField('WorkforceIdentityFederationConfig', 12)
 
 
 class Issue(_messages.Message):

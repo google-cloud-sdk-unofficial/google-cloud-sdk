@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@
         - group:
             api_field: accountConnector.customOauthConfig
             required: false
-            hidden: true
             help_text: |-
               Message for a customized OAuth config.
             params:
@@ -64,13 +63,37 @@
               required: true
               repeated: false
               help_text: |-
-                OAuth2 authrization server URL.
+                The OAuth2 authrization server URL.
             - arg_name: custom-oauth-config-token-uri
               api_field: accountConnector.customOauthConfig.tokenUri
               required: true
               repeated: false
               help_text: |-
-                OAuth2 token request URL.
+                The OAuth2 token request URL.
+            - group:
+                api_field: accountConnector.customOauthConfig.serviceDirectoryConfig
+                required: false
+                help_text: |-
+                  ServiceDirectoryConfig represents Service Directory configuration for a
+                  connection.
+                params:
+                - arg_name: custom-oauth-config-service-directory
+                  help_text: |-
+                    The Service Directory service name.
+                    Format:
+                    projects/{project}/locations/{location}/namespaces/{namespace}/services/{service}.
+                  is_positional: false
+                  is_primary_resource: false
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_locations_namespaces_services
+                  resource_method_params:
+                    accountConnector.customOauthConfig.serviceDirectoryConfig.service: '{__relative_name__}'
+                  required: true
+            - arg_name: custom-oauth-config-ssl-ca-certificate
+              api_field: accountConnector.customOauthConfig.sslCaCertificate
+              required: false
+              repeated: false
+              help_text: |-
+                SSL certificate to use for requests to a private service.
             - arg_name: custom-oauth-config-pkce-disabled
               api_field: accountConnector.customOauthConfig.pkceDisabled
               action: store_true
@@ -164,6 +187,10 @@
                     enum_value: DYNATRACE
                     help_text: |-
                       Dynatrace provider.
+                  - arg_value: bitbucket-cloud
+                    enum_value: BITBUCKET_CLOUD
+                    help_text: |-
+                      Bitbucket Cloud provider.
             - arg_name: provider-oauth-config-scopes
               api_field: accountConnector.providerOauthConfig.scopes
               required: true
@@ -209,7 +236,6 @@
     - group:
         api_field: accountConnector.proxyConfig
         required: false
-        hidden: true
         help_text: |-
           Proxy configuration.
         params:

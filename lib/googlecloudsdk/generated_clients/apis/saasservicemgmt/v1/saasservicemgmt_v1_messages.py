@@ -1040,17 +1040,20 @@ class Saas(_messages.Message):
     the application_template is empty.
 
     Values:
-      STATE_TYPE_UNSPECIFIED: State type is unspecified.
+      STATE_UNSPECIFIED: State is unspecified.
+      STATE_TYPE_UNSPECIFIED: State type is unspecified. Deprecated: Use
+        STATE_UNSPECIFIED instead.
       STATE_ACTIVE: The Saas is ready
       STATE_RUNNING: In the process of importing, synchronizing or replicating
         ApplicationTemplates
       STATE_FAILED: Failure during process of importing, synchronizing or
         replicating ApplicationTemplate processing
     """
-    STATE_TYPE_UNSPECIFIED = 0
-    STATE_ACTIVE = 1
-    STATE_RUNNING = 2
-    STATE_FAILED = 3
+    STATE_UNSPECIFIED = 0
+    STATE_TYPE_UNSPECIFIED = 1
+    STATE_ACTIVE = 2
+    STATE_RUNNING = 3
+    STATE_FAILED = 4
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AnnotationsValue(_messages.Message):
@@ -3043,7 +3046,7 @@ class UnitOperation(_messages.Message):
     of the unit operation.
 
     Values:
-      UNIT_OPERATION_STATE_UNKNOWN: <no description>
+      UNIT_OPERATION_STATE_UNKNOWN: Unit operation state is unknown.
       UNIT_OPERATION_STATE_PENDING: Unit operation is accepted but not ready
         to run.
       UNIT_OPERATION_STATE_SCHEDULED: Unit operation is accepted and

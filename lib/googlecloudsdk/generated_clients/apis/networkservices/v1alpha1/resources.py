@@ -272,6 +272,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_MCPTRANSCODERS = (
+      'projects.locations.mcpTranscoders',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/mcpTranscoders/'
+              '{mcpTranscodersId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_MESHES = (
       'projects.locations.meshes',
       '{+name}',

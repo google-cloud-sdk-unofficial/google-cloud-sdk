@@ -20,7 +20,7 @@ from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import scp_command
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.Hidden
 @base.DefaultUniverseOnly
 class Scp(scp_command.BaseScpCommand):

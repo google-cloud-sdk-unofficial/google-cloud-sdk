@@ -55,8 +55,10 @@ def _SurveyEnvironment():
       'user_agent': metrics.GetUserAgent(),
       'release_channel': config.INSTALLATION_CONFIG.release_channel,
       'python_version': platform.python_version(),
-      'environment': properties.GetMetricsEnvironment(),
-      'environment_version': properties.VALUES.metrics.environment_version.Get()
+      'environment': metrics.GetMetricsEnvironment(),
+      'environment_version': (
+          properties.VALUES.metrics.environment_version.Get()
+      ),
   }
   return [{'key': k, 'value': v} for k, v in env.items() if v is not None]
 

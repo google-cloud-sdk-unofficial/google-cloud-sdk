@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -49,6 +49,20 @@
             enum_value: BASIC
             help_text: |-
               File system basic audit logs are enabled.
+    - group:
+        mutex: true
+        hidden: true
+        help_text: |-
+          Arguments for the  iam access control enabled.
+        params:
+        - arg_name: iam-access-control-enabled
+          api_field: instance.iamAccessControlEnabled
+          action: store_true_false
+          required: false
+          type: bool
+          hidden: true
+          help_text: |-
+            Whether the IAM-based access control is enabled or not.
     - help_text: |-
         Identifier.
         The name of the instance.
@@ -63,9 +77,9 @@
       type: long
       help_text: |-
         The storage capacity of the instance in gibibytes (GiB). Allowed values
-        are from `9000` to `7632000`, depending on the `perUnitStorageThroughput`.
-        See [Performance tiers and maximum storage
-        capacities](https://cloud.google.com/managed-lustre/docs/create-instance#performance-tiers)
+        depend on the `perUnitStorageThroughput`.
+        See [Performance
+        tiers](https://docs.cloud.google.com/managed-lustre/docs/performance-tiers)
         for specific minimums, maximums, and step sizes for each performance tier.
     - arg_name: description
       api_field: instance.description
@@ -89,10 +103,10 @@
       repeated: false
       type: long
       help_text: |-
-        The throughput of the instance in MBps per TiB. Valid values are 125, 250,
-        500, 1000.
-        See [Performance tiers and maximum storage
-        capacities](https://cloud.google.com/managed-lustre/docs/create-instance#performance-tiers)
+        The throughput of the instance in MBps per TiB. Valid values are 0, 125,
+        250, 500, 1000.
+        See [Performance
+        tiers](https://docs.cloud.google.com/managed-lustre/docs/performance-tiers)
         for more information.
 
         If the instance is using the Dynamic tier, this field must not be set or
@@ -103,9 +117,9 @@
       required: false
       type: bool
       help_text: |-
+        Deprecated: No longer required for GKE instance creation.
         Indicates whether you want to enable support for GKE clients. By default,
         GKE clients are not supported.
-        Deprecated. No longer required for GKE instance creation.
     - arg_name: placement-policy
       api_field: instance.placementPolicy
       required: false
@@ -141,6 +155,7 @@
               non-overlapping CIDR ranges (e.g., `192.168.1.0/24`) and IP addresses
               (e.g., `192.168.1.0`).
           - api_field: accessMode
+            hidden: true
             help_text: |-
               The access mode for the access rule nodemap.
               Default is [READ_WRITE][google.cloud.lustre.v1alpha.AccessRulesOptions.AccessRule.AccessMode.READ_WRITE].
@@ -148,18 +163,21 @@
             help_text: |-
               Squash mode for the access rule.
           - api_field: squashUid
+            hidden: true
             help_text: |-
               Squash UID for the access rule. If the squash mode for this rule is
               [ROOT_SQUASH][google.cloud.lustre.v1alpha.AccessRulesOptions.SquashMode.ROOT_SQUASH], root users matching the
               [ip_address_ranges][google.cloud.lustre.v1alpha.AccessRulesOptions.AccessRule.ip_address_ranges] are squashed to this
               UID. Defaults to 0 (no root squash).
           - api_field: squashGid
+            hidden: true
             help_text: |-
               Squash GID for the access rule. If the squash mode for this rule is
               [ROOT_SQUASH][google.cloud.lustre.v1alpha.AccessRulesOptions.SquashMode.ROOT_SQUASH], root users matching the
               [ip_address_ranges][google.cloud.lustre.v1alpha.AccessRulesOptions.AccessRule.ip_address_ranges] are squashed to this
               GID. Defaults to 0 (no root squash).
           - api_field: mountableSubdirectories
+            hidden: true
             help_text: |-
               The list of non-root directories that can be mounted from
               clients in this NID range subset. Currently, there can be only a single

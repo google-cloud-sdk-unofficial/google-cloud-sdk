@@ -15,7 +15,6 @@
 """API library for VPC Service Controls Service Perimeters."""
 
 
-
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.accesscontextmanager import util
 from googlecloudsdk.api_lib.util import waiter
@@ -98,6 +97,17 @@ def _CreateServicePerimeterConfig(messages,
   return config, ['{}.{}'.format(mask_prefix, item) for item in mask]
 
 
+def _GetDeletedPrincipalSyntaxEnum(enum_cls, enabled):
+  """Converts a boolean/enum value to DeletedPrincipalSyntaxValueValuesEnum."""
+  if enabled is None:
+    return None
+  return (
+      enum_cls.DELETED_PRINCIPAL_SYNTAX_SUPPORT_ENABLED
+      if enabled
+      else enum_cls.DELETED_PRINCIPAL_SYNTAX_SUPPORT_DISABLED
+  )
+
+
 class Client(object):
   """High-level API client for VPC Service Controls Service Perimeters."""
 
@@ -105,22 +115,39 @@ class Client(object):
     self.client = client or util.GetClient(version=version)
     self.messages = messages or self.client.MESSAGES_MODULE
 
-  def Get(self, zone_ref):
+  def Get(self, zone_ref, deleted_principal_syntax=None):
+    request_type = (
+        self.messages.AccesscontextmanagerAccessPoliciesServicePerimetersGetRequest
+    )
     return self.client.accessPolicies_servicePerimeters.Get(
-        self.messages
-        .AccesscontextmanagerAccessPoliciesServicePerimetersGetRequest(
-            name=zone_ref.RelativeName()))
+        request_type(
+            name=zone_ref.RelativeName(),
+            deletedPrincipalSyntax=_GetDeletedPrincipalSyntaxEnum(
+                request_type.DeletedPrincipalSyntaxValueValuesEnum,
+                deleted_principal_syntax,
+            ),
+        )
+    )
 
-  def List(self, policy_ref, limit=None):
-    req = self.messages.AccesscontextmanagerAccessPoliciesServicePerimetersListRequest(
-        parent=policy_ref.RelativeName())
+  def List(self, policy_ref, limit=None, deleted_principal_syntax=None):
+    request_type = (
+        self.messages.AccesscontextmanagerAccessPoliciesServicePerimetersListRequest
+    )
+    request = request_type(
+        parent=policy_ref.RelativeName(),
+        deletedPrincipalSyntax=_GetDeletedPrincipalSyntaxEnum(
+            request_type.DeletedPrincipalSyntaxValueValuesEnum,
+            deleted_principal_syntax,
+        ),
+    )
     return list_pager.YieldFromList(
         self.client.accessPolicies_servicePerimeters,
-        req,
+        request,
         limit=limit,
         batch_size_attribute='pageSize',
         batch_size=None,
-        field='servicePerimeters')
+        field='servicePerimeters',
+    )
 
   def Commit(self, policy_ref, etag):
     commit_req = self.messages.CommitServicePerimetersRequest(etag=etag)
@@ -135,7 +162,13 @@ class Client(object):
         poller, operation_ref,
         'Waiting for COMMIT operation [{}]'.format(operation_ref.Name()))
 
-  def _ApplyPatch(self, perimeter_ref, perimeter, update_mask):
+  def _ApplyPatch(
+      self,
+      perimeter_ref,
+      perimeter,
+      update_mask,
+      deleted_principal_syntax=None,
+  ):
     """Applies a PATCH to the provided Service Perimeter."""
     m = self.messages
     update_mask = sorted(update_mask)  # For ease-of-testing
@@ -145,6 +178,10 @@ class Client(object):
         servicePerimeter=perimeter,
         name=perimeter_ref.RelativeName(),
         updateMask=','.join(update_mask),
+        deletedPrincipalSyntax=_GetDeletedPrincipalSyntaxEnum(
+            request_type.DeletedPrincipalSyntaxValueValuesEnum,
+            deleted_principal_syntax,
+        ),
     )
     operation = self.client.accessPolicies_servicePerimeters.Patch(request)
     poller = util.OperationPoller(self.client.accessPolicies_servicePerimeters,
@@ -171,6 +208,7 @@ class Client(object):
       ingress_policies=None,
       egress_policies=None,
       etag=None,
+      deleted_principal_syntax=None,
   ):
     """Patch a service perimeter.
 
@@ -197,8 +235,10 @@ class Client(object):
         updating.
       ingress_policies: list of IngressPolicy, or None if not updating.
       egress_policies: list of EgressPolicy, or None if not updating.
-      etag: str, the optional etag for the version of the Perimeter that
-        this operation is to be performed on.
+      etag: str, the optional etag for the version of the Perimeter that this
+        operation is to be performed on.
+      deleted_principal_syntax: bool or None, whether to enable deleted IAM
+        principal syntax support.
 
     Returns:
       ServicePerimeter, the updated Service Perimeter.
@@ -234,7 +274,12 @@ class Client(object):
       )
       return perimeter
 
-    return self._ApplyPatch(perimeter_ref, perimeter, update_mask)
+    return self._ApplyPatch(
+        perimeter_ref,
+        perimeter,
+        update_mask,
+        deleted_principal_syntax=deleted_principal_syntax,
+    )
 
   def PatchDryRunConfig(
       self,
@@ -252,6 +297,7 @@ class Client(object):
       ingress_policies=None,
       egress_policies=None,
       etag=None,
+      deleted_principal_syntax=None,
   ):
     """Patch the dry-run config (spec) for a Service Perimeter.
 
@@ -278,8 +324,10 @@ class Client(object):
         updating.
       ingress_policies: list of IngressPolicy, or None if not updating.
       egress_policies: list of EgressPolicy, or None if not updating.
-      etag: str, the optional etag for the version of the Perimeter that
-        this operation is to be performed on.
+      etag: str, the optional etag for the version of the Perimeter that this
+        operation is to be performed on.
+      deleted_principal_syntax: bool or None, whether to enable deleted IAM
+        principal syntax support.
 
     Returns:
       ServicePerimeter, the updated Service Perimeter.
@@ -312,7 +360,12 @@ class Client(object):
     update_mask.extend(config_mask_additions)
     perimeter.useExplicitDryRunSpec = True
     update_mask.append('useExplicitDryRunSpec')
-    return self._ApplyPatch(perimeter_ref, perimeter, update_mask)
+    return self._ApplyPatch(
+        perimeter_ref,
+        perimeter,
+        update_mask,
+        deleted_principal_syntax=deleted_principal_syntax,
+    )
 
   def EnforceDryRunConfig(self, perimeter_ref):
     """Promotes a Service Perimeter's dry-run config to enforcement config.

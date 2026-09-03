@@ -3493,6 +3493,7 @@ def AddConfidentialComputeArgs(
     support_confidential_compute_type_tdx=False,
     support_snp_svsm=False,
     support_confidential_compute_type_cca=False,
+    support_confidential_compute_type_bmsai=False,
 ):
   """Adds flags for confidential compute for instance."""
   if support_confidential_compute_type:
@@ -3525,6 +3526,14 @@ def AddConfidentialComputeArgs(
           ("""\
         Arm Confidential Compute Architecture for running confidential
         instances is also supported.
+        """),
+      ))
+    if support_confidential_compute_type_bmsai:
+      choices['BMSAI'] = 'Bare Metal Secure AI'
+      help_text = ''.join((
+          help_text,
+          ("""\
+        Bare Metal Secure AI for running confidential instances is also supported.
         """),
       ))
     if support_snp_svsm:

@@ -4031,6 +4031,27 @@ class AutoscalingPolicyCpuUtilization(_messages.Message):
       based on real-time metrics. * OPTIMIZE_AVAILABILITY. Predictive
       autoscaling improves availability by monitoring daily and weekly load
       patterns and scaling out ahead of anticipated demand.
+    signalAggregation: Defines how CPU utilization is aggregated in a group.
+      Operates on the results from the `time_aggregation`, reducing the per-
+      instance values down to a single aggregate value across the entire
+      instance group if samples are available.
+    timeAggregation: Defines how CPU utilization is aggregated over time.
+      Operates on all CPU utilization samples produced by each instance over
+      the `time_aggregation.time_window_sec`, reducing them to exactly one
+      value per instance if samples are available.
+    utilizationRange: Defines a target range for CPU utilization. The values
+      of `min_utilization` and `max_utilization` must be in the range (0.0,
+      1.0].  If the average CPU is between `min_utilization` and
+      `max_utilization`, the autoscaler maintains the current size unless
+      another configured metric requires scaling out.  If the average CPU is
+      above `max_utilization`, the autoscaler scales out until the average
+      utilization reaches the `utilization_range.utilization_target`.  If the
+      average CPU is below `min_utilization`, the autoscaler considers scaling
+      in until the average utilization reaches the
+      `utilization_range.utilization_target`. Scaling in can occur only if all
+      other configured scaling metrics also suggest scaling in.  At most one
+      of CpuUtilization.utilization_target or CpuUtilization.utilization_range
+      can be set.
     utilizationTarget: The target CPU utilization that the autoscaler
       maintains. Must be a float value in the range (0, 1]. If not specified,
       the default is0.6.  If the CPU level is below the target utilization,
@@ -4068,7 +4089,10 @@ class AutoscalingPolicyCpuUtilization(_messages.Message):
     STANDARD = 3
 
   predictiveMethod = _messages.EnumField('PredictiveMethodValueValuesEnum', 1)
-  utilizationTarget = _messages.FloatField(2)
+  signalAggregation = _messages.MessageField('AutoscalingPolicySignalAggregation', 2)
+  timeAggregation = _messages.MessageField('AutoscalingPolicyTimeAggregation', 3)
+  utilizationRange = _messages.MessageField('UtilizationRange', 4)
+  utilizationTarget = _messages.FloatField(5)
 
 
 class AutoscalingPolicyCustomMetricUtilization(_messages.Message):
@@ -4246,6 +4270,89 @@ class AutoscalingPolicyScalingSchedule(_messages.Message):
   minRequiredReplicas = _messages.IntegerField(4, variant=_messages.Variant.INT32)
   schedule = _messages.StringField(5)
   timeZone = _messages.StringField(6)
+
+
+class AutoscalingPolicySignalAggregation(_messages.Message):
+  r"""Defines how scaling signal is aggregated in a group. Operates on the
+  results of the `TimeAggregation`, reducing the per-instance values down to a
+  single aggregate value across the entire instance group.
+
+  Enums:
+    StatisticValueValuesEnum: Required. The aggregator used to aggregate
+      signal samples across the entire instance group. This field is required.
+
+  Fields:
+    percentile: If statistic is PERCENTILE, percentile must be defined. This
+      value is used only when statistic is PERCENTILE.
+    statistic: Required. The aggregator used to aggregate signal samples
+      across the entire instance group. This field is required.
+  """
+
+  class StatisticValueValuesEnum(_messages.Enum):
+    r"""Required. The aggregator used to aggregate signal samples across the
+    entire instance group. This field is required.
+
+    Values:
+      AGGREGATOR_UNSPECIFIED: The default value. This value is used if the
+        aggregator is unspecified.
+      AVERAGE: Average value of the signal samples across the instance group.
+      MAX: Maximum value of the signal samples across the instance group.
+      MIN: Minimum value of the signal samples across the instance group.
+      PERCENTILE: Percentage percentile value of the signal samples across the
+        instance group.
+    """
+    AGGREGATOR_UNSPECIFIED = 0
+    AVERAGE = 1
+    MAX = 2
+    MIN = 3
+    PERCENTILE = 4
+
+  percentile = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  statistic = _messages.EnumField('StatisticValueValuesEnum', 2)
+
+
+class AutoscalingPolicyTimeAggregation(_messages.Message):
+  r"""Defines how scaling signal is aggregated over a time window. Operates on
+  all signal samples produced over the `time_window_sec`, reducing them to
+  exactly one value.
+
+  Enums:
+    StatisticValueValuesEnum: Required. The aggregator used to aggregate
+      signal samples over the `time_window_sec`. This field is required.
+
+  Fields:
+    percentile: If statistic is PERCENTILE, percentile must be defined. This
+      value is used only when statistic is PERCENTILE.
+    statistic: Required. The aggregator used to aggregate signal samples over
+      the `time_window_sec`. This field is required.
+    timeWindowSec: Required. The duration of the time window over which the
+      signal samples are aggregated. This field is required.
+  """
+
+  class StatisticValueValuesEnum(_messages.Enum):
+    r"""Required. The aggregator used to aggregate signal samples over the
+    `time_window_sec`. This field is required.
+
+    Values:
+      AGGREGATOR_UNSPECIFIED: The default value. This value is used if the
+        aggregator is unspecified.
+      AVERAGE: Average value of the signal samples in the time window.
+      LAST_VALUE: The last value of the signal samples in the time window.
+      MAX: Maximum value of the signal samples in the time window.
+      MIN: Minimum value of the signal samples in the time window.
+      PERCENTILE: Percentage percentile value of the signal samples in the
+        time window.
+    """
+    AGGREGATOR_UNSPECIFIED = 0
+    AVERAGE = 1
+    LAST_VALUE = 2
+    MAX = 3
+    MIN = 4
+    PERCENTILE = 5
+
+  percentile = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  statistic = _messages.EnumField('StatisticValueValuesEnum', 2)
+  timeWindowSec = _messages.IntegerField(3, variant=_messages.Variant.INT32)
 
 
 class Backend(_messages.Message):
@@ -50877,12 +50984,14 @@ class ConfidentialInstanceConfig(_messages.Message):
       SEV: AMD Secure Encrypted Virtualization.
       SEV_SNP: AMD Secure Encrypted Virtualization - Secure Nested Paging.
       TDX: Intel Trust Domain eXtension.
+      BMSAI: Bare Metal Secure AI.
     """
     CCA = 0
     CONFIDENTIAL_INSTANCE_TYPE_UNSPECIFIED = 1
     SEV = 2
     SEV_SNP = 3
     TDX = 4
+    BMSAI = 5
 
   confidentialInstanceType = _messages.EnumField('ConfidentialInstanceTypeValueValuesEnum', 1)
   confidentialParavisorConfig = _messages.MessageField('ConfidentialParavisorConfig', 2)
@@ -70592,8 +70701,6 @@ class InstanceGroupManagerUpdatePolicy(_messages.Message):
 
   Enums:
     AllowedActionsValueListEntryValuesEnum:
-    DisruptionModeValueValuesEnum: Whether the boot disk is allowed to be
-      updated with restart.
     InstanceRedistributionTypeValueValuesEnum: The  instance redistribution
       policy for regional managed instance groups. Valid values are:         -
       PROACTIVE (default): The group attempts to maintain an    even
@@ -70627,8 +70734,6 @@ class InstanceGroupManagerUpdatePolicy(_messages.Message):
 
   Fields:
     allowedActions: Actions that are allowed to update instances within MIG.
-    disruptionMode: Whether the boot disk is allowed to be updated with
-      restart.
     instanceRedistributionType: The  instance redistribution policy for
       regional managed instance groups. Valid values are:         - PROACTIVE
       (default): The group attempts to maintain an    even distribution of VM
@@ -70701,16 +70806,6 @@ class InstanceGroupManagerUpdatePolicy(_messages.Message):
     REPLACE = 2
     RESTART = 3
     RESTART_IN_PLACE = 4
-
-  class DisruptionModeValueValuesEnum(_messages.Enum):
-    r"""Whether the boot disk is allowed to be updated with restart.
-
-    Values:
-      LEGACY: Default option: boot disk will not be updated with restart.
-      OPTIMIZED: Boot disk will be updated with restart.
-    """
-    LEGACY = 0
-    OPTIMIZED = 1
 
   class InstanceRedistributionTypeValueValuesEnum(_messages.Enum):
     r"""The  instance redistribution policy for regional managed instance
@@ -70808,15 +70903,14 @@ class InstanceGroupManagerUpdatePolicy(_messages.Message):
     PROACTIVE = 1
 
   allowedActions = _messages.EnumField('AllowedActionsValueListEntryValuesEnum', 1, repeated=True)
-  disruptionMode = _messages.EnumField('DisruptionModeValueValuesEnum', 2)
-  instanceRedistributionType = _messages.EnumField('InstanceRedistributionTypeValueValuesEnum', 3)
-  maxSurge = _messages.MessageField('FixedOrPercent', 4)
-  maxUnavailable = _messages.MessageField('FixedOrPercent', 5)
-  minReadySec = _messages.IntegerField(6, variant=_messages.Variant.INT32)
-  minimalAction = _messages.EnumField('MinimalActionValueValuesEnum', 7)
-  mostDisruptiveAllowedAction = _messages.EnumField('MostDisruptiveAllowedActionValueValuesEnum', 8)
-  replacementMethod = _messages.EnumField('ReplacementMethodValueValuesEnum', 9)
-  type = _messages.EnumField('TypeValueValuesEnum', 10)
+  instanceRedistributionType = _messages.EnumField('InstanceRedistributionTypeValueValuesEnum', 2)
+  maxSurge = _messages.MessageField('FixedOrPercent', 3)
+  maxUnavailable = _messages.MessageField('FixedOrPercent', 4)
+  minReadySec = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  minimalAction = _messages.EnumField('MinimalActionValueValuesEnum', 6)
+  mostDisruptiveAllowedAction = _messages.EnumField('MostDisruptiveAllowedActionValueValuesEnum', 7)
+  replacementMethod = _messages.EnumField('ReplacementMethodValueValuesEnum', 8)
+  type = _messages.EnumField('TypeValueValuesEnum', 9)
 
 
 class InstanceGroupManagerVersion(_messages.Message):
@@ -70871,8 +70965,6 @@ class InstanceGroupManagersApplyUpdatesRequest(_messages.Message):
 
   Enums:
     AllowedActionsValueListEntryValuesEnum:
-    DisruptionModeValueValuesEnum: Whether the boot disk is allowed to be
-      updated with restart.
     MaximalActionValueValuesEnum: The maximal action that should be performed
       on the instances. By default REPLACE. This field is deprecated, please
       use most_disruptive_allowed_action.
@@ -70898,8 +70990,6 @@ class InstanceGroupManagersApplyUpdatesRequest(_messages.Message):
       "instances". If the flag is set to true then the instances may not be
       specified in the request.
     allowedActions: Actions that are allowed to update instances within MIG.
-    disruptionMode: Whether the boot disk is allowed to be updated with
-      restart.
     instances: The list of URLs of one or more instances for which you want to
       apply updates. Each URL can be a full URL or a partial URL, such
       aszones/[ZONE]/instances/[INSTANCE_NAME].
@@ -70941,16 +71031,6 @@ class InstanceGroupManagersApplyUpdatesRequest(_messages.Message):
     REPLACE = 2
     RESTART = 3
     RESTART_IN_PLACE = 4
-
-  class DisruptionModeValueValuesEnum(_messages.Enum):
-    r"""Whether the boot disk is allowed to be updated with restart.
-
-    Values:
-      LEGACY: Default option: boot disk will not be updated with restart.
-      OPTIMIZED: Boot disk will be updated with restart.
-    """
-    LEGACY = 0
-    OPTIMIZED = 1
 
   class MaximalActionValueValuesEnum(_messages.Enum):
     r"""The maximal action that should be performed on the instances. By
@@ -71024,11 +71104,10 @@ class InstanceGroupManagersApplyUpdatesRequest(_messages.Message):
 
   allInstances = _messages.BooleanField(1)
   allowedActions = _messages.EnumField('AllowedActionsValueListEntryValuesEnum', 2, repeated=True)
-  disruptionMode = _messages.EnumField('DisruptionModeValueValuesEnum', 3)
-  instances = _messages.StringField(4, repeated=True)
-  maximalAction = _messages.EnumField('MaximalActionValueValuesEnum', 5)
-  minimalAction = _messages.EnumField('MinimalActionValueValuesEnum', 6)
-  mostDisruptiveAllowedAction = _messages.EnumField('MostDisruptiveAllowedActionValueValuesEnum', 7)
+  instances = _messages.StringField(3, repeated=True)
+  maximalAction = _messages.EnumField('MaximalActionValueValuesEnum', 4)
+  minimalAction = _messages.EnumField('MinimalActionValueValuesEnum', 5)
+  mostDisruptiveAllowedAction = _messages.EnumField('MostDisruptiveAllowedActionValueValuesEnum', 6)
 
 
 class InstanceGroupManagersConfigureAcceleratorTopologiesRequest(_messages.Message):
@@ -75625,8 +75704,8 @@ class Interconnect(_messages.Message):
       requested by the customer.
     satisfiesPzs: Output only. [Output Only] Reserved for future use.
     selfLink: Output only. [Output Only] Server-defined URL for the resource.
-    selfLinkWithId: Output only. [Output Only] Server-defined URL for this
-      resource with the resource id.
+    selfLinkWithId: Output only. Server-defined URL for this resource with the
+      resource id.
     state: Output only. [Output Only] The current state of Interconnect
       functionality, which can take one of the following values:        -
       ACTIVE: The Interconnect is valid, turned up and ready to use.
@@ -79566,12 +79645,18 @@ class InterconnectLocationCrossSiteInterconnectInfo(_messages.Message):
     city: Output only. The remote location for Cross-Site Interconnect wires.
       This specifies an InterconnectLocation city (metropolitan area
       designator), which itself may match multiple InterconnectLocations.
+    maxDynamicPathBandwidthGbps: Output only. The maximum unmetered bandwidth
+      for dynamic paths allowable per WireGroup for this metro.
+    maxFixedPathBandwidthGbps: Output only. The maximum unmetered bandwidth
+      for fixed paths allowable per WireGroup for this metro.
     maxSingleFlowGbps: Output only. The maximum gbps for a single flow to this
       metro. This limits the total bandwidth which may be configured per wire.
   """
 
   city = _messages.StringField(1)
-  maxSingleFlowGbps = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  maxDynamicPathBandwidthGbps = _messages.IntegerField(2)
+  maxFixedPathBandwidthGbps = _messages.IntegerField(3)
+  maxSingleFlowGbps = _messages.IntegerField(4, variant=_messages.Variant.INT32)
 
 
 class InterconnectLocationList(_messages.Message):
@@ -83326,10 +83411,9 @@ class ManagedInstance(_messages.Message):
       process of being verified.
     InstanceStatusValueValuesEnum: Output only. [Output Only] The status of
       the instance. This field is empty when the instance does not exist.
-    TargetStatusValueValuesEnum: Output only. [Output Only] The eventual
-      status of the instance. The instance group manager will not be
-      identified as stable till each managed instance reaches its
-      targetStatus.
+    TargetStatusValueValuesEnum: Output only. The eventual status of the
+      instance. The instance group manager will not be identified as stable
+      till each managed instance reaches its targetStatus.
 
   Fields:
     allInstancesConfig: Output only. [Output Only] Current all-instances
@@ -83389,9 +83473,9 @@ class ManagedInstance(_messages.Message):
       this Managed Instance. This is how much this Managed Instance
       contributes to the size of the group.
     tag: Output only. [Output Only] Tag describing the version.
-    targetStatus: Output only. [Output Only] The eventual status of the
-      instance. The instance group manager will not be identified as stable
-      till each managed instance reaches its targetStatus.
+    targetStatus: Output only. The eventual status of the instance. The
+      instance group manager will not be identified as stable till each
+      managed instance reaches its targetStatus.
     version: Output only. [Output Only] Intended version of this instance.
   """
 
@@ -83513,23 +83597,25 @@ class ManagedInstance(_messages.Message):
     TERMINATED = 11
 
   class TargetStatusValueValuesEnum(_messages.Enum):
-    r"""Output only. [Output Only] The eventual status of the instance. The
-    instance group manager will not be identified as stable till each managed
-    instance reaches its targetStatus.
+    r"""Output only. The eventual status of the instance. The instance group
+    manager will not be identified as stable till each managed instance
+    reaches its targetStatus.
 
     Values:
       ABANDONED: The managed instance will eventually be ABANDONED, i.e.
         dissociated from the managed instance group.
       DELETED: The managed instance will eventually be DELETED.
+      INVALID: Only present to map the STATUS_INVALID value.
       RUNNING: The managed instance will eventually reach status RUNNING.
       STOPPED: The managed instance will eventually reach status TERMINATED.
       SUSPENDED: The managed instance will eventually reach status SUSPENDED.
     """
     ABANDONED = 0
     DELETED = 1
-    RUNNING = 2
-    STOPPED = 3
-    SUSPENDED = 4
+    INVALID = 2
+    RUNNING = 3
+    STOPPED = 4
+    SUSPENDED = 5
 
   allInstancesConfig = _messages.MessageField('ManagedInstanceAllInstancesConfig', 1)
   currentAction = _messages.EnumField('CurrentActionValueValuesEnum', 2)
@@ -99696,8 +99782,8 @@ class RecoverableSnapshotOriginalSnapshot(_messages.Message):
       snapshot at creation time.
     creationTimestamp: Output only. [Output Only] Creation timestamp inRFC3339
       text format.
-    deletionTimestamp: Output only. [Output Only] Purge timestamp of
-      recoverable snapshot inRFC3339 text format.
+    deletionTimestamp: Output only. [Output Only] Deletion timestamp of
+      snapshot inRFC3339 text format.
     description: An optional description of this resource.
     diskSizeGb: Output only. [Output Only] Size of the source disk, specified
       in GB.
@@ -101304,8 +101390,6 @@ class RegionInstanceGroupManagersApplyUpdatesRequest(_messages.Message):
 
   Enums:
     AllowedActionsValueListEntryValuesEnum:
-    DisruptionModeValueValuesEnum: Whether the boot disk is allowed to be
-      updated with restart.
     MaximalActionValueValuesEnum: The maximal action that should be performed
       on the instances. By default REPLACE. This field is deprecated, please
       use most_disruptive_allowed_action.
@@ -101331,8 +101415,6 @@ class RegionInstanceGroupManagersApplyUpdatesRequest(_messages.Message):
       "instances". If the flag is set to true then the instances may not be
       specified in the request.
     allowedActions: Actions that are allowed to update instances within MIG.
-    disruptionMode: Whether the boot disk is allowed to be updated with
-      restart.
     instances: The list of URLs of one or more instances for which you want to
       apply updates. Each URL can be a full URL or a partial URL, such
       aszones/[ZONE]/instances/[INSTANCE_NAME].
@@ -101374,16 +101456,6 @@ class RegionInstanceGroupManagersApplyUpdatesRequest(_messages.Message):
     REPLACE = 2
     RESTART = 3
     RESTART_IN_PLACE = 4
-
-  class DisruptionModeValueValuesEnum(_messages.Enum):
-    r"""Whether the boot disk is allowed to be updated with restart.
-
-    Values:
-      LEGACY: Default option: boot disk will not be updated with restart.
-      OPTIMIZED: Boot disk will be updated with restart.
-    """
-    LEGACY = 0
-    OPTIMIZED = 1
 
   class MaximalActionValueValuesEnum(_messages.Enum):
     r"""The maximal action that should be performed on the instances. By
@@ -101457,11 +101529,10 @@ class RegionInstanceGroupManagersApplyUpdatesRequest(_messages.Message):
 
   allInstances = _messages.BooleanField(1)
   allowedActions = _messages.EnumField('AllowedActionsValueListEntryValuesEnum', 2, repeated=True)
-  disruptionMode = _messages.EnumField('DisruptionModeValueValuesEnum', 3)
-  instances = _messages.StringField(4, repeated=True)
-  maximalAction = _messages.EnumField('MaximalActionValueValuesEnum', 5)
-  minimalAction = _messages.EnumField('MinimalActionValueValuesEnum', 6)
-  mostDisruptiveAllowedAction = _messages.EnumField('MostDisruptiveAllowedActionValueValuesEnum', 7)
+  instances = _messages.StringField(3, repeated=True)
+  maximalAction = _messages.EnumField('MaximalActionValueValuesEnum', 4)
+  minimalAction = _messages.EnumField('MinimalActionValueValuesEnum', 5)
+  mostDisruptiveAllowedAction = _messages.EnumField('MostDisruptiveAllowedActionValueValuesEnum', 6)
 
 
 class RegionInstanceGroupManagersCreateInstancesRequest(_messages.Message):
@@ -127441,6 +127512,32 @@ class UsageExportLocation(_messages.Message):
 
   bucketName = _messages.StringField(1)
   reportNamePrefix = _messages.StringField(2)
+
+
+class UtilizationRange(_messages.Message):
+  r"""Represents a range of acceptable utilization values. This message is
+  used to configure range-based scaling policies, allowing Autoscaler to
+  maintain utilization within a specified range instead of aiming for a single
+  target point.
+
+  Fields:
+    maxUtilization: Required. The upper bound of the utilization range. Must
+      be greater or equal to min_utilization. This value is required when
+      using range-based scaling.  Scaling out is triggered if the utilization
+      exceeds this value.
+    minUtilization: Required. The lower bound of the utilization range. Must
+      be smaller or equal to max_utilization. This value is required when
+      using range-based scaling.  Scaling in is considered only if the
+      utilization drops below this value.
+    utilizationTarget: The target utilization that the autoscaler aims to
+      achieve when scaling is triggered. This value must be within the range
+      [min_utilization, max_utilization].  If not specified, this will default
+      to the average of max_utilization and min_utilization.
+  """
+
+  maxUtilization = _messages.FloatField(1)
+  minUtilization = _messages.FloatField(2)
+  utilizationTarget = _messages.FloatField(3)
 
 
 class VmEndpointNatMappings(_messages.Message):

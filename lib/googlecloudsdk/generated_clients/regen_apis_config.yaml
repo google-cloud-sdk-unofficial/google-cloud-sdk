@@ -612,12 +612,16 @@ apis:
   cloudtasks:
     v2beta2:
       discovery_doc: cloudtasks_v2beta2.json
-      skip:
-        bug: b/534738395
+      unelidable_request_methods:
+      - cloudtasks.projects.locations.queues.tasks.create
+      - cloudtasks.projects.locations.queues.tasks.batchCreate
+      - cloudtasks.projects.locations.queues.tasks.batchDelete
     v2beta3:
       discovery_doc: cloudtasks_v2beta3.json
-      skip:
-        bug: b/534737618
+      unelidable_request_methods:
+      - cloudtasks.projects.locations.queues.tasks.create
+      - cloudtasks.projects.locations.queues.tasks.batchCreate
+      - cloudtasks.projects.locations.queues.tasks.batchDelete
     v2:
       discovery_doc: cloudtasks_v2.json
       default: true
@@ -2006,19 +2010,19 @@ apis:
     v1beta4:
       discovery_doc: sqladmin_v1beta4.json
       unelidable_request_methods:
+      - sql.databases.insert
       - sql.instances.insert
       - sql.instances.startWorkloadCapture
       - sql.instances.startWorkloadReplay
       - sql.instances.stopWorkloadCapture
       - sql.instances.stopWorkloadReplay
+      - sql.users.insert
       resources:
         projects:
           path: projects/{project}
         blueGreenDeployments:
           path:
             projects/{project}/locations/{location}/blueGreenDeployments/{blueGreenDeploymentsId}
-      skip:
-        bug: b/539506040
   stream:
     v1:
       discovery_doc: stream_v1.json
@@ -2287,6 +2291,8 @@ apis:
         projects.locations.skills.revisions:
           path:
             projects/{projectsId}/locations/{locationsId}/skills/{skillsId}/revisions/{revisionsId}
+      skip:
+        bug: b/548051692
     v1:
       discovery_doc: agentregistry_v1.json
       default: true
@@ -2395,6 +2401,8 @@ apis:
             projects/{projectsId}/locations/{locationsId}/keyRings/{keyRingsId}/cryptoKeys/{cryptoKeysId}
         projects.secrets.versions:
           path: projects/{projectsId}/secrets/{secretsId}/versions/{versionsId}
+      skip:
+        bug: b/548051624
   geminicloudassist:
     v1alpha:
       discovery_doc: geminicloudassist_v1alpha.json

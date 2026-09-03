@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.api_lib.storage import request_config_factory
 from googlecloudsdk.command_lib.storage import errors
+from googlecloudsdk.command_lib.storage import hash_util
 from googlecloudsdk.command_lib.storage import user_request_args_factory
 from googlecloudsdk.command_lib.storage.tasks.cp import copy_util
 from googlecloudsdk.command_lib.storage.tasks.cp import upload_util
@@ -90,6 +91,14 @@ class StreamingUploadTask(copy_util.ObjectCopyTask):
         task_status_queue=task_status_queue,
         destination_resource=self._destination_resource)
 
+    def final_headers_callback():
+      if not digesters:
+        return None
+      header_value = hash_util.get_x_goog_hash_header_value(digesters)
+      if header_value:
+        return {'X-Goog-Hash': header_value}
+      return None
+
     with stream:
       provider = self._destination_resource.storage_url.scheme
       if properties.VALUES.storage.enable_zonal_buckets_bidi_streaming.GetBool():
@@ -106,6 +115,7 @@ class StreamingUploadTask(copy_util.ObjectCopyTask):
           posix_to_set=self._posix_to_set,
           source_resource=self._source_resource,
           upload_strategy=cloud_api.UploadStrategy.STREAMING,
+          final_headers_callback=final_headers_callback,
       )
 
     upload_util.validate_uploaded_object(

@@ -467,19 +467,22 @@ class AuthzPolicy(_messages.Message):
   backend designed to scan the traffic for security purposes.
 
   Enums:
-    ActionValueValuesEnum: Required. Can be one of `ALLOW`, `DENY`, `CUSTOM`.
-      When the action is `CUSTOM`, `customProvider` must be specified. When
-      the action is `ALLOW`, only requests matching the policy will be
-      allowed. When the action is `DENY`, only requests matching the policy
-      will be denied. When a request arrives, the policies are evaluated in
-      the following order: 1. If there is a `CUSTOM` policy that matches the
-      request, the `CUSTOM` policy is evaluated using the custom authorization
-      providers and the request is denied if the provider rejects the request.
-      2. If there are any `DENY` policies that match the request, the request
-      is denied. 3. If there are no `ALLOW` policies for the resource or if
-      any of the `ALLOW` policies match the request, the request is allowed.
-      4. Else the request is denied by default if none of the configured
-      AuthzPolicies with `ALLOW` action match the request.
+    ActionValueValuesEnum: Required. Can be one of `ALLOW`, `DENY`, `CUSTOM`,
+      `DENY_BY_DEFAULT`. When the action is `CUSTOM`, `customProvider` must be
+      specified. When the action is `ALLOW`, only requests matching the policy
+      will be allowed. When the action is `DENY`, only requests matching the
+      policy will be denied. When the action is `DENY_BY_DEFAULT`, no
+      `http_rules` or `network_rules` can be specified. When a request
+      arrives, the policies are evaluated in the following order: 1. If there
+      is a `CUSTOM` policy that matches the request, the `CUSTOM` policy is
+      evaluated using the custom authorization providers and the request is
+      denied if the provider rejects the request. 2. If there are any `DENY`
+      policies that match the request, the request is denied. 3. If any of the
+      `ALLOW` policies match the request, the request is allowed. 4. If a
+      `DENY_BY_DEFAULT` policy is applied to the resource, the request is
+      denied (unless it was explicitly allowed by a `CUSTOM` or `ALLOW`
+      policy). 5. Else, the request is allowed by default if no other policies
+      are configured.
     PolicyProfileValueValuesEnum: Optional. Immutable. Defines the type of
       authorization being performed. If not specified, `REQUEST_AUTHZ` is
       applied. This field cannot be changed once AuthzPolicy is created.
@@ -490,19 +493,22 @@ class AuthzPolicy(_messages.Message):
       requirements](/compute/docs/labeling-resources#requirements).
 
   Fields:
-    action: Required. Can be one of `ALLOW`, `DENY`, `CUSTOM`. When the action
-      is `CUSTOM`, `customProvider` must be specified. When the action is
-      `ALLOW`, only requests matching the policy will be allowed. When the
-      action is `DENY`, only requests matching the policy will be denied. When
-      a request arrives, the policies are evaluated in the following order: 1.
-      If there is a `CUSTOM` policy that matches the request, the `CUSTOM`
-      policy is evaluated using the custom authorization providers and the
-      request is denied if the provider rejects the request. 2. If there are
-      any `DENY` policies that match the request, the request is denied. 3. If
-      there are no `ALLOW` policies for the resource or if any of the `ALLOW`
-      policies match the request, the request is allowed. 4. Else the request
-      is denied by default if none of the configured AuthzPolicies with
-      `ALLOW` action match the request.
+    action: Required. Can be one of `ALLOW`, `DENY`, `CUSTOM`,
+      `DENY_BY_DEFAULT`. When the action is `CUSTOM`, `customProvider` must be
+      specified. When the action is `ALLOW`, only requests matching the policy
+      will be allowed. When the action is `DENY`, only requests matching the
+      policy will be denied. When the action is `DENY_BY_DEFAULT`, no
+      `http_rules` or `network_rules` can be specified. When a request
+      arrives, the policies are evaluated in the following order: 1. If there
+      is a `CUSTOM` policy that matches the request, the `CUSTOM` policy is
+      evaluated using the custom authorization providers and the request is
+      denied if the provider rejects the request. 2. If there are any `DENY`
+      policies that match the request, the request is denied. 3. If any of the
+      `ALLOW` policies match the request, the request is allowed. 4. If a
+      `DENY_BY_DEFAULT` policy is applied to the resource, the request is
+      denied (unless it was explicitly allowed by a `CUSTOM` or `ALLOW`
+      policy). 5. Else, the request is allowed by default if no other policies
+      are configured.
     createTime: Output only. The timestamp when the resource was created.
     customProvider: Optional. Required if the action is `CUSTOM`. Allows
       delegating authorization decisions to Cloud IAP or to Service
@@ -533,19 +539,21 @@ class AuthzPolicy(_messages.Message):
   """
 
   class ActionValueValuesEnum(_messages.Enum):
-    r"""Required. Can be one of `ALLOW`, `DENY`, `CUSTOM`. When the action is
-    `CUSTOM`, `customProvider` must be specified. When the action is `ALLOW`,
-    only requests matching the policy will be allowed. When the action is
-    `DENY`, only requests matching the policy will be denied. When a request
-    arrives, the policies are evaluated in the following order: 1. If there is
-    a `CUSTOM` policy that matches the request, the `CUSTOM` policy is
-    evaluated using the custom authorization providers and the request is
-    denied if the provider rejects the request. 2. If there are any `DENY`
-    policies that match the request, the request is denied. 3. If there are no
-    `ALLOW` policies for the resource or if any of the `ALLOW` policies match
-    the request, the request is allowed. 4. Else the request is denied by
-    default if none of the configured AuthzPolicies with `ALLOW` action match
-    the request.
+    r"""Required. Can be one of `ALLOW`, `DENY`, `CUSTOM`, `DENY_BY_DEFAULT`.
+    When the action is `CUSTOM`, `customProvider` must be specified. When the
+    action is `ALLOW`, only requests matching the policy will be allowed. When
+    the action is `DENY`, only requests matching the policy will be denied.
+    When the action is `DENY_BY_DEFAULT`, no `http_rules` or `network_rules`
+    can be specified. When a request arrives, the policies are evaluated in
+    the following order: 1. If there is a `CUSTOM` policy that matches the
+    request, the `CUSTOM` policy is evaluated using the custom authorization
+    providers and the request is denied if the provider rejects the request.
+    2. If there are any `DENY` policies that match the request, the request is
+    denied. 3. If any of the `ALLOW` policies match the request, the request
+    is allowed. 4. If a `DENY_BY_DEFAULT` policy is applied to the resource,
+    the request is denied (unless it was explicitly allowed by a `CUSTOM` or
+    `ALLOW` policy). 5. Else, the request is allowed by default if no other
+    policies are configured.
 
     Values:
       AUTHZ_ACTION_UNSPECIFIED: Unspecified action.
@@ -553,11 +561,16 @@ class AuthzPolicy(_messages.Message):
       DENY: Deny the request and return a HTTP 404 to the client.
       CUSTOM: Delegate the authorization decision to an external authorization
         engine.
+      DENY_BY_DEFAULT: Establishes a secure-by-default posture by denying any
+        request not explicitly matched by any `ALLOW`, `DENY`, or `CUSTOM`
+        policy. This action serves as a universal fallback: if no other
+        policies match or are configured, the request is denied.
     """
     AUTHZ_ACTION_UNSPECIFIED = 0
     ALLOW = 1
     DENY = 2
     CUSTOM = 3
+    DENY_BY_DEFAULT = 4
 
   class PolicyProfileValueValuesEnum(_messages.Enum):
     r"""Optional. Immutable. Defines the type of authorization being
@@ -1783,8 +1796,8 @@ class FirewallEndpointEndpointSettings(_messages.Message):
     r"""Optional. The content cloud region of the endpoint.
 
     Values:
-      CONTENT_CLOUD_REGION_UNSPECIFIED: PAN content cloud region not
-        specified.
+      CONTENT_CLOUD_REGION_UNSPECIFIED: Palo Alto Networks content cloud
+        region not specified.
       US_CENTRAL: us.hawkeye.services-edge.paloaltonetworks.com
       APAC: APAC content cloud portal: apac.hawkeye.services-
         edge.paloaltonetworks.com
@@ -1851,7 +1864,7 @@ class FirewallEndpointWildfireSettings(_messages.Message):
       take on WildFire real time signature lookup timeout. Default value is
       ALLOW.
     WildfireRegionValueValuesEnum: Optional. The region where WildFire
-      analysis will be performed. PAN supports regions:
+      analysis will be performed. Palo Alto Networks supports regions:
       https://docs.paloaltonetworks.com/advanced-
       wildfire/administration/advanced-wildfire-overview/advanced-wildfire-
       deployments/advanced-wildfire-global-cloud
@@ -1868,7 +1881,7 @@ class FirewallEndpointWildfireSettings(_messages.Message):
     wildfireRealtimeLookupTimeoutAction: Optional. Action to take on WildFire
       real time signature lookup timeout. Default value is ALLOW.
     wildfireRegion: Optional. The region where WildFire analysis will be
-      performed. PAN supports regions:
+      performed. Palo Alto Networks supports regions:
       https://docs.paloaltonetworks.com/advanced-
       wildfire/administration/advanced-wildfire-overview/advanced-wildfire-
       deployments/advanced-wildfire-global-cloud
@@ -1891,8 +1904,9 @@ class FirewallEndpointWildfireSettings(_messages.Message):
     DENY = 2
 
   class WildfireRegionValueValuesEnum(_messages.Enum):
-    r"""Optional. The region where WildFire analysis will be performed. PAN
-    supports regions: https://docs.paloaltonetworks.com/advanced-
+    r"""Optional. The region where WildFire analysis will be performed. Palo
+    Alto Networks supports regions:
+    https://docs.paloaltonetworks.com/advanced-
     wildfire/administration/advanced-wildfire-overview/advanced-wildfire-
     deployments/advanced-wildfire-global-cloud
 
@@ -1985,7 +1999,7 @@ class FirewallEndpointWildfireSettingsWildfireInlineCloudAnalysisSettings(_messa
 
 
 class FirstPartyEndpointSettings(_messages.Message):
-  r"""Settings for first party endpoints."""
+  r"""A FirstPartyEndpointSettings object."""
 
 
 class ForceStartProgressiveRolloutRequest(_messages.Message):
@@ -11194,7 +11208,7 @@ class Status(_messages.Message):
 
 
 class ThirdPartyEndpointSettings(_messages.Message):
-  r"""Settings for third party endpoints.
+  r"""A ThirdPartyEndpointSettings object.
 
   Fields:
     targetFirewallAttachment: Optional. URL of the target firewall attachment.

@@ -1082,6 +1082,133 @@ class GoogleCloudBigqueryMigrationV2Lease(_messages.Message):
   expireTime = _messages.StringField(2)
 
 
+class GoogleCloudBigqueryMigrationV2LineageOutput(_messages.Message):
+  r"""The output of a task with output type "LINEAGE". Actual generated
+  lineage can be queried separately (see webapp_uri), this message contains
+  only metadata: processing status, errors, etc.
+
+  Fields:
+    processingProgressReports: Output only. Work processing progress reports
+      broken up by processing stage.
+    recognizedInputs: Output only. Recognized lineage inputs. All inputs are
+      processed only if the task succeeds and all work is in state
+      [SUCCEEDED](ProgressReport.WorkSummary.State.SUCCEEDED) (in particular,
+      nothing is [SKIPPED](ProgressReport.WorkSummary.State.SKIPPED)). Even
+      with all inputs processed successfully, there may be transpiler errors
+      present leading to inaccurate lineage.
+    webappUri: The URI of the webapp that visualizes the lineage. The user
+      needs the `bigquerymigration.googleapis.com/lineageDbs.query` IAM
+      permission to use the webapp.
+  """
+
+  processingProgressReports = _messages.MessageField('GoogleCloudBigqueryMigrationV2LineageOutputProgressReport', 1, repeated=True)
+  recognizedInputs = _messages.MessageField('GoogleCloudBigqueryMigrationV2LineageOutputRecognizedInput', 2, repeated=True)
+  webappUri = _messages.StringField(3)
+
+
+class GoogleCloudBigqueryMigrationV2LineageOutputProgressReport(_messages.Message):
+  r"""Breaks down processing progress of work.
+
+  Enums:
+    ProcessingStageValueValuesEnum: Output only. The processing stage this
+      progress report describes.
+
+  Fields:
+    processingStage: Output only. The processing stage this progress report
+      describes.
+    workSummaries: Output only. Summaries of work broken up by the state of
+      the work. Each work summary describes how much work is in the given
+      state. To get numbers for the total work covered, aggregate the numbers
+      from all summaries.
+  """
+
+  class ProcessingStageValueValuesEnum(_messages.Enum):
+    r"""Output only. The processing stage this progress report describes.
+
+    Values:
+      PROCESSING_STAGE_UNSPECIFIED: The stage is not specified.
+      INPUT_INGESTION: The input ingestion stage.
+      POSTPROCESSING: The lineage DB postprocessing stage.
+    """
+    PROCESSING_STAGE_UNSPECIFIED = 0
+    INPUT_INGESTION = 1
+    POSTPROCESSING = 2
+
+  processingStage = _messages.EnumField('ProcessingStageValueValuesEnum', 1)
+  workSummaries = _messages.MessageField('GoogleCloudBigqueryMigrationV2LineageOutputProgressReportWorkSummary', 2, repeated=True)
+
+
+class GoogleCloudBigqueryMigrationV2LineageOutputProgressReportWorkSummary(_messages.Message):
+  r"""Summary of work in the given state.
+
+  Enums:
+    StateValueValuesEnum: Output only. The state of the work this summary
+      describes.
+
+  Fields:
+    comment: Output only. Human-readable comment.
+    size: Output only. Size of the work in the given State. Size counts "units
+      of work". Units represent arbitrary division of work; there's no
+      expectation each unit takes similar time to process.
+    state: Output only. The state of the work this summary describes.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the work this summary describes.
+
+    Values:
+      STATE_UNSPECIFIED: The state is not specified.
+      SUCCEEDED: Work that was processed successfully.
+      FAILED: Work that failed processing.
+      IN_PROGRESS: Work that is currently being processed or queued for
+        processing.
+      SKIPPED: Work that was recognised as necessary to fully process inputs
+        but was skipped due to system limitations.
+    """
+    STATE_UNSPECIFIED = 0
+    SUCCEEDED = 1
+    FAILED = 2
+    IN_PROGRESS = 3
+    SKIPPED = 4
+
+  comment = _messages.StringField(1)
+  size = _messages.IntegerField(2)
+  state = _messages.EnumField('StateValueValuesEnum', 3)
+
+
+class GoogleCloudBigqueryMigrationV2LineageOutputRecognizedInput(_messages.Message):
+  r"""Information about lineage input of the given type that lineage
+  generation recognized. If you expected to process more of the given input,
+  verify your input was uploaded and is in the correct format and the request
+  to generate lineage correctly specified the input location.
+
+  Enums:
+    TypeValueValuesEnum: Output only. The type of the input.
+
+  Fields:
+    type: Output only. The type of the input.
+    uncompressedSizeBytes: Output only. The uncompressed size of the
+      recognized input of the given type.
+  """
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The type of the input.
+
+    Values:
+      TYPE_UNSPECIFIED: The type is not specified.
+      METADATA: The input is metadata.
+      QUERY_LOG: The input is a query log.
+      SCRIPT: The input is a SQL script.
+    """
+    TYPE_UNSPECIFIED = 0
+    METADATA = 1
+    QUERY_LOG = 2
+    SCRIPT = 3
+
+  type = _messages.EnumField('TypeValueValuesEnum', 1)
+  uncompressedSizeBytes = _messages.IntegerField(2)
+
+
 class GoogleCloudBigqueryMigrationV2ListMigrationSubtasksResponse(_messages.Message):
   r"""Response object for a `ListMigrationSubtasks` call.
 
@@ -1332,11 +1459,43 @@ class GoogleCloudBigqueryMigrationV2MigrationTask(_messages.Message):
 class GoogleCloudBigqueryMigrationV2MigrationTaskResult(_messages.Message):
   r"""The migration task result.
 
+  Messages:
+    TaskOutputsValue: The map of task output types to the task outputs, e.g.
+      "LINEAGE".
+
   Fields:
+    taskOutputs: The map of task output types to the task outputs, e.g.
+      "LINEAGE".
     translationTaskResult: Details specific to translation task types.
   """
 
-  translationTaskResult = _messages.MessageField('GoogleCloudBigqueryMigrationV2TranslationTaskResult', 1)
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class TaskOutputsValue(_messages.Message):
+    r"""The map of task output types to the task outputs, e.g. "LINEAGE".
+
+    Messages:
+      AdditionalProperty: An additional property for a TaskOutputsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type TaskOutputsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a TaskOutputsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A GoogleCloudBigqueryMigrationV2TaskOutput attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('GoogleCloudBigqueryMigrationV2TaskOutput', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  taskOutputs = _messages.MessageField('TaskOutputsValue', 1)
+  translationTaskResult = _messages.MessageField('GoogleCloudBigqueryMigrationV2TranslationTaskResult', 2)
 
 
 class GoogleCloudBigqueryMigrationV2MigrationWorkflow(_messages.Message):
@@ -2029,6 +2188,40 @@ class GoogleCloudBigqueryMigrationV2TargetSpec(_messages.Message):
   """
 
   relativePath = _messages.StringField(1)
+
+
+class GoogleCloudBigqueryMigrationV2TaskOutput(_messages.Message):
+  r"""The task output for a task type including the status and any errors.
+
+  Enums:
+    StateValueValuesEnum: Output only. The current state of the task output.
+
+  Fields:
+    lineageOutput: The output of the task with output type "LINEAGE".
+    processingError: An explanation that may be populated when the task output
+      is in FAILED state.
+    state: Output only. The current state of the task output.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current state of the task output.
+
+    Values:
+      STATE_UNSPECIFIED: Task output state is unspecified.
+      PENDING: Task output is pending.
+      SUCCEEDED: Task output is succeeded.
+      FAILED: Task output is failed. This does not mean that there is no
+        useful information in the output; partial outputs or failure details
+        may be available.
+    """
+    STATE_UNSPECIFIED = 0
+    PENDING = 1
+    SUCCEEDED = 2
+    FAILED = 3
+
+  lineageOutput = _messages.MessageField('GoogleCloudBigqueryMigrationV2LineageOutput', 1)
+  processingError = _messages.MessageField('GoogleRpcErrorInfo', 2)
+  state = _messages.EnumField('StateValueValuesEnum', 3)
 
 
 class GoogleCloudBigqueryMigrationV2TeradataDialect(_messages.Message):

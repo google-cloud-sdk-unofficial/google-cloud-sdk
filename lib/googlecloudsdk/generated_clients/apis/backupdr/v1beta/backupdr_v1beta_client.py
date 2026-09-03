@@ -596,7 +596,7 @@ class BackupdrV1beta(base_api.BaseApiClient):
         method_id='backupdr.projects.locations.backupPlanAssociations.delete',
         ordered_params=['name'],
         path_params=['name'],
-        query_params=['requestId'],
+        query_params=['autoProtectionPolicyBinding', 'requestId'],
         relative_path='v1beta/{+name}',
         request_field='',
         request_type_name='BackupdrProjectsLocationsBackupPlanAssociationsDeleteRequest',

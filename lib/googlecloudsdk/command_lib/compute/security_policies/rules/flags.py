@@ -186,6 +186,8 @@ _RATE_LIMIT_ENFORCE_ON_KEY_TYPES_DESCRIPTION = """
       - ``tls-ja4-fingerprint'': key type takes the value of JA4 TLS/SSL
                                  fingerprint if the client connects using HTTPS,
                                  HTTP/2 or HTTP/3
+      - ``asn'': key type takes the value of the Autonomous System Number from
+                 which the request originates
 """
 
 
@@ -486,6 +488,7 @@ def AddRateLimitOptions(
       'tls-ja3-fingerprint',
       'user-ip',
       'tls-ja4-fingerprint',
+      'asn',
   ]
   parser.add_argument(
       '--enforce-on-key',
@@ -512,15 +515,16 @@ def AddRateLimitOptions(
       type=arg_parsers.ArgList(
           element_type=security_policies_utils.ParseEnforceOnKeyConfig,
           min_length=1,
-          max_length=3),
+          max_length=3,
+      ),
       # The default renders as follows:
       # [all=ALL],[http-cookie=HTTP-COOKIE],
       # [http-header=HTTP-HEADER],[http-path=HTTP-PATH],
       # [ip=IP],[region-code=REGION-CODE],[sni=SNI],
       # [tls-ja3-fingerprint=TLS-JA3-FINGERPRINT],[user-ip=USER-IP],
       # [tls-ja4-fingerprint=TLS-JA4-FINGERPRINT],
-      # [xff-ip=XFF-IP]]
-      metavar='[[all],[ip],[xff-ip],[http-cookie=HTTP_COOKIE],[http-header=HTTP_HEADER],[http-path],[sni],[region-code],[tls-ja3-fingerprint],[user-ip],[tls-ja4-fingerprint]]',
+      # [xff-ip=XFF-IP]],[asn=ASN]
+      metavar='[[all],[ip],[xff-ip],[http-cookie=HTTP_COOKIE],[http-header=HTTP_HEADER],[http-path],[sni],[region-code],[tls-ja3-fingerprint],[user-ip],[tls-ja4-fingerprint],[asn]]',
       help="""\
       Specify up to 3 key type/name pairs to rate limit.
       Valid key types are:

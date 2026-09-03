@@ -422,14 +422,20 @@ class CloudRunRevisionEndpoint(_messages.Message):
   Fields:
     serviceUri: Output only. The URI of the Cloud Run service that the
       revision belongs to. The format is:
-      projects/{project}/locations/{location}/services/{service}
+      projects/{project}/locations/{location}/services/{service}. Mutually
+      exclusive with worker_pool_uri.
     uri: A [Cloud Run](https://cloud.google.com/run) [revision](https://cloud.
       google.com/run/docs/reference/rest/v1/namespaces.revisions/get) URI. The
       format is: projects/{project}/locations/{location}/revisions/{revision}
+    workerPoolUri: Output only. The URI of the worker pool that the revision
+      belongs to. The format is:
+      projects/{project}/locations/{location}/workerPools/{workerPool}.
+      Mutually exclusive with service_uri.
   """
 
   serviceUri = _messages.StringField(1)
   uri = _messages.StringField(2)
+  workerPoolUri = _messages.StringField(3)
 
 
 class CloudRunRevisionInfo(_messages.Message):
@@ -440,14 +446,19 @@ class CloudRunRevisionInfo(_messages.Message):
     location: Location in which this revision is deployed.
     serviceUri: URI of Cloud Run service this revision belongs to. Format:
       `projects/{project_id}/locations/{location}/services/{service_id}`
+      Mutually exclusive with `worker_pool_uri`.
     uri: URI of the Cloud Run revision. Format:
       `projects/{project_id}/locations/{location}/revisions/{revision_id}`
+    workerPoolUri: URI of Cloud Run worker pool this revision belongs to.
+      Format: `projects/{project_id}/locations/{location}/workerPools/{worker_
+      pool_id}`. Mutually exclusive with `service_uri`.
   """
 
   displayName = _messages.StringField(1)
   location = _messages.StringField(2)
   serviceUri = _messages.StringField(3)
   uri = _messages.StringField(4)
+  workerPoolUri = _messages.StringField(5)
 
 
 class CloudSQLInstanceInfo(_messages.Message):

@@ -1887,6 +1887,7 @@ class MaliciousContentLLMResult(_messages.Message):
 
   Fields:
     maxSeverity: Tracks max severity found.
+    modelId: The base name of the model that performed the scan.
     scanStatus: Status of the scan.
   """
 
@@ -1915,7 +1916,8 @@ class MaliciousContentLLMResult(_messages.Message):
     NOT_PERFORMED = 2
 
   maxSeverity = _messages.EnumField('MaxSeverityValueValuesEnum', 1)
-  scanStatus = _messages.EnumField('ScanStatusValueValuesEnum', 2)
+  modelId = _messages.StringField(2)
+  scanStatus = _messages.EnumField('ScanStatusValueValuesEnum', 3)
 
 
 class MaliciousContentStaticResult(_messages.Message):

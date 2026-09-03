@@ -118,7 +118,7 @@ class CloudkmsV1(base_api.BaseApiClient):
     )
 
     def ShowEffectiveAutokeyConfig(self, request, global_params=None):
-      r"""Returns the effective Cloud KMS Autokey configuration for a given project or folder.
+      r"""Returns the effective Cloud KMS Autokey configuration for a given project or folder. Note on permissions: - If called on a project (`projects/{project}`), requires `cloudkms.projects.showEffectiveAutokeyConfig`. - If called on a folder (`folders/{folder}`), requires `cloudkms.folders.showEffectiveAutokeyConfig`.
 
       Args:
         request: (CloudkmsFoldersShowEffectiveAutokeyConfigRequest) input message
@@ -2391,7 +2391,7 @@ class CloudkmsV1(base_api.BaseApiClient):
     )
 
     def ShowEffectiveAutokeyConfig(self, request, global_params=None):
-      r"""Returns the effective Cloud KMS Autokey configuration for a given project or folder.
+      r"""Returns the effective Cloud KMS Autokey configuration for a given project or folder. Note on permissions: - If called on a project (`projects/{project}`), requires `cloudkms.projects.showEffectiveAutokeyConfig`. - If called on a folder (`folders/{folder}`), requires `cloudkms.folders.showEffectiveAutokeyConfig`.
 
       Args:
         request: (CloudkmsProjectsShowEffectiveAutokeyConfigRequest) input message

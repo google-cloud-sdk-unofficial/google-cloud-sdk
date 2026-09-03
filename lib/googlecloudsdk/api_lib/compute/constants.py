@@ -74,7 +74,7 @@ DEFAULT_ACCESS_CONFIG_NAME = 'external-nat'
 DEFAULT_IPV6_ACCESS_CONFIG_NAME = 'external-v6-access-config'
 
 CONFIDENTIAL_VM_TYPES = enum.Enum(
-    'CONFIDENTIAL_VM_TYPES', ['SEV', 'SEV_SNP', 'TDX', 'CCA']
+    'CONFIDENTIAL_VM_TYPES', ['SEV', 'SEV_SNP', 'TDX', 'CCA', 'BMSAI']
 )
 
 DEFAULT_MACHINE_TYPE = 'n1-standard-1'
@@ -83,6 +83,7 @@ DEFAULT_MACHINE_TYPE_FOR_CONFIDENTIAL_VMS = {
     CONFIDENTIAL_VM_TYPES.SEV_SNP: 'n2d-standard-2',
     CONFIDENTIAL_VM_TYPES.TDX: 'c3-standard-4',
     CONFIDENTIAL_VM_TYPES.CCA: 'c5a-standard-4',
+    CONFIDENTIAL_VM_TYPES.BMSAI: 'a4x-maxgpu-4g-metal',
 }
 DEFAULT_NETWORK = 'default'
 DEFAULT_NETWORK_INTERFACE = 'nic0'
@@ -110,6 +111,7 @@ DEFAULT_IMAGE_FAMILY_FOR_CONFIDENTIAL_VMS = {
     CONFIDENTIAL_VM_TYPES.TDX: 'ubuntu-2204-lts',
     # TODO(b/538200252): Revisit once the default image for CCA is finalized.
     CONFIDENTIAL_VM_TYPES.CCA: 'ubuntu-2604-lts-arm64',
+    CONFIDENTIAL_VM_TYPES.BMSAI: 'cos-arm64-121-lts',
 }
 
 ImageAlias = collections.namedtuple(

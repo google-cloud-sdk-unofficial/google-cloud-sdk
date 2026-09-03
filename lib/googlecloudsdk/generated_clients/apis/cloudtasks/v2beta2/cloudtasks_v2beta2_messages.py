@@ -347,6 +347,41 @@ class AttemptStatus(_messages.Message):
   scheduleTime = _messages.StringField(4)
 
 
+class BatchCreateTasksRequest(_messages.Message):
+  r"""Request message for [BatchCreateTasks].
+
+  Fields:
+    requestId: Optional. This field will be used to identify the long running
+      operation, avoiding duplication when user retries. If not provided, then
+      a UUID will be generated at server side.
+    requests: Required. The list of requests to create tasks. The queue
+      specified in parent field of each CreateTaskRequest will be the same.
+      This validation happens on the client side as well as in the handler.
+      BatchCreateTasksRequest.parent will also be the same value as the
+      individual CreateTaskRequest.parent . The maximum number of requests is
+      100.
+  """
+
+  requestId = _messages.StringField(1)
+  requests = _messages.MessageField('CreateTaskRequest', 2, repeated=True)
+
+
+class BatchDeleteTasksRequest(_messages.Message):
+  r"""Request message for deleting a batch of tasks using BatchDeleteTasks.
+
+  Fields:
+    names: Required. The names of the tasks to delete. A maximum of 1000 tasks
+      can be deleted in a batch. For example: Format: `projects/PROJECT_ID/loc
+      ations/LOCATION_ID/queues/QUEUE_ID/tasks/TASK_ID`
+    requestId: Optional. This field will be used to identify the long running
+      operation, avoiding duplication when user retries. If not provided, then
+      a UUID will be generated at server side.
+  """
+
+  names = _messages.StringField(1, repeated=True)
+  requestId = _messages.StringField(2)
+
+
 class Binding(_messages.Message):
   r"""Associates `members`, or principals, with a `role`.
 
@@ -567,6 +602,16 @@ class CloudtasksProjectsLocationsListRequest(_messages.Message):
   pageToken = _messages.StringField(5)
 
 
+class CloudtasksProjectsLocationsOperationsGetRequest(_messages.Message):
+  r"""A CloudtasksProjectsLocationsOperationsGetRequest object.
+
+  Fields:
+    name: The name of the operation resource.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
 class CloudtasksProjectsLocationsQueuesCreateRequest(_messages.Message):
   r"""A CloudtasksProjectsLocationsQueuesCreateRequest object.
 
@@ -757,6 +802,35 @@ class CloudtasksProjectsLocationsQueuesTasksAcknowledgeRequest(_messages.Message
 
   acknowledgeTaskRequest = _messages.MessageField('AcknowledgeTaskRequest', 1)
   name = _messages.StringField(2, required=True)
+
+
+class CloudtasksProjectsLocationsQueuesTasksBatchCreateRequest(_messages.Message):
+  r"""A CloudtasksProjectsLocationsQueuesTasksBatchCreateRequest object.
+
+  Fields:
+    batchCreateTasksRequest: A BatchCreateTasksRequest resource to be passed
+      as the request body.
+    parent: Required. The queue name. For example:
+      `projects/PROJECT_ID/locations/LOCATION_ID/queues/QUEUE_ID` The queue
+      must already exist.
+  """
+
+  batchCreateTasksRequest = _messages.MessageField('BatchCreateTasksRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
+class CloudtasksProjectsLocationsQueuesTasksBatchDeleteRequest(_messages.Message):
+  r"""A CloudtasksProjectsLocationsQueuesTasksBatchDeleteRequest object.
+
+  Fields:
+    batchDeleteTasksRequest: A BatchDeleteTasksRequest resource to be passed
+      as the request body.
+    parent: Required. The queue name. For example: Format:
+      `projects/PROJECT_ID/locations/LOCATION_ID/queues/QUEUE_ID`
+  """
+
+  batchDeleteTasksRequest = _messages.MessageField('BatchDeleteTasksRequest', 1)
+  parent = _messages.StringField(2, required=True)
 
 
 class CloudtasksProjectsLocationsQueuesTasksBufferRequest(_messages.Message):
@@ -1042,6 +1116,9 @@ class CreateTaskRequest(_messages.Message):
       IAM](https://cloud.google.com/iam/) permission on the Task resource.
 
   Fields:
+    parent: Required. The queue name. For example:
+      `projects/PROJECT_ID/locations/LOCATION_ID/queues/QUEUE_ID` The queue
+      must already exist.
     responseView: The response_view specifies which subset of the Task will be
       returned. By default response_view is BASIC; not all information is
       retrieved by default because some data, such as payloads, might be
@@ -1095,8 +1172,9 @@ class CreateTaskRequest(_messages.Message):
     BASIC = 1
     FULL = 2
 
-  responseView = _messages.EnumField('ResponseViewValueValuesEnum', 1)
-  task = _messages.MessageField('Task', 2)
+  parent = _messages.StringField(1)
+  responseView = _messages.EnumField('ResponseViewValueValuesEnum', 2)
+  task = _messages.MessageField('Task', 3)
 
 
 class Empty(_messages.Message):
@@ -1404,8 +1482,8 @@ class HttpRequest(_messages.Message):
 
 
 class HttpTarget(_messages.Message):
-  r"""HTTP target. When specified as a Queue, all the tasks with [HttpRequest]
-  will be overridden according to the target.
+  r"""HTTP target. When specified at the Queue level, all tasks with
+  HttpRequest are overridden according to the target.
 
   Enums:
     HttpMethodValueValuesEnum: The HTTP method to use for the request. When
@@ -1744,6 +1822,114 @@ class OidcToken(_messages.Message):
   serviceAccountEmail = _messages.StringField(2)
 
 
+class Operation(_messages.Message):
+  r"""This resource represents a long-running operation that is the result of
+  a network API call.
+
+  Messages:
+    MetadataValue: Service-specific metadata associated with the operation. It
+      typically contains progress information and common metadata such as
+      create time. Some services might not provide such metadata. Any method
+      that returns a long-running operation should document the metadata type,
+      if any.
+    ResponseValue: The normal, successful response of the operation. If the
+      original method returns no data on success, such as `Delete`, the
+      response is `google.protobuf.Empty`. If the original method is standard
+      `Get`/`Create`/`Update`, the response should be the resource. For other
+      methods, the response should have the type `XxxResponse`, where `Xxx` is
+      the original method name. For example, if the original method name is
+      `TakeSnapshot()`, the inferred response type is `TakeSnapshotResponse`.
+
+  Fields:
+    done: If the value is `false`, it means the operation is still in
+      progress. If `true`, the operation is completed, and either `error` or
+      `response` is available.
+    error: The error result of the operation in case of failure or
+      cancellation.
+    metadata: Service-specific metadata associated with the operation. It
+      typically contains progress information and common metadata such as
+      create time. Some services might not provide such metadata. Any method
+      that returns a long-running operation should document the metadata type,
+      if any.
+    name: The server-assigned name, which is only unique within the same
+      service that originally returns it. If you use the default HTTP mapping,
+      the `name` should be a resource name ending with
+      `operations/{unique_id}`.
+    response: The normal, successful response of the operation. If the
+      original method returns no data on success, such as `Delete`, the
+      response is `google.protobuf.Empty`. If the original method is standard
+      `Get`/`Create`/`Update`, the response should be the resource. For other
+      methods, the response should have the type `XxxResponse`, where `Xxx` is
+      the original method name. For example, if the original method name is
+      `TakeSnapshot()`, the inferred response type is `TakeSnapshotResponse`.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class MetadataValue(_messages.Message):
+    r"""Service-specific metadata associated with the operation. It typically
+    contains progress information and common metadata such as create time.
+    Some services might not provide such metadata. Any method that returns a
+    long-running operation should document the metadata type, if any.
+
+    Messages:
+      AdditionalProperty: An additional property for a MetadataValue object.
+
+    Fields:
+      additionalProperties: Properties of the object. Contains field @type
+        with type URL.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a MetadataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ResponseValue(_messages.Message):
+    r"""The normal, successful response of the operation. If the original
+    method returns no data on success, such as `Delete`, the response is
+    `google.protobuf.Empty`. If the original method is standard
+    `Get`/`Create`/`Update`, the response should be the resource. For other
+    methods, the response should have the type `XxxResponse`, where `Xxx` is
+    the original method name. For example, if the original method name is
+    `TakeSnapshot()`, the inferred response type is `TakeSnapshotResponse`.
+
+    Messages:
+      AdditionalProperty: An additional property for a ResponseValue object.
+
+    Fields:
+      additionalProperties: Properties of the object. Contains field @type
+        with type URL.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ResponseValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  done = _messages.BooleanField(1)
+  error = _messages.MessageField('Status', 2)
+  metadata = _messages.MessageField('MetadataValue', 3)
+  name = _messages.StringField(4)
+  response = _messages.MessageField('ResponseValue', 5)
+
+
 class PathOverride(_messages.Message):
   r"""PathOverride. Path message defines path override for HTTP targets.
 
@@ -1923,8 +2109,9 @@ class Queue(_messages.Message):
       retries (the second attempt, third attempt, etc).
     retryConfig: Settings that determine the retry behavior. * For tasks
       created using Cloud Tasks: the queue-level retry settings apply to all
-      tasks in the queue that were created using Cloud Tasks. Retry settings
-      cannot be set on individual tasks. * For tasks created using the App
+      tasks in the queue that were created using Cloud Tasks. Optionally,
+      retry settings can be set on individual tasks and override the queue-
+      level retry settings for the task. * For tasks created using the App
       Engine SDK: the queue-level retry settings apply to all tasks in the
       queue which do not have retry settings explicitly set on the task and
       were created by the App Engine SDK. See [App Engine documentation](https
@@ -2410,6 +2597,8 @@ class Task(_messages.Message):
     pullMessage: LeaseTasks to process the task. Can be set only if
       pull_target is set on the queue. A pull task is a task that has
       PullMessage set.
+    retryConfig: Optional. Specifies the task-level retry config. If present,
+      this overrides the queue-level retry config for this task.
     scheduleTime: The time when the task is scheduled to be attempted. For App
       Engine queues, this is when the task will be attempted or retried. For
       pull queues, this is the time when the task is available to be leased;
@@ -2446,9 +2635,10 @@ class Task(_messages.Message):
   httpRequest = _messages.MessageField('HttpRequest', 3)
   name = _messages.StringField(4)
   pullMessage = _messages.MessageField('PullMessage', 5)
-  scheduleTime = _messages.StringField(6)
-  status = _messages.MessageField('TaskStatus', 7)
-  view = _messages.EnumField('ViewValueValuesEnum', 8)
+  retryConfig = _messages.MessageField('RetryConfig', 6)
+  scheduleTime = _messages.StringField(7)
+  status = _messages.MessageField('TaskStatus', 8)
+  view = _messages.EnumField('ViewValueValuesEnum', 9)
 
 
 class TaskStatus(_messages.Message):

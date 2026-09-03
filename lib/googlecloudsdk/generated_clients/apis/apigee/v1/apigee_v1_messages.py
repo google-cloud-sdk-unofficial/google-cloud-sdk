@@ -14199,7 +14199,9 @@ class GoogleCloudApigeeV1SecurityProfileEnvironmentAssociation(_messages.Message
   Fields:
     attachTime: Output only. The time when environment was attached to the
       security profile.
-    name: Immutable. Name of the environment that the profile is attached to.
+    name: Immutable. The environment ID that the profile is attached to, e.g.
+      `prod`. This is the bare environment ID, not a full resource name; see
+      b/288477507.
     securityProfileRevisionId: DEPRECATED: DO NOT USE Revision ID of the
       security profile.
   """

@@ -978,6 +978,69 @@ def ApplyCustomMetrics(args, backend_service):
     backend_service.customMetrics = args.custom_metrics_file
 
 
+def ApplySecuritySettingsArgs(
+    client, args, backend_service, cleared_fields=None
+):
+  """Applies SecuritySettings related flags to the backend service message."""
+  if args.IsKnownAndSpecified('no_security_settings'):
+    backend_service.securitySettings = None
+    if cleared_fields is not None:
+      cleared_fields.append('securitySettings')
+    return
+
+  has_any_sec_flag = any(
+      args.IsSpecified(f)
+      for f in [
+          'security_settings_client_tls_policy',
+          'security_settings_subject_alt_names',
+          'security_settings_aws_v4_access_key_id',
+          'security_settings_aws_v4_access_key',
+          'security_settings_aws_v4_access_key_version',
+          'security_settings_aws_v4_origin_region',
+      ]
+  )
+  if not has_any_sec_flag:
+    return
+
+  sec_settings = (
+      backend_service.securitySettings
+      if backend_service.securitySettings
+      else client.messages.SecuritySettings()
+  )
+
+  if args.IsSpecified('security_settings_client_tls_policy'):
+    sec_settings.clientTlsPolicy = args.security_settings_client_tls_policy
+  if args.IsSpecified('security_settings_subject_alt_names'):
+    sec_settings.subjectAltNames = args.security_settings_subject_alt_names
+
+  has_aws_v4 = any(
+      args.IsSpecified(f)
+      for f in [
+          'security_settings_aws_v4_access_key_id',
+          'security_settings_aws_v4_access_key',
+          'security_settings_aws_v4_access_key_version',
+          'security_settings_aws_v4_origin_region',
+      ]
+  )
+  if has_aws_v4:
+    aws_v4 = (
+        sec_settings.awsV4Authentication
+        if sec_settings.awsV4Authentication
+        else client.messages.AWSV4Signature()
+    )
+    if args.IsSpecified('security_settings_aws_v4_access_key_id'):
+      aws_v4.accessKeyId = args.security_settings_aws_v4_access_key_id
+    if args.IsSpecified('security_settings_aws_v4_access_key'):
+      aws_v4.accessKey = args.security_settings_aws_v4_access_key
+    if args.IsSpecified('security_settings_aws_v4_access_key_version'):
+      aws_v4.accessKeyVersion = args.security_settings_aws_v4_access_key_version
+    if args.IsSpecified('security_settings_aws_v4_origin_region'):
+      aws_v4.originRegion = args.security_settings_aws_v4_origin_region
+    sec_settings.awsV4Authentication = aws_v4
+
+  backend_service.securitySettings = sec_settings
+
+
 def IpPortDynamicForwarding(client, args, backend_service):
   """Enables the Ip Port Dynamic Forwarding in the backend service.
 
@@ -1130,6 +1193,14 @@ def WaitForOperation(resources, service, operation, backend_service_ref,
 
 def ApplyConsistentHashSettings(client, args, backend_service):
   """Applies consistentHash related flags to the backend service message."""
+  if args.IsKnownAndSpecified('consistent_hash_http_header_name'):
+    if backend_service.consistentHash is None:
+      backend_service.consistentHash = (
+          client.messages.ConsistentHashLoadBalancerSettings()
+      )
+    backend_service.consistentHash.httpHeaderName = (
+        args.consistent_hash_http_header_name
+    )
   if args.IsKnownAndSpecified('consistent_hash_minimum_ring_size'):
     if backend_service.consistentHash is None:
       backend_service.consistentHash = (

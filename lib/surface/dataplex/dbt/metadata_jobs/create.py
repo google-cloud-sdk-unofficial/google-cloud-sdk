@@ -205,9 +205,8 @@ class Create(base.Command):
         help=textwrap.dedent("""\
             Update only the metadata this dbt run observed, and leave the rest
             of the entry group untouched. No entry is created, deleted or
-            re-parented, no entry link is emitted, and an aspect whose dbt
-            artifact was absent from this run keeps the value a previous run
-            gave it.
+            re-parented, and an aspect whose dbt artifact was absent from this
+            run keeps the value a previous run gave it.
 
             Use this for routine ingestion, after whichever dbt command your
             pipeline already runs: `dbt build`, `dbt test`, `dbt source
@@ -217,10 +216,10 @@ class Create(base.Command):
             Omit it when the set of dbt resources itself changed (a model
             added, renamed or deleted), since only a full run creates and
             prunes entries. A full run also refreshes display names,
-            descriptions, labels, entry links and the entry hierarchy, which
-            this flag leaves alone; and because a full run must write every
-            entry's required aspects, run it from as complete an artifact set
-            as your pipeline can produce.
+            descriptions, labels and the entry hierarchy, which this flag
+            leaves alone; and because a full run must write every entry's
+            required aspects, run it from as complete an artifact set as your
+            pipeline can produce.
 
             The first ingestion into an entry group must be a full run: there
             are no entries to attach aspects to yet."""),
@@ -228,16 +227,20 @@ class Create(base.Command):
     parser.add_argument(
         '--include-entry-links',
         action='store_true',
-        default=True,
-        help="""Also emit EntryLink records capturing dbt lineage and semantic
-        relationships (depends-on-lineage-imported, represents, depends-on-imported, etc.).""",
+        default=False,
+        hidden=True,
+        help="""Also emit EntryLink records capturing dbt relationships:
+        `depends-on` where data flows from one resource to another, and
+        `reference` where one resource describes another (a test, a semantic
+        model, a metric, or the physical BigQuery table a node writes).""",
     )
     parser.add_argument(
         '--skip-bigquery-link',
         action='store_true',
         default=False,
-        help="""Skip `represents` links (dbt node -> physical BigQuery
-        table entry). Otherwise a `represents` link is emitted for each
+        hidden=True,
+        help="""Skip physical `reference` links (dbt node -> physical BigQuery
+        table entry). Otherwise a `reference` link is emitted for each
         materialized dbt node (model/seed/snapshot) whose BigQuery dataset lives
         in the import location (`--location`); links can only reference
         @bigquery entries in that same region, so datasets in another region are
@@ -315,7 +318,7 @@ class Create(base.Command):
             artifacts_path, os.path.join(tmp_dir, 'artifacts')
         )
 
-      # Resolve which datasets get represents (physical) links
+      # Resolve which datasets get physical `reference` links
       # (dbt node -> physical @bigquery table entry). Those links can only
       # reference @bigquery entries in the import location, so datasets in
       # another region are dropped.
@@ -382,8 +385,8 @@ class Create(base.Command):
       entry_link_types = dbt_transform.LinkTypeFqns(
           system_types_project, types_location
       )
-      # Scope the caller's project plus any BigQuery projects that
-      # represents (physical) links target, so those cross-entry references
+      # Scope the caller's project plus any BigQuery projects that the
+      # physical `reference` links target, so those cross-entry references
       # resolve.
       referenced_entry_scopes = ['projects/{0}'.format(project_number)] + [
           'projects/{0}'.format(p) for p in summary.get('bigquery_projects', [])
@@ -495,9 +498,9 @@ class Create(base.Command):
       location: str,
       include_entry_links: bool,
   ) -> frozenset[tuple[str, str]] | None:
-    """Returns the BigQuery datasets to emit represents links for.
+    """Returns the BigQuery datasets to emit physical `reference` links for.
 
-    A represents link points a dbt node at its physical @bigquery table
+    A physical `reference` link points a dbt node at its @bigquery table
     entry. The link is created in the caller's entry group at the import
     location; Dataplex only supports same-region entry links, and the @bigquery
     entry of a BigQuery table lives in the Dataplex region matching its dataset.
@@ -515,7 +518,7 @@ class Create(base.Command):
 
     Returns:
       The set of (project, dataset) pairs to emit links for, or None when
-      represents links are disabled or nothing is co-located with the
+      physical links are disabled or nothing is co-located with the
       import location.
     """
     if not include_entry_links or args.skip_bigquery_link:
@@ -536,7 +539,7 @@ class Create(base.Command):
     linkable = frozenset(datasets - set(mismatched))
     if mismatched:
       log.warning(
-          'Skipping represents links for {0} BigQuery dataset(s) not in '
+          'Skipping physical links for {0} BigQuery dataset(s) not in '
           'the import location [{1}]: {2}. Entry links must be same-region, so '
           '@bigquery entries in another region cannot be linked; run the '
           'import in that region (--location) to link them.'.format(

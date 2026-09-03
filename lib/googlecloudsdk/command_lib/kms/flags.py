@@ -492,7 +492,7 @@ def AddExternalKeyUriFlag(parser):
       suggestion_aliases=['--key-uri'],
       help=(
           'The URI of the external key for keys with protection level'
-          ' "external".'
+          ' `external`.'
       ),
   )
 
@@ -502,7 +502,7 @@ def AddEkmConnectionKeyPathFlag(parser):
       '--ekm-connection-key-path',
       help=(
           'The path to the external key material on the EKM for keys with '
-          'protection level "external-vpc".'
+          'protection level `external-vpc`.'
       ),
   )
 
@@ -537,10 +537,47 @@ def AddCryptoKeyBackendFlag(parser):
   parser.add_argument(
       '--crypto-key-backend',
       help=(
-          'The resource name of the backend environment where the key material'
-          ' for all CryptoKeyVersions associated with this CryptoKey reside and'
-          ' where all related cryptographic operations are performed. Currently'
-          ' only applicable for EXTERNAL_VPC and EkmConnection resource names.'
+          'For keys with the `external-vpc` protection level, the name of the'
+          ' EkmConnection that is used to access the key material in your EKM.'
+      ),
+  )
+
+
+def AddCryptoKeyVersionProtectionLevelFlag(parser):
+  parser.add_argument(
+      '--protection-level',
+      choices=[
+          'external',
+          'external-vpc',
+      ],
+      help=(
+          'Protection level of the key version. Required when a key version is'
+          ' updated from `external` to `external-vpc` or from `external-vpc` to'
+          ' `external`.'
+      ),
+  )
+
+
+def AddCryptoKeyVersionBackendFlag(parser):
+  parser.add_argument(
+      '--crypto-key-backend',
+      help=(
+          'For key versions in the `external-vpc` protection level only, the'
+          ' resource name of the EkmConnection to be used by this key'
+          ' version. Required with the `--ekm-connection-key-path` flag when a'
+          ' key version is updated to the `external-vpc` protection level.'
+      ),
+  )
+
+
+def AddCryptoKeyVersionEkmConnectionKeyPathFlag(parser):
+  parser.add_argument(
+      '--ekm-connection-key-path',
+      help=(
+          'The path to the external key material on the EKM for keys with'
+          ' protection level `external-vpc`. Required with the'
+          ' --crypto-key-backend flag when a key version is updated to the'
+          ' `external-vpc` protection level.'
       ),
   )
 

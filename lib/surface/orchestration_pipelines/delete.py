@@ -27,7 +27,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@calliope_base.Hidden
 @calliope_base.DefaultUniverseOnly
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.BETA)
 class Delete(calliope_base.DeleteCommand):

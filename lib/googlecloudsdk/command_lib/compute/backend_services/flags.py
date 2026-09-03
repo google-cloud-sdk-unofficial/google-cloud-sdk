@@ -530,6 +530,17 @@ def AddSubsettingSubsetSize(parser):
       """)
 
 
+def AddConsistentHashHttpHeaderName(parser):
+  parser.add_argument(
+      '--consistent-hash-http-header-name',
+      type=str,
+      help="""\
+      The HTTP header name to use for the hash key when session affinity is set
+      to HEADER_FIELD.
+      """,
+  )
+
+
 def AddConsistentHashMinimumRingSize(parser):
   parser.add_argument(
       '--consistent-hash-minimum-ring-size',
@@ -966,10 +977,12 @@ def AddSessionAffinity(
             '(Applicable if `--load-balancing-scheme` is `INTERNAL_MANAGED`, '
             '`EXTERNAL_MANAGED`, or `INTERNAL_SELF_MANAGED`) Route requests '
             'to backend VMs or endpoints in a NEG based on the value of the '
-            'HTTP header named in the `--custom-request-header` flag. This '
-            'session affinity is only valid if the load balancing locality '
-            "policy is either `RING_HASH` or `MAGLEV` and the backend service's"
-            ' consistent hash specifies the name of the HTTP header.'
+            'HTTP header named in the `--consistent-hash-http-header-name` '
+            'flag. Note that this is different from '
+            '`--custom-request-header`, which specifies headers added to the '
+            'request by the load balancer. This session affinity is only '
+            'valid if the load balancing locality policy is either '
+            '`RING_HASH` or `MAGLEV`.'
         ),
         'CLIENT_IP_NO_DESTINATION': (
             "Directs a particular client's request to the same backend VM "
@@ -1669,3 +1682,76 @@ def AddCircuitBreakersMaxRequests(parser):
       the backend service cluster. Defaults to 1024.
       """,
   )
+
+
+def AddSecuritySettingsFlags(parser, add_clear_argument=False):
+  """Adds arguments for configuring security settings on backend services."""
+  mtls_group = parser.add_group(
+      help=(
+          'Mutual TLS (mTLS) security settings. Applicable primarily to '
+          'global backend services with load-balancing-scheme set to '
+          'INTERNAL_SELF_MANAGED.'
+      )
+  )
+  mtls_group.add_argument(
+      '--security-settings-client-tls-policy',
+      type=str,
+      help="""\
+      This URL refers to a network security.ClientTlsPolicy resource
+      describing how clients should authenticate on backends for this service.
+      """,
+  )
+  mtls_group.add_argument(
+      '--security-settings-subject-alt-names',
+      type=arg_parsers.ArgList(),
+      metavar='SUBJECT_ALT_NAME',
+      help="""\
+      Comma-separated list of Subject Alternative Names (SANs) verified by the
+      client during mutual TLS handshake with a server/endpoint for this backend
+      service.
+      """,
+  )
+
+  aws_group = parser.add_group(
+      help=(
+          'Settings for private AWS S3 bucket Signature Version 4 '
+          'authentication.'
+      )
+  )
+  aws_group.add_argument(
+      '--security-settings-aws-v4-access-key-id',
+      type=str,
+      help="""\
+      The identifier of an access key used for AWS Signature Version 4 s3
+      bucket authentication.
+      """,
+  )
+  aws_group.add_argument(
+      '--security-settings-aws-v4-access-key',
+      type=str,
+      help="""\
+      The access key used for AWS Signature Version 4 S3 bucket authentication.
+      """,
+  )
+  aws_group.add_argument(
+      '--security-settings-aws-v4-access-key-version',
+      type=str,
+      help="""\
+      The optional version identifier for the AWS Signature Version 4 access key.
+      """,
+  )
+  aws_group.add_argument(
+      '--security-settings-aws-v4-origin-region',
+      type=str,
+      help="""\
+      The name of the cloud region of your origin for AWS Signature Version 4
+      authentication (e.g., 'us-east-1').
+      """,
+  )
+  if add_clear_argument:
+    parser.add_argument(
+        '--no-security-settings',
+        action='store_true',
+        help='Clears the current set of backend service security settings.',
+    )
+

@@ -3955,6 +3955,13 @@ class WarmPool(_messages.Message):
     LabelsValue: Optional. User-defined labels for the warm pool.
 
   Fields:
+    artifactsGcsBucket: Optional. User-defined location of warm pool logs and
+      artifacts in Google Cloud Storage. Format: `gs://{bucket}/{folder}` A
+      default bucket will be bootstrapped if the field is not set or empty.
+      Default bucket format: `gs://--blueprint-config` Constraints: - The
+      bucket needs to be in the same project as the deployment - The path
+      cannot be within the path of `gcs_source` - The field cannot be updated,
+      including changing its presence
     cloudProvisioningToolVersion: Optional. The cloud provisioning tool
       version set on the Warm Pool. If not provided, the latest available
       version of the tool will be used.
@@ -4017,14 +4024,15 @@ class WarmPool(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  cloudProvisioningToolVersion = _messages.MessageField('CloudProvisioningToolVersion', 1)
-  createTime = _messages.StringField(2)
-  labels = _messages.MessageField('LabelsValue', 3)
-  name = _messages.StringField(4)
-  poolSize = _messages.IntegerField(5, variant=_messages.Variant.INT32)
-  serviceAccount = _messages.StringField(6)
-  state = _messages.EnumField('StateValueValuesEnum', 7)
-  updateTime = _messages.StringField(8)
+  artifactsGcsBucket = _messages.StringField(1)
+  cloudProvisioningToolVersion = _messages.MessageField('CloudProvisioningToolVersion', 2)
+  createTime = _messages.StringField(3)
+  labels = _messages.MessageField('LabelsValue', 4)
+  name = _messages.StringField(5)
+  poolSize = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  serviceAccount = _messages.StringField(7)
+  state = _messages.EnumField('StateValueValuesEnum', 8)
+  updateTime = _messages.StringField(9)
 
 
 class WarmPoolOperationMetadata(_messages.Message):
@@ -4044,6 +4052,7 @@ class WarmPoolOperationMetadata(_messages.Message):
     Values:
       WARM_POOL_STEP_UNSPECIFIED: The default value. This value is used if the
         step is omitted.
+      PREPARING_STORAGE_BUCKET: Preparing the storage bucket.
       CREATING_POOL: Creating the warm pool infrastructure.
       WARMING_POOL: Warming up instances in the pool.
       ROLLING_BACK: Rolling back the warm pool infrastructure creation on
@@ -4052,11 +4061,12 @@ class WarmPoolOperationMetadata(_messages.Message):
       FAILED: Operation failed.
     """
     WARM_POOL_STEP_UNSPECIFIED = 0
-    CREATING_POOL = 1
-    WARMING_POOL = 2
-    ROLLING_BACK = 3
-    SUCCEEDED = 4
-    FAILED = 5
+    PREPARING_STORAGE_BUCKET = 1
+    CREATING_POOL = 2
+    WARMING_POOL = 3
+    ROLLING_BACK = 4
+    SUCCEEDED = 5
+    FAILED = 6
 
   step = _messages.EnumField('StepValueValuesEnum', 1)
 

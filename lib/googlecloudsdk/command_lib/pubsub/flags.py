@@ -19,6 +19,7 @@
 from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.pubsub import resource_args
 from googlecloudsdk.command_lib.pubsub import util
@@ -1398,23 +1399,63 @@ def AddIngestionDatasourceFlags(
   )
 
 
-def AddCommitSchemaFlags(parser):
+def AddCommitSchemaFlags(parser, release_track=base.ReleaseTrack.GA):
   """Adds the flags for the Schema Definition.
 
   Args:
-    parser: The argparse parser
+    parser: The argparse parser.
+    release_track: The release track of the command.
   """
-  definition_group = parser.add_group(
-      mutex=True, help='Schema definition', required=True
-  )
-  definition_group.add_argument(
-      '--definition', type=str, help='The new definition of the schema.'
-  )
-  definition_group.add_argument(
-      '--definition-file',
-      type=arg_parsers.FileContents(),
-      help='File containing the new schema definition.',
-  )
+  if release_track == base.ReleaseTrack.ALPHA:
+    definition_group = parser.add_group(
+        mutex=True, help='Schema definition.', required=True
+    )
+
+    text_definition_group = definition_group.add_group(
+        mutex=True,
+        help=(
+            'Text-based schema definition, specified as an inline string or a'
+            ' path to the file containing the definition.'
+        ),
+    )
+    text_definition_group.add_argument(
+        '--definition',
+        type=str,
+        help='A string containing the new definition of the schema.',
+    )
+    text_definition_group.add_argument(
+        '--definition-file',
+        type=arg_parsers.FileContents(),
+        help='Path to a file containing the new definition of the schema.',
+    )
+
+    compiled_proto_definition_group = definition_group.add_group(
+        help='Compiled Protocol Buffer configuration.', hidden=True
+    )
+    compiled_proto_definition_group.add_argument(
+        '--definition-descriptor-file',
+        type=arg_parsers.FileContents(binary=True),
+        required=True,
+        help='File containing the precompiled Protocol Buffer schema.',
+    )
+    compiled_proto_definition_group.add_argument(
+        '--root-message-name',
+        type=str,
+        required=True,
+        help='Name of the root message defined in the schema.',
+    )
+  else:
+    definition_group = parser.add_group(
+        mutex=True, help='Schema definition', required=True
+    )
+    definition_group.add_argument(
+        '--definition', type=str, help='The new definition of the schema.'
+    )
+    definition_group.add_argument(
+        '--definition-file',
+        type=arg_parsers.FileContents(),
+        help='File containing the new schema definition.',
+    )
   parser.add_argument(
       '--type', type=str, help='The type of the schema.', required=True
   )

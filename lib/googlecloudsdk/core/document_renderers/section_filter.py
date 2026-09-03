@@ -43,6 +43,8 @@ class SectionFilterStream(object):
     self._in_excluded_section = False
     self._in_code_block = False
     self._buffer = ''
+    self._blank_lines_buffer = []
+    self._queued_lines = []
 
   def _check_heading(self, line: str) -> bool:
     """Checks if a line is a markdown heading and updates filter state.
@@ -129,17 +131,33 @@ class SectionFilterStream(object):
       return line
 
     while True:
-      line = self._fin.readline()
-      if not line:
-        return ''
-
-      self._check_heading(line)
-
-      if not self._in_excluded_section:
+      if self._queued_lines:
+        line = self._queued_lines.pop(0)
         if 0 <= size < len(line):
           self._buffer = line[size:]
           return line[:size]
         return line
+
+      line = self._fin.readline()
+      if not line:
+        if self._blank_lines_buffer:
+          self._queued_lines.extend(self._blank_lines_buffer)
+          self._blank_lines_buffer = []
+          continue
+        return ''
+
+      self._check_heading(line)
+
+      if self._in_excluded_section:
+        continue
+
+      if not line.strip():
+        self._blank_lines_buffer.append(line)
+      else:
+        if self._blank_lines_buffer:
+          self._queued_lines.extend(self._blank_lines_buffer)
+          self._blank_lines_buffer = []
+        self._queued_lines.append(line)
 
   def read(self, size: Optional[int] = -1) -> str:
     """Reads non-filtered content from the stream.

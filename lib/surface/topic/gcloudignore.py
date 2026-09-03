@@ -56,6 +56,9 @@ class GcloudignoreHelp(base.TopicCommand):
   * `gcloud beta run jobs deploy`
   * `gcloud alpha run worker-pools deploy`
   * `gcloud beta run worker-pools deploy`
+  * `gcloud alpha run instances dev sync`
+  * `gcloud beta run instances dev sync`
+
 
   To globally disable `.gcloudignore` parsing (including default file-ignore
   behavior), run:

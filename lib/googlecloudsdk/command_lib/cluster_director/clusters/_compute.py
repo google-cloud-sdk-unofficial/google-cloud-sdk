@@ -489,5 +489,6 @@ def MakeClusterComputePatch(
     ]
     if not compute_resources.additionalProperties:
       raise ClusterDirectorError("Compute instances cannot be empty.")
-    update_mask.add("compute.resource_requests")
+    update_mask.add("compute_resources")
   return compute_resources
+

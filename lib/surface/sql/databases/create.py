@@ -25,8 +25,10 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
+@base.UniverseCompatible
 class AddDatabase(base.Command):
   """Creates a database for a Cloud SQL instance."""
 
@@ -76,7 +78,13 @@ class AddDatabase(base.Command):
 
     # TODO(b/35386183): Move this API call logic.
 
-    result_operation = sql_client.databases.Insert(new_database)
+    result_operation = sql_client.databases.Insert(
+        sql_messages.SqlDatabasesInsertRequest(
+            database=new_database,
+            instance=instance_ref.instance,
+            project=instance_ref.project,
+        )
+    )
 
     operation_ref = client.resource_parser.Create(
         'sql.operations',

@@ -26,11 +26,15 @@ def RegionAttributeConfig():
 
 
 def InstanceAttributeConfig():
-  return concepts.ResourceParameterAttributeConfig(name='instance')
+  return concepts.ResourceParameterAttributeConfig(
+      name='instance', help_text='Secure Source Manager instance.'
+  )
 
 
 def RepositoryAttributeConfig():
-  return concepts.ResourceParameterAttributeConfig(name='repository')
+  return concepts.ResourceParameterAttributeConfig(
+      name='repository', help_text='Secure Source Manager repository.'
+  )
 
 
 def GetRegionResourceSpec():
@@ -111,5 +115,51 @@ def AddRepositoryResourceArg(parser, verb):
       'repository',
       GetRepositoryResourceSpec(),
       'The Secure Source Manager repository {}.'.format(verb),
+      required=True,
+  ).AddToParser(parser)
+
+
+# Allows to use repository as a flag.
+def AddRepositoryResourceArgAsFlag(parser, verb):
+  concept_parsers.ConceptParser.ForResource(
+      '--repository',
+      GetRepositoryResourceSpec(),
+      'The Secure Source Manager repository {}.'.format(verb),
+      required=True,
+  ).AddToParser(parser)
+
+
+def PullRequestAttributeConfig():
+  return concepts.ResourceParameterAttributeConfig(
+      name='pull_request', help_text='Secure Source Manager pull request.'
+  )
+
+
+def GetPullRequestResourceSpec():
+  return concepts.ResourceSpec(
+      'securesourcemanager.projects.locations.repositories.pullRequests',
+      resource_name='pull_request',
+      pullRequestsId=PullRequestAttributeConfig(),
+      repositoriesId=RepositoryAttributeConfig(),
+      locationsId=RegionAttributeConfig(),
+      projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
+      disable_auto_completers=False,
+  )
+
+
+def AddPullRequestResourceArg(parser, verb):
+  concept_parsers.ConceptParser.ForResource(
+      'pull_request',
+      GetPullRequestResourceSpec(),
+      'The Secure Source Manager pull request {}.'.format(verb),
+      required=True,
+  ).AddToParser(parser)
+
+
+def AddPullRequestResourceArgAsFlag(parser, verb):
+  concept_parsers.ConceptParser.ForResource(
+      '--pull-request',
+      GetPullRequestResourceSpec(),
+      'The Secure Source Manager pull request {}.'.format(verb),
       required=True,
   ).AddToParser(parser)

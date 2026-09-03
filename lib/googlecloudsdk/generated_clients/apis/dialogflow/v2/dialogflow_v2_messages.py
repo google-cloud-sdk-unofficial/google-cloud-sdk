@@ -11794,7 +11794,8 @@ class GoogleCloudDialogflowV2BatchUpdateIntentsResponse(_messages.Message):
 
 
 class GoogleCloudDialogflowV2CesAppSpec(_messages.Message):
-  r"""Spec of CES app that the generator can choose from.
+  r"""Deprecated: Use `CesToolSpec` instead. Spec of CES app that the
+  generator can choose from.
 
   Enums:
     ConfirmationRequirementValueValuesEnum: Optional. Indicates whether the
@@ -14147,8 +14148,8 @@ class GoogleCloudDialogflowV2Generator(_messages.Message):
 
   Fields:
     agentCoachingContext: Input of prebuilt Agent Coaching feature.
-    cesAppSpecs: Optional. List of CES app specs that the generator can choose
-      from.
+    cesAppSpecs: Optional. Deprecated: Use `ces_tool_specs` instead. List of
+      CES app specs that the generator can choose from.
     cesToolSpecs: Optional. List of CES tool specs that the generator can
       choose from.
     createTime: Output only. Creation time of this generator.
@@ -16470,7 +16471,8 @@ class GoogleCloudDialogflowV2KnowledgeAssistDebugInfo(_messages.Message):
       for search knowledge.
     knowledgeAssistBehavior: Configured behaviors for Knowedge Assist.
     queryCategorizationFailureReason: Reason for query categorization.
-    queryGenerationDebugInfo: Token usage metadata for query generation.
+    queryGenerationDebugInfo: Debug information and model metadata for query
+      generation.
     queryGenerationFailureReason: Reason for query generation.
     serviceLatency: The latency of the service.
   """
@@ -16656,18 +16658,29 @@ class GoogleCloudDialogflowV2KnowledgeAssistDebugInfoKnowledgeAssistBehavior(_me
 
 
 class GoogleCloudDialogflowV2KnowledgeAssistDebugInfoQueryGenerationDebugInfo(_messages.Message):
-  r"""Token usage metadata for query generation.
+  r"""Debug information and model metadata for query generation.
 
   Fields:
     candidatesTokenCount: The total number of tokens in the generated
       candidates.
     promptTokenCount: The total number of tokens in the prompt.
+    similarityToLastQuery: The similarity score of the suggested query to the
+      last suggested query.
+    similarityToLastQueryThreshold: The similarity threshold used to filter
+      out queries similar to the last suggestion.
+    thinkingBudgetTokens: The thinking budget (in number of tokens) configured
+      for the Gemini model.
+    thinkingLevel: The thinking level configured for the Gemini model.
     totalTokenCount: The total number of tokens for the entire request.
   """
 
   candidatesTokenCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   promptTokenCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  totalTokenCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  similarityToLastQuery = _messages.FloatField(3, variant=_messages.Variant.FLOAT)
+  similarityToLastQueryThreshold = _messages.FloatField(4, variant=_messages.Variant.FLOAT)
+  thinkingBudgetTokens = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  thinkingLevel = _messages.StringField(6)
+  totalTokenCount = _messages.IntegerField(7, variant=_messages.Variant.INT32)
 
 
 class GoogleCloudDialogflowV2KnowledgeBase(_messages.Message):
@@ -20446,9 +20459,11 @@ class GoogleCloudDialogflowV2ToolCallResultError(_messages.Message):
 
   Fields:
     message: Optional. The error message of the function.
+    retryable: Optional. Specifies whether the tool call is retryable.
   """
 
   message = _messages.StringField(1)
+  retryable = _messages.BooleanField(2)
 
 
 class GoogleCloudDialogflowV2ToolConnectorTool(_messages.Message):
@@ -23401,7 +23416,8 @@ class GoogleCloudDialogflowV2beta1KnowledgeAssistDebugInfo(_messages.Message):
       for search knowledge.
     knowledgeAssistBehavior: Configured behaviors for Knowedge Assist.
     queryCategorizationFailureReason: Reason for query categorization.
-    queryGenerationDebugInfo: Token usage metadata for query generation.
+    queryGenerationDebugInfo: Debug information and model metadata for query
+      generation.
     queryGenerationFailureReason: Reason for query generation.
     serviceLatency: The latency of the service.
   """
@@ -23587,18 +23603,29 @@ class GoogleCloudDialogflowV2beta1KnowledgeAssistDebugInfoKnowledgeAssistBehavio
 
 
 class GoogleCloudDialogflowV2beta1KnowledgeAssistDebugInfoQueryGenerationDebugInfo(_messages.Message):
-  r"""Token usage metadata for query generation.
+  r"""Debug information and model metadata for query generation.
 
   Fields:
     candidatesTokenCount: The total number of tokens in the generated
       candidates.
     promptTokenCount: The total number of tokens in the prompt.
+    similarityToLastQuery: The similarity score of the suggested query to the
+      last suggested query.
+    similarityToLastQueryThreshold: The similarity threshold used to filter
+      out queries similar to the last suggestion.
+    thinkingBudgetTokens: The thinking budget (in number of tokens) configured
+      for the Gemini model.
+    thinkingLevel: The thinking level configured for the Gemini model.
     totalTokenCount: The total number of tokens for the entire request.
   """
 
   candidatesTokenCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   promptTokenCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  totalTokenCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  similarityToLastQuery = _messages.FloatField(3, variant=_messages.Variant.FLOAT)
+  similarityToLastQueryThreshold = _messages.FloatField(4, variant=_messages.Variant.FLOAT)
+  thinkingBudgetTokens = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  thinkingLevel = _messages.StringField(6)
+  totalTokenCount = _messages.IntegerField(7, variant=_messages.Variant.INT32)
 
 
 class GoogleCloudDialogflowV2beta1KnowledgeOperationMetadata(_messages.Message):
@@ -24801,9 +24828,11 @@ class GoogleCloudDialogflowV2beta1ToolCallResultError(_messages.Message):
 
   Fields:
     message: Optional. The error message of the function.
+    retryable: Optional. Specifies whether the tool call is retryable.
   """
 
   message = _messages.StringField(1)
+  retryable = _messages.BooleanField(2)
 
 
 class GoogleCloudDialogflowV2beta1WebhookRequest(_messages.Message):

@@ -39,6 +39,7 @@ class CloudresourcemanagerV3(base_api.BaseApiClient):
         response_encoding=response_encoding)
     self.effectiveTags = self.EffectiveTagsService(self)
     self.folders_capabilities = self.FoldersCapabilitiesService(self)
+    self.folders_capabilityConfigs = self.FoldersCapabilityConfigsService(self)
     self.folders_effectiveSettings = self.FoldersEffectiveSettingsService(self)
     self.folders_settings = self.FoldersSettingsService(self)
     self.folders = self.FoldersService(self)
@@ -47,9 +48,11 @@ class CloudresourcemanagerV3(base_api.BaseApiClient):
     self.locations_tagBindingCollections = self.LocationsTagBindingCollectionsService(self)
     self.locations = self.LocationsService(self)
     self.operations = self.OperationsService(self)
+    self.organizations_capabilityConfigs = self.OrganizationsCapabilityConfigsService(self)
     self.organizations_effectiveSettings = self.OrganizationsEffectiveSettingsService(self)
     self.organizations_settings = self.OrganizationsSettingsService(self)
     self.organizations = self.OrganizationsService(self)
+    self.projects_capabilityConfigs = self.ProjectsCapabilityConfigsService(self)
     self.projects_effectiveSettings = self.ProjectsEffectiveSettingsService(self)
     self.projects_settings = self.ProjectsSettingsService(self)
     self.projects = self.ProjectsService(self)
@@ -155,6 +158,151 @@ class CloudresourcemanagerV3(base_api.BaseApiClient):
         relative_path='v3/{+name}',
         request_field='capability',
         request_type_name='CloudresourcemanagerFoldersCapabilitiesPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class FoldersCapabilityConfigsService(base_api.BaseApiService):
+    """Service class for the folders_capabilityConfigs resource."""
+
+    _NAME = 'folders_capabilityConfigs'
+
+    def __init__(self, client):
+      super(CloudresourcemanagerV3.FoldersCapabilityConfigsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a CapabilityConfig under a parent Organization, Folder or Project. Creating a CapabilityConfig triggers the creation of a Management Project if one is not supplied.
+
+      Args:
+        request: (CloudresourcemanagerFoldersCapabilityConfigsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/folders/{foldersId}/capabilityConfigs',
+        http_method='POST',
+        method_id='cloudresourcemanager.folders.capabilityConfigs.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['capabilityConfigId'],
+        relative_path='v3/{+parent}/capabilityConfigs',
+        request_field='capabilityConfig',
+        request_type_name='CloudresourcemanagerFoldersCapabilityConfigsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes the CapabilityConfig identified by the specified `name` (for example, `folders/123456789/capabilityConfigs/my-capability-config`).
+
+      Args:
+        request: (CloudresourcemanagerFoldersCapabilityConfigsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/folders/{foldersId}/capabilityConfigs/{capabilityConfigsId}',
+        http_method='DELETE',
+        method_id='cloudresourcemanager.folders.capabilityConfigs.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v3/{+name}',
+        request_field='',
+        request_type_name='CloudresourcemanagerFoldersCapabilityConfigsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Retrieves the Capability Config identified by the specified `name` (for example, `folders/123456789/capabilityConfigs/my-capability-config`).
+
+      Args:
+        request: (CloudresourcemanagerFoldersCapabilityConfigsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (CapabilityConfig) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/folders/{foldersId}/capabilityConfigs/{capabilityConfigsId}',
+        http_method='GET',
+        method_id='cloudresourcemanager.folders.capabilityConfigs.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v3/{+name}',
+        request_field='',
+        request_type_name='CloudresourcemanagerFoldersCapabilityConfigsGetRequest',
+        response_type_name='CapabilityConfig',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists CapabilityConfigs that are direct children of the specified organization, folder or project resource.
+
+      Args:
+        request: (CloudresourcemanagerFoldersCapabilityConfigsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListCapabilityConfigsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/folders/{foldersId}/capabilityConfigs',
+        http_method='GET',
+        method_id='cloudresourcemanager.folders.capabilityConfigs.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v3/{+parent}/capabilityConfigs',
+        request_field='',
+        request_type_name='CloudresourcemanagerFoldersCapabilityConfigsListRequest',
+        response_type_name='ListCapabilityConfigsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the `display_name`, `types` and `boundaries` of the CapabilityConfig identified by the specified `name` (for example, `folders/123456789/capabilityConfigs/my-capability-config`).
+
+      Args:
+        request: (CloudresourcemanagerFoldersCapabilityConfigsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/folders/{foldersId}/capabilityConfigs/{capabilityConfigsId}',
+        http_method='PATCH',
+        method_id='cloudresourcemanager.folders.capabilityConfigs.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v3/{+name}',
+        request_field='capabilityConfig',
+        request_type_name='CloudresourcemanagerFoldersCapabilityConfigsPatchRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -882,6 +1030,151 @@ class CloudresourcemanagerV3(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class OrganizationsCapabilityConfigsService(base_api.BaseApiService):
+    """Service class for the organizations_capabilityConfigs resource."""
+
+    _NAME = 'organizations_capabilityConfigs'
+
+    def __init__(self, client):
+      super(CloudresourcemanagerV3.OrganizationsCapabilityConfigsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a CapabilityConfig under a parent Organization, Folder or Project. Creating a CapabilityConfig triggers the creation of a Management Project if one is not supplied.
+
+      Args:
+        request: (CloudresourcemanagerOrganizationsCapabilityConfigsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/organizations/{organizationsId}/capabilityConfigs',
+        http_method='POST',
+        method_id='cloudresourcemanager.organizations.capabilityConfigs.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['capabilityConfigId'],
+        relative_path='v3/{+parent}/capabilityConfigs',
+        request_field='capabilityConfig',
+        request_type_name='CloudresourcemanagerOrganizationsCapabilityConfigsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes the CapabilityConfig identified by the specified `name` (for example, `folders/123456789/capabilityConfigs/my-capability-config`).
+
+      Args:
+        request: (CloudresourcemanagerOrganizationsCapabilityConfigsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/organizations/{organizationsId}/capabilityConfigs/{capabilityConfigsId}',
+        http_method='DELETE',
+        method_id='cloudresourcemanager.organizations.capabilityConfigs.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v3/{+name}',
+        request_field='',
+        request_type_name='CloudresourcemanagerOrganizationsCapabilityConfigsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Retrieves the Capability Config identified by the specified `name` (for example, `folders/123456789/capabilityConfigs/my-capability-config`).
+
+      Args:
+        request: (CloudresourcemanagerOrganizationsCapabilityConfigsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (CapabilityConfig) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/organizations/{organizationsId}/capabilityConfigs/{capabilityConfigsId}',
+        http_method='GET',
+        method_id='cloudresourcemanager.organizations.capabilityConfigs.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v3/{+name}',
+        request_field='',
+        request_type_name='CloudresourcemanagerOrganizationsCapabilityConfigsGetRequest',
+        response_type_name='CapabilityConfig',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists CapabilityConfigs that are direct children of the specified organization, folder or project resource.
+
+      Args:
+        request: (CloudresourcemanagerOrganizationsCapabilityConfigsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListCapabilityConfigsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/organizations/{organizationsId}/capabilityConfigs',
+        http_method='GET',
+        method_id='cloudresourcemanager.organizations.capabilityConfigs.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v3/{+parent}/capabilityConfigs',
+        request_field='',
+        request_type_name='CloudresourcemanagerOrganizationsCapabilityConfigsListRequest',
+        response_type_name='ListCapabilityConfigsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the `display_name`, `types` and `boundaries` of the CapabilityConfig identified by the specified `name` (for example, `folders/123456789/capabilityConfigs/my-capability-config`).
+
+      Args:
+        request: (CloudresourcemanagerOrganizationsCapabilityConfigsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/organizations/{organizationsId}/capabilityConfigs/{capabilityConfigsId}',
+        http_method='PATCH',
+        method_id='cloudresourcemanager.organizations.capabilityConfigs.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v3/{+name}',
+        request_field='capabilityConfig',
+        request_type_name='CloudresourcemanagerOrganizationsCapabilityConfigsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class OrganizationsEffectiveSettingsService(base_api.BaseApiService):
     """Service class for the organizations_effectiveSettings resource."""
 
@@ -1178,6 +1471,151 @@ class CloudresourcemanagerV3(base_api.BaseApiClient):
         request_field='testIamPermissionsRequest',
         request_type_name='CloudresourcemanagerOrganizationsTestIamPermissionsRequest',
         response_type_name='TestIamPermissionsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsCapabilityConfigsService(base_api.BaseApiService):
+    """Service class for the projects_capabilityConfigs resource."""
+
+    _NAME = 'projects_capabilityConfigs'
+
+    def __init__(self, client):
+      super(CloudresourcemanagerV3.ProjectsCapabilityConfigsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a CapabilityConfig under a parent Organization, Folder or Project. Creating a CapabilityConfig triggers the creation of a Management Project if one is not supplied.
+
+      Args:
+        request: (CloudresourcemanagerProjectsCapabilityConfigsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/projects/{projectsId}/capabilityConfigs',
+        http_method='POST',
+        method_id='cloudresourcemanager.projects.capabilityConfigs.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['capabilityConfigId'],
+        relative_path='v3/{+parent}/capabilityConfigs',
+        request_field='capabilityConfig',
+        request_type_name='CloudresourcemanagerProjectsCapabilityConfigsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes the CapabilityConfig identified by the specified `name` (for example, `folders/123456789/capabilityConfigs/my-capability-config`).
+
+      Args:
+        request: (CloudresourcemanagerProjectsCapabilityConfigsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/projects/{projectsId}/capabilityConfigs/{capabilityConfigsId}',
+        http_method='DELETE',
+        method_id='cloudresourcemanager.projects.capabilityConfigs.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v3/{+name}',
+        request_field='',
+        request_type_name='CloudresourcemanagerProjectsCapabilityConfigsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Retrieves the Capability Config identified by the specified `name` (for example, `folders/123456789/capabilityConfigs/my-capability-config`).
+
+      Args:
+        request: (CloudresourcemanagerProjectsCapabilityConfigsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (CapabilityConfig) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/projects/{projectsId}/capabilityConfigs/{capabilityConfigsId}',
+        http_method='GET',
+        method_id='cloudresourcemanager.projects.capabilityConfigs.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v3/{+name}',
+        request_field='',
+        request_type_name='CloudresourcemanagerProjectsCapabilityConfigsGetRequest',
+        response_type_name='CapabilityConfig',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists CapabilityConfigs that are direct children of the specified organization, folder or project resource.
+
+      Args:
+        request: (CloudresourcemanagerProjectsCapabilityConfigsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListCapabilityConfigsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/projects/{projectsId}/capabilityConfigs',
+        http_method='GET',
+        method_id='cloudresourcemanager.projects.capabilityConfigs.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v3/{+parent}/capabilityConfigs',
+        request_field='',
+        request_type_name='CloudresourcemanagerProjectsCapabilityConfigsListRequest',
+        response_type_name='ListCapabilityConfigsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the `display_name`, `types` and `boundaries` of the CapabilityConfig identified by the specified `name` (for example, `folders/123456789/capabilityConfigs/my-capability-config`).
+
+      Args:
+        request: (CloudresourcemanagerProjectsCapabilityConfigsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v3/projects/{projectsId}/capabilityConfigs/{capabilityConfigsId}',
+        http_method='PATCH',
+        method_id='cloudresourcemanager.projects.capabilityConfigs.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v3/{+name}',
+        request_field='capabilityConfig',
+        request_type_name='CloudresourcemanagerProjectsCapabilityConfigsPatchRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

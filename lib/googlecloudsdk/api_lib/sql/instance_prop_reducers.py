@@ -710,17 +710,63 @@ def OnPremisesConfiguration(sql_messages, source_ip_address, source_port):
       hostPort='{0}:{1}'.format(source_ip_address, source_port))
 
 
-def SemiManagedConfig(sql_messages, gce_instances):
-  """Generates the external primary configuration for the instance.
+def SemiManagedConfig(
+    sql_messages,
+    gce_instances=None,
+    sql_account=None,
+    sql_account_secret_name=None,
+    windows_service_account=None,
+    windows_service_account_secret_name=None,
+    replication_enabled=None,
+    backup_enabled=None,
+    insights_enabled=None,
+    insights_gcs_uri=None,
+):
+  """Generates the semi-managed instance configuration.
 
   Args:
     sql_messages: module, The messages module that should be used.
-    gce_instances: list of strings, the GCE instance name.
+    gce_instances: list of strings, the GCE instance names.
+    sql_account: string, SQL account.
+    sql_account_secret_name: string, Secret Manager secret name for SQL account.
+    windows_service_account: string, Windows service account.
+    windows_service_account_secret_name: string, Secret Manager secret name for
+      Windows service account.
+    replication_enabled: boolean, Enable AlwaysOn Availability Group.
+    backup_enabled: boolean, Enable backup config.
+    insights_enabled: boolean, Enable insights config.
+    insights_gcs_uri: string, GCS URI for insights config.
 
   Returns:
     sql_messages.SemiManagedConfig object.
   """
-  return sql_messages.SemiManagedConfig(gceInstances=gce_instances)
+  if gce_instances:
+    if isinstance(gce_instances, str):
+      gce_instances = [gce_instances]
+    gce_instances = [x.strip() for x in gce_instances if x.strip()]
+
+  backup_config = None
+  if backup_enabled is not None:
+    backup_config = sql_messages.SemiManagedBackupConfig(enabled=backup_enabled)
+
+  insights_config = None
+  if insights_enabled is not None or insights_gcs_uri is not None:
+    enabled_val = True if insights_enabled is None else insights_enabled
+    insights_config = sql_messages.SemiManagedInsightsConfig(
+        enabled=enabled_val,
+        gcsUri=insights_gcs_uri,
+    )
+
+  return sql_messages.SemiManagedConfig(
+      gceInstances=gce_instances,
+      sqlAccount=sql_account,
+      sqlAccountSecretName=sql_account_secret_name,
+      windowsServiceAccount=windows_service_account,
+      windowsServiceAccountSecretName=windows_service_account_secret_name,
+      enableReplication=replication_enabled,
+      backupConfig=backup_config,
+      insightsConfig=insights_config,
+  )
 
 
 def PrivateNetworkUrl(network):

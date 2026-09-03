@@ -860,6 +860,33 @@ class DatamigrationV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def SetDraftEntityDdl(self, request, global_params=None):
+      r"""Updates the draft DDL of an entity.
+
+      Args:
+        request: (DatamigrationProjectsLocationsConversionWorkspacesSetDraftEntityDdlRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SetDraftEntityDdlResponse) The response message.
+      """
+      config = self.GetMethodConfig('SetDraftEntityDdl')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SetDraftEntityDdl.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/conversionWorkspaces/{conversionWorkspacesId}:setDraftEntityDdl',
+        http_method='POST',
+        method_id='datamigration.projects.locations.conversionWorkspaces.setDraftEntityDdl',
+        ordered_params=['conversionWorkspace'],
+        path_params=['conversionWorkspace'],
+        query_params=[],
+        relative_path='v1/{+conversionWorkspace}:setDraftEntityDdl',
+        request_field='setDraftEntityDdlRequest',
+        request_type_name='DatamigrationProjectsLocationsConversionWorkspacesSetDraftEntityDdlRequest',
+        response_type_name='SetDraftEntityDdlResponse',
+        supports_download=False,
+    )
+
     def SetIamPolicy(self, request, global_params=None):
       r"""Sets the access control policy on the specified resource. Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.
 

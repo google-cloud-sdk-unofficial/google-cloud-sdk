@@ -336,10 +336,14 @@ def RunBaseCreateCommand(args, release_track):
               '--enable-accelerated-replica-mode is only supported for MySQL.'
           )
 
-  # --root-password is required when creating SQL Server instances
+  # --root-password is required when creating standard SQL Server instances
   if (
       args.IsSpecified('database_version')
       and args.database_version.startswith('SQLSERVER')
+      and not (
+          args.IsKnownAndSpecified('backend_type')
+          and args.backend_type == 'SEMI_MANAGED'
+      )
       and not args.IsSpecified('root_password')
   ):
     raise exceptions.RequiredArgumentException(

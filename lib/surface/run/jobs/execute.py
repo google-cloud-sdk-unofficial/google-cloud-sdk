@@ -301,6 +301,7 @@ class BetaExecute(Execute):
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser)
+    flags.AddDelayExecutionFlag(parser)
     container_args = ContainerOverridesGroup()
     container_parser.AddContainerFlags(
         parser, container_args, cls.ReleaseTrack()

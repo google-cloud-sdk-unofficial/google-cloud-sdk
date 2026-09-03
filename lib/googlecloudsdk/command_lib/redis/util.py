@@ -171,6 +171,14 @@ def UpdateAclPolicyRulesHook(resource_ref, args, req):
     rule = r.rule if hasattr(r, 'rule') else r.get('rule')
     rules_list.append((u, rule))
 
+  if getattr(args, 'add_rules', None):
+    for r in args.add_rules:
+      u = r.username if hasattr(r, 'username') else r.get('username')
+      rule = r.rule if hasattr(r, 'rule') else r.get('rule')
+
+      if u and rule and (u, rule) not in rules_list:
+        rules_list.append((u, rule))
+
   if getattr(args, 'remove_rules', None):
     for r in args.remove_rules:
       u = r.username if hasattr(r, 'username') else r.get('username')

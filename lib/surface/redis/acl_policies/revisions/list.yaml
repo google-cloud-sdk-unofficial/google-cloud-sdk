@@ -1,5 +1,4 @@
-release_tracks: [ALPHA]
-hidden: true
+release_tracks: [ALPHA, BETA, GA]
 help_text:
   brief: List Redis ACL Policy Revisions.
   description: List Redis ACL Policy Revisions for a given ACL policy.

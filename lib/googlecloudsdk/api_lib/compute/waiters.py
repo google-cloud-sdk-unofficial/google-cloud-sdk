@@ -113,6 +113,7 @@ _HUMAN_FRIENDLY_OPERATION_TYPE_SUFFIXES = {
 _MULTI_NESTED_RESOURCE_OPERATION_TYPES = [
     'ReservationSubBlocks.performMaintenance',
     'ReservationSubBlocks.reportFaulty',
+    'ReservationSubBlocks.update',
 ]
 
 

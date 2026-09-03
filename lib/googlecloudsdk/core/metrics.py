@@ -71,6 +71,36 @@ class _Event(object):
     self.value = value
 
 
+def GetMetricsEnvironment():
+  """Get the metrics environment.
+
+  Returns the property metrics/environment if set, if not, it tries to deduce if
+  we're on some known platforms like devshell or GCE.
+
+  Returns:
+    None, if no environment is set or found
+    str, a string denoting the environment if one is set or found
+  """
+
+  environment = properties.VALUES.metrics.environment.Get()
+  if environment:
+    return environment
+
+  # No explicit environment defined, try to deduce it.
+  # pylint: disable=g-import-not-at-top
+  from googlecloudsdk.core.credentials import devshell as c_devshell
+
+  if c_devshell.IsDevshellEnvironment():
+    return 'devshell'
+
+  from googlecloudsdk.core.credentials import gce_cache
+
+  if gce_cache.GetOnGCE(check_age=False):
+    return 'GCE'
+
+  return None
+
+
 class CommonParams(object):
   """Parameters common to all metrics reporters."""
 
@@ -85,7 +115,7 @@ class CommonParams(object):
     self.user_agent = GetUserAgent(current_platform)
     self.release_channel = config.INSTALLATION_CONFIG.release_channel
     self.install_type = install_type
-    self.metrics_environment = properties.GetMetricsEnvironment()
+    self.metrics_environment = GetMetricsEnvironment()
     self.is_interactive = console_io.IsInteractive(error=True, heuristic=True)
     self.python_version = platform.python_version()
     self.metrics_environment_version = (properties.VALUES

@@ -2438,6 +2438,10 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1DependencyGitSourceDependency(_
     depth: Optional. How much history should be fetched for the build (default
       1, -1 for all history).
     destPath: Required. Where should the files be placed on the worker.
+    fetchTags: Optional. True if remote tags should be fetched too (default
+      false). Note: when depth is 1 (default), git fetch only retrieves tags
+      pointing to commits within the shallow boundary. Set depth to -1 to
+      fetch all historical tags.
     recurseSubmodules: Optional. True if submodules should be fetched too
       (default false).
     repository: Required. The kind of repo (url or dev connect).
@@ -2446,9 +2450,10 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1DependencyGitSourceDependency(_
 
   depth = _messages.IntegerField(1)
   destPath = _messages.StringField(2)
-  recurseSubmodules = _messages.BooleanField(3)
-  repository = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1DependencyGitSourceRepository', 4)
-  revision = _messages.StringField(5)
+  fetchTags = _messages.BooleanField(3)
+  recurseSubmodules = _messages.BooleanField(4)
+  repository = _messages.MessageField('ContaineranalysisGoogleDevtoolsCloudbuildV1DependencyGitSourceRepository', 5)
+  revision = _messages.StringField(6)
 
 
 class ContaineranalysisGoogleDevtoolsCloudbuildV1DependencyGitSourceRepository(_messages.Message):
@@ -5474,6 +5479,7 @@ class MaliciousContentLLMResult(_messages.Message):
 
   Fields:
     maxSeverity: Tracks max severity found.
+    modelId: The base name of the model that performed the scan.
     scanStatus: Status of the scan.
   """
 
@@ -5502,7 +5508,8 @@ class MaliciousContentLLMResult(_messages.Message):
     NOT_PERFORMED = 2
 
   maxSeverity = _messages.EnumField('MaxSeverityValueValuesEnum', 1)
-  scanStatus = _messages.EnumField('ScanStatusValueValuesEnum', 2)
+  modelId = _messages.StringField(2)
+  scanStatus = _messages.EnumField('ScanStatusValueValuesEnum', 3)
 
 
 class MaliciousContentStaticResult(_messages.Message):

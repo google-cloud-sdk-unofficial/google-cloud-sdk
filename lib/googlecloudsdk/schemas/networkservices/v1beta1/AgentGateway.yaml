@@ -42,6 +42,12 @@ properties:
   labels:
     description: Set of label tags associated with the AgentGateway resource.
     $ref: LabelsValue.yaml
+  agentConnectivityTemplate:
+    description: |-
+      The resource name of the AgentConnectivityTemplate.
+      Format:
+      `projects/*/locations/*/agentConnectivityTemplates/*`.
+    type: string
   name:
     description: |-
       Identifier. Name of the AgentGateway resource. It matches pattern

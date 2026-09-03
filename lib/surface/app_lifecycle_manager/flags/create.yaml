@@ -13,11 +13,15 @@
 
       To create a simple boolean flag including a flag set, description, state, and the default variants and evaluation spec, run:
 
-        $ {command} beta-feature --key=beta_rollout --flag-value-type=bool --unit-kind=my-service-unit --flag-set=my-flag-set --description="A beta feature flag" --state=in-development --location=global
+          $ {command} beta-feature --key=beta_rollout --flag-value-type=bool --unit-kind=my-service-unit --flag-set=my-flag-set --description="A beta feature flag" --state=in-development --location=global
 
       To create a percentage rollout (10% Enabled) using a `userID` attribute, run:
 
           $ {command} beta-feature --key=beta_rollout --flag-value-type=bool --unit-kind=my-service-unit --variants='[{"id": "Enabled", "booleanValue": true}, {"id": "Disabled", "booleanValue": false}]' --evaluation-spec='{"allocations": [{"id": "p10", "randomizedOn": "userID", "slots": [{"variant": "Disabled", "weight": 90}, {"variant": "Enabled", "weight": 10}]}], "defaultTarget": "p10", "attributes": ["projects/my-project/locations/global/flagAttributes/id-attr"]}' --location=global
+
+      To create a flag with progressive rollout using dynamic allocations, run:
+
+          $ {command} beta-feature --key=beta_rollout --flag-value-type=bool --unit-kind=my-service-unit --variants='[{"id": "Enabled", "booleanValue": true}, {"id": "Disabled", "booleanValue": false}]' --evaluation-spec='{"dynamicAllocations": [{"id": "p10", "randomizedOn": "userID", "initialVariant": "Disabled", "finalVariant": "Enabled"}], "defaultDynamicAllocation": "p10"}' --location=global
 
       To create an integer flag for a retry limit, run:
 
@@ -93,6 +97,33 @@
       - api_field: defaultTarget
         help_text: |-
           Default variant for the flag.
+      - api_field: defaultDynamicAllocation
+        help_text: |-
+          The ID of a dynamic allocation to use as the default.
+      - api_field: dynamicAllocations
+        help_text: |-
+          A list of dynamic allocations.
+        spec:
+        - api_field: id
+          help_text: |-
+            Id of the dynamic allocation.
+            Max length: 128 bytes.
+        - api_field: randomizedOn
+          help_text: |-
+            Key of the context attribute that is used for traffic splitting.
+        - api_field: description
+          help_text: |-
+            A description of the dynamic allocation.
+            Max length: 500 bytes.
+        - api_field: initialVariant
+          help_text: |-
+            Initial variant to return for this allocation when not fully rolled out.
+        - api_field: finalVariant
+          help_text: |-
+            Final variant to return for this allocation when fully rolled out.
+        - api_field: salt
+          help_text: |-
+            Salt for hash generation.
       - api_field: allocations
         help_text: |-
           A list of allocations.

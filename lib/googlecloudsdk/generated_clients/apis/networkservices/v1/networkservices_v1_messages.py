@@ -824,9 +824,10 @@ class CDNPolicy(_messages.Message):
       signed request is rejected if its expiration time is later than `now` +
       `signed_request_maximum_expiration_ttl`, where `now` is the time at
       which the signed request is first handled by the CDN. - The TTL must be
-      > 0. - Fractions of a second are not allowed. By default,
-      `signed_request_maximum_expiration_ttl` is not set and the expiration
-      time of a signed request might be arbitrarily far into future.
+      > `0` and <= `315360000s` (10 years). - Fractions of a second are not
+      allowed. By default, `signed_request_maximum_expiration_ttl` is not set
+      and the expiration time of a signed request might be arbitrarily far
+      into future.
     signedRequestMode: Optional. Specifies whether to enforce signed requests.
       The default value is DISABLED, which means all content is public, and
       does not authorize access. You must also set a signed_request_keyset to
@@ -2044,9 +2045,11 @@ class ExtensionBindingMatchConditionToDestination(_messages.Message):
       the query parameters. For gRPC services, this should be a fully-
       qualified name of the form /package.service/method.
     resources: Optional. A list of non-empty strings whose value is matched
-      against the resource value. If not specified, any resource is allowed.
-      If specified, a match occurs if any of the resources matches the
-      resource value in the request. Limited to 5 resources.
+      against the resource to which a request is sent (e.g., an Agent in
+      AiApplication). If not specified, any resource is allowed. If specified,
+      a match occurs if any of the resources matches the resource value in the
+      request. Limited to 5 resources. When matching against resources in the
+      AgentRegistry, use the URNs of the registry resources.
   """
 
   headerSet = _messages.MessageField('ExtensionBindingMatchConditionToDestinationHeaderSet', 1)
@@ -2074,11 +2077,7 @@ class ExtensionBindingTarget(_messages.Message):
   Fields:
     resources: Optional. The reference to the target resource, to which this
       binding should attach. Exactly one of `resources` or `scope` must be
-      set. For Agent Gateway, this would be the full resource name, in the
-      format:
-      `projects/{project}/locations/{location}/agentGateways/{agent_gateway}`.
-      For AI App, this would be the full resource name, in the format:
-      `projects/{project}/locations/{location}/applications/{application}`.
+      set.
     scope: Optional. Specifies the scope of resources to which this binding
       should attach. Exactly one of `resources` or `scope` must be set.
   """
@@ -10718,7 +10717,7 @@ class ProducerExtension(_messages.Message):
   Messages:
     LabelsValue: Optional. Set of labels associated with the
       `ProducerExtension` resource. The format must comply with [the following
-      requirements]((https://cloud.google.com/compute/docs/labeling-
+      requirements](https://cloud.google.com/compute/docs/labeling-
       resources#requirements).
 
   Fields:
@@ -10731,7 +10730,7 @@ class ProducerExtension(_messages.Message):
       `ProducerExtension` offers.
     labels: Optional. Set of labels associated with the `ProducerExtension`
       resource. The format must comply with [the following
-      requirements]((https://cloud.google.com/compute/docs/labeling-
+      requirements](https://cloud.google.com/compute/docs/labeling-
       resources#requirements).
     name: Identifier. Name of the `ProducerExtension` resource in the
       following format: `projects/{project}/locations/{location}/producerExten
@@ -10759,7 +10758,7 @@ class ProducerExtension(_messages.Message):
   class LabelsValue(_messages.Message):
     r"""Optional. Set of labels associated with the `ProducerExtension`
     resource. The format must comply with [the following
-    requirements]((https://cloud.google.com/compute/docs/labeling-
+    requirements](https://cloud.google.com/compute/docs/labeling-
     resources#requirements).
 
     Messages:

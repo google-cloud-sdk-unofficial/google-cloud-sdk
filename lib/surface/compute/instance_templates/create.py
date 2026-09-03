@@ -376,6 +376,7 @@ def BuildConfidentialInstanceConfigMessage(
     support_confidential_compute_type_tdx=False,
     support_snp_svsm=False,
     support_confidential_compute_type_cca=False,
+    support_confidential_compute_type_bmsai=False,
 ):
   """Builds a confidential instance configuration message."""
   return instance_utils.CreateConfidentialInstanceMessage(
@@ -385,6 +386,7 @@ def BuildConfidentialInstanceConfigMessage(
       support_confidential_compute_type_tdx,
       support_snp_svsm,
       support_confidential_compute_type_cca,
+      support_confidential_compute_type_bmsai,
   )
 
 
@@ -623,6 +625,7 @@ def _RunCreate(
     support_confidential_compute_type_tdx=False,
     support_snp_svsm=False,
     support_confidential_compute_type_cca=False,
+    support_confidential_compute_type_bmsai=False,
     support_ipv6_reservation=False,
     support_internal_ipv6_reservation=False,
     support_replica_zones=True,
@@ -683,6 +686,8 @@ def _RunCreate(
         supported on AMD SEV-SNP VMs.
       support_confidential_compute_type_cca: Indicate if confidential compute
         type 'CCA' is supported.
+      support_confidential_compute_type_bmsai: Indicate if confidential compute
+        type 'BMSAI' is supported.
       support_ipv6_reservation: Indicate the external IPv6 address is supported.
       support_internal_ipv6_reservation: Indicate the internal IPv6 address is
         supported.
@@ -861,6 +866,9 @@ def _RunCreate(
       support_snp_svsm=support_snp_svsm,
       support_confidential_compute_type_cca=(
           support_confidential_compute_type_cca
+      ),
+      support_confidential_compute_type_bmsai=(
+          support_confidential_compute_type_bmsai
       ),
   )
 
@@ -1303,6 +1311,7 @@ class Create(base.CreateCommand):
   _support_confidential_compute_type_tdx = True
   _support_snp_svsm = False
   _support_confidential_compute_type_cca = True
+  _support_confidential_compute_type_bmsai = True
   _support_replica_zones = True
   _support_local_ssd_size = True
   _support_network_queue_count = True
@@ -1384,6 +1393,7 @@ class Create(base.CreateCommand):
         support_confidential_compute_type_tdx=cls._support_confidential_compute_type_tdx,
         support_snp_svsm=cls._support_snp_svsm,
         support_confidential_compute_type_cca=cls._support_confidential_compute_type_cca,
+        support_confidential_compute_type_bmsai=cls._support_confidential_compute_type_bmsai,
     )
     instance_templates_flags.AddKeyRevocationActionTypeArgs(parser)
     instances_flags.AddPerformanceMonitoringUnitArgs(parser)
@@ -1415,6 +1425,7 @@ class Create(base.CreateCommand):
         support_confidential_compute_type_tdx=self._support_confidential_compute_type_tdx,
         support_snp_svsm=self._support_snp_svsm,
         support_confidential_compute_type_cca=self._support_confidential_compute_type_cca,
+        support_confidential_compute_type_bmsai=self._support_confidential_compute_type_bmsai,
         support_replica_zones=self._support_replica_zones,
         support_performance_monitoring_unit=self._support_performance_monitoring_unit,
         support_internal_ipv6_reservation=self._support_internal_ipv6_reservation,
@@ -1469,6 +1480,7 @@ class CreateBeta(Create):
   _support_confidential_compute_type_tdx = True
   _support_snp_svsm = False
   _support_confidential_compute_type_cca = True
+  _support_confidential_compute_type_bmsai = True
   _support_replica_zones = True
   _support_local_ssd_recovery_timeout = True
   _support_local_ssd_size = True
@@ -1545,6 +1557,7 @@ class CreateBeta(Create):
         support_confidential_compute_type_tdx=cls._support_confidential_compute_type_tdx,
         support_snp_svsm=cls._support_snp_svsm,
         support_confidential_compute_type_cca=cls._support_confidential_compute_type_cca,
+        support_confidential_compute_type_bmsai=cls._support_confidential_compute_type_bmsai,
     )
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instance_templates_flags.AddKeyRevocationActionTypeArgs(parser)
@@ -1579,6 +1592,7 @@ class CreateBeta(Create):
         support_confidential_compute_type_tdx=self._support_confidential_compute_type_tdx,
         support_snp_svsm=self._support_snp_svsm,
         support_confidential_compute_type_cca=self._support_confidential_compute_type_cca,
+        support_confidential_compute_type_bmsai=self._support_confidential_compute_type_bmsai,
         support_replica_zones=self._support_replica_zones,
         support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout,
         support_performance_monitoring_unit=self._support_performance_monitoring_unit,
@@ -1633,6 +1647,7 @@ class CreateAlpha(Create):
   _support_confidential_compute_type_tdx = True
   _support_snp_svsm = True
   _support_confidential_compute_type_cca = True
+  _support_confidential_compute_type_bmsai = True
   _support_replica_zones = True
   _support_local_ssd_recovery_timeout = True
   _support_network_queue_count = True
@@ -1716,6 +1731,7 @@ class CreateAlpha(Create):
         support_confidential_compute_type_tdx=cls._support_confidential_compute_type_tdx,
         support_snp_svsm=cls._support_snp_svsm,
         support_confidential_compute_type_cca=cls._support_confidential_compute_type_cca,
+        support_confidential_compute_type_bmsai=cls._support_confidential_compute_type_bmsai,
     )
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_ALPHA_API_VERSION
@@ -1755,6 +1771,7 @@ class CreateAlpha(Create):
         support_confidential_compute_type_tdx=self._support_confidential_compute_type_tdx,
         support_snp_svsm=self._support_snp_svsm,
         support_confidential_compute_type_cca=self._support_confidential_compute_type_cca,
+        support_confidential_compute_type_bmsai=self._support_confidential_compute_type_bmsai,
         support_replica_zones=self._support_replica_zones,
         support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout,
         support_performance_monitoring_unit=self._support_performance_monitoring_unit,

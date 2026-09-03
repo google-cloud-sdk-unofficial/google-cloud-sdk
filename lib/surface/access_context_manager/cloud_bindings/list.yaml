@@ -7,9 +7,13 @@
     description: |
       List cloud access bindings.
 
-      By default, this command returns only user bindings. Service account bindings
-      are only returned if the `--filter` flag is explicitly set to
+      By default, this command returns only user bindings (Google Groups).
+
+      To return service account bindings, set `--filter` to
       `principal:serviceAccount OR principal:serviceAccountProjectNumber`.
+
+      To return federated principal bindings (workforce or workload identities), set `--filter` to
+      `principal:federatedPrincipal`.
     GA:
       examples: |
         To list cloud access bindings, run:
@@ -199,7 +203,7 @@
 
         If filter is specified as
         `principal:federatedPrincipal`,
-        the output is printed in the following format:
+        the output is printed in the following format for a workload identity:
 
           ---
           accessLevels:
@@ -207,8 +211,25 @@
           dryRunAccessLevels:
           - accessPolicies/9522/accessLevels/specific_location
           principal:
-          federatedPrincipal: principal://iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool-id/subject/subject-id
+            federatedPrincipal: principal://iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool-id/subject/subject-id
           name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
+
+        Or for all workforce pools in an organization with project-scoped session settings:
+
+          ---
+          name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
+          principal:
+            federatedPrincipal: principalSet://cloudresourcemanager.googleapis.com/organizations/256/type/WorkforcePool
+          scopedAccessSettings:
+          - activeSettings:
+              sessionSettings:
+                sessionLength: 7776000s
+                sessionLengthEnabled: true
+                sessionReauthMethod: LOGIN
+            scope:
+              clientScope:
+                restrictedProject:
+                  name: projects/1234567890
 
   request:
     collection: accesscontextmanager.organizations.gcpUserAccessBindings

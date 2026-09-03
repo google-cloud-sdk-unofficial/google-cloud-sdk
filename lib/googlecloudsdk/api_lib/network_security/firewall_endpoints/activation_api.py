@@ -342,7 +342,10 @@ class Client:
           wildfire_analysis_action_str=wildfire_analysis_action,
           enable_wildfire_analysis_logging=enable_wildfire_analysis_logging,
       )
-    if self.release_track == base.ReleaseTrack.ALPHA and kms_key:
+    if (
+        self.release_track in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+        and kms_key
+    ):
       endpoint.kmsKey = kms_key
     create_request = self._create_request(
         firewallEndpoint=endpoint, firewallEndpointId=name, parent=parent

@@ -14,7 +14,6 @@
 # limitations under the License.
 """Read and write properties for the CloudSDK."""
 
-
 import enum
 import functools
 import os
@@ -64,7 +63,8 @@ _VALID_PROJECT_REGEX = re.compile(
     # We also allow a leading digit as some legacy project ids can have
     # a leading digit.
     r'(?:(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))'
-    r'$')
+    r'$'
+)
 
 _VALID_ENDPOINT_OVERRIDE_REGEX = re.compile(
     r'^'
@@ -86,9 +86,9 @@ _VALID_ENDPOINT_OVERRIDE_REGEX = re.compile(
     # optional port
     r'(?::\d+)?'
     # require trailing slash, fragment optional
-    r'(?:/|[/?]\S+/)'
-    r'$',
-    re.IGNORECASE)
+    r'(?:/|[/?]\S+/)' r'$',
+    re.IGNORECASE,
+)
 
 _GRPC_DIRECTPATH = (
     r'(?:(?:dns|google-c2p):///'
@@ -111,8 +111,13 @@ _PURE_GRPC = (
 _HTTP_PATTERN = _VALID_ENDPOINT_OVERRIDE_REGEX.pattern[1:-1]  # strip ^ and $
 
 _VALID_STORAGE_GRPC_ENDPOINT_OVERRIDE_REGEX = re.compile(
-    r'^(?:' + _HTTP_PATTERN + r'|' + _GRPC_DIRECTPATH + r'|'
-    + _PURE_GRPC + r')$',
+    r'^(?:'
+    + _HTTP_PATTERN
+    + r'|'
+    + _GRPC_DIRECTPATH
+    + r'|'
+    + _PURE_GRPC
+    + r')$',
     re.IGNORECASE,
 )
 
@@ -159,7 +164,18 @@ def _BooleanValidator(property_name, property_value):
     InvalidValueError: if value is not boolean
   """
   accepted_strings = [
-      'true', '1', 'on', 'yes', 'y', 'false', '0', 'off', 'no', 'n', '', 'none'
+      'true',
+      '1',
+      'on',
+      'yes',
+      'y',
+      'false',
+      '0',
+      'off',
+      'no',
+      'n',
+      '',
+      'none',
   ]
   if isinstance(property_value, PropertyValue):
     value = property_value.value
@@ -169,8 +185,11 @@ def _BooleanValidator(property_name, property_value):
     raise InvalidValueError(
         'The [{0}] value [{1}] is not valid. Possible values: [{2}]. '
         '(See http://yaml.org/type/bool.html)'.format(
-            property_name, value,
-            ', '.join([x if x else "''" for x in accepted_strings])))
+            property_name,
+            value,
+            ', '.join([x if x else "''" for x in accepted_strings]),
+        )
+    )
 
 
 def _IntegerValidator(property_name=None, property_value=None):
@@ -285,7 +304,8 @@ class MissingInstallationConfig(Error):
   def __init__(self):
     super(MissingInstallationConfig, self).__init__(
         'Installation properties could not be set because the installation '
-        'root of the Cloud SDK could not be found.')
+        'root of the Cloud SDK could not be found.'
+    )
 
 
 class InvalidScopeValueError(Error):
@@ -299,8 +319,8 @@ class InvalidScopeValueError(Error):
     """
     super(InvalidScopeValueError, self).__init__(
         'Could not parse [{0}] into a valid configuration scope.  '
-        'Valid values are [{1}]'.format(given,
-                                        ', '.join(Scope.AllScopeNames())))
+        'Valid values are [{1}]'.format(given, ', '.join(Scope.AllScopeNames()))
+    )
 
 
 class InvalidValueError(Error):
@@ -316,8 +336,11 @@ class InvalidProjectError(Error):
 
 class RequiredPropertyError(Error):
   """Generic exception for when a required property was not set."""
-  FLAG_STRING = ('It can be set on a per-command basis by re-running your '
-                 'command with the [{flag}] flag.\n\n')
+
+  FLAG_STRING = (
+      'It can be set on a per-command basis by re-running your '
+      'command with the [{flag}] flag.\n\n'
+  )
 
   def __init__(self, prop, flag=None, extra_msg=None):
     if prop.section != VALUES.default_section.name:
@@ -331,17 +354,18 @@ class RequiredPropertyError(Error):
     else:
       flag_msg = ''
 
-    msg = ("""\
+    msg = """\
 The required property [{property_name}] is not currently set.
 {flag_msg}You may set it for your current workspace by running:
 
   $ gcloud config set {section}{property_name} VALUE
 
 or it can be set temporarily by the environment variable [{env_var}]""".format(
-    property_name=prop.name,
-    flag_msg=flag_msg,
-    section=section,
-    env_var=prop.EnvironmentName()))
+        property_name=prop.name,
+        flag_msg=flag_msg,
+        section=section,
+        env_var=prop.EnvironmentName(),
+    )
     if extra_msg:
       msg += '\n\n' + extra_msg
     super(RequiredPropertyError, self).__init__(msg)
@@ -436,17 +460,19 @@ class _Section(object):
     return self.name <= other.name
 
   #  pylint: disable=missing-docstring
-  def _Add(self,
-           name,
-           help_text=None,
-           internal=False,
-           hidden=False,
-           callbacks=None,
-           default=None,
-           validator=None,
-           choices=None,
-           completer=None,
-           default_flag=None):
+  def _Add(
+      self,
+      name,
+      help_text=None,
+      internal=False,
+      hidden=False,
+      callbacks=None,
+      default=None,
+      validator=None,
+      choices=None,
+      completer=None,
+      default_flag=None,
+  ):
     prop = _Property(
         section=self.__name,
         name=name,
@@ -458,17 +484,20 @@ class _Section(object):
         validator=validator,
         choices=choices,
         completer=completer,
-        default_flag=default_flag)
+        default_flag=default_flag,
+    )
     self.__properties[name] = prop
     return prop
 
-  def _AddBool(self,
-               name,
-               help_text=None,
-               internal=False,
-               hidden=False,
-               callbacks=None,
-               default=None):
+  def _AddBool(
+      self,
+      name,
+      help_text=None,
+      internal=False,
+      hidden=False,
+      callbacks=None,
+      default=None,
+  ):
     return self._Add(
         name=name,
         help_text=help_text,
@@ -477,7 +506,8 @@ class _Section(object):
         callbacks=callbacks,
         default=default,
         validator=functools.partial(_BooleanValidator, name),
-        choices=('true', 'false'))
+        choices=('true', 'false'),
+    )
 
   def Property(self, property_name):
     """Gets a property from this section, given its name.
@@ -494,9 +524,12 @@ class _Section(object):
     """
     try:
       return self.__properties[property_name]
-    except KeyError:
-      raise NoSuchPropertyError('Section [{s}] has no property [{p}].'.format(
-          s=self.__name, p=property_name))
+    except KeyError as exc:
+      raise NoSuchPropertyError(
+          'Section [{s}] has no property [{p}].'.format(
+              s=self.__name, p=property_name
+          )
+      ) from exc
 
   def HasProperty(self, property_name):
     """True iff section has given property.
@@ -519,15 +552,18 @@ class _Section(object):
       [str], The property names.
     """
     return [
-        name for name, prop in six.iteritems(self.__properties)
+        name
+        for name, prop in six.iteritems(self.__properties)
         if include_hidden or not prop.is_hidden
     ]
 
-  def AllValues(self,
-                list_unset=False,
-                include_hidden=False,
-                properties_file=None,
-                only_file_contents=False):
+  def AllValues(
+      self,
+      list_unset=False,
+      include_hidden=False,
+      properties_file=None,
+      only_file_contents=False,
+  ):
     """Gets all the properties and their values for this section.
 
     Args:
@@ -545,15 +581,19 @@ class _Section(object):
       {str:str}, The dict of {property:value} for this section.
     """
     properties_file = (
-        properties_file or named_configs.ActivePropertiesFile.Load())
+        properties_file or named_configs.ActivePropertiesFile.Load()
+    )
 
     result = {}
     for prop in self:
       if prop.is_internal:
         # Never show internal properties, ever.
         continue
-      if (prop.is_hidden and not include_hidden and
-          _GetPropertyWithoutCallback(prop, properties_file) is None):
+      if (
+          prop.is_hidden
+          and not include_hidden
+          and _GetPropertyWithoutCallback(prop, properties_file) is None
+      ):
         continue
 
       if only_file_contents:
@@ -578,11 +618,13 @@ class _Section(object):
       result[prop.name] = value
     return result
 
-  def AllPropertyValues(self,
-                        list_unset=False,
-                        include_hidden=False,
-                        properties_file=None,
-                        only_file_contents=False):
+  def AllPropertyValues(
+      self,
+      list_unset=False,
+      include_hidden=False,
+      properties_file=None,
+      only_file_contents=False,
+  ):
     """Gets all the properties and their values for this section.
 
     Args:
@@ -600,21 +642,26 @@ class _Section(object):
       {str:PropertyValue}, The dict of {property:value} for this section.
     """
     properties_file = (
-        properties_file or named_configs.ActivePropertiesFile.Load())
+        properties_file or named_configs.ActivePropertiesFile.Load()
+    )
 
     result = {}
     for prop in self:
       if prop.is_internal:
         # Never show internal properties, ever.
         continue
-      if (prop.is_hidden and not include_hidden and
-          _GetPropertyWithoutCallback(prop, properties_file) is None):
+      if (
+          prop.is_hidden
+          and not include_hidden
+          and _GetPropertyWithoutCallback(prop, properties_file) is None
+      ):
         continue
 
       if only_file_contents:
         property_value = PropertyValue(
             properties_file.Get(prop.section, prop.name),
-            PropertyValue.PropertySource.PROPERTY_FILE)
+            PropertyValue.PropertySource.PROPERTY_FILE,
+        )
       else:
         property_value = _GetPropertyWithoutDefault(prop, properties_file)
 
@@ -639,7 +686,8 @@ def AccessPolicyValidator(policy):
   if not policy.isdigit():
     raise InvalidValueError(
         'The access_context_manager.policy property must be set '
-        'to the policy number, not a string.')
+        'to the policy number, not a string.'
+    )
 
 
 class _SectionAccessContextManager(_Section):
@@ -652,23 +700,30 @@ class _SectionAccessContextManager(_Section):
     if not org.isdigit():
       raise InvalidValueError(
           'The access_context_manager.organization property must be set '
-          'to the organization ID number, not a string.')
+          'to the organization ID number, not a string.'
+      )
 
   def __init__(self):
     super(_SectionAccessContextManager, self).__init__(
-        'access_context_manager', hidden=True)
+        'access_context_manager', hidden=True
+    )
 
     self.policy = self._Add(
         'policy',
         validator=AccessPolicyValidator,
-        help_text=('ID of the policy resource to operate on. Can be found '
-                   'by running the `access-context-manager policies list` '
-                   'command.'))
+        help_text=(
+            'ID of the policy resource to operate on. Can be found '
+            'by running the `access-context-manager policies list` '
+            'command.'
+        ),
+    )
     self.organization = self._Add(
         'organization',
         validator=self.OrganizationValidator,
-        help_text=('Default organization cloud-bindings command group will '
-                   'operate on.'))
+        help_text=(
+            'Default organization cloud-bindings command group will operate on.'
+        ),
+    )
     self.enable_gcsl = self._AddBool(
         'enable_gcsl',
         default=False,
@@ -688,7 +743,8 @@ class _SectionAccessibility(_Section):
     self.screen_reader = self._AddBool(
         'screen_reader',
         default=False,
-        help_text='Make gcloud more screen reader friendly.')
+        help_text='Make gcloud more screen reader friendly.',
+    )
 
 
 class _SectionAi(_Section):
@@ -698,9 +754,12 @@ class _SectionAi(_Section):
     super(_SectionAi, self).__init__('ai')
     self.region = self._Add(
         'region',
-        help_text='Default region to use when working with '
-        'AI Platform resources. When a `--region` flag is required '
-        'but not provided, the command will fall back to this value, if set.')
+        help_text=(
+            'Default region to use when working with AI Platform resources.'
+            ' When a `--region` flag is required but not provided, the command'
+            ' will fall back to this value, if set.'
+        ),
+    )
 
 
 class _SectionAiPlatform(_Section):
@@ -710,12 +769,15 @@ class _SectionAiPlatform(_Section):
     super(_SectionAiPlatform, self).__init__('ai_platform')
     self.region = self._Add(
         'region',
-        help_text='Default region to use when working with AI Platform '
-        'Training and Prediction resources (currently for Prediction only). '
-        'It is ignored for training resources for now. The value should be '
-        'either `global` or one of the supported regions. When a `--region` '
-        'flag is required but not provided, the command will fall back to this '
-        'value, if set.')
+        help_text=(
+            'Default region to use when working with AI Platform Training and'
+            ' Prediction resources (currently for Prediction only). It is'
+            ' ignored for training resources for now. The value should be'
+            ' either `global` or one of the supported regions. When a'
+            ' `--region` flag is required but not provided, the command will'
+            ' fall back to this value, if set.'
+        ),
+    )
 
 
 class _SectionApiClientOverrides(_Section):
@@ -726,7 +788,8 @@ class _SectionApiClientOverrides(_Section):
 
   def __init__(self):
     super(_SectionApiClientOverrides, self).__init__(
-        'api_client_overrides', hidden=True)
+        'api_client_overrides', hidden=True
+    )
     self.alloydb = self._Add('alloydb')
     self.appengine = self._Add('appengine')
     self.backupdr = self._Add('backupdr')
@@ -766,24 +829,30 @@ class _SectionApiEndpointOverrides(_Section):
       )
 
     self.accessapproval = self._Add(
-        'accessapproval', command='gcloud access-approval')
+        'accessapproval', command='gcloud access-approval'
+    )
     self.accesscontextmanager = self._Add(
-        'accesscontextmanager', command='gcloud access-context-manager')
+        'accesscontextmanager', command='gcloud access-context-manager'
+    )
     self.agentidentity = self._Add(
-        'agentidentity', command='gcloud agent-identity')
+        'agentidentity', command='gcloud agent-identity'
+    )
     self.agentregistry = self._Add(
-        'agentregistry', command='gcloud agent-registry', hidden=True)
+        'agentregistry', command='gcloud agent-registry', hidden=True
+    )
     self.ai = self._Add('ai', command='gcloud ai')
     self.aiplatform = self._Add('aiplatform', command='gcloud ai-platform')
     self.alloydb = self._Add('alloydb', command='gcloud alloydb', hidden=True)
     self.anthosevents = self._Add('anthosevents', command='gcloud anthos')
     self.anthospolicycontrollerstatus_pa = self._Add(
         'anthospolicycontrollerstatus_pa',
-        command='gcloud container fleet policycontroller')
+        command='gcloud container fleet policycontroller',
+    )
     self.apigateway = self._Add('apigateway', command='gcloud api-gateway')
     self.apigee = self._Add('apigee', command='gcloud apigee')
     self.apihub = self._Add(
-        'apihub', command='gcloud apigeeregistry', hidden=True)
+        'apihub', command='gcloud apigeeregistry', hidden=True
+    )
     self.apikeys = self._Add(
         'apikeys', command='gcloud services api-keys', hidden=True
     )
@@ -791,71 +860,89 @@ class _SectionApiEndpointOverrides(_Section):
     self.apphub = self._Add('apphub', command='gcloud apphub')
     self.appoptimize = self._Add('appoptimize', command='gcloud app-optimize')
     self.artifactregistry = self._Add(
-        'artifactregistry', command='gcloud artifacts')
+        'artifactregistry', command='gcloud artifacts'
+    )
     self.assuredworkloads = self._Add(
-        'assuredworkloads', command='gcloud assured')
+        'assuredworkloads', command='gcloud assured'
+    )
     self.auditmanager = self._Add(
-        'auditmanager', command='gcloud audit-manager')
+        'auditmanager', command='gcloud audit-manager'
+    )
     self.authztoolkit = self._Add(
-        'authztoolkit', command='gcloud authz-toolkit', hidden=True)
+        'authztoolkit', command='gcloud authz-toolkit', hidden=True
+    )
     self.backupdr = self._Add(
-        'backupdr', command='gcloud backup-dr', hidden=True)
+        'backupdr', command='gcloud backup-dr', hidden=True
+    )
     self.baremetalsolution = self._Add(
-        'baremetalsolution', command='gcloud bms')
+        'baremetalsolution', command='gcloud bms'
+    )
     self.batch = self._Add('batch', command='gcloud batch', hidden=True)
     self.beyondcorp = self._Add('beyondcorp', hidden=True)
-    self.biglake = self._Add(
-        'biglake', command='gcloud biglake', hidden=True)
+    self.biglake = self._Add('biglake', command='gcloud biglake', hidden=True)
     self.bigquery = self._Add('bigquery', hidden=True)
     self.bigquerymigration = self._Add('bigquerymigration', hidden=True)
     self.bigtableadmin = self._Add('bigtableadmin', command='gcloud bigtable')
     self.binaryauthorization = self._Add(
-        'binaryauthorization', command='gcloud container binauthz', hidden=True)
+        'binaryauthorization', command='gcloud container binauthz', hidden=True
+    )
     self.categorymanager = self._Add('categorymanager', hidden=True)
     self.certificatemanager = self._Add(
-        'certificatemanager', command='gcloud certificate-manager')
+        'certificatemanager', command='gcloud certificate-manager'
+    )
     self.cloudaicompanion = self._Add('cloudaicompanion', hidden=True)
     self.cloudapiregistry = self._Add(
-        'cloudapiregistry', command='gcloud api-registry')
+        'cloudapiregistry', command='gcloud api-registry'
+    )
     self.cloudasset = self._Add('cloudasset', command='gcloud asset')
     self.cloudbilling = self._Add('cloudbilling', command='gcloud billing')
     self.cloudbuild = self._Add('cloudbuild', command='gcloud builds')
     self.cloudcommerceconsumerprocurement = self._Add(
         'cloudcommerceconsumerprocurement',
-        command='gcloud commerce-procurement')
+        command='gcloud commerce-procurement',
+    )
     self.clouddeploy = self._Add('clouddeploy', command='gcloud deploy')
     self.clouderrorreporting = self._Add(
-        'clouderrorreporting', command='gcloud error-reporting')
+        'clouderrorreporting', command='gcloud error-reporting'
+    )
     self.cloudfunctions = self._Add(
-        'cloudfunctions', command='gcloud functions')
+        'cloudfunctions', command='gcloud functions'
+    )
     self.cloudidentity = self._Add('cloudidentity', command='gcloud identity')
     self.cloudkms = self._Add('cloudkms', command='gcloud kms')
     self.cloudlocationfinder = self._Add(
-        'cloudlocationfinder', command='gcloud cloudlocationfinder')
+        'cloudlocationfinder', command='gcloud cloudlocationfinder'
+    )
     self.cloudnumberregistry = self._Add(
-        'cloudnumberregistry',
-        command='gcloud cloudnumberregistry', hidden=True)
+        'cloudnumberregistry', command='gcloud cloudnumberregistry', hidden=True
+    )
     self.cloudquotas = self._Add(
-        'cloudquotas', command='gcloud quotas', hidden=True)
+        'cloudquotas', command='gcloud quotas', hidden=True
+    )
     self.cloudresourcemanager = self._Add(
-        'cloudresourcemanager', command='gcloud projects')
+        'cloudresourcemanager', command='gcloud projects'
+    )
     self.cloudresourcesearch = self._Add('cloudresourcesearch', hidden=True)
     self.cloudscheduler = self._Add(
-        'cloudscheduler', command='gcloud scheduler')
+        'cloudscheduler', command='gcloud scheduler'
+    )
     self.cloudsecuritycompliance = self._Add(
-        'cloudsecuritycompliance',
-        command='gcloud compliance-manager')
+        'cloudsecuritycompliance', command='gcloud compliance-manager'
+    )
     self.cloudshell = self._Add(
-        'cloudshell', command='gcloud cloud-shell', hidden=True)
+        'cloudshell', command='gcloud cloud-shell', hidden=True
+    )
     self.cloudsupport = self._Add('cloudsupport', command='gcloud support')
     self.cloudtasks = self._Add('cloudtasks', command='gcloud tasks')
     self.cloudtrace = self._Add('cloudtrace', command='gcloud trace')
     self.composer = self._Add('composer', command='gcloud composer')
     self.compute = self._Add(
         'compute',
-        help_text='Overrides API endpoint for `gcloud compute` command group. '
-        'For Private Service Connect usage, see '
-        'https://cloud.google.com/vpc/docs/configure-private-service-connect-apis#using-endpoints'
+        help_text=(
+            'Overrides API endpoint for `gcloud compute` command group. '
+            'For Private Service Connect usage, see '
+            'https://cloud.google.com/vpc/docs/configure-private-service-connect-apis#using-endpoints'
+        ),
     )
     self.configdelivery = self._Add(
         'configdelivery', command='gcloud container fleet packages', hidden=True
@@ -868,22 +955,27 @@ class _SectionApiEndpointOverrides(_Section):
     self.datafusion = self._Add('datafusion', command='gcloud data-fusion')
     self.datalineage = self._Add('datalineage', command='gcloud datalineage')
     self.datamigration = self._Add(
-        'datamigration', command='gcloud database-migration')
+        'datamigration', command='gcloud database-migration'
+    )
     self.datapol = self._Add('datapol', hidden=True)
     self.datapipelines = self._Add(
-        'datapipelines', command='gcloud datapipelines')
+        'datapipelines', command='gcloud datapipelines'
+    )
     self.dataplex = self._Add('dataplex', command='gcloud dataplex')
     self.dataproc = self._Add('dataproc', command='gcloud dataproc')
     self.dataprocgdc = self._Add('dataprocgdc', hidden=True)
     self.datastore = self._Add('datastore', command='gcloud datastore')
     self.datastream = self._Add('datastream', command='gcloud datastream')
     self.deploymentmanager = self._Add(
-        'deploymentmanager', command='gcloud deployment-manager')
+        'deploymentmanager', command='gcloud deployment-manager'
+    )
     # TODO(b/420912196): Unhide after gcloud client releases to GA.
     self.designcenter = self._Add(
-        'designcenter', command='gcloud design-center', hidden=True)
+        'designcenter', command='gcloud design-center', hidden=True
+    )
     self.developerconnect = self._Add(
-        'developerconnect', command='gcloud developer-connect')
+        'developerconnect', command='gcloud developer-connect'
+    )
     self.developerknowledge = self._Add(
         'developerknowledge', command='gcloud developerknowledge', hidden=True
     )
@@ -892,21 +984,32 @@ class _SectionApiEndpointOverrides(_Section):
     self.dns = self._Add('dns', command='gcloud dns')
     self.domains = self._Add('domains', command='gcloud domains')
     self.edgecontainer = self._Add(
-        'edgecontainer', command='gcloud edge-container')
+        'edgecontainer', command='gcloud edge-container'
+    )
     self.edgenetwork = self._Add(
-        'edgenetwork', command='gcloud edge-cloud networking', hidden=True)
+        'edgenetwork', command='gcloud edge-cloud networking', hidden=True
+    )
     self.eventarc = self._Add('eventarc', command='gcloud eventarc')
     self.eventarcpublishing = self._Add(
-        'eventarcpublishing', command='gcloud eventarc publish')
+        'eventarcpublishing', command='gcloud eventarc publish'
+    )
     self.externalexposure = self._Add(
-        'externalexposure', command='gcloud scc external-exposure', hidden=True)
+        'externalexposure', command='gcloud scc external-exposure', hidden=True
+    )
     self.faultinjectiontesting = self._Add(
-        'faultinjectiontesting', command='gcloud fault-injection')
+        'faultinjectiontesting', command='gcloud fault-injection'
+    )
     self.faulttesting = self._Add(
-        'faulttesting', command='gcloud fault-testing')
+        'faulttesting', command='gcloud fault-testing'
+    )
     self.file = self._Add('file', command='gcloud filestore')
+    self.firebase = self._Add(
+        'firebase', command='gcloud firebase', hidden=True)
     self.firebasedataconnect = self._Add(
-        'firebasedataconnect', command='gcloud firebase-data-connect')
+        'firebasedataconnect', command='gcloud firebase-data-connect'
+    )
+    self.firebaserules = self._Add(
+        'firebaserules', command='gcloud firebaserules', hidden=True)
     self.firestore = self._Add('firestore', command='gcloud firestore')
     self.ftp = self._Add('ftp', command='gcloud storage ftp')
     self.geminicloudassist = self._Add(
@@ -917,21 +1020,27 @@ class _SectionApiEndpointOverrides(_Section):
     self.gkehub = self._Add('gkehub', hidden=True)
     self.gkerecommender = self._Add('gkerecommender', hidden=True)
     self.hypercomputecluster = self._Add(
-        'hypercomputecluster', command='gcloud cluster-director')
+        'hypercomputecluster', command='gcloud cluster-director'
+    )
     self.iamconnectors = self._Add(
-        'iamconnectors', command='gcloud agent-identity')
+        'iamconnectors', command='gcloud agent-identity'
+    )
     self.observability = self._Add(
-        'observability', command='gcloud observability')
+        'observability', command='gcloud observability'
+    )
     self.servicehealth = self._Add(
-        'servicehealth', command='gcloud servicehealth')
+        'servicehealth', command='gcloud servicehealth'
+    )
     self.transcoder = self._Add(
         'transcoder', command='gcloud transcoder', hidden=True
     )
     self.gkemulticloud = self._Add(
         'gkemulticloud',
-        help_text='Overrides API endpoint for `gcloud container aws`, '
-        '`gcloud container azure` and `gcloud container attached` '
-        'command groups.'
+        help_text=(
+            'Overrides API endpoint for `gcloud container aws`, '
+            '`gcloud container azure` and `gcloud container attached` '
+            'command groups.'
+        ),
     )
     # TODO(b/236427906): Unhide after gcloud client releases to GA.
     self.gkeonprem = self._Add('gkeonprem', hidden=True)
@@ -944,10 +1053,10 @@ class _SectionApiEndpointOverrides(_Section):
         'kmsinventory', command='gcloud kms inventory'
     )
     self.krmapihosting = self._Add(
-        'krmapihosting', command='gcloud anthos config controller')
+        'krmapihosting', command='gcloud anthos config controller'
+    )
     self.kubernetespolicy = self._Add('kubernetespolicy', hidden=True)
-    self.inframanager = self._Add(
-        'config', command='gcloud infra-manager')
+    self.inframanager = self._Add('config', command='gcloud infra-manager')
     self.language = self._Add('language', command='gcloud ml language')
     self.logging = self._Add('logging', command='gcloud logging')
     self.looker = self._Add('looker', command='gcloud looker')
@@ -956,44 +1065,57 @@ class _SectionApiEndpointOverrides(_Section):
         'managedflink', command='gcloud managedflink', hidden=True
     )
     self.managedidentities = self._Add(
-        'managedidentities', command='gcloud active-directory')
+        'managedidentities', command='gcloud active-directory'
+    )
     self.managedkafka = self._Add(
-        'managedkafka', command='gcloud managed-kafka', hidden=True)
+        'managedkafka', command='gcloud managed-kafka', hidden=True
+    )
     self.manager = self._Add('manager', hidden=True)
     self.marketplacesolutions = self._Add(
-        'marketplacesolutions', command='gcloud mps')
+        'marketplacesolutions', command='gcloud mps'
+    )
     self.mediaasset = self._Add('mediaasset', command='gcloud media')
     self.memcache = self._Add('memcache', command='gcloud memcache')
     self.memorystore = self._Add(
-        'memorystore', command='gcloud memorystore', hidden=True)
+        'memorystore', command='gcloud memorystore', hidden=True
+    )
     self.metastore = self._Add('metastore', command='gcloud metastore')
     self.ml = self._Add('ml', hidden=True)
     self.modelarmor = self._Add(
-        'modelarmor', command='gcloud modelarmor', hidden=True)
+        'modelarmor', command='gcloud modelarmor', hidden=True
+    )
     self.monitoring = self._Add('monitoring', command='gcloud monitoring')
     self.netapp = self._Add('netapp', command='gcloud netapp')
     self.networkconnectivity = self._Add(
-        'networkconnectivity', command='gcloud network-connectivity')
+        'networkconnectivity', command='gcloud network-connectivity'
+    )
     self.networkmanagement = self._Add(
-        'networkmanagement', command='gcloud network-management')
+        'networkmanagement', command='gcloud network-management'
+    )
     self.networksecurity = self._Add(
-        'networksecurity', command='gcloud network-security')
+        'networksecurity', command='gcloud network-security'
+    )
     self.networkservices = self._Add(
-        'networkservices', command='gcloud network-services')
+        'networkservices', command='gcloud network-services'
+    )
     self.notebooks = self._Add('notebooks', command='gcloud notebooks')
     self.ondemandscanning = self._Add('ondemandscanning', hidden=True)
     self.oracledatabase = self._Add(
-        'oracledatabase', command='gcloud oracle-database', hidden=True)
+        'oracledatabase', command='gcloud oracle-database', hidden=True
+    )
     self.orglifecycle = self._Add(
-        'orglifecycle', command='gcloud orglifecycle', hidden=True)
+        'orglifecycle', command='gcloud orglifecycle', hidden=True
+    )
     self.orgpolicy = self._Add('orgpolicy', command='gcloud org-policies')
     self.osconfig = self._Add('osconfig', hidden=True)
     self.oslogin = self._Add('oslogin', hidden=True)
     self.parallelstore = self._Add('parallelstore', hidden=True)
     self.parametermanager = self._Add(
-        'parametermanager', command='gcloud parameter-manager', hidden=True)
+        'parametermanager', command='gcloud parameter-manager', hidden=True
+    )
     self.policyanalyzer = self._Add(
-        'policyanalyzer', command='policy-intelligence')
+        'policyanalyzer', command='policy-intelligence'
+    )
     self.policysimulator = self._Add('policysimulator', hidden=True)
     self.policytroubleshooter = self._Add('policytroubleshooter', hidden=True)
     self.privateca = self._Add('privateca', command='gcloud privateca')
@@ -1004,21 +1126,23 @@ class _SectionApiEndpointOverrides(_Section):
     self.pubsub = self._Add('pubsub', command='gcloud pubsub')
     self.pubsublite = self._Add('pubsublite', hidden=True)
     self.recaptcha = self._Add(
-        'recaptchaenterprise', command='gcloud recaptcha')
+        'recaptchaenterprise', command='gcloud recaptcha'
+    )
     self.recommender = self._Add('recommender', command='gcloud recommender')
     self.redis = self._Add('redis', command='gcloud redis')
     self.remotebuildexecution = self._Add('remotebuildexecution', hidden=True)
     self.replicapoolupdater = self._Add('replicapoolupdater', hidden=True)
     self.run = self._Add('run', command='gcloud run')
     self.runtimeconfig = self._Add(
-        'runtimeconfig', command='gcloud runtime-config')
+        'runtimeconfig', command='gcloud runtime-config'
+    )
     self.saasservicemgmt = self._Add(
-        'saasservicemgmt', command='gcloud saas', hidden=True)
+        'saasservicemgmt', command='gcloud saas', hidden=True
+    )
     self.sasportal = self._Add('sasportal', hidden=True)
     self.scc = self._Add('securitycenter', command='gcloud scc')
     self.sddc = self._Add('sddc', command='gcloud vmware sddc')
-    self.seclm = self._Add(
-        'seclm', command='gcloud seclm', hidden=True)
+    self.seclm = self._Add('seclm', command='gcloud seclm', hidden=True)
     self.secrets = self._Add('secretmanager', command='gcloud secrets')
     self.securesourcemanager = self._Add('securesourcemanager', hidden=True)
     self.securitycentermanagement = self._Add(
@@ -1026,18 +1150,22 @@ class _SectionApiEndpointOverrides(_Section):
     )
     self.securityposture = self._Add('securityposture', hidden=True)
     self.servicedirectory = self._Add(
-        'servicedirectory', command='gcloud service-directory')
+        'servicedirectory', command='gcloud service-directory'
+    )
     self.servicemanagement = self._Add(
-        'servicemanagement', command='gcloud endpoints')
+        'servicemanagement', command='gcloud endpoints'
+    )
     self.serviceregistry = self._Add('serviceregistry', hidden=True)
     self.serviceusage = self._Add('serviceusage', hidden=True)
     self.source = self._Add('source', hidden=True)
     self.sourcerepo = self._Add('sourcerepo', command='gcloud source')
     self.spanner = self._Add(
         'spanner',
-        help_text='Overrides API endpoint for `gcloud spanner` command group. '
-        'For spanner emulator usage, see '
-        'https://cloud.google.com/spanner/docs/emulator#using_the_gcloud_cli_with_the_emulator'
+        help_text=(
+            'Overrides API endpoint for `gcloud spanner` command group. '
+            'For spanner emulator usage, see '
+            'https://cloud.google.com/spanner/docs/emulator#using_the_gcloud_cli_with_the_emulator'
+        ),
     )
     self.speech = self._Add('speech', command='gcloud ml speech')
     self.sql = self._Add('sql', command='gcloud sql')
@@ -1058,7 +1186,8 @@ class _SectionApiEndpointOverrides(_Section):
         hidden=True,
     )
     self.storageinsights = self._Add(
-        'storageinsights', command='gcloud storage insights', hidden=True)
+        'storageinsights', command='gcloud storage insights', hidden=True
+    )
     self.stream = self._Add('stream', hidden=True)
     self.telcoautomation = self._Add('telcoautomation', hidden=True)
     self.testing = self._Add('testing', command='gcloud firebase test')
@@ -1067,19 +1196,21 @@ class _SectionApiEndpointOverrides(_Section):
     # Aliased to `storagetransfer` in `api_lib/apis/apis_util.py`.
     self.transfer = self._Add('transfer', command='gcloud transfer')
     self.transferappliance = self._Add(
-        'transferappliance', command='gcloud transfer appliances')
+        'transferappliance', command='gcloud transfer appliances'
+    )
     self.vectorsearch = self._Add(
-        'vectorsearch', command='gcloud vector-search')
+        'vectorsearch', command='gcloud vector-search'
+    )
     self.vision = self._Add('vision', command='gcloud ml vision')
     self.vmmigration = self._Add('vmmigration', command='gcloud migration vms')
     self.vmwareengine = self._Add('vmwareengine', command='gcloud vmware')
     self.vpcaccess = self._Add('vpcaccess', hidden=True)
     self.workflowexecutions = self._Add(
-        'workflowexecutions', command='gcloud workflows executions')
+        'workflowexecutions', command='gcloud workflows executions'
+    )
     self.workflows = self._Add('workflows', command='gcloud workflows')
     self.workloadcertificate = self._Add('workloadcertificate', hidden=True)
-    self.workloadidentity = self._Add(
-        'workloadidentity', hidden=True)
+    self.workloadidentity = self._Add('workloadidentity', hidden=True)
     self.workstations = self._Add('workstations', command='gcloud workstations')
 
   def StorageGrpcEndpointValidator(self, value):
@@ -1101,7 +1232,7 @@ class _SectionApiEndpointOverrides(_Section):
     if not _VALID_ENDPOINT_OVERRIDE_REGEX.match(value):
       raise InvalidValueError(
           'The endpoint_overrides property must be an absolute URI beginning '
-          'with http:// or https:// and ending with a trailing \'/\'. '
+          "with http:// or https:// and ending with a trailing '/'. "
           '[{value}] is not a valid endpoint override.'.format(value=value)
       )
 
@@ -1109,8 +1240,9 @@ class _SectionApiEndpointOverrides(_Section):
       self, name, help_text=None, hidden=False, command=None, validator=None
   ):
     if not help_text and command:
-      help_text = (
-          'Overrides API endpoint for `{}` command group.').format(command)
+      help_text = ('Overrides API endpoint for `{}` command group.').format(
+          command
+      )
 
     default_endpoint = self.GetDefaultEndpoint(name)
     if command and default_endpoint:
@@ -1120,7 +1252,8 @@ class _SectionApiEndpointOverrides(_Section):
         name,
         help_text=help_text,
         hidden=hidden,
-        validator=validator or self.EndpointValidator)
+        validator=validator or self.EndpointValidator,
+    )
 
   def _UniversifyHelpTextEndpoint(self, address: str) -> str:
     """Update a URL based on the current universe domain."""
@@ -1150,33 +1283,46 @@ class _SectionApp(_Section):
     super(_SectionApp, self).__init__('app')
     self.promote_by_default = self._AddBool(
         'promote_by_default',
-        help_text='If True, when deploying a new version of a service, that '
-        'version will be promoted to receive all traffic for the service. '
-        'This property can be overridden with the `--promote-by-default` or '
-        '`--no-promote-by-default` flags.',
-        default=True)
+        help_text=(
+            'If True, when deploying a new version of a service, that version'
+            ' will be promoted to receive all traffic for the service. This'
+            ' property can be overridden with the `--promote-by-default` or'
+            ' `--no-promote-by-default` flags.'
+        ),
+        default=True,
+    )
     self.stop_previous_version = self._AddBool(
         'stop_previous_version',
-        help_text='If True, when deploying a new version of a service, the '
-        'previously deployed version is stopped. If False, older versions must '
-        'be stopped manually.',
-        default=True)
+        help_text=(
+            'If True, when deploying a new version of a service, the previously'
+            ' deployed version is stopped. If False, older versions must be'
+            ' stopped manually.'
+        ),
+        default=True,
+    )
     self.trigger_build_server_side = self._AddBool(
-        'trigger_build_server_side', hidden=True, default=None)
+        'trigger_build_server_side', hidden=True, default=None
+    )
     self.use_flex_with_buildpacks = self._AddBool(
-        'use_flex_with_buildpacks', hidden=True, default=None)
+        'use_flex_with_buildpacks', hidden=True, default=None
+    )
     self.cloud_build_timeout = self._Add(
         'cloud_build_timeout',
         validator=_BuildTimeoutValidator,
-        help_text='Timeout, in seconds, to wait for Docker builds to '
-        'complete during deployments. All Docker builds now use the '
-        'Cloud Build API.')
+        help_text=(
+            'Timeout, in seconds, to wait for Docker builds to '
+            'complete during deployments. All Docker builds now use the '
+            'Cloud Build API.'
+        ),
+    )
     self.container_builder_image = self._Add(
         'container_builder_image',
         default='gcr.io/cloud-builders/docker',
-        hidden=True)
+        hidden=True,
+    )
     self.use_appengine_api = self._AddBool(
-        'use_appengine_api', default=True, hidden=True)
+        'use_appengine_api', default=True, hidden=True
+    )
     # This property is currently ignored except on OS X Sierra or beta
     # deployments.
     # There's a theoretical benefit to exceeding the number of cores available,
@@ -1184,7 +1330,8 @@ class _SectionApp(_Section):
     # mini-benchmarks validated this (I got speedup from 4 threads to 8 on a
     # 4-core machine).
     self.num_file_upload_threads = self._Add(
-        'num_file_upload_threads', default=None, hidden=True)
+        'num_file_upload_threads', default=None, hidden=True
+    )
 
     def GetRuntimeRoot():
       sdk_root = config.Paths().sdk_root
@@ -1194,7 +1341,8 @@ class _SectionApp(_Section):
         return os.path.join(config.Paths().sdk_root, 'platform', 'ext-runtime')
 
     self.runtime_root = self._Add(
-        'runtime_root', callbacks=[GetRuntimeRoot], hidden=True)
+        'runtime_root', callbacks=[GetRuntimeRoot], hidden=True
+    )
 
     # Whether or not to use the (currently under-development) Flex Runtime
     # Builders, as opposed to Externalized Runtimes.
@@ -1204,16 +1352,20 @@ class _SectionApp(_Section):
     self.use_runtime_builders = self._Add(
         'use_runtime_builders',
         default=None,
-        help_text=('If set, opt in/out to a new code path for building '
-                   'applications using pre-fabricated runtimes that can be '
-                   'updated independently of client tooling. If not set, '
-                   'the default path for each runtime is used.'))
+        help_text=(
+            'If set, opt in/out to a new code path for building '
+            'applications using pre-fabricated runtimes that can be '
+            'updated independently of client tooling. If not set, '
+            'the default path for each runtime is used.'
+        ),
+    )
     # The Cloud Storage path prefix for the Flex Runtime Builder configuration
     # files. The configuration files will live at
     # "<PREFIX>/<runtime>-<version>.yaml", with an additional
     # "<PREFIX>/runtime.version" indicating the latest version.
     self.runtime_builders_root = self._Add(
-        'runtime_builders_root', default='gs://runtime-builders/', hidden=True)
+        'runtime_builders_root', default='gs://runtime-builders/', hidden=True
+    )
 
 
 class _SectionArtifacts(_Section):
@@ -1224,30 +1376,43 @@ class _SectionArtifacts(_Section):
 
     self.repository = self._Add(
         'repository',
-        help_text='Default repository to use when working with Artifact '
-        'Registry resources. When a `repository` value is required but not '
-        'provided, the command will fall back to this value, if set.')
+        help_text=(
+            'Default repository to use when working with Artifact '
+            'Registry resources. When a `repository` value is required but not '
+            'provided, the command will fall back to this value, if set.'
+        ),
+    )
 
     self.location = self._Add(
         'location',
-        help_text='Default location to use when working with Artifact Registry '
-        'resources. When a `location` value is required but not provided, the '
-        'command will fall back to this value, if set. If this value is unset, '
-        'the default location is `global` when `location` value is optional.')
+        help_text=(
+            'Default location to use when working with Artifact Registry'
+            ' resources. When a `location` value is required but not provided,'
+            ' the command will fall back to this value, if set. If this value'
+            ' is unset, the default location is `global` when `location` value'
+            ' is optional.'
+        ),
+    )
 
     self.registry_endpoint_prefix = self._Add(
         'registry_endpoint_prefix',
         default='',
         hidden=True,
-        help_text='Default prefix to use while interacting with Artifact '
-        'Registry resources.')
+        help_text=(
+            'Default prefix to use while interacting with Artifact '
+            'Registry resources.'
+        ),
+    )
 
     self.domain = self._Add(
         'domain',
         default='pkg.dev',
         hidden=True,
-        help_text='Default domain endpoint to use while interacting with '
-        'Artifact Registry Docker resources.')
+        help_text=(
+            'Default domain endpoint to use while interacting with '
+            'Artifact Registry Docker resources.'
+        ),
+    )
 
     self.gcr_host = self._Add(
         'gcr_host',
@@ -1287,43 +1452,59 @@ class _SectionAuth(_Section):
   def __init__(self):
     super(_SectionAuth, self).__init__('auth')
     self.auth_host = self._Add(
-        'auth_host', hidden=True, default=self.DEFAULT_AUTH_HOST)
+        'auth_host', hidden=True, default=self.DEFAULT_AUTH_HOST
+    )
     self.disable_credentials = self._AddBool(
         'disable_credentials',
         default=False,
-        help_text='If True, `gcloud` will not attempt to load any credentials '
-        'or authenticate any requests. This is useful when behind a proxy '
-        'that adds authentication to requests.')
+        help_text=(
+            'If True, `gcloud` will not attempt to load any credentials '
+            'or authenticate any requests. This is useful when behind a proxy '
+            'that adds authentication to requests.'
+        ),
+    )
     self.token_host = self._Add(
         'token_host',
         default=self.DEFAULT_TOKEN_HOST,
-        help_text='Overrides the token endpoint to provision access tokens. '
-        'It can be used with Private Service Connect.')
+        help_text=(
+            'Overrides the token endpoint to provision access tokens. '
+            'It can be used with Private Service Connect.'
+        ),
+    )
     self.mtls_token_host = self._Add(
         'mtls_token_host',
         default=self.DEFAULT_MTLS_TOKEN_HOST,
-        help_text='Overrides the mtls token endpoint to provision access tokens.',
-        hidden=True)
-    self.disable_ssl_validation = self._AddBool(
-        'disable_ssl_validation', hidden=True)
-    self.client_id = self._Add(
-        'client_id', hidden=True, default=config.CLOUDSDK_CLIENT_ID)
-    self.client_secret = self._Add(
-        'client_secret',
+        help_text=(
+            'Overrides the mtls token endpoint to provision access tokens.'
+        ),
         hidden=True,
-        default=config.CLOUDSDK_CLIENT_NOTSOSECRET)
+    )
+    self.disable_ssl_validation = self._AddBool(
+        'disable_ssl_validation', hidden=True
+    )
+    self.client_id = self._Add(
+        'client_id', hidden=True, default=config.CLOUDSDK_CLIENT_ID
+    )
+    self.client_secret = self._Add(
+        'client_secret', hidden=True, default=config.CLOUDSDK_CLIENT_NOTSOSECRET
+    )
     self.authority_selector = self._Add('authority_selector', hidden=True)
     self.authorization_token_file = self._Add(
-        'authorization_token_file', hidden=True)
+        'authorization_token_file', hidden=True
+    )
     self.credential_file_override = self._Add(
-        'credential_file_override', hidden=True)
+        'credential_file_override', hidden=True
+    )
     self.access_token_file = self._Add(
         'access_token_file',
-        help_text='A file path to read the access token. Use this property to '
-        'authenticate gcloud with an access token. The credentials '
-        'of the active account (if it exists) will be ignored. '
-        'The file should contain an access token with no other '
-        'information.')
+        help_text=(
+            'A file path to read the access token. Use this property to '
+            'authenticate gcloud with an access token. The credentials '
+            'of the active account (if it exists) will be ignored. '
+            'The file should contain an access token with no other '
+            'information.'
+        ),
+    )
     self.impersonate_service_account = self._Add(
         'impersonate_service_account',
         help_text=textwrap.dedent("""\
@@ -1360,26 +1541,36 @@ class _SectionAuth(_Section):
         ``SERVICE_ACCOUNT_2''.
         ``SERVICE_ACCOUNT_1'' is the impersonated service
         account and ``SERVICE_ACCOUNT_2'' is the delegate.
-        """))
+        """),
+    )
     self.disable_code_verifier = self._AddBool(
         'disable_code_verifier',
         default=False,
         hidden=True,
-        help_text='Disable code verifier in 3LO auth flow. See '
-        'https://tools.ietf.org/html/rfc7636 for more information '
-        'about code verifier.')
+        help_text=(
+            'Disable code verifier in 3LO auth flow. See '
+            'https://tools.ietf.org/html/rfc7636 for more information '
+            'about code verifier.'
+        ),
+    )
     self.token_introspection_endpoint = self._Add(
         'token_introspection_endpoint',
         hidden=True,
-        help_text='Overrides the endpoint used for token introspection with '
-        'Workload and Workforce Identity Federation. It can be used with '
-        'Private Service Connect.'
+        help_text=(
+            'Overrides the endpoint used for token introspection with '
+            'Workload and Workforce Identity Federation. It can be used with '
+            'Private Service Connect.'
+        ),
     )
     self.login_config_file = self._Add(
         'login_config_file',
-        help_text='Sets the created login configuration file in '
-        'auth/login_config_file. Calling `gcloud auth login` will automatically '
-        'use this login configuration unless it is explicitly unset.')
+        help_text=(
+            'Sets the created login configuration file in'
+            ' auth/login_config_file. Calling `gcloud auth login` will'
+            ' automatically use this login configuration unless it is'
+            ' explicitly unset.'
+        ),
+    )
     self.service_account_use_self_signed_jwt = self._Add(
         'service_account_use_self_signed_jwt',
         default=False,
@@ -1423,9 +1614,12 @@ class _SectionBatch(_Section):
 
     self.location = self._Add(
         'location',
-        help_text='Default location to use when working with Batch '
-        'resources. When a `location` value is required but not provided, the '
-        'command will fall back to this value, if set.')
+        help_text=(
+            'Default location to use when working with Batch resources. When a'
+            ' `location` value is required but not provided, the command will'
+            ' fall back to this value, if set.'
+        ),
+    )
 
 
 class _SectionBilling(_Section):
@@ -1450,7 +1644,8 @@ class _SectionBilling(_Section):
              can use this flag to specify the billing project. If both
              `billing/quota_project` and `--billing-project` are specified,
              `--billing-project` takes precedence.
-             """))
+             """),
+    )
 
 
 class _SectionBuilds(_Section):
@@ -1461,37 +1656,55 @@ class _SectionBuilds(_Section):
 
     self.region = self._Add(
         'region',
-        help_text='Default region to use when working with Cloud Build '
-        'resources. When a `--region` flag is required but not provided, the '
-        'command will fall back to this value, if set.')
+        help_text=(
+            'Default region to use when working with Cloud Build resources.'
+            ' When a `--region` flag is required but not provided, the command'
+            ' will fall back to this value, if set.'
+        ),
+    )
     self.timeout = self._Add(
         'timeout',
         validator=_BuildTimeoutValidator,
-        help_text='Timeout, in seconds, to wait for builds to complete. If '
-        'unset, defaults to 10 minutes.')
+        help_text=(
+            'Timeout, in seconds, to wait for builds to complete. If '
+            'unset, defaults to 10 minutes.'
+        ),
+    )
     self.check_tag = self._AddBool(
         'check_tag',
         default=True,
         hidden=True,
-        help_text='If True, validate that the --tag value to builds '
-        'submit is in the gcr.io, *.gcr.io, or *.pkg.dev namespace.')
+        help_text=(
+            'If True, validate that the --tag value to builds '
+            'submit is in the gcr.io, *.gcr.io, or *.pkg.dev namespace.'
+        ),
+    )
     # TODO(b/118509363): Remove this after its default is True.
     self.use_kaniko = self._AddBool(
         'use_kaniko',
         default=False,
-        help_text='If True, kaniko will be used to build images described by '
-        'a Dockerfile, instead of `docker build`.')
+        help_text=(
+            'If True, kaniko will be used to build images described by '
+            'a Dockerfile, instead of `docker build`.'
+        ),
+    )
     self.kaniko_cache_ttl = self._Add(
         'kaniko_cache_ttl',
         default=6,
-        help_text='TTL, in hours, of cached layers when using Kaniko. If zero, '
-        'layer caching is disabled.')
+        help_text=(
+            'TTL, in hours, of cached layers when using Kaniko. If zero, '
+            'layer caching is disabled.'
+        ),
+    )
     self.kaniko_image = self._Add(
         'kaniko_image',
         default='gcr.io/kaniko-project/executor:latest',
         hidden=True,
-        help_text='Kaniko builder image to use when use_kaniko=True. Defaults '
-        'to gcr.io/kaniko-project/executor:latest')
+        help_text=(
+            'Kaniko builder image to use when use_kaniko=True. Defaults '
+            'to gcr.io/kaniko-project/executor:latest'
+        ),
+    )
 
 
 class _SectionCode(_Section):
@@ -1504,18 +1717,23 @@ class _SectionCode(_Section):
         'minikube_event_timeout',
         default='90s',
         hidden=True,
-        help_text='Terminate the cluster start process if this amount of time '
-        'has passed since the last minikube event.')
+        help_text=(
+            'Terminate the cluster start process if this amount of time '
+            'has passed since the last minikube event.'
+        ),
+    )
 
     self.minikube_path_override = self._Add(
         'minikube_path_override',
         hidden=True,
-        help_text='Location of minikube binary.')
+        help_text='Location of minikube binary.',
+    )
 
     self.skaffold_path_override = self._Add(
         'skaffold_path_override',
         hidden=True,
-        help_text='Location of skaffold binary.')
+        help_text='Location of skaffold binary.',
+    )
 
 
 class _SectionColab(_Section):
@@ -1525,11 +1743,14 @@ class _SectionColab(_Section):
     super(_SectionColab, self).__init__('colab')
     self.region = self._Add(
         'region',
-        help_text='Default region to use when working with Colab Enterprise '
-        'resources. When a `--region` flag is required but not provided, the '
-        'command will fall back to this value, if set. Please see '
-        'https://cloud.google.com/colab/docs/locations for a list of supported '
-        'regions.')
+        help_text=(
+            'Default region to use when working with Colab Enterprise'
+            ' resources. When a `--region` flag is required but not provided,'
+            ' the command will fall back to this value, if set. Please see'
+            ' https://cloud.google.com/colab/docs/locations for a list of'
+            ' supported regions.'
+        ),
+    )
 
 
 class _SectionComponentManager(_Section):
@@ -1539,18 +1760,27 @@ class _SectionComponentManager(_Section):
     super(_SectionComponentManager, self).__init__('component_manager')
     self.additional_repositories = self._Add(
         'additional_repositories',
-        help_text='Comma separated list of additional repositories to check '
-        'for components.  This property is automatically managed by the '
-        '`gcloud components repositories` commands.')
+        help_text=(
+            'Comma separated list of additional repositories to check '
+            'for components.  This property is automatically managed by the '
+            '`gcloud components repositories` commands.'
+        ),
+    )
     self.disable_update_check = self._AddBool(
         'disable_update_check',
-        help_text='If True, Google Cloud CLI will not automatically check for '
-        'updates.')
+        help_text=(
+            'If True, Google Cloud CLI will not automatically check for '
+            'updates.'
+        ),
+    )
     self.disable_warning = self._AddBool(
         'disable_warning',
         hidden=True,
-        help_text='If True, Google Cloud CLI will not display warning messages '
-        'about overridden configurations.')
+        help_text=(
+            'If True, Google Cloud CLI will not display warning messages '
+            'about overridden configurations.'
+        ),
+    )
     self.fixed_sdk_version = self._Add('fixed_sdk_version', hidden=True)
     self.snapshot_url = self._Add('snapshot_url', hidden=True)
     # We need the original snapshot_url because snapshot_url may be
@@ -1561,7 +1791,9 @@ class _SectionComponentManager(_Section):
         internal=True,
         hidden=True,
         help_text='Snapshot URL when this installation is firstly installed.',
-        default='https://dl.google.com/dl/cloudsdk/channels/rapid/components-2.json'
+        default=(
+            'https://dl.google.com/dl/cloudsdk/channels/rapid/components-2.json'
+        ),
     )
 
 
@@ -1578,7 +1810,9 @@ class _SectionComposer(_Section):
             'deploying environments into Compute Engine regions inside this '
             'location. This parameter corresponds to the '
             '/locations/<location> segment of the Composer resource URIs being '
-            'referenced.'))
+            'referenced.'
+        ),
+    )
 
 
 class _SectionCompute(_Section):
@@ -1588,54 +1822,71 @@ class _SectionCompute(_Section):
     super(_SectionCompute, self).__init__('compute')
     self.zone = self._Add(
         'zone',
-        help_text='Default zone to use when working with zonal Compute '
-        'Engine resources. When a `--zone` flag is required but not provided, '
-        'the command will fall back to this value, if set. To see valid '
-        'choices, run `gcloud compute zones list`.',
-        completer=('googlecloudsdk.command_lib.compute.completers:'
-                   'ZonesCompleter'))
+        help_text=(
+            'Default zone to use when working with zonal Compute Engine'
+            ' resources. When a `--zone` flag is required but not provided, the'
+            ' command will fall back to this value, if set. To see valid'
+            ' choices, run `gcloud compute zones list`.'
+        ),
+        completer=(
+            'googlecloudsdk.command_lib.compute.completers:ZonesCompleter'
+        ),
+    )
     self.region = self._Add(
         'region',
-        help_text='Default region to use when working with regional Compute'
-        ' Engine resources. When a `--region` flag is required but not '
-        'provided, the command will fall back to this value, if set. To see '
-        'valid choices, run `gcloud compute regions list`.',
-        completer=('googlecloudsdk.command_lib.compute.completers:'
-                   'RegionsCompleter'))
+        help_text=(
+            'Default region to use when working with regional Compute Engine'
+            ' resources. When a `--region` flag is required but not provided,'
+            ' the command will fall back to this value, if set. To see valid'
+            ' choices, run `gcloud compute regions list`.'
+        ),
+        completer=(
+            'googlecloudsdk.command_lib.compute.completers:RegionsCompleter'
+        ),
+    )
     self.gce_metadata_read_timeout_sec = self._Add(
         'gce_metadata_read_timeout_sec',
         default=20,
         help_text='Timeout of requesting data from gce metadata endpoints.',
-        hidden=True)
+        hidden=True,
+    )
     self.gce_metadata_check_timeout_sec = self._Add(
         'gce_metadata_check_timeout_sec',
         default=3,
         help_text='Timeout of checking if it is on gce environment.',
-        hidden=True)
+        hidden=True,
+    )
     self.use_new_list_usable_subnets_api = self._AddBool(
         'use_new_list_usable_subnets_api',
         default=False,
         help_text=(
             'If True, use the new API for listing usable subnets which only '
-            'returns subnets in the current project.'))
+            'returns subnets in the current project.'
+        ),
+    )
     self.image_family_scope = self._Add(
         'image_family_scope',
-        help_text='Sets how images are selected with image families for '
-        'disk and instance creation. By default, zonal image resources '
-        'are used when using an image family in a public image project, '
-        'and global image resources are used for all other projects. '
-        'To override the default behavior, set this property to `zonal` '
-        'or `global`. ')
+        help_text=(
+            'Sets how images are selected with image families for '
+            'disk and instance creation. By default, zonal image resources '
+            'are used when using an image family in a public image project, '
+            'and global image resources are used for all other projects. '
+            'To override the default behavior, set this property to `zonal` '
+            'or `global`. '
+        ),
+    )
     self.iap_tunnel_use_new_websocket = self._AddBool(
         'iap_tunnel_use_new_websocket',
         default=False,
         help_text='Bool that indicates if we should use new websocket.',
-        hidden=True)
+        hidden=True,
+    )
     self.force_batch_request = self._AddBool(
         'force_batch_request',
         default=False,
         help_text='Bool that force all requests are sent as batch request',
-        hidden=True)
+        hidden=True,
+    )
     self.disable_batch_request = self._AddBool(
         'disable_batch_request',
         default=False,
@@ -1668,9 +1919,12 @@ class _SectionConfigDelivery(_Section):
 
     self.location = self._Add(
         'location',
-        help_text='Default location to use when working with Fleet Packages '
-        'resources. When a `location` value is required but not provided, the '
-        'command will fall back to this value, if set.')
+        help_text=(
+            'Default location to use when working with Fleet Packages'
+            ' resources. When a `location` value is required but not provided,'
+            ' the command will fall back to this value, if set.'
+        ),
+    )
 
 
 class _SectionContainer(_Section):
@@ -1680,30 +1934,44 @@ class _SectionContainer(_Section):
     super(_SectionContainer, self).__init__('container')
     self.cluster = self._Add(
         'cluster',
-        help_text='Name of the cluster to use by default when '
-        'working with Kubernetes Engine.')
+        help_text=(
+            'Name of the cluster to use by default when '
+            'working with Kubernetes Engine.'
+        ),
+    )
     self.use_client_certificate = self._AddBool(
         'use_client_certificate',
         default=False,
-        help_text='If True, use the cluster\'s client certificate to '
-        'authenticate to the cluster API server.')
+        help_text=(
+            "If True, use the cluster's client certificate to "
+            'authenticate to the cluster API server.'
+        ),
+    )
     self.use_app_default_credentials = self._AddBool(
         'use_application_default_credentials',
         default=False,
-        help_text='If True, use application default credentials to authenticate'
-        ' to the cluster API server.')
+        help_text=(
+            'If True, use application default credentials to authenticate'
+            ' to the cluster API server.'
+        ),
+    )
 
     self.build_timeout = self._Add(
         'build_timeout',
         validator=_BuildTimeoutValidator,
-        help_text='Timeout, in seconds, to wait for container builds to '
-        'complete.')
+        help_text=(
+            'Timeout, in seconds, to wait for container builds to complete.'
+        ),
+    )
     self.build_check_tag = self._AddBool(
         'build_check_tag',
         default=True,
         hidden=True,
-        help_text='If True, validate that the --tag value to container builds '
-        'submit is in the gcr.io or *.gcr.io namespace.')
+        help_text=(
+            'If True, validate that the --tag value to container builds '
+            'submit is in the gcr.io or *.gcr.io namespace.'
+        ),
+    )
 
 
 class _SectionContainerAttached(_Section):
@@ -1713,8 +1981,8 @@ class _SectionContainerAttached(_Section):
     super(_SectionContainerAttached, self).__init__('container_attached')
     self.location = self._Add(
         'location',
-        help_text=('Default Google Cloud location to use for Attached '
-                   'clusters.'))
+        help_text='Default Google Cloud location to use for Attached clusters.',
+    )
 
 
 class _SectionContainerAws(_Section):
@@ -1724,8 +1992,10 @@ class _SectionContainerAws(_Section):
     super(_SectionContainerAws, self).__init__('container_aws')
     self.location = self._Add(
         'location',
-        help_text=('Default Google Cloud location to use for Anthos clusters '
-                   'on AWS.'))
+        help_text=(
+            'Default Google Cloud location to use for Anthos clusters on AWS.'
+        ),
+    )
 
 
 class _SectionContainerAzure(_Section):
@@ -1735,8 +2005,10 @@ class _SectionContainerAzure(_Section):
     super(_SectionContainerAzure, self).__init__('container_azure')
     self.location = self._Add(
         'location',
-        help_text=('Default Google Cloud location to use for Anthos clusters '
-                   'on Azure.'))
+        help_text=(
+            'Default Google Cloud location to use for Anthos clusters on Azure.'
+        ),
+    )
 
 
 class _SectionContainerBareMetal(_Section):
@@ -1746,8 +2018,11 @@ class _SectionContainerBareMetal(_Section):
     super(_SectionContainerBareMetal, self).__init__('container_bare_metal')
     self.location = self._Add(
         'location',
-        help_text=('Default Google Cloud location to use for Anthos clusters '
-                   'on Bare Metal.'))
+        help_text=(
+            'Default Google Cloud location to use for Anthos clusters '
+            'on Bare Metal.'
+        ),
+    )
 
 
 class _SectionContainerVmware(_Section):
@@ -1757,8 +2032,11 @@ class _SectionContainerVmware(_Section):
     super(_SectionContainerVmware, self).__init__('container_vmware')
     self.location = self._Add(
         'location',
-        help_text=('Default Google Cloud location to use for Anthos clusters '
-                   'on VMware.'))
+        help_text=(
+            'Default Google Cloud location to use for Anthos clusters '
+            'on VMware.'
+        ),
+    )
 
 
 class _SectionContextAware(_Section):
@@ -1775,27 +2053,34 @@ class _SectionContextAware(_Section):
             'authorization. If a command sends requests to such services, the '
             'client certificate will not be validated. '
             'Run `gcloud topic client-certificate` for list of services '
-            'supporting this feature.'),
-        default=False)
+            'supporting this feature.'
+        ),
+        default=False,
+    )
     # Only for tests. It is valuable to test that the mTLS endpoints are serving
     # without involving the policy enforcement. The mTLS endpoints are expected
     # to behave identically to the regular endpoints without policy enforcement.
     self.always_use_mtls_endpoint = self._AddBool(
         'always_use_mtls_endpoint',
-        help_text='If True, use the mTLS endpoints regardless of the value of '
-        'context_aware/use_client_certificate.',
+        help_text=(
+            'If True, use the mTLS endpoints regardless of the value of '
+            'context_aware/use_client_certificate.'
+        ),
         default=False,
-        hidden=True)
+        hidden=True,
+    )
     self.auto_discovery_file_path = self._Add(
         'auto_discovery_file_path',
         validator=ExistingAbsoluteFilepathValidator,
         help_text='File path for auto discovery configuration file.',
-        hidden=True)
+        hidden=True,
+    )
     self.certificate_config_file_path = self._Add(
         'certificate_config_file_path',
         validator=ExistingAbsoluteFilepathValidator,
         help_text='File path for certificate configuration file.',
-        hidden=True)
+        hidden=True,
+    )
     self.use_ecp_http_proxy = self._AddBool(
         'use_ecp_http_proxy',
         help_text=(
@@ -1830,57 +2115,83 @@ class _SectionCore(_Section):
     super(_SectionCore, self).__init__('core')
     self.account = self._Add(
         'account',
-        help_text='Account `gcloud` should use for authentication. '
-        'Run `gcloud auth list` to see your currently available accounts.')
+        help_text=(
+            'Account `gcloud` should use for authentication. '
+            'Run `gcloud auth list` to see your currently available accounts.'
+        ),
+    )
     self.disable_collection_path_deprecation_warning = self._AddBool(
         'disable_collection_path_deprecation_warning',
         hidden=True,
-        help_text='If False, any usage of collection paths will result in '
-        'deprecation warning. Set it to False to disable it.')
+        help_text=(
+            'If False, any usage of collection paths will result in '
+            'deprecation warning. Set it to False to disable it.'
+        ),
+    )
     self.default_regional_backend_service = self._AddBool(
         'default_regional_backend_service',
-        help_text='If True, backend services in `gcloud compute '
-        'backend-services` will be regional by default. Setting the `--global` '
-        'flag is required for global backend services.')
+        help_text=(
+            'If True, backend services in `gcloud compute backend-services`'
+            ' will be regional by default. Setting the `--global` flag is'
+            ' required for global backend services.'
+        ),
+    )
     self.disable_color = self._AddBool(
         'disable_color',
-        help_text='If True, color will not be used when printing messages in '
-        'the terminal.')
+        help_text=(
+            'If True, color will not be used when printing messages in '
+            'the terminal.'
+        ),
+    )
     self.disable_command_lazy_loading = self._AddBool(
-        'disable_command_lazy_loading', hidden=True)
+        'disable_command_lazy_loading', hidden=True
+    )
     self.disable_prompts = self._AddBool(
         'disable_prompts',
-        help_text='If True, the default answer will be assumed for all user '
-        'prompts. However, for any prompts that require user input, an error '
-        'will be raised. This is equivalent to either using the global '
-        '`--quiet` flag or setting the environment variable '
-        '`CLOUDSDK_CORE_DISABLE_PROMPTS` to 1. Setting this property is '
-        'useful when scripting with `gcloud`.')
+        help_text=(
+            'If True, the default answer will be assumed for all user prompts.'
+            ' However, for any prompts that require user input, an error will'
+            ' be raised. This is equivalent to either using the global'
+            ' `--quiet` flag or setting the environment variable'
+            ' `CLOUDSDK_CORE_DISABLE_PROMPTS` to 1. Setting this property is'
+            ' useful when scripting with `gcloud`.'
+        ),
+    )
     self.display_hints = self._AddBool(
         'display_hints',
         default=False,
         hidden=True,
-        help_text='If True, the `--agent-hints` flag will be active.')
+        help_text='If True, the `--agent-hints` flag will be active.',
+    )
     self.disable_usage_reporting = self._AddBool(
         'disable_usage_reporting',
-        help_text='If True, anonymous statistics on SDK usage will not be '
-        'collected. This value is set by your choices during installation, but '
-        'can be changed at any time.  For more information, see '
-        '[Usage statistics](/sdk/docs/usage-statistics).')
+        help_text=(
+            'If True, anonymous statistics on SDK usage will not be collected.'
+            ' This value is set by your choices during installation, but can be'
+            ' changed at any time.  For more information, see [Usage'
+            ' statistics](/sdk/docs/usage-statistics).'
+        ),
+    )
     self.enable_gri = self._AddBool(
         'enable_gri',
         default=False,
         hidden=True,
-        help_text='If True, the parser for gcloud Resource Identifiers will be '
-        'enabled when interpreting resource arguments.')
+        help_text=(
+            'If True, the parser for gcloud Resource Identifiers will be '
+            'enabled when interpreting resource arguments.'
+        ),
+    )
     self.resource_completion_style = self._Add(
         'resource_completion_style',
         choices=('flags', 'gri'),
         default='flags',
         hidden=True,
-        help_text='The resource completion style controls how resource strings '
-        'are represented in command argument completions.  All styles, '
-        'including uri, are handled on input.')
+        help_text=(
+            'The resource completion style controls how resource strings '
+            'are represented in command argument completions.  All styles, '
+            'including uri, are handled on input.'
+        ),
+    )
     self.lint = self._Add(
         'lint',
         # Current runtime lint patterns. Delete from this comment when the
@@ -1897,110 +2208,162 @@ class _SectionCore(_Section):
         #     # AddCacheUpdaters lint check enabled.
         default='none',
         hidden=True,
-        help_text='Enable the runtime linter for specific patterns. '
-        'Each occurrence of a runtime pattern raises an exception. '
-        'The pattern names are source specific. Consult the source for '
-        'details.')
+        help_text=(
+            'Enable the runtime linter for specific patterns. '
+            'Each occurrence of a runtime pattern raises an exception. '
+            'The pattern names are source specific. Consult the source for '
+            'details.'
+        ),
+    )
     self.verbosity = self._Add(
         'verbosity',
-        help_text='Default logging verbosity for `gcloud` commands.  This is '
-        'the equivalent of using the global `--verbosity` flag. Supported '
-        'verbosity levels: `debug`, `info`, `warning`, `error`, `critical`, '
-        'and `none`.')
+        help_text=(
+            'Default logging verbosity for `gcloud` commands.  This is the'
+            ' equivalent of using the global `--verbosity` flag. Supported'
+            ' verbosity levels: `debug`, `info`, `warning`, `error`,'
+            ' `critical`, and `none`.'
+        ),
+    )
     self.user_output_enabled = self._AddBool(
         'user_output_enabled',
-        help_text='True, by default. If False, messages to the user and command'
-        ' output on both standard output and standard error will be'
-        ' suppressed.',
-        default=True)
+        help_text=(
+            'True, by default. If False, messages to the user and command'
+            ' output on both standard output and standard error will be'
+            ' suppressed.'
+        ),
+        default=True,
+    )
     self.interactive_ux_style = self._Add(
         'interactive_ux_style',
-        help_text='How to display interactive UX elements like progress bars '
-        'and trackers.',
+        help_text=(
+            'How to display interactive UX elements like progress bars '
+            'and trackers.'
+        ),
         hidden=True,
         default=_SectionCore.InteractiveUXStyles.NORMAL,
-        choices=[x.name for x in list(_SectionCore.InteractiveUXStyles)])
+        choices=[x.name for x in list(_SectionCore.InteractiveUXStyles)],
+    )
     self.log_http = self._AddBool(
         'log_http',
-        help_text='If True, log HTTP requests and responses to the logs.  '
-        'To see logs in the terminal, adjust `verbosity` settings. '
-        'Otherwise, logs are available in their respective log files.',
-        default=False)
+        help_text=(
+            'If True, log HTTP requests and responses to the logs.  '
+            'To see logs in the terminal, adjust `verbosity` settings. '
+            'Otherwise, logs are available in their respective log files.'
+        ),
+        default=False,
+    )
     self.log_http_redact_token = self._AddBool(
         'log_http_redact_token',
-        help_text='If true, this prevents log_http from printing access tokens.'
-        ' This property does not have effect unless log_http is true.',
+        help_text=(
+            'If true, this prevents log_http from printing access tokens.'
+            ' This property does not have effect unless log_http is true.'
+        ),
         default=True,
-        hidden=True)
+        hidden=True,
+    )
     self.log_http_show_request_body = self._AddBool(
         'log_http_show_request_body',
-        help_text='If true, this allows log_http to print the request body'
-        ' for debugging purposes on requests with the'
-        ' "redact_request_body_reason" parameter set on '
-        ' core.credentials.transports.GetApitoolsTransports.'
-        ' Note: this property does not have any effect unless'
-        ' log_http is true.',
+        help_text=(
+            'If true, this allows log_http to print the request body'
+            ' for debugging purposes on requests with the'
+            ' "redact_request_body_reason" parameter set on '
+            ' core.credentials.transports.GetApitoolsTransports.'
+            ' Note: this property does not have any effect unless'
+            ' log_http is true.'
+        ),
         default=False,
-        hidden=True)
+        hidden=True,
+    )
     self.log_http_streaming_body = self._AddBool(
         'log_http_streaming_body',
-        help_text='If True, log the streaming body instead of logging'
-        ' the "<streaming body>" text. This flag results in reading the entire'
-        ' response body in memory.'
-        ' This property does not have effect unless log_http is true.',
+        help_text=(
+            'If True, log the streaming body instead of logging the "<streaming'
+            ' body>" text. This flag results in reading the entire response'
+            ' body in memory. This property does not have effect unless'
+            ' log_http is true.'
+        ),
         default=False,
-        hidden=True)
+        hidden=True,
+    )
     self.http_timeout = self._Add('http_timeout', hidden=True)
     self.check_gce_metadata = self._AddBool(
-        'check_gce_metadata', hidden=True, default=True)
+        'check_gce_metadata', hidden=True, default=True
+    )
     self.print_completion_tracebacks = self._AddBool(
         'print_completion_tracebacks',
         hidden=True,
-        help_text='If True, print actual completion exceptions with traceback '
-        'instead of the nice UX scrubbed exceptions.')
+        help_text=(
+            'If True, print actual completion exceptions with traceback '
+            'instead of the nice UX scrubbed exceptions.'
+        ),
+    )
     self.print_unhandled_tracebacks = self._AddBool(
-        'print_unhandled_tracebacks', hidden=True)
+        'print_unhandled_tracebacks', hidden=True
+    )
     self.print_handled_tracebacks = self._AddBool(
-        'print_handled_tracebacks', hidden=True)
+        'print_handled_tracebacks', hidden=True
+    )
     self.trace_token = self._Add(
         'trace_token',
-        help_text='Token used to route traces of service requests for '
-        'investigation of issues. This token will be provided by Google '
-        'support.')
+        help_text=(
+            'Token used to route traces of service requests for '
+            'investigation of issues. This token will be provided by Google '
+            'support.'
+        ),
+    )
     self.request_reason = self._Add('request_reason', hidden=True)
     self.pass_credentials_to_gsutil = self._AddBool(
         'pass_credentials_to_gsutil',
         default=True,
-        help_text='If True, pass the configured Google Cloud CLI authentication '
-        'to gsutil.')
+        help_text=(
+            'If True, pass the configured Google Cloud CLI authentication '
+            'to gsutil.'
+        ),
+    )
     self.api_key = self._Add(
         'api_key',
         hidden=True,
-        help_text='If provided, this API key is attached to all outgoing '
-        'API calls.')
+        help_text=(
+            'If provided, this API key is attached to all outgoing API calls.'
+        ),
+    )
     self.should_prompt_to_enable_api = self._AddBool(
         'should_prompt_to_enable_api',
         default=True,
         hidden=True,
-        help_text='If true, will prompt to enable an API if a command fails due'
-        ' to the API not being enabled.')
+        help_text=(
+            'If true, will prompt to enable an API if a command fails due'
+            ' to the API not being enabled.'
+        ),
+    )
     self.color_theme = self._Add(
         'color_theme',
         help_text='Color palette for output.',
         hidden=True,
         default='off',
-        choices=['off', 'normal', 'testing'])
+        choices=['off', 'normal', 'testing'],
+    )
     self.use_legacy_flattened_format = self._AddBool(
         'use_legacy_flattened_format',
         hidden=True,
         default=False,
-        help_text='If True, use legacy format for flattened() and text().'
-        'Please note that this option will not be supported indefinitely.')
+        help_text=(
+            'If True, use legacy format for flattened() and text().'
+            'Please note that this option will not be supported indefinitely.'
+        ),
+    )
 
     # Only formats that accept empty projections can be used globally
     supported_global_formats = sorted([
-        formats.CONFIG, formats.DEFAULT, formats.DISABLE, formats.FLATTENED,
-        formats.JSON, formats.LIST, formats.NONE, formats.OBJECT, formats.TEXT
+        formats.CONFIG,
+        formats.DEFAULT,
+        formats.DISABLE,
+        formats.FLATTENED,
+        formats.JSON,
+        formats.LIST,
+        formats.NONE,
+        formats.OBJECT,
+        formats.TEXT,
     ])
 
     def FormatValidator(print_format):
@@ -2010,7 +2373,8 @@ class _SectionCore(_Section):
     self.format = self._Add(
         'format',
         validator=FormatValidator,
-        help_text=textwrap.dedent("""\
+        help_text=textwrap.dedent(
+            """\
         Sets the format for printing all command resources. This overrides the
         default command-specific human-friendly output format. Use
         `--verbosity=debug` flag to view the command-specific format. If both
@@ -2019,7 +2383,10 @@ class _SectionCore(_Section):
         `--format` takes precedence. The supported formats are limited to:
         `{0}`. For more details run $ gcloud topic formats. Run `$ gcloud config
         set --help` to see more information about `core/format`""".format(
-            '`, `'.join(supported_global_formats))))
+                '`, `'.join(supported_global_formats)
+            )
+        ),
+    )
 
     self.default_format = self._Add(
         'default_format',
@@ -2034,15 +2401,17 @@ class _SectionCore(_Section):
         precedence over `core/default_format`. The supported formats are limited
         to: `{0}`. For more details run $ gcloud topic formats. Run `$ gcloud
         config set --help` to see more information about
-        `core/default_format`""".format(
-            '`, `'.join(supported_global_formats))))
+        `core/default_format`""".format('`, `'.join(supported_global_formats))),
+    )
 
     def ShowStructuredLogsValidator(show_structured_logs):
       if show_structured_logs is None:
         return
       if show_structured_logs not in ['always', 'log', 'terminal', 'never']:
-        raise InvalidValueError(('show_structured_logs must be one of: '
-                                 '[always, log, terminal, never]'))
+        raise InvalidValueError((
+            'show_structured_logs must be one of: '
+            '[always, log, terminal, never]'
+        ))
 
     self.show_structured_logs = self._Add(
         'show_structured_logs',
@@ -2061,7 +2430,8 @@ class _SectionCore(_Section):
             *   `log` - Only log messages as JSON if stderr is a file
             *   `terminal` - Only log messages as JSON if stderr is a terminal
         +
-        If unset, default is `never`."""))
+        If unset, default is `never`."""),
+    )
 
     def MaxLogDaysValidator(max_log_days):
       if max_log_days is None:
@@ -2075,16 +2445,22 @@ class _SectionCore(_Section):
     self.max_log_days = self._Add(
         'max_log_days',
         validator=MaxLogDaysValidator,
-        help_text='Maximum number of days to retain log files before deleting.'
-        ' If set to 0, turns off log garbage collection and does not delete log'
-        ' files. If unset, the default is 30 days.',
-        default='30')
+        help_text=(
+            'Maximum number of days to retain log files before deleting. If set'
+            ' to 0, turns off log garbage collection and does not delete log'
+            ' files. If unset, the default is 30 days.'
+        ),
+        default='30',
+    )
 
     self.disable_file_logging = self._AddBool(
         'disable_file_logging',
         default=False,
-        help_text='If True, `gcloud` will not store logs to a file. This may '
-        'be useful if disk space is limited.')
+        help_text=(
+            'If True, `gcloud` will not store logs to a file. This may '
+            'be useful if disk space is limited.'
+        ),
+    )
 
     self.parse_error_details = self._Add(
         'parse_error_details',
@@ -2099,7 +2475,8 @@ class _SectionCore(_Section):
     self.custom_ca_certs_file = self._Add(
         'custom_ca_certs_file',
         validator=ExistingAbsoluteFilepathValidator,
-        help_text='Absolute path to a custom CA cert file.')
+        help_text='Absolute path to a custom CA cert file.',
+    )
 
     def ProjectValidator(project):
       """Checks to see if the project string is valid."""
@@ -2109,35 +2486,45 @@ class _SectionCore(_Section):
       if not isinstance(project, six.string_types):
         raise InvalidValueError('project must be a string')
       if project == '':  # pylint: disable=g-explicit-bool-comparison
-        raise InvalidProjectError('The project property is set to the '
-                                  'empty string, which is invalid.')
+        raise InvalidProjectError(
+            'The project property is set to the empty string, which is invalid.'
+        )
       if _VALID_PROJECT_REGEX.match(project):
         return
 
       if _LooksLikeAProjectName(project):
         raise InvalidProjectError(
             'The project property must be set to a valid project ID, not the '
-            'project name [{value}]'.format(value=project))
+            'project name [{value}]'.format(value=project)
+        )
       # Non heuristics for a better error message.
       raise InvalidProjectError(
           'The project property must be set to a valid project ID, '
-          '[{value}] is not a valid project ID.'.format(value=project))
+          '[{value}] is not a valid project ID.'.format(value=project)
+      )
 
     self.project = self._Add(
         'project',
-        help_text='Project ID of the Cloud Platform project to operate on '
-        'by default.  This can be overridden by using the global `--project` '
-        'flag.',
+        help_text=(
+            'Project ID of the Cloud Platform project to operate on by default.'
+            '  This can be overridden by using the global `--project` flag.'
+        ),
         validator=ProjectValidator,
-        completer=('googlecloudsdk.command_lib.resource_manager.completers:'
-                   'ProjectCompleter'),
-        default_flag='--project')
+        completer=(
+            'googlecloudsdk.command_lib.resource_manager.completers:'
+            'ProjectCompleter'
+        ),
+        default_flag='--project',
+    )
     self.project_number = self._Add(
         'project_number',
-        help_text='This property is for tests only. It should be kept in sync '
-        'with core/project.',
+        help_text=(
+            'This property is for tests only. It should be kept in sync '
+            'with core/project.'
+        ),
         internal=True,
-        hidden=True)
+        hidden=True,
+    )
 
     self.universe_domain = self._Add(
         'universe_domain',
@@ -2153,8 +2540,9 @@ class _SectionCore(_Section):
       if console_log_format is None:
         return
       if console_log_format not in ['standard', 'detailed']:
-        raise InvalidValueError(('console_log_format must be one of: '
-                                 '[standard, detailed]'))
+        raise InvalidValueError(
+            'console_log_format must be one of: [standard, detailed]'
+        )
 
     self.console_log_format = self._Add(
         'console_log_format',
@@ -2168,7 +2556,8 @@ class _SectionCore(_Section):
             *   `standard` - Simplified log messages are displayed on the console.
             *   `detailed` - More detailed messages are displayed on the console.
         +
-        If unset, default is `standard`."""))
+        If unset, default is `standard`."""),
+    )
 
 
 class _SectionDataPipelines(_Section):
@@ -2178,13 +2567,17 @@ class _SectionDataPipelines(_Section):
     super(_SectionDataPipelines, self).__init__('datapipelines')
     self.disable_public_ips = self._AddBool(
         'disable_public_ips',
-        help_text='Specifies that Cloud Dataflow workers '
-        'must not use public IP addresses.',
-        default=False)
+        help_text=(
+            'Specifies that Cloud Dataflow workers '
+            'must not use public IP addresses.'
+        ),
+        default=False,
+    )
     self.enable_streaming_engine = self._AddBool(
         'enable_streaming_engine',
         help_text='Set this to true to enable Streaming Engine for the job.',
-        default=False)
+        default=False,
+    )
 
 
 class _SectionDataflow(_Section):
@@ -2194,18 +2587,25 @@ class _SectionDataflow(_Section):
     super(_SectionDataflow, self).__init__('dataflow')
     self.disable_public_ips = self._AddBool(
         'disable_public_ips',
-        help_text='Specifies that Cloud Dataflow workers '
-        'must not use public IP addresses.',
-        default=False)
+        help_text=(
+            'Specifies that Cloud Dataflow workers '
+            'must not use public IP addresses.'
+        ),
+        default=False,
+    )
     self.print_only = self._AddBool(
         'print_only',
-        help_text='Prints the container spec to stdout. Does not save in '
-        'Google Cloud Storage.',
-        default=False)
+        help_text=(
+            'Prints the container spec to stdout. Does not save in '
+            'Google Cloud Storage.'
+        ),
+        default=False,
+    )
     self.enable_streaming_engine = self._AddBool(
         'enable_streaming_engine',
         help_text='Set this to true to enable Streaming Engine for the job.',
-        default=False)
+        default=False,
+    )
 
 
 class _SectionDatafusion(_Section):
@@ -2216,12 +2616,13 @@ class _SectionDatafusion(_Section):
     self.location = self._Add(
         'location',
         help_text=(
-            'Datafusion location to use. Each Datafusion location '
-            'constitutes an independent resource namespace constrained to '
-            'deploying environments into Compute Engine regions inside this '
-            'location. This parameter corresponds to the '
-            '/locations/<location> segment of the Datafusion resource URIs being '
-            'referenced.'))
+            'Datafusion location to use. Each Datafusion location constitutes'
+            ' an independent resource namespace constrained to deploying'
+            ' environments into Compute Engine regions inside this location.'
+            ' This parameter corresponds to the /locations/<location> segment'
+            ' of the Datafusion resource URIs being referenced.'
+        ),
+    )
 
 
 class _SectionDataplex(_Section):
@@ -2234,25 +2635,33 @@ class _SectionDataplex(_Section):
         help_text=(
             'Dataplex location to use. When a `location` is required but not '
             'provided by a flag, the command will fall back to this value, if '
-            'set.'))
+            'set.'
+        ),
+    )
     self.lake = self._Add(
         'lake',
         help_text=(
             'Dataplex lake to use. When a `lake` is required but not '
             'provided by a flag, the command will fall back to this value, if '
-            'set.'))
+            'set.'
+        ),
+    )
     self.zone = self._Add(
         'zone',
         help_text=(
             'Dataplex zone to use. When a `zone` is required but not '
             'provided by a flag, the command will fall back to this value, if '
-            'set.'))
+            'set.'
+        ),
+    )
     self.asset = self._Add(
         'asset',
         help_text=(
             'Dataplex asset to use. When an `asset` is required but not '
             'provided by a flag, the command will fall back to this value, if '
-            'set.'))
+            'set.'
+        ),
+    )
 
 
 class _SectionDataproc(_Section):
@@ -2265,13 +2674,17 @@ class _SectionDataproc(_Section):
         help_text=(
             'Dataproc region to use. Each Dataproc region constitutes an '
             'independent resource namespace constrained to deploying instances '
-            'into Compute Engine zones inside the region.'))
+            'into Compute Engine zones inside the region.'
+        ),
+    )
     self.location = self._Add(
         'location',
         help_text=(
             'Dataproc location to use. Each Dataproc location constitutes an '
             'independent resource namespace constrained to deploying instances '
-            'into Compute Engine zones inside the location.'))
+            'into Compute Engine zones inside the location.'
+        ),
+    )
 
 
 class _SectionDeclarative(_Section):
@@ -2282,13 +2695,18 @@ class _SectionDeclarative(_Section):
     self.client = self._Add(
         'client_type',
         choices=['dcl', 'kcc'],
-        help_text='Underlying declarative client library to use for declarative commands.',
-        default='kcc')
+        help_text=(
+            'Underlying declarative client library to use for declarative'
+            ' commands.'
+        ),
+        default='kcc',
+    )
     self.format = self._Add(
         'format',
         choices=['krm', 'terraform'],
         help_text='Declarative format to use for declarative commands.',
-        default='krm')
+        default='krm',
+    )
 
 
 class _SectionDeploy(_Section):
@@ -2302,10 +2720,13 @@ class _SectionDeploy(_Section):
             'Cloud Deploy region to use. Each Cloud Deploy '
             'region constitutes an independent resource namespace constrained '
             'to deploying instances into Compute Engine zones inside '
-            'the region.'))
+            'the region.'
+        ),
+    )
     self.delivery_pipeline = self._Add(
         'delivery_pipeline',
-        help_text=('Delivery Pipeline being managed by Cloud Deploy.'))
+        help_text='Delivery Pipeline being managed by Cloud Deploy.',
+    )
 
 
 class _SectionDeploymentManager(_Section):
@@ -2318,7 +2739,9 @@ class _SectionDeploymentManager(_Section):
         default=False,
         help_text=(
             'Enable import path globbing. Uses glob patterns to match multiple '
-            'imports in a config file.'))
+            'imports in a config file.'
+        ),
+    )
 
 
 class _SectionDevshell(_Section):
@@ -2327,9 +2750,11 @@ class _SectionDevshell(_Section):
   def __init__(self):
     super(_SectionDevshell, self).__init__('devshell')
     self.image = self._Add(
-        'image', hidden=True, default=const_lib.DEFAULT_DEVSHELL_IMAGE)
+        'image', hidden=True, default=const_lib.DEFAULT_DEVSHELL_IMAGE
+    )
     self.metadata_image = self._Add(
-        'metadata_image', hidden=True, default=const_lib.METADATA_IMAGE)
+        'metadata_image', hidden=True, default=const_lib.METADATA_IMAGE
+    )
 
 
 class _SectionDiagnostics(_Section):
@@ -2340,8 +2765,11 @@ class _SectionDiagnostics(_Section):
     self.hidden_property_allowlist = self._Add(
         'hidden_property_allowlist',
         internal=True,
-        help_text=('Comma separated list of hidden properties that should be '
-                   'allowed by the hidden properties diagnostic.'))
+        help_text=(
+            'Comma separated list of hidden properties that should be '
+            'allowed by the hidden properties diagnostic.'
+        ),
+    )
 
 
 class _SectionEdgeContainer(_Section):
@@ -2351,9 +2779,12 @@ class _SectionEdgeContainer(_Section):
     super(_SectionEdgeContainer, self).__init__('edge_container', hidden=True)
     self.location = self._Add(
         'location',
-        help_text='Default location to use when working with Private CA '
-        'resources. When a `--location` flag is required but not provided, the '
-        'command will fall back to this value, if set.')
+        help_text=(
+            'Default location to use when working with Private CA resources.'
+            ' When a `--location` flag is required but not provided, the'
+            ' command will fall back to this value, if set.'
+        ),
+    )
 
 
 class _SectionEmulator(_Section):
@@ -2368,11 +2799,14 @@ class _SectionEmulator(_Section):
     self.datastore_data_dir = self._Add('datastore_data_dir')
     self.pubsub_data_dir = self._Add('pubsub_data_dir')
     self.datastore_host_port = self._Add(
-        'datastore_host_port', default='localhost:8081')
+        'datastore_host_port', default='localhost:8081'
+    )
     self.pubsub_host_port = self._Add(
-        'pubsub_host_port', default='localhost:8085')
+        'pubsub_host_port', default='localhost:8085'
+    )
     self.bigtable_host_port = self._Add(
-        'bigtable_host_port', default='localhost:8086')
+        'bigtable_host_port', default='localhost:8086'
+    )
 
 
 class _SectionEventarc(_Section):
@@ -2382,10 +2816,13 @@ class _SectionEventarc(_Section):
     super(_SectionEventarc, self).__init__('eventarc')
     self.location = self._Add(
         'location',
-        help_text='The default location to use when working with Eventarc '
-        "resources. This should be either ``global'' or one of the supported "
-        'regions. When a `--location` flag is required but not provided, the '
-        'command will fall back to this value, if set.')
+        help_text=(
+            'The default location to use when working with Eventarc resources.'
+            " This should be either ``global'' or one of the supported regions."
+            ' When a `--location` flag is required but not provided, the'
+            ' command will fall back to this value, if set.'
+        ),
+    )
 
 
 class _SectionExperimental(_Section):
@@ -2402,18 +2839,27 @@ class _SectionFilestore(_Section):
     super(_SectionFilestore, self).__init__('filestore')
     self.location = self._Add(
         'location',
-        help_text='Please use the `--location` flag or set the '
-        'filestore/zone or filestore/region property.')
+        help_text=(
+            'Please use the `--location` flag or set the '
+            'filestore/zone or filestore/region property.'
+        ),
+    )
     self.zone = self._Add(
         'zone',
-        help_text='Default zone to use when working with Cloud Filestore '
-        'zones. When a `--zone` flag is required but not '
-        'provided, the command will fall back to this value, if set.')
+        help_text=(
+            'Default zone to use when working with Cloud Filestore '
+            'zones. When a `--zone` flag is required but not '
+            'provided, the command will fall back to this value, if set.'
+        ),
+    )
     self.region = self._Add(
         'region',
-        help_text='Default region to use when working with Cloud Filestore '
-        'regions. When a `--region` flag is required but not '
-        'provided, the command will fall back to this value, if set.')
+        help_text=(
+            'Default region to use when working with Cloud Filestore '
+            'regions. When a `--region` flag is required but not '
+            'provided, the command will fall back to this value, if set.'
+        ),
+    )
 
 
 class _SectionFunctions(_Section):
@@ -2424,12 +2870,16 @@ class _SectionFunctions(_Section):
     self.region = self._Add(
         'region',
         default='us-central1',
-        help_text='Default region to use when working with Cloud '
-        'Functions resources. When a `--region` flag is required but not '
-        'provided, the command will fall back to this value, if set. To see '
-        'valid choices, run `gcloud beta functions regions list`.',
-        completer=('googlecloudsdk.command_lib.functions.flags:'
-                   'LocationsCompleter'))
+        help_text=(
+            'Default region to use when working with Cloud Functions resources.'
+            ' When a `--region` flag is required but not provided, the command'
+            ' will fall back to this value, if set. To see valid choices, run'
+            ' `gcloud beta functions regions list`.'
+        ),
+        completer=(
+            'googlecloudsdk.command_lib.functions.flags:LocationsCompleter'
+        ),
+    )
     self.gen2 = self._AddBool(
         'gen2',
         default=False,
@@ -2444,8 +2894,11 @@ class _SectionFunctions(_Section):
         'v2',
         default=False,
         hidden=True,
-        help_text='DEPRECATED. Use `functions/gen2` instead. '
-        'This property will be removed in a future release.')
+        help_text=(
+            'DEPRECATED. Use `functions/gen2` instead. '
+            'This property will be removed in a future release.'
+        ),
+    )
 
 
 class _SectionGcloudignore(_Section):
@@ -2459,7 +2912,9 @@ class _SectionGcloudignore(_Section):
         help_text=(
             'If True, do not upload `.gcloudignore` files (see `$ gcloud topic '
             'gcloudignore`). If False, turn off the gcloudignore mechanism '
-            'entirely and upload all files.'))
+            'entirely and upload all files.'
+        ),
+    )
 
 
 class _SectionGkeHub(_Section):
@@ -2470,7 +2925,9 @@ class _SectionGkeHub(_Section):
     self.location = self._Add(
         'location',
         default='global',
-        help_text='Please use the `--location` flag to set membership location.'
+        help_text=(
+            'Please use the `--location` flag to set membership location.'
+        ),
     )
 
 
@@ -2485,35 +2942,45 @@ class _SectionGkebackup(_Section):
         help_text=(
             'Default location to use when working with Backup for GKE Services '
             'resources. When a `--location` flag is required but not provided, '
-            'the command will fall back to this value.'))
+            'the command will fall back to this value.'
+        ),
+    )
     self.backup_plan = self._Add(
         'backup_plan',
         default='-',
         help_text=(
             'Default backup plan ID to use when working with Backup for GKE '
             'Services resources. When a `--backup-plan` flag is required but '
-            'not provided, the command will fall back to this value.'))
+            'not provided, the command will fall back to this value.'
+        ),
+    )
     self.backup = self._Add(
         'backup',
         default='-',
         help_text=(
             'Default backup ID to use when working with Backup for GKE '
             'Services resources. When a `--backup` flag is required but not '
-            'provided, the command will fall back to this value.'))
+            'provided, the command will fall back to this value.'
+        ),
+    )
     self.restore = self._Add(
         'restore_plan',
         default='-',
         help_text=(
             'Default restore plan ID to use when working with Backup for GKE '
             'Services resources. When a `--restore-plan` flag is required but '
-            'not provided, the command will fall back to this value.'))
+            'not provided, the command will fall back to this value.'
+        ),
+    )
     self.restore = self._Add(
         'restore',
         default='-',
         help_text=(
             'Default restore ID to use when working with Backup for GKE '
             'Services resources. When a `--restore` flag is required but not '
-            'provided, the command will fall back to this value.'))
+            'provided, the command will fall back to this value.'
+        ),
+    )
 
 
 class _SectionGrpc(_Section):
@@ -2550,14 +3017,20 @@ class _SectionHealthcare(_Section):
     self.location = self._Add(
         'location',
         default='us-central1',
-        help_text='Default location to use when working with Cloud Healthcare  '
-        'resources. When a `--location` flag is required but not provided, the  '
-        'command will fall back to this value.')
+        help_text=(
+            'Default location to use when working with Cloud Healthcare '
+            ' resources. When a `--location` flag is required but not provided,'
+            ' the  command will fall back to this value.'
+        ),
+    )
     self.dataset = self._Add(
         'dataset',
-        help_text='Default dataset to use when working with Cloud Healthcare '
-        'resources. When a `--dataset` flag is required but not provided, the '
-        'command will fall back to this value, if set.')
+        help_text=(
+            'Default dataset to use when working with Cloud Healthcare'
+            ' resources. When a `--dataset` flag is required but not provided,'
+            ' the command will fall back to this value, if set.'
+        ),
+    )
 
 
 class _SectionInfraManager(_Section):
@@ -2568,9 +3041,12 @@ class _SectionInfraManager(_Section):
     self.location = self._Add(
         'location',
         default=None,
-        help_text='The default region to use when working with Infra Manager '
-        'resources. When a `--location` flag is required but not provided, the '
-        'command will fall back to this value, if set.')
+        help_text=(
+            'The default region to use when working with Infra Manager'
+            ' resources. When a `--location` flag is required but not provided,'
+            ' the command will fall back to this value, if set.'
+        ),
+    )
 
 
 class _SectionInteractive(_Section):
@@ -2581,62 +3057,79 @@ class _SectionInteractive(_Section):
     self.bottom_bindings_line = self._AddBool(
         'bottom_bindings_line',
         default=True,
-        help_text='If True, display the bottom key bindings line.')
+        help_text='If True, display the bottom key bindings line.',
+    )
     self.bottom_status_line = self._AddBool(
         'bottom_status_line',
         default=False,
-        help_text='If True, display the bottom status line.')
+        help_text='If True, display the bottom status line.',
+    )
     self.completion_menu_lines = self._Add(
         'completion_menu_lines',
         default=4,
-        help_text='Number of lines in the completion menu.')
+        help_text='Number of lines in the completion menu.',
+    )
     self.context = self._Add(
-        'context', default='', help_text='Command context string.')
+        'context', default='', help_text='Command context string.'
+    )
     self.debug = self._AddBool(
         'debug',
         default=False,
         hidden=True,
-        help_text='If True, enable the debugging display.')
+        help_text='If True, enable the debugging display.',
+    )
     self.fixed_prompt_position = self._Add(
         'fixed_prompt_position',
         default=False,
-        help_text='If True, display the prompt at the same position.')
+        help_text='If True, display the prompt at the same position.',
+    )
     self.help_lines = self._Add(
         'help_lines',
         default=10,
-        help_text='Maximum number of help snippet lines.')
+        help_text='Maximum number of help snippet lines.',
+    )
     self.hidden = self._AddBool(
         'hidden',
         default=False,
-        help_text='If True, expose hidden commands/flags.')
+        help_text='If True, expose hidden commands/flags.',
+    )
     self.justify_bottom_lines = self._AddBool(
         'justify_bottom_lines',
         default=False,
-        help_text='If True, left- and right-justify bottom toolbar lines.')
+        help_text='If True, left- and right-justify bottom toolbar lines.',
+    )
     self.manpage_generator = self._Add(
         'manpage_generator',
         default=True,
-        help_text=('If True, use the manpage CLI tree generator for '
-                   'unsupported commands.'))
+        help_text=(
+            'If True, use the manpage CLI tree generator for '
+            'unsupported commands.'
+        ),
+    )
     self.multi_column_completion_menu = self._AddBool(
         'multi_column_completion_menu',
         default=False,
-        help_text='If True, display the completions as a multi-column menu.')
+        help_text='If True, display the completions as a multi-column menu.',
+    )
     self.obfuscate = self._AddBool(
         'obfuscate',
         default=False,
         hidden=True,
-        help_text='If True, obfuscate status PII.')
+        help_text='If True, obfuscate status PII.',
+    )
     self.prompt = self._Add(
-        'prompt', default='$ ', help_text='Command prompt string.')
+        'prompt', default='$ ', help_text='Command prompt string.'
+    )
     self.show_help = self._AddBool(
         'show_help',
         default=True,
-        help_text='If True, show help as command args are being entered.')
+        help_text='If True, show help as command args are being entered.',
+    )
     self.suggest = self._AddBool(
         'suggest',
         default=False,
-        help_text='If True, add command line suggestions based on history.')
+        help_text='If True, add command line suggestions based on history.',
+    )
 
 
 class _SectionKubeRun(_Section):
@@ -2646,41 +3139,53 @@ class _SectionKubeRun(_Section):
     super(_SectionKubeRun, self).__init__('kuberun')
     self.enable_experimental_commands = self._AddBool(
         'enable_experimental_commands',
-        help_text='If True, experimental KubeRun commands will not prompt to '
-        'continue.',
-        hidden=True)
+        help_text=(
+            'If True, experimental KubeRun commands will not prompt to '
+            'continue.'
+        ),
+        hidden=True,
+    )
 
     self.environment = self._Add(
         'environment',
-        help_text='If set, this environment will be used as the deployment'
-        'target in all KubeRun commands.',
-        hidden=True)
+        help_text=(
+            'If set, this environment will be used as the deployment'
+            'target in all KubeRun commands.'
+        ),
+        hidden=True,
+    )
 
     self.cluster = self._Add(
         'cluster',
-        help_text='ID of the cluster or fully qualified identifier '
-        'for the cluster',
-        hidden=True)
+        help_text=(
+            'ID of the cluster or fully qualified identifier for the cluster'
+        ),
+        hidden=True,
+    )
 
     self.cluster_location = self._Add(
         'cluster_location',
         help_text='Zone or region in which the cluster is located.',
-        hidden=True)
+        hidden=True,
+    )
 
     self.use_kubeconfig = self._AddBool(
         'use_kubeconfig',
         help_text='Use the default or provided kubectl config file.',
-        hidden=True)
+        hidden=True,
+    )
 
     self.kubeconfig = self._Add(
         'kubeconfig',
         help_text='Absolute path to your kubectl config file.',
-        hidden=True)
+        hidden=True,
+    )
 
     self.context = self._Add(
         'context',
         help_text='Name of the context in your kubectl config file to use.',
-        hidden=True)
+        hidden=True,
+    )
 
 
 class _SectionLooker(_Section):
@@ -2690,9 +3195,12 @@ class _SectionLooker(_Section):
     super(_SectionLooker, self).__init__('looker')
     self.region = self._Add(
         'region',
-        help_text='Default region to use when working with Cloud '
-        'Looker resources. When a `region` is required but not '
-        'provided by a flag, the command will fall back to this value, if set.')
+        help_text=(
+            'Default region to use when working with Cloud Looker resources.'
+            ' When a `region` is required but not provided by a flag, the'
+            ' command will fall back to this value, if set.'
+        ),
+    )
 
 
 class _SectionLustre(_Section):
@@ -2702,9 +3210,12 @@ class _SectionLustre(_Section):
     super(_SectionLustre, self).__init__('lustre')
     self.location = self._Add(
         'location',
-        help_text='Default location to use when working with Cloud Lustre'
-                  ' resources. When a `location` value is required but not '
-                  'provided, the command will fall back to this value, if set.')
+        help_text=(
+            'Default location to use when working with Cloud Lustre'
+            ' resources. When a `location` value is required but not '
+            'provided, the command will fall back to this value, if set.'
+        ),
+    )
 
 
 class _SectionMediaAsset(_Section):
@@ -2718,7 +3229,9 @@ class _SectionMediaAsset(_Section):
         help_text=(
             'Default location to use when working with Cloud Media Asset '
             'resources. When a `--location` flag is required but not provided, '
-            'the command will fall back to this value.'))
+            'the command will fall back to this value.'
+        ),
+    )
 
 
 class _SectionMemcache(_Section):
@@ -2728,9 +3241,12 @@ class _SectionMemcache(_Section):
     super(_SectionMemcache, self).__init__('memcache')
     self.region = self._Add(
         'region',
-        help_text='Default region to use when working with Cloud Memorystore '
-        'for Memcached resources. When a `region` is required but not provided '
-        'by a flag, the command will fall back to this value, if set.')
+        help_text=(
+            'Default region to use when working with Cloud Memorystore for'
+            ' Memcached resources. When a `region` is required but not provided'
+            ' by a flag, the command will fall back to this value, if set.'
+        ),
+    )
 
 
 class _SectionMetastore(_Section):
@@ -2746,15 +3262,19 @@ class _SectionMetastore(_Section):
 
     if tier not in [x.name for x in list(_SectionMetastore.Tier)]:
       raise InvalidValueError(
-          ('tier `{0}` must be one of: [developer, enterprise]'.format(tier)))
+          'tier `{0}` must be one of: [developer, enterprise]'.format(tier)
+      )
 
   def __init__(self):
     super(_SectionMetastore, self).__init__('metastore')
     self.location = self._Add(
         'location',
-        help_text='Default location to use when working with Dataproc '
-        'Metastore. When a `location` is required but not provided by a flag, '
-        'the command will fall back to this value, if set.')
+        help_text=(
+            'Default location to use when working with Dataproc Metastore. When'
+            ' a `location` is required but not provided by a flag, the command'
+            ' will fall back to this value, if set.'
+        ),
+    )
     self.tier = self._Add(
         'tier',
         validator=self.TierValidator,
@@ -2769,7 +3289,8 @@ class _SectionMetastore(_Section):
             *   `enterprise` - The enterprise tier provides multi-zone high
             availability, and sufficient scalability for enterprise-level
             Dataproc Metastore workloads."""),
-        choices=[x.name for x in list(_SectionMetastore.Tier)])
+        choices=[x.name for x in list(_SectionMetastore.Tier)],
+    )
 
 
 class _SectionMetrics(_Section):
@@ -2799,16 +3320,22 @@ class _SectionMlEngine(_Section):
     self.polling_interval = self._Add(
         'polling_interval',
         default=60,
-        help_text=('Interval (in seconds) at which to poll logs from your '
-                   'Cloud ML Engine jobs. Note that making it much faster than '
-                   'the default (60) will quickly use all of your quota.'))
+        help_text=(
+            'Interval (in seconds) at which to poll logs from your '
+            'Cloud ML Engine jobs. Note that making it much faster than '
+            'the default (60) will quickly use all of your quota.'
+        ),
+    )
     self.local_python = self._Add(
         'local_python',
         default=None,
-        help_text=('Full path to the Python interpreter to use for '
-                   'Cloud ML Engine local predict/train jobs. If not '
-                   'specified, the default path is the one to the Python '
-                   'interpreter found on system `PATH`.'))
+        help_text=(
+            'Full path to the Python interpreter to use for '
+            'Cloud ML Engine local predict/train jobs. If not '
+            'specified, the default path is the one to the Python '
+            'interpreter found on system `PATH`.'
+        ),
+    )
 
 
 class _SectionMps(_Section):
@@ -2819,8 +3346,8 @@ class _SectionMps(_Section):
     self.product = self._Add(
         'product',
         default=None,
-        help_text='Id for Marketplace Solutions Product. '
-        )
+        help_text='Id for Marketplace Solutions Product. ',
+    )
 
 
 class _SectionNetapp(_Section):
@@ -2831,9 +3358,12 @@ class _SectionNetapp(_Section):
 
     self.location = self._Add(
         'location',
-        help_text='Default location to use when working with Cloud NetApp Files'
-                  ' resources. When a `location` value is required but not '
-                  'provided, the command will fall back to this value, if set.')
+        help_text=(
+            'Default location to use when working with Cloud NetApp Files'
+            ' resources. When a `location` value is required but not '
+            'provided, the command will fall back to this value, if set.'
+        ),
+    )
 
 
 class _SectionNotebooks(_Section):
@@ -2844,9 +3374,12 @@ class _SectionNotebooks(_Section):
 
     self.location = self._Add(
         'location',
-        help_text='Default location to use when working with Notebook '
-        'resources. When a `location` value is required but not provided, the '
-        'command will fall back to this value, if set.')
+        help_text=(
+            'Default location to use when working with Notebook resources. When'
+            ' a `location` value is required but not provided, the command will'
+            ' fall back to this value, if set.'
+        ),
+    )
 
 
 class _SectionPrivateCa(_Section):
@@ -2856,11 +3389,15 @@ class _SectionPrivateCa(_Section):
     super(_SectionPrivateCa, self).__init__('privateca')
     self.location = self._Add(
         'location',
-        help_text='Default location to use when working with Private CA '
-        'resources. When a `--location` flag is required but not provided, the '
-        'command will fall back to this value, if set.',
-        completer=('googlecloudsdk.command_lib.privateca.completers:'
-                   'LocationsCompleter'))
+        help_text=(
+            'Default location to use when working with Private CA resources.'
+            ' When a `--location` flag is required but not provided, the'
+            ' command will fall back to this value, if set.'
+        ),
+        completer=(
+            'googlecloudsdk.command_lib.privateca.completers:LocationsCompleter'
+        ),
+    )
 
 
 class _SectionProxy(_Section):
@@ -2869,23 +3406,33 @@ class _SectionProxy(_Section):
   def __init__(self):
     super(_SectionProxy, self).__init__('proxy')
     self.address = self._Add(
-        'address', help_text='Hostname or IP address of proxy server.')
+        'address', help_text='Hostname or IP address of proxy server.'
+    )
     self.port = self._Add(
-        'port', help_text='Port to use when connected to the proxy server.')
+        'port', help_text='Port to use when connected to the proxy server.'
+    )
     self.rdns = self._Add(
         'rdns',
         default=True,
-        help_text='If True, DNS queries will not be performed '
-        'locally, and instead, handed to the proxy to resolve. This is default'
-        ' behavior.')
+        help_text=(
+            'If True, DNS queries will not be performed locally, and instead,'
+            ' handed to the proxy to resolve. This is default behavior.'
+        ),
+    )
     self.username = self._Add(
         'username',
-        help_text='Username to use when connecting, if the proxy '
-        'requires authentication.')
+        help_text=(
+            'Username to use when connecting, if the proxy '
+            'requires authentication.'
+        ),
+    )
     self.password = self._Add(
         'password',
-        help_text='Password to use when connecting, if the proxy '
-        'requires authentication.')
+        help_text=(
+            'Password to use when connecting, if the proxy '
+            'requires authentication.'
+        ),
+    )
 
     valid_proxy_types = sorted(http_proxy_types.PROXY_TYPE_MAP.keys())
 
@@ -2893,15 +3440,20 @@ class _SectionProxy(_Section):
       if proxy_type is not None and proxy_type not in valid_proxy_types:
         raise InvalidValueError(
             'The proxy type property value [{0}] is not valid. '
-            'Possible values: [{1}].'.format(proxy_type,
-                                             ', '.join(valid_proxy_types)))
+            'Possible values: [{1}].'.format(
+                proxy_type, ', '.join(valid_proxy_types)
+            )
+        )
 
     self.proxy_type = self._Add(
         'type',
-        help_text='Type of proxy being used.  Supported proxy types are:'
-        ' [{0}].'.format(', '.join(valid_proxy_types)),
+        help_text=(
+            'Type of proxy being used.  Supported proxy types are:'
+            ' [{0}].'.format(', '.join(valid_proxy_types))
+        ),
         validator=ProxyTypeValidator,
-        choices=valid_proxy_types)
+        choices=valid_proxy_types,
+    )
 
 
 class _SectionPubsub(_Section):
@@ -2914,9 +3466,12 @@ class _SectionPubsub(_Section):
         default=False,
         internal=True,
         hidden=True,
-        help_text=('Use the legacy output for beta pubsub commands. The legacy '
-                   'output from beta is being deprecated. This property will '
-                   'eventually be removed.'))
+        help_text=(
+            'Use the legacy output for beta pubsub commands. The legacy '
+            'output from beta is being deprecated. This property will '
+            'eventually be removed.'
+        ),
+    )
 
 
 class _SectionRecaptcha(_Section):
@@ -2933,9 +3488,12 @@ class _SectionRedis(_Section):
     super(_SectionRedis, self).__init__('redis')
     self.region = self._Add(
         'region',
-        help_text='Default region to use when working with Cloud '
-        'Memorystore for Redis resources. When a `region` is required but not '
-        'provided by a flag, the command will fall back to this value, if set.')
+        help_text=(
+            'Default region to use when working with Cloud Memorystore for'
+            ' Redis resources. When a `region` is required but not provided by'
+            ' a flag, the command will fall back to this value, if set.'
+        ),
+    )
 
 
 class _SectionRegional(_Section):
@@ -2994,15 +3552,18 @@ class _SectionResourcePolicy(_Section):
     self.org_restriction_header = self._Add(
         'org_restriction_header',
         default=None,
-        help_text='Default organization restriction header to use when '
-        'working with GCP resources. If set, the value '
-        'must be in JSON format and must contain a comma separated list '
-        'of authorized GCP organization IDs. The JSON must then be encoded '
-        'by following the RFC 4648, section 5, specifications. '
-        'See https://www.rfc-editor.org/rfc/rfc4648#section-5 '
-        'for more information about base 64 encoding. And visit '
-        'https://cloud.google.com/resource-manager/docs/organization-restrictions/overview '
-        'for more information about organization restrictions.')
+        help_text=(
+            'Default organization restriction header to use when working with'
+            ' GCP resources. If set, the value must be in JSON format and must'
+            ' contain a comma separated list of authorized GCP organization'
+            ' IDs. The JSON must then be encoded by following the RFC 4648,'
+            ' section 5, specifications. See'
+            ' https://www.rfc-editor.org/rfc/rfc4648#section-5 for more'
+            ' information about base 64 encoding. And visit'
+            ' https://cloud.google.com/resource-manager/docs/organization-restrictions/overview'
+            ' for more information about organization restrictions.'
+        ),
+    )
 
 
 class _SectionRun(_Section):
@@ -3012,36 +3573,47 @@ class _SectionRun(_Section):
     super(_SectionRun, self).__init__('run')
     self.region = self._Add(
         'region',
-        help_text='Default region to use when working with Cloud '
-        'Run resources. When a `--region` flag is required '
-        'but not provided, the command will fall back to this value, if set.')
+        help_text=(
+            'Default region to use when working with Cloud Run resources. When'
+            ' a `--region` flag is required but not provided, the command will'
+            ' fall back to this value, if set.'
+        ),
+    )
 
     self.namespace = self._Add(
         'namespace',
-        help_text='Specific to working with Cloud on GKE or '
-        'a Kubernetes cluster: Kubernetes namespace for the resource.',
-        hidden=True)
+        help_text=(
+            'Specific to working with Cloud on GKE or '
+            'a Kubernetes cluster: Kubernetes namespace for the resource.'
+        ),
+        hidden=True,
+    )
 
     self.cluster = self._Add(
         'cluster',
-        help_text='ID of the cluster or fully qualified identifier '
-        'for the cluster')
+        help_text=(
+            'ID of the cluster or fully qualified identifier for the cluster'
+        ),
+    )
 
     self.cluster_location = self._Add(
         'cluster_location',
-        help_text='Zone or region in which the cluster is located.')
+        help_text='Zone or region in which the cluster is located.',
+    )
 
     self.platform = self._Add(
         'platform',
         choices=['gke', 'managed', 'kubernetes'],
         default='managed',
-        help_text='Target platform for running commands.')
+        help_text='Target platform for running commands.',
+    )
 
     self.enable_unified_build = self._Add(
         'enable_unified_build',
         default=False,
         hidden=True,
-        help_text='Enables using Cloud Run API to orchestrate builds.',)
+        help_text='Enables using Cloud Run API to orchestrate builds.',
+    )
 
 
 class _SectionScc(_Section):
@@ -3051,10 +3623,12 @@ class _SectionScc(_Section):
     super(_SectionScc, self).__init__('scc')
     self.organization = self._Add(
         'organization',
-        help_text='Default organization `gcloud` should use for scc surface.')
+        help_text='Default organization `gcloud` should use for scc surface.',
+    )
     self.parent = self._Add(
         'parent',
-        help_text='Default parent `gcloud` should use for scc surface.')
+        help_text='Default parent `gcloud` should use for scc surface.',
+    )
 
 
 class _SectionSecrets(_Section):
@@ -3065,14 +3639,19 @@ class _SectionSecrets(_Section):
     self.replication_policy = self._Add(
         'replication-policy',
         choices=['automatic', 'user-managed'],
-        help_text='The type of replication policy to apply to secrets. Allowed '
-        'values are "automatic" and "user-managed". If user-managed then '
-        'locations must also be provided.',
+        help_text=(
+            'The type of replication policy to apply to secrets. Allowed '
+            'values are "automatic" and "user-managed". If user-managed then '
+            'locations must also be provided.'
+        ),
     )
     self.locations = self._Add(
         'locations',
-        help_text='A comma separated list of the locations to replicate '
-        'secrets to. Only applies to secrets with a user-managed policy.')
+        help_text=(
+            'A comma separated list of the locations to replicate '
+            'secrets to. Only applies to secrets with a user-managed policy.'
+        ),
+    )
 
 
 class _SectionServiceHealth(_Section):
@@ -3083,9 +3662,12 @@ class _SectionServiceHealth(_Section):
     self.location = self._Add(
         'location',
         default='global',
-        help_text='Default location to use when working with Service Health '
-        'resources. When a `--location` flag is required but not provided, the '
-        'command will fall back to this value, if set.')
+        help_text=(
+            'Default location to use when working with Service Health'
+            ' resources. When a `--location` flag is required but not provided,'
+            ' the command will fall back to this value, if set.'
+        ),
+    )
 
 
 class _SectionSpanner(_Section):
@@ -3095,10 +3677,13 @@ class _SectionSpanner(_Section):
     super(_SectionSpanner, self).__init__('spanner')
     self.instance = self._Add(
         'instance',
-        help_text='Default instance to use when working with Cloud Spanner '
-        'resources. When an instance is required but not provided by a flag, '
-        'the command will fall back to this value, if set.',
-        completer='googlecloudsdk.command_lib.spanner.flags:InstanceCompleter')
+        help_text=(
+            'Default instance to use when working with Cloud Spanner resources.'
+            ' When an instance is required but not provided by a flag, the'
+            ' command will fall back to this value, if set.'
+        ),
+        completer='googlecloudsdk.command_lib.spanner.flags:InstanceCompleter',
+    )
 
 
 class _SectionSsh(_Section):
@@ -3109,20 +3694,26 @@ class _SectionSsh(_Section):
     self.putty_force_connect = self._AddBool(
         'putty_force_connect',
         default=True,  # For backwards compatibility only.
-        help_text='Whether or not `gcloud` should automatically accept new or '
-        'changed host keys when executing plink/pscp commands on Windows. '
-        'Defaults to True, but can be set to False to present these '
-        'interactive prompts to the user for host key checking.')
+        help_text=(
+            'Whether or not `gcloud` should automatically accept new or '
+            'changed host keys when executing plink/pscp commands on Windows. '
+            'Defaults to True, but can be set to False to present these '
+            'interactive prompts to the user for host key checking.'
+        ),
+    )
     self.verify_internal_ip = self._AddBool(
         'verify_internal_ip',
         default=True,
-        help_text='Whether or not `gcloud` should perform an initial SSH '
-        'connection to verify an instance ID is correct when connecting via '
-        'its internal IP. Without this check, `gcloud` will simply connect to '
-        'the internal IP of the desired instance, which may be wrong if the '
-        'desired instance is in a different subnet but happens to share the '
-        'same internal IP as an instance in the current subnet. Defaults to '
-        'True.')
+        help_text=(
+            'Whether or not `gcloud` should perform an initial SSH connection'
+            ' to verify an instance ID is correct when connecting via its'
+            ' internal IP. Without this check, `gcloud` will simply connect to'
+            ' the internal IP of the desired instance, which may be wrong if'
+            ' the desired instance is in a different subnet but happens to'
+            ' share the same internal IP as an instance in the current subnet.'
+            ' Defaults to True.'
+        ),
+    )
 
 
 class CheckHashes(enum.Enum):
@@ -3337,48 +3928,63 @@ class _SectionStorage(_Section):
         'upload_chunk_size',
         default=self.DEFAULT_UPLOAD_CHUNK_SIZE,
         validator=_HumanReadableByteAmountValidator,
-        help_text='Chunk size used for uploading to clouds.')
+        help_text='Chunk size used for uploading to clouds.',
+    )
 
     self.max_retries = self._Add(
         'max_retries',
         default=23,
-        help_text='Max number of retries for operations like copy.')
+        help_text='Max number of retries for operations like copy.',
+    )
 
     self.base_retry_delay = self._Add(
         'base_retry_delay',
         default=1,
-        help_text='Second delay between retrying operations. May be multiplied'
-        ' by exponential_sleep_multiplier.')
+        help_text=(
+            'Second delay between retrying operations. May be multiplied'
+            ' by exponential_sleep_multiplier.'
+        ),
+    )
 
     self.exponential_sleep_multiplier = self._Add(
         'exponential_sleep_multiplier',
         default=2,
-        help_text='Used in exponential backoff for retrying operations.')
+        help_text='Used in exponential backoff for retrying operations.',
+    )
 
     self.gs_xml_endpoint_url = self._Add(
         'gs_xml_endpoint_url',
         default='https://storage.googleapis.com',
         hidden=True,
-        help_text='The endpoint used to Google Cloud Storage when HMAC '
-        'authentication through Boto3.')
+        help_text=(
+            'The endpoint used to Google Cloud Storage when HMAC '
+            'authentication through Boto3.'
+        ),
+    )
 
     self.gs_xml_access_key_id = self._Add(
         'gs_xml_access_key_id',
         default=None,
         hidden=True,
-        help_text='Legacy Cloud Storage HMAC credential access key ID.'
-        'WARNING: This in conjunction with storage/gs_xml_secret_access_key '
-        'forces gcloud storage to use the XML API to call Cloud Storage, '
-        'which means not all commands will work as expected.')
+        help_text=(
+            'Legacy Cloud Storage HMAC credential access key ID.WARNING: This'
+            ' in conjunction with storage/gs_xml_secret_access_key forces'
+            ' gcloud storage to use the XML API to call Cloud Storage, which'
+            ' means not all commands will work as expected.'
+        ),
+    )
 
     self.gs_xml_secret_access_key = self._Add(
         'gs_xml_secret_access_key',
         default=None,
         hidden=True,
-        help_text='Legacy Cloud Storage HMAC credential secret access key.'
-        'WARNING: This in conjunction with storage/gs_xml_access_key_id '
-        'forces gcloud storage to use the XML API to call Cloud Storage, '
-        'which means not all commands will work as expected.')
+        help_text=(
+            'Legacy Cloud Storage HMAC credential secret access key.'
+            'WARNING: This in conjunction with storage/gs_xml_access_key_id '
+            'forces gcloud storage to use the XML API to call Cloud Storage, '
+            'which means not all commands will work as expected.'
+        ),
+    )
 
     self.json_api_version = self._Add(
         'json_api_version',
@@ -3408,79 +4014,108 @@ class _SectionStorage(_Section):
         base64-encoded AES256 strings. Customer-managed encryption keys must be
         of the form
         `projects/{project}/locations/{location}/keyRings/{key-ring}/cryptoKeys/{crypto-key}`.
-        """))
+        """),
+    )
 
     self.max_retry_delay = self._Add(
         'max_retry_delay',
         default=32,
-        help_text='Max second delay between retriable operations.')
+        help_text='Max second delay between retriable operations.',
+    )
 
     self.multipart_chunksize = self._Add(
         'multipart_chunksize',
         default=self.DEFAULT_MULTIPART_CHUNKSIZE,
         validator=_HumanReadableByteAmountValidator,
-        help_text='Specifies partition size in bytes of each part of a '
-        'multipart upload made by the Boto3 client. To calculate the maximum '
-        'size of a Boto3 client multipart upload, multiply the multipart_chunk '
-        'value by the maximum number of parts the API allows. For AWS S3 this '
-        'limit is 10000. Values can be provided either in bytes or as '
-        'human-readable values (e.g., "150M" to represent 150 mebibytes).')
+        help_text=(
+            'Specifies partition size in bytes of each part of a multipart'
+            ' upload made by the Boto3 client. To calculate the maximum size of'
+            ' a Boto3 client multipart upload, multiply the multipart_chunk'
+            ' value by the maximum number of parts the API allows. For AWS S3'
+            ' this limit is 10000. Values can be provided either in bytes or as'
+            ' human-readable values (e.g., "150M" to represent 150 mebibytes).'
+        ),
+    )
 
     self.multipart_threshold = self._Add(
         'multipart_threshold',
         default=self.DEFAULT_MULTIPART_THRESHOLD,
         validator=_HumanReadableByteAmountValidator,
-        help_text='Files larger than this threshold will be partitioned into '
-        'parts, uploaded separately by the Boto3 client, and then combined '
-        'into a single object. Otherwise, files smaller than this threshold '
-        'will be uploaded by the Boto3 client in a single stream.')
+        help_text=(
+            'Files larger than this threshold will be partitioned into parts,'
+            ' uploaded separately by the Boto3 client, and then combined into a'
+            ' single object. Otherwise, files smaller than this threshold will'
+            ' be uploaded by the Boto3 client in a single stream.'
+        ),
+    )
 
     self.multiprocessing_default_method = self._Add(
         'multiprocessing_default_method',
         default=None,
         hidden=True,
-        help_text='Specifies the default method to use for multiprocessing in'
-        ' storage commands. If not set, the default method is determined by the'
-        ' operating system and python version.',
+        help_text=(
+            'Specifies the default method to use for multiprocessing in storage'
+            ' commands. If not set, the default method is determined by the'
+            ' operating system and python version.'
+        ),
         choices=['fork', 'spawn', 'forkserver'],
     )
 
     self.process_count = self._Add(
         'process_count',
-        help_text='The maximum number of processes parallel execution should '
-        'use. When process_count and thread_count are both 1, commands use '
-        'sequential execution.')
+        help_text=(
+            'The maximum number of processes parallel execution should '
+            'use. When process_count and thread_count are both 1, commands use '
+            'sequential execution.'
+        ),
+    )
 
     self.resumable_threshold = self._Add(
         'resumable_threshold',
         default=self.DEFAULT_RESUMABLE_THRESHOLD,
         validator=_HumanReadableByteAmountValidator,
-        help_text='File operations above this size in bytes will use resumable'
-        ' instead of one-shot strategies. For example, a resumable download.')
+        help_text=(
+            'File operations above this size in bytes will use resumable'
+            ' instead of one-shot strategies. For example, a resumable'
+            ' download.'
+        ),
+    )
 
     self.sliced_object_download_component_size = self._Add(
         'sliced_object_download_component_size',
         validator=_HumanReadableByteAmountValidator,
-        help_text='Target size and upper bound for files to be sliced into.'
-        ' Analogous to parallel_composite_upload_component_size.')
+        help_text=(
+            'Target size and upper bound for files to be sliced into.'
+            ' Analogous to parallel_composite_upload_component_size.'
+        ),
+    )
 
     self.sliced_object_download_max_components = self._Add(
         'sliced_object_download_max_components',
-        help_text='Specifies the maximum number of slices to be used when'
-        ' performing a sliced object download. Set None for automatic'
-        ' optimization based on system resources.')
+        help_text=(
+            'Specifies the maximum number of slices to be used when'
+            ' performing a sliced object download. Set None for automatic'
+            ' optimization based on system resources.'
+        ),
+    )
 
     self.sliced_object_download_threshold = self._Add(
         'sliced_object_download_threshold',
         validator=_HumanReadableByteAmountValidator,
-        help_text='Slice files larger than this value. Zero will block sliced'
-        ' downloads. Analogous to parallel_composite_upload_threshold.')
+        help_text=(
+            'Slice files larger than this value. Zero will block sliced'
+            ' downloads. Analogous to parallel_composite_upload_threshold.'
+        ),
+    )
 
     self.thread_count = self._Add(
         'thread_count',
-        help_text='The number of threads parallel execution should use per '
-        'process. When process_count and thread_count are both 1, commands use '
-        'sequential execution.')
+        help_text=(
+            'The number of threads parallel execution should use per process.'
+            ' When process_count and thread_count are both 1, commands use'
+            ' sequential execution.'
+        ),
+    )
 
     self.parallel_composite_upload_component_prefix = self._Add(
         'parallel_composite_upload_component_prefix',
@@ -3514,19 +4149,26 @@ class _SectionStorage(_Section):
         'parallel_composite_upload_component_size',
         default='50M',
         validator=_HumanReadableByteAmountValidator,
-        help_text='Specifies the ideal size of a component in bytes, which '
-        'will act as an upper bound to the size of the components if '
-        'ceil(file_size / parallel_composite_upload_component_size) is less '
-        'than the maximum number of objects the API allows composing at once. '
-        'Values can be provided either in bytes or as human-readable values '
-        '(e.g., "150M" to represent 150 mebibytes).')
+        help_text=(
+            'Specifies the ideal size of a component in bytes, which will act'
+            ' as an upper bound to the size of the components if ceil(file_size'
+            ' / parallel_composite_upload_component_size) is less than the'
+            ' maximum number of objects the API allows composing at once.'
+            ' Values can be provided either in bytes or as human-readable'
+            ' values (e.g., "150M" to represent 150 mebibytes).'
+        ),
+    )
 
     self.parallel_composite_upload_compatibility_check = self._AddBool(
         'parallel_composite_upload_compatibility_check',
         default=True,
-        help_text='Determines if the GET bucket call should be performed to '
-        'check if the default storage class and retention period for the '
-        'destination bucket meet the criteria for parallel composite upload.')
+        help_text=(
+            'Determines if the GET bucket call should be performed to check if'
+            ' the default storage class and retention period for the'
+            ' destination bucket meet the criteria for parallel composite'
+            ' upload.'
+        ),
+    )
 
     self.delete_source_objects_in_compose = self._AddBool(
         'delete_source_objects_in_compose',
@@ -3542,24 +4184,30 @@ class _SectionStorage(_Section):
     self.parallel_composite_upload_enabled = self._Add(
         'parallel_composite_upload_enabled',
         default=None,
-        help_text='Determines whether parallel composite upload should be '
-        'used. Default value is None which will use parallel composite upload '
-        'and log an appropriate warning for the user explaining that parallel '
-        'composite upload is being used by default.',
-        choices=[True, False, None])
+        help_text=(
+            'Determines whether parallel composite upload should be used.'
+            ' Default value is None which will use parallel composite upload'
+            ' and log an appropriate warning for the user explaining that'
+            ' parallel composite upload is being used by default.'
+        ),
+        choices=[True, False, None],
+    )
 
     self.parallel_composite_upload_threshold = self._Add(
         'parallel_composite_upload_threshold',
         default='150M',
         validator=_HumanReadableByteAmountValidator,
-        help_text='Specifies the maximum size of a file to upload in a single '
-        'stream. Files larger than this threshold will be partitioned into '
-        'component parts, uploaded in parallel, then composed into a single '
-        'object. The number of components will be the smaller of '
-        'ceil(file_size / parallel_composite_upload_component_size) and '
-        'the maximum number of objects the API allows composing at once. For '
-        'Cloud Storage this limit is 32. This property has no effect if '
-        'parallel_composite_upload_enabled is set to False.')
+        help_text=(
+            'Specifies the maximum size of a file to upload in a single stream.'
+            ' Files larger than this threshold will be partitioned into'
+            ' component parts, uploaded in parallel, then composed into a'
+            ' single object. The number of components will be the smaller of'
+            ' ceil(file_size / parallel_composite_upload_component_size) and'
+            ' the maximum number of objects the API allows composing at once.'
+            ' For Cloud Storage this limit is 32. This property has no effect'
+            ' if parallel_composite_upload_enabled is set to False.'
+        ),
+    )
 
     self.bidi_streaming_flush_size = self._Add(
         'bidi_streaming_flush_size',
@@ -3568,7 +4216,7 @@ class _SectionStorage(_Section):
         validator=_HumanReadableByteAmountValidator,
         help_text=(
             'The size of the in-memory buffer that is flushed during bidi'
-            ' streaming uploads. Ensure this is within your machine\'s RAM'
+            " streaming uploads. Ensure this is within your machine's RAM"
             ' limits.'
         ),
     )
@@ -3642,15 +4290,20 @@ class _SectionStorage(_Section):
     self.s3_endpoint_url = self._Add(
         's3_endpoint_url',
         default=None,
-        help_text='If set, boto3 client will connect to this endpoint.'
-        ' Otherwise, boto3 selects a default endpoint based on the AWS service'
-        ' used.')
+        help_text=(
+            'If set, boto3 client will connect to this endpoint. Otherwise,'
+            ' boto3 selects a default endpoint based on the AWS service used.'
+        ),
+    )
 
     self.suggest_transfer = self._AddBool(
         'suggest_transfer',
         default=True,
-        help_text='If True, logs messages about when Storage Transfer Service'
-        ' might be a better tool than gcloud storage.')
+        help_text=(
+            'If True, logs messages about when Storage Transfer Service'
+            ' might be a better tool than gcloud storage.'
+        ),
+    )
 
     self.symlink_placeholder_directory = self._Add(
         'symlink_placeholder_directory',
@@ -3683,14 +4336,19 @@ class _SectionStorage(_Section):
             ' calculate CRC32C hashes with the included gcloud-crc32c tool'
             ' rather than the google-crc32c Python library. This behavior is '
             ' also triggered when the google-crc32c Python library is'
-            ' unavailable even if this property is False.'))
+            ' unavailable even if this property is False.'
+        ),
+    )
 
     # TODO(b/109938541): Remove this after implementation seems stable.
     self.use_gsutil = self._AddBool(
         'use_gsutil',
         default=False,
-        help_text='If True, use the deprecated upload implementation which '
-        'uses gsutil.')
+        help_text=(
+            'If True, use the deprecated upload implementation which '
+            'uses gsutil.'
+        ),
+    )
 
     self.use_magicfile = self._AddBool(
         'use_magicfile',
@@ -3699,28 +4357,36 @@ class _SectionStorage(_Section):
             'If True, uses the `file --mime <filename>` command to guess'
             ' content types instead of the default filename extension-based'
             ' mechanism. Available on UNIX and macOS (and possibly on Windows, '
-            ' if you\'re running Cygwin or some other package that provides '
+            " if you're running Cygwin or some other package that provides "
             ' implementations of UNIX-like commands). When available and '
             ' enabled use_magicfile should be more robust because it analyzes '
-            ' file contents in addition to extensions.'))
+            ' file contents in addition to extensions.'
+        ),
+    )
 
     self.use_threading_local = self._AddBool(
         'use_threading_local',
         default=True,
-        help_text='If True, reuses some resource if they are already declared on'
-        ' a thread. If False, creates duplicates of resources like API clients'
-        ' on the same thread. Turning off can help with some bugs but will'
-        ' hurt performance.')
+        help_text=(
+            'If True, reuses some resource if they are already declared on a'
+            ' thread. If False, creates duplicates of resources like API'
+            ' clients on the same thread. Turning off can help with some bugs'
+            ' but will hurt performance.'
+        ),
+    )
 
     self.preferred_api = self._Add(
         'preferred_api',
         default=StoragePreferredApi.JSON.value,
         hidden=True,
-        help_text='Specifies the API to be used for performing'
-        ' `gcloud storage` operations. If `grpc_with_json_fallback` is set,'
-        ' the gRPC API will be used if the operations is supported by'
-        ' `gcloud storage`, else it will fallback to using the JSON API.',
-        choices=([api.value for api in StoragePreferredApi]))
+        help_text=(
+            'Specifies the API to be used for performing'
+            ' `gcloud storage` operations. If `grpc_with_json_fallback` is set,'
+            ' the gRPC API will be used if the operations is supported by'
+            ' `gcloud storage`, else it will fallback to using the JSON API.'
+        ),
+        choices=([api.value for api in StoragePreferredApi]),
+    )
 
     self.use_grpc_if_available = self._AddBool(
         'use_grpc_if_available',
@@ -3741,8 +4407,11 @@ class _SectionSurvey(_Section):
     self.disable_prompts = self._AddBool(
         'disable_prompts',
         default=False,
-        help_text='If True, gcloud will not prompt you to take periodic usage '
-        'experience surveys.')
+        help_text=(
+            'If True, gcloud will not prompt you to take periodic usage '
+            'experience surveys.'
+        ),
+    )
 
 
 class _SectionTest(_Section):
@@ -3752,7 +4421,8 @@ class _SectionTest(_Section):
     super(_SectionTest, self).__init__('test')
     self.results_base_url = self._Add('results_base_url', hidden=True)
     self.matrix_status_interval = self._Add(
-        'matrix_status_interval', hidden=True)
+        'matrix_status_interval', hidden=True
+    )
 
 
 class _SectionTranscoder(_Section):
@@ -3765,7 +4435,9 @@ class _SectionTranscoder(_Section):
         help_text=(
             'Transcoder location to use. This parameter corresponds to the '
             '/locations/<location> segment of the Transcoder resource URIs '
-            'being referenced.'))
+            'being referenced.'
+        ),
+    )
 
 
 class _SectionTransfer(_Section):
@@ -3777,8 +4449,10 @@ class _SectionTransfer(_Section):
         'no_async_polling_interval_ms',
         default=3000,
         hidden=True,
-        help_text='Frequency for polling a transfer operation to see if'
-        ' it is done.')
+        help_text=(
+            'Frequency for polling a transfer operation to see if it is done.'
+        ),
+    )
 
 
 class _SectionTransport(_Section):
@@ -3795,9 +4469,12 @@ class _SectionVectorSearch(_Section):
     super(_SectionVectorSearch, self).__init__('vector_search')
     self.location = self._Add(
         'location',
-        help_text='Default location to use when working with '
-        'Vector Search resources. When a `--location` flag is required '
-        'but not provided, the command will fall back to this value, if set.')
+        help_text=(
+            'Default location to use when working with Vector Search resources.'
+            ' When a `--location` flag is required but not provided, the'
+            ' command will fall back to this value, if set.'
+        ),
+    )
 
 
 class _SectionVmware(_Section):
@@ -3809,16 +4486,20 @@ class _SectionVmware(_Section):
     self.region = self._Add(
         'region',
         default='us-central1',
-        help_text='Default region to use when working with VMware '
-        'Engine resources.  When a `--region` '
-        'flag is required but not provided, the command will fall back to '
-        'this value, if set.')
+        help_text=(
+            'Default region to use when working with VMware '
+            'Engine resources.  When a `--region` '
+            'flag is required but not provided, the command will fall back to '
+            'this value, if set.'
+        ),
+    )
 
     self.node_type = self._Add(
         'node-type',
         default='c1-highmem-72-metal',
         hidden=True,
-        help_text='Node type to use when creating a new cluster.')
+        help_text='Node type to use when creating a new cluster.',
+    )
 
 
 class _SectionWeb3(_Section):
@@ -3829,9 +4510,12 @@ class _SectionWeb3(_Section):
     self.location = self._Add(
         'location',
         default='us-central1',
-        help_text='The default region to use when working with Cloud '
-        'Web3 resources. When a `--location` flag is required '
-        'but not provided, the command will fall back to this value, if set.')
+        help_text=(
+            'The default region to use when working with Cloud Web3 resources.'
+            ' When a `--location` flag is required but not provided, the'
+            ' command will fall back to this value, if set.'
+        ),
+    )
 
 
 class _SectionWorkflows(_Section):
@@ -3842,9 +4526,12 @@ class _SectionWorkflows(_Section):
     self.location = self._Add(
         'location',
         default='us-central1',
-        help_text='The default region to use when working with Cloud '
-        'Workflows resources. When a `--location` flag is required '
-        'but not provided, the command will fall back to this value, if set.')
+        help_text=(
+            'The default region to use when working with Cloud Workflows'
+            ' resources. When a `--location` flag is required but not provided,'
+            ' the command will fall back to this value, if set.'
+        ),
+    )
 
 
 class _SectionWorkstations(_Section):
@@ -3909,18 +4596,20 @@ class _Property(object):
       the help text and used in tab completion.
   """
 
-  def __init__(self,
-               section,
-               name,
-               help_text=None,
-               hidden=False,
-               internal=False,
-               callbacks=None,
-               default=None,
-               validator=None,
-               choices=None,
-               completer=None,
-               default_flag=None):
+  def __init__(
+      self,
+      section,
+      name,
+      help_text=None,
+      hidden=False,
+      internal=False,
+      callbacks=None,
+      default=None,
+      validator=None,
+      choices=None,
+      completer=None,
+      default_flag=None,
+  ):
     self.__section = section
     self.__name = name
     self.__help_text = help_text
@@ -4040,9 +4729,9 @@ class _Property(object):
     Returns:
       PropertyValue, The value for this property.
     """
-    property_value = _GetProperty(self,
-                                  named_configs.ActivePropertiesFile.Load(),
-                                  required)
+    property_value = _GetProperty(
+        self, named_configs.ActivePropertiesFile.Load(), required
+    )
     if validate:
       self.Validate(property_value)
     return property_value
@@ -4056,7 +4745,8 @@ class _Property(object):
       True, if the value was explicitly set, False otherwise.
     """
     property_value = _GetPropertyWithoutCallback(
-        self, named_configs.ActivePropertiesFile.Load())
+        self, named_configs.ActivePropertiesFile.Load()
+    )
     if property_value is None:
       return False
     return property_value.value is not None
@@ -4109,7 +4799,8 @@ class _Property(object):
         self,
         named_configs.ActivePropertiesFile.Load(),
         required,
-        validate=validate)
+        validate=validate,
+    )
     return value
 
   def GetInt(self, required=False, validate=True):
@@ -4126,8 +4817,9 @@ class _Property(object):
     Returns:
       int, The integer value for this property.
     """
-    value = _GetIntProperty(self, named_configs.ActivePropertiesFile.Load(),
-                            required)
+    value = _GetIntProperty(
+        self, named_configs.ActivePropertiesFile.Load(), required
+    )
     if validate:
       self.Validate(value)
     return value
@@ -4288,7 +4980,8 @@ class _Sections(object):
       setattr(self, name, section)
       return section
     raise AttributeError(
-        "'_Sections' object has no attribute '{0}'".format(name))
+        "'_Sections' object has no attribute '{0}'".format(name)
+    )
 
   @property
   def default_section(self):
@@ -4321,22 +5014,26 @@ class _Sections(object):
       if section_name in self._MAPPING:
         return getattr(self, section_name)
       raise NoSuchPropertyError(
-          'Section "{section}" does not exist.'.format(section=section_name))
+          'Section "{section}" does not exist.'.format(section=section_name)
+      )
     return self.__sections[section_name]
 
   def AllSections(self, include_hidden=False):
     for name in self._MAPPING:
       getattr(self, name)
     return [
-        name for name, value in six.iteritems(self.__sections)
+        name
+        for name, value in six.iteritems(self.__sections)
         if not value.is_hidden or include_hidden
     ]
 
-  def AllValues(self,
-                list_unset=False,
-                include_hidden=False,
-                properties_file=None,
-                only_file_contents=False):
+  def AllValues(
+      self,
+      list_unset=False,
+      include_hidden=False,
+      properties_file=None,
+      only_file_contents=False,
+  ):
     """Gets the entire collection of property values for all sections.
 
     Args:
@@ -4359,16 +5056,19 @@ class _Sections(object):
           list_unset=list_unset,
           include_hidden=include_hidden,
           properties_file=properties_file,
-          only_file_contents=only_file_contents)
+          only_file_contents=only_file_contents,
+      )
       if section_result:
         result[section.name] = section_result
     return result
 
-  def AllPropertyValues(self,
-                        list_unset=False,
-                        include_hidden=False,
-                        properties_file=None,
-                        only_file_contents=False):
+  def AllPropertyValues(
+      self,
+      list_unset=False,
+      include_hidden=False,
+      properties_file=None,
+      only_file_contents=False,
+  ):
     """Gets the entire collection of property values for all sections.
 
     Args:
@@ -4392,7 +5092,8 @@ class _Sections(object):
           list_unset=list_unset,
           include_hidden=include_hidden,
           properties_file=properties_file,
-          only_file_contents=only_file_contents)
+          only_file_contents=only_file_contents,
+      )
       if section_result:
         result[section.name] = section_result
     return result
@@ -4412,17 +5113,20 @@ class _Sections(object):
     default_section_name = self.default_section.name
     sections.extend(
         sorted([
-            s for name, s in six.iteritems(self.__sections)
+            s
+            for name, s in six.iteritems(self.__sections)
             if name != default_section_name and not s.is_hidden
-        ]))
+        ])
+    )
     for section in sections:
       props = sorted([p for p in section if not p.is_hidden])
       if not props:
         continue
       messages.append('_{section}_::'.format(section=section.name))
       for prop in props:
-        messages.append('*{prop}*:::\n\n{text}'.format(
-            prop=prop.name, text=prop.help_text))
+        messages.append(
+            '*{prop}*:::\n\n{text}'.format(prop=prop.name, text=prop.help_text)
+        )
     return '\n\n\n'.join(messages)
 
 
@@ -4483,15 +5187,21 @@ class Scope(object):
 
   INSTALLATION = _ScopeInfo(
       id='installation',
-      description='The installation based configuration file applies to all '
-      'users on the system that use this version of the Cloud SDK.  If the SDK '
-      'was installed by an administrator, you will need administrator rights '
-      'to make changes to this file.')
+      description=(
+          'The installation based configuration file applies to all users on'
+          ' the system that use this version of the Cloud SDK.  If the SDK was'
+          ' installed by an administrator, you will need administrator rights'
+          ' to make changes to this file.'
+      ),
+  )
   USER = _ScopeInfo(
       id='user',
-      description='The user based configuration file applies only to the '
-      'current user of the system.  It will override any values from the '
-      'installation configuration.')
+      description=(
+          'The user based configuration file applies only to the '
+          'current user of the system.  It will override any values from the '
+          'installation configuration.'
+      ),
+  )
 
   _ALL = [USER, INSTALLATION]
   _ALL_SCOPE_NAMES = [s.id for s in _ALL]
@@ -4533,7 +5243,8 @@ class Scope(object):
   @staticmethod
   def GetHelpString():
     return '\n\n'.join(
-        ['*{0}*::: {1}'.format(s.id, s.description) for s in Scope.AllValues()])
+        ['*{0}*::: {1}'.format(s.id, s.description) for s in Scope.AllValues()]
+    )
 
 
 def PersistProperty(prop, value, scope=None):
@@ -4577,8 +5288,10 @@ def PersistProperty(prop, value, scope=None):
   env_name = prop.EnvironmentName()
   override = encoding.GetEncodedValue(os.environ, env_name)
   if override:
-    warning_message = ('WARNING: Property [{0}] is overridden '
-                       'by environment setting [{1}={2}]\n')
+    warning_message = (
+        'WARNING: Property [{0}] is overridden '
+        'by environment setting [{1}={2}]\n'
+    )
     # Writing to sys.stderr because of circular dependency
     # in googlecloudsdk.core.log on properties
     sys.stderr.write(warning_message.format(prop.name, env_name, override))
@@ -4620,7 +5333,8 @@ def _GetProperty(prop, properties_file, required):
   # Still nothing, check the final default.
   if prop.default is not None:
     return PropertyValue(
-        Stringize(prop.default), PropertyValue.PropertySource.DEFAULT)
+        Stringize(prop.default), PropertyValue.PropertySource.DEFAULT
+    )
 
   # Not set, throw if required.
   if required:
@@ -4655,7 +5369,8 @@ def _GetPropertyWithoutDefault(prop, properties_file):
     value = callback()
     if value is not None:
       return PropertyValue(
-          Stringize(value), PropertyValue.PropertySource.CALLBACK)
+          Stringize(value), PropertyValue.PropertySource.CALLBACK
+      )
 
   return None
 
@@ -4685,19 +5400,22 @@ def _GetPropertyWithoutCallback(prop, properties_file):
       continue
     if value_flag.value is not None:
       return PropertyValue(
-          Stringize(value_flag.value), PropertyValue.PropertySource.FLAG)
+          Stringize(value_flag.value), PropertyValue.PropertySource.FLAG
+      )
 
   # Check the environment variable overrides.
   value = encoding.GetEncodedValue(os.environ, prop.EnvironmentName())
   if value is not None:
     return PropertyValue(
-        Stringize(value), PropertyValue.PropertySource.ENVIRONMENT)
+        Stringize(value), PropertyValue.PropertySource.ENVIRONMENT
+    )
 
   # Check the property file itself.
   value = properties_file.Get(prop.section, prop.name)
   if value is not None:
     return PropertyValue(
-        Stringize(value), PropertyValue.PropertySource.PROPERTY_FILE)
+        Stringize(value), PropertyValue.PropertySource.PROPERTY_FILE
+    )
 
   return None
 
@@ -4746,7 +5464,9 @@ def _GetIntProperty(prop, properties_file, required):
   except ValueError:
     raise InvalidValueError(
         'The property [{prop}] must have an integer value: [{value}]'.format(
-            prop=prop, value=property_value.value))
+            prop=prop, value=property_value.value
+        )
+    )
 
 
 def IsDefaultUniverse():
@@ -4758,34 +5478,6 @@ def GetUniverseDomain():
   """Get the universe domain."""
 
   return VALUES.core.universe_domain.Get()
-
-
-def GetMetricsEnvironment():
-  """Get the metrics environment.
-
-  Returns the property metrics/environment if set, if not, it tries to deduce if
-  we're on some known platforms like devshell or GCE.
-
-  Returns:
-    None, if no environment is set or found
-    str, a string denoting the environment if one is set or found
-  """
-
-  environment = VALUES.metrics.environment.Get()
-  if environment:
-    return environment
-
-  # No explicit environment defined, try to deduce it.
-  # pylint: disable=g-import-not-at-top
-  from googlecloudsdk.core.credentials import devshell as c_devshell
-  if c_devshell.IsDevshellEnvironment():
-    return 'devshell'
-
-  from googlecloudsdk.core.credentials import gce_cache
-  if gce_cache.GetOnGCE(check_age=False):
-    return 'GCE'
-
-  return None
 
 
 def _EscapePercentSign(value):

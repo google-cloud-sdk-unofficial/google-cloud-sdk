@@ -88,7 +88,6 @@ def CreateImage(
           source_to_upload=build_source,
           region=region,
           service_ref=resource_ref,
-          release_track=release_track,
           kms_key=kms_key,
       )
     elif kms_key:

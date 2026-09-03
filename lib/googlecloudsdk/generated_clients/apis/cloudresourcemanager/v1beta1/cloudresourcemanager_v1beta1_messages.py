@@ -418,6 +418,20 @@ class CloudresourcemanagerProjectsUndeleteRequest(_messages.Message):
   undeleteProjectRequest = _messages.MessageField('UndeleteProjectRequest', 2)
 
 
+class CreateBoundaryMetadata(_messages.Message):
+  r"""A status object which is used as the `metadata` field for the Operation
+  returned by CreateBoundary. Currently empty.
+  """
+
+
+
+class CreateCapabilityConfigMetadata(_messages.Message):
+  r"""A status object which is used as the `metadata` field for the Operation
+  returned by CreateCapabilityConfig. Currently empty.
+  """
+
+
+
 class CreateFolderMetadata(_messages.Message):
   r"""Metadata pertaining to the Folder creation process.
 
@@ -459,6 +473,20 @@ class CreateTagKeyMetadata(_messages.Message):
 
 class CreateTagValueMetadata(_messages.Message):
   r"""Runtime operation information for creating a TagValue."""
+
+
+class DeleteBoundaryMetadata(_messages.Message):
+  r"""A status object which is used as the `metadata` field for the Operation
+  returned by DeleteBoundary. Currently empty.
+  """
+
+
+
+class DeleteCapabilityConfigMetadata(_messages.Message):
+  r"""A status object which is used as the `metadata` field for the Operation
+  returned by DeleteCapabilityConfig. Currently empty.
+  """
+
 
 
 class DeleteFolderMetadata(_messages.Message):
@@ -850,6 +878,9 @@ class Project(_messages.Message):
       presence of any capability implies that this is a Management Project.
       Example: `folders/123/capabilities/app-management`. OUTPUT ONLY.
     createTime: Creation time. Read-only.
+    isManagementProject: Output only. If `true`, this project is a Management
+      Project. A Management Project manages dedicated project groups for
+      specific purposes (e.g., agent management or app management).
     labels: The labels associated with this Project. Label keys must be
       between 1 and 63 characters long and must conform to the following
       regular expression: a-z{0,62}. Label values must be between 0 and 63
@@ -928,12 +959,13 @@ class Project(_messages.Message):
 
   configuredCapabilities = _messages.StringField(1, repeated=True)
   createTime = _messages.StringField(2)
-  labels = _messages.MessageField('LabelsValue', 3)
-  lifecycleState = _messages.EnumField('LifecycleStateValueValuesEnum', 4)
-  name = _messages.StringField(5)
-  parent = _messages.MessageField('ResourceId', 6)
-  projectId = _messages.StringField(7)
-  projectNumber = _messages.IntegerField(8)
+  isManagementProject = _messages.BooleanField(3)
+  labels = _messages.MessageField('LabelsValue', 4)
+  lifecycleState = _messages.EnumField('LifecycleStateValueValuesEnum', 5)
+  name = _messages.StringField(6)
+  parent = _messages.MessageField('ResourceId', 7)
+  projectId = _messages.StringField(8)
+  projectNumber = _messages.IntegerField(9)
 
 
 class ProjectCreationStatus(_messages.Message):
@@ -1098,6 +1130,27 @@ class UndeleteProjectMetadata(_messages.Message):
 
 class UndeleteProjectRequest(_messages.Message):
   r"""The request sent to the UndeleteProject method."""
+
+
+class UpdateBoundaryConfigMetadata(_messages.Message):
+  r"""A status object which is used as the `metadata` field for the Operation
+  returned by UpdateBoundaryConfig. Currently empty.
+  """
+
+
+
+class UpdateBoundaryMetadata(_messages.Message):
+  r"""A status object which is used as the `metadata` field for the Operation
+  returned by UpdateBoundary. Currently empty.
+  """
+
+
+
+class UpdateCapabilityConfigMetadata(_messages.Message):
+  r"""A status object which is used as the `metadata` field for the Operation
+  returned by UpdateCapabilityConfig. Currently empty.
+  """
+
 
 
 class UpdateFolderMetadata(_messages.Message):

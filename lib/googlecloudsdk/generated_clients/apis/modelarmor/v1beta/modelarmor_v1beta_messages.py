@@ -2048,6 +2048,10 @@ class TemplateMetadata(_messages.Message):
     customPromptSafetyErrorMessage: Optional. Indicates the custom error
       message set by the user to be returned to the end user if the prompt
       trips Model Armor filters.
+    dataResidencyCompliant: Optional. Indicates whether the template is
+      subject to data residency compliance. If true (default for new
+      templates), the template is subject to data residency compliance. If
+      false, the template bypasses data residency compliance checks.
     enforcementType: Optional. Enforcement type for Model Armor filters.
     filterVersionSelector: Optional. Specifies the configuration for the
       Filter version to be used. If this field is populated, it takes
@@ -2097,13 +2101,14 @@ class TemplateMetadata(_messages.Message):
   customLlmResponseSafetyErrorMessage = _messages.StringField(2)
   customPromptSafetyErrorCode = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   customPromptSafetyErrorMessage = _messages.StringField(4)
-  enforcementType = _messages.EnumField('EnforcementTypeValueValuesEnum', 5)
-  filterVersionSelector = _messages.MessageField('FilterVersionSelector', 6)
-  ignorePartialInvocationFailures = _messages.BooleanField(7)
-  logSanitizeOperations = _messages.BooleanField(8)
-  logTemplateOperations = _messages.BooleanField(9)
-  modalities = _messages.EnumField('ModalitiesValueListEntryValuesEnum', 10, repeated=True)
-  multiLanguageDetection = _messages.MessageField('MultiLanguageDetection', 11)
+  dataResidencyCompliant = _messages.BooleanField(5)
+  enforcementType = _messages.EnumField('EnforcementTypeValueValuesEnum', 6)
+  filterVersionSelector = _messages.MessageField('FilterVersionSelector', 7)
+  ignorePartialInvocationFailures = _messages.BooleanField(8)
+  logSanitizeOperations = _messages.BooleanField(9)
+  logTemplateOperations = _messages.BooleanField(10)
+  modalities = _messages.EnumField('ModalitiesValueListEntryValuesEnum', 11, repeated=True)
+  multiLanguageDetection = _messages.MessageField('MultiLanguageDetection', 12)
 
 
 class VirusDetail(_messages.Message):

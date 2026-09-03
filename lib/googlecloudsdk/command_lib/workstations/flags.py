@@ -422,7 +422,7 @@ def AddPoolSize(parser, use_default=True):
   Number of instances to pool for faster Workstation startup."""
   parser.add_argument(
       '--pool-size',
-      default=0 if use_default else None,
+      default=1 if use_default else None,
       type=int,
       help=help_text,
   )

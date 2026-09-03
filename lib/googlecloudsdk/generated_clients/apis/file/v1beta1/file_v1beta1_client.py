@@ -43,6 +43,8 @@ class FileV1beta1(base_api.BaseApiClient):
     self.projects_locations_instances = self.ProjectsLocationsInstancesService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
     self.projects_locations_sharePools = self.ProjectsLocationsSharePoolsService(self)
+    self.projects_locations_volumePools_volumes = self.ProjectsLocationsVolumePoolsVolumesService(self)
+    self.projects_locations_volumePools = self.ProjectsLocationsVolumePoolsService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects = self.ProjectsService(self)
 
@@ -940,6 +942,269 @@ class FileV1beta1(base_api.BaseApiClient):
         request_field='releaseShareRequest',
         request_type_name='FileProjectsLocationsSharePoolsReleaseShareRequest',
         response_type_name='ReleaseShareResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsVolumePoolsVolumesService(base_api.BaseApiService):
+    """Service class for the projects_locations_volumePools_volumes resource."""
+
+    _NAME = 'projects_locations_volumePools_volumes'
+
+    def __init__(self, client):
+      super(FileV1beta1.ProjectsLocationsVolumePoolsVolumesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a volume.
+
+      Args:
+        request: (FileProjectsLocationsVolumePoolsVolumesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Volume) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/volumePools/{volumePoolsId}/volumes',
+        http_method='POST',
+        method_id='file.projects.locations.volumePools.volumes.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['volumeId'],
+        relative_path='v1beta1/{+parent}/volumes',
+        request_field='volume',
+        request_type_name='FileProjectsLocationsVolumePoolsVolumesCreateRequest',
+        response_type_name='Volume',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a volume.
+
+      Args:
+        request: (FileProjectsLocationsVolumePoolsVolumesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/volumePools/{volumePoolsId}/volumes/{volumesId}',
+        http_method='DELETE',
+        method_id='file.projects.locations.volumePools.volumes.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='FileProjectsLocationsVolumePoolsVolumesDeleteRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets the details of a specific volume.
+
+      Args:
+        request: (FileProjectsLocationsVolumePoolsVolumesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Volume) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/volumePools/{volumePoolsId}/volumes/{volumesId}',
+        http_method='GET',
+        method_id='file.projects.locations.volumePools.volumes.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='FileProjectsLocationsVolumePoolsVolumesGetRequest',
+        response_type_name='Volume',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists all volumes for a specified volume pool.
+
+      Args:
+        request: (FileProjectsLocationsVolumePoolsVolumesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListVolumesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/volumePools/{volumePoolsId}/volumes',
+        http_method='GET',
+        method_id='file.projects.locations.volumePools.volumes.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1beta1/{+parent}/volumes',
+        request_field='',
+        request_type_name='FileProjectsLocationsVolumePoolsVolumesListRequest',
+        response_type_name='ListVolumesResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsVolumePoolsService(base_api.BaseApiService):
+    """Service class for the projects_locations_volumePools resource."""
+
+    _NAME = 'projects_locations_volumePools'
+
+    def __init__(self, client):
+      super(FileV1beta1.ProjectsLocationsVolumePoolsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a volume pool.
+
+      Args:
+        request: (FileProjectsLocationsVolumePoolsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/volumePools',
+        http_method='POST',
+        method_id='file.projects.locations.volumePools.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['volumePoolId'],
+        relative_path='v1beta1/{+parent}/volumePools',
+        request_field='volumePool',
+        request_type_name='FileProjectsLocationsVolumePoolsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a volume pool.
+
+      Args:
+        request: (FileProjectsLocationsVolumePoolsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/volumePools/{volumePoolsId}',
+        http_method='DELETE',
+        method_id='file.projects.locations.volumePools.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='FileProjectsLocationsVolumePoolsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets the details of a specific volume pool.
+
+      Args:
+        request: (FileProjectsLocationsVolumePoolsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (VolumePool) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/volumePools/{volumePoolsId}',
+        http_method='GET',
+        method_id='file.projects.locations.volumePools.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='FileProjectsLocationsVolumePoolsGetRequest',
+        response_type_name='VolumePool',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists all volume pools in a project for either a specified location or for all locations.
+
+      Args:
+        request: (FileProjectsLocationsVolumePoolsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListVolumePoolsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/volumePools',
+        http_method='GET',
+        method_id='file.projects.locations.volumePools.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1beta1/{+parent}/volumePools',
+        request_field='',
+        request_type_name='FileProjectsLocationsVolumePoolsListRequest',
+        response_type_name='ListVolumePoolsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the settings of a specific volume pool.
+
+      Args:
+        request: (FileProjectsLocationsVolumePoolsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/volumePools/{volumePoolsId}',
+        http_method='PATCH',
+        method_id='file.projects.locations.volumePools.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1beta1/{+name}',
+        request_field='volumePool',
+        request_type_name='FileProjectsLocationsVolumePoolsPatchRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

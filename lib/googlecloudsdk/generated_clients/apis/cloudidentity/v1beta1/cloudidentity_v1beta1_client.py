@@ -13,7 +13,7 @@ class CloudidentityV1beta1(base_api.BaseApiClient):
   MTLS_BASE_URL = 'https://cloudidentity.mtls.googleapis.com/'
 
   _PACKAGE = 'cloudidentity'
-  _SCOPES = ['https://www.googleapis.com/auth/cloud-identity.devices', 'https://www.googleapis.com/auth/cloud-identity.devices.lookup', 'https://www.googleapis.com/auth/cloud-identity.devices.readonly', 'https://www.googleapis.com/auth/cloud-identity.groups', 'https://www.googleapis.com/auth/cloud-identity.groups.readonly', 'https://www.googleapis.com/auth/cloud-identity.inboundsso', 'https://www.googleapis.com/auth/cloud-identity.inboundsso.readonly', 'https://www.googleapis.com/auth/cloud-identity.orgunits', 'https://www.googleapis.com/auth/cloud-identity.orgunits.readonly', 'https://www.googleapis.com/auth/cloud-identity.policies', 'https://www.googleapis.com/auth/cloud-identity.policies.readonly', 'https://www.googleapis.com/auth/cloud-platform']
+  _SCOPES = ['https://www.googleapis.com/auth/cloud-identity.allowlisteddomains', 'https://www.googleapis.com/auth/cloud-identity.allowlisteddomains.readonly', 'https://www.googleapis.com/auth/cloud-identity.devices', 'https://www.googleapis.com/auth/cloud-identity.devices.lookup', 'https://www.googleapis.com/auth/cloud-identity.devices.readonly', 'https://www.googleapis.com/auth/cloud-identity.groups', 'https://www.googleapis.com/auth/cloud-identity.groups.readonly', 'https://www.googleapis.com/auth/cloud-identity.inboundsso', 'https://www.googleapis.com/auth/cloud-identity.inboundsso.readonly', 'https://www.googleapis.com/auth/cloud-identity.orgunits', 'https://www.googleapis.com/auth/cloud-identity.orgunits.readonly', 'https://www.googleapis.com/auth/cloud-identity.policies', 'https://www.googleapis.com/auth/cloud-identity.policies.readonly', 'https://www.googleapis.com/auth/cloud-platform']
   _VERSION = 'v1beta1'
   _CLIENT_ID = 'CLIENT_ID'
   _CLIENT_SECRET = 'CLIENT_SECRET'
@@ -37,6 +37,7 @@ class CloudidentityV1beta1(base_api.BaseApiClient):
         default_global_params=default_global_params,
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
+    self.allowlistedDomains = self.AllowlistedDomainsService(self)
     self.customers_userinvitations = self.CustomersUserinvitationsService(self)
     self.customers = self.CustomersService(self)
     self.devices_deviceUsers_clientStates = self.DevicesDeviceUsersClientStatesService(self)
@@ -51,6 +52,122 @@ class CloudidentityV1beta1(base_api.BaseApiClient):
     self.orgUnits_memberships = self.OrgUnitsMembershipsService(self)
     self.orgUnits = self.OrgUnitsService(self)
     self.policies = self.PoliciesService(self)
+
+  class AllowlistedDomainsService(base_api.BaseApiService):
+    """Service class for the allowlistedDomains resource."""
+
+    _NAME = 'allowlistedDomains'
+
+    def __init__(self, client):
+      super(CloudidentityV1beta1.AllowlistedDomainsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Adds a domain to the allowlist.
+
+      Args:
+        request: (AllowlistedDomain) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='cloudidentity.allowlistedDomains.create',
+        ordered_params=[],
+        path_params=[],
+        query_params=[],
+        relative_path='v1beta1/allowlistedDomains',
+        request_field='<request>',
+        request_type_name='AllowlistedDomain',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Removes a domain from the allowlist.
+
+      Args:
+        request: (CloudidentityAllowlistedDomainsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/allowlistedDomains/{allowlistedDomainsId}',
+        http_method='DELETE',
+        method_id='cloudidentity.allowlistedDomains.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='CloudidentityAllowlistedDomainsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Retrieves a specific domain from the allowlist.
+
+      Args:
+        request: (CloudidentityAllowlistedDomainsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AllowlistedDomain) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/allowlistedDomains/{allowlistedDomainsId}',
+        http_method='GET',
+        method_id='cloudidentity.allowlistedDomains.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}',
+        request_field='',
+        request_type_name='CloudidentityAllowlistedDomainsGetRequest',
+        response_type_name='AllowlistedDomain',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists the domains in the allowlist.
+
+      Args:
+        request: (CloudidentityAllowlistedDomainsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListAllowlistedDomainsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='cloudidentity.allowlistedDomains.list',
+        ordered_params=[],
+        path_params=[],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1beta1/allowlistedDomains',
+        request_field='',
+        request_type_name='CloudidentityAllowlistedDomainsListRequest',
+        response_type_name='ListAllowlistedDomainsResponse',
+        supports_download=False,
+    )
 
   class CustomersUserinvitationsService(base_api.BaseApiService):
     """Service class for the customers_userinvitations resource."""

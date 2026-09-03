@@ -2419,9 +2419,11 @@ class ExtensionBindingMatchConditionToDestination(_messages.Message):
       the query parameters. For gRPC services, this should be a fully-
       qualified name of the form /package.service/method.
     resources: Optional. A list of non-empty strings whose value is matched
-      against the resource value. If not specified, any resource is allowed.
-      If specified, a match occurs if any of the resources matches the
-      resource value in the request. Limited to 5 resources.
+      against the resource to which a request is sent (e.g., an Agent in
+      AiApplication). If not specified, any resource is allowed. If specified,
+      a match occurs if any of the resources matches the resource value in the
+      request. Limited to 5 resources. When matching against resources in the
+      AgentRegistry, use the URNs of the registry resources.
   """
 
   headerSet = _messages.MessageField('ExtensionBindingMatchConditionToDestinationHeaderSet', 1)
@@ -5432,6 +5434,23 @@ class ListLocationsResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
+class ListMcpTranscodersResponse(_messages.Message):
+  r"""Response returned by the ListMcpTranscoders method.
+
+  Fields:
+    mcpTranscoders: List of McpTranscoder resources.
+    nextPageToken: If there might be more results than those appearing in this
+      response, then `next_page_token` is included. To get the next set of
+      results, call this method again using the value of `next_page_token` as
+      `page_token`.
+    unreachable: Unordered list. Unreachable resources.
+  """
+
+  mcpTranscoders = _messages.MessageField('McpTranscoder', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListMeshRouteViewsResponse(_messages.Message):
   r"""Response returned by the ListMeshRouteViews method.
 
@@ -6144,6 +6163,78 @@ class MatchRule(_messages.Message):
   pathTemplateMatch = _messages.StringField(4)
   prefixMatch = _messages.StringField(5)
   queryParameterMatches = _messages.MessageField('QueryParameterMatcher', 6, repeated=True)
+
+
+class McpTranscoder(_messages.Message):
+  r"""Represents an McpTranscoder resource. This resource configures the Model
+  Context Protocol (MCP) to OpenAPI transcoding capabilities, linking an
+  AgentGateway to one or more Endpoints that define the tools via OpenAPI
+  specifications.
+
+  Messages:
+    LabelsValue: Optional. Set of labels associated with the McpTranscoder
+      resource.
+
+  Fields:
+    agentGateway: Required. The resource name of the AgentGateway this
+      McpTranscoder is associated with. Must be in the format
+      projects/*/locations/*/agentGateways/{agent_gateway_id}. The referenced
+      AgentGateway must have MCP listed in its protocols.
+    createTime: Output only. The timestamp when the resource was created.
+    description: Optional. An optional description of the McpTranscoder
+      resource. Max length 1024 characters.
+    endpoints: Required. A list of resource names of Service resources (from
+      Agent Registry) that contain the OpenAPI specifications. Must be in the
+      format projects/*/locations/*/services/{service}. Note: For the MVP,
+      each McpTranscoder is limited to a single tool set.
+    etag: Optional. Etag of the resource. If this is provided, it must match
+      the server's etag. If the provided etag does not match the server's
+      etag, the request will fail with a 409 ABORTED error.
+    labels: Optional. Set of labels associated with the McpTranscoder
+      resource.
+    mcpServerUrl: Required. Specifies the MCP server URL used for the MCP
+      request calls. This typically specifies the host and path (e.g.,
+      "api.example.com/v1/mcp").
+    name: Identifier. Resource name of the McpTranscoder. It must be in the
+      format projects/*/locations/*/mcpTranscoders/{mcp_transcoder}.
+      {mcp_transcoder} must be 1-63 characters long and match the regex
+      [a-z]([-a-z0-9]*[a-z0-9])?.
+    updateTime: Output only. The timestamp when the resource was last updated.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Set of labels associated with the McpTranscoder resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  agentGateway = _messages.StringField(1)
+  createTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  endpoints = _messages.StringField(4, repeated=True)
+  etag = _messages.StringField(5)
+  labels = _messages.MessageField('LabelsValue', 6)
+  mcpServerUrl = _messages.StringField(7)
+  name = _messages.StringField(8)
+  updateTime = _messages.StringField(9)
 
 
 class Mesh(_messages.Message):
@@ -9533,6 +9624,101 @@ class NetworkservicesProjectsLocationsListRequest(_messages.Message):
   name = _messages.StringField(3, required=True)
   pageSize = _messages.IntegerField(4, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(5)
+
+
+class NetworkservicesProjectsLocationsMcpTranscodersCreateRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsMcpTranscodersCreateRequest object.
+
+  Fields:
+    mcpTranscoder: A McpTranscoder resource to be passed as the request body.
+    mcpTranscoderId: Required. Short name of the McpTranscoder resource to be
+      created.
+    parent: Required. The parent resource of the McpTranscoder. Must be in the
+      format `projects/*/locations/*`.
+  """
+
+  mcpTranscoder = _messages.MessageField('McpTranscoder', 1)
+  mcpTranscoderId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class NetworkservicesProjectsLocationsMcpTranscodersDeleteRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsMcpTranscodersDeleteRequest object.
+
+  Fields:
+    etag: Optional. The etag of the McpTranscoder to delete.
+    name: Required. A name of the McpTranscoder to delete. Must be in the
+      format `projects/*/locations/*/mcpTranscoders/*`.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+
+
+class NetworkservicesProjectsLocationsMcpTranscodersGetRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsMcpTranscodersGetRequest object.
+
+  Fields:
+    name: Required. A name of the McpTranscoder to get. Must be in the format
+      `projects/*/locations/*/mcpTranscoders/*`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworkservicesProjectsLocationsMcpTranscodersListRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsMcpTranscodersListRequest object.
+
+  Fields:
+    pageSize: Optional. Maximum number of McpTranscoders to return per call.
+      Default value is 50. Maximum value is 1000. Values above 1000 will be
+      coerced to 1000.
+    pageToken: Optional. The value returned by the last
+      `ListMcpTranscodersResponse` Indicates that this is a continuation of a
+      prior `ListMcpTranscoders` call, and that the system should return the
+      next page of data.
+    parent: Required. The project and location from which the McpTranscoders
+      should be listed, specified in the format `projects/*/locations/*`.
+    returnPartialSuccess: Optional. If true, allow partial responses for
+      multi-regional Aggregated List requests.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  returnPartialSuccess = _messages.BooleanField(4)
+
+
+class NetworkservicesProjectsLocationsMcpTranscodersPatchRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsMcpTranscodersPatchRequest object.
+
+  Fields:
+    mcpTranscoder: A McpTranscoder resource to be passed as the request body.
+    name: Identifier. Resource name of the McpTranscoder. It must be in the
+      format projects/*/locations/*/mcpTranscoders/{mcp_transcoder}.
+      {mcp_transcoder} must be 1-63 characters long and match the regex
+      [a-z]([-a-z0-9]*[a-z0-9])?.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the McpTranscoder resource by the update.
+  """
+
+  mcpTranscoder = _messages.MessageField('McpTranscoder', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
+
+
+class NetworkservicesProjectsLocationsMcpTranscodersRefreshRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsMcpTranscodersRefreshRequest object.
+
+  Fields:
+    name: Required. A name of the McpTranscoder to refresh. Must be in the
+      format `projects/*/locations/*/mcpTranscoders/*`.
+    refreshMcpTranscoderRequest: A RefreshMcpTranscoderRequest resource to be
+      passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  refreshMcpTranscoderRequest = _messages.MessageField('RefreshMcpTranscoderRequest', 2)
 
 
 class NetworkservicesProjectsLocationsMeshesCreateRequest(_messages.Message):
@@ -13546,6 +13732,10 @@ class QueryParameterMatcher(_messages.Message):
   exactMatch = _messages.StringField(1)
   name = _messages.StringField(2)
   presentMatch = _messages.BooleanField(3)
+
+
+class RefreshMcpTranscoderRequest(_messages.Message):
+  r"""Request used by the RefreshMcpTranscoder method."""
 
 
 class RegionalMulticastConsumerAssociation(_messages.Message):

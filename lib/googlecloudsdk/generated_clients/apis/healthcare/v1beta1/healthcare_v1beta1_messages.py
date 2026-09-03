@@ -5138,6 +5138,46 @@ class HealthcareProjectsLocationsDatasetsFhirStoresBulkDeleteRequest(_messages.M
   name = _messages.StringField(2, required=True)
 
 
+class HealthcareProjectsLocationsDatasetsFhirStoresBulkExportGroupPostRequest(_messages.Message):
+  r"""A
+  HealthcareProjectsLocationsDatasetsFhirStoresBulkExportGroupPostRequest
+  object.
+
+  Fields:
+    _since: Optional. If provided, only resources updated after this time are
+      exported. The time uses the format YYYY-MM-DDThh:mm:ss.sss+zz:zz. For
+      example, `2015-02-07T13:28:17.239+02:00` or `2017-01-01T00:00:00Z`. The
+      time must be specified to the second and include a time zone.
+    _type: Optional. String of comma-delimited FHIR resource types. If
+      provided, only resources of the specified resource type(s) are exported.
+    httpBody: A HttpBody resource to be passed as the request body.
+    name: Required. Name of the `Group` resource that is exported, in format `
+      projects/{project_id}/locations/{location_id}/datasets/{dataset_id}/fhir
+      Stores/{fhir_store_id}/fhir/Group/{group_id}`.
+    organizeOutputBy: Required. The FHIR resource type used to organize
+      exported resources. Only supports "Patient". When organized by Patient
+      resource, output files are grouped as follows: * Patient file(s)
+      containing the Patient resources. Each Patient is sequentially followed
+      by all resources the Patient references, and all resources that
+      reference the Patient (equivalent to a GetPatientEverything request). *
+      Individual files grouped by resource type for resources in the Group's
+      member field and the Group resource itself. Resources may be duplicated
+      across multiple Patients. For example, if two Patient resources
+      reference the same Organization resource, it will appear twice, once
+      after each Patient. The Group resource from the request does not appear
+      in the Patient files.
+    outputFormat: Optional. Output format of the export. This field is
+      optional and only `application/fhir+ndjson` is supported.
+  """
+
+  _since = _messages.StringField(1)
+  _type = _messages.StringField(2)
+  httpBody = _messages.MessageField('HttpBody', 3)
+  name = _messages.StringField(4, required=True)
+  organizeOutputBy = _messages.StringField(5)
+  outputFormat = _messages.StringField(6)
+
+
 class HealthcareProjectsLocationsDatasetsFhirStoresBulkExportGroupRequest(_messages.Message):
   r"""A HealthcareProjectsLocationsDatasetsFhirStoresBulkExportGroupRequest
   object.

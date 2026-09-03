@@ -22,20 +22,6 @@ from apitools.base.py import extra_types
 package = 'alloydb'
 
 
-class AlloydbClhErrorsAlloyDbInternalDebugInfo(_messages.Message):
-  r"""AlloyDbInternalDebugInfo contains internal debugging information for
-  AlloyDB errors. It is explicitly kept out of the allowlist (errors.yaml) to
-  ensure it is sanitized (stripped) by OnePlatform for all external requests.
-  Used only to carry internal error details to across UPC/FlowLib boundary for
-  ObservabilityInfo.
-
-  Fields:
-    originalError: A string attribute.
-  """
-
-  originalError = _messages.StringField(1)
-
-
 class AlloydbProjectsLocationsBackupsCreateRequest(_messages.Message):
   r"""A AlloydbProjectsLocationsBackupsCreateRequest object.
 

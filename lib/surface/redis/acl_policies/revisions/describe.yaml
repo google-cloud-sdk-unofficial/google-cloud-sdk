@@ -1,5 +1,4 @@
-release_tracks: [ALPHA]
-hidden: true
+release_tracks: [ALPHA, BETA, GA]
 help_text:
   brief: |
     Show metadata for a Memorystore for Redis Cluster ACL policy revision.

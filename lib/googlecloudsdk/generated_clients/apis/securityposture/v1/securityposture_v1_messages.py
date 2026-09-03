@@ -2163,6 +2163,42 @@ class SecuritypostureOrganizationsLocationsGetIacValidationFailureCriteriaReques
   name = _messages.StringField(1, required=True)
 
 
+class SecuritypostureOrganizationsLocationsGetRequest(_messages.Message):
+  r"""A SecuritypostureOrganizationsLocationsGetRequest object.
+
+  Fields:
+    name: Resource name for the location.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class SecuritypostureOrganizationsLocationsListRequest(_messages.Message):
+  r"""A SecuritypostureOrganizationsLocationsListRequest object.
+
+  Fields:
+    extraLocationTypes: Optional. Do not use this field unless explicitly
+      documented otherwise. This is primarily for internal usage.
+    filter: A filter to narrow down results to a preferred subset. The
+      filtering language accepts strings like `"displayName=tokyo"`, and is
+      documented in more detail in [AIP-160](https://google.aip.dev/160).
+    includeUnrevealedLocations: If true, the returned list will include
+      locations which are not yet revealed.
+    name: The resource that owns the locations collection, if applicable.
+    pageSize: The maximum number of results to return. If not set, the service
+      selects a default.
+    pageToken: A page token received from the `next_page_token` field in the
+      response. Send that page token to receive the subsequent page.
+  """
+
+  extraLocationTypes = _messages.StringField(1, repeated=True)
+  filter = _messages.StringField(2)
+  includeUnrevealedLocations = _messages.BooleanField(3)
+  name = _messages.StringField(4, required=True)
+  pageSize = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(6)
+
+
 class SecuritypostureOrganizationsLocationsOperationsCancelRequest(_messages.Message):
   r"""A SecuritypostureOrganizationsLocationsOperationsCancelRequest object.
 
@@ -2689,42 +2725,6 @@ class SecuritypostureOrganizationsLocationsUpdateIacValidationFailureCriteriaReq
   allowMissing = _messages.BooleanField(1)
   iacValidationFailureCriteria = _messages.MessageField('IacValidationFailureCriteria', 2)
   name = _messages.StringField(3, required=True)
-
-
-class SecuritypostureProjectsLocationsGetRequest(_messages.Message):
-  r"""A SecuritypostureProjectsLocationsGetRequest object.
-
-  Fields:
-    name: Resource name for the location.
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
-class SecuritypostureProjectsLocationsListRequest(_messages.Message):
-  r"""A SecuritypostureProjectsLocationsListRequest object.
-
-  Fields:
-    extraLocationTypes: Optional. Do not use this field unless explicitly
-      documented otherwise. This is primarily for internal usage.
-    filter: A filter to narrow down results to a preferred subset. The
-      filtering language accepts strings like `"displayName=tokyo"`, and is
-      documented in more detail in [AIP-160](https://google.aip.dev/160).
-    includeUnrevealedLocations: If true, the returned list will include
-      locations which are not yet revealed.
-    name: The resource that owns the locations collection, if applicable.
-    pageSize: The maximum number of results to return. If not set, the service
-      selects a default.
-    pageToken: A page token received from the `next_page_token` field in the
-      response. Send that page token to receive the subsequent page.
-  """
-
-  extraLocationTypes = _messages.StringField(1, repeated=True)
-  filter = _messages.StringField(2)
-  includeUnrevealedLocations = _messages.BooleanField(3)
-  name = _messages.StringField(4, required=True)
-  pageSize = _messages.IntegerField(5, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(6)
 
 
 class SeverityCountThreshold(_messages.Message):

@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core import log
 
 
+@base.UniverseCompatible
 class Commit(base.Command):
   """Commit a Pub/Sub schema revision."""
 
@@ -41,11 +42,11 @@ class Commit(base.Command):
                   """
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     # The flag name is 'schema'.
     resource_args.AddSchemaResourceArg(parser, 'to revise.')
-    flags.AddCommitSchemaFlags(parser)
+    flags.AddCommitSchemaFlags(parser, release_track=cls.ReleaseTrack())
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -74,6 +75,10 @@ class Commit(base.Command):
           schema_ref=schema_ref,
           schema_definition=definition,
           schema_type=args.type,
+          definition_descriptor_file=getattr(
+              args, 'definition_descriptor_file', None
+          ),
+          root_message_name=getattr(args, 'root_message_name', None),
       )
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)

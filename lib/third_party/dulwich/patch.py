@@ -1,8 +1,9 @@
 # patch.py -- For dealing with packed-style patches.
 # Copyright (C) 2009-2013 Jelmer Vernooij <jelmer@jelmer.uk>
 #
+# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 # Dulwich is dual-licensed under the Apache License, Version 2.0 and the GNU
-# General Public License as public by the Free Software Foundation; version 2.0
+# General Public License as published by the Free Software Foundation; version 2.0
 # or (at your option) any later version. You can redistribute it and/or
 # modify it under the terms of either of these two licenses.
 #
@@ -26,26 +27,46 @@ on.
 
 import email.parser
 import time
+from collections.abc import Generator
 from difflib import SequenceMatcher
-from typing import BinaryIO, Optional, TextIO, Union
+from typing import (
+    TYPE_CHECKING,
+    BinaryIO,
+    Optional,
+    TextIO,
+    Union,
+)
+
+if TYPE_CHECKING:
+    import email.message
+
+    from .object_store import BaseObjectStore
 
 from .objects import S_ISGITLINK, Blob, Commit
-from .pack import ObjectContainer
 
 FIRST_FEW_BYTES = 8000
 
 
-def write_commit_patch(f, commit, contents, progress, version=None, encoding=None):
+def write_commit_patch(
+    f: BinaryIO,
+    commit: "Commit",
+    contents: Union[str, bytes],
+    progress: tuple[int, int],
+    version: Optional[str] = None,
+    encoding: Optional[str] = None,
+) -> None:
     """Write a individual file patch.
 
     Args:
       commit: Commit object
-      progress: Tuple with current patch number and total.
+      progress: tuple with current patch number and total.
 
     Returns:
       tuple with filename and contents
     """
     encoding = encoding or getattr(f, "encoding", "ascii")
+    if encoding is None:
+        encoding = "ascii"
     if isinstance(contents, str):
         contents = contents.encode(encoding)
     (num, total) = progress
@@ -61,9 +82,7 @@ def write_commit_patch(f, commit, contents, progress, version=None, encoding=Non
         b"Date: " + time.strftime("%a, %d %b %Y %H:%M:%S %Z").encode(encoding) + b"\n"
     )
     f.write(
-        ("Subject: [PATCH %d/%d] " % (num, total)).encode(encoding)
-        + commit.message
-        + b"\n"
+        (f"Subject: [PATCH {num}/{total}] ").encode(encoding) + commit.message + b"\n"
     )
     f.write(b"\n")
     f.write(b"---\n")
@@ -86,10 +105,12 @@ def write_commit_patch(f, commit, contents, progress, version=None, encoding=Non
 
         f.write(b"Dulwich %d.%d.%d\n" % dulwich_version)
     else:
+        if encoding is None:
+            encoding = "ascii"
         f.write(version.encode(encoding) + b"\n")
 
 
-def get_summary(commit):
+def get_summary(commit: "Commit") -> str:
     """Determine the summary line for use in a filename.
 
     Args:
@@ -101,7 +122,7 @@ def get_summary(commit):
 
 
 #  Unified Diff
-def _format_range_unified(start, stop):
+def _format_range_unified(start: int, stop: int) -> str:
     """Convert range to the "ed" format."""
     # Per the diff spec at http://www.unix.org/single_unix_specification/
     beginning = start + 1  # lines start numbering with one
@@ -114,24 +135,24 @@ def _format_range_unified(start, stop):
 
 
 def unified_diff(
-    a,
-    b,
-    fromfile="",
-    tofile="",
-    fromfiledate="",
-    tofiledate="",
-    n=3,
-    lineterm="\n",
-    tree_encoding="utf-8",
-    output_encoding="utf-8",
-):
+    a: list[bytes],
+    b: list[bytes],
+    fromfile: bytes = b"",
+    tofile: bytes = b"",
+    fromfiledate: str = "",
+    tofiledate: str = "",
+    n: int = 3,
+    lineterm: str = "\n",
+    tree_encoding: str = "utf-8",
+    output_encoding: str = "utf-8",
+) -> Generator[bytes, None, None]:
     """difflib.unified_diff that can detect "No newline at end of file" as
     original "git diff" does.
 
     Based on the same function in Python2.7 difflib.py
     """
     started = False
-    for group in SequenceMatcher(None, a, b).get_grouped_opcodes(n):
+    for group in SequenceMatcher(a=a, b=b).get_grouped_opcodes(n):
         if not started:
             started = True
             fromdate = f"\t{fromfiledate}" if fromfiledate else ""
@@ -165,7 +186,7 @@ def unified_diff(
                     yield b"+" + line
 
 
-def is_binary(content):
+def is_binary(content: bytes) -> bool:
     """See if the first few bytes contain any null characters.
 
     Args:
@@ -174,21 +195,27 @@ def is_binary(content):
     return b"\0" in content[:FIRST_FEW_BYTES]
 
 
-def shortid(hexsha):
+def shortid(hexsha: Optional[bytes]) -> bytes:
     if hexsha is None:
         return b"0" * 7
     else:
         return hexsha[:7]
 
 
-def patch_filename(p, root):
+def patch_filename(p: Optional[bytes], root: bytes) -> bytes:
     if p is None:
         return b"/dev/null"
     else:
         return root + b"/" + p
 
 
-def write_object_diff(f, store: ObjectContainer, old_file, new_file, diff_binary=False):
+def write_object_diff(
+    f: BinaryIO,
+    store: "BaseObjectStore",
+    old_file: tuple[Optional[bytes], Optional[int], Optional[bytes]],
+    new_file: tuple[Optional[bytes], Optional[int], Optional[bytes]],
+    diff_binary: bool = False,
+) -> None:
     """Write the diff for an object.
 
     Args:
@@ -206,15 +233,22 @@ def write_object_diff(f, store: ObjectContainer, old_file, new_file, diff_binary
     patched_old_path = patch_filename(old_path, b"a")
     patched_new_path = patch_filename(new_path, b"b")
 
-    def content(mode, hexsha):
-        if hexsha is None:
-            return Blob.from_string(b"")
-        elif S_ISGITLINK(mode):
-            return Blob.from_string(b"Subproject commit " + hexsha + b"\n")
-        else:
-            return store[hexsha]
+    def content(mode: Optional[int], hexsha: Optional[bytes]) -> Blob:
+        from typing import cast
 
-    def lines(content):
+        if hexsha is None:
+            return cast(Blob, Blob.from_string(b""))
+        elif mode is not None and S_ISGITLINK(mode):
+            return cast(Blob, Blob.from_string(b"Subproject commit " + hexsha + b"\n"))
+        else:
+            obj = store[hexsha]
+            if isinstance(obj, Blob):
+                return obj
+            else:
+                # Fallback for non-blob objects
+                return cast(Blob, Blob.from_string(obj.as_raw_string()))
+
+    def lines(content: "Blob") -> list[bytes]:
         if not content:
             return []
         else:
@@ -246,7 +280,11 @@ def write_object_diff(f, store: ObjectContainer, old_file, new_file, diff_binary
 
 
 # TODO(user): Support writing unicode, rather than bytes.
-def gen_diff_header(paths, modes, shas):
+def gen_diff_header(
+    paths: tuple[Optional[bytes], Optional[bytes]],
+    modes: tuple[Optional[int], Optional[int]],
+    shas: tuple[Optional[bytes], Optional[bytes]],
+) -> Generator[bytes, None, None]:
     """Write a blob diff header.
 
     Args:
@@ -268,18 +306,22 @@ def gen_diff_header(paths, modes, shas):
     if old_mode != new_mode:
         if new_mode is not None:
             if old_mode is not None:
-                yield ("old file mode %o\n" % old_mode).encode("ascii")
-            yield ("new file mode %o\n" % new_mode).encode("ascii")
+                yield (f"old file mode {old_mode:o}\n").encode("ascii")
+            yield (f"new file mode {new_mode:o}\n").encode("ascii")
         else:
-            yield ("deleted file mode %o\n" % old_mode).encode("ascii")
+            yield (f"deleted file mode {old_mode:o}\n").encode("ascii")
     yield b"index " + shortid(old_sha) + b".." + shortid(new_sha)
     if new_mode is not None and old_mode is not None:
-        yield (" %o" % new_mode).encode("ascii")
+        yield (f" {new_mode:o}").encode("ascii")
     yield b"\n"
 
 
 # TODO(user): Support writing unicode, rather than bytes.
-def write_blob_diff(f, old_file, new_file):
+def write_blob_diff(
+    f: BinaryIO,
+    old_file: tuple[Optional[bytes], Optional[int], Optional["Blob"]],
+    new_file: tuple[Optional[bytes], Optional[int], Optional["Blob"]],
+) -> None:
     """Write blob diff.
 
     Args:
@@ -294,7 +336,7 @@ def write_blob_diff(f, old_file, new_file):
     patched_old_path = patch_filename(old_path, b"a")
     patched_new_path = patch_filename(new_path, b"b")
 
-    def lines(blob):
+    def lines(blob: Optional["Blob"]) -> list[bytes]:
         if blob is not None:
             return blob.splitlines()
         else:
@@ -314,7 +356,13 @@ def write_blob_diff(f, old_file, new_file):
     )
 
 
-def write_tree_diff(f, store, old_tree, new_tree, diff_binary=False):
+def write_tree_diff(
+    f: BinaryIO,
+    store: "BaseObjectStore",
+    old_tree: Optional[bytes],
+    new_tree: Optional[bytes],
+    diff_binary: bool = False,
+) -> None:
     """Write tree diff.
 
     Args:
@@ -335,7 +383,9 @@ def write_tree_diff(f, store, old_tree, new_tree, diff_binary=False):
         )
 
 
-def git_am_patch_split(f: Union[TextIO, BinaryIO], encoding: Optional[str] = None):
+def git_am_patch_split(
+    f: Union[TextIO, BinaryIO], encoding: Optional[str] = None
+) -> tuple["Commit", bytes, Optional[bytes]]:
     """Parse a git-am-style patch and split it up into bits.
 
     Args:
@@ -355,7 +405,9 @@ def git_am_patch_split(f: Union[TextIO, BinaryIO], encoding: Optional[str] = Non
     return parse_patch_message(msg, encoding)
 
 
-def parse_patch_message(msg, encoding=None):
+def parse_patch_message(
+    msg: "email.message.Message", encoding: Optional[str] = None
+) -> tuple["Commit", bytes, Optional[bytes]]:
     """Extract a Commit object and patch from an e-mail message.
 
     Args:
@@ -364,6 +416,8 @@ def parse_patch_message(msg, encoding=None):
     Returns: Tuple with commit object, diff contents and git version
     """
     c = Commit()
+    if encoding is None:
+        encoding = "ascii"
     c.author = msg["from"].encode(encoding)
     c.committer = msg["from"].encode(encoding)
     try:
@@ -377,7 +431,13 @@ def parse_patch_message(msg, encoding=None):
     first = True
 
     body = msg.get_payload(decode=True)
-    lines = body.splitlines(True)
+    if isinstance(body, str):
+        body = body.encode(encoding)
+    if isinstance(body, bytes):
+        lines = body.splitlines(True)
+    else:
+        # Handle other types by converting to string first
+        lines = str(body).encode(encoding).splitlines(True)
     line_iter = iter(lines)
 
     for line in line_iter:

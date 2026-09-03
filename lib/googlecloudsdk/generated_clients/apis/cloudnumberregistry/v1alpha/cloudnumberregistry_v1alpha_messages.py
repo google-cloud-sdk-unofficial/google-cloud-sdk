@@ -83,6 +83,95 @@ class CleanupIpamAdminScopeRequest(_messages.Message):
   requestId = _messages.StringField(1)
 
 
+class CloudnumberregistryOrganizationsLocationsOrgNumberRegistriesCreateRequest(_messages.Message):
+  r"""A
+  CloudnumberregistryOrganizationsLocationsOrgNumberRegistriesCreateRequest
+  object.
+
+  Fields:
+    orgNumberRegistry: A OrgNumberRegistry resource to be passed as the
+      request body.
+    orgNumberRegistryId: Required. The ID to use for the OrgNumberRegistry,
+      which will become the final segment of the resource name.
+    parent: Required. The parent resource name where the OrgNumberRegistry
+      will be created.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  orgNumberRegistry = _messages.MessageField('OrgNumberRegistry', 1)
+  orgNumberRegistryId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class CloudnumberregistryOrganizationsLocationsOrgNumberRegistriesDeleteRequest(_messages.Message):
+  r"""A
+  CloudnumberregistryOrganizationsLocationsOrgNumberRegistriesDeleteRequest
+  object.
+
+  Fields:
+    name: Required. The resource name of the OrgNumberRegistry to delete.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class CloudnumberregistryOrganizationsLocationsOrgNumberRegistriesGetRequest(_messages.Message):
+  r"""A CloudnumberregistryOrganizationsLocationsOrgNumberRegistriesGetRequest
+  object.
+
+  Fields:
+    name: Required. The resource name of the OrgNumberRegistry to retrieve.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class CloudnumberregistryOrganizationsLocationsOrgNumberRegistriesListRequest(_messages.Message):
+  r"""A
+  CloudnumberregistryOrganizationsLocationsOrgNumberRegistriesListRequest
+  object.
+
+  Fields:
+    filter: Optional. Filter expression to filter the results.
+    orderBy: Optional. Hint for how to order the results.
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. The parent resource name, for example
+      `organizations/*/locations/*`.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
 class CloudnumberregistryProjectsLocationsCustomRangesCreateRequest(_messages.Message):
   r"""A CloudnumberregistryProjectsLocationsCustomRangesCreateRequest object.
 
@@ -1319,6 +1408,22 @@ class ListOperationsResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class ListOrgNumberRegistriesResponse(_messages.Message):
+  r"""Response message for the CloudNumberRegistry.ListOrgNumberRegistries
+  method.
+
+  Fields:
+    nextPageToken: A token to retrieve the next page of results, or empty if
+      there are no more results in the list.
+    orgNumberRegistries: The list of OrgNumberRegistries.
+    unreachable: Locations that could not be reached.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  orgNumberRegistries = _messages.MessageField('OrgNumberRegistry', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListRealmsResponse(_messages.Message):
   r"""Response message for the CloudNumberRegistry.ListRealms method.
 
@@ -1562,6 +1667,60 @@ class OperationMetadata(_messages.Message):
   statusMessage = _messages.StringField(5)
   target = _messages.StringField(6)
   verb = _messages.StringField(7)
+
+
+class OrgNumberRegistry(_messages.Message):
+  r"""An OrgNumberRegistry defines a delegation of authority from an
+  organization to a project, allowing the project to manage IP address data
+  within specified scopes of the organization.
+
+  Messages:
+    LabelsValue: Optional. User-defined labels.
+
+  Fields:
+    adminProject: Required. The project that will act as the admin project for
+      CNR resources Format: projects/{project_number} or projects/{project_id}
+    createTime: Output only. The time at which the OrgNumberRegistry was
+      created.
+    labels: Optional. User-defined labels.
+    name: Identifier. The resource name of the OrgNumberRegistry.
+    targetScopes: Required. The scopes within the organization that the
+      project is able to manage. Currently only organization scope is
+      supported. For example, "organizations/1234567890".
+    updateTime: Output only. The time at which the OrgNumberRegistry was last
+      updated.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. User-defined labels.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  adminProject = _messages.StringField(1)
+  createTime = _messages.StringField(2)
+  labels = _messages.MessageField('LabelsValue', 3)
+  name = _messages.StringField(4)
+  targetScopes = _messages.StringField(5, repeated=True)
+  updateTime = _messages.StringField(6)
 
 
 class Range(_messages.Message):

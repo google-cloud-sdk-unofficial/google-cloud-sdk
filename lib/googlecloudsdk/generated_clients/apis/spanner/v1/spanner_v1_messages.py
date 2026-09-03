@@ -2913,10 +2913,11 @@ class InstanceConfig(_messages.Message):
       "_" in a future release.
 
   Fields:
-    allowedStorageTypes: Output only. The allowed storage types for this
-      configuration. The first storage type is considered the default storage
-      type for any instance that has its default_storage_type field unset or
-      set to STORAGE_TYPE_UNSPECIFIED.
+    allowedStorageTypes: Output only. Deprecated: Use the equivalent Cascading
+      Options field (kAllowedStorageTypes) instead. The allowed storage types
+      for this configuration. The first storage type is considered the default
+      storage type for any instance that has its default_storage_type field
+      unset or set to STORAGE_TYPE_UNSPECIFIED.
     baseConfig: Base configuration name, e.g. projects//instanceConfigs/nam3,
       based on which this configuration is created. Only set for user-managed
       configurations. `base_config` must refer to a configuration of type

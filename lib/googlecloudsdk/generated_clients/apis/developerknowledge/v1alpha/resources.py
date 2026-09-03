@@ -24,6 +24,16 @@ DOCS_URL = 'https://developers.google.com/knowledge'
 class Collections(enum.Enum):
   """Collections for all supported apis."""
 
+  APIREFERENCES = (
+      'apiReferences',
+      '{+name}',
+      {
+          '':
+              'apiReferences/{apiReferencesId}',
+      },
+      ['name'],
+      True
+  )
   DOCUMENTS = (
       'documents',
       '{+name}',

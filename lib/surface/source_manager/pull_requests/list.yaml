@@ -1,0 +1,32 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: List Secure Source Manager pull requests under a repository.
+    description: List Secure Source Manager pull requests under a repository.
+    examples: |
+      To list pull requests in repository `my-repo` and location `us-central1`, run the following command:
+
+      $ {command} --repository=my-repo --region=us-central1
+
+  request:
+    api_version: v1
+    collection: securesourcemanager.projects.locations.repositories.pullRequests
+    regional_endpoint_compatibility: SUPPORTED
+
+  arguments:
+    resource:
+      help_text: The repository you want to list the pull requests for.
+      spec: !REF googlecloudsdk.command_lib.source_manager.resources:repository
+
+  response:
+    id_field: name
+
+  output:
+    format: |
+      table(
+        name.basename():label=PULL_REQUEST_ID:sort=1,
+        name.segment(3):label=LOCATION,
+        title:label=TITLE,
+        state:label=STATE,
+        createTime.date()
+      )

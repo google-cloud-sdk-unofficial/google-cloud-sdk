@@ -549,9 +549,9 @@ class ApigatewayGateway(_messages.Message):
     response streaming.
 
     Values:
-      EFFECTIVE_STREAMING_MODE_UNSPECIFIED: The mode is unknown, for example
-        on a gateway created before the service began reporting it, or to a
-        caller that cannot see this field.
+      EFFECTIVE_STREAMING_MODE_UNSPECIFIED: Defaults to unknown mode which
+        happens when the caller cannot see this field. Otherwise this value
+        should not be returned under normal circumstances.
       EFFECTIVE_STREAMING_MODE_DISABLED: The gateway does not support response
         streaming.
       EFFECTIVE_STREAMING_MODE_ENABLED: The gateway supports response

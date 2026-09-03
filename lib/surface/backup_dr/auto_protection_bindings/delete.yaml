@@ -1,0 +1,28 @@
+- release_tracks: [ALPHA, BETA]
+  hidden: true
+
+  help_text:
+    brief: Delete a Backup and DR auto-protection binding.
+    description: Delete a Backup and DR auto-protection binding.
+    examples: |
+      To delete a Backup and DR auto-protection binding, run:
+
+        $ {command} my-binding-id --auto-protection-policy=my-auto-protection-policy --location=us-central1
+
+  request:
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
+    collection: backupdr.projects.locations.autoProtectionPolicies.bindings
+    method: initiateDelete
+    display_resource_type: auto protection policy binding
+
+  arguments:
+    resource:
+      help_text: The auto-protection binding to delete.
+      spec: !REF googlecloudsdk.command_lib.backupdr.resources:autoProtectionPolicyBinding
+      is_positional: true
+
+  async:
+    collection: backupdr.projects.locations.operations

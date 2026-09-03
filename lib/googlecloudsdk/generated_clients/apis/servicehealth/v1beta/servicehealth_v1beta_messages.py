@@ -690,13 +690,18 @@ class Product(_messages.Message):
   r"""Represents the Google Cloud product impacted by the event.
 
   Fields:
+    displayName: Output only. Human readable product name to be displayed to
+      customers.
     id: Unique identifier for the product.
+    previousDisplayNames: Output only. Previously used display product names.
     productName: Google Cloud product impacted by the event. Example: `"Google
       Cloud SQL"`
   """
 
-  id = _messages.StringField(1)
-  productName = _messages.StringField(2)
+  displayName = _messages.StringField(1)
+  id = _messages.StringField(2)
+  previousDisplayNames = _messages.StringField(3, repeated=True)
+  productName = _messages.StringField(4)
 
 
 class ServicehealthOrganizationsLocationsGetStatusRequest(_messages.Message):

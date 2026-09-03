@@ -2121,7 +2121,12 @@ class SessionConfigSessionOutputFileDirectoryConfig(_messages.Message):
   r"""Config to control session output file directory.
 
   Fields:
-    gcsOutputDirectory: The Google Cloud Storage path of the output directory.
+    gcsOutputDirectory: The Google Cloud Storage path of the output directory
+      (e.g. `gs://my-bucket/output`). The bucket must exist. If the bucket is
+      located in another project or uses fine-grained access controls, ensure
+      the Device Run Service Agent of the project (`service-@gcp-sa-
+      devicerun.iam.gserviceaccount.com`) is granted access to the bucket
+      (such as `roles/storage.objectAdmin`).
   """
 
   gcsOutputDirectory = _messages.MessageField('GcsPath', 1)

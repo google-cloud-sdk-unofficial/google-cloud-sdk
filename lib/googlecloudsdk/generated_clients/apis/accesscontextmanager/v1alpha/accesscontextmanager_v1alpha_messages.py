@@ -1180,8 +1180,8 @@ class ClientScope(_messages.Message):
   Fields:
     restrictedClientApplication: Optional. The application that is subject to
       this binding's scope.
-    restrictedProject: Optional. The GCP project that is subject to this
-      binding's scope.
+    restrictedProject: Optional. The Google Cloud project that is subject to
+      this binding's scope.
   """
 
   restrictedClientApplication = _messages.MessageField('Application', 1)
@@ -2114,13 +2114,19 @@ class Principal(_messages.Message):
   ID: 5
 
   Fields:
-    federatedPrincipal: Immutable. An IAM principal identifier for the
+    federatedPrincipal: Immutable. The IAM principal identifier of the
       federated workforce or workload to assign the policy to. Examples
       include the following: * Single principal: `principal://iam.googleapis.c
       om/projects/{project_number}/locations/global/workloadIdentityPools/{poo
       l_id}/subject/{subject_attribute_value}` * All workloads in a workload
       identity pool: `principalSet://iam.googleapis.com/projects/{project_numb
-      er}/locations/global/workloadIdentityPools/{pool_id}/*`
+      er}/locations/global/workloadIdentityPools/{pool_id}/*` * All Workforce
+      Pools in a Google Cloud organization: `principalSet://cloudresourcemanag
+      er.googleapis.com/organizations/{organization_id}/type/WorkforcePool`
+      Bindings created for all Workforce Pools in a Google Cloud organization
+      support only `scoped_access_settings` with the `restricted_project`
+      client scope and active `session_settings`. No other configurations are
+      allowed.
     serviceAccount: Immutable. Service account email used to assign policies
       to a single service account.
     serviceAccountProjectNumber: Immutable. Project number used to assign
@@ -2133,13 +2139,13 @@ class Principal(_messages.Message):
 
 
 class Project(_messages.Message):
-  r"""A GCP project which contains applications and resources that users can
-  access.
+  r"""A Google Cloud project which contains applications and resources that
+  users can access.
 
   Fields:
-    name: The GCP project resource name. Format: "projects/{project_number}"
-      (Only the numeric project name variation is supported). Example:
-      "projects/1234567890"
+    name: The Google Cloud project resource name. Format:
+      `projects/{project_number}`. Only the project number is supported.
+      Example: `projects/1234567890`
     projectNumber: Deprecated: Use `name` instead.
   """
 
@@ -2417,11 +2423,11 @@ class SessionSettings(_messages.Message):
       Cloud apps.
     sessionLength: Optional. The session length. Setting this field to zero
       allows for sessions that are active indefinitely. Also, setting
-      `session_length_enabled` to false disregards session limits, which means
-      that sessions never expire. If use_oidc_max_age is true, for OIDC apps,
-      the session length will be the minimum of this field and the OIDC
-      max_age param. If this field is set to zero, `session_length_enabled`
-      must be set to false or left unset.
+      `session_length_enabled` to `false` disregards session limits, which
+      means that sessions never expire. If `use_oidc_max_age` is `true`, for
+      OIDC apps, the session length will be the minimum of this field and the
+      OIDC `max_age` param. If this field is set to zero,
+      `session_length_enabled` must be set to `false` or left unset.
     sessionLengthEnabled: Optional. This field enables or disables Google
       Cloud session length. When false, all fields set above will be
       disregarded and the session length is basically infinite. If

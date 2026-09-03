@@ -1284,6 +1284,10 @@ class BackupPlanAssociation(_messages.Message):
   Fields:
     alloydbClusterBackupPlanAssociationProperties: Output only. AlloyDB
       cluster's backup plan association properties.
+    autoProtectionPolicyBinding: Output only. The resource name of the
+      `AutoProtectionPolicyBinding` that manages this association, if any.
+      Format: `projects/{project}/locations/{location}/autoProtectionPolicies/
+      {policy}/bindings/{binding}`.
     backupPlan: Required. Resource name of backup plan which needs to be
       applied on workload. Format:
       projects/{project}/locations/{location}/backupPlans/{backupPlanId}
@@ -1335,19 +1339,20 @@ class BackupPlanAssociation(_messages.Message):
     UPDATING = 5
 
   alloydbClusterBackupPlanAssociationProperties = _messages.MessageField('AlloyDBClusterBackupPlanAssociationProperties', 1)
-  backupPlan = _messages.StringField(2)
-  backupPlanRevisionId = _messages.StringField(3)
-  backupPlanRevisionName = _messages.StringField(4)
-  cloudSqlInstanceBackupPlanAssociationProperties = _messages.MessageField('CloudSqlInstanceBackupPlanAssociationProperties', 5)
-  createTime = _messages.StringField(6)
-  dataSource = _messages.StringField(7)
-  filestoreInstanceBackupPlanAssociationProperties = _messages.MessageField('FilestoreInstanceBackupPlanAssociationProperties', 8)
-  name = _messages.StringField(9)
-  resource = _messages.StringField(10)
-  resourceType = _messages.StringField(11)
-  rulesConfigInfo = _messages.MessageField('RuleConfigInfo', 12, repeated=True)
-  state = _messages.EnumField('StateValueValuesEnum', 13)
-  updateTime = _messages.StringField(14)
+  autoProtectionPolicyBinding = _messages.StringField(2)
+  backupPlan = _messages.StringField(3)
+  backupPlanRevisionId = _messages.StringField(4)
+  backupPlanRevisionName = _messages.StringField(5)
+  cloudSqlInstanceBackupPlanAssociationProperties = _messages.MessageField('CloudSqlInstanceBackupPlanAssociationProperties', 6)
+  createTime = _messages.StringField(7)
+  dataSource = _messages.StringField(8)
+  filestoreInstanceBackupPlanAssociationProperties = _messages.MessageField('FilestoreInstanceBackupPlanAssociationProperties', 9)
+  name = _messages.StringField(10)
+  resource = _messages.StringField(11)
+  resourceType = _messages.StringField(12)
+  rulesConfigInfo = _messages.MessageField('RuleConfigInfo', 13, repeated=True)
+  state = _messages.EnumField('StateValueValuesEnum', 14)
+  updateTime = _messages.StringField(15)
 
 
 class BackupPlanDetail(_messages.Message):
@@ -1995,6 +2000,11 @@ class BackupdrProjectsLocationsBackupPlanAssociationsDeleteRequest(_messages.Mes
   r"""A BackupdrProjectsLocationsBackupPlanAssociationsDeleteRequest object.
 
   Fields:
+    autoProtectionPolicyBinding: Optional. This field is exclusively used by
+      Backup and DR's auto-protection feature. The resource name of the
+      `AutoProtectionPolicyBinding` that triggered the deletion of this
+      association. Format: `projects/{project}/locations/{location}/autoProtec
+      tionPolicies/{policy}/bindings/{binding}`.
     name: Required. Name of the backup plan association resource, in the
       format `projects/{project}/locations/{location}/backupPlanAssociations/{
       backupPlanAssociationId}`
@@ -2011,8 +2021,9 @@ class BackupdrProjectsLocationsBackupPlanAssociationsDeleteRequest(_messages.Mes
       not supported (00000000-0000-0000-0000-000000000000).
   """
 
-  name = _messages.StringField(1, required=True)
-  requestId = _messages.StringField(2)
+  autoProtectionPolicyBinding = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
 
 
 class BackupdrProjectsLocationsBackupPlanAssociationsFetchForResourceTypeRequest(_messages.Message):
@@ -4976,6 +4987,10 @@ class GcpBackupConfig(_messages.Message):
   with backup plan associations.
 
   Fields:
+    autoProtectionPolicyBinding: Output only. The resource name of the
+      `AutoProtectionPolicyBinding` that manages this datasource, if any.
+      Format: `projects/{project}/locations/{location}/autoProtectionPolicies/
+      {policy}/bindings/{binding}`.
     backupPlan: The name of the backup plan.
     backupPlanAssociation: The name of the backup plan association.
     backupPlanDescription: The description of the backup plan.
@@ -4986,12 +5001,13 @@ class GcpBackupConfig(_messages.Message):
       backupvault
   """
 
-  backupPlan = _messages.StringField(1)
-  backupPlanAssociation = _messages.StringField(2)
-  backupPlanDescription = _messages.StringField(3)
-  backupPlanRevisionId = _messages.StringField(4)
-  backupPlanRevisionName = _messages.StringField(5)
-  backupPlanRules = _messages.StringField(6, repeated=True)
+  autoProtectionPolicyBinding = _messages.StringField(1)
+  backupPlan = _messages.StringField(2)
+  backupPlanAssociation = _messages.StringField(3)
+  backupPlanDescription = _messages.StringField(4)
+  backupPlanRevisionId = _messages.StringField(5)
+  backupPlanRevisionName = _messages.StringField(6)
+  backupPlanRules = _messages.StringField(7, repeated=True)
 
 
 class GoogleCloudBackupdrV1betaOperationMetadata(_messages.Message):

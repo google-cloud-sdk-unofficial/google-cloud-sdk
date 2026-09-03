@@ -1069,10 +1069,6 @@ class CancelSessionResponse(_messages.Message):
   state = _messages.EnumField('StateValueValuesEnum', 1)
 
 
-class CapturedWorkload(_messages.Message):
-  r"""Captured workload for an instance."""
-
-
 class CloneContext(_messages.Message):
   r"""Database instance clone context.
 
@@ -2032,7 +2028,7 @@ class DatabaseInstance(_messages.Message):
       READ_POOL_INSTANCE: A Cloud SQL read pool.
       CLOUD_SQL_HA_CLUSTER: A Cloud SQL HA cluster.
       GREEN_INSTANCE: A Cloud SQL instance acting as a Blue-Green deployment
-        target primary.
+        target primary. (MySQL only)
     """
     SQL_INSTANCE_TYPE_UNSPECIFIED = 0
     CLOUD_SQL_INSTANCE = 1
@@ -2385,12 +2381,16 @@ class DeploymentTask(_messages.Message):
       UPGRADE: e.g., Major Version Upgrade on Target.
       SWITCHOVER: Promoting Target, Demoting Source for this pair.
       DELETE: The task is to delete deployment.
+      POST_SWITCHOVER_OPERATIONS: Post-switchover operations, including
+        cleaning up resources of the old instance, taking final backups, and
+        updating metadata.
     """
     TYPE_UNSPECIFIED = 0
     PROVISION = 1
     UPGRADE = 2
     SWITCHOVER = 3
     DELETE = 4
+    POST_SWITCHOVER_OPERATIONS = 5
 
   endTime = _messages.StringField(1)
   errorMessage = _messages.StringField(2)
@@ -2415,7 +2415,9 @@ class DiskEncryptionConfiguration(_messages.Message):
 
   Fields:
     cmekSourceLogEncryptionEnforced: Optional. Whether to enforce CMEK log
-      encryption at source.
+      encryption at source. When enforced, transaction logs are encrypted
+      prior to being uploaded to Cloud Storage. If not enforced, then CMEK
+      logs are encrypted by the Cloud Storage service.
     confidentialMode: Optional. If true, enables Confidential Mode for the
       instance's Hyperdisk Balanced volumes. Only supported for zonal C4A
       instances currently.
@@ -2516,6 +2518,7 @@ class Empty(_messages.Message):
   """
 
 
+
 class ExecuteSqlPayload(_messages.Message):
   r"""The request payload used to execute SQL statements.
 
@@ -2605,6 +2608,39 @@ class ExecuteSqlPayload(_messages.Message):
   rowLimit = _messages.IntegerField(10)
   sqlStatement = _messages.StringField(11)
   user = _messages.StringField(12)
+
+
+class ExecuteSqlReadOnlyPayload(_messages.Message):
+  r"""The request payload used to execute SQL statements in read-only mode.
+
+  Fields:
+    autoIamAuthn: Optional. When set to true, the API caller identity
+      associated with the request is used for database authentication. The API
+      caller must be an IAM user in the database.
+    database: Optional. Name of the database on which the statement will be
+      executed.
+    passwordSecretVersion: Optional. The resource name of the Secret Manager
+      secret holding the password for the user to log into the database. The
+      secret should be created using the regional endpoint (for API) or from
+      the Regional Secrets page (for UI), and stored in the same region as the
+      Cloud SQL instance. The expected resource name format is `projects/{proj
+      ect}/locations/{location}/secrets/{secret}/versions/{secret_version}`.
+      This field is used together with the `user` field. The secret resource
+      name will not be stored.
+    rowLimit: Optional. The maximum number of rows returned per SQL statement.
+    sqlStatement: Required. SQL statements to run on the database. It can be a
+      single statement or a sequence of statements separated by semicolons.
+    user: Optional. The name of an existing database user to connect to the
+      database. When `auto_iam_authn` is set to true, this field is ignored
+      and the API caller's IAM user is used.
+  """
+
+  autoIamAuthn = _messages.BooleanField(1)
+  database = _messages.StringField(2)
+  passwordSecretVersion = _messages.StringField(3)
+  rowLimit = _messages.IntegerField(4)
+  sqlStatement = _messages.StringField(5)
+  user = _messages.StringField(6)
 
 
 class ExportContext(_messages.Message):
@@ -3606,18 +3642,6 @@ class InstancesImportRequest(_messages.Message):
   importContext = _messages.MessageField('ImportContext', 1)
 
 
-class InstancesListCapturedWorkloadsResponse(_messages.Message):
-  r"""Instance list captured workloads request.
-
-  Fields:
-    capturedWorkloads: List of captured workloads for the instance.
-    kind: This is always `sql#instancesListCapturedWorkloads`.
-  """
-
-  capturedWorkloads = _messages.MessageField('CapturedWorkload', 1, repeated=True)
-  kind = _messages.StringField(2)
-
-
 class InstancesListEntraIdCertificatesResponse(_messages.Message):
   r"""Instances ListEntraIdCertificates response.
 
@@ -3717,6 +3741,9 @@ class InstancesRestoreBackupRequest(_messages.Message):
       ts/{backupvault}/dataSources/{datasource}/backups/{backup-uid}". Only
       one of restore_backup_context, backup, backupdr_backup can be passed to
       the input.
+    ignoreMaintenanceVersion: Optional. If true, the restore operation
+      proceeds even if the target instance's maintenance version is older than
+      the source instance's maintenance version.
     restoreBackupContext: Parameters required to perform the restore backup
       operation.
     restoreInstanceClearOverridesFieldNames: Optional. This field has the same
@@ -3733,9 +3760,10 @@ class InstancesRestoreBackupRequest(_messages.Message):
 
   backup = _messages.StringField(1)
   backupdrBackup = _messages.StringField(2)
-  restoreBackupContext = _messages.MessageField('RestoreBackupContext', 3)
-  restoreInstanceClearOverridesFieldNames = _messages.StringField(4, repeated=True)
-  restoreInstanceSettings = _messages.MessageField('DatabaseInstance', 5)
+  ignoreMaintenanceVersion = _messages.BooleanField(3)
+  restoreBackupContext = _messages.MessageField('RestoreBackupContext', 4)
+  restoreInstanceClearOverridesFieldNames = _messages.StringField(5, repeated=True)
+  restoreInstanceSettings = _messages.MessageField('DatabaseInstance', 6)
 
 
 class InstancesRotateEntraIdCertificateRequest(_messages.Message):
@@ -4073,10 +4101,12 @@ class ListSessionsResponse(_messages.Message):
     nextPageToken: A token to retrieve the next page of results, or empty if
       there are no more results.
     sessions: The list of session resources.
+    warnings: List of warnings that occurred during request processing.
   """
 
   nextPageToken = _messages.StringField(1)
   sessions = _messages.MessageField('Session', 2, repeated=True)
+  warnings = _messages.MessageField('ApiWarning', 3, repeated=True)
 
 
 class LocationPreference(_messages.Message):
@@ -4369,14 +4399,22 @@ class Operation(_messages.Message):
     startTime: The time this operation actually started in UTC timezone in
       [RFC 3339](https://tools.ietf.org/html/rfc3339) format, for example
       `2012-11-15T16:19:00.094Z`.
-    startWorkloadCaptureContext: The context for start workload capture
-      operation.
-    startWorkloadReplayContext: The context for start workload replay
-      operation.
+    startWorkloadCaptureContext: The context for the `StartWorkloadCapture`
+      operation, which contains details to start recording the workload (SQL
+      queries) on a Cloud SQL instance.
+    startWorkloadReplayContext: The context for the `StartWorkloadReplay`
+      operation, which contains details about starting the execution of a
+      captured workload (recorded read and write SQL queries) on a replay
+      instance (the Cloud SQL instance where the recorded SQL queries are
+      executed).
     status: The status of an operation.
-    stopWorkloadCaptureContext: The context for stop workload capture
-      operation.
-    stopWorkloadReplayContext: The context for stop workload replay operation.
+    stopWorkloadCaptureContext: The context for the `StopWorkloadCapture`
+      operation, which contains details to stop recording the workload (SQL
+      queries) on a Cloud SQL instance.
+    stopWorkloadReplayContext: The context for the `StopWorkloadReplay`
+      operation, which contains details about stopping the execution of a
+      captured workload (recorded read and write SQL queries) on a replay
+      instance.
     subOperationType: Optional. The sub operation based on the operation type.
     targetId: Name of the resource on which this operation runs.
     targetLink: A string attribute.
@@ -5271,7 +5309,7 @@ class PscConfig(_messages.Message):
       by a project id (alphanumeric).
     networkAttachmentUri: Optional. The network attachment of the consumer
       network that the Private Service Connect enabled Cloud SQL instance is
-      authorized to connect via PSC interface. format:
+      authorized to connect using the PSC interface. format:
       projects/PROJECT/regions/REGION/networkAttachments/ID
     pscAutoConnectionPolicyEnabled: Optional. Whether to set up the PSC
       service connection policy automatically.
@@ -5589,7 +5627,8 @@ class SemiManagedInsightsConfig(_messages.Message):
 
   Fields:
     enabled: Optional. Enables insights support for the semi-managed instance.
-    gcsUri: Optional. The Cloud Storage path to store the insights data.
+    gcsUri: Optional. The Cloud Storage URI to store the insights data. The
+      Cloud Storage bucket must be in the same region as the instance.
     kind: Output only. This is always `sql#semiManagedInsightsConfig`.
   """
 
@@ -5603,11 +5642,15 @@ class SemiManagedPatchConfig(_messages.Message):
 
   Fields:
     enabled: Optional. Enables patch support for the semi-managed instance.
+    gcsUri: Optional. The Cloud Storage URI to store the SQL Server patch
+      files. The Cloud Storage bucket must be in the same region as the
+      instance.
     kind: Output only. This is always `sql#semiManagedPatchConfig`.
   """
 
   enabled = _messages.BooleanField(1)
-  kind = _messages.StringField(2)
+  gcsUri = _messages.StringField(2)
+  kind = _messages.StringField(3)
 
 
 class SendMessageConfig(_messages.Message):
@@ -6557,12 +6600,14 @@ class SqlDatabasesDeleteRequest(_messages.Message):
   Fields:
     database: Name of the database to be deleted in the instance.
     instance: Database instance ID. This does not include the project ID.
+    location: Optional. Region of the Cloud SQL instance.
     project: Project ID of the project that contains the instance.
   """
 
   database = _messages.StringField(1, required=True)
   instance = _messages.StringField(2, required=True)
-  project = _messages.StringField(3, required=True)
+  location = _messages.StringField(3)
+  project = _messages.StringField(4, required=True)
 
 
 class SqlDatabasesGetRequest(_messages.Message):
@@ -6571,12 +6616,30 @@ class SqlDatabasesGetRequest(_messages.Message):
   Fields:
     database: Name of the database in the instance.
     instance: Database instance ID. This does not include the project ID.
+    location: Optional. Region of the Cloud SQL instance.
     project: Project ID of the project that contains the instance.
   """
 
   database = _messages.StringField(1, required=True)
   instance = _messages.StringField(2, required=True)
-  project = _messages.StringField(3, required=True)
+  location = _messages.StringField(3)
+  project = _messages.StringField(4, required=True)
+
+
+class SqlDatabasesInsertRequest(_messages.Message):
+  r"""A SqlDatabasesInsertRequest object.
+
+  Fields:
+    database: A Database resource to be passed as the request body.
+    instance: Database instance ID. This does not include the project ID.
+    location: Optional. Region of the Cloud SQL instance.
+    project: Project ID of the project that contains the instance.
+  """
+
+  database = _messages.MessageField('Database', 1)
+  instance = _messages.StringField(2, required=True)
+  location = _messages.StringField(3)
+  project = _messages.StringField(4, required=True)
 
 
 class SqlDatabasesListRequest(_messages.Message):
@@ -6584,11 +6647,13 @@ class SqlDatabasesListRequest(_messages.Message):
 
   Fields:
     instance: Cloud SQL instance ID. This does not include the project ID.
+    location: Optional. Region of the Cloud SQL instance.
     project: Project ID of the project that contains the instance.
   """
 
   instance = _messages.StringField(1, required=True)
-  project = _messages.StringField(2, required=True)
+  location = _messages.StringField(2)
+  project = _messages.StringField(3, required=True)
 
 
 class SqlDatabasesPatchRequest(_messages.Message):
@@ -6598,13 +6663,15 @@ class SqlDatabasesPatchRequest(_messages.Message):
     database: Name of the database to be updated in the instance.
     databaseResource: A Database resource to be passed as the request body.
     instance: Database instance ID. This does not include the project ID.
+    location: Optional. Region of the Cloud SQL instance.
     project: Project ID of the project that contains the instance.
   """
 
   database = _messages.StringField(1, required=True)
   databaseResource = _messages.MessageField('Database', 2)
   instance = _messages.StringField(3, required=True)
-  project = _messages.StringField(4, required=True)
+  location = _messages.StringField(4)
+  project = _messages.StringField(5, required=True)
 
 
 class SqlDatabasesUpdateRequest(_messages.Message):
@@ -6614,13 +6681,15 @@ class SqlDatabasesUpdateRequest(_messages.Message):
     database: Name of the database to be updated in the instance.
     databaseResource: A Database resource to be passed as the request body.
     instance: Database instance ID. This does not include the project ID.
+    location: Optional. Region of the Cloud SQL instance.
     project: Project ID of the project that contains the instance.
   """
 
   database = _messages.StringField(1, required=True)
   databaseResource = _messages.MessageField('Database', 2)
   instance = _messages.StringField(3, required=True)
-  project = _messages.StringField(4, required=True)
+  location = _messages.StringField(4)
+  project = _messages.StringField(5, required=True)
 
 
 class SqlExternalSyncSettingError(_messages.Message):
@@ -6770,6 +6839,12 @@ class SqlExternalSyncSettingError(_messages.Message):
       PG_DDL_REPLICATION_INSUFFICIENT_PRIVILEGE: The replication user is
         missing specific privileges to setup DDL replication. (e.g. CREATE
         EVENT TRIGGER, CREATE SCHEMA) for PostgreSQL.
+      WRITABLE_DESTINATION_REPLICA_RECREATION_DOWNTIME: Read replicas of the
+        Writable Destination instance will be recreated after external
+        synchronization is complete, causing downtime on read replicas.
+      WRITABLE_DESTINATION_STORAGE_AUTO_INCREASE_DISABLED: A warning that disk
+        storage auto increase is disabled on the destination instance for a
+        Writable Destination migration.
     """
     SQL_EXTERNAL_SYNC_SETTING_ERROR_TYPE_UNSPECIFIED = 0
     CONNECTION_FAILURE = 1
@@ -6830,6 +6905,8 @@ class SqlExternalSyncSettingError(_messages.Message):
     PROMPT_DELETE_EXISTING = 56
     WILL_DELETE_EXISTING = 57
     PG_DDL_REPLICATION_INSUFFICIENT_PRIVILEGE = 58
+    WRITABLE_DESTINATION_REPLICA_RECREATION_DOWNTIME = 59
+    WRITABLE_DESTINATION_STORAGE_AUTO_INCREASE_DISABLED = 60
 
   detail = _messages.StringField(1)
   kind = _messages.StringField(2)
@@ -6879,13 +6956,15 @@ class SqlInstancesAcquireSsrsLeaseRequest(_messages.Message):
       or less (Example: instance-id).
     instancesAcquireSsrsLeaseRequest: A InstancesAcquireSsrsLeaseRequest
       resource to be passed as the request body.
+    location: Optional. Region of the Cloud SQL instance.
     project: Required. ID of the project that contains the instance (Example:
       project-id).
   """
 
   instance = _messages.StringField(1, required=True)
   instancesAcquireSsrsLeaseRequest = _messages.MessageField('InstancesAcquireSsrsLeaseRequest', 2)
-  project = _messages.StringField(3, required=True)
+  location = _messages.StringField(3)
+  project = _messages.StringField(4, required=True)
 
 
 class SqlInstancesAcquireSsrsLeaseResponse(_messages.Message):
@@ -6904,22 +6983,26 @@ class SqlInstancesAddEntraIdCertificateRequest(_messages.Message):
   Fields:
     instance: Required. Cloud SQL instance ID. This does not include the
       project ID.
+    location: Optional. Region of the Cloud SQL instance.
     project: Required. Project ID of the project that contains the instance.
   """
 
   instance = _messages.StringField(1, required=True)
-  project = _messages.StringField(2, required=True)
+  location = _messages.StringField(2)
+  project = _messages.StringField(3, required=True)
 
 
 class SqlInstancesAddReplicationSourceRequest(_messages.Message):
   r"""Instance add replication source request.
 
   Fields:
+    location: Optional. Region of the Cloud SQL instance.
     replicationSource: Required. The name of the source metadata instance to
       add for replication.
   """
 
-  replicationSource = _messages.StringField(1)
+  location = _messages.StringField(1)
+  replicationSource = _messages.StringField(2)
 
 
 class SqlInstancesAddServerCaRequest(_messages.Message):
@@ -6927,11 +7010,13 @@ class SqlInstancesAddServerCaRequest(_messages.Message):
 
   Fields:
     instance: Cloud SQL instance ID. This does not include the project ID.
+    location: Optional. Region of the Cloud SQL instance.
     project: Project ID of the project that contains the instance.
   """
 
   instance = _messages.StringField(1, required=True)
-  project = _messages.StringField(2, required=True)
+  location = _messages.StringField(2)
+  project = _messages.StringField(3, required=True)
 
 
 class SqlInstancesAddServerCertificateRequest(_messages.Message):
@@ -6940,11 +7025,13 @@ class SqlInstancesAddServerCertificateRequest(_messages.Message):
   Fields:
     instance: Required. Cloud SQL instance ID. This does not include the
       project ID.
+    location: Optional. Region of the Cloud SQL instance.
     project: Required. Project ID of the project that contains the instance.
   """
 
   instance = _messages.StringField(1, required=True)
-  project = _messages.StringField(2, required=True)
+  location = _messages.StringField(2)
+  project = _messages.StringField(3, required=True)
 
 
 class SqlInstancesCloneRequest(_messages.Message):
@@ -6955,12 +7042,14 @@ class SqlInstancesCloneRequest(_messages.Message):
       does not include the project ID.
     instancesCloneRequest: A InstancesCloneRequest resource to be passed as
       the request body.
+    location: Optional. Region of the Cloud SQL instance.
     project: Project ID of the source Cloud SQL instance.
   """
 
   instance = _messages.StringField(1, required=True)
   instancesCloneRequest = _messages.MessageField('InstancesCloneRequest', 2)
-  project = _messages.StringField(3, required=True)
+  location = _messages.StringField(3)
+  project = _messages.StringField(4, required=True)
 
 
 class SqlInstancesDeleteRequest(_messages.Message):
@@ -6974,6 +7063,7 @@ class SqlInstancesDeleteRequest(_messages.Message):
       in UTC of when this resource is considered expired.
     finalBackupTtlDays: Optional. Retention period of the final backup.
     instance: Cloud SQL instance ID. This does not include the project ID.
+    location: Optional. Region of the Cloud SQL instance.
     project: Project ID of the project that contains the instance to be
       deleted.
     retainBackups: Flag to opt-in for keep all visible backups after deleting
@@ -6989,11 +7079,12 @@ class SqlInstancesDeleteRequest(_messages.Message):
   finalBackupExpiryTime = _messages.StringField(3)
   finalBackupTtlDays = _messages.IntegerField(4)
   instance = _messages.StringField(5, required=True)
-  project = _messages.StringField(6, required=True)
-  retainBackups = _messages.BooleanField(7)
-  retainBackupsExpiryTime = _messages.StringField(8)
-  retainBackupsTtlDays = _messages.IntegerField(9)
-  skipFinalBackup = _messages.BooleanField(10)
+  location = _messages.StringField(6)
+  project = _messages.StringField(7, required=True)
+  retainBackups = _messages.BooleanField(8)
+  retainBackupsExpiryTime = _messages.StringField(9)
+  retainBackupsTtlDays = _messages.IntegerField(10)
+  skipFinalBackup = _messages.BooleanField(11)
 
 
 class SqlInstancesDemoteMasterRequest(_messages.Message):
@@ -7003,12 +7094,14 @@ class SqlInstancesDemoteMasterRequest(_messages.Message):
     instance: Cloud SQL instance name.
     instancesDemoteMasterRequest: A InstancesDemoteMasterRequest resource to
       be passed as the request body.
+    location: Optional. Region of the Cloud SQL instance.
     project: ID of the project that contains the instance.
   """
 
   instance = _messages.StringField(1, required=True)
   instancesDemoteMasterRequest = _messages.MessageField('InstancesDemoteMasterRequest', 2)
-  project = _messages.StringField(3, required=True)
+  location = _messages.StringField(3)
+  project = _messages.StringField(4, required=True)
 
 
 class SqlInstancesDemoteRequest(_messages.Message):
@@ -7018,13 +7111,55 @@ class SqlInstancesDemoteRequest(_messages.Message):
     instance: Required. The name of the Cloud SQL instance.
     instancesDemoteRequest: A InstancesDemoteRequest resource to be passed as
       the request body.
+    location: Optional. Region of the Cloud SQL instance.
     project: Required. The project ID of the project that contains the
       instance.
   """
 
   instance = _messages.StringField(1, required=True)
   instancesDemoteRequest = _messages.MessageField('InstancesDemoteRequest', 2)
-  project = _messages.StringField(3, required=True)
+  location = _messages.StringField(3)
+  project = _messages.StringField(4, required=True)
+
+
+class SqlInstancesExecuteSqlReadOnlyRequest(_messages.Message):
+  r"""A SqlInstancesExecuteSqlReadOnlyRequest object.
+
+  Fields:
+    executeSqlReadOnlyPayload: A ExecuteSqlReadOnlyPayload resource to be
+      passed as the request body.
+    instance: Required. Database instance ID. This does not include the
+      project ID.
+    location: Optional. Region of the Cloud SQL instance.
+    project: Required. Project ID of the project that contains the instance.
+  """
+
+  executeSqlReadOnlyPayload = _messages.MessageField('ExecuteSqlReadOnlyPayload', 1)
+  instance = _messages.StringField(2, required=True)
+  location = _messages.StringField(3)
+  project = _messages.StringField(4, required=True)
+
+
+class SqlInstancesExecuteSqlReadOnlyResponse(_messages.Message):
+  r"""Execute SQL statements response. Execute SQL statements in read-only
+  mode response.
+
+  Fields:
+    messages: A list of notices and warnings generated during query execution.
+      For PostgreSQL, this includes all notices and warnings. For MySQL, this
+      includes warnings generated by the last executed statement. To retrieve
+      all warnings for a multi-statement query, `SHOW WARNINGS` must be
+      executed after each statement.
+    metadata: The additional metadata information regarding the execution of
+      the SQL statements.
+    results: The list of results after executing all the SQL statements.
+    status: Contains the error from the database if the SQL execution failed.
+  """
+
+  messages = _messages.MessageField('Message', 1, repeated=True)
+  metadata = _messages.MessageField('Metadata', 2)
+  results = _messages.MessageField('QueryResult', 3, repeated=True)
+  status = _messages.MessageField('Status', 4)
 
 
 class SqlInstancesExecuteSqlRequest(_messages.Message):
@@ -7035,16 +7170,18 @@ class SqlInstancesExecuteSqlRequest(_messages.Message):
       request body.
     instance: Required. Database instance ID. This does not include the
       project ID.
+    location: Optional. Region of the Cloud SQL instance.
     project: Required. Project ID of the project that contains the instance.
   """
 
   executeSqlPayload = _messages.MessageField('ExecuteSqlPayload', 1)
   instance = _messages.StringField(2, required=True)
-  project = _messages.StringField(3, required=True)
+  location = _messages.StringField(3)
+  project = _messages.StringField(4, required=True)
 
 
 class SqlInstancesExecuteSqlResponse(_messages.Message):
-  r"""Execute SQL statements response.
+  r"""A SqlInstancesExecuteSqlResponse object.
 
   Fields:
     columns: Deprecated field. Use results.columns instead.
@@ -7082,13 +7219,15 @@ class SqlInstancesExportRequest(_messages.Message):
     instance: The Cloud SQL instance ID. This doesn't include the project ID.
     instancesExportRequest: A InstancesExportRequest resource to be passed as
       the request body.
+    location: Optional. Region of the Cloud SQL instance.
     project: Project ID of the project that contains the instance to be
       exported.
   """
 
   instance = _messages.StringField(1, required=True)
   instancesExportRequest = _messages.MessageField('InstancesExportRequest', 2)
-  project = _messages.StringField(3, required=True)
+  location = _messages.StringField(3)
+  project = _messages.StringField(4, required=True)
 
 
 class SqlInstancesFailoverRequest(_messages.Message):
@@ -7098,12 +7237,14 @@ class SqlInstancesFailoverRequest(_messages.Message):
     instance: Cloud SQL instance ID. This does not include the project ID.
     instancesFailoverRequest: A InstancesFailoverRequest resource to be passed
       as the request body.
+    location: Optional. Region of the Cloud SQL instance.
     project: ID of the project that contains the read replica.
   """
 
   instance = _messages.StringField(1, required=True)
   instancesFailoverRequest = _messages.MessageField('InstancesFailoverRequest', 2)
-  project = _messages.StringField(3, required=True)
+  location = _messages.StringField(3)
+  project = _messages.StringField(4, required=True)
 
 
 class SqlInstancesGetDiskShrinkConfigResponse(_messages.Message):
@@ -7142,11 +7283,13 @@ class SqlInstancesGetRequest(_messages.Message):
 
   Fields:
     instance: Database instance ID. This does not include the project ID.
+    location: Optional. Region of the Cloud SQL instance.
     project: Project ID of the project that contains the instance.
   """
 
   instance = _messages.StringField(1, required=True)
-  project = _messages.StringField(2, required=True)
+  location = _messages.StringField(2)
+  project = _messages.StringField(3, required=True)
 
 
 class SqlInstancesImportRequest(_messages.Message):
@@ -7156,12 +7299,14 @@ class SqlInstancesImportRequest(_messages.Message):
     instance: Cloud SQL instance ID. This does not include the project ID.
     instancesImportRequest: A InstancesImportRequest resource to be passed as
       the request body.
+    location: Optional. Region of the Cloud SQL instance.
     project: Project ID of the project that contains the instance.
   """
 
   instance = _messages.StringField(1, required=True)
   instancesImportRequest = _messages.MessageField('InstancesImportRequest', 2)
-  project = _messages.StringField(3, required=True)
+  location = _messages.StringField(3)
+  project = _messages.StringField(4, required=True)
 
 
 class SqlInstancesInsertRequest(_messages.Message):
@@ -7170,25 +7315,14 @@ class SqlInstancesInsertRequest(_messages.Message):
   Fields:
     databaseInstance: A DatabaseInstance resource to be passed as the request
       body.
+    location: Optional. Region of the Cloud SQL instance.
     project: Project ID of the project to which the newly created Cloud SQL
       instances should belong.
   """
 
   databaseInstance = _messages.MessageField('DatabaseInstance', 1)
-  project = _messages.StringField(2, required=True)
-
-
-class SqlInstancesListCapturedWorkloadsRequest(_messages.Message):
-  r"""A SqlInstancesListCapturedWorkloadsRequest object.
-
-  Fields:
-    instance: Required. Cloud SQL instance ID. This does not include the
-      project ID.
-    project: Required. Project ID of the project that contains the instance.
-  """
-
-  instance = _messages.StringField(1, required=True)
-  project = _messages.StringField(2, required=True)
+  location = _messages.StringField(2)
+  project = _messages.StringField(3, required=True)
 
 
 class SqlInstancesListEntraIdCertificatesRequest(_messages.Message):
@@ -7197,11 +7331,13 @@ class SqlInstancesListEntraIdCertificatesRequest(_messages.Message):
   Fields:
     instance: Required. Cloud SQL instance ID. This does not include the
       project ID.
+    location: Optional. Region of the Cloud SQL instance.
     project: Required. Project ID of the project that contains the instance.
   """
 
   instance = _messages.StringField(1, required=True)
-  project = _messages.StringField(2, required=True)
+  location = _messages.StringField(2)
+  project = _messages.StringField(3, required=True)
 
 
 class SqlInstancesListRequest(_messages.Message):
@@ -7216,6 +7352,7 @@ class SqlInstancesListRequest(_messages.Message):
       space-separated. For example. 'state:RUNNABLE
       instanceType:CLOUD_SQL_INSTANCE'. By default, each expression is an AND
       expression. However, you can include AND and OR expressions explicitly.
+    location: Optional. Region of the Cloud SQL instance.
     maxResults: The maximum number of instances to return. The service may
       return fewer than this value. If unspecified, at most 500 instances are
       returned. The maximum value is 1000; values above 1000 are coerced to
@@ -7226,9 +7363,10 @@ class SqlInstancesListRequest(_messages.Message):
   """
 
   filter = _messages.StringField(1)
-  maxResults = _messages.IntegerField(2, variant=_messages.Variant.UINT32)
-  pageToken = _messages.StringField(3)
-  project = _messages.StringField(4, required=True)
+  location = _messages.StringField(2)
+  maxResults = _messages.IntegerField(3, variant=_messages.Variant.UINT32)
+  pageToken = _messages.StringField(4)
+  project = _messages.StringField(5, required=True)
 
 
 class SqlInstancesListServerCasRequest(_messages.Message):
@@ -7236,11 +7374,13 @@ class SqlInstancesListServerCasRequest(_messages.Message):
 
   Fields:
     instance: Cloud SQL instance ID. This does not include the project ID.
+    location: Optional. Region of the Cloud SQL instance.
     project: Project ID of the project that contains the instance.
   """
 
   instance = _messages.StringField(1, required=True)
-  project = _messages.StringField(2, required=True)
+  location = _messages.StringField(2)
+  project = _messages.StringField(3, required=True)
 
 
 class SqlInstancesListServerCertificatesRequest(_messages.Message):
@@ -7249,11 +7389,13 @@ class SqlInstancesListServerCertificatesRequest(_messages.Message):
   Fields:
     instance: Required. Cloud SQL instance ID. This does not include the
       project ID.
+    location: Optional. Region of the Cloud SQL instance.
     project: Required. Project ID of the project that contains the instance.
   """
 
   instance = _messages.StringField(1, required=True)
-  project = _messages.StringField(2, required=True)
+  location = _messages.StringField(2)
+  project = _messages.StringField(3, required=True)
 
 
 class SqlInstancesPatchRequest(_messages.Message):
@@ -7266,6 +7408,7 @@ class SqlInstancesPatchRequest(_messages.Message):
       the same value as existing network to force DNS write endpoint
       configuration.
     instance: Cloud SQL instance ID. This does not include the project ID.
+    location: Optional. Region of the Cloud SQL instance.
     project: Project ID of the project that contains the instance.
     reconcilePscNetworking: Optional. Set PSC config to the same value as the
       existing config to reconcile the PSC networking.
@@ -7276,9 +7419,10 @@ class SqlInstancesPatchRequest(_messages.Message):
   databaseInstance = _messages.MessageField('DatabaseInstance', 1)
   enforcePsaWriteEndpoint = _messages.BooleanField(2)
   instance = _messages.StringField(3, required=True)
-  project = _messages.StringField(4, required=True)
-  reconcilePscNetworking = _messages.BooleanField(5)
-  reconcilePscNetworkingForce = _messages.BooleanField(6)
+  location = _messages.StringField(4)
+  project = _messages.StringField(5, required=True)
+  reconcilePscNetworking = _messages.BooleanField(6)
+  reconcilePscNetworkingForce = _messages.BooleanField(7)
 
 
 class SqlInstancesPointInTimeRestoreRequest(_messages.Message):
@@ -7304,12 +7448,14 @@ class SqlInstancesPreCheckMajorVersionUpgradeRequest(_messages.Message):
     instancesPreCheckMajorVersionUpgradeRequest: A
       InstancesPreCheckMajorVersionUpgradeRequest resource to be passed as the
       request body.
+    location: Optional. Region of the Cloud SQL instance.
     project: Required. Project ID of the project that contains the instance.
   """
 
   instance = _messages.StringField(1, required=True)
   instancesPreCheckMajorVersionUpgradeRequest = _messages.MessageField('InstancesPreCheckMajorVersionUpgradeRequest', 2)
-  project = _messages.StringField(3, required=True)
+  location = _messages.StringField(3)
+  project = _messages.StringField(4, required=True)
 
 
 class SqlInstancesPromoteReplicaRequest(_messages.Message):
@@ -7323,12 +7469,14 @@ class SqlInstancesPromoteReplicaRequest(_messages.Message):
       specified, then the original primary instance becomes an independent
       Cloud SQL primary instance.
     instance: Cloud SQL read replica instance name.
+    location: Optional. Region of the Cloud SQL instance.
     project: ID of the project that contains the read replica.
   """
 
   failover = _messages.BooleanField(1)
   instance = _messages.StringField(2, required=True)
-  project = _messages.StringField(3, required=True)
+  location = _messages.StringField(3)
+  project = _messages.StringField(4, required=True)
 
 
 class SqlInstancesReencryptRequest(_messages.Message):
@@ -7338,12 +7486,14 @@ class SqlInstancesReencryptRequest(_messages.Message):
     instance: Cloud SQL instance ID. This does not include the project ID.
     instancesReencryptRequest: A InstancesReencryptRequest resource to be
       passed as the request body.
+    location: Optional. Region of the Cloud SQL instance.
     project: ID of the project that contains the instance.
   """
 
   instance = _messages.StringField(1, required=True)
   instancesReencryptRequest = _messages.MessageField('InstancesReencryptRequest', 2)
-  project = _messages.StringField(3, required=True)
+  location = _messages.StringField(3)
+  project = _messages.StringField(4, required=True)
 
 
 class SqlInstancesReleaseSsrsLeaseRequest(_messages.Message):
@@ -7354,12 +7504,14 @@ class SqlInstancesReleaseSsrsLeaseRequest(_messages.Message):
       project ID. It's composed of lowercase letters, numbers, and hyphens,
       and it must start with a letter. The total length must be 98 characters
       or less (Example: instance-id).
+    location: Optional. Region of the Cloud SQL instance.
     project: Required. The ID of the project that contains the instance
       (Example: project-id).
   """
 
   instance = _messages.StringField(1, required=True)
-  project = _messages.StringField(2, required=True)
+  location = _messages.StringField(2)
+  project = _messages.StringField(3, required=True)
 
 
 class SqlInstancesReleaseSsrsLeaseResponse(_messages.Message):
@@ -7376,11 +7528,13 @@ class SqlInstancesRemoveReplicationSourceRequest(_messages.Message):
   r"""Instance remove replication source request.
 
   Fields:
+    location: Optional. Region of the Cloud SQL instance.
     replicationSource: Required. The name of the source metadata instance to
       remove from replication.
   """
 
-  replicationSource = _messages.StringField(1)
+  location = _messages.StringField(1)
+  replicationSource = _messages.StringField(2)
 
 
 class SqlInstancesRescheduleMaintenanceRequestBody(_messages.Message):
@@ -7399,9 +7553,11 @@ class SqlInstancesResetReplicaSizeRequest(_messages.Message):
   Fields:
     forceReduceDataDiskPerformance: Optional. Flag to force reduce data disk
       performance if it will be invalidated by replica disk shrink.
+    location: Optional. Region of the Cloud SQL instance.
   """
 
   forceReduceDataDiskPerformance = _messages.BooleanField(1)
+  location = _messages.StringField(2)
 
 
 class SqlInstancesResetSslConfigRequest(_messages.Message):
@@ -7412,6 +7568,7 @@ class SqlInstancesResetSslConfigRequest(_messages.Message):
 
   Fields:
     instance: Cloud SQL instance ID. This does not include the project ID.
+    location: Optional. Region of the Cloud SQL instance.
     mode: Optional. Reset SSL mode to use.
     project: Project ID of the project that contains the instance.
   """
@@ -7431,8 +7588,9 @@ class SqlInstancesResetSslConfigRequest(_messages.Message):
     SYNC_FROM_PRIMARY = 2
 
   instance = _messages.StringField(1, required=True)
-  mode = _messages.EnumField('ModeValueValuesEnum', 2)
-  project = _messages.StringField(3, required=True)
+  location = _messages.StringField(2)
+  mode = _messages.EnumField('ModeValueValuesEnum', 3)
+  project = _messages.StringField(4, required=True)
 
 
 class SqlInstancesRestartRequest(_messages.Message):
@@ -7440,12 +7598,14 @@ class SqlInstancesRestartRequest(_messages.Message):
 
   Fields:
     instance: Cloud SQL instance ID. This does not include the project ID.
+    location: Optional. Region of the Cloud SQL instance.
     project: Project ID of the project that contains the instance to be
       restarted.
   """
 
   instance = _messages.StringField(1, required=True)
-  project = _messages.StringField(2, required=True)
+  location = _messages.StringField(2)
+  project = _messages.StringField(3, required=True)
 
 
 class SqlInstancesRestoreBackupRequest(_messages.Message):
@@ -7455,12 +7615,14 @@ class SqlInstancesRestoreBackupRequest(_messages.Message):
     instance: Cloud SQL instance ID. This does not include the project ID.
     instancesRestoreBackupRequest: A InstancesRestoreBackupRequest resource to
       be passed as the request body.
+    location: Optional. Region of the Cloud SQL instance.
     project: Project ID of the project that contains the instance.
   """
 
   instance = _messages.StringField(1, required=True)
   instancesRestoreBackupRequest = _messages.MessageField('InstancesRestoreBackupRequest', 2)
-  project = _messages.StringField(3, required=True)
+  location = _messages.StringField(3)
+  project = _messages.StringField(4, required=True)
 
 
 class SqlInstancesRotateEntraIdCertificateRequest(_messages.Message):
@@ -7472,12 +7634,14 @@ class SqlInstancesRotateEntraIdCertificateRequest(_messages.Message):
     instancesRotateEntraIdCertificateRequest: A
       InstancesRotateEntraIdCertificateRequest resource to be passed as the
       request body.
+    location: Optional. Region of the Cloud SQL instance.
     project: Required. Project ID of the project that contains the instance.
   """
 
   instance = _messages.StringField(1, required=True)
   instancesRotateEntraIdCertificateRequest = _messages.MessageField('InstancesRotateEntraIdCertificateRequest', 2)
-  project = _messages.StringField(3, required=True)
+  location = _messages.StringField(3)
+  project = _messages.StringField(4, required=True)
 
 
 class SqlInstancesRotateServerCaRequest(_messages.Message):
@@ -7487,12 +7651,14 @@ class SqlInstancesRotateServerCaRequest(_messages.Message):
     instance: Cloud SQL instance ID. This does not include the project ID.
     instancesRotateServerCaRequest: A InstancesRotateServerCaRequest resource
       to be passed as the request body.
+    location: Optional. Region of the Cloud SQL instance.
     project: Project ID of the project that contains the instance.
   """
 
   instance = _messages.StringField(1, required=True)
   instancesRotateServerCaRequest = _messages.MessageField('InstancesRotateServerCaRequest', 2)
-  project = _messages.StringField(3, required=True)
+  location = _messages.StringField(3)
+  project = _messages.StringField(4, required=True)
 
 
 class SqlInstancesRotateServerCertificateRequest(_messages.Message):
@@ -7504,12 +7670,14 @@ class SqlInstancesRotateServerCertificateRequest(_messages.Message):
     instancesRotateServerCertificateRequest: A
       InstancesRotateServerCertificateRequest resource to be passed as the
       request body.
+    location: Optional. Region of the Cloud SQL instance.
     project: Required. Project ID of the project that contains the instance.
   """
 
   instance = _messages.StringField(1, required=True)
   instancesRotateServerCertificateRequest = _messages.MessageField('InstancesRotateServerCertificateRequest', 2)
-  project = _messages.StringField(3, required=True)
+  location = _messages.StringField(3)
+  project = _messages.StringField(4, required=True)
 
 
 class SqlInstancesStartExternalSyncRequest(_messages.Message):
@@ -7525,6 +7693,7 @@ class SqlInstancesStartExternalSyncRequest(_messages.Message):
       data sync. Currently only applicable for MySQL.
 
   Fields:
+    location: Optional. Region of the Cloud SQL instance.
     migrationType: Optional. MigrationType configures the migration to use
       physical files or logical dump files. If not set, then the logical dump
       file configuration is used. Valid values are `LOGICAL` or `PHYSICAL`.
@@ -7588,12 +7757,13 @@ class SqlInstancesStartExternalSyncRequest(_messages.Message):
     OPTIMAL = 2
     MAX = 3
 
-  migrationType = _messages.EnumField('MigrationTypeValueValuesEnum', 1)
-  mysqlSyncConfig = _messages.MessageField('MySqlSyncConfig', 2)
-  replicaOverwriteEnabled = _messages.BooleanField(3)
-  skipVerification = _messages.BooleanField(4)
-  syncMode = _messages.EnumField('SyncModeValueValuesEnum', 5)
-  syncParallelLevel = _messages.EnumField('SyncParallelLevelValueValuesEnum', 6)
+  location = _messages.StringField(1)
+  migrationType = _messages.EnumField('MigrationTypeValueValuesEnum', 2)
+  mysqlSyncConfig = _messages.MessageField('MySqlSyncConfig', 3)
+  replicaOverwriteEnabled = _messages.BooleanField(4)
+  skipVerification = _messages.BooleanField(5)
+  syncMode = _messages.EnumField('SyncModeValueValuesEnum', 6)
+  syncParallelLevel = _messages.EnumField('SyncParallelLevelValueValuesEnum', 7)
 
 
 class SqlInstancesStartReplicaRequest(_messages.Message):
@@ -7601,34 +7771,13 @@ class SqlInstancesStartReplicaRequest(_messages.Message):
 
   Fields:
     instance: Cloud SQL read replica instance name.
+    location: Optional. Region of the Cloud SQL instance.
     project: ID of the project that contains the read replica.
   """
 
   instance = _messages.StringField(1, required=True)
-  project = _messages.StringField(2, required=True)
-
-
-class SqlInstancesStartWorkloadCaptureRequest(_messages.Message):
-  r"""Request to start recording traffic from the primary instance (captured
-  workload).
-
-  Fields:
-    startWorkloadCaptureContext: Optional. Contains details about the start
-      workload capture operation.
-  """
-
-  startWorkloadCaptureContext = _messages.MessageField('StartWorkloadCaptureContext', 1)
-
-
-class SqlInstancesStartWorkloadReplayRequest(_messages.Message):
-  r"""Request to start executing a captured workload on a shadow instance.
-
-  Fields:
-    startWorkloadReplayContext: Optional. Contains details about the start
-      workload replay operation.
-  """
-
-  startWorkloadReplayContext = _messages.MessageField('StartWorkloadReplayContext', 1)
+  location = _messages.StringField(2)
+  project = _messages.StringField(3, required=True)
 
 
 class SqlInstancesStopReplicaRequest(_messages.Message):
@@ -7636,33 +7785,13 @@ class SqlInstancesStopReplicaRequest(_messages.Message):
 
   Fields:
     instance: Cloud SQL read replica instance name.
+    location: Optional. Region of the Cloud SQL instance.
     project: ID of the project that contains the read replica.
   """
 
   instance = _messages.StringField(1, required=True)
-  project = _messages.StringField(2, required=True)
-
-
-class SqlInstancesStopWorkloadCaptureRequest(_messages.Message):
-  r"""Request to stop recording traffic from the primary instance.
-
-  Fields:
-    stopWorkloadCaptureContext: Optional. Contains details about the stop
-      workload capture operation.
-  """
-
-  stopWorkloadCaptureContext = _messages.MessageField('StopWorkloadCaptureContext', 1)
-
-
-class SqlInstancesStopWorkloadReplayRequest(_messages.Message):
-  r"""Request to stop executing a captured workload on a shadow instance.
-
-  Fields:
-    stopWorkloadReplayContext: Optional. Contains details about the stop
-      workload replay operation.
-  """
-
-  stopWorkloadReplayContext = _messages.MessageField('StopWorkloadReplayContext', 1)
+  location = _messages.StringField(2)
+  project = _messages.StringField(3, required=True)
 
 
 class SqlInstancesSwitchoverRequest(_messages.Message):
@@ -7673,12 +7802,14 @@ class SqlInstancesSwitchoverRequest(_messages.Message):
       operations timeout, which is a sum of all database operations. Default
       value is 10 minutes and can be modified to a maximum value of 24 hours.
     instance: Cloud SQL read replica instance name.
+    location: Optional. Region of the Cloud SQL instance.
     project: ID of the project that contains the replica.
   """
 
   dbTimeout = _messages.StringField(1)
   instance = _messages.StringField(2, required=True)
-  project = _messages.StringField(3, required=True)
+  location = _messages.StringField(3)
+  project = _messages.StringField(4, required=True)
 
 
 class SqlInstancesTruncateLogRequest(_messages.Message):
@@ -7688,12 +7819,14 @@ class SqlInstancesTruncateLogRequest(_messages.Message):
     instance: Cloud SQL instance ID. This does not include the project ID.
     instancesTruncateLogRequest: A InstancesTruncateLogRequest resource to be
       passed as the request body.
+    location: Optional. Region of the Cloud SQL instance.
     project: Project ID of the Cloud SQL project.
   """
 
   instance = _messages.StringField(1, required=True)
   instancesTruncateLogRequest = _messages.MessageField('InstancesTruncateLogRequest', 2)
-  project = _messages.StringField(3, required=True)
+  location = _messages.StringField(3)
+  project = _messages.StringField(4, required=True)
 
 
 class SqlInstancesUpdateRequest(_messages.Message):
@@ -7706,13 +7839,15 @@ class SqlInstancesUpdateRequest(_messages.Message):
       the same value as existing network to force DNS write endpoint
       configuration.
     instance: Cloud SQL instance ID. This does not include the project ID.
+    location: Optional. Region of the Cloud SQL instance.
     project: Project ID of the project that contains the instance.
   """
 
   databaseInstance = _messages.MessageField('DatabaseInstance', 1)
   enforcePsaWriteEndpoint = _messages.BooleanField(2)
   instance = _messages.StringField(3, required=True)
-  project = _messages.StringField(4, required=True)
+  location = _messages.StringField(4)
+  project = _messages.StringField(5, required=True)
 
 
 class SqlInstancesVerifyExternalSyncSettingsRequest(_messages.Message):
@@ -7728,6 +7863,7 @@ class SqlInstancesVerifyExternalSyncSettingsRequest(_messages.Message):
       data sync. Only applicable for PostgreSQL.
 
   Fields:
+    location: Optional. Region of the Cloud SQL instance.
     migrationType: Optional. MigrationType configures the migration to use
       physical files or logical dump files. If not set, then the logical dump
       file configuration is used. Valid values are `LOGICAL` or `PHYSICAL`.
@@ -7791,13 +7927,14 @@ class SqlInstancesVerifyExternalSyncSettingsRequest(_messages.Message):
     OPTIMAL = 2
     MAX = 3
 
-  migrationType = _messages.EnumField('MigrationTypeValueValuesEnum', 1)
-  mysqlSyncConfig = _messages.MessageField('MySqlSyncConfig', 2)
-  selectedObjects = _messages.MessageField('ExternalSyncSelectedObject', 3, repeated=True)
-  syncMode = _messages.EnumField('SyncModeValueValuesEnum', 4)
-  syncParallelLevel = _messages.EnumField('SyncParallelLevelValueValuesEnum', 5)
-  verifyConnectionOnly = _messages.BooleanField(6)
-  verifyReplicationOnly = _messages.BooleanField(7)
+  location = _messages.StringField(1)
+  migrationType = _messages.EnumField('MigrationTypeValueValuesEnum', 2)
+  mysqlSyncConfig = _messages.MessageField('MySqlSyncConfig', 3)
+  selectedObjects = _messages.MessageField('ExternalSyncSelectedObject', 4, repeated=True)
+  syncMode = _messages.EnumField('SyncModeValueValuesEnum', 5)
+  syncParallelLevel = _messages.EnumField('SyncParallelLevelValueValuesEnum', 6)
+  verifyConnectionOnly = _messages.BooleanField(7)
+  verifyReplicationOnly = _messages.BooleanField(8)
 
 
 class SqlInstancesVerifyExternalSyncSettingsResponse(_messages.Message):
@@ -7909,11 +8046,13 @@ class SqlProjectsInstancesGetDiskShrinkConfigRequest(_messages.Message):
 
   Fields:
     instance: Cloud SQL instance ID. This does not include the project ID.
+    location: Optional. Region of the Cloud SQL instance.
     project: Project ID of the project that contains the instance.
   """
 
   instance = _messages.StringField(1, required=True)
-  project = _messages.StringField(2, required=True)
+  location = _messages.StringField(2)
+  project = _messages.StringField(3, required=True)
 
 
 class SqlProjectsInstancesGetLatestRecoveryTimeRequest(_messages.Message):
@@ -7921,6 +8060,7 @@ class SqlProjectsInstancesGetLatestRecoveryTimeRequest(_messages.Message):
 
   Fields:
     instance: Cloud SQL instance ID. This does not include the project ID.
+    location: Optional. Region of the Cloud SQL instance.
     project: Project ID of the project that contains the instance.
     sourceInstanceDeletionTime: The timestamp used to identify the time when
       the source instance is deleted. If this instance is deleted, then you
@@ -7928,8 +8068,9 @@ class SqlProjectsInstancesGetLatestRecoveryTimeRequest(_messages.Message):
   """
 
   instance = _messages.StringField(1, required=True)
-  project = _messages.StringField(2, required=True)
-  sourceInstanceDeletionTime = _messages.StringField(3)
+  location = _messages.StringField(2)
+  project = _messages.StringField(3, required=True)
+  sourceInstanceDeletionTime = _messages.StringField(4)
 
 
 class SqlProjectsInstancesPerformDiskShrinkRequest(_messages.Message):
@@ -7937,14 +8078,16 @@ class SqlProjectsInstancesPerformDiskShrinkRequest(_messages.Message):
 
   Fields:
     instance: Cloud SQL instance ID. This does not include the project ID.
+    location: Optional. Region of the Cloud SQL instance.
     performDiskShrinkContext: A PerformDiskShrinkContext resource to be passed
       as the request body.
     project: Project ID of the project that contains the instance.
   """
 
   instance = _messages.StringField(1, required=True)
-  performDiskShrinkContext = _messages.MessageField('PerformDiskShrinkContext', 2)
-  project = _messages.StringField(3, required=True)
+  location = _messages.StringField(2)
+  performDiskShrinkContext = _messages.MessageField('PerformDiskShrinkContext', 3)
+  project = _messages.StringField(4, required=True)
 
 
 class SqlProjectsInstancesRescheduleMaintenanceRequest(_messages.Message):
@@ -7952,6 +8095,7 @@ class SqlProjectsInstancesRescheduleMaintenanceRequest(_messages.Message):
 
   Fields:
     instance: Cloud SQL instance ID. This does not include the project ID.
+    location: Optional. Region of the Cloud SQL instance.
     project: ID of the project that contains the instance.
     sqlInstancesRescheduleMaintenanceRequestBody: A
       SqlInstancesRescheduleMaintenanceRequestBody resource to be passed as
@@ -7959,8 +8103,9 @@ class SqlProjectsInstancesRescheduleMaintenanceRequest(_messages.Message):
   """
 
   instance = _messages.StringField(1, required=True)
-  project = _messages.StringField(2, required=True)
-  sqlInstancesRescheduleMaintenanceRequestBody = _messages.MessageField('SqlInstancesRescheduleMaintenanceRequestBody', 3)
+  location = _messages.StringField(2)
+  project = _messages.StringField(3, required=True)
+  sqlInstancesRescheduleMaintenanceRequestBody = _messages.MessageField('SqlInstancesRescheduleMaintenanceRequestBody', 4)
 
 
 class SqlProjectsInstancesResetReplicaSizeRequest(_messages.Message):
@@ -8164,14 +8309,16 @@ class SqlSslCertsCreateEphemeralRequest(_messages.Message):
 
   Fields:
     instance: Cloud SQL instance ID. This does not include the project ID.
+    location: Optional. Region of the Cloud SQL instance.
     project: Project ID of the Cloud SQL project.
     sslCertsCreateEphemeralRequest: A SslCertsCreateEphemeralRequest resource
       to be passed as the request body.
   """
 
   instance = _messages.StringField(1, required=True)
-  project = _messages.StringField(2, required=True)
-  sslCertsCreateEphemeralRequest = _messages.MessageField('SslCertsCreateEphemeralRequest', 3)
+  location = _messages.StringField(2)
+  project = _messages.StringField(3, required=True)
+  sslCertsCreateEphemeralRequest = _messages.MessageField('SslCertsCreateEphemeralRequest', 4)
 
 
 class SqlSslCertsDeleteRequest(_messages.Message):
@@ -8285,14 +8432,16 @@ class SqlUsersDeleteRequest(_messages.Message):
   Fields:
     host: Host of the user in the instance.
     instance: Database instance ID. This does not include the project ID.
+    location: Optional. Region of the Cloud SQL instance.
     name: Name of the user in the instance.
     project: Project ID of the project that contains the instance.
   """
 
   host = _messages.StringField(1)
   instance = _messages.StringField(2, required=True)
-  name = _messages.StringField(3)
-  project = _messages.StringField(4, required=True)
+  location = _messages.StringField(3)
+  name = _messages.StringField(4)
+  project = _messages.StringField(5, required=True)
 
 
 class SqlUsersGetRequest(_messages.Message):
@@ -8301,14 +8450,32 @@ class SqlUsersGetRequest(_messages.Message):
   Fields:
     host: Host of a user of the instance.
     instance: Database instance ID. This does not include the project ID.
+    location: Optional. Region of the Cloud SQL instance.
     name: User of the instance.
     project: Project ID of the project that contains the instance.
   """
 
   host = _messages.StringField(1)
   instance = _messages.StringField(2, required=True)
-  name = _messages.StringField(3, required=True)
-  project = _messages.StringField(4, required=True)
+  location = _messages.StringField(3)
+  name = _messages.StringField(4, required=True)
+  project = _messages.StringField(5, required=True)
+
+
+class SqlUsersInsertRequest(_messages.Message):
+  r"""A SqlUsersInsertRequest object.
+
+  Fields:
+    instance: Database instance ID. This does not include the project ID.
+    location: Optional. Region of the Cloud SQL instance.
+    project: Project ID of the project that contains the instance.
+    user: A User resource to be passed as the request body.
+  """
+
+  instance = _messages.StringField(1, required=True)
+  location = _messages.StringField(2)
+  project = _messages.StringField(3, required=True)
+  user = _messages.MessageField('User', 4)
 
 
 class SqlUsersListRequest(_messages.Message):
@@ -8316,11 +8483,13 @@ class SqlUsersListRequest(_messages.Message):
 
   Fields:
     instance: Database instance ID. This does not include the project ID.
+    location: Optional. Region of the Cloud SQL instance.
     project: Project ID of the project that contains the instance.
   """
 
   instance = _messages.StringField(1, required=True)
-  project = _messages.StringField(2, required=True)
+  location = _messages.StringField(2)
+  project = _messages.StringField(3, required=True)
 
 
 class SqlUsersUpdateRequest(_messages.Message):
@@ -8331,6 +8500,7 @@ class SqlUsersUpdateRequest(_messages.Message):
       body.database_roles will be ignored for update request.
     host: Optional. Host of the user in the instance.
     instance: Database instance ID. This does not include the project ID.
+    location: Optional. Region of the Cloud SQL instance.
     name: Name of the user in the instance.
     project: Project ID of the project that contains the instance.
     revokeExistingRoles: Optional. Specifies whether to revoke existing roles
@@ -8350,16 +8520,89 @@ class SqlUsersUpdateRequest(_messages.Message):
   databaseRoles = _messages.StringField(1, repeated=True)
   host = _messages.StringField(2)
   instance = _messages.StringField(3, required=True)
-  name = _messages.StringField(4)
-  project = _messages.StringField(5, required=True)
-  revokeExistingRoles = _messages.BooleanField(6)
-  revokeExistingServerRoles = _messages.BooleanField(7)
-  serverRoles = _messages.StringField(8, repeated=True)
-  user = _messages.MessageField('User', 9)
+  location = _messages.StringField(4)
+  name = _messages.StringField(5)
+  project = _messages.StringField(6, required=True)
+  revokeExistingRoles = _messages.BooleanField(7)
+  revokeExistingServerRoles = _messages.BooleanField(8)
+  serverRoles = _messages.StringField(9, repeated=True)
+  user = _messages.MessageField('User', 10)
+
+
+class SqlWorkloadCapturesListRequest(_messages.Message):
+  r"""A SqlWorkloadCapturesListRequest object.
+
+  Fields:
+    instance: Required. Cloud SQL instance ID. This does not include the
+      project ID.
+    location: Optional. Region of the Cloud SQL instance.
+    project: Required. Project ID of the project that contains the instance.
+  """
+
+  instance = _messages.StringField(1, required=True)
+  location = _messages.StringField(2)
+  project = _messages.StringField(3, required=True)
+
+
+class SqlWorkloadCapturesStartReplayRequest(_messages.Message):
+  r"""Request to start executing a captured workload on a replay instance (the
+  Cloud SQL instance where the recorded SQL queries are executed).
+
+  Fields:
+    location: Optional. Region of the Cloud SQL instance.
+    startWorkloadReplayContext: Optional. Contains details about the start
+      workload replay operation.
+  """
+
+  location = _messages.StringField(1)
+  startWorkloadReplayContext = _messages.MessageField('StartWorkloadReplayContext', 2)
+
+
+class SqlWorkloadCapturesStartRequest(_messages.Message):
+  r"""Request to start recording traffic from the primary instance (captured
+  workload).
+
+  Fields:
+    location: Optional. Region of the Cloud SQL instance.
+    startWorkloadCaptureContext: Optional. Contains details about the start
+      workload capture operation.
+  """
+
+  location = _messages.StringField(1)
+  startWorkloadCaptureContext = _messages.MessageField('StartWorkloadCaptureContext', 2)
+
+
+class SqlWorkloadCapturesStopReplayRequest(_messages.Message):
+  r"""Request to stop executing a captured workload on a replay instance.
+
+  Fields:
+    location: Optional. Region of the Cloud SQL instance.
+    stopWorkloadReplayContext: Optional. Contains details about the stop
+      workload replay operation.
+  """
+
+  location = _messages.StringField(1)
+  stopWorkloadReplayContext = _messages.MessageField('StopWorkloadReplayContext', 2)
+
+
+class SqlWorkloadCapturesStopRequest(_messages.Message):
+  r"""Request to stop recording traffic from the primary instance.
+
+  Fields:
+    location: Optional. Region of the Cloud SQL instance.
+    stopWorkloadCaptureContext: Optional. Contains details about the stop
+      workload capture operation.
+  """
+
+  location = _messages.StringField(1)
+  stopWorkloadCaptureContext = _messages.MessageField('StopWorkloadCaptureContext', 2)
 
 
 class SslCert(_messages.Message):
   r"""SslCerts Resource
+
+  Enums:
+    StateValueValuesEnum: Output only. The state of the certificate.
 
   Fields:
     cert: PEM representation.
@@ -8375,7 +8618,22 @@ class SslCert(_messages.Message):
     kind: This is always `sql#sslCert`.
     selfLink: The URI of this resource.
     sha1Fingerprint: Sha1 Fingerprint.
+    state: Output only. The state of the certificate.
   """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the certificate.
+
+    Values:
+      CERTIFICATE_STATE_UNSPECIFIED: Certificate state is unspecified.
+      ACTIVE: The certificate is active and in use.
+      NEXT: The certificate is the next one to be used.
+      SUPERSEDED: The certificate is superseded.
+    """
+    CERTIFICATE_STATE_UNSPECIFIED = 0
+    ACTIVE = 1
+    NEXT = 2
+    SUPERSEDED = 3
 
   cert = _messages.StringField(1)
   certSerialNumber = _messages.StringField(2)
@@ -8386,6 +8644,7 @@ class SslCert(_messages.Message):
   kind = _messages.StringField(7)
   selfLink = _messages.StringField(8)
   sha1Fingerprint = _messages.StringField(9)
+  state = _messages.EnumField('StateValueValuesEnum', 10)
 
 
 class SslCertDetail(_messages.Message):
@@ -8518,29 +8777,51 @@ class StandardQueryParameters(_messages.Message):
 
 
 class StartWorkloadCaptureContext(_messages.Message):
-  r"""Context for start workload capture operation.
+  r"""The context for the `StartWorkloadCapture` operation, which contains
+  details to start recording the workload (SQL queries) on a Cloud SQL
+  instance.
 
   Fields:
     enableLiveReplay: Optional. If true, the captured workload is
       simultaneously executed on a separate, ephemeral Cloud SQL instance.
-      This "live replay" instance is automatically provisioned. If false (the
-      default), the workload is only stored and no live replay occurs. It can
-      be replayed later using a separate `StartWorkloadReplayRequest`. Note:
-      The workload capture runs continuously until an explicit
-      `StopWorkloadCaptureRequest` is issued.
+      This "live replay" instance is automatically provisioned and is cloned
+      from the source instance. If false (the default), the workload is only
+      stored and no live replay occurs. It can be replayed later using a
+      separate `StartWorkloadReplayRequest`. Note: The workload capture runs
+      continuously until an explicit `StopWorkloadCaptureRequest` is issued.
+    replayInstance: Optional. Required if `enable_live_replay` is true. The
+      name of the Cloud SQL instance where the captured workload (SQL queries)
+      is being executed, excluding the project ID (for example, `my-replay-
+      instance`). The instance name must start with a lowercase letter and
+      contain only lowercase letters, numbers, and hyphens. The combined
+      length of `project-ID:instance-name` must be 98 characters or less.
   """
 
   enableLiveReplay = _messages.BooleanField(1)
+  replayInstance = _messages.StringField(2)
 
 
 class StartWorkloadReplayContext(_messages.Message):
-  r"""Context for start workload replay operation.
+  r"""The context for the `StartWorkloadReplay` operation, which contains
+  details about starting the execution of a captured workload (recorded read
+  and write SQL queries) on a replay instance (the Cloud SQL instance where
+  the recorded SQL queries are executed).
 
   Fields:
-    shadowInstance: Required. The name of the shadow instance.
+    replayInstance: Required. The name of the Cloud SQL instance where the
+      captured workload (SQL queries) is being executed, excluding the project
+      ID (for example, `my-replay-instance`). The instance name must start
+      with a lowercase letter and contain only lowercase letters, numbers, and
+      hyphens. The combined length of `project-ID:instance-name` must be 98
+      characters or less.
+    workloadId: Output only. The ID of the workload to start executing on the
+      replay instance. Each workload capture generates a unique ID in the
+      format `workload-` (for example, `workload-1786046400`). Use this ID to
+      start executing the recorded SQL queries.
   """
 
-  shadowInstance = _messages.StringField(1)
+  replayInstance = _messages.StringField(1)
+  workloadId = _messages.StringField(2)
 
 
 class Status(_messages.Message):
@@ -8595,7 +8876,9 @@ class Status(_messages.Message):
 
 
 class StopWorkloadCaptureContext(_messages.Message):
-  r"""Context for stop workload capture operation.
+  r"""The context for the `StopWorkloadCapture` operation, which contains
+  details to stop recording the workload (SQL queries) on a Cloud SQL
+  instance.
 
   Fields:
     abortLiveReplay: Optional. If true, immediately aborts the concurrent live
@@ -8609,13 +8892,25 @@ class StopWorkloadCaptureContext(_messages.Message):
 
 
 class StopWorkloadReplayContext(_messages.Message):
-  r"""Context for stop workload replay operation.
+  r"""The context for the `StopWorkloadReplay` operation, which contains
+  details about stopping the execution of a captured workload (recorded read
+  and write SQL queries) on a replay instance.
 
   Fields:
-    shadowInstance: Required. The name of the shadow instance.
+    replayInstance: Required. The name of the Cloud SQL instance where the
+      captured workload (SQL queries) is being executed, excluding the project
+      ID (for example, `my-replay-instance`). The instance name must start
+      with a lowercase letter and contain only lowercase letters, numbers, and
+      hyphens. The combined length of `project-ID:instance-name` must be 98
+      characters or less.
+    workloadId: Output only. The ID of the workload to stop executing on the
+      replay instance. Each workload capture generates a unique ID in the
+      format `workload-` (for example, `workload-1786046400`). Use this ID to
+      stop executing the recorded SQL queries.
   """
 
-  shadowInstance = _messages.StringField(1)
+  replayInstance = _messages.StringField(1)
+  workloadId = _messages.StringField(2)
 
 
 class SwitchoverBlueGreenDeploymentRequest(_messages.Message):
@@ -9202,6 +9497,60 @@ class Value(_messages.Message):
 
   nullValue = _messages.BooleanField(1)
   value = _messages.StringField(2)
+
+
+class WorkloadCapture(_messages.Message):
+  r"""Captured workload for an instance.
+
+  Enums:
+    WorkloadCaptureStateValueValuesEnum: Output only. The state of the
+      workload capture.
+
+  Fields:
+    endTime: Output only. The end time of the workload capture.
+    replayInstance: Output only. The name of the replay instance, if live
+      replay was enabled.
+    retentionDays: Output only. The retention period in days for the captured
+      workload.
+    sourceInstance: Output only. The name of the source instance.
+    startTime: Output only. The start time of the workload capture.
+    workloadCaptureState: Output only. The state of the workload capture.
+    workloadId: Output only. The ID of the captured workload.
+  """
+
+  class WorkloadCaptureStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the workload capture.
+
+    Values:
+      STATE_UNSPECIFIED: Default value. This value is unused.
+      RUNNING: Workload capture is currently running.
+      COMPLETED: Workload capture completed successfully.
+      FAILED: Workload capture failed.
+    """
+    STATE_UNSPECIFIED = 0
+    RUNNING = 1
+    COMPLETED = 2
+    FAILED = 3
+
+  endTime = _messages.StringField(1)
+  replayInstance = _messages.StringField(2)
+  retentionDays = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  sourceInstance = _messages.StringField(4)
+  startTime = _messages.StringField(5)
+  workloadCaptureState = _messages.EnumField('WorkloadCaptureStateValueValuesEnum', 6)
+  workloadId = _messages.StringField(7)
+
+
+class WorkloadCapturesListResponse(_messages.Message):
+  r"""Instance list captured workloads response.
+
+  Fields:
+    kind: This is always `sql#workloadCapturesList`.
+    workloadCaptures: List of captured workloads for the instance.
+  """
+
+  kind = _messages.StringField(1)
+  workloadCaptures = _messages.MessageField('WorkloadCapture', 2, repeated=True)
 
 
 encoding.AddCustomJsonFieldMapping(

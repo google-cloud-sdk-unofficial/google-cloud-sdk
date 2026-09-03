@@ -3387,6 +3387,33 @@ class HealthcareV1beta1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Bulk_export_group_post(self, request, global_params=None):
+      r"""Export resources using POST.
+
+      Args:
+        request: (HealthcareProjectsLocationsDatasetsFhirStoresBulkExportGroupPostRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (HttpBody) The response message.
+      """
+      config = self.GetMethodConfig('Bulk_export_group_post')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Bulk_export_group_post.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/datasets/{datasetsId}/fhirStores/{fhirStoresId}/fhir/Group/{GroupId}/$export',
+        http_method='POST',
+        method_id='healthcare.projects.locations.datasets.fhirStores.bulk-export-group-post',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['_since', '_type', 'organizeOutputBy', 'outputFormat'],
+        relative_path='v1beta1/{+name}/$export',
+        request_field='httpBody',
+        request_type_name='HealthcareProjectsLocationsDatasetsFhirStoresBulkExportGroupPostRequest',
+        response_type_name='HttpBody',
+        supports_download=False,
+    )
+
     def BulkDelete(self, request, global_params=None):
       r"""Bulk deletes the FHIR resources from the given FHIR store. This method returns an Operation that can be used to track the progress of the deletion by calling GetOperation. The success and secondary_success counters correspond to the deleted current version and historical versions, respectively.
 

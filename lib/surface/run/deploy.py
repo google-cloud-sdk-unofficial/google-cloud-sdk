@@ -21,15 +21,14 @@ import logging
 import os
 import os.path
 import re
+from typing import Any, Mapping
 
-from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.run import api_enabler
 from googlecloudsdk.api_lib.run import constants
 from googlecloudsdk.api_lib.run import container_resource
 from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.api_lib.run import service as service_lib
 from googlecloudsdk.api_lib.run import traffic
-from googlecloudsdk.api_lib.util import apis as core_apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.artifacts import docker_util
@@ -294,8 +293,13 @@ class Deploy(base.Command):
     validators.ValidateContainerLimit(containers)
     return containers
 
-  def _ValidateAndGetDeployFromSource(self, containers):
-    deploy_from_source = {
+  # validate the source container flags and return a map of source containers.
+  # currently at most one source container will be returned
+  def _ValidateAndGetSourceContainer(
+      self, containers: Mapping[str, Any]
+  ) -> Mapping[str, Any]:
+    # get potential source containers before validation
+    source_containers = {
         name: container
         for name, container in containers.items()
         if (
@@ -303,21 +307,18 @@ class Deploy(base.Command):
             or flags.FlagIsExplicitlySet(container, 'source')
         )
     }
-    validators.ValidateSourceDeployContainer(deploy_from_source)
+    validators.ValidateNumberOfSourceContainers(source_containers)
     validators.ValidateUnifiedBuildProperty(
-        deploy_from_source, containers, self.ReleaseTrack()
+        source_containers, containers, self.ReleaseTrack()
     )
     validators.ValidateNoAutomaticUpdatesForContainers(
-        deploy_from_source, containers, self.ReleaseTrack()
+        source_containers, containers, self.ReleaseTrack()
     )
-    validators.ValidateContainerImageOrPromptForSource(deploy_from_source)
     validators.ValidateUploadThroughRunApi(
-        deploy_from_source, self.ReleaseTrack()
+        source_containers, self.ReleaseTrack()
     )
-    validators.ValidateNoBuildFromSource(
-        deploy_from_source, self.ReleaseTrack()
-    )
-    return deploy_from_source
+    validators.ValidateNoBuildFromSource(source_containers, self.ReleaseTrack())
+    return source_containers
 
   def _GetBaseImageForSourceContainer(self, container_args, service):
     """Returns the base image for the container.
@@ -561,8 +562,8 @@ class Deploy(base.Command):
       conn_context: ConnectionInfo object, context to get project location.
       platform: properties.VALUES.run.platform, platform to run on and to check
         if it is GKE.
-      skip_activation_prompt: bool, True if the user has already activated
-        the required APIs.
+      skip_activation_prompt: bool, True if the user has already activated the
+        required APIs.
       container_args: base.ArgumentGroup, Container arguments using source
         build.
       annotated_build_image_uri: str, build image uri from service annotations.
@@ -872,46 +873,6 @@ class Deploy(base.Command):
 
     return iap
 
-  def _GetServiceForAlphaSourceDeploy(
-      self, conn_context, service_ref, project_id, required_apis, platform
-  ):
-    """Fetches service for alpha source deploy, enabling APIs if Run API is disabled.
-
-    This attempts to get the service first. If it fails with an API enablement
-    error, it enables all required APIs assuming others may also be disabled.
-    If it succeeds, it assumes other required APIs are already enabled.
-
-    Args:
-      conn_context: serverless operations connection context.
-      service_ref: service reference to retrieve.
-      project_id: project ID to enable APIs on if required.
-      required_apis: list of required API names.
-      platform: current deployment platform.
-
-    Returns:
-      A tuple of (service, skip_activation_prompt).
-    """
-    with serverless_operations.Connect(
-        conn_context,
-        skip_activation_prompt=True,
-        should_retry_if_disabled=False,
-    ) as operations:
-      try:
-        service = operations.GetService(service_ref)
-        return service, False
-      except apitools_exceptions.HttpError as e:
-        enablement_info = core_apis.GetApiEnablementInfo(e)
-        if enablement_info and platform == platforms.PLATFORM_MANAGED:
-          api_enabler.enable_apis(project_id, required_apis)
-          with serverless_operations.Connect(
-              conn_context,
-              skip_activation_prompt=True,
-              should_retry_if_disabled=True,
-          ) as retry_operations:
-            service = retry_operations.GetService(service_ref)
-            return service, True
-        raise
-
   def Run(self, args):
     """Deploy a container to Cloud Run."""
     flags.ValidatePublicFlags(args)
@@ -921,16 +882,15 @@ class Deploy(base.Command):
     )
 
     containers = self._ValidateAndGetContainers(args)
-    deploy_from_source = self._ValidateAndGetDeployFromSource(containers)
+    source_container = self._ValidateAndGetSourceContainer(containers)
     is_local_build = validators.IsLocalBuildFromSource(
-        self.ReleaseTrack(), deploy_from_source
+        self.ReleaseTrack(), source_container
     )
     is_no_build_from_source = validators.IsNoBuildFromSource(
-        self.ReleaseTrack(), deploy_from_source
+        self.ReleaseTrack(), source_container
     )
 
     local_build_changes = []
-    local_build_base_image = None
     local_build_dir = None
 
     service_ref = args.CONCEPTS.service.Parse()
@@ -956,20 +916,25 @@ class Deploy(base.Command):
     project_id = properties.VALUES.core.project.Get(required=True)
 
     required_apis = self._GetRequiredApis(
-        deploy_from_source, is_no_build_from_source, is_local_build
+        source_container, is_no_build_from_source, is_local_build
     )
 
     is_alpha_source_deploy_build = self._IsAlphaSourceDeployBuild(
-        deploy_from_source, is_no_build_from_source
+        source_container, is_no_build_from_source
     )
+    custom_check_response = None
     skip_activation_prompt = False
-    if (
+    if is_alpha_source_deploy_build and platform == platforms.PLATFORM_MANAGED:
+      custom_check_response = api_enabler.check_response_and_enable_apis(
+          project_id, required_apis
+      )
+    elif (
         required_apis
         and platform == platforms.PLATFORM_MANAGED
         and not is_alpha_source_deploy_build
     ):
       skip_activation_prompt = api_enabler.check_and_enable_apis(
-          properties.VALUES.core.project.Get(), required_apis
+          project_id, required_apis
       )
 
     conn_context = self._ConnectionContext(args)
@@ -996,24 +961,21 @@ class Deploy(base.Command):
     source_bucket = None
     skip_build = False
     upload_through_run_api = False
-    if deploy_from_source:
+    if source_container:
       upload_through_run_api = sources.ShouldUploadThroughRunApi(
-          deploy_from_source, self.ReleaseTrack()
+          source_container, self.ReleaseTrack()
       )
     service = None
-    if is_alpha_source_deploy_build:
-      service, skip_activation_prompt = self._GetServiceForAlphaSourceDeploy(
-          conn_context, service_ref, project_id, required_apis, platform
-      )
     with serverless_operations.Connect(
-        conn_context, skip_activation_prompt
+        conn_context,
+        skip_activation_prompt=skip_activation_prompt,
+        custom_check_response_func=custom_check_response,
     ) as operations:
-      if not is_alpha_source_deploy_build:
-        service = operations.GetService(service_ref)
+      service = operations.GetService(service_ref)
       if is_local_build:
         container_name, container_args = next(
             (name, c)
-            for name, c in deploy_from_source.items()
+            for name, c in source_container.items()
             if getattr(c, 'local_build', False)
         )
         local_build.ValidateLocalBuildSource(container_args.source)
@@ -1043,7 +1005,7 @@ class Deploy(base.Command):
         image = 'scratch'
         skip_build = True
         deploy_from_source_container_name, container_args = next(
-            iter(deploy_from_source.items())
+            iter(source_container.items())
         )
         # re-use the existing container name if it is not specified.
         if not deploy_from_source_container_name and service:
@@ -1060,7 +1022,7 @@ class Deploy(base.Command):
         )
 
         container_args.image = 'scratch'
-      elif deploy_from_source:
+      elif source_container:
         (
             is_function,
             image,
@@ -1079,7 +1041,7 @@ class Deploy(base.Command):
             source_bucket,
         ) = self._BuildFromSource(
             args,
-            deploy_from_source,
+            source_container,
             service_ref,
             conn_context,
             platform,
@@ -1090,11 +1052,12 @@ class Deploy(base.Command):
             project_id=properties.VALUES.core.project.Get(required=True),
             region=flags.GetRegion(args),
             build_service_account=build_service_account,
+            skip_build_sa_permission_check=is_alpha_source_deploy_build,
         )
       # Deploy a container with an image
       saved_cmd, saved_args_val = None, None
-      if is_local_build and deploy_from_source:
-        _, container_args = next(iter(deploy_from_source.items()))
+      if is_local_build and source_container:
+        _, container_args = next(iter(source_container.items()))
         if not flags.FlagIsExplicitlySet(container_args, 'command'):
           saved_cmd = getattr(container_args, 'command', None)
           container_args.command = None
@@ -1104,8 +1067,8 @@ class Deploy(base.Command):
 
       changes = self._GetBaseChanges(args)
 
-      if is_local_build and deploy_from_source:
-        _, container_args = next(iter(deploy_from_source.items()))
+      if is_local_build and source_container:
+        _, container_args = next(iter(source_container.items()))
         if saved_cmd is not None:
           container_args.command = saved_cmd
         if saved_args_val is not None:
@@ -1164,7 +1127,7 @@ class Deploy(base.Command):
             args,
             service,
             changes_,
-            deploy_from_source,
+            source_container,
             repo_to_create,
             allow_unauth,
             has_latest,

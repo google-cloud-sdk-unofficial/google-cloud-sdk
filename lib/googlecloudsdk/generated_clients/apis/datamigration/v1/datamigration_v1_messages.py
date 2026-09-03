@@ -2367,6 +2367,23 @@ class DatamigrationProjectsLocationsConversionWorkspacesSeedRequest(_messages.Me
   seedConversionWorkspaceRequest = _messages.MessageField('SeedConversionWorkspaceRequest', 2)
 
 
+class DatamigrationProjectsLocationsConversionWorkspacesSetDraftEntityDdlRequest(_messages.Message):
+  r"""A
+  DatamigrationProjectsLocationsConversionWorkspacesSetDraftEntityDdlRequest
+  object.
+
+  Fields:
+    conversionWorkspace: Required. Name of the conversion workspace resource
+      in the form of: projects/{project}/locations/{location}/conversionWorksp
+      aces/{conversion_workspace}.
+    setDraftEntityDdlRequest: A SetDraftEntityDdlRequest resource to be passed
+      as the request body.
+  """
+
+  conversionWorkspace = _messages.StringField(1, required=True)
+  setDraftEntityDdlRequest = _messages.MessageField('SetDraftEntityDdlRequest', 2)
+
+
 class DatamigrationProjectsLocationsConversionWorkspacesSetIamPolicyRequest(_messages.Message):
   r"""A DatamigrationProjectsLocationsConversionWorkspacesSetIamPolicyRequest
   object.
@@ -7001,6 +7018,114 @@ class SequenceEntity(_messages.Message):
   maxValue = _messages.BytesField(5)
   minValue = _messages.BytesField(6)
   startValue = _messages.BytesField(7)
+
+
+class SetDraftEntityDdlRequest(_messages.Message):
+  r"""Request message for DataMigrationService.SetDraftEntityDdl.
+
+  Enums:
+    BasedOnDdlKindValueValuesEnum: Optional. Which DDL (Deterministic/AI) the
+      updated DDL is based on. Defaults to DETERMINISTIC if not specified.
+    DdlKindValueValuesEnum: Optional. The updated DDL Kind. Can be either
+      USER_EDIT (default) or AI.
+    EntityTypeValueValuesEnum: Required. The type of the database entity
+      (table, view, index, ...).
+
+  Fields:
+    basedOnDdlKind: Optional. Which DDL (Deterministic/AI) the updated DDL is
+      based on. Defaults to DETERMINISTIC if not specified.
+    ddl: Required. The DDL to set.
+    ddlKind: Optional. The updated DDL Kind. Can be either USER_EDIT (default)
+      or AI.
+    entityName: Required. The draft entity full name from the tree. .
+    entityType: Required. The type of the database entity (table, view, index,
+      ...).
+    explanation: Optional. An optional explanation of the generated DDL if
+      ddl_kind is AI.
+  """
+
+  class BasedOnDdlKindValueValuesEnum(_messages.Enum):
+    r"""Optional. Which DDL (Deterministic/AI) the updated DDL is based on.
+    Defaults to DETERMINISTIC if not specified.
+
+    Values:
+      DDL_KIND_UNSPECIFIED: The kind of the DDL is unknown.
+      SOURCE: DDL of the source entity
+      DETERMINISTIC: Deterministic converted DDL
+      AI: Gemini AI converted DDL
+      USER_EDIT: User edited DDL
+    """
+    DDL_KIND_UNSPECIFIED = 0
+    SOURCE = 1
+    DETERMINISTIC = 2
+    AI = 3
+    USER_EDIT = 4
+
+  class DdlKindValueValuesEnum(_messages.Enum):
+    r"""Optional. The updated DDL Kind. Can be either USER_EDIT (default) or
+    AI.
+
+    Values:
+      DDL_KIND_UNSPECIFIED: The kind of the DDL is unknown.
+      SOURCE: DDL of the source entity
+      DETERMINISTIC: Deterministic converted DDL
+      AI: Gemini AI converted DDL
+      USER_EDIT: User edited DDL
+    """
+    DDL_KIND_UNSPECIFIED = 0
+    SOURCE = 1
+    DETERMINISTIC = 2
+    AI = 3
+    USER_EDIT = 4
+
+  class EntityTypeValueValuesEnum(_messages.Enum):
+    r"""Required. The type of the database entity (table, view, index, ...).
+
+    Values:
+      DATABASE_ENTITY_TYPE_UNSPECIFIED: Unspecified database entity type.
+      DATABASE_ENTITY_TYPE_SCHEMA: Schema.
+      DATABASE_ENTITY_TYPE_TABLE: Table.
+      DATABASE_ENTITY_TYPE_COLUMN: Column.
+      DATABASE_ENTITY_TYPE_CONSTRAINT: Constraint.
+      DATABASE_ENTITY_TYPE_INDEX: Index.
+      DATABASE_ENTITY_TYPE_TRIGGER: Trigger.
+      DATABASE_ENTITY_TYPE_VIEW: View.
+      DATABASE_ENTITY_TYPE_SEQUENCE: Sequence.
+      DATABASE_ENTITY_TYPE_STORED_PROCEDURE: Stored Procedure.
+      DATABASE_ENTITY_TYPE_FUNCTION: Function.
+      DATABASE_ENTITY_TYPE_SYNONYM: Synonym.
+      DATABASE_ENTITY_TYPE_DATABASE_PACKAGE: Package.
+      DATABASE_ENTITY_TYPE_UDT: UDT.
+      DATABASE_ENTITY_TYPE_MATERIALIZED_VIEW: Materialized View.
+      DATABASE_ENTITY_TYPE_DATABASE: Database.
+    """
+    DATABASE_ENTITY_TYPE_UNSPECIFIED = 0
+    DATABASE_ENTITY_TYPE_SCHEMA = 1
+    DATABASE_ENTITY_TYPE_TABLE = 2
+    DATABASE_ENTITY_TYPE_COLUMN = 3
+    DATABASE_ENTITY_TYPE_CONSTRAINT = 4
+    DATABASE_ENTITY_TYPE_INDEX = 5
+    DATABASE_ENTITY_TYPE_TRIGGER = 6
+    DATABASE_ENTITY_TYPE_VIEW = 7
+    DATABASE_ENTITY_TYPE_SEQUENCE = 8
+    DATABASE_ENTITY_TYPE_STORED_PROCEDURE = 9
+    DATABASE_ENTITY_TYPE_FUNCTION = 10
+    DATABASE_ENTITY_TYPE_SYNONYM = 11
+    DATABASE_ENTITY_TYPE_DATABASE_PACKAGE = 12
+    DATABASE_ENTITY_TYPE_UDT = 13
+    DATABASE_ENTITY_TYPE_MATERIALIZED_VIEW = 14
+    DATABASE_ENTITY_TYPE_DATABASE = 15
+
+  basedOnDdlKind = _messages.EnumField('BasedOnDdlKindValueValuesEnum', 1)
+  ddl = _messages.StringField(2)
+  ddlKind = _messages.EnumField('DdlKindValueValuesEnum', 3)
+  entityName = _messages.StringField(4)
+  entityType = _messages.EnumField('EntityTypeValueValuesEnum', 5)
+  explanation = _messages.StringField(6)
+
+
+class SetDraftEntityDdlResponse(_messages.Message):
+  r"""Response message for DataMigrationService.SetDraftEntityDdl."""
 
 
 class SetIamPolicyRequest(_messages.Message):

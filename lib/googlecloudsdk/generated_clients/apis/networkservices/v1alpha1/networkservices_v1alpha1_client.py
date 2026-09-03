@@ -59,6 +59,7 @@ class NetworkservicesV1alpha1(base_api.BaseApiClient):
     self.projects_locations_lbRouteExtensions = self.ProjectsLocationsLbRouteExtensionsService(self)
     self.projects_locations_lbTcpExtensions = self.ProjectsLocationsLbTcpExtensionsService(self)
     self.projects_locations_lbTrafficExtensions = self.ProjectsLocationsLbTrafficExtensionsService(self)
+    self.projects_locations_mcpTranscoders = self.ProjectsLocationsMcpTranscodersService(self)
     self.projects_locations_meshes_routeViews = self.ProjectsLocationsMeshesRouteViewsService(self)
     self.projects_locations_meshes = self.ProjectsLocationsMeshesService(self)
     self.projects_locations_multicastConsumerAssociations = self.ProjectsLocationsMulticastConsumerAssociationsService(self)
@@ -3387,6 +3388,178 @@ class NetworkservicesV1alpha1(base_api.BaseApiClient):
         relative_path='v1alpha1/{+name}',
         request_field='lbTrafficExtension',
         request_type_name='NetworkservicesProjectsLocationsLbTrafficExtensionsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsMcpTranscodersService(base_api.BaseApiService):
+    """Service class for the projects_locations_mcpTranscoders resource."""
+
+    _NAME = 'projects_locations_mcpTranscoders'
+
+    def __init__(self, client):
+      super(NetworkservicesV1alpha1.ProjectsLocationsMcpTranscodersService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new McpTranscoder in a given project and location.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsMcpTranscodersCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/mcpTranscoders',
+        http_method='POST',
+        method_id='networkservices.projects.locations.mcpTranscoders.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['mcpTranscoderId'],
+        relative_path='v1alpha1/{+parent}/mcpTranscoders',
+        request_field='mcpTranscoder',
+        request_type_name='NetworkservicesProjectsLocationsMcpTranscodersCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single McpTranscoder.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsMcpTranscodersDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/mcpTranscoders/{mcpTranscodersId}',
+        http_method='DELETE',
+        method_id='networkservices.projects.locations.mcpTranscoders.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['etag'],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsMcpTranscodersDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single McpTranscoder.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsMcpTranscodersGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (McpTranscoder) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/mcpTranscoders/{mcpTranscodersId}',
+        http_method='GET',
+        method_id='networkservices.projects.locations.mcpTranscoders.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsMcpTranscodersGetRequest',
+        response_type_name='McpTranscoder',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists McpTranscoders in a given project and location.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsMcpTranscodersListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListMcpTranscodersResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/mcpTranscoders',
+        http_method='GET',
+        method_id='networkservices.projects.locations.mcpTranscoders.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken', 'returnPartialSuccess'],
+        relative_path='v1alpha1/{+parent}/mcpTranscoders',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsMcpTranscodersListRequest',
+        response_type_name='ListMcpTranscodersResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single McpTranscoder.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsMcpTranscodersPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/mcpTranscoders/{mcpTranscodersId}',
+        http_method='PATCH',
+        method_id='networkservices.projects.locations.mcpTranscoders.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1alpha1/{+name}',
+        request_field='mcpTranscoder',
+        request_type_name='NetworkservicesProjectsLocationsMcpTranscodersPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Refresh(self, request, global_params=None):
+      r"""Refreshes the McpTranscoder by pulling the latest endpoint from Agent Registry.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsMcpTranscodersRefreshRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Refresh')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Refresh.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/mcpTranscoders/{mcpTranscodersId}:refresh',
+        http_method='POST',
+        method_id='networkservices.projects.locations.mcpTranscoders.refresh',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}:refresh',
+        request_field='refreshMcpTranscoderRequest',
+        request_type_name='NetworkservicesProjectsLocationsMcpTranscodersRefreshRequest',
         response_type_name='Operation',
         supports_download=False,
     )

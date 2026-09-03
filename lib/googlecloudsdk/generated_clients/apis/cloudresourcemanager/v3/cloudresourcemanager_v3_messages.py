@@ -190,6 +190,80 @@ class Capability(_messages.Message):
   value = _messages.BooleanField(2)
 
 
+class CapabilityConfig(_messages.Message):
+  r"""A CapabilityConfig allows managing experiences like applications and
+  agents on a logical administrative perimeter of Projects (Boundary).
+
+  Enums:
+    StateValueValuesEnum: Output only. The lifecycle state of the
+      CapabilityConfig.
+    TypesValueListEntryValuesEnum:
+
+  Fields:
+    boundaries: Optional. The list of Boundaries associated with this
+      CapabilityConfig. Format:
+      `organizations/{organization}/boundaries/{boundary}` or,
+      `folders/{folder}/boundaries/{boundary}` or,
+      `projects/{project}/boundaries/{boundary}`
+    createTime: Output only. The creation time of the CapabilityConfig.
+    displayName: Optional. Human-readable non-unique display name of the
+      CapabilityConfig. When present it must be between 4 to 30 characters.
+      Allowed characters are: lowercase and uppercase letters, numbers,
+      hyphen, single-quote, double-quote, space, and exclamation point.
+      Example: `My Capability Config`
+    etag: This checksum is computed by the server based on the value of other
+      fields, and may be sent on update and delete requests to ensure the
+      client has an up-to-date value before proceeding.
+    managementProject: Optional. Immutable. The Management Project associated
+      with this CapabilityConfig. If not provided during creation, a
+      management project will be automatically created. Cannot be modified
+      after creation. Format: `projects/{project_number}` Example:
+      `projects/123456789012`
+    name: Identifier. The unique resource name of the CapabilityConfig.
+      Format:
+      `organizations/{organization}/capabilityConfigs/{capabilityConfig}` or,
+      `folders/{folder}/capabilityConfigs/{capabilityConfig}` or,
+      `projects/{project}/capabilityConfigs/{capabilityConfig}`
+    state: Output only. The lifecycle state of the CapabilityConfig.
+    types: Required. The CapabilityConfig types.
+    updateTime: Output only. The most recent time this CapabilityConfig was
+      modified.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The lifecycle state of the CapabilityConfig.
+
+    Values:
+      STATE_UNSPECIFIED: Unspecified state.
+      ACTIVE: CapabilityConfig is operational, and the management project is
+        fully active.
+    """
+    STATE_UNSPECIFIED = 0
+    ACTIVE = 1
+
+  class TypesValueListEntryValuesEnum(_messages.Enum):
+    r"""TypesValueListEntryValuesEnum enum type.
+
+    Values:
+      TYPE_UNSPECIFIED: Unspecified type.
+      APP_MANAGEMENT: For AppHub applications.
+      AGENT_MANAGEMENT: For Agent Registry.
+    """
+    TYPE_UNSPECIFIED = 0
+    APP_MANAGEMENT = 1
+    AGENT_MANAGEMENT = 2
+
+  boundaries = _messages.StringField(1, repeated=True)
+  createTime = _messages.StringField(2)
+  displayName = _messages.StringField(3)
+  etag = _messages.StringField(4)
+  managementProject = _messages.StringField(5)
+  name = _messages.StringField(6)
+  state = _messages.EnumField('StateValueValuesEnum', 7)
+  types = _messages.EnumField('TypesValueListEntryValuesEnum', 8, repeated=True)
+  updateTime = _messages.StringField(9)
+
+
 class ClearSettingRequest(_messages.Message):
   r"""The request for ClearSetting.
 
@@ -260,6 +334,96 @@ class CloudresourcemanagerFoldersCapabilitiesPatchRequest(_messages.Message):
   """
 
   capability = _messages.MessageField('Capability', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
+
+
+class CloudresourcemanagerFoldersCapabilityConfigsCreateRequest(_messages.Message):
+  r"""A CloudresourcemanagerFoldersCapabilityConfigsCreateRequest object.
+
+  Fields:
+    capabilityConfig: A CapabilityConfig resource to be passed as the request
+      body.
+    capabilityConfigId: Required. The user-assigned ID for the
+      CapabilityConfig, which will become the final component of the
+      CapabilityConfig's resource name. Must be unique within the parent
+      resource. It must be 6 to 30 lowercase ASCII letters, digits, or
+      hyphens. It must start with a letter. Trailing hyphens are prohibited.
+      Example: `my-capability-config-123`
+    parent: Required. The parent resource under which the CapabilityConfig
+      will be created. Format: `organizations/{organization_id}` or
+      `folders/{folder_id}` or `projects/{project_number}`
+  """
+
+  capabilityConfig = _messages.MessageField('CapabilityConfig', 1)
+  capabilityConfigId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class CloudresourcemanagerFoldersCapabilityConfigsDeleteRequest(_messages.Message):
+  r"""A CloudresourcemanagerFoldersCapabilityConfigsDeleteRequest object.
+
+  Fields:
+    name: Required. The name of the CapabilityConfig to delete. Format:
+      `organizations/{organization}/capabilityConfigs/{capabilityConfig}` or,
+      `folders/{folder}/capabilityConfigs/{capabilityConfig}` or,
+      `projects/{project}/capabilityConfigs/{capabilityConfig}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class CloudresourcemanagerFoldersCapabilityConfigsGetRequest(_messages.Message):
+  r"""A CloudresourcemanagerFoldersCapabilityConfigsGetRequest object.
+
+  Fields:
+    name: Required. The name of the CapabilityConfig to retrieve. Format:
+      `organizations/{organization}/capabilityConfigs/{capabilityConfig}` or,
+      `folders/{folder}/capabilityConfigs/{capabilityConfig}` or,
+      `projects/{project}/capabilityConfigs/{capabilityConfig}` Example:
+      `folders/123456789/capabilityConfigs/my-capability-config`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class CloudresourcemanagerFoldersCapabilityConfigsListRequest(_messages.Message):
+  r"""A CloudresourcemanagerFoldersCapabilityConfigsListRequest object.
+
+  Fields:
+    pageSize: Optional. The maximum number of CapabilityConfigs to return in
+      the response. The service may return fewer CapabilityConfigs than
+      requested. If unspecified, at most 100 CapabilityConfigs will be
+      returned. The maximum value is 100; values above 100 will be coerced to
+      100.
+    pageToken: Optional. A pagination token received from a previous call to
+      `ListCapabilityConfigs` that indicates from where listing should
+      continue. Provide this to retrieve the subsequent page.
+    parent: Required. The name of the parent resource whose CapabilityConfigs
+      are being listed. Format: `organizations/{organization_id}` or
+      `folders/{folder_id}`
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class CloudresourcemanagerFoldersCapabilityConfigsPatchRequest(_messages.Message):
+  r"""A CloudresourcemanagerFoldersCapabilityConfigsPatchRequest object.
+
+  Fields:
+    capabilityConfig: A CapabilityConfig resource to be passed as the request
+      body.
+    name: Identifier. The unique resource name of the CapabilityConfig.
+      Format:
+      `organizations/{organization}/capabilityConfigs/{capabilityConfig}` or,
+      `folders/{folder}/capabilityConfigs/{capabilityConfig}` or,
+      `projects/{project}/capabilityConfigs/{capabilityConfig}`
+    updateMask: Optional. The list of fields to update.
+  """
+
+  capabilityConfig = _messages.MessageField('CapabilityConfig', 1)
   name = _messages.StringField(2, required=True)
   updateMask = _messages.StringField(3)
 
@@ -678,6 +842,98 @@ class CloudresourcemanagerOperationsGetRequest(_messages.Message):
   name = _messages.StringField(1, required=True)
 
 
+class CloudresourcemanagerOrganizationsCapabilityConfigsCreateRequest(_messages.Message):
+  r"""A CloudresourcemanagerOrganizationsCapabilityConfigsCreateRequest
+  object.
+
+  Fields:
+    capabilityConfig: A CapabilityConfig resource to be passed as the request
+      body.
+    capabilityConfigId: Required. The user-assigned ID for the
+      CapabilityConfig, which will become the final component of the
+      CapabilityConfig's resource name. Must be unique within the parent
+      resource. It must be 6 to 30 lowercase ASCII letters, digits, or
+      hyphens. It must start with a letter. Trailing hyphens are prohibited.
+      Example: `my-capability-config-123`
+    parent: Required. The parent resource under which the CapabilityConfig
+      will be created. Format: `organizations/{organization_id}` or
+      `folders/{folder_id}` or `projects/{project_number}`
+  """
+
+  capabilityConfig = _messages.MessageField('CapabilityConfig', 1)
+  capabilityConfigId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class CloudresourcemanagerOrganizationsCapabilityConfigsDeleteRequest(_messages.Message):
+  r"""A CloudresourcemanagerOrganizationsCapabilityConfigsDeleteRequest
+  object.
+
+  Fields:
+    name: Required. The name of the CapabilityConfig to delete. Format:
+      `organizations/{organization}/capabilityConfigs/{capabilityConfig}` or,
+      `folders/{folder}/capabilityConfigs/{capabilityConfig}` or,
+      `projects/{project}/capabilityConfigs/{capabilityConfig}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class CloudresourcemanagerOrganizationsCapabilityConfigsGetRequest(_messages.Message):
+  r"""A CloudresourcemanagerOrganizationsCapabilityConfigsGetRequest object.
+
+  Fields:
+    name: Required. The name of the CapabilityConfig to retrieve. Format:
+      `organizations/{organization}/capabilityConfigs/{capabilityConfig}` or,
+      `folders/{folder}/capabilityConfigs/{capabilityConfig}` or,
+      `projects/{project}/capabilityConfigs/{capabilityConfig}` Example:
+      `folders/123456789/capabilityConfigs/my-capability-config`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class CloudresourcemanagerOrganizationsCapabilityConfigsListRequest(_messages.Message):
+  r"""A CloudresourcemanagerOrganizationsCapabilityConfigsListRequest object.
+
+  Fields:
+    pageSize: Optional. The maximum number of CapabilityConfigs to return in
+      the response. The service may return fewer CapabilityConfigs than
+      requested. If unspecified, at most 100 CapabilityConfigs will be
+      returned. The maximum value is 100; values above 100 will be coerced to
+      100.
+    pageToken: Optional. A pagination token received from a previous call to
+      `ListCapabilityConfigs` that indicates from where listing should
+      continue. Provide this to retrieve the subsequent page.
+    parent: Required. The name of the parent resource whose CapabilityConfigs
+      are being listed. Format: `organizations/{organization_id}` or
+      `folders/{folder_id}`
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class CloudresourcemanagerOrganizationsCapabilityConfigsPatchRequest(_messages.Message):
+  r"""A CloudresourcemanagerOrganizationsCapabilityConfigsPatchRequest object.
+
+  Fields:
+    capabilityConfig: A CapabilityConfig resource to be passed as the request
+      body.
+    name: Identifier. The unique resource name of the CapabilityConfig.
+      Format:
+      `organizations/{organization}/capabilityConfigs/{capabilityConfig}` or,
+      `folders/{folder}/capabilityConfigs/{capabilityConfig}` or,
+      `projects/{project}/capabilityConfigs/{capabilityConfig}`
+    updateMask: Optional. The list of fields to update.
+  """
+
+  capabilityConfig = _messages.MessageField('CapabilityConfig', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
+
+
 class CloudresourcemanagerOrganizationsEffectiveSettingsGetRequest(_messages.Message):
   r"""A CloudresourcemanagerOrganizationsEffectiveSettingsGetRequest object.
 
@@ -834,6 +1090,96 @@ class CloudresourcemanagerOrganizationsTestIamPermissionsRequest(_messages.Messa
 
   resource = _messages.StringField(1, required=True)
   testIamPermissionsRequest = _messages.MessageField('TestIamPermissionsRequest', 2)
+
+
+class CloudresourcemanagerProjectsCapabilityConfigsCreateRequest(_messages.Message):
+  r"""A CloudresourcemanagerProjectsCapabilityConfigsCreateRequest object.
+
+  Fields:
+    capabilityConfig: A CapabilityConfig resource to be passed as the request
+      body.
+    capabilityConfigId: Required. The user-assigned ID for the
+      CapabilityConfig, which will become the final component of the
+      CapabilityConfig's resource name. Must be unique within the parent
+      resource. It must be 6 to 30 lowercase ASCII letters, digits, or
+      hyphens. It must start with a letter. Trailing hyphens are prohibited.
+      Example: `my-capability-config-123`
+    parent: Required. The parent resource under which the CapabilityConfig
+      will be created. Format: `organizations/{organization_id}` or
+      `folders/{folder_id}` or `projects/{project_number}`
+  """
+
+  capabilityConfig = _messages.MessageField('CapabilityConfig', 1)
+  capabilityConfigId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class CloudresourcemanagerProjectsCapabilityConfigsDeleteRequest(_messages.Message):
+  r"""A CloudresourcemanagerProjectsCapabilityConfigsDeleteRequest object.
+
+  Fields:
+    name: Required. The name of the CapabilityConfig to delete. Format:
+      `organizations/{organization}/capabilityConfigs/{capabilityConfig}` or,
+      `folders/{folder}/capabilityConfigs/{capabilityConfig}` or,
+      `projects/{project}/capabilityConfigs/{capabilityConfig}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class CloudresourcemanagerProjectsCapabilityConfigsGetRequest(_messages.Message):
+  r"""A CloudresourcemanagerProjectsCapabilityConfigsGetRequest object.
+
+  Fields:
+    name: Required. The name of the CapabilityConfig to retrieve. Format:
+      `organizations/{organization}/capabilityConfigs/{capabilityConfig}` or,
+      `folders/{folder}/capabilityConfigs/{capabilityConfig}` or,
+      `projects/{project}/capabilityConfigs/{capabilityConfig}` Example:
+      `folders/123456789/capabilityConfigs/my-capability-config`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class CloudresourcemanagerProjectsCapabilityConfigsListRequest(_messages.Message):
+  r"""A CloudresourcemanagerProjectsCapabilityConfigsListRequest object.
+
+  Fields:
+    pageSize: Optional. The maximum number of CapabilityConfigs to return in
+      the response. The service may return fewer CapabilityConfigs than
+      requested. If unspecified, at most 100 CapabilityConfigs will be
+      returned. The maximum value is 100; values above 100 will be coerced to
+      100.
+    pageToken: Optional. A pagination token received from a previous call to
+      `ListCapabilityConfigs` that indicates from where listing should
+      continue. Provide this to retrieve the subsequent page.
+    parent: Required. The name of the parent resource whose CapabilityConfigs
+      are being listed. Format: `organizations/{organization_id}` or
+      `folders/{folder_id}`
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class CloudresourcemanagerProjectsCapabilityConfigsPatchRequest(_messages.Message):
+  r"""A CloudresourcemanagerProjectsCapabilityConfigsPatchRequest object.
+
+  Fields:
+    capabilityConfig: A CapabilityConfig resource to be passed as the request
+      body.
+    name: Identifier. The unique resource name of the CapabilityConfig.
+      Format:
+      `organizations/{organization}/capabilityConfigs/{capabilityConfig}` or,
+      `folders/{folder}/capabilityConfigs/{capabilityConfig}` or,
+      `projects/{project}/capabilityConfigs/{capabilityConfig}`
+    updateMask: Optional. The list of fields to update.
+  """
+
+  capabilityConfig = _messages.MessageField('CapabilityConfig', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
 
 
 class CloudresourcemanagerProjectsDeleteRequest(_messages.Message):
@@ -1470,6 +1816,20 @@ class CloudresourcemanagerTagValuesTestIamPermissionsRequest(_messages.Message):
   testIamPermissionsRequest = _messages.MessageField('TestIamPermissionsRequest', 2)
 
 
+class CreateBoundaryMetadata(_messages.Message):
+  r"""A status object which is used as the `metadata` field for the Operation
+  returned by CreateBoundary. Currently empty.
+  """
+
+
+
+class CreateCapabilityConfigMetadata(_messages.Message):
+  r"""A status object which is used as the `metadata` field for the Operation
+  returned by CreateCapabilityConfig. Currently empty.
+  """
+
+
+
 class CreateFolderMetadata(_messages.Message):
   r"""Metadata pertaining to the Folder creation process.
 
@@ -1511,6 +1871,20 @@ class CreateTagKeyMetadata(_messages.Message):
 
 class CreateTagValueMetadata(_messages.Message):
   r"""Runtime operation information for creating a TagValue."""
+
+
+class DeleteBoundaryMetadata(_messages.Message):
+  r"""A status object which is used as the `metadata` field for the Operation
+  returned by DeleteBoundary. Currently empty.
+  """
+
+
+
+class DeleteCapabilityConfigMetadata(_messages.Message):
+  r"""A status object which is used as the `metadata` field for the Operation
+  returned by DeleteCapabilityConfig. Currently empty.
+  """
+
 
 
 class DeleteFolderMetadata(_messages.Message):
@@ -2007,6 +2381,28 @@ class Lien(_messages.Message):
   restrictions = _messages.StringField(6, repeated=True)
 
 
+class ListCapabilityConfigsResponse(_messages.Message):
+  r"""A page of the response received from the ListCapabilityConfigs method. A
+  paginated response where more pages are available has `next_page_token` set.
+  This token can be used in a subsequent request to retrieve the next page.
+  NOTE: A response may contain fewer elements than the request `page_size` and
+  still have a `next_page_token`.
+
+  Fields:
+    capabilityConfigs: The list of CapabilityConfigs under the parent. This
+      list can be paginated.
+    nextPageToken: Pagination token. If the result set is too large to fit in
+      a single response, this token is returned. It encodes the position of
+      the current result cursor. Feeding this value into a new list request
+      with the `page_token` parameter gives the next page of the results. When
+      `next_page_token` is not filled in, there is no next page and the list
+      returned is the last page in the result set.
+  """
+
+  capabilityConfigs = _messages.MessageField('CapabilityConfig', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
 class ListEffectiveTagsResponse(_messages.Message):
   r"""The response of ListEffectiveTags.
 
@@ -2474,6 +2870,9 @@ class Project(_messages.Message):
     etag: Output only. A checksum computed by the server based on the current
       value of the Project resource. This may be sent on update and delete
       requests to ensure the client has an up-to-date value before proceeding.
+    isManagementProject: Output only. If `true`, this project is a Management
+      Project. A Management Project manages dedicated project groups for
+      specific purposes (e.g., agent management or app management).
     labels: Optional. The labels associated with this project. Label keys must
       be between 1 and 63 characters long and must conform to the following
       regular expression: \[a-z\](\[-a-z0-9\]*\[a-z0-9\])?. Label values must
@@ -2578,13 +2977,14 @@ class Project(_messages.Message):
   deleteTime = _messages.StringField(3)
   displayName = _messages.StringField(4)
   etag = _messages.StringField(5)
-  labels = _messages.MessageField('LabelsValue', 6)
-  name = _messages.StringField(7)
-  parent = _messages.StringField(8)
-  projectId = _messages.StringField(9)
-  state = _messages.EnumField('StateValueValuesEnum', 10)
-  tags = _messages.MessageField('TagsValue', 11)
-  updateTime = _messages.StringField(12)
+  isManagementProject = _messages.BooleanField(6)
+  labels = _messages.MessageField('LabelsValue', 7)
+  name = _messages.StringField(8)
+  parent = _messages.StringField(9)
+  projectId = _messages.StringField(10)
+  state = _messages.EnumField('StateValueValuesEnum', 11)
+  tags = _messages.MessageField('TagsValue', 12)
+  updateTime = _messages.StringField(13)
 
 
 class ProjectCreationStatus(_messages.Message):
@@ -3209,6 +3609,27 @@ class UndeleteProjectMetadata(_messages.Message):
 
 class UndeleteProjectRequest(_messages.Message):
   r"""The request sent to the UndeleteProject method."""
+
+
+class UpdateBoundaryConfigMetadata(_messages.Message):
+  r"""A status object which is used as the `metadata` field for the Operation
+  returned by UpdateBoundaryConfig. Currently empty.
+  """
+
+
+
+class UpdateBoundaryMetadata(_messages.Message):
+  r"""A status object which is used as the `metadata` field for the Operation
+  returned by UpdateBoundary. Currently empty.
+  """
+
+
+
+class UpdateCapabilityConfigMetadata(_messages.Message):
+  r"""A status object which is used as the `metadata` field for the Operation
+  returned by UpdateCapabilityConfig. Currently empty.
+  """
+
 
 
 class UpdateFolderMetadata(_messages.Message):

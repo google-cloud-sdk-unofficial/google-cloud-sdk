@@ -44,6 +44,16 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  FOLDERS_CAPABILITYCONFIGS = (
+      'folders.capabilityConfigs',
+      '{+name}',
+      {
+          '':
+              'folders/{foldersId}/capabilityConfigs/{capabilityConfigsId}',
+      },
+      ['name'],
+      True
+  )
   FOLDERS_EFFECTIVESETTINGS = (
       'folders.effectiveSettings',
       '{+name}',
@@ -123,6 +133,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  ORGANIZATIONS_CAPABILITYCONFIGS = (
+      'organizations.capabilityConfigs',
+      '{+name}',
+      {
+          '':
+              'organizations/{organizationsId}/capabilityConfigs/'
+              '{capabilityConfigsId}',
+      },
+      ['name'],
+      True
+  )
   ORGANIZATIONS_EFFECTIVESETTINGS = (
       'organizations.effectiveSettings',
       '{+name}',
@@ -150,6 +171,16 @@ class Collections(enum.Enum):
       {
           '':
               'projects/{projectsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_CAPABILITYCONFIGS = (
+      'projects.capabilityConfigs',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/capabilityConfigs/{capabilityConfigsId}',
       },
       ['name'],
       True

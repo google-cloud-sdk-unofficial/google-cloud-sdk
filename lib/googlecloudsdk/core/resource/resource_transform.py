@@ -49,9 +49,10 @@ import re
 
 from googlecloudsdk.core.console import console_attr
 from googlecloudsdk.core.resource import resource_exceptions
+from googlecloudsdk.core.resource import resource_lex
+from googlecloudsdk.core.resource import resource_parser_transform
 from googlecloudsdk.core.resource import resource_property
 from googlecloudsdk.core.util import times
-
 import six
 from six.moves import map  # pylint: disable=redefined-builtin
 from six.moves import urllib
@@ -77,8 +78,6 @@ def GetBooleanArgValue(arg):
 
 def _GetParsedKey(key):
   """Returns a parsed key from a dotted key string."""
-  # pylint: disable=g-import-not-at-top, circular dependency
-  from googlecloudsdk.core.resource import resource_lex
   return resource_lex.Lexer(key).Key()
 
 
@@ -94,27 +93,6 @@ def GetKeyValue(r, key, undefined=None):
     The value for key in r.
   """
   return resource_property.Get(r, _GetParsedKey(key), undefined)
-
-
-def TransformAlways(r):
-  """Marks a transform sequence to always be applied.
-
-  In some cases transforms are disabled. Prepending always() to a transform
-  sequence causes the sequence to always be evaluated.
-
-  Example:
-    `some_field.always().foo().bar()`:::
-    Always applies foo() and then bar().
-
-  Args:
-    r: A resource.
-
-  Returns:
-    r.
-  """
-  # This method is used as a decorator in transform expressions. It is
-  # recognized at parse time and discarded.
-  return r
 
 
 def TransformBaseName(r, undefined=''):
@@ -770,27 +748,6 @@ def TransformGroup(r, *keys):
   return buf.getvalue()
 
 
-def TransformIf(r, expr):
-  """Disables the projection key if the flag name filter expr is false.
-
-  Args:
-    r: A JSON-serializable object.
-    expr: A command flag filter name expression. See `gcloud topic filters` for
-      details on filter expressions. The expression variables are flag names
-      without the leading *--* prefix and dashes replaced by underscores.
-
-  Example:
-    `table(name, value.if(NOT short_format))`:::
-    Lists a value column if the *--short-format* command line flag is not
-    specified.
-
-  Returns:
-    r
-  """
-  _ = expr
-  return r
-
-
 def TransformIso(r, undefined='T'):
   """Formats the resource to numeric ISO time format.
 
@@ -884,36 +841,6 @@ def TransformLower(r):
   """
   if r and isinstance(r, six.string_types):
     return r.lower()
-  return r
-
-
-def TransformMap(r, depth=1):
-  """Applies the next transform in the sequence to each resource list item.
-
-  Example:
-    ```list_field.map().foo().list()```:::
-    Applies foo() to each item in list_field and then list() to the resulting
-    value to return a compact comma-separated list.
-    ```list_field.*foo().list()```:::
-    ```*``` is shorthand for map().
-    ```list_field.map().foo().map().bar()```:::
-    Applies foo() to each item in list_field and then bar() to each item in the
-    resulting list.
-    ```abc.xyz.map(2).foo()```:::
-    Applies foo() to each item in xyz[] for all items in abc[].
-    ```abc.xyz.**foo()```:::
-    ```**``` is shorthand for map(2).
-
-  Args:
-    r: A resource.
-    depth: The list nesting depth.
-
-  Returns:
-    r.
-  """
-  # This method is used as a decorator in transform expressions. It is
-  # recognized at parse time and discarded.
-  _ = depth
   return r
 
 
@@ -1260,65 +1187,20 @@ def TransformSub(r, pattern, replacement, count=0, ignorecase=True):
     `table(field.sub(" there", ""))`:::
     If the field string is "hey there" it will be displayed as "hey".
   """
+  if r is None:
+    return None
+
   try:
     count = int(count)
-  except ValueError:
+  except (AttributeError, TypeError, ValueError):
     return r
 
   try:
     ignorecase = re.IGNORECASE if GetBooleanArgValue(ignorecase) else 0
     flags = re.MULTILINE | re.DOTALL | ignorecase
     return re.sub(pattern, replacement, r, count, flags)
-  except re.error:
+  except (re.error, TypeError):
     return r
-
-
-def TransformSynthesize(r, *args):
-  """Synthesizes a new resource from the schema arguments.
-
-  A list of tuple arguments controls the resource synthesis. Each tuple is a
-  schema that defines the synthesis of one resource list item. Each schema
-  item defines the synthesis of one synthesized_resource attribute from an
-  original_resource attribute.
-
-  There are three kinds of schema items:
-
-  *name:literal*:::
-  The value for the name attribute in the synthesized resource is the literal
-  value.
-  *name=key*:::
-  The value for the name attribute in the synthesized_resource is the
-  value of key in the original_resource.
-  *key*:::
-  All the attributes of the value of key in the original_resource are
-  added to the attributes in the synthesized_resource.
-  :::
-
-  Args:
-    r: A resource list.
-    *args: The list of schema tuples.
-
-  Example:
-    This returns a list of two resource items:::
-    `synthesize((name:up, upInfo), (name:down, downInfo))`
-    If upInfo and downInfo serialize to:::
-    `{"foo": 1, "bar": "yes"}`
-    and:::
-    `{"foo": 0, "bar": "no"}`
-    then the synthesized resource list is:::
-    `[{"name": "up", "foo": 1, "bar": "yes"},
-      {"name": "down", "foo": 0, "bar": "no"}]`
-    This could then be displayed by a nested table using:::
-    `synthesize(...):format="table(name, foo, bar)"`
-
-
-  Returns:
-    A synthesized resource list.
-  """
-  # This method is used as a decorator in transform expressions. It is
-  # recognized at parse time and discarded.
-  _ = args
-  return r
 
 
 def TransformUpper(r):
@@ -1440,7 +1322,7 @@ def TransformTrailOff(r, character_limit, undefined=''):
 
 # The builtin transforms.
 _BUILTIN_TRANSFORMS = {
-    'always': TransformAlways,
+    'always': resource_parser_transform.TransformAlways,
     'basename': TransformBaseName,
     'collection': TransformCollection,
     'color': TransformColor,
@@ -1459,13 +1341,13 @@ _BUILTIN_TRANSFORMS = {
     'float': TransformFloat,
     'format': TransformFormat,
     'group': TransformGroup,
-    'if': TransformIf,
+    'if': resource_parser_transform.TransformIf,
     'iso': TransformIso,
     'join': TransformJoin,
     'len': TransformLen,
     'lower': TransformLower,
     'list': TransformList,
-    'map': TransformMap,
+    'map': resource_parser_transform.TransformMap,
     'notnull': TransformNotNull,
     'regex': TransformRegex,
     'resolution': TransformResolution,
@@ -1476,7 +1358,7 @@ _BUILTIN_TRANSFORMS = {
     'sort': TransformSort,
     'split': TransformSplit,
     'sub': TransformSub,
-    'synthesize': TransformSynthesize,
+    'synthesize': resource_parser_transform.TransformSynthesize,
     'trailoff': TransformTrailOff,
     'upper': TransformUpper,
     'uri': TransformUri,

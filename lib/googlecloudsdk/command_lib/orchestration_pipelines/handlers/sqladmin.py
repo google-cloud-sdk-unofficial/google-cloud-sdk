@@ -157,7 +157,11 @@ class SqladminDatabaseHandler(base.GcpResourceHandler):
     resource_message.project = self.environment.project
     resource_message.instance = self.get_validated_parent_id()
     resource_message.name = self.get_resource_id()
-    return resource_message
+    return self.messages.SqlDatabasesInsertRequest(
+        project=self.environment.project,
+        instance=self.get_validated_parent_id(),
+        database=resource_message,
+    )
 
   def build_delete_request(
       self, existing_resource: messages.Message
@@ -220,7 +224,11 @@ class SqladminUserHandler(base.GcpResourceHandler):
   ) -> messages.Message:
     resource_message.project = self.environment.project
     resource_message.instance = self.get_validated_parent_id()
-    return resource_message
+    return self.messages.SqlUsersInsertRequest(
+        project=self.environment.project,
+        instance=self.get_validated_parent_id(),
+        user=resource_message,
+    )
 
   def build_delete_request(
       self, existing_resource: messages.Message

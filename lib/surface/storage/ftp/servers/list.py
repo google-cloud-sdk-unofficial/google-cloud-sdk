@@ -14,9 +14,8 @@
 # limitations under the License.
 """Command to list Cloud FTP servers."""
 
-from googlecloudsdk.api_lib.storage import ftp
+from googlecloudsdk.api_lib.storage import ftp_api
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.storage.ftp import servers_util
 
 
 @base.UniverseCompatible
@@ -59,8 +58,7 @@ class List(base.ListCommand):
     """)
 
   def Run(self, args):
-    client = ftp.FtpClient()
-    parent = servers_util.GetParentString(args.location)
+    client = ftp_api.FtpApi()
     return client.ListServers(
-        parent, page_size=args.page_size, limit=args.limit
+        args.location, page_size=args.page_size, limit=args.limit
     )

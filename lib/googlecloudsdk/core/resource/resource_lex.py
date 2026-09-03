@@ -73,10 +73,9 @@ import copy
 import re
 
 from googlecloudsdk.core.resource import resource_exceptions
+from googlecloudsdk.core.resource import resource_parser_transform
 from googlecloudsdk.core.resource import resource_projection_spec
 from googlecloudsdk.core.resource import resource_property
-from googlecloudsdk.core.resource import resource_transform
-
 import six
 from six.moves import map  # pylint: disable=redefined-builtin
 from six.moves import range  # pylint: disable=redefined-builtin
@@ -786,19 +785,19 @@ class Lexer(object):
     while True:
       transform = self._ParseTransform(func_name, active=active,
                                        map_transform=map_transform)
-      if transform.func == resource_transform.TransformAlways:
+      if transform.func is resource_parser_transform.TransformAlways:
         active = None  # Always active.
         func_name = None
-      elif transform.func == resource_transform.TransformMap:
+      elif transform.func is resource_parser_transform.TransformMap:
         map_transform = int(transform.args[0]) if transform.args else 1
         func_name = None
-      elif transform.func == resource_transform.TransformIf:
+      elif transform.func is resource_parser_transform.TransformIf:
         if len(transform.args) != 1:
           raise resource_exceptions.ExpressionSyntaxError(
               'Conditional filter expression expected [{0}].'.format(
                   self.Annotate(here)))
         calls.SetConditional(transform.args[0])
-      elif transform.func == resource_transform.TransformSynthesize:
+      elif transform.func is resource_parser_transform.TransformSynthesize:
         transform.func = self._ParseSynthesize(transform.args)
         transform.args = []
         transform.kwargs = {}
@@ -893,3 +892,4 @@ def GetKeyName(key, quote=True, omit_indices=False):
       part = '"{part}"'.format(part=part)
     parts.append(part)
   return '.'.join(parts) if parts else '.'
+

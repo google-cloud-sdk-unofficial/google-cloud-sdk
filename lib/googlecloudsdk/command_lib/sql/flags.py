@@ -3769,17 +3769,87 @@ def AddBackendType(
 def AddSemiManagedSqlServer(
     parser: parser_extensions.Namespace, hidden: bool = True
 ) -> None:
-  """Adds the `--gce-instance` flag to the parser."""
+  """Adds flags for semi-managed SQL Server instances to the parser."""
   parser.add_argument(
+      '--gce-instances',
       '--gce-instance',
+      dest='gce_instances',
+      required=False,
+      type=arg_parsers.ArgList(),
+      hidden=hidden,
+      action=arg_parsers.FlattenAction(),
+      help=(
+          'The list of full resource names of the GCE instances that are to be'
+          ' onboarded to Cloud SQL. E.g.'
+          ' `--gce-instances=projects/PRJ/zones/ZONE/instances/INSTANCE` '
+      ),
+  )
+  parser.add_argument(
+      '--sql-account',
       required=False,
       type=str,
       hidden=hidden,
-      action='append',
+      help='SQL account name for semi-managed SQL Server instance.',
+  )
+  parser.add_argument(
+      '--sql-account-secret-name',
+      required=False,
+      type=str,
+      hidden=hidden,
       help=(
-          'The list of full resource names of the GCE instances that are to be'
-          ' onboarded to Cloud SQL.'
-          '`--gce-instance=projects/test-project/zones/us-central1/instances/my-gce-instance'
+          'Secret Manager secret resource name containing the SQL account'
+          ' credentials for semi-managed instance.'
+      ),
+  )
+  parser.add_argument(
+      '--windows-service-account',
+      required=False,
+      type=str,
+      hidden=hidden,
+      help='Windows service account for semi-managed instance.',
+  )
+  parser.add_argument(
+      '--windows-service-account-secret-name',
+      required=False,
+      type=str,
+      hidden=hidden,
+      help=(
+          'Secret Manager secret resource name containing the Windows'
+          ' service account credentials for semi-managed instance.'
+      ),
+  )
+  parser.add_argument(
+      '--enable-semi-managed-replication',
+      required=False,
+      hidden=hidden,
+      action=arg_parsers.StoreTrueFalseAction,
+      help=(
+          'Enable AlwaysOn Availability Group replication for semi-managed'
+          ' instance.'
+      ),
+  )
+  parser.add_argument(
+      '--enable-semi-managed-backup',
+      required=False,
+      hidden=hidden,
+      action=arg_parsers.StoreTrueFalseAction,
+      help='Enable backup configuration for semi-managed instance.',
+  )
+  parser.add_argument(
+      '--enable-semi-managed-insights',
+      required=False,
+      hidden=hidden,
+      action=arg_parsers.StoreTrueFalseAction,
+      help='Enable Query Insights configuration for semi-managed instance.',
+  )
+  parser.add_argument(
+      '--semi-managed-insights-gcs-uri',
+      required=False,
+      type=str,
+      hidden=hidden,
+      help=(
+          'Cloud Storage GCS path to store Query Insights data for'
+          ' semi-managed instance.'
       ),
   )
 

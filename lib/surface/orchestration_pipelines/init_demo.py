@@ -208,7 +208,6 @@ jobs:
 """
 
 
-@calliope_base.Hidden
 @calliope_base.DefaultUniverseOnly
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.BETA)
 class InitDemo(calliope_base.Command):

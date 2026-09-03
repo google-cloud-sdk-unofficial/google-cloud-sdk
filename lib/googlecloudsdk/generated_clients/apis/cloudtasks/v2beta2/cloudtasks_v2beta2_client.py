@@ -39,6 +39,7 @@ class CloudtasksV2beta2(base_api.BaseApiClient):
         response_encoding=response_encoding)
     self.api_queue = self.ApiQueueService(self)
     self.api = self.ApiService(self)
+    self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
     self.projects_locations_queues_tasks = self.ProjectsLocationsQueuesTasksService(self)
     self.projects_locations_queues = self.ProjectsLocationsQueuesService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
@@ -90,6 +91,43 @@ class CloudtasksV2beta2(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+  class ProjectsLocationsOperationsService(base_api.BaseApiService):
+    """Service class for the projects_locations_operations resource."""
+
+    _NAME = 'projects_locations_operations'
+
+    def __init__(self, client):
+      super(CloudtasksV2beta2.ProjectsLocationsOperationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.
+
+      Args:
+        request: (CloudtasksProjectsLocationsOperationsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2beta2/projects/{projectsId}/locations/{locationsId}/operations/{operationsId}',
+        http_method='GET',
+        method_id='cloudtasks.projects.locations.operations.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v2beta2/{+name}',
+        request_field='',
+        request_type_name='CloudtasksProjectsLocationsOperationsGetRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class ProjectsLocationsQueuesTasksService(base_api.BaseApiService):
     """Service class for the projects_locations_queues_tasks resource."""
 
@@ -124,6 +162,60 @@ class CloudtasksV2beta2(base_api.BaseApiClient):
         request_field='acknowledgeTaskRequest',
         request_type_name='CloudtasksProjectsLocationsQueuesTasksAcknowledgeRequest',
         response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def BatchCreate(self, request, global_params=None):
+      r"""Creates a batch of tasks and adds them to a queue. This call is not atomic. All tasks must be for the same queue. A maximum of 100 tasks can be created in a single batch.
+
+      Args:
+        request: (CloudtasksProjectsLocationsQueuesTasksBatchCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('BatchCreate')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    BatchCreate.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2beta2/projects/{projectsId}/locations/{locationsId}/queues/{queuesId}/tasks:batchCreate',
+        http_method='POST',
+        method_id='cloudtasks.projects.locations.queues.tasks.batchCreate',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v2beta2/{+parent}/tasks:batchCreate',
+        request_field='batchCreateTasksRequest',
+        request_type_name='CloudtasksProjectsLocationsQueuesTasksBatchCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def BatchDelete(self, request, global_params=None):
+      r"""Deletes a batch of tasks. This is a non-atomic operation: if deletion fails for some tasks, it can still succeed for others. The metadata field of google.longrunning.Operation contains details of failed deletions. A maximum of 1000 tasks can be deleted in a batch.
+
+      Args:
+        request: (CloudtasksProjectsLocationsQueuesTasksBatchDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('BatchDelete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    BatchDelete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2beta2/projects/{projectsId}/locations/{locationsId}/queues/{queuesId}/tasks:batchDelete',
+        http_method='POST',
+        method_id='cloudtasks.projects.locations.queues.tasks.batchDelete',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v2beta2/{+parent}/tasks:batchDelete',
+        request_field='batchDeleteTasksRequest',
+        request_type_name='CloudtasksProjectsLocationsQueuesTasksBatchDeleteRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

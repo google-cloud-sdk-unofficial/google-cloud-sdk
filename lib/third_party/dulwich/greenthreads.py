@@ -3,8 +3,9 @@
 #
 # Author: Fabien Boucher <fabien.boucher@enovance.com>
 #
+# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 # Dulwich is dual-licensed under the Apache License, Version 2.0 and the GNU
-# General Public License as public by the Free Software Foundation; version 2.0
+# General Public License as published by the Free Software Foundation; version 2.0
 # or (at your option) any later version. You can redistribute it and/or
 # modify it under the terms of either of these two licenses.
 #
@@ -22,7 +23,7 @@
 
 """Utility module for querying an ObjectStore with gevent."""
 
-from typing import FrozenSet, Optional, Set, Tuple
+from typing import Optional
 
 import gevent
 from gevent import pool
@@ -44,7 +45,7 @@ def _split_commits_and_tags(obj_store, lst, *, ignore_unknown=False, pool=None):
     commits = set()
     tags = set()
 
-    def find_commit_type(sha):
+    def find_commit_type(sha) -> None:
         try:
             o = obj_store[sha]
         except KeyError:
@@ -57,7 +58,7 @@ def _split_commits_and_tags(obj_store, lst, *, ignore_unknown=False, pool=None):
                 tags.add(sha)
                 commits.add(o.object[1])
             else:
-                raise KeyError("Not a commit or a tag: %s" % sha)
+                raise KeyError(f"Not a commit or a tag: {sha}")
 
     jobs = [pool.spawn(find_commit_type, s) for s in lst]
     gevent.joinall(jobs)
@@ -81,7 +82,7 @@ class GreenThreadsMissingObjectFinder(MissingObjectFinder):
         concurrency=1,
         get_parents=None,
     ) -> None:
-        def collect_tree_sha(sha):
+        def collect_tree_sha(sha) -> None:
             self.sha_done.add(sha)
             cmt = object_store[sha]
             _collect_filetree_revs(object_store, cmt.tree, self.sha_done)
@@ -95,7 +96,7 @@ class GreenThreadsMissingObjectFinder(MissingObjectFinder):
         want_commits, want_tags = _split_commits_and_tags(
             object_store, wants, ignore_unknown=False, pool=p
         )
-        all_ancestors: FrozenSet[ObjectID] = frozenset(
+        all_ancestors: frozenset[ObjectID] = frozenset(
             _collect_ancestors(object_store, have_commits)[0]
         )
         missing_commits, common_commits = _collect_ancestors(
@@ -109,11 +110,11 @@ class GreenThreadsMissingObjectFinder(MissingObjectFinder):
             self.sha_done.add(t)
         missing_tags = want_tags.difference(have_tags)
         wants = missing_commits.union(missing_tags)
-        self.objects_to_send: Set[
-            Tuple[ObjectID, Optional[bytes], Optional[int], bool]
+        self.objects_to_send: set[
+            tuple[ObjectID, Optional[bytes], Optional[int], bool]
         ] = {(w, None, 0, False) for w in wants}
         if progress is None:
             self.progress = lambda x: None
         else:
             self.progress = progress
-        self._tagged = get_tagged and get_tagged() or {}
+        self._tagged = (get_tagged and get_tagged()) or {}

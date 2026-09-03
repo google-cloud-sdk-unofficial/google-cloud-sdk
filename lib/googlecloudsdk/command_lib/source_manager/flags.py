@@ -210,3 +210,40 @@ def AddServiceAccount(
       help=help_text,
   )
 
+
+def AddTitle(
+    parser,
+    help_text="The title of the pull request.",
+    required=True,
+):
+  parser.add_argument(
+      "--title", dest="title", required=required, help=help_text
+  )
+
+
+def AddBody(
+    parser,
+    help_text="The description of the pull request.",
+    required=False,
+):
+  parser.add_argument("--body", dest="body", required=required, help=help_text)
+
+
+def AddBaseBranch(
+    parser,
+    help_text="The branch to merge changes in.",
+    required=True,
+):
+  parser.add_argument(
+      "--base-branch", dest="base_branch", required=required, help=help_text
+  )
+
+
+def AddHeadBranch(
+    parser,
+    help_text="The branch containing the changes to be merged.",
+    required=True,
+):
+  parser.add_argument(
+      "--head-branch", dest="head_branch", required=required, help=help_text
+  )

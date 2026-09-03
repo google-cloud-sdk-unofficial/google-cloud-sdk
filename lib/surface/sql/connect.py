@@ -155,7 +155,7 @@ def _GetClientIP(instance_ref, sql_client, acl_name):
   return instance_info, client_ip
 
 
-def AddBaseArgs(parser) -> None:
+def AddBaseArgs(parser):
   """Declare flag arguments for this command parser.
 
   Args:
@@ -298,8 +298,7 @@ def RunConnectCommand(args, supports_database=False):
   instances_command_util.ConnectToInstance(sql_args, sql_user)
 
 
-def RunProxyConnectCommand(args,
-                           supports_database=False):
+def RunProxyConnectCommand(args, supports_database=False):
   """Connects to a Cloud SQL instance through the Cloud SQL Proxy.
 
   Args:
@@ -314,90 +313,6 @@ def RunProxyConnectCommand(args,
     HttpException: An http error response was received while executing api
         request.
     CloudSqlProxyError: Cloud SQL Proxy could not be found.
-    SqlClientNotFoundError: A local SQL client could not be found.
-    ConnectionError: An error occurred while trying to connect to the instance.
-  """
-  client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
-  sql_client = client.sql_client
-  sql_messages = client.sql_messages
-
-  instance_ref = instances_command_util.GetInstanceRef(args, client)
-
-  instance_info = sql_client.instances.Get(
-      sql_messages.SqlInstancesGetRequest(
-          project=instance_ref.project, instance=instance_ref.instance))
-
-  if not instances_api_util.IsInstanceV2(sql_messages, instance_info):
-    # The Cloud SQL Proxy does not support V1 instances.
-    return RunConnectCommand(args, supports_database)
-
-  # If the instance is V2, keep going with the proxy.
-  exe = files.FindExecutableOnPath('cloud_sql_proxy')
-  if not exe:
-    raise exceptions.CloudSqlProxyError(
-        'Cloud SQL Proxy (v1) couldn\'t be found in PATH. Either install '
-        'the component with `gcloud components install cloud_sql_proxy` or see '
-        'https://github.com/GoogleCloudPlatform/cloud-sql-proxy/releases '
-        'to install the v1 Cloud SQL Proxy. '
-        'The v2 Cloud SQL Proxy is currently not supported by the '
-        'connect command. You need to install the v1 Cloud SQL Proxy binary '
-        'to use the connect command.')
-
-  # Check for the executable based on the db version.
-  db_type = instance_info.databaseVersion.name.split('_')[0]
-  exe_name = constants.DB_EXE.get(db_type, 'mysql')
-  exe = files.FindExecutableOnPath(exe_name)
-  if not exe:
-    raise exceptions.SqlClientNotFoundError(
-        '{0} client not found.  Please install a {1} client and make sure '
-        'it is in PATH to be able to connect to the database instance.'.format(
-            exe_name.title(), exe_name))
-
-  # Start the Cloud SQL Proxy and wait for it to be ready to accept connections.
-  port = str(args.port)
-  proxy_process = instances_api_util.StartCloudSqlProxy(instance_info, port)
-  atexit.register(proxy_process.kill)
-
-  # Determine what SQL user to connect with.
-  sql_user = constants.DEFAULT_SQL_USER[exe_name]
-  if args.user:
-    sql_user = args.user
-
-  # We have everything we need, time to party!
-  flags = constants.EXE_FLAGS[exe_name]
-  sql_args = [exe_name]
-  if exe_name == 'sqlcmd':
-    # sqlcmd merges hostname and port into a single argument
-    hostname = 'tcp:127.0.0.1,{0}'.format(port)
-    sql_args.extend([flags['hostname'], hostname])
-  else:
-    sql_args.extend([flags['hostname'], '127.0.0.1', flags['port'], port])
-  sql_args.extend([flags['user'], sql_user])
-  if 'password' in flags:
-    sql_args.append(flags['password'])
-
-  if supports_database:
-    sql_args.extend(instances_command_util.GetDatabaseArgs(args, flags))
-
-  instances_command_util.ConnectToInstance(sql_args, sql_user)
-  proxy_process.kill()
-
-
-def RunProxyV2ConnectCommand(args, supports_database=False):
-  """Connects to a Cloud SQL instance through the Cloud SQL Proxy (v2).
-
-  Args:
-    args: argparse.Namespace, The arguments that this command was invoked with.
-    supports_database: Whether or not the `--database` flag needs to be
-      accounted for.
-
-  Returns:
-    If no exception is raised this method does not return. A new process is
-    started and the original one is killed.
-  Raises:
-    HttpException: An http error response was received while executing api
-        request.
-    CloudSqlProxyError: Cloud SQL Proxy (v2) could not be found.
     SqlClientNotFoundError: A local SQL client could not be found.
     ConnectionError: An error occurred while trying to connect to the instance.
   """
@@ -471,7 +386,8 @@ def RunProxyV2ConnectCommand(args, supports_database=False):
       psc=psc,
       auto_ip=auto_ip,
       debug_logs=debug_logs,
-      run_connection_test=run_connection_test)
+      run_connection_test=run_connection_test,
+  )
   atexit.register(proxy_process.kill)
 
   if run_connection_test:
@@ -543,7 +459,7 @@ class Connect(base.Command):
 
   def Run(self, args):
     """Connects to a Cloud SQL instance."""
-    return RunProxyV2ConnectCommand(args, supports_database=True)
+    return RunProxyConnectCommand(args, supports_database=True)
 
 
 @base.DefaultUniverseOnly
@@ -562,7 +478,7 @@ class ConnectBeta(base.Command):
 
   def Run(self, args):
     """Connects to a Cloud SQL instance."""
-    return RunProxyV2ConnectCommand(args, supports_database=True)
+    return RunProxyConnectCommand(args, supports_database=True)
 
 
 @base.UniverseCompatible
@@ -582,4 +498,4 @@ class ConnectAlpha(base.Command):
 
   def Run(self, args):
     """Connects to a Cloud SQL instance."""
-    return RunProxyV2ConnectCommand(args, supports_database=True)
+    return RunProxyConnectCommand(args, supports_database=True)

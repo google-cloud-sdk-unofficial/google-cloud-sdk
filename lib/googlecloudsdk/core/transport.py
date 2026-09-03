@@ -24,6 +24,7 @@ import uuid
 
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import config
+from googlecloudsdk.core import config_sqlite_store
 from googlecloudsdk.core import log
 from googlecloudsdk.core import metrics
 from googlecloudsdk.core import properties
@@ -602,7 +603,7 @@ def GetAndCacheArchitecture(user_platform):
     client machine architecture
   """
 
-  active_config_store = config.GetConfigStore()
+  active_config_store = config_sqlite_store.GetConfigStore()
   try:
     cached_arch = active_config_store.Get('client_arch')
   except Exception:  # pylint: disable=broad-except
@@ -662,7 +663,7 @@ def MakeUserAgentString(cmd_path=None):
       agent_fragment=agent_fragment,
       cmd=(cmd_path or properties.VALUES.metrics.command_name.Get()),
       inv_id=INVOCATION_ID,
-      environment=properties.GetMetricsEnvironment(),
+      environment=metrics.GetMetricsEnvironment(),
       env_version=properties.VALUES.metrics.environment_version.Get(),
       os=user_platform.operating_system,
       os_version=user_platform.operating_system.clean_version

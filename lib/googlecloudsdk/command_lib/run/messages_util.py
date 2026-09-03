@@ -343,10 +343,11 @@ def LogInstancePostDeploymentMessages(instance, region, release_track):
   release_track_prefix = (
       f' {release_track.prefix}' if release_track.prefix else ''
   )
-  log.status.Print(
-      f'\nSee logs with:\ngcloud{release_track_prefix} run instances'
-      f' logs tail {instance.name} --region {region}'
-  )
+  if release_track.prefix == 'alpha':
+    log.status.Print(
+        f'\nSee logs with:\ngcloud{release_track_prefix} run instances'
+        f' logs tail {instance.name} --region {region}'
+    )
   if instance.annotations.get(k8s_object.SSH_ENABLED_ANNOTATION) == 'true':
     log.status.Print(
         f'\nSSH with:\ngcloud{release_track_prefix} run instances ssh'

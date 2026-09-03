@@ -275,6 +275,22 @@ def set_semantic_governance_policy(
     policy.mcpTools = list(_expand_mcp_tools(raw_tools, mcp_tool_type))
     fields_to_update.append("mcpTools")
 
+  # Handle agent-response-denial-message (nested field on
+  # AgentResponseCustomization).
+  if hasattr(args, "agent_response_denial_message") and args.IsSpecified(
+      "agent_response_denial_message"
+  ):
+    customization_type = ai_util.GetMessage(
+        "AgentResponseCustomization", version_id
+    )
+    if customization_type is not None:
+      existing = getattr(policy, "agentResponseCustomization", None)
+      if existing is None:
+        existing = customization_type()
+      existing.denialMessage = getattr(args, "agent_response_denial_message")
+      policy.agentResponseCustomization = existing
+      fields_to_update.append("agentResponseCustomization.denialMessage")
+
   # Handle update_mask if it exists (for PATCH operations)
   if fields_to_update:
     mask_val = ",".join(sorted(fields_to_update))

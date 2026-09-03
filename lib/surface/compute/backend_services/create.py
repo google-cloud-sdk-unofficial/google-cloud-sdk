@@ -132,7 +132,6 @@ class CreateHelper(object):
       support_ip_port_dynamic_forwarding,
       support_forward_proxy,
       support_allow_multinetwork,
-      support_identity,
       support_external_passthrough,
       support_iap_alpha=False,
   ):
@@ -152,7 +151,7 @@ class CreateHelper(object):
         parser, cust_metavar='HTTPS_HEALTH_CHECK')
     flags.AddServiceLoadBalancingPolicy(parser)
     flags.AddBackendServiceTlsSettings(
-        parser, support_identity=support_identity
+        parser, support_identity=True
     )
     flags.AddServiceBindings(parser)
     neg_group = parser.add_group(mutex=False, required=False, hidden=True)
@@ -189,6 +188,7 @@ class CreateHelper(object):
     signed_url_flags.AddSignedUrlCacheMaxAge(parser, required=False)
 
     flags.AddSubsettingPolicy(parser)
+    flags.AddSecuritySettingsFlags(parser)
     if support_subsetting_subset_size:
       flags.AddSubsettingSubsetSize(parser)
 
@@ -206,6 +206,7 @@ class CreateHelper(object):
     cdn_flags.AddCdnPolicyArgs(parser, 'backend service')
 
     flags.AddConnectionTrackingPolicy(parser)
+    flags.AddConsistentHashHttpHeaderName(parser)
     flags.AddConsistentHashMinimumRingSize(parser)
     flags.AddCircuitBreakersMaxRequests(parser)
     flags.AddCompressionMode(parser)
@@ -226,7 +227,6 @@ class CreateHelper(object):
       support_ip_port_dynamic_forwarding,
       support_forward_proxy,
       support_allow_multinetwork,
-      support_identity,
       support_external_passthrough,
   ):
     self._support_subsetting_subset_size = support_subsetting_subset_size
@@ -236,7 +236,6 @@ class CreateHelper(object):
     self._support_forward_proxy = support_forward_proxy
     self._support_allow_multinetwork = support_allow_multinetwork
     self._release_track = release_track
-    self._support_identity = support_identity
     self._support_external_passthrough = support_external_passthrough
 
   def _CreateGlobalRequests(self, holder, args, backend_services_ref):
@@ -277,7 +276,7 @@ class CreateHelper(object):
           release_track=self._release_track,
       )
     if args.tls_settings is not None or (
-        self._support_identity and hasattr(args, 'identity') and args.identity
+        hasattr(args, 'identity') and args.identity
     ):
       backend_services_utils.ApplyTlsSettingsArgs(
           client,
@@ -373,6 +372,9 @@ class CreateHelper(object):
     if self._support_allow_multinetwork:
       backend_service.allowMultinetwork = args.allow_multinetwork
 
+    backend_services_utils.ApplySecuritySettingsArgs(
+        client, args, backend_service
+    )
     _ApplyHaPolicyArgs(client.messages, args, backend_service)
 
     group_ref = self._GetNetworkEndpointGroupRef(args, holder.resources, client)
@@ -428,7 +430,7 @@ class CreateHelper(object):
       )
 
     if args.tls_settings is not None or (
-        self._support_identity and hasattr(args, 'identity') and args.identity
+        hasattr(args, 'identity') and args.identity
     ):
       backend_services_utils.ApplyTlsSettingsArgs(
           client,
@@ -512,6 +514,9 @@ class CreateHelper(object):
     if self._support_allow_multinetwork:
       backend_service.allowMultinetwork = args.allow_multinetwork
 
+    backend_services_utils.ApplySecuritySettingsArgs(
+        client, args, backend_service
+    )
     _ApplyHaPolicyArgs(client.messages, args, backend_service)
 
     group_ref = self._GetNetworkEndpointGroupRef(args, holder.resources, client)
@@ -666,7 +671,6 @@ class CreateGA(base.CreateCommand):
   _support_ip_port_dynamic_forwarding = False
   _support_forward_proxy = False
   _support_allow_multinetwork = False
-  _support_identity = False
   _support_external_passthrough = False
   _support_iap_alpha = False
 
@@ -678,7 +682,6 @@ class CreateGA(base.CreateCommand):
         support_ip_port_dynamic_forwarding=cls._support_ip_port_dynamic_forwarding,
         support_forward_proxy=cls._support_forward_proxy,
         support_allow_multinetwork=cls._support_allow_multinetwork,
-        support_identity=cls._support_identity,
         support_external_passthrough=cls._support_external_passthrough,
         support_iap_alpha=cls._support_iap_alpha,
     )
@@ -693,7 +696,6 @@ class CreateGA(base.CreateCommand):
         support_forward_proxy=self._support_forward_proxy,
         support_allow_multinetwork=self._support_allow_multinetwork,
         release_track=self.ReleaseTrack(),
-        support_identity=self._support_identity,
         support_external_passthrough=self._support_external_passthrough,
     ).Run(args, holder)
 
@@ -720,7 +722,6 @@ class CreateBeta(CreateGA):
   _support_ip_port_dynamic_forwarding = True
   _support_forward_proxy = True
   _support_allow_multinetwork = False
-  _support_identity = True
   _support_external_passthrough = True
 
 
@@ -746,6 +747,5 @@ class CreateAlpha(CreateBeta):
   _support_ip_port_dynamic_forwarding = True
   _support_forward_proxy = True
   _support_allow_multinetwork = True
-  _support_identity = True
   _support_external_passthrough = True
   _support_iap_alpha = True

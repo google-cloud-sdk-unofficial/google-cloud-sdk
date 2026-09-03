@@ -20,9 +20,11 @@ import json
 import string
 import textwrap
 
+from googlecloudsdk.api_lib.firestore import api_utils as fs_api_utils
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import arg_parsers_usage_text
 from googlecloudsdk.calliope import base as calliope_base
+from googlecloudsdk.command_lib.util.apis import arg_utils
 
 # Keys used in index field configuration.
 FIELD_CONFIG_FIELD_PATH = 'field-path'
@@ -513,16 +515,22 @@ def AddUserCredsIdArg(parser):
   )
 
 
-def _ChoiceType(choices):
-  """Adapts calliope_base.ChoiceArgument behavior for use with nested arg_parse.ArgObject.
+def _EnumChoiceType(enum_message):
+  """Adapts calliope_base.ChoiceArgument behavior for use with nested enums parsed by arg_parse.ArgObject.
 
   Args:
-    choices: [str], A list of valid flag values.
+    enum_message: An apitools Enum message class.
 
   Returns:
     A callable that sanitizes and validates a user provided flag value against
     those choices. This callable matches ChoiceArgument behavior.
   """
+
+  choices = [
+      arg_utils.EnumNameToChoice(enum_name)
+      for enum_name in enum_message.names()
+  ]
+
   # Validate the choice list with calliope_base.
   _ = calliope_base.ChoiceArgument('unused', choices=choices)
 
@@ -530,9 +538,10 @@ def _ChoiceType(choices):
     val_sanitized = calliope_base.SanitizeChoices([val])[0]
     if val_sanitized not in choices:
       raise arg_parsers.ArgumentTypeError(
-          f'Invalid choice: {val}. Valid choices are: [{", ".join(choices)}].'
+          f'Invalid choice: {val}. Valid choices are:'
+          f' [{", ".join(sorted(choices))}].'
       )
-    return val_sanitized
+    return arg_utils.ChoiceToEnumName(val_sanitized)
 
   return Parse
 
@@ -543,7 +552,9 @@ _FIELD_PATH_SPEC = arg_parsers.ArgObject(
 )
 
 _ARRAY_CONFIG_SPEC = arg_parsers.ArgObject(
-    value_type=_ChoiceType(['contains']),
+    value_type=_EnumChoiceType(
+        fs_api_utils.GetMessages().GoogleFirestoreAdminV1IndexField.ArrayConfigValueValuesEnum
+    ),
     help_text=(
         'Specifies the configuration for an array field. The only '
         "valid option is 'contains'. Exactly one of 'order', "
@@ -552,7 +563,9 @@ _ARRAY_CONFIG_SPEC = arg_parsers.ArgObject(
 )
 
 _ORDER_SPEC = arg_parsers.ArgObject(
-    value_type=_ChoiceType(['ascending', 'descending', 'order-unspecified']),
+    value_type=_EnumChoiceType(
+        fs_api_utils.GetMessages().GoogleFirestoreAdminV1IndexField.OrderValueValuesEnum
+    ),
     help_text=(
         "Specifies the order. Valid options are 'ascending', "
         "'descending'. Exactly one of 'order', 'array-config', or "
@@ -621,17 +634,19 @@ _SEARCH_CONFIG_SPEC = arg_parsers.ArgObject(
                     repeated=True,
                     spec={
                         FIELD_CONFIG_INDEX_TYPE: arg_parsers.ArgObject(
-                            value_type=_ChoiceType(['tokenized']),
+                            value_type=_EnumChoiceType(
+                                fs_api_utils.GetMessages().GoogleFirestoreAdminV1SearchTextIndexSpec.IndexTypeValueValuesEnum
+                            ),
                             help_text=textwrap.dedent("""\
-                                Required. How to index the text field value. Valid options are:
-                                  * `tokenized`: Field values are tokenized.
+                                Required. How to index the text field value.
                                 """),
                         ),
                         FIELD_CONFIG_MATCH_TYPE: arg_parsers.ArgObject(
-                            value_type=_ChoiceType(['match-globally']),
+                            value_type=_EnumChoiceType(
+                                fs_api_utils.GetMessages().GoogleFirestoreAdminV1SearchTextIndexSpec.MatchTypeValueValuesEnum
+                            ),
                             help_text=textwrap.dedent("""\
-                                Required. How to match the text field value. Valid options are:
-                                  * `match-globally`: Match on any indexed field.
+                                Required. How to match the text field value.
                                 """),
                         ),
                     },
@@ -731,12 +746,13 @@ def AddQueryScopeFlag(parser):
   Args:
     parser: The argparse parser.
   """
-  calliope_base.ChoiceArgument(
+  messages = fs_api_utils.GetMessages()
+  arg_utils.ChoiceEnumMapper(
       '--query-scope',
-      choices=['collection', 'collection-group', 'collection-recursive'],
+      message_enum=messages.GoogleFirestoreAdminV1Index.QueryScopeValueValuesEnum,
       default='collection',
       help_str='Query scope the index applies to.',
-  ).AddToParser(parser)
+  ).choice_arg.AddToParser(parser)
 
 
 def AddApiScopeFlag(parser):
@@ -745,12 +761,13 @@ def AddApiScopeFlag(parser):
   Args:
     parser: The argparse parser.
   """
-  calliope_base.ChoiceArgument(
+  messages = fs_api_utils.GetMessages()
+  arg_utils.ChoiceEnumMapper(
       '--api-scope',
-      choices=['any-api', 'datastore-mode-api', 'mongodb-compatible-api'],
+      message_enum=messages.GoogleFirestoreAdminV1Index.ApiScopeValueValuesEnum,
       default='any-api',
       help_str='Api scope the index applies to.',
-  ).AddToParser(parser)
+  ).choice_arg.AddToParser(parser)
 
 
 def AddDensityFlag(parser):
@@ -759,12 +776,13 @@ def AddDensityFlag(parser):
   Args:
     parser: The argparse parser.
   """
-  calliope_base.ChoiceArgument(
+  messages = fs_api_utils.GetMessages()
+  arg_utils.ChoiceEnumMapper(
       '--density',
-      choices=['dense', 'density-unspecified', 'sparse-all', 'sparse-any'],
+      message_enum=messages.GoogleFirestoreAdminV1Index.DensityValueValuesEnum,
       default=None,
       help_str='Density of the index.',
-  ).AddToParser(parser)
+  ).choice_arg.AddToParser(parser)
 
 
 def AddMultikeyFlag(parser):

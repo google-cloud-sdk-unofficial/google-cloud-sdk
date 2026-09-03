@@ -211,7 +211,10 @@ class ImageExpander(object):
         image_family = constants.DEFAULT_IMAGE_FAMILY_FOR_CONFIDENTIAL_VMS[
             confidential_vm_type
         ]
-        params['project'] = self._AddUniversePrefix('ubuntu-os-cloud')
+        if confidential_vm_type == constants.CONFIDENTIAL_VM_TYPES.BMSAI:
+          params['project'] = self._AddUniversePrefix('cos-cloud')
+        else:
+          params['project'] = self._AddUniversePrefix('ubuntu-os-cloud')
       else:
         image_family = constants.DEFAULT_IMAGE_FAMILY
         params['project'] = self._AddUniversePrefix('debian-cloud')

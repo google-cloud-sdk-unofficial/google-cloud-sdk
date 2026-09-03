@@ -20,8 +20,10 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.emulators import spanner_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Start(base.Command):
   """Start a local Cloud Spanner emulator.
 
@@ -69,6 +71,15 @@ class Start(base.Command):
         help='If true, the emulator will randomly inject faults into '
         'transactions. This facilitates application abort-retry testing.',
         default=False)
+    parser.add_argument(
+        '--remote-functions-host-port',
+        required=False,
+        type=lambda arg: arg_parsers.HostPort.Parse(arg, ipv6_enabled=True),
+        help=(
+            'The host:port address of the Functions Framework instance '
+            'hosting remote functions. Only localhost addresses are supported.'
+        ),
+    )
 
   def Run(self, args):
     if not args.host_port:

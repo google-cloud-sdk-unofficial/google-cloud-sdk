@@ -37,12 +37,19 @@ class DataflowV1b3(base_api.BaseApiClient):
         default_global_params=default_global_params,
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
+    self.folders_locations_configStoreSettings = self.FoldersLocationsConfigStoreSettingsService(self)
+    self.folders_locations = self.FoldersLocationsService(self)
+    self.folders = self.FoldersService(self)
+    self.organizations_locations_configStoreSettings = self.OrganizationsLocationsConfigStoreSettingsService(self)
+    self.organizations_locations = self.OrganizationsLocationsService(self)
+    self.organizations = self.OrganizationsService(self)
     self.projects_catalogTemplates_templateVersions = self.ProjectsCatalogTemplatesTemplateVersionsService(self)
     self.projects_catalogTemplates = self.ProjectsCatalogTemplatesService(self)
     self.projects_jobs_debug = self.ProjectsJobsDebugService(self)
     self.projects_jobs_messages = self.ProjectsJobsMessagesService(self)
     self.projects_jobs_workItems = self.ProjectsJobsWorkItemsService(self)
     self.projects_jobs = self.ProjectsJobsService(self)
+    self.projects_locations_configStoreSettings = self.ProjectsLocationsConfigStoreSettingsService(self)
     self.projects_locations_deployments = self.ProjectsLocationsDeploymentsService(self)
     self.projects_locations_flexTemplates = self.ProjectsLocationsFlexTemplatesService(self)
     self.projects_locations_jobs_debug = self.ProjectsLocationsJobsDebugService(self)
@@ -58,6 +65,336 @@ class DataflowV1b3(base_api.BaseApiClient):
     self.projects_templateVersions = self.ProjectsTemplateVersionsService(self)
     self.projects_templates = self.ProjectsTemplatesService(self)
     self.projects = self.ProjectsService(self)
+
+  class FoldersLocationsConfigStoreSettingsService(base_api.BaseApiService):
+    """Service class for the folders_locations_configStoreSettings resource."""
+
+    _NAME = 'folders_locations_configStoreSettings'
+
+    def __init__(self, client):
+      super(DataflowV1b3.FoldersLocationsConfigStoreSettingsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new ConfigStoreSetting.
+
+      Args:
+        request: (DataflowFoldersLocationsConfigStoreSettingsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ConfigStoreSetting) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1b3/folders/{foldersId}/locations/{locationsId}/configStoreSettings',
+        http_method='POST',
+        method_id='dataflow.folders.locations.configStoreSettings.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['configStoreSettingId'],
+        relative_path='v1b3/{+parent}/configStoreSettings',
+        request_field='configStoreSetting',
+        request_type_name='DataflowFoldersLocationsConfigStoreSettingsCreateRequest',
+        response_type_name='ConfigStoreSetting',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes an existing ConfigStoreSetting.
+
+      Args:
+        request: (DataflowFoldersLocationsConfigStoreSettingsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1b3/folders/{foldersId}/locations/{locationsId}/configStoreSettings/{configStoreSettingsId}',
+        http_method='DELETE',
+        method_id='dataflow.folders.locations.configStoreSettings.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1b3/{+name}',
+        request_field='',
+        request_type_name='DataflowFoldersLocationsConfigStoreSettingsDeleteRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets a ConfigStoreSetting.
+
+      Args:
+        request: (DataflowFoldersLocationsConfigStoreSettingsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ConfigStoreSetting) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1b3/folders/{foldersId}/locations/{locationsId}/configStoreSettings/{configStoreSettingsId}',
+        http_method='GET',
+        method_id='dataflow.folders.locations.configStoreSettings.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1b3/{+name}',
+        request_field='',
+        request_type_name='DataflowFoldersLocationsConfigStoreSettingsGetRequest',
+        response_type_name='ConfigStoreSetting',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists ConfigStoreSettings.
+
+      Args:
+        request: (DataflowFoldersLocationsConfigStoreSettingsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListConfigStoreSettingsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1b3/folders/{foldersId}/locations/{locationsId}/configStoreSettings',
+        http_method='GET',
+        method_id='dataflow.folders.locations.configStoreSettings.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1b3/{+parent}/configStoreSettings',
+        request_field='',
+        request_type_name='DataflowFoldersLocationsConfigStoreSettingsListRequest',
+        response_type_name='ListConfigStoreSettingsResponse',
+        supports_download=False,
+    )
+
+    def Resolve(self, request, global_params=None):
+      r"""Resolves effective value of a ConfigStoreSetting.
+
+      Args:
+        request: (DataflowFoldersLocationsConfigStoreSettingsResolveRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ResolveConfigStoreSettingResponse) The response message.
+      """
+      config = self.GetMethodConfig('Resolve')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Resolve.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1b3/folders/{foldersId}/locations/{locationsId}/configStoreSettings/{configStoreSettingsId}:resolve',
+        http_method='POST',
+        method_id='dataflow.folders.locations.configStoreSettings.resolve',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1b3/{+name}:resolve',
+        request_field='resolveConfigStoreSettingRequest',
+        request_type_name='DataflowFoldersLocationsConfigStoreSettingsResolveRequest',
+        response_type_name='ResolveConfigStoreSettingResponse',
+        supports_download=False,
+    )
+
+  class FoldersLocationsService(base_api.BaseApiService):
+    """Service class for the folders_locations resource."""
+
+    _NAME = 'folders_locations'
+
+    def __init__(self, client):
+      super(DataflowV1b3.FoldersLocationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class FoldersService(base_api.BaseApiService):
+    """Service class for the folders resource."""
+
+    _NAME = 'folders'
+
+    def __init__(self, client):
+      super(DataflowV1b3.FoldersService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class OrganizationsLocationsConfigStoreSettingsService(base_api.BaseApiService):
+    """Service class for the organizations_locations_configStoreSettings resource."""
+
+    _NAME = 'organizations_locations_configStoreSettings'
+
+    def __init__(self, client):
+      super(DataflowV1b3.OrganizationsLocationsConfigStoreSettingsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new ConfigStoreSetting.
+
+      Args:
+        request: (DataflowOrganizationsLocationsConfigStoreSettingsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ConfigStoreSetting) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1b3/organizations/{organizationsId}/locations/{locationsId}/configStoreSettings',
+        http_method='POST',
+        method_id='dataflow.organizations.locations.configStoreSettings.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['configStoreSettingId'],
+        relative_path='v1b3/{+parent}/configStoreSettings',
+        request_field='configStoreSetting',
+        request_type_name='DataflowOrganizationsLocationsConfigStoreSettingsCreateRequest',
+        response_type_name='ConfigStoreSetting',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes an existing ConfigStoreSetting.
+
+      Args:
+        request: (DataflowOrganizationsLocationsConfigStoreSettingsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1b3/organizations/{organizationsId}/locations/{locationsId}/configStoreSettings/{configStoreSettingsId}',
+        http_method='DELETE',
+        method_id='dataflow.organizations.locations.configStoreSettings.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1b3/{+name}',
+        request_field='',
+        request_type_name='DataflowOrganizationsLocationsConfigStoreSettingsDeleteRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets a ConfigStoreSetting.
+
+      Args:
+        request: (DataflowOrganizationsLocationsConfigStoreSettingsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ConfigStoreSetting) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1b3/organizations/{organizationsId}/locations/{locationsId}/configStoreSettings/{configStoreSettingsId}',
+        http_method='GET',
+        method_id='dataflow.organizations.locations.configStoreSettings.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1b3/{+name}',
+        request_field='',
+        request_type_name='DataflowOrganizationsLocationsConfigStoreSettingsGetRequest',
+        response_type_name='ConfigStoreSetting',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists ConfigStoreSettings.
+
+      Args:
+        request: (DataflowOrganizationsLocationsConfigStoreSettingsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListConfigStoreSettingsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1b3/organizations/{organizationsId}/locations/{locationsId}/configStoreSettings',
+        http_method='GET',
+        method_id='dataflow.organizations.locations.configStoreSettings.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1b3/{+parent}/configStoreSettings',
+        request_field='',
+        request_type_name='DataflowOrganizationsLocationsConfigStoreSettingsListRequest',
+        response_type_name='ListConfigStoreSettingsResponse',
+        supports_download=False,
+    )
+
+    def Resolve(self, request, global_params=None):
+      r"""Resolves effective value of a ConfigStoreSetting.
+
+      Args:
+        request: (DataflowOrganizationsLocationsConfigStoreSettingsResolveRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ResolveConfigStoreSettingResponse) The response message.
+      """
+      config = self.GetMethodConfig('Resolve')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Resolve.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1b3/organizations/{organizationsId}/locations/{locationsId}/configStoreSettings/{configStoreSettingsId}:resolve',
+        http_method='POST',
+        method_id='dataflow.organizations.locations.configStoreSettings.resolve',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1b3/{+name}:resolve',
+        request_field='resolveConfigStoreSettingRequest',
+        request_type_name='DataflowOrganizationsLocationsConfigStoreSettingsResolveRequest',
+        response_type_name='ResolveConfigStoreSettingResponse',
+        supports_download=False,
+    )
+
+  class OrganizationsLocationsService(base_api.BaseApiService):
+    """Service class for the organizations_locations resource."""
+
+    _NAME = 'organizations_locations'
+
+    def __init__(self, client):
+      super(DataflowV1b3.OrganizationsLocationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class OrganizationsService(base_api.BaseApiService):
+    """Service class for the organizations resource."""
+
+    _NAME = 'organizations'
+
+    def __init__(self, client):
+      super(DataflowV1b3.OrganizationsService, self).__init__(client)
+      self._upload_configs = {
+          }
 
   class ProjectsCatalogTemplatesTemplateVersionsService(base_api.BaseApiService):
     """Service class for the projects_catalogTemplates_templateVersions resource."""
@@ -590,6 +927,151 @@ class DataflowV1b3(base_api.BaseApiClient):
         request_field='job',
         request_type_name='DataflowProjectsJobsUpdateRequest',
         response_type_name='Job',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsConfigStoreSettingsService(base_api.BaseApiService):
+    """Service class for the projects_locations_configStoreSettings resource."""
+
+    _NAME = 'projects_locations_configStoreSettings'
+
+    def __init__(self, client):
+      super(DataflowV1b3.ProjectsLocationsConfigStoreSettingsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new ConfigStoreSetting.
+
+      Args:
+        request: (DataflowProjectsLocationsConfigStoreSettingsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ConfigStoreSetting) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1b3/projects/{projectsId}/locations/{locationsId}/configStoreSettings',
+        http_method='POST',
+        method_id='dataflow.projects.locations.configStoreSettings.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['configStoreSettingId'],
+        relative_path='v1b3/{+parent}/configStoreSettings',
+        request_field='configStoreSetting',
+        request_type_name='DataflowProjectsLocationsConfigStoreSettingsCreateRequest',
+        response_type_name='ConfigStoreSetting',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes an existing ConfigStoreSetting.
+
+      Args:
+        request: (DataflowProjectsLocationsConfigStoreSettingsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1b3/projects/{projectsId}/locations/{locationsId}/configStoreSettings/{configStoreSettingsId}',
+        http_method='DELETE',
+        method_id='dataflow.projects.locations.configStoreSettings.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1b3/{+name}',
+        request_field='',
+        request_type_name='DataflowProjectsLocationsConfigStoreSettingsDeleteRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets a ConfigStoreSetting.
+
+      Args:
+        request: (DataflowProjectsLocationsConfigStoreSettingsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ConfigStoreSetting) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1b3/projects/{projectsId}/locations/{locationsId}/configStoreSettings/{configStoreSettingsId}',
+        http_method='GET',
+        method_id='dataflow.projects.locations.configStoreSettings.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1b3/{+name}',
+        request_field='',
+        request_type_name='DataflowProjectsLocationsConfigStoreSettingsGetRequest',
+        response_type_name='ConfigStoreSetting',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists ConfigStoreSettings.
+
+      Args:
+        request: (DataflowProjectsLocationsConfigStoreSettingsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListConfigStoreSettingsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1b3/projects/{projectsId}/locations/{locationsId}/configStoreSettings',
+        http_method='GET',
+        method_id='dataflow.projects.locations.configStoreSettings.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1b3/{+parent}/configStoreSettings',
+        request_field='',
+        request_type_name='DataflowProjectsLocationsConfigStoreSettingsListRequest',
+        response_type_name='ListConfigStoreSettingsResponse',
+        supports_download=False,
+    )
+
+    def Resolve(self, request, global_params=None):
+      r"""Resolves effective value of a ConfigStoreSetting.
+
+      Args:
+        request: (DataflowProjectsLocationsConfigStoreSettingsResolveRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ResolveConfigStoreSettingResponse) The response message.
+      """
+      config = self.GetMethodConfig('Resolve')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Resolve.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1b3/projects/{projectsId}/locations/{locationsId}/configStoreSettings/{configStoreSettingsId}:resolve',
+        http_method='POST',
+        method_id='dataflow.projects.locations.configStoreSettings.resolve',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1b3/{+name}:resolve',
+        request_field='resolveConfigStoreSettingRequest',
+        request_type_name='DataflowProjectsLocationsConfigStoreSettingsResolveRequest',
+        response_type_name='ResolveConfigStoreSettingResponse',
         supports_download=False,
     )
 

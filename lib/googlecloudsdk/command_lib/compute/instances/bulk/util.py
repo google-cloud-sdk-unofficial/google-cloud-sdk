@@ -420,8 +420,14 @@ def CreateBulkInsertInstanceResource(
           (args.disk or []) + (args.create_disk or [])
       )
   )
+  confidential_vm_type = instance_utils.GetConfidentialVmType(args, True)
   image_uri = create_utils.GetImageUri(
-      args, compute_client, create_boot_disk, project, resource_parser
+      args,
+      compute_client,
+      create_boot_disk,
+      project,
+      resource_parser,
+      confidential_vm_type=confidential_vm_type,
   )
 
   shielded_instance_config = create_utils.BuildShieldedInstanceConfigMessage(
@@ -436,10 +442,9 @@ def CreateBulkInsertInstanceResource(
           support_confidential_compute_type_tdx=True,
           support_snp_svsm=supported_features.support_snp_svsm,
           support_confidential_compute_type_cca=True,
+          support_confidential_compute_type_bmsai=True,
       )
   )
-
-  confidential_vm_type = instance_utils.GetConfidentialVmType(args, True)
 
   service_accounts = create_utils.GetProjectServiceAccount(
       args, project, compute_client, skip_defaults

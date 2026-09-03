@@ -54,7 +54,7 @@ class AgentidentityV1(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Gets details of a single AccessSummary.
+      r"""Gets details of a single access summary.
 
       Args:
         request: (AgentidentityProjectsLocationsAccessSummariesGetRequest) input message
@@ -81,7 +81,7 @@ class AgentidentityV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists AccessSummaries in a given project and location. Supported Filters: - `workload_id`: Filter by the SPIFFE ID of the agent. Example: `workload_id="spiffe://example.com/ns/default/sa/my-agent"`.
+      r"""Lists access summaries in a given project and location. Supported filters: - `workload_id`: Filter by the SPIFFE ID of the agent. Example: `workload_id="spiffe://example.com/ns/default/sa/my-agent"`.
 
       Args:
         request: (AgentidentityProjectsLocationsAccessSummariesListRequest) input message
@@ -118,7 +118,7 @@ class AgentidentityV1(base_api.BaseApiClient):
           }
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a single Authorization.
+      r"""Deletes a single authorization.
 
       Args:
         request: (AgentidentityProjectsLocationsAuthProvidersAuthorizationsDeleteRequest) input message
@@ -145,7 +145,7 @@ class AgentidentityV1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets details of a single Authorization.
+      r"""Gets details of a single authorization.
 
       Args:
         request: (AgentidentityProjectsLocationsAuthProvidersAuthorizationsGetRequest) input message
@@ -172,7 +172,7 @@ class AgentidentityV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists Authorizations in a given project and location.
+      r"""Lists authorizations in a given project and location.
 
       Args:
         request: (AgentidentityProjectsLocationsAuthProvidersAuthorizationsListRequest) input message
@@ -209,7 +209,7 @@ class AgentidentityV1(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a new AuthProvider in a given project and location.
+      r"""Creates a new auth provider in a given project and location.
 
       Args:
         request: (AgentidentityProjectsLocationsAuthProvidersCreateRequest) input message
@@ -236,7 +236,7 @@ class AgentidentityV1(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a single AuthProvider.
+      r"""Deletes a single auth provider.
 
       Args:
         request: (AgentidentityProjectsLocationsAuthProvidersDeleteRequest) input message
@@ -263,7 +263,7 @@ class AgentidentityV1(base_api.BaseApiClient):
     )
 
     def Disable(self, request, global_params=None):
-      r"""Disables a single AuthProvider.
+      r"""Disables a single auth provider.
 
       Args:
         request: (AgentidentityProjectsLocationsAuthProvidersDisableRequest) input message
@@ -290,7 +290,7 @@ class AgentidentityV1(base_api.BaseApiClient):
     )
 
     def Enable(self, request, global_params=None):
-      r"""Enables a single AuthProvider.
+      r"""Enables a single auth provider.
 
       Args:
         request: (AgentidentityProjectsLocationsAuthProvidersEnableRequest) input message
@@ -317,7 +317,7 @@ class AgentidentityV1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets details of a single AuthProvider.
+      r"""Gets details of a single auth provider.
 
       Args:
         request: (AgentidentityProjectsLocationsAuthProvidersGetRequest) input message
@@ -371,7 +371,7 @@ class AgentidentityV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists AuthProviders in a given project and location.
+      r"""Lists auth providers in a given project and location.
 
       Args:
         request: (AgentidentityProjectsLocationsAuthProvidersListRequest) input message
@@ -398,7 +398,7 @@ class AgentidentityV1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates the parameters of a single AuthProvider.
+      r"""Updates the parameters of a single auth provider.
 
       Args:
         request: (AgentidentityProjectsLocationsAuthProvidersPatchRequest) input message
@@ -425,7 +425,7 @@ class AgentidentityV1(base_api.BaseApiClient):
     )
 
     def Query(self, request, global_params=None):
-      r"""Queries what all auth_providers are used by a given workload_id.
+      r"""Queries which auth providers are used by a given workload ID.
 
       Args:
         request: (AgentidentityProjectsLocationsAuthProvidersQueryRequest) input message
@@ -452,7 +452,7 @@ class AgentidentityV1(base_api.BaseApiClient):
     )
 
     def QueryWorkloads(self, request, global_params=None):
-      r"""Queries what all workloads are using a given auth_provider.
+      r"""Queries which workloads are using a given auth provider.
 
       Args:
         request: (AgentidentityProjectsLocationsAuthProvidersQueryWorkloadsRequest) input message
@@ -479,7 +479,7 @@ class AgentidentityV1(base_api.BaseApiClient):
     )
 
     def RevokeAuthorization(self, request, global_params=None):
-      r"""Revokes all authorizations for a specific user on an AuthProvider. This deletes all authorization records associated with the user and AuthProvider, effectively revoking access across all agents.
+      r"""Revokes all authorizations for a specific user on an auth provider. This deletes all authorization records associated with the user and auth provider, effectively revoking access across all agents.
 
       Args:
         request: (AgentidentityProjectsLocationsAuthProvidersRevokeAuthorizationRequest) input message
@@ -560,7 +560,7 @@ class AgentidentityV1(base_api.BaseApiClient):
     )
 
     def Undelete(self, request, global_params=None):
-      r"""Undeletes a single AuthProvider.
+      r"""Undeletes a single auth provider.
 
       Args:
         request: (AgentidentityProjectsLocationsAuthProvidersUndeleteRequest) input message

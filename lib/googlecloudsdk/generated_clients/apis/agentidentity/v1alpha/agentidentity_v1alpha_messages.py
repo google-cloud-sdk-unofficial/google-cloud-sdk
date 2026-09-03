@@ -12,51 +12,51 @@ package = 'agentidentity'
 
 
 class AccessSummary(_messages.Message):
-  r"""Message describing AccessSummary object
+  r"""Represents an access summary.
 
   Enums:
-    AuthProviderTypeValueValuesEnum: Output only. The type of the connector
-      that was used to create this access summary.
+    AuthProviderTypeValueValuesEnum: Output only. The auth provider type used
+      to create this access summary.
 
   Messages:
-    LabelsValue: Optional. Labels as key value pairs
+    LabelsValue: Optional. Labels as key-value pairs.
 
   Fields:
-    authProvider: Output only. The auth_provider that this access summary is
+    authProvider: Output only. The auth provider that this access summary is
       associated with.
-    authProviderType: Output only. The type of the connector that was used to
-      create this access summary.
-    firstAccessTime: Output only. The first time this user has interacted with
-      this workload. Rounded to the previous hour.
-    labels: Optional. Labels as key value pairs
-    lastAccessTime: Output only. The most recent time this user has interacted
-      with this workload. Rounded to the previous hour.
-    name: Output only. Identifier. Name of the AccessSummary
+    authProviderType: Output only. The auth provider type used to create this
+      access summary.
+    firstAccessTime: Output only. The first time this user interacted with
+      this workload, rounded to the previous hour.
+    labels: Optional. Labels as key-value pairs.
+    lastAccessTime: Output only. The most recent time this user interacted
+      with this workload, rounded to the previous hour.
+    name: Output only. Identifier. The resource name of the access summary.
     purgeTime: Output only. The time when this access summary is permanently
       deleted.
     scopes: Output only. All scopes that have been used by this user with this
       workload. The number of scopes is limited to 200.
-    tokenUrl: Output only. The url of the authentication server that was
+    tokenUrl: Output only. The URL of the authentication server that was
       accessed.
-    userId: Output only. The user_id provided by the workload application for
+    userId: Output only. The user ID provided by the workload application for
       this user. Not verified by Google.
     workloadId: Output only. The identity bound to the workload that this user
-      interacted with to produce this AccessSummary. Will typically be an
-      agentic spiffe id
+      interacted with to produce this access summary. Typically an agentic
+      SPIFFE ID.
   """
 
   class AuthProviderTypeValueValuesEnum(_messages.Enum):
-    r"""Output only. The type of the connector that was used to create this
-    access summary.
+    r"""Output only. The auth provider type used to create this access
+    summary.
 
     Values:
-      AUTH_PROVIDER_TYPE_UNSPECIFIED: Unspecified auth-provider type.
-      AUTH_PROVIDER_TYPE_THREE_LEGGED_OAUTH: Three Legged OAuth auth-provider
+      AUTH_PROVIDER_TYPE_UNSPECIFIED: Unspecified auth provider type.
+      AUTH_PROVIDER_TYPE_THREE_LEGGED_OAUTH: 3-legged OAuth (3LO) auth
+        provider type.
+      AUTH_PROVIDER_TYPE_TWO_LEGGED_OAUTH: 2-legged OAuth (2LO) auth provider
         type.
-      AUTH_PROVIDER_TYPE_TWO_LEGGED_OAUTH: Two Legged OAuth auth-provider
-        type.
-      AUTH_PROVIDER_TYPE_API_KEY: API Key auth-provider type.
-      AUTH_PROVIDER_TYPE_GEMINI_ENTERPRISE: Gemini Enterprise auth-provider
+      AUTH_PROVIDER_TYPE_API_KEY: API key auth provider type.
+      AUTH_PROVIDER_TYPE_GEMINI_ENTERPRISE: Gemini Enterprise auth provider
         type.
     """
     AUTH_PROVIDER_TYPE_UNSPECIFIED = 0
@@ -67,7 +67,7 @@ class AccessSummary(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    r"""Optional. Labels as key value pairs
+    r"""Optional. Labels as key-value pairs.
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.
@@ -106,7 +106,7 @@ class AgentidentityProjectsLocationsAccessSummariesGetRequest(_messages.Message)
   r"""A AgentidentityProjectsLocationsAccessSummariesGetRequest object.
 
   Fields:
-    name: Required. Name of the resource
+    name: Required. The resource name of the access summary.
   """
 
   name = _messages.StringField(1, required=True)
@@ -125,6 +125,7 @@ class AgentidentityProjectsLocationsAccessSummariesListRequest(_messages.Message
       by (auth_provider_id, user_id) in ascending order.
     pageSize: Optional. Requested page size. Server may return fewer items
       than requested. If unspecified, server will pick an appropriate default.
+      The maximum page size is 1000.
     pageToken: Optional. A token identifying a page of results the server
       should return.
     parent: Required. The parent resource where the search is performed.
@@ -143,9 +144,9 @@ class AgentidentityProjectsLocationsAuthProvidersAuthorizationsDeleteRequest(_me
   object.
 
   Fields:
-    name: Required. The name of the Authorization to delete. Format: projects/
-      {project}/locations/{location}/authProviders/{auth_provider}/authorizati
-      ons/{authorization}
+    name: Required. The resource name of the authorization to delete. Format:
+      projects/{project}/locations/{location}/authProviders/{auth_provider}/au
+      thorizations/{authorization}
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
       will know to ignore the request if it has already been completed. The
@@ -163,12 +164,40 @@ class AgentidentityProjectsLocationsAuthProvidersAuthorizationsDeleteRequest(_me
   requestId = _messages.StringField(2)
 
 
+class AgentidentityProjectsLocationsAuthProvidersAuthorizationsGetIamPolicyRequest(_messages.Message):
+  r"""A
+  AgentidentityProjectsLocationsAuthProvidersAuthorizationsGetIamPolicyRequest
+  object.
+
+  Fields:
+    options_requestedPolicyVersion: Optional. The maximum policy version that
+      will be used to format the policy. Valid values are 0, 1, and 3.
+      Requests specifying an invalid value will be rejected. Requests for
+      policies with any conditional role bindings must specify version 3.
+      Policies with no conditional role bindings may specify any valid value
+      or leave the field unset. The policy in the response might use the
+      policy version that you specified, or it might use a lower policy
+      version. For example, if you specify version 3, but the policy has no
+      conditional role bindings, the response uses version 1. To learn which
+      resources support conditions in their IAM policies, see the [IAM
+      documentation](https://cloud.google.com/iam/help/conditions/resource-
+      policies).
+    resource: REQUIRED: The resource for which the policy is being requested.
+      See [Resource
+      names](https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+  """
+
+  options_requestedPolicyVersion = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  resource = _messages.StringField(2, required=True)
+
+
 class AgentidentityProjectsLocationsAuthProvidersAuthorizationsGetRequest(_messages.Message):
   r"""A AgentidentityProjectsLocationsAuthProvidersAuthorizationsGetRequest
   object.
 
   Fields:
-    name: Required. Name of the resource
+    name: Required. The resource name of the authorization.
   """
 
   name = _messages.StringField(1, required=True)
@@ -185,6 +214,7 @@ class AgentidentityProjectsLocationsAuthProvidersAuthorizationsListRequest(_mess
       by authorization_id in ascending order.
     pageSize: Optional. Requested page size. Server may return fewer items
       than requested. If unspecified, server will pick an appropriate default.
+      The maximum page size is 1000.
     pageToken: Optional. A page token, received from a previous
       `ListAuthorizations` call. Provide this to retrieve the subsequent page.
       When paginating, all other parameters provided to `ListAuthorizations`
@@ -201,17 +231,52 @@ class AgentidentityProjectsLocationsAuthProvidersAuthorizationsListRequest(_mess
   parent = _messages.StringField(5, required=True)
 
 
+class AgentidentityProjectsLocationsAuthProvidersAuthorizationsSetIamPolicyRequest(_messages.Message):
+  r"""A
+  AgentidentityProjectsLocationsAuthProvidersAuthorizationsSetIamPolicyRequest
+  object.
+
+  Fields:
+    resource: REQUIRED: The resource for which the policy is being specified.
+      See [Resource
+      names](https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+    setIamPolicyRequest: A SetIamPolicyRequest resource to be passed as the
+      request body.
+  """
+
+  resource = _messages.StringField(1, required=True)
+  setIamPolicyRequest = _messages.MessageField('SetIamPolicyRequest', 2)
+
+
+class AgentidentityProjectsLocationsAuthProvidersAuthorizationsTestIamPermissionsRequest(_messages.Message):
+  r"""A AgentidentityProjectsLocationsAuthProvidersAuthorizationsTestIamPermis
+  sionsRequest object.
+
+  Fields:
+    resource: REQUIRED: The resource for which the policy detail is being
+      requested. See [Resource
+      names](https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+    testIamPermissionsRequest: A TestIamPermissionsRequest resource to be
+      passed as the request body.
+  """
+
+  resource = _messages.StringField(1, required=True)
+  testIamPermissionsRequest = _messages.MessageField('TestIamPermissionsRequest', 2)
+
+
 class AgentidentityProjectsLocationsAuthProvidersCreateRequest(_messages.Message):
   r"""A AgentidentityProjectsLocationsAuthProvidersCreateRequest object.
 
   Fields:
     authProvider: A AuthProvider resource to be passed as the request body.
-    authProviderId: Required. The ID to use for the AuthProvider, which will
-      become the final segment of the AuthProvider's resource name. This value
-      should be 1-63 characters, and valid characters are /a-z-/. The first
-      character must be a lowercase letter, and the last character must be a
-      lowercase letter or a number.
-    parent: Required. The parent resource where the AuthProvider is created.
+    authProviderId: Required. The ID to use for the auth provider, which will
+      become the final segment of the auth provider's resource name. This
+      value should be 1-63 characters, and valid characters are /a-z-/. The
+      first character must be a lowercase letter, and the last character must
+      be a lowercase letter or a number.
+    parent: Required. The parent resource where the auth provider is created.
       Format: projects/{project}/locations/{location}
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
@@ -236,7 +301,7 @@ class AgentidentityProjectsLocationsAuthProvidersDeleteRequest(_messages.Message
   r"""A AgentidentityProjectsLocationsAuthProvidersDeleteRequest object.
 
   Fields:
-    name: Required. Name of the resource
+    name: Required. The resource name of the auth provider.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
       will know to ignore the request if it has already been completed. The
@@ -260,7 +325,7 @@ class AgentidentityProjectsLocationsAuthProvidersDisableRequest(_messages.Messag
   Fields:
     disableAuthProviderRequest: A DisableAuthProviderRequest resource to be
       passed as the request body.
-    name: Required. Name of the resource Format:
+    name: Required. The resource name of the auth provider. Format:
       projects/{project}/locations/{location}/authProviders/{auth_provider}
   """
 
@@ -274,7 +339,7 @@ class AgentidentityProjectsLocationsAuthProvidersEnableRequest(_messages.Message
   Fields:
     enableAuthProviderRequest: A EnableAuthProviderRequest resource to be
       passed as the request body.
-    name: Required. Name of the resource Format:
+    name: Required. The resource name of the auth provider. Format:
       projects/{project}/locations/{location}/authProviders/{auth_provider}
   """
 
@@ -312,7 +377,7 @@ class AgentidentityProjectsLocationsAuthProvidersGetRequest(_messages.Message):
   r"""A AgentidentityProjectsLocationsAuthProvidersGetRequest object.
 
   Fields:
-    name: Required. Name of the resource
+    name: Required. The resource name of the auth provider.
   """
 
   name = _messages.StringField(1, required=True)
@@ -327,14 +392,15 @@ class AgentidentityProjectsLocationsAuthProvidersListRequest(_messages.Message):
       auth_provider_id in ascending order.
     pageSize: Optional. Requested page size. Server may return fewer items
       than requested. If unspecified, server will pick an appropriate default.
+      The maximum page size is 1000.
     pageToken: Optional. A token, which can be sent as `page_token` to
       retrieve the next page. If this field is omitted, the first page is
       returned.
     parent: Required. The parent resource where the search is performed.
       Format: projects/{project}/locations/{location}
-    showDeleted: Optional. Deleted auth_providers will be kept with a soft-
-      delete for 30 days before being purged. If this field is set to true,
-      deleted auth_providers will also be returned.
+    showDeleted: Optional. Deleted auth providers will be kept with a soft-
+      delete for 30 days before being purged. If this field is set to `true`,
+      deleted auth providers will also be returned.
   """
 
   filter = _messages.StringField(1)
@@ -350,7 +416,7 @@ class AgentidentityProjectsLocationsAuthProvidersPatchRequest(_messages.Message)
 
   Fields:
     authProvider: A AuthProvider resource to be passed as the request body.
-    name: Identifier. The full resource name of the auth_provider. Format:
+    name: Identifier. The full resource name of the auth provider. Format:
       projects/{project}/locations/{location}/authProviders/{auth_provider}
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
@@ -364,11 +430,11 @@ class AgentidentityProjectsLocationsAuthProvidersPatchRequest(_messages.Message)
       The request ID must be a valid UUID with the exception that zero UUID is
       not supported (00000000-0000-0000-0000-000000000000).
     updateMask: Optional. Field mask is used to specify the fields to be
-      overwritten in the AuthProvider resource by the update. The fields
-      specified in the update_mask are relative to the resource, not the full
-      request. A field will be overwritten if it is in the mask. If the user
-      does not provide a mask then all fields present in the request will be
-      overwritten.
+      overwritten in the auth provider resource by the update. The fields
+      specified in the `update_mask` are relative to the resource, not the
+      full request. A field will be overwritten if it is in the mask. If the
+      user does not provide a mask then all fields present in the request will
+      be overwritten.
   """
 
   authProvider = _messages.MessageField('AuthProvider', 1)
@@ -406,13 +472,14 @@ class AgentidentityProjectsLocationsAuthProvidersQueryWorkloadsRequest(_messages
   object.
 
   Fields:
-    name: Required. The name of the auth_provider to query. Format:
+    name: Required. The name of the auth provider to query. Format:
       projects/{project}/locations/{location}/authProviders/{auth_provider}
     pageSize: Optional. Requested page size. Server may return fewer items
       than requested. If unspecified, server will pick an appropriate default.
+      The maximum page size is 1000.
     pageToken: Optional. A token, which can be sent as `page_token` to
       retrieve the next page. When paginating, all other parameters provided
-      to QueryWorkloads must match the call that provided the page token. If
+      to `QueryWorkloads` must match the call that provided the page token. If
       this field is omitted, the first page is returned.
   """
 
@@ -426,7 +493,7 @@ class AgentidentityProjectsLocationsAuthProvidersRevokeAuthorizationRequest(_mes
   object.
 
   Fields:
-    name: Required. The resource name of the AuthProvider. Format:
+    name: Required. The resource name of the auth provider. Format:
       projects/{project}/locations/{location}/authProviders/{auth_provider}
     revokeAuthorizationRequest: A RevokeAuthorizationRequest resource to be
       passed as the request body.
@@ -473,7 +540,7 @@ class AgentidentityProjectsLocationsAuthProvidersUndeleteRequest(_messages.Messa
   r"""A AgentidentityProjectsLocationsAuthProvidersUndeleteRequest object.
 
   Fields:
-    name: Required. Name of the resource Format:
+    name: Required. The resource name of the auth provider. Format:
       projects/{project}/locations/{location}/authProviders/{auth_provider}
     undeleteAuthProviderRequest: A UndeleteAuthProviderRequest resource to be
       passed as the request body.
@@ -517,10 +584,10 @@ class AgentidentityProjectsLocationsListRequest(_messages.Message):
 
 
 class ApiKeyParams(_messages.Message):
-  r"""Message describing ApiKeyParams object.
+  r"""Configuration for API key authentication.
 
   Fields:
-    apiKey: Optional. Input only. The API key for this auth_provider.
+    apiKey: Optional. Input only. The API key for this auth provider.
   """
 
   apiKey = _messages.StringField(1)
@@ -590,46 +657,47 @@ class AuditLogConfig(_messages.Message):
 
 
 class AuthProvider(_messages.Message):
-  r"""Message describing AuthProvider object
+  r"""Represents an auth provider.
 
   Enums:
-    StateValueValuesEnum: Output only. The state of the auth_provider.
+    StateValueValuesEnum: Output only. The state of the auth provider.
 
   Messages:
-    LabelsValue: Optional. Labels as key value pairs
+    LabelsValue: Optional. Labels as key-value pairs.
 
   Fields:
     allowedScopes: Optional. List of scopes that are allowed to be requested
-      for this auth_provider. If this list is non-empty, only scopes within
+      for this auth provider. If this list is non-empty, only scopes within
       this list may be requested. If this list is empty, all scopes may be
       requested. Scopes appearing in `blocked_scopes` are disallowed even if
       they appear in `allowed_scopes`. The number of allowed scopes is limited
       to 200.
-    authProviderTypeParams: Required. AuthProvider type specific parameters.
+    authProviderTypeParams: Required. Parameters specific to the auth provider
+      type.
     blockedScopes: Optional. List of scopes that are blocked from being
-      requested for this auth_provider. If a scope appears in this list, it
+      requested for this auth provider. If a scope appears in this list, it
       will not be requested, even if it also appears in `allowed_scopes`.
       `blocked_scopes` takes precedence over `allowed_scopes`. The number of
       blocked scopes is limited to 200.
-    createTime: Output only. [Output only] Create time stamp
-    deleted: Output only. This is set to true if the auth_provider is deleted.
+    createTime: Output only. The creation timestamp.
+    deleted: Output only. Set to `true` if the auth provider is deleted.
     description: Optional. Description of the resource. Must be less than 256
       characters.
-    expireTime: Output only. The time when the auth_provider will expire.
-    labels: Optional. Labels as key value pairs
-    name: Identifier. The full resource name of the auth_provider. Format:
+    expireTime: Output only. The time when the auth provider will expire.
+    labels: Optional. Labels as key-value pairs.
+    name: Identifier. The full resource name of the auth provider. Format:
       projects/{project}/locations/{location}/authProviders/{auth_provider}
-    state: Output only. The state of the auth_provider.
-    updateTime: Output only. [Output only] Update time stamp
-    workloadIds: Optional. Input only. Represents the workload identity in IAM
-      `principal://` format of the agent(s) that will use this AuthProvider.
-      Example: `principal://agents.global.org-
+    state: Output only. The state of the auth provider.
+    updateTime: Output only. The update timestamp.
+    workloadIds: Optional. Input only. Identifiers for the agents that will
+      use this auth provider, starting with `principal://`. For example: `prin
+      cipal://agents.global.org-
       ${ORG_ID}.system.id.goog/resources/aiplatform/projects/{PROJECT_ID}/loca
       tions/{LOCATIONS}/reasoningEngines/{ID}`
   """
 
   class StateValueValuesEnum(_messages.Enum):
-    r"""Output only. The state of the auth_provider.
+    r"""Output only. The state of the auth provider.
 
     Values:
       STATE_UNSPECIFIED: Unspecified state.
@@ -642,7 +710,7 @@ class AuthProvider(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
-    r"""Optional. Labels as key value pairs
+    r"""Optional. Labels as key-value pairs.
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.
@@ -679,14 +747,13 @@ class AuthProvider(_messages.Message):
 
 
 class AuthProviderTypeParams(_messages.Message):
-  r"""AuthProvider type specific parameters. Required when creating an
-  auth_provider.
+  r"""Required. Parameters specific to the auth provider type.
 
   Fields:
-    apiKey: ApiKey AuthProvider type parameters.
-    geAuthProvider: GeminiEnterprise auth_provider type parameters.
-    threeLeggedOauth: ThreeLeggedOAuth AuthProvider type parameters.
-    twoLeggedOauth: TwoLeggedOAuth AuthProvider type parameters.
+    apiKey: Parameters for API key authentication.
+    geAuthProvider: Parameters for Gemini Enterprise authentication.
+    threeLeggedOauth: Parameters for 3-legged OAuth (3LO) authentication.
+    twoLeggedOauth: Parameters for 2-legged OAuth (2LO) authentication.
   """
 
   apiKey = _messages.MessageField('ApiKeyParams', 1)
@@ -696,20 +763,20 @@ class AuthProviderTypeParams(_messages.Message):
 
 
 class Authorization(_messages.Message):
-  r"""Message describing Authorization object
+  r"""Represents an authorization.
 
   Enums:
     StateValueValuesEnum: Output only. The state of the authorization.
 
   Fields:
-    clientUserId: Output only. The client_user_id provided by the client
+    clientUserId: Output only. The client user ID provided by the client
       application for their end user. Not verified by Google.
-    createTime: Output only. [Output only] Create time stamp
-    name: Identifier. name of resource
+    createTime: Output only. The creation timestamp.
+    name: Identifier. The resource name of the authorization.
     scopes: Output only. The scopes actually granted by the end user during
       the consent flow.
     state: Output only. The state of the authorization.
-    updateTime: Output only. [Output only] Update time stamp
+    updateTime: Output only. The update timestamp.
   """
 
   class StateValueValuesEnum(_messages.Enum):
@@ -820,7 +887,7 @@ class Binding(_messages.Message):
 
 
 class DisableAuthProviderRequest(_messages.Message):
-  r"""Message for disabling an AuthProvider
+  r"""Request message for `DisableAuthProvider`.
 
   Fields:
     requestId: Optional. An optional request ID to identify requests. Specify
@@ -844,7 +911,7 @@ class Empty(_messages.Message):
 
 
 class EnableAuthProviderRequest(_messages.Message):
-  r"""Message for enabling an AuthProvider
+  r"""Request message for `EnableAuthProvider`.
 
   Fields:
     requestId: Optional. An optional request ID to identify requests. Specify
@@ -895,14 +962,14 @@ class Expr(_messages.Message):
 
 
 class GeminiEnterpriseAuthProviderParams(_messages.Message):
-  r"""Message describing GeminiEnterpriseAuthProviderParams object."""
+  r"""Configuration for Gemini Enterprise authentication."""
 
 
 class ListAccessSummariesResponse(_messages.Message):
-  r"""Message for response to listing AccessSummaries
+  r"""Response message for `ListAccessSummaries`.
 
   Fields:
-    accessSummaries: The list of AccessSummary
+    accessSummaries: The list of access summaries.
     nextPageToken: A token identifying a page of results the server should
       return.
     unreachable: Unordered list. Locations that could not be reached.
@@ -914,10 +981,10 @@ class ListAccessSummariesResponse(_messages.Message):
 
 
 class ListAuthProvidersResponse(_messages.Message):
-  r"""Message for response to listing AuthProviders
+  r"""Response message for `ListAuthProviders`.
 
   Fields:
-    authProviders: The list of AuthProvider
+    authProviders: The list of auth providers.
     nextPageToken: A token identifying a page of results the server should
       return.
     unreachable: Unordered list. Locations that could not be reached.
@@ -929,10 +996,10 @@ class ListAuthProvidersResponse(_messages.Message):
 
 
 class ListAuthorizationsResponse(_messages.Message):
-  r"""Message for response to listing Authorizations
+  r"""Response message for `ListAuthorizations`.
 
   Fields:
-    authorizations: The list of Authorization
+    authorizations: The list of authorizations.
     nextPageToken: A token identifying a page of results the server should
       return.
     unreachable: Unordered list. Locations that could not be reached.
@@ -1115,10 +1182,10 @@ class Policy(_messages.Message):
 
 
 class QueryAuthProvidersResponse(_messages.Message):
-  r"""Response message for QueryAuthProviders.
+  r"""Response message for `QueryAuthProviders`.
 
   Fields:
-    authProviderNames: The unique list of auth_provider resource names used by
+    authProviderNames: The unique list of auth provider resource names used by
       the workload.
     nextPageToken: A token identifying a page of results the server should
       return. If this field is omitted, there are no subsequent pages.
@@ -1129,12 +1196,12 @@ class QueryAuthProvidersResponse(_messages.Message):
 
 
 class QueryWorkloadsResponse(_messages.Message):
-  r"""Response message for QueryWorkloads.
+  r"""Response message for `QueryWorkloads`.
 
   Fields:
     nextPageToken: A token to retrieve the next page of results.
-    workloadIds: The unique list of workload identifiers (agents) that used
-      the auth_provider.
+    workloadIds: The unique list of identifiers for the agents that used this
+      auth provider, starting with `principal://`.
   """
 
   nextPageToken = _messages.StringField(1)
@@ -1142,7 +1209,7 @@ class QueryWorkloadsResponse(_messages.Message):
 
 
 class RevokeAuthorizationRequest(_messages.Message):
-  r"""Request message for RevokeAuthorization.
+  r"""Request message for `RevokeAuthorization`.
 
   Fields:
     userId: Required. The identity of the user to revoke authorization for.
@@ -1152,7 +1219,7 @@ class RevokeAuthorizationRequest(_messages.Message):
 
 
 class RevokeAuthorizationResponse(_messages.Message):
-  r"""Response message for RevokeAuthorization."""
+  r"""Response message for `RevokeAuthorization`."""
 
 
 class SetIamPolicyRequest(_messages.Message):
@@ -1260,24 +1327,24 @@ class TestIamPermissionsResponse(_messages.Message):
 
 
 class ThreeLeggedOAuth(_messages.Message):
-  r"""Message describing ThreeLeggedOAuth object.
+  r"""Configuration for 3-legged OAuth (3LO) authentication.
 
   Fields:
     authorizationUrl: Optional. The authorization endpoint to send users to
-      for consenting to delegate to the agent. eg.
-      "https://auth.atlassian.com/authorize"
+      for consenting to delegate to the agent. For example,
+      "https://auth.atlassian.com/authorize".
     clientId: Optional. The client ID of the OAuth client.
     clientSecret: Optional. Input only. The client secret of the OAuth client.
-    defaultContinueUri: Optional. The default continue URI for 3LO flow and it
-      will be used when no continue URI is provided in the RetrieveCredentials
+    defaultContinueUri: Optional. The default continue URI for the 3LO flow,
+      used when no continue URI is provided in the RetrieveCredentials
       request.
     enablePkce: Optional. Enables Proof Key for Code Exchange (PKCE) for the
       OAuth flow to prevent authorization code interception attacks.
-    redirectUrl: Output only. The redirect URL this auth_provider uses for the
-      OAuth exchange. This is deterministic based on the name of the
-      auth_provider.
+    redirectUrl: Output only. The redirect URL this auth provider uses for the
+      OAuth exchange. This is deterministic based on the name of the auth
+      provider.
     tokenUrl: Optional. The token endpoint for requesting tokens on behalf of
-      an end user. eg. "https://auth.atlassian.com/oauth/token"
+      an end user. For example, "https://auth.atlassian.com/oauth/token".
   """
 
   authorizationUrl = _messages.StringField(1)
@@ -1290,7 +1357,7 @@ class ThreeLeggedOAuth(_messages.Message):
 
 
 class TwoLeggedOAuth(_messages.Message):
-  r"""Message describing TwoLeggedOAuth object.
+  r"""Configuration for 2-legged OAuth (2LO) authentication.
 
   Fields:
     clientId: Optional. The client ID of the OAuth client.
@@ -1304,7 +1371,7 @@ class TwoLeggedOAuth(_messages.Message):
 
 
 class UndeleteAuthProviderRequest(_messages.Message):
-  r"""Message for undeleting a AuthProvider
+  r"""Request message for `UndeleteAuthProvider`.
 
   Fields:
     requestId: Optional. An optional request ID to identify requests. Specify
@@ -1326,3 +1393,5 @@ encoding.AddCustomJsonEnumMapping(
     StandardQueryParameters.FXgafvValueValuesEnum, '_2', '2')
 encoding.AddCustomJsonFieldMapping(
     AgentidentityProjectsLocationsAuthProvidersGetIamPolicyRequest, 'options_requestedPolicyVersion', 'options.requestedPolicyVersion')
+encoding.AddCustomJsonFieldMapping(
+    AgentidentityProjectsLocationsAuthProvidersAuthorizationsGetIamPolicyRequest, 'options_requestedPolicyVersion', 'options.requestedPolicyVersion')

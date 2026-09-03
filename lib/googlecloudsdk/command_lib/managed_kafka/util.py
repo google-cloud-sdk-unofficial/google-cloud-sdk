@@ -79,6 +79,14 @@ def PrepareUpdateWithSubnets(_, args, request):
     The updated request with the subnet.
   """
   if not args.subnets:
+    if getattr(args, "dns_zone_target", None) or getattr(
+        args, "psc_resource_target", None
+    ):
+      raise exceptions.InvalidArgumentException(
+          "--subnets",
+          "Must specify --subnets when specifying --dns-zone-target or"
+          " --psc-resource-target.",
+      )
     return request
 
   # The cluster is not created yet if only the subnet flag is set. This is
@@ -204,8 +212,24 @@ def AppendUpdateMask(update_mask, new_mask):
   return update_mask if update_mask[0] != "," else update_mask[1:]
 
 
+_DNS_ZONE_TARGET_MAP = {
+    "network-project": "DNS_ZONE_NETWORK_PROJECT",
+    "cluster-project": "DNS_ZONE_CLUSTER_PROJECT",
+    "cluster-project-manual-binding": "DNS_ZONE_CLUSTER_PROJECT_MANUAL_BINDING",
+}
+
+_PSC_RESOURCE_TARGET_MAP = {
+    "network-project": "PSC_NETWORK_PROJECT",
+    "cluster-project": "PSC_CLUSTER_PROJECT",
+}
+
+
 def MapSubnetsToNetworkConfig(_, args, request):
   """Maps the list of subnets from the flag to the API fields in the request.
+
+  NOTE: The gcloud CLI applies the target configuration flags globally to all
+  subnets specified in the command. This is an intended CLI usability design
+  decision, even though the underlying API supports per-subnet configuration.
 
   Args:
     _:  resource parameter required but unused variable.
@@ -219,8 +243,24 @@ def MapSubnetsToNetworkConfig(_, args, request):
   if not request.cluster.gcpConfig:
     request.cluster.gcpConfig = {}
   request.cluster.gcpConfig.accessConfig = {"networkConfigs": []}
+  dns_zone_target = getattr(args, "dns_zone_target", None)
+  if dns_zone_target:
+    dns_zone_target_val = _DNS_ZONE_TARGET_MAP[dns_zone_target]
+  else:
+    dns_zone_target_val = None
+
+  psc_resource_target = getattr(args, "psc_resource_target", None)
+  if psc_resource_target:
+    psc_resource_target_val = _PSC_RESOURCE_TARGET_MAP[psc_resource_target]
+  else:
+    psc_resource_target_val = None
+
   for subnet in args.subnets:
     network_config = {"subnet": subnet}
+    if dns_zone_target_val:
+      network_config["dnsZoneTarget"] = dns_zone_target_val
+    if psc_resource_target_val:
+      network_config["pscResourceTarget"] = psc_resource_target_val
     request.cluster.gcpConfig.accessConfig.networkConfigs.append(
         encoding.DictToMessage(network_config, _MESSAGE.NetworkConfig)
     )

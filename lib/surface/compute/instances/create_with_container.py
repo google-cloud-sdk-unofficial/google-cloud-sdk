@@ -42,6 +42,7 @@ def _Args(
     support_confidential_compute_type_tdx=False,
     support_snp_svsm=False,
     support_confidential_compute_type_cca=False,
+    support_confidential_compute_type_bmsai=False,
     support_specific_then_x_affinity=False,
     support_any_reservation_then_fail_affinity=False,
     support_disk_labels=False,
@@ -109,6 +110,7 @@ def _Args(
       support_confidential_compute_type_tdx,
       support_snp_svsm,
       support_confidential_compute_type_cca,
+      support_confidential_compute_type_bmsai,
   )
   instances_flags.AddNestedVirtualizationArgs(parser)
   if support_expose_host_topology:
@@ -190,6 +192,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_confidential_compute_type_tdx = True
   _support_snp_svsm = False
   _support_confidential_compute_type_cca = True
+  _support_confidential_compute_type_bmsai = True
   _support_local_ssd_recovery_timeout = True
   _support_specific_then_x_affinity = False
   _support_any_reservation_then_fail_affinity = False
@@ -214,6 +217,7 @@ class CreateWithContainer(base.CreateCommand):
         support_confidential_compute_type_tdx=True,
         support_snp_svsm=False,
         support_confidential_compute_type_cca=True,
+        support_confidential_compute_type_bmsai=True,
         support_specific_then_x_affinity=False,
         support_any_reservation_then_fail_affinity=False,
         support_disk_labels=False,
@@ -497,6 +501,7 @@ class CreateWithContainer(base.CreateCommand):
           support_confidential_compute_type_tdx=self._support_confidential_compute_type_tdx,
           support_snp_svsm=self._support_snp_svsm,
           support_confidential_compute_type_cca=self._support_confidential_compute_type_cca,
+          support_confidential_compute_type_bmsai=self._support_confidential_compute_type_bmsai,
       )
       if confidential_instance_config:
         instance.confidentialInstanceConfig = confidential_instance_config
@@ -587,6 +592,7 @@ class CreateWithContainerBeta(CreateWithContainer):
   _support_confidential_compute_type_tdx = True
   _support_snp_svsm = False
   _support_confidential_compute_type_cca = True
+  _support_confidential_compute_type_bmsai = True
   _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
   _support_local_ssd_recovery_timeout = True
@@ -607,6 +613,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         support_confidential_compute_type_tdx=True,
         support_snp_svsm=False,
         support_confidential_compute_type_cca=True,
+        support_confidential_compute_type_bmsai=True,
         support_specific_then_x_affinity=True,
         support_any_reservation_then_fail_affinity=True,
         support_disk_labels=True,
@@ -648,6 +655,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   _support_confidential_compute_type_tdx = True
   _support_snp_svsm = True
   _support_confidential_compute_type_cca = True
+  _support_confidential_compute_type_bmsai = True
   _support_local_ssd_recovery_timeout = True
   _support_specific_then_x_affinity = True
   _support_any_reservation_then_fail_affinity = True
@@ -670,6 +678,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         support_confidential_compute_type_tdx=True,
         support_snp_svsm=True,
         support_confidential_compute_type_cca=True,
+        support_confidential_compute_type_bmsai=True,
         support_specific_then_x_affinity=True,
         support_any_reservation_then_fail_affinity=True,
         support_disk_labels=True,

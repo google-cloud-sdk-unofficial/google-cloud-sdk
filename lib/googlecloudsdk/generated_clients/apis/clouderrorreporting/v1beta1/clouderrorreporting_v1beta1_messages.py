@@ -766,15 +766,15 @@ class ReportedErrorEvent(_messages.Message):
       provided, the message must contain a header (typically consisting of the
       exception type name and an error message) and an exception stack trace
       in one of the supported programming languages and formats. Supported
-      languages are Java, Python, JavaScript, Ruby, C#, PHP, and Go. Supported
-      stack trace formats are: * **Java**: Must be the return value of [`Throw
-      able.printStackTrace()`](https://docs.oracle.com/javase/7/docs/api/java/
-      lang/Throwable.html#printStackTrace%28%29). * **Python**: Must be the
-      return value of [`traceback.format_exc()`](https://docs.python.org/2/lib
-      rary/traceback.html#traceback.format_exc). * **JavaScript**: Must be the
-      value of [`error.stack`](https://github.com/v8/v8/wiki/Stack-Trace-API)
-      as returned by V8. * **Ruby**: Must contain frames returned by
-      [`Exception.backtrace`](https://ruby-
+      languages are Java, Python, JavaScript, Ruby, C#, PHP, Go, and Rust.
+      Supported stack trace formats are: * **Java**: Must be the return value
+      of [`Throwable.printStackTrace()`](https://docs.oracle.com/javase/7/docs
+      /api/java/lang/Throwable.html#printStackTrace%28%29). * **Python**: Must
+      be the return value of [`traceback.format_exc()`](https://docs.python.or
+      g/2/library/traceback.html#traceback.format_exc). * **JavaScript**: Must
+      be the value of [`error.stack`](https://github.com/v8/v8/wiki/Stack-
+      Trace-API) as returned by V8. * **Ruby**: Must contain frames returned
+      by [`Exception.backtrace`](https://ruby-
       doc.org/core-2.2.0/Exception.html#method-i-backtrace). * **C#**: Must be
       the return value of
       [`Exception.ToString()`](https://msdn.microsoft.com/en-
@@ -782,7 +782,10 @@ class ReportedErrorEvent(_messages.Message):
       with `"PHP (Notice|Parse error|Fatal error|Warning): "` and contain the
       result of [`(string)$exception`](https://php.net/manual/en/exception.tos
       tring.php). * **Go**: Must be the return value of
-      [`debug.Stack()`](https://pkg.go.dev/runtime/debug#Stack).
+      [`debug.Stack()`](https://pkg.go.dev/runtime/debug#Stack). * **Rust**:
+      Must contain standard [`std::backtrace`](https://doc.rust-
+      lang.org/std/backtrace/index.html) frames. Requires `RUST_BACKTRACE=1`
+      and debug symbols enabled.
     serviceContext: Required. The service context in which this error has
       occurred.
   """

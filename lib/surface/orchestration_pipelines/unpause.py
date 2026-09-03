@@ -33,7 +33,6 @@ DEFAULT_POLLING_TIME_SECONDS = datetime.timedelta(seconds=2)
 POLL_JITTER_SECONDS = datetime.timedelta(seconds=0.5)
 
 
-@calliope_base.Hidden
 @calliope_base.DefaultUniverseOnly
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.BETA)
 class Unpause(calliope_base.Command):

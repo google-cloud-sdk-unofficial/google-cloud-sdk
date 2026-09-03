@@ -14,13 +14,12 @@
 # limitations under the License.
 """Command to create a Cloud FTP user."""
 
-from googlecloudsdk.api_lib.storage import ftp
+import json
+from googlecloudsdk.api_lib.storage import ftp_api
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage.ftp import operations_util
-from googlecloudsdk.command_lib.storage.ftp import servers_util
-from googlecloudsdk.command_lib.storage.ftp import users_util
-from googlecloudsdk.core import log
+from googlecloudsdk.core import exceptions
 
 
 @base.UniverseCompatible
@@ -51,14 +50,7 @@ class Create(base.Command):
         'USER_ID',
         help='The ID of the user to create.',
     )
-    parser.add_argument(
-        '--async',
-        action='store_true',
-        dest='async_',
-        help=(
-            'Return immediately, without waiting for the operation to complete.'
-        ),
-    )
+
     parser.add_argument(
         '--server',
         required=True,
@@ -77,7 +69,11 @@ class Create(base.Command):
     parser.add_argument(
         '--user-credentials-from-file',
         type=arg_parsers.FileContents(),
-        help='Path to a JSON file containing user credentials.',
+        help=(
+            'Path to a JSON file containing user credentials. '
+            'For example: [{"credentialType": "PUBLIC_KEY", '
+            '"credentialName": "key1", "sshPublicKeyBody": "ssh-rsa..."}]'
+        ),
     )
     parser.add_argument(
         '--storage-directory-mapping',
@@ -91,24 +87,37 @@ class Create(base.Command):
             required_keys=['bucket', 'directory', 'permission'],
         ),
         action='append',
+        required=True,
         metavar='PROPERTY=VALUE',
         help='Mapping of Google Cloud Storage bucket to virtual directory.',
     )
 
   def Run(self, args):
-    client = ftp.FtpClient()
-    parent = servers_util.GetServerResourceName(args.location, args.server)
-    user_msg = users_util.CreateUserMsg(client.messages, args)
+    client = ftp_api.FtpApi()
 
-    op = client.CreateUser(parent, args.USER_ID, user_msg)
+    creds_from_file = None
+    if args.user_credentials_from_file:
+      try:
+        creds_from_file = json.loads(args.user_credentials_from_file)
+      except json.JSONDecodeError as e:
+        raise exceptions.Error(
+            'Invalid JSON format in user credentials file. Expected a JSON '
+            'list of dictionaries, e.g.: [{{"credentialType": "PUBLIC_KEY", '
+            '"credentialName": "my-key", "sshPublicKeyBody": "..."}}]. '
+            'Parser error: {}'.format(e)
+        )
 
-    if args.async_:
-      log.status.Print('Create request issued for: [{}]'.format(args.USER_ID))
-      log.status.Print('Check operation [{}] for status.'.format(op.name))
-      return op
+    op = client.CreateUser(
+        args.location,
+        args.server,
+        args.USER_ID,
+        customer_service_account=args.customer_service_account,
+        user_credentials=creds_from_file,
+        storage_directory_mappings=args.storage_directory_mapping,
+    )
 
     op_ref = operations_util.GetOperationRef(op.name)
-    return operations_util.WaitForOperation(
+    return client.WaitForOperation(
         op_ref,
         'Waiting for user [{}] to be created'.format(args.USER_ID),
         result_service=client.users_service,

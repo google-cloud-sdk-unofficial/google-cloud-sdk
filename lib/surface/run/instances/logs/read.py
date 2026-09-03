@@ -23,7 +23,7 @@ from googlecloudsdk.core import log
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Read(base.Command):
   """Read logs for a Cloud Run instance."""
 

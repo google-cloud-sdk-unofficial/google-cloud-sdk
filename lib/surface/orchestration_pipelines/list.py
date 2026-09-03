@@ -21,7 +21,6 @@ from googlecloudsdk.command_lib.orchestration_pipelines.tools import composer_ut
 from googlecloudsdk.command_lib.orchestration_pipelines.tools import yaml_processor
 
 
-@calliope_base.Hidden
 @calliope_base.DefaultUniverseOnly
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.BETA)
 class List(calliope_base.Command):

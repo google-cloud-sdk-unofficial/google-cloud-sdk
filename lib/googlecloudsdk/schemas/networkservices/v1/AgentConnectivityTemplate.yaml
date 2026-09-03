@@ -4,7 +4,8 @@ title: networkservices v1 AgentConnectivityTemplate export schema
 description: A gcloud export/import command YAML validation schema.
 type: object
 required:
-- protocols
+- accessPath
+- deploymentModel
 additionalProperties: false
 properties:
   COMMENT:
@@ -27,50 +28,65 @@ properties:
     description: Unknown API fields that cannot be imported.
     items:
       type: string
-  description:
+  accessPath:
     description: |-
-      A free-text description of the resource. Max length 1024 characters.
+      Immutable. The path of the access. Maps roughly to ingress/egress, though
+      we keep CLIENT_TO_AGENT and AGENT_TO_ANYWHERE as carryovers from Agent
+      Gateway's original resource model. The path is immutable once set. Exactly
+      one path can be set.
     type: string
-  etag:
+    enum:
+    - ACCESS_PATH_UNSPECIFIED
+    - AGENT_TO_ANYWHERE
+    - CLIENT_TO_AGENT
+  accessTypes:
     description: |-
-      Etag of the resource. If this is provided, it must match the server's
-      etag. If the provided etag does not match the server's etag, the request
-      will fail with a 409 ABORTED error.
-    type: string
-  googleManaged:
-    description: |-
-      Proxy is orchestrated and managed by GoogleCloud in a tenant project.
-    $ref: AgentConnectivityTemplateGoogleManaged.yaml
-  labels:
-    description: Set of label tags associated with the AgentConnectivityTemplate resource.
-    $ref: LabelsValue.yaml
-  name:
-    description: |-
-      Identifier. Name of the AgentConnectivityTemplate resource. It matches pattern
-      `projects/*/locations/*/agentConnectivityTemplates/`.
-    type: string
-  networkConfig:
-    description: Network configuration for the AgentConnectivityTemplate.
-    $ref: AgentConnectivityTemplateNetworkConfig.yaml
-  protocols:
-    description: List of protocols supported by an Agent Gateway
+      The types of network access provided to the gateway. Both PUBLIC and
+      PRIVATE can be configured.
     type: array
     items:
       type: string
       enum:
-      - MCP
-      - PROTOCOL_UNSPECIFIED
-  registries:
+      - ACCESS_TYPE_UNSPECIFIED
+      - PRIVATE
+      - PUBLIC
+  agentCompute:
     description: |-
-      A list of Agent registries containing the agents, MCP servers and
-      tools governed by the Agent Gateway. Note: Currently limited to
-      project-scoped registries Must be of format `//agentregistry.googleapi
-      s.com/projects/{project}/locations/{location}/
-    type: array
-    items:
-      type: string
-  selfManaged:
+      The compute environment where the agent is hosted. Exactly one type of
+      compute must be chosen.
+    type: string
+    enum:
+    - AGENT_COMPUTE_UNSPECIFIED
+    - BORG
+    - CLOUD_RUN
+    - GKE
+  deploymentModel:
+    description: The deployment model for the gateway.
+    type: string
+    enum:
+    - AMBIENT
+    - CENTRALIZED
+    - DEPLOYMENT_MODEL_UNSPECIFIED
+  description:
     description: |-
-      Attach to existing Application Load Balancers or Secure Web
-      Proxies.
-    $ref: AgentConnectivityTemplateSelfManaged.yaml
+      A free-text description of the resource. Max length 1024 characters.
+    type: string
+  egressNetworkConfig:
+    description: Configuration for egress network traffic.
+    $ref: EgressNetworkConfig.yaml
+  etag:
+    description: |-
+      Etag of the resource. If this is provided, it must match the server's
+      etag. If the provided etag does not match the server's etag, the
+      request will fail with a 409 ABORTED error.
+    type: string
+  labels:
+    description: |-
+      Set of label tags associated with the AgentConnectivityTemplate
+      resource.
+    $ref: LabelsValue.yaml
+  name:
+    description: |-
+      Identifier. Name of the AgentConnectivityTemplate resource. It matches
+      pattern `projects/*/locations/*/agentConnectivityTemplates/`.
+    type: string

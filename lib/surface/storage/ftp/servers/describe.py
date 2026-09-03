@@ -14,9 +14,8 @@
 # limitations under the License.
 """Command to describe a Cloud FTP server."""
 
-from googlecloudsdk.api_lib.storage import ftp
+from googlecloudsdk.api_lib.storage import ftp_api
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.storage.ftp import servers_util
 
 
 @base.UniverseCompatible
@@ -54,8 +53,5 @@ class Describe(base.DescribeCommand):
     )
 
   def Run(self, args):
-    client = ftp.FtpClient()
-    server_name = servers_util.GetServerResourceName(
-        args.location, args.SERVER_ID
-    )
-    return client.GetServer(server_name)
+    client = ftp_api.FtpApi()
+    return client.GetServer(args.location, args.SERVER_ID)

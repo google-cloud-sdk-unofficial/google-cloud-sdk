@@ -15,6 +15,7 @@
 """Functions for validating flags and configurations for Cloud Run commands."""
 
 import re
+from typing import Any, Mapping
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
@@ -71,12 +72,16 @@ def ValidateNoAutomaticUpdatesForContainers(
         )
 
 
-def ValidateSourceDeployContainer(deploy_from_source):
+def ValidateNumberOfSourceContainers(
+    source_containers: Mapping[str, Any],
+) -> None:
   """Validates container configurations for source deployments."""
-  if len(deploy_from_source) > 1:
+  # we support at most one source container for now.
+  # this check ensure we have 0 to 1 source containers.
+  if len(source_containers) > 1:
     needs_image = [
         name
-        for name, container in deploy_from_source.items()
+        for name, container in source_containers.items()
         if not flags.FlagIsExplicitlySet(container, 'source')
     ]
     if needs_image:
@@ -84,19 +89,10 @@ def ValidateSourceDeployContainer(deploy_from_source):
     raise c_exceptions.InvalidArgumentException(
         '--container', 'At most one container can be deployed from source.'
     )
-  if len(deploy_from_source) == 1:
-    container = next(iter(deploy_from_source.values()))
-    if getattr(container, 'no_build', False) and getattr(
-        container, 'local_build', False
-    ):
-      raise c_exceptions.ConflictingArgumentsException(
-          '--no-build', '--local-build'
-      )
 
-
-def ValidateContainerImageOrPromptForSource(deploy_from_source):
-  """Validates that each container has a source or image."""
-  for name, container in deploy_from_source.items():
+  # helper to prompt for source if not provided.
+  # this should be changed when we extend to support multiple source containers.
+  for name, container in source_containers.items():
     if not flags.FlagIsExplicitlySet(container, 'source'):
       if console_io.CanPrompt():
         container.source = flags.PromptForDefaultSource(name)
@@ -117,6 +113,18 @@ def ValidateContainerImageOrPromptForSource(deploy_from_source):
             '--image',
             message,
         )
+
+  # ensure no_build and local_build are not used together.
+  # condition should change when we extend to support multiple source
+  # containers.
+  if len(source_containers) == 1:
+    container = next(iter(source_containers.values()))
+    if getattr(container, 'no_build', False) and getattr(
+        container, 'local_build', False
+    ):
+      raise c_exceptions.ConflictingArgumentsException(
+          '--no-build', '--local-build'
+      )
 
 
 def ValidateUnifiedBuildProperty(deploy_from_source, containers, release_track):

@@ -1022,7 +1022,8 @@ class QuotaConfig(_messages.Message):
       equal to -1. If set to -1, it means the value is "unlimited".
     requestOrigin: Output only. The origin of the quota preference request.
     stateDetail: Output only. Optional details about the state of this quota
-      preference.
+      preference. For example, it may contain a description of a partially
+      approved request or explain why the request was denied.
     traceId: Output only. The trace id that the Google Cloud uses to provision
       the requested quota. This trace id may be used by the client to contact
       Cloud support to track the state of a quota preference request. The

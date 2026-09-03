@@ -225,6 +225,7 @@ class UpdateHelper(object):
     cdn_flags.AddCdnPolicyArgs(parser, 'backend service', update_command=True)
 
     flags.AddConnectionTrackingPolicy(parser)
+    flags.AddConsistentHashHttpHeaderName(parser)
     flags.AddConsistentHashMinimumRingSize(parser)
     flags.AddCircuitBreakersMaxRequests(parser)
     flags.AddCompressionMode(parser)
@@ -244,6 +245,7 @@ class UpdateHelper(object):
     if support_allow_multinetwork:
       flags.AddAllowMultinetwork(parser)
     flags.AddHaPolicyLeaderFlags(parser)
+    flags.AddSecuritySettingsFlags(parser, add_clear_argument=True)
 
   def __init__(
       self,
@@ -461,6 +463,9 @@ class UpdateHelper(object):
     ):
       replacement.allowMultinetwork = args.allow_multinetwork
 
+    backend_services_utils.ApplySecuritySettingsArgs(
+        client, args, replacement, cleared_fields
+    )
     _ApplyHaPolicyArgs(client.messages, args, replacement)
     return replacement, cleared_fields
 
@@ -563,8 +568,16 @@ class UpdateHelper(object):
         else False,
         args.IsSpecified('ha_policy_leader_backend_group'),
         args.IsSpecified('ha_policy_leader_instance'),
+        args.IsSpecified('consistent_hash_http_header_name'),
         args.IsSpecified('consistent_hash_minimum_ring_size'),
         args.IsSpecified('circuit_breakers_max_requests'),
+        args.IsSpecified('security_settings_client_tls_policy'),
+        args.IsSpecified('security_settings_subject_alt_names'),
+        args.IsSpecified('security_settings_aws_v4_access_key_id'),
+        args.IsSpecified('security_settings_aws_v4_access_key'),
+        args.IsSpecified('security_settings_aws_v4_access_key_version'),
+        args.IsSpecified('security_settings_aws_v4_origin_region'),
+        args.IsSpecified('no_security_settings'),
     ]):
       raise compute_exceptions.UpdatePropertyError(
           'At least one property must be modified.')

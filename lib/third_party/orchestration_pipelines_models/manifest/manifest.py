@@ -14,22 +14,28 @@
 #
 """Module for a Manifest wrapper that provides helper methods."""
 from typing import Optional
+
+from cloudsdk.google.protobuf import json_format
+
 from orchestration_pipelines_models.manifest.manifest_pb2 import (
     Manifest as ManifestModel,
+)
+from orchestration_pipelines_models.manifest.manifest_pb2 import (
     VersionHistory,
     VersionMetadata,
 )
-from cloudsdk.google.protobuf import json_format
 
 
 class VersionDeploymentInfo:
     """A stable data class for deployment details of a version."""
 
-    def __init__(self,
-                 origination: Optional[str] = None,
-                 git_repo: Optional[str] = None,
-                 git_branch: Optional[str] = None,
-                 commit_sha: Optional[str] = None):
+    def __init__(
+        self,
+        origination: Optional[str] = None,
+        git_repo: Optional[str] = None,
+        git_branch: Optional[str] = None,
+        commit_sha: Optional[str] = None,
+    ):
         self.origination = origination
         self.git_repo = git_repo
         self.git_branch = git_branch
@@ -55,9 +61,9 @@ class Manifest:
         if manifest_def is None:
             return None
         manifest = ManifestModel()
-        json_format.ParseDict(js_dict=manifest_def,
-                              message=manifest,
-                              ignore_unknown_fields=False)
+        json_format.ParseDict(
+            js_dict=manifest_def, message=manifest, ignore_unknown_fields=False
+        )
         return cls(manifest)
 
     def get_bundle_id(self) -> str:
@@ -80,23 +86,22 @@ class Manifest:
 
     def is_pipeline_in_bundle(self, version_id: str, pipeline_id: str) -> bool:
         """Checks if a pipeline is listed in the specified version's history."""
-        latest_version_info = self._get_latest_version_history_entry(
-            version_id)
+        latest_version_info = self._get_latest_version_history_entry(version_id)
         if latest_version_info and latest_version_info.pipelines:
             return pipeline_id in latest_version_info.pipelines
         return False
 
     def get_deployment_details(
-            self, version_id: str) -> Optional[VersionDeploymentInfo]:
-        """
-        Returns the deployment details for a specific version, taking the most
+        self, version_id: str
+    ) -> Optional[VersionDeploymentInfo]:
+        """Returns the deployment details for a specific version, taking the most
         recent entry if multiple exist for the same version.
         """
+        latest_version_info = self._get_latest_version_history_entry(version_id)
 
-        latest_version_info = self._get_latest_version_history_entry(
-            version_id)
-
-        if not latest_version_info or latest_version_info.metadata == VersionMetadata(
+        if (
+            not latest_version_info
+            or latest_version_info.metadata == VersionMetadata()
         ):
             return None
 
@@ -111,12 +116,14 @@ class Manifest:
         )
 
     def _get_latest_version_history_entry(
-            self, version_id: str) -> Optional[VersionHistory]:
+        self, version_id: str
+    ) -> Optional[VersionHistory]:
         """Finds the most recent VersionHistory entry for a given version_id."""
         if not self._manifest.versions_history:
             return None
         matching_versions = [
-            vh for vh in self._manifest.versions_history
+            vh
+            for vh in self._manifest.versions_history
             if vh and vh.version_id == version_id
         ]
         if not matching_versions:

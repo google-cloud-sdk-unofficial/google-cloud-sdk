@@ -452,3 +452,30 @@ allowed-source-ip-ranges:
     A comma-separated list of IPv4 ranges in CIDR notation that are allowed to connect
     to the public cluster. Use this flag only if --public-cluster is enabled.
     Example: --allowed-source-ip-ranges=203.0.113.0/24,198.51.100.0/24
+
+dns-zone-target:
+  arg_name: dns-zone-target
+  help_text: |
+    The Private DNS Zone target config.
+  choices:
+  - arg_value: network-project
+    enum_value: DNS_ZONE_NETWORK_PROJECT
+    help_text: The DNS Zone is created in the VPC Network's project.
+  - arg_value: cluster-project
+    enum_value: DNS_ZONE_CLUSTER_PROJECT
+    help_text: The DNS Zone is created in the Cluster's project.
+  - arg_value: cluster-project-manual-binding
+    enum_value: DNS_ZONE_CLUSTER_PROJECT_MANUAL_BINDING
+    help_text: The DNS Zone is created in the Cluster's project, and automated binding is skipped.
+
+psc-resource-target:
+  arg_name: psc-resource-target
+  help_text: |
+    The Private Service Connect (PSC) resource target config.
+  choices:
+  - arg_value: network-project
+    enum_value: PSC_NETWORK_PROJECT
+    help_text: The PSC connections are created in the VPC Network's project.
+  - arg_value: cluster-project
+    enum_value: PSC_CLUSTER_PROJECT
+    help_text: The PSC connections are created in the Cluster's project.

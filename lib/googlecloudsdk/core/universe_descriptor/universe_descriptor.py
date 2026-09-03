@@ -36,7 +36,7 @@ from typing import Any, Dict, List, Mapping, Set, TypedDict
 from urllib import parse
 
 from cloudsdk.google.protobuf import json_format
-from googlecloudsdk.core import config
+from googlecloudsdk.core import config_sqlite_store
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.configurations import named_configs
@@ -288,7 +288,7 @@ class UniverseDescriptor:
       UniverseDescriptorDataSQLiteError: An error occurred while fetching the
       descriptor data from the config cache.
     """
-    config_store = config.GetConfigStore(
+    config_store = config_sqlite_store.GetConfigStore(
         CONFIG_CACHE_DESCRIPTOR_DATA_TABLE_NAME
     )
     try:
@@ -423,7 +423,7 @@ class UniverseDescriptor:
     Returns:
       True if the descriptor was successfully deleted, False otherwise.
     """
-    config_store = config.GetConfigStore(
+    config_store = config_sqlite_store.GetConfigStore(
         CONFIG_CACHE_DESCRIPTOR_DATA_TABLE_NAME
     )
     try:
@@ -465,7 +465,7 @@ class UniverseDescriptor:
       UniverseDescriptorDataError: The provided descriptor data did not have
       the expected keys.
     """
-    config_store = config.GetConfigStore(
+    config_store = config_sqlite_store.GetConfigStore(
         CONFIG_CACHE_DESCRIPTOR_DATA_TABLE_NAME
     )
     # User can have multiple descriptor dicts so we key by universe domain

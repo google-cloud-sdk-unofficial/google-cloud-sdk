@@ -2163,7 +2163,6 @@ def AddDelayExecutionFlag(parser):
   parser.add_argument(
       '--delay-execution',
       action=arg_parsers.StoreTrueFalseAction,
-      hidden=True,
       help='True if the executions of the job can be delayed to start.',
   )
 
@@ -5277,7 +5276,6 @@ def RunUploadFlag():
   return base.Argument(
       '--run-upload',
       action=arg_parsers.StoreTrueFalseAction,
-      hidden=True,
       help=(
           'Specifies that the source should be uploaded via Cloud Run'
           ' UploadSource API.'
@@ -5325,7 +5323,7 @@ def SourceAndImageFlags(
 
 
 def IsUploadLaunchStage(release_track):
-  return release_track == base.ReleaseTrack.ALPHA
+  return release_track in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 
 
 def ContainerFlag():
@@ -5650,5 +5648,17 @@ def DevSyncCleanupFlag(parser):
           'If set, the Cloud Run instance created for the dev sync session'
           ' will not be automatically deleted when the session terminates. By'
           ' default, the instance is deleted to clean up resources.'
+      ),
+  )
+
+
+def DevSyncTailLogsFlag(parser):
+  return parser.add_argument(
+      '--tail-logs',
+      action='store_true',
+      default=True,
+      help=(
+          'Log tailing is enabled by default for developers. Setting this'
+          ' flag to false disables automated log streaming.'
       ),
   )

@@ -25,7 +25,6 @@ class InstanceStatus(enum.Enum):
   PENDING = 'pending'
   RUNNING = 'running'
   STOPPED = 'stopped'
-  COMPLETED = 'completed'
   FAILED = 'failed'
   UNKNOWN = 'unknown'
 
@@ -63,9 +62,6 @@ class Instance(container_resource.ContainerResource):
           best=PLAY_SYMBOL, alt='+', color='green'
       ),
       InstanceStatus.STOPPED: InstanceSymbol(
-          best=SQUARE_SYMBOL, alt='-', color=None
-      ),
-      InstanceStatus.COMPLETED: InstanceSymbol(
           best=SQUARE_SYMBOL, alt='-', color=None
       ),
       InstanceStatus.FAILED: InstanceSymbol(best='X', alt='X', color='red'),
@@ -118,11 +114,8 @@ class Instance(container_resource.ContainerResource):
       # Running
       return InstanceStatus.RUNNING
     elif ready_cond and not ready_cond['status']:
-      if not ready_cond.get('reason'):
-        # Done
-        return InstanceStatus.COMPLETED
-      elif ready_cond.get('reason') == 'Stopped':
-        # Paused
+      if not ready_cond.get('reason') or ready_cond.get('reason') == 'Stopped':
+        # Stopped
         return InstanceStatus.STOPPED
       else:
         # Failed

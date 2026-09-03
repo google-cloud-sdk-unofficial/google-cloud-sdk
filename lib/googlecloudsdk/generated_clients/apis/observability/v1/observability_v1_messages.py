@@ -536,6 +536,21 @@ class ObservabilityOrganizationsLocationsUpdateSettingsRequest(_messages.Message
   updateMask = _messages.StringField(3)
 
 
+class ObservabilityProjectsLocationsBucketsCreateRequest(_messages.Message):
+  r"""A ObservabilityProjectsLocationsBucketsCreateRequest object.
+
+  Fields:
+    bucket: A Bucket resource to be passed as the request body.
+    bucketId: Required. Id of the bucket to create.
+    parent: Required. Name of the project and location for the bucket. The
+      format is: projects/[PROJECT_ID]/locations/[LOCATION]
+  """
+
+  bucket = _messages.MessageField('Bucket', 1)
+  bucketId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
 class ObservabilityProjectsLocationsBucketsDatasetsGetRequest(_messages.Message):
   r"""A ObservabilityProjectsLocationsBucketsDatasetsGetRequest object.
 
@@ -708,6 +723,21 @@ class ObservabilityProjectsLocationsBucketsListRequest(_messages.Message):
   pageToken = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
   showDeleted = _messages.BooleanField(4)
+
+
+class ObservabilityProjectsLocationsBucketsPatchRequest(_messages.Message):
+  r"""A ObservabilityProjectsLocationsBucketsPatchRequest object.
+
+  Fields:
+    bucket: A Bucket resource to be passed as the request body.
+    name: Identifier. Name of the bucket. The format is:
+      projects/[PROJECT_ID]/locations/[LOCATION]/buckets/[BUCKET_ID]
+    updateMask: Optional. The list of fields to update.
+  """
+
+  bucket = _messages.MessageField('Bucket', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
 
 
 class ObservabilityProjectsLocationsGetRequest(_messages.Message):

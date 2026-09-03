@@ -59,6 +59,12 @@ arguments:
     help_text: |
       The MCP tools that are affected by this policy.
       Syntax: --mcp-tools=mcp-server=S1,tools=T1;T2
+  - arg_name: agent-response-denial-message
+    hidden: true
+    help_text: |
+      Sets `agent_response_customization.denial_message` on the policy: a
+      custom message shown to the end user when the policy denies a request.
+      Max 1000 characters.
   - arg_name: etag
     help_text: |
       The etag of the semantic governance policy.

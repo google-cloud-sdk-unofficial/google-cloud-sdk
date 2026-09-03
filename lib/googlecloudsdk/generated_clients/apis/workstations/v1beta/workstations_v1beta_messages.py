@@ -439,6 +439,12 @@ class GceHyperdiskBalancedHighAvailability(_messages.Message):
       can be resized. Defaults to `0`, which indicates no maximum limit is
       enforced by this configuration. Resizing is still subject to the quotas
       and limits of the underlying disk type.
+    provisionedIops: Optional. Indicates how many IOPS to provision for the
+      disk. This sets the number of I/O operations per second that the disk
+      can handle. Values must be between 3000 and 100,000.
+    provisionedThroughput: Optional. Indicates how much throughput to
+      provision for the disk. This sets the number of throughput mb per second
+      that the disk can handle. Values must be between 1 and 2,400.
     reclaimPolicy: Optional. Whether the persistent disk should be deleted
       when the workstation is deleted. Valid values are `DELETE` and `RETAIN`.
       Defaults to `DELETE`.
@@ -468,9 +474,11 @@ class GceHyperdiskBalancedHighAvailability(_messages.Message):
 
   archiveTimeout = _messages.StringField(1)
   maxSizeGb = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  reclaimPolicy = _messages.EnumField('ReclaimPolicyValueValuesEnum', 3)
-  sizeGb = _messages.IntegerField(4, variant=_messages.Variant.INT32)
-  sourceSnapshot = _messages.StringField(5)
+  provisionedIops = _messages.IntegerField(3)
+  provisionedThroughput = _messages.IntegerField(4)
+  reclaimPolicy = _messages.EnumField('ReclaimPolicyValueValuesEnum', 5)
+  sizeGb = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  sourceSnapshot = _messages.StringField(7)
 
 
 class GceInstance(_messages.Message):

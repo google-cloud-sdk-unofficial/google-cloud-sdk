@@ -574,6 +574,7 @@ def AddCommonBulkInsertArgs(
       support_confidential_compute_type_tdx=True,
       support_snp_svsm=support_snp_svsm,
       support_confidential_compute_type_cca=True,
+      support_confidential_compute_type_bmsai=True,
   )
   instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
   AddBulkCreateArgs(

@@ -14,11 +14,10 @@
 # limitations under the License.
 """Command to update a Cloud FTP server."""
 
-from googlecloudsdk.api_lib.storage import ftp
+from googlecloudsdk.api_lib.storage import ftp_api
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage.ftp import operations_util
-from googlecloudsdk.command_lib.storage.ftp import servers_util
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 
@@ -51,14 +50,7 @@ class Update(base.Command):
         'SERVER_ID',
         help='The ID of the FTP server to update.',
     )
-    parser.add_argument(
-        '--async',
-        action='store_true',
-        dest='async_',
-        help=(
-            'Return immediately, without waiting for the operation to complete.'
-        ),
-    )
+
     parser.add_argument(
         '--location',
         required=True,
@@ -88,11 +80,8 @@ class Update(base.Command):
     )
 
   def Run(self, args):
-    client = ftp.FtpClient()
-    server_name = servers_util.GetServerResourceName(
-        args.location, args.SERVER_ID
-    )
-    existing_server = client.GetServer(server_name)
+    client = ftp_api.FtpApi()
+    existing_server = client.GetServer(args.location, args.SERVER_ID)
     access_type_enum = client.messages.Server.AccessTypeValueValuesEnum
 
     is_internal = existing_server.accessType == access_type_enum.INTERNAL
@@ -123,19 +112,22 @@ class Update(base.Command):
           'Provided lists will overwrite existing server configuration.'
       )
 
-    server_msg, update_mask = servers_util.UpdateServerMsg(
-        client.messages, args, existing_server
+    kwargs = {}
+    if args.IsSpecified('display_name'):
+      kwargs['display_name'] = args.display_name
+    if args.IsSpecified('allowed_cidr_blocks'):
+      kwargs['allowed_cidr_blocks'] = args.allowed_cidr_blocks
+    if args.IsSpecified('consumer_accept_list'):
+      kwargs['consumer_accept_list'] = args.consumer_accept_list
+    if args.IsSpecified('consumer_reject_list'):
+      kwargs['consumer_reject_list'] = args.consumer_reject_list
+
+    op = client.UpdateServer(
+        args.location, args.SERVER_ID, existing_server=existing_server, **kwargs
     )
 
-    op = client.UpdateServer(server_msg, update_mask)
-
-    if args.async_:
-      log.status.Print('Update request issued for: [{}]'.format(args.SERVER_ID))
-      log.status.Print('Check operation [{}] for status.'.format(op.name))
-      return op
-
     op_ref = operations_util.GetOperationRef(op.name)
-    return operations_util.WaitForOperation(
+    return client.WaitForOperation(
         op_ref,
         'Waiting for server [{}] to be updated'.format(args.SERVER_ID),
         result_service=client.servers_service,

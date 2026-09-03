@@ -47,9 +47,9 @@ arguments:
     help_text: |
       If specified, an unhealthy MIG/NEG will be removed from Global load balancing and traffic
       routing for the service.
-      A MIG/NEG is considered to be unhealthy if less than 25% of the instance/endpoints in the
+      A MIG/NEG is considered to be unhealthy if less than 25%% of the instance/endpoints in the
       MIG/NEG are healthy.
-      autoCapacityDrain will never drain more than 50% of the configured MIGs/NEGs of a Backend
+      autoCapacityDrain will never drain more than 50%% of the configured MIGs/NEGs of a Backend
       Service.
     type: bool
   - arg_name: failover-health-threshold

@@ -54,7 +54,7 @@ class AgentidentityV1alpha(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      r"""Gets details of a single AccessSummary.
+      r"""Gets details of a single access summary.
 
       Args:
         request: (AgentidentityProjectsLocationsAccessSummariesGetRequest) input message
@@ -81,7 +81,7 @@ class AgentidentityV1alpha(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists AccessSummaries in a given project and location. Supported Filters: - `workload_id`: Filter by the SPIFFE ID of the agent. Example: `workload_id="spiffe://example.com/ns/default/sa/my-agent"`.
+      r"""Lists access summaries in a given project and location. Supported filters: - `workload_id`: Filter by the SPIFFE ID of the agent. Example: `workload_id="spiffe://example.com/ns/default/sa/my-agent"`.
 
       Args:
         request: (AgentidentityProjectsLocationsAccessSummariesListRequest) input message
@@ -118,7 +118,7 @@ class AgentidentityV1alpha(base_api.BaseApiClient):
           }
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a single Authorization.
+      r"""Deletes a single authorization.
 
       Args:
         request: (AgentidentityProjectsLocationsAuthProvidersAuthorizationsDeleteRequest) input message
@@ -145,7 +145,7 @@ class AgentidentityV1alpha(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets details of a single Authorization.
+      r"""Gets details of a single authorization.
 
       Args:
         request: (AgentidentityProjectsLocationsAuthProvidersAuthorizationsGetRequest) input message
@@ -171,8 +171,35 @@ class AgentidentityV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def GetIamPolicy(self, request, global_params=None):
+      r"""Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.
+
+      Args:
+        request: (AgentidentityProjectsLocationsAuthProvidersAuthorizationsGetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('GetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/authProviders/{authProvidersId}/authorizations/{authorizationsId}:getIamPolicy',
+        http_method='GET',
+        method_id='agentidentity.projects.locations.authProviders.authorizations.getIamPolicy',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=['options_requestedPolicyVersion'],
+        relative_path='v1alpha/{+resource}:getIamPolicy',
+        request_field='',
+        request_type_name='AgentidentityProjectsLocationsAuthProvidersAuthorizationsGetIamPolicyRequest',
+        response_type_name='Policy',
+        supports_download=False,
+    )
+
     def List(self, request, global_params=None):
-      r"""Lists Authorizations in a given project and location.
+      r"""Lists authorizations in a given project and location.
 
       Args:
         request: (AgentidentityProjectsLocationsAuthProvidersAuthorizationsListRequest) input message
@@ -198,6 +225,60 @@ class AgentidentityV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def SetIamPolicy(self, request, global_params=None):
+      r"""Sets the access control policy on the specified resource. Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.
+
+      Args:
+        request: (AgentidentityProjectsLocationsAuthProvidersAuthorizationsSetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('SetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/authProviders/{authProvidersId}/authorizations/{authorizationsId}:setIamPolicy',
+        http_method='POST',
+        method_id='agentidentity.projects.locations.authProviders.authorizations.setIamPolicy',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=[],
+        relative_path='v1alpha/{+resource}:setIamPolicy',
+        request_field='setIamPolicyRequest',
+        request_type_name='AgentidentityProjectsLocationsAuthProvidersAuthorizationsSetIamPolicyRequest',
+        response_type_name='Policy',
+        supports_download=False,
+    )
+
+    def TestIamPermissions(self, request, global_params=None):
+      r"""Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may "fail open" without warning.
+
+      Args:
+        request: (AgentidentityProjectsLocationsAuthProvidersAuthorizationsTestIamPermissionsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TestIamPermissionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('TestIamPermissions')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/authProviders/{authProvidersId}/authorizations/{authorizationsId}:testIamPermissions',
+        http_method='POST',
+        method_id='agentidentity.projects.locations.authProviders.authorizations.testIamPermissions',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=[],
+        relative_path='v1alpha/{+resource}:testIamPermissions',
+        request_field='testIamPermissionsRequest',
+        request_type_name='AgentidentityProjectsLocationsAuthProvidersAuthorizationsTestIamPermissionsRequest',
+        response_type_name='TestIamPermissionsResponse',
+        supports_download=False,
+    )
+
   class ProjectsLocationsAuthProvidersService(base_api.BaseApiService):
     """Service class for the projects_locations_authProviders resource."""
 
@@ -209,7 +290,7 @@ class AgentidentityV1alpha(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a new AuthProvider in a given project and location.
+      r"""Creates a new auth provider in a given project and location.
 
       Args:
         request: (AgentidentityProjectsLocationsAuthProvidersCreateRequest) input message
@@ -236,7 +317,7 @@ class AgentidentityV1alpha(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a single AuthProvider.
+      r"""Deletes a single auth provider.
 
       Args:
         request: (AgentidentityProjectsLocationsAuthProvidersDeleteRequest) input message
@@ -263,7 +344,7 @@ class AgentidentityV1alpha(base_api.BaseApiClient):
     )
 
     def Disable(self, request, global_params=None):
-      r"""Disables a single AuthProvider.
+      r"""Disables a single auth provider.
 
       Args:
         request: (AgentidentityProjectsLocationsAuthProvidersDisableRequest) input message
@@ -290,7 +371,7 @@ class AgentidentityV1alpha(base_api.BaseApiClient):
     )
 
     def Enable(self, request, global_params=None):
-      r"""Enables a single AuthProvider.
+      r"""Enables a single auth provider.
 
       Args:
         request: (AgentidentityProjectsLocationsAuthProvidersEnableRequest) input message
@@ -317,7 +398,7 @@ class AgentidentityV1alpha(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets details of a single AuthProvider.
+      r"""Gets details of a single auth provider.
 
       Args:
         request: (AgentidentityProjectsLocationsAuthProvidersGetRequest) input message
@@ -371,7 +452,7 @@ class AgentidentityV1alpha(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists AuthProviders in a given project and location.
+      r"""Lists auth providers in a given project and location.
 
       Args:
         request: (AgentidentityProjectsLocationsAuthProvidersListRequest) input message
@@ -398,7 +479,7 @@ class AgentidentityV1alpha(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates the parameters of a single AuthProvider.
+      r"""Updates the parameters of a single auth provider.
 
       Args:
         request: (AgentidentityProjectsLocationsAuthProvidersPatchRequest) input message
@@ -425,7 +506,7 @@ class AgentidentityV1alpha(base_api.BaseApiClient):
     )
 
     def Query(self, request, global_params=None):
-      r"""Queries what all auth_providers are used by a given workload_id.
+      r"""Queries which auth providers are used by a given workload ID.
 
       Args:
         request: (AgentidentityProjectsLocationsAuthProvidersQueryRequest) input message
@@ -452,7 +533,7 @@ class AgentidentityV1alpha(base_api.BaseApiClient):
     )
 
     def QueryWorkloads(self, request, global_params=None):
-      r"""Queries what all workloads are using a given auth_provider.
+      r"""Queries which workloads are using a given auth provider.
 
       Args:
         request: (AgentidentityProjectsLocationsAuthProvidersQueryWorkloadsRequest) input message
@@ -479,7 +560,7 @@ class AgentidentityV1alpha(base_api.BaseApiClient):
     )
 
     def RevokeAuthorization(self, request, global_params=None):
-      r"""Revokes all authorizations for a specific user on an AuthProvider. This deletes all authorization records associated with the user and AuthProvider, effectively revoking access across all agents.
+      r"""Revokes all authorizations for a specific user on an auth provider. This deletes all authorization records associated with the user and auth provider, effectively revoking access across all agents.
 
       Args:
         request: (AgentidentityProjectsLocationsAuthProvidersRevokeAuthorizationRequest) input message
@@ -560,7 +641,7 @@ class AgentidentityV1alpha(base_api.BaseApiClient):
     )
 
     def Undelete(self, request, global_params=None):
-      r"""Undeletes a single AuthProvider.
+      r"""Undeletes a single auth provider.
 
       Args:
         request: (AgentidentityProjectsLocationsAuthProvidersUndeleteRequest) input message

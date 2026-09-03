@@ -14,11 +14,12 @@
 # limitations under the License.
 """Command to update a Cloud FTP user."""
 
-from googlecloudsdk.api_lib.storage import ftp
+import json
+from googlecloudsdk.api_lib.storage import ftp_api
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage.ftp import operations_util
-from googlecloudsdk.command_lib.storage.ftp import users_util
+from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 
 
@@ -50,14 +51,7 @@ class Update(base.Command):
         'USER_ID',
         help='The ID of the user to update.',
     )
-    parser.add_argument(
-        '--async',
-        action='store_true',
-        dest='async_',
-        help=(
-            'Return immediately, without waiting for the operation to complete.'
-        ),
-    )
+
     parser.add_argument(
         '--server',
         required=True,
@@ -75,7 +69,11 @@ class Update(base.Command):
     parser.add_argument(
         '--user-credentials-from-file',
         type=arg_parsers.FileContents(),
-        help='Path to a JSON file containing user credentials.',
+        help=(
+            'Path to a JSON file containing user credentials. '
+            'For example: [{"credentialType": "PUBLIC_KEY", '
+            '"credentialName": "key1", "sshPublicKeyBody": "ssh-rsa..."}]'
+        ),
     )
     parser.add_argument(
         '--storage-directory-mapping',
@@ -94,30 +92,38 @@ class Update(base.Command):
     )
 
   def Run(self, args):
-    client = ftp.FtpClient()
-    user_name = users_util.GetUserResourceName(
-        args.location, args.server, args.USER_ID
-    )
-    existing_user = client.GetUser(user_name)
+    client = ftp_api.FtpApi()
 
     if args.IsSpecified('user_credentials_from_file') or args.IsSpecified(
         'storage_directory_mapping'
     ):
       log.warning('Provided lists will overwrite existing user configuration.')
 
-    user_msg, update_mask = users_util.UpdateUserMsg(
-        client.messages, args, existing_user
-    )
+    kwargs = {}
+    if args.IsSpecified('customer_service_account'):
+      kwargs['customer_service_account'] = args.customer_service_account
 
-    op = client.UpdateUser(user_msg, update_mask)
+    if args.IsSpecified('user_credentials_from_file'):
+      creds_from_file = None
+      if args.user_credentials_from_file:
+        try:
+          creds_from_file = json.loads(args.user_credentials_from_file)
+        except json.JSONDecodeError as e:
+          raise exceptions.Error(
+              'Invalid JSON format in user credentials file. Expected a JSON '
+              'list of dictionaries, e.g.: [{{"credentialType": "PUBLIC_KEY", '
+              '"credentialName": "my-key", "sshPublicKeyBody": "..."}}]. '
+              'Parser error: {}'.format(e)
+          )
+      kwargs['user_credentials'] = creds_from_file
 
-    if args.async_:
-      log.status.Print('Update request issued for: [{}]'.format(args.USER_ID))
-      log.status.Print('Check operation [{}] for status.'.format(op.name))
-      return op
+    if args.IsSpecified('storage_directory_mapping'):
+      kwargs['storage_directory_mappings'] = args.storage_directory_mapping
+
+    op = client.UpdateUser(args.location, args.server, args.USER_ID, **kwargs)
 
     op_ref = operations_util.GetOperationRef(op.name)
-    return operations_util.WaitForOperation(
+    return client.WaitForOperation(
         op_ref,
         'Waiting for user [{}] to be updated'.format(args.USER_ID),
         result_service=client.users_service,

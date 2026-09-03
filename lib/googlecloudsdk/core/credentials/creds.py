@@ -35,6 +35,7 @@ from google.auth import external_account as google_auth_external_account
 from google.auth import external_account_authorized_user as google_auth_external_account_authorized_user
 from google.auth import impersonated_credentials as google_auth_impersonated
 from googlecloudsdk.core import config
+from googlecloudsdk.core import config_sqlite_store
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -395,7 +396,7 @@ class SqliteCredentialStore(CredentialStore):
         'CREATE TABLE IF NOT EXISTS "{}" '
         '(account_id TEXT PRIMARY KEY, value BLOB)'
         .format(_CREDENTIAL_TABLE_NAME))
-    config_store = config.GetConfigStore()
+    config_store = config_sqlite_store.GetConfigStore()
     if not config_store.Get('cred_token_store_formatted'):
       self.FormatAccountIdColumn()
 
@@ -439,7 +440,7 @@ class SqliteCredentialStore(CredentialStore):
                 (formatted_account_id, cred_json),
             )
 
-      config_store = config.GetConfigStore()
+      config_store = config_sqlite_store.GetConfigStore()
       config_store.Set('cred_token_store_formatted', True)
 
   def GetAccounts(self):

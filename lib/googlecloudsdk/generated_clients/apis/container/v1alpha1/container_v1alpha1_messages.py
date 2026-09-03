@@ -375,6 +375,8 @@ class AddonsConfig(_messages.Message):
   cluster, enabling additional functionality.
 
   Fields:
+    agentAuthorityConfig: Optional. Configuration for the Agent Authority add-
+      on.
     agentSandboxConfig: Optional. Configuration for the AgentSandbox addon.
     cloudBuildConfig: Configuration for the Cloud Build addon.
     cloudRunConfig: Configuration for the Cloud Run addon. The `IstioConfig`
@@ -428,33 +430,34 @@ class AddonsConfig(_messages.Message):
     wizSensorConfig: Optional. Configuration for the Wiz Sensor add-on.
   """
 
-  agentSandboxConfig = _messages.MessageField('AgentSandboxConfig', 1)
-  cloudBuildConfig = _messages.MessageField('CloudBuildConfig', 2)
-  cloudRunConfig = _messages.MessageField('CloudRunConfig', 3)
-  configConnectorConfig = _messages.MessageField('ConfigConnectorConfig', 4)
-  dnsCacheConfig = _messages.MessageField('DnsCacheConfig', 5)
-  gcePersistentDiskCsiDriverConfig = _messages.MessageField('GcePersistentDiskCsiDriverConfig', 6)
-  gcpFilestoreCsiDriverConfig = _messages.MessageField('GcpFilestoreCsiDriverConfig', 7)
-  gcsFuseCsiDriverConfig = _messages.MessageField('GcsFuseCsiDriverConfig', 8)
-  gkeBackupAgentConfig = _messages.MessageField('GkeBackupAgentConfig', 9)
-  highScaleCheckpointingConfig = _messages.MessageField('HighScaleCheckpointingConfig', 10)
-  horizontalPodAutoscaling = _messages.MessageField('HorizontalPodAutoscaling', 11)
-  httpLoadBalancing = _messages.MessageField('HttpLoadBalancing', 12)
-  istioConfig = _messages.MessageField('IstioConfig', 13)
-  kalmConfig = _messages.MessageField('KalmConfig', 14)
-  kubernetesDashboard = _messages.MessageField('KubernetesDashboard', 15)
-  kueueConfig = _messages.MessageField('KueueConfig', 16)
-  lustreCsiDriverConfig = _messages.MessageField('LustreCsiDriverConfig', 17)
-  networkPolicyConfig = _messages.MessageField('NetworkPolicyConfig', 18)
-  nodeReadinessConfig = _messages.MessageField('NodeReadinessConfig', 19)
-  parallelstoreCsiDriverConfig = _messages.MessageField('ParallelstoreCsiDriverConfig', 20)
-  podSnapshotConfig = _messages.MessageField('PodSnapshotConfig', 21)
-  rayConfig = _messages.MessageField('RayConfig', 22)
-  rayOperatorConfig = _messages.MessageField('RayOperatorConfig', 23)
-  sliceControllerConfig = _messages.MessageField('SliceControllerConfig', 24)
-  slurmOperatorConfig = _messages.MessageField('SlurmOperatorConfig', 25)
-  statefulHaConfig = _messages.MessageField('StatefulHAConfig', 26)
-  wizSensorConfig = _messages.MessageField('WizSensorConfig', 27)
+  agentAuthorityConfig = _messages.MessageField('AgentAuthorityConfig', 1)
+  agentSandboxConfig = _messages.MessageField('AgentSandboxConfig', 2)
+  cloudBuildConfig = _messages.MessageField('CloudBuildConfig', 3)
+  cloudRunConfig = _messages.MessageField('CloudRunConfig', 4)
+  configConnectorConfig = _messages.MessageField('ConfigConnectorConfig', 5)
+  dnsCacheConfig = _messages.MessageField('DnsCacheConfig', 6)
+  gcePersistentDiskCsiDriverConfig = _messages.MessageField('GcePersistentDiskCsiDriverConfig', 7)
+  gcpFilestoreCsiDriverConfig = _messages.MessageField('GcpFilestoreCsiDriverConfig', 8)
+  gcsFuseCsiDriverConfig = _messages.MessageField('GcsFuseCsiDriverConfig', 9)
+  gkeBackupAgentConfig = _messages.MessageField('GkeBackupAgentConfig', 10)
+  highScaleCheckpointingConfig = _messages.MessageField('HighScaleCheckpointingConfig', 11)
+  horizontalPodAutoscaling = _messages.MessageField('HorizontalPodAutoscaling', 12)
+  httpLoadBalancing = _messages.MessageField('HttpLoadBalancing', 13)
+  istioConfig = _messages.MessageField('IstioConfig', 14)
+  kalmConfig = _messages.MessageField('KalmConfig', 15)
+  kubernetesDashboard = _messages.MessageField('KubernetesDashboard', 16)
+  kueueConfig = _messages.MessageField('KueueConfig', 17)
+  lustreCsiDriverConfig = _messages.MessageField('LustreCsiDriverConfig', 18)
+  networkPolicyConfig = _messages.MessageField('NetworkPolicyConfig', 19)
+  nodeReadinessConfig = _messages.MessageField('NodeReadinessConfig', 20)
+  parallelstoreCsiDriverConfig = _messages.MessageField('ParallelstoreCsiDriverConfig', 21)
+  podSnapshotConfig = _messages.MessageField('PodSnapshotConfig', 22)
+  rayConfig = _messages.MessageField('RayConfig', 23)
+  rayOperatorConfig = _messages.MessageField('RayOperatorConfig', 24)
+  sliceControllerConfig = _messages.MessageField('SliceControllerConfig', 25)
+  slurmOperatorConfig = _messages.MessageField('SlurmOperatorConfig', 26)
+  statefulHaConfig = _messages.MessageField('StatefulHAConfig', 27)
+  wizSensorConfig = _messages.MessageField('WizSensorConfig', 28)
 
 
 class AdvancedDatapathObservabilityConfig(_messages.Message):
@@ -527,6 +530,16 @@ class AdvancedMachineFeatures(_messages.Message):
   enableNestedVirtualization = _messages.BooleanField(1)
   performanceMonitoringUnit = _messages.EnumField('PerformanceMonitoringUnitValueValuesEnum', 2)
   threadsPerCore = _messages.IntegerField(3)
+
+
+class AgentAuthorityConfig(_messages.Message):
+  r"""Configuration for Agent Authority feature.
+
+  Fields:
+    enabled: Optional. Whether Agent Authority is enabled.
+  """
+
+  enabled = _messages.BooleanField(1)
 
 
 class AgentSandboxConfig(_messages.Message):
@@ -858,7 +871,7 @@ class AutoprovisioningNodePoolDefaults(_messages.Message):
       with Cloud KMS Keys please see:
       https://cloud.google.com/compute/docs/disks/customer-managed-encryption
     diskSizeGb: Size of the disk attached to each node, specified in GB. The
-      smallest allowed disk size is 10GB. TODO(b/395671893) - Add BootDisk
+      smallest allowed disk size is 12GB. TODO(b/395671893) - Add BootDisk
       boot_disk field and deprecate this field. If unspecified, the default
       disk size is 100GB.
     diskType: Type of the disk attached to each node (e.g. 'pd-standard', 'pd-
@@ -910,6 +923,39 @@ class AutoprovisioningNodePoolDefaults(_messages.Message):
   serviceAccount = _messages.StringField(9)
   shieldedInstanceConfig = _messages.MessageField('ShieldedInstanceConfig', 10)
   upgradeSettings = _messages.MessageField('UpgradeSettings', 11)
+
+
+class AutoprovisioningRestrictionConfig(_messages.Message):
+  r"""AutoprovisioningRestrictionConfig configures restrictions related to
+  autoprovisioning settings.
+
+  Enums:
+    ServiceAccountPermissionCheckValueValuesEnum: Optional. Controls whether
+      service account validation checks are enforced for autoprovisioning.
+
+  Fields:
+    authorizedServiceAccounts: Optional. Contains the list of service accounts
+      allowed for autoprovisioned node pools / Custom ComputeClasses.
+    serviceAccountPermissionCheck: Optional. Controls whether service account
+      validation checks are enforced for autoprovisioning.
+  """
+
+  class ServiceAccountPermissionCheckValueValuesEnum(_messages.Enum):
+    r"""Optional. Controls whether service account validation checks are
+    enforced for autoprovisioning.
+
+    Values:
+      PERMISSION_CHECK_MODE_UNSPECIFIED: Default value. Permission check mode
+        is unspecified.
+      DISABLED: Service account permission check is disabled.
+      ENABLED: Service account permission check is enabled.
+    """
+    PERMISSION_CHECK_MODE_UNSPECIFIED = 0
+    DISABLED = 1
+    ENABLED = 2
+
+  authorizedServiceAccounts = _messages.StringField(1, repeated=True)
+  serviceAccountPermissionCheck = _messages.EnumField('ServiceAccountPermissionCheckValueValuesEnum', 2)
 
 
 class AutoscaledRolloutPolicy(_messages.Message):
@@ -1874,6 +1920,8 @@ class ClusterAutoscaling(_messages.Message):
       the NodePool's nodes can be created by NAP.
     autoprovisioningNodePoolDefaults: AutoprovisioningNodePoolDefaults
       contains defaults for a node pool created by NAP.
+    autoprovisioningRestrictionConfig: Optional. Configures restrictions
+      related to autoprovisioning settings.
     autoscalingProfile: Defines autoscaling behaviour.
     defaultComputeClassConfig: Default compute class is a configuration for
       default compute class.
@@ -1911,10 +1959,11 @@ class ClusterAutoscaling(_messages.Message):
   autopilotGeneralProfile = _messages.EnumField('AutopilotGeneralProfileValueValuesEnum', 1)
   autoprovisioningLocations = _messages.StringField(2, repeated=True)
   autoprovisioningNodePoolDefaults = _messages.MessageField('AutoprovisioningNodePoolDefaults', 3)
-  autoscalingProfile = _messages.EnumField('AutoscalingProfileValueValuesEnum', 4)
-  defaultComputeClassConfig = _messages.MessageField('DefaultComputeClassConfig', 5)
-  enableNodeAutoprovisioning = _messages.BooleanField(6)
-  resourceLimits = _messages.MessageField('ResourceLimit', 7, repeated=True)
+  autoprovisioningRestrictionConfig = _messages.MessageField('AutoprovisioningRestrictionConfig', 4)
+  autoscalingProfile = _messages.EnumField('AutoscalingProfileValueValuesEnum', 5)
+  defaultComputeClassConfig = _messages.MessageField('DefaultComputeClassConfig', 6)
+  enableNodeAutoprovisioning = _messages.BooleanField(7)
+  resourceLimits = _messages.MessageField('ResourceLimit', 8, repeated=True)
 
 
 class ClusterNetworkPerformanceConfig(_messages.Message):
@@ -6954,8 +7003,10 @@ class NodeConfig(_messages.Message):
       autoscaling profile.
     containerdConfig: Parameters for containerd customization.
     diskSizeGb: Size of the disk attached to each node, specified in GB. The
-      smallest allowed disk size is 10GB. If unspecified, the default disk
-      size is 100GB.
+      smallest allowed disk size is 15 GB for node pools running GKE versions
+      1.36.3-gke.1480000 or later. Or, for earlier versions, the smallest
+      allowed disk size is 12 GB. If unspecified, the default disk size is
+      100GB.
     diskType: Type of the disk attached to each node (e.g. 'pd-standard', 'pd-
       ssd' or 'pd-balanced') If unspecified, the default disk type is 'pd-
       standard'
@@ -9063,6 +9114,7 @@ class ReleaseChannelConfig(_messages.Message):
     customVersions: Output only. List of custom versions for the channel.
     defaultVersion: The default version for newly created clusters on the
       channel.
+    previewVersions: Output only. List of preview versions for the channel.
     upgradeTargetVersion: The auto upgrade target version for clusters on the
       channel.
     validVersions: List of valid versions for the channel.
@@ -9097,8 +9149,9 @@ class ReleaseChannelConfig(_messages.Message):
   channel = _messages.EnumField('ChannelValueValuesEnum', 2)
   customVersions = _messages.StringField(3, repeated=True)
   defaultVersion = _messages.StringField(4)
-  upgradeTargetVersion = _messages.StringField(5)
-  validVersions = _messages.StringField(6, repeated=True)
+  previewVersions = _messages.StringField(5, repeated=True)
+  upgradeTargetVersion = _messages.StringField(6)
+  validVersions = _messages.StringField(7, repeated=True)
 
 
 class ReservationAffinity(_messages.Message):
@@ -10843,6 +10896,12 @@ class UpdateMasterRequest(_messages.Message):
 class UpdateNodePoolRequest(_messages.Message):
   r"""SetNodePoolVersionRequest updates the version of a node pool.
 
+  Enums:
+    NodeConfigUpdateModeValueValuesEnum: Optional. Option to specify the
+      rollout strategy to apply node pool configuration updates. If
+      unspecified, standard rolling update strategy with VM recreation is used
+      as the default behavior.
+
   Fields:
     accelerators: A list of hardware accelerators to be attached to each node.
       See https://cloud.google.com/compute/docs/gpus for more information
@@ -10911,6 +10970,9 @@ class UpdateNodePoolRequest(_messages.Message):
     name: The name (project, location, cluster, node pool) of the node pool to
       update. Specified in the format
       `projects/*/locations/*/clusters/*/nodePools/*`.
+    nodeConfigUpdateMode: Optional. Option to specify the rollout strategy to
+      apply node pool configuration updates. If unspecified, standard rolling
+      update strategy with VM recreation is used as the default behavior.
     nodeDrainConfig: The desired node drain configuration for nodes in the
       node pool.
     nodeNetworkConfig: Node network config.
@@ -10962,6 +11024,22 @@ class UpdateNodePoolRequest(_messages.Message):
       name field.
   """
 
+  class NodeConfigUpdateModeValueValuesEnum(_messages.Enum):
+    r"""Optional. Option to specify the rollout strategy to apply node pool
+    configuration updates. If unspecified, standard rolling update strategy
+    with VM recreation is used as the default behavior.
+
+    Values:
+      NODE_CONFIG_UPDATE_MODE_UNSPECIFIED: Unspecified.
+      LIVE_UPDATE_WITHOUT_DRAIN: Node updates are applied in-place on the
+        running VM without VM recreation and without draining workloads/pods.
+      LIVE_UPDATE_WITH_DRAIN: Node updates are applied in-place on the running
+        VM without VM recreation, but workloads/pods are drained first.
+    """
+    NODE_CONFIG_UPDATE_MODE_UNSPECIFIED = 0
+    LIVE_UPDATE_WITHOUT_DRAIN = 1
+    LIVE_UPDATE_WITH_DRAIN = 2
+
   accelerators = _messages.MessageField('AcceleratorConfig', 1, repeated=True)
   bootDisk = _messages.MessageField('BootDisk', 2)
   clusterId = _messages.StringField(3)
@@ -10988,24 +11066,25 @@ class UpdateNodePoolRequest(_messages.Message):
   maintenancePolicy = _messages.MessageField('NodePoolMaintenancePolicy', 24)
   maxRunDuration = _messages.StringField(25)
   name = _messages.StringField(26)
-  nodeDrainConfig = _messages.MessageField('NodeDrainConfig', 27)
-  nodeNetworkConfig = _messages.MessageField('NodeNetworkConfig', 28)
-  nodePoolId = _messages.StringField(29)
-  nodeVersion = _messages.StringField(30)
-  projectId = _messages.StringField(31)
-  queuedProvisioning = _messages.MessageField('QueuedProvisioning', 32)
-  resourceLabels = _messages.MessageField('ResourceLabels', 33)
-  resourceManagerTags = _messages.MessageField('ResourceManagerTags', 34)
-  runnerPoolConfig = _messages.MessageField('RunnerPoolConfig', 35)
-  storagePools = _messages.StringField(36, repeated=True)
-  tags = _messages.MessageField('NetworkTags', 37)
-  taintConfig = _messages.MessageField('TaintConfig', 38)
-  taints = _messages.MessageField('NodeTaints', 39)
-  updatedNodePool = _messages.MessageField('NodePool', 40)
-  upgradeSettings = _messages.MessageField('UpgradeSettings', 41)
-  windowsNodeConfig = _messages.MessageField('WindowsNodeConfig', 42)
-  workloadMetadataConfig = _messages.MessageField('WorkloadMetadataConfig', 43)
-  zone = _messages.StringField(44)
+  nodeConfigUpdateMode = _messages.EnumField('NodeConfigUpdateModeValueValuesEnum', 27)
+  nodeDrainConfig = _messages.MessageField('NodeDrainConfig', 28)
+  nodeNetworkConfig = _messages.MessageField('NodeNetworkConfig', 29)
+  nodePoolId = _messages.StringField(30)
+  nodeVersion = _messages.StringField(31)
+  projectId = _messages.StringField(32)
+  queuedProvisioning = _messages.MessageField('QueuedProvisioning', 33)
+  resourceLabels = _messages.MessageField('ResourceLabels', 34)
+  resourceManagerTags = _messages.MessageField('ResourceManagerTags', 35)
+  runnerPoolConfig = _messages.MessageField('RunnerPoolConfig', 36)
+  storagePools = _messages.StringField(37, repeated=True)
+  tags = _messages.MessageField('NetworkTags', 38)
+  taintConfig = _messages.MessageField('TaintConfig', 39)
+  taints = _messages.MessageField('NodeTaints', 40)
+  updatedNodePool = _messages.MessageField('NodePool', 41)
+  upgradeSettings = _messages.MessageField('UpgradeSettings', 42)
+  windowsNodeConfig = _messages.MessageField('WindowsNodeConfig', 43)
+  workloadMetadataConfig = _messages.MessageField('WorkloadMetadataConfig', 44)
+  zone = _messages.StringField(45)
 
 
 class UpgradeDetails(_messages.Message):

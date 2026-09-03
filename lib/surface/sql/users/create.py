@@ -93,7 +93,13 @@ def RunBaseCreateCommand(args):
       serverRoles=args.server_roles,
   )
 
-  result_operation = sql_client.users.Insert(new_user)
+  result_operation = sql_client.users.Insert(
+      sql_messages.SqlUsersInsertRequest(
+          user=new_user,
+          instance=instance_ref.instance,
+          project=instance_ref.project,
+      )
+  )
   operation_ref = client.resource_parser.Create(
       'sql.operations',
       operation=result_operation.name,

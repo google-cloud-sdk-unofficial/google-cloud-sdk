@@ -108,7 +108,9 @@ class ServicePrinter(cp.CustomPrinterBase):
         cp.Labeled([
             (
                 'SSH enabled',
-                record.annotations.get(service.SERVICE_SSH_ENABLED_ANNOTATION),
+                record.annotations.get(
+                    service.SERVICE_SSH_ENABLED_ANNOTATION, 'false'
+                ),
             ),
         ])
     )

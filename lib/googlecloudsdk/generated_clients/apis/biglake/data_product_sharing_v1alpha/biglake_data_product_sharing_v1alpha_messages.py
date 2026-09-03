@@ -35,6 +35,22 @@ class BiglakeDataproductsharingV1alphaProjectsCatalogsPublishDataProductRequest(
   publishDataProductRequest = _messages.MessageField('PublishDataProductRequest', 2)
 
 
+class BiglakeDataproductsharingV1alphaProjectsCatalogsUnpublishDataProductRequest(_messages.Message):
+  r"""A
+  BiglakeDataproductsharingV1alphaProjectsCatalogsUnpublishDataProductRequest
+  object.
+
+  Fields:
+    connectionCatalog: Required. The Delta Sharing Catalog containing the SAP
+      BDC enrollment config. Format: projects/{project}/catalogs/{catalog}
+    unpublishDataProductRequest: A UnpublishDataProductRequest resource to be
+      passed as the request body.
+  """
+
+  connectionCatalog = _messages.StringField(1, required=True)
+  unpublishDataProductRequest = _messages.MessageField('UnpublishDataProductRequest', 2)
+
+
 class DataProductReference(_messages.Message):
   r"""Reference to a Knowledge Catalog Data Product.
 
@@ -162,6 +178,20 @@ class StandardQueryParameters(_messages.Message):
   trace = _messages.StringField(10)
   uploadType = _messages.StringField(11)
   upload_protocol = _messages.StringField(12)
+
+
+class UnpublishDataProductRequest(_messages.Message):
+  r"""Request message for UnpublishDataProduct.
+
+  Fields:
+    share: Required. The name of the Share to unpublish from SAP BDC.
+  """
+
+  share = _messages.StringField(1)
+
+
+class UnpublishDataProductResponse(_messages.Message):
+  r"""Response message for UnpublishDataProduct."""
 
 
 encoding.AddCustomJsonFieldMapping(

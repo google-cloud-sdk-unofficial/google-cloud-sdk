@@ -828,6 +828,33 @@ class ObservabilityV1(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+    def Create(self, request, global_params=None):
+      r"""Create a new bucket.
+
+      Args:
+        request: (ObservabilityProjectsLocationsBucketsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/buckets',
+        http_method='POST',
+        method_id='observability.projects.locations.buckets.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['bucketId'],
+        relative_path='v1/{+parent}/buckets',
+        request_field='bucket',
+        request_type_name='ObservabilityProjectsLocationsBucketsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Get bucket resource.
 
@@ -879,6 +906,33 @@ class ObservabilityV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='ObservabilityProjectsLocationsBucketsListRequest',
         response_type_name='ListBucketsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Update a bucket.
+
+      Args:
+        request: (ObservabilityProjectsLocationsBucketsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/buckets/{bucketsId}',
+        http_method='PATCH',
+        method_id='observability.projects.locations.buckets.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1/{+name}',
+        request_field='bucket',
+        request_type_name='ObservabilityProjectsLocationsBucketsPatchRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

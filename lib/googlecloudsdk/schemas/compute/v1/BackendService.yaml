@@ -159,7 +159,9 @@ properties:
       passthrough Network Load
       Balancers](https://cloud.google.com/load-
       balancing/docs/network/networklb-failover-overview).
-      failoverPolicy cannot be specified with haPolicy.
+      failoverPolicy cannot be specified with
+      haPolicy.failoverPolicy cannot be used by global external
+      Passthrough Network Load Balancers.
     $ref: BackendServiceFailoverPolicy.yaml
   fingerprint:
     description: |-
@@ -194,9 +196,10 @@ properties:
       requires customers to be responsible for tracking backend
       endpoint health and electing a leader among the healthy
       endpoints. Therefore, haPolicy cannot be specified with
-      healthChecks.  haPolicy can only be specified for External
+      healthChecks. haPolicy can only be specified for External
       Passthrough Network Load Balancers and Internal
-      Passthrough Network Load Balancers.
+      Passthrough Network Load Balancers.haPolicy cannot be used
+      by global external Passthrough Network Load Balancers.
     $ref: BackendServiceHAPolicy.yaml
   healthChecks:
     description: |-
@@ -259,8 +262,8 @@ properties:
     description: |-
       Specifies the load balancer type. A backend service
       created for one type of load balancer cannot be used
-      with another. For more information, refer toChoosing a
-      load balancer.
+      with another. For more information, refer to Backend
+      services product and scheme table.
     type: string
     enum:
     - EXTERNAL
@@ -463,13 +466,12 @@ properties:
     description: |-
       The protocol this BackendService uses to
       communicate with backends.  Possible values are
-      HTTP, HTTPS, HTTP2, H2C, TCP, SSL, UDP or GRPC.
-      depending on the chosen load balancer or Traffic
-      Director configuration. Refer to the documentation
-      for the load balancers or for Traffic Director for
-      more information.  Must be set to GRPC when the
-      backend service is referenced by a URL map that is
-      bound to target gRPC proxy.
+      HTTP, HTTPS, HTTP2, H2C, TCP, SSL, UDP, GRPC, or
+      UNSPECIFIED, depending on the chosen load balancer
+      or Traffic Director configuration. Refer to  Load
+      balancing features for more information.  Must be
+      set to GRPC when the backend service is referenced
+      by a URL map that is bound to target gRPC proxy.
     type: string
     enum:
     - GRPC
@@ -503,8 +505,14 @@ properties:
       URL to networkservices.ServiceLbPolicy
       resource.  Can only be set if load balancing
       scheme is EXTERNAL_MANAGED, INTERNAL_MANAGED
-      or INTERNAL_SELF_MANAGED and the scope is
-      global.
+      or INTERNAL_SELF_MANAGED for a global backend
+      service, and EXTERNAL_MANAGED or
+      INTERNAL_MANAGED for a regional backend
+      service. For a global backend service, the
+      service lb policy must be global. For a
+      regional backend service, the service lb
+      policy must be regional and in the same
+      region.
     type: string
   sessionAffinity:
     description: |-

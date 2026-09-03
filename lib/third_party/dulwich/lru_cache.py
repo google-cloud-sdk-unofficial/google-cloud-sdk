@@ -2,8 +2,9 @@
 # Copyright (C) 2006, 2008 Canonical Ltd
 # Copyright (C) 2022 Jelmer Vernooĳ <jelmer@jelmer.uk>
 #
+# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 # Dulwich is dual-licensed under the Apache License, Version 2.0 and the GNU
-# General Public License as public by the Free Software Foundation; version 2.0
+# General Public License as published by the Free Software Foundation; version 2.0
 # or (at your option) any later version. You can redistribute it and/or
 # modify it under the terms of either of these two licenses.
 #
@@ -21,7 +22,8 @@
 
 """A simple least-recently-used (LRU) cache."""
 
-from typing import Callable, Dict, Generic, Iterable, Iterator, Optional, TypeVar
+from collections.abc import Iterable, Iterator
+from typing import Callable, Generic, Optional, TypeVar, Union, cast
 
 _null_key = object()
 
@@ -33,15 +35,17 @@ V = TypeVar("V")
 class _LRUNode(Generic[K, V]):
     """This maintains the linked-list which is the lru internals."""
 
-    __slots__ = ("prev", "next_key", "key", "value", "cleanup", "size")
+    __slots__ = ("cleanup", "key", "next_key", "prev", "size", "value")
 
     prev: Optional["_LRUNode[K, V]"]
-    next_key: K
+    next_key: Union[K, object]
     size: Optional[int]
 
-    def __init__(self, key: K, value: V, cleanup=None) -> None:
+    def __init__(
+        self, key: K, value: V, cleanup: Optional[Callable[[K, V], None]] = None
+    ) -> None:
         self.prev = None
-        self.next_key = _null_key  # type: ignore
+        self.next_key = _null_key
         self.key = key
         self.value = value
         self.cleanup = cleanup
@@ -74,7 +78,7 @@ class LRUCache(Generic[K, V]):
     def __init__(
         self, max_cache: int = 100, after_cleanup_count: Optional[int] = None
     ) -> None:
-        self._cache: Dict[K, _LRUNode[K, V]] = {}
+        self._cache: dict[K, _LRUNode[K, V]] = {}
         # The "HEAD" of the lru linked list
         self._most_recently_used = None
         # The "TAIL" of the lru linked list
@@ -105,7 +109,7 @@ class LRUCache(Generic[K, V]):
             # 'next' item. So move the current lru to the previous node.
             self._least_recently_used = node_prev
         else:
-            node_next = cache[next_key]
+            node_next = cache[cast(K, next_key)]
             node_next.prev = node_prev
         assert node_prev
         assert mru
@@ -134,14 +138,14 @@ class LRUCache(Generic[K, V]):
             if node.next_key is _null_key:
                 if node is not self._least_recently_used:
                     raise AssertionError(
-                        "only the last node should have" f" no next value: {node}"
+                        f"only the last node should have no next value: {node}"
                     )
                 node_next = None
             else:
-                node_next = self._cache[node.next_key]
+                node_next = self._cache[cast(K, node.next_key)]
                 if node_next.prev is not node:
                     raise AssertionError(
-                        "inconsistency found, node.next.prev" f" != node: {node}"
+                        f"inconsistency found, node.next.prev != node: {node}"
                     )
             if node.prev is None:
                 if node is not self._most_recently_used:
@@ -152,7 +156,7 @@ class LRUCache(Generic[K, V]):
             else:
                 if node.prev.next_key != node.key:
                     raise AssertionError(
-                        "inconsistency found, node.prev.next" f" != node: {node}"
+                        f"inconsistency found, node.prev.next != node: {node}"
                     )
             yield node
             node = node_next
@@ -209,11 +213,11 @@ class LRUCache(Generic[K, V]):
         """
         return self._cache.keys()
 
-    def items(self) -> Dict[K, V]:
+    def items(self) -> dict[K, V]:
         """Get the key:value pairs as a dict."""
         return {k: n.value for k, n in self._cache.items()}
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """Clear the cache until it shrinks to the requested size.
 
         This does not completely wipe the cache, just makes sure it is under
@@ -245,7 +249,7 @@ class LRUCache(Generic[K, V]):
         if node.prev is not None:
             node.prev.next_key = node.next_key
         if node.next_key is not _null_key:
-            node_next = self._cache[node.next_key]
+            node_next = self._cache[cast(K, node.next_key)]
             node_next.prev = node.prev
         # INSERT
         node.next_key = self._most_recently_used.key
@@ -265,11 +269,11 @@ class LRUCache(Generic[K, V]):
         if node.prev is not None:
             node.prev.next_key = node.next_key
         if node.next_key is not _null_key:
-            node_next = self._cache[node.next_key]
+            node_next = self._cache[cast(K, node.next_key)]
             node_next.prev = node.prev
         # And remove this node's pointers
         node.prev = None
-        node.next_key = _null_key  # type: ignore
+        node.next_key = _null_key
 
     def _remove_lru(self) -> None:
         """Remove one entry from the lru, and handle consequences.
@@ -290,7 +294,9 @@ class LRUCache(Generic[K, V]):
         """Change the number of entries that will be cached."""
         self._update_max_cache(max_cache, after_cleanup_count=after_cleanup_count)
 
-    def _update_max_cache(self, max_cache, after_cleanup_count=None):
+    def _update_max_cache(
+        self, max_cache: int, after_cleanup_count: Optional[int] = None
+    ) -> None:
         self._max_cache = max_cache
         if after_cleanup_count is None:
             self._after_cleanup_count = self._max_cache * 8 / 10
@@ -333,7 +339,7 @@ class LRUSizeCache(LRUCache[K, V]):
         """
         self._value_size = 0
         if compute_size is None:
-            self._compute_size = len  # type: ignore
+            self._compute_size = cast(Callable[[V], int], len)
         else:
             self._compute_size = compute_size
         self._update_max_size(max_size, after_cleanup_size=after_cleanup_size)

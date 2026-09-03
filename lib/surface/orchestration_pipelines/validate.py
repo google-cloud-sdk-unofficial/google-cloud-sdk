@@ -41,7 +41,6 @@ def _validate_artifact_bucket(env, _, pipeline_models):
 DEPLOYMENT_FILE_NAME = "deployment.yaml"
 
 
-@calliope_base.Hidden
 @calliope_base.DefaultUniverseOnly
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.BETA)
 class Validate(calliope_base.Command):

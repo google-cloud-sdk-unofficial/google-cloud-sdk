@@ -354,6 +354,9 @@ class ApplicationTemplate(_messages.Message):
     iacFormat: Output only. The IaC format of the application template.
     iacSource: Output only. Indicates the IaC source format of this
       application template.
+    inputsAsRootModuleVariables: Optional. If true, exposes all inputs as root
+      module variables. This is only supported for STANDARD composition type
+      templates.
     latestRevision: Output only. The latest application template revision.
     latestSystemRevisionUri: Output only. The URI of the most recent System
       Revision generated for this ApplicationTemplate. This ID corresponds to
@@ -425,15 +428,16 @@ class ApplicationTemplate(_messages.Message):
   displayName = _messages.StringField(6)
   iacFormat = _messages.EnumField('IacFormatValueValuesEnum', 7)
   iacSource = _messages.EnumField('IacSourceValueValuesEnum', 8)
-  latestRevision = _messages.StringField(9)
-  latestSystemRevisionUri = _messages.StringField(10)
-  name = _messages.StringField(11)
-  rootInputVariables = _messages.MessageField('ComponentVariable', 12, repeated=True)
-  rootOutputVariables = _messages.MessageField('ComponentVariable', 13, repeated=True)
-  saasRuntimeContext = _messages.MessageField('SaaSRuntimeContext', 14)
-  serializedApplicationTemplate = _messages.MessageField('SerializedApplicationTemplate', 15)
-  templateMetadata = _messages.MessageField('TFBlueprintMetadata', 16)
-  updateTime = _messages.StringField(17)
+  inputsAsRootModuleVariables = _messages.BooleanField(9)
+  latestRevision = _messages.StringField(10)
+  latestSystemRevisionUri = _messages.StringField(11)
+  name = _messages.StringField(12)
+  rootInputVariables = _messages.MessageField('ComponentVariable', 13, repeated=True)
+  rootOutputVariables = _messages.MessageField('ComponentVariable', 14, repeated=True)
+  saasRuntimeContext = _messages.MessageField('SaaSRuntimeContext', 15)
+  serializedApplicationTemplate = _messages.MessageField('SerializedApplicationTemplate', 16)
+  templateMetadata = _messages.MessageField('TFBlueprintMetadata', 17)
+  updateTime = _messages.StringField(18)
 
 
 class ApplicationTemplateRevision(_messages.Message):
@@ -5837,6 +5841,9 @@ class SerializedApplicationTemplate(_messages.Message):
     hasGlobalResource: Output only. Whether the application template is
       compatible with regional scope.
     iacFormat: Optional. The IaC format of the application template.
+    inputsAsRootModuleVariables: Optional. If true, exposes all inputs as root
+      module variables. This is only supported for STANDARD composition type
+      templates.
     providers: Optional. Custom provider configurations imported from IaC.
     rootInputVariables: Output only. Root level input variables of the
       application template.
@@ -5889,12 +5896,13 @@ class SerializedApplicationTemplate(_messages.Message):
   displayName = _messages.StringField(8)
   hasGlobalResource = _messages.BooleanField(9)
   iacFormat = _messages.EnumField('IacFormatValueValuesEnum', 10)
-  providers = _messages.MessageField('SerializedProvider', 11, repeated=True)
-  rootInputVariables = _messages.MessageField('ComponentVariable', 12, repeated=True)
-  rootOutputVariables = _messages.MessageField('ComponentVariable', 13, repeated=True)
-  saasRuntimeContext = _messages.MessageField('SaaSRuntimeContext', 14)
-  serializedPolicies = _messages.MessageField('SerializedPolicy', 15, repeated=True)
-  uri = _messages.StringField(16)
+  inputsAsRootModuleVariables = _messages.BooleanField(11)
+  providers = _messages.MessageField('SerializedProvider', 12, repeated=True)
+  rootInputVariables = _messages.MessageField('ComponentVariable', 13, repeated=True)
+  rootOutputVariables = _messages.MessageField('ComponentVariable', 14, repeated=True)
+  saasRuntimeContext = _messages.MessageField('SaaSRuntimeContext', 15)
+  serializedPolicies = _messages.MessageField('SerializedPolicy', 16, repeated=True)
+  uri = _messages.StringField(17)
 
 
 class SerializedComponent(_messages.Message):

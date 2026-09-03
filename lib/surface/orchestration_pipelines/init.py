@@ -18,7 +18,6 @@ from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.orchestration_pipelines import scaffolding
 
 
-@calliope_base.Hidden
 @calliope_base.DefaultUniverseOnly
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.BETA)
 class Init(calliope_base.Command):

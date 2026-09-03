@@ -282,3 +282,32 @@ autoProtectionPolicyBindingDefault:
     - value: "-"
       hint: |
         default is all auto protection policy bindings
+
+appliedAutoProtectionPolicy:
+  name: applied_auto_protection_policy
+  collection: backupdr.projects.locations.appliedAutoProtectionPolicies
+  request_id_field: appliedAutoProtectionPoliciesId
+  attributes:
+  - *project
+  - *location
+  - &appliedAutoProtectionPoliciesId
+    parameter_name: appliedAutoProtectionPoliciesId
+    attribute_name: applied_auto_protection_policy
+    help: The ID of the AppliedAutoProtectionPolicy.
+  disable_auto_completers: false
+
+appliedAutoProtectionPolicyDefault:
+  name: appliedAutoProtectionPolicy
+  collection: backupdr.projects.locations.appliedAutoProtectionPolicies
+  request_id_field: appliedAutoProtectionPoliciesId
+  attributes:
+  - *project
+  - *locationDefaultGlobal
+  - &appliedAutoProtectionPolicyDefault
+    parameter_name: appliedAutoProtectionPoliciesId
+    attribute_name: applied_auto_protection_policy
+    help: The ID of the AppliedAutoProtectionPolicy.
+    fallthroughs:
+    - value: "-"
+      hint: |
+        default is all applied auto protection policies

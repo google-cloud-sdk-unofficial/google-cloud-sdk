@@ -1,8 +1,9 @@
 # reflog.py -- Parsing and writing reflog files
 # Copyright (C) 2015 Jelmer Vernooij and others.
 #
+# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 # Dulwich is dual-licensed under the Apache License, Version 2.0 and the GNU
-# General Public License as public by the Free Software Foundation; version 2.0
+# General Public License as published by the Free Software Foundation; version 2.0
 # or (at your option) any later version. You can redistribute it and/or
 # modify it under the terms of either of these two licenses.
 #
@@ -21,6 +22,8 @@
 """Utilities for reading and generating reflogs."""
 
 import collections
+from collections.abc import Generator
+from typing import BinaryIO, Optional, Union
 
 from .objects import ZERO_SHA, format_timezone, parse_timezone
 
@@ -30,7 +33,14 @@ Entry = collections.namedtuple(
 )
 
 
-def format_reflog_line(old_sha, new_sha, committer, timestamp, timezone, message):
+def format_reflog_line(
+    old_sha: Optional[bytes],
+    new_sha: bytes,
+    committer: bytes,
+    timestamp: Union[int, float],
+    timezone: int,
+    message: bytes,
+) -> bytes:
     """Generate a single reflog line.
 
     Args:
@@ -58,7 +68,7 @@ def format_reflog_line(old_sha, new_sha, committer, timestamp, timezone, message
     )
 
 
-def parse_reflog_line(line):
+def parse_reflog_line(line: bytes) -> Entry:
     """Parse a reflog line.
 
     Args:
@@ -79,7 +89,7 @@ def parse_reflog_line(line):
     )
 
 
-def read_reflog(f):
+def read_reflog(f: BinaryIO) -> Generator[Entry, None, None]:
     """Read reflog.
 
     Args:
@@ -87,10 +97,10 @@ def read_reflog(f):
     Returns: Iterator over Entry objects
     """
     for line in f:
-        yield parse_reflog_line(line)
+        yield parse_reflog_line(line.rstrip(b"\n"))
 
 
-def drop_reflog_entry(f, index, rewrite=False):
+def drop_reflog_entry(f: BinaryIO, index: int, rewrite: bool = False) -> None:
     """Drop the specified reflog entry.
 
     Args:
@@ -100,7 +110,7 @@ def drop_reflog_entry(f, index, rewrite=False):
             old SHA to the new SHA of the entry that now precedes it
     """
     if index < 0:
-        raise ValueError("Invalid reflog index %d" % index)
+        raise ValueError(f"Invalid reflog index {index}")
 
     log = []
     offset = f.tell()
@@ -147,3 +157,28 @@ def drop_reflog_entry(f, index, rewrite=False):
             )
         )
     f.truncate()
+
+
+def iter_reflogs(logs_dir: str) -> Generator[bytes, None, None]:
+    """Iterate over all reflogs in a repository.
+
+    Args:
+        logs_dir: Path to the logs directory (e.g., .git/logs)
+
+    Yields:
+        Reference names (as bytes) that have reflogs
+    """
+    import os
+    from pathlib import Path
+
+    if not os.path.exists(logs_dir):
+        return
+
+    logs_path = Path(logs_dir)
+    for log_file in logs_path.rglob("*"):
+        if log_file.is_file():
+            # Get the ref name by removing the logs_dir prefix
+            ref_name = str(log_file.relative_to(logs_path))
+            # Convert path separators to / for refs
+            ref_name = ref_name.replace(os.sep, "/")
+            yield ref_name.encode("utf-8")

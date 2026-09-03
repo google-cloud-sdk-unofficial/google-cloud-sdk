@@ -345,7 +345,6 @@ def _ExtractResourceProfilePaths(config_dict: dict[str, Any]) -> set[str]:
   return paths_to_upload
 
 
-@calliope_base.Hidden
 @calliope_base.DefaultUniverseOnly
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.BETA)
 class Deploy(calliope_base.Command):

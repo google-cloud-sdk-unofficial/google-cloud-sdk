@@ -1208,11 +1208,31 @@ class _BaseInstances(object):
       instance_resource.backendType = _ParseBackendType(
           sql_messages, args.backend_type
       )
-    if args.IsKnownAndSpecified('gce_instance'):
-      semi_managed_config = reducers.SemiManagedConfig(
-          sql_messages, args.gce_instance
+    semi_managed_params = {
+        'gce_instances': 'gce_instances',
+        'sql_account': 'sql_account',
+        'sql_account_secret_name': 'sql_account_secret_name',
+        'windows_service_account': 'windows_service_account',
+        'windows_service_account_secret_name': (
+            'windows_service_account_secret_name'
+        ),
+        'enable_semi_managed_replication': 'replication_enabled',
+        'enable_semi_managed_backup': 'backup_enabled',
+        'enable_semi_managed_insights': 'insights_enabled',
+        'semi_managed_insights_gcs_uri': 'insights_gcs_uri',
+    }
+    kwargs = {
+        param: getattr(args, flag)
+        for flag, param in semi_managed_params.items()
+        if args.IsKnownAndSpecified(flag)
+    }
+    if kwargs or (
+        args.IsKnownAndSpecified('backend_type')
+        and args.backend_type == 'SEMI_MANAGED'
+    ):
+      instance_resource.semiManagedConfig = reducers.SemiManagedConfig(
+          sql_messages, **kwargs
       )
-      instance_resource.semiManagedConfig = semi_managed_config
 
     if args.IsKnownAndSpecified('root_password'):
       instance_resource.rootPassword = args.root_password

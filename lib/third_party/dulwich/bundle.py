@@ -1,8 +1,9 @@
 # bundle.py -- Bundle format support
 # Copyright (C) 2020 Jelmer Vernooij <jelmer@jelmer.uk>
 #
+# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 # Dulwich is dual-licensed under the Apache License, Version 2.0 and the GNU
-# General Public License as public by the Free Software Foundation; version 2.0
+# General Public License as published by the Free Software Foundation; version 2.0
 # or (at your option) any later version. You can redistribute it and/or
 # modify it under the terms of either of these two licenses.
 #
@@ -20,7 +21,7 @@
 
 """Bundle format support."""
 
-from typing import Dict, List, Optional, Sequence, Tuple, Union
+from typing import BinaryIO, Callable, Optional
 
 from .pack import PackData, write_pack_data
 
@@ -28,10 +29,10 @@ from .pack import PackData, write_pack_data
 class Bundle:
     version: Optional[int]
 
-    capabilities: Dict[str, str]
-    prerequisites: List[Tuple[bytes, str]]
-    references: Dict[str, bytes]
-    pack_data: Union[PackData, Sequence[bytes]]
+    capabilities: dict[str, Optional[str]]
+    prerequisites: list[tuple[bytes, bytes]]
+    references: dict[bytes, bytes]
+    pack_data: PackData
 
     def __repr__(self) -> str:
         return (
@@ -41,7 +42,7 @@ class Bundle:
             f"references={self.references})>"
         )
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, type(self)):
             return False
         if self.version != other.version:
@@ -56,8 +57,35 @@ class Bundle:
             return False
         return True
 
+    def store_objects(
+        self, object_store, progress: Optional[Callable[[str], None]] = None
+    ):
+        """Store all objects from this bundle into an object store.
 
-def _read_bundle(f, version):
+        Args:
+            object_store: The object store to add objects to
+            progress: Optional progress callback function
+        """
+        from .objects import ShaFile
+
+        count = 0
+        for unpacked in self.pack_data.iter_unpacked():
+            # Convert the unpacked object to a proper git object
+            if unpacked.decomp_chunks:
+                git_obj = ShaFile.from_raw_chunks(
+                    unpacked.obj_type_num, unpacked.decomp_chunks
+                )
+                object_store.add_object(git_obj)
+                count += 1
+
+                if progress and count % 100 == 0:
+                    progress(f"Stored {count} objects")
+
+        if progress:
+            progress(f"Stored {count} objects total")
+
+
+def _read_bundle(f: BinaryIO, version: int) -> Bundle:
     capabilities = {}
     prerequisites = []
     references = {}
@@ -66,23 +94,31 @@ def _read_bundle(f, version):
         while line.startswith(b"@"):
             line = line[1:].rstrip(b"\n")
             try:
-                key, value = line.split(b"=", 1)
+                key, value_bytes = line.split(b"=", 1)
+                value = value_bytes.decode("utf-8")
             except ValueError:
                 key = line
                 value = None
-            else:
-                value = value.decode("utf-8")
             capabilities[key.decode("utf-8")] = value
             line = f.readline()
     while line.startswith(b"-"):
         (obj_id, comment) = line[1:].rstrip(b"\n").split(b" ", 1)
-        prerequisites.append((obj_id, comment.decode("utf-8")))
+        prerequisites.append((obj_id, comment))
         line = f.readline()
     while line != b"\n":
         (obj_id, ref) = line.rstrip(b"\n").split(b" ", 1)
         references[ref] = obj_id
         line = f.readline()
-    pack_data = PackData.from_file(f)
+    # Extract pack data to separate stream since PackData expects
+    # the file to start with PACK header at position 0
+    pack_bytes = f.read()
+    if not pack_bytes:
+        raise ValueError("Bundle file contains no pack data")
+
+    from io import BytesIO
+
+    pack_file = BytesIO(pack_bytes)
+    pack_data = PackData.from_file(pack_file)
     ret = Bundle()
     ret.references = references
     ret.capabilities = capabilities
@@ -92,17 +128,25 @@ def _read_bundle(f, version):
     return ret
 
 
-def read_bundle(f):
-    """Read a bundle file."""
+def read_bundle(f: BinaryIO) -> Bundle:
+    """Read a bundle file.
+
+    Args:
+        f: A seekable binary file-like object. The file must remain open
+           for the lifetime of the returned Bundle object.
+    """
+    if not hasattr(f, "seek"):
+        raise ValueError("Bundle file must be seekable")
+
     firstline = f.readline()
     if firstline == b"# v2 git bundle\n":
         return _read_bundle(f, 2)
     if firstline == b"# v3 git bundle\n":
         return _read_bundle(f, 3)
-    raise AssertionError("unsupported bundle format header: %r" % firstline)
+    raise AssertionError(f"unsupported bundle format header: {firstline!r}")
 
 
-def write_bundle(f, bundle):
+def write_bundle(f: BinaryIO, bundle: Bundle) -> None:
     version = bundle.version
     if version is None:
         if bundle.capabilities:
@@ -114,7 +158,7 @@ def write_bundle(f, bundle):
     elif version == 3:
         f.write(b"# v3 git bundle\n")
     else:
-        raise AssertionError("unknown version %d" % version)
+        raise AssertionError(f"unknown version {version}")
     if version == 3:
         for key, value in bundle.capabilities.items():
             f.write(b"@" + key.encode("utf-8"))
@@ -122,12 +166,124 @@ def write_bundle(f, bundle):
                 f.write(b"=" + value.encode("utf-8"))
             f.write(b"\n")
     for obj_id, comment in bundle.prerequisites:
-        f.write(b"-%s %s\n" % (obj_id, comment.encode("utf-8")))
+        f.write(b"-" + obj_id + b" " + comment + b"\n")
     for ref, obj_id in bundle.references.items():
-        f.write(b"%s %s\n" % (obj_id, ref))
+        f.write(obj_id + b" " + ref + b"\n")
     f.write(b"\n")
     write_pack_data(
         f.write,
         num_records=len(bundle.pack_data),
         records=bundle.pack_data.iter_unpacked(),
     )
+
+
+def create_bundle_from_repo(
+    repo,
+    refs: Optional[list[bytes]] = None,
+    prerequisites: Optional[list[bytes]] = None,
+    version: Optional[int] = None,
+    capabilities: Optional[dict[str, Optional[str]]] = None,
+    progress: Optional[Callable[[str], None]] = None,
+) -> Bundle:
+    """Create a bundle from a repository.
+
+    Args:
+        repo: Repository object to create bundle from
+        refs: List of refs to include (defaults to all refs)
+        prerequisites: List of commit SHAs that are prerequisites
+        version: Bundle version (2 or 3, auto-detected if None)
+        capabilities: Bundle capabilities (for v3 bundles)
+        progress: Optional progress reporting function
+
+    Returns:
+        Bundle object ready for writing
+    """
+    if refs is None:
+        refs = list(repo.refs.keys())
+
+    if prerequisites is None:
+        prerequisites = []
+
+    if capabilities is None:
+        capabilities = {}
+
+    # Build the references dictionary for the bundle
+    bundle_refs = {}
+    want_objects = []
+
+    for ref in refs:
+        if ref in repo.refs:
+            ref_value = repo.refs[ref]
+            # Handle peeled refs
+            try:
+                peeled_value = repo.refs.get_peeled(ref)
+                if peeled_value is not None and peeled_value != ref_value:
+                    bundle_refs[ref] = peeled_value
+                else:
+                    bundle_refs[ref] = ref_value
+            except KeyError:
+                bundle_refs[ref] = ref_value
+            want_objects.append(bundle_refs[ref])
+
+    # Convert prerequisites to proper format
+    bundle_prerequisites = []
+    have_objects = []
+    for prereq in prerequisites:
+        if isinstance(prereq, str):
+            prereq = prereq.encode("utf-8")
+        if isinstance(prereq, bytes):
+            if len(prereq) == 40:  # SHA1 hex string
+                try:
+                    # Validate it's actually hex
+                    bytes.fromhex(prereq.decode("utf-8"))
+                    # Store hex in bundle and for pack generation
+                    bundle_prerequisites.append((prereq, b""))
+                    have_objects.append(prereq)
+                except ValueError:
+                    # Not a valid hex string, invalid prerequisite
+                    raise ValueError(f"Invalid prerequisite format: {prereq!r}")
+            elif len(prereq) == 20:
+                # Binary SHA, convert to hex for both bundle and pack generation
+                hex_prereq = prereq.hex().encode("ascii")
+                bundle_prerequisites.append((hex_prereq, b""))
+                have_objects.append(hex_prereq)
+            else:
+                # Invalid length
+                raise ValueError(f"Invalid prerequisite SHA length: {len(prereq)}")
+        else:
+            # Assume it's already a binary SHA
+            hex_prereq = prereq.hex().encode("ascii")
+            bundle_prerequisites.append((hex_prereq, b""))
+            have_objects.append(hex_prereq)
+
+    # Generate pack data containing all objects needed for the refs
+    pack_count, pack_objects = repo.generate_pack_data(
+        have=have_objects,
+        want=want_objects,
+        progress=progress,
+    )
+
+    # Store the pack objects directly, we'll write them when saving the bundle
+    # For now, create a simple wrapper to hold the data
+    class _BundlePackData:
+        def __init__(self, count, objects):
+            self._count = count
+            self._objects = list(objects)  # Materialize the iterator
+
+        def __len__(self):
+            return self._count
+
+        def iter_unpacked(self):
+            return iter(self._objects)
+
+    pack_data = _BundlePackData(pack_count, pack_objects)
+
+    # Create bundle object
+    bundle = Bundle()
+    bundle.version = version
+    bundle.capabilities = capabilities
+    bundle.prerequisites = bundle_prerequisites
+    bundle.references = bundle_refs
+    bundle.pack_data = pack_data  # type: ignore[assignment]
+
+    return bundle

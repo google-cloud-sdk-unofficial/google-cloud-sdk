@@ -2250,9 +2250,16 @@ class PscConfig(_messages.Message):
       Service Connect endpoint would be set up. This is optional, and only
       relevant in case the network is a shared VPC. If this is not specified,
       the endpoint would be setup in the VPC host project.
+    requestedIpAddress: Optional. Immutable. Optional: The desired IP address
+      for the instance. If not specified, an IP will be automatically
+      allocated. The IP must be from the subnetwork range configured in the
+      Service Connection Policy. This effective ip address is set in the
+      ip_addresses field. use 3 instead of 2 to avoid conflict with the
+      reserved_ip_range field.
   """
 
   endpointProject = _messages.StringField(1)
+  requestedIpAddress = _messages.StringField(2)
 
 
 class ReplicaConfig(_messages.Message):

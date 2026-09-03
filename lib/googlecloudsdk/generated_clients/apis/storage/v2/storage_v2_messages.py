@@ -648,6 +648,83 @@ class Cors(_messages.Message):
   responseHeader = _messages.StringField(4, repeated=True)
 
 
+class CreateAuthSessionRequest(_messages.Message):
+  r"""Request message for CreateAuthSession.
+
+  Enums:
+    AuthSessionTypeValueValuesEnum: Optional. OPTIONAL: The type of session
+      token to create. If unspecified, the server will return the highest
+      privileged session handle.
+
+  Fields:
+    authSessionType: Optional. OPTIONAL: The type of session token to create.
+      If unspecified, the server will return the highest privileged session
+      handle.
+    expireTime: Optional. Timestamp in UTC of when the session handle is
+      considered expired.
+    requestId: Optional. OPTIONAL: A unique identifier for this request. A
+      random UUID is recommended.
+    ttl: Optional. The TTL for how long the session handle will remain active.
+      The max allowed TTL is 300 seconds, which is also the default value.
+  """
+
+  class AuthSessionTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. OPTIONAL: The type of session token to create. If
+    unspecified, the server will return the highest privileged session handle.
+
+    Values:
+      AUTH_SESSION_TYPE_UNSPECIFIED: Default value. The session handle with
+        the highest allowed privilege is returned.
+      AUTH_SESSION_TYPE_READ_ONLY: Read-only session.
+      AUTH_SESSION_TYPE_WRITE_ONLY: Write-only session.
+      AUTH_SESSION_TYPE_READ_WRITE: Both reads and writes are allowed.
+    """
+    AUTH_SESSION_TYPE_UNSPECIFIED = 0
+    AUTH_SESSION_TYPE_READ_ONLY = 1
+    AUTH_SESSION_TYPE_WRITE_ONLY = 2
+    AUTH_SESSION_TYPE_READ_WRITE = 3
+
+  authSessionType = _messages.EnumField('AuthSessionTypeValueValuesEnum', 1)
+  expireTime = _messages.StringField(2)
+  requestId = _messages.StringField(3)
+  ttl = _messages.StringField(4)
+
+
+class CreateAuthSessionResponse(_messages.Message):
+  r"""Response message for CreateAuthSession.
+
+  Enums:
+    AuthSessionTypeValueValuesEnum: The type of auth session represented by
+      the `auth_session_handle`.
+
+  Fields:
+    authSessionHandle: The encrypted session handle.
+    authSessionType: The type of auth session represented by the
+      `auth_session_handle`.
+    expireTime: The timestamp until which the `auth_session_handle` will
+      remain active.
+  """
+
+  class AuthSessionTypeValueValuesEnum(_messages.Enum):
+    r"""The type of auth session represented by the `auth_session_handle`.
+
+    Values:
+      AUTH_SESSION_TYPE_UNSPECIFIED: Default value. The session handle with
+        the highest allowed privilege is returned.
+      AUTH_SESSION_TYPE_READ_ONLY: Read-only session.
+      AUTH_SESSION_TYPE_WRITE_ONLY: Write-only session.
+      AUTH_SESSION_TYPE_READ_WRITE: Both reads and writes are allowed.
+    """
+    AUTH_SESSION_TYPE_UNSPECIFIED = 0
+    AUTH_SESSION_TYPE_READ_ONLY = 1
+    AUTH_SESSION_TYPE_WRITE_ONLY = 2
+    AUTH_SESSION_TYPE_READ_WRITE = 3
+
+  authSessionHandle = _messages.BytesField(1)
+  authSessionType = _messages.EnumField('AuthSessionTypeValueValuesEnum', 2)
+  expireTime = _messages.StringField(3)
+
+
 class CrossRegionEgressSpike(_messages.Message):
   r"""Represents a finding about a spike in cross-region egress from Cloud
   Storage. This corresponds to the `CROSS_REGION_EGRESS_SPIKE` finding type.
@@ -3936,6 +4013,21 @@ class StorageOrganizationsLocationsUpdateManagementHubRequest(_messages.Message)
   name = _messages.StringField(2, required=True)
   requestId = _messages.StringField(3)
   updateMask = _messages.StringField(4)
+
+
+class StorageProjectsBucketsCreateAuthSessionRequest(_messages.Message):
+  r"""A StorageProjectsBucketsCreateAuthSessionRequest object.
+
+  Fields:
+    createAuthSessionRequest: A CreateAuthSessionRequest resource to be passed
+      as the request body.
+    resource: Required. REQUIRED: The Bucket resource for which the session
+      token is being requested. The `resource` field should be
+      `projects/_/buckets/{bucket}`.
+  """
+
+  createAuthSessionRequest = _messages.MessageField('CreateAuthSessionRequest', 1)
+  resource = _messages.StringField(2, required=True)
 
 
 class StorageProjectsBucketsFoldersBulkDeleteRequest(_messages.Message):

@@ -236,6 +236,14 @@ class Cluster(_messages.Message):
     LabelsValue: Optional. Labels as key value pairs.
 
   Fields:
+    bootstrapAddress: Output only. The bootstrap address of the Kafka cluster.
+      The returned address format is: `bootstrap-...managedkafka.s.cloud.goog`
+      or `bootstrap...managedkafka..cloud.goog` (legacy format). ## Examples:
+      `bootstrap-nol2mecj8p94jhx2ge2rg54579a.c0aad26f.europe-
+      west1.managedkafka.s.cloud.goog` - `bootstrap.my-cluster.us-
+      central1.managedkafka.my-project.cloud.goog` The port number is omitted
+      so clients can connect to their target listener (for example, `:9092`
+      for TLS or `:9094` for mTLS).
     brokerCapacityConfig: Optional. Capacity configuration at a per-broker
       level within the Kafka cluster. The config will be appled to each broker
       in the cluster.
@@ -363,25 +371,26 @@ class Cluster(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  brokerCapacityConfig = _messages.MessageField('BrokerCapacityConfig', 1)
-  brokerConfigOverrides = _messages.MessageField('BrokerConfigOverridesValue', 2)
-  brokerDetails = _messages.MessageField('BrokerDetails', 3, repeated=True)
-  brokersPerZone = _messages.MessageField('BrokersPerZoneValue', 4)
-  capacityConfig = _messages.MessageField('CapacityConfig', 5)
-  createTime = _messages.StringField(6)
-  effectiveCapacityConfig = _messages.MessageField('EffectiveCapacityConfig', 7)
-  gcpConfig = _messages.MessageField('GcpConfig', 8)
-  kafkaVersion = _messages.StringField(9)
-  labels = _messages.MessageField('LabelsValue', 10)
-  name = _messages.StringField(11)
-  publicClusterDetails = _messages.MessageField('PublicClusterDetails', 12)
-  rebalanceConfig = _messages.MessageField('RebalanceConfig', 13)
-  satisfiesPzi = _messages.BooleanField(14)
-  satisfiesPzs = _messages.BooleanField(15)
-  state = _messages.EnumField('StateValueValuesEnum', 16)
-  tlsConfig = _messages.MessageField('TlsConfig', 17)
-  updateOptions = _messages.MessageField('UpdateOptions', 18)
-  updateTime = _messages.StringField(19)
+  bootstrapAddress = _messages.StringField(1)
+  brokerCapacityConfig = _messages.MessageField('BrokerCapacityConfig', 2)
+  brokerConfigOverrides = _messages.MessageField('BrokerConfigOverridesValue', 3)
+  brokerDetails = _messages.MessageField('BrokerDetails', 4, repeated=True)
+  brokersPerZone = _messages.MessageField('BrokersPerZoneValue', 5)
+  capacityConfig = _messages.MessageField('CapacityConfig', 6)
+  createTime = _messages.StringField(7)
+  effectiveCapacityConfig = _messages.MessageField('EffectiveCapacityConfig', 8)
+  gcpConfig = _messages.MessageField('GcpConfig', 9)
+  kafkaVersion = _messages.StringField(10)
+  labels = _messages.MessageField('LabelsValue', 11)
+  name = _messages.StringField(12)
+  publicClusterDetails = _messages.MessageField('PublicClusterDetails', 13)
+  rebalanceConfig = _messages.MessageField('RebalanceConfig', 14)
+  satisfiesPzi = _messages.BooleanField(15)
+  satisfiesPzs = _messages.BooleanField(16)
+  state = _messages.EnumField('StateValueValuesEnum', 17)
+  tlsConfig = _messages.MessageField('TlsConfig', 18)
+  updateOptions = _messages.MessageField('UpdateOptions', 19)
+  updateTime = _messages.StringField(20)
 
 
 class ConnectAccessConfig(_messages.Message):

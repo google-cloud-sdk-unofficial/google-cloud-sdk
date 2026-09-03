@@ -2,8 +2,9 @@
 
 # Copyright (C) 2022 Daniele Trifirò <daniele@iterative.ai>
 #
+# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 # Dulwich is dual-licensed under the Apache License, Version 2.0 and the GNU
-# General Public License as public by the Free Software Foundation; version 2.0
+# General Public License as published by the Free Software Foundation; version 2.0
 # or (at your option) any later version. You can redistribute it and/or
 # modify it under the terms of either of these two licenses.
 #
@@ -26,7 +27,8 @@ https://git-scm.com/book/en/v2/Git-Tools-Credential-Storage
 """
 
 import sys
-from typing import Iterator, Optional
+from collections.abc import Iterator
+from typing import Optional
 from urllib.parse import ParseResult, urlparse
 
 from .config import ConfigDict, SectionLike

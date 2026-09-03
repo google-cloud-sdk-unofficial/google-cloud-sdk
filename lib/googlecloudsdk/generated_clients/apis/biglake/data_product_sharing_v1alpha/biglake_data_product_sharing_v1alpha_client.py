@@ -53,7 +53,7 @@ class BiglakeDataProductSharingV1alpha(base_api.BaseApiClient):
           }
 
     def PublishDataProduct(self, request, global_params=None):
-      r"""Publishes a Knowledge Catalog Data Product or a list of tables to SAP BDC.
+      r"""Publishes a Knowledge Catalog Data Product or an Iceberg catalog to SAP BDC.
 
       Args:
         request: (BiglakeDataproductsharingV1alphaProjectsCatalogsPublishDataProductRequest) input message
@@ -76,6 +76,33 @@ class BiglakeDataProductSharingV1alpha(base_api.BaseApiClient):
         request_field='publishDataProductRequest',
         request_type_name='BiglakeDataproductsharingV1alphaProjectsCatalogsPublishDataProductRequest',
         response_type_name='PublishDataProductResponse',
+        supports_download=False,
+    )
+
+    def UnpublishDataProduct(self, request, global_params=None):
+      r"""Unpublishes a Knowledge Catalog Data Product or Iceberg catalog share from SAP BDC.
+
+      Args:
+        request: (BiglakeDataproductsharingV1alphaProjectsCatalogsUnpublishDataProductRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (UnpublishDataProductResponse) The response message.
+      """
+      config = self.GetMethodConfig('UnpublishDataProduct')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    UnpublishDataProduct.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='dataproductsharing/v1alpha/projects/{projectsId}/catalogs/{catalogsId}:unpublishDataProduct',
+        http_method='POST',
+        method_id='biglake.dataproductsharing.v1alpha.projects.catalogs.unpublishDataProduct',
+        ordered_params=['connectionCatalog'],
+        path_params=['connectionCatalog'],
+        query_params=[],
+        relative_path='dataproductsharing/v1alpha/{+connectionCatalog}:unpublishDataProduct',
+        request_field='unpublishDataProductRequest',
+        request_type_name='BiglakeDataproductsharingV1alphaProjectsCatalogsUnpublishDataProductRequest',
+        response_type_name='UnpublishDataProductResponse',
         supports_download=False,
     )
 

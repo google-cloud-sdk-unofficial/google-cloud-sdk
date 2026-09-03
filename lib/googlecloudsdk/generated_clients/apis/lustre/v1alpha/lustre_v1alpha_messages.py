@@ -324,6 +324,10 @@ class Date(_messages.Message):
 class DirectoryPolicy(_messages.Message):
   r"""A directory policy for a Managed Lustre instance.
 
+  Enums:
+    StateValueValuesEnum: Output only. The current state of the directory
+      policy.
+
   Fields:
     directoryPath: Required. Immutable. The lustre instance filesystem full
       path of the directory. It must start with a slash. e.g.
@@ -336,13 +340,29 @@ class DirectoryPolicy(_messages.Message):
       DirectoryPolicy names have the form `projects/{project}/locations/{locat
       ion}/instances/{instance}/directoryPolicies/{id}`. {id} is user
       provided.
+    state: Output only. The current state of the directory policy.
     uid: Output only. Unique ID of the resource.
   """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current state of the directory policy.
+
+    Values:
+      STATE_UNSPECIFIED: State is unspecified.
+      CREATING: Directory policy is being created.
+      ACTIVE: Directory policy is active and ready to be used.
+      DELETING: Directory policy is being deleted.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+    DELETING = 3
 
   directoryPath = _messages.StringField(1)
   lustreProjectId = _messages.IntegerField(2)
   name = _messages.StringField(3)
-  uid = _messages.StringField(4)
+  state = _messages.EnumField('StateValueValuesEnum', 4)
+  uid = _messages.StringField(5)
 
 
 class DynamicTierOptions(_messages.Message):

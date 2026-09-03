@@ -1,0 +1,39 @@
+- release_tracks: [ALPHA, BETA]
+  hidden: true
+
+  help_text:
+    brief: Create a Backup and DR auto-protection binding.
+    description: Create a Backup and DR auto-protection binding.
+    examples: |
+      To create a Backup and DR auto-protection binding, run:
+
+        $ {command} my-binding-id --auto-protection-policy=my-auto-protection-policy --location=us-central1 --scope=projects/my-project
+
+  request:
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
+    collection: backupdr.projects.locations.autoProtectionPolicies.bindings
+    method: create
+    display_resource_type: auto protection policy binding
+
+  arguments:
+    params:
+    - help_text: The auto-protection binding to create.
+      resource_spec: !REF googlecloudsdk.command_lib.backupdr.resources:autoProtectionPolicyBinding
+      is_positional: true
+      is_primary_resource: true
+      request_id_field: autoProtectionPolicyBindingId
+    - arg_name: scope
+      api_field: autoProtectionPolicyBinding.scope
+      help_text: |
+        The scope of the binding (e.g. projects/foo).
+      required: true
+    - arg_name: description
+      api_field: autoProtectionPolicyBinding.description
+      help_text: |
+        The description of the binding.
+      required: false
+  async:
+    collection: backupdr.projects.locations.operations

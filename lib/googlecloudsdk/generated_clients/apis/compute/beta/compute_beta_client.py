@@ -44,6 +44,7 @@ class ComputeBeta(base_api.BaseApiClient):
     self.backendBuckets = self.BackendBucketsService(self)
     self.backendServices = self.BackendServicesService(self)
     self.crossSiteNetworks = self.CrossSiteNetworksService(self)
+    self.dhcpOptionsConfigs = self.DhcpOptionsConfigsService(self)
     self.diskSettings = self.DiskSettingsService(self)
     self.diskTypes = self.DiskTypesService(self)
     self.disks = self.DisksService(self)
@@ -54,6 +55,7 @@ class ComputeBeta(base_api.BaseApiClient):
     self.futureReservations = self.FutureReservationsService(self)
     self.globalAddresses = self.GlobalAddressesService(self)
     self.globalForwardingRules = self.GlobalForwardingRulesService(self)
+    self.globalFrontendSettings = self.GlobalFrontendSettingsService(self)
     self.globalNetworkEndpointGroups = self.GlobalNetworkEndpointGroupsService(self)
     self.globalOperations = self.GlobalOperationsService(self)
     self.globalOrganizationOperations = self.GlobalOrganizationOperationsService(self)
@@ -97,12 +99,14 @@ class ComputeBeta(base_api.BaseApiClient):
     self.organizationRolloutPlans = self.OrganizationRolloutPlansService(self)
     self.organizationRollouts = self.OrganizationRolloutsService(self)
     self.organizationSecurityPolicies = self.OrganizationSecurityPoliciesService(self)
+    self.organizationSnapshotRecycleBinPolicy = self.OrganizationSnapshotRecycleBinPolicyService(self)
     self.packetMirrorings = self.PacketMirroringsService(self)
     self.previewFeatures = self.PreviewFeaturesService(self)
     self.projectViews = self.ProjectViewsService(self)
     self.projects = self.ProjectsService(self)
     self.publicAdvertisedPrefixes = self.PublicAdvertisedPrefixesService(self)
     self.publicDelegatedPrefixes = self.PublicDelegatedPrefixesService(self)
+    self.recoverableSnapshots = self.RecoverableSnapshotsService(self)
     self.regionAutoscalers = self.RegionAutoscalersService(self)
     self.regionBackendBuckets = self.RegionBackendBucketsService(self)
     self.regionBackendServices = self.RegionBackendServicesService(self)
@@ -153,6 +157,7 @@ class ComputeBeta(base_api.BaseApiClient):
     self.securityPolicies = self.SecurityPoliciesService(self)
     self.serviceAttachments = self.ServiceAttachmentsService(self)
     self.snapshotGroups = self.SnapshotGroupsService(self)
+    self.snapshotRecycleBinPolicy = self.SnapshotRecycleBinPolicyService(self)
     self.snapshotSettings = self.SnapshotSettingsService(self)
     self.snapshots = self.SnapshotsService(self)
     self.sslCertificates = self.SslCertificatesService(self)
@@ -1822,6 +1827,176 @@ patch format and processing rules.
         request_field='crossSiteNetworkResource',
         request_type_name='ComputeCrossSiteNetworksPatchRequest',
         response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class DhcpOptionsConfigsService(base_api.BaseApiService):
+    """Service class for the dhcpOptionsConfigs resource."""
+
+    _NAME = 'dhcpOptionsConfigs'
+
+    def __init__(self, client):
+      super(ComputeBeta.DhcpOptionsConfigsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes the specified DhcpOptionsConfig in the given location.
+
+      Args:
+        request: (ComputeDhcpOptionsConfigsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='DELETE',
+        method_id='compute.dhcpOptionsConfigs.delete',
+        ordered_params=['project', 'region', 'dhcpOptionsConfig'],
+        path_params=['dhcpOptionsConfig', 'project', 'region'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/regions/{region}/dhcpOptionsConfigs/{dhcpOptionsConfig}',
+        request_field='',
+        request_type_name='ComputeDhcpOptionsConfigsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Returns the specified DhcpOptionsConfig resource in the given location.
+
+      Args:
+        request: (ComputeDhcpOptionsConfigsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (DhcpOptionsConfig) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.dhcpOptionsConfigs.get',
+        ordered_params=['project', 'region', 'dhcpOptionsConfig'],
+        path_params=['dhcpOptionsConfig', 'project', 'region'],
+        query_params=[],
+        relative_path='projects/{project}/regions/{region}/dhcpOptionsConfigs/{dhcpOptionsConfig}',
+        request_field='',
+        request_type_name='ComputeDhcpOptionsConfigsGetRequest',
+        response_type_name='DhcpOptionsConfig',
+        supports_download=False,
+    )
+
+    def Insert(self, request, global_params=None):
+      r"""Creates a DhcpOptionsConfig in the specified project in the given location.
+using the parameters that are included in the request.
+
+      Args:
+        request: (ComputeDhcpOptionsConfigsInsertRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Insert')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Insert.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.dhcpOptionsConfigs.insert',
+        ordered_params=['project', 'region'],
+        path_params=['project', 'region'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/regions/{region}/dhcpOptionsConfigs',
+        request_field='dhcpOptionsConfig',
+        request_type_name='ComputeDhcpOptionsConfigsInsertRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists the DhcpOptionsConfigs for a project in the given location.
+
+      Args:
+        request: (ComputeDhcpOptionsConfigsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (DhcpOptionsConfigList) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.dhcpOptionsConfigs.list',
+        ordered_params=['project', 'region'],
+        path_params=['project', 'region'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess'],
+        relative_path='projects/{project}/regions/{region}/dhcpOptionsConfigs',
+        request_field='',
+        request_type_name='ComputeDhcpOptionsConfigsListRequest',
+        response_type_name='DhcpOptionsConfigList',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Patches the specified DhcpOptionsConfig resource with the data included in.
+the request. This method supports PATCH
+semantics and usesJSON merge
+patch format and processing rules.
+
+      Args:
+        request: (ComputeDhcpOptionsConfigsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='PATCH',
+        method_id='compute.dhcpOptionsConfigs.patch',
+        ordered_params=['project', 'region', 'dhcpOptionsConfig'],
+        path_params=['dhcpOptionsConfig', 'project', 'region'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='projects/{project}/regions/{region}/dhcpOptionsConfigs/{dhcpOptionsConfig}',
+        request_field='dhcpOptionsConfigResource',
+        request_type_name='ComputeDhcpOptionsConfigsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def TestIamPermissions(self, request, global_params=None):
+      r"""Returns permissions that a caller has on the specified resource.
+
+      Args:
+        request: (ComputeDhcpOptionsConfigsTestIamPermissionsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TestPermissionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('TestIamPermissions')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.dhcpOptionsConfigs.testIamPermissions',
+        ordered_params=['project', 'region', 'resource'],
+        path_params=['project', 'region', 'resource'],
+        query_params=[],
+        relative_path='projects/{project}/regions/{region}/dhcpOptionsConfigs/{resource}/testIamPermissions',
+        request_field='testPermissionsRequest',
+        request_type_name='ComputeDhcpOptionsConfigsTestIamPermissionsRequest',
+        response_type_name='TestPermissionsResponse',
         supports_download=False,
     )
 
@@ -4365,6 +4540,68 @@ should be of the same type as the old target.
         request_field='testPermissionsRequest',
         request_type_name='ComputeGlobalForwardingRulesTestIamPermissionsRequest',
         response_type_name='TestPermissionsResponse',
+        supports_download=False,
+    )
+
+  class GlobalFrontendSettingsService(base_api.BaseApiService):
+    """Service class for the globalFrontendSettings resource."""
+
+    _NAME = 'globalFrontendSettings'
+
+    def __init__(self, client):
+      super(ComputeBeta.GlobalFrontendSettingsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Gets the Global Frontend Billing Bundle Settings for a project.
+
+      Args:
+        request: (ComputeGlobalFrontendSettingsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GlobalFrontendSettings) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.globalFrontendSettings.get',
+        ordered_params=['project'],
+        path_params=['project'],
+        query_params=[],
+        relative_path='projects/{project}/global/globalFrontendSettings',
+        request_field='',
+        request_type_name='ComputeGlobalFrontendSettingsGetRequest',
+        response_type_name='GlobalFrontendSettings',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the Global Frontend Billing Bundle Settings for a project.
+
+      Args:
+        request: (ComputeGlobalFrontendSettingsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GlobalFrontendSettingsPatchResponse) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='PATCH',
+        method_id='compute.globalFrontendSettings.patch',
+        ordered_params=['project'],
+        path_params=['project'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='projects/{project}/global/globalFrontendSettings',
+        request_field='globalFrontendSettings',
+        request_type_name='ComputeGlobalFrontendSettingsPatchRequest',
+        response_type_name='GlobalFrontendSettingsPatchResponse',
         supports_download=False,
     )
 
@@ -15186,6 +15423,70 @@ instead.
         supports_download=False,
     )
 
+  class OrganizationSnapshotRecycleBinPolicyService(base_api.BaseApiService):
+    """Service class for the organizationSnapshotRecycleBinPolicy resource."""
+
+    _NAME = 'organizationSnapshotRecycleBinPolicy'
+
+    def __init__(self, client):
+      super(ComputeBeta.OrganizationSnapshotRecycleBinPolicyService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Returns the specified SnapshotRecycleBinPolicy.
+
+      Args:
+        request: (ComputeOrganizationSnapshotRecycleBinPolicyGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SnapshotRecycleBinPolicy) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='organizations/{organizationsId}/global/snapshotRecycleBinPolicy',
+        http_method='GET',
+        method_id='compute.organizationSnapshotRecycleBinPolicy.get',
+        ordered_params=['organization'],
+        path_params=['organization'],
+        query_params=[],
+        relative_path='{+organization}/global/snapshotRecycleBinPolicy',
+        request_field='',
+        request_type_name='ComputeOrganizationSnapshotRecycleBinPolicyGetRequest',
+        response_type_name='SnapshotRecycleBinPolicy',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Patches the SnapshotRecycleBinPolicy.
+
+      Args:
+        request: (ComputeOrganizationSnapshotRecycleBinPolicyPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='organizations/{organizationsId}/global/snapshotRecycleBinPolicy',
+        http_method='PATCH',
+        method_id='compute.organizationSnapshotRecycleBinPolicy.patch',
+        ordered_params=['organization'],
+        path_params=['organization'],
+        query_params=['requestId'],
+        relative_path='{+organization}/global/snapshotRecycleBinPolicy',
+        request_field='snapshotRecycleBinPolicy',
+        request_type_name='ComputeOrganizationSnapshotRecycleBinPolicyPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class PacketMirroringsService(base_api.BaseApiService):
     """Service class for the packetMirrorings resource."""
 
@@ -16380,6 +16681,201 @@ patch format and processing rules.
         request_field='',
         request_type_name='ComputePublicDelegatedPrefixesWithdrawRequest',
         response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class RecoverableSnapshotsService(base_api.BaseApiService):
+    """Service class for the recoverableSnapshots resource."""
+
+    _NAME = 'recoverableSnapshots'
+
+    def __init__(self, client):
+      super(ComputeBeta.RecoverableSnapshotsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes the specified RecoverableSnapshot. Deleting a recoverable snapshot.
+will delete the underlying PD snapshot and is irreversible.
+
+      Args:
+        request: (ComputeRecoverableSnapshotsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='DELETE',
+        method_id='compute.recoverableSnapshots.delete',
+        ordered_params=['project', 'recoverableSnapshot'],
+        path_params=['project', 'recoverableSnapshot'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/global/recoverableSnapshots/{recoverableSnapshot}',
+        request_field='',
+        request_type_name='ComputeRecoverableSnapshotsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Returns the specified RecoverableSnapshot resource.
+
+      Args:
+        request: (ComputeRecoverableSnapshotsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (RecoverableSnapshot) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.recoverableSnapshots.get',
+        ordered_params=['project', 'recoverableSnapshot'],
+        path_params=['project', 'recoverableSnapshot'],
+        query_params=[],
+        relative_path='projects/{project}/global/recoverableSnapshots/{recoverableSnapshot}',
+        request_field='',
+        request_type_name='ComputeRecoverableSnapshotsGetRequest',
+        response_type_name='RecoverableSnapshot',
+        supports_download=False,
+    )
+
+    def GetIamPolicy(self, request, global_params=None):
+      r"""Gets the access control policy for a resource. May be empty if no such.
+policy or resource exists.
+
+      Args:
+        request: (ComputeRecoverableSnapshotsGetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('GetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.recoverableSnapshots.getIamPolicy',
+        ordered_params=['project', 'resource'],
+        path_params=['project', 'resource'],
+        query_params=['optionsRequestedPolicyVersion'],
+        relative_path='projects/{project}/global/recoverableSnapshots/{resource}/getIamPolicy',
+        request_field='',
+        request_type_name='ComputeRecoverableSnapshotsGetIamPolicyRequest',
+        response_type_name='Policy',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Retrieves a list of all of the RecoverableSnapshots in your project.
+
+      Args:
+        request: (ComputeRecoverableSnapshotsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (RecoverableSnapshotList) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.recoverableSnapshots.list',
+        ordered_params=['project'],
+        path_params=['project'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess'],
+        relative_path='projects/{project}/global/recoverableSnapshots',
+        request_field='',
+        request_type_name='ComputeRecoverableSnapshotsListRequest',
+        response_type_name='RecoverableSnapshotList',
+        supports_download=False,
+    )
+
+    def Recover(self, request, global_params=None):
+      r"""Recovers the specified RecoverableSnapshot.
+
+      Args:
+        request: (ComputeRecoverableSnapshotsRecoverRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Recover')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Recover.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.recoverableSnapshots.recover',
+        ordered_params=['project', 'recoverableSnapshot'],
+        path_params=['project', 'recoverableSnapshot'],
+        query_params=['requestId', 'snapshotName'],
+        relative_path='projects/{project}/global/recoverableSnapshots/{recoverableSnapshot}/recover',
+        request_field='',
+        request_type_name='ComputeRecoverableSnapshotsRecoverRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def SetIamPolicy(self, request, global_params=None):
+      r"""Sets the access control policy on the specified resource.
+Replaces any existing policy.
+
+      Args:
+        request: (ComputeRecoverableSnapshotsSetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('SetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.recoverableSnapshots.setIamPolicy',
+        ordered_params=['project', 'resource'],
+        path_params=['project', 'resource'],
+        query_params=[],
+        relative_path='projects/{project}/global/recoverableSnapshots/{resource}/setIamPolicy',
+        request_field='globalSetPolicyRequest',
+        request_type_name='ComputeRecoverableSnapshotsSetIamPolicyRequest',
+        response_type_name='Policy',
+        supports_download=False,
+    )
+
+    def TestIamPermissions(self, request, global_params=None):
+      r"""Returns permissions that a caller has on the specified resource.
+
+      Args:
+        request: (ComputeRecoverableSnapshotsTestIamPermissionsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TestPermissionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('TestIamPermissions')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.recoverableSnapshots.testIamPermissions',
+        ordered_params=['project', 'resource'],
+        path_params=['project', 'resource'],
+        query_params=[],
+        relative_path='projects/{project}/global/recoverableSnapshots/{resource}/testIamPermissions',
+        request_field='testPermissionsRequest',
+        request_type_name='ComputeRecoverableSnapshotsTestIamPermissionsRequest',
+        response_type_name='TestPermissionsResponse',
         supports_download=False,
     )
 
@@ -27254,6 +27750,68 @@ Replaces any existing policy.
         supports_download=False,
     )
 
+  class SnapshotRecycleBinPolicyService(base_api.BaseApiService):
+    """Service class for the snapshotRecycleBinPolicy resource."""
+
+    _NAME = 'snapshotRecycleBinPolicy'
+
+    def __init__(self, client):
+      super(ComputeBeta.SnapshotRecycleBinPolicyService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Returns the specified SnapshotRecycleBinPolicy.
+
+      Args:
+        request: (ComputeSnapshotRecycleBinPolicyGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SnapshotRecycleBinPolicy) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.snapshotRecycleBinPolicy.get',
+        ordered_params=['project'],
+        path_params=['project'],
+        query_params=[],
+        relative_path='projects/{project}/global/snapshotRecycleBinPolicy',
+        request_field='',
+        request_type_name='ComputeSnapshotRecycleBinPolicyGetRequest',
+        response_type_name='SnapshotRecycleBinPolicy',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Patches the SnapshotRecycleBinPolicy.
+
+      Args:
+        request: (ComputeSnapshotRecycleBinPolicyPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='PATCH',
+        method_id='compute.snapshotRecycleBinPolicy.patch',
+        ordered_params=['project'],
+        path_params=['project'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/global/snapshotRecycleBinPolicy',
+        request_field='snapshotRecycleBinPolicy',
+        request_type_name='ComputeSnapshotRecycleBinPolicyPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class SnapshotSettingsService(base_api.BaseApiService):
     """Service class for the snapshotSettings resource."""
 
@@ -27412,6 +27970,34 @@ snapshots.
         request_field='',
         request_type_name='ComputeSnapshotsGetRequest',
         response_type_name='Snapshot',
+        supports_download=False,
+    )
+
+    def GetEffectiveRecycleBinRule(self, request, global_params=None):
+      r"""Returns the effective recycle bin rule for a snapshot by merging org and.
+project level rules. If no rules are defined at org and project level, the
+standard default rule is returned.
+
+      Args:
+        request: (ComputeSnapshotsGetEffectiveRecycleBinRuleRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SnapshotsGetEffectiveRecycleBinRuleResponse) The response message.
+      """
+      config = self.GetMethodConfig('GetEffectiveRecycleBinRule')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetEffectiveRecycleBinRule.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.snapshots.getEffectiveRecycleBinRule',
+        ordered_params=['project', 'snapshot'],
+        path_params=['project', 'snapshot'],
+        query_params=[],
+        relative_path='projects/{project}/global/snapshots/{snapshot}/getEffectiveRecycleBinRule',
+        request_field='',
+        request_type_name='ComputeSnapshotsGetEffectiveRecycleBinRuleRequest',
+        response_type_name='SnapshotsGetEffectiveRecycleBinRuleResponse',
         supports_download=False,
     )
 

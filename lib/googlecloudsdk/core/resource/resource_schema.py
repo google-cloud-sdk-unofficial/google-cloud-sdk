@@ -21,6 +21,7 @@ analyzing underlying apitools / protorpclite Message response classes.
 import collections
 import re
 import sys
+from typing import Any, Optional, Type
 
 from apitools.base.protorpclite import messages
 from googlecloudsdk.core import log
@@ -318,34 +319,65 @@ def FormatNormalizedSchema(message_class):
   return ""
 
 
-def GetCommandResponseSchema(command):
+def _GetCommandClass(command: Any) -> Optional[Type[Any]]:
+  """Resolves the underlying command class from an instance, wrapper, or class."""
+  if not command:
+    return None
+  if isinstance(command, type):
+    return command
+  for target in (command, getattr(command, "_command", None)):
+    if target:
+      common_type = getattr(target, "_common_type", None)
+      if common_type and isinstance(common_type, type):
+        return common_type
+      command_class = getattr(target, "_command_class", None)
+      if command_class and isinstance(command_class, type):
+        return command_class
+  inner = getattr(command, "_command", command)
+  return inner if isinstance(inner, type) else type(inner)
+
+
+def GetCommandResponseSchema(
+    command: Any,
+) -> Optional[Type[messages.Message]]:
   """Resolves the primary resource Message response class for a gcloud command.
 
   Args:
-    command: Calliope Command instance or CommandHelp wrapper object.
+    command: Calliope Command backend object, instance, or class.
 
   Returns:
     The unwrapped resource Message subclass, or None if command is
     non-declarative or has response hooks / non-message response.
   """
-  inner_cmd = getattr(command, "_command", command)
-  yaml_spec = getattr(inner_cmd, "yaml_spec", None)
+  if not command:
+    return None
+
+  cmd_cls = _GetCommandClass(command)
+  yaml_spec = getattr(cmd_cls, "yaml_spec", None) if cmd_cls else None
+  if not yaml_spec:
+    yaml_spec = getattr(command, "yaml_spec", None)
   if not yaml_spec:
     return None
 
+  if getattr(yaml_spec, "async_", None):
+    return None
+
   resp_spec = getattr(yaml_spec, "response", None)
-  if not resp_spec:
+  if resp_spec and getattr(resp_spec, "modify_response_hooks", None):
     return None
 
-  if getattr(resp_spec, "modify_response_hooks", None):
-    return None
+  methods = getattr(cmd_cls, "methods", None) if cmd_cls else None
+  if not methods:
+    methods = getattr(command, "methods", [])
 
-  methods = getattr(inner_cmd, "methods", [])
-  method = (
-      methods[0]
-      if methods
-      else getattr(inner_cmd, "operation_method", None)
-  )
+  method = None
+  if methods:
+    method = methods[0]
+  elif cmd_cls and getattr(cmd_cls, "operation_method", None):
+    method = getattr(cmd_cls, "operation_method", None)
+  else:
+    method = getattr(command, "operation_method", None)
+
   if not method:
     return None
 
@@ -357,7 +389,9 @@ def GetCommandResponseSchema(command):
     )
     return None
 
-  result_attribute = getattr(resp_spec, "result_attribute", None)
+  result_attribute = (
+      getattr(resp_spec, "result_attribute", None) if resp_spec else None
+  )
   return UnwrapResponseSchema(response_cls, result_attribute=result_attribute)
 
 
@@ -589,4 +623,3 @@ def ValidateReferencedKeys(
             ", ".join(invalid_keys), command_path
         )
     )
-

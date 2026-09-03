@@ -22,9 +22,9 @@ import uuid
 from apitools.base.py import exceptions as api_exceptions
 from apitools.base.py import transfer  # pytype: disable=import-error
 from googlecloudsdk.api_lib.cloudbuild import snapshot as snapshot_lib
-from googlecloudsdk.api_lib.run import run_util
 from googlecloudsdk.api_lib.storage import storage_api
 from googlecloudsdk.api_lib.storage import storage_util
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.command_lib.builds import staging_bucket_util
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import validators
@@ -63,7 +63,6 @@ def UploadThroughCloudRun(
     source_to_upload,
     region,
     service_ref,
-    release_track,
     kms_key=None,
     skip_build=False,
 ):
@@ -73,7 +72,6 @@ def UploadThroughCloudRun(
     source_to_upload: The source to upload.
     region: The region to upload to.
     service_ref: The Cloud Run service resource reference.
-    release_track: The release track to use for the upload.
     kms_key: Optional. The KMS key to use for encryption.
     skip_build: Optional. Whether to skip the build step.
 
@@ -84,8 +82,8 @@ def UploadThroughCloudRun(
       project=properties.VALUES.core.project.Get(required=True), region=region
   )
 
-  messages = run_util.GetMessagesModule(release_track)
-  run_client = run_util.GetClientInstance(region, release_track)
+  messages = apis.GetMessagesModule('run', 'v2')
+  run_client = apis.GetClientInstance('run', 'v2', location=region)
   request = messages.RunProjectsLocationsSourceUploadsUploadRequest(
       parent=parent,
       googleCloudRunV2UploadSourceRequest=messages.GoogleCloudRunV2UploadSourceRequest(

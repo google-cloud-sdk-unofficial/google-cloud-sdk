@@ -24,6 +24,16 @@ DOCS_URL = 'https://cloud.google.com/identity/'
 class Collections(enum.Enum):
   """Collections for all supported apis."""
 
+  ALLOWLISTEDDOMAINS = (
+      'allowlistedDomains',
+      '{+name}',
+      {
+          '':
+              'allowlistedDomains/{allowlistedDomainsId}',
+      },
+      ['name'],
+      True
+  )
   CUSTOMERS = (
       'customers',
       'customers/{customersId}',

@@ -309,7 +309,7 @@ class AuditLogConfig(_messages.Message):
 
 
 class AutokeyConfig(_messages.Message):
-  r"""Cloud KMS Autokey configuration for a folder.
+  r"""Cloud KMS Autokey configuration for a project or folder.
 
   Enums:
     KeyProjectResolutionModeValueValuesEnum: Optional.
@@ -614,7 +614,7 @@ class CloudkmsFoldersShowEffectiveAutokeyConfigRequest(_messages.Message):
   Fields:
     parent: Required. Name of the resource project or folder to show the
       effective Cloud KMS Autokey configuration for. This may be helpful for
-      interrogating the effect of nested folder configurations on a given
+      evaluating the effect of nested folder configurations on a given
       resource project. Format: * projects/{project} * folders/{folder}
   """
 
@@ -2081,7 +2081,7 @@ class CloudkmsProjectsShowEffectiveAutokeyConfigRequest(_messages.Message):
   Fields:
     parent: Required. Name of the resource project or folder to show the
       effective Cloud KMS Autokey configuration for. This may be helpful for
-      interrogating the effect of nested folder configurations on a given
+      evaluating the effect of nested folder configurations on a given
       resource project. Format: * projects/{project} * folders/{folder}
   """
 
@@ -2348,11 +2348,12 @@ class CryptoKeyVersion(_messages.Message):
       for reimport, by being specified as a target in
       ImportCryptoKeyVersionRequest.crypto_key_version.
     state: The current state of the CryptoKeyVersion.
-    trustedWrappingEnabled: Immutable. Field indicating that the key may be
-      wrapped by a trusted key. This field can be set for all key purposes
-      except ENCRYPT_DECRYPT, and is only valid for keys with protection level
-      HSM_SINGLE_TENANT. This field can only be set at creation or import time
-      via CreateCryptoKeyVersion, or ImportCryptoKeyVersion.
+    trustedWrappingEnabled: Optional. Immutable. Field indicating that the key
+      may be wrapped by a trusted key. This field can be set for all key
+      purposes except ENCRYPT_DECRYPT, and is only valid for keys with
+      protection level HSM_SINGLE_TENANT. This field can only be set at
+      creation or import time via CreateCryptoKeyVersion, or
+      ImportCryptoKeyVersion.
   """
 
   class AlgorithmValueValuesEnum(_messages.Enum):
@@ -4173,10 +4174,13 @@ class KeyOperationAttestation(_messages.Message):
         hs-adapters/software-key-attestation.html.
       CAVIUM_V2_COMPRESSED: Cavium HSM attestation V2 compressed with gzip.
         This is a new format introduced in Cavium's version 3.2-08.
+      CAVIUM_V209: Cavium HSM attestation V209, introduced in Cavium's version
+        2.09-0702.
     """
     ATTESTATION_FORMAT_UNSPECIFIED = 0
     CAVIUM_V1_COMPRESSED = 1
     CAVIUM_V2_COMPRESSED = 2
+    CAVIUM_V209 = 3
 
   certChains = _messages.MessageField('CertificateChains', 1)
   content = _messages.BytesField(2)
@@ -5593,7 +5597,7 @@ class SetIamPolicyRequest(_messages.Message):
 
 
 class ShowEffectiveAutokeyConfigResponse(_messages.Message):
-  r"""Response message for ShowEffectiveAutokeyConfig.
+  r"""Response message for ShowEffectiveAutokeyConfig
 
   Enums:
     KeyProjectResolutionModeValueValuesEnum: The KeyProjectResolutionMode for

@@ -1,0 +1,19 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Describe a Secure Source Manager pull request.
+    description: Describe a Secure Source Manager pull request.
+    examples: |
+      To describe a pull request 1 in repository `my-repo` and location `us-central1`, run the following command:
+
+      $ {command} 1 --repository=my-repo --region=us-central1
+
+  request:
+    api_version: v1
+    collection: securesourcemanager.projects.locations.repositories.pullRequests
+    regional_endpoint_compatibility: SUPPORTED
+
+  arguments:
+    resource:
+      help_text: The Secure Source Manager pull request to describe.
+      spec: !REF googlecloudsdk.command_lib.source_manager.resources:pull_request

@@ -58,15 +58,19 @@
 
       To update a percentage rollout (50% Enabled) using a userID attribute, run:
 
-        $ {command} my-flag --location=global --evaluation-spec='{"allocations": [{"id": "p10", "randomizedOn": "userID", "slots": [{"variant": "Disabled", "weight": 50}, {"variant": "Enabled", "weight": 50}]}], "defaultTarget": "p10", "attributes": ["projects/my-project/locations/global/flagAttributes/id-attr"]}'
+          $ {command} my-flag --location=global --evaluation-spec='{"allocations": [{"id": "p10", "randomizedOn": "userID", "slots": [{"variant": "Disabled", "weight": 50}, {"variant": "Enabled", "weight": 50}]}], "defaultTarget": "p10", "attributes": ["projects/my-project/locations/global/flagAttributes/id-attr"]}'
+
+      To update a flag with progressive rollout using dynamic allocations, run:
+
+          $ {command} my-flag --location=global --evaluation-spec='{"dynamicAllocations": [{"id": "p10", "randomizedOn": "userID", "initialVariant": "Disabled", "finalVariant": "Enabled"}], "defaultDynamicAllocation": "p10"}'
 
       To add labels to a flag, run:
 
-        $ {command} my-flag --location=global --labels=environment=prod,team=frontend
+          $ {command} my-flag --location=global --labels=environment=prod,team=frontend
 
       To clear optional fields, run:
 
-        $ {command} my-flag --location=global --clear-description --clear-flag-set --clear-labels --clear-annotations
+          $ {command} my-flag --location=global --clear-description --clear-flag-set --clear-labels --clear-annotations
   arguments:
     params:
     - help_text: |-
@@ -91,6 +95,33 @@
       - api_field: defaultTarget
         help_text: |-
           Default variant for the flag.
+      - api_field: defaultDynamicAllocation
+        help_text: |-
+          The ID of a dynamic allocation to use as the default.
+      - api_field: dynamicAllocations
+        help_text: |-
+          A list of dynamic allocations.
+        spec:
+        - api_field: id
+          help_text: |-
+            Id of the dynamic allocation.
+            Max length: 128 bytes.
+        - api_field: randomizedOn
+          help_text: |-
+            Key of the context attribute that is used for traffic splitting.
+        - api_field: description
+          help_text: |-
+            A description of the dynamic allocation.
+            Max length: 500 bytes.
+        - api_field: initialVariant
+          help_text: |-
+            Initial variant to return for this allocation when not fully rolled out.
+        - api_field: finalVariant
+          help_text: |-
+            Final variant to return for this allocation when fully rolled out.
+        - api_field: salt
+          help_text: |-
+            Salt for hash generation.
       - api_field: allocations
         help_text: |-
           A list of allocations.

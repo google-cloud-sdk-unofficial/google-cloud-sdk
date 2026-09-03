@@ -24,6 +24,31 @@ DOCS_URL = 'https://docs.cloud.google.com/number-registry/reference/rest'
 class Collections(enum.Enum):
   """Collections for all supported apis."""
 
+  ORGANIZATIONS = (
+      'organizations',
+      'organizations/{organizationsId}',
+      {},
+      ['organizationsId'],
+      True
+  )
+  ORGANIZATIONS_LOCATIONS = (
+      'organizations.locations',
+      'organizations/{organizationsId}/locations/{locationsId}',
+      {},
+      ['organizationsId', 'locationsId'],
+      True
+  )
+  ORGANIZATIONS_LOCATIONS_ORGNUMBERREGISTRIES = (
+      'organizations.locations.orgNumberRegistries',
+      '{+name}',
+      {
+          '':
+              'organizations/{organizationsId}/locations/{locationsId}/'
+              'orgNumberRegistries/{orgNumberRegistriesId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS = (
       'projects',
       'projects/{projectsId}',

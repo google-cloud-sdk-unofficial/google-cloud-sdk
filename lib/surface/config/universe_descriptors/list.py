@@ -18,7 +18,7 @@
 import sqlite3
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import config
+from googlecloudsdk.core import config_sqlite_store
 from googlecloudsdk.core.universe_descriptor import universe_descriptor
 
 
@@ -42,7 +42,7 @@ class List(base.ListCommand):
 
   def Run(self, unused_args):
     config_universe_domains = universe_descriptor.GetAllConfigUniverseDomains()
-    config_store = config.GetConfigStore(
+    config_store = config_sqlite_store.GetConfigStore(
         universe_descriptor.CONFIG_CACHE_DESCRIPTOR_DATA_TABLE_NAME
     )
     for universe_domain in config_universe_domains:

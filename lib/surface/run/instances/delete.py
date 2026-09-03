@@ -29,7 +29,7 @@ from googlecloudsdk.core.console import console_io
 
 @base.UniverseCompatible
 @base.RegionalEndpointsSupported
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.Command):
   """Delete an instance."""
 

@@ -53,11 +53,17 @@ class ApiKey(_messages.Message):
         This can happen if the key has expired or the service account is not
         active or an internal error has occurred.
       REPAIRING: The key is being repaired/reconciled.
+      CREATING: Being created.
+      DELETING: Being deleted.
+      FAILED: In error state.
     """
     STATE_UNKNOWN = 0
     ACTIVE = 1
     NOT_ACTIVE = 2
     REPAIRING = 3
+    CREATING = 4
+    DELETING = 5
+    FAILED = 6
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
@@ -3606,6 +3612,7 @@ class ZonalProject(_messages.Message):
       STATE_ENABLING: The project is being enabled on the zone.
       STATE_REPAIRING: The project is being repaired.
       STATE_ERROR: The project is being disabled on the zone.
+      STATE_DISABLING: Being disabled on the zone.
     """
     STATE_UNSPECIFIED = 0
     STATE_ON = 1
@@ -3613,6 +3620,7 @@ class ZonalProject(_messages.Message):
     STATE_ENABLING = 3
     STATE_REPAIRING = 4
     STATE_ERROR = 5
+    STATE_DISABLING = 6
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):

@@ -180,7 +180,7 @@ class ObjectMeta(_messages.Message):
       will be different depending on the resource type. *
       `autoscaling.knative.dev/maxScale`: Revision. *
       `autoscaling.knative.dev/minScale`: Revision. *
-      `run.googleapis.com/base-images`: Service, Revision. *
+      `run.googleapis.com/base-images`: Service, Revision . *
       `run.googleapis.com/binary-authorization-breakglass`: Service, Job, *
       `run.googleapis.com/binary-authorization`: Service, Job, Execution. *
       `run.googleapis.com/build-base-image`: Service. *
@@ -232,7 +232,7 @@ class ObjectMeta(_messages.Message):
       will be different depending on the resource type. *
       `autoscaling.knative.dev/maxScale`: Revision. *
       `autoscaling.knative.dev/minScale`: Revision. *
-      `run.googleapis.com/base-images`: Service, Revision. *
+      `run.googleapis.com/base-images`: Service, Revision . *
       `run.googleapis.com/binary-authorization-breakglass`: Service, Job, *
       `run.googleapis.com/binary-authorization`: Service, Job, Execution. *
       `run.googleapis.com/build-base-image`: Service. *
@@ -315,7 +315,7 @@ class ObjectMeta(_messages.Message):
     restricted, and the accepted annotations will be different depending on
     the resource type. * `autoscaling.knative.dev/maxScale`: Revision. *
     `autoscaling.knative.dev/minScale`: Revision. * `run.googleapis.com/base-
-    images`: Service, Revision. * `run.googleapis.com/binary-authorization-
+    images`: Service, Revision . * `run.googleapis.com/binary-authorization-
     breakglass`: Service, Job, * `run.googleapis.com/binary-authorization`:
     Service, Job, Execution. * `run.googleapis.com/build-base-image`: Service.
     * `run.googleapis.com/build-enable-automatic-updates`: Service. *

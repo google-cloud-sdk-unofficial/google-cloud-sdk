@@ -26,7 +26,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.command_lib.auth import auth_util as auth_command_util
 from googlecloudsdk.command_lib.auth import flags as auth_flags
-from googlecloudsdk.core import config
+from googlecloudsdk.core import config_sqlite_store
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 _MTLS_WARNING_INTERVAL_SECONDS = 24 * 60 * 60  # Seconds in a day
@@ -54,7 +54,7 @@ def _ShowMTLSWarningOnceDaily():
   current_time = time.time()
 
   should_show_warning = True
-  active_config_store = config.GetConfigStore()
+  active_config_store = config_sqlite_store.GetConfigStore()
 
   if active_config_store:
     last_shown_str = active_config_store.Get(

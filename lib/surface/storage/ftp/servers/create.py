@@ -14,12 +14,12 @@
 # limitations under the License.
 """Command to create a Cloud FTP server."""
 
-from googlecloudsdk.api_lib.storage import ftp
+from googlecloudsdk.api_lib.storage import ftp_api
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage.ftp import operations_util
-from googlecloudsdk.command_lib.storage.ftp import servers_util
-from googlecloudsdk.core import log
+from googlecloudsdk.command_lib.util.args import labels_util
+from googlecloudsdk.core import exceptions
 
 
 @base.UniverseCompatible
@@ -32,7 +32,7 @@ class Create(base.Command):
   detailed_help = {
       'DESCRIPTION': (
           """\
-          Create a new Cloud FTP server. Returns a long-running operation.
+          Create a new Cloud FTP server.
       """
       ),
       'EXAMPLES': (
@@ -50,14 +50,7 @@ class Create(base.Command):
         'SERVER_ID',
         help='The ID of the FTP server to create.',
     )
-    parser.add_argument(
-        '--async',
-        action='store_true',
-        dest='async_',
-        help=(
-            'Return immediately, without waiting for the operation to complete.'
-        ),
-    )
+
     parser.add_argument(
         '--location',
         required=True,
@@ -78,8 +71,8 @@ class Create(base.Command):
         type=arg_parsers.ArgList(),
         metavar='CIDR_BLOCK',
         help=(
-            '(For EXTERNAL servers) A comma-separated list of CIDR blocks'
-            ' allowed to connect.'
+            '(Required for EXTERNAL servers) A comma-separated list of CIDR'
+            ' blocks allowed to connect.'
         ),
     )
     parser.add_argument(
@@ -87,8 +80,8 @@ class Create(base.Command):
         type=arg_parsers.ArgDict(value_type=int),
         metavar='PROJECT_ID=LIMIT',
         help=(
-            '(For INTERNAL servers) A comma-separated list of projects allowed'
-            ' to connect via PSC.'
+            '(Required for INTERNAL servers) A comma-separated list of projects'
+            ' allowed to connect via PSC.'
         ),
     )
     parser.add_argument(
@@ -100,21 +93,33 @@ class Create(base.Command):
             ' connection via PSC.'
         ),
     )
+    labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
-    client = ftp.FtpClient()
-    parent = servers_util.GetParentString(args.location)
-    server_msg = servers_util.CreateServerMsg(client.messages, args)
+    client = ftp_api.FtpApi()
 
-    op = client.CreateServer(parent, args.SERVER_ID, server_msg)
+    if args.access_type.upper() == 'EXTERNAL' and not args.allowed_cidr_blocks:
+      raise exceptions.Error(
+          '--allowed-cidr-blocks is required for EXTERNAL access type.'
+      )
+    if args.access_type.upper() == 'INTERNAL' and not args.consumer_accept_list:
+      raise exceptions.Error(
+          '--consumer-accept-list is required for INTERNAL access type.'
+      )
 
-    if args.async_:
-      log.status.Print('Create request issued for: [{}]'.format(args.SERVER_ID))
-      log.status.Print('Check operation [{}] for status.'.format(op.name))
-      return op
+    op = client.CreateServer(
+        args.location,
+        args.SERVER_ID,
+        display_name=args.display_name,
+        access_type=args.access_type,
+        allowed_cidr_blocks=args.allowed_cidr_blocks,
+        consumer_accept_list=args.consumer_accept_list,
+        consumer_reject_list=args.consumer_reject_list,
+        labels=args.labels,
+    )
 
     op_ref = operations_util.GetOperationRef(op.name)
-    return operations_util.WaitForOperation(
+    return client.WaitForOperation(
         op_ref,
         'Waiting for server [{}] to be created'.format(args.SERVER_ID),
         result_service=client.servers_service,

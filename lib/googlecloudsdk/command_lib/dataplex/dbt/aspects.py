@@ -156,7 +156,7 @@ def owner_identities(owner: dict[str, Any] | None) -> list[dict[str, str]]:
   return [{'name': name, 'role': 'owner'} for name in names]
 
 
-def stat_int(stats: dict[str, Any], key: str) -> int | None:
+def stat_int(stats: dict[str, Any], *keys: str) -> int | None:
   """Returns a catalog stat as int, or None if absent / not included.
 
   dbt reports stat values as strings and sometimes as decimals (e.g. "2048.0"),
@@ -164,25 +164,28 @@ def stat_int(stats: dict[str, Any], key: str) -> int | None:
 
   Args:
     stats: the catalog node's ``stats`` mapping.
-    key: the stat name to read (e.g. 'num_rows', 'num_bytes').
+    *keys: the stat names to try, in order (e.g. 'num_bytes', 'bytes').
+      The first key that is present and included wins.
 
   Returns:
-    The stat value as int, or None when the stat is absent or not included.
+    The stat value as int, or None when no key is present and included.
   """
-  stat = stats.get(key, {})
-  if not stat.get('include'):
-    return None
-  try:
-    return int(float(stat.get('value')))
-  except (TypeError, ValueError):
-    return None
+  for key in keys:
+    stat = stats.get(key, {})
+    if not stat.get('include'):
+      continue
+    try:
+      return int(float(stat.get('value')))
+    except (TypeError, ValueError):
+      return None
+  return None
 
 
 def add_stat(
-    data: dict[str, Any], out_key: str, stats: dict[str, Any], stat_key: str
+    data: dict[str, Any], out_key: str, stats: dict[str, Any], *stat_keys: str
 ) -> None:
   """Copies a catalog stat into ``data[out_key]``, omitting it when absent."""
-  value = stat_int(stats, stat_key)
+  value = stat_int(stats, *stat_keys)
   if value is not None:
     data[out_key] = value
 

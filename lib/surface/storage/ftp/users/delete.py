@@ -14,11 +14,9 @@
 # limitations under the License.
 """Command to delete a Cloud FTP user."""
 
-from googlecloudsdk.api_lib.storage import ftp
+from googlecloudsdk.api_lib.storage import ftp_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage.ftp import operations_util
-from googlecloudsdk.command_lib.storage.ftp import users_util
-from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
@@ -50,14 +48,7 @@ class Delete(base.Command):
         'USER_ID',
         help='The ID of the user to delete.',
     )
-    parser.add_argument(
-        '--async',
-        action='store_true',
-        dest='async_',
-        help=(
-            'Return immediately, without waiting for the operation to complete.'
-        ),
-    )
+
     parser.add_argument(
         '--server',
         required=True,
@@ -83,20 +74,13 @@ class Delete(base.Command):
           cancel_on_no=True,
       )
 
-    client = ftp.FtpClient()
-    user_name = users_util.GetUserResourceName(
-        args.location, args.server, args.USER_ID
+    client = ftp_api.FtpApi()
+    op = client.DeleteUser(
+        args.location, args.server, args.USER_ID, force=args.force
     )
 
-    op = client.DeleteUser(user_name, force=args.force)
-
-    if args.async_:
-      log.status.Print('Delete request issued for: [{}]'.format(args.USER_ID))
-      log.status.Print('Check operation [{}] for status.'.format(op.name))
-      return op
-
     op_ref = operations_util.GetOperationRef(op.name)
-    return operations_util.WaitForOperation(
+    client.WaitForOperation(
         op_ref,
         'Waiting for user [{}] to be deleted'.format(args.USER_ID),
         result_service=None,

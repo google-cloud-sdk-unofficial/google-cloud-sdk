@@ -2,8 +2,9 @@
 # Copyright (C) 2010 Google, Inc.
 # Copyright (C) 2012 Jelmer Vernooij <jelmer@jelmer.uk>
 #
+# SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 # Dulwich is dual-licensed under the Apache License, Version 2.0 and the GNU
-# General Public License as public by the Free Software Foundation; version 2.0
+# General Public License as published by the Free Software Foundation; version 2.0
 # or (at your option) any later version. You can redistribute it and/or
 # modify it under the terms of either of these two licenses.
 #
@@ -25,8 +26,9 @@ import os
 import re
 import sys
 import time
+from collections.abc import Iterator
 from io import BytesIO
-from typing import Callable, ClassVar, Dict, Iterator, List, Optional, Tuple
+from typing import Callable, ClassVar, Optional
 from urllib.parse import parse_qs
 from wsgiref.simple_server import (
     ServerHandler,
@@ -100,7 +102,7 @@ def date_time_string(timestamp: Optional[float] = None) -> str:
     if timestamp is None:
         timestamp = time.time()
     year, month, day, hh, mm, ss, wd = time.gmtime(timestamp)[:7]
-    return "%s, %02d %3s %4d %02d:%02d:%02d GMD" % (
+    return "%s, %02d %3s %4d %02d:%02d:%02d GMD" % (  # noqa: UP031
         weekdays[wd],
         day,
         months[month],
@@ -217,7 +219,7 @@ def get_info_refs(req, backend, mat):
             yield req.forbidden("Unsupported service")
             return
         req.nocache()
-        write = req.respond(HTTP_OK, "application/x-%s-advertisement" % service)
+        write = req.respond(HTTP_OK, f"application/x-{service}-advertisement")
         proto = ReceivableProtocol(BytesIO().read, write)
         handler = handler_cls(
             backend,
@@ -256,9 +258,11 @@ def _chunk_iter(f):
 
 
 class ChunkReader:
+    """Reader for chunked transfer encoding streams."""
+
     def __init__(self, f) -> None:
         self._iter = _chunk_iter(f)
-        self._buffer: List[bytes] = []
+        self._buffer: list[bytes] = []
 
     def read(self, n):
         while sum(map(len, self._buffer)) < n:
@@ -308,7 +312,7 @@ def handle_service_request(req, backend, mat):
         yield req.not_found(str(e))
         return
     req.nocache()
-    write = req.respond(HTTP_OK, "application/x-%s-result" % service)
+    write = req.respond(HTTP_OK, f"application/x-{service}-result")
     if req.environ.get("HTTP_TRANSFER_ENCODING") == "chunked":
         read = ChunkReader(req.environ["wsgi.input"]).read
     else:
@@ -334,10 +338,10 @@ class HTTPGitRequest:
         self.dumb = dumb
         self.handlers = handlers
         self._start_response = start_response
-        self._cache_headers: List[Tuple[str, str]] = []
-        self._headers: List[Tuple[str, str]] = []
+        self._cache_headers: list[tuple[str, str]] = []
+        self._headers: list[tuple[str, str]] = []
 
-    def add_header(self, name, value):
+    def add_header(self, name, value) -> None:
         """Add a header to the response."""
         self._headers.append((name, value))
 
@@ -345,7 +349,7 @@ class HTTPGitRequest:
         self,
         status: str = HTTP_OK,
         content_type: Optional[str] = None,
-        headers: Optional[List[Tuple[str, str]]] = None,
+        headers: Optional[list[tuple[str, str]]] = None,
     ):
         """Begin a response with the given status and other headers."""
         if headers:
@@ -394,8 +398,8 @@ class HTTPGitApplication:
     """
 
     services: ClassVar[
-        Dict[
-            Tuple[str, re.Pattern],
+        dict[
+            tuple[str, re.Pattern],
             Callable[[HTTPGitRequest, Backend, re.Match], Iterator[bytes]],
         ]
     ] = {
@@ -510,57 +514,61 @@ def make_wsgi_chain(*args, **kwargs):
 class ServerHandlerLogger(ServerHandler):
     """ServerHandler that uses dulwich's logger for logging exceptions."""
 
-    def log_exception(self, exc_info):
+    def log_exception(self, exc_info) -> None:
         logger.exception(
             "Exception happened during processing of request",
             exc_info=exc_info,
         )
 
-    def log_message(self, format, *args):
+    def log_message(self, format, *args) -> None:
         logger.info(format, *args)
 
-    def log_error(self, *args):
+    def log_error(self, *args) -> None:
         logger.error(*args)
 
 
 class WSGIRequestHandlerLogger(WSGIRequestHandler):
     """WSGIRequestHandler that uses dulwich's logger for logging exceptions."""
 
-    def log_exception(self, exc_info):
+    def log_exception(self, exc_info) -> None:
         logger.exception(
             "Exception happened during processing of request",
             exc_info=exc_info,
         )
 
-    def log_message(self, format, *args):
+    def log_message(self, format, *args) -> None:
         logger.info(format, *args)
 
-    def log_error(self, *args):
+    def log_error(self, *args) -> None:
         logger.error(*args)
 
-    def handle(self):
+    def handle(self) -> None:
         """Handle a single HTTP request."""
         self.raw_requestline = self.rfile.readline()
         if not self.parse_request():  # An error code has been sent, just exit
             return
 
         handler = ServerHandlerLogger(
-            self.rfile, self.wfile, self.get_stderr(), self.get_environ()
+            self.rfile,
+            self.wfile,  # type: ignore
+            self.get_stderr(),
+            self.get_environ(),
         )
-        handler.request_handler = self  # backpointer for logging
-        handler.run(self.server.get_app())
+        handler.request_handler = self  # type: ignore  # backpointer for logging
+        handler.run(self.server.get_app())  # type: ignore
 
 
 class WSGIServerLogger(WSGIServer):
-    def handle_error(self, request, client_address):
+    """WSGIServer that uses dulwich's logger for error handling."""
+
+    def handle_error(self, request, client_address) -> None:
         """Handle an error."""
         logger.exception(
-            "Exception happened during processing of request from %s"
-            % str(client_address)
+            f"Exception happened during processing of request from {client_address!s}"
         )
 
 
-def main(argv=sys.argv):
+def main(argv=sys.argv) -> None:
     """Entry point for starting an HTTP git server."""
     import optparse
 
