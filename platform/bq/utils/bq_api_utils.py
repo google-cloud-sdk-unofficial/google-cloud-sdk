@@ -6,7 +6,9 @@ import logging
 import re
 from typing import Dict, NamedTuple, Optional, Union
 import urllib
+
 from absl import flags
+
 from utils import bq_consts
 from utils import bq_error
 

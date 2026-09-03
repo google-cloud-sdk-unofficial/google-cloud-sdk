@@ -65,6 +65,7 @@ def UploadThroughCloudRun(
     service_ref,
     release_track,
     kms_key=None,
+    skip_build=False,
 ):
   """Upload source code through Cloud Run API.
 
@@ -74,6 +75,7 @@ def UploadThroughCloudRun(
     service_ref: The Cloud Run service resource reference.
     release_track: The release track to use for the upload.
     kms_key: Optional. The KMS key to use for encryption.
+    skip_build: Optional. Whether to skip the build step.
 
   Returns:
     UploadedSource, The uploaded source metadata.
@@ -93,10 +95,16 @@ def UploadThroughCloudRun(
   )
   if os.path.isdir(source_to_upload):
     with files.TemporaryDirectory() as tmpdir:
-      archive_path = os.path.join(tmpdir, 'source.tar.gz')
-      snapshot_lib.Snapshot(
-          source_to_upload, include_gitignore=False
-      ).MakeTarball(archive_path)
+      if skip_build:
+        archive_path = os.path.join(tmpdir, 'source.tar.gz')
+        snapshot_lib.Snapshot(
+            source_to_upload, include_gitignore=False
+        ).MakeTarball(archive_path)
+      else:
+        archive_path = os.path.join(tmpdir, 'source.zip')
+        snapshot_lib.Snapshot(
+            source_to_upload, include_gitignore=False
+        ).MakeZipFile(archive_path)
       upload = transfer.Upload.FromFile(
           archive_path, mime_type='application/gzip'
       )
@@ -180,7 +188,7 @@ def GetGcsObject(source: str, location: str):
 
 def IsGcsObject(source: str) -> bool:
   """Returns true if the source is located remotely in a GCS object."""
-  return (source or '').startswith(_GCS_PREFIX)
+  return isinstance(source, str) and source.startswith(_GCS_PREFIX)
 
 
 def GetSourceSizeBytes(source_path: str) -> int:
@@ -215,11 +223,14 @@ def ShouldUploadThroughRunApi(deploy_from_source, release_track) -> bool:
     return False
 
   container_args = next(iter(deploy_from_source.values()))
+  source_path = getattr(container_args, 'source', None)
+  if IsGcsObject(source_path):
+    return False
+
   if flags.FlagIsExplicitlySet(container_args, 'run_upload'):
     return bool(container_args.run_upload)
 
   if validators.IsNoBuildFromSource(release_track, deploy_from_source):
-    source_path = getattr(container_args, 'source', None)
     source_size = GetSourceSizeBytes(source_path)
     return 0 <= source_size < MAX_RUN_UPLOAD_SOURCE_SIZE_BYTES
 

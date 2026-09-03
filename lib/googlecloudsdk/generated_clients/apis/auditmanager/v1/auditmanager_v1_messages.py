@@ -943,6 +943,8 @@ class GenerateAuditReportRequest(_messages.Message):
       uploaded. You must select a bucket that was provided during the
       enrollment process.
     reportFormat: Required. Format for the audit report.
+    validateOnly: Optional. If `true`, only validate the request and don't
+      generate the audit report.
   """
 
   class ReportFormatValueValuesEnum(_messages.Enum):
@@ -959,6 +961,7 @@ class GenerateAuditReportRequest(_messages.Message):
   complianceStandard = _messages.StringField(2)
   gcsUri = _messages.StringField(3)
   reportFormat = _messages.EnumField('ReportFormatValueValuesEnum', 4)
+  validateOnly = _messages.BooleanField(5)
 
 
 class GenerateAuditScopeReportRequest(_messages.Message):

@@ -3232,7 +3232,7 @@ class MemorystoreProjectsLocationsAclPoliciesDeleteRequest(_messages.Message):
       server's etag, the request will fail with an ABORTED error.
     name: Required. Memorystore ACL policy resource name using the form:
       `projects/{project}/locations/{location}/aclPolicies/{acl_policy_id}`
-      where `location` refers to a GCP region.
+      where `location` refers to a Google Cloud region.
     requestId: Optional. Idempotent request UUID.
   """
 
@@ -3247,7 +3247,7 @@ class MemorystoreProjectsLocationsAclPoliciesGetRequest(_messages.Message):
   Fields:
     name: Required. Memorystore ACL policy resource name using the form:
       `projects/{project}/locations/{location}/aclPolicies/{acl_policy}` where
-      `location` refers to a GCP region.
+      `location` refers to a Google Cloud region.
   """
 
   name = _messages.StringField(1, required=True)
@@ -3299,7 +3299,7 @@ class MemorystoreProjectsLocationsAclPoliciesRevisionsGetRequest(_messages.Messa
   Fields:
     name: Required. Memorystore ACL policy revision resource name using the
       form: `projects/{project}/locations/{location}/aclPolicies/{acl_policy}/
-      revisions/{revision}` where `location` refers to a GCP region.
+      revisions/{revision}` where `location` refers to a Google Cloud region.
   """
 
   name = _messages.StringField(1, required=True)

@@ -51,26 +51,27 @@ import datetime
 import json
 import urllib
 
-import cachetools
-
+from google.auth import _cache
 from google.auth import _helpers
+from google.auth import _regional_access_boundary_utils
 from google.auth import _service_account_info
 from google.auth import crypt
 from google.auth import exceptions
 import google.auth.credentials
 
 try:
-    from google.auth.crypt import es256
+    from google.auth.crypt import es
 except ImportError:  # pragma: NO COVER
-    es256 = None  # type: ignore
+    es = None  # type: ignore
 
 _DEFAULT_TOKEN_LIFETIME_SECS = 3600  # 1 hour in seconds
 _DEFAULT_MAX_CACHE_SIZE = 10
 _ALGORITHM_TO_VERIFIER_CLASS = {"RS256": crypt.RSAVerifier}
-_CRYPTOGRAPHY_BASED_ALGORITHMS = frozenset(["ES256"])
+_CRYPTOGRAPHY_BASED_ALGORITHMS = frozenset(["ES256", "ES384"])
 
-if es256 is not None:  # pragma: NO COVER
-    _ALGORITHM_TO_VERIFIER_CLASS["ES256"] = es256.ES256Verifier  # type: ignore
+if es is not None:  # pragma: NO COVER
+    _ALGORITHM_TO_VERIFIER_CLASS["ES256"] = es.EsVerifier  # type: ignore
+    _ALGORITHM_TO_VERIFIER_CLASS["ES384"] = es.EsVerifier  # type: ignore
 
 
 def encode(signer, payload, header=None, key_id=None):
@@ -96,8 +97,8 @@ def encode(signer, payload, header=None, key_id=None):
     header.update({"typ": "JWT"})
 
     if "alg" not in header:
-        if es256 is not None and isinstance(signer, es256.ES256Signer):
-            header.update({"alg": "ES256"})
+        if es is not None and isinstance(signer, es.EsSigner):
+            header.update({"alg": signer.algorithm})
         else:
             header.update({"alg": "RS256"})
 
@@ -318,7 +319,9 @@ def decode(token, certs=None, verify=True, audience=None, clock_skew_in_seconds=
 
 
 class Credentials(
-    google.auth.credentials.Signing, google.auth.credentials.CredentialsWithQuotaProject
+    google.auth.credentials.Signing,
+    google.auth.credentials.CredentialsWithQuotaProject,
+    google.auth.credentials.CredentialsWithRegionalAccessBoundary,
 ):
     """Credentials that use a JWT as the bearer token.
 
@@ -491,7 +494,15 @@ class Credentials(
         """
         kwargs.setdefault("issuer", credentials.signer_email)
         kwargs.setdefault("subject", credentials.signer_email)
-        return cls(credentials.signer, audience=audience, **kwargs)
+        jwt_creds = cls(credentials.signer, audience=audience, **kwargs)
+
+        if isinstance(
+            credentials,
+            google.auth.credentials.CredentialsWithRegionalAccessBoundary,
+        ):
+            credentials._copy_regional_access_boundary_manager(jwt_creds)
+
+        return jwt_creds
 
     def with_claims(
         self, issuer=None, subject=None, audience=None, additional_claims=None
@@ -515,7 +526,7 @@ class Credentials(
         new_additional_claims = copy.deepcopy(self._additional_claims)
         new_additional_claims.update(additional_claims or {})
 
-        return self.__class__(
+        cred = self.__class__(
             self._signer,
             issuer=issuer if issuer is not None else self._issuer,
             subject=subject if subject is not None else self._subject,
@@ -523,10 +534,12 @@ class Credentials(
             additional_claims=new_additional_claims,
             quota_project_id=self._quota_project_id,
         )
+        self._copy_regional_access_boundary_manager(cred)
+        return cred
 
     @_helpers.copy_docstring(google.auth.credentials.CredentialsWithQuotaProject)
     def with_quota_project(self, quota_project_id):
-        return self.__class__(
+        cred = self.__class__(
             self._signer,
             issuer=self._issuer,
             subject=self._subject,
@@ -534,6 +547,8 @@ class Credentials(
             additional_claims=self._additional_claims,
             quota_project_id=quota_project_id,
         )
+        self._copy_regional_access_boundary_manager(cred)
+        return cred
 
     def _make_jwt(self):
         """Make a signed JWT.
@@ -560,7 +575,7 @@ class Credentials(
 
         return jwt, expiry
 
-    def refresh(self, request):
+    def _perform_refresh_token(self, request):
         """Refreshes the access token.
 
         Args:
@@ -569,6 +584,25 @@ class Credentials(
         # pylint: disable=unused-argument
         # (pylint doesn't correctly recognize overridden methods.)
         self.token, self.expiry = self._make_jwt()
+
+    def _build_regional_access_boundary_lookup_url(self, request=None):
+        """Builds the lookup URL using the service account's email address.
+
+        Returns None if the subject is populated.
+        """
+        # In jwt.Credentials, subject defaults to client_email (which is the issuer).
+        # We must check self._subject != self._issuer to correctly determine if
+        # Domain-Wide Delegation is active.
+        if self._subject and self._subject != self._issuer:
+            # RAB does not apply to Workspace User Accounts via Domain-wide Delegation.
+            return None
+
+        if not self.signer_email:
+            return None
+
+        return _regional_access_boundary_utils.get_service_account_rab_endpoint(
+            self.signer_email
+        )
 
     @_helpers.copy_docstring(google.auth.credentials.Signing)
     def sign_bytes(self, message):
@@ -586,7 +620,7 @@ class Credentials(
 
     @property  # type: ignore
     def additional_claims(self):
-        """ Additional claims the JWT object was created with."""
+        """Additional claims the JWT object was created with."""
         return self._additional_claims
 
 
@@ -630,7 +664,7 @@ class OnDemandCredentials(
             token_lifetime (int): The amount of time in seconds for
                 which the token is valid. Defaults to 1 hour.
             max_cache_size (int): The maximum number of JWT tokens to keep in
-                cache. Tokens are cached using :class:`cachetools.LRUCache`.
+                cache. Tokens are cached using :class:`google.auth._cache.LRUCache`.
             quota_project_id (Optional[str]): The project ID used for quota
                 and billing.
 
@@ -646,7 +680,7 @@ class OnDemandCredentials(
             additional_claims = {}
 
         self._additional_claims = additional_claims
-        self._cache = cachetools.LRUCache(maxsize=max_cache_size)
+        self._cache = _cache.LRUCache(maxsize=max_cache_size)
 
     @classmethod
     def _from_signer_and_info(cls, signer, info, **kwargs):
@@ -760,7 +794,6 @@ class OnDemandCredentials(
 
     @_helpers.copy_docstring(google.auth.credentials.CredentialsWithQuotaProject)
     def with_quota_project(self, quota_project_id):
-
         return self.__class__(
             self._signer,
             issuer=self._issuer,

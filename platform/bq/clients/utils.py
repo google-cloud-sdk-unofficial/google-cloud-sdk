@@ -488,6 +488,8 @@ def ParseConnectionPath(
   return (project_id, location, connection_id)
 
 
+
+
 def ReadTableConstrants(table_constraints: str):
   """Create table constraints json object from string or a file name.
 
@@ -1354,7 +1356,7 @@ def ReadSchema(schema: str) -> List[str]:
         % (schema,)
     )
   else:
-    return [NewField(entry) for entry in schema.split(',')]  # pytype: disable=bad-return-type
+    return [NewField(entry) for entry in schema.split(',')]
 
 
 def NormalizeProjectReference(

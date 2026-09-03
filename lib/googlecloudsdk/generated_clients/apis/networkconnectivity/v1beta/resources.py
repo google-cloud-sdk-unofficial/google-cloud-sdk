@@ -95,6 +95,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_INTERCONNECTKEYGROUPS = (
+      'projects.locations.interconnectKeyGroups',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'interconnectKeyGroups/{interconnectKeyGroupsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_MULTICLOUDDATATRANSFERCONFIGS = (
       'projects.locations.multicloudDataTransferConfigs',
       '{+name}',

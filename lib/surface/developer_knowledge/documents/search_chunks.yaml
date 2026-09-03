@@ -1,0 +1,60 @@
+# Copyright 2026 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+- release_tracks: [ALPHA]
+  command_type: LIST
+  hints:
+    read_only: true
+  help_text:
+    brief: |
+      Search for developer knowledge across Google's developer documentation.
+    description: |
+      Search for developer knowledge across Google's developer documentation. Return DocumentChunks based on the user's query.
+
+      There may be many chunks from the same Document. To retrieve full documents, use `gcloud alpha developer-knowledge documents describe` with the DocumentChunk.parent returned in the search-chunks results.
+    examples: |
+      To search for document chunks answering a query:
+
+        $ {command} --query="How to create a Cloud Storage bucket?"
+
+      To search for document chunks filtered by data source:
+
+        $ {command} --query="Cloud Functions deployment" --query-filter='data_source = "docs.cloud.google.com"'
+
+      To search with custom pagination:
+
+        $ {command} --query="Compute Engine instances" --page-size=10 --limit=20
+
+  # LINT.IfChange
+  request:
+    collection: developerknowledge.documents
+    api_version: v1alpha
+    method: searchDocumentChunks
+    disable_resource_check: true
+
+  arguments:
+    params:
+    - arg_name: query
+      api_field: query
+      required: true
+      help_text: |
+        Raw query string provided by the user, such as "How to create a Cloud Storage bucket?".
+    - arg_name: query-filter
+      api_field: filter
+      help_text: |
+        Apply a strict filter to the search results. Supported filter fields: `data_source`, `update_time`, `uri`. Example: `data_source = "docs.cloud.google.com"`.
+  # LINT.ThenChange(//google/developers/knowledge/v1main/developerknowledge.proto)
+
+  guidance:
+    content: |
+      When searching for information, use `search-chunks` first to discover relevant document chunks, and then use `describe` on the chunk's parent to retrieve the full document if necessary.

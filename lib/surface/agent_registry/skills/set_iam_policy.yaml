@@ -1,0 +1,40 @@
+# -*- coding: utf-8 -*- #
+# Copyright 2026 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Set the IAM policy for a skill.
+    description: Set the IAM policy for a skill.
+    examples: |
+      The following command reads an IAM policy defined in a JSON file `policy.json` and sets it
+      for the skill with ID `my-skill`:
+
+        $ {command} my-skill policy.json --location=us-central1
+
+  request:
+    api_version: v1alpha
+    collection: agentregistry.projects.locations.skills
+
+  arguments:
+    resource:
+      help_text: The skill for which to display the IAM policy.
+      spec: !REF googlecloudsdk.command_lib.agent_registry.v1alpha_resources:projects_locations_skills
+      is_positional: true
+
+  iam:
+    policy_version: 3
+    set_iam_policy_request_path: googleIamV1SetIamPolicyRequest
+    message_type_overrides:
+      policy: GoogleIamV1Policy
+      set_iam_policy_request: GoogleIamV1SetIamPolicyRequest

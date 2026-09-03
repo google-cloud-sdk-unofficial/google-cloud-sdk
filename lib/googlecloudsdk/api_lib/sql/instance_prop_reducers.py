@@ -710,17 +710,17 @@ def OnPremisesConfiguration(sql_messages, source_ip_address, source_port):
       hostPort='{0}:{1}'.format(source_ip_address, source_port))
 
 
-def SemiManagedConfig(sql_messages, gce_instance):
+def SemiManagedConfig(sql_messages, gce_instances):
   """Generates the external primary configuration for the instance.
 
   Args:
     sql_messages: module, The messages module that should be used.
-    gce_instance: string, the GCE instance name.
+    gce_instances: list of strings, the GCE instance name.
 
   Returns:
     sql_messages.SemiManagedConfig object.
   """
-  return sql_messages.SemiManagedConfig(gceInstance=gce_instance)
+  return sql_messages.SemiManagedConfig(gceInstances=gce_instances)
 
 
 def PrivateNetworkUrl(network):

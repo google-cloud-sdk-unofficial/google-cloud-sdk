@@ -1413,11 +1413,27 @@ class AddIamPolicyBindingCommandGenerator(BaseIamPolicyBindingCommandGenerator):
 
     method = self.arg_generator.GetSpecifiedPrimaryResource(
         self.methods, args).method
-    binding_message_type = method.GetMessageByName('Binding')
+    binding_message_type_name = 'Binding'
+    if self.spec.iam and self.spec.iam.message_type_overrides:
+      if 'binding' in self.spec.iam.message_type_overrides:
+        binding_message_type_name = (
+            self.spec.iam.message_type_overrides['binding']
+            or binding_message_type_name
+        )
+    binding_message_type = method.GetMessageByName(binding_message_type_name)
     if add_condition:
       condition = iam_util.ValidateAndExtractConditionMutexRole(args)
       policy = self._GetIamPolicy(args)
-      condition_message_type = method.GetMessageByName('Expr')
+      condition_message_type_name = 'Expr'
+      if self.spec.iam and self.spec.iam.message_type_overrides:
+        if 'condition' in self.spec.iam.message_type_overrides:
+          condition_message_type_name = (
+              self.spec.iam.message_type_overrides['condition']
+              or condition_message_type_name
+          )
+      condition_message_type = method.GetMessageByName(
+          condition_message_type_name
+      )
       iam_util.AddBindingToIamPolicyWithCondition(
           binding_message_type, condition_message_type, policy, args.member,
           args.role, condition)

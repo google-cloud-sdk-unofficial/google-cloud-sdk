@@ -1,0 +1,22 @@
+- release_tracks: [ALPHA]
+  hints:
+    read_only: true
+  help_text:
+    brief: Describe a Cloud Armor managed ruleset.
+    description: |
+      Describe a Cloud Armor managed ruleset by its canonical name.
+    examples: |
+      To describe a managed ruleset named `google-sqli-canary`:
+
+        $ {command} google-sqli-canary
+
+  request:
+    ALPHA:
+      api_version: alpha
+    collection: compute.managedRulesets
+    method: get
+
+  arguments:
+    resource:
+      help_text: The canonical name of the managed ruleset to describe.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:managed_ruleset

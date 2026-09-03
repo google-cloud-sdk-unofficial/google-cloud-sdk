@@ -594,7 +594,6 @@ class Empty(_messages.Message):
   """
 
 
-
 class ExecutePipelineRequest(_messages.Message):
   r"""The request for Firestore.ExecutePipeline.
 
@@ -2147,7 +2146,6 @@ class GoogleFirestoreAdminV1Backup(_messages.Message):
     stats: Output only. Statistics about the backup. This data only becomes
       available after the backup is fully materialized to secondary storage.
       This field will be empty till then.
-    storagePlacement: Output only. The storage placement of the backup.
   """
 
   class StateValueValuesEnum(_messages.Enum):
@@ -2172,7 +2170,6 @@ class GoogleFirestoreAdminV1Backup(_messages.Message):
   snapshotTime = _messages.StringField(5)
   state = _messages.EnumField('StateValueValuesEnum', 6)
   stats = _messages.MessageField('GoogleFirestoreAdminV1Stats', 7)
-  storagePlacement = _messages.StringField(8)
 
 
 class GoogleFirestoreAdminV1BackupSchedule(_messages.Message):
@@ -2502,7 +2499,6 @@ class GoogleFirestoreAdminV1DailyRecurrence(_messages.Message):
   """
 
 
-
 class GoogleFirestoreAdminV1Database(_messages.Message):
   r"""A Cloud Firestore Database.
 
@@ -2523,13 +2519,13 @@ class GoogleFirestoreAdminV1Database(_messages.Message):
       database.
     FirestoreDataAccessModeValueValuesEnum: Optional. The Firestore API data
       access mode to use for this database. If not set on write: - the default
-      value is DATA_ACCESS_MODE_DISABLED for Enterprise Edition. - the default
-      value is DATA_ACCESS_MODE_ENABLED for Standard Edition.
+      value is DATA_ACCESS_MODE_DISABLED for Enterprise edition. - the default
+      value is DATA_ACCESS_MODE_ENABLED for Standard edition.
     MongodbCompatibleDataAccessModeValueValuesEnum: Optional. The MongoDB
       compatible API data access mode to use for this database. If not set on
       write, the default value is DATA_ACCESS_MODE_ENABLED for Enterprise
-      Edition. The value is always DATA_ACCESS_MODE_DISABLED for Standard
-      Edition.
+      edition. The value is always DATA_ACCESS_MODE_DISABLED for Standard
+      edition.
     PointInTimeRecoveryEnablementValueValuesEnum: Whether to enable the PITR
       feature on this database.
     RealtimeUpdatesModeValueValuesEnum: Immutable. The default Realtime
@@ -2575,8 +2571,8 @@ class GoogleFirestoreAdminV1Database(_messages.Message):
       client has an up-to-date value before proceeding.
     firestoreDataAccessMode: Optional. The Firestore API data access mode to
       use for this database. If not set on write: - the default value is
-      DATA_ACCESS_MODE_DISABLED for Enterprise Edition. - the default value is
-      DATA_ACCESS_MODE_ENABLED for Standard Edition.
+      DATA_ACCESS_MODE_DISABLED for Enterprise edition. - the default value is
+      DATA_ACCESS_MODE_ENABLED for Standard edition.
     freeTier: Output only. Background: Free tier is the ability of a Firestore
       database to use a small amount of resources every day without being
       charged. Once usage exceeds the free tier limit further usage is
@@ -2586,6 +2582,7 @@ class GoogleFirestoreAdminV1Database(_messages.Message):
       will be marked as eligible for the free tier. Databases that are created
       while there is a free tier database will not be eligible for the free
       tier.
+    freeTierLimited: Optional.
     keyPrefix: Output only. The key_prefix for this database. This key_prefix
       is used, in combination with the project ID ("~") to construct the
       application ID that is returned from the Cloud Datastore APIs in Google
@@ -2596,8 +2593,8 @@ class GoogleFirestoreAdminV1Database(_messages.Message):
       are listed at https://cloud.google.com/firestore/docs/locations.
     mongodbCompatibleDataAccessMode: Optional. The MongoDB compatible API data
       access mode to use for this database. If not set on write, the default
-      value is DATA_ACCESS_MODE_ENABLED for Enterprise Edition. The value is
-      always DATA_ACCESS_MODE_DISABLED for Standard Edition.
+      value is DATA_ACCESS_MODE_ENABLED for Enterprise edition. The value is
+      always DATA_ACCESS_MODE_DISABLED for Standard edition.
     name: The resource name of the Database. Format:
       `projects/{project}/databases/{database}`
     pointInTimeRecoveryEnablement: Whether to enable the PITR feature on this
@@ -2608,10 +2605,6 @@ class GoogleFirestoreAdminV1Database(_messages.Message):
       for this database.
     sourceInfo: Output only. Information about the provenance of this
       database.
-    storagePlacement: The storage placement for the database. This field is
-      required if `location_id` is a Standard Managed Multi-Region (SMMR),
-      e.g. "us". In this case, `storage_placement` must be set to the
-      underlying Google Managed Multi-Region (GMMR), e.g. "nam5".
     tags: Optional. Input only. Immutable. Tag keys/values directly bound to
       this resource. For example: "123/environment": "production",
       "123/costCenter": "marketing"
@@ -2647,8 +2640,9 @@ class GoogleFirestoreAdminV1Database(_messages.Message):
     DISABLED = 2
 
   class ConcurrencyModeValueValuesEnum(_messages.Enum):
-    r"""The default concurrency control mode to use for this database. If
-    unspecified in a CreateDatabase request, this will default based on the
+    r"""The default concurrency control mode to use for this database.
+
+    If unspecified in a CreateDatabase request, this will default based on the
     database edition: Optimistic for Enterprise and Pessimistic for all other
     databases. While transactions can explicitly specify their own concurrency
     mode, this setting defines the default behavior when left unspecified.
@@ -2660,10 +2654,10 @@ class GoogleFirestoreAdminV1Database(_messages.Message):
       CONCURRENCY_MODE_UNSPECIFIED: Not used.
       OPTIMISTIC: Use optimistic concurrency control by default. This mode is
         available for Cloud Firestore databases. This is the default setting
-        for Cloud Firestore Enterprise Edition databases.
+        for Cloud Firestore Enterprise edition databases.
       PESSIMISTIC: Use pessimistic concurrency control by default. This mode
         is available for Cloud Firestore databases. This is the default
-        setting for Cloud Firestore Standard Edition databases.
+        setting for Cloud Firestore Standard edition databases.
       OPTIMISTIC_WITH_ENTITY_GROUPS: Use optimistic concurrency control with
         entity groups by default. This mode is enabled for some databases that
         were automatically upgraded from Cloud Datastore to Cloud Firestore
@@ -2703,9 +2697,10 @@ class GoogleFirestoreAdminV1Database(_messages.Message):
 
   class FirestoreDataAccessModeValueValuesEnum(_messages.Enum):
     r"""Optional. The Firestore API data access mode to use for this database.
+
     If not set on write: - the default value is DATA_ACCESS_MODE_DISABLED for
-    Enterprise Edition. - the default value is DATA_ACCESS_MODE_ENABLED for
-    Standard Edition.
+    Enterprise edition. - the default value is DATA_ACCESS_MODE_ENABLED for
+    Standard edition.
 
     Values:
       DATA_ACCESS_MODE_UNSPECIFIED: Not Used.
@@ -2719,10 +2714,11 @@ class GoogleFirestoreAdminV1Database(_messages.Message):
     DATA_ACCESS_MODE_DISABLED = 2
 
   class MongodbCompatibleDataAccessModeValueValuesEnum(_messages.Enum):
-    r"""Optional. The MongoDB compatible API data access mode to use for this
-    database. If not set on write, the default value is
-    DATA_ACCESS_MODE_ENABLED for Enterprise Edition. The value is always
-    DATA_ACCESS_MODE_DISABLED for Standard Edition.
+    r"""Optional.
+
+    The MongoDB compatible API data access mode to use for this database. If not
+    set on write, the default value is DATA_ACCESS_MODE_ENABLED for Enterprise
+    edition. The value is always DATA_ACCESS_MODE_DISABLED for Standard edition.
 
     Values:
       DATA_ACCESS_MODE_UNSPECIFIED: Not Used.
@@ -2820,15 +2816,21 @@ class GoogleFirestoreAdminV1Database(_messages.Message):
   etag = _messages.StringField(9)
   firestoreDataAccessMode = _messages.EnumField('FirestoreDataAccessModeValueValuesEnum', 10)
   freeTier = _messages.BooleanField(11)
-  keyPrefix = _messages.StringField(12)
-  locationId = _messages.StringField(13)
-  mongodbCompatibleDataAccessMode = _messages.EnumField('MongodbCompatibleDataAccessModeValueValuesEnum', 14)
-  name = _messages.StringField(15)
-  pointInTimeRecoveryEnablement = _messages.EnumField('PointInTimeRecoveryEnablementValueValuesEnum', 16)
-  previousId = _messages.StringField(17)
-  realtimeUpdatesMode = _messages.EnumField('RealtimeUpdatesModeValueValuesEnum', 18)
-  sourceInfo = _messages.MessageField('GoogleFirestoreAdminV1SourceInfo', 19)
-  storagePlacement = _messages.StringField(20)
+  freeTierLimited = _messages.BooleanField(12)
+  keyPrefix = _messages.StringField(13)
+  locationId = _messages.StringField(14)
+  mongodbCompatibleDataAccessMode = _messages.EnumField(
+      'MongodbCompatibleDataAccessModeValueValuesEnum', 15
+  )
+  name = _messages.StringField(16)
+  pointInTimeRecoveryEnablement = _messages.EnumField(
+      'PointInTimeRecoveryEnablementValueValuesEnum', 17
+  )
+  previousId = _messages.StringField(18)
+  realtimeUpdatesMode = _messages.EnumField(
+      'RealtimeUpdatesModeValueValuesEnum', 19
+  )
+  sourceInfo = _messages.MessageField('GoogleFirestoreAdminV1SourceInfo', 20)
   tags = _messages.MessageField('TagsValue', 21)
   type = _messages.EnumField('TypeValueValuesEnum', 22)
   uid = _messages.StringField(23)
@@ -2841,7 +2843,6 @@ class GoogleFirestoreAdminV1DatabaseScope(_messages.Message):
   database are visible to the Change Stream. One Database scope Change Stream
   is allowed per database.
   """
-
 
 
 class GoogleFirestoreAdminV1DeleteDatabaseMetadata(_messages.Message):
@@ -3075,7 +3076,6 @@ class GoogleFirestoreAdminV1FlatIndex(_messages.Message):
   """
 
 
-
 class GoogleFirestoreAdminV1GoogleDefaultEncryptionOptions(_messages.Message):
   r"""The configuration options for using Google default encryption."""
 
@@ -3158,7 +3158,12 @@ class GoogleFirestoreAdminV1ImportDocumentsRequest(_messages.Message):
 
 class GoogleFirestoreAdminV1Index(_messages.Message):
   r"""Cloud Firestore indexes enable simple and complex queries against
-  documents in a database.
+
+  documents in a database. In Standard edition databases, single-field indexes
+  are managed using the google.firestore.admin.v1.Field resource, and
+  composite indexes are managed using the google.firestore.admin.v1.Index
+  resource. In Enterprise edition databases, both single-field and composite
+  indexes are managed using the google.firestore.admin.v1.Index resource.
 
   Enums:
     ApiScopeValueValuesEnum: The API scope supported by this index.
@@ -3174,15 +3179,14 @@ class GoogleFirestoreAdminV1Index(_messages.Message):
   Fields:
     apiScope: The API scope supported by this index.
     density: Immutable. The density configuration of the index.
-    fields: The fields supported by this index. For composite indexes, this
-      requires a minimum of 2 and a maximum of 100 fields. The last field
-      entry is always for the field path `__name__`. If, on creation,
-      `__name__` was not specified as the last field, it will be added
-      automatically with the same direction as that of the last field defined.
-      If the final field in a composite index is not directional, the
-      `__name__` will be ordered ASCENDING (unless explicitly specified). For
-      single field indexes, this will always be exactly one entry with a field
-      path equal to the field path of the associated field.
+    fields: The fields supported by this index. At most 100 fields may be
+      specified. In Standard edition databases only: - At least 2 fields must
+      be specified. - The last field entry is always for the field path
+      `__name__`. If, on creation, `__name__` was not specified as the last
+      field, it will be added automatically with the same direction as that of
+      the last field defined. If the final field in the index is not
+      directional, the `__name__` will be ordered ASCENDING (unless explicitly
+      specified).
     multikey: Optional. Whether the index is multikey. By default, the index
       is not multikey. For non-multikey indexes, none of the paths in the
       index definition reach or traverse an array, except via an explicit
@@ -3190,10 +3194,11 @@ class GoogleFirestoreAdminV1Index(_messages.Message):
       definition reach or traverse an array, except via an explicit array
       index. Violations will result in errors. Note this field only applies to
       index with MONGODB_COMPATIBLE_API ApiScope.
-    name: Output only. A server defined name for this index. The form of this
-      name for composite indexes will be: `projects/{project_id}/databases/{da
-      tabase_id}/collectionGroups/{collection_id}/indexes/{composite_index_id}
-      ` For single field indexes, this field will be empty.
+    name: A server-defined name for this index. Output only. When used in the
+      google.firestore.admin.v1.Index resource, the value is of the form: `pro
+      jects/{project_id}/databases/{database_id}/collectionGroups/{collection_
+      id}/indexes/{index_id}` When used in the google.firestore.admin.v1.Field
+      resource, the value is empty.
     queryScope: Indexes with a collection query scope specified allow queries
       against a collection that is the child of a specific document, specified
       at query time, and that has the same collection ID. Indexes with a
@@ -3232,7 +3237,7 @@ class GoogleFirestoreAdminV1Index(_messages.Message):
         This value is input only.
       SPARSE_ALL: An index entry will only exist if ALL fields are present in
         the document. This is both the default and only allowed value for
-        Standard Edition databases (for both Cloud Firestore `ANY_API` and
+        Standard edition databases (for both Cloud Firestore `ANY_API` and
         Cloud Datastore `DATASTORE_MODE_API`). Take for example the following
         document: ``` { "__name__": "...", "a": 1, "b": 2, "c": 3 } ``` an
         index on `(a ASC, b ASC, c ASC, __name__ ASC)` will generate an index
@@ -3244,7 +3249,7 @@ class GoogleFirestoreAdminV1Index(_messages.Message):
         from the index are present.
       SPARSE_ANY: An index entry will exist if ANY field are present in the
         document. This is used as the definition of a sparse index for
-        Enterprise Edition databases. Take for example the following document:
+        Enterprise edition databases. Take for example the following document:
         ``` { "__name__": "...", "a": 1, "b": 2, "c": 3 } ``` an index on `(a
         ASC, d ASC)` will generate an index entry for this document since `a`
         is present, and will fill in an `unset` value for `d`. An index on `(d
@@ -3253,7 +3258,7 @@ class GoogleFirestoreAdminV1Index(_messages.Message):
         entry for all documents since Firestore guarantees that all documents
         have a `__name__` field.
       DENSE: An index entry will exist regardless of if the fields are present
-        or not. This is the default density for an Enterprise Edition
+        or not. This is the default density for an Enterprise edition
         database. The index will store `unset` values for fields that are not
         present in the document.
     """
@@ -3572,14 +3577,7 @@ class GoogleFirestoreAdminV1ListUserCredsResponse(_messages.Message):
 
 
 class GoogleFirestoreAdminV1LocationMetadata(_messages.Message):
-  r"""The metadata message for google.cloud.location.Location.metadata.
-
-  Fields:
-    availableStoragePlacements: The available storage placements for the
-      location.
-  """
-
-  availableStoragePlacements = _messages.StringField(1, repeated=True)
+  r"""The metadata message for google.cloud.location.Location.metadata."""
 
 
 class GoogleFirestoreAdminV1PitrSnapshot(_messages.Message):
@@ -3845,7 +3843,6 @@ class GoogleFirestoreAdminV1SourceEncryptionOptions(_messages.Message):
   """
 
 
-
 class GoogleFirestoreAdminV1SourceInfo(_messages.Message):
   r"""Information about the provenance of this database.
 
@@ -3957,7 +3954,46 @@ class GoogleFirestoreAdminV1TtlConfigDelta(_messages.Message):
 
 
 class GoogleFirestoreAdminV1UpdateDatabaseMetadata(_messages.Message):
-  r"""Metadata related to the update database operation."""
+  r"""Metadata related to the update database operation.
+
+  Enums:
+    StateValueValuesEnum: The state of the operation.
+
+  Fields:
+    endTime: The time this operation completed. Will be unset if operation
+      still in progress.
+    startTime: The time this operation started.
+    state: The state of the operation.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""The state of the operation.
+
+    Values:
+      OPERATION_STATE_UNSPECIFIED: Unspecified.
+      INITIALIZING: Request is being prepared for processing.
+      PROCESSING: Request is actively being processed.
+      CANCELLING: Request is in the process of being cancelled after user
+        called google.longrunning.Operations.CancelOperation on the operation.
+      FINALIZING: Request has been processed and is in its finalization stage.
+      SUCCESSFUL: Request has completed successfully.
+      FAILED: Request has finished being processed, but encountered an error.
+      CANCELLED: Request has finished being cancelled after user called
+        google.longrunning.Operations.CancelOperation.
+    """
+
+    OPERATION_STATE_UNSPECIFIED = 0
+    INITIALIZING = 1
+    PROCESSING = 2
+    CANCELLING = 3
+    FINALIZING = 4
+    SUCCESSFUL = 5
+    FAILED = 6
+    CANCELLED = 7
+
+  endTime = _messages.StringField(1)
+  startTime = _messages.StringField(2)
+  state = _messages.EnumField('StateValueValuesEnum', 3)
 
 
 class GoogleFirestoreAdminV1UserCreds(_messages.Message):
@@ -4690,7 +4726,7 @@ class ReadWrite(_messages.Message):
 
 
 class RequestOptions(_messages.Message):
-  r"""Options for a server request.
+  r"""Options for a request.
 
   Fields:
     requestTags: Optional. The request tags for the request.
@@ -5292,11 +5328,16 @@ class Value(_messages.Message):
     NullValueValueValuesEnum: A null value.
 
   Fields:
-    arrayValue: An array value. Cannot directly contain another array value,
-      though can contain a map which contains another array.
+    arrayValue: An array value. In Standard edition databases, an array value
+      cannot directly contain another array value, though it can contain a map
+      which contains another array. In Enterprise edition databases, an array
+      value can contain another array value.
     booleanValue: A boolean value.
-    bytesValue: A bytes value. Must not exceed 1 MiB - 89 bytes. Only the
-      first 1,500 bytes are considered by queries.
+    bytesValue: A bytes value. In Standard edition databases: * The value must
+      not exceed 1 MiB - 89 bytes. * Only the first 1,500 bytes are considered
+      by queries. In Enterprise edition databases, there is no limit on the
+      size of the value. However, it is still subject to document and index
+      entry size limits.
     doubleValue: A double value.
     fieldReferenceValue: Value which references a field. This is considered
       relative (vs absolute) since it only refers to a field and not a field
@@ -5314,9 +5355,12 @@ class Value(_messages.Message):
     referenceValue: A reference to a document. For example:
       `projects/{project_id}/databases/{database_id}/documents/{document_path}
       `.
-    stringValue: A string value. The string, represented as UTF-8, must not
-      exceed 1 MiB - 89 bytes. Only the first 1,500 bytes of the UTF-8
-      representation are considered by queries.
+    stringValue: A string value. In Standard edition databases: * The string,
+      represented as UTF-8, must not exceed 1 MiB - 89 bytes. * Only the first
+      1,500 bytes of the UTF-8 representation are considered by queries. In
+      Enterprise edition databases, there is no limit on the size of the
+      value. However, it is still subject to document and index entry size
+      limits.
     timestampValue: A timestamp value. Precise only to microseconds. When
       stored, any additional precision is rounded down.
     variableReferenceValue: Pointer to a variable defined elsewhere in a

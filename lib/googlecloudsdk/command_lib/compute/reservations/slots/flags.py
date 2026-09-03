@@ -15,7 +15,6 @@
 """Flags and helpers for the compute reservation slots commands."""
 
 
-
 def AddDescribeFlags(parser):
   """Adds flags to the parser for the describe command."""
   parser.add_argument(
@@ -82,3 +81,28 @@ def AddGetVersionFlags(parser):
       '--target',
       action='store_true',
       help='Whether to get the target version.')
+
+
+def AddGetHealthFlags(parser):
+  """Adds flags to the parser for the get-health command."""
+  parser.add_argument(
+      '--block-name',
+      metavar='BLOCK_NAME',
+      type=str,
+      required=True,
+      help='Name of the reservation block.',
+  )
+  parser.add_argument(
+      '--sub-block-name',
+      metavar='SUB_BLOCK_NAME',
+      type=str,
+      required=True,
+      help='Name of the reservation sub block.',
+  )
+  parser.add_argument(
+      '--slot-name',
+      metavar='SLOT_NAME',
+      type=str,
+      required=True,
+      help='Name of the reservation slot.',
+  )

@@ -659,33 +659,6 @@ class IamV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
-    def GetIamPolicy(self, request, global_params=None):
-      r"""Gets IAM policies on a WorkforcePool.
-
-      Args:
-        request: (IamLocationsWorkforcePoolsProvidersScimTenantsGetIamPolicyRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (Policy) The response message.
-      """
-      config = self.GetMethodConfig('GetIamPolicy')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}:getIamPolicy',
-        http_method='POST',
-        method_id='iam.locations.workforcePools.providers.scimTenants.getIamPolicy',
-        ordered_params=['resource'],
-        path_params=['resource'],
-        query_params=[],
-        relative_path='v1/{+resource}:getIamPolicy',
-        request_field='getIamPolicyRequest',
-        request_type_name='IamLocationsWorkforcePoolsProvidersScimTenantsGetIamPolicyRequest',
-        response_type_name='Policy',
-        supports_download=False,
-    )
-
     def List(self, request, global_params=None):
       r"""Gemini Enterprise only. Lists all non-deleted WorkforcePoolProviderScimTenants in a WorkforcePoolProvider. If `show_deleted` is set to `true`, then deleted SCIM tenants are also listed.
 
@@ -740,33 +713,6 @@ class IamV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
-    def SetIamPolicy(self, request, global_params=None):
-      r"""Sets IAM policies on a WorkforcePool.
-
-      Args:
-        request: (IamLocationsWorkforcePoolsProvidersScimTenantsSetIamPolicyRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (Policy) The response message.
-      """
-      config = self.GetMethodConfig('SetIamPolicy')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}:setIamPolicy',
-        http_method='POST',
-        method_id='iam.locations.workforcePools.providers.scimTenants.setIamPolicy',
-        ordered_params=['resource'],
-        path_params=['resource'],
-        query_params=[],
-        relative_path='v1/{+resource}:setIamPolicy',
-        request_field='setIamPolicyRequest',
-        request_type_name='IamLocationsWorkforcePoolsProvidersScimTenantsSetIamPolicyRequest',
-        response_type_name='Policy',
-        supports_download=False,
-    )
-
     def SuggestClaimMapping(self, request, global_params=None):
       r"""Suggests a SCIM Tenant claim mapping based on the parent provider attribute mapping.
 
@@ -791,33 +737,6 @@ class IamV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='IamLocationsWorkforcePoolsProvidersScimTenantsSuggestClaimMappingRequest',
         response_type_name='SuggestScimTenantClaimMappingResponse',
-        supports_download=False,
-    )
-
-    def TestIamPermissions(self, request, global_params=None):
-      r"""Returns the caller's permissions on the WorkforcePool. If the pool doesn't exist, this call returns an empty set of permissions. It doesn't return a `NOT_FOUND` error.
-
-      Args:
-        request: (IamLocationsWorkforcePoolsProvidersScimTenantsTestIamPermissionsRequest) input message
-        global_params: (StandardQueryParameters, default: None) global arguments
-      Returns:
-        (TestIamPermissionsResponse) The response message.
-      """
-      config = self.GetMethodConfig('TestIamPermissions')
-      return self._RunMethod(
-          config, request, global_params=global_params)
-
-    TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        flat_path='v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}:testIamPermissions',
-        http_method='POST',
-        method_id='iam.locations.workforcePools.providers.scimTenants.testIamPermissions',
-        ordered_params=['resource'],
-        path_params=['resource'],
-        query_params=[],
-        relative_path='v1/{+resource}:testIamPermissions',
-        request_field='testIamPermissionsRequest',
-        request_type_name='IamLocationsWorkforcePoolsProvidersScimTenantsTestIamPermissionsRequest',
-        response_type_name='TestIamPermissionsResponse',
         supports_download=False,
     )
 

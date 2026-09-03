@@ -208,6 +208,7 @@ def ParseCreateOptionsBase(
   flags.ValidateCloudRunConfigCreateArgs(
       cloud_run_config, get_default('addons')
   )
+  flags.ValidateWizSensorFlags(args, is_update=False)
 
   MaybeLogCloudNatHelpText(args, is_autopilot, location, project_id)
 
@@ -608,6 +609,13 @@ def ParseCreateOptionsBase(
           'node_architecture_taint_behavior'
       ),
       enable_scheduled_upgrades=get_default('enable_scheduled_upgrades'),
+      wiz_sensor_registry_secret_uri=get_default(
+          'wiz_sensor_registry_secret_uri'
+      ),
+      wiz_sensor_api_key_secret_uri=get_default(
+          'wiz_sensor_api_key_secret_uri'
+      ),
+      wiz_sensor_proxy_secret_uri=get_default('wiz_sensor_proxy_secret_uri'),
   )
 
 
@@ -895,10 +903,9 @@ flags_to_add = {
         'enableKernelModuleSignatureEnforcement': (
             flags.AddEnableKernelModuleSignatureEnforcementFlag
         ),
-        'enableSliceController': lambda p: flags.AddEnableSliceControllerFlag(
-            p, hidden=True
-        ),
+        'enableSliceController': flags.AddEnableSliceControllerFlag,
         'autopilotGeneralProfile': flags.AddAutopilotGeneralProfileFlag,
+        'wizSensor': lambda p: flags.AddWizSensorFlags(p, hidden=True),
     },
     BETA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -1142,14 +1149,13 @@ flags_to_add = {
         'enableLustreMultiNic': lambda p: flags.AddEnableLustreMultiRailFlag(
             p, hidden=True
         ),
-        'enableSliceController': lambda p: flags.AddEnableSliceControllerFlag(
-            p, hidden=True
-        ),
+        'enableSliceController': flags.AddEnableSliceControllerFlag,
         'autopilotGeneralProfile': flags.AddAutopilotGeneralProfileFlag,
         'linkedRunnersMode': lambda p: flags.AddLinkedRunnersModeFlag(
             p, hidden=True
         ),
         'enableScheduledUpgrades': flags.AddEnableScheduledUpgradesFlag,
+        'wizSensor': lambda p: flags.AddWizSensorFlags(p, hidden=True),
     },
     ALPHA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -1399,14 +1405,13 @@ flags_to_add = {
         'enableLustreMultiNic': lambda p: flags.AddEnableLustreMultiRailFlag(
             p, hidden=True
         ),
-        'enableSliceController': lambda p: flags.AddEnableSliceControllerFlag(
-            p, hidden=True
-        ),
+        'enableSliceController': flags.AddEnableSliceControllerFlag,
         'autopilotGeneralProfile': flags.AddAutopilotGeneralProfileFlag,
         'linkedRunnersMode': lambda p: flags.AddLinkedRunnersModeFlag(
             p, hidden=True
         ),
         'enableScheduledUpgrades': flags.AddEnableScheduledUpgradesFlag,
+        'wizSensor': lambda p: flags.AddWizSensorFlags(p, hidden=True),
     },
 }
 # LINT.ThenChange(create_auto.py:auto_flags)

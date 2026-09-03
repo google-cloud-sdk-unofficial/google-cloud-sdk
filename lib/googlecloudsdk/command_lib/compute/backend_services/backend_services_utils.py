@@ -76,9 +76,15 @@ def GetIAP(iap_arg, messages, existing_iap_settings=None):
         r = r[1:]
       return r
 
-    if subarg in ('enabled', 'disabled', 'oauth2-client-id',
-                  'oauth2-client-secret',
-                  'oauth2-client-info-developer-email-address'):
+    if subarg in (
+        'enabled',
+        'disabled',
+        'oauth2-client-id',
+        'oauth2-client-secret',
+        'oauth2-client-info-client-name',
+        'oauth2-client-info-developer-email-address',
+        'oauth2-client-info-application-name',
+    ):
       if subarg in iap_arg_parsed:
         raise exceptions.InvalidArgumentException(
             '--iap', 'Sub-argument %s specified multiple times' % _Repr(subarg))
@@ -116,10 +122,34 @@ def GetIAP(iap_arg, messages, existing_iap_settings=None):
           '--iap', 'Both [oauth2-client-id] and [oauth2-client-secret] must be '
           'specified together')
 
+  def _EnsureOAuth2ClientInfo(field_name):
+    if not hasattr(messages.BackendServiceIAP, 'oauth2ClientInfo'):
+      raise exceptions.InvalidArgumentException(
+          '--iap',
+          '[%s] is only available in Alpha track.' % field_name,
+      )
+    if iap_settings.oauth2ClientInfo is None:
+      iap_settings.oauth2ClientInfo = (
+          messages.BackendServiceIAPOAuth2ClientInfo()
+      )
+
+  if 'oauth2-client-info-client-name' in iap_arg_parsed:
+    _EnsureOAuth2ClientInfo('oauth2-client-info-client-name')
+    iap_settings.oauth2ClientInfo.clientName = iap_arg_parsed[
+        'oauth2-client-info-client-name'
+    ]
+
   if 'oauth2-client-info-developer-email-address' in iap_arg_parsed:
-    iap_settings.oauth2ClientInfo = messages.BackendServiceIAPOAuth2ClientInfo()
-    iap_settings.oauth2ClientInfo.developerEmailAddress = iap_arg_parsed.get(
-        'oauth2-client-info-developer-email-address')
+    _EnsureOAuth2ClientInfo('oauth2-client-info-developer-email-address')
+    iap_settings.oauth2ClientInfo.developerEmailAddress = iap_arg_parsed[
+        'oauth2-client-info-developer-email-address'
+    ]
+
+  if 'oauth2-client-info-application-name' in iap_arg_parsed:
+    _EnsureOAuth2ClientInfo('oauth2-client-info-application-name')
+    iap_settings.oauth2ClientInfo.applicationName = iap_arg_parsed[
+        'oauth2-client-info-application-name'
+    ]
 
   return iap_settings
 

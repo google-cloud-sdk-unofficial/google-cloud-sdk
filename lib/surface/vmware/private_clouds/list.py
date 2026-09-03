@@ -40,6 +40,7 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List Google Cloud VMware Engine private clouds."""
 
@@ -57,7 +58,10 @@ class List(base.ListCommand):
         'managementCluster.stretchedClusterConfig.preferredLocation.segment(-1):'
         'label=PREFERRED_ZONE,'
         'managementCluster.stretchedClusterConfig.secondaryLocation.segment(-1):'
-        'label=SECONDARY_ZONE)'
+        'label=SECONDARY_ZONE,'
+        'managementCluster.placementGroup:label=MANAGEMENT_PLACEMENT_GROUP:optional,'
+        'managementCluster.stretchedClusterConfig.preferredLocationPlacementGroup:label=PREFERRED_PLACEMENT_GROUP:optional,'
+        'managementCluster.stretchedClusterConfig.secondaryLocationPlacementGroup:label=SECONDARY_PLACEMENT_GROUP:optional)'
     )
 
   def Run(self, args):

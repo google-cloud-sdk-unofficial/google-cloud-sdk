@@ -70,3 +70,66 @@ def CreateChangeStream(
           googleFirestoreAdminV1ChangeStream=change_stream,
       )
   )
+
+
+def DeleteChangeStream(project, database, change_stream_id, etag=None):
+  """Performs a Firestore Admin v1 ChangeStream Deletion.
+
+  Args:
+    project: the project id to delete, a string.
+    database: the database id to delete, a string.
+    change_stream_id: the change stream id to delete, a string.
+    etag: the current etag of the change stream, a string, or None.
+
+  Returns:
+    Empty.
+  """
+  messages = api_utils.GetMessages()
+  return _GetChangeStreamService().Delete(
+      messages.FirestoreProjectsDatabasesChangeStreamsDeleteRequest(
+          name='projects/{}/databases/{}/changeStreams/{}'.format(
+              project, database, change_stream_id
+          ),
+          etag=etag,
+      )
+  )
+
+
+def GetChangeStream(project, database, change_stream_id):
+  """Performs a Firestore Admin v1 ChangeStream Get.
+
+  Args:
+    project: the project id to get, a string.
+    database: the database id to get, a string.
+    change_stream_id: the change stream id to get, a string.
+
+  Returns:
+    a ChangeStream resource.
+  """
+  messages = api_utils.GetMessages()
+  return _GetChangeStreamService().Get(
+      messages.FirestoreProjectsDatabasesChangeStreamsGetRequest(
+          name='projects/{}/databases/{}/changeStreams/{}'.format(
+              project, database, change_stream_id
+          )
+      )
+  )
+
+
+def ListChangeStreams(project, database):
+  """Performs a Firestore Admin v1 ChangeStreams List.
+
+  Args:
+    project: the project id to list, a string.
+    database: the database id to list, a string.
+
+  Returns:
+    a List of ChangeStream resources.
+  """
+  messages = api_utils.GetMessages()
+  response = _GetChangeStreamService().List(
+      messages.FirestoreProjectsDatabasesChangeStreamsListRequest(
+          parent='projects/{}/databases/{}'.format(project, database)
+      )
+  )
+  return response.changeStreams if response.changeStreams else []

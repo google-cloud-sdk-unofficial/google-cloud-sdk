@@ -1165,3 +1165,23 @@ def AddUseProjectServiceAccountFlag(parser):
           'Service Account. This is only supported for same-project restores.'
       ),
   )
+
+
+def GetAutoProtectionPolicyResourceSpec():
+  return concepts.ResourceSpec(
+      'backupdr.projects.locations.autoProtectionPolicies',
+      resource_name='AutoProtectionPolicy',
+      locationsId=LocationAttributeConfig(),
+      projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
+      disable_auto_completers=False,
+  )
+
+
+def AddAutoProtectionPolicyResourceArg(parser, help_text):
+  """Adds an argument for AutoProtection Policy to parser."""
+  concept_parsers.ConceptParser.ForResource(
+      'auto_protection_policy',
+      GetAutoProtectionPolicyResourceSpec(),
+      help_text,
+      required=True,
+  ).AddToParser(parser)

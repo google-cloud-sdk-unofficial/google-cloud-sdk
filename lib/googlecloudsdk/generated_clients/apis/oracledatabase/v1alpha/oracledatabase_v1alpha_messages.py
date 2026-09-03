@@ -1399,6 +1399,12 @@ class CloudVmCluster(_messages.Message):
       of the CloudExadataInfrastructure. Example: us-east4-b-r2.
     identityConnector: Output only. The identity connector details which will
       allow OCI to securely access the resources in the customer project.
+    identityConnectorDisabled: Optional. Input only. If set to true, disables
+      the automatic provisioning of the Workload Identity Connector during
+      creation. If set to false or omitted, the Workload Identity Connector
+      will be automatically provisioned by default. Note: Provisioning the
+      Workload Identity Connector is a prerequisite for enabling Google Cloud
+      CMEK.
     labels: Optional. Labels or tags associated with the VM Cluster.
     name: Identifier. The name of the VM Cluster resource with the format:
       projects/{project}/locations/{region}/cloudVmClusters/{cloud_vm_cluster}
@@ -1451,13 +1457,14 @@ class CloudVmCluster(_messages.Message):
   exascaleDbStorageVault = _messages.StringField(7)
   gcpOracleZone = _messages.StringField(8)
   identityConnector = _messages.MessageField('IdentityConnector', 9)
-  labels = _messages.MessageField('LabelsValue', 10)
-  name = _messages.StringField(11)
-  network = _messages.StringField(12)
-  odbDnsZone = _messages.StringField(13)
-  odbNetwork = _messages.StringField(14)
-  odbSubnet = _messages.StringField(15)
-  properties = _messages.MessageField('CloudVmClusterProperties', 16)
+  identityConnectorDisabled = _messages.BooleanField(10)
+  labels = _messages.MessageField('LabelsValue', 11)
+  name = _messages.StringField(12)
+  network = _messages.StringField(13)
+  odbDnsZone = _messages.StringField(14)
+  odbNetwork = _messages.StringField(15)
+  odbSubnet = _messages.StringField(16)
+  properties = _messages.MessageField('CloudVmClusterProperties', 17)
 
 
 class CloudVmClusterProperties(_messages.Message):
@@ -2803,16 +2810,32 @@ class DbSystemShape(_messages.Message):
   https://docs.oracle.com/en-
   us/iaas/api/#/en/database/20160918/DbSystemShapeSummary/
 
+  Enums:
+    ComputeModelValueValuesEnum: Output only. The compute model of the
+      Database System shape.
+
   Fields:
     availableCoreCount: Optional. Available core count.
     availableCoreCountPerNode: Optional. Number of cores per node.
     availableDataStorageTb: Optional. Storage per storage server in terabytes.
+    availableDataStorageTbPerServer: Output only. The maximum data storage
+      available per storage server for this shape in terabytes.
+    availableDbNodeStorageGb: Output only. The maximum Db Node storage that
+      can be enabled for this shape in gigabytes.
+    availableDbNodeStorageGbPerNode: Output only. The maximum Db Node storage
+      available per database node for this shape in gigabytes.
+    availableMemoryGb: Output only. The maximum memory that can be enabled for
+      this shape in gigabytes.
     availableMemoryPerNodeGb: Optional. Memory per database server node in
       gigabytes.
+    computeModel: Output only. The compute model of the Database System shape.
     coreCountIncrement: Optional. Core count increment.
+    displayName: Output only. The display name of the shape used for the DB
+      system.
     maxNodeCount: Optional. Maximum number of database servers.
     maxStorageCount: Optional. Maximum number of storage servers.
     minCoreCountPerNode: Optional. Minimum core count per node.
+    minDataStorageTb: Output only. Minimum data storage in terabytes.
     minDbNodeStoragePerNodeGb: Optional. Minimum node storage per database
       server in gigabytes.
     minMemoryPerNodeGb: Optional. Minimum memory per node in gigabytes.
@@ -2822,24 +2845,58 @@ class DbSystemShape(_messages.Message):
     name: Identifier. The name of the Database System Shape resource with the
       format:
       projects/{project}/locations/{region}/dbSystemShapes/{db_system_shape}
+    runtimeMinimumCoreCount: Output only. The runtime minimum number of CPU
+      cores that can be enabled on the DB system for this shape.
+    serverTypesSupported: Output only. If true, the shape supports
+      configurable DB and Storage Server types.
     shape: Optional. shape
+    shapeAttributes: Output only. The shape attributes of the DB system shape.
+    shapeFamily: Output only. The family of the shape used for the DB system.
+    shapeType: Output only. The shape type for the virtual machine DB system.
   """
+
+  class ComputeModelValueValuesEnum(_messages.Enum):
+    r"""Output only. The compute model of the Database System shape.
+
+    Values:
+      COMPUTE_MODEL_UNSPECIFIED: Unspecified compute model.
+      COMPUTE_MODEL_ECPU: Abstract measure of compute resources. ECPUs are
+        based on the number of cores elastically allocated from a pool of
+        compute and storage servers.
+      COMPUTE_MODEL_OCPU: Physical measure of compute resources. OCPUs are
+        based on the physical core of a processor.
+    """
+    COMPUTE_MODEL_UNSPECIFIED = 0
+    COMPUTE_MODEL_ECPU = 1
+    COMPUTE_MODEL_OCPU = 2
 
   availableCoreCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   availableCoreCountPerNode = _messages.IntegerField(2, variant=_messages.Variant.INT32)
   availableDataStorageTb = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  availableMemoryPerNodeGb = _messages.IntegerField(4, variant=_messages.Variant.INT32)
-  coreCountIncrement = _messages.IntegerField(5, variant=_messages.Variant.INT32)
-  maxNodeCount = _messages.IntegerField(6, variant=_messages.Variant.INT32)
-  maxStorageCount = _messages.IntegerField(7, variant=_messages.Variant.INT32)
-  minCoreCountPerNode = _messages.IntegerField(8, variant=_messages.Variant.INT32)
-  minDbNodeStoragePerNodeGb = _messages.IntegerField(9, variant=_messages.Variant.INT32)
-  minMemoryPerNodeGb = _messages.IntegerField(10, variant=_messages.Variant.INT32)
-  minNodeCount = _messages.IntegerField(11, variant=_messages.Variant.INT32)
-  minStorageCount = _messages.IntegerField(12, variant=_messages.Variant.INT32)
-  minimumCoreCount = _messages.IntegerField(13, variant=_messages.Variant.INT32)
-  name = _messages.StringField(14)
-  shape = _messages.StringField(15)
+  availableDataStorageTbPerServer = _messages.FloatField(4)
+  availableDbNodeStorageGb = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  availableDbNodeStorageGbPerNode = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  availableMemoryGb = _messages.IntegerField(7, variant=_messages.Variant.INT32)
+  availableMemoryPerNodeGb = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+  computeModel = _messages.EnumField('ComputeModelValueValuesEnum', 9)
+  coreCountIncrement = _messages.IntegerField(10, variant=_messages.Variant.INT32)
+  displayName = _messages.StringField(11)
+  maxNodeCount = _messages.IntegerField(12, variant=_messages.Variant.INT32)
+  maxStorageCount = _messages.IntegerField(13, variant=_messages.Variant.INT32)
+  minCoreCountPerNode = _messages.IntegerField(14, variant=_messages.Variant.INT32)
+  minDataStorageTb = _messages.IntegerField(15, variant=_messages.Variant.INT32)
+  minDbNodeStoragePerNodeGb = _messages.IntegerField(16, variant=_messages.Variant.INT32)
+  minMemoryPerNodeGb = _messages.IntegerField(17, variant=_messages.Variant.INT32)
+  minNodeCount = _messages.IntegerField(18, variant=_messages.Variant.INT32)
+  minStorageCount = _messages.IntegerField(19, variant=_messages.Variant.INT32)
+  minimumCoreCount = _messages.IntegerField(20, variant=_messages.Variant.INT32)
+  name = _messages.StringField(21)
+  runtimeMinimumCoreCount = _messages.IntegerField(22, variant=_messages.Variant.INT32)
+  serverTypesSupported = _messages.BooleanField(23)
+  shape = _messages.StringField(24)
+  shapeAttributes = _messages.StringField(25, repeated=True)
+  shapeFamily = _messages.StringField(26)
+  shapeType = _messages.StringField(27)
 
 
 class DbVersion(_messages.Message):
@@ -2951,11 +3008,35 @@ class DeploymentDiagnosticData(_messages.Message):
   object = _messages.StringField(6)
 
 
+class DisableCloudVmClusterIdentityConnectorRequest(_messages.Message):
+  r"""The request for `CloudVmCluster.DisableCloudVmClusterIdentityConnector`.
+  """
+
+
+
+class DisableExadbVmClusterIdentityConnectorRequest(_messages.Message):
+  r"""The request for `ExadbVmCluster.DisableExadbVmClusterIdentityConnector`.
+  """
+
+
+
 class Empty(_messages.Message):
   r"""A generic empty message that you can re-use to avoid defining duplicated
   empty messages in your APIs. A typical example is to use it as the request
   or the response type of an API method. For instance: service Foo { rpc
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
+  """
+
+
+
+class EnableCloudVmClusterIdentityConnectorRequest(_messages.Message):
+  r"""The request for `CloudVmCluster.EnableCloudVmClusterIdentityConnector`.
+  """
+
+
+
+class EnableExadbVmClusterIdentityConnectorRequest(_messages.Message):
+  r"""The request for `ExadbVmCluster.EnableExadbVmClusterIdentityConnector`.
   """
 
 
@@ -3071,6 +3152,12 @@ class ExadbVmCluster(_messages.Message):
       system will pick the zone assigned to the ExascaleDbStorageVault.
     identityConnector: Output only. The identity connector details which will
       allow OCI to securely access the resources in the customer project.
+    identityConnectorDisabled: Optional. Input only. If set to true, disables
+      the automatic provisioning of the Workload Identity Connector during
+      creation. If set to false or omitted, the Workload Identity Connector
+      will be automatically provisioned by default. Note: Provisioning the
+      Workload Identity Connector is a prerequisite for enabling Google Cloud
+      CMEK.
     labels: Optional. The labels or tags associated with the ExadbVmCluster.
     name: Identifier. The name of the ExadbVmCluster resource in the following
       format:
@@ -3116,11 +3203,12 @@ class ExadbVmCluster(_messages.Message):
   entitlementId = _messages.StringField(4)
   gcpOracleZone = _messages.StringField(5)
   identityConnector = _messages.MessageField('IdentityConnector', 6)
-  labels = _messages.MessageField('LabelsValue', 7)
-  name = _messages.StringField(8)
-  odbNetwork = _messages.StringField(9)
-  odbSubnet = _messages.StringField(10)
-  properties = _messages.MessageField('ExadbVmClusterProperties', 11)
+  identityConnectorDisabled = _messages.BooleanField(7)
+  labels = _messages.MessageField('LabelsValue', 8)
+  name = _messages.StringField(9)
+  odbNetwork = _messages.StringField(10)
+  odbSubnet = _messages.StringField(11)
+  properties = _messages.MessageField('ExadbVmClusterProperties', 12)
 
 
 class ExadbVmClusterProperties(_messages.Message):
@@ -6307,10 +6395,20 @@ class IdentityConnector(_messages.Message):
   Fields:
     connectionState: Output only. The connection state of the identity
       connector.
+    identityConnectorId: Output only. The unique partner identifier for the
+      Identity Connector, used to establish secure cross-cloud access between
+      Google Cloud and OCI. This corresponds directly to the ID of the
+      OracleDbGcpIdentityConnector resource in Oracle Cloud Infrastructure
+      (OCI).
     serviceAgentEmail: Output only. A google managed service account on which
       customers can grant roles to access resources in the customer project.
       Example: `p176944527254-55-75119d87fd8f@gcp-sa-
       oci.iam.gserviceaccount.com`
+    workloadIdentityPool: Output only. The resource name of the Workload
+      Identity Pool configured for identity federation with OCI. This exact
+      pool name can be used to configure VPC Service Controls (VPC-SC) egress
+      rules. Format: `projects/{project}/locations/global/workloadIdentityPool
+      s/{workload_identity_pool}`
   """
 
   class ConnectionStateValueValuesEnum(_messages.Enum):
@@ -6331,7 +6429,9 @@ class IdentityConnector(_messages.Message):
     UNKNOWN = 4
 
   connectionState = _messages.EnumField('ConnectionStateValueValuesEnum', 1)
-  serviceAgentEmail = _messages.StringField(2)
+  identityConnectorId = _messages.StringField(2)
+  serviceAgentEmail = _messages.StringField(3)
+  workloadIdentityPool = _messages.StringField(4)
 
 
 class IngressIp(_messages.Message):
@@ -6365,6 +6465,17 @@ class KafkaBootstrapServer(_messages.Message):
   host = _messages.StringField(1)
   port = _messages.IntegerField(2, variant=_messages.Variant.INT32)
   privateIpAddress = _messages.StringField(3)
+
+
+class KnowledgeCatalogConfig(_messages.Message):
+  r"""Knowledge Catalog Configuration for the ServiceIntegration.
+
+  Fields:
+    enabled: Required. Whether periodic knowledge catalog extraction is
+      enabled.
+  """
+
+  enabled = _messages.BooleanField(1)
 
 
 class ListAutonomousDatabaseBackupsResponse(_messages.Message):
@@ -6862,6 +6973,22 @@ class ListPluggableDatabasesResponse(_messages.Message):
   pluggableDatabases = _messages.MessageField('PluggableDatabase', 2, repeated=True)
 
 
+class ListServiceIntegrationsResponse(_messages.Message):
+  r"""The response for `ServiceIntegration.List`.
+
+  Fields:
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    serviceIntegrations: The list of ServiceIntegrations.
+    unreachable: Unreachable locations when listing resources across all
+      locations using wildcard location '-'.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  serviceIntegrations = _messages.MessageField('ServiceIntegration', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListSystemVersionsResponse(_messages.Message):
   r"""The response for `SystemVersion.List`.
 
@@ -7239,6 +7366,12 @@ class OdbNetwork(_messages.Message):
       format: projects/{project}/locations/{region}/odbNetworks/{odb_network}
     network: Required. The name of the VPC network in the following format:
       projects/{project}/global/networks/{network}
+    serviceConnectionConfig: Optional. Configuration to enable the service
+      (Oracledatabase@Google Cloud) to establish connectivity to the database.
+      This should be specified if you intend to associate this OdbNetwork with
+      a DatabaseConnection resource to `ExecuteSQL` on the database, or to
+      create a ServiceIntegration with the Database. Please don't specify it
+      otherwise to avoid complicating the network setup.
     state: Output only. State of the ODB Network.
   """
 
@@ -7288,7 +7421,8 @@ class OdbNetwork(_messages.Message):
   labels = _messages.MessageField('LabelsValue', 4)
   name = _messages.StringField(5)
   network = _messages.StringField(6)
-  state = _messages.EnumField('StateValueValuesEnum', 7)
+  serviceConnectionConfig = _messages.MessageField('ServiceConnectionConfig', 7)
+  state = _messages.EnumField('StateValueValuesEnum', 8)
 
 
 class OdbSubnet(_messages.Message):
@@ -8118,6 +8252,41 @@ class OracledatabaseProjectsLocationsCloudVmClustersDeleteRequest(_messages.Mess
   requestId = _messages.StringField(3)
 
 
+class OracledatabaseProjectsLocationsCloudVmClustersDisableIdentityConnectorRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsCloudVmClustersDisableIdentityConnector
+  Request object.
+
+  Fields:
+    disableCloudVmClusterIdentityConnectorRequest: A
+      DisableCloudVmClusterIdentityConnectorRequest resource to be passed as
+      the request body.
+    name: Required. The name of the Cloud VM Cluster in the following format:
+      projects/{project}/locations/{location}/cloudVmClusters/{cloud_vm_cluste
+      r}
+  """
+
+  disableCloudVmClusterIdentityConnectorRequest = _messages.MessageField('DisableCloudVmClusterIdentityConnectorRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class OracledatabaseProjectsLocationsCloudVmClustersEnableIdentityConnectorRequest(_messages.Message):
+  r"""A
+  OracledatabaseProjectsLocationsCloudVmClustersEnableIdentityConnectorRequest
+  object.
+
+  Fields:
+    enableCloudVmClusterIdentityConnectorRequest: A
+      EnableCloudVmClusterIdentityConnectorRequest resource to be passed as
+      the request body.
+    name: Required. The name of the Cloud VM Cluster in the following format:
+      projects/{project}/locations/{location}/cloudVmClusters/{cloud_vm_cluste
+      r}
+  """
+
+  enableCloudVmClusterIdentityConnectorRequest = _messages.MessageField('EnableCloudVmClusterIdentityConnectorRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
 class OracledatabaseProjectsLocationsCloudVmClustersGetRequest(_messages.Message):
   r"""A OracledatabaseProjectsLocationsCloudVmClustersGetRequest object.
 
@@ -8530,6 +8699,32 @@ class OracledatabaseProjectsLocationsDbSystemsListRequest(_messages.Message):
   parent = _messages.StringField(5, required=True)
 
 
+class OracledatabaseProjectsLocationsDbSystemsPatchRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsDbSystemsPatchRequest object.
+
+  Fields:
+    dbSystem: A DbSystem resource to be passed as the request body.
+    name: Identifier. The name of the DbSystem resource in the following
+      format: projects/{project}/locations/{region}/dbSystems/{db_system}
+    requestId: Optional. An optional ID to identify the request. This value is
+      used to identify duplicate requests. If you make a request with the same
+      request ID and the original request is still in progress or completed,
+      the server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. A mask specifying which fields in the DbSystem
+      should be updated. A field specified in the mask is updated. If a mask
+      isn't provided, the service treats this as an implied field mask
+      equivalent to all fields that are populated (have a non-empty value).
+  """
+
+  dbSystem = _messages.MessageField('DbSystem', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
+
+
 class OracledatabaseProjectsLocationsDbVersionsGetRequest(_messages.Message):
   r"""A OracledatabaseProjectsLocationsDbVersionsGetRequest object.
 
@@ -8677,6 +8872,41 @@ class OracledatabaseProjectsLocationsExadbVmClustersDeleteRequest(_messages.Mess
 
   name = _messages.StringField(1, required=True)
   requestId = _messages.StringField(2)
+
+
+class OracledatabaseProjectsLocationsExadbVmClustersDisableIdentityConnectorRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsExadbVmClustersDisableIdentityConnector
+  Request object.
+
+  Fields:
+    disableExadbVmClusterIdentityConnectorRequest: A
+      DisableExadbVmClusterIdentityConnectorRequest resource to be passed as
+      the request body.
+    name: Required. The name of the Exadb VM Cluster in the following format:
+      projects/{project}/locations/{location}/exadbVmClusters/{exadb_vm_cluste
+      r}
+  """
+
+  disableExadbVmClusterIdentityConnectorRequest = _messages.MessageField('DisableExadbVmClusterIdentityConnectorRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class OracledatabaseProjectsLocationsExadbVmClustersEnableIdentityConnectorRequest(_messages.Message):
+  r"""A
+  OracledatabaseProjectsLocationsExadbVmClustersEnableIdentityConnectorRequest
+  object.
+
+  Fields:
+    enableExadbVmClusterIdentityConnectorRequest: A
+      EnableExadbVmClusterIdentityConnectorRequest resource to be passed as
+      the request body.
+    name: Required. The name of the Exadb VM Cluster in the following format:
+      projects/{project}/locations/{location}/exadbVmClusters/{exadb_vm_cluste
+      r}
+  """
+
+  enableExadbVmClusterIdentityConnectorRequest = _messages.MessageField('EnableExadbVmClusterIdentityConnectorRequest', 1)
+  name = _messages.StringField(2, required=True)
 
 
 class OracledatabaseProjectsLocationsExadbVmClustersGetRequest(_messages.Message):
@@ -8849,6 +9079,36 @@ class OracledatabaseProjectsLocationsExascaleDbStorageVaultsListRequest(_message
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   parent = _messages.StringField(5, required=True)
+
+
+class OracledatabaseProjectsLocationsExascaleDbStorageVaultsPatchRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsExascaleDbStorageVaultsPatchRequest
+  object.
+
+  Fields:
+    exascaleDbStorageVault: A ExascaleDbStorageVault resource to be passed as
+      the request body.
+    name: Identifier. The resource name of the ExascaleDbStorageVault. Format:
+      projects/{project}/locations/{location}/exascaleDbStorageVaults/{exascal
+      e_db_storage_vault}
+    requestId: Optional. An optional ID to identify the request. This value is
+      used to identify duplicate requests. If you make a request with the same
+      request ID and the original request is still in progress or completed,
+      the server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. A mask specifying which fields in the
+      ExascaleDbStorageVault should be updated. A field specified in the mask
+      is updated. If a mask isn't provided, the service treats this as an
+      implied field mask equivalent to all fields that are populated (have a
+      non-empty value).
+  """
+
+  exascaleDbStorageVault = _messages.MessageField('ExascaleDbStorageVault', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
 
 
 class OracledatabaseProjectsLocationsFlexComponentsGetRequest(_messages.Message):
@@ -9070,6 +9330,37 @@ class OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsListRequest(
   parent = _messages.StringField(5, required=True)
 
 
+class OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsPatchRequest(_messages.Message):
+  r"""A
+  OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsPatchRequest
+  object.
+
+  Fields:
+    goldengateConnectionAssignment: A GoldengateConnectionAssignment resource
+      to be passed as the request body.
+    name: Identifier. The name of the GoldengateConnectionAssignment resource
+      in the following format: projects/{project}/locations/{region}/goldengat
+      eConnectionAssignments/{goldengate_connection_assignment}
+    requestId: Optional. An optional ID to identify the request. This value is
+      used to identify duplicate requests. If you make a request with the same
+      request ID and the original request is still in progress or completed,
+      the server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. A mask specifying which fields in the
+      GoldengateConnectionAssignment should be updated. A field specified in
+      the mask is updated. If a mask isn't provided, the service treats this
+      as an implied field mask equivalent to all fields that are populated
+      (have a non-empty value).
+  """
+
+  goldengateConnectionAssignment = _messages.MessageField('GoldengateConnectionAssignment', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
+
+
 class OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsTestRequest(_messages.Message):
   r"""A
   OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsTestRequest
@@ -9209,6 +9500,36 @@ class OracledatabaseProjectsLocationsGoldengateConnectionsListRequest(_messages.
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   parent = _messages.StringField(5, required=True)
+
+
+class OracledatabaseProjectsLocationsGoldengateConnectionsPatchRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsGoldengateConnectionsPatchRequest
+  object.
+
+  Fields:
+    goldengateConnection: A GoldengateConnection resource to be passed as the
+      request body.
+    name: Identifier. The name of the GoldengateConnection resource in the
+      following format: projects/{project}/locations/{region}/goldengateConnec
+      tions/{goldengate_connection}
+    requestId: Optional. An optional ID to identify the request. This value is
+      used to identify duplicate requests. If you make a request with the same
+      request ID and the original request is still in progress or completed,
+      the server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. A mask specifying which fields in the
+      GoldengateConnection should be updated. A field specified in the mask is
+      updated. If a mask isn't provided, the service treats this as an implied
+      field mask equivalent to all fields that are populated (have a non-empty
+      value).
+  """
+
+  goldengateConnection = _messages.MessageField('GoldengateConnection', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
 
 
 class OracledatabaseProjectsLocationsGoldengateDeploymentEnvironmentsGetRequest(_messages.Message):
@@ -9410,6 +9731,36 @@ class OracledatabaseProjectsLocationsGoldengateDeploymentsListRequest(_messages.
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   parent = _messages.StringField(5, required=True)
+
+
+class OracledatabaseProjectsLocationsGoldengateDeploymentsPatchRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsGoldengateDeploymentsPatchRequest
+  object.
+
+  Fields:
+    goldengateDeployment: A GoldengateDeployment resource to be passed as the
+      request body.
+    name: Identifier. The name of the GoldengateDeployment resource in the
+      following format: projects/{project}/locations/{region}/goldengateDeploy
+      ments/{goldengate_deployment}
+    requestId: Optional. An optional ID to identify the request. This value is
+      used to identify duplicate requests. If you make a request with the same
+      request ID and the original request is still in progress or completed,
+      the server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. A mask specifying which fields in the
+      GoldengateDeployment should be updated. A field specified in the mask is
+      updated. If a mask isn't provided, the service treats this as an implied
+      field mask equivalent to all fields that are populated (have a non-empty
+      value).
+  """
+
+  goldengateDeployment = _messages.MessageField('GoldengateDeployment', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
 
 
 class OracledatabaseProjectsLocationsGoldengateDeploymentsStartRequest(_messages.Message):
@@ -9716,6 +10067,60 @@ class OracledatabaseProjectsLocationsOdbNetworksOdbSubnetsListRequest(_messages.
   parent = _messages.StringField(5, required=True)
 
 
+class OracledatabaseProjectsLocationsOdbNetworksOdbSubnetsPatchRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsOdbNetworksOdbSubnetsPatchRequest
+  object.
+
+  Fields:
+    name: Identifier. The name of the OdbSubnet resource in the following
+      format: projects/{project}/locations/{location}/odbNetworks/{odb_network
+      }/odbSubnets/{odb_subnet}
+    odbSubnet: A OdbSubnet resource to be passed as the request body.
+    requestId: Optional. An optional ID to identify the request. This value is
+      used to identify duplicate requests. If you make a request with the same
+      request ID and the original request is still in progress or completed,
+      the server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. A mask specifying which fields in the OdbSubnet
+      should be updated. A field specified in the mask is updated. If a mask
+      isn't provided, the service treats this as an implied field mask
+      equivalent to all fields that are populated (have a non-empty value).
+  """
+
+  name = _messages.StringField(1, required=True)
+  odbSubnet = _messages.MessageField('OdbSubnet', 2)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
+
+
+class OracledatabaseProjectsLocationsOdbNetworksPatchRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsOdbNetworksPatchRequest object.
+
+  Fields:
+    name: Identifier. The name of the OdbNetwork resource in the following
+      format: projects/{project}/locations/{region}/odbNetworks/{odb_network}
+    odbNetwork: A OdbNetwork resource to be passed as the request body.
+    requestId: Optional. An optional ID to identify the request. This value is
+      used to identify duplicate requests. If you make a request with the same
+      request ID and the original request is still in progress or completed,
+      the server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. A mask specifying which fields in the OdbNetwork
+      should be updated. A field specified in the mask is updated. If a mask
+      isn't provided, the service treats this as an implied field mask
+      equivalent to all fields that are populated (have a non-empty value).
+  """
+
+  name = _messages.StringField(1, required=True)
+  odbNetwork = _messages.MessageField('OdbNetwork', 2)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
+
+
 class OracledatabaseProjectsLocationsOperationsCancelRequest(_messages.Message):
   r"""A OracledatabaseProjectsLocationsOperationsCancelRequest object.
 
@@ -9808,6 +10213,83 @@ class OracledatabaseProjectsLocationsPluggableDatabasesListRequest(_messages.Mes
   pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(3)
   parent = _messages.StringField(4, required=True)
+
+
+class OracledatabaseProjectsLocationsServiceIntegrationsCreateRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsServiceIntegrationsCreateRequest
+  object.
+
+  Fields:
+    parent: Required. The parent value for the ServiceIntegration in the
+      following format: projects/{project}/locations/{location}.
+    requestId: Optional. An optional ID to identify the request. This value is
+      used to identify duplicate requests. If you make a request with the same
+      request ID and the original request is still in progress or completed,
+      the server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments.
+    serviceIntegration: A ServiceIntegration resource to be passed as the
+      request body.
+    serviceIntegrationId: Required. The ID of the ServiceIntegration to
+      create. This value is restricted to (^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$)
+      and must be a maximum of 63 characters in length. The value must start
+      with a letter and end with a letter or a number.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  serviceIntegration = _messages.MessageField('ServiceIntegration', 3)
+  serviceIntegrationId = _messages.StringField(4)
+
+
+class OracledatabaseProjectsLocationsServiceIntegrationsDeleteRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsServiceIntegrationsDeleteRequest
+  object.
+
+  Fields:
+    name: Required. The name of the resource in the following format: projects
+      /{project}/locations/{location}/serviceIntegrations/{service_integration
+      }.
+    requestId: Optional. An optional ID to identify the request. This value is
+      used to identify duplicate requests. If you make a request with the same
+      request ID and the original request is still in progress or completed,
+      the server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments.
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class OracledatabaseProjectsLocationsServiceIntegrationsGetRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsServiceIntegrationsGetRequest object.
+
+  Fields:
+    name: Required. The name of the ServiceIntegration in the following
+      format: projects/{project}/locations/{location}/serviceIntegrations/{ser
+      vice_integration}.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class OracledatabaseProjectsLocationsServiceIntegrationsListRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsServiceIntegrationsListRequest object.
+
+  Fields:
+    filter: Optional. An expression for filtering the results of the request.
+    orderBy: Optional. An expression for ordering the results of the request.
+    pageSize: Optional. The maximum number of items to return.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. The parent value for the ServiceIntegration in the
+      following format: projects/{project}/locations/{location}.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
 
 
 class OracledatabaseProjectsLocationsSystemVersionsGetRequest(_messages.Message):
@@ -10127,6 +10609,22 @@ class PolarisIcebergCatalog(_messages.Message):
   uri = _messages.StringField(5)
 
 
+class PscInterfaceConfig(_messages.Message):
+  r"""Configuration for a Private Service Connect (PSC) interface used by
+  Oracledatabase@Google Cloud to establish private connectivity to the
+  database.
+
+  Fields:
+    networkAttachment: Optional. The resource name of the Network Attachment
+      that Oracledatabase@Google Cloud will use to establish private
+      connectivity to the database via a Private Service Connect Interface
+      (PSC-I). Format: projects/{project}/regions/{region}/networkAttachments/
+      {network_attachment}
+  """
+
+  networkAttachment = _messages.StringField(1)
+
+
 class RefreshAutonomousDatabaseRequest(_messages.Message):
   r"""Request message for RefreshAutonomousDatabase method.
 
@@ -10256,6 +10754,116 @@ class ScheduledOperationDetails(_messages.Message):
   dayOfWeek = _messages.EnumField('DayOfWeekValueValuesEnum', 1)
   startTime = _messages.MessageField('TimeOfDay', 2)
   stopTime = _messages.MessageField('TimeOfDay', 3)
+
+
+class ServiceConnectionConfig(_messages.Message):
+  r"""Configuration to enable the service (Oracledatabase@Google Cloud) to
+  establish connectivity to the database. This should be specified if you
+  intend to associate this OdbNetwork with a DatabaseConnection resource to
+  `ExecuteSQL` on the database, or to create a ServiceIntegration with the
+  Database. Please don't specify it otherwise to avoid complicating the
+  network setup.
+
+  Fields:
+    pscInterfaceConfig: Optional. Configuration for Private Service Connect
+      (PSC) interface.
+  """
+
+  pscInterfaceConfig = _messages.MessageField('PscInterfaceConfig', 1)
+
+
+class ServiceIntegration(_messages.Message):
+  r"""Represents a ServiceIntegration resource in the Oracle Database API.
+
+  Enums:
+    ServiceIntegrationTypeValueValuesEnum: Required. The type of the service
+      integration.
+    StateValueValuesEnum: Output only. The current state of the service
+      integration.
+
+  Messages:
+    LabelsValue: Optional. Optional: Labels as key-value pairs to organize the
+      resource.
+
+  Fields:
+    createTime: Output only. The create time of the resource.
+    databaseConnection: Optional. The resource name of the DatabaseConnection
+      to be integrated. Format: projects/{project}/locations/{location}/databa
+      seConnections/{database_connection}
+    displayName: Optional. User-friendly display name for the service
+      integration.
+    knowledgeCatalogConfig: Configuration for Dataplex Knowledge Catalog
+      integration.
+    labels: Optional. Optional: Labels as key-value pairs to organize the
+      resource.
+    name: Identifier. The resource name of the ServiceIntegration. Format: pro
+      jects/{project}/locations/{location}/serviceIntegrations/{service_integr
+      ation}
+    serviceIntegrationType: Required. The type of the service integration.
+    state: Output only. The current state of the service integration.
+    updateTime: Output only. The update time of the resource.
+  """
+
+  class ServiceIntegrationTypeValueValuesEnum(_messages.Enum):
+    r"""Required. The type of the service integration.
+
+    Values:
+      SERVICE_INTEGRATION_TYPE_UNSPECIFIED: Default unspecified type.
+      KNOWLEDGE_CATALOG: Dataplex Knowledge Catalog integration.
+    """
+    SERVICE_INTEGRATION_TYPE_UNSPECIFIED = 0
+    KNOWLEDGE_CATALOG = 1
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current state of the service integration.
+
+    Values:
+      STATE_UNSPECIFIED: Default unspecified value.
+      CREATING: Indicates that the resource is in a creating state.
+      ACTIVE: Indicates that the resource is in an active state.
+      FAILED: Indicates that the resource is in a failed state.
+      DELETING: Indicates that the resource is in a deleting state.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+    FAILED = 3
+    DELETING = 4
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Optional: Labels as key-value pairs to organize the
+    resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  databaseConnection = _messages.StringField(2)
+  displayName = _messages.StringField(3)
+  knowledgeCatalogConfig = _messages.MessageField('KnowledgeCatalogConfig', 4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  name = _messages.StringField(6)
+  serviceIntegrationType = _messages.EnumField('ServiceIntegrationTypeValueValuesEnum', 7)
+  state = _messages.EnumField('StateValueValuesEnum', 8)
+  updateTime = _messages.StringField(9)
 
 
 class SourceConfig(_messages.Message):

@@ -364,7 +364,11 @@ def _MakeSlurmPartition(message_module, partition):
 
 
 def _MakeSlurmNodeSet(
-    message_module, node_set, storage_configs, cluster_ref=None
+    message_module,
+    node_set,
+    storage_configs,
+    cluster_ref=None,
+    machine_type=None,
 ):
   """Makes a cluster slurm node set message from node set args."""
   node_set_keys = set(node_set.keys())
@@ -438,6 +442,16 @@ def _MakeSlurmNodeSet(
         label_cls=message_module.ComputeInstanceSlurmNodeSet.LabelsValue,
     )
     boot_disk = conf.get("bootDisk")
+    if (
+        not boot_disk
+        and machine_type
+        and not machine_type.startswith(("n2-", "ct5p-"))
+    ):
+      boot_disk = {"type": "hyperdisk-balanced", "sizeGb": 100}
+
+    if boot_disk and machine_type:
+      _validator.ValidateBootDisk(machine_type, boot_disk)
+
     compute_instance_boot_disk = None
     if boot_disk:
       compute_instance_boot_disk = message_module.BootDisk(
@@ -487,14 +501,19 @@ def MakeClusterSlurmOrchestrator(
       is_gke = node_set_type == NodeSetType.GKE.value or (
           node_set_type is None and has_gke_fields
       )
+      machine_type = None
       if not is_gke:
         compute_id = node_set.get("computeId")
         if compute_id:
-          _GetComputeMachineTypeFromArgs(args, compute_id)
+          machine_type = _GetComputeMachineTypeFromArgs(args, compute_id)
       storage_configs = default_storage_configs
       slurm.nodeSets.append(
           _MakeSlurmNodeSet(
-              message_module, node_set, storage_configs, cluster_ref
+              message_module,
+              node_set,
+              storage_configs,
+              cluster_ref,
+              machine_type=machine_type,
           )
       )
 
@@ -627,6 +646,37 @@ def MakeClusterSlurmOrchestratorPatch(
     for prop in cluster_patch.storageResources.additionalProperties:
       storage_resources_map[prop.key] = prop.value
 
+  removed_storage_ids = set()
+  if (
+      existing_cluster
+      and existing_cluster.storageResources
+      and cluster_patch
+      and cluster_patch.storageResources
+  ):
+    existing_ids = {
+        prop.key
+        for prop in existing_cluster.storageResources.additionalProperties
+    }
+    updated_ids = {
+        prop.key for prop in cluster_patch.storageResources.additionalProperties
+    }
+    removed_storage_ids = existing_ids - updated_ids
+
+  existing_storage_configs = []
+  if (
+      existing_cluster
+      and existing_cluster.orchestrator
+      and existing_cluster.orchestrator.slurm
+      and existing_cluster.orchestrator.slurm.nodeSets
+  ):
+    existing_storage_configs = (
+        existing_cluster.orchestrator.slurm.nodeSets[0].storageConfigs or []
+    )
+
+  filtered_existing_storage_configs = [
+      sc for sc in existing_storage_configs if sc.id not in removed_storage_ids
+  ]
+
   existing_slurm_node_sets = None
   if (
       existing_cluster
@@ -673,6 +723,16 @@ def MakeClusterSlurmOrchestratorPatch(
             "startupScriptTimeout"
         )
       if "bootDisk" in node_set:
+        if not is_gke_node_set:
+          compute_id = getattr(existing_node_set, "computeId", None)
+          if compute_id:
+            machine_type = _GetComputeMachineTypeFromCluster(
+                compute_id,
+                cluster_patch,
+                existing_cluster=existing_cluster,
+                use_existing_cluster=True,
+            )
+            _validator.ValidateBootDisk(machine_type, node_set.get("bootDisk"))
         _PatchBootDiskForNodeSet(
             message_module,
             existing_node_set=existing_node_set,
@@ -738,7 +798,9 @@ def MakeClusterSlurmOrchestratorPatch(
       ):
         storage_configs_source = cluster_patch
       storage_configs = _GetStorageConfigs(
-          message_module, storage_configs_source
+          message_module,
+          storage_configs_source,
+          existing_storage_configs=filtered_existing_storage_configs,
       )
       node_set_id = node_set.get("id")
       _validator.ValidateResourceID(node_set_id)
@@ -749,9 +811,10 @@ def MakeClusterSlurmOrchestratorPatch(
           node_set_type_str == NodeSetType.GKE.value
           or (node_set_type_str is None and has_gke_fields)
       )
+      machine_type = None
       if not is_gke_node_set:
         compute_id = node_set.get("computeId")
-        _GetComputeMachineTypeFromCluster(
+        machine_type = _GetComputeMachineTypeFromCluster(
             compute_id,
             cluster_patch,
             existing_cluster=existing_cluster,
@@ -761,7 +824,11 @@ def MakeClusterSlurmOrchestratorPatch(
           key=node_set_id,
           dict_spec=slurm_node_sets,
           value=_MakeSlurmNodeSet(
-              message_module, node_set, storage_configs, cluster_ref
+              message_module,
+              node_set,
+              storage_configs,
+              cluster_ref,
+              machine_type=machine_type,
           ),
           exception_message=_SLURM_NODESET_ALREADY_EXISTS_ERROR,
       )
@@ -866,28 +933,11 @@ def MakeClusterSlurmOrchestratorPatch(
       ].storageConfigs
 
     new_storage_configs = _GetStorageConfigs(
-        message_module, cluster_patch, existing_storage_configs
+        message_module, cluster_patch, filtered_existing_storage_configs
     )
 
     if not slurm.nodeSets and slurm_node_sets:
       slurm.nodeSets = list(slurm_node_sets.values())
-
-    removed_storage_ids = set()
-    if (
-        existing_cluster
-        and existing_cluster.storageResources
-        and cluster_patch
-        and cluster_patch.storageResources
-    ):
-      existing_ids = {
-          prop.key
-          for prop in existing_cluster.storageResources.additionalProperties
-      }
-      updated_ids = {
-          prop.key
-          for prop in cluster_patch.storageResources.additionalProperties
-      }
-      removed_storage_ids = existing_ids - updated_ids
 
     if slurm.nodeSets:
       for ns in slurm.nodeSets:

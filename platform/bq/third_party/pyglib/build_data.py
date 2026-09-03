@@ -21,7 +21,7 @@ from typing import Optional
 from pyglib import resources
 
 try:
-  from google.base.python.clif import googleinit  # pylint: disable=g-import-not-at-top  # pytype: disable=import-error
+  from google.base.python.clif import googleinit  # pylint: disable=g-import-not-at-top  # pyrefly: ignore[missing-import]
 except ImportError:
   googleinit = None
 

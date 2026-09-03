@@ -3824,7 +3824,7 @@ class Setting(_messages.Message):
     ValueValue: Required. The value of the Setting.
 
   Fields:
-    type: Required. Immutable. The type of the Setting. .
+    type: Required. Immutable. The type of the Setting.
     value: Required. The value of the Setting.
   """
 

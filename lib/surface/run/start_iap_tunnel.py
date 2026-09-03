@@ -84,4 +84,9 @@ class StartIapTunnel(base.Command):
             "4033: not authorized. Missing iap.tunnelServices.accessViaIAP"
             " permission."
         ) from e
+      if args.workload_type == "service" and "4003" in str(e):
+        raise core_exceptions.Error(
+            "Error connecting to the service. Please ensure your execution"
+            " environment is set to gen2."
+        ) from e
       raise

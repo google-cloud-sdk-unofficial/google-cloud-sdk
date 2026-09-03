@@ -47,8 +47,7 @@ class AnswerCitation(_messages.Message):
 
 
 class AnswerQueryRequest(_messages.Message):
-  r"""LINT.IfChange(answer_query_request) Request message for
-  DeveloperKnowledge.AnswerQuery.
+  r"""Request message for DeveloperKnowledge.AnswerQuery.
 
   Fields:
     filter: Optional. Applies a strict filter to the search results used to
@@ -141,7 +140,9 @@ class DeveloperknowledgeDocumentsBatchGetRequest(_messages.Message):
       maximum of 20 documents can be retrieved in a batch. The documents are
       returned in the same order as the `names` in the request. Format:
       `documents/{uri_without_scheme}` Example:
-      `documents/docs.cloud.google.com/storage/docs/creating-buckets`
+      `documents/docs.cloud.google.com/storage/docs/creating-buckets` Each
+      name must not exceed 500 characters; values longer than 500 characters
+      will result in an `INVALID_ARGUMENT` error.
     view: Optional. Specifies the DocumentView of the document. If
       unspecified, DeveloperKnowledge.BatchGetDocuments defaults to
       `DOCUMENT_VIEW_CONTENT`.
@@ -184,7 +185,9 @@ class DeveloperknowledgeDocumentsGetRequest(_messages.Message):
   Fields:
     name: Required. Specifies the name of the document to retrieve. Format:
       `documents/{uri_without_scheme}` Example:
-      `documents/docs.cloud.google.com/storage/docs/creating-buckets`
+      `documents/docs.cloud.google.com/storage/docs/creating-buckets` The name
+      must not exceed 500 characters; values longer than 500 characters will
+      result in an `INVALID_ARGUMENT` error.
     view: Optional. Specifies the DocumentView of the document. If
       unspecified, DeveloperKnowledge.GetDocument defaults to
       `DOCUMENT_VIEW_CONTENT`.
@@ -224,17 +227,20 @@ class DeveloperknowledgeDocumentsSearchDocumentChunksRequest(_messages.Message):
       expression supports a subset of the syntax described at
       https://google.aip.dev/160. While `SearchDocumentChunks` returns
       DocumentChunks, the filter is applied to `DocumentChunk.document`
-      fields. Supported fields for filtering: * `data_source` (STRING): The
-      source of the document, e.g. `docs.cloud.google.com`. See
+      fields. Supported fields for filtering: * `content_length_bytes`
+      (INTEGER): The length of the `Document.content` field in bytes. *
+      `data_source` (STRING): The source of the document, e.g.
+      `docs.cloud.google.com`. See
       https://developers.google.com/knowledge/reference/corpus-reference for
       the complete list of data sources in the corpus. * `update_time`
       (TIMESTAMP): The timestamp of when the document was last meaningfully
       updated. A meaningful update is one that changes document's markdown
       content or metadata. * `uri` (STRING): The document URI, e.g.
-      `https://docs.cloud.google.com/bigquery/docs/tables`. STRING fields
-      support `=` (equals) and `!=` (not equals) operators for **exact match**
-      on the whole string. Partial match, prefix match, and regexp match are
-      not supported. TIMESTAMP fields support `=`, `<`, `<=`, `>`, and `>=`
+      `https://docs.cloud.google.com/bigquery/docs/tables`. INTEGER fields
+      support `=`, `<`, `<=`, `>`, and `>=` operators. STRING fields support
+      `=` (equals) and `!=` (not equals) operators for **exact match** on the
+      whole string. Partial match, prefix match, and regexp match are not
+      supported. TIMESTAMP fields support `=`, `<`, `<=`, `>`, and `>=`
       operators. Timestamps must be in RFC-3339 format, e.g.,
       `"2025-01-01T00:00:00Z"`. Note: Field names must be in `snake_case`
       (e.g., `data_source`). Values on the right-hand side of filtering
@@ -242,7 +248,8 @@ class DeveloperknowledgeDocumentsSearchDocumentChunksRequest(_messages.Message):
       `"docs.cloud.google.com"`). You can combine expressions using `AND`,
       `OR`, and `NOT` (or `-`) logical operators. `OR` has higher precedence
       than `AND`. Use parentheses for explicit precedence grouping. Examples:
-      * `data_source = "docs.cloud.google.com" OR data_source =
+      * Filter by `Document.content_length_bytes`: `content_length_bytes <
+      50000` * `data_source = "docs.cloud.google.com" OR data_source =
       "firebase.google.com"` * `data_source != "firebase.google.com"` *
       `update_time < "2024-01-01T00:00:00Z"` * `update_time >=
       "2025-01-22T00:00:00Z" AND (data_source = "developer.chrome.com" OR
@@ -258,7 +265,62 @@ class DeveloperknowledgeDocumentsSearchDocumentChunksRequest(_messages.Message):
       `SearchDocumentChunks` call. Provide this to retrieve the subsequent
       page.
     query: Required. Provides the raw query string provided by the user, such
-      as "How to create a Cloud Storage bucket?".
+      as "How to create a Cloud Storage bucket?". The query must not exceed
+      500 characters; values longer than 500 characters will result in an
+      `INVALID_ARGUMENT` error.
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  query = _messages.StringField(4)
+
+
+class DeveloperknowledgeSearchRequest(_messages.Message):
+  r"""A DeveloperknowledgeSearchRequest object.
+
+  Fields:
+    filter: Optional. Applies a strict filter to the search results. The
+      expression supports a subset of the syntax described at
+      https://google.aip.dev/160. While `Search` returns SearchResults, the
+      filter is applied to `DocumentChunk.document` fields contained in the
+      results. Supported fields for filtering: * `data_source` (STRING): The
+      source of the document, e.g. `docs.cloud.google.com`. See
+      https://developers.google.com/knowledge/reference/corpus-reference for
+      the complete list of data sources in the corpus. * `resource_type`
+      (RESOURCE_TYPE): The type of the resource, e.g.
+      `RESOURCE_TYPE_DOCUMENT`. See https://developers.google.com/knowledge/re
+      ference/rest/v1alpha/ResourceType for the possible types. *
+      `update_time` (TIMESTAMP): The timestamp of when the document was last
+      meaningfully updated. A meaningful update is one that changes document's
+      markdown content or metadata. * `uri` (STRING): The document URI, e.g.
+      `https://docs.cloud.google.com/bigquery/docs/tables`. STRING fields
+      support `=` (equals) and `!=` (not equals) operators for **exact match**
+      on the whole string. Partial match, prefix match, and regexp match are
+      not supported. TIMESTAMP fields support `=`, `<`, `<=`, `>`, and `>=`
+      operators. Timestamps must be in RFC-3339 format, e.g.,
+      `"2025-01-01T00:00:00Z"`. You can combine expressions using `AND`, `OR`,
+      and `NOT` (or `-`) logical operators. `OR` has higher precedence than
+      `AND`. Use parentheses for explicit precedence grouping. Examples: *
+      `data_source = "docs.cloud.google.com" OR data_source =
+      "firebase.google.com"` * `data_source != "firebase.google.com"` *
+      `resource_type = "RESOURCE_TYPE_DOCUMENT"` * `resource_type !=
+      "RESOURCE_TYPE_DOCUMENT"` * `update_time < "2024-01-01T00:00:00Z"` *
+      `update_time >= "2025-01-22T00:00:00Z" AND (data_source =
+      "developer.chrome.com" OR data_source = "web.dev")` * `uri =
+      "https://docs.cloud.google.com/release-notes"` The `filter` string must
+      not exceed 500 characters; values longer than 500 characters will result
+      in an `INVALID_ARGUMENT` error.
+    pageSize: Specifies the maximum number of results to return. The service
+      may return fewer than this value. If unspecified, at most 5 results will
+      be returned. The maximum value is 100; values above 100 will be coerced
+      to 100.
+    pageToken: Optional. Contains a page token, received from a previous
+      `Search` call. Provide this to retrieve the subsequent page.
+    query: Required. Provides the raw query string provided by the user, such
+      as "How to create a Cloud Storage bucket?". The query must not exceed
+      500 characters; values longer than 500 characters will result in an
+      `INVALID_ARGUMENT` error.
   """
 
   filter = _messages.StringField(1)
@@ -268,8 +330,9 @@ class DeveloperknowledgeDocumentsSearchDocumentChunksRequest(_messages.Message):
 
 
 class Document(_messages.Message):
-  r"""A Document represents a piece of content from the Developer Knowledge
-  corpus.
+  r"""A Document represents a page of documentation in the Developer Knowledge
+  corpus, like the page at
+  https://docs.cloud.google.com/storage/docs/creating-buckets.
 
   Enums:
     ViewValueValuesEnum: Output only. Specifies the DocumentView of the
@@ -374,8 +437,8 @@ class SearchDocumentChunksResponse(_messages.Message):
   r"""Response message for DeveloperKnowledge.SearchDocumentChunks.
 
   Fields:
-    nextPageToken: Optional. Provides a token that can be sent as `page_token`
-      to retrieve the next page. If this field is omitted, there are no
+    nextPageToken: Provides a token that can be sent as `page_token` to
+      retrieve the next page. If this field is omitted, there are no
       subsequent pages.
     results: Contains the search results for the given query. Each
       DocumentChunk in this list contains a snippet of content relevant to the
@@ -386,6 +449,64 @@ class SearchDocumentChunksResponse(_messages.Message):
 
   nextPageToken = _messages.StringField(1)
   results = _messages.MessageField('DocumentChunk', 2, repeated=True)
+
+
+class SearchResponse(_messages.Message):
+  r"""Response message for DeveloperKnowledge.Search.
+
+  Fields:
+    nextPageToken: Provides a token that can be sent as `page_token` to
+      retrieve the next page. If this field is omitted, there are no
+      subsequent pages.
+    results: Contains the search results for the given query. Each
+      SearchResult in this list contains a resource relevant to the search
+      query. For results that contain a DocumentChunk, use the
+      DocumentChunk.parent field of each result with
+      DeveloperKnowledge.GetDocument or DeveloperKnowledge.BatchGetDocuments
+      to retrieve the full document content.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  results = _messages.MessageField('SearchResult', 2, repeated=True)
+
+
+class SearchResult(_messages.Message):
+  r"""A SearchResult represents a developer knowledge resource returned by
+  DeveloperKnowledge.Search.
+
+  Enums:
+    ResourceTypeValueValuesEnum: Specifies the type of resource contained in
+      this search result, e.g. RESOURCE_TYPE_DOCUMENT.
+
+  Fields:
+    documentChunk: The document chunk contained in this search result. Use the
+      DocumentChunk.parent field with DeveloperKnowledge.GetDocument or
+      DeveloperKnowledge.BatchGetDocuments to retrieve the full document
+      content.
+    relevanceScore: Represents the relevance score of the result to the search
+      query. Higher score indicates higher result relevance. The score is in
+      range [0.0, 1.0].
+    resourceType: Specifies the type of resource contained in this search
+      result, e.g. RESOURCE_TYPE_DOCUMENT.
+  """
+
+  class ResourceTypeValueValuesEnum(_messages.Enum):
+    r"""Specifies the type of resource contained in this search result, e.g.
+    RESOURCE_TYPE_DOCUMENT.
+
+    Values:
+      RESOURCE_TYPE_UNSPECIFIED: An unspecified resource type.
+      RESOURCE_TYPE_DOCUMENT: The Document resource type. A Document
+        represents a page of documentation in the Developer Knowledge corpus,
+        like the page at https://docs.cloud.google.com/storage/docs/creating-
+        buckets.
+    """
+    RESOURCE_TYPE_UNSPECIFIED = 0
+    RESOURCE_TYPE_DOCUMENT = 1
+
+  documentChunk = _messages.MessageField('DocumentChunk', 1)
+  relevanceScore = _messages.FloatField(2)
+  resourceType = _messages.EnumField('ResourceTypeValueValuesEnum', 3)
 
 
 class StandardQueryParameters(_messages.Message):

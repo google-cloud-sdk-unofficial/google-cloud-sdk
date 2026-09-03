@@ -52,7 +52,7 @@ class Cancel(base.Command):
     resource_args.AddOperationResourceArgs(parser, 'cancel')
 
   def Run(self, args):
-    client = operations.OperationsClient()
+    client = operations.OperationsClient(release_track=self.ReleaseTrack())
     operation_ref = args.CONCEPTS.operation.Parse()
 
     console_io.PromptContinue(

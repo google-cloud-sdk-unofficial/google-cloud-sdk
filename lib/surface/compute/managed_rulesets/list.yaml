@@ -1,0 +1,33 @@
+- release_tracks: [ALPHA]
+  hints:
+    read_only: true
+  help_text:
+    brief: List pre-configured Cloud Armor managed rulesets.
+    description: |
+      List all available pre-configured Cloud Armor managed rulesets.
+    examples: |
+      To list all available managed rulesets:
+
+        $ {command}
+
+  request:
+    ALPHA:
+      api_version: alpha
+    collection: compute.managedRulesets
+    method: list
+
+  arguments:
+    resource:
+      help_text: The project of the managed rulesets to list.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:compute_project
+      override_resource_collection: true
+
+  response:
+    id_field: name
+
+  output:
+    format: |
+      table(
+        name,
+        description
+      )

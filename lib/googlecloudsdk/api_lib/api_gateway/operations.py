@@ -18,17 +18,20 @@
 
 from googlecloudsdk.api_lib.api_gateway import base
 from googlecloudsdk.api_lib.util import waiter
+from googlecloudsdk.calliope import base as calliope_base
 
 
 class OperationsClient(base.BaseClient):
   """Client for operation objects on Cloud API Gateway API."""
 
-  def __init__(self, client=None):
+  def __init__(self, client=None, release_track=calliope_base.ReleaseTrack.GA):
     base.BaseClient.__init__(
         self,
         client=client,
         message_base='ApigatewayProjectsLocationsOperations',
-        service_name='projects_locations_operations')
+        service_name='projects_locations_operations',
+        release_track=release_track,
+    )
 
     self.DefineGet()
     self.DefineList('operations', is_operations=True)

@@ -21,6 +21,7 @@ import os
 import textwrap
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as gcloud_exceptions
 from googlecloudsdk.command_lib.iam.byoid_utilities import cred_config
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -42,9 +43,12 @@ class CreateLoginConfig(base.CreateCommand):
   """
 
   detailed_help = {
-      'EXAMPLES':
-          textwrap.dedent("""\
-          To create a login configuration for your project, run:
+      'EXAMPLES': textwrap.dedent("""\
+          To create a login configuration by using the short-format audience, run:
+
+            $ {command} $WORKFORCE_POOL_ID/$PROVIDER_ID --output-file=login-config.json
+
+          To create a login configuration by using the full resource name audience, run:
 
             $ {command} locations/global/workforcePools/$WORKFORCE_POOL_ID/providers/$PROVIDER_ID --output-file=login-config.json
           """),
@@ -54,7 +58,12 @@ class CreateLoginConfig(base.CreateCommand):
   def Args(cls, parser):
     # Required args.
     parser.add_argument(
-        'audience', help='Workforce pool provider resource name.'
+        'audience',
+        help=(
+            'The workforce pool provider resource name in the format'
+            ' "<pool>/<provider>" or'
+            ' "locations/<location>/workforcePools/<pool>/providers/<provider>".'
+        ),
     )
     parser.add_argument(
         '--output-file',
@@ -91,9 +100,13 @@ class CreateLoginConfig(base.CreateCommand):
     )
 
   def Run(self, args):
+    if hasattr(args, 'audience'):
+      try:
+        args.audience = cred_config.normalize_workforce_audience(args.audience)
+      except cred_config.GeneratorError as e:
+        raise gcloud_exceptions.InvalidArgumentException('AUDIENCE', e.message)
     # Take universe domains into account.
     universe_domain_property = properties.VALUES.core.universe_domain
-
     universe_domain = universe_domain_property.Get()
     # Universe_domain arg takes precedence over the configuration.
     if getattr(args, 'universe_domain', None):

@@ -424,6 +424,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_SERVICEINTEGRATIONS = (
+      'projects.locations.serviceIntegrations',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'serviceIntegrations/{serviceIntegrationsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_SYSTEMVERSIONS = (
       'projects.locations.systemVersions',
       '{+name}',

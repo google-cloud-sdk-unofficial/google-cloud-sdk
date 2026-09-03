@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.interconnects.cross_site_networks import flags as cross_site_network_flags
 from googlecloudsdk.command_lib.compute.interconnects.wire_groups import flags
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 _DETAILED_HELP = {
@@ -92,9 +93,19 @@ class AddEndpoint(base.UpdateCommand):
         resources=holder.resources,
     )
     endpoint_label = args.endpoint_label
-    endpoints = wire_group.Describe().endpoints
+    existing_wire_group = wire_group.Describe()
+    endpoints = existing_wire_group.endpoints
 
     endpoints_map = convert_endpoints_to_dict(endpoints)
+
+    if endpoint_label in endpoints_map:
+      log.warning(
+          'Endpoint with label [{0}] already exists in WireGroup [{1}]. '
+          'Skipping update to avoid erasing existing configurations.'.format(
+              endpoint_label, ref.Name()
+          )
+      )
+      return existing_wire_group
 
     endpoints_map[endpoint_label] = holder.client.messages.WireGroupEndpoint()
 

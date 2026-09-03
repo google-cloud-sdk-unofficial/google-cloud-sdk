@@ -97,15 +97,15 @@ def AddReferenceArchitecture(parser, api_version=None, hidden=False):
         - a3-ultra: 4x reserved nodes (requires --reserved-instances), 1x login node (n2-standard-16), 36TB Lustre storage, and 5.1TB Filestore storage.
         - a4-high-flex-start: 4x a4-highgpu-8g compute nodes (Flex Start), 1x login node (n2-standard-16), 18TB Lustre storage, and 2TB Filestore storage.
         - a4x-high: 18x reserved nodes (requires --reserved-instances), 1x login node (n2-standard-16), and 36TB Lustre storage.
-        - g4: 4x g4-standard-384 compute nodes (Flex Start), 1x login node (n2-standard-16), 36TB Lustre storage, and 10.2TB Filestore storage.
-        - h4d-highmem: 4x h4d-highmem-192 compute nodes (Flex Start), 1x login node (n2-standard-16), 18TB Lustre storage, and 1TB Filestore storage.
+        - g4-flex-start: 4x g4-standard-384 compute nodes (Flex Start), 1x login node (n2-standard-16), 36TB Lustre storage, and 10.2TB Filestore storage.
+        - h4d-highmem-flex-start: 4x h4d-highmem-192 compute nodes (Flex Start), 1x login node (n2-standard-16), 18TB Lustre storage, and 1TB Filestore storage.
       """),
       choices=[
           "a3-ultra",
           "a4-high-flex-start",
           "a4x-high",
-          "g4",
-          "h4d-highmem",
+          "g4-flex-start",
+          "h4d-highmem-flex-start",
       ],
       hidden=hidden,
   )

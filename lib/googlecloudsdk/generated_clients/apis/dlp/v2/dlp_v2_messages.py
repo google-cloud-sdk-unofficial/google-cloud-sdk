@@ -3959,7 +3959,8 @@ class GooglePrivacyDlpV2BigQueryTableTypes(_messages.Message):
 
 
 class GooglePrivacyDlpV2BoundingBox(_messages.Message):
-  r"""Bounding box encompassing detected text within an image.
+  r"""Bounding box encompassing detected text within an image. Coordinates are
+  in pixels and strictly within the image or frame bounds.
 
   Fields:
     height: Height of the bounding box in pixels.

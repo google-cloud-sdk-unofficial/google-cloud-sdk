@@ -101,6 +101,7 @@ class Create(base.CreateCommand):
         admin_enabled=args.admin_enabled,
         network_service_class=getattr(args, 'network_service_class', None),
         bandwidth_allocation=getattr(args, 'bandwidth_allocation', None),
+        flow_management=getattr(args, 'flow_management', None),
         validate_only=args.validate_only,
     )
 
@@ -131,3 +132,4 @@ class CreateAlpha(CreateBeta):
     super().Args(parser)
     flags.AddBandwidthMetered(parser)
     flags.AddNetworkServiceClass(parser)
+    flags.AddFlowManagement(parser)

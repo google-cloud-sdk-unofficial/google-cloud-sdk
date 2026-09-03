@@ -349,10 +349,10 @@ def _generate_authentication_header_map(
 class AwsSecurityCredentials:
     """A class that models AWS security credentials with an optional session token.
 
-        Attributes:
-            access_key_id (str): The AWS security credentials access key id.
-            secret_access_key (str): The AWS security credentials secret access key.
-            session_token (Optional[str]): The optional AWS security credentials session token. This should be set when using temporary credentials.
+    Attributes:
+        access_key_id (str): The AWS security credentials access key id.
+        secret_access_key (str): The AWS security credentials secret access key.
+        session_token (Optional[str]): The optional AWS security credentials session token. This should be set when using temporary credentials.
     """
 
     access_key_id: str
@@ -421,7 +421,6 @@ class _DefaultAwsSecurityCredentialsSupplier(AwsSecurityCredentialsSupplier):
 
     @_helpers.copy_docstring(AwsSecurityCredentialsSupplier)
     def get_aws_security_credentials(self, context, request):
-
         # Check environment variables for permanent credentials first.
         # https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html
         env_aws_access_key_id = os.environ.get(environment_vars.AWS_ACCESS_KEY_ID)
@@ -532,9 +531,10 @@ class _DefaultAwsSecurityCredentialsSupplier(AwsSecurityCredentialsSupplier):
             google.auth.exceptions.RefreshError: If an error occurs while
                 retrieving the AWS security credentials.
         """
-        headers = {"Content-Type": "application/json"}
         if imdsv2_session_token is not None:
-            headers["X-aws-ec2-metadata-token"] = imdsv2_session_token
+            headers = {"X-aws-ec2-metadata-token": imdsv2_session_token}
+        else:
+            headers = None
 
         response = request(
             url="{}/{}".format(self._security_credentials_url, role_name),
@@ -689,8 +689,8 @@ class Credentials(external_account.Credentials):
             )
         else:
             environment_id = credential_source.get("environment_id") or ""
-            self._aws_security_credentials_supplier = _DefaultAwsSecurityCredentialsSupplier(
-                credential_source
+            self._aws_security_credentials_supplier = (
+                _DefaultAwsSecurityCredentialsSupplier(credential_source)
             )
             self._cred_verification_url = credential_source.get(
                 "regional_cred_verification_url"
@@ -760,8 +760,10 @@ class Credentials(external_account.Credentials):
 
         # Retrieve the AWS security credentials needed to generate the signed
         # request.
-        aws_security_credentials = self._aws_security_credentials_supplier.get_aws_security_credentials(
-            self._supplier_context, request
+        aws_security_credentials = (
+            self._aws_security_credentials_supplier.get_aws_security_credentials(
+                self._supplier_context, request
+            )
         )
         # Generate the signed request to AWS STS GetCallerIdentity API.
         # Use the required regional endpoint. Otherwise, the request will fail.
@@ -840,11 +842,9 @@ class Credentials(external_account.Credentials):
         Raises:
             ValueError: For invalid parameters.
         """
-        aws_security_credentials_supplier = info.get(
-            "aws_security_credentials_supplier"
-        )
-        kwargs.update(
-            {"aws_security_credentials_supplier": aws_security_credentials_supplier}
+        kwargs.setdefault(
+            "aws_security_credentials_supplier",
+            info.get("aws_security_credentials_supplier"),
         )
         return super(Credentials, cls).from_info(info, **kwargs)
 

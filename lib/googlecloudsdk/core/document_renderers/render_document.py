@@ -41,6 +41,7 @@ from googlecloudsdk.core.document_renderers import man_renderer
 from googlecloudsdk.core.document_renderers import markdown_renderer
 from googlecloudsdk.core.document_renderers import projections_renderer
 from googlecloudsdk.core.document_renderers import renderer
+from googlecloudsdk.core.document_renderers import section_filter
 from googlecloudsdk.core.document_renderers import text_renderer
 
 
@@ -154,8 +155,13 @@ class MarkdownRenderer(object):
       command_node: The command object that the document is being rendered for.
     """
     self._renderer = style_renderer
+    if getattr(style_renderer, 'excluded_sections', None):
+      self._fin = section_filter.SectionFilterStream(
+          fin, excluded_sections=style_renderer.excluded_sections
+      )
+    else:
+      self._fin = fin
     self._buf = ''
-    self._fin = fin
     self._notes = notes
     self._edit = self._notes
     self._lists = [_ListElementState()]

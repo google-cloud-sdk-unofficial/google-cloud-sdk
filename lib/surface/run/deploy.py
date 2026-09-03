@@ -22,11 +22,14 @@ import os
 import os.path
 import re
 
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.run import api_enabler
+from googlecloudsdk.api_lib.run import constants
 from googlecloudsdk.api_lib.run import container_resource
 from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.api_lib.run import service as service_lib
 from googlecloudsdk.api_lib.run import traffic
+from googlecloudsdk.api_lib.util import apis as core_apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.artifacts import docker_util
@@ -750,11 +753,25 @@ class Deploy(base.Command):
         suppress_output=args.async_ or dry_run,
     )
 
+  def _IsAlphaSourceDeployBuild(
+      self, deploy_from_source, is_no_build_from_source
+  ):
+    return (
+        bool(deploy_from_source)
+        and not is_no_build_from_source
+        and self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+    )
+
   def _GetRequiredApis(
       self, deploy_from_source, is_no_build_from_source, is_local_build=False
   ):
     apis = []
-    if self.ReleaseTrack() == base.ReleaseTrack.GA:
+    if (
+        self.ReleaseTrack() == base.ReleaseTrack.GA
+        or self._IsAlphaSourceDeployBuild(
+            deploy_from_source, is_no_build_from_source
+        )
+    ):
       apis.append(api_enabler.get_run_api())
     if (
         deploy_from_source
@@ -855,6 +872,46 @@ class Deploy(base.Command):
 
     return iap
 
+  def _GetServiceForAlphaSourceDeploy(
+      self, conn_context, service_ref, project_id, required_apis, platform
+  ):
+    """Fetches service for alpha source deploy, enabling APIs if Run API is disabled.
+
+    This attempts to get the service first. If it fails with an API enablement
+    error, it enables all required APIs assuming others may also be disabled.
+    If it succeeds, it assumes other required APIs are already enabled.
+
+    Args:
+      conn_context: serverless operations connection context.
+      service_ref: service reference to retrieve.
+      project_id: project ID to enable APIs on if required.
+      required_apis: list of required API names.
+      platform: current deployment platform.
+
+    Returns:
+      A tuple of (service, skip_activation_prompt).
+    """
+    with serverless_operations.Connect(
+        conn_context,
+        skip_activation_prompt=True,
+        should_retry_if_disabled=False,
+    ) as operations:
+      try:
+        service = operations.GetService(service_ref)
+        return service, False
+      except apitools_exceptions.HttpError as e:
+        enablement_info = core_apis.GetApiEnablementInfo(e)
+        if enablement_info and platform == platforms.PLATFORM_MANAGED:
+          api_enabler.enable_apis(project_id, required_apis)
+          with serverless_operations.Connect(
+              conn_context,
+              skip_activation_prompt=True,
+              should_retry_if_disabled=True,
+          ) as retry_operations:
+            service = retry_operations.GetService(service_ref)
+            return service, True
+        raise
+
   def Run(self, args):
     """Deploy a container to Cloud Run."""
     flags.ValidatePublicFlags(args)
@@ -902,8 +959,15 @@ class Deploy(base.Command):
         deploy_from_source, is_no_build_from_source, is_local_build
     )
 
+    is_alpha_source_deploy_build = self._IsAlphaSourceDeployBuild(
+        deploy_from_source, is_no_build_from_source
+    )
     skip_activation_prompt = False
-    if required_apis and platform == platforms.PLATFORM_MANAGED:
+    if (
+        required_apis
+        and platform == platforms.PLATFORM_MANAGED
+        and not is_alpha_source_deploy_build
+    ):
       skip_activation_prompt = api_enabler.check_and_enable_apis(
           properties.VALUES.core.project.Get(), required_apis
       )
@@ -936,10 +1000,16 @@ class Deploy(base.Command):
       upload_through_run_api = sources.ShouldUploadThroughRunApi(
           deploy_from_source, self.ReleaseTrack()
       )
+    service = None
+    if is_alpha_source_deploy_build:
+      service, skip_activation_prompt = self._GetServiceForAlphaSourceDeploy(
+          conn_context, service_ref, project_id, required_apis, platform
+      )
     with serverless_operations.Connect(
         conn_context, skip_activation_prompt
     ) as operations:
-      service = operations.GetService(service_ref)
+      if not is_alpha_source_deploy_build:
+        service = operations.GetService(service_ref)
       if is_local_build:
         container_name, container_args = next(
             (name, c)
@@ -1054,6 +1124,13 @@ class Deploy(base.Command):
                 '--command',
                 '--function',
             )
+      else:
+        if (
+            flags.FlagIsExplicitlySet(args, 'ssh')
+            and args.ssh
+            and not flags.FlagIsExplicitlySet(args, 'execution_environment')
+        ):
+          changes.append(config_changes.SandboxChange(constants.GEN2))
 
       messages_util.MaybeLogDefaultGpuTypeMessage(args, service)
       pretty_print.Info(

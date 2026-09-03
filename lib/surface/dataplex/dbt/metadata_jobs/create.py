@@ -32,9 +32,11 @@ from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.dataplex import resource_args
+from googlecloudsdk.command_lib.dataplex.dbt import artifacts as dbt_artifacts
 from googlecloudsdk.command_lib.dataplex.dbt import bigquery_location as bq_loc
 from googlecloudsdk.command_lib.dataplex.dbt import transform as dbt_transform
 from googlecloudsdk.command_lib.projects import util as projects_util
@@ -49,6 +51,26 @@ _JSONL_FILENAME = 'dbt_metadata.jsonl'
 _TERMINAL_STATES = frozenset(
     ['SUCCEEDED', 'SUCCEEDED_WITH_ERRORS', 'FAILED', 'CANCELED']
 )
+
+
+def _HttpErrorSummary(error: apitools_exceptions.HttpError) -> str:
+  """Describes an HttpError for a log line, tolerating a malformed response.
+
+  ``HttpError.status_code`` subscripts the raw response, so it raises rather
+  than returning anything when the response is absent or unparsed. This is only
+  ever called from an error path, where raising would replace the real problem
+  with a spurious one.
+
+  Args:
+    error: the HttpError to describe.
+
+  Returns:
+    'HTTP <code>', or 'error' when the code cannot be read.
+  """
+  try:
+    return 'HTTP {0}'.format(error.status_code)
+  except (AttributeError, KeyError, TypeError, ValueError):
+    return 'error'
 
 
 class _ImportJobPoller(waiter.OperationPoller):
@@ -78,22 +100,27 @@ class _ImportJobPoller(waiter.OperationPoller):
     return job
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.Command):
   """Transform dbt-core artifacts and import them into Dataplex Catalog.
 
   This command reads the JSON artifacts produced by dbt-core (manifest.json,
-  catalog.json, run_results.json, sources.json) from a local directory,
-  transforms them into the Dataplex metadata import format, uploads the result
-  to Cloud Storage, and triggers a Dataplex metadata import job that ingests
-  the metadata into the Knowledge Catalog.
+  catalog.json, run_results.json, sources.json) from a local directory or a
+  Cloud Storage folder, transforms them into the Dataplex metadata import
+  format, uploads the result to Cloud Storage, and triggers a Dataplex metadata
+  import job that ingests the metadata into the Knowledge Catalog.
 
   Only the entry group that receives the dbt entries must exist in the caller's
   project beforehand. The caller must also be able to USE the dbt connector
   types (dataplex.aspectTypes.use / the dbt-connector-types alternate-use
   permission).
+
+  Unless `--aspects-only` is passed, the import is a FULL sync of the dbt
+  contents of the entry group: any dbt entry in the entry group that this run's
+  artifacts do not describe is DELETED. Give each dbt project its own entry
+  group. Two dbt projects importing their own artifacts into one shared entry
+  group will each delete the other's entries on every run.
 
   The Metadata Job ID identifies the import run and, if provided, must:
    * Contain only lowercase letters, numbers, and hyphens.
@@ -114,6 +141,15 @@ class Create(base.Command):
                 --entry-group=dbt-metadata-ingestion \
                 --storage-uri=gs://my-bucket/dbt-imports/
 
+          The artifacts may also be read from Cloud Storage, e.g. when they are
+          published there by a dbt CI job:
+
+            $ {command} my-dbt-import --project=my-project \
+                --location=us-central1 \
+                --artifacts-path=gs://my-bucket/dbt-artifacts/ \
+                --entry-group=dbt-metadata-ingestion \
+                --storage-uri=gs://my-bucket/dbt-imports/
+
           To only build and upload the JSONL and validate the job without
           ingesting, add `--validate-only`.
           """
@@ -124,12 +160,15 @@ class Create(base.Command):
   def Args(parser: parser_arguments.ArgumentInterceptor) -> None:
     resource_args.AddMetadataJobResourceArg(parser, 'to create.')
     parser.add_argument(
-        '--artifacts-path',
+        dbt_artifacts.ARTIFACTS_PATH_FLAG,
         default='.',
-        help="""Local path to the dbt-core artifacts. May point at the dbt
-        project root (the `target/` subdirectory is detected automatically) or
-        directly at the directory containing manifest.json. Defaults to the
-        current working directory.""",
+        help="""Path to the dbt-core artifacts: a local directory, or a Cloud
+        Storage folder (`gs://bucket/folder/`) they were published to. May point
+        at the dbt project root (the `target/` subdirectory is detected
+        automatically) or directly at the directory containing manifest.json.
+        manifest.json is required; catalog.json, run_results.json and
+        sources.json are read if present. Defaults to the current working
+        directory.""",
     )
     parser.add_argument(
         '--storage-uri',
@@ -142,7 +181,9 @@ class Create(base.Command):
         '--entry-group',
         default='dbt-metadata-ingestion',
         help="""Short ID of the entry group that receives the dbt entries. Must
-        already exist in the project / location.""",
+        already exist in the project / location. Use a separate entry group per
+        dbt project: without `--aspects-only`, a run deletes the dbt entries in
+        this entry group that its own artifacts do not describe.""",
     )
     parser.add_argument(
         '--connector-types-project',
@@ -222,6 +263,11 @@ class Create(base.Command):
     location = metadata_job.locationsId
     metadata_job_id = self._GetMetadataJobId(metadata_job)
 
+    # Resolve the upload destination before doing any work: downloading the
+    # artifacts and transforming them is the expensive part, and a malformed
+    # --storage-uri would otherwise only surface after both.
+    storage_prefix = self._JobStoragePrefix(args.storage_uri, metadata_job_id)
+
     # Entry names / entry-group refs use the project NUMBER.
     project_number = self._GetProjectNumber(project_id)
 
@@ -259,19 +305,27 @@ class Create(base.Command):
           'existing entries and emits no entry links.'
       )
 
-    # Resolve which datasets get represents (physical) links
-    # (dbt node -> physical @bigquery table entry). Those links can only
-    # reference @bigquery entries in the import location, so datasets in another
-    # region are dropped.
-    linkable_datasets = self._ResolveLinkableDatasets(
-        args, location, include_entry_links
-    )
-
     # 1. Transform dbt artifacts into a JSONL import file in a temp dir.
     with files.TemporaryDirectory() as tmp_dir:
+      # Everything below reads the artifacts off the filesystem, so a Cloud
+      # Storage --artifacts-path is fetched into the temp dir first.
+      artifacts_path = args.artifacts_path
+      if dbt_artifacts.IsCloudStoragePath(artifacts_path):
+        artifacts_path = dbt_artifacts.Download(
+            artifacts_path, os.path.join(tmp_dir, 'artifacts')
+        )
+
+      # Resolve which datasets get represents (physical) links
+      # (dbt node -> physical @bigquery table entry). Those links can only
+      # reference @bigquery entries in the import location, so datasets in
+      # another region are dropped.
+      linkable_datasets = self._ResolveLinkableDatasets(
+          args, artifacts_path, location, include_entry_links
+      )
+
       local_jsonl = os.path.join(tmp_dir, _JSONL_FILENAME)
       summary = dbt_transform.GenerateImportFile(
-          artifacts_path=args.artifacts_path,
+          artifacts_path=artifacts_path,
           output_path=local_jsonl,
           eg_project=project_number,
           eg_project_id=project_id,
@@ -299,10 +353,21 @@ class Create(base.Command):
             'has gained, renamed or dropped a resource since the last full '
             'run.'
         )
+      elif not summary['entries']:
+        # A full run replaces the entry group's dbt contents, so importing an
+        # empty set is a request to delete all of them -- almost always a
+        # mistyped --artifacts-path rather than an intent.
+        raise exceptions.Error(
+            'The dbt artifacts at [{0}] describe no resources, so this run '
+            'would delete every dbt entry already in entry group [{1}]. Check '
+            'that --artifacts-path points at the intended dbt project, or pass '
+            '--aspects-only to leave the entry set alone.'.format(
+                args.artifacts_path, args.entry_group
+            )
+        )
 
       # 2. Upload the JSONL under a per-job prefix (avoids stale-file
       #    duplicates) and point the import job at that prefix.
-      storage_prefix = self._JobStoragePrefix(args.storage_uri, metadata_job_id)
       object_uri = storage_prefix + _JSONL_FILENAME
       log.status.Print('Uploading import file to {0} ...'.format(object_uri))
       storage_api.StorageClient().CopyFileToGCS(
@@ -385,21 +450,48 @@ class Create(base.Command):
     # The create operation only confirms the job was accepted. Wait for it, then
     # poll the job itself until the import reaches a terminal state so we can
     # report the real outcome (and fail on a failed import).
-    metadata_job_lib.WaitForOperation(create_req_op)
-    if not job_id:
-      # Without the id we can't address the job to poll; the create succeeded.
-      log.status.Print(
-          'dbt metadata import job created in [{0}].'.format(parent)
+    try:
+      metadata_job_lib.WaitForOperation(create_req_op)
+      if not job_id:
+        # Without the id we can't address the job to poll; the create succeeded.
+        log.status.Print(
+            'dbt metadata import job created in [{0}].'.format(parent)
+        )
+        return
+      result = self._WaitForImport(
+          dataplex_client,
+          message,
+          '{0}/metadataJobs/{1}'.format(parent, job_id),
       )
-      return
-    result = self._WaitForImport(
-        dataplex_client, message, '{0}/metadataJobs/{1}'.format(parent, job_id)
-    )
+    except waiter.TimeoutError as exc:
+      raise exceptions.Error(self._TimedOutMessage(job_id, parent)) from exc
     self._ReportImportOutcome(job_id, result)
+
+  def _TimedOutMessage(self, job_id: str | None, parent: str) -> str:
+    """Explains that waiting stopped but the import job did not."""
+    label = '[{0}] '.format(job_id) if job_id else ''
+    project, location = parent.split('/')[1], parent.split('/')[3]
+    if job_id:
+      how_to_check = (
+          'gcloud dataplex metadata-jobs describe {0} --project={1} '
+          '--location={2}'.format(job_id, project, location)
+      )
+    else:
+      how_to_check = (
+          'gcloud dataplex metadata-jobs list --project={0} '
+          '--location={1}'.format(project, location)
+      )
+    return (
+        'Timed out waiting for dbt metadata import job {0}to finish. The job '
+        'was submitted and is still running -- this is not an import failure. '
+        'Check its outcome with:\n  {1}\nPass --async to submit without '
+        'waiting.'.format(label, how_to_check)
+    )
 
   def _ResolveLinkableDatasets(
       self,
       args: parser_extensions.Namespace,
+      artifacts_path: str,
       location: str,
       include_entry_links: bool,
   ) -> frozenset[tuple[str, str]] | None:
@@ -417,6 +509,7 @@ class Create(base.Command):
 
     Args:
       args: the parsed command arguments.
+      artifacts_path: the local directory holding the dbt artifacts.
       location: the import location (the entry group / metadata job region).
       include_entry_links: whether this run emits entry links at all.
 
@@ -427,7 +520,7 @@ class Create(base.Command):
     """
     if not include_entry_links or args.skip_bigquery_link:
       return None
-    datasets = dbt_transform.MaterializedBigQueryDatasets(args.artifacts_path)
+    datasets = dbt_transform.MaterializedBigQueryDatasets(artifacts_path)
     if not datasets:
       return None
     # Drop only datasets we can prove live in another region. Datasets we can't
@@ -498,8 +591,17 @@ class Create(base.Command):
           )
       ) from exc
     except apitools_exceptions.HttpError as exc:
-      log.debug(
-          'Ignoring non-404 error from entry group pre-flight check: %s', exc
+      # The entry group may well exist, so don't block the import on a
+      # best-effort check that Get can be stricter about than the import job
+      # is. Warn rather than swallow: when the asynchronous import then fails,
+      # this is the line that explains why.
+      log.warning(
+          'Could not verify that entry group [{0}] exists ({1}). Continuing. '
+          'If the import job fails, check that the entry group exists in '
+          'project [{2}], location [{3}] and that the caller has '
+          'dataplex.entryGroups.get on it.'.format(
+              entry_group, _HttpErrorSummary(exc), project_id, location
+          )
       )
 
   def _GetMetadataJobId(self, metadata_job: resources.Resource) -> str | None:
@@ -622,8 +724,33 @@ class Create(base.Command):
   def _JobStoragePrefix(
       self, storage_uri: str, metadata_job_id: str | None
   ) -> str:
-    """Returns gs://bucket/<prefix>/<job-id>/ for the per-job upload."""
+    """Returns gs://bucket/<prefix>/<job-id>/ for the per-job upload.
+
+    Args:
+      storage_uri: the raw --storage-uri value.
+      metadata_job_id: the metadata job id, or None when the server assigns it.
+
+    Returns:
+      The gs:// prefix the import file is uploaded under.
+
+    Raises:
+      calliope_exceptions.InvalidArgumentException: if --storage-uri is not a
+        valid Cloud Storage path.
+    """
     prefix = storage_uri if storage_uri.endswith('/') else storage_uri + '/'
+    # ObjectReference rejects a malformed path with ValueError subclasses, which
+    # gcloud would report as a crash (and file a crash report) rather than as a
+    # bad flag value. Probe with the file name the caller would end up with, so
+    # a bare `gs://` -- which would otherwise upload to a bucket named after the
+    # job id -- is rejected too.
+    try:
+      storage_util.ObjectReference.FromUrl(prefix + _JSONL_FILENAME)
+    except ValueError as e:
+      raise calliope_exceptions.InvalidArgumentException(
+          '--storage-uri',
+          '[{0}] is not a valid Cloud Storage path; expected '
+          'gs://BUCKET/FOLDER.'.format(storage_uri),
+      ) from e
     # A server-generated job id isn't known at upload time; use a unique folder
     # so concurrent server-id jobs sharing this storage-uri don't overwrite each
     # other's import file.

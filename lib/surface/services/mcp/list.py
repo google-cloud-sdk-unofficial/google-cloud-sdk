@@ -21,7 +21,7 @@ from googlecloudsdk.command_lib.services import common_flags
 
 
 @base.Deprecate(
-    is_removed=False,
+    is_removed=True,
     warning=(
         'MCP enablement is not required and this command is no-op. To list'
         ' services, please use: gcloud services list.'

@@ -358,6 +358,13 @@ class Collections(enum.Enum):
       ['project', 'zone', 'machineType'],
       True
   )
+  MANAGEDRULESETS = (
+      'managedRulesets',
+      'projects/{project}/global/managedRulesets/{managedRuleset}',
+      {},
+      ['project', 'managedRuleset'],
+      True
+  )
   NETWORKATTACHMENTS = (
       'networkAttachments',
       'projects/{project}/regions/{region}/networkAttachments/'

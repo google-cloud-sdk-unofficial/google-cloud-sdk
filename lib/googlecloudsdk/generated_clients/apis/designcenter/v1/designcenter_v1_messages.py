@@ -3909,6 +3909,9 @@ class Framework(_messages.Message):
     description: Optional. The framework description.
     displayName: Optional. The framework display name.
     majorRevisionId: Optional. The major revision id of the framework.
+    managedProjectApplicable: Output only. Indicates if the framework is
+      defined in the managed project. Only managed-project frameworks can be
+      manually attached.
     name: Required. The framework name.
     parentDomain: Required. The domain to which this framework belongs.
     url: Optional. The URL to a framework.
@@ -3932,9 +3935,10 @@ class Framework(_messages.Message):
   description = _messages.StringField(4)
   displayName = _messages.StringField(5)
   majorRevisionId = _messages.IntegerField(6, variant=_messages.Variant.INT32)
-  name = _messages.StringField(7)
-  parentDomain = _messages.MessageField('Domain', 8)
-  url = _messages.StringField(9)
+  managedProjectApplicable = _messages.BooleanField(7)
+  name = _messages.StringField(8)
+  parentDomain = _messages.MessageField('Domain', 9)
+  url = _messages.StringField(10)
 
 
 class GKEDeploymentTarget(_messages.Message):
@@ -5668,11 +5672,15 @@ class SerializedApplicationTemplate(_messages.Message):
     components: Optional. The application template components.
     compositionType: Output only. The composition type of the
       applicationTemplate: STANDARD OR COMPOSITE.
+    customTfvars: Optional. Custom variable values imported from
+      terraform.tfvars.
+    customVariables: Optional. Custom variables imported from variables.tf.
     description: Optional. The application template description.
     displayName: Optional. The application template display name.
     hasGlobalResource: Output only. Whether the application template is
       compatible with regional scope.
     iacFormat: Optional. The IaC format of the application template.
+    providers: Optional. Custom provider configurations imported from IaC.
     rootInputVariables: Output only. Root level input variables of the
       application template.
     rootOutputVariables: Output only. Root level output variables of the
@@ -5718,15 +5726,18 @@ class SerializedApplicationTemplate(_messages.Message):
   applicationParameters = _messages.MessageField('Parameter', 2, repeated=True)
   components = _messages.MessageField('SerializedComponent', 3, repeated=True)
   compositionType = _messages.EnumField('CompositionTypeValueValuesEnum', 4)
-  description = _messages.StringField(5)
-  displayName = _messages.StringField(6)
-  hasGlobalResource = _messages.BooleanField(7)
-  iacFormat = _messages.EnumField('IacFormatValueValuesEnum', 8)
-  rootInputVariables = _messages.MessageField('ComponentVariable', 9, repeated=True)
-  rootOutputVariables = _messages.MessageField('ComponentVariable', 10, repeated=True)
-  saasRuntimeContext = _messages.MessageField('SaaSRuntimeContext', 11)
-  serializedPolicies = _messages.MessageField('SerializedPolicy', 12, repeated=True)
-  uri = _messages.StringField(13)
+  customTfvars = _messages.MessageField('Parameter', 5, repeated=True)
+  customVariables = _messages.MessageField('TerraformInput', 6, repeated=True)
+  description = _messages.StringField(7)
+  displayName = _messages.StringField(8)
+  hasGlobalResource = _messages.BooleanField(9)
+  iacFormat = _messages.EnumField('IacFormatValueValuesEnum', 10)
+  providers = _messages.MessageField('SerializedProvider', 11, repeated=True)
+  rootInputVariables = _messages.MessageField('ComponentVariable', 12, repeated=True)
+  rootOutputVariables = _messages.MessageField('ComponentVariable', 13, repeated=True)
+  saasRuntimeContext = _messages.MessageField('SaaSRuntimeContext', 14)
+  serializedPolicies = _messages.MessageField('SerializedPolicy', 15, repeated=True)
+  uri = _messages.StringField(16)
 
 
 class SerializedComponent(_messages.Message):
@@ -5853,6 +5864,23 @@ class SerializedPolicy(_messages.Message):
   policyType = _messages.EnumField('PolicyTypeValueValuesEnum', 5)
   policyUri = _messages.StringField(6)
   uri = _messages.StringField(7)
+
+
+class SerializedProvider(_messages.Message):
+  r"""Represents a serialized Terraform provider configuration.
+
+  Fields:
+    parameters: Optional. Configuration parameters of the provider. Reuses the
+      standard Parameter message.
+    provider: Required. Name of the provider (e.g., `"google"`, `"google-
+      beta"`, `"google-nightly"`).
+    providerAlias: Optional. Optional alias for the provider (supports multi-
+      region setups).
+  """
+
+  parameters = _messages.MessageField('Parameter', 1, repeated=True)
+  provider = _messages.StringField(2)
+  providerAlias = _messages.StringField(3)
 
 
 class SetIamPolicyRequest(_messages.Message):
@@ -6641,17 +6669,22 @@ class TerraformInput(_messages.Message):
       variable.
     description: Output only. Terraform variable description.
     isRequired: Output only. Indicates if input is required.
+    sensitive: Optional. Indicates if the Terraform variable is sensitive.
     terraformInputVariable: Output only. Input variable name present in
       Terraform.
     type: Output only. The Terraform input data type.
+    validationRules: Optional. Optional validation rules defined on the
+      variable.
   """
 
   connections = _messages.MessageField('TerraformInputConnections', 1, repeated=True)
   defaultValue = _messages.MessageField('extra_types.JsonValue', 2)
   description = _messages.StringField(3)
   isRequired = _messages.BooleanField(4)
-  terraformInputVariable = _messages.StringField(5)
-  type = _messages.StringField(6)
+  sensitive = _messages.BooleanField(5)
+  terraformInputVariable = _messages.StringField(6)
+  type = _messages.StringField(7)
+  validationRules = _messages.MessageField('TerraformVariableValidation', 8, repeated=True)
 
 
 class TerraformInputConnections(_messages.Message):
@@ -6874,6 +6907,21 @@ class TerraformUiOutputDisplay(_messages.Message):
     DISPLAY_VARIABLE_VISIBILITY_ROOT = 1
 
   visibility = _messages.EnumField('VisibilityValueValuesEnum', 1)
+
+
+class TerraformVariableValidation(_messages.Message):
+  r"""Represents a custom validation rule defined on a Terraform input
+  variable.
+
+  Fields:
+    condition: Optional. The HCL expression for the validation condition
+      (e.g., "length(var.image_id) > 4").
+    errorMessage: Optional. The error message displayed when the condition is
+      false.
+  """
+
+  condition = _messages.StringField(1)
+  errorMessage = _messages.StringField(2)
 
 
 class TestIamPermissionsRequest(_messages.Message):

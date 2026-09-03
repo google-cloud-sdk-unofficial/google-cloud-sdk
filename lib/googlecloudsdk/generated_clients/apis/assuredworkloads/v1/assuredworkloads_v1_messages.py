@@ -1364,8 +1364,12 @@ class GoogleCloudAssuredworkloadsV1DbFindingSummary(_messages.Message):
     findingClass: Output only. The class of the finding.
     findingCount: Output only. The count of the finding.
     name: Identifier. The name of the finding summary.
+    organizationPolicyFindingCount: Output only. Number of active organization
+      policy findings for this category.
     relatedFrameworks: Optional. The list of compliance frameworks that the
       finding belongs to.
+    resourceFindingCount: Output only. Number of active resource findings for
+      this category.
     severity: Output only. The severity of the finding.
     updateTime: Output only. The last updated time of the finding.
   """
@@ -1453,9 +1457,11 @@ class GoogleCloudAssuredworkloadsV1DbFindingSummary(_messages.Message):
   findingClass = _messages.EnumField('FindingClassValueValuesEnum', 2)
   findingCount = _messages.IntegerField(3)
   name = _messages.StringField(4)
-  relatedFrameworks = _messages.StringField(5, repeated=True)
-  severity = _messages.EnumField('SeverityValueValuesEnum', 6)
-  updateTime = _messages.StringField(7)
+  organizationPolicyFindingCount = _messages.IntegerField(5)
+  relatedFrameworks = _messages.StringField(6, repeated=True)
+  resourceFindingCount = _messages.IntegerField(7)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 8)
+  updateTime = _messages.StringField(9)
 
 
 class GoogleCloudAssuredworkloadsV1DbFrameworkComplianceSummary(_messages.Message):

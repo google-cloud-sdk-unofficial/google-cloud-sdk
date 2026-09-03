@@ -14,9 +14,7 @@
 # limitations under the License.
 """Wraps a Cloud Run DomainMapping message for field access convenience."""
 
-
 from googlecloudsdk.api_lib.run import k8s_object
-
 
 MAPPING_ALREADY_EXISTS_CONDITION_REASON = 'MappingAlreadyExists'
 
@@ -30,6 +28,10 @@ class DomainMapping(k8s_object.KubernetesObject):
 
   API_CATEGORY = 'domains.cloudrun.com'
   KIND = 'DomainMapping'
+
+  def __init__(self, to_wrap, messages_mod, kind=None):
+    super().__init__(to_wrap, messages_mod, kind=kind)
+    self._route_missing = False
 
   @property
   def route_name(self):
@@ -52,5 +54,20 @@ class DomainMapping(k8s_object.KubernetesObject):
     return getattr(self._m.status, 'resourceRecords', None)
 
   @property
+  def route_missing(self):
+    # default to False if not set
+    return self._route_missing
+
+  @route_missing.setter
+  def route_missing(self, value):
+    """True if the target service route is missing."""
+    self._route_missing = value
+
+  @property
   def mapped_route_name(self):
     return getattr(self._m.status, 'mappedRouteName', None)
+
+  def ReadySymbolAndColor(self):
+    if self.route_missing:
+      return 'X', 'red'
+    return super().ReadySymbolAndColor()

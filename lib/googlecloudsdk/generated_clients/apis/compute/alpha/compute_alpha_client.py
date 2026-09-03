@@ -59,6 +59,7 @@ class ComputeAlpha(base_api.BaseApiClient):
     self.globalAddresses = self.GlobalAddressesService(self)
     self.globalFolderOperations = self.GlobalFolderOperationsService(self)
     self.globalForwardingRules = self.GlobalForwardingRulesService(self)
+    self.globalFrontendSettings = self.GlobalFrontendSettingsService(self)
     self.globalNetworkEndpointGroups = self.GlobalNetworkEndpointGroupsService(self)
     self.globalOperations = self.GlobalOperationsService(self)
     self.globalOrganizationOperations = self.GlobalOrganizationOperationsService(self)
@@ -646,6 +647,32 @@ Resources documentation.
         request_field='testPermissionsRequest',
         request_type_name='ComputeAddressesTestIamPermissionsRequest',
         response_type_name='TestPermissionsResponse',
+        supports_download=False,
+    )
+
+    def UpdatePublicPtr(self, request, global_params=None):
+      r"""Set a custom ptr domain name on regional address.
+
+      Args:
+        request: (ComputeAddressesUpdatePublicPtrRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('UpdatePublicPtr')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    UpdatePublicPtr.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.addresses.updatePublicPtr',
+        ordered_params=['project', 'region', 'address'],
+        path_params=['address', 'project', 'region'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/regions/{region}/addresses/{address}:updatePublicPtr',
+        request_field='regionAddressesUpdatePublicPtrRequest',
+        request_type_name='ComputeAddressesUpdatePublicPtrRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 
@@ -5353,6 +5380,68 @@ should be of the same type as the old target.
         request_field='testPermissionsRequest',
         request_type_name='ComputeGlobalForwardingRulesTestIamPermissionsRequest',
         response_type_name='TestPermissionsResponse',
+        supports_download=False,
+    )
+
+  class GlobalFrontendSettingsService(base_api.BaseApiService):
+    """Service class for the globalFrontendSettings resource."""
+
+    _NAME = 'globalFrontendSettings'
+
+    def __init__(self, client):
+      super(ComputeAlpha.GlobalFrontendSettingsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Gets the Global Frontend Billing Bundle Settings for a project.
+
+      Args:
+        request: (ComputeGlobalFrontendSettingsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GlobalFrontendSettings) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.globalFrontendSettings.get',
+        ordered_params=['project'],
+        path_params=['project'],
+        query_params=[],
+        relative_path='projects/{project}/global/globalFrontendSettings',
+        request_field='',
+        request_type_name='ComputeGlobalFrontendSettingsGetRequest',
+        response_type_name='GlobalFrontendSettings',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the Global Frontend Billing Bundle Settings for a project.
+
+      Args:
+        request: (ComputeGlobalFrontendSettingsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GlobalFrontendSettingsPatchResponse) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='PATCH',
+        method_id='compute.globalFrontendSettings.patch',
+        ordered_params=['project'],
+        path_params=['project'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='projects/{project}/global/globalFrontendSettings',
+        request_field='globalFrontendSettings',
+        request_type_name='ComputeGlobalFrontendSettingsPatchRequest',
+        response_type_name='GlobalFrontendSettingsPatchResponse',
         supports_download=False,
     )
 

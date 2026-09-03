@@ -24,6 +24,7 @@ class ProjectionsRenderer(text_renderer.TextRenderer):
   """Renders only the PROJECTION KEYS section of a markdown document."""
 
   def __init__(self, *args, **kwargs):
+    kwargs.setdefault('excluded_sections', ())
     super(ProjectionsRenderer, self).__init__(*args, **kwargs)
     self._file_out = self._out  # the output file inherited from TextRenderer
     self._null_out = io.StringIO()

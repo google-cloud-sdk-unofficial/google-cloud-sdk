@@ -51,6 +51,7 @@ class StorageV1(base_api.BaseApiClient):
     self.projects_hmacKeys = self.ProjectsHmacKeysService(self)
     self.projects_serviceAccount = self.ProjectsServiceAccountService(self)
     self.projects = self.ProjectsService(self)
+    self.rapidCaches = self.RapidCachesService(self)
 
   class AnywhereCachesService(base_api.BaseApiService):
     """Service class for the anywhereCaches resource."""
@@ -2338,3 +2339,143 @@ class StorageV1(base_api.BaseApiClient):
       super(StorageV1.ProjectsService, self).__init__(client)
       self._upload_configs = {
           }
+
+  class RapidCachesService(base_api.BaseApiService):
+    """Service class for the rapidCaches resource."""
+
+    _NAME = 'rapidCaches'
+
+    def __init__(self, client):
+      super(StorageV1.RapidCachesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Disable(self, request, global_params=None):
+      r"""Disables a Rapid Cache instance.
+
+      Args:
+        request: (StorageRapidCachesDisableRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Disable')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Disable.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='storage.rapidCaches.disable',
+        ordered_params=['bucket', 'rapidCacheId'],
+        path_params=['bucket', 'rapidCacheId'],
+        query_params=[],
+        relative_path='b/{bucket}/rapidCaches/{rapidCacheId}/disable',
+        request_field='',
+        request_type_name='StorageRapidCachesDisableRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Returns the metadata of a Rapid Cache instance.
+
+      Args:
+        request: (StorageRapidCachesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (RapidCache) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='storage.rapidCaches.get',
+        ordered_params=['bucket', 'rapidCacheId'],
+        path_params=['bucket', 'rapidCacheId'],
+        query_params=[],
+        relative_path='b/{bucket}/rapidCaches/{rapidCacheId}',
+        request_field='',
+        request_type_name='StorageRapidCachesGetRequest',
+        response_type_name='RapidCache',
+        supports_download=False,
+    )
+
+    def Insert(self, request, global_params=None):
+      r"""Creates a Rapid Cache instance.
+
+      Args:
+        request: (RapidCache) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Insert')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Insert.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='storage.rapidCaches.insert',
+        ordered_params=['bucket'],
+        path_params=['bucket'],
+        query_params=[],
+        relative_path='b/{bucket}/rapidCaches',
+        request_field='<request>',
+        request_type_name='RapidCache',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Returns a list of Rapid Cache instances of the bucket.
+
+      Args:
+        request: (StorageRapidCachesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (RapidCaches) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='storage.rapidCaches.list',
+        ordered_params=['bucket'],
+        path_params=['bucket'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='b/{bucket}/rapidCaches',
+        request_field='',
+        request_type_name='StorageRapidCachesListRequest',
+        response_type_name='RapidCaches',
+        supports_download=False,
+    )
+
+    def Update(self, request, global_params=None):
+      r"""Updates the configuration of a Rapid Cache instance.
+
+      Args:
+        request: (RapidCache) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Update')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Update.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='PATCH',
+        method_id='storage.rapidCaches.update',
+        ordered_params=['bucket', 'rapidCacheId'],
+        path_params=['bucket', 'rapidCacheId'],
+        query_params=[],
+        relative_path='b/{bucket}/rapidCaches/{rapidCacheId}',
+        request_field='<request>',
+        request_type_name='RapidCache',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )

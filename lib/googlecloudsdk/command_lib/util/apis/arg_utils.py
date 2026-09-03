@@ -570,6 +570,8 @@ def GenerateFlag(field, attributes, fix_bools=True, category=None):
   )
   if attributes.default != UNSPECIFIED:
     arg.kwargs['default'] = attributes.default
+  if attributes.dest:
+    arg.kwargs['dest'] = attributes.dest
   if not _IsStoreBoolAction(action):
     # For this special action type, it won't accept a bunch of the common
     # kwargs, so we can only add them if not generating a boolean flag.

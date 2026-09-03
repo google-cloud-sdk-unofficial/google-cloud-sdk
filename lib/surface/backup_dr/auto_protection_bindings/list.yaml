@@ -1,0 +1,36 @@
+- release_tracks: [ALPHA, BETA]
+  hidden: true
+
+  help_text:
+    brief: List Backup and DR auto-protection bindings.
+    description: List Backup and DR auto-protection bindings.
+    examples: |
+      To list Backup and DR auto-protection bindings for a specific auto-protection-policy, run:
+
+        $ {command} --auto-protection-policy=my-auto-protection-policy --location=us-central1
+
+  request:
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
+    collection: backupdr.projects.locations.autoProtectionPolicies.bindings
+    method: list
+
+  arguments:
+    resource:
+      help_text: The auto-protection policy whose bindings should be listed.
+      spec: !REF googlecloudsdk.command_lib.backupdr.resources:autoProtectionPolicy
+      is_positional: false
+
+  output:
+    format: |
+      table(
+        name.basename():label=NAME:sort=2,
+        description:label=DESCRIPTION,
+        scope:label=SCOPE,
+        state:label=STATUS,
+        bindingEvaluationSummary.matchingResourceCount:label=MATCHING_RESOURCE_COUNT,
+        bindingEvaluationSummary.protectedResourceCount:label=PROTECTED_RESOURCE_COUNT,
+        bindingEvaluationSummary.failedResourceCount:label=FAILED_RESOURCE_COUNT
+      )

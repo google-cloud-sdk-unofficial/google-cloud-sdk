@@ -1985,7 +1985,7 @@ class FirewallEndpointWildfireSettingsWildfireInlineCloudAnalysisSettings(_messa
 
 
 class FirstPartyEndpointSettings(_messages.Message):
-  r"""A FirstPartyEndpointSettings object."""
+  r"""Settings for first party endpoints."""
 
 
 class ForceStartProgressiveRolloutRequest(_messages.Message):
@@ -11194,7 +11194,7 @@ class Status(_messages.Message):
 
 
 class ThirdPartyEndpointSettings(_messages.Message):
-  r"""A ThirdPartyEndpointSettings object.
+  r"""Settings for third party endpoints.
 
   Fields:
     targetFirewallAttachment: Optional. URL of the target firewall attachment.
@@ -11308,6 +11308,8 @@ class TlsInspectionPolicy(_messages.Message):
   Certificate Authority Service and associated metadata.
 
   Enums:
+    CertificateIssuanceModeValueValuesEnum: Optional. The mode used to issue
+      certificates (local CA signing vs direct leaf).
     MinTlsVersionValueValuesEnum: Optional. Minimum TLS version that the
       firewall should use when negotiating connections with both clients and
       servers. If this is not set, then the default value is to allow the
@@ -11326,6 +11328,8 @@ class TlsInspectionPolicy(_messages.Message):
     caPool: Required. A CA pool resource used to issue interception
       certificates. The CA pool string has a relative resource path following
       the form "projects/{project}/locations/{location}/caPools/{ca_pool}".
+    certificateIssuanceMode: Optional. The mode used to issue certificates
+      (local CA signing vs direct leaf).
     createTime: Output only. The timestamp when the resource was created.
     customTlsFeatures: Optional. List of custom TLS cipher suites selected.
       This field is valid only if the selected tls_feature_profile is CUSTOM.
@@ -11370,6 +11374,20 @@ class TlsInspectionPolicy(_messages.Message):
       that Secure Web Proxy does not yet honor this field.
     updateTime: Output only. The timestamp when the resource was updated.
   """
+
+  class CertificateIssuanceModeValueValuesEnum(_messages.Enum):
+    r"""Optional. The mode used to issue certificates (local CA signing vs
+    direct leaf).
+
+    Values:
+      CERTIFICATE_ISSUANCE_MODE_UNSPECIFIED: Unspecified default mode.
+      DIRECT_LEAF_PROVISIONING: Fallback: Direct Private CA leaf certificate
+        provisioning.
+      LOCAL_INTERMEDIATE_CA_SIGNING: High-speed Local Intermediate CA signing.
+    """
+    CERTIFICATE_ISSUANCE_MODE_UNSPECIFIED = 0
+    DIRECT_LEAF_PROVISIONING = 1
+    LOCAL_INTERMEDIATE_CA_SIGNING = 2
 
   class MinTlsVersionValueValuesEnum(_messages.Enum):
     r"""Optional. Minimum TLS version that the firewall should use when
@@ -11421,15 +11439,16 @@ class TlsInspectionPolicy(_messages.Message):
     PROFILE_CUSTOM = 4
 
   caPool = _messages.StringField(1)
-  createTime = _messages.StringField(2)
-  customTlsFeatures = _messages.StringField(3, repeated=True)
-  description = _messages.StringField(4)
-  excludePublicCaSet = _messages.BooleanField(5)
-  minTlsVersion = _messages.EnumField('MinTlsVersionValueValuesEnum', 6)
-  name = _messages.StringField(7)
-  tlsFeatureProfile = _messages.EnumField('TlsFeatureProfileValueValuesEnum', 8)
-  trustConfig = _messages.StringField(9)
-  updateTime = _messages.StringField(10)
+  certificateIssuanceMode = _messages.EnumField('CertificateIssuanceModeValueValuesEnum', 2)
+  createTime = _messages.StringField(3)
+  customTlsFeatures = _messages.StringField(4, repeated=True)
+  description = _messages.StringField(5)
+  excludePublicCaSet = _messages.BooleanField(6)
+  minTlsVersion = _messages.EnumField('MinTlsVersionValueValuesEnum', 7)
+  name = _messages.StringField(8)
+  tlsFeatureProfile = _messages.EnumField('TlsFeatureProfileValueValuesEnum', 9)
+  trustConfig = _messages.StringField(10)
+  updateTime = _messages.StringField(11)
 
 
 class UllMirroringCollector(_messages.Message):

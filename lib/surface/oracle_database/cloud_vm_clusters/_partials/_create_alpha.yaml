@@ -399,6 +399,18 @@
       resource_method_params:
         cloudVmCluster.exascaleDbStorageVault: '{__relative_name__}'
       required: false
+    - arg_name: identity-connector-disabled
+      api_field: cloudVmCluster.identityConnectorDisabled
+      action: store_true
+      required: false
+      type: bool
+      help_text: |-
+        If set to true, disables the automatic provisioning
+        of the Workload Identity Connector during creation. If set to false or
+        omitted, the Workload Identity Connector will be automatically provisioned
+        by default. Note: Provisioning the Workload Identity Connector is a
+        prerequisite for enabling Google Cloud CMEK.
+      default: null
     - arg_name: request-id
       api_field: requestId
       required: false

@@ -93,6 +93,15 @@ class Create(base.Command):
     )
     pc_flags.AddNetworkAttachmentFlag(psc_group)
 
+    # --- Reserved Public IP Group ---
+    reserved_public_ip_group = config_group.add_group(
+        help='Arguments for Reserved Public IP configuration.',
+        mutex=True,
+    )
+    pc_flags.AddReservedPublicIpFlag(reserved_public_ip_group)
+    pc_flags.AddReservedPublicIpNatIpsCountFlag(reserved_public_ip_group)
+
+
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command."""

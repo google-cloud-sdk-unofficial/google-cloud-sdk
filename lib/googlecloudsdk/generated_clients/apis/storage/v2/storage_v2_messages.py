@@ -392,21 +392,17 @@ class BucketSecurityControlViolation(_messages.Message):
 
   Fields:
     bucket: Output only. The name of the bucket.
-    evaluationErrorsCount: Output only. The total count of objects whose
-      policy evaluation resulted in error across the bucket.
-    evaluationErrorsPercentage: Output only. The percentage of objects with
-      evaluation errors.
-    policyViolationsCount: Output only. The total count of objects which have
+    evaluationErrors: Output only. The number and percentage of objects whose
+      policy evaluation resulted in an error across the bucket.
+    objectCount: Output only. The total number of objects in the bucket.
+    policyViolations: Output only. The number and percentage of objects with
       policy violations across the bucket.
-    policyViolationsPercentage: Output only. The percentage of objects with
-      policy violations.
   """
 
   bucket = _messages.StringField(1)
-  evaluationErrorsCount = _messages.IntegerField(2)
-  evaluationErrorsPercentage = _messages.IntegerField(3)
-  policyViolationsCount = _messages.IntegerField(4)
-  policyViolationsPercentage = _messages.IntegerField(5)
+  evaluationErrors = _messages.MessageField('ValueWithPercentage', 2)
+  objectCount = _messages.IntegerField(3)
+  policyViolations = _messages.MessageField('ValueWithPercentage', 4)
 
 
 class BucketSourceSpec(_messages.Message):
@@ -767,9 +763,13 @@ class DefaultCmekEncryptionViolation(_messages.Message):
 
   Fields:
     bucketViolationDetails: Output only. Bucket level violation details.
+    defaultKmsKey: Output only. The default KMS key configured on the bucket.
+      Format: `projects/{project}/locations/{location}/keyRings/{key_ring}/cry
+      ptoKeys/{crypto_key}`
   """
 
   bucketViolationDetails = _messages.MessageField('BucketSecurityControlViolation', 1)
+  defaultKmsKey = _messages.StringField(2)
 
 
 class DeleteFolderRecursiveRequest(_messages.Message):
@@ -940,10 +940,14 @@ class EnforcedEncryptionViolation(_messages.Message):
   r"""Details about a bucket-enforced encryption violation.
 
   Fields:
+    allowedEncryptionTypes: Output only. The allowed and enforced encryption
+      types configured on the bucket. Acceptable values are `GMEK`, `CMEK`,
+      and `CSEK`.
     bucketViolationDetails: Output only. Bucket level violation details.
   """
 
-  bucketViolationDetails = _messages.MessageField('BucketSecurityControlViolation', 1)
+  allowedEncryptionTypes = _messages.StringField(1, repeated=True)
+  bucketViolationDetails = _messages.MessageField('BucketSecurityControlViolation', 2)
 
 
 class ExcessiveNonCurrentVersion(_messages.Message):
@@ -4149,17 +4153,16 @@ class StorageProjectsBucketsObjectsViewFullContextRequest(_messages.Message):
   r"""A StorageProjectsBucketsObjectsViewFullContextRequest object.
 
   Fields:
-    bucket: Required. Name of the bucket in which the object resides.
     contextKey: Required. The key of the object context to retrieve.
     generation: Optional. If present, selects a specific revision of this
       object (as opposed to the latest version, the default).
-    object: Required. Name of the object this context belongs to.
+    name: Required. The name of the object. Format:
+      `projects/{project}/buckets/{bucket}/objects/{object}`
   """
 
-  bucket = _messages.StringField(1, required=True)
-  contextKey = _messages.StringField(2)
-  generation = _messages.IntegerField(3)
-  object = _messages.StringField(4, required=True)
+  contextKey = _messages.StringField(1)
+  generation = _messages.IntegerField(2)
+  name = _messages.StringField(3, required=True)
 
 
 class StorageProjectsBucketsReplaceBucketEncryptionKeyRequest(_messages.Message):

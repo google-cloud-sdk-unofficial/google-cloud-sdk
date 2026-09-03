@@ -142,6 +142,11 @@ def _update_digesters(digesters, data, chunk_crc32c=None):
 
 def _should_validate_chunk_integrity(digesters):
   """Returns true if chunk integrity should be validated."""
+  if (
+      properties.VALUES.storage.check_hashes.Get()
+      == properties.CheckHashes.NEVER.value
+  ):
+    return False
   if not digesters:
     return False
   if hash_util.HashAlgorithm.CRC32C not in digesters:

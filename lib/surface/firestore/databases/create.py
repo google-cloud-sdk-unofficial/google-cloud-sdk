@@ -219,6 +219,7 @@ class CreateFirestoreAPI(base.Command):
         self.DatabaseConcurrencyMode(args.concurrency_mode),
         storage_placement=getattr(args, 'storage_placement', None),
         tags=args.tags,
+        free_tier_limited=args.free_tier_limited,
     )
 
   @classmethod
@@ -320,6 +321,15 @@ class CreateFirestoreAPI(base.Command):
             """),
         action='store_true',
         default=None,
+    )
+    parser.add_argument(
+        '--free-tier-limited',
+        help=textwrap.dedent("""\
+            Whether to restrict the created database to free tier usage only.
+            """),
+        action='store_true',
+        default=None,
+        hidden=True,
     )
     flags.AddConcurrencyModeFlag(parser)
     flags.AddKmsKeyNameFlag(parser)

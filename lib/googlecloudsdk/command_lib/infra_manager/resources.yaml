@@ -141,3 +141,16 @@ automigrationconfig:
   - *project
   - *location
   disable_auto_completers: false
+warm_pool:
+  name: warmPool
+  plural_name: warmPools
+  collection: config.projects.locations.warmPools
+  request_id_field: warmPoolId
+  attributes:
+  - *project
+  - *location
+  - &warm_pool
+    parameter_name: warmPoolsId
+    attribute_name: warm_pool
+    help: The ID of the Warm Pool
+  disable_auto_completers: false

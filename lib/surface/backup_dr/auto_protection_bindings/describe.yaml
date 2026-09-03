@@ -1,0 +1,24 @@
+- release_tracks: [ALPHA, BETA]
+  hidden: true
+
+  help_text:
+    brief: Describe a Backup and DR auto-protection binding.
+    description: Describe a Backup and DR auto-protection binding.
+    examples: |
+      To describe a Backup and DR auto-protection binding, run:
+
+        $ {command} my-binding-id --auto-protection-policy=my-auto-protection-policy --location=us-central1
+
+  request:
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
+    collection: backupdr.projects.locations.autoProtectionPolicies.bindings
+    method: get
+
+  arguments:
+    resource:
+      help_text: The auto-protection binding to describe.
+      spec: !REF googlecloudsdk.command_lib.backupdr.resources:autoProtectionPolicyBinding
+      is_positional: true

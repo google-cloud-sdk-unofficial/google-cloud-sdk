@@ -553,6 +553,7 @@ class Make(bigquery_command.BigqueryCmd):
             'BACKGROUND_CHANGE_DATA_CAPTURE',
             'BACKGROUND_COLUMN_METADATA_INDEX',
             'BACKGROUND_SEARCH_INDEX_REFRESH',
+            'AUTOMATIC_MATERIALIZED_VIEW_REFRESH',
         ],
         (
             'Type of jobs to create reservation assignment for.'
@@ -576,6 +577,7 @@ class Make(bigquery_command.BigqueryCmd):
             ' BACKGROUND reservations if one does not exist.'
             '\n BACKGROUND_COLUMN_METADATA_INDEX'
             '\n BACKGROUND_SEARCH_INDEX_REFRESH'
+            '\n AUTOMATIC_MATERIALIZED_VIEW_REFRESH'
             '\n SPARK'
             '\n BigQuery Spark jobs'
             ' that use services external to BQ for executing SPARK procedure'
@@ -968,7 +970,7 @@ class Make(bigquery_command.BigqueryCmd):
       self, identifier: str = '', schema: str = ''
   ) -> Optional[int]:
     # pylint: disable=g-doc-exception
-    """Create a dataset, table, view, or transfer configuration with this name.
+    r"""Create a dataset, table, view, or transfer configuration with this name.
 
     See 'bq help mk' for more information.
 

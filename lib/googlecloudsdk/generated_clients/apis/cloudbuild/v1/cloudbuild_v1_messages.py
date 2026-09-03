@@ -2984,7 +2984,6 @@ class Empty(_messages.Message):
   """
 
 
-
 class FailureInfo(_messages.Message):
   r"""A fatal problem encountered during the execution of the build.
 
@@ -3395,6 +3394,10 @@ class GitSourceDependency(_messages.Message):
     depth: Optional. How much history should be fetched for the build (default
       1, -1 for all history).
     destPath: Required. Where should the files be placed on the worker.
+    fetchTags: Optional. True if remote tags should be fetched too (default
+      false). Note: when depth is 1 (default), git fetch only retrieves tags
+      pointing to commits within the shallow boundary. Set depth to -1 to
+      fetch all historical tags.
     recurseSubmodules: Optional. True if submodules should be fetched too
       (default false).
     repository: Required. The kind of repo (url or dev connect).
@@ -3403,9 +3406,10 @@ class GitSourceDependency(_messages.Message):
 
   depth = _messages.IntegerField(1)
   destPath = _messages.StringField(2)
-  recurseSubmodules = _messages.BooleanField(3)
-  repository = _messages.MessageField('GitSourceRepository', 4)
-  revision = _messages.StringField(5)
+  fetchTags = _messages.BooleanField(3)
+  recurseSubmodules = _messages.BooleanField(4)
+  repository = _messages.MessageField('GitSourceRepository', 5)
+  revision = _messages.StringField(6)
 
 
 class GitSourceRepository(_messages.Message):
@@ -4534,7 +4538,6 @@ class ReceiveTriggerWebhookResponse(_messages.Message):
   r"""ReceiveTriggerWebhookResponse [Experimental] is the response object for
   the ReceiveTriggerWebhook method.
   """
-
 
 
 class RemoveBitbucketServerConnectedRepositoryRequest(_messages.Message):

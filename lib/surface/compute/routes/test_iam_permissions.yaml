@@ -1,0 +1,29 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Test IAM permissions for a Compute Engine route.
+    description: |
+      Returns permissions that a caller has on the specified route.
+    examples: |
+      To test if the caller has 'compute.routes.get' permission on a route, run:
+
+        $ {command} my-route --permissions=compute.routes.get
+
+  request:
+    collection: compute.routes
+    api_version: alpha
+    method: testIamPermissions
+    use_relative_name: false
+
+  command_type: GENERIC
+
+  arguments:
+    resource:
+      help_text: The route for which to test permissions.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:route
+    params:
+    - arg_name: permissions
+      api_field: testPermissionsRequest.permissions
+      required: true
+      repeated: true
+      help_text: |-
+        Permissions to be tested.

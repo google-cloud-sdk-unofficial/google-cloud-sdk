@@ -282,7 +282,11 @@ _METADATA_TYPES = {
     'GEOGRAPHY': 'GEOSPATIAL',
     'STRUCT': 'STRUCT',
     'RECORD': 'STRUCT',
-    'RANGE': 'RANGE',
+    # TODO: b/545043720 - Change the "RANGE" mapping back to "RANGE" once it is
+    # available in the production schema aspect, which currently lacks RANGE
+    # support. Temporarily mapping it to OTHER and suppressing rangeElementType
+    # to bypass this blocker.
+    'RANGE': 'OTHER',
 }
 
 # The 1P schema aspect requires a dataType on every field, but dbt often has no
@@ -327,22 +331,26 @@ def _has_constraint(column: dict[str, Any], constraint_type: str) -> bool:
   )
 
 
-def _field_mode(data_type: str, column: dict[str, Any]) -> str:
+def _field_mode(
+    data_type: str, column: dict[str, Any], contract_enforced: bool | None
+) -> str:
   """The 1P `mode` for a column, or '' when dbt cannot tell us.
 
   dbt's artifacts carry no nullability, so NULLABLE is never inferable -- only
-  an ARRAY (always repeated) and a declared not_null constraint are certain.
+  an ARRAY (always repeated) and an enforced not_null constraint are certain.
 
   Args:
     data_type: the column's dbt/warehouse type string.
     column: the merged column, read for its dbt constraints.
+    contract_enforced: the node's contract ``enforced`` flag, or None when the
+      node declares no contract.
 
   Returns:
     'REPEATED', 'REQUIRED', or '' when neither is certain.
   """
   if (data_type or '').strip().upper().startswith('ARRAY<'):
     return 'REPEATED'
-  if _has_constraint(column, 'not_null'):
+  if contract_enforced and _has_constraint(column, 'not_null'):
     return 'REQUIRED'
   return ''
 
@@ -567,7 +575,7 @@ def _node_and_column_constraints(
 
 
 def _schema_field(
-    column: dict[str, Any], name: str, semantic: dict[str, str]
+    column: dict[str, Any], name: str, contract_enforced: bool | None
 ) -> dict[str, Any]:
   """Builds one 1P schema field from a merged column."""
   data_type = _clean_data_type(column.get('dataType'))
@@ -578,24 +586,20 @@ def _schema_field(
   }
   if column.get('description'):
     field['description'] = column['description']
-  mode = _field_mode(data_type, column)
+  mode = _field_mode(data_type, column, contract_enforced)
   if mode:
     field['mode'] = mode
   range_element = _range_element_type(data_type)
-  if range_element:
+  if range_element and field['metadataType'] == 'RANGE':
     field['rangeElementType'] = range_element
   annotations = _field_annotations(column)
   if annotations:
     field['annotations'] = annotations
-  # Matched case-insensitively, as the two column sources already are.
-  role = semantic.get((column.get('columnId') or '').lower())
-  if role:
-    field['semantic'] = role
   return field
 
 
 def _nested_fields(
-    columns: list[dict[str, Any]], semantic: dict[str, str]
+    columns: list[dict[str, Any]], contract_enforced: bool | None
 ) -> list[dict[str, Any]]:
   """Rebuilds the nested field tree from BigQuery's dotted column paths.
 
@@ -607,7 +611,8 @@ def _nested_fields(
 
   Args:
     columns: the merged columns from ``merged_columns``, in catalog order.
-    semantic: column name -> DIMENSION/MEASURE, from the semantic models.
+    contract_enforced: the node's contract ``enforced`` flag, threaded down to
+      ``_field_mode``.
 
   Returns:
     The top-level fields, each with nested ``fields`` where applicable.
@@ -639,7 +644,7 @@ def _nested_fields(
         siblings.append(parent)
       siblings = parent.setdefault('fields', [])
     key = tuple(part.lower() for part in path)
-    field = _schema_field(column, path[-1], semantic)
+    field = _schema_field(column, path[-1], contract_enforced)
     placeholder = by_path.get(key)
     if placeholder is None:
       by_path[key] = field
@@ -726,21 +731,19 @@ def system_schema_aspect(
     ctx: naming.Context,
     columns: list[dict[str, Any]],
     node: dict[str, Any] | None = None,
-    semantic: dict[str, str] | None = None,
     resolve_target: Callable[[str], str | None] | None = None,
 ) -> dict[str, Any] | None:
   """Builds the core 1P `schema` aspect from the same merged columns.
 
   This is the only schema dbt entries carry. It reconstructs real nesting
   from BigQuery's flattened dotted paths and fills the fields the catalog UI
-  and search read (metadataType, mode, rangeElementType, annotations,
-  semantic) plus every constraint dbt declares.
+  and search read (metadataType, mode, rangeElementType, annotations) plus
+  every constraint dbt declares.
 
   Args:
     ctx: the naming.Context holding the naming coordinates for this run.
     columns: the merged columns from ``merged_columns``.
     node: the dbt node, read for its constraints.
-    semantic: column name -> DIMENSION/MEASURE, from the semantic models.
     resolve_target: maps a foreign key's raw ``to`` to a Dataplex entry name;
       when absent, no foreign keys are emitted.
 
@@ -750,7 +753,7 @@ def system_schema_aspect(
   if not columns:
     return None
   node = node or {}
-  data = {'fields': _nested_fields(columns, semantic or {})}
+  data = {'fields': _nested_fields(columns, _contract_enforced(node))}
   key = primary_key(node)
   if key:
     data['primaryKey'] = key
@@ -780,13 +783,14 @@ def model_contracts_aspect(
   ]
   column_contracts = []
   for col_name, col in (node.get('columns') or {}).items():
+    col = col or {}
     column_contracts.append({
-        'name': col.get('name', col_name),
+        'name': col.get('name') or col_name,
         'dataType': col.get('data_type') or '',
         'constraints': [
-            c.get('type')
+            (c or {}).get('type')
             for c in col.get('constraints') or []
-            if c.get('type')
+            if (c or {}).get('type')
         ],
     })
   data = {

@@ -1,0 +1,22 @@
+- release_tracks: [ALPHA, BETA]
+  hidden: true
+
+  help_text:
+    brief: Describe a Backup and DR AutoProtectionPolicy.
+    description: Describe a Backup and DR AutoProtectionPolicy.
+    examples: |
+      To describe an AutoProtectionPolicy 'my-policy' in 'us-central1', run:
+
+        $ {command} my-policy --location=us-central1
+
+  request:
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
+    collection: backupdr.projects.locations.autoProtectionPolicies
+
+  arguments:
+    resource:
+      help_text: Name of the AutoProtectionPolicy to describe.
+      spec: !REF googlecloudsdk.command_lib.backupdr.resources:autoProtectionPolicy

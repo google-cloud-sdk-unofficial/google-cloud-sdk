@@ -40,8 +40,9 @@ try:
     from collections.abc import Mapping
 # Python 2.7 compatibility
 except ImportError:  # pragma: NO COVER
-    from collections import Mapping
+    from collections import Mapping  # type: ignore
 import abc
+import base64
 import json
 import os
 from typing import NamedTuple
@@ -49,6 +50,7 @@ from typing import NamedTuple
 from google.auth import _helpers
 from google.auth import exceptions
 from google.auth import external_account
+from google.auth.transport import _mtls_helper
 
 
 class SubjectTokenSupplier(metaclass=abc.ABCMeta):
@@ -82,9 +84,9 @@ class SubjectTokenSupplier(metaclass=abc.ABCMeta):
 
 class _TokenContent(NamedTuple):
     """Models the token content response from file and url internal suppliers.
-        Attributes:
-            content (str): The string content of the file or URL response.
-            location (str): The location the content was retrieved from. This will either be a file location or a URL.
+    Attributes:
+        content (str): The string content of the file or URL response.
+        location (str): The location the content was retrieved from. This will either be a file location or a URL.
     """
 
     content: str
@@ -92,7 +94,7 @@ class _TokenContent(NamedTuple):
 
 
 class _FileSupplier(SubjectTokenSupplier):
-    """ Internal implementation of subject token supplier which supports reading a subject token from a file."""
+    """Internal implementation of subject token supplier which supports reading a subject token from a file."""
 
     def __init__(self, path, format_type, subject_token_field_name):
         self._path = path
@@ -113,7 +115,7 @@ class _FileSupplier(SubjectTokenSupplier):
 
 
 class _UrlSupplier(SubjectTokenSupplier):
-    """ Internal implementation of subject token supplier which supports retrieving a subject token by calling a URL endpoint."""
+    """Internal implementation of subject token supplier which supports retrieving a subject token by calling a URL endpoint."""
 
     def __init__(self, url, format_type, subject_token_field_name, headers):
         self._url = url
@@ -142,6 +144,98 @@ class _UrlSupplier(SubjectTokenSupplier):
         )
 
 
+class _X509Supplier(SubjectTokenSupplier):
+    """Internal supplier for X509 workload credentials. This class is used internally and always returns an empty string as the subject token."""
+
+    def __init__(self, trust_chain_path, leaf_cert_callback):
+        self._trust_chain_path = trust_chain_path
+        self._leaf_cert_callback = leaf_cert_callback
+
+    @_helpers.copy_docstring(SubjectTokenSupplier)
+    def get_subject_token(self, context, request):
+        from cryptography import x509
+
+        try:
+            leaf_cert_data = self._leaf_cert_callback()
+        except Exception as e:
+            raise exceptions.RefreshError("Failed to retrieve leaf certificate.") from e
+
+        try:
+            if isinstance(leaf_cert_data, str):
+                leaf_cert_data = leaf_cert_data.encode("utf-8")
+            leaf_cert = x509.load_pem_x509_certificate(leaf_cert_data)
+        except Exception as e:
+            raise exceptions.RefreshError("Failed to parse leaf certificate.") from e
+        trust_chain = self._read_trust_chain()
+        cert_chain = []
+
+        cert_chain.append(_encode_cert(leaf_cert))
+
+        if trust_chain is None or len(trust_chain) == 0:
+            return json.dumps(cert_chain)
+
+        # Append the first cert if it is not the leaf cert.
+        first_cert = _encode_cert(trust_chain[0])
+        if first_cert != cert_chain[0]:
+            cert_chain.append(first_cert)
+
+        for i in range(1, len(trust_chain)):
+            encoded = _encode_cert(trust_chain[i])
+            # Check if the current cert is the leaf cert and raise an exception if it is.
+            if encoded == cert_chain[0]:
+                raise exceptions.RefreshError(
+                    "The leaf certificate must be at the top of the trust chain file"
+                )
+            else:
+                cert_chain.append(encoded)
+        return json.dumps(cert_chain)
+
+    def _read_trust_chain(self):
+        from cryptography import x509
+
+        certificate_trust_chain = []
+        # If no trust chain path was provided, return an empty list.
+        if self._trust_chain_path is None or self._trust_chain_path == "":
+            return certificate_trust_chain
+        try:
+            # Open the trust chain file.
+            with open(self._trust_chain_path, "rb") as f:
+                trust_chain_data = f.read()
+                # Split PEM data into individual certificates.
+                cert_blocks = trust_chain_data.split(b"-----BEGIN CERTIFICATE-----")
+                for cert_block in cert_blocks:
+                    # Skip empty blocks.
+                    if cert_block.strip():
+                        cert_data = b"-----BEGIN CERTIFICATE-----" + cert_block
+                        try:
+                            # Load each certificate and add it to the trust chain.
+                            cert = x509.load_pem_x509_certificate(cert_data)
+                            certificate_trust_chain.append(cert)
+                        except Exception as e:
+                            raise exceptions.RefreshError(
+                                "Error loading PEM certificates from the trust chain file '{}'".format(
+                                    self._trust_chain_path
+                                )
+                            ) from e
+                return certificate_trust_chain
+        except FileNotFoundError as e:
+            raise exceptions.RefreshError(
+                "Trust chain file '{}' was not found.".format(self._trust_chain_path)
+            ) from e
+        except OSError as e:
+            raise exceptions.RefreshError(
+                "Error accessing trust chain file '{}'.".format(self._trust_chain_path)
+            ) from e
+
+
+def _encode_cert(cert):
+    from cryptography.hazmat.primitives import serialization
+
+    return base64.b64encode(cert.public_bytes(serialization.Encoding.DER)).decode(
+        "utf-8"
+    )
+
+
 def _parse_token_data(token_content, format_type="text", subject_token_field_name=None):
     if format_type == "text":
         token = token_content.content
@@ -165,7 +259,16 @@ def _parse_token_data(token_content, format_type="text", subject_token_field_nam
 
 
 class Credentials(external_account.Credentials):
-    """External account credentials sourced from files and URLs."""
+    """External account credentials sourced from files and URLs.
+
+    **IMPORTANT**:
+    This class does not validate the credential configuration. A security
+    risk occurs when a credential configuration configured with malicious urls
+    is used.
+    When the credential configuration is accepted from an
+    untrusted source, you should validate it before using.
+    Refer https://cloud.google.com/docs/authentication/external/externally-sourced-credentials for more details.
+    """
 
     def __init__(
         self,
@@ -248,6 +351,7 @@ class Credentials(external_account.Credentials):
             self._subject_token_supplier = subject_token_supplier
             self._credential_source_file = None
             self._credential_source_url = None
+            self._credential_source_certificate = None
         else:
             if not isinstance(credential_source, Mapping):
                 self._credential_source_executable = None
@@ -256,45 +360,22 @@ class Credentials(external_account.Credentials):
                 )
             self._credential_source_file = credential_source.get("file")
             self._credential_source_url = credential_source.get("url")
-            self._credential_source_headers = credential_source.get("headers")
-            credential_source_format = credential_source.get("format", {})
-            # Get credential_source format type. When not provided, this
-            # defaults to text.
-            self._credential_source_format_type = (
-                credential_source_format.get("type") or "text"
-            )
+            self._credential_source_certificate = credential_source.get("certificate")
+
             # environment_id is only supported in AWS or dedicated future external
             # account credentials.
             if "environment_id" in credential_source:
                 raise exceptions.MalformedError(
                     "Invalid Identity Pool credential_source field 'environment_id'"
                 )
-            if self._credential_source_format_type not in ["text", "json"]:
-                raise exceptions.MalformedError(
-                    "Invalid credential_source format '{}'".format(
-                        self._credential_source_format_type
-                    )
-                )
-            # For JSON types, get the required subject_token field name.
-            if self._credential_source_format_type == "json":
-                self._credential_source_field_name = credential_source_format.get(
-                    "subject_token_field_name"
-                )
-                if self._credential_source_field_name is None:
-                    raise exceptions.MalformedError(
-                        "Missing subject_token_field_name for JSON credential_source format"
-                    )
-            else:
-                self._credential_source_field_name = None
 
-            if self._credential_source_file and self._credential_source_url:
-                raise exceptions.MalformedError(
-                    "Ambiguous credential_source. 'file' is mutually exclusive with 'url'."
-                )
-            if not self._credential_source_file and not self._credential_source_url:
-                raise exceptions.MalformedError(
-                    "Missing credential_source. A 'file' or 'url' must be provided."
-                )
+            # check that only one of file, url, or certificate are provided.
+            self._validate_single_source()
+
+            if self._credential_source_certificate:
+                self._validate_certificate_config()
+            else:
+                self._validate_file_or_url_config(credential_source)
 
             if self._credential_source_file:
                 self._subject_token_supplier = _FileSupplier(
@@ -302,12 +383,16 @@ class Credentials(external_account.Credentials):
                     self._credential_source_format_type,
                     self._credential_source_field_name,
                 )
-            else:
+            elif self._credential_source_url:
                 self._subject_token_supplier = _UrlSupplier(
                     self._credential_source_url,
                     self._credential_source_format_type,
                     self._credential_source_field_name,
                     self._credential_source_headers,
+                )
+            else:  # self._credential_source_certificate
+                self._subject_token_supplier = _X509Supplier(
+                    self._trust_chain_path, self._get_cert_bytes
                 )
 
     @_helpers.copy_docstring(external_account.Credentials)
@@ -316,16 +401,35 @@ class Credentials(external_account.Credentials):
             self._supplier_context, request
         )
 
+    def _get_mtls_cert_and_key_paths(self):
+        if self._credential_source_certificate is None:
+            raise exceptions.RefreshError(
+                'The credential is not configured to use mtls requests. The credential should include a "certificate" section in the credential source.'
+            )
+        else:
+            return _mtls_helper._get_workload_cert_and_key_paths(
+                self._certificate_config_location
+            )
+
+    def _get_cert_bytes(self):
+        cert_path, _ = self._get_mtls_cert_and_key_paths()
+        return _mtls_helper._read_cert_file(cert_path)
+
+    def _mtls_required(self):
+        return self._credential_source_certificate is not None
+
     def _create_default_metrics_options(self):
         metrics_options = super(Credentials, self)._create_default_metrics_options()
-        # Check that credential source is a dict before checking for file vs url. This check needs to be done
+        # Check that credential source is a dict before checking for credential type. This check needs to be done
         # here because the external_account credential constructor needs to pass the metrics options to the
         # impersonated credential object before the identity_pool credentials are validated.
         if isinstance(self._credential_source, Mapping):
             if self._credential_source.get("file"):
                 metrics_options["source"] = "file"
-            else:
+            elif self._credential_source.get("url"):
                 metrics_options["source"] = "url"
+            else:
+                metrics_options["source"] = "x509"
         else:
             metrics_options["source"] = "programmatic"
         return metrics_options
@@ -340,9 +444,81 @@ class Credentials(external_account.Credentials):
             args.update({"subject_token_supplier": self._subject_token_supplier})
         return args
 
+    def _validate_certificate_config(self):
+        self._certificate_config_location = self._credential_source_certificate.get(
+            "certificate_config_location"
+        )
+        use_default = self._credential_source_certificate.get(
+            "use_default_certificate_config"
+        )
+        self._trust_chain_path = self._credential_source_certificate.get(
+            "trust_chain_path"
+        )
+        if self._certificate_config_location and use_default:
+            raise exceptions.MalformedError(
+                "Invalid certificate configuration, certificate_config_location cannot be specified when use_default_certificate_config = true."
+            )
+        if not self._certificate_config_location and not use_default:
+            raise exceptions.MalformedError(
+                "Invalid certificate configuration, use_default_certificate_config should be true if no certificate_config_location is provided."
+            )
+
+    def _validate_file_or_url_config(self, credential_source):
+        self._credential_source_headers = credential_source.get("headers")
+        credential_source_format = credential_source.get("format", {})
+        # Get credential_source format type. When not provided, this
+        # defaults to text.
+        self._credential_source_format_type = (
+            credential_source_format.get("type") or "text"
+        )
+        if self._credential_source_format_type not in ["text", "json"]:
+            raise exceptions.MalformedError(
+                "Invalid credential_source format '{}'".format(
+                    self._credential_source_format_type
+                )
+            )
+        # For JSON types, get the required subject_token field name.
+        if self._credential_source_format_type == "json":
+            self._credential_source_field_name = credential_source_format.get(
+                "subject_token_field_name"
+            )
+            if self._credential_source_field_name is None:
+                raise exceptions.MalformedError(
+                    "Missing subject_token_field_name for JSON credential_source format"
+                )
+        else:
+            self._credential_source_field_name = None
+
+    def _validate_single_source(self):
+        credential_sources = [
+            self._credential_source_file,
+            self._credential_source_url,
+            self._credential_source_certificate,
+        ]
+        valid_credential_sources = list(
+            filter(lambda source: source is not None, credential_sources)
+        )
+
+        if len(valid_credential_sources) > 1:
+            raise exceptions.MalformedError(
+                "Ambiguous credential_source. 'file', 'url', and 'certificate' are mutually exclusive.."
+            )
+        if len(valid_credential_sources) != 1:
+            raise exceptions.MalformedError(
+                "Missing credential_source. A 'file', 'url', or 'certificate' must be provided."
+            )
+
     @classmethod
     def from_info(cls, info, **kwargs):
         """Creates an Identity Pool Credentials instance from parsed external account info.
+
+        **IMPORTANT**:
+        This method does not validate the credential configuration. A security
+        risk occurs when a credential configuration configured with malicious urls
+        is used.
+        When the credential configuration is accepted from an
+        untrusted source, you should validate it before using with this method.
+        Refer https://cloud.google.com/docs/authentication/external/externally-sourced-credentials for more details.
 
         Args:
             info (Mapping[str, str]): The Identity Pool external account info in Google
@@ -356,13 +532,20 @@ class Credentials(external_account.Credentials):
         Raises:
             ValueError: For invalid parameters.
         """
-        subject_token_supplier = info.get("subject_token_supplier")
-        kwargs.update({"subject_token_supplier": subject_token_supplier})
+        kwargs.setdefault("subject_token_supplier", info.get("subject_token_supplier"))
         return super(Credentials, cls).from_info(info, **kwargs)
 
     @classmethod
     def from_file(cls, filename, **kwargs):
         """Creates an IdentityPool Credentials instance from an external account json file.
+
+        **IMPORTANT**:
+        This method does not validate the credential configuration. A security
+        risk occurs when a credential configuration configured with malicious urls
+        is used.
+        When the credential configuration is accepted from an
+        untrusted source, you should validate it before using with this method.
+        Refer https://cloud.google.com/docs/authentication/external/externally-sourced-credentials for more details.
 
         Args:
             filename (str): The path to the IdentityPool external account json file.
@@ -373,3 +556,24 @@ class Credentials(external_account.Credentials):
                 credentials.
         """
         return super(Credentials, cls).from_file(filename, **kwargs)
+
+    def refresh(self, request):
+        """Refreshes the access token.
+
+        Args:
+            request (google.auth.transport.Request): The object used to make
+                HTTP requests.
+        """
+        from google.auth import _agent_identity_utils
+
+        cert_fingerprint = None
+        # Check if the credential is X.509 based.
+        if self._credential_source_certificate is not None:
+            cert_bytes = self._get_cert_bytes()
+            cert = _agent_identity_utils.parse_certificate(cert_bytes)
+            if _agent_identity_utils.should_request_bound_token(cert):
+                cert_fingerprint = (
+                    _agent_identity_utils.calculate_certificate_fingerprint(cert)
+                )
+
+        self._perform_refresh_token(request, cert_fingerprint=cert_fingerprint)

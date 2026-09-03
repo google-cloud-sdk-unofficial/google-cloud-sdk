@@ -89,6 +89,7 @@ class Create(base.CreateCommand):
         """,
     )
     flags.AddAutoscalingSettingsFlagsToParser(parser)
+    flags.AddPlacementGroupFlagsToParser(parser)
 
   def Run(self, args):
     cluster = args.CONCEPTS.cluster.Parse()
@@ -118,6 +119,9 @@ class Create(base.CreateCommand):
         nodes_configs,
         autoscaling_settings,
         vsan_type=args.vsan_type,
+        placement_group=args.placement_group,
+        preferred_placement_group=args.preferred_placement_group,
+        secondary_placement_group=args.secondary_placement_group,
     )
 
     if is_async:

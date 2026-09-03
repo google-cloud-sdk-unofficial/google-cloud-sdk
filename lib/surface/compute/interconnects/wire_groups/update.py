@@ -113,6 +113,7 @@ class Update(base.UpdateCommand):
         admin_enabled=args.admin_enabled,
         network_service_class=getattr(args, 'network_service_class', None),
         bandwidth_allocation=getattr(args, 'bandwidth_allocation', None),
+        flow_management=getattr(args, 'flow_management', None),
         validate_only=args.validate_only,
     )
 
@@ -146,3 +147,4 @@ class UpdateAlpha(UpdateBeta):
     super().Args(parser)
     flags.AddBandwidthMetered(parser)
     flags.AddNetworkServiceClass(parser)
+    flags.AddFlowManagement(parser)

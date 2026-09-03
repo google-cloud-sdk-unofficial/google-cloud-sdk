@@ -117,6 +117,26 @@ class AuditLogConfig(_messages.Message):
   logType = _messages.EnumField('LogTypeValueValuesEnum', 3)
 
 
+class AuditPamBindingId(_messages.Message):
+  r"""A composite unique identifier for a PAM Grant which is
+  {Org/Folder/Project identifier, grant Unique Identifier} tuple.
+
+  Fields:
+    container: Output only. GCP Project/Folder/Organization identifier to
+      which the PAM entitlement/grant is bound to. Container will be in the
+      following form: projects/$project_num or folders/$folder_num or
+      organizations/$org
+    grantUuid: Output only. Represents the unique identifier for the PAM
+      grant. Full_resource_name_pattern for PAM Grant is:
+      //privilegedaccessmanager.googleapis.com/
+      (projects|folders|organizations)/$0/locations/$1/entitlements/$2/
+      grants/$3 where $3 is the grant_uuid.
+  """
+
+  container = _messages.StringField(1)
+  grantUuid = _messages.StringField(2)
+
+
 class Authority(_messages.Message):
   r"""Authority encodes how Google will recognize identities from this
   Membership. See the workload identity documentation for more details:
@@ -389,6 +409,9 @@ class CloudAuditOptions(_messages.Message):
       pipeline. Will be deprecated once the migration to PermissionType is
       complete (b/201806118).
     logName: The log_name to populate in the Cloud Audit Record.
+    pamAuthorizationMetadata: Output only. Contains the corresponding PAM
+      grant identifier if the access was granted by a Privileged Access
+      Manager (PAM) binding.
     permissionType: The type associated with the permission.
   """
 
@@ -425,7 +448,8 @@ class CloudAuditOptions(_messages.Message):
   agentMetadata = _messages.MessageField('AgentMetadata', 1)
   authorizationLoggingOptions = _messages.MessageField('AuthorizationLoggingOptions', 2)
   logName = _messages.EnumField('LogNameValueValuesEnum', 3)
-  permissionType = _messages.EnumField('PermissionTypeValueValuesEnum', 4)
+  pamAuthorizationMetadata = _messages.MessageField('PrivilegedAccessManagerMetadata', 4)
+  permissionType = _messages.EnumField('PermissionTypeValueValuesEnum', 5)
 
 
 class ClusterSelector(_messages.Message):
@@ -834,6 +858,7 @@ class CommonFeatureState(_messages.Message):
     fleetobservability: FleetObservability feature state.
     helloworld: Hello World-specific state.
     rbacrolebindingactuation: RBAC Role Binding Actuation feature state
+    servicemesh: Service Mesh-specific state.
     state: Output only. The "running state" of the Feature in this Fleet.
     workloadidentity: WorkloadIdentity fleet-level state.
   """
@@ -843,8 +868,9 @@ class CommonFeatureState(_messages.Message):
   fleetobservability = _messages.MessageField('FleetObservabilityFeatureState', 3)
   helloworld = _messages.MessageField('HelloWorldFeatureState', 4)
   rbacrolebindingactuation = _messages.MessageField('RBACRoleBindingActuationFeatureState', 5)
-  state = _messages.MessageField('FeatureState', 6)
-  workloadidentity = _messages.MessageField('WorkloadIdentityFeatureState', 7)
+  servicemesh = _messages.MessageField('ServiceMeshFeatureState', 6)
+  state = _messages.MessageField('FeatureState', 7)
+  workloadidentity = _messages.MessageField('WorkloadIdentityFeatureState', 8)
 
 
 class CommonFleetDefaultMemberConfigSpec(_messages.Message):
@@ -7147,6 +7173,22 @@ class PolicyControllerToleration(_messages.Message):
   value = _messages.StringField(4)
 
 
+class PrivilegedAccessManagerMetadata(_messages.Message):
+  r"""Metadata about the Privileged Access Manager (PAM) backed authorization
+  decisions.
+
+  Fields:
+    pamBindingIds: Output only. If PAM is managing the elevated access,
+      AuditPamBindingId is written to an Identity and Access Management (IAM)
+      policy, which specifies access controls for resources. If the access is
+      granted via an IAM policy with a binding which is managed by Privileged
+      Access Manager, PrivilegedAccessManagerMetadata will contain the
+      AuditPamBindingId.
+  """
+
+  pamBindingIds = _messages.MessageField('AuditPamBindingId', 1, repeated=True)
+
+
 class QualifiedVersion(_messages.Message):
   r"""Represents a qualified version with information about it.
 
@@ -8622,6 +8664,223 @@ class ServiceMeshDataPlaneManagement(_messages.Message):
   state = _messages.EnumField('StateValueValuesEnum', 2)
 
 
+class ServiceMeshFeatureCondition(_messages.Message):
+  r"""Condition being reported.
+
+  Enums:
+    CodeValueValuesEnum: Unique identifier of the condition which describes
+      the condition recognizable to the user.
+    SeverityValueValuesEnum: Severity level of the condition.
+
+  Fields:
+    code: Unique identifier of the condition which describes the condition
+      recognizable to the user.
+    details: A short summary about the issue.
+    documentationLink: Links contains actionable information.
+    severity: Severity level of the condition.
+  """
+
+  class CodeValueValuesEnum(_messages.Enum):
+    r"""Unique identifier of the condition which describes the condition
+    recognizable to the user.
+
+    Values:
+      CODE_UNSPECIFIED: Default Unspecified code
+      MESH_IAM_PERMISSION_DENIED: Mesh IAM permission denied error code
+      MESH_IAM_CROSS_PROJECT_PERMISSION_DENIED: Permission denied error code
+        for cross-project
+      CNI_CONFIG_UNSUPPORTED: CNI config unsupported error code
+      GKE_SANDBOX_UNSUPPORTED: GKE sandbox unsupported error code
+      NODEPOOL_WORKLOAD_IDENTITY_FEDERATION_REQUIRED: Nodepool workload
+        identity federation required error code
+      CNI_INSTALLATION_FAILED: CNI installation failed error code
+      CNI_POD_UNSCHEDULABLE: CNI pod unschedulable error code
+      CLUSTER_HAS_ZERO_NODES: Cluster has zero node code
+      CANONICAL_SERVICE_ERROR: Failure to reconcile CanonicalServices
+      UNSUPPORTED_MULTIPLE_CONTROL_PLANES: Multiple control planes unsupported
+        error code
+      VPCSC_GA_SUPPORTED: VPC-SC GA is supported for this control plane.
+      DEPRECATED_SPEC_CONTROL_PLANE_MANAGEMENT: User is using deprecated
+        ControlPlaneManagement and they have not yet set Management.
+      DEPRECATED_SPEC_CONTROL_PLANE_MANAGEMENT_SAFE: User is using deprecated
+        ControlPlaneManagement and they have already set Management.
+      CONFIG_APPLY_INTERNAL_ERROR: Configuration (Istio/k8s resources) failed
+        to apply due to internal error.
+      CONFIG_VALIDATION_ERROR: Configuration failed to be applied due to being
+        invalid.
+      CONFIG_VALIDATION_WARNING: Encountered configuration(s) with possible
+        unintended behavior or invalid configuration. These configs may not
+        have been applied.
+      QUOTA_EXCEEDED_BACKEND_SERVICES: BackendService quota exceeded error
+        code.
+      QUOTA_EXCEEDED_HEALTH_CHECKS: HealthCheck quota exceeded error code.
+      QUOTA_EXCEEDED_HTTP_ROUTES: HTTPRoute quota exceeded error code.
+      QUOTA_EXCEEDED_TCP_ROUTES: TCPRoute quota exceeded error code.
+      QUOTA_EXCEEDED_TLS_ROUTES: TLS routes quota exceeded error code.
+      QUOTA_EXCEEDED_TRAFFIC_POLICIES: TrafficPolicy quota exceeded error
+        code.
+      QUOTA_EXCEEDED_ENDPOINT_POLICIES: EndpointPolicy quota exceeded error
+        code.
+      QUOTA_EXCEEDED_GATEWAYS: Gateway quota exceeded error code.
+      QUOTA_EXCEEDED_MESHES: Mesh quota exceeded error code.
+      QUOTA_EXCEEDED_SERVER_TLS_POLICIES: ServerTLSPolicy quota exceeded error
+        code.
+      QUOTA_EXCEEDED_CLIENT_TLS_POLICIES: ClientTLSPolicy quota exceeded error
+        code.
+      QUOTA_EXCEEDED_SERVICE_LB_POLICIES: ServiceLBPolicy quota exceeded error
+        code.
+      QUOTA_EXCEEDED_HTTP_FILTERS: HTTPFilter quota exceeded error code.
+      QUOTA_EXCEEDED_TCP_FILTERS: TCPFilter quota exceeded error code.
+      QUOTA_EXCEEDED_NETWORK_ENDPOINT_GROUPS: NetworkEndpointGroup quota
+        exceeded error code.
+      CONFIG_APPLY_BLOCKED: Configuration failed to apply due to fleet being
+        blocked.
+      LEGACY_MC_SECRETS: Legacy istio secrets found for multicluster error
+        code.
+      WORKLOAD_IDENTITY_REQUIRED: Workload identity required error code.
+      NON_STANDARD_BINARY_USAGE: Non-standard binary usage error code.
+      UNSUPPORTED_GATEWAY_CLASS: Unsupported gateway class error code.
+      MANAGED_CNI_NOT_ENABLED: Managed CNI not enabled error code.
+      MISSING_CONTROL_PLANE_CONFIG: Missing control plane configuration error
+        code.
+      SHARED_VPC_MISSING_PERMISSIONS: Shared VPC missing permissions error
+        code.
+      REQUIRED_ORG_POLICY_DISABLED: Required org policy disabled error code.
+      MODERNIZATION_INCOMPATIBLE_POD_ANNOTATION: One or more Pods have
+        unsupported annotations.
+      MODERNIZATION_INCOMPATIBLE_POD_IP_SCALE: Cluster exceeds service mesh
+        pod IP scalability limits.
+      MODERNIZATION_INCOMPATIBLE_CONFIG: Incompatible config found in the
+        cluster.
+      MODERNIZATION_INCOMPATIBLE_GATEWAY_POD_SCALE: Gateway pods per cluster
+        limit exceeded.
+      MODERNIZATION_SCHEDULED: Modernization is scheduled for a cluster.
+      MODERNIZATION_IN_PROGRESS: Modernization is in progress for a cluster.
+      MODERNIZATION_COMPLETED: Modernization is completed for a cluster.
+      MODERNIZATION_ABORTED: Modernization is aborted for a cluster.
+      MODERNIZATION_PREPARING: Preparing cluster so that its workloads can be
+        migrated.
+      MODERNIZATION_STALLED: Modernization is stalled for a cluster.
+      MODERNIZATION_PREPARED: Cluster has been prepared for its workloads to
+        be migrated.
+      MODERNIZATION_MIGRATING_WORKLOADS: Migrating the cluster's workloads to
+        the new implementation.
+      MODERNIZATION_ROLLING_BACK_CLUSTER: Rollback is in progress for
+        modernization of a cluster.
+      MODERNIZATION_WILL_BE_SCHEDULED: Modernization will be scheduled for a
+        fleet.
+      MODERNIZATION_MANUAL: Fleet is opted out from automated modernization.
+      MODERNIZATION_ELIGIBLE: Fleet is eligible for modernization.
+      MODERNIZATION_MODERNIZING: Modernization of one or more clusters in a
+        fleet is in progress.
+      MODERNIZATION_MODERNIZED_SOAKING: Modernization of all the fleet's
+        clusters is complete. Soaking before finalizing the modernization.
+      MODERNIZATION_FINALIZED: Modernization is finalized for all clusters in
+        a fleet. Rollback is no longer allowed.
+      MODERNIZATION_ROLLING_BACK_FLEET: Rollback is in progress for
+        modernization of all clusters in a fleet.
+      MODERNIZATION_MODERNIZED: Modernization of all clusters in the fleet is
+        complete. Soaking before finalizing the modernization.
+      MODERNIZATION_INCOMPATIBLE_SERVICES_SCALE: Fleet exceeds service mesh
+        services scalability limits.
+      MODERNIZATION_COMPATIBLE: Fleet is compatible for modernization.
+      MODERNIZATION_INCOMPATIBLE: Fleet is not yet compatible for
+        modernization.
+      MODERNIZATION_INCOMPATIBLE_FLEET_SCALE: Fleet exceeds service mesh
+        fleet-level scalability limits.
+      MODERNIZATION_INCOMPATIBLE_FLEET_QUOTA: Fleet exceeds service mesh
+        fleet-level quota limits.
+    """
+    CODE_UNSPECIFIED = 0
+    MESH_IAM_PERMISSION_DENIED = 1
+    MESH_IAM_CROSS_PROJECT_PERMISSION_DENIED = 2
+    CNI_CONFIG_UNSUPPORTED = 3
+    GKE_SANDBOX_UNSUPPORTED = 4
+    NODEPOOL_WORKLOAD_IDENTITY_FEDERATION_REQUIRED = 5
+    CNI_INSTALLATION_FAILED = 6
+    CNI_POD_UNSCHEDULABLE = 7
+    CLUSTER_HAS_ZERO_NODES = 8
+    CANONICAL_SERVICE_ERROR = 9
+    UNSUPPORTED_MULTIPLE_CONTROL_PLANES = 10
+    VPCSC_GA_SUPPORTED = 11
+    DEPRECATED_SPEC_CONTROL_PLANE_MANAGEMENT = 12
+    DEPRECATED_SPEC_CONTROL_PLANE_MANAGEMENT_SAFE = 13
+    CONFIG_APPLY_INTERNAL_ERROR = 14
+    CONFIG_VALIDATION_ERROR = 15
+    CONFIG_VALIDATION_WARNING = 16
+    QUOTA_EXCEEDED_BACKEND_SERVICES = 17
+    QUOTA_EXCEEDED_HEALTH_CHECKS = 18
+    QUOTA_EXCEEDED_HTTP_ROUTES = 19
+    QUOTA_EXCEEDED_TCP_ROUTES = 20
+    QUOTA_EXCEEDED_TLS_ROUTES = 21
+    QUOTA_EXCEEDED_TRAFFIC_POLICIES = 22
+    QUOTA_EXCEEDED_ENDPOINT_POLICIES = 23
+    QUOTA_EXCEEDED_GATEWAYS = 24
+    QUOTA_EXCEEDED_MESHES = 25
+    QUOTA_EXCEEDED_SERVER_TLS_POLICIES = 26
+    QUOTA_EXCEEDED_CLIENT_TLS_POLICIES = 27
+    QUOTA_EXCEEDED_SERVICE_LB_POLICIES = 28
+    QUOTA_EXCEEDED_HTTP_FILTERS = 29
+    QUOTA_EXCEEDED_TCP_FILTERS = 30
+    QUOTA_EXCEEDED_NETWORK_ENDPOINT_GROUPS = 31
+    CONFIG_APPLY_BLOCKED = 32
+    LEGACY_MC_SECRETS = 33
+    WORKLOAD_IDENTITY_REQUIRED = 34
+    NON_STANDARD_BINARY_USAGE = 35
+    UNSUPPORTED_GATEWAY_CLASS = 36
+    MANAGED_CNI_NOT_ENABLED = 37
+    MISSING_CONTROL_PLANE_CONFIG = 38
+    SHARED_VPC_MISSING_PERMISSIONS = 39
+    REQUIRED_ORG_POLICY_DISABLED = 40
+    MODERNIZATION_INCOMPATIBLE_POD_ANNOTATION = 41
+    MODERNIZATION_INCOMPATIBLE_POD_IP_SCALE = 42
+    MODERNIZATION_INCOMPATIBLE_CONFIG = 43
+    MODERNIZATION_INCOMPATIBLE_GATEWAY_POD_SCALE = 44
+    MODERNIZATION_SCHEDULED = 45
+    MODERNIZATION_IN_PROGRESS = 46
+    MODERNIZATION_COMPLETED = 47
+    MODERNIZATION_ABORTED = 48
+    MODERNIZATION_PREPARING = 49
+    MODERNIZATION_STALLED = 50
+    MODERNIZATION_PREPARED = 51
+    MODERNIZATION_MIGRATING_WORKLOADS = 52
+    MODERNIZATION_ROLLING_BACK_CLUSTER = 53
+    MODERNIZATION_WILL_BE_SCHEDULED = 54
+    MODERNIZATION_MANUAL = 55
+    MODERNIZATION_ELIGIBLE = 56
+    MODERNIZATION_MODERNIZING = 57
+    MODERNIZATION_MODERNIZED_SOAKING = 58
+    MODERNIZATION_FINALIZED = 59
+    MODERNIZATION_ROLLING_BACK_FLEET = 60
+    MODERNIZATION_MODERNIZED = 61
+    MODERNIZATION_INCOMPATIBLE_SERVICES_SCALE = 62
+    MODERNIZATION_COMPATIBLE = 63
+    MODERNIZATION_INCOMPATIBLE = 64
+    MODERNIZATION_INCOMPATIBLE_FLEET_SCALE = 65
+    MODERNIZATION_INCOMPATIBLE_FLEET_QUOTA = 66
+
+  class SeverityValueValuesEnum(_messages.Enum):
+    r"""Severity level of the condition.
+
+    Values:
+      SEVERITY_UNSPECIFIED: Unspecified severity
+      ERROR: Indicates an issue that prevents the mesh from operating
+        correctly
+      WARNING: Indicates a setting is likely wrong, but the mesh is still able
+        to operate
+      INFO: An informational message, not requiring any action
+    """
+    SEVERITY_UNSPECIFIED = 0
+    ERROR = 1
+    WARNING = 2
+    INFO = 3
+
+  code = _messages.EnumField('CodeValueValuesEnum', 1)
+  details = _messages.StringField(2)
+  documentationLink = _messages.StringField(3)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 4)
+
+
 class ServiceMeshFeatureSpec(_messages.Message):
   r"""**Service Mesh**: Spec for the fleet for the servicemesh feature
 
@@ -8692,6 +8951,17 @@ class ServiceMeshFeatureSpec(_messages.Message):
   modernization = _messages.EnumField('ModernizationValueValuesEnum', 1)
   modernizationCompatibility = _messages.EnumField('ModernizationCompatibilityValueValuesEnum', 2)
   modernizationStrategy = _messages.EnumField('ModernizationStrategyValueValuesEnum', 3)
+
+
+class ServiceMeshFeatureState(_messages.Message):
+  r"""**Service Mesh**: State for the whole Hub, as analyzed by the Service
+  Mesh Hub Controller.
+
+  Fields:
+    conditions: Output only. List of conditions reported for this feature.
+  """
+
+  conditions = _messages.MessageField('ServiceMeshFeatureCondition', 1, repeated=True)
 
 
 class ServiceMeshMembershipSpec(_messages.Message):

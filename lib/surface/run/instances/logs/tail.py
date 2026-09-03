@@ -12,26 +12,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to tail logs for an instance."""
+"""Command to tail logs for a Cloud Run instance."""
 
+from googlecloudsdk.api_lib.run import ssh as run_ssh
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.logs import read as read_logs_lib
+from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
-from googlecloudsdk.command_lib.run import streaming
-from googlecloudsdk.core import properties
 
 
-@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Tail(base.BinaryBackedCommand):
+@base.DefaultUniverseOnly
+class Tail(base.Command):
   """Tail logs for a Cloud Run instance."""
 
   detailed_help = {
       'DESCRIPTION': (
           """\
-          {command} tails log-entries for a particular
-          Cloud Run instance in real time.  The log entries are formatted for
-          consumption in a terminal.
+          {command} tails log entries for a particular Cloud Run instance
+          in real time. The log entries are formatted for consumption in a
+          terminal.
           """
       ),
       'EXAMPLES': (
@@ -39,36 +38,51 @@ class Tail(base.BinaryBackedCommand):
           To tail log entries for a Cloud Run instance, run:
 
             $ {command} my-instance
-
-          To tail log entries with severity ERROR or higher, run:
-
-            $ {command} my-instance --log-filter="severity>=ERROR"
-
-          Detailed information about filters can be found at:
-          [](https://cloud.google.com/logging/docs/view/advanced_filters)
           """
       ),
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
+    flags.AddContainerArg(parser)
+    parser.add_argument(
+        '--iap-tunnel-url-override',
+        hidden=True,
+        help=(
+            'Allows for overriding the connection endpoint for integration'
+            ' testing.'
+        ),
+    )
     parser.add_argument('instance', help='Name for a Cloud Run instance.')
-    read_logs_lib.LogFilterArgs(parser)
 
   def Run(self, args):
-    filters = []
-    if args.IsSpecified('log_filter'):
-      filters.append(args.log_filter)
-    filters.append('resource.type=%s' % 'cloud_run_instance')
-    filters.append('resource.labels.instance_name=%s' % args.instance)
-    filters.append(
-        'resource.labels.location=%s' % flags.GetRegion(args, prompt=True)
+    """Executes the tail logs command on the target instance."""
+    args.project = flags.GetProjectID(args)
+    args.region = flags.GetRegion(args, prompt=True)
+    if not args.region:
+      raise exceptions.ArgumentError(
+          'Missing required argument [region]. Set --region flag or set'
+          ' run/region property.'
+      )
+
+    # run_ssh.Ssh uses deployment_name as the primary resource identifier
+    # across all workload types, expecting instance to be None.
+    args.deployment_name = args.instance
+    args.instance = None
+    args.release_track = self.ReleaseTrack()
+
+    ssh_instance = run_ssh.Ssh(args, run_ssh.Ssh.WorkloadType.INSTANCE)
+    components = ssh_instance.GetSshCommandComponents()
+
+    ssh_cmd = run_ssh.ssh.SSHCommand(
+        remote=components.remote,
+        cert_file=components.cert_file,
+        iap_tunnel_args=components.iap_tunnel_args,
+        options=components.options,
+        identity_file=components.identity_file,
+        remote_command=[
+            '/lib64/ld-linux-x86-64.so.2',
+            '/usr/local/gcp/bin/tail_logs',
+        ],
     )
-    filters.append('severity>=DEFAULT')
-    project_id = properties.VALUES.core.project.Get(required=True)
-    filter_str = ' '.join(filters)
-    command_executor = streaming.LogStreamingWrapper()
-    response = command_executor(
-        project_id=project_id, log_format='run', log_filter=filter_str
-    )
-    return self._DefaultOperationResponseHandler(response)
+    return ssh_cmd.Run(components.env)

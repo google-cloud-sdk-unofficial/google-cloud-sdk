@@ -426,6 +426,7 @@ class Cluster(_messages.Message):
       the `NodeType`).
     nodeTypeId: Optional. Deprecated: The canonical identifier of node types
       (`NodeType`) in this cluster. For example: standard-72.
+    placementGroup: Optional. The placement group for the management cluster.
     state: Output only. State of the resource.
     stretchedClusterConfig: Optional. Configuration of a stretched cluster.
       Required for clusters that belong to a STRETCHED private cloud.
@@ -502,11 +503,12 @@ class Cluster(_messages.Message):
   nodeCustomCoreCount = _messages.IntegerField(7, variant=_messages.Variant.INT32)
   nodeTypeConfigs = _messages.MessageField('NodeTypeConfigsValue', 8)
   nodeTypeId = _messages.StringField(9)
-  state = _messages.EnumField('StateValueValuesEnum', 10)
-  stretchedClusterConfig = _messages.MessageField('StretchedClusterConfig', 11)
-  uid = _messages.StringField(12)
-  updateTime = _messages.StringField(13)
-  vsanType = _messages.EnumField('VsanTypeValueValuesEnum', 14)
+  placementGroup = _messages.StringField(10)
+  state = _messages.EnumField('StateValueValuesEnum', 11)
+  stretchedClusterConfig = _messages.MessageField('StretchedClusterConfig', 12)
+  uid = _messages.StringField(13)
+  updateTime = _messages.StringField(14)
+  vsanType = _messages.EnumField('VsanTypeValueValuesEnum', 15)
 
 
 class Constraints(_messages.Message):
@@ -1835,6 +1837,7 @@ class ManagementCluster(_messages.Message):
       the `NodeType`).
     nodeTypeId: Optional. Deprecated: The canonical identifier of node types
       (`NodeType`) in this cluster. For example: standard-72.
+    placementGroup: Optional. The placement group for the cluster.
     stretchedClusterConfig: Optional. Configuration of a stretched cluster.
       Required for STRETCHED private clouds.
     vsanType: Optional. Immutable. The vSAN type of the cluster.
@@ -1885,8 +1888,9 @@ class ManagementCluster(_messages.Message):
   nodeCustomCoreCount = _messages.IntegerField(4, variant=_messages.Variant.INT32)
   nodeTypeConfigs = _messages.MessageField('NodeTypeConfigsValue', 5)
   nodeTypeId = _messages.StringField(6)
-  stretchedClusterConfig = _messages.MessageField('StretchedClusterConfig', 7)
-  vsanType = _messages.EnumField('VsanTypeValueValuesEnum', 8)
+  placementGroup = _messages.StringField(7)
+  stretchedClusterConfig = _messages.MessageField('StretchedClusterConfig', 8)
+  vsanType = _messages.EnumField('VsanTypeValueValuesEnum', 9)
 
 
 class ManagementDnsZoneBinding(_messages.Message):
@@ -3424,15 +3428,21 @@ class StretchedClusterConfig(_messages.Message):
       example: `projects/{project}/locations/europe-west3-a` or `europe-
       west3-a`, where `{project}` can either be a project number or a project
       ID.
+    preferredLocationPlacementGroup: Optional. Placement group for the
+      preferred location.
     secondaryLocation: Required. Additional zone for a higher level of
       availability and load balancing. Specify the resource name or ID of a
       zone that belongs to the region of the private cloud. For example:
       `projects/{project}/locations/europe-west3-b` or `europe-west3-b`, where
       `{project}` can either be a project number or a project ID.
+    secondaryLocationPlacementGroup: Optional. Placement group for the
+      secondary location.
   """
 
   preferredLocation = _messages.StringField(1)
-  secondaryLocation = _messages.StringField(2)
+  preferredLocationPlacementGroup = _messages.StringField(2)
+  secondaryLocation = _messages.StringField(3)
+  secondaryLocationPlacementGroup = _messages.StringField(4)
 
 
 class Subnet(_messages.Message):

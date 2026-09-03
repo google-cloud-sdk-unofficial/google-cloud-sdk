@@ -1,0 +1,29 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Test IAM permissions for a Compute Engine interconnect attachment.
+    description: |
+      Returns permissions that a caller has on the specified interconnect attachment.
+    examples: |
+      To test if the caller has 'compute.interconnectAttachments.get' permission on an interconnect attachment, run:
+
+        $ {command} my-attachment --region=``REGION'' --permissions=compute.interconnectAttachments.get
+
+  request:
+    collection: compute.interconnectAttachments
+    api_version: alpha
+    method: testIamPermissions
+    use_relative_name: false
+
+  command_type: GENERIC
+
+  arguments:
+    resource:
+      help_text: The interconnect attachment for which to test permissions.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:interconnect_attachment
+    params:
+    - arg_name: permissions
+      api_field: testPermissionsRequest.permissions
+      required: true
+      repeated: true
+      help_text: |-
+        Permissions to be tested.

@@ -44,6 +44,7 @@ class TextRenderer(renderer.Renderer):
       self.second_line_indent = self.indent
 
   def __init__(self, *args, **kwargs):
+    kwargs.setdefault('excluded_sections', ('PROJECTION KEYS',))
     super(TextRenderer, self).__init__(*args, **kwargs)
     self._attr = console_attr.GetConsoleAttr()
     self._bullet = self._attr.GetBullets()

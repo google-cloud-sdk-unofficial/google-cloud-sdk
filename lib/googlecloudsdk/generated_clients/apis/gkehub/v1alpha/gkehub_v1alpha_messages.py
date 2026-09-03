@@ -117,6 +117,26 @@ class AuditLogConfig(_messages.Message):
   logType = _messages.EnumField('LogTypeValueValuesEnum', 3)
 
 
+class AuditPamBindingId(_messages.Message):
+  r"""A composite unique identifier for a PAM Grant which is
+  {Org/Folder/Project identifier, grant Unique Identifier} tuple.
+
+  Fields:
+    container: Output only. GCP Project/Folder/Organization identifier to
+      which the PAM entitlement/grant is bound to. Container will be in the
+      following form: projects/$project_num or folders/$folder_num or
+      organizations/$org
+    grantUuid: Output only. Represents the unique identifier for the PAM
+      grant. Full_resource_name_pattern for PAM Grant is:
+      //privilegedaccessmanager.googleapis.com/
+      (projects|folders|organizations)/$0/locations/$1/entitlements/$2/
+      grants/$3 where $3 is the grant_uuid.
+  """
+
+  container = _messages.StringField(1)
+  grantUuid = _messages.StringField(2)
+
+
 class Authority(_messages.Message):
   r"""Authority encodes how Google will recognize identities from this
   Membership. See the workload identity documentation for more details:
@@ -404,6 +424,9 @@ class CloudAuditOptions(_messages.Message):
       pipeline. Will be deprecated once the migration to PermissionType is
       complete (b/201806118).
     logName: The log_name to populate in the Cloud Audit Record.
+    pamAuthorizationMetadata: Output only. Contains the corresponding PAM
+      grant identifier if the access was granted by a Privileged Access
+      Manager (PAM) binding.
     permissionType: The type associated with the permission.
   """
 
@@ -440,7 +463,8 @@ class CloudAuditOptions(_messages.Message):
   agentMetadata = _messages.MessageField('AgentMetadata', 1)
   authorizationLoggingOptions = _messages.MessageField('AuthorizationLoggingOptions', 2)
   logName = _messages.EnumField('LogNameValueValuesEnum', 3)
-  permissionType = _messages.EnumField('PermissionTypeValueValuesEnum', 4)
+  pamAuthorizationMetadata = _messages.MessageField('PrivilegedAccessManagerMetadata', 4)
+  permissionType = _messages.EnumField('PermissionTypeValueValuesEnum', 5)
 
 
 class CloudBuildMembershipSpec(_messages.Message):
@@ -7706,6 +7730,22 @@ class PolicyControllerToleration(_messages.Message):
   key = _messages.StringField(2)
   operator = _messages.StringField(3)
   value = _messages.StringField(4)
+
+
+class PrivilegedAccessManagerMetadata(_messages.Message):
+  r"""Metadata about the Privileged Access Manager (PAM) backed authorization
+  decisions.
+
+  Fields:
+    pamBindingIds: Output only. If PAM is managing the elevated access,
+      AuditPamBindingId is written to an Identity and Access Management (IAM)
+      policy, which specifies access controls for resources. If the access is
+      granted via an IAM policy with a binding which is managed by Privileged
+      Access Manager, PrivilegedAccessManagerMetadata will contain the
+      AuditPamBindingId.
+  """
+
+  pamBindingIds = _messages.MessageField('AuditPamBindingId', 1, repeated=True)
 
 
 class QualifiedVersion(_messages.Message):

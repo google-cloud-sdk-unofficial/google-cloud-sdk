@@ -676,7 +676,7 @@ class StorageV2(base_api.BaseApiClient):
     )
 
     def ViewFullContext(self, request, global_params=None):
-      r"""Retrieves a specific object context with its extended data for a given object.
+      r"""Retrieves the full content of an object context, including its key, value, and any associated extended data for a given context key. Object contexts can optionally contain extended data. If an object context contains extended data, the metadata payload structure will contain only its type URL. To retrieve the full extended data, call this method. Returns the complete representation of the context as an `ObjectFullContext`.
 
       Args:
         request: (StorageProjectsBucketsObjectsViewFullContextRequest) input message
@@ -692,10 +692,10 @@ class StorageV2(base_api.BaseApiClient):
         flat_path='v2/projects/{projectsId}/buckets/{bucketsId}/objects/{objectsId}:viewFullContext',
         http_method='GET',
         method_id='storage.projects.buckets.objects.viewFullContext',
-        ordered_params=['bucket', 'object'],
-        path_params=['bucket', 'object'],
+        ordered_params=['name'],
+        path_params=['name'],
         query_params=['contextKey', 'generation'],
-        relative_path='v2/{+bucket}/objects/{+object}:viewFullContext',
+        relative_path='v2/{+name}:viewFullContext',
         request_field='',
         request_type_name='StorageProjectsBucketsObjectsViewFullContextRequest',
         response_type_name='ObjectFullContext',

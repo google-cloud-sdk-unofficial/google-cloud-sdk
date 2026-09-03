@@ -29,7 +29,7 @@ _CONSUMER_POLICY_DEFAULT = '/consumerPolicies/{}'
 
 
 @base.Deprecate(
-    is_removed=False,
+    is_removed=True,
     warning=(
         'MCP enablement is not required and this command is no-op. To disable'
         ' a service, please use: gcloud services disable.'

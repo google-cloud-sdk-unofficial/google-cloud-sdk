@@ -179,7 +179,7 @@ def PromptToEnableApi(project, service_token, exception,
     raise exception
 
 
-def CheckResponse(skip_activation_prompt=False):
+def CheckResponse(skip_activation_prompt=False, should_retry_if_disabled=True):
   """Returns a callback for checking API errors."""
   state = {'already_prompted_to_enable': False}
 
@@ -191,7 +191,9 @@ def CheckResponse(skip_activation_prompt=False):
     enablement_info = GetApiEnablementInfo(response_as_error)
     if enablement_info:
       if state['already_prompted_to_enable'] or skip_activation_prompt:
-        raise apitools_exceptions.RequestError('Retry')
+        if should_retry_if_disabled:
+          raise apitools_exceptions.RequestError('Retry')
+        return
       state['already_prompted_to_enable'] = True
       PromptToEnableApi(*enablement_info)
 
@@ -260,6 +262,7 @@ def GetClientInstance(
     http_timeout_sec=None,
     skip_activation_prompt=False,
     location=None,
+    should_retry_if_disabled=True,
 ):
   """Returns an instance of the API client specified in the args.
 
@@ -271,6 +274,8 @@ def GetClientInstance(
     skip_activation_prompt: bool, if true, do not prompt for service activation.
     location: str, Region, multi-region, or zone to use for regionalized
       endpoints (REP).
+    should_retry_if_disabled: bool, if true, retry the request when the API is
+      disabled and skip_activation_prompt is true.
 
   Returns:
     base_api.BaseApiClient, An instance of the specified API client.
@@ -281,7 +286,10 @@ def GetClientInstance(
       api_version,
       no_http,
       None,
-      CheckResponse(skip_activation_prompt),
+      CheckResponse(
+          skip_activation_prompt,
+          should_retry_if_disabled=should_retry_if_disabled,
+      ),
       http_timeout_sec=http_timeout_sec,
       region=regional.LocationToRegion(location) if location else None,
   )

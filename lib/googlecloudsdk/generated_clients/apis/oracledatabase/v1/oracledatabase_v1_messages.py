@@ -1467,6 +1467,11 @@ class CloudVmClusterProperties(_messages.Message):
     StateValueValuesEnum: Output only. State of the cluster.
     StorageManagementTypeValueValuesEnum: Output only. The storage management
       type of the VM Cluster.
+    VmBackupStorageTypeValueValuesEnum: Optional. Specifies whether VM backups
+      are stored on local DB server storage or Exascale storage.
+    VmFileSystemStorageTypeValueValuesEnum: Optional. Specifies whether VM
+      file system storage / VM images are stored on local DB server storage or
+      Exascale storage.
 
   Fields:
     clusterName: Optional. OCI Cluster name.
@@ -1511,6 +1516,11 @@ class CloudVmClusterProperties(_messages.Message):
     systemVersion: Optional. Operating system version of the image.
     timeZone: Optional. Time zone of VM Cluster to set. Defaults to UTC if not
       specified.
+    vmBackupStorageType: Optional. Specifies whether VM backups are stored on
+      local DB server storage or Exascale storage.
+    vmFileSystemStorageType: Optional. Specifies whether VM file system
+      storage / VM images are stored on local DB server storage or Exascale
+      storage.
   """
 
   class ComputeModelValueValuesEnum(_messages.Enum):
@@ -1588,6 +1598,32 @@ class CloudVmClusterProperties(_messages.Message):
     ASM = 1
     EXASCALE = 2
 
+  class VmBackupStorageTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. Specifies whether VM backups are stored on local DB server
+    storage or Exascale storage.
+
+    Values:
+      VM_BACKUP_STORAGE_TYPE_UNSPECIFIED: Unspecified storage type.
+      VM_BACKUP_STORAGE_TYPE_LOCAL: Local DB server storage.
+      VM_BACKUP_STORAGE_TYPE_EXASCALE: Exascale storage.
+    """
+    VM_BACKUP_STORAGE_TYPE_UNSPECIFIED = 0
+    VM_BACKUP_STORAGE_TYPE_LOCAL = 1
+    VM_BACKUP_STORAGE_TYPE_EXASCALE = 2
+
+  class VmFileSystemStorageTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. Specifies whether VM file system storage / VM images are
+    stored on local DB server storage or Exascale storage.
+
+    Values:
+      VM_FILE_SYSTEM_STORAGE_TYPE_UNSPECIFIED: Unspecified storage type.
+      VM_FILE_SYSTEM_STORAGE_TYPE_LOCAL: Local DB server storage.
+      VM_FILE_SYSTEM_STORAGE_TYPE_EXASCALE: Exascale storage.
+    """
+    VM_FILE_SYSTEM_STORAGE_TYPE_UNSPECIFIED = 0
+    VM_FILE_SYSTEM_STORAGE_TYPE_LOCAL = 1
+    VM_FILE_SYSTEM_STORAGE_TYPE_EXASCALE = 2
+
   clusterName = _messages.StringField(1)
   compartmentId = _messages.StringField(2)
   computeModel = _messages.EnumField('ComputeModelValueValuesEnum', 3)
@@ -1622,6 +1658,8 @@ class CloudVmClusterProperties(_messages.Message):
   storageSizeGb = _messages.IntegerField(32, variant=_messages.Variant.INT32)
   systemVersion = _messages.StringField(33)
   timeZone = _messages.MessageField('TimeZone', 34)
+  vmBackupStorageType = _messages.EnumField('VmBackupStorageTypeValueValuesEnum', 35)
+  vmFileSystemStorageType = _messages.EnumField('VmFileSystemStorageTypeValueValuesEnum', 36)
 
 
 class ConfigureExascaleCloudExadataInfrastructureRequest(_messages.Message):
@@ -1631,10 +1669,13 @@ class ConfigureExascaleCloudExadataInfrastructureRequest(_messages.Message):
     requestId: Optional. An optional ID to identify the request.
     totalStorageSizeGb: Required. The total storage to be allocated to
       Exascale in GBs.
+    totalVmStorageSizeGb: Optional. Storage size needed for VM storage on
+      Exascale in GBs.
   """
 
   requestId = _messages.StringField(1)
   totalStorageSizeGb = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  totalVmStorageSizeGb = _messages.IntegerField(3, variant=_messages.Variant.INT32)
 
 
 class CustomerContact(_messages.Message):
@@ -3121,12 +3162,18 @@ class ExascaleConfig(_messages.Message):
   Fields:
     availableStorageSizeGb: Output only. Available storage size for Exascale
       in GBs.
+    availableVmStorageSizeGb: Output only. Available storage size for VM
+      storage on Exascale in GBs.
     totalStorageSizeGb: Output only. Total storage size needed for Exascale in
       GBs.
+    totalVmStorageSizeGb: Output only. Storage size needed for VM storage on
+      Exascale in GBs.
   """
 
   availableStorageSizeGb = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  totalStorageSizeGb = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  availableVmStorageSizeGb = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  totalStorageSizeGb = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  totalVmStorageSizeGb = _messages.IntegerField(4, variant=_messages.Variant.INT32)
 
 
 class ExascaleDbStorageDetails(_messages.Message):

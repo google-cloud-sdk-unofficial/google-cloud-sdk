@@ -16,12 +16,15 @@
 """Higher level functions to support updater operations at the CLI level."""
 
 
+from collections.abc import Callable
+import functools
 import hashlib
 import os
 import shutil
 import subprocess
 import sys
 import textwrap
+from typing import Any, TypeVar
 
 from googlecloudsdk.core import argv_utils
 from googlecloudsdk.core import config
@@ -227,6 +230,40 @@ def FilterMetaComponents(components):
   return sorted(
       [comp for comp in components if comp.data is not None],
       key=lambda c: c.details.display_name)
+
+
+_F = TypeVar('_F', bound=Callable[..., Any])
+
+
+def _DisableCBA(func: _F) -> _F:
+  """Temporarily disables client certificates for non-mTLS network calls.
+
+  Temporarily disables client certificates to allow network calls to be made
+  without mTLS. This should only be used in situations where mTLS is not
+  required, such as when accessing artifact repositories hosted outside of GCP.
+
+  Args:
+    func: The function or method to wrap.
+
+  Returns:
+    The wrapped function with CBA temporarily disabled.
+  """
+
+  # TODO(b/544838735): Evaluate restricting CBA disablement to Windows.
+  @functools.wraps(func)
+  def Wrapper(*args: Any, **kwargs: Any) -> Any:
+    prev_use_client_cert = (
+        properties.VALUES.context_aware.use_client_certificate.GetBool()
+    )
+    if prev_use_client_cert:
+      properties.VALUES.context_aware.use_client_certificate.Set(False)
+    try:
+      return func(*args, **kwargs)
+    finally:
+      if prev_use_client_cert:
+        properties.VALUES.context_aware.use_client_certificate.Set(True)
+
+  return Wrapper
 
 
 class UpdateManager(object):
@@ -958,6 +995,10 @@ version [{1}].  To clear your fixed version setting, run:
         version=version,
         restart_args=restart_args)
 
+  # Disables CBA during update to avoid locking libecp.dll into process memory
+  # on Windows, which would prevent in-place replacement of the
+  # enterprise-certificate-proxy component.
+  @_DisableCBA
   def Update(self, update_seed=None, throw_if_unattended=False, version=None,
              restart_args=None):
     """Performs an update of the given components.
@@ -1382,6 +1423,9 @@ To revert your CLI to the previously installed version, you may run:
 
     self.__Write(log.status, 'Restoration done!\n')
 
+  # Disables CBA during reinstall to avoid locking libecp.dll into process
+  # memory on Windows, which would prevent in-place replacement of the SDK.
+  @_DisableCBA
   def Reinstall(self):
     """Do a reinstall of what we have based on a fresh download of the SDK.
 

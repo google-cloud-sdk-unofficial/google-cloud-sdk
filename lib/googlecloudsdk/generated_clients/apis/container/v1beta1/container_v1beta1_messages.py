@@ -11470,17 +11470,29 @@ class WizSensorConfig(_messages.Message):
   r"""Configuration for the Wiz Sensor add-on.
 
   Fields:
-    configSecretUri: Optional. The GCP Secret Manager URI for the Wiz config
-      secret.
+    apiKeySecretUri: Optional. The GCP Secret Manager URI for the Wiz API key
+      secret. Format:
+      "projects/{project_id}/secrets/{secret_name}/versions/{version}" or
+      Format: "projects/{project_id}/locations/{location_id}/secrets/{secret_n
+      ame}/versions/{version}"
     enabled: Optional. Whether the Wiz Sensor add-on is enabled for this
       cluster.
+    proxySecretUri: Optional. The GCP Secret Manager URI for the Wiz proxy
+      configuration. Format:
+      "projects/{project_id}/secrets/{secret_name}/versions/{version}" or
+      Format: "projects/{project_id}/locations/{location_id}/secrets/{secret_n
+      ame}/versions/{version}"
     registrySecretUri: Optional. The GCP Secret Manager URI for the Wiz
-      registry secret.
+      registry secret. Format:
+      "projects/{project_id}/secrets/{secret_name}/versions/{version}" or
+      Format: "projects/{project_id}/locations/{location_id}/secrets/{secret_n
+      ame}/versions/{version}"
   """
 
-  configSecretUri = _messages.StringField(1)
+  apiKeySecretUri = _messages.StringField(1)
   enabled = _messages.BooleanField(2)
-  registrySecretUri = _messages.StringField(3)
+  proxySecretUri = _messages.StringField(3)
+  registrySecretUri = _messages.StringField(4)
 
 
 class WorkloadALTSConfig(_messages.Message):

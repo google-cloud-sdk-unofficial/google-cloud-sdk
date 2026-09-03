@@ -136,6 +136,7 @@ class Renderer(object):
       width=80,
       command_metadata=None,
       command_node=None,
+      excluded_sections=(),
   ):
     self._blank = True
     self._command = ['gcloud']  # use command[0] instead of literal 'gcloud'
@@ -148,6 +149,14 @@ class Renderer(object):
     self._width = width
     self.command_metadata = command_metadata
     self.command_node = command_node
+    self._excluded_sections = (
+        tuple(excluded_sections) if excluded_sections else ()
+    )
+
+  @property
+  def excluded_sections(self):
+    """Returns the tuple of section titles to filter out of the input stream."""
+    return self._excluded_sections
 
   @property
   def command(self):

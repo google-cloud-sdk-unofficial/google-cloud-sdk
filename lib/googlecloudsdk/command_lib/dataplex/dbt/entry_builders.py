@@ -57,7 +57,6 @@ import without recreating the entry.
 
 from __future__ import annotations
 
-import collections
 from collections.abc import Callable
 import json
 import re
@@ -106,7 +105,6 @@ def _add_schema_aspect(
     aspects_map: dict[str, Any],
     catalog_columns: dict[str, Any] | None,
     node: dict[str, Any],
-    semantic: dict[str, str] | None = None,
     resolve_target: Callable[[str], str | None] | None = None,
     stale_aspects: set[str] | None = None,
 ) -> None:
@@ -117,7 +115,6 @@ def _add_schema_aspect(
     aspects_map: the entry's aspect map, updated in place.
     catalog_columns: the catalog node/source ``columns`` mapping, or None.
     node: the dbt resource, read for its manifest columns and constraints.
-    semantic: column name -> DIMENSION/MEASURE, from the semantic models.
     resolve_target: maps a foreign key's raw ``to`` to a Dataplex entry name.
     stale_aspects: updated in place with the schema aspect key when the schema
       came from the manifest alone, so an update leaves a stored catalog-backed
@@ -127,7 +124,7 @@ def _add_schema_aspect(
   if not columns:
     return
   aspects_map[ctx.schema_key()] = aspects.system_schema_aspect(
-      ctx, columns, node, semantic, resolve_target
+      ctx, columns, node, resolve_target
   )
   # Without the catalog these columns are the YAML declaration alone: no data
   # types, no nesting, and only the columns the author wrote down. A
@@ -309,6 +306,7 @@ def _entry(
     description: str | None = None,
     labels: dict[str, str] | None = None,
     stale_aspects: set[str] | None = None,
+    deleted_aspects: set[str] | None = None,
 ) -> dict[str, Any]:
   """Wraps an aspect map in the entry record shared by every builder.
 
@@ -317,6 +315,14 @@ def _entry(
   stay in the aspect map -- an entry cannot be created without its required
   aspects -- but are left out of ``aspectKeys``. Creation writes the whole map
   and so still gets them.
+
+  ``deleted_aspects`` is the opposite case: an aspect the resource no longer has
+  at all. ``aspectKeys`` is the write mask, so an aspect absent from both the
+  map and the mask is not removed -- it keeps whatever an earlier run stored,
+  forever. Naming the key without supplying a body deletes it. Only an aspect
+  derived from an artifact this run definitely read may be listed here;
+  otherwise a run missing that artifact would delete good metadata. A REQUIRED
+  aspect must never be listed -- the import job rejects the item.
 
   How much that protects an existing value depends on the sync mode. Under
   ``--aspects-only`` the write mask is ``aspectKeys`` exactly, so an unobserved
@@ -336,6 +342,8 @@ def _entry(
     description: entrySource description; omitted when None.
     labels: entrySource labels; omitted when None.
     stale_aspects: aspect keys to leave out of ``aspectKeys``.
+    deleted_aspects: aspect keys to name in ``aspectKeys`` without a body, so
+      the import deletes whatever is stored under them.
 
   Returns:
     An import item holding the entry record and its ``aspectKeys``.
@@ -369,9 +377,11 @@ def _entry(
       'fullyQualifiedName': fqn,
       'entrySource': entry_source,
   }
+  keys = {k for k in aspects_map if k not in stale}
+  keys.update(deleted_aspects or ())
   return {
       'entry': entry,
-      'aspectKeys': sorted(k for k in aspects_map if k not in stale),
+      'aspectKeys': sorted(keys),
   }
 
 
@@ -416,7 +426,6 @@ def _build_model_entry(
     unique_id: str,
     node: dict[str, Any],
     catalog_nodes: dict[str, Any],
-    semantic: dict[str, str] | None = None,
     resolve_target: Callable[[str], str | None] | None = None,
 ) -> dict[str, Any]:
   """Builds a dbt-model entry with node, model, schema and contract aspects."""
@@ -449,14 +458,19 @@ def _build_model_entry(
       aspects_map,
       cat_node.get('columns'),
       node,
-      semantic,
       resolve_target,
       stale_aspects=stale,
   )
 
   contracts = aspects.model_contracts_aspect(ctx, node, enforced)
+  contracts_key = ctx.aspect_key('dbt-model-contracts')
+  deleted = set()
   if contracts:
-    aspects_map[ctx.aspect_key('dbt-model-contracts')] = contracts
+    aspects_map[contracts_key] = contracts
+  else:
+    # Built from the manifest alone, which every run reads, so an absent
+    # contract means the model dropped it -- not that this run didn't look.
+    deleted.add(contracts_key)
 
   project_name = node.get('package_name') or _DEFAULT_PROJECT_NAME
   resource_name = node.get('name') or ''
@@ -471,6 +485,7 @@ def _build_model_entry(
       description=node.get('description'),
       labels=_resource_labels(node),
       stale_aspects=stale,
+      deleted_aspects=deleted,
   )
 
 
@@ -813,7 +828,7 @@ def _build_metric_entry(
           {
               'label': metric.get('label') or '',
               'metricType': metric.get('type') or '',
-              'typeParams': json.dumps(type_params, default=str),
+              'typeParams': _json_or_empty(type_params),
               # A dbt metric `filter` nests its SQL under `where_filters`, the
               # same shape as a saved query's `where`; reuse the one parser.
               'baseFilter': _where_clause(filt),
@@ -856,7 +871,9 @@ def _build_macro_entry(
       ctx.aspect_key('dbt-macro'): aspects.make_aspect(
           ctx.aspect_fqn('dbt-macro'),
           {
-              'macroSql': macro.get('macro_sql') or '',
+              'macroSql': _truncate_bytes(
+                  macro.get('macro_sql'), naming.MAX_CODE_BYTES
+              ),
               'arguments': args,
           },
       ),
@@ -1178,58 +1195,6 @@ def _check_size_limits(
     )
 
 
-# A semantic dimension/measure only labels a column when it names one plainly;
-# anything expression-shaped (`lower(x)`, `a + b`) is not a column reference.
-_PLAIN_COLUMN = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')
-
-
-def _semantic_columns(
-    manifest: dict[str, Any], model_uid_by_name: dict[str, str]
-) -> dict[str, dict[str, str]]:
-  """Indexes semantic dimensions/measures onto the columns they describe.
-
-  MetricFlow semantic models sit on top of exactly one physical model and label
-  its columns as dimensions or measures. That is the `semantic` field of the 1P
-  schema aspect, so the labels are carried across where a dimension/measure
-  plainly names a column. A column labelled both ways is left unlabelled rather
-  than guessed at.
-
-  The backing model is resolved with `described_model`, the same way the
-  parent entry and the defines-semantics link are, so all three agree.
-
-  Args:
-    manifest: the parsed dbt manifest.
-    model_uid_by_name: model name -> unique_id, from ``model_uids_by_name``.
-
-  Returns:
-    model unique_id -> {lowercased column name: 'DIMENSION' | 'MEASURE'}.
-  """
-  by_model: collections.defaultdict[str, dict[str, str]] = (
-      collections.defaultdict(dict)
-  )
-  for semantic_model in (manifest.get('semantic_models') or {}).values():
-    model_id = described_model(semantic_model, model_uid_by_name)
-    if not model_id:
-      continue
-    columns = by_model[model_id]
-    for role, items in (
-        ('DIMENSION', semantic_model.get('dimensions')),
-        ('MEASURE', semantic_model.get('measures')),
-    ):
-      for item in items or []:
-        column = (item or {}).get('expr') or (item or {}).get('name') or ''
-        if not _PLAIN_COLUMN.match(column):
-          continue
-        # Lowercased to match the columns, which merge case-insensitively.
-        column = column.lower()
-        if columns.setdefault(column, role) != role:
-          columns[column] = ''
-  return {
-      model_id: {c: role for c, role in columns.items() if role}
-      for model_id, columns in by_model.items()
-  }
-
-
 def _sole_dependency(node: dict[str, Any]) -> str | None:
   """The node's single upstream dbt node, or None when it isn't exactly one."""
   deps = (node.get('depends_on') or {}).get('nodes') or []
@@ -1526,18 +1491,10 @@ def build_entries(
 
   # Materialized resources nest under their dbt group when they declare one.
   model_uid_by_name = model_uids_by_name(nodes)
-  semantic_columns = _semantic_columns(manifest, model_uid_by_name)
   for unique_id, node in by_type['model']:
     add(
         unique_id,
-        _build_model_entry(
-            ctx,
-            unique_id,
-            node,
-            catalog_nodes,
-            semantic_columns.get(unique_id),
-            resolve_target,
-        ),
+        _build_model_entry(ctx, unique_id, node, catalog_nodes, resolve_target),
         group_uid(node),
     )
   for unique_id, node in by_type['seed']:

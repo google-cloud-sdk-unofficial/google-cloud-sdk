@@ -67,8 +67,10 @@ class List(base.ListCommand):
     parent_ref = args.CONCEPTS.location.Parse()
     sort_by = common_args.ParseSortByArg(args.sort_by)
 
-    return gateways.GatewayClient().List(parent_ref.RelativeName(),
-                                         filters=args.filter,
-                                         limit=args.limit,
-                                         page_size=args.page_size,
-                                         sort_by=sort_by)
+    return gateways.GatewayClient(release_track=self.ReleaseTrack()).List(
+        parent_ref.RelativeName(),
+        filters=args.filter,
+        limit=args.limit,
+        page_size=args.page_size,
+        sort_by=sort_by,
+    )

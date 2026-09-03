@@ -39,6 +39,10 @@ class AgentConnectivityTemplate(_messages.Message):
       AGENT_TO_ANYWHERE as carryovers from Agent Gateway's original resource
       model. The path is immutable once set. Exactly one path can be set.
     AccessTypesValueListEntryValuesEnum:
+    AgentComputeValueValuesEnum: Optional. The compute environment where the
+      agent is hosted. Exactly one type of compute must be chosen.
+    DeploymentModelValueValuesEnum: Required. The deployment model for the
+      gateway.
 
   Messages:
     LabelsValue: Optional. Set of label tags associated with the
@@ -51,7 +55,10 @@ class AgentConnectivityTemplate(_messages.Message):
       immutable once set. Exactly one path can be set.
     accessTypes: Optional. The types of network access provided to the
       gateway. Both PUBLIC and PRIVATE can be configured.
+    agentCompute: Optional. The compute environment where the agent is hosted.
+      Exactly one type of compute must be chosen.
     createTime: Output only. The timestamp when the resource was created.
+    deploymentModel: Required. The deployment model for the gateway.
     description: Optional. A free-text description of the resource. Max length
       1024 characters.
     egressNetworkConfig: Optional. Configuration for egress network traffic.
@@ -92,6 +99,33 @@ class AgentConnectivityTemplate(_messages.Message):
     PUBLIC = 1
     PRIVATE = 2
 
+  class AgentComputeValueValuesEnum(_messages.Enum):
+    r"""Optional. The compute environment where the agent is hosted. Exactly
+    one type of compute must be chosen.
+
+    Values:
+      AGENT_COMPUTE_UNSPECIFIED: Unspecified compute type.
+      GKE: Google Kubernetes Engine.
+      CLOUD_RUN: Google Cloud Run.
+      BORG: Google Borg (for 1P producers).
+    """
+    AGENT_COMPUTE_UNSPECIFIED = 0
+    GKE = 1
+    CLOUD_RUN = 2
+    BORG = 3
+
+  class DeploymentModelValueValuesEnum(_messages.Enum):
+    r"""Required. The deployment model for the gateway.
+
+    Values:
+      DEPLOYMENT_MODEL_UNSPECIFIED: Unspecified deployment model.
+      CENTRALIZED: Centralized deployment.
+      AMBIENT: Ambient deployment.
+    """
+    DEPLOYMENT_MODEL_UNSPECIFIED = 0
+    CENTRALIZED = 1
+    AMBIENT = 2
+
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
     r"""Optional. Set of label tags associated with the
@@ -119,13 +153,15 @@ class AgentConnectivityTemplate(_messages.Message):
 
   accessPath = _messages.EnumField('AccessPathValueValuesEnum', 1)
   accessTypes = _messages.EnumField('AccessTypesValueListEntryValuesEnum', 2, repeated=True)
-  createTime = _messages.StringField(3)
-  description = _messages.StringField(4)
-  egressNetworkConfig = _messages.MessageField('EgressNetworkConfig', 5)
-  etag = _messages.StringField(6)
-  labels = _messages.MessageField('LabelsValue', 7)
-  name = _messages.StringField(8)
-  updateTime = _messages.StringField(9)
+  agentCompute = _messages.EnumField('AgentComputeValueValuesEnum', 3)
+  createTime = _messages.StringField(4)
+  deploymentModel = _messages.EnumField('DeploymentModelValueValuesEnum', 5)
+  description = _messages.StringField(6)
+  egressNetworkConfig = _messages.MessageField('EgressNetworkConfig', 7)
+  etag = _messages.StringField(8)
+  labels = _messages.MessageField('LabelsValue', 9)
+  name = _messages.StringField(10)
+  updateTime = _messages.StringField(11)
 
 
 class AgentGateway(_messages.Message):
@@ -1808,6 +1844,278 @@ class Expr(_messages.Message):
   title = _messages.StringField(4)
 
 
+class ExtensionBinding(_messages.Message):
+  r"""`ExtensionBinding` is a resource representing the attachment of an
+  extension to a service.
+
+  Messages:
+    LabelsValue: Optional. Set of labels associated with the
+      `ExtensionBinding` resource. The format must comply with [the following
+      requirements](https://cloud.google.com/compute/docs/labeling-
+      resources#requirements).
+    ProducerMetadataValue: Optional. Additional metadata that should be passed
+      to the attached extension with each request.
+
+  Fields:
+    createTime: Output only. The timestamp when the resource was created.
+    description: Optional. A human-readable description of the resource.
+    etag: Optional. Etag of the resource. If provided, it must match the
+      server's etag. If the provided etag does not match the server's etag,
+      the request will fail with a 409 ABORTED error.
+    failOpen: Optional. Determines the behavior of the extension binding when
+      the call to the extension fails or times out. Default value is `FALSE`.
+      When set to `TRUE`, failures of the extension are silently ignored.
+    labels: Optional. Set of labels associated with the `ExtensionBinding`
+      resource. The format must comply with [the following
+      requirements](https://cloud.google.com/compute/docs/labeling-
+      resources#requirements).
+    matchConditions: Optional. A list of match conditions to match against the
+      incoming request. The extension will be invoked if at least one
+      condition matches the request, or if no match conditions are specified.
+      Limited to 5 conditions.
+    name: Identifier. Name of the `ExtensionBinding` resource in the following
+      format: `projects/{project}/locations/{location}/extensionBindings/{exte
+      nsion_binding}`.
+    priority: Optional. Priority of the extension binding. Lower numbers
+      indicate higher priority. Priority of extension bindings are used to
+      determine the order in which extension bindings are applied to a
+      request.
+    producerExtension: Required. The name of the extension that this binding
+      should attach to target resources. Format: For Google-provided
+      extensions, specify the service endpoint (see [Model Armor
+      integration](https://docs.cloud.google.com/model-armor/integrations))
+    producerMetadata: Optional. Additional metadata that should be passed to
+      the attached extension with each request.
+    target: Required. Specifies a target to which this `ExtensionBinding`
+      should be attached. The target can be either a single resource or a
+      scope of resources.
+    updateTime: Output only. The timestamp when the resource was updated.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Set of labels associated with the `ExtensionBinding`
+    resource. The format must comply with [the following
+    requirements](https://cloud.google.com/compute/docs/labeling-
+    resources#requirements).
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ProducerMetadataValue(_messages.Message):
+    r"""Optional. Additional metadata that should be passed to the attached
+    extension with each request.
+
+    Messages:
+      AdditionalProperty: An additional property for a ProducerMetadataValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        ProducerMetadataValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ProducerMetadataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  etag = _messages.StringField(3)
+  failOpen = _messages.BooleanField(4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  matchConditions = _messages.MessageField('ExtensionBindingMatchCondition', 6, repeated=True)
+  name = _messages.StringField(7)
+  priority = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+  producerExtension = _messages.StringField(9)
+  producerMetadata = _messages.MessageField('ProducerMetadataValue', 10)
+  target = _messages.MessageField('ExtensionBindingTarget', 11)
+  updateTime = _messages.StringField(12)
+
+
+class ExtensionBindingMatchCondition(_messages.Message):
+  r"""Conditions to match against the incoming request.
+
+  Fields:
+    to: Optional. Describes properties of a destination of a request. If
+      specified, the extension will only be invoked on requests to
+      destinations that match the specified criteria.
+  """
+
+  to = _messages.MessageField('ExtensionBindingMatchConditionTo', 1)
+
+
+class ExtensionBindingMatchConditionHeaderMatch(_messages.Message):
+  r"""Determines how an HTTP header should be matched.
+
+  Fields:
+    name: Required. Specifies the name of the header in the request.
+    value: Optional. Specifies how the header match will be performed.
+  """
+
+  name = _messages.StringField(1)
+  value = _messages.MessageField('ExtensionBindingMatchConditionStringMatch', 2)
+
+
+class ExtensionBindingMatchConditionStringMatch(_messages.Message):
+  r"""Specifies matching logic for string values.
+
+  Fields:
+    contains: Optional. The input string must have the substring specified
+      here. Note: empty contains match is not allowed, please use regex
+      instead. Examples: * ``abc`` matches the value ``xyz.abc.def``
+    exact: Optional. The input string must match exactly the string specified
+      here. Examples: * ``abc`` only matches the value ``abc``.
+    ignoreCase: Optional. If true, indicates the exact/prefix/suffix/contains
+      matching should be case insensitive. For example, the matcher ``data``
+      will match both input string ``Data`` and ``data`` if set to true.
+    prefix: Optional. The input string must have the prefix specified here.
+      Note: empty prefix is not allowed. Examples: * ``abc`` matches the value
+      ``abc.xyz``
+    suffix: Optional. The input string must have the suffix specified here.
+      Note: empty prefix is not allowed, please use regex instead. Examples: *
+      ``abc`` matches the value ``xyz.abc``
+  """
+
+  contains = _messages.StringField(1)
+  exact = _messages.StringField(2)
+  ignoreCase = _messages.BooleanField(3)
+  prefix = _messages.StringField(4)
+  suffix = _messages.StringField(5)
+
+
+class ExtensionBindingMatchConditionTo(_messages.Message):
+  r"""Describes properties of one or more destinations of a request.
+
+  Fields:
+    destination: Optional. Describes properties of destination of a request.
+      Within a destination, the match follows AND semantics across fields and
+      OR semantics within a field, i.e. a match occurs when ANY path matches
+      AND ANY header matches and ANY method matches. At least one of
+      destination or not_destination must be specified.
+    notDestination: Optional. Describes the negated properties of the request
+      destination. Extension will not be invoked on requests that match the
+      criteria specified in this field. At least one of destination or
+      not_destination must be specified.
+  """
+
+  destination = _messages.MessageField('ExtensionBindingMatchConditionToDestination', 1)
+  notDestination = _messages.MessageField('ExtensionBindingMatchConditionToDestination', 2)
+
+
+class ExtensionBindingMatchConditionToDestination(_messages.Message):
+  r"""Describes properties of a single destination.
+
+  Fields:
+    headerSet: Optional. A set of HTTP headers to match against. If not
+      specified, requests with any headers are matched.
+    hosts: Optional. A list of HTTP Hosts to match against. Limited to 10
+      hosts. If not specified, any host is allowed. If specified, a match
+      occurs if any of the hosts matches the host value in the request.
+    paths: Optional. A list of paths to match against. Limited to 10 paths. If
+      not specified, any path is allowed. Note that this path match includes
+      the query parameters. For gRPC services, this should be a fully-
+      qualified name of the form /package.service/method.
+    resources: Optional. A list of non-empty strings whose value is matched
+      against the resource value. If not specified, any resource is allowed.
+      If specified, a match occurs if any of the resources matches the
+      resource value in the request. Limited to 5 resources.
+  """
+
+  headerSet = _messages.MessageField('ExtensionBindingMatchConditionToDestinationHeaderSet', 1)
+  hosts = _messages.MessageField('ExtensionBindingMatchConditionStringMatch', 2, repeated=True)
+  paths = _messages.MessageField('ExtensionBindingMatchConditionStringMatch', 3, repeated=True)
+  resources = _messages.MessageField('ExtensionBindingMatchConditionStringMatch', 4, repeated=True)
+
+
+class ExtensionBindingMatchConditionToDestinationHeaderSet(_messages.Message):
+  r"""Describes a set of HTTP headers to match against.
+
+  Fields:
+    headers: Required. A list of headers to match against in http header. If
+      multiple header matches are provided, they will be evaluated as an AND,
+      i.e. all header matches must match for the request to match.
+  """
+
+  headers = _messages.MessageField('ExtensionBindingMatchConditionHeaderMatch', 1, repeated=True)
+
+
+class ExtensionBindingTarget(_messages.Message):
+  r"""Specifies a list of targets to which this `ExtensionBinding` should
+  attach.
+
+  Fields:
+    resources: Optional. The reference to the target resource, to which this
+      binding should attach. Exactly one of `resources` or `scope` must be
+      set. For Agent Gateway, this would be the full resource name, in the
+      format:
+      `projects/{project}/locations/{location}/agentGateways/{agent_gateway}`.
+      For AI App, this would be the full resource name, in the format:
+      `projects/{project}/locations/{location}/applications/{application}`.
+    scope: Optional. Specifies the scope of resources to which this binding
+      should attach. Exactly one of `resources` or `scope` must be set.
+  """
+
+  resources = _messages.StringField(1, repeated=True)
+  scope = _messages.MessageField('ExtensionBindingTargetScope', 2)
+
+
+class ExtensionBindingTargetScope(_messages.Message):
+  r"""Specifies the scope of resources to which this binding should attach.
+
+  Enums:
+    ResourceTypesValueListEntryValuesEnum:
+
+  Fields:
+    parent: Required. Parent resource name specification, in the format:
+      `projects/{project_number}`.
+    resourceTypes: Required. Type of the resource to which the binding should
+      attach. Limited to 1 resource type.
+  """
+
+  class ResourceTypesValueListEntryValuesEnum(_messages.Enum):
+    r"""ResourceTypesValueListEntryValuesEnum enum type.
+
+    Values:
+      RESOURCE_TYPE_UNSPECIFIED: Default value. Should not be used.
+      AI_APPLICATION: AI Application resources.
+      AGENT_GATEWAY: Agent Gateway resources.
+    """
+    RESOURCE_TYPE_UNSPECIFIED = 0
+    AI_APPLICATION = 1
+    AGENT_GATEWAY = 2
+
+  parent = _messages.StringField(1)
+  resourceTypes = _messages.EnumField('ResourceTypesValueListEntryValuesEnum', 2, repeated=True)
+
+
 class ExtensionChain(_messages.Message):
   r"""A single extension chain wrapper that contains the match conditions and
   extensions to execute.
@@ -2168,13 +2476,11 @@ class FlexShieldingOptions(_messages.Message):
         west3`.
       ME_CENTRAL1: Content is fetched from an origin or cache near `me-
         central1`.
-      US_EAST5: Content is fetched from an origin or cache near `us-east5`.
     """
     FLEX_SHIELDING_REGION_UNSPECIFIED = 0
     AFRICA_SOUTH1 = 1
     EUROPE_WEST3 = 2
     ME_CENTRAL1 = 3
-    US_EAST5 = 4
 
   flexShieldingRegions = _messages.EnumField('FlexShieldingRegionsValueListEntryValuesEnum', 1, repeated=True)
 
@@ -4059,6 +4365,27 @@ class ListEndpointPoliciesResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class ListExtensionBindingsResponse(_messages.Message):
+  r"""Response returned by the `ListExtensionBindings` method.
+
+  Fields:
+    extensionBindings: List of `ExtensionBinding` resources.
+    nextPageToken: If there might be more results than those appearing in this
+      response, then `next_page_token` is included. To get the next set of
+      results, call this method again using the value of `next_page_token` as
+      `page_token`.
+    unreachable: Unordered list. Unreachable resources. Populated when the
+      request attempts to list all resources across all supported locations,
+      while some locations are temporarily unavailable. The resource names are
+      in the format `projects/{project}/locations/{location}/extensionBindings
+      /{extension_binding}`.
+  """
+
+  extensionBindings = _messages.MessageField('ExtensionBinding', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListGatewayRouteViewsResponse(_messages.Message):
   r"""Response returned by the ListGatewayRouteViews method.
 
@@ -4380,6 +4707,27 @@ class ListOperationsResponse(_messages.Message):
 
   nextPageToken = _messages.StringField(1)
   operations = _messages.MessageField('Operation', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListProducerExtensionsResponse(_messages.Message):
+  r"""Response returned by the `ListProducerExtensions` method.
+
+  Fields:
+    nextPageToken: If there might be more results than those appearing in this
+      response, then `next_page_token` is included. To get the next set of
+      results, call this method again using the value of `next_page_token` as
+      `page_token`.
+    producerExtensions: List of `ProducerExtension` resources.
+    unreachable: Unordered list. Unreachable resources. Populated when the
+      request attempts to list all resources across all supported locations,
+      while some locations are temporarily unavailable. The resource names are
+      in the format: `projects/{project}/locations/{location}/producerExtensio
+      ns/{producer_extension}`.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  producerExtensions = _messages.MessageField('ProducerExtension', 2, repeated=True)
   unreachable = _messages.StringField(3, repeated=True)
 
 
@@ -6488,6 +6836,90 @@ class NetworkservicesProjectsLocationsEndpointPoliciesPatchRequest(_messages.Mes
   updateMask = _messages.StringField(3)
 
 
+class NetworkservicesProjectsLocationsExtensionBindingsCreateRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsExtensionBindingsCreateRequest object.
+
+  Fields:
+    extensionBinding: A ExtensionBinding resource to be passed as the request
+      body.
+    extensionBindingId: Required. Short name of the `ExtensionBinding`
+      resource to be created.
+    parent: Required. The parent resource of the `ExtensionBinding` resource.
+      Must be in the format `projects/{project}/locations/{location}`.
+  """
+
+  extensionBinding = _messages.MessageField('ExtensionBinding', 1)
+  extensionBindingId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class NetworkservicesProjectsLocationsExtensionBindingsDeleteRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsExtensionBindingsDeleteRequest object.
+
+  Fields:
+    etag: Optional. The etag of the ExtensionBinding to delete.
+    name: Required. A name of the `ExtensionBinding` resource to delete. Must
+      be in the format `projects/{project}/locations/{location}/extensionBindi
+      ngs/{extension_binding}`.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+
+
+class NetworkservicesProjectsLocationsExtensionBindingsGetRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsExtensionBindingsGetRequest object.
+
+  Fields:
+    name: Required. A name of the `ExtensionBinding` resource to get. Must be
+      in the format `projects/{project}/locations/{location}/extensionBindings
+      /{extension_binding}`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworkservicesProjectsLocationsExtensionBindingsListRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsExtensionBindingsListRequest object.
+
+  Fields:
+    pageSize: Optional. Maximum number of `ExtensionBinding` resources to
+      return per call.
+    pageToken: Optional. The value returned by the last
+      `ListExtensionBindingsResponse` Indicates that this is a continuation of
+      a prior `ListExtensionBindings` call, and that the system should return
+      the next page of data.
+    parent: Required. The project and location from which the
+      `ExtensionBinding` resources should be listed, specified in the format
+      `projects/{project}/locations/{location}`.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class NetworkservicesProjectsLocationsExtensionBindingsPatchRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsExtensionBindingsPatchRequest object.
+
+  Fields:
+    extensionBinding: A ExtensionBinding resource to be passed as the request
+      body.
+    name: Identifier. Name of the `ExtensionBinding` resource in the following
+      format: `projects/{project}/locations/{location}/extensionBindings/{exte
+      nsion_binding}`.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the `ExtensionBinding` resource by the update. The fields
+      specified in the update_mask are relative to the resource, not the full
+      request. A field will be overwritten if it is in the mask. If the user
+      does not provide a mask then all fields will be overwritten.
+  """
+
+  extensionBinding = _messages.MessageField('ExtensionBinding', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
+
+
 class NetworkservicesProjectsLocationsGatewaysCreateRequest(_messages.Message):
   r"""A NetworkservicesProjectsLocationsGatewaysCreateRequest object.
 
@@ -8528,6 +8960,71 @@ class NetworkservicesProjectsLocationsOperationsListRequest(_messages.Message):
   returnPartialSuccess = _messages.BooleanField(5)
 
 
+class NetworkservicesProjectsLocationsProducerExtensionsCreateRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsProducerExtensionsCreateRequest
+  object.
+
+  Fields:
+    parent: Required. The parent resource of the `ProducerExtension` resource.
+      Must be in the format `projects/{project}/locations/{location}`.
+    producerExtension: A ProducerExtension resource to be passed as the
+      request body.
+    producerExtensionId: Required. Short name of the `ProducerExtension`
+      resource to be created.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  producerExtension = _messages.MessageField('ProducerExtension', 2)
+  producerExtensionId = _messages.StringField(3)
+
+
+class NetworkservicesProjectsLocationsProducerExtensionsDeleteRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsProducerExtensionsDeleteRequest
+  object.
+
+  Fields:
+    etag: Optional. The etag of the ProducerExtension to delete.
+    name: Required. A name of the `ProducerExtension` resource to delete. Must
+      be in the format `projects/{project}/locations/{location}/producerExtens
+      ions/{producer_extension}`.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+
+
+class NetworkservicesProjectsLocationsProducerExtensionsGetRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsProducerExtensionsGetRequest object.
+
+  Fields:
+    name: Required. A name of the `ProducerExtension` resource to get. Must be
+      in the format `projects/{project}/locations/{location}/producerExtension
+      s/{producer_extension}`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworkservicesProjectsLocationsProducerExtensionsListRequest(_messages.Message):
+  r"""A NetworkservicesProjectsLocationsProducerExtensionsListRequest object.
+
+  Fields:
+    pageSize: Optional. Maximum number of `ProducerExtension` resources to
+      return per call.
+    pageToken: Optional. The value returned by the last
+      `ListProducerExtensionsResponse` Indicates that this is a continuation
+      of a prior `ListProducerExtensions` call, and that the system should
+      return the next page of data.
+    parent: Required. The project and location from which the
+      `ProducerExtension` resources should be listed, specified in the format
+      `projects/{project}/locations/{location}`.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
 class NetworkservicesProjectsLocationsRegionalMulticastConsumerAssociationsCreateRequest(_messages.Message):
   r"""A NetworkservicesProjectsLocationsRegionalMulticastConsumerAssociationsC
   reateRequest object.
@@ -10208,6 +10705,138 @@ class Policy(_messages.Message):
   bindings = _messages.MessageField('Binding', 2, repeated=True)
   etag = _messages.BytesField(3)
   version = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+
+
+class ProducerExtension(_messages.Message):
+  r"""`ProducerExtension` is a resource representing producer defined
+  configuration for their service extension.
+
+  Enums:
+    PhaseValueValuesEnum: Required. The phase in which this
+      `ProducerExtension` should execute.
+
+  Messages:
+    LabelsValue: Optional. Set of labels associated with the
+      `ProducerExtension` resource. The format must comply with [the following
+      requirements]((https://cloud.google.com/compute/docs/labeling-
+      resources#requirements).
+
+  Fields:
+    createTime: Output only. The timestamp when the resource was created.
+    description: Optional. A human-readable description of the resource.
+    etag: Optional. Etag of the resource. If this is provided, it must match
+      the server's etag. If the provided etag does not match the server's
+      etag, the request will fail with a 409 ABORTED error.
+    extensionSettings: Required. The configuration for the service that this
+      `ProducerExtension` offers.
+    labels: Optional. Set of labels associated with the `ProducerExtension`
+      resource. The format must comply with [the following
+      requirements]((https://cloud.google.com/compute/docs/labeling-
+      resources#requirements).
+    name: Identifier. Name of the `ProducerExtension` resource in the
+      following format: `projects/{project}/locations/{location}/producerExten
+      sions/{producer_extension}`.
+    phase: Required. The phase in which this `ProducerExtension` should
+      execute.
+    updateTime: Output only. The timestamp when the resource was updated.
+  """
+
+  class PhaseValueValuesEnum(_messages.Enum):
+    r"""Required. The phase in which this `ProducerExtension` should execute.
+
+    Values:
+      PHASE_UNSPECIFIED: Unspecified phase.
+      TRAFFIC: The `ProducerExtension` will be executed during the traffic
+        phase.
+      AUTHZ: The `ProducerExtension` will be executed during the authorization
+        phase.
+    """
+    PHASE_UNSPECIFIED = 0
+    TRAFFIC = 1
+    AUTHZ = 2
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Set of labels associated with the `ProducerExtension`
+    resource. The format must comply with [the following
+    requirements]((https://cloud.google.com/compute/docs/labeling-
+    resources#requirements).
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  etag = _messages.StringField(3)
+  extensionSettings = _messages.MessageField('ProducerExtensionExtensionSettings', 4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  name = _messages.StringField(6)
+  phase = _messages.EnumField('PhaseValueValuesEnum', 7)
+  updateTime = _messages.StringField(8)
+
+
+class ProducerExtensionExtensionSettings(_messages.Message):
+  r"""The configuration for the service that this `ProducerExtension` offers.
+
+  Enums:
+    SupportedEventsValueListEntryValuesEnum:
+
+  Fields:
+    authority: Optional. The `:authority` header in the request sent to the
+      extension service.
+    observabilityMode: Optional. Whether the extension should function in
+      observability mode.
+    service: Required. URI of the PSC attachment.
+    supportedEvents: Required. The event types supported by the extension.
+  """
+
+  class SupportedEventsValueListEntryValuesEnum(_messages.Enum):
+    r"""SupportedEventsValueListEntryValuesEnum enum type.
+
+    Values:
+      EVENT_TYPE_UNSPECIFIED: Unspecified value. Do not use.
+      REQUEST_HEADERS: If included in `supported_events`, the extension is
+        called when the HTTP request headers arrive.
+      REQUEST_BODY: If included in `supported_events`, the extension is called
+        when the HTTP request body arrives.
+      RESPONSE_HEADERS: If included in `supported_events`, the extension is
+        called when the HTTP response headers arrive.
+      RESPONSE_BODY: If included in `supported_events`, the extension is
+        called when the HTTP response body arrives.
+      REQUEST_TRAILERS: If included in `supported_events`, the extension is
+        called when the HTTP request trailers arrives.
+      RESPONSE_TRAILERS: If included in `supported_events`, the extension is
+        called when the HTTP response trailers arrives.
+    """
+    EVENT_TYPE_UNSPECIFIED = 0
+    REQUEST_HEADERS = 1
+    REQUEST_BODY = 2
+    RESPONSE_HEADERS = 3
+    RESPONSE_BODY = 4
+    REQUEST_TRAILERS = 5
+    RESPONSE_TRAILERS = 6
+
+  authority = _messages.StringField(1)
+  observabilityMode = _messages.BooleanField(2)
+  service = _messages.StringField(3)
+  supportedEvents = _messages.EnumField('SupportedEventsValueListEntryValuesEnum', 4, repeated=True)
 
 
 class PublicKey(_messages.Message):

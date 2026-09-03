@@ -31,8 +31,8 @@ SYNC_RULES = 'SyncRules'
 FETCH_PROJECT_DETAILS = 'FetchProjectDetails'
 ESTABLISH_CONNECTION = 'EstablishConnection'
 DOMAIN_MAPPING_READY = 'DomainMappingReady'
+RESOURCES_AVAILABLE = 'ResourcesAvailable'
 
-_RESOURCES_AVAILABLE = 'ResourcesAvailable'
 _STARTED = 'Started'
 _COMPLETED = 'Completed'
 _CONTAINER_READY = 'ContainerReady'
@@ -187,7 +187,7 @@ def ExecutionStages(include_completion=False):
   """Returns the list of progress tracker Stages for Executions."""
   stages = [
       progress_tracker.Stage(
-          'Provisioning resources...', key=_RESOURCES_AVAILABLE
+          'Provisioning resources...', key=RESOURCES_AVAILABLE
       )
   ]
   if include_completion:
@@ -203,14 +203,14 @@ def ExecutionStages(include_completion=False):
 
 
 def ExecutionDependencies():
-  return {_STARTED: {_RESOURCES_AVAILABLE}, _COMPLETED: {_STARTED}}
+  return {_STARTED: {RESOURCES_AVAILABLE}, _COMPLETED: {_STARTED}}
 
 
 def InstanceDependencies():
   """Dependencies for the Instance resource, for passing to ConditionPoller."""
   return {
-      _RUNNING: {_RESOURCES_AVAILABLE},
-      _RESOURCES_AVAILABLE: {_CONTAINER_READY},
+      _RUNNING: {RESOURCES_AVAILABLE},
+      RESOURCES_AVAILABLE: {_CONTAINER_READY},
   }
 
 
@@ -230,7 +230,7 @@ def InstanceStages(
   )
   stages.append(
       progress_tracker.Stage(
-          'Provisioning resources...', key=_RESOURCES_AVAILABLE
+          'Provisioning resources...', key=RESOURCES_AVAILABLE
       )
   )
   stages.append(progress_tracker.Stage('Starting instance...', key=_RUNNING))

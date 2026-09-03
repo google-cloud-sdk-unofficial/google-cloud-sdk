@@ -616,6 +616,7 @@ class CreateAlpha(Create):
     ops.placement_policy = args.placement_policy
     ops.location_policy = args.location_policy
     ops.enable_blue_green_upgrade = args.enable_blue_green_upgrade
+    ops.enable_upgrade_in_place = args.enable_upgrade_in_place
     ops.enable_surge_upgrade = args.enable_surge_upgrade
     ops.node_pool_soak_duration = args.node_pool_soak_duration
     ops.standard_rollout_policy = args.standard_rollout_policy
@@ -720,6 +721,7 @@ class CreateAlpha(Create):
     flags.AddPlacementPolicyFlag(parser)
     flags.AddEnableSurgeUpgradeFlag(parser)
     flags.AddEnableBlueGreenUpgradeFlag(parser)
+    flags.AddEnableUpgradeInPlaceFlag(parser, hidden=True)
     flags.AddStandardRolloutPolicyFlag(parser, for_node_pool=True)
     flags.AddAutoscaledRolloutPolicyFlag(parser)
     flags.AddNodePoolSoakDurationFlag(parser, for_node_pool=True)

@@ -18,10 +18,12 @@
 import textwrap
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as gcloud_exceptions
 from googlecloudsdk.command_lib.iam import flags
 from googlecloudsdk.command_lib.iam.byoid_utilities import cred_config
 
 
+@base.UniverseCompatible
 class CreateCredConfig(base.CreateCommand):
   """Create a configuration file for generated credentials.
 
@@ -30,23 +32,25 @@ class CreateCredConfig(base.CreateCommand):
   """
 
   detailed_help = {
-      'EXAMPLES': textwrap.dedent(
-          """\
-          To create a file-sourced credential configuration for your project, run:
+      'EXAMPLES': textwrap.dedent("""\
+          To create a file-sourced credential configuration by using the short-format audience, run:
+
+            $ {command} $WORKFORCE_POOL_ID/$PROVIDER_ID --credential-source-file=$PATH_TO_OIDC_ID_TOKEN --workforce-pool-user-project=$PROJECT_NUMBER --output-file=credentials.json
+
+          To create a file-sourced credential configuration by using the full resource name audience, run:
 
             $ {command} locations/$REGION/workforcePools/$WORKFORCE_POOL_ID/providers/$PROVIDER_ID --credential-source-file=$PATH_TO_OIDC_ID_TOKEN --workforce-pool-user-project=$PROJECT_NUMBER --output-file=credentials.json
 
           To create a URL-sourced credential configuration for your project, run:
 
-            $ {command} locations/$REGION/workforcePools/$WORKFORCE_POOL_ID/providers/$PROVIDER_ID --credential-source-url=$URL_FOR_OIDC_TOKEN --credential-source-headers=Key=Value --workforce-pool-user-project=$PROJECT_NUMBER --output-file=credentials.json
+            $ {command} $WORKFORCE_POOL_ID/$PROVIDER_ID --credential-source-url=$URL_FOR_OIDC_TOKEN --credential-source-headers=Key=Value --workforce-pool-user-project=$PROJECT_NUMBER --output-file=credentials.json
 
           To create an executable-source credential configuration for your project, run the following command:
 
-            $ {command} locations/$REGION/workforcePools/$WORKFORCE_POOL_ID/providers/$PROVIDER_ID --executable-command=$EXECUTABLE_COMMAND --executable-timeout-millis=30000 --executable-output-file=$CACHE_FILE --workforce-pool-user-project=$PROJECT_NUMBER --output-file=credentials.json
+            $ {command} $WORKFORCE_POOL_ID/$PROVIDER_ID --executable-command=$EXECUTABLE_COMMAND --executable-timeout-millis=30000 --executable-output-file=$CACHE_FILE --workforce-pool-user-project=$PROJECT_NUMBER --output-file=credentials.json
 
           To use the resulting file for any of these commands, set the GOOGLE_APPLICATION_CREDENTIALS environment variable to point to the generated file.
-          """
-      ),
+          """),
   }
 
   _use_pluggable_auth = False
@@ -59,7 +63,13 @@ class CreateCredConfig(base.CreateCommand):
 
     # Required args. The audience is a positional arg, meaning it is required.
     parser.add_argument(
-        'audience', help='The workforce pool provider resource name.')
+        'audience',
+        help=(
+            'The workforce pool provider resource name in the format'
+            ' "<pool>/<provider>" or'
+            ' "locations/<location>/workforcePools/<pool>/providers/<provider>".'
+        ),
+    )
 
     # The credential source must be specified (file-sourced or URL-sourced).
     credential_types = parser.add_group(
@@ -99,5 +109,10 @@ class CreateCredConfig(base.CreateCommand):
         hidden=True)
 
   def Run(self, args):
+    if hasattr(args, 'audience'):
+      try:
+        args.audience = cred_config.normalize_workforce_audience(args.audience)
+      except cred_config.GeneratorError as e:
+        raise gcloud_exceptions.InvalidArgumentException('AUDIENCE', e.message)
     cred_config.create_credential_config(args,
                                          cred_config.ConfigType.WORKFORCE_POOLS)

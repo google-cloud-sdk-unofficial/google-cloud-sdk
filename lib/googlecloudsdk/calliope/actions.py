@@ -619,6 +619,7 @@ def _PreActionHook(action, func, additional_help=None):
       kwargs['choices'] = self._wrapped_action.choices
       kwargs['option_strings'] = self._wrapped_action.option_strings
       super(Action, self).__init__(*args, **kwargs)
+      self.additional_help = additional_help
 
     def __call__(self, parser, namespace, value, option_string=None):
       # Fix for _Append and _AppendConst to only run self.func once.

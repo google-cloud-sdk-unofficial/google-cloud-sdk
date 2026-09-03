@@ -1051,23 +1051,6 @@ class IamLocationsWorkforcePoolsProvidersScimTenantsDeleteRequest(_messages.Mess
   name = _messages.StringField(2, required=True)
 
 
-class IamLocationsWorkforcePoolsProvidersScimTenantsGetIamPolicyRequest(_messages.Message):
-  r"""A IamLocationsWorkforcePoolsProvidersScimTenantsGetIamPolicyRequest
-  object.
-
-  Fields:
-    getIamPolicyRequest: A GetIamPolicyRequest resource to be passed as the
-      request body.
-    resource: REQUIRED: The resource for which the policy is being requested.
-      See [Resource
-      names](https://cloud.google.com/apis/design/resource_names) for the
-      appropriate value for this field.
-  """
-
-  getIamPolicyRequest = _messages.MessageField('GetIamPolicyRequest', 1)
-  resource = _messages.StringField(2, required=True)
-
-
 class IamLocationsWorkforcePoolsProvidersScimTenantsGetRequest(_messages.Message):
   r"""A IamLocationsWorkforcePoolsProvidersScimTenantsGetRequest object.
 
@@ -1123,23 +1106,6 @@ class IamLocationsWorkforcePoolsProvidersScimTenantsPatchRequest(_messages.Messa
   workforcePoolProviderScimTenant = _messages.MessageField('WorkforcePoolProviderScimTenant', 3)
 
 
-class IamLocationsWorkforcePoolsProvidersScimTenantsSetIamPolicyRequest(_messages.Message):
-  r"""A IamLocationsWorkforcePoolsProvidersScimTenantsSetIamPolicyRequest
-  object.
-
-  Fields:
-    resource: REQUIRED: The resource for which the policy is being specified.
-      See [Resource
-      names](https://cloud.google.com/apis/design/resource_names) for the
-      appropriate value for this field.
-    setIamPolicyRequest: A SetIamPolicyRequest resource to be passed as the
-      request body.
-  """
-
-  resource = _messages.StringField(1, required=True)
-  setIamPolicyRequest = _messages.MessageField('SetIamPolicyRequest', 2)
-
-
 class IamLocationsWorkforcePoolsProvidersScimTenantsSuggestClaimMappingRequest(_messages.Message):
   r"""A
   IamLocationsWorkforcePoolsProvidersScimTenantsSuggestClaimMappingRequest
@@ -1173,24 +1139,6 @@ class IamLocationsWorkforcePoolsProvidersScimTenantsSuggestClaimMappingRequest(_
 
   intendedScimUsage = _messages.EnumField('IntendedScimUsageValueValuesEnum', 1)
   parent = _messages.StringField(2, required=True)
-
-
-class IamLocationsWorkforcePoolsProvidersScimTenantsTestIamPermissionsRequest(_messages.Message):
-  r"""A
-  IamLocationsWorkforcePoolsProvidersScimTenantsTestIamPermissionsRequest
-  object.
-
-  Fields:
-    resource: REQUIRED: The resource for which the policy detail is being
-      requested. See [Resource
-      names](https://cloud.google.com/apis/design/resource_names) for the
-      appropriate value for this field.
-    testIamPermissionsRequest: A TestIamPermissionsRequest resource to be
-      passed as the request body.
-  """
-
-  resource = _messages.StringField(1, required=True)
-  testIamPermissionsRequest = _messages.MessageField('TestIamPermissionsRequest', 2)
 
 
 class IamLocationsWorkforcePoolsProvidersScimTenantsTokensCreateRequest(_messages.Message):
@@ -4477,11 +4425,22 @@ class Oidc(_messages.Message):
       with or without the HTTPS prefix. For example: ``` //iam.googleapis.com/
       projects//locations//workloadIdentityPools//providers/ https://iam.googl
       eapis.com/projects//locations//workloadIdentityPools//providers/ ```
-    discoveryUri: Optional. The URL to fetch the discovery document from,
-      overriding the default URL derived from `issuer_uri`. If not set, the
-      URL defaults to `issuer_uri` with `/.well-known/openid-configuration`
-      appended, as per the OpenID Connect Discovery 1.0 specification.
-    issuerUri: Required. The OIDC issuer URL. Must be an HTTPS endpoint. Per
+    discoveryUri: Optional. The URL to fetch the OIDC discovery document from,
+      overriding the default URL derived from `issuer_uri`. If not set,
+      `discovery_uri` defaults to `issuer_uri` with `/.well-known/openid-
+      configuration` appended, as per the OpenID Connect Discovery 1.0
+      specification. If set, `discovery_uri` must meet the following
+      requirements: - Must start with `https://`. - Must not exceed 2000
+      characters. - The scheme, host, and port must match `issuer_uri`. - The
+      path must contain `/.well-known/` (where `` is not empty, such as
+      `openid-configuration`) and conform to the `issuer_uri` topology: - The
+      well-known path segment is inserted before the issuer path (for example,
+      `https://example.com/.well-known/openid-configuration/tenant1` for
+      issuer `https://example.com/tenant1`), or - The well-known path segment
+      is appended under the issuer path (for example,
+      `https://example.com/tenant1/.well-known/openid-configuration` for
+      issuer `https://example.com/tenant1`).
+    issuerUri: Required. The OIDC `issuer_uri`. Must be an HTTPS endpoint. Per
       OpenID Connect Discovery 1.0 spec, the OIDC issuer URL is used to locate
       the provider's public keys (via `jwks_uri`) for verifying tokens like
       the OIDC ID token. These public key types must be 'EC' or 'RSA'.

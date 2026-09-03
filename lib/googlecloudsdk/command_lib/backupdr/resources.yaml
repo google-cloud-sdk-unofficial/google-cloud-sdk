@@ -222,3 +222,63 @@ dataSourceReferenceDefault:
     - value: "-"
       hint: |
         default is all data source references
+
+autoProtectionPolicy:
+  name: auto_protection_policy
+  collection: backupdr.projects.locations.autoProtectionPolicies
+  request_id_field: autoProtectionPoliciesId
+  attributes:
+  - *project
+  - *location
+  - &autoProtectionPoliciesId
+    parameter_name: autoProtectionPoliciesId
+    attribute_name: auto_protection_policy
+    help: The ID of the AutoProtectionPolicy.
+  disable_auto_completers: false
+
+autoProtectionPolicyDefault:
+  name: autoProtectionPolicy
+  collection: backupdr.projects.locations.autoProtectionPolicies
+  request_id_field: autoProtectionPoliciesId
+  attributes:
+  - *project
+  - *locationDefaultGlobal
+  - &autoProtectionPolicyDefault
+    parameter_name: autoProtectionPoliciesId
+    attribute_name: auto_protection_policy
+    help: The ID of the AutoProtectionPolicy.
+    fallthroughs:
+    - value: "-"
+      hint: |
+        default is all auto protection policies
+
+autoProtectionPolicyBinding:
+  name: auto_protection_policy_binding
+  collection: backupdr.projects.locations.autoProtectionPolicies.bindings
+  request_id_field: autoProtectionPolicyBindingId
+  attributes:
+  - *project
+  - *location
+  - *autoProtectionPoliciesId
+  - &autoProtectionPolicyBindingsId
+    parameter_name: bindingsId
+    attribute_name: auto_protection_policy_binding
+    help: The ID of the Auto Protection Policy Binding
+  disable_auto_completers: false
+
+autoProtectionPolicyBindingDefault:
+  name: autoProtectionPolicyBinding
+  collection: backupdr.projects.locations.autoProtectionPolicies.bindings
+  request_id_field: autoProtectionPolicyBindingId
+  attributes:
+  - *project
+  - *locationDefaultGlobal
+  - *autoProtectionPolicyDefault
+  - &autoProtectionPolicyBindingDefault
+    parameter_name: bindingsId
+    attribute_name: auto_protection_policy_binding
+    help: The ID of the Auto Protection Policy Binding
+    fallthroughs:
+    - value: "-"
+      hint: |
+        default is all auto protection policy bindings

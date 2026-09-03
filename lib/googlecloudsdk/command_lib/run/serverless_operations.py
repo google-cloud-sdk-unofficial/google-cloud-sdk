@@ -92,7 +92,11 @@ class UnknownAPIError(exceptions.Error):
 
 
 @contextlib.contextmanager
-def Connect(conn_context, skip_activation_prompt=False):
+def Connect(
+    conn_context,
+    skip_activation_prompt=False,
+    should_retry_if_disabled=True,
+):
   """Provide a ServerlessOperations instance to use.
 
   If we're using the GKE Serverless Add-on, connect to the relevant cluster.
@@ -105,6 +109,8 @@ def Connect(conn_context, skip_activation_prompt=False):
       the run.googleapis.com service was enabled. If this is true, we skip
       prompting the user to enable the service because they should have already
       been prompted if the API wasn't activated.
+    should_retry_if_disabled: bool that should be true if we want to retry the
+      request when the API is disabled.
 
   Yields:
     A ServerlessOperations instance.
@@ -121,15 +127,18 @@ def Connect(conn_context, skip_activation_prompt=False):
       conn_context.api_version,
       skip_activation_prompt=skip_activation_prompt,
       location=conn_context.region,
+      should_retry_if_disabled=should_retry_if_disabled,
   )
   # pylint: enable=protected-access
 
   with conn_context as conn_info:
-    response_func = (
-        apis.CheckResponse(skip_activation_prompt)
-        if conn_context.supports_one_platform
-        else None
-    )
+    if conn_context.supports_one_platform:
+      response_func = apis.CheckResponse(
+          skip_activation_prompt,
+          should_retry_if_disabled=should_retry_if_disabled,
+      )
+    else:
+      response_func = None
     # pylint: disable=protected-access
     client = apis_internal._GetClientInstance(
         conn_info.api_name,
@@ -992,13 +1001,14 @@ class ServerlessOperations(object):
           )
           source_path = build_source
         elif upload_through_run_api:
-          tracker.UpdateHeaderMessage('Uploading sources through Run API..')
+          tracker.UpdateHeaderMessage('Uploading sources...')
           source_object = sources.UploadThroughCloudRun(
               source_to_upload=build_source,
               region=region,
               service_ref=service_ref,
               release_track=release_track,
               kms_key=kms_key,
+              skip_build=skip_build,
           )
           source_path = sources.GetGsutilUri(source_object)
         else:
@@ -2131,8 +2141,15 @@ class ServerlessOperations(object):
               'completes before creating a new one.'
           )
         raise e
+    ex = execution.Execution(execution_message, messages)
     if asyn:
-      return execution.Execution(execution_message, messages)
+      return ex
+    if ex.spec.delayExecution and not wait:
+      tracker.StartStage(stages.RESOURCES_AVAILABLE)
+      tracker.UpdateStage(
+          stages.RESOURCES_AVAILABLE, 'Queued to provision resources.'
+      )
+      return ex
 
     execution_ref = self._registry.Parse(
         execution_message.metadata.name,

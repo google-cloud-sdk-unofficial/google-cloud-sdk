@@ -53,6 +53,7 @@
         - group:
             params:
             - group:
+                release_tracks: [BETA, GA]
                 help_text: |
                   Schema specification.
                 mutex: true
@@ -67,6 +68,41 @@
                   type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
                   help_text: |
                     File containing schema definition.
+            - group:
+                release_tracks: [ALPHA]
+                mutex: true
+                required: true
+                params:
+                - group:
+                    help_text: |
+                      Schema specification.
+                    mutex: true
+                    params:
+                    - arg_name: definition
+                      api_field: validateMessageRequest.schema.definition
+                      help_text: |
+                        Inline schema definition.
+                    - arg_name: definition-file
+                      api_field: validateMessageRequest.schema.definition
+                      type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+                      help_text: |
+                        File containing schema definition.
+                - group:
+                    help_text: |
+                      Compiled Protocol Buffer configuration.
+                    hidden: true
+                    params:
+                    - arg_name: definition-descriptor-file
+                      api_field: validateMessageRequest.schema.compiledProtoSchema.compiledBytes
+                      type: "googlecloudsdk.calliope.arg_parsers:FileContents:binary=True"
+                      required: true
+                      help_text: |
+                        File containing the precompiled Protocol Buffer schema.
+                    - arg_name: root-message-name
+                      api_field: validateMessageRequest.schema.compiledProtoSchema.rootMessage
+                      required: true
+                      help_text: |
+                        Name of the root message defined in the schema.
             - arg_name: type
               api_field: validateMessageRequest.schema.type
               help_text: |

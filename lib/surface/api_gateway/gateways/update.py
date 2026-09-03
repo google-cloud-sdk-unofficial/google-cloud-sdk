@@ -51,7 +51,7 @@ class Update(base.UpdateCommand):
   def Run(self, args):
     gateway_ref = args.CONCEPTS.gateway.Parse()
 
-    gateways_client = gateways.GatewayClient()
+    gateways_client = gateways.GatewayClient(release_track=self.ReleaseTrack())
     gateway, mask = self.ProcessUpdates(gateways_client.Get(gateway_ref), args)
 
     resp = gateways_client.Update(gateway, update_mask=mask)
@@ -61,10 +61,11 @@ class Update(base.UpdateCommand):
 
     return operations_util.PrintOperationResult(
         resp.name,
-        operations.OperationsClient(),
+        operations.OperationsClient(release_track=self.ReleaseTrack()),
         service=gateways_client.service,
         wait_string=wait,
-        is_async=args.async_)
+        is_async=args.async_,
+    )
 
   def ProcessUpdates(self, gateway, args):
     api_config_ref = args.CONCEPTS.api_config.Parse()

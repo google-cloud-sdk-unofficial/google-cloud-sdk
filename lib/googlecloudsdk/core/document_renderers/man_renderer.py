@@ -36,6 +36,7 @@ class ManRenderer(renderer.Renderer):
   _FONT_TAG = (r'\fB', r'\fI', r'\f5')
 
   def __init__(self, *args, **kwargs):
+    kwargs.setdefault('excluded_sections', ('PROJECTION KEYS',))
     super(ManRenderer, self).__init__(*args, **kwargs)
     self._example = False
     self._fill = 0

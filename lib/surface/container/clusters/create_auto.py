@@ -86,6 +86,7 @@ auto_flags = [
     'nodepoolupgradeconcurrencyconfig',
     'enableScheduledUpgrades',
     'nodecreationmode',
+    'wizSensor',
 ]
 # LINT.ThenChange()
 

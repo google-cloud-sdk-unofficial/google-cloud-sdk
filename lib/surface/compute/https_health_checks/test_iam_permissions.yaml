@@ -1,0 +1,30 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: Test IAM permissions for a Compute Engine legacy HTTPS health check.
+  description: |
+    Returns permissions that a caller has on the specified legacy HTTPS health check.
+
+  examples: |
+    To test if the caller has 'compute.httpsHealthChecks.get' permission on an HTTPS health check `my-health-check`, run:
+
+      $ {command} my-health-check --permissions=compute.httpsHealthChecks.get
+
+request:
+  collection: compute.httpsHealthChecks
+  api_version: alpha
+  method: testIamPermissions
+  use_relative_name: false
+
+command_type: GENERIC
+
+arguments:
+  resource:
+    help_text: The legacy HTTPS health check for which to test permissions.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:https_health_check
+  params:
+  - arg_name: permissions
+    api_field: testPermissionsRequest.permissions
+    required: true
+    repeated: true
+    help_text: |-
+      Permissions to test.

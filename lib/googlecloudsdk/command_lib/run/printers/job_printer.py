@@ -27,6 +27,12 @@ EXECUTION_PRINTER_FORMAT = 'execution'
 JOB_PRINTER_FORMAT = 'job'
 TASK_PRINTER_FORMAT = 'task'
 
+IDENTITY_ANNOTATION = 'run.googleapis.com/identity'
+IDENTITY_TYPE_ANNOTATION = 'run.googleapis.com/identity-type'
+IDENTITY_CERTIFICATE_ENABLED_ANNOTATION = (
+    'run.googleapis.com/identity-certificate-enabled'
+)
+
 
 def _PluralizedWord(word, count):
   return '{count} {word}{plural}'.format(
@@ -101,6 +107,23 @@ class TaskPrinter(cp.CustomPrinterBase):
   """
 
   @staticmethod
+  def _GetIdentityLabels(record):
+    identity_type = record.annotations.get(IDENTITY_TYPE_ANNOTATION, '')
+    if identity_type in ['workload-identity', 'agent-identity']:
+      return [
+          ('Identity', record.annotations.get(IDENTITY_ANNOTATION, '')),
+          ('Identity Type', identity_type),
+          (
+              'Identity Certificate Enabled',
+              record.annotations.get(
+                  IDENTITY_CERTIFICATE_ENABLED_ANNOTATION, 'false'
+              ),
+          ),
+      ]
+    else:
+      return [('Service account', record.service_account)]
+
+  @staticmethod
   def GetTerminationGracePeriod(record):
     if record.termination_grace_period is not None:
       return '{}s'.format(record.termination_grace_period)
@@ -125,14 +148,16 @@ class TaskPrinter(cp.CustomPrinterBase):
             if record.spec.maxRetries is not None
             else None,
         ),
-        ('Service account', record.service_account),
+    ]
+    labels.extend(TaskPrinter._GetIdentityLabels(record))
+    labels.extend([
         ('VPC access', k8s_util.GetVpcNetwork(record.annotations)),
         ('SQL connections', k8s_util.GetCloudSqlInstances(record.annotations)),
         (
             'Volumes',
             container_util.GetVolumes(record),
         ),
-    ]
+    ])
     return cp.Lines([container_util.GetContainers(record), cp.Labeled(labels)])
 
   @staticmethod

@@ -43,6 +43,7 @@ class NetworkconnectivityV1beta(base_api.BaseApiClient):
     self.projects_locations_global_hubs = self.ProjectsLocationsGlobalHubsService(self)
     self.projects_locations_global_policyBasedRoutes = self.ProjectsLocationsGlobalPolicyBasedRoutesService(self)
     self.projects_locations_global = self.ProjectsLocationsGlobalService(self)
+    self.projects_locations_interconnectKeyGroups = self.ProjectsLocationsInterconnectKeyGroupsService(self)
     self.projects_locations_multicloudDataTransferConfigs_destinations = self.ProjectsLocationsMulticloudDataTransferConfigsDestinationsService(self)
     self.projects_locations_multicloudDataTransferConfigs = self.ProjectsLocationsMulticloudDataTransferConfigsService(self)
     self.projects_locations_multicloudDataTransferSupportedServices = self.ProjectsLocationsMulticloudDataTransferSupportedServicesService(self)
@@ -951,6 +952,178 @@ class NetworkconnectivityV1beta(base_api.BaseApiClient):
       super(NetworkconnectivityV1beta.ProjectsLocationsGlobalService, self).__init__(client)
       self._upload_configs = {
           }
+
+  class ProjectsLocationsInterconnectKeyGroupsService(base_api.BaseApiService):
+    """Service class for the projects_locations_interconnectKeyGroups resource."""
+
+    _NAME = 'projects_locations_interconnectKeyGroups'
+
+    def __init__(self, client):
+      super(NetworkconnectivityV1beta.ProjectsLocationsInterconnectKeyGroupsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new InterconnectKeyGroup in a given project.
+
+      Args:
+        request: (NetworkconnectivityProjectsLocationsInterconnectKeyGroupsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta/projects/{projectsId}/locations/{locationsId}/interconnectKeyGroups',
+        http_method='POST',
+        method_id='networkconnectivity.projects.locations.interconnectKeyGroups.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['interconnectKeyGroupId', 'requestId'],
+        relative_path='v1beta/{+parent}/interconnectKeyGroups',
+        request_field='googleCloudNetworkconnectivityV1betaInterconnectKeyGroup',
+        request_type_name='NetworkconnectivityProjectsLocationsInterconnectKeyGroupsCreateRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single InterconnectKeyGroup.
+
+      Args:
+        request: (NetworkconnectivityProjectsLocationsInterconnectKeyGroupsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta/projects/{projectsId}/locations/{locationsId}/interconnectKeyGroups/{interconnectKeyGroupsId}',
+        http_method='DELETE',
+        method_id='networkconnectivity.projects.locations.interconnectKeyGroups.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1beta/{+name}',
+        request_field='',
+        request_type_name='NetworkconnectivityProjectsLocationsInterconnectKeyGroupsDeleteRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def FetchConfig(self, request, global_params=None):
+      r"""Fetches the full MACsec configuration of the InterconnectKeyGroup, including sensitive key material.
+
+      Args:
+        request: (NetworkconnectivityProjectsLocationsInterconnectKeyGroupsFetchConfigRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudNetworkconnectivityV1betaInterconnectKeyGroup) The response message.
+      """
+      config = self.GetMethodConfig('FetchConfig')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    FetchConfig.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta/projects/{projectsId}/locations/{locationsId}/interconnectKeyGroups/{interconnectKeyGroupsId}:fetchConfig',
+        http_method='GET',
+        method_id='networkconnectivity.projects.locations.interconnectKeyGroups.fetchConfig',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta/{+name}:fetchConfig',
+        request_field='',
+        request_type_name='NetworkconnectivityProjectsLocationsInterconnectKeyGroupsFetchConfigRequest',
+        response_type_name='GoogleCloudNetworkconnectivityV1betaInterconnectKeyGroup',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single InterconnectKeyGroup.
+
+      Args:
+        request: (NetworkconnectivityProjectsLocationsInterconnectKeyGroupsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudNetworkconnectivityV1betaInterconnectKeyGroup) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta/projects/{projectsId}/locations/{locationsId}/interconnectKeyGroups/{interconnectKeyGroupsId}',
+        http_method='GET',
+        method_id='networkconnectivity.projects.locations.interconnectKeyGroups.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['view'],
+        relative_path='v1beta/{+name}',
+        request_field='',
+        request_type_name='NetworkconnectivityProjectsLocationsInterconnectKeyGroupsGetRequest',
+        response_type_name='GoogleCloudNetworkconnectivityV1betaInterconnectKeyGroup',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists InterconnectKeyGroups in a given project.
+
+      Args:
+        request: (NetworkconnectivityProjectsLocationsInterconnectKeyGroupsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudNetworkconnectivityV1betaListInterconnectKeyGroupsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta/projects/{projectsId}/locations/{locationsId}/interconnectKeyGroups',
+        http_method='GET',
+        method_id='networkconnectivity.projects.locations.interconnectKeyGroups.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken', 'view'],
+        relative_path='v1beta/{+parent}/interconnectKeyGroups',
+        request_field='',
+        request_type_name='NetworkconnectivityProjectsLocationsInterconnectKeyGroupsListRequest',
+        response_type_name='GoogleCloudNetworkconnectivityV1betaListInterconnectKeyGroupsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single InterconnectKeyGroup. Used for adding and removing keys.
+
+      Args:
+        request: (NetworkconnectivityProjectsLocationsInterconnectKeyGroupsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta/projects/{projectsId}/locations/{locationsId}/interconnectKeyGroups/{interconnectKeyGroupsId}',
+        http_method='PATCH',
+        method_id='networkconnectivity.projects.locations.interconnectKeyGroups.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1beta/{+name}',
+        request_field='googleCloudNetworkconnectivityV1betaInterconnectKeyGroup',
+        request_type_name='NetworkconnectivityProjectsLocationsInterconnectKeyGroupsPatchRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
 
   class ProjectsLocationsMulticloudDataTransferConfigsDestinationsService(base_api.BaseApiService):
     """Service class for the projects_locations_multicloudDataTransferConfigs_destinations resource."""

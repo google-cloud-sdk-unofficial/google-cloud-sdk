@@ -3775,9 +3775,10 @@ def AddSemiManagedSqlServer(
       required=False,
       type=str,
       hidden=hidden,
+      action='append',
       help=(
-          'The full resource name of the GCE instance that is to be onboarded'
-          ' to Cloud SQL.'
+          'The list of full resource names of the GCE instances that are to be'
+          ' onboarded to Cloud SQL.'
           '`--gce-instance=projects/test-project/zones/us-central1/instances/my-gce-instance'
       ),
   )

@@ -190,6 +190,13 @@ class Collections(enum.Enum):
       ['project', 'forwardingRule'],
       True
   )
+  GLOBALFRONTENDSETTINGS = (
+      'globalFrontendSettings',
+      'projects/{project}/global/globalFrontendSettings',
+      {},
+      ['project'],
+      True
+  )
   GLOBALNETWORKENDPOINTGROUPS = (
       'globalNetworkEndpointGroups',
       'projects/{project}/global/networkEndpointGroups/{networkEndpointGroup}',

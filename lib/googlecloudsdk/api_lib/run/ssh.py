@@ -56,29 +56,6 @@ def _GetProjectNumberFromWorkloadJson(
   return project_number
 
 
-def _ValidateGen2(workload_json: dict[str, Any]) -> None:
-  """Validates that the workload is gen2.
-
-  Args:
-    workload_json: dict, The JSON representation of the Cloud Run workload.
-
-  Raises:
-    ValueError: If the workload is a gen1 deployment.
-  """
-  template = workload_json.get(constants.SPEC, {}).get(constants.TEMPLATE, {})
-  execution_environment = (
-      template.get(constants.METADATA, {})
-      .get(constants.ANNOTATIONS, {})
-      .get(k8s_object.EXECUTION_ENVIRONMENT_ANNOTATION)
-  )
-  if execution_environment == constants.GEN1:
-    raise ValueError(
-        "SSH is not supported for Cloud Run gen1 deployments. If you"
-        " already switched the execution environment to gen2, please wait a"
-        " few minutes for the deployment to be updated."
-    )
-
-
 def _ValidateSSHEnabled(workload_json: dict[str, Any]) -> None:
   """Validates that the workload has SSH enabled.
 
@@ -189,7 +166,6 @@ class Ssh:
     )
 
     workload_json = self._GetWorkloadJson()
-    _ValidateGen2(workload_json)
     _ValidateSSHEnabled(workload_json)
 
     if self.workload_type == self.WorkloadType.SERVICE:

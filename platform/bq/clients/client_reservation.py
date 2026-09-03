@@ -190,7 +190,6 @@ def GetBodyForCreateReservationAssignment(
     ] = scheduling_policy_concurrency
   if principal is not None:
     reservation_assignment['principal'] = principal
-
   return reservation_assignment
 
 
@@ -936,12 +935,12 @@ def MoveReservationAssignment(
 
 
 def UpdateReservationAssignment(
-    client,
-    reference,
-    priority,
-    scheduling_policy_max_slots,
-    scheduling_policy_concurrency,
-):
+    client: discovery.Resource,
+    reference: bq_id_utils.ApiClientHelper.ReservationAssignmentReference,
+    priority: Optional[str] = None,
+    scheduling_policy_max_slots: Optional[int] = None,
+    scheduling_policy_concurrency: Optional[int] = None,
+) -> Dict[str, Any]:
   """Updates reservation assignment.
 
   Arguments:
@@ -977,6 +976,7 @@ def UpdateReservationAssignment(
         'concurrency'
     ] = scheduling_policy_concurrency
     update_mask += 'scheduling_policy.concurrency,'
+
   return (
       client.projects()
       .locations()

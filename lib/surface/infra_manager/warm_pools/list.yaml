@@ -1,0 +1,29 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: List warm pools.
+    description: List warm pools.
+    examples: |-
+      To list all warm pools at location `us-central1`, run:
+
+        $ {command} --location=us-central1
+
+  request:
+    collection: config.projects.locations.warmPools
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.infra_manager.resources:location
+      help_text: Location to list warm pools.
+
+  response:
+    id_field: name
+
+  output:
+    format: |
+      table(
+        name.basename():label=NAME,
+        state,
+        poolSize,
+        createTime:sort=1
+      )

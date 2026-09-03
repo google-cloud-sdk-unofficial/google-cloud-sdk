@@ -145,8 +145,71 @@ def _validate_audience(audience, config_type):
     )
 
 
+_FULL_RE = re.compile(
+    r'^locations/([^/]+)/workforcePools/([^/]+)/providers/([^/]+)$'
+)
+_SHORT_RE = re.compile(r'^([^/]+)/([^/]+)$')
+_RESERVED_FIRST = frozenset({'locations', 'workforcePools', 'providers'})
+
+
+def normalize_workforce_audience(audience):
+  """Normalizes the workforce pool provider audience to the full resource name format.
+
+  Expands short-format audience inputs (`<pool>/<provider>`) into full
+  canonical resource names
+  (`locations/global/workforcePools/<pool>/providers/<provider>`), while
+  validating and preserving full resource names
+  (`locations/<location>/workforcePools/<pool>/providers/<provider>`).
+
+  Args:
+    audience: str, The workforce pool provider audience input.
+
+  Returns:
+    str, The normalized audience resource name.
+
+  Raises:
+    GeneratorError: If the audience is empty, None, or does not match
+      either the short format `<pool>/<provider>` or the full format
+      `locations/<location>/workforcePools/<pool>/providers/<provider>`.
+
+  Examples:
+    >>> normalize_workforce_audience('my-pool/my-provider')
+    'locations/global/workforcePools/my-pool/providers/my-provider'
+    >>> normalize_workforce_audience(
+    ...     'locations/us-central1/workforcePools/p/providers/pr'
+    ... )
+    'locations/us-central1/workforcePools/p/providers/pr'
+  """
+  if not audience:
+    raise GeneratorError('Audience must be specified.')
+
+  audience = audience.strip()
+
+  match = _FULL_RE.match(audience)
+  if match:
+    return audience
+
+  match = _SHORT_RE.match(audience)
+  if match and match.group(1) not in _RESERVED_FIRST:
+    return 'locations/global/workforcePools/{}/providers/{}'.format(
+        match.group(1), match.group(2)
+    )
+
+  raise GeneratorError(
+      'Invalid workforce pool provider audience: "{}". Expected format: '
+      '"<pool>/<provider>" or '
+      '"locations/<location>/workforcePools/<pool>/providers/<provider>".'
+      .format(audience)
+  )
+
+
 def create_credential_config(args, config_type):
   """Creates the byoid credential config based on CLI arguments."""
+  if hasattr(args, 'audience') and config_type is ConfigType.WORKFORCE_POOLS:
+    try:
+      args.audience = normalize_workforce_audience(args.audience)
+    except GeneratorError as e:
+      raise calliope_exceptions.InvalidArgumentException('AUDIENCE', e.message)
   _validate_audience(args.audience, config_type)
   # If a certificate path was provided, enable mtls by default.
   is_cert = getattr(args, 'credential_cert_path', None) is not None
@@ -180,6 +243,7 @@ def create_credential_config(args, config_type):
 
   try:
     generator = get_generator(args, config_type)
+
     output = {
         'universe_domain': universe_domain,
         'type': 'external_account',

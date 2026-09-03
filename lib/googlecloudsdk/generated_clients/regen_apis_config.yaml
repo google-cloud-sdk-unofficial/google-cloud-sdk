@@ -1124,11 +1124,19 @@ apis:
       discovery_doc: file_v1beta1.json
     v1:
       discovery_doc: file_v1.json
+  firebase:
+    v1beta1:
+      discovery_doc: firebase_v1beta1.json
+      default: true
   firebasedataconnect:
     v1alpha:
       discovery_doc: firebasedataconnect_v1alpha.json
     v1beta:
       discovery_doc: firebasedataconnect_v1beta.json
+      default: true
+  firebaserules:
+    v1:
+      discovery_doc: firebaserules_v1.json
       default: true
   firestore:
     v1beta2:
@@ -1142,8 +1150,6 @@ apis:
     v1:
       discovery_doc: firestore_v1.json
       default: true
-      skip:
-        bug: b/541257660
   genomics:
     v1:
       discovery_doc: genomics_v1.json
@@ -1822,6 +1828,8 @@ apis:
     v2:
       discovery_doc: run_v2.json
       gcloud_gapic_library: google/cloud/run/v2:run_v2_py
+      skip:
+        bug: b/543860500
   runtimeconfig:
     v1beta1:
       discovery_doc: runtimeconfig_v1beta1.json
@@ -1829,8 +1837,6 @@ apis:
     v1:
       discovery_doc: saasservicemgmt_v1.json
       default: true
-    v1alpha1:
-      discovery_doc: saasservicemgmt_v1alpha1.json
     v1beta1:
       discovery_doc: saasservicemgmt_v1beta1.json
   sasportal:
@@ -2710,15 +2716,24 @@ canonical_surfaces:
   file:
     name: file
     command: filestore
+  firebase:
+    name: firebase
+    command: firebase
+    hidden: true
+  firebasedataconnect:
+    name: firebasedataconnect
+    command: firebase-data-connect
+  firebaserules:
+    name: firebaserules
+    command: firebaserules
+    hidden: true
   firestore:
     name: firestore
     command: firestore
   ftp:
     name: ftp
     command: storage ftp
-  firebasedataconnect:
-    name: firebasedataconnect
-    command: firebase-data-connect
+
   geminicloudassist:
     name: geminicloudassist
     command: geminicloudassist

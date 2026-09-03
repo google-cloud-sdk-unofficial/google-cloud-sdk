@@ -95,6 +95,15 @@ http_health_check:
     attribute_name: http_health_check
     help: The name of the Google Compute Engine HTTP health check.
 
+https_health_check:
+  name: https health check
+  collection: compute.httpsHealthChecks
+  attributes:
+  - *project
+  - parameter_name: httpsHealthCheck
+    attribute_name: https_health_check
+    help: The name of the Google Compute Engine HTTPS health check.
+
 firewall:
   name: firewall_rule
   collection: compute.firewalls
@@ -332,6 +341,15 @@ reservation_block:
     attribute_name: reservation_block
     help: The name of the Google Compute Engine reservation block.
 
+route:
+  name: route
+  collection: compute.routes
+  attributes:
+  - *project
+  - parameter_name: route
+    attribute_name: route
+    help: The name of the Google Compute Engine route.
+
 service_attachment:
   name: service attachment
   collection: compute.serviceAttachments
@@ -398,6 +416,14 @@ machine_image:
   - parameter_name: machineImage
     attribute_name: machine_image
     help: The name of the Google Compute Engine machine image.
+network:
+  name: network
+  collection: compute.networks
+  attributes:
+  - *project
+  - parameter_name: network
+    attribute_name: network
+    help: The name of the Google Compute Engine network.
 
 resource_policy:
   name: resource policy
@@ -617,3 +643,12 @@ router:
   - parameter_name: router
     attribute_name: router
     help: The name of the Google Compute Engine router.
+
+managed_ruleset:
+  name: Managed Ruleset
+  collection: compute.managedRulesets
+  attributes:
+  - *compute_project
+  - parameter_name: managedRuleset
+    attribute_name: managed_ruleset
+    help: The name of the Cloud Armor Managed ruleset.

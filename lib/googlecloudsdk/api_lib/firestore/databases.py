@@ -56,6 +56,7 @@ def CreateDatabase(
     concurrency_mode,
     storage_placement=None,
     tags=None,
+    free_tier_limited=None,
 ):
   """Performs a Firestore Admin v1 Database Creation.
 
@@ -78,6 +79,8 @@ def CreateDatabase(
     storage_placement: the storage placement for SMMR databases, a string or
       None.
     tags: the tags to attach to the database, a key-value dictionary, or None.
+    free_tier_limited: whether this database is free tier limited, a boolean or
+      None.
 
   Returns:
     an Operation.
@@ -86,23 +89,28 @@ def CreateDatabase(
   tags_value = api_utils.ParseTagsForTagsValue(
       tags, messages.GoogleFirestoreAdminV1Database.TagsValue
   )
+  db_kwargs = {
+      'type': database_type,
+      'databaseEdition': database_edition,
+      'locationId': location,
+      'deleteProtectionState': delete_protection_state,
+      'pointInTimeRecoveryEnablement': pitr_state,
+      'cmekConfig': cmek_config,
+      'mongodbCompatibleDataAccessMode': mongodb_compatible_data_access_mode,
+      'firestoreDataAccessMode': firestore_data_access_mode,
+      'realtimeUpdatesMode': realtime_updates_mode,
+      'concurrencyMode': concurrency_mode,
+      'freeTierLimited': free_tier_limited,
+      'tags': tags_value,
+  }
+  if hasattr(messages.GoogleFirestoreAdminV1Database, 'storagePlacement'):
+    db_kwargs['storagePlacement'] = storage_placement
   return _GetDatabaseService().Create(
       messages.FirestoreProjectsDatabasesCreateRequest(
           parent='projects/{}'.format(project),
           databaseId=database,
           googleFirestoreAdminV1Database=messages.GoogleFirestoreAdminV1Database(
-              type=database_type,
-              databaseEdition=database_edition,
-              locationId=location,
-              deleteProtectionState=delete_protection_state,
-              pointInTimeRecoveryEnablement=pitr_state,
-              cmekConfig=cmek_config,
-              mongodbCompatibleDataAccessMode=mongodb_compatible_data_access_mode,
-              firestoreDataAccessMode=firestore_data_access_mode,
-              realtimeUpdatesMode=realtime_updates_mode,
-              concurrencyMode=concurrency_mode,
-              storagePlacement=storage_placement,
-              tags=tags_value,
+              **db_kwargs
           ),
       )
   )

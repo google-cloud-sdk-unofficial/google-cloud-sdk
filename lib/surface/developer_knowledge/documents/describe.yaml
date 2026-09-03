@@ -1,0 +1,65 @@
+# Copyright 2026 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+- release_tracks: [ALPHA]
+  hints:
+    read_only: true
+  help_text:
+    brief: |
+      Retrieve a single document with its full Markdown content.
+    description: |
+      Retrieve a single document and metadata based on its resource name/URI.
+    examples: |
+      To retrieve the full Markdown content along with the metadata of a document, run:
+
+        $ {command} documents/docs.cloud.google.com/storage/docs/creating-buckets
+
+      To retrieve only the basic metadata (like title and data source) of a specific document, run:
+
+        $ {command} documents/docs.cloud.google.com/storage/docs/creating-buckets --view=basic
+
+      To retrieve the complete document record, including all available backend fields, metadata, and full Markdown content, run:
+
+        $ {command} documents/docs.cloud.google.com/storage/docs/creating-buckets --view=full
+
+# LINT.IfChange
+  request:
+    collection: developerknowledge.documents
+    api_version: v1alpha
+    method: get
+    disable_resource_check: true
+
+  arguments:
+    params:
+    - arg_name: name
+      api_field: name
+      is_positional: true
+      required: true
+      help_text: |
+        The resource name of the document to retrieve. Format: `documents/{uri_without_scheme}` (e.g., `documents/docs.cloud.google.com/storage/docs/creating-buckets`).
+    - arg_name: view
+      api_field: view
+      default: content
+      help_text: |
+        Specify which fields of the document are included in the response.
+      choices:
+      - arg_value: basic
+        enum_value: DOCUMENT_VIEW_BASIC
+        help_text: Include basic metadata fields (e.g., URI, data source, title).
+      - arg_value: content
+        enum_value: DOCUMENT_VIEW_CONTENT
+        help_text: Include basic fields and the Markdown content.
+      - arg_value: full
+        enum_value: DOCUMENT_VIEW_FULL
+        help_text: Include all document fields.
+# LINT.ThenChange(//google/developers/knowledge/v1main/developerknowledge.proto)

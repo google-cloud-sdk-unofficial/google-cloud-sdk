@@ -130,6 +130,16 @@ class Deployment(_messages.Message):
   name = _messages.StringField(2)
 
 
+class DiagnoseAlarmResponse(_messages.Message):
+  r"""Message for response from diagnosing an alarm.
+
+  Fields:
+    diagnose: Diagnosis details.
+  """
+
+  diagnose = _messages.StringField(1)
+
+
 class Empty(_messages.Message):
   r"""A generic empty message that you can re-use to avoid defining duplicated
   empty messages in your APIs. A typical example is to use it as the request
@@ -1171,6 +1181,21 @@ class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPoin
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
+
+
+class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersNetworkPathsDiagnoseAlarmRequest(_messages.Message):
+  r"""A NetworkmanagementProjectsLocationsNetworkMonitoringProvidersNetworkPat
+  hsDiagnoseAlarmRequest object.
+
+  Fields:
+    alarmId: Required. The alarm ID to diagnose.
+    name: Required. Name of the NetworkPath resource. Format: projects/{projec
+      t}/locations/{location}/networkMonitoringProviders/{network_monitoring_p
+      rovider}/networkPaths/{network_path}
+  """
+
+  alarmId = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
 
 
 class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersNetworkPathsGetRequest(_messages.Message):

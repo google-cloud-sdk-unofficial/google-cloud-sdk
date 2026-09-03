@@ -18,7 +18,7 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, Optional, cast
+from typing import Any, Dict, List, Optional, cast
 import uuid
 
 from googlecloudsdk.command_lib.cluster_director.clusters import errors
@@ -130,7 +130,7 @@ REFERENCE_ARCHITECTURE_DEFINITIONS = {
             }
         },
     },
-    "g4": {
+    "g4-flex-start": {
         "computeResources": {
             "g4-fleet": {
                 "config": {
@@ -165,7 +165,7 @@ REFERENCE_ARCHITECTURE_DEFINITIONS = {
             },
         },
     },
-    "h4d-highmem": {
+    "h4d-highmem-flex-start": {
         "computeResources": {
             "h4d-fleet": {
                 "config": {
@@ -266,6 +266,20 @@ def _SafeAppend(prefix: str, suffix: str, max_length: int = 63) -> str:
   return truncated + suffix
 
 
+def _GetSpecifiedComputeResources(args: Any) -> Dict[str, List[Any]]:
+  """Returns a dict of specified compute resources by flag name."""
+  specified = {}
+  for flag in [
+      "flex_start_instances",
+      "on_demand_instances",
+      "spot_instances",
+      "reserved_instances",
+  ]:
+    if args.IsSpecified(flag):
+      specified[flag] = getattr(args, flag)
+  return specified
+
+
 def _ApplySpec(
     args: Any,
     message_module: Any,
@@ -280,18 +294,30 @@ def _ApplySpec(
       specified_zone or f"{cluster_ref.locationsId}-b"
   )  # Default zone if not specified.
   ri_zone = zone
-  is_flex_start = False
   default_compute_id = _SafeAppend(prefix, "-compute")
-  compute_id = default_compute_id
 
   # 1. Process Compute Resources from Spec
   compute_resources = spec.get("computeResources", {})
+  expected_type = None
+  spec_config = {}
   if compute_resources:
-    # Get the first compute config
     _, resource_spec = list(compute_resources.items())[0]
-    config_spec = resource_spec.get("config", {})
+    spec_config = resource_spec.get("config", {})
+    if "newReservedInstances" in spec_config:
+      expected_type = "reserved_instances"
+    elif "newFlexStartInstances" in spec_config:
+      expected_type = "flex_start_instances"
 
-    if "newReservedInstances" in config_spec:
+  specified_computes = _GetSpecifiedComputeResources(args)
+
+  should_apply_default = False
+  if not specified_computes:
+    should_apply_default = True
+  elif expected_type in specified_computes:
+    should_apply_default = True
+
+  if should_apply_default and expected_type:
+    if expected_type == "reserved_instances":
       if not args.IsSpecified("reserved_instances"):
         raise errors.ClusterDirectorError(
             f"Reference architecture {label} requires a reservation. Please"
@@ -316,21 +342,14 @@ def _ApplySpec(
         ri_zone = inferred_zone or zone
         if not ri.get("zone"):
           ri["zone"] = ri_zone
-
-      compute_id = (
-          args.reserved_instances[0].get("id")
-          if args.reserved_instances
-          else default_compute_id
-      )
       ri_zone = (
           args.reserved_instances[0].get("zone")
           if args.reserved_instances
           else zone
       )
 
-    elif "newFlexStartInstances" in config_spec:
-      is_flex_start = True
-      spec_flex = config_spec["newFlexStartInstances"]
+    elif expected_type == "flex_start_instances":
+      spec_flex = spec_config["newFlexStartInstances"]
       if not args.IsSpecified("flex_start_instances"):
         args.flex_start_instances = [{
             "id": default_compute_id,
@@ -348,16 +367,38 @@ def _ApplySpec(
           if not fsi.get("maxDuration"):
             fsi["maxDuration"] = spec_flex["maxDuration"]
 
-      compute_id = (
-          args.flex_start_instances[0].get("id")
-          if args.flex_start_instances
-          else default_compute_id
-      )
       ri_zone = (
           args.flex_start_instances[0].get("zone")
           if args.flex_start_instances
           else zone
       )
+  else:
+    # User specified other compute, don't apply defaults from spec.
+    # Just resolve compute_id and ri_zone from what they specified.
+    primary_type = None
+    primary_compute = None
+    for flag in [
+        "flex_start_instances",
+        "reserved_instances",
+        "spot_instances",
+        "on_demand_instances",
+    ]:
+      if flag in specified_computes:
+        primary_compute = specified_computes[flag][0]
+        primary_type = flag
+        break
+
+    if primary_compute:
+      if primary_type == "reserved_instances":
+        res_path = primary_compute.get("reservation")
+        inferred_zone = None
+        if res_path:
+          inferred_zone = _GetZoneFromReservation(res_path)
+        ri_zone = inferred_zone or zone
+        if not primary_compute.get("zone"):
+          primary_compute["zone"] = ri_zone
+      else:
+        ri_zone = primary_compute.get("zone") or zone
 
   # 2. Process Storage Resources from Spec
   storage_resources = spec.get("storageResources", {})
@@ -405,25 +446,47 @@ def _ApplySpec(
     _SetSpecified(args, "create_network", "--create-network")
 
   # 4. Create Node Sets and Partitions
-  node_count = spec.get("nodeCount", 1)
   if not args.IsSpecified("slurm_node_sets"):
-    node_set = {
-        "id": _SafeAppend(prefix, "ns"),
-        "computeId": compute_id,
-        "type": "gce",
-    }
-    if is_flex_start:
-      node_set["maxDynamicNodeCount"] = node_count
-    else:
-      node_set["staticNodeCount"] = node_count
-    args.slurm_node_sets = [node_set]
+    defined_computes = []
+    for flag in [
+        "flex_start_instances",
+        "reserved_instances",
+        "spot_instances",
+        "on_demand_instances",
+    ]:
+      if args.IsSpecified(flag) or getattr(args, flag, None):
+        for comp in getattr(args, flag, None) or []:
+          defined_computes.append((comp, flag == "flex_start_instances"))
+
+    args.slurm_node_sets = []
+    for i, (comp, is_comp_flex) in enumerate(defined_computes):
+      comp_id = comp.get("id")
+      if len(defined_computes) == 1:
+        ns_id = _SafeAppend(prefix, "ns")
+      else:
+        ns_id = _SafeAppend(prefix, f"ns{i}")
+
+      node_set = {
+          "id": ns_id,
+          "computeId": comp_id,
+          "type": "gce",
+      }
+      count = spec.get("nodeCount", 1) if i == 0 else 1
+      machine_type = comp.get("machineType")
+      is_tpu = machine_type and machine_type.startswith(("ct", "tpu"))
+      if is_comp_flex or is_tpu:
+        node_set["maxDynamicNodeCount"] = count
+      else:
+        node_set["staticNodeCount"] = count
+      args.slurm_node_sets.append(node_set)
     _SetSpecified(args, "slurm_node_sets", "--slurm-node-sets")
+
   if not args.IsSpecified("slurm_partitions"):
     partition_id = _SafeAppend(prefix, "partition")
-    ns_id = _SafeAppend(prefix, "ns")
+    node_set_ids = [ns["id"] for ns in args.slurm_node_sets]
     args.slurm_partitions = [{
         "id": partition_id,
-        "nodeSetIds": [ns_id],
+        "nodeSetIds": node_set_ids,
     }]
     _SetSpecified(args, "slurm_partitions", "--slurm-partitions")
   if not args.IsSpecified("slurm_default_partition"):

@@ -1100,6 +1100,39 @@ def AddTimeout(parser, default='30s'):
   )
 
 
+def AddMaxStreamDuration(parser, is_update=False):
+  """Adds max stream duration flag to the argparse."""
+  if is_update:
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        '--no-max-stream-duration',
+        action='store_true',
+        default=None,
+        help=(
+            'Clears the maximum stream duration timeout on the backend'
+            ' service.'
+        ),
+    )
+  else:
+    group = parser
+
+  group.add_argument(
+      '--max-stream-duration',
+      type=arg_parsers.Duration(),
+      help="""\
+      Specifies the default maximum duration (timeout) for streams on this
+      service. Duration is computed from the beginning of the stream until the
+      response has been completely processed, including all retries. A stream
+      that does not complete in this duration is closed. If not specified, there
+      will be no timeout limit, i.e. the maximum duration is infinite. This
+      value can be overridden in the PathMatcher configuration of the UrlMap
+      referencing this backend service. This field is only allowed when the
+      loadBalancingScheme of the backend service is INTERNAL_SELF_MANAGED. For
+      more information about duration formats, see $ gcloud topic datetimes.
+      """,
+  )
+
+
 def AddPortName(parser):
   """Add port-name flag."""
   parser.add_argument(

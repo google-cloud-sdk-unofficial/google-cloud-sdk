@@ -246,6 +246,7 @@
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateAutomatedBackupConfig
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateNodeType
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceVersion
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateAclPolicy
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateAuthMode
     GA:
       api_version: v1
@@ -263,6 +264,7 @@
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateAutomatedBackupConfig
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateNodeType
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceVersion
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateAclPolicy
     collection: redis.projects.locations.clusters
 
   update:

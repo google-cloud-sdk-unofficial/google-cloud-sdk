@@ -342,6 +342,8 @@ definitions:
       # The name of the argument as it should appear in the JSON. If
       # not given it will match the API field name.
       json_name: {type: string}
+      # The name of the destination attribute in the args namespace.
+      dest: {type: string}
       # The module path to a class that implements remote completion
       # for this argument.
       completer: {$ref: "#/definitions/python_hook"}

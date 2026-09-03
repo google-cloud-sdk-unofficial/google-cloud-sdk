@@ -27,6 +27,7 @@ from googlecloudsdk.core import yaml
 from googlecloudsdk.core.util import encoding
 from googlecloudsdk.core.util import files as file_utils
 from googlecloudsdk.core.util import platforms
+from googlecloudsdk.core.util import times
 
 
 class Error(core_exceptions.Error):
@@ -50,23 +51,122 @@ class Kubeconfig(object):
     self.users = {}
     self.contexts = {}
 
-    entry = None
+    self._ReadKubeconfigSectionIntoDict('clusters', self.clusters)
+    self._ReadKubeconfigSectionIntoDict('users', self.users)
+    self._ReadKubeconfigSectionIntoDict('contexts', self.contexts)
+    # WARNING: if an Error is raised here, LoadOrCreate will catch it, save a
+    # backup of ~/.kube/config to ~/.kube/config.<timestamp>.backup, and
+    # re-create it with only one entry for current context.
+
+  @classmethod
+  def _GetEntryLocationDesc(cls, index, item, last_seen_name, section_name):
+    """Returns a description of the location of an entry inside a section.
+
+    Examples:
+      - "entry 'my-cluster' in clusters section"
+      - "entry at zero-starting-index 2 (after entry 'dev-cluster') in clusters
+        section"
+      - "entry 'prod-cluster' at line 42 in clusters section"
+      - "clusters section" (when index is None)
+
+    Args:
+      index: int or None, 0-based index of the entry inside the section.
+      item: dict or object, the section element data.
+      last_seen_name: str or None, name of the preceding valid entry.
+      section_name: str, formatted section name.
+
+    Returns:
+      str, descriptive location string indicating where the entry is located.
+    """
+    if index is None:
+      return section_name
+
+    parts = []
+    item_name = None
+    if isinstance(item, dict):
+      item_name = item.get('name')
+
+    if item_name:
+      parts.append('entry \'{0}\''.format(item_name))
+    else:
+      parts.append('entry at zero-starting-index {0}'.format(index))
+
+    if last_seen_name and item_name != last_seen_name:
+      parts.append('(after entry \'{0}\')'.format(last_seen_name))
+
+    line_num = None
+    if hasattr(item, 'lc') and getattr(item.lc, 'line', None) is not None:
+      line_num = item.lc.line + 1
+    elif (
+        isinstance(item, dict)
+        and hasattr(item, 'lc')
+        and getattr(item.lc, 'line', None) is not None
+    ):
+      line_num = item.lc.line + 1
+
+    if line_num is not None:
+      parts.append('at line {0}'.format(line_num))
+
+    parts.append('in {0}'.format(section_name))
+    return ' '.join(parts)
+
+  def _ReadKubeconfigSectionIntoDict(self, section_key, target_dict):
+    """Populates target dictionary with entries from a kubeconfig section.
+
+    Args:
+      section_key: str, section name in parsed kubeconfig data (e.g.
+        'clusters').
+      target_dict: dict, dictionary to populate with entries keyed by entry
+        'name'.
+
+    Raises:
+      Error: if the section key or entry 'name' is missing, or if data is
+        malformed.
+    """
+    file_desc = self._filename or 'kubeconfig'
     try:
-      for cluster in self._data['clusters']:
-        entry = cluster
-        self.clusters[cluster['name']] = cluster
-      for user in self._data['users']:
-        entry = user
-        self.users[user['name']] = user
-      for context in self._data['contexts']:
-        entry = context
-        self.contexts[context['name']] = context
-    except KeyError as error:
+      items = self._data[section_key]
+    except (KeyError, TypeError) as error:
+      if isinstance(error, KeyError):
+        raise Error(
+            'Expected top-level section key \'{0}\' not found in root of'
+            ' \'{1}\''.format(
+                error.args[0] if error.args else error, file_desc
+            )
+        ) from error
       raise Error(
-          'expected key {0} not found for entry {1}'.format(error, entry)
+          '{0} : Most likely the root of \'{1}\' is empty or invalid'.format(
+              error, file_desc
+          )
+      ) from error
+
+    section_name = '{0} section'.format(section_key)
+    index = None
+    item = None
+    last_seen_name = None
+    try:
+      for index, item in enumerate(items):
+        name = item['name']
+        target_dict[name] = item
+        last_seen_name = name
+    except TypeError as error:
+      location_desc = self._GetEntryLocationDesc(
+          index, item, last_seen_name, section_name
       )
-      # WARNING: this will clear the ~/.kube/config and re-create it
-      # with only one entry for current context.
+      raise Error(
+          '{0} : Most likely there is empty data in {1} of \'{2}\''.format(
+              error, location_desc, file_desc
+          )
+      ) from error
+    except KeyError as error:
+      location_desc = self._GetEntryLocationDesc(
+          index, item, last_seen_name, section_name
+      )
+      raise Error(
+          'Expected key \'{0}\' not found in {1} of \'{2}\''.format(
+              error.args[0] if error.args else error, location_desc, file_desc
+          )
+      ) from error
 
   @property
   def current_context(self):
@@ -110,18 +210,25 @@ class Kubeconfig(object):
     self._data['current-context'] = context
 
   @classmethod
-  def _Validate(cls, data):
+  def _Validate(cls, data, filename=None):
     """Make sure we have the main fields of a kubeconfig."""
+    file_desc = filename or 'kubeconfig'
     if not data:
-      raise Error('empty file')
+      raise Error('Empty file: \'{0}\''.format(file_desc))
     try:
       for key in ('clusters', 'users', 'contexts'):
         if not isinstance(data[key], list):
           raise Error(
-              'invalid type for {0}: {1}'.format(data[key], type(data[key]))
+              'Invalid type for \'{0}\' in \'{1}\': {2}'.format(
+                  data[key], file_desc, type(data[key])
+              )
           )
     except KeyError as error:
-      raise Error('expected key {0} not found'.format(error))
+      raise Error(
+          'Expected key \'{0}\' not found in \'{1}\''.format(
+              error.args[0] if error.args else error, file_desc
+          )
+      ) from error
 
   @classmethod
   def LoadFromFile(cls, filename):
@@ -132,8 +239,8 @@ class Kubeconfig(object):
           'unable to load kubeconfig for {0}: {1}'.format(
               filename, error.inner_error
           )
-      )
-    cls._Validate(data)
+      ) from error
+    cls._Validate(data, filename=filename)
     return cls(data, filename)
 
   @classmethod
@@ -147,11 +254,32 @@ class Kubeconfig(object):
       try:
         return cls.LoadFromFile(path)
       except (Error, IOError) as error:
-        log.debug(
-            'unable to load default kubeconfig: {0}; recreating {1}'.format(
-                error, path
-            )
+        # Use hyphens instead of colons in the timestamp format because ':' is
+        # an illegal filename character on Windows.
+        timestamp = times.FormatDateTime(
+            times.Now(times.UTC), '%Y-%m-%dT%H-%M-%SZ'
         )
+        pid = os.getpid()  # add unique PID to backup file name
+        counter = 0
+        backup_path = '{0}.{1}.{2}.00.backup'.format(path, timestamp, pid)
+        while os.path.exists(backup_path) and counter < 99:
+          # add unique number 01..99 to backup file name if it already exists
+          counter += 1
+          backup_path = '{0}.{1}.{2}.{3:02d}.backup'.format(
+              path, timestamp, pid, counter
+          )
+        try:
+          os.rename(path, backup_path)
+          log.warning(
+              'Unable to load default kubeconfig: {0}; saved backup to {1}'
+              ' and recreating {2}'.format(error, backup_path, path)
+          )
+        except OSError:
+          log.debug(
+              'Unable to load default kubeconfig: {0}; recreating {1}'.format(
+                  error, path
+              )
+          )
     file_utils.MakeDir(os.path.dirname(path))
     kubeconfig = cls(EmptyKubeconfig(), path)
     kubeconfig.SaveToFile()
@@ -167,10 +295,12 @@ class Kubeconfig(object):
 
     kubeconfig = encoding.GetEncodedValue(os.environ, 'KUBECONFIG')
     if kubeconfig:
-      kubeconfigs = kubeconfig.split(os.pathsep)
-      for kubeconfig in kubeconfigs:
-        # KUBEONCIFG=$KUBECONFIG:~/.kube/config might be ':~/.kube/config'
-        if kubeconfig:
+      # split $KUBECONFIG env var into individual paths separated by ':'
+      paths = kubeconfig.split(os.pathsep)
+      for kubeconfig in paths:
+        # KUBECONFIG=$KUBECONFIG:~/.kube/config might become ':~/.kube/config'
+        # if KUBECONFIG is not set.
+        if kubeconfig:  # only consider non-empty paths
           return os.path.abspath(kubeconfig)
 
     # This follows the same resolution process as kubectl for the config file.

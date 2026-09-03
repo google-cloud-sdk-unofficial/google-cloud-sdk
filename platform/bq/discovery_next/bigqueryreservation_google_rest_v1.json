@@ -1475,6 +1475,11 @@
         "agentMetadata": {
           "description": "If an agent is making the request, metadata about the agent making the request. Used by the Cloud Audit Logging system to enrich the audit log.",
           "$ref": "AgentMetadata"
+        },
+        "pamAuthorizationMetadata": {
+          "description": "Output only. Contains the corresponding PAM grant identifier if the access was granted by a Privileged Access Manager (PAM) binding.",
+          "readOnly": true,
+          "$ref": "PrivilegedAccessManagerMetadata"
         }
       }
     },
@@ -1510,6 +1515,38 @@
       "properties": {
         "agentName": {
           "description": "The name of the agent being used. This is expected to be populated with either \"aiplatform\" (for Vertex AI) or \"geminicloudassist\" (for Gemini Cloud Assist).",
+          "type": "string"
+        }
+      }
+    },
+    "PrivilegedAccessManagerMetadata": {
+      "id": "PrivilegedAccessManagerMetadata",
+      "description": "Metadata about the Privileged Access Manager (PAM) backed authorization decisions.",
+      "type": "object",
+      "properties": {
+        "pamBindingIds": {
+          "description": "Output only. If PAM is managing the elevated access, AuditPamBindingId is written to an Identity and Access Management (IAM) policy, which specifies access controls for resources. If the access is granted via an IAM policy with a binding which is managed by Privileged Access Manager, PrivilegedAccessManagerMetadata will contain the AuditPamBindingId.",
+          "readOnly": true,
+          "type": "array",
+          "items": {
+            "$ref": "AuditPamBindingId"
+          }
+        }
+      }
+    },
+    "AuditPamBindingId": {
+      "id": "AuditPamBindingId",
+      "description": "A composite unique identifier for a PAM Grant which is {Org\/Folder\/Project identifier, grant Unique Identifier} tuple.",
+      "type": "object",
+      "properties": {
+        "container": {
+          "description": "Output only. GCP Project\/Folder\/Organization identifier to which the PAM entitlement\/grant is bound to. Container will be in the following form: projects\/$project_num or folders\/$folder_num or organizations\/$org",
+          "readOnly": true,
+          "type": "string"
+        },
+        "grantUuid": {
+          "description": "Output only. Represents the unique identifier for the PAM grant. Full_resource_name_pattern for PAM Grant is: \/\/privilegedaccessmanager.googleapis.com\/ (projects|folders|organizations)\/$0\/locations\/$1\/entitlements\/$2\/ grants\/$3 where $3 is the grant_uuid.",
+          "readOnly": true,
           "type": "string"
         }
       }
@@ -1578,7 +1615,7 @@
           "format": "google-datetime"
         },
         "updateTime": {
-          "description": "Output only. Last update time of the reservation group.",
+          "description": "Output only. Last update time of the reservation group via a user operation. This timestamp is updated only when an update operation explicitly targets this reservation group directly. It is not updated when parent or child groups are created, updated, or deleted.",
           "readOnly": true,
           "type": "string",
           "format": "google-datetime"
@@ -2117,6 +2154,12 @@
                         "assignmentId": {
                           "description": "The optional assignment ID. Assignment name will be generated automatically if this field is empty. This field must only contain lower case alphanumeric characters or dashes. Max length is 64 characters.",
                           "location": "query",
+                          "type": "string"
+                        },
+                        "debug": {
+                          "description": "Optional. Debug options.",
+                          "location": "query",
+                          "repeated": true,
                           "type": "string"
                         }
                       },

@@ -14,7 +14,6 @@
 # limitations under the License.
 """Surface for listing all domain mappings."""
 
-
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.command_lib.run import connection_context
@@ -36,18 +35,20 @@ class List(commands.List):
   hidden = True
 
   detailed_help = {
-      'DESCRIPTION':
+      'DESCRIPTION': (
           """\
           {description}
 
           For domain mapping support with fully managed Cloud Run, use
-          `gcloud beta run domain-mappings list`.""",
-      'EXAMPLES':
+          `gcloud beta run domain-mappings list`."""
+      ),
+      'EXAMPLES': (
           """\
           To list all Cloud Run domain mappings, run:
 
               $ {command}
-          """,
+          """
+      ),
   }
 
   @classmethod
@@ -61,8 +62,7 @@ class List(commands.List):
         prefixes=False,
         hidden=True,
     )
-    concept_parsers.ConceptParser(
-        [namespace_presentation]).AddToParser(parser)
+    concept_parsers.ConceptParser([namespace_presentation]).AddToParser(parser)
 
     parser.display_info.AddFormat(
         """table(
@@ -87,13 +87,21 @@ class List(commands.List):
         args,
         flags.Product.RUN,
         self.ReleaseTrack(),
-        version_override=('v1alpha1' if
-                          platforms.GetPlatform() != platforms.PLATFORM_MANAGED
-                          else None))
+        version_override=(
+            'v1alpha1'
+            if platforms.GetPlatform() != platforms.PLATFORM_MANAGED
+            else None
+        ),
+    )
     namespace_ref = args.CONCEPTS.namespace.Parse()
     with serverless_operations.Connect(conn_context) as client:
       self.SetCompleteApiEndpoint(conn_context.endpoint)
-      return commands.SortByName(client.ListDomainMappings(namespace_ref))
+      domain_mappings = client.ListDomainMappings(namespace_ref)
+      service_names = {s.name for s in client.ListServices(namespace_ref)}
+      for domain_mapping in domain_mappings:
+        if domain_mapping.route_name not in service_names:
+          domain_mapping.route_missing = True
+      return commands.SortByName(domain_mappings)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -101,14 +109,14 @@ class BetaList(List):
   """Lists domain mappings."""
 
   detailed_help = {
-      'DESCRIPTION':
-          '{description}',
-      'EXAMPLES':
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': (
           """\
           To list all Cloud Run domain mappings, run:
 
               $ {command}
-          """,
+          """
+      ),
   }
 
   @classmethod

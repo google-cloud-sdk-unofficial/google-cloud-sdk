@@ -109,6 +109,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.SLURMOPERATOR: _ParseAddonDisabled,
                     api_adapter.KUEUE: _ParseAddonDisabled,
                     api_adapter.NODEREADINESSCONTROLLER: _ParseAddonDisabled,
+                    api_adapter.WIZ_SENSOR: _ParseAddonDisabled,
                 },
                 **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS}
             ),
@@ -174,6 +175,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.SLURMOPERATOR: _ParseAddonDisabled,
                     api_adapter.KUEUE: _ParseAddonDisabled,
                     api_adapter.NODEREADINESSCONTROLLER: _ParseAddonDisabled,
+                    api_adapter.WIZ_SENSOR: _ParseAddonDisabled,
                 },
                 **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS}
             ),
@@ -235,6 +237,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.SLURMOPERATOR: _ParseAddonDisabled,
                     api_adapter.KUEUE: _ParseAddonDisabled,
                     api_adapter.NODEREADINESSCONTROLLER: _ParseAddonDisabled,
+                    api_adapter.WIZ_SENSOR: _ParseAddonDisabled,
                 },
                 **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS}
             ),
@@ -365,6 +368,7 @@ class Update(base.UpdateCommand):
     flags.AddRemoveLabelsFlag(group)
     flags.AddAutoprovisioningNetworkTagsUpdate(group)
     flags.AddPodSnapshotConfigFlags(group, hidden=False)
+    flags.AddWizSensorFlags(parser, hidden=True)
     flags.AddAgentSandboxConfigFlags(group, hidden=False)
     flags.AddNetworkPolicyFlags(group)
     flags.AddEnableIntraNodeVisibilityFlag(group)
@@ -488,7 +492,7 @@ class Update(base.UpdateCommand):
     flags.AddControlPlaneEgressFlag(group)
     flags.AddAutopilotPrivilegedAdmissionFlag(group)
     flags.AddEnableKernelModuleSignatureEnforcementFlag(group)
-    flags.AddEnableSliceControllerFlag(group, hidden=True)
+    flags.AddEnableSliceControllerFlag(group)
     flags.AddDataplaneV2Flag(group, hidden=True, is_update=True)
     flags.AddAutopilotGeneralProfileFlag(group)
 
@@ -526,6 +530,7 @@ class Update(base.UpdateCommand):
     flags.ValidateCloudRunConfigUpdateArgs(
         opts.cloud_run_config, args.disable_addons
     )
+    flags.ValidateWizSensorFlags(args, is_update=True)
     if args.disable_addons and api_adapter.NODELOCALDNS in args.disable_addons:
       # NodeLocalDNS is being enabled or disabled
       console_io.PromptContinue(
@@ -821,7 +826,7 @@ operations on the cluster (including delete) until it has run to completion."""
  [{name}]. The master will be updated to serve on a new IP address in addition \
 to the current IP address, and cluster credentials will be rotated. Kubernetes \
 Engine will then schedule recreation of all nodes ({num_nodes} nodes) to point \
-to the new IP address. If maintenence window is used, nodes are not recreated \
+to the new IP address. If maintenance window is used, nodes are not recreated \
 until a maintenance window occurs. See documentation \
 https://cloud.google.com/kubernetes-engine/docs/how-to/credential-rotation \
 on how to manually update nodes. This operation is long-running and will block \
@@ -849,7 +854,7 @@ cluster [{name}]. The master will be updated to stop serving on the old IP \
 address and only serve on the new IP address. Make sure all API clients have \
 been updated to communicate with the new IP address (e.g. by running `gcloud \
 container clusters get-credentials --project {project} --location {zone} \
-{name}`). If maintenence window is used, nodes are not recreated until a \
+{name}`). If maintenance window is used, nodes are not recreated until a \
 maintenance window occurs. See documentation \
 https://cloud.google.com/kubernetes-engine/docs/how-to/ip-rotation on how to \
 manually update nodes. This operation is long-running and will block other \
@@ -1409,9 +1414,10 @@ class UpdateBeta(Update):
     flags.AddControlPlaneEgressFlag(group)
     flags.AddAutopilotPrivilegedAdmissionFlag(group)
     flags.AddPodSnapshotConfigFlags(group, hidden=False)
+    flags.AddWizSensorFlags(parser, hidden=True)
     flags.AddAgentSandboxConfigFlags(group, hidden=False)
     flags.AddEnableKernelModuleSignatureEnforcementFlag(group)
-    flags.AddEnableSliceControllerFlag(group, hidden=True)
+    flags.AddEnableSliceControllerFlag(group)
     flags.AddAutopilotGeneralProfileFlag(group)
     flags.AddLinkedRunnersModeFlag(group, hidden=True)
     flags.AddNodePoolUpgradeConcurrencyConfigFlag(group, hidden=False)
@@ -1447,6 +1453,7 @@ class UpdateBeta(Update):
     flags.ValidateCloudRunConfigUpdateArgs(
         opts.cloud_run_config, args.disable_addons
     )
+    flags.ValidateWizSensorFlags(args, is_update=True)
     if args.disable_addons and api_adapter.NODELOCALDNS in args.disable_addons:
       # NodeLocalDNS is being enabled or disabled
       console_io.PromptContinue(
@@ -1831,9 +1838,10 @@ class UpdateAlpha(Update):
     flags.AddControlPlaneEgressFlag(group)
     flags.AddAutopilotPrivilegedAdmissionFlag(group)
     flags.AddPodSnapshotConfigFlags(group, hidden=False)
+    flags.AddWizSensorFlags(parser, hidden=True)
     flags.AddAgentSandboxConfigFlags(group, hidden=False)
     flags.AddEnableKernelModuleSignatureEnforcementFlag(group)
-    flags.AddEnableSliceControllerFlag(group, hidden=True)
+    flags.AddEnableSliceControllerFlag(group)
     flags.AddAutopilotGeneralProfileFlag(group)
     flags.AddLinkedRunnersModeFlag(group, hidden=True)
     flags.AddNodePoolUpgradeConcurrencyConfigFlag(group, hidden=False)
@@ -1871,6 +1879,7 @@ class UpdateAlpha(Update):
     flags.ValidateCloudRunConfigUpdateArgs(
         opts.cloud_run_config, args.disable_addons
     )
+    flags.ValidateWizSensorFlags(args, is_update=True)
     if args.disable_addons and api_adapter.NODELOCALDNS in args.disable_addons:
       # NodeLocalDNS is being enabled or disabled
       console_io.PromptContinue(

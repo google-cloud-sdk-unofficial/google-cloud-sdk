@@ -17,6 +17,7 @@
 
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.vmware import util
+from googlecloudsdk.calliope import exceptions
 
 
 class ClustersClient(util.VmwareClientBase):
@@ -37,18 +38,37 @@ class ClustersClient(util.VmwareClientBase):
       nodes_configs,
       autoscaling_settings=None,
       vsan_type=None,
+      placement_group=None,
+      preferred_placement_group=None,
+      secondary_placement_group=None,
   ):
     parent = resource.Parent().RelativeName()
     cluster_id = resource.Name()
+
+    if placement_group and (
+        preferred_placement_group or secondary_placement_group
+    ):
+      raise exceptions.ConflictingArgumentsException(
+          '--placement-group',
+          '--preferred-placement-group / --secondary-placement-group',
+      )
 
     node_type_configs = util.ConstructNodeParameterConfigMessage(
         self.messages.Cluster.NodeTypeConfigsValue,
         self.messages.NodeTypeConfig,
         nodes_configs,
     )
+    stretched_cluster_config = None
+    if preferred_placement_group or secondary_placement_group:
+      stretched_cluster_config = self.messages.StretchedClusterConfig(
+          preferredLocationPlacementGroup=preferred_placement_group,
+          secondaryLocationPlacementGroup=secondary_placement_group,
+      )
     cluster = self.messages.Cluster(
         nodeTypeConfigs=node_type_configs,
         vsanType=self.GetVsanType(vsan_type),
+        placementGroup=placement_group,
+        stretchedClusterConfig=stretched_cluster_config,
     )
     cluster.autoscalingSettings = util.ConstructAutoscalingSettingsMessage(
         self.messages.AutoscalingSettings,

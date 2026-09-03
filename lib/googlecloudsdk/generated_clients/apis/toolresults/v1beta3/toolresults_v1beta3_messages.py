@@ -107,6 +107,10 @@ class AndroidTestLoop(_messages.Message):
 
 
 
+class AntiTamperingTermination(_messages.Message):
+  r"""Anti-tampering termination was detected."""
+
+
 class Any(_messages.Message):
   r""" `Any` contains an arbitrary serialized protocol buffer message along
   with a URL that describes the type of the serialized message. Protobuf
@@ -2246,6 +2250,7 @@ class TestIssue(_messages.Message):
       assetIssue: There was an issue with the assets in this test.
       licensingProtectionTermination: Licensing protection termination
         (Pairip) was detected.
+      antiTamperingTermination: Anti-tampering termination was detected.
     """
     unspecifiedType = 0
     fatalException = 1
@@ -2281,6 +2286,7 @@ class TestIssue(_messages.Message):
     detectedAppSplashScreen = 31
     assetIssue = 32
     licensingProtectionTermination = 33
+    antiTamperingTermination = 34
 
   category = _messages.EnumField('CategoryValueValuesEnum', 1)
   errorMessage = _messages.StringField(2)

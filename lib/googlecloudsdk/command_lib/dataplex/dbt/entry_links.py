@@ -40,7 +40,8 @@ manifest.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping, Set
+import collections
+from collections import abc
 import hashlib
 from typing import Any, TypedDict
 
@@ -57,6 +58,7 @@ _EXPOSURES = 'exposures'
 _PARENT_MAP = 'parent_map'
 _SAVED_QUERIES = 'saved_queries'
 _SEMANTIC_MODELS = 'semantic_models'
+_SOURCES = 'sources'
 
 
 def LinkTypeFqns(  # pylint: disable=invalid-name
@@ -210,8 +212,52 @@ def _entry_link(
   return {'entryLink': entry_link}
 
 
+def _sql_name(node: dict[str, Any]) -> str:
+  """Constructs the fully qualified SQL path (database.schema.table) for a node.
+
+  It dynamically resolves the physical table name based on the dbt relation_name
+  if present, falling back to reconstructing it from database, schema, and
+  table fields (alias/identifier/name) if relation_name is absent.
+
+  Examples:
+    - With relation_name:
+      {"relation_name": "`myDb`.`mySchema`.`myTable`"} ->
+      "`myDb`.`mySchema`.`myTable`"
+    - Reconstructed model with alias:
+      {"database": "db", "schema": "sc", "alias": "orders_v2"} ->
+      "`db`.`sc`.`orders_v2`"
+    - Reconstructed source with identifier:
+      {"schema": "raw", "identifier": "events_raw"} -> "`raw`.`events_raw`"
+    - Reconstructed fallback:
+      {"name": "my_table"} -> "`my_table`"
+
+  Args:
+    node: The dbt manifest node dictionary (representing a model, source, etc.).
+
+  Returns:
+    The constructed SQL name string, or an empty string if table name cannot be
+    found.
+  """
+  # Prefer relation_name as it is dbt's authoritative, adapter-rendered
+  # relation name.
+  relation_name = node.get('relation_name')
+  if relation_name:
+    return relation_name.strip()
+
+  # Fallback: Reconstruct if relation_name is absent.
+  database = node.get('database')
+  schema = node.get('schema')
+  table = node.get('alias') or node.get('identifier') or node.get('name')
+  if database and schema and table:
+    return f'`{database}`.`{schema}`.`{table}`'
+  elif schema and table:
+    return f'`{schema}`.`{table}`'
+
+  return f'`{table}`' if table else ''
+
+
 def _emit_depends_on(
-    ctx: naming.Context, manifest: Mapping[str, Any], known_ids: Set[str]
+    ctx: naming.Context, manifest: abc.Mapping[str, Any], known_ids: set[str]
 ) -> list[EntryLinkRecord]:
   """Emits ``depends-on`` entry links (dependent -> dependency) from parent_map.
 
@@ -262,47 +308,45 @@ def _emit_depends_on(
   return out
 
 
-def _index_uid_by_name(
+def _index_uid_by_key(
     mapping: dict[str, Any] | None,
-    predicate: Callable[[dict[str, Any]], bool] = lambda _: True,
-) -> dict[str, str]:
-  """Maps a resource's short ``name`` to its dbt unique_id.
+    key_fn: abc.Callable[[dict[str, Any]], Any],
+    predicate: abc.Callable[[dict[str, Any]], bool] = lambda _: True,
+) -> dict[Any, str]:
+  """Indexes a mapping of unique_id -> resource by a custom key.
 
-  Group / model cross-references in the manifest are by short name, so resolve
-  them against the actual manifest keys rather than reconstructing the unique_id
-  by string formatting (which assumes a fixed ``<type>.<project>.<name>``
-  layout and breaks for versioned models, packages, etc.).
+  If multiple resources produce the same key, that key is marked as ambiguous
+  and is excluded from the final index.
 
   Args:
-    mapping: a manifest section mapping unique_id -> resource dict.
-    predicate: optional filter on the resource dict; only matching resources are
-      indexed.
+    mapping: A dictionary of unique_id -> resource dict.
+    key_fn: A function that takes a resource dict and returns the index key.
+      Must return a hashable value. If it returns None, the resource is skipped.
+    predicate: An optional filter function that takes a resource dict and
+      returns True if it should be indexed.
 
   Returns:
-    A dict of short resource name -> dbt unique_id.
+    A dictionary of key -> unique_id.
   """
   index = {}
   ambiguous = set()
   for uid, node in (mapping or {}).items():
     if not predicate(node):
       continue
-    name = node.get('name')
-    if not name:
+    key = key_fn(node)
+    if key is None:
       continue
-    if name in index:
-      # Versioned models share one ``name``, as do same-named models in two
-      # packages. Resolving to an arbitrary one would emit a confident link to
-      # the wrong entry, so drop the name and emit nothing for it.
-      ambiguous.add(name)
-      continue
-    index[name] = uid
-  for name in ambiguous:
-    del index[name]
+    if key in index:
+      ambiguous.add(key)
+    else:
+      index[key] = uid
+  for key in ambiguous:
+    del index[key]
   return index
 
 
 def _emit_consumed_by(
-    ctx: naming.Context, manifest: Mapping[str, Any], known_ids: Set[str]
+    ctx: naming.Context, manifest: abc.Mapping[str, Any], known_ids: set[str]
 ) -> list[EntryLinkRecord]:
   """exposure entry -> Upstream dbt resource (depends-on-imported)."""
   out: list[EntryLinkRecord] = []
@@ -327,7 +371,7 @@ def _emit_consumed_by(
 
 
 def _emit_defines_semantics_for(
-    ctx: naming.Context, manifest: Mapping[str, Any], known_ids: Set[str]
+    ctx: naming.Context, manifest: abc.Mapping[str, Any], known_ids: set[str]
 ) -> list[EntryLinkRecord]:
   """Emits represents links from semantic models to their backing model.
 
@@ -371,7 +415,7 @@ def _emit_defines_semantics_for(
 
 
 def _emit_derives_from(
-    ctx: naming.Context, manifest: Mapping[str, Any], known_ids: Set[str]
+    ctx: naming.Context, manifest: abc.Mapping[str, Any], known_ids: set[str]
 ) -> list[EntryLinkRecord]:
   """metric or saved_query -> upstream metric / semantic_model."""
   out: list[EntryLinkRecord] = []
@@ -396,56 +440,32 @@ def _emit_derives_from(
   return out
 
 
-# dbt resource types that materialize to a physical BigQuery table.
+# DBT resource types that materialize to a physical BigQuery table.
 _MATERIALIZED_RESOURCE_TYPES = frozenset(['model', 'seed', 'snapshot'])
 
+# An `ephemeral` model is inlined into its dependents as a CTE and never becomes
+# a relation so it shouldn't emit a represents link.
+_EPHEMERAL_MATERIALIZATION = 'ephemeral'
 
-def _schema_join_aspect(
-    ctx: naming.Context,
-    source_sql: str,
-    target_sql: str,
-    column_pairs: list[tuple[str, str]],
-) -> dict[str, Any]:
-  """Builds the ``schema-join`` aspect required by schema-join links.
 
-  The ``schema-join`` link type declares ``required_aspects: schema-join``, so
-  each link carries a Dataplex-owned ``schema-join`` aspect describing the
-  joinable columns (payload follows the aspect type's ``SchemaJoins`` template).
+def _materializes_to_bigquery(node: dict[str, Any]) -> bool:
+  """Whether a dbt node becomes a physical BigQuery relation."""
+  if node.get('resource_type') not in _MATERIALIZED_RESOURCE_TYPES:
+    return False
+  materialized = (node.get('config') or {}).get('materialized')
+  return str(materialized or '').strip().lower() != _EPHEMERAL_MATERIALIZATION
 
-  Args:
-    ctx: the naming.Context holding the naming coordinates for this run.
-    source_sql: SQL representation (relation name) of the source entity.
-    target_sql: SQL representation (relation name) of the target entity.
-    column_pairs: (source column, target column) pairs to join on, one per join.
 
-  Returns:
-    An aspect map ({aspect_key: {aspectType, data}}) for the link.
-  """
-  data = {
-      'joins': [
-          {
-              'source': {'name': source_sql, 'fields': [source_field]},
-              'target': {'name': target_sql, 'fields': [target_field]},
-              # A dbt `relationships` test asserts a user-authored foreign key.
-              'type': 'FOREIGN_KEY',
-              'inferenceSource': 'USER',
-          }
-          for source_field, target_field in column_pairs
-      ],
-      'userManaged': True,
-  }
-  return {
-      ctx.schema_join_key(): {
-          'aspectType': ctx.schema_join_fqn(),
-          'data': data,
-      }
-  }
+def _source_key(src: dict[str, Any]) -> tuple[str, str] | None:
+  src_name = src.get('source_name')
+  tbl_name = src.get('name')
+  return (src_name, tbl_name) if src_name and tbl_name else None
 
 
 def _emit_schema_join(
-    ctx: naming.Context, manifest: Mapping[str, Any], known_ids: Set[str]
+    ctx: naming.Context, manifest: abc.Mapping[str, Any], known_ids: set[str]
 ) -> list[EntryLinkRecord]:
-  """Child model -> parent model, from relationships tests.
+  """Child model -> parent model or source, from relationships tests.
 
   Emitted as a ``schema-join`` link (undirected) carrying the required
   ``schema-join`` aspect. The joinable columns live in that aspect
@@ -463,65 +483,125 @@ def _emit_schema_join(
   Returns:
     A list of schema-join EntryLink records.
   """
-  nodes = manifest.get(_NODES) or {}
-  model_uid_by_name = _index_uid_by_name(
-      nodes, lambda n: n.get('resource_type') in _MATERIALIZED_RESOURCE_TYPES
-  )
-  # unique_id pair -> the columns to join on. The link id is derived from the
-  # two endpoints alone, so several relationships tests between the same pair of
-  # models have to share one link and one aspect. The pair is ordered so that
-  # two tests pointing opposite ways across the same models land on one link
-  # rather than two half-populated ones; the join records keep the orientation.
-  columns_by_pair: dict[tuple[str, str], list[tuple[str, str]]] = {}
-  for node in nodes.values():
-    if node.get('resource_type') != 'test':
-      continue
-    tm = node.get('test_metadata') or {}
-    if tm.get('name') != 'relationships':
-      continue
-    kwargs = tm.get('kwargs') or {}
-    attached = node.get('attached_node')
-    if not attached:
-      continue
-    child_col = kwargs.get('column_name')
-    parent_col = kwargs.get('field')
-    if not child_col or not parent_col:
-      continue
-    parent_name = naming.parse_ref(kwargs.get('to') or '')
-    if not parent_name:
-      continue
-    parent_uid = model_uid_by_name.get(parent_name)
-    if not parent_uid:
-      continue
-    if (
-        naming.entry_id(attached) not in known_ids
-        or naming.entry_id(parent_uid) not in known_ids
-    ):
-      continue
-    source_uid, target_uid = sorted((attached, parent_uid))
-    if source_uid == attached:
-      columns = (child_col, parent_col)
-    else:
-      columns = (parent_col, child_col)
-    pairs = columns_by_pair.setdefault((source_uid, target_uid), [])
-    if columns not in pairs:
-      pairs.append(columns)
-
   out: list[EntryLinkRecord] = []
-  for (source_uid, target_uid), pairs in columns_by_pair.items():
-    source_id = naming.entry_id(source_uid)
-    target_id = naming.entry_id(target_uid)
-    # The schema-join aspect names the joinable columns; use each model's
-    # relation_name (SQL representation), falling back to the entry id.
-    source_sql = (nodes.get(source_uid) or {}).get('relation_name') or source_id
-    target_sql = (nodes.get(target_uid) or {}).get('relation_name') or target_id
+  nodes = manifest.get(_NODES) or {}
+  sources = manifest.get(_SOURCES) or {}
+
+  # Index models by name (filtering for materialized resources)
+  models_by_name = _index_uid_by_key(
+      nodes,
+      key_fn=lambda n: n.get('name'),
+      predicate=lambda n: n.get('resource_type')
+      in _MATERIALIZED_RESOURCE_TYPES,
+  )
+
+  # Index sources by (source_name, table_name)
+  sources_by_name = _index_uid_by_key(
+      sources,
+      key_fn=_source_key,
+  )
+
+  grouped_joins: dict[tuple[str, str], list[dict[str, Any]]] = (
+      collections.defaultdict(list)
+  )
+
+  for test_node in nodes.values():
+    if test_node.get('resource_type') != 'test':
+      continue
+    test_metadata = test_node.get('test_metadata') or {}
+    if test_metadata.get('name') != 'relationships':
+      continue
+
+    kwargs = test_metadata.get('kwargs') or {}
+    to_expr = kwargs.get('to')
+    target_field = kwargs.get('field')
+    source_field = test_node.get('column_name') or kwargs.get('column_name')
+
+    if not (to_expr and target_field and source_field):
+      continue
+
+    target_uid = None
+    ref_model = naming.parse_ref(to_expr)
+    if ref_model:
+      target_uid = models_by_name.get(ref_model)
+    else:
+      ref_source = naming.parse_source(to_expr)
+      if ref_source:
+        target_uid = sources_by_name.get(ref_source)
+
+    if not target_uid:
+      continue
+
+    source_uid = test_node.get('attached_node')
+    if not source_uid:
+      continue
+
+    # Sort the unique IDs before lowercasing (converting to entry IDs) to
+    # ensure case-sensitive sorting order remains stable across re-imports.
+    sorted_uids = sorted([source_uid, target_uid])
+    first_entry_id = naming.entry_id(sorted_uids[0])
+    second_entry_id = naming.entry_id(sorted_uids[1])
+
+    if first_entry_id not in known_ids or second_entry_id not in known_ids:
+      continue
+
+    source_node = nodes.get(source_uid) or sources.get(source_uid)
+    target_node = nodes.get(target_uid) or sources.get(target_uid)
+
+    if not (source_node and target_node):
+      continue
+
+    source_sql = _sql_name(source_node)
+    target_sql = _sql_name(target_node)
+
+    if not (source_sql and target_sql):
+      continue
+
+    pair = (first_entry_id, second_entry_id)
+    join_entry = {
+        'source': {
+            'name': source_sql,
+            'fields': [source_field],
+        },
+        'target': {
+            'name': target_sql,
+            'fields': [target_field],
+        },
+        'type': 'FOREIGN_KEY',
+        'inferenceSource': 'USER',
+    }
+
+    if join_entry not in grouped_joins[pair]:
+      grouped_joins[pair].append(join_entry)
+
+  for (first_entry_id, second_entry_id), joins in grouped_joins.items():
+    first_entry_fqn = ctx.entry_name(first_entry_id)
+    second_entry_fqn = ctx.entry_name(second_entry_id)
+    # The columns live in the aspect rather than as entryReference path values
+    # because an undirected reference (which schema-join uses) does not accept
+    # a path.
+    # Additionally, this aspect is mandatory because the schema-join
+    # link type declares required_aspects: schema-join, and a link without
+    # it is rejected by Dataplex.
+    aspect_data = {
+        'joins': joins,
+        'userManaged': True,
+    }
+
+    aspects = {
+        ctx.schema_join_key(): {
+            'aspectType': ctx.schema_join_fqn(),
+            'data': aspect_data,
+        }
+    }
+
     out.append(
         _entry_link(
             ctx,
             'schema_join',
-            ctx.entry_name(source_id),
-            ctx.entry_name(target_id),
-            aspects=_schema_join_aspect(ctx, source_sql, target_sql, pairs),
+            first_entry_fqn,
+            second_entry_fqn,
+            aspects=aspects,
             undirected=True,
         )
     )
@@ -556,27 +636,6 @@ def _get_bigquery_entry_name(
   )
 
 
-def materialized_bigquery_projects(manifest: Mapping[str, Any]) -> set[str]:
-  """Returns the BigQuery projects (dbt ``database``) of materialized nodes.
-
-  Used to scope the import job's referencedEntryScopes so represents (physical)
-  links
-  to physical @bigquery entries in those projects resolve.
-
-  Args:
-    manifest: the parsed dbt manifest.json.
-
-  Returns:
-    The set of distinct project ids that materialized nodes write to.
-  """
-  return {
-      node['database']
-      for node in (manifest.get(_NODES) or {}).values()
-      if node.get('resource_type') in _MATERIALIZED_RESOURCE_TYPES
-      and node.get('database')
-  }
-
-
 def materialized_bigquery_datasets(
     manifest: dict[str, Any],
 ) -> set[tuple[str, str]]:
@@ -591,7 +650,7 @@ def materialized_bigquery_datasets(
   return {
       (node['database'], node['schema'])
       for node in (manifest.get(_NODES) or {}).values()
-      if node.get('resource_type') in _MATERIALIZED_RESOURCE_TYPES
+      if _materializes_to_bigquery(node)
       and node.get('database')
       and node.get('schema')
   }
@@ -599,9 +658,9 @@ def materialized_bigquery_datasets(
 
 def _emit_materializes_to(
     ctx: naming.Context,
-    manifest: Mapping[str, Any],
-    known_ids: Set[str],
-    linkable_datasets: Set[tuple[str, str]],
+    manifest: abc.Mapping[str, Any],
+    known_ids: set[str],
+    linkable_datasets: set[tuple[str, str]],
 ) -> list[EntryLinkRecord]:
   """Emits represents (physical) links from dbt nodes to their @bigquery tables.
 
@@ -626,7 +685,7 @@ def _emit_materializes_to(
   """
   out: list[EntryLinkRecord] = []
   for uid, node in (manifest.get(_NODES) or {}).items():
-    if node.get('resource_type') not in _MATERIALIZED_RESOURCE_TYPES:
+    if not _materializes_to_bigquery(node):
       continue
     d_id = naming.entry_id(uid)
     if d_id not in known_ids:
@@ -653,9 +712,9 @@ def _emit_materializes_to(
 
 def build_entry_links(
     ctx: naming.Context,
-    manifest: Mapping[str, Any],
-    known_ids: Set[str],
-    linkable_datasets: Set[tuple[str, str]] | None = None,
+    manifest: abc.Mapping[str, Any],
+    known_ids: set[str],
+    linkable_datasets: set[tuple[str, str]] | None = None,
 ) -> list[EntryLinkRecord]:
   """Builds all EntryLink records (lineage + semantic edges).
 
@@ -679,7 +738,8 @@ def build_entry_links(
   links.extend(_emit_consumed_by(ctx, manifest, known_ids))
   links.extend(_emit_defines_semantics_for(ctx, manifest, known_ids))
   links.extend(_emit_derives_from(ctx, manifest, known_ids))
-  links.extend(_emit_schema_join(ctx, manifest, known_ids))
+  # TODO(b/546009331): Implement schema-join emission once the backend-side
+  # issue is resolved.
   if linkable_datasets is not None:
     links.extend(
         _emit_materializes_to(ctx, manifest, known_ids, linkable_datasets)

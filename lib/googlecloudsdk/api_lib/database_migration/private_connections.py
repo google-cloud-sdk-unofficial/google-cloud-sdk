@@ -50,13 +50,24 @@ class PrivateConnectionsClient:
     """Returns a private connection object."""
     private_connection_obj = self._messages.PrivateConnection(
         name=private_connection_id, labels={}, displayName=args.display_name)
-    if args.IsKnownAndSpecified('network_attachment'):
+    if (
+        args.IsKnownAndSpecified('reserved_public_ip')
+        or args.IsKnownAndSpecified('reserved_public_ip_nat_ips_count')
+    ):
+      reserved_public_ip_config = self._messages.ReservedPublicIpConfig()
+      if args.reserved_public_ip_nat_ips_count is not None:
+        reserved_public_ip_config.natIpsCount = (
+            args.reserved_public_ip_nat_ips_count
+        )
+      private_connection_obj.reservedPublicIpConfig = reserved_public_ip_config
+
+    elif args.IsKnownAndSpecified('network_attachment'):
       private_connection_obj.pscInterfaceConfig = (
           self._messages.PscInterfaceConfig(
               networkAttachment=args.network_attachment
           )
       )
-    else:
+    elif args.CONCEPTS.vpc.Parse() is not None:
       vpc_peering_ref = args.CONCEPTS.vpc.Parse()
       private_connection_obj.vpcPeeringConfig = self._messages.VpcPeeringConfig(
           vpcName=vpc_peering_ref.RelativeName(), subnet=args.subnet

@@ -86,7 +86,7 @@ class Snapshot(storage_util.Snapshot):
       tf = self._MakeTarball(archive_path)
       tf.close()
 
-  def _MakeZipFile(self, archive_path):
+  def MakeZipFile(self, archive_path):
     zip_file = zipfile.ZipFile(archive_path, 'w', zipfile.ZIP_DEFLATED)
     try:
       for dpath in self.dirs:
@@ -116,7 +116,7 @@ class Snapshot(storage_util.Snapshot):
         with files.TemporaryDirectory() as tmp:
           if gcs_object.Name().endswith('.zip'):
             archive_path = os.path.join(tmp, 'file.zip')
-            self._MakeZipFile(archive_path)
+            self.MakeZipFile(archive_path)
           else:
             archive_path = os.path.join(tmp, 'file.tgz')
             tf = self._MakeTarball(archive_path)

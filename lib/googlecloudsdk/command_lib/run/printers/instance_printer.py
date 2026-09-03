@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.run.printers import k8s_object_printer_util as k
 from googlecloudsdk.command_lib.run.printers import traffic_printer
 from googlecloudsdk.core.console import console_attr
 from googlecloudsdk.core.resource import custom_printer_base as cp
+from googlecloudsdk.core.util import times
 
 
 def StatusColorFormat():
@@ -50,6 +51,27 @@ def _GetRestartPolicy(record):
   return 'OnFailure'
 
 
+def _GetRunningForMessage(record):
+  """Returns formatted message containing running duration for instance."""
+  original_msg = ''
+  if record.ready_condition and record.ready_condition.get('message'):
+    original_msg = record.ready_condition['message']
+
+  if record.is_running and record.last_transition_time:
+    try:
+      start_time = times.ParseDateTime(record.last_transition_time)
+      now = times.Now(times.UTC)
+      delta = now - start_time
+      if delta.total_seconds() >= 0:
+        duration_str = k8s_util.FormatDurationShort(int(delta.total_seconds()))
+        if original_msg:
+          return f'Instance uptime: {duration_str}. {original_msg}'
+        return f'Instance uptime: {duration_str}.'
+    except (TypeError, ValueError, AttributeError, times.Error):
+      pass
+  return original_msg
+
+
 class InstancePrinter(cp.CustomPrinterBase):
   """Prints the run Instance in a custom human-readable format.
 
@@ -59,17 +81,14 @@ class InstancePrinter(cp.CustomPrinterBase):
 
   @staticmethod
   def FormatReadyMessage(record):
-    # The ready message should be the same as FormatReadyMessage but without the
-    # symbol.
-    ready_message = ''
-    if record.ready_condition and record.ready_condition['message']:
-      # We ignore the symbol here as it is already in the header.
+    ready_message = _GetRunningForMessage(record)
+    if ready_message:
       _, color = record.ReadySymbolAndColor()
-      ready_message = console_attr.GetConsoleAttr().Colorize(
-          textwrap.fill(record.ready_condition['message'], 100),
+      return console_attr.GetConsoleAttr().Colorize(
+          textwrap.fill(ready_message, 100),
           color,
       )
-    return ready_message
+    return ''
 
   @staticmethod
   def GetConfig(record):

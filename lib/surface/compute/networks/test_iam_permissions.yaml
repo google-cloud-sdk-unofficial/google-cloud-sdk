@@ -1,0 +1,30 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: Test IAM permissions for a Compute Engine network.
+  description: |
+    Returns permissions that a caller has on the specified network.
+
+  examples: |
+    To test if the caller has 'compute.networks.get' permission on a network `my-network`, run:
+
+      $ {command} my-network --permissions=compute.networks.get
+
+request:
+  collection: compute.networks
+  api_version: alpha
+  method: testIamPermissions
+  use_relative_name: false
+
+command_type: GENERIC
+
+arguments:
+  resource:
+    help_text: The network for which to test permissions.
+    spec: !REF googlecloudsdk.command_lib.compute.resources:network
+  params:
+  - arg_name: permissions
+    api_field: testPermissionsRequest.permissions
+    required: true
+    repeated: true
+    help_text: |-
+      The permissions to test.

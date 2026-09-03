@@ -18,17 +18,34 @@
 
 import abc
 from enum import Enum
+import logging
 import os
+from typing import Dict, List, Optional, TYPE_CHECKING
+from urllib.parse import urlparse
+import warnings
+
 
 from google.auth import _helpers, environment_vars
+from google.auth import _regional_access_boundary_utils
 from google.auth import exceptions
 from google.auth import metrics
+from google.auth._credentials_base import _BaseCredentials
 from google.auth._refresh_worker import RefreshThreadManager
 
-DEFAULT_UNIVERSE_DOMAIN = "googleapis.com"
+if TYPE_CHECKING:  # pragma: NO COVER
+    import google.auth.transport
+
+DEFAULT_UNIVERSE_DOMAIN = _helpers.DEFAULT_UNIVERSE_DOMAIN
+
+# These constants are deprecated and no longer used.
+# They are kept solely for backward compatibility with older implementations.
+NO_OP_TRUST_BOUNDARY_LOCATIONS: List[str] = []
+NO_OP_TRUST_BOUNDARY_ENCODED_LOCATIONS = "0x0"
+
+_LOGGER = logging.getLogger("google.auth._default")
 
 
-class Credentials(metaclass=abc.ABCMeta):
+class Credentials(_BaseCredentials):
     """Base class for all credentials.
 
     All credentials have a :attr:`token` that is used for authentication and
@@ -48,9 +65,8 @@ class Credentials(metaclass=abc.ABCMeta):
     """
 
     def __init__(self):
-        self.token = None
-        """str: The bearer token that can be used in HTTP headers to make
-        authenticated requests."""
+        super(Credentials, self).__init__()
+
         self.expiry = None
         """Optional[datetime]: When the token expires and is no longer valid.
         If this is None, the token is assumed to never expire."""
@@ -129,6 +145,17 @@ class Credentials(metaclass=abc.ABCMeta):
         """The universe domain value."""
         return self._universe_domain
 
+    def get_cred_info(self):
+        """The credential information JSON.
+
+        The credential information will be added to auth related error messages
+        by client library.
+
+        Returns:
+            Mapping[str, str]: The credential information JSON.
+        """
+        return None
+
     @abc.abstractmethod
     def refresh(self, request):
         """Refreshes the access token.
@@ -168,24 +195,7 @@ class Credentials(metaclass=abc.ABCMeta):
             token (Optional[str]): If specified, overrides the current access
                 token.
         """
-        headers["authorization"] = "Bearer {}".format(
-            _helpers.from_bytes(token or self.token)
-        )
-        """Trust boundary value will be a cached value from global lookup.
-
-        The response of trust boundary will be a list of regions and a hex
-        encoded representation.
-
-        An example of global lookup response:
-        {
-          "locations": [
-            "us-central1", "us-east1", "europe-west1", "asia-east1"
-          ]
-          "encoded_locations": "0xA30"
-        }
-        """
-        if self._trust_boundary is not None:
-            headers["x-allowed-locations"] = self._trust_boundary["encoded_locations"]
+        self._apply(headers, token)
         if self.quota_project_id:
             headers["x-goog-user-project"] = self.quota_project_id
 
@@ -230,8 +240,24 @@ class Credentials(metaclass=abc.ABCMeta):
         else:
             self._blocking_refresh(request)
 
+        self._after_refresh(request, method, url, headers)
+
         metrics.add_metric_header(headers, self._metric_header_for_usage())
         self.apply(headers)
+
+    def _after_refresh(self, request, method, url, headers):
+        """Hook for subclasses to perform actions after refresh but before
+        applying credentials to headers.
+
+        Args:
+            request (google.auth.transport.Request): The object used to make
+                HTTP requests.
+            method (str): The request's HTTP method or the RPC method being
+                invoked.
+            url (str): The request's URI or the RPC service's URI.
+            headers (Mapping): The request's headers.
+        """
+        pass
 
     def with_non_blocking_refresh(self):
         self._use_non_blocking_refresh = True
@@ -288,6 +314,259 @@ class CredentialsWithUniverseDomain(Credentials):
         """
         raise NotImplementedError(
             "This credential does not support with_universe_domain."
+        )
+
+
+class CredentialsWithRegionalAccessBoundary(Credentials):
+    """Abstract base for credentials supporting regional access boundary configuration."""
+
+    def __init__(self):
+        super().__init__()
+        self._rab_manager = (
+            _regional_access_boundary_utils._RegionalAccessBoundaryManager()
+        )
+
+    def __setstate__(self, state):
+        """Pickle helper that restores state, safely reconstructing RAB fields if missing."""
+        self.__dict__.update(state)
+        if "_rab_manager" not in self.__dict__:
+            from google.auth import _regional_access_boundary_utils
+
+            self._rab_manager = (
+                _regional_access_boundary_utils._RegionalAccessBoundaryManager()
+            )
+        if "_use_non_blocking_refresh" not in self.__dict__:
+            self._use_non_blocking_refresh = False
+        if "_refresh_worker" not in self.__dict__:
+            from google.auth._refresh_worker import RefreshThreadManager
+
+            self._refresh_worker = RefreshThreadManager()
+
+    @property
+    def regional_access_boundary(self):
+        """Optional[str]: The encoded Regional Access Boundary locations."""
+        return self._rab_manager._data.encoded_locations
+
+    @property
+    def regional_access_boundary_expiry(self):
+        """Optional[datetime.datetime]: The expiration time of the Regional Access Boundary."""
+        return self._rab_manager._data.expiry
+
+    @abc.abstractmethod
+    def _perform_refresh_token(self, request):
+        """Refreshes the access token.
+
+        Args:
+            request (google.auth.transport.Request): The object used to make
+                HTTP requests.
+
+        Raises:
+            google.auth.exceptions.RefreshError: If the credentials could
+                not be refreshed.
+        """
+        raise NotImplementedError("_perform_refresh_token must be implemented")
+
+    def with_trust_boundary(self, trust_boundary):
+        """Returns a copy of these credentials.
+
+        .. deprecated::
+            Manual Regional Access Boundary overrides are not supported.
+            This method is maintained for backwards compatibility and
+            returns a copy of the credentials without modifying the
+            Regional Access Boundary state.
+
+        Args:
+            trust_boundary (Mapping[str, str]): Ignored.
+
+        Returns:
+            google.auth.credentials.Credentials: A new credentials instance.
+        """
+        import warnings
+
+        warnings.warn(
+            "with_trust_boundary is deprecated and has no effect.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        make_copy = getattr(self, "_make_copy", None)
+        if make_copy:
+            return make_copy()
+        else:
+            raise NotImplementedError(
+                "This credential does not support trust boundaries."
+            )
+
+    def _copy_regional_access_boundary_manager(self, target):
+        """Copies the regional access boundary manager state to another instance."""
+        target._rab_manager._data = self._rab_manager._data
+        target._rab_manager._use_blocking_regional_access_boundary_lookup = (
+            self._rab_manager._use_blocking_regional_access_boundary_lookup
+        )
+
+    def _set_regional_access_boundary(self, initial_boundary):
+        """Applies the regional_access_boundary provided via the initial_boundary on these
+        credentials. This is intended for internal use only as an invalid
+        initial_boundary would produce unexpected results until automatic recovery
+        is supported. Currently this is used by the gcloud CLI and therefore changes to the
+        contract MUST be backwards compatible (e.g. the method signature must be
+        unchanged and the credentials with the RAB set must be returned).
+
+
+        Returns:
+            google.auth.credentials.Credentials: The credentials instance.
+        """
+        self._rab_manager.set_initial_regional_access_boundary(
+            encoded_locations=initial_boundary.get("encodedLocations", None),
+            expiry=initial_boundary.get("expiry", None),
+        )
+        return self
+
+    def _set_blocking_regional_access_boundary_lookup(self):
+        """Enables the blocking lookup mode on these credentials.
+        This is intended for internal use only as blocking lookup requires additional
+        care and consideration. Currently this is used by the gcloud CLI and
+        therefore changes to the contract MUST be backwards compatible (e.g. the
+        method signature must be unchanged and the credentials with the
+        blocking lookup flag set to true must be returned).
+
+        Returns:
+            google.auth.credentials.Credentials: The credentials instance.
+        """
+        self._rab_manager.enable_blocking_lookup()
+        return self
+
+    def _is_regional_endpoint(self, url):
+        """Checks if the request URL is for a regional endpoint.
+
+        Args:
+            url (str): The URL of the request.
+
+        Returns:
+            bool: True if the URL is a regional endpoint, False otherwise.
+        """
+        try:
+            # Do not perform a lookup if the request is for a regional endpoint.
+            hostname = urlparse(url).hostname
+            if hostname and hostname.endswith(
+                (
+                    ".rep.googleapis.com",
+                    ".rep.sandbox.googleapis.com",
+                    ".rep.mtls.googleapis.com",
+                    ".rep.mtls.sandbox.googleapis.com",
+                )
+            ):
+                return True
+        except (ValueError, TypeError, AttributeError):
+            # If the URL is malformed, proceed with the default lookup behavior.
+            pass
+
+        return False
+
+    def _maybe_start_regional_access_boundary_refresh(self, request, url):
+        """
+        Starts a background thread to refresh the Regional Access Boundary if needed.
+
+        This method checks if a refresh is necessary and if one is not already
+        in progress or in a cooldown period. If so, it starts a background
+        thread to perform the lookup.
+
+        Args:
+            request (google.auth.transport.Request): The object used to make
+                HTTP requests.
+            url (str): The URL of the request.
+        """
+        # Do not perform a lookup if the request is for a regional endpoint.
+        if self._is_regional_endpoint(url):
+            return
+
+        # A refresh is only needed if the feature is enabled.
+        if not self._is_regional_access_boundary_lookup_required():
+            return
+
+        # Trigger background or blocking refresh if needed
+        self._rab_manager.maybe_start_refresh(self, request)
+
+    def _is_regional_access_boundary_lookup_required(self):
+        """Checks if a Regional Access Boundary lookup is required.
+
+        A lookup is required if the universe domain is supported.
+
+        Returns:
+            bool: True if a Regional Access Boundary lookup is required, False otherwise.
+        """
+        # Skip for non-default universe domains.
+        if self.universe_domain != DEFAULT_UNIVERSE_DOMAIN:
+            return False
+
+        return True
+
+    def apply(self, headers, token=None):
+        """Apply the token to the authentication header."""
+        super().apply(headers, token)
+        self._rab_manager.apply_headers(headers)
+
+    def _after_refresh(self, request, method, url, headers):
+        """Triggers the Regional Access Boundary lookup if necessary."""
+        self._maybe_start_regional_access_boundary_refresh(request, url)
+
+    def refresh(self, request):
+        """Refreshes the access token.
+
+        This method calls the subclass's token refresh logic. The Regional
+        Access Boundary is refreshed separately in a non-blocking way.
+        """
+        self._perform_refresh_token(request)
+
+    def _lookup_regional_access_boundary(
+        self,
+        request: "google.auth.transport.Request",  # noqa: F821
+        fail_fast: bool = False,
+    ) -> "Optional[Dict[str, str]]":
+        """Calls the Regional Access Boundary lookup API to retrieve the Regional Access Boundary information.
+
+        Args:
+            request (google.auth.transport.Request): The object used to make
+                HTTP requests.
+            fail_fast (bool): Whether the lookup should fail fast (short timeout, no retries).
+
+        Returns:
+            Optional[Dict[str, str]]: The Regional Access Boundary information returned by the lookup API, or None if the lookup failed.
+        """
+        from google.oauth2 import _client
+
+        url = self._build_regional_access_boundary_lookup_url(request=request)
+        if not url:
+            _LOGGER.debug("Failed to build Regional Access Boundary lookup URL.")
+            return None
+
+        headers: Dict[str, str] = {}
+        self._apply(headers)
+        return _client._lookup_regional_access_boundary(
+            request, url, headers=headers, fail_fast=fail_fast
+        )
+
+    @abc.abstractmethod
+    def _build_regional_access_boundary_lookup_url(
+        self, request: "Optional[google.auth.transport.Request]" = None  # noqa: F821
+    ):
+        """
+        Builds and returns the URL for the Regional Access Boundary lookup API.
+
+        This method should be implemented by subclasses to provide the
+        specific URL based on the credential type and its properties.
+
+        Args:
+            request (Optional[google.auth.transport.Request]): The object used
+                to make HTTP requests. In some subclasses, this may be used to
+                make an initial network call to resolve required metadata for the
+                URL.
+
+        Returns:
+            str: The URL for the Regional Access Boundary lookup endpoint, or None
+                 if lookup should be skipped (e.g., for non-applicable universe domains).
+        """
+        raise NotImplementedError(
+            "_build_regional_access_boundary_lookup_url must be implemented"
         )
 
 
@@ -374,8 +653,7 @@ class ReadOnlyScoped(metaclass=abc.ABCMeta):
 
     @abc.abstractproperty
     def requires_scopes(self):
-        """True if these credentials require scopes to obtain an access token.
-        """
+        """True if these credentials require scopes to obtain an access token."""
         return False
 
     def has_scopes(self, scopes):
@@ -512,3 +790,32 @@ class TokenState(Enum):
     FRESH = 1
     STALE = 2
     INVALID = 3
+
+
+class CredentialsWithTrustBoundary(CredentialsWithRegionalAccessBoundary):
+    """Abstract base for credentials supporting legacy trust boundary configuration.
+
+    .. deprecated::
+        Use :class:`~google.auth.credentials.CredentialsWithRegionalAccessBoundary` instead.
+    """
+
+    def __init__(self):
+        super().__init__()
+        warnings.warn(
+            "CredentialsWithTrustBoundary is deprecated. Use CredentialsWithRegionalAccessBoundary.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+    @abc.abstractmethod
+    def _build_trust_boundary_lookup_url(self):
+        """Deprecated: Implement _build_regional_access_boundary_lookup_url instead."""
+        raise NotImplementedError()
+
+    def _build_regional_access_boundary_lookup_url(self, request=None):
+        warnings.warn(
+            "CredentialsWithTrustBoundary is deprecated. Use CredentialsWithRegionalAccessBoundary.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._build_trust_boundary_lookup_url()

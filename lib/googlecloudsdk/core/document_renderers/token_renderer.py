@@ -107,6 +107,7 @@ class TokenRenderer(renderer.Renderer):
       self.second_line_indent = self.indent
 
   def __init__(self, height=0, encoding='utf-8', compact=True, **kwargs):
+    kwargs.setdefault('excluded_sections', ('PROJECTION KEYS',))
     super(TokenRenderer, self).__init__(**kwargs)
     self._attr = console_attr.GetConsoleAttr(encoding=encoding)
     self._csi = self.CSI

@@ -87,12 +87,34 @@ class PrivateCloudsClient(util.VmwareClientBase):
       nsx_edge_size=None,
       nsx_edge_count=None,
       vsan_type=None,
+      placement_group=None,
+      preferred_placement_group=None,
+      secondary_placement_group=None,
   ):
     parent = resource.Parent().RelativeName()
     project = resource.Parent().Parent().Name()
     private_cloud_id = resource.Name()
     private_cloud = self.messages.PrivateCloud(description=description)
     private_cloud.type = self.GetPrivateCloudType(private_cloud_type)
+
+    if placement_group and (
+        preferred_placement_group or secondary_placement_group
+    ):
+      raise exceptions.ConflictingArgumentsException(
+          '--placement-group',
+          '--preferred-placement-group / --secondary-placement-group',
+      )
+
+    if (preferred_placement_group or secondary_placement_group) and (
+        private_cloud.type
+        is not self.messages.PrivateCloud.TypeValueValuesEnum.STRETCHED
+    ):
+      raise exceptions.InvalidArgumentException(
+          '--preferred-placement-group',
+          'Stretched placement group flags (--preferred-placement-group /'
+          ' --secondary-placement-group) can only be specified for STRETCHED'
+          ' private clouds.',
+      )
     ven = self.networks_client.GetByID(project, vmware_engine_network_id)
     new_subnets = []
     if service_subnet:
@@ -128,6 +150,7 @@ class PrivateCloudsClient(util.VmwareClientBase):
             nodes_configs,
         ),
         'vsanType': self.GetVsanType(vsan_type),
+        'placementGroup': placement_group,
     }
     if (
         private_cloud.type
@@ -141,6 +164,8 @@ class PrivateCloudsClient(util.VmwareClientBase):
           self.messages.StretchedClusterConfig(
               preferredLocation=preferred_zone,
               secondaryLocation=secondary_zone,
+              preferredLocationPlacementGroup=preferred_placement_group,
+              secondaryLocationPlacementGroup=secondary_placement_group,
           )
       )
 

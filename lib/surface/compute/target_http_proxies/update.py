@@ -14,7 +14,6 @@
 # limitations under the License.
 """Command for updating target HTTP proxies."""
 
-
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import target_proxies_utils
@@ -25,6 +24,7 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.target_http_proxies import flags
 from googlecloudsdk.command_lib.compute.target_http_proxies import target_http_proxies_utils
 from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
+from googlecloudsdk.command_lib.network_services import flags as network_services_flags
 
 
 def _DetailedHelp():
@@ -52,7 +52,35 @@ def _DetailedHelp():
   }
 
 
-def _Run(args, holder, target_http_proxy_arg, url_map_arg):
+def _CheckMissingArgument(args, support_http_filters=False):
+  """Validates that at least one property to update is specified."""
+  all_args = [
+      'url_map',
+      'http_keep_alive_timeout_sec',
+      'clear_http_keep_alive_timeout_sec',
+  ]
+  err_msg_args = [
+      '[--url-map]',
+      '[--http-keep-alive-timeout-sec]',
+      '[--clear-http-keep-alive-timeout-sec]',
+  ]
+  if support_http_filters:
+    all_args.extend(['http_filters', 'clear_http_filters'])
+    err_msg_args.extend(['[--http-filters]', '[--clear-http-filters]'])
+  if not any(args.IsSpecified(arg) for arg in all_args):
+    raise exceptions.MinimumArgumentException(
+        err_msg_args, 'Please specify at least one property to update.'
+    )
+
+
+def _Run(
+    args,
+    holder,
+    target_http_proxy_arg,
+    url_map_arg,
+    http_filters=None,
+    clear_http_filters=False,
+):
   """Issues requests necessary to update Target HTTP Proxies."""
   client = holder.client
 
@@ -73,11 +101,26 @@ def _Run(args, holder, target_http_proxy_arg, url_map_arg):
       invalid_arg = '--http-keep-alive-timeout-sec'
     elif args.IsSpecified('clear_http_keep_alive_timeout_sec'):
       invalid_arg = '--clear-http-keep-alive-timeout-sec'
+    elif http_filters is not None:
+      invalid_arg = '--http-filters'
+    elif clear_http_filters:
+      invalid_arg = '--clear-http-filters'
     if invalid_arg is not None:
+      if invalid_arg in ('--http-filters', '--clear-http-filters'):
+        raise exceptions.InvalidArgumentException(
+            invalid_arg,
+            'http filters are not patchable for regional target HTTP proxies',
+        )
       raise exceptions.InvalidArgumentException(
           invalid_arg,
           'http keep alive timeout is not patchable for regional target HTTP'
           ' proxies',
+      )
+
+    if not url_map_ref:
+      raise exceptions.InvalidArgumentException(
+          '--url-map',
+          'URL map must be specified for regional target HTTP proxies',
       )
 
     request = client.messages.ComputeRegionTargetHttpProxiesSetUrlMapRequest(
@@ -104,6 +147,12 @@ def _Run(args, holder, target_http_proxy_arg, url_map_arg):
     elif args.IsSpecified('clear_http_keep_alive_timeout_sec'):
       new_resource.httpKeepAliveTimeoutSec = None
       cleared_fields.append('httpKeepAliveTimeoutSec')
+
+    if http_filters:
+      new_resource.httpFilters = [ref.SelfLink() for ref in http_filters]
+    elif clear_http_filters:
+      new_resource.httpFilters = []
+      cleared_fields.append('httpFilters')
 
     if old_resource != new_resource:
       return _PatchGlobalTargetHttpProxy(
@@ -145,14 +194,17 @@ def _PatchGlobalTargetHttpProxy(
     return client.MakeRequests(requests)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA,
     base.ReleaseTrack.BETA,
     base.ReleaseTrack.GA,
     base.ReleaseTrack.PREVIEW,
 )
 class Update(base.UpdateCommand):
   """Update a target HTTP proxy."""
+
+  _support_http_filters = False
+  _url_map_required = True
 
   TARGET_HTTP_PROXY_ARG = None
   URL_MAP_ARG = None
@@ -162,18 +214,57 @@ class Update(base.UpdateCommand):
   def Args(cls, parser):
     cls.TARGET_HTTP_PROXY_ARG = flags.TargetHttpProxyArgument()
     cls.TARGET_HTTP_PROXY_ARG.AddArgument(parser, operation_type='update')
-    cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy()
+    cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy(
+        required=cls._url_map_required
+    )
     cls.URL_MAP_ARG.AddArgument(parser)
 
     group = parser.add_mutually_exclusive_group()
     target_proxies_utils.AddHttpKeepAliveTimeoutSec(group)
     target_proxies_utils.AddClearHttpKeepAliveTimeoutSec(group)
 
+    if cls._support_http_filters:
+      http_filters_group = parser.add_mutually_exclusive_group()
+      network_services_flags.GetHttpFilterResourceArg(
+          'to attach',
+          name='http-filters',
+          required=False,
+          plural=True,
+          group=http_filters_group,
+      ).AddToParser(http_filters_group)
+      http_filters_group.add_argument(
+          '--clear-http-filters',
+          action='store_true',
+          default=None,
+          help='Clear existing HTTP filters.',
+      )
+
   def Run(self, args):
+    _CheckMissingArgument(
+        args, support_http_filters=self._support_http_filters
+    )
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    http_filters = None
+    clear_http_filters = False
+    if self._support_http_filters:
+      if args.IsKnownAndSpecified('http_filters'):
+        http_filters = args.CONCEPTS.http_filters.Parse()
+      clear_http_filters = args.IsKnownAndSpecified('clear_http_filters')
     return _Run(
         args,
         holder,
         self.TARGET_HTTP_PROXY_ARG,
         self.URL_MAP_ARG,
+        http_filters=http_filters,
+        clear_http_filters=clear_http_filters,
     )
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update a target HTTP proxy."""
+
+  _support_http_filters = True
+  _url_map_required = False
+

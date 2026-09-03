@@ -999,6 +999,158 @@ class GoogleCloudNetworkconnectivityV1betaInterconnectAttachment(_messages.Messa
   region = _messages.StringField(1)
 
 
+class GoogleCloudNetworkconnectivityV1betaInterconnectKeyGroup(_messages.Message):
+  r"""Represents an InterconnectKeyGroup resource.
+
+  Messages:
+    InterconnectsValue: Output only. [Output Only] Status of Interconnects
+      using this Key Group. The map keys are the Interconnect names. These
+      cannot be specified by the user. They are modified during an add-key-
+      group or remove-key-group operation on an Interconnect.
+    KeysValue: Optional. The MACsec keys in this group. The map keys are the
+      customer-provided names of the MACsec keys.
+    LabelsValue: Optional. Labels as key value pairs.
+
+  Fields:
+    createTime: Output only. [Output Only] Create time stamp.
+    description: Optional. An optional description of this resource.
+    interconnects: Output only. [Output Only] Status of Interconnects using
+      this Key Group. The map keys are the Interconnect names. These cannot be
+      specified by the user. They are modified during an add-key-group or
+      remove-key-group operation on an Interconnect.
+    keys: Optional. The MACsec keys in this group. The map keys are the
+      customer-provided names of the MACsec keys.
+    labels: Optional. Labels as key value pairs.
+    name: Identifier. Name of the resource.
+    updateTime: Output only. [Output Only] Update time stamp.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class InterconnectsValue(_messages.Message):
+    r"""Output only. [Output Only] Status of Interconnects using this Key
+    Group. The map keys are the Interconnect names. These cannot be specified
+    by the user. They are modified during an add-key-group or remove-key-group
+    operation on an Interconnect.
+
+    Messages:
+      AdditionalProperty: An additional property for a InterconnectsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type InterconnectsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a InterconnectsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A GoogleCloudNetworkconnectivityV1betaInterconnectStatus
+          attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('GoogleCloudNetworkconnectivityV1betaInterconnectStatus', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class KeysValue(_messages.Message):
+    r"""Optional. The MACsec keys in this group. The map keys are the
+    customer-provided names of the MACsec keys.
+
+    Messages:
+      AdditionalProperty: An additional property for a KeysValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type KeysValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a KeysValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A GoogleCloudNetworkconnectivityV1betaMacsecKey attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('GoogleCloudNetworkconnectivityV1betaMacsecKey', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels as key value pairs.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  interconnects = _messages.MessageField('InterconnectsValue', 3)
+  keys = _messages.MessageField('KeysValue', 4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  name = _messages.StringField(6)
+  updateTime = _messages.StringField(7)
+
+
+class GoogleCloudNetworkconnectivityV1betaInterconnectStatus(_messages.Message):
+  r"""Represents the status of an Interconnect using this Key Group.
+
+  Enums:
+    MacsecOperationalStatusValueValuesEnum: Output only. Whether MACsec is
+      operational on the Interconnect. During GET, this is only filled if
+      using the FULL view.
+
+  Fields:
+    ckn: Output only. The CKN of the MACsec key actually in use on the
+      Interconnect. During GET, this is only filled if using the FULL view and
+      only if macsec_operation_status is ENABLED.
+    macsecOperationalStatus: Output only. Whether MACsec is operational on the
+      Interconnect. During GET, this is only filled if using the FULL view.
+    name: Output only. Name of the Interconnect.
+  """
+
+  class MacsecOperationalStatusValueValuesEnum(_messages.Enum):
+    r"""Output only. Whether MACsec is operational on the Interconnect. During
+    GET, this is only filled if using the FULL view.
+
+    Values:
+      MACSEC_OPERATIONAL_STATUS_UNSPECIFIED: MACsec operational status is not
+        specified.
+      ENABLED: MACsec is enabled.
+      DISABLED: MACsec is disabled.
+      FETCH_FAILED: Indicates that the fanout to fetch MACsec operational
+        status failed.
+    """
+    MACSEC_OPERATIONAL_STATUS_UNSPECIFIED = 0
+    ENABLED = 1
+    DISABLED = 2
+    FETCH_FAILED = 3
+
+  ckn = _messages.StringField(1)
+  macsecOperationalStatus = _messages.EnumField('MacsecOperationalStatusValueValuesEnum', 2)
+  name = _messages.StringField(3)
+
+
 class GoogleCloudNetworkconnectivityV1betaIpRangeReservation(_messages.Message):
   r"""A list of IP ranges that are reserved for this gateway's internal
   intfrastructure.
@@ -1272,6 +1424,20 @@ class GoogleCloudNetworkconnectivityV1betaListHubsResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class GoogleCloudNetworkconnectivityV1betaListInterconnectKeyGroupsResponse(_messages.Message):
+  r"""Response for ListInterconnectKeyGroups method.
+
+  Fields:
+    interconnectKeyGroups: The list of InterconnectKeyGroups.
+    nextPageToken: A token identifying a page of results.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  interconnectKeyGroups = _messages.MessageField('GoogleCloudNetworkconnectivityV1betaInterconnectKeyGroup', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class GoogleCloudNetworkconnectivityV1betaListMulticloudDataTransferConfigsResponse(_messages.Message):
   r"""Response message to list `MulticloudDataTransferConfig` resources.
 
@@ -1439,6 +1605,25 @@ class GoogleCloudNetworkconnectivityV1betaLocationMetadata(_messages.Message):
     TRANSPORTS = 4
 
   locationFeatures = _messages.EnumField('LocationFeaturesValueListEntryValuesEnum', 1, repeated=True)
+
+
+class GoogleCloudNetworkconnectivityV1betaMacsecKey(_messages.Message):
+  r"""Represents a single MACsec key.
+
+  Fields:
+    cak: Required. A MACsec connectivity association key (CAK). Must be a 64
+      character long hexadecimal string. This field is not returned by
+      standard Get/List, only by GetConfig.
+    ckn: Required. A MACsec connectivity association key name (CKN). Must be a
+      64 character long hexadecimal string.
+    name: Required. User-defined name for this key.
+    startTime: Required. ISO 8601 timestamp of when this key will take effect.
+  """
+
+  cak = _messages.StringField(1)
+  ckn = _messages.StringField(2)
+  name = _messages.StringField(3)
+  startTime = _messages.StringField(4)
 
 
 class GoogleCloudNetworkconnectivityV1betaMulticloudDataTransferConfig(_messages.Message):
@@ -4365,6 +4550,175 @@ class NetworkconnectivityProjectsLocationsGlobalPolicyBasedRoutesTestIamPermissi
 
   googleIamV1TestIamPermissionsRequest = _messages.MessageField('GoogleIamV1TestIamPermissionsRequest', 1)
   resource = _messages.StringField(2, required=True)
+
+
+class NetworkconnectivityProjectsLocationsInterconnectKeyGroupsCreateRequest(_messages.Message):
+  r"""A NetworkconnectivityProjectsLocationsInterconnectKeyGroupsCreateRequest
+  object.
+
+  Fields:
+    googleCloudNetworkconnectivityV1betaInterconnectKeyGroup: A
+      GoogleCloudNetworkconnectivityV1betaInterconnectKeyGroup resource to be
+      passed as the request body.
+    interconnectKeyGroupId: Required. Id of the requesting object.
+    parent: Required. Value for parent.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  googleCloudNetworkconnectivityV1betaInterconnectKeyGroup = _messages.MessageField('GoogleCloudNetworkconnectivityV1betaInterconnectKeyGroup', 1)
+  interconnectKeyGroupId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class NetworkconnectivityProjectsLocationsInterconnectKeyGroupsDeleteRequest(_messages.Message):
+  r"""A NetworkconnectivityProjectsLocationsInterconnectKeyGroupsDeleteRequest
+  object.
+
+  Fields:
+    name: Required. Name of the resource.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class NetworkconnectivityProjectsLocationsInterconnectKeyGroupsFetchConfigRequest(_messages.Message):
+  r"""A
+  NetworkconnectivityProjectsLocationsInterconnectKeyGroupsFetchConfigRequest
+  object.
+
+  Fields:
+    name: Required. Name of the resource.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworkconnectivityProjectsLocationsInterconnectKeyGroupsGetRequest(_messages.Message):
+  r"""A NetworkconnectivityProjectsLocationsInterconnectKeyGroupsGetRequest
+  object.
+
+  Enums:
+    ViewValueValuesEnum: Optional. The view to return for the
+      InterconnectKeyGroup.
+
+  Fields:
+    name: Required. Name of the resource.
+    view: Optional. The view to return for the InterconnectKeyGroup.
+  """
+
+  class ViewValueValuesEnum(_messages.Enum):
+    r"""Optional. The view to return for the InterconnectKeyGroup.
+
+    Values:
+      INTERCONNECT_KEY_GROUP_VIEW_UNSPECIFIED: When unspecified, defaults to
+        BASIC.
+      BASIC: Includes basic information, omitting operational status.
+      FULL: Includes full information, including operational status.
+    """
+    INTERCONNECT_KEY_GROUP_VIEW_UNSPECIFIED = 0
+    BASIC = 1
+    FULL = 2
+
+  name = _messages.StringField(1, required=True)
+  view = _messages.EnumField('ViewValueValuesEnum', 2)
+
+
+class NetworkconnectivityProjectsLocationsInterconnectKeyGroupsListRequest(_messages.Message):
+  r"""A NetworkconnectivityProjectsLocationsInterconnectKeyGroupsListRequest
+  object.
+
+  Enums:
+    ViewValueValuesEnum: Optional. The view to return for the
+      InterconnectKeyGroups.
+
+  Fields:
+    filter: Optional. Filtering results.
+    orderBy: Optional. Hint for how to order the results.
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Parent value for ListInterconnectKeyGroupsRequest.
+    view: Optional. The view to return for the InterconnectKeyGroups.
+  """
+
+  class ViewValueValuesEnum(_messages.Enum):
+    r"""Optional. The view to return for the InterconnectKeyGroups.
+
+    Values:
+      INTERCONNECT_KEY_GROUP_VIEW_UNSPECIFIED: When unspecified, defaults to
+        BASIC.
+      BASIC: Includes basic information, omitting operational status.
+      FULL: Includes full information, including operational status.
+    """
+    INTERCONNECT_KEY_GROUP_VIEW_UNSPECIFIED = 0
+    BASIC = 1
+    FULL = 2
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+  view = _messages.EnumField('ViewValueValuesEnum', 6)
+
+
+class NetworkconnectivityProjectsLocationsInterconnectKeyGroupsPatchRequest(_messages.Message):
+  r"""A NetworkconnectivityProjectsLocationsInterconnectKeyGroupsPatchRequest
+  object.
+
+  Fields:
+    googleCloudNetworkconnectivityV1betaInterconnectKeyGroup: A
+      GoogleCloudNetworkconnectivityV1betaInterconnectKeyGroup resource to be
+      passed as the request body.
+    name: Identifier. Name of the resource.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten. Generally only used to add/remove keys, but we do support
+      https://google.aip.dev/134 semantics of full replacement. Note that
+      individual keys are immutable - if an existing key is present in the
+      update_mask, and the interconnect_key_group includes it (i.e. not a
+      delete key operation), then it must include the same name, ckn,
+      start_time, and cak.
+  """
+
+  googleCloudNetworkconnectivityV1betaInterconnectKeyGroup = _messages.MessageField('GoogleCloudNetworkconnectivityV1betaInterconnectKeyGroup', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
 
 
 class NetworkconnectivityProjectsLocationsListRequest(_messages.Message):

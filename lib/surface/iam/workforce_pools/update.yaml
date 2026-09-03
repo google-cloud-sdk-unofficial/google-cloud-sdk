@@ -41,6 +41,8 @@
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool.session_duration
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool.disabled
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool.disable_programmatic_signin
+    - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool.workspace_link_state
+      hidden: true
 
   async:
     collection: iam.locations.workforcePools.operations

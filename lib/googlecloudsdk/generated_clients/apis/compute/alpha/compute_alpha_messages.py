@@ -1139,6 +1139,9 @@ class Address(_messages.Message):
       either Standard or Premium Tier.  If this field is not specified, it is
       assumed to be PREMIUM.
     prefixLength: The prefix length if the resource represents an IP range.
+    ptrDomainName: The public DNS PTR record to be configured for this
+      external IP.
+    ptrDomainNameTtl: The TTL in seconds for public DNS PTR record.
     purpose: The purpose of this resource, which can be one of the following
       values:              - GCE_ENDPOINT for addresses that are used by VM
       instances, alias IP ranges, load balancers, and similar resources.
@@ -1383,14 +1386,16 @@ class Address(_messages.Message):
   networkAttachment = _messages.StringField(14)
   networkTier = _messages.EnumField('NetworkTierValueValuesEnum', 15)
   prefixLength = _messages.IntegerField(16, variant=_messages.Variant.INT32)
-  purpose = _messages.EnumField('PurposeValueValuesEnum', 17)
-  region = _messages.StringField(18)
-  selfLink = _messages.StringField(19)
-  selfLinkWithId = _messages.StringField(20)
-  serviceClassId = _messages.StringField(21)
-  status = _messages.EnumField('StatusValueValuesEnum', 22)
-  subnetwork = _messages.StringField(23)
-  users = _messages.StringField(24, repeated=True)
+  ptrDomainName = _messages.StringField(17)
+  ptrDomainNameTtl = _messages.IntegerField(18, variant=_messages.Variant.INT32)
+  purpose = _messages.EnumField('PurposeValueValuesEnum', 19)
+  region = _messages.StringField(20)
+  selfLink = _messages.StringField(21)
+  selfLinkWithId = _messages.StringField(22)
+  serviceClassId = _messages.StringField(23)
+  status = _messages.EnumField('StatusValueValuesEnum', 24)
+  subnetwork = _messages.StringField(25)
+  users = _messages.StringField(26, repeated=True)
 
 
 class AddressAggregatedList(_messages.Message):
@@ -9575,19 +9580,18 @@ class CapacityAdviceRequestInstanceFlexibilityPolicyInstanceSelectionAttachedDis
   r"""Attached disk configuration.
 
   Enums:
-    TypeValueValuesEnum: Specifies the type of the disk. This field must be
-      set to SCRATCH.
+    TypeValueValuesEnum: Specifies the type of the disk.
 
   Fields:
-    type: Specifies the type of the disk. This field must be set to SCRATCH.
+    type: Specifies the type of the disk.
   """
 
   class TypeValueValuesEnum(_messages.Enum):
-    r"""Specifies the type of the disk. This field must be set to SCRATCH.
+    r"""Specifies the type of the disk.
 
     Values:
-      DISK_TYPE_UNSPECIFIED: <no description>
-      SCRATCH: <no description>
+      DISK_TYPE_UNSPECIFIED: Default value, unspecified disk type.
+      SCRATCH: Scratch disk (Local SSD).
     """
     DISK_TYPE_UNSPECIFIED = 0
     SCRATCH = 1
@@ -12216,6 +12220,35 @@ class ComputeAddressesTestIamPermissionsRequest(_messages.Message):
   region = _messages.StringField(2, required=True)
   resource = _messages.StringField(3, required=True)
   testPermissionsRequest = _messages.MessageField('TestPermissionsRequest', 4)
+
+
+class ComputeAddressesUpdatePublicPtrRequest(_messages.Message):
+  r"""A ComputeAddressesUpdatePublicPtrRequest object.
+
+  Fields:
+    address: Name of the address resource to update.
+    project: Source project ID where the address belongs.
+    region: Name of the region for this request.
+    regionAddressesUpdatePublicPtrRequest: A
+      RegionAddressesUpdatePublicPtrRequest resource to be passed as the
+      request body.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.  For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server can check if original operation with the same request ID was
+      received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments.  The request
+      ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  address = _messages.StringField(1, required=True)
+  project = _messages.StringField(2, required=True)
+  region = _messages.StringField(3, required=True)
+  regionAddressesUpdatePublicPtrRequest = _messages.MessageField('RegionAddressesUpdatePublicPtrRequest', 4)
+  requestId = _messages.StringField(5)
 
 
 class ComputeAdviceCalendarModeExtensionRequest(_messages.Message):
@@ -17309,6 +17342,33 @@ class ComputeGlobalForwardingRulesTestIamPermissionsRequest(_messages.Message):
   project = _messages.StringField(1, required=True)
   resource = _messages.StringField(2, required=True)
   testPermissionsRequest = _messages.MessageField('TestPermissionsRequest', 3)
+
+
+class ComputeGlobalFrontendSettingsGetRequest(_messages.Message):
+  r"""A ComputeGlobalFrontendSettingsGetRequest object.
+
+  Fields:
+    project: A string attribute.
+  """
+
+  project = _messages.StringField(1, required=True)
+
+
+class ComputeGlobalFrontendSettingsPatchRequest(_messages.Message):
+  r"""A ComputeGlobalFrontendSettingsPatchRequest object.
+
+  Fields:
+    globalFrontendSettings: A GlobalFrontendSettings resource to be passed as
+      the request body.
+    project: A string attribute.
+    requestId: A string attribute.
+    updateMask: e.g., "type"
+  """
+
+  globalFrontendSettings = _messages.MessageField('GlobalFrontendSettings', 1)
+  project = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
 
 
 class ComputeGlobalNetworkEndpointGroupsAttachNetworkEndpointsRequest(_messages.Message):
@@ -55473,6 +55533,10 @@ class FirewallPolicy(_messages.Message):
       GLOBAL_VPC_NETWORK will be used.
 
   Fields:
+    applySecurityProfileFallbackAction: Optional. If specified, it defines
+      what should happen in case of backend issues for rules with
+      apply_security_profile_group action. Allowed values: ALLOW, DENY. If not
+      specified, the default behavior is ALLOW.
     associations: A list of associations that belong to this firewall policy.
     creationTimestamp: Output only. [Output Only] Creation timestamp inRFC3339
       text format.
@@ -55604,26 +55668,27 @@ class FirewallPolicy(_messages.Message):
     GLOBAL_VPC_NETWORK = 0
     REGIONAL_VPC_NETWORK = 1
 
-  associations = _messages.MessageField('FirewallPolicyAssociation', 1, repeated=True)
-  creationTimestamp = _messages.StringField(2)
-  description = _messages.StringField(3)
-  displayName = _messages.StringField(4)
-  fingerprint = _messages.BytesField(5)
-  id = _messages.IntegerField(6, variant=_messages.Variant.UINT64)
-  kind = _messages.StringField(7, default='compute#firewallPolicy')
-  name = _messages.StringField(8)
-  packetMirroringRules = _messages.MessageField('FirewallPolicyRule', 9, repeated=True)
-  parent = _messages.StringField(10)
-  policySource = _messages.EnumField('PolicySourceValueValuesEnum', 11)
-  policyType = _messages.EnumField('PolicyTypeValueValuesEnum', 12)
-  region = _messages.StringField(13)
-  rolloutOperation = _messages.MessageField('FirewallPolicyRolloutOperation', 14)
-  ruleTupleCount = _messages.IntegerField(15, variant=_messages.Variant.INT32)
-  rules = _messages.MessageField('FirewallPolicyRule', 16, repeated=True)
-  selfLink = _messages.StringField(17)
-  selfLinkWithId = _messages.StringField(18)
-  shortName = _messages.StringField(19)
-  vpcNetworkScope = _messages.EnumField('VpcNetworkScopeValueValuesEnum', 20)
+  applySecurityProfileFallbackAction = _messages.StringField(1)
+  associations = _messages.MessageField('FirewallPolicyAssociation', 2, repeated=True)
+  creationTimestamp = _messages.StringField(3)
+  description = _messages.StringField(4)
+  displayName = _messages.StringField(5)
+  fingerprint = _messages.BytesField(6)
+  id = _messages.IntegerField(7, variant=_messages.Variant.UINT64)
+  kind = _messages.StringField(8, default='compute#firewallPolicy')
+  name = _messages.StringField(9)
+  packetMirroringRules = _messages.MessageField('FirewallPolicyRule', 10, repeated=True)
+  parent = _messages.StringField(11)
+  policySource = _messages.EnumField('PolicySourceValueValuesEnum', 12)
+  policyType = _messages.EnumField('PolicyTypeValueValuesEnum', 13)
+  region = _messages.StringField(14)
+  rolloutOperation = _messages.MessageField('FirewallPolicyRolloutOperation', 15)
+  ruleTupleCount = _messages.IntegerField(16, variant=_messages.Variant.INT32)
+  rules = _messages.MessageField('FirewallPolicyRule', 17, repeated=True)
+  selfLink = _messages.StringField(18)
+  selfLinkWithId = _messages.StringField(19)
+  shortName = _messages.StringField(20)
+  vpcNetworkScope = _messages.EnumField('VpcNetworkScopeValueValuesEnum', 21)
 
 
 class FirewallPolicyAssociation(_messages.Message):
@@ -59693,6 +59758,60 @@ class GlobalAddressesMoveRequest(_messages.Message):
   destinationAddress = _messages.StringField(2)
 
 
+class GlobalFrontendSettings(_messages.Message):
+  r"""Represents the Global Frontend Bundle settings for a single project.
+
+  Enums:
+    BundleTypeValueValuesEnum: Customer-settable bundle type.
+
+  Fields:
+    bundleType: Customer-settable bundle type.
+    creationTimestamp: Output only. [Output Only] Creation timestamp in
+      RFC3339 text format.
+    description: Output only. [Output Only] An optional description of this
+      resource.
+    etag: Output only. For optimistic locking
+    id: Output only. [Output Only] The unique identifier for the resource.
+      This identifier is defined by the server.
+    name: Output only. OUTPUT_ONLY fields [Output Only] Name of the resource.
+      Must be 1-63 characters long and match the regular expression
+      `[a-z]([-a-z0-9]*[a-z0-9])?` which means the first character must be a
+      lowercase letter, and all following characters must be a dash, lowercase
+      letter, or digit, except the last character, which cannot be a dash.
+    selfLink: Output only. [Output Only] Server-defined URL for the resource.
+  """
+
+  class BundleTypeValueValuesEnum(_messages.Enum):
+    r"""Customer-settable bundle type.
+
+    Values:
+      BUNDLE_TYPE_UNSPECIFIED: Bundling is not active
+      GLOBAL_FRONT_END: Standard Global Frontend bundle
+      INDIVIDUAL: Ala Carte mode
+    """
+    BUNDLE_TYPE_UNSPECIFIED = 0
+    GLOBAL_FRONT_END = 1
+    INDIVIDUAL = 2
+
+  bundleType = _messages.EnumField('BundleTypeValueValuesEnum', 1)
+  creationTimestamp = _messages.StringField(2)
+  description = _messages.StringField(3)
+  etag = _messages.StringField(4)
+  id = _messages.IntegerField(5, variant=_messages.Variant.UINT64)
+  name = _messages.StringField(6)
+  selfLink = _messages.StringField(7)
+
+
+class GlobalFrontendSettingsPatchResponse(_messages.Message):
+  r"""Response to an UpdateGlobalFrontendSettingsRequest.
+
+  Fields:
+    operation: A Operation attribute.
+  """
+
+  operation = _messages.MessageField('Operation', 1)
+
+
 class GlobalListVmExtensionsResponse(_messages.Message):
   r"""A GlobalListVmExtensionsResponse object.
 
@@ -61299,12 +61418,14 @@ class HaController(_messages.Message):
     r"""Indicates how failover should be initiated.
 
     Values:
+      AUTOMATIC: Failover will be initiated automatically in case of an outage
       FAILOVER_INITIATION_UNSPECIFIED: <no description>
       MANUAL_ONLY: Failover will be initiated only when
         compute.haControllers.failover method is called.
     """
-    FAILOVER_INITIATION_UNSPECIFIED = 0
-    MANUAL_ONLY = 1
+    AUTOMATIC = 0
+    FAILOVER_INITIATION_UNSPECIFIED = 1
+    MANUAL_ONLY = 2
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. The current state of the HA Controller.
@@ -99955,9 +100076,9 @@ class RegexRewrite(_messages.Message):
   r"""The spec for modifying the path using a regular expression.
 
   Fields:
-    pathPattern: The regular expression used to match against the URL path. It
-      uses RE2 syntax with the following constraints:              - Any
-      single character operators      - Groups are allowed to have only
+    pathPattern: Required. The regular expression used to match against the
+      URL path. It uses RE2 syntax with the following constraints:
+      - Any single character operators      - Groups are allowed to have only
       submatch operator inside      - Groups are allowed only without any char
       repetition, e.g.      .*      - Any char repetition, e.g. .*, is
       only allowed to be used in a single regex together with:
@@ -99966,8 +100087,8 @@ class RegexRewrite(_messages.Message):
       Ranges are only allowed to have:                            - Character
       range             - Digits range             - Symbols listed in
       characters allowed for ranges
-    pathSubstitution: Required when path pattern is specified. Used to rewrite
-      matching parts of the path.
+    pathSubstitution: Required. Required when path pattern is specified. Used
+      to rewrite matching parts of the path.
   """
 
   pathPattern = _messages.StringField(1)
@@ -100192,6 +100313,19 @@ class RegionAddressesMoveRequest(_messages.Message):
 
   description = _messages.StringField(1)
   destinationAddress = _messages.StringField(2)
+
+
+class RegionAddressesUpdatePublicPtrRequest(_messages.Message):
+  r"""A RegionAddressesUpdatePublicPtrRequest object.
+
+  Fields:
+    ptrDomainName: The public DNS PTR record to be configured for this
+      external IP.
+    ptrDomainNameTtl: The TTL in seconds for public DNS PTR record.
+  """
+
+  ptrDomainName = _messages.StringField(1)
+  ptrDomainNameTtl = _messages.IntegerField(2, variant=_messages.Variant.INT32)
 
 
 class RegionAutoscalerList(_messages.Message):
@@ -128376,7 +128510,8 @@ class VmExtensionState(_messages.Message):
       APPLYING_CONFIG: A new configuration is being applied to the extension.
         Depending on each extensions' behavior, an extension restart might be
         involved in this process to get new configuration applied properly.
-      ENFORCEMENT_STATE_UNSPECIFIED: <no description>
+      ENFORCEMENT_STATE_UNSPECIFIED: Enforcement state of the extension is
+        unspecified.
       INCOMPATIBLE: None of the extension revisions of the given extension
         version is compatible with the VM's architecture and Operating System.
       INSTALLED: The extension has been successfully installed.
@@ -128410,12 +128545,12 @@ class VmExtensionState(_messages.Message):
     r"""The health status of the extension.
 
     Values:
-      CRASHED: <no description>
-      HEALTH_STATUS_UNSPECIFIED: <no description>
-      RUNNING: <no description>
-      STARTING: <no description>
-      STOPPED: <no description>
-      STOPPING: <no description>
+      CRASHED: The extension crashed.
+      HEALTH_STATUS_UNSPECIFIED: Health status is unspecified.
+      RUNNING: The extension is running.
+      STARTING: The extension is starting.
+      STOPPED: The extension is stopped.
+      STOPPING: The extension is stopping.
     """
     CRASHED = 0
     HEALTH_STATUS_UNSPECIFIED = 1
@@ -129391,6 +129526,10 @@ class VpnTunnel(_messages.Message):
       the same vpnGatewayInterface ID in the peer Google Cloud VPN gateway.
     peerIp: IP address of the peer VPN gateway. Only IPv4 is supported. This
       field can be set only for Classic VPN tunnels.
+    pqcPhase1: User specified list of PQC key exchange mechanisms (KEMs) to
+      use for the phase 1 of the IKE protocol.
+    pqcPhase2: User specified list of PQC key exchange mechanisms (KEMs) to
+      use for the phase 2 of the IKE protocol.
     region: [Output Only] URL of the region where the VPN tunnel resides. You
       must specify this field as part of the HTTP request URL. It is not
       settable as a field in the request body.
@@ -129547,16 +129686,147 @@ class VpnTunnel(_messages.Message):
   peerExternalGatewayInterface = _messages.IntegerField(15, variant=_messages.Variant.INT32)
   peerGcpGateway = _messages.StringField(16)
   peerIp = _messages.StringField(17)
-  region = _messages.StringField(18)
-  remoteTrafficSelector = _messages.StringField(19, repeated=True)
-  router = _messages.StringField(20)
-  selfLink = _messages.StringField(21)
-  sharedSecret = _messages.StringField(22)
-  sharedSecretHash = _messages.StringField(23)
-  status = _messages.EnumField('StatusValueValuesEnum', 24)
-  targetVpnGateway = _messages.StringField(25)
-  vpnGateway = _messages.StringField(26)
-  vpnGatewayInterface = _messages.IntegerField(27, variant=_messages.Variant.INT32)
+  pqcPhase1 = _messages.MessageField('VpnTunnelPqc', 18)
+  pqcPhase2 = _messages.MessageField('VpnTunnelPqc', 19)
+  region = _messages.StringField(20)
+  remoteTrafficSelector = _messages.StringField(21, repeated=True)
+  router = _messages.StringField(22)
+  selfLink = _messages.StringField(23)
+  sharedSecret = _messages.StringField(24)
+  sharedSecretHash = _messages.StringField(25)
+  status = _messages.EnumField('StatusValueValuesEnum', 26)
+  targetVpnGateway = _messages.StringField(27)
+  vpnGateway = _messages.StringField(28)
+  vpnGatewayInterface = _messages.IntegerField(29, variant=_messages.Variant.INT32)
+
+
+class VpnTunnelAdditionalKeyExchanges(_messages.Message):
+  r"""User specified list of PQC key exchanges.
+
+  Enums:
+    Ke1sValueListEntryValuesEnum:
+    Ke2sValueListEntryValuesEnum:
+    Ke3sValueListEntryValuesEnum:
+    Ke4sValueListEntryValuesEnum:
+    Ke5sValueListEntryValuesEnum:
+    Ke6sValueListEntryValuesEnum:
+    Ke7sValueListEntryValuesEnum:
+
+  Fields:
+    ke1s: A Ke1sValueListEntryValuesEnum attribute.
+    ke2s: A Ke2sValueListEntryValuesEnum attribute.
+    ke3s: A Ke3sValueListEntryValuesEnum attribute.
+    ke4s: A Ke4sValueListEntryValuesEnum attribute.
+    ke5s: A Ke5sValueListEntryValuesEnum attribute.
+    ke6s: A Ke6sValueListEntryValuesEnum attribute.
+    ke7s: A Ke7sValueListEntryValuesEnum attribute.
+  """
+
+  class Ke1sValueListEntryValuesEnum(_messages.Enum):
+    r"""Ke1sValueListEntryValuesEnum enum type.
+
+    Values:
+      KEY_ENCAPSULATION_MECHANISM_UNSPECIFIED: <no description>
+      KE_NONE: <no description>
+      ML_KEM_1024: <no description>
+      ML_KEM_768: <no description>
+    """
+    KEY_ENCAPSULATION_MECHANISM_UNSPECIFIED = 0
+    KE_NONE = 1
+    ML_KEM_1024 = 2
+    ML_KEM_768 = 3
+
+  class Ke2sValueListEntryValuesEnum(_messages.Enum):
+    r"""Ke2sValueListEntryValuesEnum enum type.
+
+    Values:
+      KEY_ENCAPSULATION_MECHANISM_UNSPECIFIED: <no description>
+      KE_NONE: <no description>
+      ML_KEM_1024: <no description>
+      ML_KEM_768: <no description>
+    """
+    KEY_ENCAPSULATION_MECHANISM_UNSPECIFIED = 0
+    KE_NONE = 1
+    ML_KEM_1024 = 2
+    ML_KEM_768 = 3
+
+  class Ke3sValueListEntryValuesEnum(_messages.Enum):
+    r"""Ke3sValueListEntryValuesEnum enum type.
+
+    Values:
+      KEY_ENCAPSULATION_MECHANISM_UNSPECIFIED: <no description>
+      KE_NONE: <no description>
+      ML_KEM_1024: <no description>
+      ML_KEM_768: <no description>
+    """
+    KEY_ENCAPSULATION_MECHANISM_UNSPECIFIED = 0
+    KE_NONE = 1
+    ML_KEM_1024 = 2
+    ML_KEM_768 = 3
+
+  class Ke4sValueListEntryValuesEnum(_messages.Enum):
+    r"""Ke4sValueListEntryValuesEnum enum type.
+
+    Values:
+      KEY_ENCAPSULATION_MECHANISM_UNSPECIFIED: <no description>
+      KE_NONE: <no description>
+      ML_KEM_1024: <no description>
+      ML_KEM_768: <no description>
+    """
+    KEY_ENCAPSULATION_MECHANISM_UNSPECIFIED = 0
+    KE_NONE = 1
+    ML_KEM_1024 = 2
+    ML_KEM_768 = 3
+
+  class Ke5sValueListEntryValuesEnum(_messages.Enum):
+    r"""Ke5sValueListEntryValuesEnum enum type.
+
+    Values:
+      KEY_ENCAPSULATION_MECHANISM_UNSPECIFIED: <no description>
+      KE_NONE: <no description>
+      ML_KEM_1024: <no description>
+      ML_KEM_768: <no description>
+    """
+    KEY_ENCAPSULATION_MECHANISM_UNSPECIFIED = 0
+    KE_NONE = 1
+    ML_KEM_1024 = 2
+    ML_KEM_768 = 3
+
+  class Ke6sValueListEntryValuesEnum(_messages.Enum):
+    r"""Ke6sValueListEntryValuesEnum enum type.
+
+    Values:
+      KEY_ENCAPSULATION_MECHANISM_UNSPECIFIED: <no description>
+      KE_NONE: <no description>
+      ML_KEM_1024: <no description>
+      ML_KEM_768: <no description>
+    """
+    KEY_ENCAPSULATION_MECHANISM_UNSPECIFIED = 0
+    KE_NONE = 1
+    ML_KEM_1024 = 2
+    ML_KEM_768 = 3
+
+  class Ke7sValueListEntryValuesEnum(_messages.Enum):
+    r"""Ke7sValueListEntryValuesEnum enum type.
+
+    Values:
+      KEY_ENCAPSULATION_MECHANISM_UNSPECIFIED: <no description>
+      KE_NONE: <no description>
+      ML_KEM_1024: <no description>
+      ML_KEM_768: <no description>
+    """
+    KEY_ENCAPSULATION_MECHANISM_UNSPECIFIED = 0
+    KE_NONE = 1
+    ML_KEM_1024 = 2
+    ML_KEM_768 = 3
+
+  ke1s = _messages.EnumField('Ke1sValueListEntryValuesEnum', 1, repeated=True)
+  ke2s = _messages.EnumField('Ke2sValueListEntryValuesEnum', 2, repeated=True)
+  ke3s = _messages.EnumField('Ke3sValueListEntryValuesEnum', 3, repeated=True)
+  ke4s = _messages.EnumField('Ke4sValueListEntryValuesEnum', 4, repeated=True)
+  ke5s = _messages.EnumField('Ke5sValueListEntryValuesEnum', 5, repeated=True)
+  ke6s = _messages.EnumField('Ke6sValueListEntryValuesEnum', 6, repeated=True)
+  ke7s = _messages.EnumField('Ke7sValueListEntryValuesEnum', 7, repeated=True)
 
 
 class VpnTunnelAggregatedList(_messages.Message):
@@ -130029,6 +130299,33 @@ class VpnTunnelPhase2Algorithms(_messages.Message):
   encryption = _messages.StringField(1, repeated=True)
   integrity = _messages.StringField(2, repeated=True)
   pfs = _messages.StringField(3, repeated=True)
+
+
+class VpnTunnelPqc(_messages.Message):
+  r"""A VpnTunnelPqc object.
+
+  Enums:
+    ModeValueValuesEnum:
+
+  Fields:
+    keys: A VpnTunnelAdditionalKeyExchanges attribute.
+    mode: A ModeValueValuesEnum attribute.
+  """
+
+  class ModeValueValuesEnum(_messages.Enum):
+    r"""ModeValueValuesEnum enum type.
+
+    Values:
+      DISABLED: <no description>
+      ENABLED: <no description>
+      PQC_MODE_UNSPECIFIED: <no description>
+    """
+    DISABLED = 0
+    ENABLED = 1
+    PQC_MODE_UNSPECIFIED = 2
+
+  keys = _messages.MessageField('VpnTunnelAdditionalKeyExchanges', 1)
+  mode = _messages.EnumField('ModeValueValuesEnum', 2)
 
 
 class VpnTunnelsScopedList(_messages.Message):
@@ -130856,6 +131153,8 @@ class WireProperties(_messages.Message):
       pseudowire:        - NONE: default.    - DISABLE_PORT: set the port line
       protocol down when inline probes    detect a fault. This setting is only
       permitted on port mode    pseudowires.
+    FlowManagementValueValuesEnum: The flow management configuration for the
+      wire.
     NetworkServiceClassValueValuesEnum: The network service class.
 
   Fields:
@@ -130878,6 +131177,7 @@ class WireProperties(_messages.Message):
       NONE: default.    - DISABLE_PORT: set the port line protocol down when
       inline probes    detect a fault. This setting is only permitted on port
       mode    pseudowires.
+    flowManagement: The flow management configuration for the wire.
     networkServiceClass: The network service class.
   """
 
@@ -130917,6 +131217,16 @@ class WireProperties(_messages.Message):
     DISABLE_PORT = 0
     NONE = 1
 
+  class FlowManagementValueValuesEnum(_messages.Enum):
+    r"""The flow management configuration for the wire.
+
+    Values:
+      DYNAMIC_PATH: The wire uses dynamic paths.
+      FIXED_PATH: The wire uses fixed paths.
+    """
+    DYNAMIC_PATH = 0
+    FIXED_PATH = 1
+
   class NetworkServiceClassValueValuesEnum(_messages.Enum):
     r"""The network service class.
 
@@ -130931,7 +131241,8 @@ class WireProperties(_messages.Message):
   bandwidthMetered = _messages.IntegerField(2)
   bandwidthUnmetered = _messages.IntegerField(3)
   faultResponse = _messages.EnumField('FaultResponseValueValuesEnum', 4)
-  networkServiceClass = _messages.EnumField('NetworkServiceClassValueValuesEnum', 5)
+  flowManagement = _messages.EnumField('FlowManagementValueValuesEnum', 5)
+  networkServiceClass = _messages.EnumField('NetworkServiceClassValueValuesEnum', 6)
 
 
 class WorkloadIdentityConfig(_messages.Message):

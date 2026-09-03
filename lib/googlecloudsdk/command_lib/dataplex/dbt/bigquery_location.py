@@ -85,4 +85,17 @@ def ResolveDatasetLocations(  # pylint: disable=invalid-name
       continue
     if got.location:
       resolved[(project, dataset)] = _dataplex_region(got.location)
+  if not resolved:
+    # Every lookup failing is a different situation from a dataset or two being
+    # unreadable: the caller learns nothing about any dataset, so the
+    # co-location filter silently stops filtering.
+    log.warning(
+        'Could not read the location of any of the {0} BigQuery dataset(s) '
+        'this dbt run materializes into, so none could be checked against the '
+        'import location. This usually means the BigQuery API is disabled or '
+        'the caller lacks bigquery.datasets.get. Links to @bigquery entries '
+        'outside the import location are emitted anyway and the import job '
+        'reports them as per-link errors; pass --skip-bigquery-link to omit '
+        'them.'.format(len(pairs))
+    )
   return resolved

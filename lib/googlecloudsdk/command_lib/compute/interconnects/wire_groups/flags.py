@@ -40,6 +40,11 @@ _NETWORK_SERVICE_CLASS_CHOICES = {
     'GOLD': 'The highest service class.',
 }
 
+_FLOW_MANAGEMENT_CHOICES = {
+    'DYNAMIC_PATH': 'The wire uses dynamic paths.',
+    'FIXED_PATH': 'The wire uses fixed paths.',
+}
+
 _WIRE_GROUP_TYPE = {
     'WIRE': 'Single wire type wire groups must have only one VLAN tag.',
     'REDUNDANT': 'Redundant type wire groups must have only one VLAN tag.',
@@ -166,6 +171,17 @@ def AddBandwidthAllocation(parser, required=True):
       choices=_BANDWIDTH_ALLOCATION_CHOICES,
       help='The bandwidth allocation for the wire group.',
       required=required,
+  )
+
+
+def AddFlowManagement(parser):
+  """Adds flow-management flag to the argparse.ArgumentParser."""
+  parser.add_argument(
+      '--flow-management',
+      choices=_FLOW_MANAGEMENT_CHOICES,
+      help=(
+          'The flow management configuration for the wire group.'
+      ),
   )
 
 

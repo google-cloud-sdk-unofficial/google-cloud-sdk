@@ -201,6 +201,11 @@ class Execute(base.Command):
             'Execution [{{bold}}{execution}{{reset}}] is being'
             ' started asynchronously.'.format(execution=e.name)
         )
+      elif e.spec.delayExecution and not args.wait:
+        pretty_print.Success(
+            'Delayed execution [{{bold}}{execution}{{reset}}] is queued to'
+            ' start in next 12 hours.'.format(execution=e.name)
+        )
       else:
         operation = 'completed' if args.wait else 'started running'
 

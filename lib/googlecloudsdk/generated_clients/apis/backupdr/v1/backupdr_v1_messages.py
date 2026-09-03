@@ -3676,11 +3676,13 @@ class ComputeInstanceBackupProperties(_messages.Message):
       created from these properties.
     disk: An array of disks that are associated with the instances that are
       created from these properties.
+    excludedDisks: Optional. List of disks excluded from the backup.
     guestAccelerator: A list of guest accelerator cards' type and count to use
       for instances created from these properties.
     guestFlush: Optional. Indicates whether to perform a guest flush operation
       before taking a compute backup. When set to false, the system will
       create crash-consistent backups. Default value is false.
+    includedDisks: Optional. List of disks included in the backup.
     keyRevocationActionType: KeyRevocationActionType of the instance.
       Supported options are "STOP" and "NONE". The default value is "NONE" if
       it is not specified.
@@ -3761,18 +3763,20 @@ class ComputeInstanceBackupProperties(_messages.Message):
   canIpForward = _messages.BooleanField(1)
   description = _messages.StringField(2)
   disk = _messages.MessageField('AttachedDisk', 3, repeated=True)
-  guestAccelerator = _messages.MessageField('AcceleratorConfig', 4, repeated=True)
-  guestFlush = _messages.BooleanField(5)
-  keyRevocationActionType = _messages.EnumField('KeyRevocationActionTypeValueValuesEnum', 6)
-  labels = _messages.MessageField('LabelsValue', 7)
-  machineType = _messages.StringField(8)
-  metadata = _messages.MessageField('Metadata', 9)
-  minCpuPlatform = _messages.StringField(10)
-  networkInterface = _messages.MessageField('NetworkInterface', 11, repeated=True)
-  scheduling = _messages.MessageField('Scheduling', 12)
-  serviceAccount = _messages.MessageField('ServiceAccount', 13, repeated=True)
-  sourceInstance = _messages.StringField(14)
-  tags = _messages.MessageField('Tags', 15)
+  excludedDisks = _messages.StringField(4, repeated=True)
+  guestAccelerator = _messages.MessageField('AcceleratorConfig', 5, repeated=True)
+  guestFlush = _messages.BooleanField(6)
+  includedDisks = _messages.StringField(7, repeated=True)
+  keyRevocationActionType = _messages.EnumField('KeyRevocationActionTypeValueValuesEnum', 8)
+  labels = _messages.MessageField('LabelsValue', 9)
+  machineType = _messages.StringField(10)
+  metadata = _messages.MessageField('Metadata', 11)
+  minCpuPlatform = _messages.StringField(12)
+  networkInterface = _messages.MessageField('NetworkInterface', 13, repeated=True)
+  scheduling = _messages.MessageField('Scheduling', 14)
+  serviceAccount = _messages.MessageField('ServiceAccount', 15, repeated=True)
+  sourceInstance = _messages.StringField(16)
+  tags = _messages.MessageField('Tags', 17)
 
 
 class ComputeInstanceDataSourceProperties(_messages.Message):

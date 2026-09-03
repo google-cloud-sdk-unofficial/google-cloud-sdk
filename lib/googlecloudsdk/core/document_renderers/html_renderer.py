@@ -45,6 +45,7 @@ class HTMLRenderer(renderer.Renderer):
   _FONT_TAG = (('code',), ('code', 'var'), ('code',))
 
   def __init__(self, *args, **kwargs):
+    kwargs.setdefault('excluded_sections', ('PROJECTION KEYS',))
     super(HTMLRenderer, self).__init__(*args, **kwargs)
     self._document_ids = set()
     self._example = False

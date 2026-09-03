@@ -257,9 +257,7 @@ FROM (
       job = client_job.Query(client, query, use_legacy_sql=False)
     except bq_error.BigqueryError as e:
       # TODO(b/324243535): Correct this typing.
-      # pytype: disable=attribute-error
-      if 'Name multi_site_info not found' in e.error['message']:
-        # pytype: enable=attribute-error
+      if 'Name multi_site_info not found' in e.error['message']:  # pyrefly: ignore[missing-attribute]
         raise app.UsageError(
             'This functionality is not enabled for the current project.'
         )

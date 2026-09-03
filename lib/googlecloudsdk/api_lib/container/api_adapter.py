@@ -385,6 +385,7 @@ NETWORK_POLICY = 'NetworkPolicy'
 NODELOCALDNS = 'NodeLocalDNS'
 APPLICATIONMANAGER = 'ApplicationManager'
 NODEREADINESSCONTROLLER = 'NodeReadinessController'
+WIZ_SENSOR = 'WizSensor'
 RESOURCE_LIMITS = 'resourceLimits'
 SERVICE_ACCOUNT = 'serviceAccount'
 MIN_CPU_PLATFORM = 'minCpuPlatform'
@@ -423,6 +424,7 @@ ADDONS_OPTIONS = DEFAULT_ADDONS + [
     SLURMOPERATOR,
     KUEUE,
     NODEREADINESSCONTROLLER,
+    WIZ_SENSOR,
 ]
 BETA_ADDONS_OPTIONS = ADDONS_OPTIONS + [
     ISTIO,
@@ -932,6 +934,9 @@ class CreateClusterOptions(object):
       node_pool_upgrade_concurrency_config=None,
       enable_scheduled_upgrades=None,
       node_creation_mode=None,
+      wiz_sensor_registry_secret_uri=None,
+      wiz_sensor_api_key_secret_uri=None,
+      wiz_sensor_proxy_secret_uri=None,
   ):
     self.node_machine_type = node_machine_type
     self.node_source_image = node_source_image
@@ -1262,6 +1267,9 @@ class CreateClusterOptions(object):
     )
     self.enable_scheduled_upgrades = enable_scheduled_upgrades
     self.node_creation_mode = node_creation_mode
+    self.wiz_sensor_registry_secret_uri = wiz_sensor_registry_secret_uri
+    self.wiz_sensor_api_key_secret_uri = wiz_sensor_api_key_secret_uri
+    self.wiz_sensor_proxy_secret_uri = wiz_sensor_proxy_secret_uri
 
 
 class UpdateClusterOptions(object):
@@ -1471,6 +1479,9 @@ class UpdateClusterOptions(object):
       node_creation_mode=None,
       jwt_authenticator_config=None,
       clear_jwt_authenticator_config=None,
+      wiz_sensor_registry_secret_uri=None,
+      wiz_sensor_api_key_secret_uri=None,
+      wiz_sensor_proxy_secret_uri=None,
   ):
     self.version = version
     self.update_master = bool(update_master)
@@ -1725,6 +1736,9 @@ class UpdateClusterOptions(object):
     self.node_creation_mode = node_creation_mode
     self.jwt_authenticator_config = jwt_authenticator_config
     self.clear_jwt_authenticator_config = clear_jwt_authenticator_config
+    self.wiz_sensor_registry_secret_uri = wiz_sensor_registry_secret_uri
+    self.wiz_sensor_api_key_secret_uri = wiz_sensor_api_key_secret_uri
+    self.wiz_sensor_proxy_secret_uri = wiz_sensor_proxy_secret_uri
 
 
 class SetMasterAuthOptions(object):
@@ -1818,6 +1832,7 @@ class CreateNodePoolOptions(object):
       threads_per_core=None,
       enable_blue_green_upgrade=None,
       enable_surge_upgrade=None,
+      enable_upgrade_in_place=None,
       node_pool_soak_duration=None,
       standard_rollout_policy=None,
       autoscaled_rollout_policy=None,
@@ -1941,6 +1956,7 @@ class CreateNodePoolOptions(object):
     self.performance_monitoring_unit = performance_monitoring_unit
     self.enable_blue_green_upgrade = enable_blue_green_upgrade
     self.enable_surge_upgrade = enable_surge_upgrade
+    self.enable_upgrade_in_place = enable_upgrade_in_place
     self.node_pool_soak_duration = node_pool_soak_duration
     self.standard_rollout_policy = standard_rollout_policy
     self.autoscaled_rollout_policy = autoscaled_rollout_policy
@@ -2030,6 +2046,7 @@ class UpdateNodePoolOptions(object):
       enable_image_streaming=None,
       enable_blue_green_upgrade=None,
       enable_surge_upgrade=None,
+      enable_upgrade_in_place=None,
       node_pool_soak_duration=None,
       standard_rollout_policy=None,
       autoscaled_rollout_policy=None,
@@ -2091,6 +2108,7 @@ class UpdateNodePoolOptions(object):
     self.enable_image_streaming = enable_image_streaming
     self.enable_blue_green_upgrade = enable_blue_green_upgrade
     self.enable_surge_upgrade = enable_surge_upgrade
+    self.enable_upgrade_in_place = enable_upgrade_in_place
     self.node_pool_soak_duration = node_pool_soak_duration
     self.standard_rollout_policy = standard_rollout_policy
     self.autoscaled_rollout_policy = autoscaled_rollout_policy
@@ -2172,6 +2190,7 @@ class UpdateNodePoolOptions(object):
         or self.enable_image_streaming is not None
         or self.enable_surge_upgrade is not None
         or self.enable_blue_green_upgrade is not None
+        or self.enable_upgrade_in_place is not None
         or self.node_pool_soak_duration is not None
         or self.standard_rollout_policy is not None
         or self.autoscaled_rollout_policy is not None
@@ -2733,6 +2752,10 @@ class APIAdapter(object):
           enable_parallelstore_csi_driver=options.addons.get(
               PARALLELSTORECSIDRIVER, False
           ),
+          enable_wiz_sensor=options.addons.get(WIZ_SENSOR, None),
+          wiz_sensor_registry_secret_uri=options.wiz_sensor_registry_secret_uri,
+          wiz_sensor_api_key_secret_uri=options.wiz_sensor_api_key_secret_uri,
+          wiz_sensor_proxy_secret_uri=options.wiz_sensor_proxy_secret_uri,
           enable_high_scale_checkpointing=options.addons.get(
               HIGHSCALECHECKPOINTING, False
           ),
@@ -5047,6 +5070,12 @@ class APIAdapter(object):
           enable_node_local_dns=not disable_node_local_dns
           if disable_node_local_dns is not None
           else None,
+          enable_wiz_sensor=not options.disable_addons.get(WIZ_SENSOR)
+          if options.disable_addons.get(WIZ_SENSOR) is not None
+          else None,
+          wiz_sensor_registry_secret_uri=options.wiz_sensor_registry_secret_uri,
+          wiz_sensor_api_key_secret_uri=options.wiz_sensor_api_key_secret_uri,
+          wiz_sensor_proxy_secret_uri=options.wiz_sensor_proxy_secret_uri,
       )
       if options.disable_addons.get(CONFIGCONNECTOR) is not None:
         addons.configConnectorConfig = self.messages.ConfigConnectorConfig(
@@ -6251,6 +6280,10 @@ class APIAdapter(object):
       enable_agent_sandbox=None,
       enable_kueue=None,
       enable_node_readiness_controller=None,
+      enable_wiz_sensor=None,
+      wiz_sensor_registry_secret_uri=None,
+      wiz_sensor_api_key_secret_uri=None,
+      wiz_sensor_proxy_secret_uri=None,
   ):
     """Generates an AddonsConfig object given specific parameters.
 
@@ -6278,6 +6311,10 @@ class APIAdapter(object):
       enable_kueue: whether to enable Kueue.
       enable_node_readiness_controller: whether to enable
         NodeReadinessController.
+      enable_wiz_sensor: whether to enable WizSensor.
+      wiz_sensor_registry_secret_uri: the registry secret URI for WizSensor.
+      wiz_sensor_api_key_secret_uri: the API key secret URI for WizSensor.
+      wiz_sensor_proxy_secret_uri: the proxy secret URI for WizSensor.
 
     Returns:
       An AddonsConfig object that contains the options defining what addons to
@@ -6362,6 +6399,19 @@ class APIAdapter(object):
     if enable_node_readiness_controller is not None:
       addons.nodeReadinessConfig = self.messages.NodeReadinessConfig(
           enabled=enable_node_readiness_controller
+      )
+
+    if (
+        enable_wiz_sensor is not None
+        or wiz_sensor_registry_secret_uri is not None
+        or wiz_sensor_api_key_secret_uri is not None
+        or wiz_sensor_proxy_secret_uri is not None
+    ):
+      addons.wizSensorConfig = self.messages.WizSensorConfig(
+          enabled=enable_wiz_sensor,
+          registrySecretUri=wiz_sensor_registry_secret_uri,
+          apiKeySecretUri=wiz_sensor_api_key_secret_uri,
+          proxySecretUri=wiz_sensor_proxy_secret_uri,
       )
 
     return addons
@@ -7484,6 +7534,8 @@ class APIAdapter(object):
       upgrade_settings.strategy = (
           self.messages.UpgradeSettings.StrategyValueValuesEnum.BLUE_GREEN
       )
+    if options.enable_upgrade_in_place is not None:
+      upgrade_settings.updateInPlace = options.enable_upgrade_in_place
     if (
         options.standard_rollout_policy is not None
         or options.node_pool_soak_duration is not None
@@ -7534,6 +7586,7 @@ class APIAdapter(object):
         or options.standard_rollout_policy is not None
         or options.node_pool_soak_duration is not None
         or options.autoscaled_rollout_policy is not None
+        or options.enable_upgrade_in_place is not None
     ):
       update_request.upgradeSettings = self.UpdateUpgradeSettings(
           node_pool_ref, options
@@ -9382,6 +9435,12 @@ class V1Beta1Adapter(V1Adapter):
           if disable_node_local_dns is not None
           else None,
           enable_pod_snapshots=options.enable_pod_snapshots,
+          enable_wiz_sensor=not disable_addons.get(WIZ_SENSOR)
+          if disable_addons.get(WIZ_SENSOR) is not None
+          else None,
+          wiz_sensor_registry_secret_uri=options.wiz_sensor_registry_secret_uri,
+          wiz_sensor_api_key_secret_uri=options.wiz_sensor_api_key_secret_uri,
+          wiz_sensor_proxy_secret_uri=options.wiz_sensor_proxy_secret_uri,
       )
       if disable_addons.get(CONFIGCONNECTOR) is not None:
         addons.configConnectorConfig = self.messages.ConfigConnectorConfig(

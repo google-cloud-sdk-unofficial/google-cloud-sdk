@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""View Locations resources."""
+"""View supported locations."""
 
 from googlecloudsdk.calliope import base
 from surface.cluster_director.locations import _init_extensions as extensions
@@ -21,16 +21,16 @@ from surface.cluster_director.locations import _init_extensions as extensions
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class LocationsAlpha(extensions.LocationsAlpha):
-  """View Locations resources."""
+  """View supported locations."""
+
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class LocationsBeta(extensions.LocationsBeta):
-  """View Locations resources."""
+  """View supported locations."""
 
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class LocationsGa(extensions.LocationsGa):
-  """View Locations resources."""
-
+  """View supported locations."""

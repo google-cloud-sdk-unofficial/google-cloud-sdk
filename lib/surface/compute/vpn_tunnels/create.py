@@ -160,7 +160,7 @@ class CreateGA(base.CreateCommand):
     parser.add_argument('--phase2-pfs',
                         metavar='ALGORITHMS',
                         type=arg_parsers.ArgList(min_length=1),
-                        help='Phase 2 perfect forward secerecy algorithms.')
+                        help='Phase 2 perfect forward secrecy algorithms.')
 
   @classmethod
   def Args(cls, parser):

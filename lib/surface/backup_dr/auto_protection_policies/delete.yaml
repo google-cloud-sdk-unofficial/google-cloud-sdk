@@ -1,0 +1,25 @@
+- release_tracks: [ALPHA, BETA]
+  hidden: true
+
+  help_text:
+    brief: Delete a Backup and DR AutoProtectionPolicy.
+    description: Delete a Backup and DR AutoProtectionPolicy.
+    examples: |
+      To delete an AutoProtectionPolicy 'my-policy' in 'us-central1', run:
+
+        $ {command} my-policy --location=us-central1
+
+  request:
+    BETA:
+      api_version: v1beta
+    ALPHA:
+      api_version: v1alpha
+    collection: backupdr.projects.locations.autoProtectionPolicies
+
+  arguments:
+    resource:
+      help_text: Name of the AutoProtectionPolicy to delete.
+      spec: !REF googlecloudsdk.command_lib.backupdr.resources:autoProtectionPolicy
+
+  async:
+    collection: backupdr.projects.locations.operations

@@ -24,3 +24,9 @@
       spec: !REF googlecloudsdk.command_lib.database_migration.resources:region
       help_text: |
         The region you want to list static ips of.
+    params:
+    - arg_name: fetch-reserved-public-ips
+      api_field: fetchReservedPublicIps
+      type: bool
+      help_text: |
+        Indicates whether to fetch the reserved public IP addresses allocated for private connections in this location.

@@ -4617,7 +4617,7 @@ class RedisProjectsLocationsAclPoliciesDeleteRequest(_messages.Message):
       server's etag, the request will fail with an ABORTED error.
     name: Required. Redis ACL policy resource name using the form: `projects/{
       project_id}/locations/{location_id}/aclPolicies/{acl_policy_id}` where
-      `location_id` refers to a GCP region.
+      `location_id` refers to a Google Cloud region.
     requestId: Optional. Idempotent request UUID.
   """
 
@@ -4632,7 +4632,7 @@ class RedisProjectsLocationsAclPoliciesGetRequest(_messages.Message):
   Fields:
     name: Required. Redis ACL policy resource name using the form: `projects/{
       project_id}/locations/{location_id}/aclPolicies/{acl_policy_id}` where
-      `location_id` refers to a GCP region.
+      `location_id` refers to a Google Cloud region.
   """
 
   name = _messages.StringField(1, required=True)
@@ -4684,7 +4684,8 @@ class RedisProjectsLocationsAclPoliciesRevisionsGetRequest(_messages.Message):
   Fields:
     name: Required. Redis ACL policy revision resource name using the form: `p
       rojects/{project_id}/locations/{location_id}/aclPolicies/{acl_policy_id}
-      /revisions/{revision_id}` where `location_id` refers to a GCP region.
+      /revisions/{revision_id}` where `location_id` refers to a Google Cloud
+      region.
   """
 
   name = _messages.StringField(1, required=True)

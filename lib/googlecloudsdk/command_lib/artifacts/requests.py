@@ -44,21 +44,29 @@ def GetStorageMessages():
   return apis.GetMessagesModule(STORAGE_API_NAME, STORAGE_API_VERSION)
 
 
-def SkipRetryOn500Errors(response):
-  """Wrap http_wrapper.CheckResponse to skip retry on 501."""
+def SkipRetryOn500Errors(response, original_check_response=None):
+  """Wrap CheckResponse to skip retry on >= 500s."""
   if response.status_code >= 500:
     raise apitools_exceptions.HttpError.FromResponse(response)
+  if original_check_response:
+    return original_check_response(response)
   return http_wrapper.CheckResponse(response)
 
 
 def GetClient(skip_activation_prompt=False, location=None):
+  """Returns the API client for the Artifact Registry service."""
   client = apis.GetClientInstance(
       ARTIFACTREGISTRY_API_NAME,
       ARTIFACTREGISTRY_API_VERSION,
       skip_activation_prompt=skip_activation_prompt,
       location=location,
   )
-  client.check_response_func = SkipRetryOn500Errors
+  original_check_response = client.check_response_func
+
+  def WrappedCheckResponse(response):
+    return SkipRetryOn500Errors(response, original_check_response)
+
+  client.check_response_func = WrappedCheckResponse
   return client
 
 

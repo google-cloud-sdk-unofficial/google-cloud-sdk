@@ -338,7 +338,7 @@ def GenerateImportFile(  # pylint: disable=invalid-name
   if include_entry_links and linkable_datasets:
     bigquery_projects = sorted({project for project, _ in linkable_datasets})
 
-  with files.FileWriter(output_path) as f:
+  with files.FileWriter(output_path, newline='\n') as f:
     for item in entries:
       f.write(json.dumps(item) + '\n')
     for item in links:

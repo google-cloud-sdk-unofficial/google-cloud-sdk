@@ -33,8 +33,8 @@ DETAILED_HELP = {
         - Use --config flag with cluster specs in JSON format.
         - Use --quickstart-cluster or --reference-architecture to apply pre-configured templates.
 
-        ## REFERENCE ARCHITECTURES AND QUICKSTART
-        Reference architectures and quickstart options allow you to quickly provision clusters with pre-defined configurations for compute, storage, and orchestrator.
+        ## QUICKSTART CLUSTER AND REFERENCE ARCHITECTURES
+        Quickstart cluster and reference architectures allow you to quickly provision clusters with pre-defined configurations for compute, storage, and orchestrator.
 
         *quickstart* (applied when using `--quickstart-cluster`):
         - Compute: 2x a3-megagpu-8g nodes (Flex Start, max duration 7 days).
@@ -56,12 +56,12 @@ DETAILED_HELP = {
         - Login Node: 1x n2-standard-16 node.
         - Storage: 36TB Lustre storage (scratch disk).
 
-        *g4* (applied when using `--reference-architecture=g4`):
+        *g4-flex-start* (applied when using `--reference-architecture=g4-flex-start`):
         - Compute: 4x g4-standard-384 nodes (Flex Start, max duration 7 days).
         - Login Node: 1x n2-standard-16 node.
         - Storage: 36TB Lustre storage (scratch disk) and 10.2TB Filestore storage.
 
-        *h4d-highmem* (applied when using `--reference-architecture=h4d-highmem`):
+        *h4d-highmem-flex-start* (applied when using `--reference-architecture=h4d-highmem-flex-start`):
         - Compute: 4x h4d-highmem-192 nodes (Flex Start, max duration 7 days).
         - Login Node: 1x n2-standard-16 node.
         - Storage: 18TB Lustre storage (scratch disk) and 1TB Filestore storage.
@@ -100,9 +100,9 @@ DETAILED_HELP = {
 
         $ {command} my-cluster --location=us-central1 --quickstart-cluster --create-network name=network0
 
-        To create a cluster `my-cluster` in location `us-central1` using a pre-defined reference architecture choice (such as `g4`), run the following example:
+        To create a cluster `my-cluster` in location `us-central1` using a pre-defined reference architecture choice (such as `g4-flex-start`), run the following example:
 
-        $ {command} my-cluster --location=us-central1 --reference-architecture=g4 --create-network name=network0
+        $ {command} my-cluster --location=us-central1 --reference-architecture=g4-flex-start --create-network name=network0
         """),
 }
 

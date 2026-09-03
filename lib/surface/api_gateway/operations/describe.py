@@ -51,7 +51,7 @@ class Describe(base.DescribeCommand):
     resource_args.AddOperationResourceArgs(parser, 'describe')
 
   def Run(self, args):
-    client = operations.OperationsClient()
+    client = operations.OperationsClient(release_track=self.ReleaseTrack())
     operation_ref = args.CONCEPTS.operation.Parse()
 
     return client.Get(operation_ref)

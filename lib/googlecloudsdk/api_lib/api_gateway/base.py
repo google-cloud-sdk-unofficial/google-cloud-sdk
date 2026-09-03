@@ -19,24 +19,46 @@
 import types
 
 from apitools.base.py import list_pager
-
 from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-def GetClientInstance(version='v1', no_http=False):
-  return apis.GetClientInstance('apigateway', version, no_http=no_http)
+# API version backing each release track.
+VERSION_MAP = {
+    calliope_base.ReleaseTrack.ALPHA: 'v1alpha1',
+    calliope_base.ReleaseTrack.BETA: 'v1',
+    calliope_base.ReleaseTrack.GA: 'v1',
+}
 
 
-def GetMessagesModule(version='v1'):
-  return apis.GetMessagesModule('apigateway', version)
+def GetApiVersion(release_track=calliope_base.ReleaseTrack.GA):
+  return VERSION_MAP[release_track]
+
+
+def GetClientInstance(
+    release_track=calliope_base.ReleaseTrack.GA, no_http=False
+):
+  return apis.GetClientInstance(
+      'apigateway', GetApiVersion(release_track), no_http=no_http
+  )
+
+
+def GetMessagesModule(release_track=calliope_base.ReleaseTrack.GA):
+  return apis.GetMessagesModule('apigateway', GetApiVersion(release_track))
 
 
 class BaseClient(object):
   """Base for building API Clients."""
 
-  def __init__(self, client=None, message_base=None, service_name=None):
-    self.client = client or GetClientInstance()
+  def __init__(
+      self,
+      client=None,
+      message_base=None,
+      service_name=None,
+      release_track=calliope_base.ReleaseTrack.GA,
+  ):
+    self.client = client or GetClientInstance(release_track)
     self.messages = self.client.MESSAGES_MODULE
     self.service = getattr(self.client, service_name, None)
 

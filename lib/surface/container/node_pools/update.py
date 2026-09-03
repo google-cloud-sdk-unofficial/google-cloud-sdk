@@ -458,6 +458,7 @@ class UpdateAlpha(Update):
     flags.AddSurgeUpgradeFlag(upgrade_settings_group, for_node_pool=True)
     flags.AddMaxUnavailableUpgradeFlag(
         upgrade_settings_group, for_node_pool=True)
+    flags.AddEnableUpgradeInPlaceFlag(upgrade_settings_group, hidden=True)
 
     flags.AddEnableBlueGreenUpgradeFlag(upgrade_settings_group)
     flags.AddStandardRolloutPolicyFlag(
@@ -544,6 +545,7 @@ class UpdateAlpha(Update):
         gvnic=args.enable_gvnic,
         enable_image_streaming=args.enable_image_streaming,
         enable_blue_green_upgrade=args.enable_blue_green_upgrade,
+        enable_upgrade_in_place=args.enable_upgrade_in_place,
         enable_surge_upgrade=args.enable_surge_upgrade,
         node_pool_soak_duration=args.node_pool_soak_duration,
         standard_rollout_policy=args.standard_rollout_policy,

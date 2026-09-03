@@ -61,6 +61,17 @@
       spec:
       - api_field: key
       - api_field: value
+    - arg_name: identity-connector-disabled
+      api_field: exadbVmCluster.identityConnectorDisabled
+      action: store_true_false
+      required: false
+      type: bool
+      help_text: |-
+        If set to true, disables the automatic provisioning
+        of the Workload Identity Connector during creation. If set to false or
+        omitted, the Workload Identity Connector will be automatically provisioned
+        by default. Note: Provisioning the Workload Identity Connector is a
+        prerequisite for enabling Google Cloud CMEK.
     - arg_name: request-id
       api_field: requestId
       required: false

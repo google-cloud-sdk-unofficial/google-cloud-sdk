@@ -982,8 +982,6 @@ class SignatureInfo(_messages.Message):
         NIST P-256 key that returns shared secret.
       KEM_ECDH_P384: Key encapsulation: Elliptic Curve Diffie-Hellman with
         NIST P-384 key that returns shared secret.
-      KEM_ECDH_P521: Key encapsulation: Elliptic Curve Diffie-Hellman with
-        NIST P-521 key that returns shared secret.
       AES_256_KWP: AES key wrap with zero padding algorithm (RFC 5649). Can
         only be used by keys with purpose AES_WRAPPING.
     """
@@ -1036,8 +1034,7 @@ class SignatureInfo(_messages.Message):
     PQ_SIGN_ML_DSA_87_EXTERNAL_MU = 46
     KEM_ECDH_P256 = 47
     KEM_ECDH_P384 = 48
-    KEM_ECDH_P521 = 49
-    AES_256_KWP = 50
+    AES_256_KWP = 49
 
   customerKmsKeyVersion = _messages.StringField(1)
   googleKeyAlgorithm = _messages.EnumField('GoogleKeyAlgorithmValueValuesEnum', 2)

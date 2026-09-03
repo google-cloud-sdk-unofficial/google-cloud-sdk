@@ -1,0 +1,37 @@
+- release_tracks: [ALPHA, BETA]
+  hidden: true
+
+  help_text:
+    brief: List Backup and DR AutoProtectionPolicies.
+    description: List Backup and DR AutoProtectionPolicies.
+    examples: |
+      To list Backup and DR AutoProtectionPolicies across all locations, run:
+
+        $ {command}
+
+      To list Backup and DR AutoProtectionPolicies strictly in 'us-central1', run:
+
+        $ {command} --location=us-central1
+
+  request:
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
+    collection: backupdr.projects.locations.autoProtectionPolicies
+
+  arguments:
+    resource:
+      help_text: The location to list AutoProtectionPolicies.
+      spec: !REF googlecloudsdk.command_lib.backupdr.resources:locationDefaultGlobal
+
+  output:
+    format: |
+      table(
+        name.basename():label=NAME:sort=2,
+        backupPlanDetails[0].resourceType:label=RESOURCE_TYPE,
+        backupPlanDetails[0].backupPlan:label=BACKUP_PLAN,
+        criteria.matchingConditions[0].labelCondition.key:label=LABEL_KEY,
+        criteria.matchingConditions[0].labelCondition.values[0]:label=LABEL_VALUE,
+        state:label=STATUS
+      )

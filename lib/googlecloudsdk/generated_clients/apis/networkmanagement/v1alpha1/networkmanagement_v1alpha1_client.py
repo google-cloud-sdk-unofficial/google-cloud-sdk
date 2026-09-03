@@ -411,6 +411,33 @@ class NetworkmanagementV1alpha1(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+    def DiagnoseAlarm(self, request, global_params=None):
+      r"""Diagnoses an alarm for a given alarm ID.
+
+      Args:
+        request: (NetworkmanagementProjectsLocationsNetworkMonitoringProvidersNetworkPathsDiagnoseAlarmRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (DiagnoseAlarmResponse) The response message.
+      """
+      config = self.GetMethodConfig('DiagnoseAlarm')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    DiagnoseAlarm.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/networkMonitoringProviders/{networkMonitoringProvidersId}/networkPaths/{networkPathsId}:diagnoseAlarm',
+        http_method='GET',
+        method_id='networkmanagement.projects.locations.networkMonitoringProviders.networkPaths.diagnoseAlarm',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['alarmId'],
+        relative_path='v1alpha1/{+name}:diagnoseAlarm',
+        request_field='',
+        request_type_name='NetworkmanagementProjectsLocationsNetworkMonitoringProvidersNetworkPathsDiagnoseAlarmRequest',
+        response_type_name='DiagnoseAlarmResponse',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Gets the NetworkPath resource.
 

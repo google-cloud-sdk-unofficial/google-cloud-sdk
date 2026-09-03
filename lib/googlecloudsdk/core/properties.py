@@ -1804,7 +1804,7 @@ class _SectionContextAware(_Section):
             ' True, the ECP HTTP proxy will be used for all ECP requests. If'
             ' set to False, the ECP HTTP proxy will not be used.'
         ),
-        default=False,
+        default=True,
         hidden=True,
     )
     self.use_mtls_for_grpc = self._AddBool(

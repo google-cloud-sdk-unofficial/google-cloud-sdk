@@ -25,7 +25,6 @@ class SemanticGovernancePolicyEngineBeta(base.Group):
   category = base.AI_AND_MACHINE_LEARNING_CATEGORY
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
 class SemanticGovernancePolicyEngineGA(base.Group):

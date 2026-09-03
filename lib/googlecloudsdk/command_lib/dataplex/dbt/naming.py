@@ -96,10 +96,24 @@ def entry_id(unique_id: str) -> str:
   return unique_id.lower().replace('.', '_')
 
 
-# Matches a dbt ``ref(...)`` call and captures its quoted arguments. dbt refs
-# can be ``ref('model')``, ``ref('package', 'model')`` or ``ref('model',
-# version=2)``; the target model is always the last quoted positional argument.
+# Matches a dbt `ref(...)` call and captures the raw arguments string inside.
+# Examples:
+#   - ref('model') -> captures: "'model'"
+#   - ref('package', 'model') -> captures: "'package', 'model'"
+#   - ref('model', version=2) -> captures: "'model', version=2"
 _REF_CALL = re.compile(r'ref\(([^)]*)\)')
+
+# Matches a dbt `source(...)` call and captures the raw arguments string inside.
+# Example:
+#   - source('source_name', 'table_name') ->
+#     captures: "'source_name', 'table_name'"
+_SOURCE_CALL = re.compile(r'source\(([^)]*)\)')
+
+# Matches a single- or double-quoted string and captures the text inside.
+# Used to extract clean string values from the arguments of ref() or source().
+# Examples:
+#   - "'my_model'" -> captures: "my_model"
+#   - '"events"' -> captures: "events"
 _QUOTED = re.compile(r"""['"]([^'"]+)['"]""")
 
 
@@ -130,8 +144,39 @@ def parse_ref(s: str | None) -> str | None:
       break
     quoted = _QUOTED.search(arg)
     if quoted:
-      model = quoted.group(1)
+      model = quoted.group(1).strip()
   return model
+
+
+def parse_source(s: str | None) -> tuple[str, str] | None:
+  """Extracts the source and table name from a dbt `source(...)` expression.
+
+  A valid dbt source call must contain exactly two quoted positional arguments:
+  the source name (logical grouping/schema) and the table name.
+
+  Example:
+    - "source('raw_data', 'clicks')" -> returns ("raw_data", "clicks")
+
+  Args:
+    s: The raw dbt `source(...)` expression string.
+
+  Returns:
+    A tuple of (source_name, table_name), or None if parsing fails or is
+    invalid.
+  """
+  if not s:
+    return None
+  call = _SOURCE_CALL.search(s)
+  if not call:
+    return None
+  args = []
+  for arg in call.group(1).split(','):
+    quoted = _QUOTED.search(arg)
+    if quoted:
+      args.append(quoted.group(1).strip())
+  if len(args) == 2:
+    return args[0], args[1]
+  return None
 
 
 @dataclasses.dataclass(frozen=True)

@@ -793,7 +793,7 @@ class Update(bigquery_command.BigqueryCmd):
       self, identifier: str = '', schema: str = ''
   ) -> Optional[int]:
     # pylint: disable=g-doc-exception
-    """Updates a dataset, table, view or transfer configuration with this name.
+    r"""Updates a dataset, table, view or transfer configuration with this name.
 
     See 'bq help update' for more information.
 
@@ -1024,16 +1024,9 @@ class Update(bigquery_command.BigqueryCmd):
           reference = bq_client_utils.GetReservationAssignmentReference(
               id_fallbacks=client, path=object_info['name']
           )
-        elif self.priority is not None:
-          object_info = client_reservation.UpdateReservationAssignment(
-              client=client.GetReservationApiClient(),
-              reference=reference,
-              priority=self.priority,
-              scheduling_policy_max_slots=self.scheduling_policy_max_slots,
-              scheduling_policy_concurrency=self.scheduling_policy_concurrency,
-          )
         elif (
-            self.scheduling_policy_max_slots is not None
+            self.priority is not None
+            or self.scheduling_policy_max_slots is not None
             or self.scheduling_policy_concurrency is not None
         ):
           object_info = client_reservation.UpdateReservationAssignment(
@@ -1045,8 +1038,9 @@ class Update(bigquery_command.BigqueryCmd):
           )
         else:
           raise bq_error.BigqueryError(
-              'Either --destination_reservation_id or --priority must be '
-              'specified.'
+              'Either --destination_reservation_id, --priority, '
+              ' --scheduling_policy_max_slots, or'
+              ' --scheduling_policy_concurrency must be specified.'
           )
 
         frontend_utils.PrintObjectInfo(

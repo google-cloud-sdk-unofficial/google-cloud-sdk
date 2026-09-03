@@ -2869,7 +2869,16 @@ class NetworkConfig(_messages.Message):
   r"""The configuration of a Virtual Private Cloud (VPC) network that can
   access the Kafka cluster.
 
+  Enums:
+    DnsZoneTargetValueValuesEnum: Optional. Immutable. The Private DNS Zone
+      target.
+    PscResourceTargetValueValuesEnum: Optional. Immutable. The Private Service
+      Connect (PSC) resource target.
+
   Fields:
+    dnsZoneTarget: Optional. Immutable. The Private DNS Zone target.
+    pscResourceTarget: Optional. Immutable. The Private Service Connect (PSC)
+      resource target.
     subnet: Required. Name of the VPC subnet in which to create Private
       Service Connect (PSC) endpoints for the Kafka brokers and bootstrap
       address. Structured like:
@@ -2879,7 +2888,49 @@ class NetworkConfig(_messages.Message):
       specified.
   """
 
-  subnet = _messages.StringField(1)
+  class DnsZoneTargetValueValuesEnum(_messages.Enum):
+    r"""Optional. Immutable. The Private DNS Zone target.
+
+    Values:
+      DNS_ZONE_TARGET_UNSPECIFIED: DNS zone target is unspecified. Defaults to
+        `DNS_ZONE_NETWORK_PROJECT`.
+      DNS_ZONE_NETWORK_PROJECT: Resources are created in the VPC Network's
+        project (which is the project ID specified in the subnetwork's
+        resource path, e.g. the Host Project in Shared VPC).
+      DNS_ZONE_CLUSTER_PROJECT: Resources are created in the Cluster's Service
+        project (e.g. the Service Project in Shared VPC).
+      DNS_ZONE_CLUSTER_PROJECT_MANUAL_BINDING: Resources are created in the
+        Cluster's Service project (e.g. the Service Project in Shared VPC),
+        and automated binding to the VPC network is skipped. Choose this
+        option if the Google-managed service account does not have bind
+        permissions on the Host Project, and you intend to perform the binding
+        out-of-band.
+    """
+    DNS_ZONE_TARGET_UNSPECIFIED = 0
+    DNS_ZONE_NETWORK_PROJECT = 1
+    DNS_ZONE_CLUSTER_PROJECT = 2
+    DNS_ZONE_CLUSTER_PROJECT_MANUAL_BINDING = 3
+
+  class PscResourceTargetValueValuesEnum(_messages.Enum):
+    r"""Optional. Immutable. The Private Service Connect (PSC) resource
+    target.
+
+    Values:
+      PSC_RESOURCE_TARGET_UNSPECIFIED: Resource target is unspecified.
+        Defaults to `PSC_NETWORK_PROJECT`.
+      PSC_NETWORK_PROJECT: Resources are created in the VPC Network's project
+        (which is the project ID specified in the subnetwork's resource path,
+        e.g. the Host Project in Shared VPC).
+      PSC_CLUSTER_PROJECT: Resources are created in the Cluster's Service
+        project (e.g. the Service Project in Shared VPC).
+    """
+    PSC_RESOURCE_TARGET_UNSPECIFIED = 0
+    PSC_NETWORK_PROJECT = 1
+    PSC_CLUSTER_PROJECT = 2
+
+  dnsZoneTarget = _messages.EnumField('DnsZoneTargetValueValuesEnum', 1)
+  pscResourceTarget = _messages.EnumField('PscResourceTargetValueValuesEnum', 2)
+  subnet = _messages.StringField(3)
 
 
 class Operation(_messages.Message):

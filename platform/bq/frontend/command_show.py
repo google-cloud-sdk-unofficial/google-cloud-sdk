@@ -150,6 +150,7 @@ class Show(bigquery_command.BigqueryCmd):
             'BACKGROUND_CHANGE_DATA_CAPTURE',
             'BACKGROUND_COLUMN_METADATA_INDEX',
             'BACKGROUND_SEARCH_INDEX_REFRESH',
+            'AUTOMATIC_MATERIALIZED_VIEW_REFRESH',
         ],
         (
             'Type of jobs to search reservation assignment for. Options'
@@ -163,6 +164,7 @@ class Show(bigquery_command.BigqueryCmd):
             '\n BACKGROUND_CHANGE_DATA_CAPTURE'
             '\n BACKGROUND_COLUMN_METADATA_INDEX'
             '\n BACKGROUND_SEARCH_INDEX_REFRESH'
+            '\n AUTOMATIC_MATERIALIZED_VIEW_REFRESH'
             '\n Used in conjunction with --reservation_assignment.'
         ),
         flag_values=fv,

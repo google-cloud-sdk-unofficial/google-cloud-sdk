@@ -1,0 +1,53 @@
+# Copyright 2026 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+- release_tracks: [ALPHA]
+  hints:
+    read_only: true
+  help_text:
+    brief: |
+      Answer a natural language query using grounded generation.
+    description: |
+      Answer a natural language query using grounded generation based on the Developer Knowledge corpus.
+    examples: |
+      To answer a question using grounded generation:
+
+        $ {command} --query="What is the difference between a global and regional load balancer?"
+
+      To answer a question with corpus filtering:
+
+        $ {command} --query="How do I deploy a Cloud Run function?" --query-filter='data_source = "docs.cloud.google.com"'
+
+# LINT.IfChange
+  request:
+    collection: developerknowledge.v1alpha
+    api_version: v1alpha
+    method: developerknowledge.answerQuery
+    disable_resource_check: true
+
+  arguments:
+    params:
+    - arg_name: query
+      api_field: query
+      required: true
+      help_text: |
+        The query to answer.
+    - arg_name: query-filter
+      api_field: filter
+      help_text: |
+        Apply a strict filter to the search results used to ground the answer. Supported filter fields: `content_length_bytes`, `data_source`, `update_time`, `uri`. Example: `data_source = "docs.cloud.google.com"`.
+# LINT.ThenChange(//google/developers/knowledge/v1main/developerknowledge.proto)
+
+  guidance:
+    content: |
+      Use `answer-query` to get synthesized natural language answers with source citations.

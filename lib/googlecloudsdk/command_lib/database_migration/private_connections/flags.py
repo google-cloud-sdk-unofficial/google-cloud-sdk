@@ -71,3 +71,34 @@ def AddValidateOnlyFlag(parser):
           ' network attachment Datastream will connect to.'
       ),
   )
+
+
+def AddReservedPublicIpFlag(parser):
+  """Adds the `--reserved-public-ip` flag to the parser."""
+  parser.add_argument(
+      '--reserved-public-ip',
+      action='store_true',
+      required=False,
+      help=(
+          'Creates the private connection using reserved public IP addresses. '
+          'If this flag is provided without --reserved-public-ip-nat-ips-count, '
+          'a default of 1 IP address is reserved.'
+      ),
+  )
+
+
+def AddReservedPublicIpNatIpsCountFlag(parser):
+  """Adds the `--reserved-public-ip-nat-ips-count` flag to the parser."""
+  parser.add_argument(
+      '--reserved-public-ip-nat-ips-count',
+      required=False,
+      type=int,
+      help=(
+          'Number of static public IP addresses to reserve for the private '
+          'connection. Specifying this flag automatically enables reserved '
+          'public IPs, making the --reserved-public-ip flag optional.'
+      ),
+  )
+
+
+

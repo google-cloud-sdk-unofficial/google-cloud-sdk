@@ -21,17 +21,83 @@ from surface.cluster_director import _init_extensions as extensions
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ClusterDirectorAlpha(extensions.ClusterDirectorAlpha):
-  """Manage Cluster Director resources."""
+  """Manage Cluster Director resources.
+
+  Cluster Director is a unified management plane that simplifies deploying and
+  running large-scale AI and high-performance computing (HPC) clusters.
+
+  The service automates complex infrastructure setup by integrating compute,
+  networking, and storage to maximize performance and minimize downtimes.
+
+  If you have your own configuration already:
+  - Use `--config` to provide a complete JSON definition
+
+  To start from a pre-configuration:
+  - Use `--quickstart-cluster` to create and connect a managed Slurm cluster
+  with basic defaults
+  - Use `--reference-architecture` to choose from workload-optimized templates
+
+  To fully customize:
+  - Run the 'clusters create' command for the most granular configuration
+  options
+
+
+  Learn more at https://docs.cloud.google.com/cluster-director/
+  """
 
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ClusterDirectorBeta(extensions.ClusterDirectorBeta):
-  """Manage Cluster Director resources."""
+  """Manage Cluster Director resources.
+
+  Cluster Director is a unified management plane that simplifies deploying and
+  running large-scale AI and high-performance computing (HPC) clusters.
+
+  The service automates complex infrastructure setup by integrating compute,
+  networking, and storage to maximize performance and minimize downtimes.
+
+  If you have your own configuration already:
+  - Use `--config` to provide a complete JSON definition
+
+  To start from a pre-configuration:
+  - Use `--quickstart-cluster` to create and connect a managed Slurm cluster
+  with basic defaults
+  - Use `--reference-architecture` to choose from workload-optimized templates
+
+  To fully customize:
+  - Run the 'clusters create' command for the most granular configuration
+  options
+
+
+  Learn more at https://docs.cloud.google.com/cluster-director/
+  """
 
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.Hidden
 class ClusterDirectorGa(extensions.ClusterDirectorGa):
-  """Manage Cluster Director resources."""
+  """Manage Cluster Director resources.
+
+  Cluster Director is a unified management plane that simplifies deploying and
+  running large-scale AI and high-performance computing (HPC) clusters.
+
+  The service automates complex infrastructure setup by integrating compute,
+  networking, and storage to maximize performance and minimize downtimes.
+
+  If you have your own configuration already:
+  - Use `--config` to provide a complete JSON definition
+
+  To start from a pre-configuration:
+  - Use `--quickstart-cluster` to create and connect a managed Slurm cluster
+  with basic defaults
+  - Use `--reference-architecture` to choose from workload-optimized templates
+
+  To fully customize:
+  - Run the 'clusters create' command for the most granular configuration
+  options
+
+
+  Learn more at https://docs.cloud.google.com/cluster-director/
+  """

@@ -156,6 +156,37 @@ class AutoscalingEvent(_messages.Message):
   workerPool = _messages.StringField(6)
 
 
+class AutoscalingSchedule(_messages.Message):
+  r"""A schedule for autoscaling.
+
+  Fields:
+    crontab: Optional. A crontab specification of when this schedule should
+      trigger applying overrides. The overrides will be applied from the
+      trigger time until the specified duration elapses.
+    duration: Optional. The duration for which the parameter overrides for
+      this schedule will be applied when triggered by the crontab.
+    name: Optional. The name of the schedule.
+    parameters: Optional. The parameters to use for autoscaling when this
+      schedule is active.
+    priority: Optional. Specifies the priority of the schedule. If two
+      schedules overlap, the one with the higher priority will be used. The
+      higher the value, the higher the priority of the schedule.
+    timeZone: Optional. The time zone for the schedule. The value of this
+      field must be a time zone name from the [tz
+      database](http://en.wikipedia.org/wiki/Tz_database). The default value
+      is UTC.
+    updateTime: Output only. When the customer last updated the schedule.
+  """
+
+  crontab = _messages.StringField(1)
+  duration = _messages.StringField(2)
+  name = _messages.StringField(3)
+  parameters = _messages.MessageField('Parameters', 4)
+  priority = _messages.IntegerField(5)
+  timeZone = _messages.StringField(6)
+  updateTime = _messages.StringField(7)
+
+
 class AutoscalingSettings(_messages.Message):
   r"""Settings for WorkerPool autoscaling.
 
@@ -5661,6 +5692,23 @@ class ParameterMetadataEnumOption(_messages.Message):
   value = _messages.StringField(3)
 
 
+class Parameters(_messages.Message):
+  r"""The parameters to use for autoscaling when this schedule is active.
+
+  Fields:
+    cpuUtilizationTarget: Optional. The target CPU utilization for this
+      schedule.
+    latencyTarget: Optional. The target latency for this schedule.
+    maxWorkerCount: Optional. The maximum number of workers for this schedule.
+    minWorkerCount: Optional. The minimum number of workers for this schedule.
+  """
+
+  cpuUtilizationTarget = _messages.FloatField(1)
+  latencyTarget = _messages.StringField(2)
+  maxWorkerCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  minWorkerCount = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+
+
 class PartialGroupByKeyInstruction(_messages.Message):
   r"""An instruction that does a partial group-by-key. One input and one
   output.
@@ -6310,6 +6358,7 @@ class RuntimeUpdatableParams(_messages.Message):
       field is currently only supported for Streaming Engine jobs.
     minNumWorkers: The minimum number of workers to scale down to. This field
       is currently only supported for Streaming Engine jobs.
+    schedules: Optional. The schedule for autoscaling.
     workerUtilizationHint: Target worker utilization, compared against the
       aggregate utilization of the worker pool by autoscaler, to determine
       upscaling and downscaling when absent other constraints such as backlog.
@@ -6323,7 +6372,8 @@ class RuntimeUpdatableParams(_messages.Message):
   latencyTier = _messages.StringField(3)
   maxNumWorkers = _messages.IntegerField(4, variant=_messages.Variant.INT32)
   minNumWorkers = _messages.IntegerField(5, variant=_messages.Variant.INT32)
-  workerUtilizationHint = _messages.FloatField(6)
+  schedules = _messages.MessageField('AutoscalingSchedule', 6, repeated=True)
+  workerUtilizationHint = _messages.FloatField(7)
 
 
 class SDKInfo(_messages.Message):

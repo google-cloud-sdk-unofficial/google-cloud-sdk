@@ -267,6 +267,7 @@ def _GetToolLogProtoString(proto_dict, include_argv=True):
       'log_timestamp': int(time.time()),
       'uid': os.getuid(),
       'build_timestamp': build_data.Timestamp(),
+      'version': build_data.BuildLabel(),
       'host_name': socket.gethostname(),
       'log_path': _GetDefaultLogPath(),
       'language': 'py',

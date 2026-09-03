@@ -78,11 +78,16 @@ class Delete(base.DeleteCommand):
         throw_if_unattended=True,
         cancel_on_no=True)
 
-    resp = gateways.GatewayClient().Delete(gateway_ref)
+    resp = gateways.GatewayClient(release_track=self.ReleaseTrack()).Delete(
+        gateway_ref
+    )
 
     wait = 'Waiting for API Gateway [{}] to be deleted'.format(
         gateway_ref.Name())
 
     return operations_util.PrintOperationResult(
-        resp.name, operations.OperationsClient(), wait_string=wait,
-        is_async=args.async_)
+        resp.name,
+        operations.OperationsClient(release_track=self.ReleaseTrack()),
+        wait_string=wait,
+        is_async=args.async_,
+    )

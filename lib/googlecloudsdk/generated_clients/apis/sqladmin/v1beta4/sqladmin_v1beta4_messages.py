@@ -2516,7 +2516,6 @@ class Empty(_messages.Message):
   """
 
 
-
 class ExecuteSqlPayload(_messages.Message):
   r"""The request payload used to execute SQL statements.
 
@@ -5530,16 +5529,85 @@ class SelectedObjects(_messages.Message):
   database = _messages.StringField(1)
 
 
+class SemiManagedBackupConfig(_messages.Message):
+  r"""Backup configuration for a semi-managed instance.
+
+  Fields:
+    enabled: Optional. Enables backup support for the semi-managed instance.
+      This must be true for manual and automatic backups to work.
+    kind: Output only. This is always `sql#semiManagedBackupConfig`.
+  """
+
+  enabled = _messages.BooleanField(1)
+  kind = _messages.StringField(2)
+
+
 class SemiManagedConfig(_messages.Message):
   r"""Configuration specific to semi-managed instances.
 
   Fields:
+    backupConfig: Optional. Backup configuration for a semi-managed instance.
+    enableReplication: Optional. If true, configures the Semi-Managed instance
+      to have an Always-on Availability group. This configuration cannot be
+      changed after the instance is created.
+    errors: Output only. The list of errors for the semi-managed instance.
     gceInstance: Optional. The resource name of the Compute Engine VM backing
-      this semi-managed instance. Format:
+      this semi-managed instance. Deprecated. Use gce_instances instead. This
+      field will be removed in a later release.
+    gceInstances: Optional. The resource name of the Compute Engine VM backing
+      this semi-managed instance. If multiple Compute Engine instances are
+      selected then the instance will be configured as an SQL Server FCI
+      instance. Format:
       projects/{project}/zones/{zone}/instances/{instance_name}
+    insightsConfig: Optional. Insights configuration for a semi-managed
+      instance.
+    kind: Output only. This is always `sql#semiManagedConfig`.
+    patchConfig: Optional. Patch configuration for a semi-managed instance.
+    sqlAccount: Optional. SQL account.
+    sqlAccountSecretName: Optional. SQL account secret name.
+    windowsServiceAccount: Optional. Windows service account.
+    windowsServiceAccountSecretName: Optional. Windows service account secret
+      name.
   """
 
-  gceInstance = _messages.StringField(1)
+  backupConfig = _messages.MessageField('SemiManagedBackupConfig', 1)
+  enableReplication = _messages.BooleanField(2)
+  errors = _messages.StringField(3, repeated=True)
+  gceInstance = _messages.StringField(4)
+  gceInstances = _messages.StringField(5, repeated=True)
+  insightsConfig = _messages.MessageField('SemiManagedInsightsConfig', 6)
+  kind = _messages.StringField(7)
+  patchConfig = _messages.MessageField('SemiManagedPatchConfig', 8)
+  sqlAccount = _messages.StringField(9)
+  sqlAccountSecretName = _messages.StringField(10)
+  windowsServiceAccount = _messages.StringField(11)
+  windowsServiceAccountSecretName = _messages.StringField(12)
+
+
+class SemiManagedInsightsConfig(_messages.Message):
+  r"""Insights configuration for a semi-managed instance.
+
+  Fields:
+    enabled: Optional. Enables insights support for the semi-managed instance.
+    gcsUri: Optional. The Cloud Storage path to store the insights data.
+    kind: Output only. This is always `sql#semiManagedInsightsConfig`.
+  """
+
+  enabled = _messages.BooleanField(1)
+  gcsUri = _messages.StringField(2)
+  kind = _messages.StringField(3)
+
+
+class SemiManagedPatchConfig(_messages.Message):
+  r"""Patch configuration for a semi-managed instance.
+
+  Fields:
+    enabled: Optional. Enables patch support for the semi-managed instance.
+    kind: Output only. This is always `sql#semiManagedPatchConfig`.
+  """
+
+  enabled = _messages.BooleanField(1)
+  kind = _messages.StringField(2)
 
 
 class SendMessageConfig(_messages.Message):

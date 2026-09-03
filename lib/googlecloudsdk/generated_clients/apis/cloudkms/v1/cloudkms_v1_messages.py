@@ -2446,8 +2446,6 @@ class CryptoKeyVersion(_messages.Message):
         NIST P-256 key that returns shared secret.
       KEM_ECDH_P384: Key encapsulation: Elliptic Curve Diffie-Hellman with
         NIST P-384 key that returns shared secret.
-      KEM_ECDH_P521: Key encapsulation: Elliptic Curve Diffie-Hellman with
-        NIST P-521 key that returns shared secret.
       AES_256_KWP: AES key wrap with zero padding algorithm (RFC 5649). Can
         only be used by keys with purpose AES_WRAPPING.
     """
@@ -2500,8 +2498,7 @@ class CryptoKeyVersion(_messages.Message):
     PQ_SIGN_ML_DSA_87_EXTERNAL_MU = 46
     KEM_ECDH_P256 = 47
     KEM_ECDH_P384 = 48
-    KEM_ECDH_P521 = 49
-    AES_256_KWP = 50
+    AES_256_KWP = 49
 
   class ProtectionLevelValueValuesEnum(_messages.Enum):
     r"""Output only. The ProtectionLevel describing how crypto operations are
@@ -2711,8 +2708,6 @@ class CryptoKeyVersionTemplate(_messages.Message):
         NIST P-256 key that returns shared secret.
       KEM_ECDH_P384: Key encapsulation: Elliptic Curve Diffie-Hellman with
         NIST P-384 key that returns shared secret.
-      KEM_ECDH_P521: Key encapsulation: Elliptic Curve Diffie-Hellman with
-        NIST P-521 key that returns shared secret.
       AES_256_KWP: AES key wrap with zero padding algorithm (RFC 5649). Can
         only be used by keys with purpose AES_WRAPPING.
     """
@@ -2765,8 +2760,7 @@ class CryptoKeyVersionTemplate(_messages.Message):
     PQ_SIGN_ML_DSA_87_EXTERNAL_MU = 46
     KEM_ECDH_P256 = 47
     KEM_ECDH_P384 = 48
-    KEM_ECDH_P521 = 49
-    AES_256_KWP = 50
+    AES_256_KWP = 49
 
   class ProtectionLevelValueValuesEnum(_messages.Enum):
     r"""ProtectionLevel to use when creating a CryptoKeyVersion based on this
@@ -3310,8 +3304,8 @@ class ExternalProtectionLevelOptions(_messages.Message):
   Fields:
     ekmConnectionBackendOverride: Optional. The resource name of the backend
       environment where the key material of CryptoKeyVersions is associated
-      with. Setting this field overrides the CryptoKeyBackend. This field may
-      be set when CryptoKeyVersions is set to EXTERNAL_VPC. Format:
+      with. Setting this field overrides the crypto_key_backend. This field
+      may be set when CryptoKeyVersions is set to EXTERNAL_VPC. Format:
       `projects/*/locations/*/ekmConnections/*`.
     ekmConnectionKeyPath: Optional. The path to the external key material on
       the EKM when using EkmConnection e.g., "v0/my/key". Set this field
@@ -3527,8 +3521,6 @@ class ImportCryptoKeyVersionRequest(_messages.Message):
         NIST P-256 key that returns shared secret.
       KEM_ECDH_P384: Key encapsulation: Elliptic Curve Diffie-Hellman with
         NIST P-384 key that returns shared secret.
-      KEM_ECDH_P521: Key encapsulation: Elliptic Curve Diffie-Hellman with
-        NIST P-521 key that returns shared secret.
       AES_256_KWP: AES key wrap with zero padding algorithm (RFC 5649). Can
         only be used by keys with purpose AES_WRAPPING.
     """
@@ -3581,8 +3573,7 @@ class ImportCryptoKeyVersionRequest(_messages.Message):
     PQ_SIGN_ML_DSA_87_EXTERNAL_MU = 46
     KEM_ECDH_P256 = 47
     KEM_ECDH_P384 = 48
-    KEM_ECDH_P521 = 49
-    AES_256_KWP = 50
+    AES_256_KWP = 49
 
   algorithm = _messages.EnumField('AlgorithmValueValuesEnum', 1)
   cryptoKeyVersion = _messages.StringField(2)
@@ -3943,8 +3934,6 @@ class ImportTrustedKeyWrappedCryptoKeyVersionRequest(_messages.Message):
         NIST P-256 key that returns shared secret.
       KEM_ECDH_P384: Key encapsulation: Elliptic Curve Diffie-Hellman with
         NIST P-384 key that returns shared secret.
-      KEM_ECDH_P521: Key encapsulation: Elliptic Curve Diffie-Hellman with
-        NIST P-521 key that returns shared secret.
       AES_256_KWP: AES key wrap with zero padding algorithm (RFC 5649). Can
         only be used by keys with purpose AES_WRAPPING.
     """
@@ -3997,8 +3986,7 @@ class ImportTrustedKeyWrappedCryptoKeyVersionRequest(_messages.Message):
     PQ_SIGN_ML_DSA_87_EXTERNAL_MU = 46
     KEM_ECDH_P256 = 47
     KEM_ECDH_P384 = 48
-    KEM_ECDH_P521 = 49
-    AES_256_KWP = 50
+    AES_256_KWP = 49
 
   algorithm = _messages.EnumField('AlgorithmValueValuesEnum', 1)
   cryptoKeyVersion = _messages.StringField(2)
@@ -4970,8 +4958,6 @@ class PublicKey(_messages.Message):
         NIST P-256 key that returns shared secret.
       KEM_ECDH_P384: Key encapsulation: Elliptic Curve Diffie-Hellman with
         NIST P-384 key that returns shared secret.
-      KEM_ECDH_P521: Key encapsulation: Elliptic Curve Diffie-Hellman with
-        NIST P-521 key that returns shared secret.
       AES_256_KWP: AES key wrap with zero padding algorithm (RFC 5649). Can
         only be used by keys with purpose AES_WRAPPING.
     """
@@ -5024,8 +5010,7 @@ class PublicKey(_messages.Message):
     PQ_SIGN_ML_DSA_87_EXTERNAL_MU = 46
     KEM_ECDH_P256 = 47
     KEM_ECDH_P384 = 48
-    KEM_ECDH_P521 = 49
-    AES_256_KWP = 50
+    AES_256_KWP = 49
 
   class ProtectionLevelValueValuesEnum(_messages.Enum):
     r"""The ProtectionLevel of the CryptoKeyVersion public key.

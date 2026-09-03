@@ -5067,6 +5067,8 @@ class Step(_messages.Message):
     state: Each step is in one of the pre-defined states.
     storageBucket: Display information of a Storage Bucket. Used only for
       return traces.
+    viewerPermissionMissingInfo: Display information of a step that is
+      redacted due to missing permissions.
     vpcConnector: Display information of a VPC connector.
     vpnGateway: Display information of a Compute Engine VPN gateway.
     vpnTunnel: Display information of a Compute Engine VPN tunnel.
@@ -5274,9 +5276,10 @@ class Step(_messages.Message):
   serverlessNeg = _messages.MessageField('ServerlessNegInfo', 38)
   state = _messages.EnumField('StateValueValuesEnum', 39)
   storageBucket = _messages.MessageField('StorageBucketInfo', 40)
-  vpcConnector = _messages.MessageField('VpcConnectorInfo', 41)
-  vpnGateway = _messages.MessageField('VpnGatewayInfo', 42)
-  vpnTunnel = _messages.MessageField('VpnTunnelInfo', 43)
+  viewerPermissionMissingInfo = _messages.MessageField('ViewerPermissionMissingInfo', 41)
+  vpcConnector = _messages.MessageField('VpcConnectorInfo', 42)
+  vpnGateway = _messages.MessageField('VpnGatewayInfo', 43)
+  vpnTunnel = _messages.MessageField('VpnTunnelInfo', 44)
 
 
 class StorageBucketInfo(_messages.Message):
@@ -5341,6 +5344,35 @@ class Trace(_messages.Message):
   endpointInfo = _messages.MessageField('EndpointInfo', 1)
   forwardTraceId = _messages.IntegerField(2, variant=_messages.Variant.INT32)
   steps = _messages.MessageField('Step', 3, repeated=True)
+
+
+class ViewerPermissionMissingInfo(_messages.Message):
+  r"""For display only. Metadata associated with a step that was redacted due
+  to missing permissions.
+
+  Enums:
+    ResourceTypesValueListEntryValuesEnum:
+
+  Fields:
+    resourceTypes: Types of the resources that the user does not have
+      permission to view.
+  """
+
+  class ResourceTypesValueListEntryValuesEnum(_messages.Enum):
+    r"""ResourceTypesValueListEntryValuesEnum enum type.
+
+    Values:
+      RESOURCE_TYPE_UNSPECIFIED: Resource type is unspecified.
+      FIREWALL: Firewall rule.
+      INSTANCE: Instance.
+      FORWARDING_RULE: Forwarding rule.
+    """
+    RESOURCE_TYPE_UNSPECIFIED = 0
+    FIREWALL = 1
+    INSTANCE = 2
+    FORWARDING_RULE = 3
+
+  resourceTypes = _messages.EnumField('ResourceTypesValueListEntryValuesEnum', 1, repeated=True)
 
 
 class VpcConnectorInfo(_messages.Message):

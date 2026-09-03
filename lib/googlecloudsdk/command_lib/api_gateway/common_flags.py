@@ -29,6 +29,26 @@ def AddDisplayNameArg(parser):
       """)
 
 
+def AddEnableStreamingFlag(parser):
+  """Adds the enable streaming flag."""
+  parser.add_argument(
+      '--enable-streaming',
+      action='store_true',
+      default=None,
+      # Hidden until response streaming is generally available (b/533512118);
+      # the streaming_mode field is restricted to trusted testers until then.
+      hidden=True,
+      help="""\
+      Creates the gateway with response streaming enabled, which supports
+      server-sent events, HTTP chunked transfer, WebSockets, and gRPC/HTTP2
+      bidirectional streaming.
+
+      This can only be set when the gateway is created and cannot be changed
+      afterwards. When omitted, API Gateway selects the streaming mode.
+      """,
+  )
+
+
 def AddManagedServiceFlag(parser):
   """Adds the managed service flag."""
   parser.add_argument(

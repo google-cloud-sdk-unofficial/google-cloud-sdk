@@ -71,6 +71,7 @@ class OracledatabaseV1alpha(base_api.BaseApiClient):
     self.projects_locations_odbNetworks = self.ProjectsLocationsOdbNetworksService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
     self.projects_locations_pluggableDatabases = self.ProjectsLocationsPluggableDatabasesService(self)
+    self.projects_locations_serviceIntegrations = self.ProjectsLocationsServiceIntegrationsService(self)
     self.projects_locations_systemVersions = self.ProjectsLocationsSystemVersionsService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects = self.ProjectsService(self)
@@ -992,6 +993,60 @@ class OracledatabaseV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def DisableIdentityConnector(self, request, global_params=None):
+      r"""Disables the Workload Identity Connector for a Cloud VM Cluster.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsCloudVmClustersDisableIdentityConnectorRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('DisableIdentityConnector')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    DisableIdentityConnector.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/cloudVmClusters/{cloudVmClustersId}:disableIdentityConnector',
+        http_method='POST',
+        method_id='oracledatabase.projects.locations.cloudVmClusters.disableIdentityConnector',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:disableIdentityConnector',
+        request_field='disableCloudVmClusterIdentityConnectorRequest',
+        request_type_name='OracledatabaseProjectsLocationsCloudVmClustersDisableIdentityConnectorRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def EnableIdentityConnector(self, request, global_params=None):
+      r"""Enables the Workload Identity Connector for a Cloud VM Cluster.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsCloudVmClustersEnableIdentityConnectorRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('EnableIdentityConnector')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    EnableIdentityConnector.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/cloudVmClusters/{cloudVmClustersId}:enableIdentityConnector',
+        http_method='POST',
+        method_id='oracledatabase.projects.locations.cloudVmClusters.enableIdentityConnector',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:enableIdentityConnector',
+        request_field='enableCloudVmClusterIdentityConnectorRequest',
+        request_type_name='OracledatabaseProjectsLocationsCloudVmClustersEnableIdentityConnectorRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Gets details of a single VM Cluster.
 
@@ -1619,6 +1674,33 @@ class OracledatabaseV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Patch(self, request, global_params=None):
+      r"""Updates the `labels` of a single DbSystem.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsDbSystemsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/dbSystems/{dbSystemsId}',
+        http_method='PATCH',
+        method_id='oracledatabase.projects.locations.dbSystems.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1alpha/{+name}',
+        request_field='dbSystem',
+        request_type_name='OracledatabaseProjectsLocationsDbSystemsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class ProjectsLocationsDbVersionsService(base_api.BaseApiService):
     """Service class for the projects_locations_dbVersions resource."""
 
@@ -1875,6 +1957,60 @@ class OracledatabaseV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def DisableIdentityConnector(self, request, global_params=None):
+      r"""Disables the Workload Identity Connector for an Exadb VM Cluster.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsExadbVmClustersDisableIdentityConnectorRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('DisableIdentityConnector')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    DisableIdentityConnector.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/exadbVmClusters/{exadbVmClustersId}:disableIdentityConnector',
+        http_method='POST',
+        method_id='oracledatabase.projects.locations.exadbVmClusters.disableIdentityConnector',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:disableIdentityConnector',
+        request_field='disableExadbVmClusterIdentityConnectorRequest',
+        request_type_name='OracledatabaseProjectsLocationsExadbVmClustersDisableIdentityConnectorRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def EnableIdentityConnector(self, request, global_params=None):
+      r"""Enables the Workload Identity Connector for an Exadb VM Cluster.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsExadbVmClustersEnableIdentityConnectorRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('EnableIdentityConnector')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    EnableIdentityConnector.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/exadbVmClusters/{exadbVmClustersId}:enableIdentityConnector',
+        http_method='POST',
+        method_id='oracledatabase.projects.locations.exadbVmClusters.enableIdentityConnector',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:enableIdentityConnector',
+        request_field='enableExadbVmClusterIdentityConnectorRequest',
+        request_type_name='OracledatabaseProjectsLocationsExadbVmClustersEnableIdentityConnectorRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Gets details of a single Exadb (Exascale) VM Cluster.
 
@@ -2098,6 +2234,33 @@ class OracledatabaseV1alpha(base_api.BaseApiClient):
         request_field='',
         request_type_name='OracledatabaseProjectsLocationsExascaleDbStorageVaultsListRequest',
         response_type_name='ListExascaleDbStorageVaultsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the `labels` of a single ExascaleDbStorageVault.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsExascaleDbStorageVaultsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/exascaleDbStorageVaults/{exascaleDbStorageVaultsId}',
+        http_method='PATCH',
+        method_id='oracledatabase.projects.locations.exascaleDbStorageVaults.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1alpha/{+name}',
+        request_field='exascaleDbStorageVault',
+        request_type_name='OracledatabaseProjectsLocationsExascaleDbStorageVaultsPatchRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 
@@ -2411,6 +2574,33 @@ class OracledatabaseV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Patch(self, request, global_params=None):
+      r"""Updates the `labels` of a single GoldengateConnectionAssignment.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/goldengateConnectionAssignments/{goldengateConnectionAssignmentsId}',
+        http_method='PATCH',
+        method_id='oracledatabase.projects.locations.goldengateConnectionAssignments.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1alpha/{+name}',
+        request_field='goldengateConnectionAssignment',
+        request_type_name='OracledatabaseProjectsLocationsGoldengateConnectionAssignmentsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Test(self, request, global_params=None):
       r"""Tests a single GoldengateConnectionAssignment.
 
@@ -2617,6 +2807,33 @@ class OracledatabaseV1alpha(base_api.BaseApiClient):
         request_field='',
         request_type_name='OracledatabaseProjectsLocationsGoldengateConnectionsListRequest',
         response_type_name='ListGoldengateConnectionsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the `labels` of a single GoldengateConnection.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsGoldengateConnectionsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/goldengateConnections/{goldengateConnectionsId}',
+        http_method='PATCH',
+        method_id='oracledatabase.projects.locations.goldengateConnections.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1alpha/{+name}',
+        request_field='goldengateConnection',
+        request_type_name='OracledatabaseProjectsLocationsGoldengateConnectionsPatchRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 
@@ -2930,6 +3147,33 @@ class OracledatabaseV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Patch(self, request, global_params=None):
+      r"""Updates the `labels` of a single GoldengateDeployment.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsGoldengateDeploymentsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/goldengateDeployments/{goldengateDeploymentsId}',
+        http_method='PATCH',
+        method_id='oracledatabase.projects.locations.goldengateDeployments.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1alpha/{+name}',
+        request_field='goldengateDeployment',
+        request_type_name='OracledatabaseProjectsLocationsGoldengateDeploymentsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Start(self, request, global_params=None):
       r"""Starts a single GoldengateDeployment.
 
@@ -3220,6 +3464,33 @@ class OracledatabaseV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Patch(self, request, global_params=None):
+      r"""Updates the `labels` of a single ODB Subnet.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsOdbNetworksOdbSubnetsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/odbNetworks/{odbNetworksId}/odbSubnets/{odbSubnetsId}',
+        http_method='PATCH',
+        method_id='oracledatabase.projects.locations.odbNetworks.odbSubnets.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1alpha/{+name}',
+        request_field='odbSubnet',
+        request_type_name='OracledatabaseProjectsLocationsOdbNetworksOdbSubnetsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class ProjectsLocationsOdbNetworksService(base_api.BaseApiService):
     """Service class for the projects_locations_odbNetworks resource."""
 
@@ -3335,6 +3606,33 @@ class OracledatabaseV1alpha(base_api.BaseApiClient):
         request_field='',
         request_type_name='OracledatabaseProjectsLocationsOdbNetworksListRequest',
         response_type_name='ListOdbNetworksResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the `labels` of a single OdbNetwork.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsOdbNetworksPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/odbNetworks/{odbNetworksId}',
+        http_method='PATCH',
+        method_id='oracledatabase.projects.locations.odbNetworks.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1alpha/{+name}',
+        request_field='odbNetwork',
+        request_type_name='OracledatabaseProjectsLocationsOdbNetworksPatchRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 
@@ -3517,6 +3815,124 @@ class OracledatabaseV1alpha(base_api.BaseApiClient):
         request_field='',
         request_type_name='OracledatabaseProjectsLocationsPluggableDatabasesListRequest',
         response_type_name='ListPluggableDatabasesResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsServiceIntegrationsService(base_api.BaseApiService):
+    """Service class for the projects_locations_serviceIntegrations resource."""
+
+    _NAME = 'projects_locations_serviceIntegrations'
+
+    def __init__(self, client):
+      super(OracledatabaseV1alpha.ProjectsLocationsServiceIntegrationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new ServiceIntegration in a given project and location.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsServiceIntegrationsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/serviceIntegrations',
+        http_method='POST',
+        method_id='oracledatabase.projects.locations.serviceIntegrations.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['requestId', 'serviceIntegrationId'],
+        relative_path='v1alpha/{+parent}/serviceIntegrations',
+        request_field='serviceIntegration',
+        request_type_name='OracledatabaseProjectsLocationsServiceIntegrationsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single ServiceIntegration.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsServiceIntegrationsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/serviceIntegrations/{serviceIntegrationsId}',
+        http_method='DELETE',
+        method_id='oracledatabase.projects.locations.serviceIntegrations.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsServiceIntegrationsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single ServiceIntegration.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsServiceIntegrationsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ServiceIntegration) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/serviceIntegrations/{serviceIntegrationsId}',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.serviceIntegrations.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsServiceIntegrationsGetRequest',
+        response_type_name='ServiceIntegration',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists ServiceIntegrations in a given project and location.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsServiceIntegrationsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListServiceIntegrationsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/serviceIntegrations',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.serviceIntegrations.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/serviceIntegrations',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsServiceIntegrationsListRequest',
+        response_type_name='ListServiceIntegrationsResponse',
         supports_download=False,
     )
 

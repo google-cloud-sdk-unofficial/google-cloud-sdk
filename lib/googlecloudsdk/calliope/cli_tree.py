@@ -15,7 +15,6 @@
 
 """A module for the Cloud SDK CLI tree external representation."""
 
-
 import json
 import os
 import re
@@ -93,6 +92,7 @@ LOOKUP_TYPE = 'type'
 LOOKUP_UNIVERSE_COMPATIBLE = 'universe_compatible'
 LOOKUP_DEFAULT_UNIVERSE_COMPATIBLE = 'default_universe_compatible'
 LOOKUP_VALUE = 'value'
+LOOKUP_DEPRECATION = 'deprecation'
 
 
 class Error(exceptions.Error):
@@ -209,12 +209,14 @@ class FlagOrPositional(Argument):
     nargs: {0, 1, '?', '*', '+'}
     value: str, The argument value documentation name.
     alternative_names: list, The list of alternative names.
+    dest: str, The destination attribute name.
   """
 
   def __init__(self, arg, name):
 
     super(FlagOrPositional, self).__init__(arg)
     self.category = getattr(arg, LOOKUP_CATEGORY, '')
+    self.dest = getattr(arg, 'dest', None)
     completer = getattr(arg, LOOKUP_COMPLETER, None)
     if completer:
       try:
@@ -267,6 +269,7 @@ class Flag(FlagOrPositional):
     choices: list|dict, The list of static choices.
     is_global: bool, True if the flag is global (inherited from the root).
     type: str, The flag value type name.
+    action: str, The argparse action class name.
   """
 
   def __init__(self, flag, name):
@@ -275,6 +278,25 @@ class Flag(FlagOrPositional):
     super(Flag, self).__init__(flag, name)
     self.choices = []
     self.is_global = flag.is_global
+    self.action = None
+    # Unwrap deprecated/removed flag wrappers (e.g. _PreActionHook) to access
+    # the actual action class and its properties.
+    unwrapped_flag = flag
+    while hasattr(unwrapped_flag, '_wrapped_action'):
+      unwrapped_flag = unwrapped_flag._wrapped_action
+
+    qualname = getattr(
+        unwrapped_flag.__class__,
+        '__qualname__',
+        unwrapped_flag.__class__.__name__,
+    )
+    # Extract the factory function name (e.g., 'StoreProperty' from
+    # 'StoreProperty.<locals>.Action') instead of the generic nested
+    # 'Action' class.
+    if '.<locals>.' in qualname:
+      self.action = qualname.split('.<locals>.')[0]
+    else:
+      self.action = qualname
     # ArgParse does not have an explicit Boolean flag type. By
     # convention a flag with arg.nargs=0 and action='store_true' or
     # action='store_false' is a Boolean flag. arg.type gives no hint
@@ -309,7 +331,9 @@ class Flag(FlagOrPositional):
       self.alternative_names = flag.alternative_names
     if getattr(flag, LOOKUP_INVERTED_SYNOPSIS, False):
       self.attr[LOOKUP_INVERTED_SYNOPSIS] = True
-    prop, kind, value = getattr(flag, 'store_property', (None, None, None))
+    prop, kind, value = getattr(
+        unwrapped_flag, 'store_property', (None, None, None)
+    )
     if prop:
       # This allows actions.Store*Property() to be reconstituted.
       attr = {LOOKUP_NAME: six.text_type(prop)}
@@ -318,6 +342,11 @@ class Flag(FlagOrPositional):
       if value:
         attr[LOOKUP_VALUE] = value
       self.attr[LOOKUP_PROPERTY] = attr
+    if deprecation := getattr(flag, 'additional_help', None):
+      self.attr[LOOKUP_DEPRECATION] = {
+          'label': deprecation.label,
+          'message': deprecation.message,
+      }
 
 
 class Positional(FlagOrPositional):
@@ -456,7 +485,7 @@ class Command(object):
         man_name='.'.join(self.path),
         top_command=self.path[0] if self.path else '',
         parent_command=parent_path_string,
-        **sections
+        **sections,
     )
 
     # _parent is explicitly private so it won't appear in serialized output.
@@ -657,6 +686,8 @@ def _Serialize(tree):
         six.text_type(flag.nargs),
         six.text_type(flag.type),
         six.text_type(flag.value),
+        six.text_type(flag.dest or ''),
+        six.text_type(flag.action or ''),
     ])
 
   def _CollectAllFlags(command):

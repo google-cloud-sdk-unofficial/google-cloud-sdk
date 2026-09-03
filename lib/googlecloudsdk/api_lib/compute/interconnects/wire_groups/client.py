@@ -52,6 +52,7 @@ class WireGroup(object):
       admin_enabled=None,
       network_service_class=None,
       bandwidth_allocation=None,
+      flow_management=None,
       validate_only=None,
   ):
     """Make a tuple for wire group insert request.
@@ -66,6 +67,7 @@ class WireGroup(object):
       admin_enabled: set admin_enabled on the wire group.
       network_service_class: the network service class of the wire group.
       bandwidth_allocation: the bandwidth allocation for the wire group.
+      flow_management: the flow management configuration for the wire group.
       validate_only: only validates the configuration, but doesn't create it.
 
     Returns:
@@ -106,6 +108,12 @@ class WireGroup(object):
               bandwidth_allocation
           )
       )
+    if flow_management is not None:
+      wire_group.wireProperties.flowManagement = (
+          messages.WireProperties.FlowManagementValueValuesEnum(
+              flow_management
+          )
+      )
 
     return (
         self._client.wireGroups,
@@ -128,6 +136,7 @@ class WireGroup(object):
       admin_enabled=None,
       network_service_class=None,
       bandwidth_allocation=None,
+      flow_management=None,
       endpoints=None,
       validate_only=None,
       update_mask=None,
@@ -150,6 +159,8 @@ class WireGroup(object):
       update_mask.append('wireProperties.networkServiceClass')
     if bandwidth_allocation is not None:
       update_mask.append('wireProperties.bandwidthAllocation')
+    if flow_management is not None:
+      update_mask.append('wireProperties.flowManagement')
     if fault_response is not None:
       update_mask.append('wireProperties.faultResponse')
     if admin_enabled is not None:
@@ -188,6 +199,12 @@ class WireGroup(object):
       wire_group.wireProperties.bandwidthAllocation = (
           messages.WireProperties.BandwidthAllocationValueValuesEnum(
               bandwidth_allocation
+          )
+      )
+    if flow_management is not None:
+      wire_group.wireProperties.flowManagement = (
+          messages.WireProperties.FlowManagementValueValuesEnum(
+              flow_management
           )
       )
 
@@ -236,6 +253,7 @@ class WireGroup(object):
       admin_enabled=None,
       network_service_class=None,
       bandwidth_allocation=None,
+      flow_management=None,
       validate_only=None,
       only_generate_request=False,
   ):
@@ -250,6 +268,7 @@ class WireGroup(object):
             admin_enabled,
             network_service_class,
             bandwidth_allocation,
+            flow_management,
             validate_only
         )
     ]

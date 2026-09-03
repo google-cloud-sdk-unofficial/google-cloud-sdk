@@ -68,7 +68,9 @@ class List(base.ListCommand):
   def Run(self, args):
     parent_ref = args.CONCEPTS.location.Parse()
 
-    return operations.OperationsClient().List(parent_ref.RelativeName(),
-                                              filters=args.filter,
-                                              limit=args.limit,
-                                              page_size=args.page_size)
+    return operations.OperationsClient(release_track=self.ReleaseTrack()).List(
+        parent_ref.RelativeName(),
+        filters=args.filter,
+        limit=args.limit,
+        page_size=args.page_size,
+    )

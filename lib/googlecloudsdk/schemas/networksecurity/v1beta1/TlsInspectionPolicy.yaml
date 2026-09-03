@@ -34,6 +34,14 @@ properties:
       string has a relative resource path following the form
       "projects/{project}/locations/{location}/caPools/{ca_pool}".
     type: string
+  certificateIssuanceMode:
+    description: |-
+      The certificate issuance mode for the TLS inspection policy.
+    type: string
+    enum:
+    - CERTIFICATE_ISSUANCE_MODE_UNSPECIFIED
+    - DIRECT_LEAF_PROVISIONING
+    - LOCAL_INTERMEDIATE_CA_SIGNING
   customTlsFeatures:
     description: |-
       List of custom TLS cipher suites selected. This field is valid only if the

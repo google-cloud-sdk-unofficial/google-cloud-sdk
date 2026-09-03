@@ -648,6 +648,8 @@ class Attachment(_messages.Message):
 
   Fields:
     createTime: Output only. The time when the attachment was created.
+    errorDetails: Output only. Error details if the attachment is in a FAILED
+      state.
     gkeCluster: Required. Immutable. The GKE cluster resource name. Format:
       projects/{project}/locations/{location}/clusters/{cluster}
     labels: Optional. Labels as key value pairs
@@ -700,11 +702,12 @@ class Attachment(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   createTime = _messages.StringField(1)
-  gkeCluster = _messages.StringField(2)
-  labels = _messages.MessageField('LabelsValue', 3)
-  name = _messages.StringField(4)
-  state = _messages.EnumField('StateValueValuesEnum', 5)
-  updateTime = _messages.StringField(6)
+  errorDetails = _messages.MessageField('Status', 2)
+  gkeCluster = _messages.StringField(3)
+  labels = _messages.MessageField('LabelsValue', 4)
+  name = _messages.StringField(5)
+  state = _messages.EnumField('StateValueValuesEnum', 6)
+  updateTime = _messages.StringField(7)
 
 
 class AttachmentOperationMetadata(_messages.Message):

@@ -382,6 +382,15 @@ def ParseUpdateOptionsBase(args, locations):
     ClusterUpdateOptions, object with data used to update cluster.
   """
   opts = api_adapter.UpdateClusterOptions(
+      wiz_sensor_registry_secret_uri=getattr(
+          args, 'wiz_sensor_registry_secret_uri', None
+      ),
+      wiz_sensor_api_key_secret_uri=getattr(
+          args, 'wiz_sensor_api_key_secret_uri', None
+      ),
+      wiz_sensor_proxy_secret_uri=getattr(
+          args, 'wiz_sensor_proxy_secret_uri', None
+      ),
       monitoring_service=args.monitoring_service,
       logging_service=args.logging_service,
       monitoring=args.monitoring,

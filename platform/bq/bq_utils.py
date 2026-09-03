@@ -98,7 +98,7 @@ def GetBigqueryRcFilename() -> Optional[str]:
   Returns:
     bigqueryrc filename as a string.
   """
-  return (  # pytype: disable=bad-return-type
+  return (
       (FLAGS['bigqueryrc'].present and FLAGS.bigqueryrc)
       or os.environ.get('BIGQUERYRC')
       or FLAGS.bigqueryrc
@@ -359,9 +359,7 @@ def GetInfoString() -> str:
     httplib2_version = httplib2.__version__
   except AttributeError:
     # Handle an unexpected version being loaded
-    # pytype: disable=module-attr
-    httplib2_version = httplib2.python3.__version__
-    # pytype: enable=module-attr
+    httplib2_version = httplib2.python3.__version__  # pyrefly: ignore[missing-attribute]
   try:
     shell_path = os.environ['PATH']
   except KeyError:

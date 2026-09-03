@@ -2,6 +2,12 @@ release_tracks: [GA, BETA]
 help_text:
   brief: Update the semantic governance policy engine config.
   description: Update the semantic governance policy engine config.
+  examples: |-
+    To add or update a gateway config named `my-gateway` on the semantic
+    governance policy engine in location `us-central1`, run:
+
+      $ {command} --location=us-central1 \
+          --gateway-config=name=my-gateway,network=my-network,subnetwork=my-subnetwork,dns-zone-name=my-zone.example.com.
 arguments:
   resource:
     help_text: The semantic governance policy engine config.

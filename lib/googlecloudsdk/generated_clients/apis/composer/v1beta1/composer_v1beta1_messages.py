@@ -1199,6 +1199,8 @@ class DagRun(_messages.Message):
     TypeValueValuesEnum: DAG run type (how it got created/executed).
 
   Fields:
+    cloudLoggingFilter: Output only. A Cloud Logging filter that can be used
+      to retrieve the logs of this DAG run.
     dagId: The DAG ID of the DAG whose execution is described by this DAG run.
     dagRunId: The DAG run ID.
     dataIntervalEnd: End of the data interval. Added in version 2.2. If run
@@ -1254,18 +1256,19 @@ class DagRun(_messages.Message):
     DATASET_TRIGGERED = 4
     ASSET_TRIGGERED = 5
 
-  dagId = _messages.StringField(1)
-  dagRunId = _messages.StringField(2)
-  dataIntervalEnd = _messages.StringField(3)
-  dataIntervalStart = _messages.StringField(4)
-  endDate = _messages.StringField(5)
-  executionDate = _messages.StringField(6)
-  name = _messages.StringField(7)
-  note = _messages.StringField(8)
-  runAfter = _messages.StringField(9)
-  startDate = _messages.StringField(10)
-  state = _messages.EnumField('StateValueValuesEnum', 11)
-  type = _messages.EnumField('TypeValueValuesEnum', 12)
+  cloudLoggingFilter = _messages.StringField(1)
+  dagId = _messages.StringField(2)
+  dagRunId = _messages.StringField(3)
+  dataIntervalEnd = _messages.StringField(4)
+  dataIntervalStart = _messages.StringField(5)
+  endDate = _messages.StringField(6)
+  executionDate = _messages.StringField(7)
+  name = _messages.StringField(8)
+  note = _messages.StringField(9)
+  runAfter = _messages.StringField(10)
+  startDate = _messages.StringField(11)
+  state = _messages.EnumField('StateValueValuesEnum', 12)
+  type = _messages.EnumField('TypeValueValuesEnum', 13)
 
 
 class DataRetentionConfig(_messages.Message):
@@ -3201,8 +3204,8 @@ class TaskInstance(_messages.Message):
     StateValueValuesEnum: Task instance state.
 
   Fields:
-    cloudLoggingFilter: A Cloud Logging filter that can be used to retrieve
-      the logs of this task instance.
+    cloudLoggingFilter: Output only. A Cloud Logging filter that can be used
+      to retrieve the logs of this task instance.
     dagId: The DAG ID of the DAG whose execution is described by the DAG run
       the taskInstance belongs to.
     dagRunId: The DAG run ID the task instance belongs to.

@@ -1,0 +1,40 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: Create a warm pool.
+    description: Create a warm pool.
+    examples: |-
+      To create a warm pool `my-warm-pool` at location `us-central1` with size 5 and service account `projects/my-project/serviceAccounts/sa@project.iam.gserviceaccount.com`, run:
+
+        $ {command} my-warm-pool --location=us-central1 --pool-size=5 --service-account=projects/my-project/serviceAccounts/sa@project.iam.gserviceaccount.com
+
+  request:
+    collection: config.projects.locations.warmPools
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.infra_manager.resources:warm_pool
+      help_text: The warm pool to create.
+    params:
+    - arg_name: pool-size
+      api_field: warmPool.poolSize
+      required: true
+      type: int
+      help_text: Size of the warm pool.
+    - arg_name: service-account
+      api_field: warmPool.serviceAccount
+      required: true
+      help_text: 'Service account to attach to the warm pool. Format: projects/{projectID}/serviceAccounts/{serviceAccount}'
+    - group:
+        params:
+        - arg_name: provisioning-tool
+          api_field: warmPool.cloudProvisioningToolVersion.tool
+          help_text: Tool used for provisioning.
+        - arg_name: provisioning-version-constraint
+          api_field: warmPool.cloudProvisioningToolVersion.versionConstraint
+          help_text: Version constraint of the provisioning tool.
+    labels:
+      api_field: warmPool.labels
+
+  async:
+    collection: config.projects.locations.operations

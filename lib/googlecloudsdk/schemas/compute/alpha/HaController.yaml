@@ -23,6 +23,7 @@ properties:
     enum:
     - FAILOVER_INITIATION_UNSPECIFIED
     - MANUAL_ONLY
+    - AUTOMATIC
   instanceName:
     description: |-
       Name of the instance that HaController is in charge of. If not

@@ -182,3 +182,18 @@ def ValidateLustreFilesystemName(name: str) -> None:
         " between 1 and 8 characters long and contain only lowercase letters"
         " and numbers."
     )
+
+
+def ValidateBootDisk(machine_type: str, boot_disk: dict[str, Any]) -> None:
+  """Validates boot disk compatibility with machine type."""
+  if not machine_type or not boot_disk:
+    return
+  disk_type = boot_disk.get("type")
+  if not disk_type:
+    return
+  if not machine_type.startswith(("n2-", "ct5p-")) and disk_type.startswith(
+      "pd-"
+  ):
+    raise ClusterDirectorError(
+        f"{disk_type} disk type cannot be used by {machine_type} machine type."
+    )

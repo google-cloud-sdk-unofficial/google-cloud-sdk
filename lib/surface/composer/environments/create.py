@@ -810,6 +810,12 @@ class CreateBeta(Create):
   @classmethod
   def Args(cls, parser, release_track=base.ReleaseTrack.BETA):
     super(CreateBeta, cls).Args(parser, release_track)
+    parser.add_argument(
+        '--enable-development-mode',
+        action='store_true',
+        hidden=True,
+        help='Whether to build a development-mode environment.',
+    )
 
   def GetOperationMessage(self, args, is_composer_v1):
     """See base class."""
@@ -913,6 +919,7 @@ class CreateBeta(Create):
         release_track=self.ReleaseTrack(),
         storage_bucket=args.storage_bucket,
         airflow_database_retention_days=args.airflow_database_retention_days,
+        enable_development_mode=args.enable_development_mode,
     )
 
     return environments_api_util.Create(self.env_ref, create_flags,
@@ -1011,11 +1018,6 @@ class CreateAlpha(CreateBeta):
     super(CreateAlpha, cls).Args(parser, release_track)
 
     # Adding alpha arguments
-    parser.add_argument(
-        '--enable-development-mode',
-        action='store_true',
-        hidden=True,
-        help='Whether to build a development-mode environment.')
     parser.add_argument(
         '--airflow-executor-type',
         hidden=True,

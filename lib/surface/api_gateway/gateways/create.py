@@ -25,8 +25,7 @@ from googlecloudsdk.command_lib.api_gateway import resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a new gateway."""
@@ -53,18 +52,41 @@ class Create(base.CreateCommand):
     gateway_ref = args.CONCEPTS.gateway.Parse()
     api_config_ref = args.CONCEPTS.api_config.Parse()
 
-    gateways_client = gateways.GatewayClient()
-    resp = gateways_client.Create(gateway_ref,
-                                  api_config_ref,
-                                  display_name=args.display_name,
-                                  labels=args.labels)
+    enable_streaming = (
+        args.enable_streaming
+        if args.IsKnownAndSpecified('enable_streaming')
+        else None
+    )
+
+    gateways_client = gateways.GatewayClient(release_track=self.ReleaseTrack())
+    resp = gateways_client.Create(
+        gateway_ref,
+        api_config_ref,
+        display_name=args.display_name,
+        labels=args.labels,
+        enable_streaming=enable_streaming,
+    )
 
     wait = 'Waiting for API Gateway [{}] to be created with [{}] config'.format(
         gateway_ref.Name(), api_config_ref.RelativeName())
 
     return operations_util.PrintOperationResult(
         resp.name,
-        operations.OperationsClient(),
+        operations.OperationsClient(release_track=self.ReleaseTrack()),
         service=gateways_client.service,
         wait_string=wait,
-        is_async=args.async_)
+        is_async=args.async_,
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
+class CreateAlpha(Create):
+  """Create a new gateway."""
+
+  # The alpha track resolves to the v1alpha1 client (see base.VERSION_MAP),
+  # which exposes streaming_mode for the --enable-streaming flag.
+  @staticmethod
+  def Args(parser):
+    Create.Args(parser)
+    common_flags.AddEnableStreamingFlag(parser)

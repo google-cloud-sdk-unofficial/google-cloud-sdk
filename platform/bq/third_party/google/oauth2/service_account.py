@@ -73,14 +73,24 @@ specific subject using :meth:`~Credentials.with_subject`.
 
 import copy
 import datetime
+import logging
+from typing import Optional, TYPE_CHECKING
+
 
 from google.auth import _helpers
+from google.auth import _regional_access_boundary_utils
 from google.auth import _service_account_info
 from google.auth import credentials
 from google.auth import exceptions
+from google.auth import iam
 from google.auth import jwt
 from google.auth import metrics
 from google.oauth2 import _client
+
+if TYPE_CHECKING:  # pragma: NO COVER
+    import google.auth.transport
+
+_LOGGER = logging.getLogger(__name__)
 
 _DEFAULT_TOKEN_LIFETIME_SECS = 3600  # 1 hour in seconds
 _GOOGLE_OAUTH2_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token"
@@ -91,6 +101,7 @@ class Credentials(
     credentials.Scoped,
     credentials.CredentialsWithQuotaProject,
     credentials.CredentialsWithTokenUri,
+    credentials.CredentialsWithRegionalAccessBoundary,
 ):
     """Service account credentials
 
@@ -164,7 +175,7 @@ class Credentials(
             universe_domain (str): The universe domain. The default
                 universe domain is googleapis.com. For default value self
                 signed jwt is used for token refresh.
-            trust_boundary (str): String representation of trust boundary meta.
+            trust_boundary (Mapping[str,str]): A credential trust boundary.
 
         .. note:: Typically one of the helper constructors
             :meth:`from_service_account_file` or
@@ -173,6 +184,7 @@ class Credentials(
         """
         super(Credentials, self).__init__()
 
+        self._cred_file_path = None
         self._scopes = scopes
         self._default_scopes = default_scopes
         self._signer = signer
@@ -193,7 +205,8 @@ class Credentials(
             self._additional_claims = additional_claims
         else:
             self._additional_claims = {}
-        self._trust_boundary = {"locations": [], "encoded_locations": "0x0"}
+
+        self._trust_boundary = trust_boundary
 
     @classmethod
     def _from_signer_and_info(cls, signer, info, **kwargs):
@@ -220,7 +233,7 @@ class Credentials(
                 "universe_domain", credentials.DEFAULT_UNIVERSE_DOMAIN
             ),
             trust_boundary=info.get("trust_boundary"),
-            **kwargs
+            **kwargs,
         )
 
     @classmethod
@@ -293,7 +306,10 @@ class Credentials(
             additional_claims=self._additional_claims.copy(),
             always_use_jwt_access=self._always_use_jwt_access,
             universe_domain=self._universe_domain,
+            trust_boundary=self._trust_boundary,
         )
+        cred._cred_file_path = self._cred_file_path
+        self._copy_regional_access_boundary_manager(cred)
         return cred
 
     @_helpers.copy_docstring(credentials.Scoped)
@@ -422,8 +438,8 @@ class Credentials(
             return metrics.CRED_TYPE_SA_JWT
         return metrics.CRED_TYPE_SA_ASSERTION
 
-    @_helpers.copy_docstring(credentials.Credentials)
-    def refresh(self, request):
+    @_helpers.copy_docstring(credentials.CredentialsWithRegionalAccessBoundary)
+    def _perform_refresh_token(self, request):
         if self._always_use_jwt_access and not self._jwt_credentials:
             # If self signed jwt should be used but jwt credential is not
             # created, try to create one with scopes
@@ -471,7 +487,6 @@ class Credentials(
                     self._jwt_credentials is None
                     or self._jwt_credentials._audience != audience
                 ):
-
                     self._jwt_credentials = jwt.Credentials.from_signing_credentials(
                         self, audience
                     )
@@ -489,6 +504,32 @@ class Credentials(
                 self, audience
             )
 
+    def _build_regional_access_boundary_lookup_url(
+        self, request: "Optional[google.auth.transport.Request]" = None  # noqa: F821
+    ):
+        """Builds and returns the URL for the Regional Access Boundary lookup API.
+
+        This method constructs the specific URL for the IAM Credentials API's
+        `allowedLocations` endpoint, using the credential's universe domain
+        and service account email.
+
+        Returns:
+            Optional[str]: The URL for the Regional Access Boundary lookup endpoint, or None
+                 if the service account email is missing. Returns None if the subject is populated.
+        """
+        if self._subject:
+            # RAB does not apply to Workspace User Accounts via Domain-wide Delegation.
+            return None
+
+        if not self.service_account_email:
+            _LOGGER.error(
+                "Service account email is required to build the Regional Access Boundary lookup URL for service account credentials."
+            )
+            return None
+        return _regional_access_boundary_utils.get_service_account_rab_endpoint(
+            self._service_account_email
+        )
+
     @_helpers.copy_docstring(credentials.Signing)
     def sign_bytes(self, message):
         return self._signer.sign(message)
@@ -502,6 +543,16 @@ class Credentials(
     @_helpers.copy_docstring(credentials.Signing)
     def signer_email(self):
         return self._service_account_email
+
+    @_helpers.copy_docstring(credentials.Credentials)
+    def get_cred_info(self):
+        if self._cred_file_path:
+            return {
+                "credential_source": self._cred_file_path,
+                "credential_type": "service account credentials",
+                "principal": self.service_account_email,
+            }
+        return None
 
 
 class IDTokenCredentials(
@@ -579,6 +630,7 @@ class IDTokenCredentials(
                 token endponint is used for token refresh. Note that
                 iam.serviceAccountTokenCreator role is required to use the IAM
                 endpoint.
+
         .. note:: Typically one of the helper constructors
             :meth:`from_service_account_file` or
             :meth:`from_service_account_info` are used instead of calling the
@@ -596,8 +648,11 @@ class IDTokenCredentials(
             self._universe_domain = credentials.DEFAULT_UNIVERSE_DOMAIN
         else:
             self._universe_domain = universe_domain
+        self._iam_id_token_endpoint = iam._IAM_IDTOKEN_ENDPOINT.replace(
+            "googleapis.com", self._universe_domain
+        )
 
-        if universe_domain != credentials.DEFAULT_UNIVERSE_DOMAIN:
+        if self._universe_domain != credentials.DEFAULT_UNIVERSE_DOMAIN:
             self._use_iam_endpoint = True
 
         if additional_claims is not None:
@@ -791,11 +846,14 @@ class IDTokenCredentials(
             additional_claims={"scope": "https://www.googleapis.com/auth/iam"},
         )
         jwt_credentials.refresh(request)
+
         self.token, self.expiry = _client.call_iam_generate_id_token_endpoint(
             request,
+            self._iam_id_token_endpoint,
             self.signer_email,
             self._target_audience,
             jwt_credentials.token.decode(),
+            self._universe_domain,
         )
 
     @_helpers.copy_docstring(credentials.Credentials)

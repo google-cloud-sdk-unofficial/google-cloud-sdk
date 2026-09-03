@@ -45,4 +45,6 @@ class Describe(base.DescribeCommand):
   def Run(self, args):
     gateway_ref = args.CONCEPTS.gateway.Parse()
 
-    return gateways.GatewayClient().Get(gateway_ref)
+    return gateways.GatewayClient(release_track=self.ReleaseTrack()).Get(
+        gateway_ref
+    )

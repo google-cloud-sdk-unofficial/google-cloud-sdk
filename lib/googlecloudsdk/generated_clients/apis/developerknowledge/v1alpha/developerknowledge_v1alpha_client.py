@@ -77,7 +77,7 @@ class DeveloperknowledgeV1alpha(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""LINT.IfChange(get_document_rpc) Retrieves a single document with its full Markdown content.
+      r"""Retrieves a single document with its full Markdown content.
 
       Args:
         request: (DeveloperknowledgeDocumentsGetRequest) input message
@@ -104,7 +104,7 @@ class DeveloperknowledgeV1alpha(base_api.BaseApiClient):
     )
 
     def SearchDocumentChunks(self, request, global_params=None):
-      r"""LINT.IfChange(search_chunks_rpc) Searches for developer knowledge across Google's developer documentation. Returns DocumentChunks based on the user's query. There may be many chunks from the same Document. To retrieve full documents, use DeveloperKnowledge.GetDocument or DeveloperKnowledge.BatchGetDocuments with the DocumentChunk.parent returned in the SearchDocumentChunksResponse.results.
+      r"""Searches for developer knowledge across Google's developer documentation. Returns DocumentChunks based on the user's query. There may be many chunks from the same Document. To retrieve full documents, use DeveloperKnowledge.GetDocument or DeveloperKnowledge.BatchGetDocuments with the DocumentChunk.parent returned in the SearchDocumentChunksResponse.results.
 
       Args:
         request: (DeveloperknowledgeDocumentsSearchDocumentChunksRequest) input message
@@ -140,7 +140,7 @@ class DeveloperknowledgeV1alpha(base_api.BaseApiClient):
           }
 
     def AnswerQuery(self, request, global_params=None):
-      r"""LINT.IfChange(answer_query_rpc) Answers a query using grounded generation.
+      r"""Answers a query using grounded generation.
 
       Args:
         request: (AnswerQueryRequest) input message
@@ -162,5 +162,31 @@ class DeveloperknowledgeV1alpha(base_api.BaseApiClient):
         request_field='<request>',
         request_type_name='AnswerQueryRequest',
         response_type_name='AnswerQueryResponse',
+        supports_download=False,
+    )
+
+    def Search(self, request, global_params=None):
+      r"""Searches for developer knowledge across Google's developer documentation and other sources. For documentation, returns DocumentChunks based on the user's query. There may be many chunks from the same Document. To retrieve full documents, use DeveloperKnowledge.GetDocument or DeveloperKnowledge.BatchGetDocuments with the DocumentChunk.parent returned in the SearchResponse.results.
+
+      Args:
+        request: (DeveloperknowledgeSearchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SearchResponse) The response message.
+      """
+      config = self.GetMethodConfig('Search')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Search.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='developerknowledge.search',
+        ordered_params=[],
+        path_params=[],
+        query_params=['filter', 'pageSize', 'pageToken', 'query'],
+        relative_path='v1alpha:search',
+        request_field='',
+        request_type_name='DeveloperknowledgeSearchRequest',
+        response_type_name='SearchResponse',
         supports_download=False,
     )

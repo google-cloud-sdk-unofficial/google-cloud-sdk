@@ -236,6 +236,7 @@ class BigqueryClient:
     proxy_info = None
     disable_ssl = flags.FLAGS.disable_ssl_validation
     use_ecp = False
+    ecp_manager = None
 
 
     # Let CreateHttp handle command-line proxy flags only if ECP is NOT active.
@@ -243,6 +244,7 @@ class BigqueryClient:
       logging.info('Configured httplib2 with manual proxy')
 
     http = CreateHttp(proxy_info=proxy_info, disable_ssl_validation=disable_ssl)
+
 
     # Apply mTLS credentials ONLY if NOT using the ECP proxy.
     # The ECP proxy handles the mTLS handshake.

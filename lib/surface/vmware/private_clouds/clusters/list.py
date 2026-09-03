@@ -40,6 +40,7 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List clusters in a Google Cloud VMware Engine private cloud."""
 
@@ -49,10 +50,17 @@ class List(base.ListCommand):
   def Args(parser):
     """Register flags for this command."""
     flags.AddPrivatecloudArgToParser(parser)
-    parser.display_info.AddFormat('table(name.segment(-1):label=NAME,'
-                                  'name.segment(-5):label=LOCATION,'
-                                  'name.segment(-3):label=PRIVATE_CLOUD,'
-                                  'createTime,state)')
+    parser.display_info.AddFormat(
+        'table('
+        'name.segment(-1):label=NAME,'
+        'name.segment(-5):label=LOCATION,'
+        'name.segment(-3):label=PRIVATE_CLOUD,'
+        'createTime,'
+        'state,'
+        'placementGroup:label=PLACEMENT_GROUP:optional,'
+        'stretchedClusterConfig.preferredLocationPlacementGroup:label=PREFERRED_PLACEMENT_GROUP:optional,'
+        'stretchedClusterConfig.secondaryLocationPlacementGroup:label=SECONDARY_PLACEMENT_GROUP:optional)'
+    )
 
   def Run(self, args):
     privatecloud = args.CONCEPTS.private_cloud.Parse()

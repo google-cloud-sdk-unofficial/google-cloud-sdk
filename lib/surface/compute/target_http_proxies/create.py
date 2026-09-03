@@ -22,6 +22,7 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.target_http_proxies import flags
 from googlecloudsdk.command_lib.compute.target_http_proxies import target_http_proxies_utils
 from googlecloudsdk.command_lib.compute.url_maps import flags as url_map_flags
+from googlecloudsdk.command_lib.network_services import flags as network_services_flags
 
 
 def _DetailedHelp():
@@ -67,7 +68,12 @@ def _Args(parser, traffic_director_security):
 
 
 def _Run(
-    args, holder, url_map_ref, target_http_proxy_ref, traffic_director_security
+    args,
+    holder,
+    url_map_ref,
+    target_http_proxy_ref,
+    traffic_director_security,
+    http_filters=None,
 ):
   """Issue a Target HTTP Proxy Insert request."""
   client = holder.client
@@ -89,6 +95,9 @@ def _Run(
   if args.IsSpecified('http_keep_alive_timeout_sec'):
     target_http_proxy.httpKeepAliveTimeoutSec = args.http_keep_alive_timeout_sec
 
+  if http_filters:
+    target_http_proxy.httpFilters = [ref.SelfLink() for ref in http_filters]
+
   if target_http_proxies_utils.IsRegionalTargetHttpProxiesRef(
       target_http_proxy_ref
   ):
@@ -107,6 +116,7 @@ def _Run(
   return client.MakeRequests([(collection, 'Insert', request)])
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(
     base.ReleaseTrack.BETA, base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW
 )
@@ -114,6 +124,7 @@ class Create(base.CreateCommand):
   """Create a target HTTP proxy."""
 
   _traffic_director_security = False
+  _support_http_filters = False
 
   URL_MAP_ARG = None
   TARGET_HTTP_PROXY_ARG = None
@@ -126,6 +137,10 @@ class Create(base.CreateCommand):
     cls.URL_MAP_ARG = url_map_flags.UrlMapArgumentForTargetProxy()
     cls.URL_MAP_ARG.AddArgument(parser)
     _Args(parser, cls._traffic_director_security)
+    if cls._support_http_filters:
+      network_services_flags.GetHttpFilterResourceArg(
+          'to attach', name='http-filters', required=False, plural=True
+      ).AddToParser(parser)
 
   def Run(self, args):
     """Issue a Target HTTP Proxy Insert request."""
@@ -136,15 +151,25 @@ class Create(base.CreateCommand):
     url_map_ref = target_http_proxies_utils.ResolveTargetHttpProxyUrlMap(
         args, self.URL_MAP_ARG, target_http_proxy_ref, holder.resources
     )
+    http_filters = None
+    if self._support_http_filters and args.IsKnownAndSpecified('http_filters'):
+      http_filters = args.CONCEPTS.http_filters.Parse()
     return _Run(
         args,
         holder,
         url_map_ref,
         target_http_proxy_ref,
         self._traffic_director_security,
+        http_filters=http_filters,
     )
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
+  """Create a target HTTP proxy."""
+
   _traffic_director_security = True
+  _support_http_filters = True
+
+

@@ -65,6 +65,37 @@
         The GCP Oracle zone where OdbNetwork is hosted.
         Example: us-east4-b-r2.
         If not specified, the system will pick a zone based on availability.
+    - group:
+        api_field: odbNetwork.serviceConnectionConfig
+        required: false
+        help_text: |-
+          Configuration to enable the service (Oracledatabase@Google Cloud) to
+          establish connectivity to the database.
+
+          This should be specified if you intend to associate this OdbNetwork with a
+          DatabaseConnection resource to `ExecuteSQL` on the database, or to create a
+          ServiceIntegration with the Database.
+
+          Please don't specify it otherwise to avoid complicating the network setup.
+        params:
+        - group:
+            api_field: odbNetwork.serviceConnectionConfig.pscInterfaceConfig
+            required: false
+            help_text: |-
+              Configuration for a Private Service Connect (PSC) interface used by
+              Oracledatabase@Google Cloud to establish private connectivity to the
+              database.
+            params:
+            - arg_name: psc-interface-config-network-attachment
+              api_field: odbNetwork.serviceConnectionConfig.pscInterfaceConfig.networkAttachment
+              required: false
+              repeated: false
+              help_text: |-
+                The resource name of the Network Attachment that
+                Oracledatabase@Google Cloud will use to establish private connectivity to
+                the database via a Private Service Connect Interface (PSC-I).
+                Format:
+                projects/{project}/regions/{region}/networkAttachments/{network_attachment}
     - arg_name: request-id
       api_field: requestId
       required: false

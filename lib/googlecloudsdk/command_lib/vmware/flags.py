@@ -400,3 +400,30 @@ def AddNsxEdgeConfigFlagsToParser(parser):
       """,
   )
 
+
+def AddPlacementGroupFlagsToParser(parser):
+  """Adds placement group flags to the parser."""
+  parser.add_argument(
+      '--placement-group',
+      required=False,
+      hidden=True,
+      help="""\
+      Placement group ID or resource name associated with the cluster.
+      """,
+  )
+  parser.add_argument(
+      '--preferred-placement-group',
+      required=False,
+      hidden=True,
+      help="""\
+      Preferred location placement group ID for stretched private cloud or cluster.
+      """,
+  )
+  parser.add_argument(
+      '--secondary-placement-group',
+      required=False,
+      hidden=True,
+      help="""\
+      Secondary location placement group ID for stretched private cloud or cluster.
+      """,
+  )

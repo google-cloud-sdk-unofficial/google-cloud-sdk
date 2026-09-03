@@ -1371,6 +1371,60 @@ def ValidateCloudRunConfigUpdateArgs(cloud_run_config_args, update_addons_args):
       )
 
 
+def ValidateWizSensorFlags(args, is_update: bool = False) -> None:
+  """Validates flags specifying Wiz Sensor config.
+
+  Args:
+    args: parsed commandline arguments.
+    is_update: Whether this is an update operation.
+  """
+  registry_secret = getattr(args, 'wiz_sensor_registry_secret_uri', None)
+  api_key_secret = getattr(args, 'wiz_sensor_api_key_secret_uri', None)
+  proxy_secret = getattr(args, 'wiz_sensor_proxy_secret_uri', None)
+
+  if registry_secret or api_key_secret or proxy_secret:
+    if (registry_secret or api_key_secret) and not (
+        registry_secret and api_key_secret
+    ):
+      raise exceptions.InvalidArgumentException(
+          '--wiz-sensor-registry-secret-uri',
+          'Both --wiz-sensor-registry-secret-uri and '
+          '--wiz-sensor-api-key-secret-uri must be provided together.',
+      )
+
+    if not is_update and not getattr(args, 'enable_secret_sync', False):
+      raise exceptions.InvalidArgumentException(
+          '--enable-secret-sync',
+          '--enable-secret-sync must be specified when Wiz Sensor secrets are'
+          ' provided.',
+      )
+
+  if (
+      registry_secret is not None
+      or api_key_secret is not None
+      or proxy_secret is not None
+  ):
+    if is_update:
+      val = (
+          args.disable_addons.get(api_adapter.WIZ_SENSOR, None)
+          if args.disable_addons
+          else None
+      )
+      if val is None or val:
+        raise exceptions.InvalidArgumentException(
+            '--update-addons',
+            '--update-addons=WizSensor=ENABLED must be specified when '
+            'Wiz Sensor secrets are provided.',
+        )
+    else:
+      if not (args.addons and args.addons.get(api_adapter.WIZ_SENSOR, False)):
+        raise exceptions.InvalidArgumentException(
+            '--addons',
+            '--addons=WizSensor=ENABLED must be specified when '
+            'Wiz Sensor secrets are provided.',
+        )
+
+
 def AddEnableStackdriverKubernetesFlag(parser):
   """Adds a --enable-stackdriver-kubernetes flag to parser."""
   help_text = """Enable Cloud Operations for GKE."""
@@ -3918,9 +3972,10 @@ def AddAddonsFlagsWithOptions(parser, addon_options):
       not in [
           api_adapter.APPLICATIONMANAGER,
           api_adapter.STATEFULHA,
+          api_adapter.WIZ_SENSOR,
           # TODO: b/482020381 - Remove once KUEUE is GA, so it appears in the
           # visible addon options.
-          api_adapter.KUEUE
+          api_adapter.KUEUE,
       ]
   ]
   visible_addon_options += api_adapter.VISIBLE_CLOUDRUN_ADDONS
@@ -4000,6 +4055,42 @@ def AddPodSnapshotConfigFlags(parser, hidden=False):
       const=False,
       default=None,
       help='Disable the Pod Snapshot feature on the cluster.',
+  )
+
+
+def AddWizSensorFlags(
+    parser: parser_arguments.ArgumentInterceptor, hidden: bool = False
+) -> None:
+  """Adds flags for Wiz Sensor configuration."""
+  wiz_sensor_group = parser.add_group(
+      mutex=False,
+      help='Flags for Wiz Sensor configuration:',
+      hidden=hidden,
+  )
+  secret_uri_regex = (
+      r'^projects/[^/]+/(locations/[^/]+/)?secrets/[^/]+(/versions/[^/]+)?$|^$'
+  )
+  secret_uri_validator = arg_parsers.RegexpValidator(
+      secret_uri_regex,
+      'Must be in the format projects/{project}/secrets/{secret} or '
+      'projects/{project}/locations/{location}/secrets/{secret} '
+      'optionally with /versions/{version}',
+  )
+
+  wiz_sensor_group.add_argument(
+      '--wiz-sensor-registry-secret-uri',
+      type=secret_uri_validator,
+      help='The GCP Secret Manager URI for the Wiz registry secret.',
+  )
+  wiz_sensor_group.add_argument(
+      '--wiz-sensor-api-key-secret-uri',
+      type=secret_uri_validator,
+      help='The GCP Secret Manager URI for the Wiz API key secret.',
+  )
+  wiz_sensor_group.add_argument(
+      '--wiz-sensor-proxy-secret-uri',
+      type=secret_uri_validator,
+      help='The GCP Secret Manager URI for the Wiz proxy configuration.',
   )
 
 
@@ -5358,6 +5449,21 @@ Changes node pool upgrade strategy to blue-green upgrade.
       '--enable-blue-green-upgrade',
       action='store_true',
       help=blue_green_upgrade_help,
+      hidden=hidden,
+  )
+
+
+def AddEnableUpgradeInPlaceFlag(parser, hidden=True):
+  """Adds --enable-upgrade-in-place flag to the parser."""
+  help_text = """\
+Enable in-place upgrades for the node pool. In-place upgrades reboot the
+nodes in-place on the same physical host, preserving attached Local SSDs.
+"""
+  parser.add_argument(
+      '--enable-upgrade-in-place',
+      action='store_true',
+      default=None,
+      help=help_text,
       hidden=hidden,
   )
 
@@ -9031,7 +9137,7 @@ def AddAutopilotPrivilegedAdmissionFlag(parser):
   )
 
 
-def AddEnableSliceControllerFlag(parser, hidden=True):
+def AddEnableSliceControllerFlag(parser, hidden=False):
   """Adds Slice Controller flag to the given parser.
 
   Args:

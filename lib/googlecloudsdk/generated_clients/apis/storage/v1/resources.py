@@ -115,6 +115,13 @@ class Collections(enum.Enum):
       ['projectId'],
       True
   )
+  RAPIDCACHES = (
+      'rapidCaches',
+      'b/{bucket}/rapidCaches/{rapidCacheId}',
+      {},
+      ['bucket', 'rapidCacheId'],
+      True
+  )
 
   def __init__(self, collection_name, path, flat_paths, params,
                enable_uri_parsing):

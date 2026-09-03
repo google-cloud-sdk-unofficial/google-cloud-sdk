@@ -198,10 +198,7 @@ def EncryptedSSLCredentials(config_path):
 
 
 def _ShouldRepairECP(cert_config):
-  """Check if ECP binaries should be installed and the ECP config updated (internal users only)."""
-  if not properties.IsInternalUserCheck():
-    return False
-
+  """Check if ECP binaries should be installed and the ECP config updated."""
   if 'cert_configs' not in cert_config:
     return False
 
@@ -239,7 +236,45 @@ def _GetPlatform():
   return platform
 
 
-def _RepairECP(cert_config_file_path):
+def _InstallECP(updater, sdk_root: str):
+  """Installs enterprise-certificate-proxy component.
+
+  Args:
+    updater: update_manager.UpdateManager, the update manager instance.
+    sdk_root: str, the root directory of the Google Cloud SDK installation.
+
+  Raises:
+    exceptions.Error: If the user lacks admin/write permissions.
+    update_manager.MissingRequiredComponentsError: If component install fails.
+  """
+  from googlecloudsdk.core.updater import update_manager  # pylint:disable=g-import-not-at-top
+
+  log.status.Print(
+      'Device appears to be enrolled in Certificate Based Access but is'
+      ' missing critical components. Installing'
+      ' enterprise-certificate-proxy and restarting gcloud.'
+  )
+  restart_args = ['components', 'install', 'enterprise-certificate-proxy']
+  try:
+    if not updater.Install(
+        ['enterprise-certificate-proxy'],
+        throw_if_unattended=True,
+        restart_args=restart_args,
+    ):
+      raise update_manager.MissingRequiredComponentsError(
+          'Enterprise Certificate Proxy could not be installed.'
+      )
+  except exceptions.RequiresAdminRightsError as e:
+    raise exceptions.Error(
+        'Enterprise Certificate Proxy cannot be repaired because you do not'
+        ' have permission to modify the Google Cloud SDK installation'
+        ' directory [{sdk_root}]. Please reinstall Google Cloud SDK in a'
+        ' location where you have write permissions, such as your home'
+        ' directory.'.format(sdk_root=sdk_root)
+    ) from e
+
+
+def _RepairECP(cert_config_file_path: str):
   """Install ECP and update the ecp config to include the new binaries.
 
   Args:
@@ -257,6 +292,7 @@ def _RepairECP(cert_config_file_path):
     return
 
   # Temporarily disable client certificate to avoid deadlock.
+  # TODO(b/544752521): See if this disabling can be removed.
   properties.VALUES.context_aware.use_client_certificate.Set(False)
 
   # Update manager depends on Context Aware, so cannot import it at the top.
@@ -267,30 +303,22 @@ def _RepairECP(cert_config_file_path):
       sdk_root=sdk_root, url=None, platform_filter=platform
   )
 
-  try:
-    already_installed = updater.EnsureInstalledAndRestart(
-        ['enterprise-certificate-proxy'],
-        'Device appears to be enrolled in Certificate Based Access but is'
-        ' missing critical components. Installing enterprise-certificate-proxy'
-        ' and restarting gcloud.',
-    )
-  except exceptions.RequiresAdminRightsError as e:
-    raise exceptions.Error(
-        'Enterprise Certificate Proxy cannot be repaired because you do not'
-        ' have permission to modify the Google Cloud SDK installation'
-        ' directory [{sdk_root}]. Please reinstall Google Cloud SDK in a'
-        ' location where you have write permissions, such as your home'
-        ' directory.'.format(
-            sdk_root=config.Paths().sdk_root
-        )
-    ) from e
+  installed_components = updater.GetCurrentVersionsInformation(
+      include_hidden=True
+  )
+  needs_install = 'enterprise-certificate-proxy' not in installed_components
 
-  if already_installed:
-    enterprise_certificate_config.update_config(
-        enterprise_certificate_config.platform_to_config(platform),
-        output_file=cert_config_file_path,
-    )
-    properties.VALUES.context_aware.use_client_certificate.Set(True)
+  if needs_install:
+    _InstallECP(updater, sdk_root)
+
+  enterprise_certificate_config.update_config(
+      enterprise_certificate_config.platform_to_config(platform),
+      output_file=cert_config_file_path,
+  )
+  properties.VALUES.context_aware.use_client_certificate.Set(True)
+
+  if needs_install:
+    update_manager.RestartCommand()
 
 
 def GetCertificateConfig(certificate_config_file_path: str):

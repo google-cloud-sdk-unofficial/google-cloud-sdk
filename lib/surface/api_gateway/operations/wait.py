@@ -51,7 +51,7 @@ class Wait(base.Command):
     resource_args.AddOperationResourceArgs(parser, 'poll')
 
   def Run(self, args):
-    client = operations.OperationsClient()
+    client = operations.OperationsClient(release_track=self.ReleaseTrack())
     operation_ref = args.CONCEPTS.operation.Parse()
 
     # To give a better message for already-completed operations, get the

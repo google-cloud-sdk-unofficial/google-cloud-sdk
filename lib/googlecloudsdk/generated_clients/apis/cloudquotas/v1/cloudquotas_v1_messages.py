@@ -1138,6 +1138,9 @@ class QuotaInfo(_messages.Message):
 
   Enums:
     ContainerTypeValueValuesEnum: The container type of the QuotaInfo.
+    TrafficSourceValueValuesEnum: Output only. Indicates the traffic type
+      attribution for this quota limit (e.g. agentic). This is an
+      informational field used to categorize and filter the quota limits.
 
   Fields:
     containerType: The container type of the QuotaInfo.
@@ -1171,6 +1174,9 @@ class QuotaInfo(_messages.Message):
     serviceRequestQuotaUri: URI to the page where users can request more quota
       for the cloud service-for example, https://console.cloud.google.com/iam-
       admin/quotas.
+    trafficSource: Output only. Indicates the traffic type attribution for
+      this quota limit (e.g. agentic). This is an informational field used to
+      categorize and filter the quota limits.
   """
 
   class ContainerTypeValueValuesEnum(_messages.Enum):
@@ -1186,6 +1192,23 @@ class QuotaInfo(_messages.Message):
     PROJECT = 1
     FOLDER = 2
     ORGANIZATION = 3
+
+  class TrafficSourceValueValuesEnum(_messages.Enum):
+    r"""Output only. Indicates the traffic type attribution for this quota
+    limit (e.g. agentic). This is an informational field used to categorize
+    and filter the quota limits.
+
+    Values:
+      TRAFFIC_SOURCE_UNSPECIFIED: This quota limit applies to all traffic.
+        This is the default value.
+      TRAFFIC_SOURCE_NONAGENTIC: This quota limit applies to traffic not
+        recognized as agentic.
+      TRAFFIC_SOURCE_AGENTIC: This quota limit applies to only agentic
+        traffic.
+    """
+    TRAFFIC_SOURCE_UNSPECIFIED = 0
+    TRAFFIC_SOURCE_NONAGENTIC = 1
+    TRAFFIC_SOURCE_AGENTIC = 2
 
   containerType = _messages.EnumField('ContainerTypeValueValuesEnum', 1)
   dimensions = _messages.StringField(2, repeated=True)
@@ -1203,6 +1226,7 @@ class QuotaInfo(_messages.Message):
   refreshInterval = _messages.StringField(14)
   service = _messages.StringField(15)
   serviceRequestQuotaUri = _messages.StringField(16)
+  trafficSource = _messages.EnumField('TrafficSourceValueValuesEnum', 17)
 
 
 class QuotaPreference(_messages.Message):

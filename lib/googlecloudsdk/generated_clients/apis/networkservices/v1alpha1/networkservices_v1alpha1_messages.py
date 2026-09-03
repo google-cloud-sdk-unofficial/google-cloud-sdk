@@ -39,6 +39,10 @@ class AgentConnectivityTemplate(_messages.Message):
       AGENT_TO_ANYWHERE as carryovers from Agent Gateway's original resource
       model. The path is immutable once set. Exactly one path can be set.
     AccessTypesValueListEntryValuesEnum:
+    AgentComputeValueValuesEnum: Optional. The compute environment where the
+      agent is hosted. Exactly one type of compute must be chosen.
+    DeploymentModelValueValuesEnum: Required. The deployment model for the
+      gateway.
 
   Messages:
     LabelsValue: Optional. Set of label tags associated with the
@@ -51,7 +55,10 @@ class AgentConnectivityTemplate(_messages.Message):
       immutable once set. Exactly one path can be set.
     accessTypes: Optional. The types of network access provided to the
       gateway. Both PUBLIC and PRIVATE can be configured.
+    agentCompute: Optional. The compute environment where the agent is hosted.
+      Exactly one type of compute must be chosen.
     createTime: Output only. The timestamp when the resource was created.
+    deploymentModel: Required. The deployment model for the gateway.
     description: Optional. A free-text description of the resource. Max length
       1024 characters.
     egressNetworkConfig: Optional. Configuration for egress network traffic.
@@ -92,6 +99,33 @@ class AgentConnectivityTemplate(_messages.Message):
     PUBLIC = 1
     PRIVATE = 2
 
+  class AgentComputeValueValuesEnum(_messages.Enum):
+    r"""Optional. The compute environment where the agent is hosted. Exactly
+    one type of compute must be chosen.
+
+    Values:
+      AGENT_COMPUTE_UNSPECIFIED: Unspecified compute type.
+      GKE: Google Kubernetes Engine.
+      CLOUD_RUN: Google Cloud Run.
+      BORG: Google Borg (for 1P producers).
+    """
+    AGENT_COMPUTE_UNSPECIFIED = 0
+    GKE = 1
+    CLOUD_RUN = 2
+    BORG = 3
+
+  class DeploymentModelValueValuesEnum(_messages.Enum):
+    r"""Required. The deployment model for the gateway.
+
+    Values:
+      DEPLOYMENT_MODEL_UNSPECIFIED: Unspecified deployment model.
+      CENTRALIZED: Centralized deployment.
+      AMBIENT: Ambient deployment.
+    """
+    DEPLOYMENT_MODEL_UNSPECIFIED = 0
+    CENTRALIZED = 1
+    AMBIENT = 2
+
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
     r"""Optional. Set of label tags associated with the
@@ -119,13 +153,15 @@ class AgentConnectivityTemplate(_messages.Message):
 
   accessPath = _messages.EnumField('AccessPathValueValuesEnum', 1)
   accessTypes = _messages.EnumField('AccessTypesValueListEntryValuesEnum', 2, repeated=True)
-  createTime = _messages.StringField(3)
-  description = _messages.StringField(4)
-  egressNetworkConfig = _messages.MessageField('EgressNetworkConfig', 5)
-  etag = _messages.StringField(6)
-  labels = _messages.MessageField('LabelsValue', 7)
-  name = _messages.StringField(8)
-  updateTime = _messages.StringField(9)
+  agentCompute = _messages.EnumField('AgentComputeValueValuesEnum', 3)
+  createTime = _messages.StringField(4)
+  deploymentModel = _messages.EnumField('DeploymentModelValueValuesEnum', 5)
+  description = _messages.StringField(6)
+  egressNetworkConfig = _messages.MessageField('EgressNetworkConfig', 7)
+  etag = _messages.StringField(8)
+  labels = _messages.MessageField('LabelsValue', 9)
+  name = _messages.StringField(10)
+  updateTime = _messages.StringField(11)
 
 
 class AgentGateway(_messages.Message):
@@ -788,9 +824,10 @@ class CDNPolicy(_messages.Message):
       signed request is rejected if its expiration time is later than `now` +
       `signed_request_maximum_expiration_ttl`, where `now` is the time at
       which the signed request is first handled by the CDN. - The TTL must be
-      > 0. - Fractions of a second are not allowed. By default,
-      `signed_request_maximum_expiration_ttl` is not set and the expiration
-      time of a signed request might be arbitrarily far into future.
+      > `0` and <= `315360000s` (10 years). - Fractions of a second are not
+      allowed. By default, `signed_request_maximum_expiration_ttl` is not set
+      and the expiration time of a signed request might be arbitrarily far
+      into future.
     signedRequestMode: Optional. Specifies whether to enforce signed requests.
       The default value is DISABLED, which means all content is public, and
       does not authorize access. You must also set a signed_request_keyset to
@@ -1831,6 +1868,11 @@ class ExpressLink(_messages.Message):
       resource.
 
   Fields:
+    cloudRunSecurityInfo: Output only. Cloud Run security information if the
+      ExpressLink destination is a Cloud Run service.
+    cloudRunSourceInfo: Output only. Cloud Run source observability details.
+    connectionStatus: Output only. The connection status and negotiated
+      parameters.
     createTime: Output only. The timestamp when the resource was created.
     description: Optional. A free-text description of the resource. Max length
       1024 characters.
@@ -1838,6 +1880,8 @@ class ExpressLink(_messages.Message):
     etag: Optional. Etag of the resource. If this is provided, it must match
       the server's etag. If the provided etag does not match the server's
       etag, the request will fail with a 409 ABORTED error.
+    forwardingRuleInfo: Output only. Forwarding Rule information if the
+      ExpressLink destination is a Forwarding Rule.
     labels: Optional. Set of label tags associated with the ExpressLink
       resource.
     matches: Optional. A list of matches define conditions used to match
@@ -1849,6 +1893,8 @@ class ExpressLink(_messages.Message):
       services, at least one Match with valid hostname is required.
     name: Identifier. Name of the ExpressLink resource. It matches pattern
       `projects/*/locations/*/expressLinks/`.
+    pscEndpointInfo: Output only. Private Service Connect (PSC) endpoint
+      information if the ExpressLink destination is a PSC service.
     source: Optional. The source service(s) for this binding.
     updateTime: Output only. The timestamp when the resource was updated.
   """
@@ -1877,15 +1923,205 @@ class ExpressLink(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  createTime = _messages.StringField(1)
-  description = _messages.StringField(2)
-  destination = _messages.MessageField('ExpressLinkDestination', 3)
-  etag = _messages.StringField(4)
-  labels = _messages.MessageField('LabelsValue', 5)
-  matches = _messages.MessageField('ExpressLinkMatch', 6, repeated=True)
-  name = _messages.StringField(7)
-  source = _messages.MessageField('ExpressLinkSource', 8)
-  updateTime = _messages.StringField(9)
+  cloudRunSecurityInfo = _messages.MessageField('ExpressLinkCloudRunSecurityInfo', 1)
+  cloudRunSourceInfo = _messages.MessageField('ExpressLinkCloudRunSourceInfo', 2)
+  connectionStatus = _messages.MessageField('ExpressLinkConnectionStatus', 3, repeated=True)
+  createTime = _messages.StringField(4)
+  description = _messages.StringField(5)
+  destination = _messages.MessageField('ExpressLinkDestination', 6)
+  etag = _messages.StringField(7)
+  forwardingRuleInfo = _messages.MessageField('ExpressLinkForwardingRuleInfo', 8)
+  labels = _messages.MessageField('LabelsValue', 9)
+  matches = _messages.MessageField('ExpressLinkMatch', 10, repeated=True)
+  name = _messages.StringField(11)
+  pscEndpointInfo = _messages.MessageField('ExpressLinkPscEndpointInfo', 12)
+  source = _messages.MessageField('ExpressLinkSource', 13)
+  updateTime = _messages.StringField(14)
+
+
+class ExpressLinkAuthenticationMethod(_messages.Message):
+  r"""AuthenticationMethod specifies identity type and credential type pair.
+
+  Enums:
+    CredentialTypeValueValuesEnum: Output only. Credential type supported or
+      used.
+    IdentityTypeValueValuesEnum: Output only. Identity type supported or used.
+
+  Fields:
+    credentialType: Output only. Credential type supported or used.
+    identityType: Output only. Identity type supported or used.
+  """
+
+  class CredentialTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. Credential type supported or used.
+
+    Values:
+      CREDENTIAL_TYPE_UNSPECIFIED: Unspecified credential type.
+      GCP_ACCESS_TOKEN: Google Cloud Access Token credential.
+      JWT: JSON Web Token credential.
+      BOUND_GCP_ACCESS_TOKEN: Bound Google Cloud Access Token credential.
+      BOUND_JWT: Bound JSON Web Token credential.
+      MTLS: Mutual TLS credential.
+    """
+    CREDENTIAL_TYPE_UNSPECIFIED = 0
+    GCP_ACCESS_TOKEN = 1
+    JWT = 2
+    BOUND_GCP_ACCESS_TOKEN = 3
+    BOUND_JWT = 4
+    MTLS = 5
+
+  class IdentityTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. Identity type supported or used.
+
+    Values:
+      IDENTITY_TYPE_UNSPECIFIED: Unspecified identity type.
+      SERVICE_ACCOUNT: Service Account identity.
+      AGENT_IDENTITY: Agent identity.
+      WORKLOAD_IDENTITY: Workload identity.
+      OAUTH: OAuth identity.
+    """
+    IDENTITY_TYPE_UNSPECIFIED = 0
+    SERVICE_ACCOUNT = 1
+    AGENT_IDENTITY = 2
+    WORKLOAD_IDENTITY = 3
+    OAUTH = 4
+
+  credentialType = _messages.EnumField('CredentialTypeValueValuesEnum', 1)
+  identityType = _messages.EnumField('IdentityTypeValueValuesEnum', 2)
+
+
+class ExpressLinkCloudRunSecurityInfo(_messages.Message):
+  r"""CloudRunSecurityInfo provides security details for Cloud Run to Cloud
+  Run ExpressLinks.
+
+  Enums:
+    MtlsTierValueValuesEnum: Output only. Identifies the level of mTLS
+      transport security in use.
+
+  Fields:
+    mtlsTier: Output only. Identifies the level of mTLS transport security in
+      use.
+    serverAuthenticationMethods: Output only. The inbound server
+      authentication methods required by the destination Cloud Run service.
+  """
+
+  class MtlsTierValueValuesEnum(_messages.Enum):
+    r"""Output only. Identifies the level of mTLS transport security in use.
+
+    Values:
+      MTLS_TIER_UNSPECIFIED: Unspecified mTLS tier.
+      STRICT: Strict mTLS transport security.
+      PERMISSIVE: Permissive mTLS transport security.
+    """
+    MTLS_TIER_UNSPECIFIED = 0
+    STRICT = 1
+    PERMISSIVE = 2
+
+  mtlsTier = _messages.EnumField('MtlsTierValueValuesEnum', 1)
+  serverAuthenticationMethods = _messages.MessageField('ExpressLinkAuthenticationMethod', 2, repeated=True)
+
+
+class ExpressLinkCloudRunSourceInfo(_messages.Message):
+  r"""CloudRunSourceInfo provides observability details for Cloud Run source
+  services.
+
+  Fields:
+    workloads: Output only. Observability details for Cloud Run source
+      workloads.
+  """
+
+  workloads = _messages.MessageField('ExpressLinkCloudRunSourceInfoWorkloadInfo', 1, repeated=True)
+
+
+class ExpressLinkCloudRunSourceInfoWorkloadInfo(_messages.Message):
+  r"""WorkloadInfo provides observability details for a single Cloud Run
+  source workload.
+
+  Fields:
+    clientAuthenticationMethods: Output only. The outbound authentication
+      methods the workload is capable of.
+    vpcNetwork: Output only. Consumer VPC network resource name.
+    workloadUri: Output only. The URI of the source workload (e.g. Cloud Run
+      revision).
+  """
+
+  clientAuthenticationMethods = _messages.MessageField('ExpressLinkAuthenticationMethod', 1, repeated=True)
+  vpcNetwork = _messages.StringField(2)
+  workloadUri = _messages.StringField(3)
+
+
+class ExpressLinkConnectionStatus(_messages.Message):
+  r"""ConnectionStatus details the resolved state, error status, and
+  negotiated configuration of the ExpressLink resource.
+
+  Enums:
+    CredentialTypeValueValuesEnum: Output only. The negotiated credential
+      type.
+    ErrorValueValuesEnum: Output only. Code representing the type of error
+      encountered.
+    RouteTypeValueValuesEnum: Output only. The route type of the connection
+      (e.g. HTTP).
+
+  Fields:
+    credentialType: Output only. The negotiated credential type.
+    error: Output only. Code representing the type of error encountered.
+    errorMessage: Output only. Detailed error message explaining the binding
+      failure.
+    routeType: Output only. The route type of the connection (e.g. HTTP).
+    workloadUri: Output only. The URI of the source workload this status
+      applies to.
+  """
+
+  class CredentialTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The negotiated credential type.
+
+    Values:
+      CREDENTIAL_TYPE_UNSPECIFIED: Unspecified credential type.
+      GCP_ACCESS_TOKEN: Google Cloud Access Token credential.
+      JWT: JSON Web Token credential.
+      BOUND_GCP_ACCESS_TOKEN: Bound Google Cloud Access Token credential.
+      BOUND_JWT: Bound JSON Web Token credential.
+      MTLS: Mutual TLS credential.
+    """
+    CREDENTIAL_TYPE_UNSPECIFIED = 0
+    GCP_ACCESS_TOKEN = 1
+    JWT = 2
+    BOUND_GCP_ACCESS_TOKEN = 3
+    BOUND_JWT = 4
+    MTLS = 5
+
+  class ErrorValueValuesEnum(_messages.Enum):
+    r"""Output only. Code representing the type of error encountered.
+
+    Values:
+      CODE_UNSPECIFIED: Unspecified error code.
+      NOT_FOUND: The destination service or required endpoint was not found.
+      PARTIAL_RESOLUTION_ERROR: Partial failure: some destination services
+        were resolved, but others failed.
+    """
+    CODE_UNSPECIFIED = 0
+    NOT_FOUND = 1
+    PARTIAL_RESOLUTION_ERROR = 2
+
+  class RouteTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The route type of the connection (e.g. HTTP).
+
+    Values:
+      ROUTE_TYPE_UNSPECIFIED: Unspecified route type.
+      HTTP: HTTP route type.
+      TCP: TCP route type.
+      GRPC: GRPC route type.
+    """
+    ROUTE_TYPE_UNSPECIFIED = 0
+    HTTP = 1
+    TCP = 2
+    GRPC = 3
+
+  credentialType = _messages.EnumField('CredentialTypeValueValuesEnum', 1)
+  error = _messages.EnumField('ErrorValueValuesEnum', 2)
+  errorMessage = _messages.StringField(3)
+  routeType = _messages.EnumField('RouteTypeValueValuesEnum', 4)
+  workloadUri = _messages.StringField(5)
 
 
 class ExpressLinkDestination(_messages.Message):
@@ -1902,6 +2138,19 @@ class ExpressLinkDestination(_messages.Message):
   """
 
   services = _messages.StringField(1, repeated=True)
+
+
+class ExpressLinkForwardingRuleInfo(_messages.Message):
+  r"""ForwardingRuleInfo provides operational details when the ExpressLink
+  destination is a Forwarding Rule.
+
+  Fields:
+    ipAddress: Output only. The IP address of the forwarding rule.
+    port: Output only. The port or port range of the forwarding rule.
+  """
+
+  ipAddress = _messages.StringField(1)
+  port = _messages.StringField(2)
 
 
 class ExpressLinkMatch(_messages.Message):
@@ -1921,6 +2170,38 @@ class ExpressLinkMatch(_messages.Message):
   """
 
   hostname = _messages.StringField(1)
+
+
+class ExpressLinkPscEndpointInfo(_messages.Message):
+  r"""Private Service Connect (PSC) endpoint information populated in the Get
+  API responses if the ExpressLink resource is bound to a PSC service.
+
+  Fields:
+    pscEndpoints: Output only. A list of PSC endpoints mapped to the PSC
+      producer service.
+  """
+
+  pscEndpoints = _messages.MessageField('ExpressLinkPscEndpointInfoPscEndpoint', 1, repeated=True)
+
+
+class ExpressLinkPscEndpointInfoPscEndpoint(_messages.Message):
+  r"""Private Service Connect (PSC) endpoint details.
+
+  Fields:
+    allowGlobalAccess: Output only. Whether the PSC endpoint is accessible
+      from all regions.
+    forwardingRule: Output only. The ForwardingRule resource name of the PSC
+      endpoint. Should match the pattern:
+      `projects/*/regions/*/forwardingRules/`.
+    pscEndpointAddress: Output only. The IP address of the PSC endpoint.
+    vpcNetwork: Output only. The resource name of the consumer VPC network.
+      Should match the pattern: `projects/*/global/networks/`.
+  """
+
+  allowGlobalAccess = _messages.BooleanField(1)
+  forwardingRule = _messages.StringField(2)
+  pscEndpointAddress = _messages.StringField(3)
+  vpcNetwork = _messages.StringField(4)
 
 
 class ExpressLinkSource(_messages.Message):
@@ -2168,11 +2449,7 @@ class ExtensionBindingTarget(_messages.Message):
   Fields:
     resources: Optional. The reference to the target resource, to which this
       binding should attach. Exactly one of `resources` or `scope` must be
-      set. For Agent Gateway, this would be the full resource name, in the
-      format:
-      `projects/{project}/locations/{location}/agentGateways/{agent_gateway}`.
-      For AI App, this would be the full resource name, in the format:
-      `projects/{project}/locations/{location}/applications/{application}`.
+      set.
     scope: Optional. Specifies the scope of resources to which this binding
       should attach. Exactly one of `resources` or `scope` must be set.
   """
@@ -2576,13 +2853,11 @@ class FlexShieldingOptions(_messages.Message):
         west3`.
       ME_CENTRAL1: Content is fetched from an origin or cache near `me-
         central1`.
-      US_EAST5: Content is fetched from an origin or cache near `us-east5`.
     """
     FLEX_SHIELDING_REGION_UNSPECIFIED = 0
     AFRICA_SOUTH1 = 1
     EUROPE_WEST3 = 2
     ME_CENTRAL1 = 3
-    US_EAST5 = 4
 
   flexShieldingRegions = _messages.EnumField('FlexShieldingRegionsValueListEntryValuesEnum', 1, repeated=True)
 
@@ -7953,16 +8228,45 @@ class NetworkservicesProjectsLocationsExpressLinksDeleteRequest(_messages.Messag
 class NetworkservicesProjectsLocationsExpressLinksGetRequest(_messages.Message):
   r"""A NetworkservicesProjectsLocationsExpressLinksGetRequest object.
 
+  Enums:
+    ViewValueValuesEnum: Optional. Determines the information level of the
+      ExpressLink resource returned in the API response.
+
   Fields:
     name: Required. A name of the ExpressLink to get. Must be in the format
       `projects/*/locations/*/expressLinks/*`.
+    view: Optional. Determines the information level of the ExpressLink
+      resource returned in the API response.
   """
 
+  class ViewValueValuesEnum(_messages.Enum):
+    r"""Optional. Determines the information level of the ExpressLink resource
+    returned in the API response.
+
+    Values:
+      EXPRESS_LINK_VIEW_UNSPECIFIED: The unset value. The API will default to
+        `EXPRESS_LINK_VIEW_BASIC`.
+      EXPRESS_LINK_VIEW_BASIC: Includes the configuration of an ExpressLink
+        resource, but not the debug information (e.g. PSC endpoints) of the
+        bound service. This is the default value for the Get and List APIs.
+      EXPRESS_LINK_VIEW_FULL: Includes the configuration of an ExpressLink
+        resource and all the debug information (e.g. PSC endpoints) of the
+        bound service. This is available only for the Get API.
+    """
+    EXPRESS_LINK_VIEW_UNSPECIFIED = 0
+    EXPRESS_LINK_VIEW_BASIC = 1
+    EXPRESS_LINK_VIEW_FULL = 2
+
   name = _messages.StringField(1, required=True)
+  view = _messages.EnumField('ViewValueValuesEnum', 2)
 
 
 class NetworkservicesProjectsLocationsExpressLinksListRequest(_messages.Message):
   r"""A NetworkservicesProjectsLocationsExpressLinksListRequest object.
+
+  Enums:
+    ViewValueValuesEnum: Optional. Determines the information level of the
+      ExpressLink resources returned in the API response.
 
   Fields:
     pageSize: Maximum number of ExpressLinks to return per call.
@@ -7971,11 +8275,32 @@ class NetworkservicesProjectsLocationsExpressLinksListRequest(_messages.Message)
       call, and that the system should return the next page of data.
     parent: Required. The project and location from which the ExpressLinks
       should be listed, specified in the format `projects/*/locations/*`.
+    view: Optional. Determines the information level of the ExpressLink
+      resources returned in the API response.
   """
+
+  class ViewValueValuesEnum(_messages.Enum):
+    r"""Optional. Determines the information level of the ExpressLink
+    resources returned in the API response.
+
+    Values:
+      EXPRESS_LINK_VIEW_UNSPECIFIED: The unset value. The API will default to
+        `EXPRESS_LINK_VIEW_BASIC`.
+      EXPRESS_LINK_VIEW_BASIC: Includes the configuration of an ExpressLink
+        resource, but not the debug information (e.g. PSC endpoints) of the
+        bound service. This is the default value for the Get and List APIs.
+      EXPRESS_LINK_VIEW_FULL: Includes the configuration of an ExpressLink
+        resource and all the debug information (e.g. PSC endpoints) of the
+        bound service. This is available only for the Get API.
+    """
+    EXPRESS_LINK_VIEW_UNSPECIFIED = 0
+    EXPRESS_LINK_VIEW_BASIC = 1
+    EXPRESS_LINK_VIEW_FULL = 2
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
+  view = _messages.EnumField('ViewValueValuesEnum', 4)
 
 
 class NetworkservicesProjectsLocationsExpressLinksPatchRequest(_messages.Message):
@@ -13053,7 +13378,7 @@ class ProducerExtension(_messages.Message):
   Messages:
     LabelsValue: Optional. Set of labels associated with the
       `ProducerExtension` resource. The format must comply with [the following
-      requirements]((https://cloud.google.com/compute/docs/labeling-
+      requirements](https://cloud.google.com/compute/docs/labeling-
       resources#requirements).
 
   Fields:
@@ -13066,7 +13391,7 @@ class ProducerExtension(_messages.Message):
       `ProducerExtension` offers.
     labels: Optional. Set of labels associated with the `ProducerExtension`
       resource. The format must comply with [the following
-      requirements]((https://cloud.google.com/compute/docs/labeling-
+      requirements](https://cloud.google.com/compute/docs/labeling-
       resources#requirements).
     name: Identifier. Name of the `ProducerExtension` resource in the
       following format: `projects/{project}/locations/{location}/producerExten
@@ -13094,7 +13419,7 @@ class ProducerExtension(_messages.Message):
   class LabelsValue(_messages.Message):
     r"""Optional. Set of labels associated with the `ProducerExtension`
     resource. The format must comply with [the following
-    requirements]((https://cloud.google.com/compute/docs/labeling-
+    requirements](https://cloud.google.com/compute/docs/labeling-
     resources#requirements).
 
     Messages:

@@ -198,6 +198,18 @@ class Binding(_messages.Message):
   role = _messages.StringField(3)
 
 
+class BranchMetadata(_messages.Message):
+  r"""Contains metadata about a branch.
+
+  Fields:
+    branchName: The branch name.
+    lastCommit: The last commit on the branch.
+  """
+
+  branchName = _messages.StringField(1)
+  lastCommit = _messages.MessageField('CommitLogEntry', 2)
+
+
 class CancelOperationRequest(_messages.Message):
   r"""The request message for Operations.CancelOperation."""
 
@@ -208,6 +220,26 @@ class CancelWorkflowInvocationRequest(_messages.Message):
 
 class CancelWorkflowInvocationResponse(_messages.Message):
   r"""`CancelWorkflowInvocation` response message."""
+
+
+class CheckoutWorkspaceBranchRequest(_messages.Message):
+  r"""`CheckoutWorkspaceBranch` request message.
+
+  Fields:
+    branch: Required. The name of the branch in the Git repository to which
+      the workspace should be checked out.
+    createIfNotExists: Optional. If set to true and the branch does not exist,
+      it will be created. Otherwise, an error will be thrown.
+    sourceBranch: Optional. The name of the branch in the Git repository from
+      which the new branch should be created. If left unset, the workspace's
+      current branch name will be used. Accepts only branch names from
+      FetchWorkspaceBranches response, and can only be set if
+      `create_if_not_exists` is true. Oherwise, an error will be thrown.
+  """
+
+  branch = _messages.StringField(1)
+  createIfNotExists = _messages.BooleanField(2)
+  sourceBranch = _messages.StringField(3)
 
 
 class CodeCompilationConfig(_messages.Message):
@@ -1516,6 +1548,20 @@ class DataformProjectsLocationsRepositoriesWorkflowInvocationsQueryRequest(_mess
   pageToken = _messages.StringField(3)
 
 
+class DataformProjectsLocationsRepositoriesWorkspacesCheckoutRequest(_messages.Message):
+  r"""A DataformProjectsLocationsRepositoriesWorkspacesCheckoutRequest object.
+
+  Fields:
+    checkoutWorkspaceBranchRequest: A CheckoutWorkspaceBranchRequest resource
+      to be passed as the request body.
+    name: Required. The workspace resource name. Format: projects/{project}/lo
+      cations/{location}/repositories/{repository}/workspaces/{workspace}
+  """
+
+  checkoutWorkspaceBranchRequest = _messages.MessageField('CheckoutWorkspaceBranchRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
 class DataformProjectsLocationsRepositoriesWorkspacesCommitRequest(_messages.Message):
   r"""A DataformProjectsLocationsRepositoriesWorkspacesCommitRequest object.
 
@@ -1545,11 +1591,81 @@ class DataformProjectsLocationsRepositoriesWorkspacesCreateRequest(_messages.Mes
   workspaceId = _messages.StringField(3)
 
 
+class DataformProjectsLocationsRepositoriesWorkspacesDeleteBranchRequest(_messages.Message):
+  r"""A DataformProjectsLocationsRepositoriesWorkspacesDeleteBranchRequest
+  object.
+
+  Fields:
+    deleteBranchRequest: A DeleteBranchRequest resource to be passed as the
+      request body.
+    name: Required. The workspace resource name. Format: projects/{project}/lo
+      cations/{location}/repositories/{repository}/workspaces/{workspace}
+  """
+
+  deleteBranchRequest = _messages.MessageField('DeleteBranchRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
 class DataformProjectsLocationsRepositoriesWorkspacesDeleteRequest(_messages.Message):
   r"""A DataformProjectsLocationsRepositoriesWorkspacesDeleteRequest object.
 
   Fields:
     name: Required. The workspace resource's name.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class DataformProjectsLocationsRepositoriesWorkspacesFetchBranchesRequest(_messages.Message):
+  r"""A DataformProjectsLocationsRepositoriesWorkspacesFetchBranchesRequest
+  object.
+
+  Enums:
+    FilterValueValuesEnum: Optional. Filter for the returned list.
+
+  Fields:
+    filter: Optional. Filter for the returned list.
+    name: Required. The workspace resource name. Format: projects/{project}/lo
+      cations/{location}/repositories/{repository}/workspaces/{workspace}
+    pageSize: Optional. Maximum number of branches to return. The server may
+      return fewer items than requested. If unspecified, the server will pick
+      an appropriate default. The maximum value is 1000; values above 1000
+      will be coerced to 1000.
+    pageToken: Optional. Page token received from a previous
+      `FetchWorkspaceBranches` call. Provide this to retrieve the subsequent
+      page. When paginating, all other parameters provided to
+      `FetchWorkspaceBranches`, with the exception of `page_size`, must match
+      the call that provided the page token.
+  """
+
+  class FilterValueValuesEnum(_messages.Enum):
+    r"""Optional. Filter for the returned list.
+
+    Values:
+      BRANCH_FILTER_UNSPECIFIED: Default value. This value is unused.
+      LOCAL_ONLY: Returns local branches.
+      REMOTE_ONLY: Returns remote branches.
+      ALL: Returns all branches.
+    """
+    BRANCH_FILTER_UNSPECIFIED = 0
+    LOCAL_ONLY = 1
+    REMOTE_ONLY = 2
+    ALL = 3
+
+  filter = _messages.EnumField('FilterValueValuesEnum', 1)
+  name = _messages.StringField(2, required=True)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+
+
+class DataformProjectsLocationsRepositoriesWorkspacesFetchCurrentBranchRequest(_messages.Message):
+  r"""A
+  DataformProjectsLocationsRepositoriesWorkspacesFetchCurrentBranchRequest
+  object.
+
+  Fields:
+    name: Required. The workspace resource name. Format: projects/{project}/lo
+      cations/{location}/repositories/{repository}/workspaces/{workspace}
   """
 
   name = _messages.StringField(1, required=True)
@@ -1897,6 +2013,22 @@ class DataformProjectsLocationsRepositoriesWorkspacesSetIamPolicyRequest(_messag
   setIamPolicyRequest = _messages.MessageField('SetIamPolicyRequest', 2)
 
 
+class DataformProjectsLocationsRepositoriesWorkspacesSyncWorkspaceRefsRequest(_messages.Message):
+  r"""A
+  DataformProjectsLocationsRepositoriesWorkspacesSyncWorkspaceRefsRequest
+  object.
+
+  Fields:
+    name: Required. The workspace resource name. Format: projects/{project}/lo
+      cations/{location}/repositories/{repository}/workspaces/{workspace}
+    syncWorkspaceRefsRequest: A SyncWorkspaceRefsRequest resource to be passed
+      as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  syncWorkspaceRefsRequest = _messages.MessageField('SyncWorkspaceRefsRequest', 2)
+
+
 class DataformProjectsLocationsRepositoriesWorkspacesTestIamPermissionsRequest(_messages.Message):
   r"""A
   DataformProjectsLocationsRepositoriesWorkspacesTestIamPermissionsRequest
@@ -2140,6 +2272,24 @@ class Declaration(_messages.Message):
   relationDescriptor = _messages.MessageField('RelationDescriptor', 1)
 
 
+class DeleteBranchRequest(_messages.Message):
+  r"""`DeleteBranch` request message.
+
+  Fields:
+    branch: Required. The name of the branch in the Git repository to delete.
+    force: Optional. If set to true, any non-pushed commits on the branch will
+      be deleted. Upstream branch name will be the same as the branch to
+      delete.
+  """
+
+  branch = _messages.StringField(1)
+  force = _messages.BooleanField(2)
+
+
+class DeleteBranchResponse(_messages.Message):
+  r"""`DeleteBranch` response message."""
+
+
 class DeleteFile(_messages.Message):
   r"""Represents the delete file operation."""
 
@@ -2273,6 +2423,16 @@ class Expr(_messages.Message):
   title = _messages.StringField(4)
 
 
+class FetchCurrentWorkspaceBranchResponse(_messages.Message):
+  r"""Response message for `FetchCurrentWorkspaceBranch` method.
+
+  Fields:
+    branchName: The name of the current branch for the workspace.
+  """
+
+  branchName = _messages.StringField(1)
+
+
 class FetchFileDiffResponse(_messages.Message):
   r"""`FetchFileDiff` response message.
 
@@ -2328,6 +2488,19 @@ class FetchRepositoryHistoryResponse(_messages.Message):
   """
 
   commits = _messages.MessageField('CommitLogEntry', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
+class FetchWorkspaceBranchesResponse(_messages.Message):
+  r"""Response message for `FetchWorkspaceBranches` method.
+
+  Fields:
+    branches: The branches in the workspace.
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+  """
+
+  branches = _messages.MessageField('BranchMetadata', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
 
 
@@ -4052,6 +4225,26 @@ class Status(_messages.Message):
   message = _messages.StringField(3)
 
 
+class SyncWorkspaceRefsRequest(_messages.Message):
+  r"""`SyncWorkspaceRefs` request message.
+
+  Fields:
+    deepen: Optional. Can be used to deepen the commit history of shallow
+      clones. Git documentation: https://git-scm.com/docs/git-
+      fetch#Documentation/git-fetch.txt---deependepth
+    remoteBranchName: Optional. The name of the branch in the Git remote to
+      which the refs should be fetched for. If left unset, all remote branches
+      will be fetched.
+  """
+
+  deepen = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  remoteBranchName = _messages.StringField(2)
+
+
+class SyncWorkspaceRefsResponse(_messages.Message):
+  r"""`SyncWorkspaceRefs` response message."""
+
+
 class TableUpdateTrigger(_messages.Message):
   r"""Represents a table update trigger configuration.
 
@@ -4444,10 +4637,17 @@ class Workspace(_messages.Message):
       repository if this Workspace is protected by a KMS key.
     disableMoves: Optional. If set to true, workspaces will not be moved if
       its linked Repository is moved. Instead, it will be deleted.
+    enableBranchManagement: Immutable. Controls the enablement of branch
+      checkout for the workspace. When set to True, the workspace will be
+      allowed to checkout branches.
     internalMetadata: Output only. All the metadata information that is used
       internally to serve the resource. For example: timestamps, flags, status
       fields, etc. The format of this field is a JSON string.
     name: Identifier. The workspace's name.
+    originalBranch: Optional. Input only. Immutable. The name of the default
+      upstream branch for all pull/push operations in the remote repository
+      for this workspace. If empty, the HEAD branch from repository will be
+      used.
     privateResourceMetadata: Output only. Metadata indicating whether this
       resource is user-scoped. For `Workspace` resources, the `user_scoped`
       field is always `true`.
@@ -4456,9 +4656,11 @@ class Workspace(_messages.Message):
   createTime = _messages.StringField(1)
   dataEncryptionState = _messages.MessageField('DataEncryptionState', 2)
   disableMoves = _messages.BooleanField(3)
-  internalMetadata = _messages.StringField(4)
-  name = _messages.StringField(5)
-  privateResourceMetadata = _messages.MessageField('PrivateResourceMetadata', 6)
+  enableBranchManagement = _messages.BooleanField(4)
+  internalMetadata = _messages.StringField(5)
+  name = _messages.StringField(6)
+  originalBranch = _messages.StringField(7)
+  privateResourceMetadata = _messages.MessageField('PrivateResourceMetadata', 8)
 
 
 class WorkspaceCompilationOverrides(_messages.Message):

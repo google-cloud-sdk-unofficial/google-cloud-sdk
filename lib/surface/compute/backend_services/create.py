@@ -64,6 +64,7 @@ def _ResolveProtocol(messages, args, default='HTTP'):
 
 
 def AddIapFlag(parser, alpha=False):
+  """Adds IAP flag to the parser."""
   # TODO(b/34479878): It would be nice if the auto-generated help text were
   # a bit better so we didn't need to be quite so verbose here.
   metavar = None
@@ -72,19 +73,33 @@ def AddIapFlag(parser, alpha=False):
         'disabled|enabled,['
         'oauth2-client-id=OAUTH2-CLIENT-ID,'
         'oauth2-client-secret=OAUTH2-CLIENT-SECRET,'
-        'oauth2-client-info-developer-email-address=DEVELOPER-EMAIL-ADDRESS]'
+        'oauth2-client-info-client-name=CLIENT_NAME,'
+        'oauth2-client-info-developer-email-address=DEVELOPER_EMAIL,'
+        'oauth2-client-info-application-name=APPLICATION_NAME]'
     )
-  flags.AddIap(
-      parser,
-      metavar=metavar,
-      help="""\
-      Configure Identity Aware Proxy (IAP) for external HTTP(S) load balancing.
-      You can configure IAP to be `enabled` or `disabled` (default). If enabled,
-      you can provide values for `oauth2-client-id` and `oauth2-client-secret`.
-      For example, `--iap=enabled,oauth2-client-id=foo,oauth2-client-secret=bar`
-      turns IAP on, and `--iap=disabled` turns it off. For more information, see
-      https://cloud.google.com/iap/.
-      """)
+    help_str = """\
+        Configure Identity Aware Proxy (IAP) for external HTTP(S) load balancing.
+        You can configure IAP to be `enabled` or `disabled` (default). If enabled,
+        you can provide values for `oauth2-client-id`, `oauth2-client-secret`,
+        `oauth2-client-info-client-name`,
+        `oauth2-client-info-developer-email-address`, and
+        `oauth2-client-info-application-name`.
+        For example, `--iap=enabled,oauth2-client-id=foo,oauth2-client-secret=bar,oauth2-client-info-client-name=baz,oauth2-client-info-developer-email-address=dev@example.com,oauth2-client-info-application-name=app`
+        turns IAP on, and `--iap=disabled` turns it off. For more information, see
+        https://cloud.google.com/iap/.
+        """
+  else:
+    metavar = None
+    help_str = """\
+        Configure Identity Aware Proxy (IAP) for external HTTP(S) load balancing.
+        You can configure IAP to be `enabled` or `disabled` (default). If enabled,
+        you can provide values for `oauth2-client-id` and `oauth2-client-secret`.
+        For example, `--iap=enabled,oauth2-client-id=foo,oauth2-client-secret=bar`
+        turns IAP on, and `--iap=disabled` turns it off. For more information, see
+        https://cloud.google.com/iap/.
+        """
+
+  flags.AddIap(parser, help=help_str, metavar=metavar)
 
 
 def _ApplyHaPolicyArgs(messages, args, backend_service):
@@ -140,7 +155,16 @@ class CreateHelper(object):
         parser, support_identity=support_identity
     )
     flags.AddServiceBindings(parser)
+    neg_group = parser.add_group(mutex=False, required=False, hidden=True)
+    neg_group_arg = flags.GetNetworkEndpointGroupArg(
+        support_global_neg=True, support_region_neg=True
+    )
+    neg_group_arg.required = False
+    neg_group_arg.AddArgument(
+        neg_group, operation_type='create the backend service'
+    )
     flags.AddTimeout(parser)
+    flags.AddMaxStreamDuration(parser)
     flags.AddPortName(parser)
     flags.AddProtocol(
         parser,
@@ -351,6 +375,11 @@ class CreateHelper(object):
 
     _ApplyHaPolicyArgs(client.messages, args, backend_service)
 
+    group_ref = self._GetNetworkEndpointGroupRef(args, holder.resources, client)
+    if group_ref:
+      backend = client.messages.Backend(group=group_ref.SelfLink())
+      backend_service.backends = [backend]
+
     request = client.messages.ComputeBackendServicesInsertRequest(
         backendService=backend_service, project=backend_services_ref.project
     )
@@ -485,12 +514,28 @@ class CreateHelper(object):
 
     _ApplyHaPolicyArgs(client.messages, args, backend_service)
 
+    group_ref = self._GetNetworkEndpointGroupRef(args, holder.resources, client)
+    if group_ref:
+      backend = client.messages.Backend(group=group_ref.SelfLink())
+      backend_service.backends = [backend]
+
     request = client.messages.ComputeRegionBackendServicesInsertRequest(
         backendService=backend_service,
         region=backend_services_ref.region,
         project=backend_services_ref.project)
 
     return [(client.apitools_client.regionBackendServices, 'Insert', request)]
+
+  def _GetNetworkEndpointGroupRef(self, args, resources, client):
+    if args.IsSpecified('network_endpoint_group'):
+      return flags.GetNetworkEndpointGroupArg(
+          support_global_neg=True, support_region_neg=True
+      ).ResolveAsResource(
+          args,
+          resources,
+          scope_lister=compute_flags.GetDefaultScopeLister(client),
+      )
+    return None
 
   def _CreateBackendService(self, holder, args, backend_services_ref):
     """Creates a global backend service."""
@@ -511,6 +556,12 @@ class CreateHelper(object):
     else:
       port_name = _ResolvePortName(args)
 
+    max_stream_duration = (
+        holder.client.messages.Duration(seconds=args.max_stream_duration)
+        if args.max_stream_duration is not None
+        else None
+    )
+
     return holder.client.messages.BackendService(
         description=args.description,
         name=backend_services_ref.Name(),
@@ -521,6 +572,7 @@ class CreateHelper(object):
         ),
         timeoutSec=args.timeout,
         enableCDN=enable_cdn,
+        maxStreamDuration=max_stream_duration,
     )
 
   def _CreateRegionBackendService(self, holder, args, backend_services_ref):
@@ -529,15 +581,25 @@ class CreateHelper(object):
     health_checks = flags.GetHealthCheckUris(args, self, holder.resources)
     messages = holder.client.messages
 
+    max_stream_duration = (
+        messages.Duration(seconds=args.max_stream_duration)
+        if args.max_stream_duration is not None
+        else None
+    )
+
     return messages.BackendService(
         description=args.description,
         name=backend_services_ref.Name(),
         healthChecks=health_checks,
         loadBalancingScheme=(
             messages.BackendService.LoadBalancingSchemeValueValuesEnum(
-                args.load_balancing_scheme)),
+                args.load_balancing_scheme
+            )
+        ),
         protocol=_ResolveProtocol(messages, args, default='TCP'),
-        timeoutSec=args.timeout)
+        timeoutSec=args.timeout,
+        maxStreamDuration=max_stream_duration,
+    )
 
   def _ApplyIapArgs(self, messages, iap_arg, backend_service):
     if iap_arg is not None:

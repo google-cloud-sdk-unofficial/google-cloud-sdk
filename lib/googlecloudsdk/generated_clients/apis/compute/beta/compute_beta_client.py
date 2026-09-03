@@ -84,6 +84,7 @@ class ComputeBeta(base_api.BaseApiClient):
     self.licenses = self.LicensesService(self)
     self.machineImages = self.MachineImagesService(self)
     self.machineTypes = self.MachineTypesService(self)
+    self.managedRulesets = self.ManagedRulesetsService(self)
     self.networkAttachments = self.NetworkAttachmentsService(self)
     self.networkEdgeSecurityServices = self.NetworkEdgeSecurityServicesService(self)
     self.networkEndpointGroups = self.NetworkEndpointGroupsService(self)
@@ -8521,6 +8522,33 @@ policy or resource exists.
         supports_download=False,
     )
 
+    def GetVmExtensionState(self, request, global_params=None):
+      r"""Retrieves details of a specific VM extension state.
+This is a read-only API.
+
+      Args:
+        request: (ComputeInstancesGetVmExtensionStateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (VmExtensionState) The response message.
+      """
+      config = self.GetMethodConfig('GetVmExtensionState')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetVmExtensionState.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.instances.getVmExtensionState',
+        ordered_params=['project', 'zone', 'instance', 'extensionName'],
+        path_params=['extensionName', 'instance', 'project', 'zone'],
+        query_params=[],
+        relative_path='projects/{project}/zones/{zone}/instances/{instance}/vmExtensionStates/{extensionName}',
+        request_field='',
+        request_type_name='ComputeInstancesGetVmExtensionStateRequest',
+        response_type_name='VmExtensionState',
+        supports_download=False,
+    )
+
     def Insert(self, request, global_params=None):
       r"""Creates an instance resource in the specified project using the data.
 included in the request.
@@ -8602,6 +8630,33 @@ referrers to VM instances.
         request_field='',
         request_type_name='ComputeInstancesListReferrersRequest',
         response_type_name='InstanceListReferrers',
+        supports_download=False,
+    )
+
+    def ListVmExtensionStates(self, request, global_params=None):
+      r"""Lists all VM extensions states for a specific instance.
+This is a read-only API.
+
+      Args:
+        request: (ComputeInstancesListVmExtensionStatesRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListVmExtensionStatesResponse) The response message.
+      """
+      config = self.GetMethodConfig('ListVmExtensionStates')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ListVmExtensionStates.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.instances.listVmExtensionStates',
+        ordered_params=['project', 'zone', 'instance'],
+        path_params=['instance', 'project', 'zone'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess'],
+        relative_path='projects/{project}/zones/{zone}/instances/{instance}/vmExtensionStates',
+        request_field='',
+        request_type_name='ComputeInstancesListVmExtensionStatesRequest',
+        response_type_name='ListVmExtensionStatesResponse',
         supports_download=False,
     )
 
@@ -11847,6 +11902,68 @@ project.
         request_field='',
         request_type_name='ComputeMachineTypesListRequest',
         response_type_name='MachineTypeList',
+        supports_download=False,
+    )
+
+  class ManagedRulesetsService(base_api.BaseApiService):
+    """Service class for the managedRulesets resource."""
+
+    _NAME = 'managedRulesets'
+
+    def __init__(self, client):
+      super(ComputeBeta.ManagedRulesetsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Gets the details for the specified managed ruleset name.
+
+      Args:
+        request: (ComputeManagedRulesetsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ManagedRuleset) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.managedRulesets.get',
+        ordered_params=['project', 'managedRuleset'],
+        path_params=['managedRuleset', 'project'],
+        query_params=[],
+        relative_path='projects/{project}/global/managedRulesets/{managedRuleset}',
+        request_field='',
+        request_type_name='ComputeManagedRulesetsGetRequest',
+        response_type_name='ManagedRuleset',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Retrieves the list of all the managed rulesets available.
+
+      Args:
+        request: (ComputeManagedRulesetsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ManagedRulesetList) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.managedRulesets.list',
+        ordered_params=['project'],
+        path_params=['project'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess'],
+        relative_path='projects/{project}/global/managedRulesets',
+        request_field='',
+        request_type_name='ComputeManagedRulesetsListRequest',
+        response_type_name='ManagedRulesetList',
         supports_download=False,
     )
 

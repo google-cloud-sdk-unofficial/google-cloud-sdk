@@ -1,0 +1,17 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: Describe a warm pool.
+    description: Describe a warm pool.
+    examples: |-
+      To describe a warm pool `my-warm-pool` at location `us-central1`, run:
+
+        $ {command} my-warm-pool --location=us-central1
+
+  request:
+    collection: config.projects.locations.warmPools
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.infra_manager.resources:warm_pool
+      help_text: The warm pool to describe.

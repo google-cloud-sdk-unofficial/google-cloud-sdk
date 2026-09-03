@@ -23,6 +23,7 @@ class MarkdownRenderer(renderer.Renderer):
   """Renders markdown to markdown."""
 
   def __init__(self, *args, **kwargs):
+    kwargs.setdefault('excluded_sections', ('PROJECTION KEYS',))
     super(MarkdownRenderer, self).__init__(*args, **kwargs)
 
   def Write(self, text):

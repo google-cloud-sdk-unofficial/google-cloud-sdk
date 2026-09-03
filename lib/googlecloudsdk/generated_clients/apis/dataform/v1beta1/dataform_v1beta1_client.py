@@ -1037,6 +1037,33 @@ class DataformV1beta1(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+    def Checkout(self, request, global_params=None):
+      r"""Checkout a branch in a Workspace.
+
+      Args:
+        request: (DataformProjectsLocationsRepositoriesWorkspacesCheckoutRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Checkout')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Checkout.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/repositories/{repositoriesId}/workspaces/{workspacesId}:checkout',
+        http_method='POST',
+        method_id='dataform.projects.locations.repositories.workspaces.checkout',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}:checkout',
+        request_field='checkoutWorkspaceBranchRequest',
+        request_type_name='DataformProjectsLocationsRepositoriesWorkspacesCheckoutRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
     def Commit(self, request, global_params=None):
       r"""Applies a Git commit for uncommitted files in a Workspace.
 
@@ -1115,6 +1142,87 @@ class DataformV1beta1(base_api.BaseApiClient):
         request_field='',
         request_type_name='DataformProjectsLocationsRepositoriesWorkspacesDeleteRequest',
         response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def DeleteBranch(self, request, global_params=None):
+      r"""Deletes a branch in a Workspace.
+
+      Args:
+        request: (DataformProjectsLocationsRepositoriesWorkspacesDeleteBranchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (DeleteBranchResponse) The response message.
+      """
+      config = self.GetMethodConfig('DeleteBranch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    DeleteBranch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/repositories/{repositoriesId}/workspaces/{workspacesId}:deleteBranch',
+        http_method='POST',
+        method_id='dataform.projects.locations.repositories.workspaces.deleteBranch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}:deleteBranch',
+        request_field='deleteBranchRequest',
+        request_type_name='DataformProjectsLocationsRepositoriesWorkspacesDeleteBranchRequest',
+        response_type_name='DeleteBranchResponse',
+        supports_download=False,
+    )
+
+    def FetchBranches(self, request, global_params=None):
+      r"""Fetches branches in a Workspace.
+
+      Args:
+        request: (DataformProjectsLocationsRepositoriesWorkspacesFetchBranchesRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (FetchWorkspaceBranchesResponse) The response message.
+      """
+      config = self.GetMethodConfig('FetchBranches')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    FetchBranches.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/repositories/{repositoriesId}/workspaces/{workspacesId}:fetchBranches',
+        http_method='GET',
+        method_id='dataform.projects.locations.repositories.workspaces.fetchBranches',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1beta1/{+name}:fetchBranches',
+        request_field='',
+        request_type_name='DataformProjectsLocationsRepositoriesWorkspacesFetchBranchesRequest',
+        response_type_name='FetchWorkspaceBranchesResponse',
+        supports_download=False,
+    )
+
+    def FetchCurrentBranch(self, request, global_params=None):
+      r"""Fetches the current branch of a Workspace.
+
+      Args:
+        request: (DataformProjectsLocationsRepositoriesWorkspacesFetchCurrentBranchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (FetchCurrentWorkspaceBranchResponse) The response message.
+      """
+      config = self.GetMethodConfig('FetchCurrentBranch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    FetchCurrentBranch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/repositories/{repositoriesId}/workspaces/{workspacesId}:fetchCurrentBranch',
+        http_method='GET',
+        method_id='dataform.projects.locations.repositories.workspaces.fetchCurrentBranch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}:fetchCurrentBranch',
+        request_field='',
+        request_type_name='DataformProjectsLocationsRepositoriesWorkspacesFetchCurrentBranchRequest',
+        response_type_name='FetchCurrentWorkspaceBranchResponse',
         supports_download=False,
     )
 
@@ -1628,6 +1736,33 @@ class DataformV1beta1(base_api.BaseApiClient):
         request_field='setIamPolicyRequest',
         request_type_name='DataformProjectsLocationsRepositoriesWorkspacesSetIamPolicyRequest',
         response_type_name='Policy',
+        supports_download=False,
+    )
+
+    def SyncWorkspaceRefs(self, request, global_params=None):
+      r"""Syncs the refs of a Workspace.
+
+      Args:
+        request: (DataformProjectsLocationsRepositoriesWorkspacesSyncWorkspaceRefsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SyncWorkspaceRefsResponse) The response message.
+      """
+      config = self.GetMethodConfig('SyncWorkspaceRefs')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SyncWorkspaceRefs.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/repositories/{repositoriesId}/workspaces/{workspacesId}:syncWorkspaceRefs',
+        http_method='POST',
+        method_id='dataform.projects.locations.repositories.workspaces.syncWorkspaceRefs',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}:syncWorkspaceRefs',
+        request_field='syncWorkspaceRefsRequest',
+        request_type_name='DataformProjectsLocationsRepositoriesWorkspacesSyncWorkspaceRefsRequest',
+        response_type_name='SyncWorkspaceRefsResponse',
         supports_download=False,
     )
 

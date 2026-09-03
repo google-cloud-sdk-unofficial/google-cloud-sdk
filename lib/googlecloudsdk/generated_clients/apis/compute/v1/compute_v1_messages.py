@@ -8891,6 +8891,9 @@ class Commitment(_messages.Message):
       MEMORY_OPTIMIZED_X4_960_16T: CUD bucket for X4 machine with 960 vCPUs
         and 16TB of memory.
       NETWORK_OPTIMIZED_C4N: CUD bucket for C4N (dual Diorite) machines.
+      NETWORK_OPTIMIZED_U4C: CUD bucket for NETWORK_OPTIMIZED_U4C machines.
+      NETWORK_OPTIMIZED_U4P: CUD bucket for NETWORK_OPTIMIZED_U4P machines.
+      NETWORK_OPTIMIZED_U4S: CUD bucket for NETWORK_OPTIMIZED_U4S machines.
       STORAGE_OPTIMIZED_Z3: <no description>
       TYPE_UNSPECIFIED: Note for internal users: When adding a new enum Type
         for v1, make sure to also add it in the comment for the `optional Type
@@ -8936,8 +8939,11 @@ class Commitment(_messages.Message):
     MEMORY_OPTIMIZED_X4_960_12T = 36
     MEMORY_OPTIMIZED_X4_960_16T = 37
     NETWORK_OPTIMIZED_C4N = 38
-    STORAGE_OPTIMIZED_Z3 = 39
-    TYPE_UNSPECIFIED = 40
+    NETWORK_OPTIMIZED_U4C = 39
+    NETWORK_OPTIMIZED_U4P = 40
+    NETWORK_OPTIMIZED_U4S = 41
+    STORAGE_OPTIMIZED_Z3 = 42
+    TYPE_UNSPECIFIED = 43
 
   autoRenew = _messages.BooleanField(1)
   category = _messages.EnumField('CategoryValueValuesEnum', 2)
@@ -48813,6 +48819,9 @@ class FutureReservation(_messages.Message):
       FutureReservation resource. It is populated for each instance of the
       FutureReservation resource, and includes the api_version the instance
       was retrieved through, and its canonical resource_type name.
+    resourceName: Name of the resource intended to be delivered. Name should
+      conform to RFC1035. This will be the name of storage pool or Exapool for
+      persistent disk FRs.
     schedulingType: Maintenance information for this reservation
     selfLink: Output only. [Output Only] Server-defined fully-qualified URL
       for this resource.
@@ -48826,6 +48835,7 @@ class FutureReservation(_messages.Message):
     specificSkuProperties: Future Reservation configuration to indicate
       instance properties and total count.
     status: Output only. [Output only] Status of the Future Reservation
+    storagePoolProperties: Storage pool details for the future reservation.
     timeWindow: Time window for this Future Reservation.
     zone: Output only. [Output Only] URL of the Zone where this future
       reservation resides.
@@ -48913,15 +48923,17 @@ class FutureReservation(_messages.Message):
   reservationMode = _messages.EnumField('ReservationModeValueValuesEnum', 17)
   reservationName = _messages.StringField(18)
   resourceMetadata = _messages.MessageField('ResourceMetadata', 19)
-  schedulingType = _messages.EnumField('SchedulingTypeValueValuesEnum', 20)
-  selfLink = _messages.StringField(21)
-  selfLinkWithId = _messages.StringField(22)
-  shareSettings = _messages.MessageField('ShareSettings', 23)
-  specificReservationRequired = _messages.BooleanField(24)
-  specificSkuProperties = _messages.MessageField('FutureReservationSpecificSKUProperties', 25)
-  status = _messages.MessageField('FutureReservationStatus', 26)
-  timeWindow = _messages.MessageField('FutureReservationTimeWindow', 27)
-  zone = _messages.StringField(28)
+  resourceName = _messages.StringField(20)
+  schedulingType = _messages.EnumField('SchedulingTypeValueValuesEnum', 21)
+  selfLink = _messages.StringField(22)
+  selfLinkWithId = _messages.StringField(23)
+  shareSettings = _messages.MessageField('ShareSettings', 24)
+  specificReservationRequired = _messages.BooleanField(25)
+  specificSkuProperties = _messages.MessageField('FutureReservationSpecificSKUProperties', 26)
+  status = _messages.MessageField('FutureReservationStatus', 27)
+  storagePoolProperties = _messages.MessageField('FutureReservationStoragePoolProperties', 28)
+  timeWindow = _messages.MessageField('FutureReservationTimeWindow', 29)
+  zone = _messages.StringField(30)
 
 
 class FutureReservationCommitmentInfo(_messages.Message):
@@ -49067,6 +49079,8 @@ class FutureReservationStatus(_messages.Message):
       requested amendment.
     autoCreatedReservations: Output only. Fully qualified urls of the
       automatically created reservations at start_time.
+    exapoolProvisionedCapacityGb: Output only. Exapool provisioned capacities
+      for each SKU type.
     existingMatchingUsageInfo: Output only. [Output Only] Represents the
       existing matching usage for the future reservation.
     fulfilledCount: Output only. This count indicates the fulfilled capacity
@@ -49085,6 +49099,8 @@ class FutureReservationStatus(_messages.Message):
     procurementStatus: Output only. Current state of this Future Reservation
     specificSkuProperties: A FutureReservationStatusSpecificSKUProperties
       attribute.
+    storagePoolProvisionedCapacity: Output only. Storage pool provisioned
+      capacities for each SKU type.
   """
 
   class AmendmentStatusValueValuesEnum(_messages.Enum):
@@ -49150,12 +49166,14 @@ class FutureReservationStatus(_messages.Message):
 
   amendmentStatus = _messages.EnumField('AmendmentStatusValueValuesEnum', 1)
   autoCreatedReservations = _messages.StringField(2, repeated=True)
-  existingMatchingUsageInfo = _messages.MessageField('FutureReservationStatusExistingMatchingUsageInfo', 3)
-  fulfilledCount = _messages.IntegerField(4)
-  lastKnownGoodState = _messages.MessageField('FutureReservationStatusLastKnownGoodState', 5)
-  lockTime = _messages.StringField(6)
-  procurementStatus = _messages.EnumField('ProcurementStatusValueValuesEnum', 7)
-  specificSkuProperties = _messages.MessageField('FutureReservationStatusSpecificSKUProperties', 8)
+  exapoolProvisionedCapacityGb = _messages.MessageField('StoragePoolExapoolProvisionedCapacityGb', 3)
+  existingMatchingUsageInfo = _messages.MessageField('FutureReservationStatusExistingMatchingUsageInfo', 4)
+  fulfilledCount = _messages.IntegerField(5)
+  lastKnownGoodState = _messages.MessageField('FutureReservationStatusLastKnownGoodState', 6)
+  lockTime = _messages.StringField(7)
+  procurementStatus = _messages.EnumField('ProcurementStatusValueValuesEnum', 8)
+  specificSkuProperties = _messages.MessageField('FutureReservationStatusSpecificSKUProperties', 9)
+  storagePoolProvisionedCapacity = _messages.MessageField('FutureReservationStoragePoolProvisionedCapacity', 10)
 
 
 class FutureReservationStatusExistingMatchingUsageInfo(_messages.Message):
@@ -49275,6 +49293,39 @@ class FutureReservationStatusSpecificSKUProperties(_messages.Message):
   """
 
   sourceInstanceTemplateId = _messages.StringField(1)
+
+
+class FutureReservationStoragePoolProperties(_messages.Message):
+  r"""Storage pool properties for the future reservation.
+
+  Fields:
+    requestedExapoolProvisionedCapacityGb: Requested exapool provisioned
+      capacity in GiB.
+    requestedStoragePoolProvisionedCapacity: Requested storage pool
+      provisioned capacity.
+    storagePoolType: Type of the storage pool.
+  """
+
+  requestedExapoolProvisionedCapacityGb = _messages.MessageField('StoragePoolExapoolProvisionedCapacityGb', 1)
+  requestedStoragePoolProvisionedCapacity = _messages.MessageField('FutureReservationStoragePoolProvisionedCapacity', 2)
+  storagePoolType = _messages.StringField(3)
+
+
+class FutureReservationStoragePoolProvisionedCapacity(_messages.Message):
+  r"""Storage pool provisioned capacities for each SKU type.
+
+  Fields:
+    poolProvisionedCapacityGb: Size of the storage pool in GiB.
+    poolProvisionedIops: Provisioned IOPS of the storage pool. Only relevant
+      if the storage pool type is hyperdisk-balanced.
+    poolProvisionedThroughput: Provisioned throughput of the storage pool in
+      MiB/s. Only relevant if the storage pool type is hyperdisk-balanced or
+      hyperdisk-throughput.
+  """
+
+  poolProvisionedCapacityGb = _messages.IntegerField(1)
+  poolProvisionedIops = _messages.IntegerField(2)
+  poolProvisionedThroughput = _messages.IntegerField(3)
 
 
 class FutureReservationTimeWindow(_messages.Message):
@@ -56885,6 +56936,8 @@ class InstanceFlexibilityPolicyInstanceSelection(_messages.Message):
     machineTypes: Alternative machine types to use for instances that are
       created from these properties. This field only accepts a machine type
       names, for example `n2-standard-4` and not URLs or partial URLs.
+    minCpuPlatform: Name of the minimum CPU platform to be used by this
+      instance selection. e.g. 'Intel Ice Lake'.
     rank: Rank when prioritizing the shape flexibilities. The instance
       selections with rank are considered first, in the ascending order of the
       rank. If not set, defaults to 0.
@@ -56892,7 +56945,8 @@ class InstanceFlexibilityPolicyInstanceSelection(_messages.Message):
 
   disks = _messages.MessageField('AttachedDisk', 1, repeated=True)
   machineTypes = _messages.StringField(2, repeated=True)
-  rank = _messages.IntegerField(3)
+  minCpuPlatform = _messages.StringField(3)
+  rank = _messages.IntegerField(4)
 
 
 class InstanceGroup(_messages.Message):
@@ -71463,6 +71517,9 @@ class NetworkEndpointGroup(_messages.Message):
 
     Values:
       GCE_VM_IP: The network endpoint is represented by an IP address.
+      GCE_VM_IP_DEDICATED_BACKEND: The network endpoint for targeting a
+        specific network interface of a VM instance in configurations with
+        multiple network interfaces on the same network.
       GCE_VM_IP_PORT: The network endpoint is represented by IP address and
         port pair.
       GCE_VM_IP_PORTMAP: The network endpoint is represented by an IP, Port
@@ -71481,13 +71538,14 @@ class NetworkEndpointGroup(_messages.Message):
         infrastructure.
     """
     GCE_VM_IP = 0
-    GCE_VM_IP_PORT = 1
-    GCE_VM_IP_PORTMAP = 2
-    INTERNET_FQDN_PORT = 3
-    INTERNET_IP_PORT = 4
-    NON_GCP_PRIVATE_IP_PORT = 5
-    PRIVATE_SERVICE_CONNECT = 6
-    SERVERLESS = 7
+    GCE_VM_IP_DEDICATED_BACKEND = 1
+    GCE_VM_IP_PORT = 2
+    GCE_VM_IP_PORTMAP = 3
+    INTERNET_FQDN_PORT = 4
+    INTERNET_IP_PORT = 5
+    NON_GCP_PRIVATE_IP_PORT = 6
+    PRIVATE_SERVICE_CONNECT = 7
+    SERVERLESS = 8
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AnnotationsValue(_messages.Message):
@@ -81685,6 +81743,29 @@ class Reference(_messages.Message):
   referenceType = _messages.StringField(2)
   referrer = _messages.StringField(3)
   target = _messages.StringField(4)
+
+
+class RegexRewrite(_messages.Message):
+  r"""The spec for modifying the path using a regular expression.
+
+  Fields:
+    pathPattern: Required. The regular expression used to match against the
+      URL path. It uses RE2 syntax with the following constraints:
+      - Any single character operators      - Groups are allowed to have only
+      submatch operator inside      - Groups are allowed only without any char
+      repetition, e.g.      .*      - Any char repetition, e.g. .*, is
+      only allowed to be used in a single regex together with:
+      - Empty string operators             - Other repetitions             -
+      Ranges             - Repetitions of ranges                       -
+      Ranges are only allowed to have:                            - Character
+      range             - Digits range             - Symbols listed in
+      characters allowed for ranges
+    pathSubstitution: Required. Required when path pattern is specified. Used
+      to rewrite matching parts of the path.
+  """
+
+  pathPattern = _messages.StringField(1)
+  pathSubstitution = _messages.StringField(2)
 
 
 class Region(_messages.Message):
@@ -93186,6 +93267,7 @@ class SecurityPolicyRuleRateLimitOptions(_messages.Message):
 
     Values:
       ALL: <no description>
+      ASN: <no description>
       HTTP_COOKIE: <no description>
       HTTP_HEADER: <no description>
       HTTP_PATH: <no description>
@@ -93198,16 +93280,17 @@ class SecurityPolicyRuleRateLimitOptions(_messages.Message):
       XFF_IP: <no description>
     """
     ALL = 0
-    HTTP_COOKIE = 1
-    HTTP_HEADER = 2
-    HTTP_PATH = 3
-    IP = 4
-    REGION_CODE = 5
-    SNI = 6
-    TLS_JA3_FINGERPRINT = 7
-    TLS_JA4_FINGERPRINT = 8
-    USER_IP = 9
-    XFF_IP = 10
+    ASN = 1
+    HTTP_COOKIE = 2
+    HTTP_HEADER = 3
+    HTTP_PATH = 4
+    IP = 5
+    REGION_CODE = 6
+    SNI = 7
+    TLS_JA3_FINGERPRINT = 8
+    TLS_JA4_FINGERPRINT = 9
+    USER_IP = 10
+    XFF_IP = 11
 
   banDurationSec = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   banThreshold = _messages.MessageField('SecurityPolicyRuleRateLimitOptionsThreshold', 2)
@@ -93332,6 +93415,7 @@ class SecurityPolicyRuleRateLimitOptionsEnforceOnKeyConfig(_messages.Message):
 
     Values:
       ALL: <no description>
+      ASN: <no description>
       HTTP_COOKIE: <no description>
       HTTP_HEADER: <no description>
       HTTP_PATH: <no description>
@@ -93344,16 +93428,17 @@ class SecurityPolicyRuleRateLimitOptionsEnforceOnKeyConfig(_messages.Message):
       XFF_IP: <no description>
     """
     ALL = 0
-    HTTP_COOKIE = 1
-    HTTP_HEADER = 2
-    HTTP_PATH = 3
-    IP = 4
-    REGION_CODE = 5
-    SNI = 6
-    TLS_JA3_FINGERPRINT = 7
-    TLS_JA4_FINGERPRINT = 8
-    USER_IP = 9
-    XFF_IP = 10
+    ASN = 1
+    HTTP_COOKIE = 2
+    HTTP_HEADER = 3
+    HTTP_PATH = 4
+    IP = 5
+    REGION_CODE = 6
+    SNI = 7
+    TLS_JA3_FINGERPRINT = 8
+    TLS_JA4_FINGERPRINT = 9
+    USER_IP = 10
+    XFF_IP = 11
 
   enforceOnKeyName = _messages.StringField(1)
   enforceOnKeyType = _messages.EnumField('EnforceOnKeyTypeValueValuesEnum', 2)
@@ -99226,11 +99311,21 @@ class Subnetwork(_messages.Message):
 
     Values:
       ARP_ALL_RANGES: All ranges assigned to the VM NIC will respond to ARP.
+      ARP_BROADCAST_PRIMARY_RANGE: VMs will receive an ARP response from a VM
+        instance owning the target IP address within the subnetwork's primary
+        CIDR range, if such a VM instance exists and is running.
+      ARP_BROADCAST_PRIMARY_RANGE_WITH_LEARNING: Combines
+        ARP_BROADCAST_PRIMARY_RANGE with MAC learning. Enables cache mapping
+        between IP addresses and custom MAC addresses of instances and use of
+        it to set the correct destination MAC address. If this option is
+        chosen, the subnetwork must have /24 or a smaller CIDR range.
       ARP_PRIMARY_RANGE: Only the primary range of the VM NIC will respond to
         ARP.
     """
     ARP_ALL_RANGES = 0
-    ARP_PRIMARY_RANGE = 1
+    ARP_BROADCAST_PRIMARY_RANGE = 1
+    ARP_BROADCAST_PRIMARY_RANGE_WITH_LEARNING = 2
+    ARP_PRIMARY_RANGE = 3
 
   class RoleValueValuesEnum(_messages.Enum):
     r"""The role of subnetwork. Currently, this field is only used when
@@ -105880,11 +105975,15 @@ class UrlRewrite(_messages.Message):
       non-empty routeRules[].matchRules[].path_template_match is required.
       Only one of path_prefix_rewrite orpath_template_rewrite may be
       specified.
+    regexRewrite: The regex rewrite to be applied to the URL. Only one
+      ofpathPrefixRewrite, pathTemplateRewrite, orregexRewrite may be
+      specified.
   """
 
   hostRewrite = _messages.StringField(1)
   pathPrefixRewrite = _messages.StringField(2)
   pathTemplateRewrite = _messages.StringField(3)
+  regexRewrite = _messages.MessageField('RegexRewrite', 4)
 
 
 class UsableSubnetwork(_messages.Message):

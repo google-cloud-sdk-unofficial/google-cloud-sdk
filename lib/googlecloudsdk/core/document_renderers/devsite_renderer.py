@@ -30,6 +30,7 @@ class DevSiteRenderer(html_renderer.HTMLRenderer):
   """
 
   def __init__(self, *args, **kwargs):
+    kwargs.setdefault('excluded_sections', ('PROJECTION KEYS',))
     self.book_path = kwargs.pop('book_path', '/sdk/_book.yaml')
     super(DevSiteRenderer, self).__init__(*args, **kwargs)
     self._opentag = False

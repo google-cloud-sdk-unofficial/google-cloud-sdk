@@ -627,11 +627,25 @@ def configure_formatter(
       == bq_id_utils.ApiClientHelper.ReservationAssignmentReference
   ):
     formatter.AddColumns(('name', 'jobType', 'assignee'))
+
     if object_info and 'principal' in object_info:
       formatter.AddColumns(('principal',))
     elif object_info and print_format == 'list':
       if any('principal' in assignment for assignment in object_info):
         formatter.AddColumns(('principal',))
+
+    if object_info and 'precedence' in object_info:
+      formatter.AddColumns(('precedence',))
+    elif object_info and print_format == 'list':
+      if any('precedence' in assignment for assignment in object_info):
+        formatter.AddColumns(('precedence',))
+
+    if object_info and 'condition' in object_info:
+      formatter.AddColumns(('condition',))
+    elif object_info and print_format == 'list':
+      if any('condition' in assignment for assignment in object_info):
+        formatter.AddColumns(('condition',))
+
   elif reference_type == bq_id_utils.ApiClientHelper.ReservationGroupReference:
     formatter.AddColumns(('name',))
   elif reference_type == bq_id_utils.ApiClientHelper.ConnectionReference:

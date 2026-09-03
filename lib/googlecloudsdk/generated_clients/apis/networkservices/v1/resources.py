@@ -118,6 +118,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_EXTENSIONBINDINGS = (
+      'projects.locations.extensionBindings',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'extensionBindings/{extensionBindingsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_GATEWAYS = (
       'projects.locations.gateways',
       '{+name}',
@@ -328,6 +339,17 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/operations/'
               '{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_PRODUCEREXTENSIONS = (
+      'projects.locations.producerExtensions',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'producerExtensions/{producerExtensionsId}',
       },
       ['name'],
       True

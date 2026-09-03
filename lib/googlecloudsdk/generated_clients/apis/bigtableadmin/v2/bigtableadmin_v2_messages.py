@@ -3454,7 +3454,10 @@ class Instance(_messages.Message):
       long and must conform to the regular expression:
       `[\p{Ll}\p{Lo}\p{N}_-]{0,63}`. * No more than 64 labels can be
       associated with a given resource. * Keys and values must both be under
-      128 bytes.
+      128 bytes. Labels and Tags (below) are both used to bind metadata to
+      resources, with different use-cases. See
+      https://cloud.google.com/resource-manager/docs/tags/tags-overview for an
+      in-depth overview on the difference between tags and labels.
     TagsValue: Optional. Input only. Immutable. Tag keys/values directly bound
       to this resource. For example: - "123/environment": "production", -
       "123/costCenter": "marketing" Tags and Labels (above) are both used to
@@ -3480,7 +3483,10 @@ class Instance(_messages.Message):
       Label values must be between 0 and 63 characters long and must conform
       to the regular expression: `[\p{Ll}\p{Lo}\p{N}_-]{0,63}`. * No more than
       64 labels can be associated with a given resource. * Keys and values
-      must both be under 128 bytes.
+      must both be under 128 bytes. Labels and Tags (below) are both used to
+      bind metadata to resources, with different use-cases. See
+      https://cloud.google.com/resource-manager/docs/tags/tags-overview for an
+      in-depth overview on the difference between tags and labels.
     name: The unique name of the instance. Values are of the form
       `projects/{project}/instances/a-z+[a-z0-9]`.
     satisfiesPzi: Output only. Reserved for future use.
@@ -3554,7 +3560,10 @@ class Instance(_messages.Message):
     must be between 0 and 63 characters long and must conform to the regular
     expression: `[\p{Ll}\p{Lo}\p{N}_-]{0,63}`. * No more than 64 labels can be
     associated with a given resource. * Keys and values must both be under 128
-    bytes.
+    bytes. Labels and Tags (below) are both used to bind metadata to
+    resources, with different use-cases. See
+    https://cloud.google.com/resource-manager/docs/tags/tags-overview for an
+    in-depth overview on the difference between tags and labels.
 
     Messages:
       AdditionalProperty: An additional property for a LabelsValue object.
@@ -4822,9 +4831,11 @@ class Table(_messages.Message):
         granularity. Should not be returned. When specified during table
         creation, MILLIS will be used.
       MILLIS: The table keeps data versioned at a granularity of 1ms.
+      MICROS: The table keeps data versioned at a granularity of 1us.
     """
     TIMESTAMP_GRANULARITY_UNSPECIFIED = 0
     MILLIS = 1
+    MICROS = 2
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class ClusterStatesValue(_messages.Message):

@@ -154,7 +154,8 @@ def _IsSpecified(namespace, arg_dest, clearable=False):
   """
   specified_args_list = set(
       resource_util.NormalizeFormat(key)
-      for key in namespace.GetSpecifiedArgs().keys())
+      for key in namespace.GetSpecifiedArgsDict().keys()
+  )
 
   dest = arg_dest and resource_util.NormalizeFormat(arg_dest)
   if dest in specified_args_list:
@@ -368,6 +369,7 @@ class Argument(YAMLArgument):
       arguments in static analysis.
     arg_name: The name of the argument that will be generated. Defaults to the
       api_field if not set.
+    dest: The destination attribute in the parsed namespace for this argument.
     help_text: The help text for the generated argument.
     metavar: The metavar for the generated argument. This will be generated
       automatically if not provided.
@@ -429,6 +431,7 @@ class Argument(YAMLArgument):
         arg_name=arg_name,
         help_text=help_text,
         metavar=data.get('metavar'),
+        dest=data.get('dest'),
         completer=util.Hook.FromData(data, 'completer'),
         is_positional=is_positional,
         type=util.ParseType(data),
@@ -445,29 +448,33 @@ class Argument(YAMLArgument):
     )
 
   # pylint:disable=redefined-builtin, type param needs to match the schema.
-  def __init__(self,
-               api_field=None,
-               arg_name=None,
-               help_text=None,
-               metavar=None,
-               completer=None,
-               is_positional=None,
-               type=None,
-               choices=None,
-               default=arg_utils.UNSPECIFIED,
-               fallback=None,
-               processor=None,
-               required=False,
-               hidden=False,
-               action=None,
-               repeated=None,
-               generate=True,
-               disable_unused_arg_check=False,
-               clearable=False):
+  def __init__(
+      self,
+      api_field=None,
+      arg_name=None,
+      help_text=None,
+      metavar=None,
+      dest=None,
+      completer=None,
+      is_positional=None,
+      type=None,
+      choices=None,
+      default=arg_utils.UNSPECIFIED,
+      fallback=None,
+      processor=None,
+      required=False,
+      hidden=False,
+      action=None,
+      repeated=None,
+      generate=True,
+      disable_unused_arg_check=False,
+      clearable=False,
+  ):
     super(Argument, self).__init__()
     self.api_field = api_field
     self.disable_unused_arg_check = disable_unused_arg_check
     self.arg_name = arg_name
+    self.dest = dest
     self.help_text = help_text
     self.metavar = metavar
     self.completer = completer
@@ -493,8 +500,9 @@ class Argument(YAMLArgument):
       return False
     return _IsSpecified(
         namespace=namespace,
-        arg_dest=resource_util.NormalizeFormat(self.arg_name),
-        clearable=self.clearable)
+        arg_dest=self.dest or resource_util.NormalizeFormat(self.arg_name),
+        clearable=self.clearable,
+    )
 
   def _GetField(self, message):
     """Gets apitools field associated with api_field."""
@@ -570,7 +578,8 @@ class Argument(YAMLArgument):
       return
 
     value = arg_utils.GetFromNamespace(
-        namespace, self.arg_name, fallback=self.fallback)
+        namespace, self.dest or self.arg_name, fallback=self.fallback
+    )
     if value is None:
       return
 

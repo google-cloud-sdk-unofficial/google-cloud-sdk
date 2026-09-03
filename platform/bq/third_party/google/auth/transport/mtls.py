@@ -15,24 +15,48 @@
 
 """Utilites for mutual TLS."""
 
+from os import getenv
+
 from google.auth import exceptions
 from google.auth.transport import _mtls_helper
 
 
-def has_default_client_cert_source():
-    """Check if default client SSL credentials exists on the device.
+def has_default_client_cert_source(include_context_aware=True):
+  """Check if default client SSL credentials exists on the device.
 
-    Returns:
-        bool: indicating if the default client cert source exists.
-    """
-    metadata_path = _mtls_helper._check_dca_metadata_path(
-        _mtls_helper.CONTEXT_AWARE_METADATA_PATH
-    )
-    return metadata_path is not None
+  Args:
+     include_context_aware (bool): include_context_aware indicates if
+       context_aware path location will be checked or should it be skipped.
+
+  Returns:
+      bool: indicating if the default client cert source exists.
+  """
+  if (
+      include_context_aware
+      and _mtls_helper._check_config_path(
+          _mtls_helper.CONTEXT_AWARE_METADATA_PATH
+      )
+      is not None
+  ):
+    return True
+  if (
+      _mtls_helper._check_config_path(
+          _mtls_helper.CERTIFICATE_CONFIGURATION_DEFAULT_PATH
+      )
+      is not None
+  ):
+    return True
+  cert_config_path = getenv("GOOGLE_API_CERTIFICATE_CONFIG")
+  if (
+      cert_config_path
+      and _mtls_helper._check_config_path(cert_config_path) is not None
+  ):
+    return True
+  return False
 
 
 def default_client_cert_source():
-    """Get a callback which returns the default client SSL credentials.
+  """Get a callback which returns the default client SSL credentials.
 
     Returns:
         Callable[[], [bytes, bytes]]: A callback which returns the default
@@ -42,25 +66,25 @@ def default_client_cert_source():
         google.auth.exceptions.DefaultClientCertSourceError: If the default
             client SSL credentials don't exist or are malformed.
     """
-    if not has_default_client_cert_source():
-        raise exceptions.MutualTLSChannelError(
-            "Default client cert source doesn't exist"
-        )
+  if not has_default_client_cert_source(include_context_aware=True):
+    raise exceptions.MutualTLSChannelError(
+        "Default client cert source doesn't exist"
+    )
 
-    def callback():
-        try:
-            _, cert_bytes, key_bytes = _mtls_helper.get_client_cert_and_key()
-        except (OSError, RuntimeError, ValueError) as caught_exc:
-            new_exc = exceptions.MutualTLSChannelError(caught_exc)
-            raise new_exc from caught_exc
+  def callback():
+    try:
+      _, cert_bytes, key_bytes = _mtls_helper.get_client_cert_and_key()
+    except (OSError, RuntimeError, ValueError) as caught_exc:
+      new_exc = exceptions.MutualTLSChannelError(caught_exc)
+      raise new_exc from caught_exc
 
-        return cert_bytes, key_bytes
+    return cert_bytes, key_bytes
 
-    return callback
+  return callback
 
 
 def default_client_encrypted_cert_source(cert_path, key_path):
-    """Get a callback which returns the default encrpyted client SSL credentials.
+  """Get a callback which returns the default encrpyted client SSL credentials.
 
     Args:
         cert_path (str): The cert file path. The default client certificate will
@@ -78,27 +102,55 @@ def default_client_encrypted_cert_source(cert_path, key_path):
         google.auth.exceptions.DefaultClientCertSourceError: If any problem
             occurs when loading or saving the client certificate and key.
     """
-    if not has_default_client_cert_source():
-        raise exceptions.MutualTLSChannelError(
-            "Default client encrypted cert source doesn't exist"
-        )
+  if not has_default_client_cert_source(include_context_aware=True):
+    raise exceptions.MutualTLSChannelError(
+        "Default client encrypted cert source doesn't exist"
+    )
 
-    def callback():
-        try:
-            (
+  def callback():
+    try:
+      (
                 _,
                 cert_bytes,
                 key_bytes,
                 passphrase_bytes,
             ) = _mtls_helper.get_client_ssl_credentials(generate_encrypted_key=True)
-            with open(cert_path, "wb") as cert_file:
-                cert_file.write(cert_bytes)
-            with open(key_path, "wb") as key_file:
-                key_file.write(key_bytes)
-        except (exceptions.ClientCertError, OSError) as caught_exc:
-            new_exc = exceptions.MutualTLSChannelError(caught_exc)
-            raise new_exc from caught_exc
+      with open(cert_path, "wb") as cert_file:
+        cert_file.write(cert_bytes)
+      with open(key_path, "wb") as key_file:
+        key_file.write(key_bytes)
+    except (exceptions.ClientCertError, OSError) as caught_exc:
+      new_exc = exceptions.MutualTLSChannelError(caught_exc)
+      raise new_exc from caught_exc
 
-        return cert_path, key_path, passphrase_bytes
+    return cert_path, key_path, passphrase_bytes
 
-    return callback
+  return callback
+
+
+def _should_use_client_cert():
+  """Returns boolean for whether the client certificate should be used for mTLS.
+
+  This is a wrapper around _mtls_helper.check_use_client_cert().
+  If GOOGLE_API_USE_CLIENT_CERTIFICATE is set to true or false, a corresponding
+  bool value will be returned
+  If GOOGLE_API_USE_CLIENT_CERTIFICATE is unset, the value will be inferred by
+  reading a file pointed at by GOOGLE_API_CERTIFICATE_CONFIG, and verifying it
+  contains a "workload" section. If so, the function will return True,
+  otherwise False.
+
+  Returns:
+     bool: indicating whether the client certificate should be used for mTLS.
+  """
+  return _mtls_helper.check_use_client_cert()
+
+
+def __getattr__(name):
+  if name == "should_use_client_cert":
+    import os
+
+    test_target = os.getenv("TEST_TARGET", "")
+    if test_target.startswith("//third_party/py/google/cloud"):
+      raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    return _should_use_client_cert
+  raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

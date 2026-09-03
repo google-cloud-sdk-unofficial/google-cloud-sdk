@@ -2699,7 +2699,8 @@ class Schema(_messages.Message):
 
   Fields:
     compiledProtoSchema: Optional. Configuration for a schema provided as a
-      pre-compiled Protocol Buffer FileDescriptorSet.
+      pre-compiled Protocol Buffer FileDescriptorSet. The `type` field above
+      must be set to PROTOCOL_BUFFER.
     definition: The definition of the schema. This should contain a string
       representing the full definition of the schema that is a valid schema
       definition of the type specified in `type`.

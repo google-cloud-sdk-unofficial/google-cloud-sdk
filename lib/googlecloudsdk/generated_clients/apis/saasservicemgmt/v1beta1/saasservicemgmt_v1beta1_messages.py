@@ -63,13 +63,13 @@ class AppParams(_messages.Message):
   r"""AppParams contains the parameters for creating an AppHub Application.
 
   Fields:
-    group: Grouping used to construct the name of the AppHub Application.
-      Multiple UnitKinds can specify the same group to use the same
-      Application across their respective units. Corresponds to the
+    group: Optional. Grouping used to construct the name of the AppHub
+      Application. Multiple UnitKinds can specify the same group to use the
+      same Application across their respective units. Corresponds to the
       app_boundary_id in the ADC composite ApplicationTemplate. Defaults to
       UnitKind.name
-    scope: Corresponds to the scope in the ADC composite ApplicationTemplate.
-      Defaults to TYPE_REGIONAL.
+    scope: Optional. Corresponds to the scope in the ADC composite
+      ApplicationTemplate. Defaults to TYPE_REGIONAL.
   """
 
   group = _messages.StringField(1)
@@ -102,9 +102,9 @@ class ComponentRef(_messages.Message):
   Fields:
     component: Optional. Name of the component in composite.Components
     compositeRef: Reference to the Composite ApplicationTemplate.
-    revision: Revision of the component. If the component does not have a
-      revision, this field will be explicitly set to the revision of the
-      composite ApplicationTemplate.
+    revision: Optional. Revision of the component. If the component does not
+      have a revision, this field will be explicitly set to the revision of
+      the composite ApplicationTemplate.
   """
 
   component = _messages.StringField(1)
@@ -118,9 +118,9 @@ class CompositeRef(_messages.Message):
   Fields:
     applicationTemplate: Required. Reference to the ApplicationTemplate
       resource.
-    revision: Revision of the ApplicationTemplate to use. Changes to revision
-      will trigger manual resynchronization. If empty, ApplicationTemplate
-      will be ignored.
+    revision: Optional. Revision of the ApplicationTemplate to use. Changes to
+      revision will trigger manual resynchronization. If empty,
+      ApplicationTemplate will be ignored.
     syncOperation: Output only. Reference to on-going AppTemplate import and
       replication operation (i.e. the operation_id for the long-running
       operation). This field is opaque for external usage.
@@ -489,6 +489,35 @@ class Flag(_messages.Message):
   variants = _messages.MessageField('FlagVariant', 16, repeated=True)
 
 
+class FlagAllocation(_messages.Message):
+  r"""Defines a target for a dynamic allocation rollout.
+
+  Fields:
+    dynamicAllocationName: Required. The dynamic allocation being targeted
+      within that flag's EvaluationSpec.
+    finalVariant: Optional. The name of the target variant of the launch - the
+      one that should be at 100%.
+    flagName: Required. The flag resource containing the allocation.
+    initialVariant: Optional. The name of the "starting" variant during the
+      launch - the one at 0%.
+  """
+
+  dynamicAllocationName = _messages.StringField(1)
+  finalVariant = _messages.StringField(2)
+  flagName = _messages.StringField(3)
+  initialVariant = _messages.StringField(4)
+
+
+class FlagAllocationList(_messages.Message):
+  r"""Wrapper for a list of flag allocations.
+
+  Fields:
+    allocations: Required. FlagAllocations to be rolled out.
+  """
+
+  allocations = _messages.MessageField('FlagAllocation', 1, repeated=True)
+
+
 class FlagAttribute(_messages.Message):
   r"""FlagAttribute defines a custom property in the evaluation context.
 
@@ -679,6 +708,8 @@ class FlagRelease(_messages.Message):
     etag: Output only. An opaque value that uniquely identifies a version or
       generation of a resource. It can be used to confirm that the client and
       server agree on the ordering of a resource being written.
+    flagAllocationsRelease: Optional. Immutable. Specifies the release targets
+      dynamic allocations.
     flagNamesRelease: Optional. Immutable. Specifies the release consisting of
       a list of flags.
     flagRevisions: Optional. Immutable. DEPRECATED: Use flag_revisions_release
@@ -772,17 +803,18 @@ class FlagRelease(_messages.Message):
   createTime = _messages.StringField(4)
   effectiveFlagRevisions = _messages.StringField(5, repeated=True)
   etag = _messages.StringField(6)
-  flagNamesRelease = _messages.MessageField('FlagNameList', 7)
-  flagRevisions = _messages.StringField(8, repeated=True)
-  flagRevisionsRelease = _messages.MessageField('FlagRevisionList', 9)
-  flagSets = _messages.StringField(10, repeated=True)
-  flagSetsRelease = _messages.MessageField('FlagSetList', 11)
-  labels = _messages.MessageField('LabelsValue', 12)
-  name = _messages.StringField(13)
-  obsoleteFlags = _messages.StringField(14, repeated=True)
-  uid = _messages.StringField(15)
-  unitKind = _messages.StringField(16)
-  updateTime = _messages.StringField(17)
+  flagAllocationsRelease = _messages.MessageField('FlagAllocationList', 7)
+  flagNamesRelease = _messages.MessageField('FlagNameList', 8)
+  flagRevisions = _messages.StringField(9, repeated=True)
+  flagRevisionsRelease = _messages.MessageField('FlagRevisionList', 10)
+  flagSets = _messages.StringField(11, repeated=True)
+  flagSetsRelease = _messages.MessageField('FlagSetList', 12)
+  labels = _messages.MessageField('LabelsValue', 13)
+  name = _messages.StringField(14)
+  obsoleteFlags = _messages.StringField(15, repeated=True)
+  uid = _messages.StringField(16)
+  unitKind = _messages.StringField(17)
+  updateTime = _messages.StringField(18)
 
 
 class FlagRevision(_messages.Message):
@@ -1956,17 +1988,20 @@ class Saas(_messages.Message):
     the application_template is empty.
 
     Values:
-      STATE_TYPE_UNSPECIFIED: State type is unspecified.
+      STATE_UNSPECIFIED: State is unspecified.
+      STATE_TYPE_UNSPECIFIED: State type is unspecified. Deprecated: Use
+        STATE_UNSPECIFIED instead.
       STATE_ACTIVE: The Saas is ready
       STATE_RUNNING: In the process of importing, synchronizing or replicating
         ApplicationTemplates
       STATE_FAILED: Failure during process of importing, synchronizing or
         replicating ApplicationTemplate processing
     """
-    STATE_TYPE_UNSPECIFIED = 0
-    STATE_ACTIVE = 1
-    STATE_RUNNING = 2
-    STATE_FAILED = 3
+    STATE_UNSPECIFIED = 0
+    STATE_TYPE_UNSPECIFIED = 1
+    STATE_ACTIVE = 2
+    STATE_RUNNING = 3
+    STATE_FAILED = 4
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class AnnotationsValue(_messages.Message):
@@ -4905,8 +4940,8 @@ class UnitKind(_messages.Message):
       arbitrary metadata. They are not queryable and should be preserved when
       modifying objects. More info: https://kubernetes.io/docs/user-
       guide/annotations
-    appParams: AppParams contains the parameters for creating an AppHub
-      Application.
+    appParams: Optional. AppParams contains the parameters for creating an
+      AppHub Application.
     applicationTemplateComponent: Optional. Reference to component and
       revision in a composite ApplicationTemplate.
     boundaryType: Optional. Output only. BoundaryType describes the type of
@@ -5135,7 +5170,7 @@ class UnitOperation(_messages.Message):
     of the unit operation.
 
     Values:
-      UNIT_OPERATION_STATE_UNKNOWN: <no description>
+      UNIT_OPERATION_STATE_UNKNOWN: Unit operation state is unknown.
       UNIT_OPERATION_STATE_PENDING: Unit operation is accepted but not ready
         to run.
       UNIT_OPERATION_STATE_SCHEDULED: Unit operation is accepted and

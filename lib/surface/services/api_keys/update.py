@@ -78,6 +78,10 @@ DETAILED_HELP = {
                 - "foomethod"
                 - "barmethod"
             ```
+
+        To append allowed referrers and api targets to an existing key:
+
+          $ {command} projects/myproject/locations/global/keys/my-key-id --append --allowed-referrers="https://www.example.com/*" --api-target=service=foo.service.com
         """
     )
 }
@@ -93,20 +97,36 @@ class Update(base.UpdateCommand):
     common_flags.key_flag(parser=parser, suffix='to update')
     common_flags.display_name_flag(parser=parser, suffix='to update')
     common_flags.add_key_update_args(parser)
+    parser.add_argument(
+        '--append',
+        action='store_true',
+        help=(
+            'If specified, merge the new restrictions with the current '
+            'restrictions of the key instead of replacing them.'
+        ),
+    )
     base.ASYNC_FLAG.AddToParser(parser)
 
-  def Run(self, args: argparse.Namespace) -> Any:
+  def Run(
+      self, args: argparse.Namespace, current_key: Any | None = None
+  ) -> Any:
     """Run command.
 
     Args:
       args: an argparse namespace. All the arguments that were provided to this
         command invocation.
+      current_key: Optional existing V2Key message if already fetched.
 
     Returns:
-      None
+      The LRO object.
+
+    Raises:
+      googlecloudsdk.calliope.exceptions.InvalidArgumentException: If attempting
+        to append a different client restriction type than already exists on the
+        key.
     """
 
-    client = apikeys.GetClientInstance()
+    client = apikeys.GetClientInstance(self.ReleaseTrack())
     messages = client.MESSAGES_MODULE
 
     key_ref = args.CONCEPTS.key.Parse()
@@ -122,42 +142,107 @@ class Update(base.UpdateCommand):
       key_proto.displayName = args.display_name
     if args.IsSpecified('clear_annotations'):
       update_mask.append('annotations')
-    if args.IsSpecified('clear_restrictions'):
-      update_mask.append('restrictions')
-    else:
+
+    if args.append:
+      if current_key is None:
+        request = messages.ApikeysProjectsLocationsKeysGetRequest(
+            name=key_ref.RelativeName()
+        )
+        current_key = client.projects_locations_keys.Get(request)
+
+      # Copy etag from current key to ensure the update is based on the
+      # latest version, preventing race conditions.
+      if current_key.etag:
+        key_proto.etag = current_key.etag
+
+      current_restrictions = getattr(current_key, 'restrictions', None)
+      current_client_type = _GetClientRestrictionType(current_restrictions)
+
+      new_client_type = None
       if args.IsSpecified('allowed_referrers'):
-        update_mask.append('restrictions.browser_key_restrictions')
-        key_proto.restrictions.browserKeyRestrictions = (
-            messages.V2BrowserKeyRestrictions(
-                allowedReferrers=args.allowed_referrers
-            )
-        )
+        new_client_type = 'browserKeyRestrictions'
       elif args.IsSpecified('allowed_ips'):
-        update_mask.append('restrictions.server_key_restrictions')
-        key_proto.restrictions.serverKeyRestrictions = (
-            messages.V2ServerKeyRestrictions(allowedIps=args.allowed_ips)
-        )
+        new_client_type = 'serverKeyRestrictions'
       elif args.IsSpecified('allowed_bundle_ids'):
-        update_mask.append('restrictions.ios_key_restrictions')
-        key_proto.restrictions.iosKeyRestrictions = (
-            messages.V2IosKeyRestrictions(
-                allowedBundleIds=args.allowed_bundle_ids
-            )
-        )
+        new_client_type = 'iosKeyRestrictions'
       elif args.IsSpecified('allowed_application'):
-        update_mask.append('restrictions.android_key_restrictions')
-        key_proto.restrictions.androidKeyRestrictions = (
-            messages.V2AndroidKeyRestrictions(
-                allowedApplications=apikeys.GetAllowedAndroidApplications(
-                    args, messages
-                )
+        new_client_type = 'androidKeyRestrictions'
+
+      if (
+          new_client_type
+          and current_client_type
+          and current_client_type != new_client_type
+      ):
+        new_friendly = _FRIENDLY_NAME_BY_TYPE[new_client_type]
+        current_friendly = _FRIENDLY_NAME_BY_TYPE[current_client_type]
+        raise exceptions.InvalidArgumentException(
+            f'--{new_friendly}',
+            f'Cannot append {new_friendly} restriction because the key already '
+            f'has {current_friendly} restriction.',
+        )
+
+      if new_client_type:
+        field_name, restriction_msg, mask_path = (
+            _GetMergedApplicationRestriction(
+                current_restrictions, new_client_type, args, messages
             )
         )
+        setattr(key_proto.restrictions, field_name, restriction_msg)
+        update_mask.append(mask_path)
+
       if args.IsSpecified('api_target'):
-        update_mask.append('restrictions.api_targets')
-        key_proto.restrictions.apiTargets = apikeys.GetApiTargets(
-            args, messages
+        current_api_targets = (
+            getattr(current_restrictions, 'apiTargets', [])
+            if current_restrictions
+            else []
         )
+        if current_api_targets is None:
+          current_api_targets = []
+        new_api_targets = apikeys.GetApiTargets(args, messages) or []
+        merged_targets = _MergeApiTargets(
+            current_api_targets, new_api_targets, messages
+        )
+
+        key_proto.restrictions.apiTargets = merged_targets
+        update_mask.append('restrictions.api_targets')
+    else:
+      if args.IsSpecified('clear_restrictions'):
+        update_mask.append('restrictions')
+      else:
+        if args.IsSpecified('allowed_referrers'):
+          update_mask.append('restrictions.browser_key_restrictions')
+          key_proto.restrictions.browserKeyRestrictions = (
+              messages.V2BrowserKeyRestrictions(
+                  allowedReferrers=args.allowed_referrers
+              )
+          )
+        elif args.IsSpecified('allowed_ips'):
+          update_mask.append('restrictions.server_key_restrictions')
+          key_proto.restrictions.serverKeyRestrictions = (
+              messages.V2ServerKeyRestrictions(allowedIps=args.allowed_ips)
+          )
+        elif args.IsSpecified('allowed_bundle_ids'):
+          update_mask.append('restrictions.ios_key_restrictions')
+          key_proto.restrictions.iosKeyRestrictions = (
+              messages.V2IosKeyRestrictions(
+                  allowedBundleIds=args.allowed_bundle_ids
+              )
+          )
+        elif args.IsSpecified('allowed_application'):
+          update_mask.append('restrictions.android_key_restrictions')
+          key_proto.restrictions.androidKeyRestrictions = (
+              messages.V2AndroidKeyRestrictions(
+                  allowedApplications=apikeys.GetAllowedAndroidApplications(
+                      args, messages
+                  )
+              )
+          )
+        if args.IsSpecified('api_target'):
+          update_mask.append('restrictions.api_targets')
+          key_proto.restrictions.apiTargets = apikeys.GetApiTargets(
+              args, messages
+          )
+
     request = messages.ApikeysProjectsLocationsKeysPatchRequest(
         name=key_ref.RelativeName(),
         updateMask=','.join(update_mask),
@@ -184,29 +269,8 @@ class Update(base.UpdateCommand):
 class AlphaUpdate(Update):
   """A surface for updating API keys, including append support."""
 
-  @classmethod
-  def Args(cls, parser):
-    """Add arguments to the parser.
-
-    Args:
-      parser: The argparse.ArgumentParser to which the arguments are added.
-    """
-    Update.Args(parser)
-    parser.add_argument(
-        '--append',
-        action='store_true',
-        help=(
-            'If specified, merge the new restrictions with the current '
-            'restrictions of the key instead of replacing them.'
-        ),
-    )
-
   def Run(self, args: argparse.Namespace) -> Any:
-    """Run the update command for Alpha release track.
-
-    This method extends the base Update.Run to support the '--append' flag,
-    which allows merging new restrictions with existing ones instead of
-    replacing them.
+    """Run the update command for Alpha release track with secure defaults.
 
     Args:
       args: An argparse namespace. All the arguments that were provided to this
@@ -216,10 +280,9 @@ class AlphaUpdate(Update):
       The LRO object.
 
     Raises:
-      googlecloudsdk.calliope.exceptions.InvalidArgumentException:
-        If the --clear-restrictions flag is specified, if the updated key
-        lacks API target restrictions, or if attempting to append a different
-        client restriction type than already exists on the key.
+      googlecloudsdk.calliope.exceptions.InvalidArgumentException: If the
+        --clear-restrictions flag is specified or if the updated key lacks API
+        target restrictions.
     """
     client = apikeys.GetClientInstance(self.ReleaseTrack())
     messages = client.MESSAGES_MODULE
@@ -249,95 +312,7 @@ class AlphaUpdate(Update):
           '`--api-target` to restrict this key.',
       )
 
-    if not args.append:
-      return super(AlphaUpdate, self).Run(args)
-
-    update_mask = []
-    key_proto = messages.V2Key(
-        name=key_ref.RelativeName(), restrictions=messages.V2Restrictions()
-    )
-
-    if args.IsSpecified('annotations'):
-      update_mask.append('annotations')
-      key_proto.annotations = apikeys.GetAnnotations(args, messages)
-    if args.IsSpecified('display_name'):
-      update_mask.append('display_name')
-      key_proto.displayName = args.display_name
-    if args.IsSpecified('clear_annotations'):
-      update_mask.append('annotations')
-
-    # Copy etag from current key to ensure the update is based on the
-    # latest version, preventing race conditions.
-    if current_key.etag:
-      key_proto.etag = current_key.etag
-
-    current_restrictions = getattr(current_key, 'restrictions', None)
-    current_client_type = _GetClientRestrictionType(current_restrictions)
-
-    new_client_type = None
-    if args.IsSpecified('allowed_referrers'):
-      new_client_type = 'browserKeyRestrictions'
-    elif args.IsSpecified('allowed_ips'):
-      new_client_type = 'serverKeyRestrictions'
-    elif args.IsSpecified('allowed_bundle_ids'):
-      new_client_type = 'iosKeyRestrictions'
-    elif args.IsSpecified('allowed_application'):
-      new_client_type = 'androidKeyRestrictions'
-
-    if (
-        new_client_type
-        and current_client_type
-        and current_client_type != new_client_type
-    ):
-      new_friendly = _FRIENDLY_NAME_BY_TYPE[new_client_type]
-      current_friendly = _FRIENDLY_NAME_BY_TYPE[current_client_type]
-      raise exceptions.InvalidArgumentException(
-          f'--{new_friendly}',
-          f'Cannot append {new_friendly} restriction because the key already '
-          f'has {current_friendly} restriction.',
-      )
-
-    if new_client_type:
-      field_name, restriction_msg, mask_path = _GetMergedApplicationRestriction(
-          current_restrictions, new_client_type, args, messages
-      )
-      setattr(key_proto.restrictions, field_name, restriction_msg)
-      update_mask.append(mask_path)
-
-    if args.IsSpecified('api_target'):
-      current_api_targets = (
-          getattr(current_restrictions, 'apiTargets', [])
-          if current_restrictions
-          else []
-      )
-      if current_api_targets is None:
-        current_api_targets = []
-      new_api_targets = apikeys.GetApiTargets(args, messages) or []
-      merged_targets = _MergeApiTargets(
-          current_api_targets, new_api_targets, messages
-      )
-
-      key_proto.restrictions.apiTargets = merged_targets
-      update_mask.append('restrictions.api_targets')
-
-    # Construct and send the patch request.
-    request = messages.ApikeysProjectsLocationsKeysPatchRequest(
-        name=key_ref.RelativeName(),
-        updateMask=','.join(update_mask),
-        v2Key=key_proto,
-    )
-    op = client.projects_locations_keys.Patch(request)
-    if not op.done:
-      if args.async_:
-        cmd = OP_WAIT_CMD.format(op.name)
-        log.status.Print(
-            f'Asynchronous operation is in progress... Use the following '
-            f'command to wait for its completion:\n {cmd}'
-        )
-        return op
-      op = services_util.WaitOperation(op.name, apikeys.GetOperation)
-    services_util.PrintOperationWithResponse(op)
-    return op
+    return super(AlphaUpdate, self).Run(args, current_key=current_key)
 
 
 @dataclasses.dataclass

@@ -185,6 +185,7 @@ class Create(base.CreateCommand):
     )
     flags.AddAutoscalingSettingsFlagsToParser(parser)
     flags.AddNsxEdgeConfigFlagsToParser(parser)
+    flags.AddPlacementGroupFlagsToParser(parser)
 
   def Run(self, args):
     privatecloud = args.CONCEPTS.private_cloud.Parse()
@@ -231,6 +232,9 @@ class Create(base.CreateCommand):
         nsx_edge_size=args.nsx_edge_size,
         nsx_edge_count=args.nsx_edge_count,
         vsan_type=args.vsan_type,
+        placement_group=args.placement_group,
+        preferred_placement_group=args.preferred_placement_group,
+        secondary_placement_group=args.secondary_placement_group,
     )
     if is_async:
       log.CreatedResource(operation.name, kind='private cloud', is_async=True)

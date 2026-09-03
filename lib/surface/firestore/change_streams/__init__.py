@@ -20,4 +20,7 @@ from googlecloudsdk.calliope import base
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ChangeStreams(base.Group):
-  """Manage Cloud Firestore ChangeStreams."""
+  """Manage Cloud Firestore ChangeStreams.
+
+  Change streams are only available on Enterprise edition databases.
+  """

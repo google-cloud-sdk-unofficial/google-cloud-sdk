@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, BETA, GA]
+  hints:
+    read_only: true
   help_text:
     brief: List management servers in the project
     description: List management servers in the project. Currently, a project can have only one management server.

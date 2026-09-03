@@ -38,28 +38,54 @@ from googlecloudsdk.core import log
 
 
 def AddIapFlag(parser, alpha=False):
+  """Adds IAP flag to the parser."""
   # TODO(b/34479878): It would be nice if the auto-generated help text were
   # a bit better so we didn't need to be quite so verbose here.
-  metavar = None
   if alpha:
     metavar = (
         'disabled|enabled,['
         'oauth2-client-id=OAUTH2-CLIENT-ID,'
         'oauth2-client-secret=OAUTH2-CLIENT-SECRET,'
-        'oauth2-client-info-developer-email-address=DEVELOPER-EMAIL-ADDRESS]'
+        'oauth2-client-info-client-name=CLIENT_NAME,'
+        'oauth2-client-info-developer-email-address=DEVELOPER_EMAIL,'
+        'oauth2-client-info-application-name=APPLICATION_NAME]'
     )
-  flags.AddIap(
-      parser,
-      metavar=metavar,
-      help="""\
-      Change the Identity Aware Proxy (IAP) service configuration for the
-      backend service. You can set IAP to 'enabled' or 'disabled', or modify
-      the OAuth2 client configuration (oauth2-client-id and
-      oauth2-client-secret) used by IAP. If any fields are unspecified, their
-      values will not be modified. For instance, if IAP is enabled,
-      '--iap=disabled' will disable IAP, and a subsequent '--iap=enabled' will
-      then enable it with the same OAuth2 client configuration as the first
-      time it was enabled.
+    help_str = """\
+        Change the Identity Aware Proxy (IAP) service configuration for the
+        backend service. You can set IAP to 'enabled' or 'disabled', or modify
+        the OAuth2 client configuration (oauth2-client-id,
+        oauth2-client-secret, oauth2-client-info-client-name,
+        oauth2-client-info-developer-email-address, and
+        oauth2-client-info-application-name) used by IAP. If any
+        fields are unspecified, their values will not be modified. For instance, if
+        IAP is enabled, '--iap=disabled' will disable IAP, and a subsequent
+        '--iap=enabled' will then enable it with the same OAuth2 client
+        configuration as the first time it was enabled.
+
+        To clear the OAuth2 client ID and secret, set their values to a single
+        space character (e.g., '--iap=enabled,oauth2-client-id=" ",oauth2-client-secret=" "').
+        Setting them to empty strings will result in an error.
+
+        Example output of `gcloud compute backend-services describe` after clearing:
+
+            iap:
+              enabled: true
+              oauth2ClientId: ' '
+
+        See
+        https://cloud.google.com/iap/ for more information about this feature.
+        """
+  else:
+    metavar = None
+    help_str = """\
+        Change the Identity Aware Proxy (IAP) service configuration for the
+        backend service. You can set IAP to 'enabled' or 'disabled', or modify
+        the OAuth2 client configuration (oauth2-client-id and
+        oauth2-client-secret) used by IAP. If any fields are unspecified, their
+        values will not be modified. For instance, if IAP is enabled,
+        '--iap=disabled' will disable IAP, and a subsequent '--iap=enabled' will
+        then enable it with the same OAuth2 client configuration as the first
+        time it was enabled.
 
       To clear the OAuth2 client ID and secret, set their values to a single
       space character (e.g., '--iap=enabled,oauth2-client-id=" ",oauth2-client-secret=" "').
@@ -71,9 +97,11 @@ def AddIapFlag(parser, alpha=False):
             enabled: true
             oauth2ClientId: ' '
 
-      See
-      https://cloud.google.com/iap/ for more information about this feature.
-      """)
+        See
+        https://cloud.google.com/iap/ for more information about this feature.
+        """
+
+  flags.AddIap(parser, help=help_str, metavar=metavar)
 
 
 def _ApplyHaPolicyArgs(messages, args, backend_service):
@@ -160,6 +188,7 @@ class UpdateHelper(object):
             resource='backend service'))
     cls.EDGE_SECURITY_POLICY_ARG.AddArgument(parser)
     flags.AddTimeout(parser, default=None)
+    flags.AddMaxStreamDuration(parser, is_update=True)
     flags.AddPortName(parser)
     flags.AddProtocol(parser, default=None)
 
@@ -270,6 +299,14 @@ class UpdateHelper(object):
 
     if args.timeout:
       replacement.timeoutSec = args.timeout
+
+    if args.max_stream_duration is not None:
+      replacement.maxStreamDuration = client.messages.Duration(
+          seconds=args.max_stream_duration
+      )
+    elif args.no_max_stream_duration:
+      replacement.maxStreamDuration = None
+      cleared_fields.append('maxStreamDuration')
 
     if args.port_name:
       replacement.portName = args.port_name
@@ -452,6 +489,8 @@ class UpdateHelper(object):
         args.IsSpecified('edge_security_policy'),
         args.IsSpecified('session_affinity'),
         args.IsSpecified('timeout'),
+        args.IsSpecified('max_stream_duration'),
+        args.IsSpecified('no_max_stream_duration'),
         args.IsSpecified('connection_drain_on_failover'),
         args.IsSpecified('drop_traffic_if_unhealthy'),
         args.IsSpecified('failover_ratio'),

@@ -574,6 +574,17 @@ workforce_pool:
        `--no-disable-security-token-exchange` to enable programmatic sign-in. For more
       information, refer to Obtain short-lived tokens for workforce identity federation at
       https://cloud.google.com/iam/docs/workforce-obtaining-short-lived-credentials
+  workspace_link_state:
+    api_field: workforcePool.workspaceLinkConfig.state
+    arg_name: workspace-link-state
+    choices:
+    - arg_value: unlinked
+      enum_value: UNLINKED
+    - arg_value: linked
+      enum_value: LINKED
+    help_text: |-
+      The state of the workspace link config for this workforce pool. Valid values are `LINKED` and
+      `UNLINKED`.
 
 workforce_pool_provider_scim_tenant:
   display_name:

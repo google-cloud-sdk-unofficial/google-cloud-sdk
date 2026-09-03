@@ -1374,14 +1374,13 @@ class NetworkConfig(_messages.Message):
   r"""Represents Google Cloud specific infrastructure routing configurations.
 
   Fields:
-    privateServiceConnectServiceAttachments: Optional. The Resource Name of
-      the target Private Service Connect Service Attachments. Format: `project
-      s/{project}/regions/{region}/serviceAttachments/{service_attachment}`
-      The caller must have update permission on the referenced Service
-      Attachments. Optional.
+    serviceAttachments: Optional. The Resource Name of the target Private
+      Service Connect Service Attachments. Format: `projects/{project}/regions
+      /{region}/serviceAttachments/{service_attachment}` The caller must have
+      update permission on the referenced Service Attachments. Optional.
   """
 
-  privateServiceConnectServiceAttachments = _messages.StringField(1, repeated=True)
+  serviceAttachments = _messages.StringField(1, repeated=True)
 
 
 class Operation(_messages.Message):

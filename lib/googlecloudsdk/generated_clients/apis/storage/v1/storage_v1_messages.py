@@ -2015,6 +2015,49 @@ class Policy(_messages.Message):
   version = _messages.IntegerField(5, variant=_messages.Variant.INT32)
 
 
+class RapidCache(_messages.Message):
+  r"""A Rapid Cache instance.
+
+  Fields:
+    admissionPolicy: The cache-level entry admission policy.
+    bucket: The name of the bucket containing this cache instance.
+    cacheType: The type of Rapid Cache this represents. Valid values include:
+      "rapid-cache" and "rapid-cache-ultra".
+    createTime: The creation time of the cache instance in RFC 3339 format.
+    id: The ID of the resource, including the project number, bucket name and
+      rapid cache ID.
+    ingestOnWrite: Specifies whether objects are ingested into the cache upon
+      write.
+    kind: The kind of item this is. For Rapid Cache, this is always
+      storage#rapidCache.
+    pendingUpdate: True if the cache instance has an active Update long-
+      running operation.
+    rapidCacheId: The ID of the Rapid cache instance.
+    selfLink: The link to this cache instance.
+    state: The current state of the cache instance.
+    ttl: The TTL of all cache entries in whole seconds. e.g., "7200s".
+    updateTime: The modification time of the cache instance metadata in RFC
+      3339 format.
+    zone: The zone in which the cache instance is running. For example, us-
+      central1-a.
+  """
+
+  admissionPolicy = _messages.StringField(1)
+  bucket = _messages.StringField(2)
+  cacheType = _messages.StringField(3)
+  createTime = _message_types.DateTimeField(4)
+  id = _messages.StringField(5)
+  ingestOnWrite = _messages.BooleanField(6)
+  kind = _messages.StringField(7, default='storage#rapidCache')
+  pendingUpdate = _messages.BooleanField(8)
+  rapidCacheId = _messages.StringField(9)
+  selfLink = _messages.StringField(10)
+  state = _messages.StringField(11)
+  ttl = _messages.StringField(12)
+  updateTime = _message_types.DateTimeField(13)
+  zone = _messages.StringField(14)
+
+
 class RapidCacheConfig(_messages.Message):
   r"""Configuration options for the rapid cache of a managed folder.
 
@@ -2087,6 +2130,23 @@ class RapidCachePolicy(_messages.Message):
 
   ingestOnWrite = _messages.EnumField('IngestOnWriteValueValuesEnum', 1)
   rapidCacheId = _messages.StringField(2)
+
+
+class RapidCaches(_messages.Message):
+  r"""A list of Rapid Caches.
+
+  Fields:
+    items: The list of items.
+    kind: The kind of item this is. For lists of Rapid Caches, this is always
+      storage#rapidCaches.
+    nextPageToken: The continuation token, used to page through large result
+      sets. Provide this value in a subsequent request to return the next page
+      of results.
+  """
+
+  items = _messages.MessageField('RapidCache', 1, repeated=True)
+  kind = _messages.StringField(2, default='storage#rapidCaches')
+  nextPageToken = _messages.StringField(3)
 
 
 class RelocateBucketRequest(_messages.Message):
@@ -4628,6 +4688,45 @@ class StorageProjectsServiceAccountGetRequest(_messages.Message):
 
   projectId = _messages.StringField(1, required=True)
   userProject = _messages.StringField(2)
+
+
+class StorageRapidCachesDisableRequest(_messages.Message):
+  r"""A StorageRapidCachesDisableRequest object.
+
+  Fields:
+    bucket: Name of the parent bucket.
+    rapidCacheId: The ID of the requested Rapid Cache instance.
+  """
+
+  bucket = _messages.StringField(1, required=True)
+  rapidCacheId = _messages.StringField(2, required=True)
+
+
+class StorageRapidCachesGetRequest(_messages.Message):
+  r"""A StorageRapidCachesGetRequest object.
+
+  Fields:
+    bucket: Name of the parent bucket.
+    rapidCacheId: The ID of the requested Rapid Cache instance.
+  """
+
+  bucket = _messages.StringField(1, required=True)
+  rapidCacheId = _messages.StringField(2, required=True)
+
+
+class StorageRapidCachesListRequest(_messages.Message):
+  r"""A StorageRapidCachesListRequest object.
+
+  Fields:
+    bucket: Name of the parent bucket.
+    pageSize: Maximum number of items to return in a single page of responses.
+    pageToken: A previously-returned page token representing part of the
+      larger set of results to view.
+  """
+
+  bucket = _messages.StringField(1, required=True)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
 
 
 class TestIamPermissionsResponse(_messages.Message):
