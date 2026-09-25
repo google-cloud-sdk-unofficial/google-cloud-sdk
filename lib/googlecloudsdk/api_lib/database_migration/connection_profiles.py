@@ -622,6 +622,11 @@ class ConnectionProfilesClient(object):
           )
       )
       update_fields.append('postgresql.private_service_connect_connectivity')
+    elif args.IsKnownAndSpecified('forward_ssh_hostname'):
+      connection_profile.postgresql.forwardSshConnectivity = (
+          self._GetForwardSshTunnelConnectivity(args)
+      )
+      update_fields.append('postgresql.forward_ssh_connectivity')
     self._UpdatePostgreSqlSslConfig(connection_profile, args, update_fields)
 
   def _UpdateOracleSslConfig(self, connection_profile, args, update_fields):
@@ -658,6 +663,11 @@ class ConnectionProfilesClient(object):
             )
         )
         update_fields.append('oracle.private_connectivity')
+    elif args.IsKnownAndSpecified('forward_ssh_hostname'):
+      connection_profile.oracle.forwardSshConnectivity = (
+          self._GetForwardSshTunnelConnectivity(args)
+      )
+      update_fields.append('oracle.forward_ssh_connectivity')
     elif args.IsKnownAndSpecified('static_ip_connectivity'):
       connection_profile.oracle.staticServiceIpConnectivity = {}
       update_fields.append('oracle.static_service_ip_connectivity')
@@ -754,9 +764,6 @@ class ConnectionProfilesClient(object):
           )
       )
       update_fields.append('sqlserver.private_connectivity')
-    elif args.IsKnownAndSpecified('static_ip_connectivity'):
-      connection_profile.sqlserver.staticIpConnectivity = {}
-      update_fields.append('sqlserver.static_ip_connectivity')
     elif args.IsKnownAndSpecified('psc_service_attachment'):
       psc_ref = args.CONCEPTS.psc_service_attachment.Parse()
       connection_profile.sqlserver.privateServiceConnectConnectivity = (
@@ -765,6 +772,14 @@ class ConnectionProfilesClient(object):
           )
       )
       update_fields.append('sqlserver.private_service_connect_connectivity')
+    elif args.IsKnownAndSpecified('static_ip_connectivity'):
+      connection_profile.sqlserver.staticIpConnectivity = {}
+      update_fields.append('sqlserver.static_ip_connectivity')
+    elif args.IsKnownAndSpecified('forward_ssh_hostname'):
+      connection_profile.sqlserver.forwardSshConnectivity = (
+          self._GetForwardSshTunnelConnectivity(args)
+      )
+      update_fields.append('sqlserver.forward_ssh_connectivity')
     self._UpdateSqlServerSslConfig(connection_profile, args, update_fields)
 
   def _GetProvider(self, cp_type, provider):
@@ -1164,8 +1179,9 @@ class ConnectionProfilesClient(object):
     else:
       raise UnsupportedConnectionProfileDBTypeError(
           'The requested connection profile does not contain a MySQL,'
-          ' PostgreSQL or Oracle object. Currently only MySQL, PostgreSQL and'
-          ' Oracle connection profiles are supported.'
+          ' PostgreSQL, Oracle or SQL Server object. Currently only MySQL,'
+          ' PostgreSQL, Oracle and SQL Server connection profiles are'
+          ' supported.'
       )
 
     self._UpdateLabels(connection_profile, args)

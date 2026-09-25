@@ -32,7 +32,6 @@ from googlecloudsdk.core.util import scaled_integer
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class Upload(base.Command):
   """Uploads files to Artifact Registry."""
 

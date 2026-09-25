@@ -131,8 +131,10 @@ from .types.vendor_settings import ServiceMesh
 from .types.vendor_settings import ServiceScaling
 from .types.vendor_settings import VpcAccess
 from .types.vendor_settings import WorkerPoolScaling
+from .types.vendor_settings import WorkloadIdentityConfig
 from .types.vendor_settings import EncryptionKeyRevocationAction
 from .types.vendor_settings import ExecutionEnvironment
+from .types.vendor_settings import IdentityType
 from .types.vendor_settings import IngressTraffic
 from .types.worker_pool import CreateWorkerPoolRequest
 from .types.worker_pool import DeleteWorkerPoolRequest
@@ -196,6 +198,7 @@ __all__ = (
 'GetWorkerPoolRequest',
 'HTTPGetAction',
 'HTTPHeader',
+'IdentityType',
 'IngressTraffic',
 'Instance',
 'InstanceSplit',
@@ -267,4 +270,5 @@ __all__ = (
 'WorkerPoolRevisionTemplate',
 'WorkerPoolScaling',
 'WorkerPoolsClient',
+'WorkloadIdentityConfig',
 )

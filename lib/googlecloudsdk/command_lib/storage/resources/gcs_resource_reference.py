@@ -123,6 +123,62 @@ class GcsAnywhereCacheResource(resource_reference.CloudResource):
     )
 
 
+class GcsRapidCacheResource(resource_reference.CloudResource):
+  """Holds Rapid Cache metadata."""
+
+  def __init__(
+      self,
+      admission_policy=None,
+      bucket=None,
+      cache_type=None,
+      create_time=None,
+      id_string=None,
+      ingest_on_write=None,
+      kind=None,
+      metadata=None,
+      pending_update=None,
+      rapid_cache_id=None,
+      state=None,
+      ttl=None,
+      update_time=None,
+      zone=None,
+  ):
+    self.admission_policy = admission_policy
+    self.bucket = bucket
+    self.cache_type = cache_type
+    self.create_time = create_time
+    self.id = id_string
+    self.ingest_on_write = ingest_on_write
+    self.kind = kind
+    self.metadata = metadata
+    self.pending_update = pending_update
+    self.rapid_cache_id = rapid_cache_id
+    self.state = state
+    self.ttl = ttl
+    self.update_time = update_time
+    self.zone = zone
+
+  def __eq__(self, other):
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return (
+        self.admission_policy == other.admission_policy
+        and self.bucket == other.bucket
+        and self.cache_type == other.cache_type
+        and self.create_time == other.create_time
+        and self.id == other.id
+        and self.ingest_on_write == other.ingest_on_write
+        and self.kind == other.kind
+        and self.metadata == other.metadata
+        and self.pending_update == other.pending_update
+        and self.rapid_cache_id == other.rapid_cache_id
+        and self.state == other.state
+        and self.ttl == other.ttl
+        and self.update_time == other.update_time
+        and self.zone == other.zone
+    )
+
+
 class GcsBucketResource(resource_reference.BucketResource):
   """API-specific subclass for handling metadata.
 

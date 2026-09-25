@@ -642,7 +642,7 @@ class Endpoint(_messages.Message):
       meet these requirements are rejected Note: This field is equivalent to
       the `annotations` field in the v1 API. They have the same syntax and
       read/write to the same location in Service Directory.
-    name: Immutable. The resource name for the endpoint in the format
+    name: Identifier. The resource name for the endpoint in the format
       `projects/*/locations/*/namespaces/*/services/*/endpoints/*`.
     network: Immutable. The Google Compute Engine network (VPC) of the
       endpoint in the format `projects//locations/global/networks/*`. The
@@ -1031,7 +1031,7 @@ class Namespace(_messages.Message):
     labels: Optional. Resource labels associated with this namespace. No more
       than 64 user labels can be associated with a given resource. Label keys
       and values can be no longer than 63 characters.
-    name: Immutable. The resource name for the namespace in the format
+    name: Identifier. The resource name for the namespace in the format
       `projects/*/locations/*/namespaces/*`.
     uid: Output only. A globally unique identifier (in UUID4 format) for this
       namespace.
@@ -1388,7 +1388,7 @@ class Service(_messages.Message):
       meet these requirements are rejected Note: This field is equivalent to
       the `annotations` field in the v1 API. They have the same syntax and
       read/write to the same location in Service Directory.
-    name: Immutable. The resource name for the service in the format
+    name: Identifier. The resource name for the service in the format
       `projects/*/locations/*/namespaces/*/services/*`.
     owners: Optional. List of contacts for this service. This can include
       application engineers, architects, SRE, ops team, business owners etc.
@@ -1676,7 +1676,7 @@ class ServicedirectoryProjectsLocationsNamespacesPatchRequest(_messages.Message)
   r"""A ServicedirectoryProjectsLocationsNamespacesPatchRequest object.
 
   Fields:
-    name: Immutable. The resource name for the namespace in the format
+    name: Identifier. The resource name for the namespace in the format
       `projects/*/locations/*/namespaces/*`.
     namespace: A Namespace resource to be passed as the request body.
     updateMask: Required. List of fields to be updated in this request.
@@ -1820,7 +1820,7 @@ class ServicedirectoryProjectsLocationsNamespacesServicesEndpointsPatchRequest(_
 
   Fields:
     endpoint: A Endpoint resource to be passed as the request body.
-    name: Immutable. The resource name for the endpoint in the format
+    name: Identifier. The resource name for the endpoint in the format
       `projects/*/locations/*/namespaces/*/services/*/endpoints/*`.
     updateMask: Required. List of fields to be updated in this request.
   """
@@ -1905,7 +1905,7 @@ class ServicedirectoryProjectsLocationsNamespacesServicesPatchRequest(_messages.
   object.
 
   Fields:
-    name: Immutable. The resource name for the service in the format
+    name: Identifier. The resource name for the service in the format
       `projects/*/locations/*/namespaces/*/services/*`.
     service: A Service resource to be passed as the request body.
     updateMask: Required. List of fields to be updated in this request.

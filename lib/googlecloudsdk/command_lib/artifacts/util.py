@@ -116,6 +116,8 @@ _REPO_CREATION_HELP_TEXT = """\
 Format of the repository. REPOSITORY_FORMAT must be one of:\n
  apt
     APT package format.
+ conda
+    Conda package format.
  docker
     Docker image format.
  go

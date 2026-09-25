@@ -10928,6 +10928,33 @@ class ApigeeV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def GetMcpServerConfig(self, request, global_params=None):
+      r"""Gets the deployed MCP server configuration for an organization. McpServerConfig is an org-scoped singleton (one per organization). The returned configuration may be up to 30 seconds out of date by default.
+
+      Args:
+        request: (ApigeeOrganizationsGetMcpServerConfigRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudApigeeV1McpServerConfig) The response message.
+      """
+      config = self.GetMethodConfig('GetMcpServerConfig')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetMcpServerConfig.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/organizations/{organizationsId}/mcpServerConfig',
+        http_method='GET',
+        method_id='apigee.organizations.getMcpServerConfig',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='ApigeeOrganizationsGetMcpServerConfigRequest',
+        response_type_name='GoogleCloudApigeeV1McpServerConfig',
+        supports_download=False,
+    )
+
     def GetProjectMapping(self, request, global_params=None):
       r"""Gets the project ID and region for an Apigee organization.
 

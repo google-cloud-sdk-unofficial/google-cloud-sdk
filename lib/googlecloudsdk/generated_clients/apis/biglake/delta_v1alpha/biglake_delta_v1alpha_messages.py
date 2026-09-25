@@ -178,8 +178,8 @@ class DeltaSharingCatalog(_messages.Message):
 
   Fields:
     createTime: Output only. The creation time of the catalog.
-    encryptionConfiguration: Optional. Custom encryption configuration (e.g.,
-      Cloud KMS keys).
+    encryptionConfig: Optional. Custom encryption configuration (e.g., Cloud
+      KMS keys).
     federatedCatalogOptions: Optional. Configuration options for federated
       catalogs.
     location: Required. Immutable. The user-provided GCP location of the
@@ -198,7 +198,7 @@ class DeltaSharingCatalog(_messages.Message):
   """
 
   createTime = _messages.StringField(1)
-  encryptionConfiguration = _messages.MessageField('EncryptionConfiguration', 2)
+  encryptionConfig = _messages.MessageField('EncryptionConfig', 2)
   federatedCatalogOptions = _messages.MessageField('FederatedCatalogOptions', 3)
   location = _messages.StringField(4)
   name = _messages.StringField(5)
@@ -259,13 +259,13 @@ class Empty(_messages.Message):
 
 
 
-class EncryptionConfiguration(_messages.Message):
+class EncryptionConfig(_messages.Message):
   r"""Custom encryption configuration (e.g., Cloud KMS keys).
 
   Fields:
-    kmsKeyName: Optional. Optional Cloud KMS key name for encryption of
-      resources in the catalog. Format: projects/{project}/locations/{location
-      }/keyRings/{keyRing}/cryptoKeys/{cryptoKey}
+    kmsKeyName: Optional. Cloud KMS key name used to encrypt cached data
+      fetched from the catalog. Format: `projects/{project}/locations/{locatio
+      n}/keyRings/{keyRing}/cryptoKeys/{cryptoKey}`
   """
 
   kmsKeyName = _messages.StringField(1)

@@ -1,0 +1,35 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: List Secure Source Manager pull request file diffs.
+    description: |
+      List file diffs for a Secure Source Manager pull request.
+    examples: |
+      To list file diffs for pull request `1` of repository `my-repo` and location `us-central1`, run the following command:
+
+      $ {command} --pull-request=1 --repository=my-repo --region=us-central1
+
+  command_type: LIST
+
+  request:
+    api_version: v1
+    collection: securesourcemanager.projects.locations.repositories.pullRequests
+    method: listFileDiffs
+    regional_endpoint_compatibility: SUPPORTED
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: The Secure Source Manager pull request to list file diffs of.
+      spec: !REF googlecloudsdk.command_lib.source_manager.resources:pull_request
+      is_positional: true
+    exclude: [uri]
+
+  output:
+    format: |
+      table(
+        name:label=FILE_PATH:sort=1,
+        action:label=ACTION,
+        sha:label=SHA
+      )

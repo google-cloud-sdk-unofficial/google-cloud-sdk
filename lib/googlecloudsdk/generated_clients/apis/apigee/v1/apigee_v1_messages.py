@@ -4289,6 +4289,18 @@ class ApigeeOrganizationsGetDeployedIngressConfigRequest(_messages.Message):
   view = _messages.EnumField('ViewValueValuesEnum', 2)
 
 
+class ApigeeOrganizationsGetMcpServerConfigRequest(_messages.Message):
+  r"""A ApigeeOrganizationsGetMcpServerConfigRequest object.
+
+  Fields:
+    name: Required. Name of the deployed MCP server configuration for the
+      organization in the singleton form:
+      `organizations/{org}/mcpServerConfig`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
 class ApigeeOrganizationsGetProjectMappingRequest(_messages.Message):
   r"""A ApigeeOrganizationsGetProjectMappingRequest object.
 
@@ -6425,6 +6437,7 @@ class GoogleCloudApigeeV1AddonsConfig(_messages.Message):
       on.
     integrationConfig: Configuration for the Integration add-on.
     monetizationConfig: Configuration for the Monetization add-on.
+    specGenerationConfig: Configuration for the Spec Generation add-on.
   """
 
   advancedApiOpsConfig = _messages.MessageField('GoogleCloudApigeeV1AdvancedApiOpsConfig', 1)
@@ -6433,6 +6446,7 @@ class GoogleCloudApigeeV1AddonsConfig(_messages.Message):
   connectorsPlatformConfig = _messages.MessageField('GoogleCloudApigeeV1ConnectorsPlatformConfig', 4)
   integrationConfig = _messages.MessageField('GoogleCloudApigeeV1IntegrationConfig', 5)
   monetizationConfig = _messages.MessageField('GoogleCloudApigeeV1MonetizationConfig', 6)
+  specGenerationConfig = _messages.MessageField('GoogleCloudApigeeV1SpecGenerationConfig', 7)
 
 
 class GoogleCloudApigeeV1AdjustAppGroupBalanceRequest(_messages.Message):
@@ -11167,6 +11181,39 @@ class GoogleCloudApigeeV1MaintenanceUpdatePolicyMaintenanceWindow(_messages.Mess
   startTime = _messages.MessageField('GoogleTypeTimeOfDay', 2)
 
 
+class GoogleCloudApigeeV1McpServerConfig(_messages.Message):
+  r"""Deployed MCP server configuration for an organization. Response for
+  GetMcpServerConfig. Org-scoped singleton: each organization has exactly one
+  McpServerConfig. Multiple logical MCP servers within the same org are
+  expressed inside the Cloud Storage blob (McpServerConfigData.hosts map), not
+  as multiple McpServerConfig resources.
+
+  Fields:
+    mcpServerConfigDataLocation: Output only. Cloud Storage URI to the
+      McpServerConfigData blob in the Apigee tenant project bucket. The
+      sidecar fetches this URI using Cloud Storage, and deserializes the.
+      protojson blob to McpServerConfigData. Treat this as an opaque URI - its
+      format may change. Example: gs://{apigee-tp-bucket}/apigee-mcp-
+      config-{org}-{revision_id}.json
+    name: Identifier. Resource name in the singleton form:
+      organizations/{org}/mcpServerConfig
+    revisionCreateTime: Output only. Time at which this McpServerConfig
+      revision was created. Mirrors IngressConfig.revision_create_time.
+    revisionId: Output only. Revision ID that defines the ordering on
+      McpServerConfig revisions. Higher values indicate more recently deployed
+      configurations. Monotonically non-decreasing per organization. Mirrors
+      IngressConfig.revision_id.
+    uid: Output only. Unique ID for the McpServerConfig that will only change
+      if the organization is deleted and recreated.
+  """
+
+  mcpServerConfigDataLocation = _messages.StringField(1)
+  name = _messages.StringField(2)
+  revisionCreateTime = _messages.StringField(3)
+  revisionId = _messages.IntegerField(4)
+  uid = _messages.StringField(5)
+
+
 class GoogleCloudApigeeV1Metadata(_messages.Message):
   r"""Encapsulates additional information about query execution.
 
@@ -14710,6 +14757,41 @@ class GoogleCloudApigeeV1Space(_messages.Message):
   displayName = _messages.StringField(2)
   name = _messages.StringField(3)
   updateTime = _messages.StringField(4)
+
+
+class GoogleCloudApigeeV1SpecGenerationConfig(_messages.Message):
+  r"""Configurations of the Spec Generation add-on.
+
+  Enums:
+    StateValueValuesEnum: Output only. The state of the Spec Generation add-
+      on.
+
+  Fields:
+    enabled: Flag that specifies whether the Spec Generation add-on is
+      enabled.
+    state: Output only. The state of the Spec Generation add-on.
+    updateTime: Output only. The latest update time.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the Spec Generation add-on.
+
+    Values:
+      ADDON_STATE_UNSPECIFIED: Default value.
+      ENABLING: Add-on is in progress of enabling.
+      ENABLED: Add-on is fully enabled and ready to use.
+      DISABLING: Add-on is in progress of disabling.
+      DISABLED: Add-on is fully disabled.
+    """
+    ADDON_STATE_UNSPECIFIED = 0
+    ENABLING = 1
+    ENABLED = 2
+    DISABLING = 3
+    DISABLED = 4
+
+  enabled = _messages.BooleanField(1)
+  state = _messages.EnumField('StateValueValuesEnum', 2)
+  updateTime = _messages.StringField(3)
 
 
 class GoogleCloudApigeeV1Stats(_messages.Message):

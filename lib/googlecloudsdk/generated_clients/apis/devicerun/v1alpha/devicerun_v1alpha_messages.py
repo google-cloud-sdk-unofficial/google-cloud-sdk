@@ -800,6 +800,8 @@ class CatalogSoftwareVersion(_messages.Message):
       software, for example `software_type = "ANDROIDX_TEST_ORCHESTRATOR"`.
     version: Output only. Specifies the version identifier, e.g. "1.4.1".
       Unique within a `software_type`.
+    xcodeDetails: Output only. Contains Xcode-specific attributes (set when
+      software_type == XCODE).
   """
 
   class SoftwareTypeValueValuesEnum(_messages.Enum):
@@ -811,9 +813,11 @@ class CatalogSoftwareVersion(_messages.Message):
       SOFTWARE_TYPE_UNSPECIFIED: Software type not specified.
       ANDROIDX_TEST_ORCHESTRATOR: AndroidX Test Orchestrator, which runs each
         Android instrumentation test case in its own process.
+      XCODE: Apple Xcode, the toolchain that builds and runs iOS XCTests.
     """
     SOFTWARE_TYPE_UNSPECIFIED = 0
     ANDROIDX_TEST_ORCHESTRATOR = 1
+    XCODE = 2
 
   androidxTestOrchestratorDetails = _messages.MessageField('CatalogAndroidxTestOrchestratorDetails', 1)
   displayName = _messages.StringField(2)
@@ -822,6 +826,7 @@ class CatalogSoftwareVersion(_messages.Message):
   name = _messages.StringField(5)
   softwareType = _messages.EnumField('SoftwareTypeValueValuesEnum', 6)
   version = _messages.StringField(7)
+  xcodeDetails = _messages.MessageField('CatalogXcodeDetails', 8)
 
 
 class CatalogSupportedProduct(_messages.Message):
@@ -839,6 +844,19 @@ class CatalogSupportedProduct(_messages.Message):
 
   automation = _messages.MessageField('CatalogAutomationSupport', 1)
   deviceStreaming = _messages.MessageField('CatalogDeviceStreamingSupport', 2)
+
+
+class CatalogXcodeDetails(_messages.Message):
+  r"""Xcode-specific attributes.
+
+  Fields:
+    supportedIosVersions: Output only. Lists the iOS versions this Xcode can
+      run tests against, e.g. "16.6". This is a property of the toolchain, so
+      it says nothing about whether a device on that iOS version is available;
+      list the `Device` collection to find out.
+  """
+
+  supportedIosVersions = _messages.StringField(1, repeated=True)
 
 
 class Date(_messages.Message):
@@ -2126,7 +2144,7 @@ class SessionConfigSessionOutputFileDirectoryConfig(_messages.Message):
       located in another project or uses fine-grained access controls, ensure
       the Device Run Service Agent of the project (`service-@gcp-sa-
       devicerun.iam.gserviceaccount.com`) is granted access to the bucket
-      (such as `roles/storage.objectAdmin`).
+      (such as `roles/storage.objectUser`).
   """
 
   gcsOutputDirectory = _messages.MessageField('GcsPath', 1)

@@ -37,6 +37,13 @@ class BiglakeV1(base_api.BaseApiClient):
         default_global_params=default_global_params,
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
+    self.hive_v1_projects_catalogs_databases_tables_partitions = self.HiveV1ProjectsCatalogsDatabasesTablesPartitionsService(self)
+    self.hive_v1_projects_catalogs_databases_tables = self.HiveV1ProjectsCatalogsDatabasesTablesService(self)
+    self.hive_v1_projects_catalogs_databases = self.HiveV1ProjectsCatalogsDatabasesService(self)
+    self.hive_v1_projects_catalogs = self.HiveV1ProjectsCatalogsService(self)
+    self.hive_v1_projects = self.HiveV1ProjectsService(self)
+    self.hive_v1 = self.HiveV1Service(self)
+    self.hive = self.HiveService(self)
     self.iceberg_v1_restcatalog_extensions_projects_catalogs = self.IcebergV1RestcatalogExtensionsProjectsCatalogsService(self)
     self.iceberg_v1_restcatalog_extensions_projects = self.IcebergV1RestcatalogExtensionsProjectsService(self)
     self.iceberg_v1_restcatalog_extensions = self.IcebergV1RestcatalogExtensionsService(self)
@@ -52,6 +59,616 @@ class BiglakeV1(base_api.BaseApiClient):
     self.projects_catalogs_namespaces = self.ProjectsCatalogsNamespacesService(self)
     self.projects_catalogs = self.ProjectsCatalogsService(self)
     self.projects = self.ProjectsService(self)
+
+  class HiveV1ProjectsCatalogsDatabasesTablesPartitionsService(base_api.BaseApiService):
+    """Service class for the hive_v1_projects_catalogs_databases_tables_partitions resource."""
+
+    _NAME = 'hive_v1_projects_catalogs_databases_tables_partitions'
+
+    def __init__(self, client):
+      super(BiglakeV1.HiveV1ProjectsCatalogsDatabasesTablesPartitionsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def BatchCreate(self, request, global_params=None):
+      r"""Adds partitions to a table.
+
+      Args:
+        request: (BiglakeHiveV1ProjectsCatalogsDatabasesTablesPartitionsBatchCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (BatchCreatePartitionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('BatchCreate')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    BatchCreate.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='hive/v1/projects/{projectsId}/catalogs/{catalogsId}/databases/{databasesId}/tables/{tablesId}/partitions:batchCreate',
+        http_method='POST',
+        method_id='biglake.hive.v1.projects.catalogs.databases.tables.partitions.batchCreate',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='hive/v1/{+parent}/partitions:batchCreate',
+        request_field='batchCreatePartitionsRequest',
+        request_type_name='BiglakeHiveV1ProjectsCatalogsDatabasesTablesPartitionsBatchCreateRequest',
+        response_type_name='BatchCreatePartitionsResponse',
+        supports_download=False,
+    )
+
+    def BatchDelete(self, request, global_params=None):
+      r"""Deletes partitions from a table.
+
+      Args:
+        request: (BiglakeHiveV1ProjectsCatalogsDatabasesTablesPartitionsBatchDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('BatchDelete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    BatchDelete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='hive/v1/projects/{projectsId}/catalogs/{catalogsId}/databases/{databasesId}/tables/{tablesId}/partitions:batchDelete',
+        http_method='POST',
+        method_id='biglake.hive.v1.projects.catalogs.databases.tables.partitions.batchDelete',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='hive/v1/{+parent}/partitions:batchDelete',
+        request_field='batchDeletePartitionsRequest',
+        request_type_name='BiglakeHiveV1ProjectsCatalogsDatabasesTablesPartitionsBatchDeleteRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def BatchUpdate(self, request, global_params=None):
+      r"""Updates partitions in a table.
+
+      Args:
+        request: (BiglakeHiveV1ProjectsCatalogsDatabasesTablesPartitionsBatchUpdateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (BatchUpdatePartitionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('BatchUpdate')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    BatchUpdate.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='hive/v1/projects/{projectsId}/catalogs/{catalogsId}/databases/{databasesId}/tables/{tablesId}/partitions:batchUpdate',
+        http_method='POST',
+        method_id='biglake.hive.v1.projects.catalogs.databases.tables.partitions.batchUpdate',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='hive/v1/{+parent}/partitions:batchUpdate',
+        request_field='batchUpdatePartitionsRequest',
+        request_type_name='BiglakeHiveV1ProjectsCatalogsDatabasesTablesPartitionsBatchUpdateRequest',
+        response_type_name='BatchUpdatePartitionsResponse',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Streams list of partitions from a table.
+
+      Args:
+        request: (BiglakeHiveV1ProjectsCatalogsDatabasesTablesPartitionsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListPartitionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='hive/v1/projects/{projectsId}/catalogs/{catalogsId}/databases/{databasesId}/tables/{tablesId}/partitions:list',
+        http_method='GET',
+        method_id='biglake.hive.v1.projects.catalogs.databases.tables.partitions.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter'],
+        relative_path='hive/v1/{+parent}/partitions:list',
+        request_field='',
+        request_type_name='BiglakeHiveV1ProjectsCatalogsDatabasesTablesPartitionsListRequest',
+        response_type_name='ListPartitionsResponse',
+        supports_download=False,
+    )
+
+  class HiveV1ProjectsCatalogsDatabasesTablesService(base_api.BaseApiService):
+    """Service class for the hive_v1_projects_catalogs_databases_tables resource."""
+
+    _NAME = 'hive_v1_projects_catalogs_databases_tables'
+
+    def __init__(self, client):
+      super(BiglakeV1.HiveV1ProjectsCatalogsDatabasesTablesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new hive table.
+
+      Args:
+        request: (BiglakeHiveV1ProjectsCatalogsDatabasesTablesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (HiveTable) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='hive/v1/projects/{projectsId}/catalogs/{catalogsId}/databases/{databasesId}/tables',
+        http_method='POST',
+        method_id='biglake.hive.v1.projects.catalogs.databases.tables.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['hiveTableId'],
+        relative_path='hive/v1/{+parent}/tables',
+        request_field='hiveTable',
+        request_type_name='BiglakeHiveV1ProjectsCatalogsDatabasesTablesCreateRequest',
+        response_type_name='HiveTable',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes an existing table specified by the table name.
+
+      Args:
+        request: (BiglakeHiveV1ProjectsCatalogsDatabasesTablesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='hive/v1/projects/{projectsId}/catalogs/{catalogsId}/databases/{databasesId}/tables/{tablesId}',
+        http_method='DELETE',
+        method_id='biglake.hive.v1.projects.catalogs.databases.tables.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='hive/v1/{+name}',
+        request_field='',
+        request_type_name='BiglakeHiveV1ProjectsCatalogsDatabasesTablesDeleteRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets the table specified by the resource name.
+
+      Args:
+        request: (BiglakeHiveV1ProjectsCatalogsDatabasesTablesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (HiveTable) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='hive/v1/projects/{projectsId}/catalogs/{catalogsId}/databases/{databasesId}/tables/{tablesId}',
+        http_method='GET',
+        method_id='biglake.hive.v1.projects.catalogs.databases.tables.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='hive/v1/{+name}',
+        request_field='',
+        request_type_name='BiglakeHiveV1ProjectsCatalogsDatabasesTablesGetRequest',
+        response_type_name='HiveTable',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""List all hive tables in a specified project under the hive catalog and database.
+
+      Args:
+        request: (BiglakeHiveV1ProjectsCatalogsDatabasesTablesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListHiveTablesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='hive/v1/projects/{projectsId}/catalogs/{catalogsId}/databases/{databasesId}/tables',
+        http_method='GET',
+        method_id='biglake.hive.v1.projects.catalogs.databases.tables.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='hive/v1/{+parent}/tables',
+        request_field='',
+        request_type_name='BiglakeHiveV1ProjectsCatalogsDatabasesTablesListRequest',
+        response_type_name='ListHiveTablesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates an existing table specified by the table name.
+
+      Args:
+        request: (BiglakeHiveV1ProjectsCatalogsDatabasesTablesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (HiveTable) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='hive/v1/projects/{projectsId}/catalogs/{catalogsId}/databases/{databasesId}/tables/{tablesId}',
+        http_method='PATCH',
+        method_id='biglake.hive.v1.projects.catalogs.databases.tables.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='hive/v1/{+name}',
+        request_field='hiveTable',
+        request_type_name='BiglakeHiveV1ProjectsCatalogsDatabasesTablesPatchRequest',
+        response_type_name='HiveTable',
+        supports_download=False,
+    )
+
+  class HiveV1ProjectsCatalogsDatabasesService(base_api.BaseApiService):
+    """Service class for the hive_v1_projects_catalogs_databases resource."""
+
+    _NAME = 'hive_v1_projects_catalogs_databases'
+
+    def __init__(self, client):
+      super(BiglakeV1.HiveV1ProjectsCatalogsDatabasesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new database.
+
+      Args:
+        request: (BiglakeHiveV1ProjectsCatalogsDatabasesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (HiveDatabase) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='hive/v1/projects/{projectsId}/catalogs/{catalogsId}/databases',
+        http_method='POST',
+        method_id='biglake.hive.v1.projects.catalogs.databases.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['hiveDatabaseId'],
+        relative_path='hive/v1/{+parent}/databases',
+        request_field='hiveDatabase',
+        request_type_name='BiglakeHiveV1ProjectsCatalogsDatabasesCreateRequest',
+        response_type_name='HiveDatabase',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes an existing database specified by the database name.
+
+      Args:
+        request: (BiglakeHiveV1ProjectsCatalogsDatabasesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='hive/v1/projects/{projectsId}/catalogs/{catalogsId}/databases/{databasesId}',
+        http_method='DELETE',
+        method_id='biglake.hive.v1.projects.catalogs.databases.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='hive/v1/{+name}',
+        request_field='',
+        request_type_name='BiglakeHiveV1ProjectsCatalogsDatabasesDeleteRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets the database specified by the resource name.
+
+      Args:
+        request: (BiglakeHiveV1ProjectsCatalogsDatabasesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (HiveDatabase) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='hive/v1/projects/{projectsId}/catalogs/{catalogsId}/databases/{databasesId}',
+        http_method='GET',
+        method_id='biglake.hive.v1.projects.catalogs.databases.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='hive/v1/{+name}',
+        request_field='',
+        request_type_name='BiglakeHiveV1ProjectsCatalogsDatabasesGetRequest',
+        response_type_name='HiveDatabase',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""List all databases in a specified catalog.
+
+      Args:
+        request: (BiglakeHiveV1ProjectsCatalogsDatabasesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListHiveDatabasesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='hive/v1/projects/{projectsId}/catalogs/{catalogsId}/databases',
+        http_method='GET',
+        method_id='biglake.hive.v1.projects.catalogs.databases.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='hive/v1/{+parent}/databases',
+        request_field='',
+        request_type_name='BiglakeHiveV1ProjectsCatalogsDatabasesListRequest',
+        response_type_name='ListHiveDatabasesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates an existing database specified by the database name.
+
+      Args:
+        request: (BiglakeHiveV1ProjectsCatalogsDatabasesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (HiveDatabase) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='hive/v1/projects/{projectsId}/catalogs/{catalogsId}/databases/{databasesId}',
+        http_method='PATCH',
+        method_id='biglake.hive.v1.projects.catalogs.databases.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='hive/v1/{+name}',
+        request_field='hiveDatabase',
+        request_type_name='BiglakeHiveV1ProjectsCatalogsDatabasesPatchRequest',
+        response_type_name='HiveDatabase',
+        supports_download=False,
+    )
+
+  class HiveV1ProjectsCatalogsService(base_api.BaseApiService):
+    """Service class for the hive_v1_projects_catalogs resource."""
+
+    _NAME = 'hive_v1_projects_catalogs'
+
+    def __init__(self, client):
+      super(BiglakeV1.HiveV1ProjectsCatalogsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new hive catalog.
+
+      Args:
+        request: (BiglakeHiveV1ProjectsCatalogsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (HiveCatalog) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='hive/v1/projects/{projectsId}/catalogs',
+        http_method='POST',
+        method_id='biglake.hive.v1.projects.catalogs.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['hiveCatalogId', 'primary_location'],
+        relative_path='hive/v1/{+parent}/catalogs',
+        request_field='hiveCatalog',
+        request_type_name='BiglakeHiveV1ProjectsCatalogsCreateRequest',
+        response_type_name='HiveCatalog',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes an existing catalog specified by the catalog ID. Delete will fail if the catalog is not empty.
+
+      Args:
+        request: (BiglakeHiveV1ProjectsCatalogsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='hive/v1/projects/{projectsId}/catalogs/{catalogsId}',
+        http_method='DELETE',
+        method_id='biglake.hive.v1.projects.catalogs.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='hive/v1/{+name}',
+        request_field='',
+        request_type_name='BiglakeHiveV1ProjectsCatalogsDeleteRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def Failover(self, request, global_params=None):
+      r"""Failover the catalog to a new primary replica region.
+
+      Args:
+        request: (BiglakeHiveV1ProjectsCatalogsFailoverRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (FailoverHiveCatalogResponse) The response message.
+      """
+      config = self.GetMethodConfig('Failover')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Failover.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='hive/v1/projects/{projectsId}/catalogs/{catalogsId}:failover',
+        http_method='POST',
+        method_id='biglake.hive.v1.projects.catalogs.failover',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='hive/v1/{+name}:failover',
+        request_field='failoverHiveCatalogRequest',
+        request_type_name='BiglakeHiveV1ProjectsCatalogsFailoverRequest',
+        response_type_name='FailoverHiveCatalogResponse',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets the catalog specified by the resource name.
+
+      Args:
+        request: (BiglakeHiveV1ProjectsCatalogsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (HiveCatalog) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='hive/v1/projects/{projectsId}/catalogs/{catalogsId}',
+        http_method='GET',
+        method_id='biglake.hive.v1.projects.catalogs.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='hive/v1/{+name}',
+        request_field='',
+        request_type_name='BiglakeHiveV1ProjectsCatalogsGetRequest',
+        response_type_name='HiveCatalog',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""List all catalogs in a specified project.
+
+      Args:
+        request: (BiglakeHiveV1ProjectsCatalogsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListHiveCatalogsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='hive/v1/projects/{projectsId}/catalogs',
+        http_method='GET',
+        method_id='biglake.hive.v1.projects.catalogs.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='hive/v1/{+parent}/catalogs',
+        request_field='',
+        request_type_name='BiglakeHiveV1ProjectsCatalogsListRequest',
+        response_type_name='ListHiveCatalogsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates an existing catalog.
+
+      Args:
+        request: (BiglakeHiveV1ProjectsCatalogsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (HiveCatalog) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='hive/v1/projects/{projectsId}/catalogs/{catalogsId}',
+        http_method='PATCH',
+        method_id='biglake.hive.v1.projects.catalogs.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='hive/v1/{+name}',
+        request_field='hiveCatalog',
+        request_type_name='BiglakeHiveV1ProjectsCatalogsPatchRequest',
+        response_type_name='HiveCatalog',
+        supports_download=False,
+    )
+
+  class HiveV1ProjectsService(base_api.BaseApiService):
+    """Service class for the hive_v1_projects resource."""
+
+    _NAME = 'hive_v1_projects'
+
+    def __init__(self, client):
+      super(BiglakeV1.HiveV1ProjectsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class HiveV1Service(base_api.BaseApiService):
+    """Service class for the hive_v1 resource."""
+
+    _NAME = 'hive_v1'
+
+    def __init__(self, client):
+      super(BiglakeV1.HiveV1Service, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class HiveService(base_api.BaseApiService):
+    """Service class for the hive resource."""
+
+    _NAME = 'hive'
+
+    def __init__(self, client):
+      super(BiglakeV1.HiveService, self).__init__(client)
+      self._upload_configs = {
+          }
 
   class IcebergV1RestcatalogExtensionsProjectsCatalogsService(base_api.BaseApiService):
     """Service class for the iceberg_v1_restcatalog_extensions_projects_catalogs resource."""

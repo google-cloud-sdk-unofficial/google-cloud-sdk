@@ -144,8 +144,10 @@ from .vendor_settings import (
     ServiceScaling,
     VpcAccess,
     WorkerPoolScaling,
+    WorkloadIdentityConfig,
     EncryptionKeyRevocationAction,
     ExecutionEnvironment,
+    IdentityType,
     IngressTraffic,
 )
 from .worker_pool import (
@@ -256,8 +258,10 @@ __all__ = (
     'ServiceScaling',
     'VpcAccess',
     'WorkerPoolScaling',
+    'WorkloadIdentityConfig',
     'EncryptionKeyRevocationAction',
     'ExecutionEnvironment',
+    'IdentityType',
     'IngressTraffic',
     'CreateWorkerPoolRequest',
     'DeleteWorkerPoolRequest',

@@ -268,6 +268,114 @@ class CloudApi(object):
     """
     raise NotImplementedError('patch_anywhere_cache must be overridden.')
 
+  def create_rapid_cache(
+      self,
+      bucket_name,
+      zone,
+      cache_type=None,
+      admission_policy=None,
+      ttl=None,
+  ):
+    """Creates Rapid Cache for given bucket.
+
+    Args:
+      bucket_name (str): The name of the bucket where the Rapid Cache should be
+        created.
+      zone (str): Name of the zonal locations where the Rapid Cache should be
+        created.
+      cache_type (str): The type of Rapid Cache to create.
+      admission_policy (str|None): The cache admission policy decides for each
+        cache miss, that is whether to insert the missed block or not.
+      ttl (str|None): Cache entry time-to-live in seconds.
+
+    Returns:
+      GoogleLongrunningOperation Apitools object for creating caches.
+
+    Raises:
+      CloudApiError: API returned an error.
+      NotImplementedError: This function was not implemented by a class using
+        this interface.
+    """
+    raise NotImplementedError('create_rapid_cache must be overridden.')
+
+  def disable_rapid_cache(self, bucket_name, rapid_cache_id):
+    """Disables Rapid Cache in particular zone of a bucket.
+
+    Args:
+      bucket_name (str): The name of the bucket where the Rapid Cache should be
+        disabled.
+      rapid_cache_id (str): Unique identifier for a cache instance in bucket.
+
+    Returns:
+      GoogleLongrunningOperation or None: Apitools object or None.
+
+    Raises:
+      CloudApiError: API returned an error.
+      NotImplementedError: This function was not implemented by a class using
+        this interface.
+    """
+    raise NotImplementedError('disable_rapid_cache must be overridden.')
+
+  def get_rapid_cache(self, bucket_name, rapid_cache_id):
+    """Gets Rapid Cache Instance for a zone in bucket.
+
+    Args:
+      bucket_name (str): The name of the bucket.
+      rapid_cache_id (str): Unique identifier for a cache instance in bucket.
+
+    Returns:
+      gcs_resource_reference.GcsRapidCacheResource: The Rapid Cache Instance.
+
+    Raises:
+      CloudApiError: API returned an error.
+      NotImplementedError: This function was not implemented by a class using
+        this interface.
+    """
+    raise NotImplementedError('get_rapid_cache must be overridden.')
+
+  def list_rapid_caches(self, bucket_name):
+    """Lists all Rapid Cache instances of the bucket.
+
+    Args:
+      bucket_name (str): The name of the bucket.
+
+    Yields:
+      Iterator over gcs_resource_reference.GcsRapidCacheResource objects.
+
+    Raises:
+      CloudApiError: API returned an error.
+      NotImplementedError: This function was not implemented by a class using
+        this interface.
+    """
+    raise NotImplementedError('list_rapid_caches must be overridden.')
+
+  def patch_rapid_cache(
+      self,
+      bucket_name,
+      rapid_cache_id,
+      admission_policy=None,
+      ttl=None,
+  ):
+    """Updates Rapid Cache instance of a bucket.
+
+    Args:
+      bucket_name (str): The name of the bucket where the Rapid Cache should be
+        updated.
+      rapid_cache_id (str): Unique identifier for a cache instance in bucket.
+      admission_policy (str|None): The cache admission policy decides for each
+        cache miss, that is whether to insert the missed block or not.
+      ttl (str|None): Cache entry time-to-live in seconds.
+
+    Returns:
+      GoogleLongrunningOperation Apitools object for creating caches.
+
+    Raises:
+      CloudApiError: API returned an error.
+      NotImplementedError: This function was not implemented by a class using
+        this interface.
+    """
+    raise NotImplementedError('patch_rapid_cache must be overridden.')
+
   def create_bucket(self, bucket_resource, request_config, fields_scope=None):
     """Creates a new bucket with the specified metadata.
 

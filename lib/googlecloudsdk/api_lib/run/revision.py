@@ -53,6 +53,13 @@ GPU_ZONAL_REDUNDANCY_DISABLED_ANNOTATION = (
 SOURCES_ANNOTATION = (
     'run.googleapis.com/sources'
 )
+# Annotation that contains a JSON-formatted string representing a map of
+# (container name, BuildConfig) entries, where container name is either empty
+# and corresponds to the ingress container or has a name and corresponds to
+# the container with the same name, and BuildConfig is a JSON representation
+# of a V2.Service.Template.Container.BuildConfig object.
+# gcloud-disable-gdu-domain
+BUILD_CONFIG_ANNOTATION = 'run.googleapis.com/build-config'
 # If true, overflow scaling capabilities are enabled for this revision.
 OVERFLOW_SCALING_ANNOTATION = 'run.googleapis.com/overflow-scaling'
 # Annotation to set the CPU utilization target for scaling.

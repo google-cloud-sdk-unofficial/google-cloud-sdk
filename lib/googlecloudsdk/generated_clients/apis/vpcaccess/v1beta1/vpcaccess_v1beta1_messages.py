@@ -47,6 +47,10 @@ class Connector(_messages.Message):
     network: Optional. Name of a VPC network.
     state: Output only. State of the VPC access connector.
     subnet: Optional. The subnet in which to house the VPC Access Connector.
+    throughput: Optional. Specifies the maximum throughput for the connector
+      in Mbps. It replaces the machine_type, min_instances and max_instances
+      parameters. This field cannot be set when machine_type, min_instances,
+      or max_instances are specified.
   """
 
   class StateValueValuesEnum(_messages.Enum):
@@ -80,6 +84,7 @@ class Connector(_messages.Message):
   network = _messages.StringField(11)
   state = _messages.EnumField('StateValueValuesEnum', 12)
   subnet = _messages.MessageField('Subnet', 13)
+  throughput = _messages.IntegerField(14, variant=_messages.Variant.INT32)
 
 
 class ListConnectorsResponse(_messages.Message):

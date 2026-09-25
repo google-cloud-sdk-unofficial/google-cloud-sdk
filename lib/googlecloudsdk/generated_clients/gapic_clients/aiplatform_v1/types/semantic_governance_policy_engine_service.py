@@ -224,27 +224,30 @@ class UpdateSemanticGovernancePolicyEngineOperationMetadata(proto.Message):
 
 
 class DeprovisionSemanticGovernancePolicyEngineRequest(proto.Message):
-  r"""Request message for
+    r"""Request message for
+    [SemanticGovernancePolicyEngineService.DeprovisionSemanticGovernancePolicyEngine][google.cloud.aiplatform.v1.SemanticGovernancePolicyEngineService.DeprovisionSemanticGovernancePolicyEngine].
 
-  [SemanticGovernancePolicyEngineService.DeprovisionSemanticGovernancePolicyEngine][google.cloud.aiplatform.v1.SemanticGovernancePolicyEngineService.DeprovisionSemanticGovernancePolicyEngine].
+    Attributes:
+        name (str):
+            Required. The resource name of the
+            SemanticGovernancePolicyEngine to deprovision.
+            Format:
 
-  Attributes:
-      name (str): Required. The resource name of the
-        SemanticGovernancePolicyEngine to deprovision.
-          Format:
             projects/{project}/locations/{location}/semanticGovernancePolicyEngine
-      force (bool): Optional. If true, the operation bypass checks on current
-        state and force the deprovisioning operation.
-  """
+        force (bool):
+            Optional. If true, the operation bypass
+            checks on current state and force the
+            deprovisioning operation.
+    """
 
-  name: str = proto.Field(
-      proto.STRING,
-      number=1,
-  )
-  force: bool = proto.Field(
-      proto.BOOL,
-      number=2,
-  )
+    name: str = proto.Field(
+        proto.STRING,
+        number=1,
+    )
+    force: bool = proto.Field(
+        proto.BOOL,
+        number=2,
+    )
 
 
 class DeprovisionSemanticGovernancePolicyEngineOperationMetadata(proto.Message):
@@ -278,8 +281,17 @@ class GatewayConfig(proto.Message):
             be used from the same {location} Format:
             projects/{project}/regions/{region}/subnetworks/{subnetwork}
         dns_zone_name (str):
-            Optional. FQDN of the private DNS zone to
-            create DNS record set for PSC endpoint.
+            Optional. Name of the private Cloud DNS managed zone in
+            which to create the gateway's A-record. This is the managed
+            zone's own name, not its DNS name: for a zone serving
+            ``example.internal.``, this field takes the zone name, such
+            as ``my-private-zone``.
+
+            The zone's DNS name is combined with a generated per-gateway
+            label to form the record's fully qualified name, which must
+            stay within the 255-octet DNS limit. If the full name is too
+            long, gateway provisioning fails when it attempts to create
+            the DNS record.
         state (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.GatewayConfig.State):
             Output only. The state of the Gateway
             configuration.
@@ -293,6 +305,16 @@ class GatewayConfig(proto.Message):
         dns_record (str):
             Output only. The fully qualified record name
             of the created A-record in Cloud DNS.
+        allowed_projects (MutableSequence[str]):
+            Optional. Additional consumer projects permitted to attach
+            their own PSC endpoint to this gateway's ServiceAttachment.
+            This is the "decoupled" mode, where the customer creates the
+            PSC endpoint in a project other than this gateway's
+            ``network`` project. Each listed project is VPC-SC enforced:
+            it must be within the caller's service perimeter. The owning
+            SemanticGovernancePolicyEngine's own project is always
+            permitted implicitly and need not be listed. Format:
+            ``projects/{project}`` (ID or number).
     """
     class State(proto.Enum):
         r"""State of the Gateway configuration.
@@ -347,6 +369,10 @@ class GatewayConfig(proto.Message):
     dns_record: str = proto.Field(
         proto.STRING,
         number=8,
+    )
+    allowed_projects: MutableSequence[str] = proto.RepeatedField(
+        proto.STRING,
+        number=9,
     )
 
 

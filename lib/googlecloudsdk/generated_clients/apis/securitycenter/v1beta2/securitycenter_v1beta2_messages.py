@@ -4252,7 +4252,7 @@ class GoogleCloudSecuritycenterV2AttackExposure(_messages.Message):
       Example: `organizations/123/simulations/456/attackExposureResults/789`
     exposedHighValueResourcesCount: The number of high value resources that
       are exposed as a result of this finding.
-    exposedLowValueResourcesCount: The number of high value resources that are
+    exposedLowValueResourcesCount: The number of low value resources that are
       exposed as a result of this finding.
     exposedMediumValueResourcesCount: The number of medium value resources
       that are exposed as a result of this finding.
@@ -5929,11 +5929,11 @@ class GoogleCloudSecuritycenterV2Finding(_messages.Message):
       ative_resource_name This field is immutable after creation time. The
       following list shows some examples: +
       `organizations/{organization_id}/sources/{source_id}` +
-      `folders/{folders_id}/sources/{source_id}` +
-      `projects/{projects_id}/sources/{source_id}` + `organizations/{organizat
-      ion_id}/sources/{source_id}/locations/{location_id}` +
-      `folders/{folders_id}/sources/{source_id}/locations/{location_id}` +
-      `projects/{projects_id}/sources/{source_id}/locations/{location_id}`
+      `folders/{folder_id}/sources/{source_id}` +
+      `projects/{project_id}/sources/{source_id}` + `organizations/{organizati
+      on_id}/sources/{source_id}/locations/{location_id}` +
+      `folders/{folder_id}/sources/{source_id}/locations/{location_id}` +
+      `projects/{project_id}/sources/{source_id}/locations/{location_id}`
     parentDisplayName: Output only. The human readable display name of the
       finding source such as "Event Threat Detection" or "Security Health
       Analytics".

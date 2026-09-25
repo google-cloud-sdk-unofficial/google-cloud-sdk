@@ -41,6 +41,7 @@ _DELETION_CANCEL_STRING = 'Deletion aborted by user.'
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.PREVIEW)
+@base.UniverseCompatible
 class SetAutoscaling(base.Command):
   """Set autoscaling parameters of a managed instance group."""
 
@@ -211,6 +212,7 @@ class SetAutoscalingAlpha(SetAutoscaling):
         parser)
     managed_instance_groups_utils.AddPredictiveAutoscaling(parser,
                                                            standard=True)
+    managed_instance_groups_utils.AddCpuAggregationArgs(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

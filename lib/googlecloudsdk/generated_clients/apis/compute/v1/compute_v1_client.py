@@ -521,6 +521,60 @@ resources.
         supports_download=False,
     )
 
+    def Capacity(self, request, global_params=None):
+      r"""Advice on making real-time decisions (such as choosing zone or.
+machine types) during deployment to maximize your chances of obtaining
+capacity.
+
+      Args:
+        request: (ComputeAdviceCapacityRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (CapacityAdviceResponse) The response message.
+      """
+      config = self.GetMethodConfig('Capacity')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Capacity.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.advice.capacity',
+        ordered_params=['project', 'region'],
+        path_params=['project', 'region'],
+        query_params=[],
+        relative_path='projects/{project}/regions/{region}/advice/capacity',
+        request_field='capacityAdviceRequest',
+        request_type_name='ComputeAdviceCapacityRequest',
+        response_type_name='CapacityAdviceResponse',
+        supports_download=False,
+    )
+
+    def CapacityHistory(self, request, global_params=None):
+      r"""Gets the capacity history.
+
+      Args:
+        request: (ComputeAdviceCapacityHistoryRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (CapacityHistoryResponse) The response message.
+      """
+      config = self.GetMethodConfig('CapacityHistory')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    CapacityHistory.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.advice.capacityHistory',
+        ordered_params=['project', 'region'],
+        path_params=['project', 'region'],
+        query_params=[],
+        relative_path='projects/{project}/regions/{region}/advice/capacityHistory',
+        request_field='capacityHistoryRequest',
+        request_type_name='ComputeAdviceCapacityHistoryRequest',
+        response_type_name='CapacityHistoryResponse',
+        supports_download=False,
+    )
+
   class AutoscalersService(base_api.BaseApiService):
     """Service class for the autoscalers resource."""
 

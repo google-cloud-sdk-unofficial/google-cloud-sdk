@@ -98,7 +98,7 @@ class XcTest(base.Command):
         ),
     )
     parser.add_argument(
-        '--apps',
+        '--additional-apps',
         metavar='APP_PATH',
         type=arg_parsers.ArgList(element_type=_ValidateAppPath),
         default=[],
@@ -252,8 +252,8 @@ class XcTest(base.Command):
       )
 
     installables = []
-    if args.apps:
-      for app_ipa in args.apps:
+    if args.additional_apps:
+      for app_ipa in args.additional_apps:
         app_ipa_gcs = session_submit_ops.UploadFileIfNeeded(
             app_ipa, bucket_name, storage_client, run_id
         )

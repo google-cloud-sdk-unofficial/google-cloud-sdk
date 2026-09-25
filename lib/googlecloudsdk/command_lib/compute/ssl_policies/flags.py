@@ -258,3 +258,18 @@ def GetTlsModeFlag():
       },
       help='Indicates how TLS is enforced for server connections.'
   )
+
+
+def GetTlsSettingsSubjectAltNamesFlag():
+  """Returns the flag for subject alternative names in server TLS settings."""
+  return base.Argument(
+      '--tls-settings-subject-alt-names',
+      metavar='SUBJECT_ALT_NAME',
+      type=arg_parsers.ArgList(),
+      help="""\
+      A comma-separated list of alternate names used to verify the subject
+      identity in the certificate presented by the client during mutual TLS
+      (mTLS) handshakes.
+      """,
+  )
+

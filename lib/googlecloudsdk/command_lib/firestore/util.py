@@ -20,11 +20,9 @@ from typing import Optional
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib.firestore import api_utils as fs_api
 from googlecloudsdk.api_lib.util import apis
-from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core.util import iso_duration
-from googlecloudsdk.core.util import text
 from googlecloudsdk.core.util import times
 
 
@@ -68,76 +66,6 @@ def GetDefaultFieldCollectionGroupFallthrough():
 
 def GetDefaultFieldPathFallthrough():
   return '*'
-
-
-def ValidateFieldConfig(unused_ref, args, request):
-  """Python hook to validate the field configuration of the given request.
-
-  Note that this hook is only called after the request has been formed based on
-  the spec. Thus, the validation of the user's choices for order and
-  array-config, as well as the check for the required field-path attribute, have
-  already been performed. The remaining logic validates the combination of
-  field configuration types.
-
-  Args:
-    unused_ref: The resource ref (unused).
-    args: The parsed arg namespace.
-    request: The request formed based on the spec.
-
-  Returns:
-    The original request assuming the field configuration is valid.
-  Raises:
-    InvalidArgumentException: If the field configuration is invalid.
-  """
-  invalid_field_configs = []
-  for field_config in args.field_config:
-    # Because of the way declarative ArgDict parsing works, the type of
-    # field_config here is already an apitools message, as opposed to an
-    # ArgDict.
-
-    if field_config.vectorConfig:
-      # TODO(b/302742966): enhance validation and error message once the vector
-      # config is in preview.
-      continue
-
-    field_configs = [
-        field_config.order,
-        field_config.arrayConfig,
-        field_config.searchConfig,
-    ]
-    populated_configs = [
-        config for config in field_configs if config is not None
-    ]
-
-    if len(populated_configs) != 1:
-      invalid_field_configs.append(field_config)
-
-  if invalid_field_configs:
-
-    if args.calliope_command.ReleaseTrack() == base.ReleaseTrack.GA:
-      error_msg = "Exactly one of 'order' or 'array-config' must be"
-    else:
-      error_msg = (
-          "Exactly one of 'order', 'array-config', or 'search-config' must be"
-      )
-
-    error_msg += (
-        ' specified for the {field_word} with the following {path_word}:'
-        ' [{paths}].'.format(
-            field_word=text.Pluralize(len(invalid_field_configs), 'field'),
-            path_word=text.Pluralize(len(invalid_field_configs), 'path'),
-            paths=', '.join(
-                field_config.fieldPath for field_config in invalid_field_configs
-            ),
-        )
-    )
-
-    raise exceptions.InvalidArgumentException(
-        '--field-config',
-        error_msg,
-    )
-
-  return request
 
 
 def ExtractOperationMetadata(response, unused_args):

@@ -34,6 +34,13 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS = (
+      'projects',
+      'projects/{projectsId}',
+      {},
+      ['projectsId'],
+      True
+  )
   PROJECTS_LOCATIONS = (
       'projects.locations',
       'projects/{projectsId}/locations/{locationsId}',
@@ -135,6 +142,17 @@ class Collections(enum.Enum):
       'operations/{operationsId}',
       {},
       ['projectsId', 'locationsId', 'endpointsId', 'operationsId'],
+      True
+  )
+  PROJECTS_LOCATIONS_ENDPOINTS_RESPONSES = (
+      'projects.locations.endpoints.responses',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/endpoints/'
+              '{endpointsId}/responses/{responsesId}',
+      },
+      ['name'],
       True
   )
   PROJECTS_LOCATIONS_FEATUREGROUPS = (
@@ -469,6 +487,33 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/pipelineJobs/'
               '{pipelineJobsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_PUBLISHERS = (
+      'projects.locations.publishers',
+      'projects/{projectsId}/locations/{locationsId}/publishers/'
+      '{publishersId}',
+      {},
+      ['projectsId', 'locationsId', 'publishersId'],
+      True
+  )
+  PROJECTS_LOCATIONS_PUBLISHERS_V1 = (
+      'projects.locations.publishers.v1',
+      'projects/{projectsId}/locations/{locationsId}/publishers/'
+      '{publishersId}/v1',
+      {},
+      ['projectsId', 'locationsId', 'publishersId'],
+      True
+  )
+  PROJECTS_LOCATIONS_PUBLISHERS_V1_RESPONSES = (
+      'projects.locations.publishers.v1.responses',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/publishers/'
+              '{publishersId}/v1/responses/{responsesId}',
       },
       ['name'],
       True

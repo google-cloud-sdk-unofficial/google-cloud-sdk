@@ -409,8 +409,9 @@ class AddonsConfig(_messages.Message):
       whether network policy is enabled for the nodes.
     nodeReadinessConfig: Optional. Configuration for NodeReadinessController
       add-on.
-    parallelstoreCsiDriverConfig: Configuration for the Cloud Storage
-      Parallelstore CSI driver.
+    parallelstoreCsiDriverConfig: Deprecated: The Parallelstore CSI driver is
+      no longer supported. Configuration for the Cloud Storage Parallelstore
+      CSI driver.
     podSnapshotConfig: Optional. Configuration for the Pod Snapshot feature.
     rayConfig: Optional. DEPRECATED. Use RayOperatorConfig instead.
     rayOperatorConfig: Optional. Configuration for Ray Operator addon.
@@ -3250,9 +3251,12 @@ class CostManagementConfig(_messages.Message):
 
   Fields:
     enabled: Whether the feature is enabled or not.
+    networkEgressCostAllocationEnabled: Optional. Whether network egress cost
+      allocation is enabled or not.
   """
 
   enabled = _messages.BooleanField(1)
+  networkEgressCostAllocationEnabled = _messages.BooleanField(2)
 
 
 class CrashLoopBackOffConfig(_messages.Message):
@@ -7800,7 +7804,8 @@ class OperationProgress(_messages.Message):
 
 
 class ParallelstoreCsiDriverConfig(_messages.Message):
-  r"""Configuration for the Cloud Storage Parallelstore CSI driver.
+  r"""Deprecated: The Parallelstore CSI driver is no longer supported.
+  Configuration for the Cloud Storage Parallelstore CSI driver.
 
   Fields:
     enabled: Whether the Cloud Storage Parallelstore CSI driver is enabled for
@@ -8431,13 +8436,21 @@ class ReservedResourcesConfig(_messages.Message):
     cpuReservedMillicore: Optional. The amount of CPU to reserve for system
       daemons. This is a user-specified value. If unspecified, GKE decides the
       default based on node version using different formula.
+    effectiveCpuReservedMillicore: Output only. The effective amount of CPU
+      reserved for system daemons. If `cpu_reserved_millicore` is specified,
+      user-specified value is used. Otherwise the GKE default is applied.
+    effectiveMemoryReservedMib: Output only. The effective amount of memory
+      reserved for system daemons. If `memory_reserved_mib` is specified, the
+      user-specified value is used. Otherwise the GKE default is applied.
     memoryReservedMib: Optional. The amount of memory to reserve for system
       daemons (in MiB). This is a user-specified value. If unspecified, GKE
       decides the default based on node version using different formula.
   """
 
   cpuReservedMillicore = _messages.IntegerField(1)
-  memoryReservedMib = _messages.IntegerField(2)
+  effectiveCpuReservedMillicore = _messages.IntegerField(2)
+  effectiveMemoryReservedMib = _messages.IntegerField(3)
+  memoryReservedMib = _messages.IntegerField(4)
 
 
 class ResolvedConfEntry(_messages.Message):
@@ -9765,6 +9778,7 @@ class SwapConfig(_messages.Message):
       default.
     ephemeralLocalSsdProfile: Swap on the local SSD shared with pod ephemeral
       storage.
+    zswapConfig: Optional. Enables and configures zswap for the node pool.
   """
 
   bootDiskProfile = _messages.MessageField('BootDiskProfile', 1)
@@ -9772,6 +9786,7 @@ class SwapConfig(_messages.Message):
   enabled = _messages.BooleanField(3)
   encryptionConfig = _messages.MessageField('EncryptionConfig', 4)
   ephemeralLocalSsdProfile = _messages.MessageField('EphemeralLocalSsdProfile', 5)
+  zswapConfig = _messages.MessageField('ZswapConfig', 6)
 
 
 class SyncRotationConfig(_messages.Message):
@@ -10055,6 +10070,8 @@ class UpdateNodePoolRequest(_messages.Message):
       version - "1.X.Y": picks the highest valid gke.N patch in the 1.X.Y
       version - "1.X.Y-gke.N": picks an explicit Kubernetes version - "-":
       picks the Kubernetes master version
+    nodes: Optional. The nodes to upgrade. The field can only be used together
+      with the node_version field.
     projectId: Deprecated. The Google Developers Console [project ID or
       project number](https://cloud.google.com/resource-manager/docs/creating-
       managing-projects). This field has been deprecated and replaced by the
@@ -10135,18 +10152,19 @@ class UpdateNodePoolRequest(_messages.Message):
   nodeNetworkConfig = _messages.MessageField('NodeNetworkConfig', 29)
   nodePoolId = _messages.StringField(30)
   nodeVersion = _messages.StringField(31)
-  projectId = _messages.StringField(32)
-  queuedProvisioning = _messages.MessageField('QueuedProvisioning', 33)
-  resourceLabels = _messages.MessageField('ResourceLabels', 34)
-  resourceManagerTags = _messages.MessageField('ResourceManagerTags', 35)
-  storagePools = _messages.StringField(36, repeated=True)
-  tags = _messages.MessageField('NetworkTags', 37)
-  taintConfig = _messages.MessageField('TaintConfig', 38)
-  taints = _messages.MessageField('NodeTaints', 39)
-  upgradeSettings = _messages.MessageField('UpgradeSettings', 40)
-  windowsNodeConfig = _messages.MessageField('WindowsNodeConfig', 41)
-  workloadMetadataConfig = _messages.MessageField('WorkloadMetadataConfig', 42)
-  zone = _messages.StringField(43)
+  nodes = _messages.StringField(32, repeated=True)
+  projectId = _messages.StringField(33)
+  queuedProvisioning = _messages.MessageField('QueuedProvisioning', 34)
+  resourceLabels = _messages.MessageField('ResourceLabels', 35)
+  resourceManagerTags = _messages.MessageField('ResourceManagerTags', 36)
+  storagePools = _messages.StringField(37, repeated=True)
+  tags = _messages.MessageField('NetworkTags', 38)
+  taintConfig = _messages.MessageField('TaintConfig', 39)
+  taints = _messages.MessageField('NodeTaints', 40)
+  upgradeSettings = _messages.MessageField('UpgradeSettings', 41)
+  windowsNodeConfig = _messages.MessageField('WindowsNodeConfig', 42)
+  workloadMetadataConfig = _messages.MessageField('WorkloadMetadataConfig', 43)
+  zone = _messages.StringField(44)
 
 
 class UpgradeAvailableEvent(_messages.Message):
@@ -10752,6 +10770,22 @@ class WritableCgroups(_messages.Message):
   """
 
   enabled = _messages.BooleanField(1)
+
+
+class ZswapConfig(_messages.Message):
+  r"""Configuration for Linux zswap compressed swap cache in RAM.
+
+  Fields:
+    compressor: Optional. Sets the compressor algorithm. Defaults to `"lzo"`.
+      Supported: `"lzo"`, `"lzo-rle"`, `"deflate"`.
+    enabled: Optional. Enables or disables zswap. Defaults to `false`.
+    maxPoolPercent: Optional. Limits the maximum percentage of memory the
+      compressed pool can occupy. Range: `[1, 30]`. Defaults to `20`.
+  """
+
+  compressor = _messages.StringField(1)
+  enabled = _messages.BooleanField(2)
+  maxPoolPercent = _messages.IntegerField(3, variant=_messages.Variant.INT32)
 
 
 encoding.AddCustomJsonFieldMapping(

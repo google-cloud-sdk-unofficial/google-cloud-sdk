@@ -33,12 +33,14 @@ help_text = textwrap.dedent("""\
     To update a catalog `my-lakehouse-catalog` to catalog type lakehouse with restricted locations, run:
 
       $ {command} my-lakehouse-catalog --catalog-type=lakehouse --restricted-locations=gs://my-bucket1,gs://my-bucket2
+    To update a catalog `my-lakehouse-catalog` to enable cross-cloud cache, run:
+
+      $ {command} my-lakehouse-catalog --cross-cloud-cache=enabled
+
+    To update the Cloud KMS key of a catalog `my-catalog`, run:
+
+      $ {command} my-catalog --kms-key=projects/my-project/locations/us-central1/keyRings/my-ring/cryptoKeys/my-new-key
     """)
-# TODO(b/539807179): Uncomment when --kms-key flag visibility is updated.
-# To update the Cloud KMS key of a catalog `my-catalog`, run:
-#
-#   $ {command} my-catalog
-#     --kms-key=projects/my-project/locations/us-central1/keyRings/my-ring/cryptoKeys/my-new-key
 
 help_text_alpha = textwrap.dedent("""\
     To update the refresh interval and namespace filters for a federated catalog `my-federated-catalog`, run:
@@ -74,6 +76,8 @@ class UpdateCatalog(base.UpdateCommand):
         cls.ReleaseTrack()
     ).choice_arg.AddToParser(parser)
     arguments.AddRestrictedLocationsArg(parser)
+    arguments.AddCrossCloudCacheArg(parser)
+
     if cls._support_service_directory_name:
       arguments.AddServiceDirectoryNameArg(parser)
     if cls._support_unity_service_principal_application_id:
@@ -163,7 +167,13 @@ class UpdateCatalog(base.UpdateCommand):
       description = args.description
     kms_key = arguments.GetAndValidateKmsKeyName(args)
     if kms_key:
-      update_mask.append('encryption_configuration.kms_key_name')
+      update_mask.append('encryption_config.kms_key_name')
+    cross_cloud_cache_options = None
+    if args.IsSpecified('cross_cloud_cache'):
+      update_mask.append('cross_cloud_cache_options.enabled')
+      cross_cloud_cache_options = messages.CrossCloudCacheOptions(
+          enabled=(args.cross_cloud_cache == 'enabled')
+      )
 
     get_request = messages.BiglakeIcebergV1RestcatalogExtensionsProjectsCatalogsGetRequest(
         name=catalog_name
@@ -279,9 +289,10 @@ class UpdateCatalog(base.UpdateCommand):
         catalog_type=catalog_type,
         credential_mode=credential_mode,
         description=description,
+        cross_cloud_cache_options=cross_cloud_cache_options,
     )
     if kms_key:
-      catalog.encryption_configuration = messages.EncryptionConfiguration(
+      catalog.encryption_config = messages.EncryptionConfig(
           kms_key_name=kms_key
       )
 

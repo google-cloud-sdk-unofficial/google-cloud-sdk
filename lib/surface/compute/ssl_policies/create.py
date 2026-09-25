@@ -94,6 +94,7 @@ class CreateAlpha(Create):
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
     flags.GetTlsModeFlag().AddToParser(parser)
+    flags.GetTlsSettingsSubjectAltNamesFlag().AddToParser(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -112,7 +113,8 @@ class CreateAlpha(Create):
         min_tls_version=flags.ParseTlsVersion(args.min_tls_version),
         custom_features=custom_features,
         post_quantum_key_exchange=args.post_quantum_key_exchange,
-        tls_mode=args.tls_mode
+        tls_mode=args.tls_mode,
+        tls_settings_subject_alt_names=args.tls_settings_subject_alt_names
     )
     operation_ref = helper.Create(ssl_policy_ref, ssl_policy_to_insert)
     return helper.WaitForOperation(

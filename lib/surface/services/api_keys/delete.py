@@ -25,6 +25,7 @@ OP_BASE_CMD = 'gcloud services operations '
 OP_WAIT_CMD = OP_BASE_CMD + 'wait {0}'
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
@@ -46,6 +47,7 @@ class Delete(base.DeleteCommand):
   def Args(parser):
 
     common_flags.key_flag(parser=parser, suffix='to delete')
+    common_flags.check_existing_usage_flag(parser=parser, action='deleted')
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -63,8 +65,17 @@ class Delete(base.DeleteCommand):
     messages = client.MESSAGES_MODULE
 
     key_ref = args.CONCEPTS.key.Parse()
+    enum_cls = (
+        messages.ApikeysProjectsLocationsKeysDeleteRequest.CheckExistingUsageValueValuesEnum
+    )
+    check_existing_usage = common_flags.get_check_existing_usage_enum(
+        args, enum_cls
+    )
+
     request = messages.ApikeysProjectsLocationsKeysDeleteRequest(
-        name=key_ref.RelativeName())
+        name=key_ref.RelativeName(),
+        checkExistingUsage=check_existing_usage,
+    )
     op = client.projects_locations_keys.Delete(request)
 
     if not op.done:

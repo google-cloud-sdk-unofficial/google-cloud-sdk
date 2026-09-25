@@ -14,10 +14,12 @@
 # limitations under the License.
 """Helper class to stream/tail logs for Cloud Run dev sync."""
 
+import json
 import re
 import subprocess
 import sys
 import threading
+from typing import Optional
 
 from googlecloudsdk.command_lib.run.sync import ssh_util
 from googlecloudsdk.core import log
@@ -31,10 +33,94 @@ _IGNORED_METADATA_PREFIXES = (
     'Image:',
 )
 
-_LOG_LINE_PATTERN = re.compile(
-    r'^\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]\s+'
-    r'(\[[A-Za-z0-9_]+\])\s+\[[^\]]+\]\s*(.*)$'
+_CONTAINER_STREAM_LOG_NAMES = (
+    '[stdout_stderr]',
+    '[stdout]',
+    '[stderr]',
 )
+
+_SEVERITIES = (
+    'DEFAULT',
+    'DEBUG',
+    'INFO',
+    'NOTICE',
+    'WARNING',
+    'ERROR',
+    'CRITICAL',
+    'ALERT',
+    'EMERGENCY',
+)
+
+_SEVERITIES_PATTERN = '|'.join(_SEVERITIES)
+
+_LOG_LINE_PATTERN = re.compile(
+    r'^(\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\])\s+'
+    rf'(?:\[({_SEVERITIES_PATTERN})\]\s+)?'
+    r'(\[[^\]]+\])\s*(.*)$'
+)
+
+
+def _GetExplicitSeverity(payload: str) -> Optional[str]:
+  """Returns explicit severity if payload is a structured JSON log entry."""
+  stripped = payload.strip()
+  if not (stripped.startswith('{') and stripped.endswith('}')):
+    return None
+  try:
+    data = json.loads(stripped)
+    if isinstance(data, dict):
+      for key in ('severity', 'level'):
+        val = data.get(key)
+        if isinstance(val, str) and val.upper() in _SEVERITIES:
+          return val.upper()
+  except (ValueError, TypeError):
+    pass
+  return None
+
+
+def FormatLogLineForDevSync(line: str) -> str:
+  """Formats a log entry for dev sync, omitting timestamps and stream names."""
+  match = _LOG_LINE_PATTERN.match(line)
+  if not match:
+    return line
+  _, severity, source, payload = (
+      match.group(1),
+      match.group(2),
+      match.group(3),
+      match.group(4),
+  )
+  final_severity = None
+  explicit_sev = _GetExplicitSeverity(payload)
+  if explicit_sev:
+    final_severity = explicit_sev
+  elif severity and source not in _CONTAINER_STREAM_LOG_NAMES:
+    final_severity = severity
+
+  if final_severity:
+    return f'[{final_severity}] {payload}\n'
+  return f'{payload}\n'
+
+
+def FormatLogLineForTail(line: str) -> str:
+  """Formats a log entry for tailing, preserving timestamps and streams."""
+  match = _LOG_LINE_PATTERN.match(line)
+  if not match:
+    return line
+  timestamp, severity, source, payload = (
+      match.group(1),
+      match.group(2),
+      match.group(3),
+      match.group(4),
+  )
+  final_severity = None
+  explicit_sev = _GetExplicitSeverity(payload)
+  if explicit_sev:
+    final_severity = explicit_sev
+  elif severity and source not in _CONTAINER_STREAM_LOG_NAMES:
+    final_severity = severity
+
+  if final_severity:
+    return f'{timestamp} [{final_severity}] {source} {payload}\n'
+  return f'{timestamp} {source} {payload}\n'
 
 
 class LogTailer:
@@ -56,9 +142,7 @@ class LogTailer:
             line.startswith(prefix) for prefix in _IGNORED_METADATA_PREFIXES
         ):
           continue
-        match = _LOG_LINE_PATTERN.match(line)
-        if match:
-          line = f'{match.group(1)} {match.group(2)}\n'
+        line = FormatLogLineForDevSync(line)
         sys.stdout.write(line)
         sys.stdout.flush()
     except Exception as e:  # pylint: disable=broad-except

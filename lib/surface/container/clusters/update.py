@@ -390,7 +390,9 @@ class Update(base.UpdateCommand):
     flags.AddMaintenanceDisruptionBudgetFlagGroup(
         group, hidden=False, is_update=True)
     flags.AddDailyMaintenanceWindowFlag(group, add_unset_text=True)
-    flags.AddRecurringMaintenanceWindowFlags(group, is_update=True)
+    flags.AddRecurringMaintenanceWindowFlags(
+        group, is_update=True, release_track=base.ReleaseTrack.GA
+    )
     flags.AddResourceUsageExportFlags(group, is_update=True)
     flags.AddReleaseChannelFlag(group, is_update=True, hidden=False)
     flags.AddWorkloadIdentityFlags(group)
@@ -1292,7 +1294,9 @@ class UpdateBeta(Update):
     flags.AddMaintenanceDisruptionBudgetFlagGroup(
         group, hidden=False, is_update=True)
     flags.AddDailyMaintenanceWindowFlag(group, add_unset_text=True)
-    flags.AddRecurringMaintenanceWindowFlags(group, is_update=True)
+    flags.AddRecurringMaintenanceWindowFlags(
+        group, is_update=True, release_track=base.ReleaseTrack.BETA
+    )
     flags.AddPodSecurityPolicyFlag(group)
     flags.AddBinauthzFlags(group, release_track=base.ReleaseTrack.BETA)
     flags.AddAutoprovisioningFlags(group)
@@ -1430,6 +1434,8 @@ class UpdateBeta(Update):
     group_scheduled_upgrade_flags = group.add_group(mutex=True)
     flags.AddEnableScheduledUpgradesFlag(group_scheduled_upgrade_flags)
     flags.AddDisableScheduledUpgradesFlag(group_scheduled_upgrade_flags)
+
+    flags.AddTargetNodeVersionFlags(group, hidden=True, is_update=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1720,7 +1726,9 @@ class UpdateAlpha(Update):
     flags.AddMaintenanceDisruptionBudgetFlagGroup(
         group, hidden=False, is_update=True)
     flags.AddDailyMaintenanceWindowFlag(group, add_unset_text=True)
-    flags.AddRecurringMaintenanceWindowFlags(group, is_update=True)
+    flags.AddRecurringMaintenanceWindowFlags(
+        group, is_update=True, release_track=base.ReleaseTrack.ALPHA
+    )
     flags.AddPodSecurityPolicyFlag(group)
     flags.AddBinauthzFlags(group, release_track=base.ReleaseTrack.ALPHA)
     flags.AddResourceUsageExportFlags(group, is_update=True)
@@ -1857,6 +1865,8 @@ class UpdateAlpha(Update):
     group_scheduled_upgrade_flags = group.add_group(mutex=True)
     flags.AddEnableScheduledUpgradesFlag(group_scheduled_upgrade_flags)
     flags.AddDisableScheduledUpgradesFlag(group_scheduled_upgrade_flags)
+
+    flags.AddTargetNodeVersionFlags(group, hidden=True, is_update=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)

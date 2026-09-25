@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -82,6 +82,22 @@
         enum_value: JSON
         help_text: |-
           JSON format.
+    - arg_name: tags
+      api_field: parameter.tags
+      required: false
+      repeated: true
+      help_text: |-
+        Tag keys and tag values that are bound to this Parameter.
+        You must represent each item in the map as:
+        `"<tag-key-namespaced-name>" : "<tag-value-short-name>"`.
+
+        For example, a single resource can have the following tags: `"123/environment": "production",
+          "123/costCenter": "marketing",`. Tags are used to organize and group resources.
+
+        Tags can be used to control policy evaluation for the resource.
+      spec:
+      - api_field: key
+      - api_field: value
     - arg_name: request-id
       api_field: requestId
       required: false

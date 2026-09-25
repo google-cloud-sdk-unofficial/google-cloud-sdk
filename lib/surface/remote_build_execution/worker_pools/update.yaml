@@ -25,6 +25,7 @@
     - googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:RemoveAutoscale
     - googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:RemoveNetworkAllowlist
     - googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:UpdateLabels
+    - googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:UpdateBackupVmInstanceSpecs
 
   async:
     collection: remotebuildexecution.projects.operations
@@ -224,4 +225,40 @@
           processor: googlecloudsdk.command_lib.scheduler.util:ClearFlag
           help_text: |
             Clear the network allowlist mode.
+    - group:
+        mutex: true
+        params:
+        - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.backupVmInstanceSpecs
+          arg_name: backup-vm-instance-spec
+          repeated: true
+          type: arg_object
+          required: false
+          help_text: |
+            Backup VM instance specification for flexible worker pools. Providing this flag replaces
+            all existing backup specifications with the specified list.
+
+            Can be specified multiple times for multiple fallback options, or as a JSON/YAML list or file.
+          spec:
+          - api_field: machineType
+            json_name: machine-type
+            required: true
+            help_text: Machine type of the backup VM instance (e.g. 'c2-standard-4').
+          - api_field: minCpuPlatform
+            json_name: min-cpu-platform
+            required: false
+            help_text: Minimum CPU platform for the backup VM instance.
+          - api_field: diskType
+            json_name: disk-type
+            required: false
+            help_text: Type of persistent disk the backup worker VMs will use. Default is pd-standard.
+          - api_field: diskSizeGb
+            json_name: disk-size
+            type: int
+            required: false
+            help_text: Size of the disk attached to the backup VM, in GB. Default is 200.
+        - arg_name: clear-backup-vm-instance-specs
+          action: store_true
+          processor: googlecloudsdk.command_lib.scheduler.util:ClearFlag
+          help_text: |
+            Clear all backup VM instance specifications from the worker pool.
     additional_arguments_hook: googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:AddLabelsFlags

@@ -407,13 +407,13 @@ class Empty(_messages.Message):
 
 
 
-class EncryptionConfiguration(_messages.Message):
+class EncryptionConfig(_messages.Message):
   r"""Custom encryption configuration (e.g., Cloud KMS keys).
 
   Fields:
-    kmsKeyName: Optional. Optional Cloud KMS key name for encryption of
-      resources in the catalog. Format: projects/{project}/locations/{location
-      }/keyRings/{keyRing}/cryptoKeys/{cryptoKey}
+    kmsKeyName: Optional. Cloud KMS key name used to encrypt cached data
+      fetched from the catalog. Format: `projects/{project}/locations/{locatio
+      n}/keyRings/{keyRing}/cryptoKeys/{cryptoKey}`
   """
 
   kmsKeyName = _messages.StringField(1)
@@ -484,8 +484,8 @@ class HiveCatalog(_messages.Message):
     createTime: Output only. The creation time of the catalog.
     description: Optional. Stores the catalog description. The maximum length
       is 4000 characters.
-    encryptionConfiguration: Optional. Custom encryption configuration (e.g.,
-      Cloud KMS keys).
+    encryptionConfig: Optional. Custom encryption configuration (e.g., Cloud
+      KMS keys).
     locationUri: Required. The Cloud Storage location path where the catalog
       exists. Format: gs://bucket/path/to/catalog The maximum length is 4000
       characters.
@@ -497,7 +497,7 @@ class HiveCatalog(_messages.Message):
 
   createTime = _messages.StringField(1)
   description = _messages.StringField(2)
-  encryptionConfiguration = _messages.MessageField('EncryptionConfiguration', 3)
+  encryptionConfig = _messages.MessageField('EncryptionConfig', 3)
   locationUri = _messages.StringField(4)
   name = _messages.StringField(5)
   replicas = _messages.MessageField('Replica', 6, repeated=True)

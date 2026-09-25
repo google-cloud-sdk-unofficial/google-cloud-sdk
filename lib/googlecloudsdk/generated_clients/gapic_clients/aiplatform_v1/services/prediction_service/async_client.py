@@ -17,6 +17,7 @@ import logging as std_logging
 from collections import OrderedDict
 import re
 from typing import Dict, Callable, Mapping, MutableMapping, MutableSequence, Optional, AsyncIterable, Awaitable, AsyncIterator, Sequence, Tuple, Type, Union
+import warnings
 
 from googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1 import gapic_version as package_version
 
@@ -1128,7 +1129,9 @@ class PredictionServiceAsyncClient:
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
             metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> Awaitable[AsyncIterable[prediction_service.StreamingPredictResponse]]:
-        r"""Perform a streaming online prediction request for
+        r"""Deprecated: Renamed to
+        [PredictionService.StreamDirectPredict][google.cloud.aiplatform.v1.PredictionService.StreamDirectPredict]
+        (b/323233534). Perform a streaming online prediction request for
         Vertex first-party products and frameworks.
 
         .. code-block:: python
@@ -1191,6 +1194,8 @@ class PredictionServiceAsyncClient:
                    [PredictionService.StreamingPredict][google.cloud.aiplatform.v1.PredictionService.StreamingPredict].
 
         """
+        warnings.warn("PredictionServiceAsyncClient.streaming_predict is deprecated",
+            DeprecationWarning)
 
         # Wrap the RPC method; this adds retry and timeout information,
         # and friendly error handling.
@@ -1812,6 +1817,307 @@ class PredictionServiceAsyncClient:
 
         # Send the request.
         response = rpc(
+            request,
+            retry=retry,
+            timeout=timeout,
+            metadata=metadata,
+        )
+
+        # Done; return the response.
+        return response
+
+    async def get_response(self,
+            request: Optional[Union[prediction_service.GetResponseRequest, dict]] = None,
+            *,
+            name: Optional[str] = None,
+            retry: OptionalRetry = gapic_v1.method.DEFAULT,
+            timeout: Union[float, object] = gapic_v1.method.DEFAULT,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
+            ) -> httpbody_pb2.HttpBody:
+        r"""Gets the response from the endpoint.
+
+        .. code-block:: python
+
+            # This snippet has been automatically generated and should be regarded as a
+            # code template only.
+            # It will require modifications to work:
+            # - It may require correct/in-range values for request initialization.
+            # - It may require specifying regional endpoints when creating the service
+            #   client as shown in:
+            #   https://googleapis.dev/python/google-api-core/latest/client_options.html
+            from googlecloudsdk.generated_clients.gapic_clients import aiplatform_v1
+
+            async def sample_get_response():
+                # Create a client
+                client = aiplatform_v1.PredictionServiceAsyncClient()
+
+                # Initialize request argument(s)
+                request = aiplatform_v1.GetResponseRequest(
+                    name="name_value",
+                )
+
+                # Make the request
+                response = await client.get_response(request=request)
+
+                # Handle the response
+                print(response)
+
+        Args:
+            request (Optional[Union[googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.GetResponseRequest, dict]]):
+                The request object. Request message for
+                [PredictionService.GetResponse][google.cloud.aiplatform.v1.PredictionService.GetResponse].
+            name (:class:`str`):
+                Required. The name of the Response resource. Format:
+                ``projects/{project}/locations/{location}/endpoints/{endpoint}/responses/{response}``
+
+                This corresponds to the ``name`` field
+                on the ``request`` instance; if ``request`` is provided, this
+                should not be set.
+            retry (google.api_core.retry_async.AsyncRetry): Designation of what errors, if any,
+                should be retried.
+            timeout (float): The timeout for this request.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
+
+        Returns:
+            google.api.httpbody_pb2.HttpBody:
+                Message that represents an arbitrary HTTP body. It should only be used for
+                   payload formats that can't be represented as JSON,
+                   such as raw binary or an HTML page.
+
+                   This message can be used both in streaming and
+                   non-streaming API methods in the request as well as
+                   the response.
+
+                   It can be used as a top-level request field, which is
+                   convenient if one wants to extract parameters from
+                   either the URL or HTTP template into the request
+                   fields and also want access to the raw HTTP body.
+
+                   Example:
+
+                      message GetResourceRequest {
+                         // A unique request id. string request_id = 1;
+
+                         // The raw HTTP body is bound to this field.
+                         google.api.HttpBody http_body = 2;
+
+                      }
+
+                      service ResourceService {
+                         rpc GetResource(GetResourceRequest)
+                            returns (google.api.HttpBody);
+
+                         rpc UpdateResource(google.api.HttpBody)
+                            returns (google.protobuf.Empty);
+
+                      }
+
+                   Example with streaming methods:
+
+                      service CaldavService {
+                         rpc GetCalendar(stream google.api.HttpBody)
+                            returns (stream google.api.HttpBody);
+
+                         rpc UpdateCalendar(stream google.api.HttpBody)
+                            returns (stream google.api.HttpBody);
+
+                      }
+
+                   Use of this type only changes how the request and
+                   response bodies are handled, all other features will
+                   continue to work unchanged.
+
+        """
+        # Create or coerce a protobuf request object.
+        # - Quick check: If we got a request object, we should *not* have
+        #   gotten any keyword arguments that map to the request.
+        flattened_params = [name]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
+        if request is not None and has_flattened_params:
+            raise ValueError("If the `request` argument is set, then none of "
+                             "the individual field arguments should be set.")
+
+        # - Use the request object if provided (there's no risk of modifying the input as
+        #   there are no flattened fields), or create one.
+        if not isinstance(request, prediction_service.GetResponseRequest):
+            request = prediction_service.GetResponseRequest(request)
+
+        # If we have keyword arguments corresponding to fields on the
+        # request, apply these.
+        if name is not None:
+            request.name = name
+
+        # Wrap the RPC method; this adds retry and timeout information,
+        # and friendly error handling.
+        rpc = self._client._transport._wrapped_methods[self._client._transport.get_response]
+
+        # Certain fields should be provided within the metadata header;
+        # add these here.
+        metadata = tuple(metadata) + (
+            gapic_v1.routing_header.to_grpc_metadata((
+                ("name", request.name),
+            )),
+        )
+
+        # Validate the universe domain.
+        self._client._validate_universe_domain()
+
+        # Send the request.
+        response = await rpc(
+            request,
+            retry=retry,
+            timeout=timeout,
+            metadata=metadata,
+        )
+
+        # Done; return the response.
+        return response
+
+    async def delete_response(self,
+            request: Optional[Union[prediction_service.DeleteResponseRequest, dict]] = None,
+            *,
+            name: Optional[str] = None,
+            retry: OptionalRetry = gapic_v1.method.DEFAULT,
+            timeout: Union[float, object] = gapic_v1.method.DEFAULT,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
+            ) -> httpbody_pb2.HttpBody:
+        r"""Deletes the response from the endpoint.
+
+        .. code-block:: python
+
+            # This snippet has been automatically generated and should be regarded as a
+            # code template only.
+            # It will require modifications to work:
+            # - It may require correct/in-range values for request initialization.
+            # - It may require specifying regional endpoints when creating the service
+            #   client as shown in:
+            #   https://googleapis.dev/python/google-api-core/latest/client_options.html
+            from googlecloudsdk.generated_clients.gapic_clients import aiplatform_v1
+
+            async def sample_delete_response():
+                # Create a client
+                client = aiplatform_v1.PredictionServiceAsyncClient()
+
+                # Initialize request argument(s)
+                request = aiplatform_v1.DeleteResponseRequest(
+                    name="name_value",
+                )
+
+                # Make the request
+                response = await client.delete_response(request=request)
+
+                # Handle the response
+                print(response)
+
+        Args:
+            request (Optional[Union[googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.DeleteResponseRequest, dict]]):
+                The request object. Request message for
+                [PredictionService.DeleteResponse][google.cloud.aiplatform.v1.PredictionService.DeleteResponse].
+            name (:class:`str`):
+                Required. The name of the Response resource to be
+                deleted. Format:
+                ``projects/{project}/locations/{location}/endpoints/{endpoint}/responses/{response}``
+
+                This corresponds to the ``name`` field
+                on the ``request`` instance; if ``request`` is provided, this
+                should not be set.
+            retry (google.api_core.retry_async.AsyncRetry): Designation of what errors, if any,
+                should be retried.
+            timeout (float): The timeout for this request.
+            metadata (Sequence[Tuple[str, Union[str, bytes]]]): Key/value pairs which should be
+                sent along with the request as metadata. Normally, each value must be of type `str`,
+                but for metadata keys ending with the suffix `-bin`, the corresponding values must
+                be of type `bytes`.
+
+        Returns:
+            google.api.httpbody_pb2.HttpBody:
+                Message that represents an arbitrary HTTP body. It should only be used for
+                   payload formats that can't be represented as JSON,
+                   such as raw binary or an HTML page.
+
+                   This message can be used both in streaming and
+                   non-streaming API methods in the request as well as
+                   the response.
+
+                   It can be used as a top-level request field, which is
+                   convenient if one wants to extract parameters from
+                   either the URL or HTTP template into the request
+                   fields and also want access to the raw HTTP body.
+
+                   Example:
+
+                      message GetResourceRequest {
+                         // A unique request id. string request_id = 1;
+
+                         // The raw HTTP body is bound to this field.
+                         google.api.HttpBody http_body = 2;
+
+                      }
+
+                      service ResourceService {
+                         rpc GetResource(GetResourceRequest)
+                            returns (google.api.HttpBody);
+
+                         rpc UpdateResource(google.api.HttpBody)
+                            returns (google.protobuf.Empty);
+
+                      }
+
+                   Example with streaming methods:
+
+                      service CaldavService {
+                         rpc GetCalendar(stream google.api.HttpBody)
+                            returns (stream google.api.HttpBody);
+
+                         rpc UpdateCalendar(stream google.api.HttpBody)
+                            returns (stream google.api.HttpBody);
+
+                      }
+
+                   Use of this type only changes how the request and
+                   response bodies are handled, all other features will
+                   continue to work unchanged.
+
+        """
+        # Create or coerce a protobuf request object.
+        # - Quick check: If we got a request object, we should *not* have
+        #   gotten any keyword arguments that map to the request.
+        flattened_params = [name]
+        has_flattened_params = len([param for param in flattened_params if param is not None]) > 0
+        if request is not None and has_flattened_params:
+            raise ValueError("If the `request` argument is set, then none of "
+                             "the individual field arguments should be set.")
+
+        # - Use the request object if provided (there's no risk of modifying the input as
+        #   there are no flattened fields), or create one.
+        if not isinstance(request, prediction_service.DeleteResponseRequest):
+            request = prediction_service.DeleteResponseRequest(request)
+
+        # If we have keyword arguments corresponding to fields on the
+        # request, apply these.
+        if name is not None:
+            request.name = name
+
+        # Wrap the RPC method; this adds retry and timeout information,
+        # and friendly error handling.
+        rpc = self._client._transport._wrapped_methods[self._client._transport.delete_response]
+
+        # Certain fields should be provided within the metadata header;
+        # add these here.
+        metadata = tuple(metadata) + (
+            gapic_v1.routing_header.to_grpc_metadata((
+                ("name", request.name),
+            )),
+        )
+
+        # Validate the universe domain.
+        self._client._validate_universe_domain()
+
+        # Send the request.
+        response = await rpc(
             request,
             retry=retry,
             timeout=timeout,

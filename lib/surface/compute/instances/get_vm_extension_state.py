@@ -22,7 +22,7 @@ from googlecloudsdk.command_lib.compute.instances import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class GetVmExtensionState(base.DescribeCommand):
   """Get the VM Extension State for a compute instance."""
 

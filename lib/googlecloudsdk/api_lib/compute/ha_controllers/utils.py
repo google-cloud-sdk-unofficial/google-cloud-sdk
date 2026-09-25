@@ -141,6 +141,15 @@ def GetFailedToGetInstanceErrorMessage(http_exception):
   )
 
 
+def GetFailedToGetDiskMetadataErrorMessage(http_exception):
+  """Returns the error message for a failed disk metadata retrieval."""
+  return utils.ConstructList(
+      'Failed to get metadata for disks attached to the instance. Check the'
+      ' logs for more details and retry the command:',
+      utils.ParseErrors([api_exceptions.HttpException(http_exception)]),
+  )
+
+
 def StopInstance(client, instance_name, project, zone):
   """Performs a request to stop an instance and returns the error list, or an empty list if the request was successful."""
   errors = []
@@ -174,6 +183,15 @@ def GetZonalDisks(instance):
     if '/zones/' in disk.source:
       zonal_disks.append(disk)
   return zonal_disks
+
+
+def GetRegionalDisks(instance):
+  """Returns the regional disks for the given instance."""
+  regional_disks = []
+  for disk in instance.disks:
+    if '/regions/' in disk.source:
+      regional_disks.append(disk)
+  return regional_disks
 
 
 def StartInstance(client, instance_name, project, zone):
@@ -380,6 +398,8 @@ def GetDiskMetadata(holder, project, region, zone, disk_resource):
 
 def GetMachineType(instance):
   """Returns the machine type for the given instance."""
+  if not instance or not instance.machineType:
+    return None
   return instance.machineType.split('/')[-1].split('-')[0]
 
 

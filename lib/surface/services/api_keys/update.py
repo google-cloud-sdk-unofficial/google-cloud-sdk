@@ -243,10 +243,18 @@ class Update(base.UpdateCommand):
               args, messages
           )
 
+    enum_cls = (
+        messages.ApikeysProjectsLocationsKeysPatchRequest.CheckExistingUsageValueValuesEnum
+    )
+    check_existing_usage = common_flags.get_check_existing_usage_enum(
+        args, enum_cls
+    )
+
     request = messages.ApikeysProjectsLocationsKeysPatchRequest(
         name=key_ref.RelativeName(),
         updateMask=','.join(update_mask),
         v2Key=key_proto,
+        checkExistingUsage=check_existing_usage,
     )
     op = client.projects_locations_keys.Patch(request)
     if not op.done:

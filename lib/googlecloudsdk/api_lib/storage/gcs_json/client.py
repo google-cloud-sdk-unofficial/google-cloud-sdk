@@ -508,6 +508,104 @@ class JsonClient(cloud_api.CloudApi):
     self.client.anywhereCaches.Resume(request)
 
   @error_util.catch_http_error_raise_gcs_api_error()
+  def create_rapid_cache(
+      self,
+      bucket_name,
+      zone,
+      cache_type=None,
+      admission_policy=None,
+      ttl=None,
+  ):
+    """See super class."""
+    request = self.messages.RapidCache(
+        bucket=bucket_name,
+        zone=zone,
+        cacheType=cache_type,
+        admissionPolicy=admission_policy,
+        ttl=ttl,
+    )
+    with self._apitools_request_headers_context(
+        {'x-goog-gcs-idempotency-token': uuid.uuid4().hex}
+    ):
+      operation = self.client.rapidCaches.Insert(request)
+    return operation
+
+  @error_util.catch_http_error_raise_gcs_api_error()
+  def disable_rapid_cache(
+      self,
+      bucket_name,
+      rapid_cache_id,
+  ):
+    """See super class."""
+    request = self.messages.StorageRapidCachesDisableRequest(
+        bucket=bucket_name,
+        rapidCacheId=rapid_cache_id,
+    )
+    return self.client.rapidCaches.Disable(request)
+
+  @error_util.catch_http_error_raise_gcs_api_error()
+  def get_rapid_cache(
+      self,
+      bucket_name,
+      rapid_cache_id,
+  ):
+    """See super class."""
+    request = self.messages.StorageRapidCachesGetRequest(
+        bucket=bucket_name,
+        rapidCacheId=rapid_cache_id,
+    )
+    return metadata_util.get_rapid_cache_resource_from_metadata(
+        self.client.rapidCaches.Get(request)
+    )
+
+  @error_util.catch_http_error_raise_gcs_api_error()
+  def list_rapid_caches(
+      self,
+      bucket_name,
+  ):
+    """See super class."""
+    request = self.messages.StorageRapidCachesListRequest(
+        bucket=bucket_name,
+        pageSize=cloud_api.NUM_ITEMS_PER_LIST_PAGE,
+        pageToken=None,
+    )
+    rapid_cache_iterator = list_pager.YieldFromList(
+        self.client.rapidCaches,
+        request,
+        batch_size=cloud_api.NUM_ITEMS_PER_LIST_PAGE,
+        batch_size_attribute='pageSize',
+    )
+    try:
+      for rapid_cache in rapid_cache_iterator:
+        yield metadata_util.get_rapid_cache_resource_from_metadata(rapid_cache)
+    except apitools_exceptions.HttpError as e:
+      core_exceptions.reraise(
+          cloud_errors.translate_error(e, error_util.ERROR_TRANSLATION)
+      )
+
+  @error_util.catch_http_error_raise_gcs_api_error()
+  def patch_rapid_cache(
+      self,
+      bucket_name,
+      rapid_cache_id,
+      admission_policy=None,
+      ttl=None,
+  ):
+    """See super class."""
+    kwargs = {'bucket': bucket_name, 'rapidCacheId': rapid_cache_id}
+    if admission_policy is not None:
+      kwargs['admissionPolicy'] = admission_policy
+    if ttl is not None:
+      kwargs['ttl'] = ttl
+
+    request = self.messages.RapidCache(**kwargs)
+    with self._apitools_request_headers_context(
+        {'x-goog-gcs-idempotency-token': uuid.uuid4().hex}
+    ):
+      operation = self.client.rapidCaches.Update(request)
+    return operation
+
+  @error_util.catch_http_error_raise_gcs_api_error()
   def create_bucket(self,
                     bucket_resource,
                     request_config,

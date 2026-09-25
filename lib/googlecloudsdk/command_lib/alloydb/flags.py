@@ -1922,6 +1922,26 @@ def AddSubscriptionType(parser, alloydb_messages):
   )
 
 
+def AddEdition(parser, alloydb_messages):
+  """Adds Edition flag.
+
+  Args:
+    parser: argparse.Parser: Parser object for command line inputs.
+    alloydb_messages: Message module.
+  """
+  parser.add_argument(
+      '--edition',
+      required=False,
+      type=alloydb_messages.Cluster.EditionValueValuesEnum,
+      choices=[
+          # Don't allow UNSPECIFIED
+          alloydb_messages.Cluster.EditionValueValuesEnum.EDITION_ALLOYDB,
+          alloydb_messages.Cluster.EditionValueValuesEnum.EDITION_ALLOYDB_DEVELOPER,
+      ],
+      help='Edition of the cluster.',
+  )
+
+
 def AddTags(parser):
   """Makes the base.Argument for --tags flag."""
   help_parts = [
@@ -2038,6 +2058,21 @@ def AddDataplexIntegrationFlags(parser):
           'Enable or disable Dataplex integration for this cluster (Enabled by'
           ' default).'
       ),
+  )
+
+
+def AddAgentModeFlags(parser: argparse.ArgumentParser) -> None:
+  """Adds Agent Mode configuration flags to the parser.
+
+  Args:
+    parser: argparse.ArgumentParser: Parser object for command line inputs.
+  """
+  parser.add_argument(
+      '--enable-agent-mode',
+      action=arg_parsers.StoreTrueFalseAction,
+      required=False,
+      hidden=True,
+      help='Enable or disable Agent Mode for this cluster.',
   )
 
 

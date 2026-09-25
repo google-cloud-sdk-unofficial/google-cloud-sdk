@@ -17,9 +17,10 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class AutoProtectionBindings(base.Group):
   """Manage Backup and DR auto protection bindings."""
-  pass
+
+  category = base.STORAGE_CATEGORY
+

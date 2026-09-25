@@ -15,6 +15,11 @@
                 "chat_completions"
               ]
             },
+            "DeleteResponse": {
+              "methods": [
+                "delete_response"
+              ]
+            },
             "DirectPredict": {
               "methods": [
                 "direct_predict"
@@ -43,6 +48,11 @@
             "GenerateContent": {
               "methods": [
                 "generate_content"
+              ]
+            },
+            "GetResponse": {
+              "methods": [
+                "get_response"
               ]
             },
             "Invoke": {
@@ -110,6 +120,11 @@
                 "chat_completions"
               ]
             },
+            "DeleteResponse": {
+              "methods": [
+                "delete_response"
+              ]
+            },
             "DirectPredict": {
               "methods": [
                 "direct_predict"
@@ -138,6 +153,11 @@
             "GenerateContent": {
               "methods": [
                 "generate_content"
+              ]
+            },
+            "GetResponse": {
+              "methods": [
+                "get_response"
               ]
             },
             "Invoke": {
@@ -205,6 +225,11 @@
                 "chat_completions"
               ]
             },
+            "DeleteResponse": {
+              "methods": [
+                "delete_response"
+              ]
+            },
             "DirectPredict": {
               "methods": [
                 "direct_predict"
@@ -233,6 +258,11 @@
             "GenerateContent": {
               "methods": [
                 "generate_content"
+              ]
+            },
+            "GetResponse": {
+              "methods": [
+                "get_response"
               ]
             },
             "Invoke": {

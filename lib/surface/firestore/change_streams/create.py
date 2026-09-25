@@ -22,7 +22,7 @@ from googlecloudsdk.core import properties
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   r"""Create a Cloud Firestore change stream.
 

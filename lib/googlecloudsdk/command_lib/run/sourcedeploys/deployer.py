@@ -22,7 +22,9 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.run import global_methods
 from googlecloudsdk.api_lib.run import metric_names
+from googlecloudsdk.api_lib.util import api_enablement
 from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.util import exceptions as api_exceptions
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.builds import submit_util
@@ -34,6 +36,7 @@ from googlecloudsdk.command_lib.run.sourcedeploys import types
 from googlecloudsdk.core import metrics
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
+from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import retry
 
 
@@ -56,7 +59,6 @@ def CreateImage(
     skip_activation_prompt,
     region: str,
     resource_ref,
-    delegate_builds=False,
     base_image=None,
     service_account=None,
     build_worker_pool=None,
@@ -82,7 +84,12 @@ def CreateImage(
     client = 'gcloud'
 
     tracker.StartStage(stages.UPLOAD_SOURCE)
-    if upload_through_run_api:
+    if kms_key:
+      # Assumes GCS source because other source types are not yet supported.
+      tracker.UpdateHeaderMessage('Using the source from the specified bucket.')
+      _ValidateCmekDeployment(build_source, build_image, kms_key)
+      source = sources.GetGcsObject(build_source, location=region)
+    elif upload_through_run_api:
       tracker.UpdateHeaderMessage('Uploading sources.')
       source = sources.UploadThroughCloudRun(
           source_to_upload=build_source,
@@ -90,10 +97,6 @@ def CreateImage(
           service_ref=resource_ref,
           kms_key=kms_key,
       )
-    elif kms_key:
-      tracker.UpdateHeaderMessage('Using the source from the specified bucket.')
-      _ValidateCmekDeployment(build_source, build_image, kms_key)
-      source = sources.GetGcsObject(build_source, location=region)
     else:
       tracker.UpdateHeaderMessage('Uploading sources.')
       source = sources.Upload(build_source, region, resource_ref, source_bucket)
@@ -119,9 +122,18 @@ def CreateImage(
           submit_build_request,
           region=region,
       )
+    except api_exceptions.HttpException as e:
+      enablement_info = api_enablement.GetApiEnablementInfo(
+          e.payload.status_message
+      )
+      # gcloud-disable-gdu-domain
+      if enablement_info and enablement_info[1] == 'cloudbuild.googleapis.com':
+        if properties.VALUES.core.should_prompt_to_enable_api.GetBool():
+          raise console_io.OperationCancelledError('Aborted by user.')
+      raise
     except apitools_exceptions.HttpNotFoundError as e:
       # This happens if user didn't have permission to access the builds API.
-      if base_image or delegate_builds:
+      if base_image:
         # If the customer enabled automatic base image updates or set the
         # --delegate-builds falling back is not possible.
         raise e

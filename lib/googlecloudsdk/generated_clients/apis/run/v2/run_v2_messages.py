@@ -586,7 +586,8 @@ class GoogleCloudRunV2Container(_messages.Message):
     resources: Compute Resource requirements by this container.
     sandboxLauncher: Optional. Indicates that this container can act as a
       sandbox supervisor and launch sandboxes.
-    sourceCode: Optional. Location of the source.
+    sourceCode: Optional. Location of the source. This field is only supported
+      in Cloud Run Service.
     startupProbe: Startup probe of application within the container. All other
       probes are disabled if a startup probe is provided, until it succeeds.
       Container will not be added to service endpoints if the probe fails.
@@ -2478,6 +2479,8 @@ class GoogleCloudRunV2Revision(_messages.Message):
     vpcAccess: VPC Access configuration for this Revision. For more
       information, visit
       https://cloud.google.com/run/docs/configuring/connecting-vpc.
+    workloadIdentityConfig: Optional. The Revision's workload identity
+      settings.
   """
 
   class EncryptionKeyRevocationActionValueValuesEnum(_messages.Enum):
@@ -2649,6 +2652,7 @@ class GoogleCloudRunV2Revision(_messages.Message):
   updateTime = _messages.StringField(36)
   volumes = _messages.MessageField('GoogleCloudRunV2Volume', 37, repeated=True)
   vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 38)
+  workloadIdentityConfig = _messages.MessageField('GoogleCloudRunV2WorkloadIdentityConfig', 39)
 
 
 class GoogleCloudRunV2RevisionScaling(_messages.Message):
@@ -2787,6 +2791,8 @@ class GoogleCloudRunV2RevisionTemplate(_messages.Message):
     vpcAccess: Optional. VPC Access configuration to use for this Revision.
       For more information, visit
       https://cloud.google.com/run/docs/configuring/connecting-vpc.
+    workloadIdentityConfig: Optional. The Revision's workload identity
+      settings.
   """
 
   class EncryptionKeyRevocationActionValueValuesEnum(_messages.Enum):
@@ -2902,6 +2908,7 @@ class GoogleCloudRunV2RevisionTemplate(_messages.Message):
   timeout = _messages.StringField(21)
   volumes = _messages.MessageField('GoogleCloudRunV2Volume', 22, repeated=True)
   vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 23)
+  workloadIdentityConfig = _messages.MessageField('GoogleCloudRunV2WorkloadIdentityConfig', 24)
 
 
 class GoogleCloudRunV2RunJobRequest(_messages.Message):
@@ -3086,9 +3093,6 @@ class GoogleCloudRunV2Service(_messages.Message):
       response to a Delete request.
     description: User-provided description of the Service. This field
       currently has a 512-character limit.
-    durableExecution: Optional. Immutable. Indicates whether the Service has
-      durable execution enabled. This field is immutable once the Service is
-      created.
     etag: Optional. A system-generated fingerprint for this version of the
       resource. May be used to detect modification conflict during updates.
     expireTime: Output only. For a deleted resource, the time after which it
@@ -3333,34 +3337,33 @@ class GoogleCloudRunV2Service(_messages.Message):
   defaultUriDisabled = _messages.BooleanField(10)
   deleteTime = _messages.StringField(11)
   description = _messages.StringField(12)
-  durableExecution = _messages.BooleanField(13)
-  etag = _messages.StringField(14)
-  expireTime = _messages.StringField(15)
-  generation = _messages.IntegerField(16)
-  iapEnabled = _messages.BooleanField(17)
-  ingress = _messages.EnumField('IngressValueValuesEnum', 18)
-  invokerIamDisabled = _messages.BooleanField(19)
-  labels = _messages.MessageField('LabelsValue', 20)
-  lastModifier = _messages.StringField(21)
-  latestCreatedRevision = _messages.StringField(22)
-  latestReadyRevision = _messages.StringField(23)
-  launchStage = _messages.EnumField('LaunchStageValueValuesEnum', 24)
-  multiRegionSettings = _messages.MessageField('GoogleCloudRunV2MultiRegionSettings', 25)
-  name = _messages.StringField(26)
-  observedGeneration = _messages.IntegerField(27)
-  reconciling = _messages.BooleanField(28)
-  satisfiesPzs = _messages.BooleanField(29)
-  scaling = _messages.MessageField('GoogleCloudRunV2ServiceScaling', 30)
-  sshEnabled = _messages.BooleanField(31)
-  template = _messages.MessageField('GoogleCloudRunV2RevisionTemplate', 32)
-  terminalCondition = _messages.MessageField('GoogleCloudRunV2Condition', 33)
-  threatDetectionEnabled = _messages.BooleanField(34)
-  traffic = _messages.MessageField('GoogleCloudRunV2TrafficTarget', 35, repeated=True)
-  trafficStatuses = _messages.MessageField('GoogleCloudRunV2TrafficTargetStatus', 36, repeated=True)
-  uid = _messages.StringField(37)
-  updateTime = _messages.StringField(38)
-  uri = _messages.StringField(39)
-  urls = _messages.StringField(40, repeated=True)
+  etag = _messages.StringField(13)
+  expireTime = _messages.StringField(14)
+  generation = _messages.IntegerField(15)
+  iapEnabled = _messages.BooleanField(16)
+  ingress = _messages.EnumField('IngressValueValuesEnum', 17)
+  invokerIamDisabled = _messages.BooleanField(18)
+  labels = _messages.MessageField('LabelsValue', 19)
+  lastModifier = _messages.StringField(20)
+  latestCreatedRevision = _messages.StringField(21)
+  latestReadyRevision = _messages.StringField(22)
+  launchStage = _messages.EnumField('LaunchStageValueValuesEnum', 23)
+  multiRegionSettings = _messages.MessageField('GoogleCloudRunV2MultiRegionSettings', 24)
+  name = _messages.StringField(25)
+  observedGeneration = _messages.IntegerField(26)
+  reconciling = _messages.BooleanField(27)
+  satisfiesPzs = _messages.BooleanField(28)
+  scaling = _messages.MessageField('GoogleCloudRunV2ServiceScaling', 29)
+  sshEnabled = _messages.BooleanField(30)
+  template = _messages.MessageField('GoogleCloudRunV2RevisionTemplate', 31)
+  terminalCondition = _messages.MessageField('GoogleCloudRunV2Condition', 32)
+  threatDetectionEnabled = _messages.BooleanField(33)
+  traffic = _messages.MessageField('GoogleCloudRunV2TrafficTarget', 34, repeated=True)
+  trafficStatuses = _messages.MessageField('GoogleCloudRunV2TrafficTargetStatus', 35, repeated=True)
+  uid = _messages.StringField(36)
+  updateTime = _messages.StringField(37)
+  uri = _messages.StringField(38)
+  urls = _messages.StringField(39, repeated=True)
 
 
 class GoogleCloudRunV2ServiceMesh(_messages.Message):
@@ -3422,7 +3425,8 @@ class GoogleCloudRunV2SourceCode(_messages.Message):
     cloudStorageSource: The source is a Cloud Storage bucket.
     inlinedSource: Optional. Input only. Source code inlined in the request.
       Cloud Run will store the inlined_source to Cloud Storage and replace the
-      field with cloud_storage_source.
+      field with cloud_storage_source. This field is only supported in Cloud
+      Run Service.
   """
 
   cloudStorageSource = _messages.MessageField('GoogleCloudRunV2CloudStorageSource', 1)
@@ -3717,6 +3721,7 @@ class GoogleCloudRunV2Task(_messages.Message):
     vpcAccess: Output only. VPC Access configuration to use for this Task. For
       more information, visit
       https://cloud.google.com/run/docs/configuring/connecting-vpc.
+    workloadIdentityConfig: Optional. The Task's workload identity settings.
   """
 
   class ExecutionEnvironmentValueValuesEnum(_messages.Enum):
@@ -3822,6 +3827,7 @@ class GoogleCloudRunV2Task(_messages.Message):
   updateTime = _messages.StringField(33)
   volumes = _messages.MessageField('GoogleCloudRunV2Volume', 34, repeated=True)
   vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 35)
+  workloadIdentityConfig = _messages.MessageField('GoogleCloudRunV2WorkloadIdentityConfig', 36)
 
 
 class GoogleCloudRunV2TaskAttemptResult(_messages.Message):
@@ -3882,6 +3888,7 @@ class GoogleCloudRunV2TaskTemplate(_messages.Message):
     vpcAccess: Optional. VPC Access configuration to use for this Task. For
       more information, visit
       https://cloud.google.com/run/docs/configuring/connecting-vpc.
+    workloadIdentityConfig: Optional. The Task's workload identity settings.
   """
 
   class ExecutionEnvironmentValueValuesEnum(_messages.Enum):
@@ -3908,6 +3915,7 @@ class GoogleCloudRunV2TaskTemplate(_messages.Message):
   timeout = _messages.StringField(10)
   volumes = _messages.MessageField('GoogleCloudRunV2Volume', 11, repeated=True)
   vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 12)
+  workloadIdentityConfig = _messages.MessageField('GoogleCloudRunV2WorkloadIdentityConfig', 13)
 
 
 class GoogleCloudRunV2TrafficTarget(_messages.Message):
@@ -4660,6 +4668,38 @@ class GoogleCloudRunV2WorkerPoolScaling(_messages.Message):
   minInstanceCount = _messages.IntegerField(5, variant=_messages.Variant.INT32)
   pubsubScalings = _messages.MessageField('GoogleCloudRunV2PubSubScaling', 6, repeated=True)
   scalingMode = _messages.EnumField('ScalingModeValueValuesEnum', 7)
+
+
+class GoogleCloudRunV2WorkloadIdentityConfig(_messages.Message):
+  r"""Workload identity settings.
+
+  Enums:
+    IdentityTypeValueValuesEnum: Optional. The type of identity to use.
+
+  Fields:
+    identity: Optional. The Revision's SPIFFE workload identity. Enables
+      provisioning of SPIFFE workload certificates.
+    identityCertificateEnabled: Optional. Controls whether an instance
+      receives a MWLID certificate. Corresponds to the intention of the
+      original --[no-]identity-certificate flag.
+    identityType: Optional. The type of identity to use.
+  """
+
+  class IdentityTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The type of identity to use.
+
+    Values:
+      IDENTITY_TYPE_UNSPECIFIED: Unspecified
+      IDENTITY_TYPE_SERVICE_ACCOUNT: Service account identity.
+      IDENTITY_TYPE_AGENT_IDENTITY: Agent identity.
+    """
+    IDENTITY_TYPE_UNSPECIFIED = 0
+    IDENTITY_TYPE_SERVICE_ACCOUNT = 1
+    IDENTITY_TYPE_AGENT_IDENTITY = 2
+
+  identity = _messages.StringField(1)
+  identityCertificateEnabled = _messages.BooleanField(2)
+  identityType = _messages.EnumField('IdentityTypeValueValuesEnum', 3)
 
 
 class GoogleDevtoolsCloudbuildV1ApprovalConfig(_messages.Message):

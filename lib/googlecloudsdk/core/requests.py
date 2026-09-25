@@ -15,7 +15,6 @@
 
 """A module to get an unauthenticated requests.Session object."""
 
-
 import abc
 import collections
 import inspect
@@ -40,7 +39,6 @@ import requests
 import six
 from six.moves import http_client as httplib
 from six.moves import urllib
-import socks
 from urllib3.util.ssl_ import create_urllib3_context
 
 try:
@@ -59,52 +57,57 @@ _INVALID_HTTPS_PROXY_ENV_VAR_WARNING = (
 _invalid_https_proxy_env_var_warning_shown = False
 
 
-def GetSession(timeout='unset',
-               ca_certs=None,
-               session=None,
-               streaming_response_body=False,
-               redact_request_body_reason=None,
-               client_certificate=None,
-               client_key=None,):
+def GetSession(
+    timeout='unset',
+    ca_certs=None,
+    session=None,
+    streaming_response_body=False,
+    redact_request_body_reason=None,
+    client_certificate=None,
+    client_key=None,
+):
   """Get a requests.Session that is properly configured for use by gcloud.
 
   This method does not add credentials to the client. For a requests.Session
   that has been authenticated, use core.credentials.requests.GetSession().
 
   Args:
-    timeout: double, The timeout in seconds. This is the
-        socket level timeout. If timeout is None, timeout is infinite. If
-        default argument 'unset' is given, a sensible default is selected using
-        transport.GetDefaultTimeout().
+    timeout: double, The timeout in seconds. This is the socket level timeout.
+      If timeout is None, timeout is infinite. If default argument 'unset' is
+      given, a sensible default is selected using transport.GetDefaultTimeout().
     ca_certs: str, absolute filename of a ca_certs file that overrides the
-        default. The gcloud config property for ca_certs, in turn, overrides
-        this argument.
+      default. The gcloud config property for ca_certs, in turn, overrides this
+      argument.
     session: requests.Session instance
-    streaming_response_body: bool, True indicates that the response body will
-        be a streaming body.
+    streaming_response_body: bool, True indicates that the response body will be
+      a streaming body.
     redact_request_body_reason: str, the reason why the request body must be
-        redacted if --log-http is used. If None, the body is not redacted.
+      redacted if --log-http is used. If None, the body is not redacted.
     client_certificate: str, absolute filename of a client_certificate file that
-        is set explicitly for client certificate authentication
-    client_key: str, absolute filename of a client_key file that
-        is set explicitly for client certificate authentication
+      is set explicitly for client certificate authentication
+    client_key: str, absolute filename of a client_key file that is set
+      explicitly for client certificate authentication
 
   Returns:
     A requests.Session object configured with all the required settings
     for gcloud.
   """
-  http_client = _CreateRawSession(timeout, ca_certs, session,
-                                  client_certificate, client_key)
+  http_client = _CreateRawSession(
+      timeout, ca_certs, session, client_certificate, client_key
+  )
   http_client = RequestWrapper().WrapWithDefaults(
       http_client,
       streaming_response_body=streaming_response_body,
-      redact_request_body_reason=redact_request_body_reason)
+      redact_request_body_reason=redact_request_body_reason,
+  )
   return http_client
 
 
 class ClientSideCertificate(
-    collections.namedtuple('ClientSideCertificate',
-                           ['certfile', 'keyfile', 'password'])):
+    collections.namedtuple(
+        'ClientSideCertificate', ['certfile', 'keyfile', 'password']
+    )
+):
   """Holds information about a client side certificate.
 
   Attributes:
@@ -115,7 +118,8 @@ class ClientSideCertificate(
 
   def __new__(cls, certfile, keyfile, password=None):
     return super(ClientSideCertificate, cls).__new__(
-        cls, certfile, keyfile, password)
+        cls, certfile, keyfile, password
+    )
 
 
 def CreateSSLContext():
@@ -163,47 +167,10 @@ class HTTPAdapter(requests.adapters.HTTPAdapter):
     kwargs['ssl_context'] = context
 
 
-def GetProxyInfo():
-  """Returns the proxy string for use by requests from gcloud properties.
-
-  See https://requests.readthedocs.io/en/master/user/advanced/#proxies.
-  """
-  proxy_type = properties.VALUES.proxy.proxy_type.Get()
-  proxy_address = properties.VALUES.proxy.address.Get()
-  proxy_port = properties.VALUES.proxy.port.GetInt()
-
-  proxy_prop_set = len(
-      [f for f in (proxy_type, proxy_address, proxy_port) if f])
-  if proxy_prop_set > 0 and proxy_prop_set != 3:
-    raise properties.InvalidValueError(
-        'Please set all or none of the following properties: '
-        'proxy/type, proxy/address and proxy/port')
-
-  if not proxy_prop_set:
-    return
-
-  proxy_rdns = properties.VALUES.proxy.rdns.GetBool()
-  proxy_user = properties.VALUES.proxy.username.Get()
-  proxy_pass = properties.VALUES.proxy.password.Get()
-
-  http_proxy_type = http_proxy_types.PROXY_TYPE_MAP[proxy_type]
-  if http_proxy_type == socks.PROXY_TYPE_SOCKS4:
-    proxy_scheme = 'socks4a' if proxy_rdns else 'socks4'
-  elif http_proxy_type == socks.PROXY_TYPE_SOCKS5:
-    proxy_scheme = 'socks5h' if proxy_rdns else 'socks5'
-  elif http_proxy_type == socks.PROXY_TYPE_HTTP:
-    proxy_scheme = 'http'
-  else:
-    raise ValueError('Unsupported proxy type: {}'.format(proxy_type))
-
-  if proxy_user or proxy_pass:
-    proxy_auth = ':'.join(
-        urllib.parse.quote(x) or '' for x in (proxy_user, proxy_pass))
-    proxy_auth += '@'
-  else:
-    proxy_auth = ''
-  return '{}://{}{}:{}'.format(proxy_scheme, proxy_auth, proxy_address,
-                               proxy_port)
+# Extracted GetProxyInfo to http_proxy_types module to prevent circular
+# dependency
+def GetProxyInfo(properties_module=properties):
+  return http_proxy_types.GetProxyInfo(properties_module)
 
 
 class _LocalECPProxyAdapter(requests.adapters.HTTPAdapter):
@@ -370,16 +337,17 @@ def Session(
     disable_ssl_certificate_validation=False,
     session=None,
     client_certificate=None,
-    client_key=None):
+    client_key=None,
+):
   """Returns a requests.Session subclass.
 
   Args:
     timeout: float, Request timeout, in seconds.
     ca_certs: str, absolute filename of a ca_certs file
     disable_ssl_certificate_validation: bool, If true, disable ssl certificate
-        validation.
+      validation.
     session: requests.Session instance. Otherwise, a new requests.Session will
-        be initialized.
+      be initialized.
     client_certificate: str, absolute filename of a client_certificate file
     client_key: str, absolute filename of a client_key file
 
@@ -389,6 +357,7 @@ def Session(
   proxy_info = GetProxyInfo()
 
   orig_request_method = session.request
+
   def WrappedRequest(*args, **kwargs):
     if 'timeout' not in kwargs:
       kwargs['timeout'] = timeout
@@ -396,10 +365,15 @@ def Session(
     # Work around a proxy bug in Python's standard library on Windows.
     if _HasBpo42627() and 'proxies' not in kwargs:
       kwargs['proxies'] = _AdjustProxiesKwargForBpo42627(
-          proxy_info, urllib_request.getproxies_environment(),
-          orig_request_method, *args, **kwargs)
+          proxy_info,
+          urllib_request.getproxies_environment(),
+          orig_request_method,
+          *args,
+          **kwargs,
+      )
 
     return orig_request_method(*args, **kwargs)
+
   session.request = WrappedRequest
 
   if proxy_info:
@@ -428,23 +402,35 @@ def Session(
   # standard Google endpoints).
   if client_certificate is not None and client_key is not None:
     log.debug(
-        'Using provided server certificate %s, client certificate %s, client certificate key %s',
-        ca_certs, client_certificate, client_key)
+        'Using provided server certificate %s, client certificate %s, client'
+        ' certificate key %s',
+        ca_certs,
+        client_certificate,
+        client_key,
+    )
     client_side_certificate = ClientSideCertificate(
-        client_certificate, client_key)
+        client_certificate, client_key
+    )
     adapter = HTTPAdapter(client_side_certificate)
   else:
     ca_config = context_aware.Config()
     if ca_config:
-      if ca_config.config_type == context_aware.ConfigType.ENTERPRISE_CERTIFICATE:
+      if (
+          ca_config.config_type
+          == context_aware.ConfigType.ENTERPRISE_CERTIFICATE
+      ):
         adapter = _CreateMutualTlsOffloadAdapter(ca_config)
-      elif ca_config.config_type == context_aware.ConfigType.ON_DISK_CERTIFICATE:
-        log.debug('Using client certificate %s',
-                  ca_config.encrypted_client_cert_path)
+      elif (
+          ca_config.config_type == context_aware.ConfigType.ON_DISK_CERTIFICATE
+      ):
+        log.debug(
+            'Using client certificate %s', ca_config.encrypted_client_cert_path
+        )
         client_side_certificate = ClientSideCertificate(
             ca_config.encrypted_client_cert_path,
             ca_config.encrypted_client_cert_path,
-            ca_config.encrypted_client_cert_password)
+            ca_config.encrypted_client_cert_password,
+        )
         adapter = HTTPAdapter(client_side_certificate)
       else:
         adapter = HTTPAdapter(None)
@@ -461,8 +447,13 @@ def Session(
   return session
 
 
-def _CreateRawSession(timeout='unset', ca_certs=None, session=None,
-                      client_certificate=None, client_key=None):
+def _CreateRawSession(
+    timeout='unset',
+    ca_certs=None,
+    session=None,
+    client_certificate=None,
+    client_key=None,
+):
   """Create a requests.Session matching the appropriate gcloud properties."""
   # Compared with setting the default timeout in the function signature (i.e.
   # timeout=300), this lets you test with short default timeouts by mocking
@@ -479,12 +470,14 @@ def _CreateRawSession(timeout='unset', ca_certs=None, session=None,
     ca_certs = ca_certs_property
   if no_validate:
     ca_certs = None
-  return Session(timeout=effective_timeout,
-                 ca_certs=ca_certs,
-                 disable_ssl_certificate_validation=no_validate,
-                 session=session,
-                 client_certificate=client_certificate,
-                 client_key=client_key)
+  return Session(
+      timeout=effective_timeout,
+      ca_certs=ca_certs,
+      disable_ssl_certificate_validation=no_validate,
+      session=session,
+      client_certificate=client_certificate,
+      client_key=client_key,
+  )
 
 
 def _GetURIFromRequestArgs(url, params):
@@ -519,8 +512,9 @@ class Request(transport.Request):
   def FromRequestArgs(cls, *args, **kwargs):
     return cls(*args, **kwargs)
 
-  def __init__(self, method, url, params=None, data=None, headers=None,
-               **kwargs):
+  def __init__(
+      self, method, url, params=None, data=None, headers=None, **kwargs
+  ):
     self._kwargs = kwargs
     uri = _GetURIFromRequestArgs(url, params)
     super(Request, self).__init__(uri, method, headers or {}, data)
@@ -567,8 +561,8 @@ def GoogleAuthRequest(
     client_key: str, Path to the client key file.
   """
   session = GetSession(
-      client_certificate=client_certificate,
-      client_key=client_key)
+      client_certificate=client_certificate, client_key=client_key
+  )
 
   # Ensure requests to the GCE metadata server are not proxied. We respect the
   # same env vars for overriding the metadata server hostname/IP as google-auth:
@@ -577,11 +571,12 @@ def GoogleAuthRequest(
       os.environ,
       'GCE_METADATA_HOST',
       encoding.GetEncodedValue(
-          os.environ,
-          'GCE_METADATA_ROOT',
-          'metadata.google.internal'))
+          os.environ, 'GCE_METADATA_ROOT', 'metadata.google.internal'
+      ),
+  )
   metadata_ip_root = encoding.GetEncodedValue(
-      os.environ, 'GCE_METADATA_IP', '169.254.169.254')
+      os.environ, 'GCE_METADATA_IP', '169.254.169.254'
+  )
   # Ideally we would set 'no_proxy' in the proxies dict, but requests doesn't
   # actually handle this correctly: https://github.com/psf/requests/issues/5000.
   # Instead we specify the hostnames/addresses not to proxy as individual keys
@@ -595,7 +590,7 @@ def GoogleAuthRequest(
   return google_auth_requests.Request(session=session)
 
 
-class _GoogleAuthApitoolsCredentials():
+class _GoogleAuthApitoolsCredentials:
 
   def __init__(self, credentials):
     self.credentials = credentials
@@ -630,8 +625,8 @@ class ResponseHandler(six.with_metaclass(abc.ABCMeta)):
   """Handler to process the Http Response.
 
   Attributes:
-    use_stream: bool, if True, the response body gets returned as a stream
-        of data instead of returning the entire body at once.
+    use_stream: bool, if True, the response body gets returned as a stream of
+      data instead of returning the entire body at once.
   """
 
   def __init__(self, use_stream):
@@ -648,7 +643,7 @@ class ResponseHandler(six.with_metaclass(abc.ABCMeta)):
     """Handles the http response."""
 
 
-class _ApitoolsRequests():
+class _ApitoolsRequests:
   """A httplib2.Http-like object for use by apitools."""
 
   def __init__(self, session, response_handler=None, response_encoding=None):
@@ -669,9 +664,11 @@ class _ApitoolsRequests():
       log.debug('Skipping response_handler as response is invalid.')
       return
 
-    if (self._response_handler.use_stream and
-        properties.VALUES.core.log_http.GetBool() and
-        properties.VALUES.core.log_http_streaming_body.GetBool()):
+    if (
+        self._response_handler.use_stream
+        and properties.VALUES.core.log_http.GetBool()
+        and properties.VALUES.core.log_http_streaming_body.GetBool()
+    ):
       # The response_handler uses streaming body, but since a request was
       # made to log the response body, we should retain a copy of the response
       # data. A call to response.content would read the entire data in-memory.
@@ -703,7 +700,8 @@ class _ApitoolsRequests():
       use_stream = False
 
     response = self.session.request(
-        method, uri, data=body, headers=headers, stream=use_stream, hooks=hooks)
+        method, uri, data=body, headers=headers, stream=use_stream, hooks=hooks
+    )
     headers = dict(response.headers)
     headers['status'] = response.status_code
 
@@ -749,14 +747,15 @@ def _HasBpo42627():
   return (
       platforms.OperatingSystem.Current() == platforms.OperatingSystem.WINDOWS
       and hasattr(urllib_request, 'getproxies_registry')
-      and urllib_request.getproxies_registry().get('https', '').startswith(
-          'https://')
+      and urllib_request.getproxies_registry()
+      .get('https', '')
+      .startswith('https://')
   )
 
 
 def _AdjustProxiesKwargForBpo42627(
-    gcloud_proxy_info, environment_proxies,
-    orig_request_method, *args, **kwargs):
+    gcloud_proxy_info, environment_proxies, orig_request_method, *args, **kwargs
+):
   """Returns proxies to workaround https://bugs.python.org/issue42627 if needed.
 
   Args:
@@ -765,6 +764,7 @@ def _AdjustProxiesKwargForBpo42627(
     orig_request_method: function, The original requests.Session.request method.
     *args: Positional arguments to the original request method.
     **kwargs: Keyword arguments to the original request method.
+
   Returns:
     Optional[dict], Adjusted proxies to pass to the request method, or None if
       no adjustment is necessary.
@@ -796,6 +796,4 @@ def _AdjustProxiesKwargForBpo42627(
     # some implementation detail changes, don't try to adjust anything.
     return None
 
-  return {
-      'https': https_proxy.replace('https://', 'http://', 1)
-  }
+  return {'https': https_proxy.replace('https://', 'http://', 1)}

@@ -18,6 +18,7 @@
 import collections
 import json
 import re
+from typing import Any
 
 from googlecloudsdk.api_lib.apigee import base
 from googlecloudsdk.api_lib.util import waiter
@@ -125,6 +126,29 @@ class APIsClient(base.BaseClient):
     except errors.RequestError as error:
       # Rewrite error message to better describe what was attempted.
       raise error.RewrittenError("deployment", "undeploy")
+
+  @classmethod
+  def Delete(cls, identifiers: dict[str, str]) -> dict[str, Any]:
+    """Deletes an API proxy and all of its revisions.
+
+    The API rejects the request if any revision is still deployed.
+
+    Args:
+      identifiers: Dict of identifiers for the request entity path, as generated
+        by resource_args.ParseResources(). Must include "organizationsId" and
+        "apisId".
+
+    Returns:
+      A dict of the API response, describing the deleted API proxy.
+
+    Raises:
+      command_lib.apigee.errors.RequestError: if the API request fails.
+    """
+    try:
+      return super(APIsClient, cls).Delete(identifiers)
+    except errors.RequestError as error:
+      # Rewrite error message to better describe what was attempted.
+      raise error.RewrittenError("API proxy", "delete")
 
 
 class EnvironmentsClient(base.BaseClient):

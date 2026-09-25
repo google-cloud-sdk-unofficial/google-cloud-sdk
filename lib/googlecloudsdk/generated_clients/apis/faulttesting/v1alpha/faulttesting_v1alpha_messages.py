@@ -258,6 +258,11 @@ class Experiment(_messages.Message):
 class ExperimentTemplate(_messages.Message):
   r"""Template for a failure-injection experiment.
 
+  Messages:
+    TagsValue: Optional. Input only. Immutable. Tag keys/values directly bound
+      to this resource. For example: "123/environment": "production",
+      "123/costCenter": "marketing"
+
   Fields:
     action: Required. The action to be performed.
     createTime: Output only. The time the template was created.
@@ -270,8 +275,37 @@ class ExperimentTemplate(_messages.Message):
     name: Identifier. The resource name of this experiment template. Format: `
       projects/{project}/locations/{location}/experimentTemplates/{experiment_
       template}`
+    tags: Optional. Input only. Immutable. Tag keys/values directly bound to
+      this resource. For example: "123/environment": "production",
+      "123/costCenter": "marketing"
     updateTime: Output only. The time the template was last updated.
   """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class TagsValue(_messages.Message):
+    r"""Optional. Input only. Immutable. Tag keys/values directly bound to
+    this resource. For example: "123/environment": "production",
+    "123/costCenter": "marketing"
+
+    Messages:
+      AdditionalProperty: An additional property for a TagsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type TagsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a TagsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   action = _messages.MessageField('Action', 1)
   createTime = _messages.StringField(2)
@@ -279,7 +313,8 @@ class ExperimentTemplate(_messages.Message):
   displayName = _messages.StringField(4)
   duration = _messages.StringField(5)
   name = _messages.StringField(6)
-  updateTime = _messages.StringField(7)
+  tags = _messages.MessageField('TagsValue', 7)
+  updateTime = _messages.StringField(8)
 
 
 class FaulttestingProjectsLocationsExclusionWindowsCreateRequest(_messages.Message):

@@ -22,6 +22,12 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.network_firewall_policies import flags
 
 
+@base.UniverseCompatible
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA,
+    base.ReleaseTrack.PREVIEW,
+    base.ReleaseTrack.BETA,
+)
 class Update(base.UpdateCommand):
   """Update a Compute Engine network firewall policy.
 
@@ -29,6 +35,7 @@ class Update(base.UpdateCommand):
   firewall policy is a set of rules that controls access to various resources.
   """
 
+  support_security_profile_fallback_action = False
   NETWORK_FIREWALL_POLICY_ARG = None
 
   @classmethod
@@ -37,6 +44,8 @@ class Update(base.UpdateCommand):
         required=True, operation='update')
     cls.NETWORK_FIREWALL_POLICY_ARG.AddArgument(parser, operation_type='update')
     flags.AddArgsUpdateNetworkFirewallPolicy(parser)
+    if cls.support_security_profile_fallback_action:
+      flags.AddSecurityProfileFallbackAction(parser, required=False)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -51,11 +60,32 @@ class Update(base.UpdateCommand):
 
     existing_firewall_policy = network_firewall_policy.Describe(
         only_generate_request=False)[0]
+    security_profile_fallback_action = None
+    if self.support_security_profile_fallback_action and args.IsSpecified(
+        'security_profile_fallback_action'
+    ):
+      security_profile_fallback_action = args.security_profile_fallback_action
+
     firewall_policy = holder.client.messages.FirewallPolicy(
         description=args.description,
         fingerprint=existing_firewall_policy.fingerprint)
+    if security_profile_fallback_action is not None:
+      firewall_policy.applySecurityProfileFallbackAction = (
+          security_profile_fallback_action
+      )
     return network_firewall_policy.Update(
         firewall_policy=firewall_policy, only_generate_request=False)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update a Compute Engine network firewall policy.
+
+  *{command}* is used to update network firewall policies. A network
+  firewall policy is a set of rules that controls access to various resources.
+  """
+
+  support_security_profile_fallback_action = True
 
 
 Update.detailed_help = {

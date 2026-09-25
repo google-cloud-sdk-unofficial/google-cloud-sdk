@@ -26,6 +26,7 @@ __protobuf__ = proto.module(
         'IngressTraffic',
         'ExecutionEnvironment',
         'EncryptionKeyRevocationAction',
+        'IdentityType',
         'VpcAccess',
         'BinaryAuthorization',
         'RevisionScaling',
@@ -36,6 +37,7 @@ __protobuf__ = proto.module(
         'WorkerPoolScaling',
         'NodeSelector',
         'BuildConfig',
+        'WorkloadIdentityConfig',
     },
 )
 
@@ -95,6 +97,22 @@ class EncryptionKeyRevocationAction(proto.Enum):
     ENCRYPTION_KEY_REVOCATION_ACTION_UNSPECIFIED = 0
     PREVENT_NEW = 1
     SHUTDOWN = 2
+
+
+class IdentityType(proto.Enum):
+    r"""Identity type.
+
+    Values:
+        IDENTITY_TYPE_UNSPECIFIED (0):
+            Unspecified
+        IDENTITY_TYPE_SERVICE_ACCOUNT (1):
+            Service account identity.
+        IDENTITY_TYPE_AGENT_IDENTITY (3):
+            Agent identity.
+    """
+    IDENTITY_TYPE_UNSPECIFIED = 0
+    IDENTITY_TYPE_SERVICE_ACCOUNT = 1
+    IDENTITY_TYPE_AGENT_IDENTITY = 3
 
 
 class VpcAccess(proto.Message):
@@ -644,6 +662,37 @@ class BuildConfig(proto.Message):
     service_account: str = proto.Field(
         proto.STRING,
         number=9,
+    )
+
+
+class WorkloadIdentityConfig(proto.Message):
+    r"""Workload identity settings.
+
+    Attributes:
+        identity (str):
+            Optional. The Revision's SPIFFE workload
+            identity. Enables provisioning of SPIFFE
+            workload certificates.
+        identity_type (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.IdentityType):
+            Optional. The type of identity to use.
+        identity_certificate_enabled (bool):
+            Optional. Controls whether an instance receives a MWLID
+            certificate. Corresponds to the intention of the original
+            --[no-]identity-certificate flag.
+    """
+
+    identity: str = proto.Field(
+        proto.STRING,
+        number=1,
+    )
+    identity_type: 'IdentityType' = proto.Field(
+        proto.ENUM,
+        number=2,
+        enum='IdentityType',
+    )
+    identity_certificate_enabled: bool = proto.Field(
+        proto.BOOL,
+        number=3,
     )
 
 

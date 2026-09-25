@@ -122,7 +122,7 @@ class ApiReference(_messages.Message):
     updateTime: Output only. Represents the timestamp when the reference data
       or its metadata was last updated.
     uri: Output only. Provides the URI of the reference data, such as
-      `maven.org/com.google.jukebox.v1/methods/GetArtist`.
+      `https://maven.org/com.google.jukebox.v1/methods/GetArtist`.
     yamlContent: The reference data represented as a DocFX YAML string.
   """
 
@@ -440,7 +440,7 @@ class Document(_messages.Message):
     updateTime: Output only. Represents the timestamp when the content or
       metadata of the document was last updated.
     uri: Output only. Provides the URI of the content, such as
-      `docs.cloud.google.com/storage/docs/creating-buckets`.
+      `https://docs.cloud.google.com/storage/docs/creating-buckets`.
     view: Output only. Specifies the DocumentView of the document.
   """
 

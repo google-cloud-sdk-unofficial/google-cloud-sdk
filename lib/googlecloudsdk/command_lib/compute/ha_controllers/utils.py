@@ -79,6 +79,10 @@ MACHINE_MISMATCH_ERROR_MESSAGE = (
     " supports Regional PD."
 )
 
+FAILED_TO_GET_INSTANCE_DATA_ERROR_MESSAGE = (
+    "Instance data failed validation. Check the logs for more details."
+)
+
 
 def GetFailedToRollbackSnapshotsErrorMessage(errors):
   """Returns the error message for a failed snapshots rollback."""
@@ -112,6 +116,17 @@ def GetFailedToReattachZonalDisksWarningMessage(errors):
       "Could not reattach zonal disks to your instance. You must manually"
       " check the disk attachments:",
       api_utils.ParseMakeRequestsErrors(errors),
+  )
+
+
+def GetVerifyReplicaZonesErrorMessage(instance_name, disk_name, replica_zones):
+  """Returns the error message for a failed replica zones verification."""
+  return (
+      f"A regional disk '{disk_name}' attached to the instance"
+      f" '{instance_name}' is replicated in zones {', '.join(replica_zones)}."
+      " When creating an HA controller, the zone configurations must match the"
+      " replica zones of all the regional disks attached to the given"
+      " instance."
   )
 
 
@@ -354,14 +369,45 @@ def FixImportStructure(
   return resource_data
 
 
+def ValidateReplicaZones(
+    holder, instance_name, project, region, configuration_zones
+):
+  """Validates if the replica zones of all the disks attached to the instance match the zone configurations."""
+  instance, primary_zone, secondary_zone = _PerformGetInstanceStep(
+      holder,
+      instance_name,
+      project,
+      configuration_zones[0],
+      configuration_zones[1],
+  )
+  regional_disks = api_utils.GetRegionalDisks(instance)
+  metadata = _GetDisksMetadata(
+      holder, project, region, primary_zone, regional_disks
+  )
+  for disk_name, disk_metadata in metadata.items():
+    if disk_metadata.replicaZones:
+      replica_zones = [
+          zone.split("/")[-1] for zone in disk_metadata.replicaZones
+      ]
+      normalized_config_zones = [
+          zone.split("/")[-1] for zone in configuration_zones
+      ]
+      if set(normalized_config_zones) != set(replica_zones):
+        raise compute_exceptions.ArgumentError(
+            GetVerifyReplicaZonesErrorMessage(
+                instance_name, disk_name, replica_zones
+            )
+        )
+  return instance, primary_zone, secondary_zone
+
+
 def MigrateZonalDisksToRegional(
-    holder, instance_name, project, region, zone, replica_zone
+    holder, instance, project, region, zone, replica_zone
 ):
   """Migrates zonal disks of the instance to regional disks."""
   log.status.Print("Starting zonal to regional disks migration.")
   start_instance_needed = False
   try:
-    instance = _PerformGetInstanceStep(holder, instance_name, project, zone)
     machine_type = api_utils.GetMachineType(instance)
     if machine_type not in SUPPORTED_DISK_TYPES:
       unsupported_machine_type_error_message = (
@@ -386,7 +432,7 @@ def MigrateZonalDisksToRegional(
         SUPPORTED_DISK_TYPES[machine_type],
     )
     start_instance_needed = _PerformStopInstanceStep(
-        holder, instance_name, project, zone
+        holder, instance.name, project, zone
     )
     _PerformCreateSnapshotsOrRollbackStep(holder, project, zone, zonal_disks)
     _PerformCreateRegionalDisksOrRollbackStep(
@@ -400,10 +446,10 @@ def MigrateZonalDisksToRegional(
         destination_disk_types,
     )
     _PerformDetachZonalDisksOrRollbackStep(
-        holder, instance_name, project, zone, region, zonal_disks
+        holder, instance.name, project, zone, region, zonal_disks
     )
     _PerformAttachRegionalDisksOrRollbackStep(
-        holder, instance_name, project, zone, region, zonal_disks
+        holder, instance.name, project, zone, region, zonal_disks
     )
   except calliope_exceptions.ToolException as e:
     raise calliope_exceptions.ToolException(
@@ -411,7 +457,7 @@ def MigrateZonalDisksToRegional(
     ) from e
   finally:
     if start_instance_needed:
-      _PerformStartInstanceStep(holder, instance_name, project, zone)
+      _PerformStartInstanceStep(holder, instance.name, project, zone)
   log.status.Print("Zonal to regional disks migration completed.")
 
 
@@ -470,13 +516,23 @@ def _GetDestinationDiskTypes(
 
 def _GetDisksMetadata(holder, project, region, zone, disks):
   """Returns the metadata for the given disks."""
-  disks_with_metadata = {}
-  for disk in disks:
-    zonal_disk_resource = holder.resources.Parse(disk.source)
-    disks_with_metadata[disk.deviceName] = api_utils.GetDiskMetadata(
-        holder, project, region, zone, zonal_disk_resource
+  try:
+    disks_with_metadata = {}
+    for disk in disks:
+      disk_resource = holder.resources.Parse(disk.source)
+      disks_with_metadata[disk.deviceName] = api_utils.GetDiskMetadata(
+          holder, project, region, zone, disk_resource
+      )
+    return disks_with_metadata
+  except apitools_exceptions.HttpError as e:
+    log.error(api_utils.GetFailedToGetDiskMetadataErrorMessage(e))
+    http_exception = api_exceptions.HttpException(e)
+    utils.RaiseToolException(
+        problems=[
+            (http_exception.payload.status_code, http_exception.payload.message)
+        ],
+        error_message="Failed to get disk metadata.",
     )
-  return disks_with_metadata
 
 
 def _ValidateDiskMetadata(disks, disk_metadata):
@@ -520,10 +576,63 @@ def GetUnsupportedMachineSeriesErrorMessage(machine_series):
   return error_message
 
 
-def _PerformGetInstanceStep(holder, instance_name, project, zone):
-  """Gets the instance as part of the migration process."""
+def GetInstanceInBothZonesErrorMessage(instance_name, zone1, zone2):
+  """Returns the error message for an instance found in both zones."""
+  return (
+      f"Instance name '{instance_name}' already in use in both zones "
+      f"'{', '.join([zone1, zone2])}'. To create an HA Controller the"
+      " instance name must be used in only one of the zones and zonal DNS"
+      " must be used."
+  )
+
+
+def GetInstanceNotInAnyZoneErrorMessage(instance_name, zone1, zone2):
+  """Returns the error message for an instance not found in any of the zones."""
+  return (
+      f"Instance '{instance_name}' not found in any of the zones"
+      f" '{', '.join([zone1, zone2])}'."
+  )
+
+
+def _CheckWhichZoneHasInstance(holder, instance_name, project, zone1, zone2):
+  """Fetches the instance from both zones and returns the instance, the primary and the secondary zones."""
+  primary_zone = None
+  secondary_zone = None
+  instance = None
+  for zone in [zone1, zone2]:
+    try:
+      instance = api_utils.GetInstance(
+          holder.client, instance_name, project, zone
+      )
+      primary_zone = zone
+    except apitools_exceptions.HttpError as e:
+      if e.status_code != 404:
+        raise
+      else:
+        secondary_zone = zone
+  if not instance:
+    error_message = GetInstanceNotInAnyZoneErrorMessage(
+        instance_name, zone1, zone2
+    )
+    log.error(error_message)
+    raise calliope_exceptions.ToolException(error_message)
+
+  if not secondary_zone:
+    error_message = GetInstanceInBothZonesErrorMessage(
+        instance_name, zone1, zone2
+    )
+    log.error(error_message)
+    raise calliope_exceptions.ToolException(error_message)
+
+  return instance, primary_zone, secondary_zone
+
+
+def _PerformGetInstanceStep(holder, instance_name, project, zone1, zone2):
+  """Gets the instance, the primary and the secondary zones as part of the migration process."""
   try:
-    return api_utils.GetInstance(holder.client, instance_name, project, zone)
+    return _CheckWhichZoneHasInstance(
+        holder, instance_name, project, zone1, zone2
+    )
   except apitools_exceptions.HttpError as e:
     log.error(api_utils.GetFailedToGetInstanceErrorMessage(e))
     http_exception = api_exceptions.HttpException(e)

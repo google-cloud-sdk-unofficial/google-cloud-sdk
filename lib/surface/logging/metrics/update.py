@@ -26,6 +26,9 @@ DETAILED_HELP = {
         """\
           Update the description or the filter expression of an existing
           logs-based metric.
+
+          For more information, see the logs-based metrics overview at:
+          [](https://cloud.google.com/logging/docs/logs-based-metrics).
       """,
     'EXAMPLES':
         """\
@@ -46,7 +49,12 @@ DETAILED_HELP = {
             $ {command} high_severity_count --config-from-file=$PATH_TO_FILE
 
           The config file should be in YAML format. Detailed information about
-          how to configure metrics can be found at: [](https://cloud.google.com/logging/docs/reference/v2/rest/v2/projects.metrics#LogMetric).
+          how to configure metrics can be found at:
+          [](https://cloud.google.com/logging/docs/reference/v2/rest/v2/projects.metrics#LogMetric).
+
+          For an example of the file structure for a distribution metric, see:
+          [](https://cloud.google.com/logging/docs/logs-based-metrics/distribution-metrics#example).
+
           Any top-level fields in the LogMetric definition that aren't specified
           in the config file will not be updated in the metric.
 
@@ -57,6 +65,7 @@ DETAILED_HELP = {
 }
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
@@ -85,10 +94,13 @@ class Update(base.UpdateCommand):
               'If omitted, the filter is not changed.'))
     config_group.add_argument(
         '--config-from-file',
-        help=('A path to a YAML file specifying the '
-              'updates to be made to the logs-based '
-              'metric.'),
-        type=arg_parsers.FileContents())
+        help=(
+            'A path to a YAML file specifying the updates to be made to the'
+            ' logs-based metric. For an example of the file structure, see'
+            ' https://cloud.google.com/logging/docs/logs-based-metrics/distribution-metrics#example.'
+        ),
+        type=arg_parsers.FileContents(),
+    )
 
     legacy_mode_group.add_argument(
         '--bucket-name',

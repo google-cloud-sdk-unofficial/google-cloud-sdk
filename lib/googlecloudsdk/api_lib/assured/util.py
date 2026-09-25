@@ -15,26 +15,40 @@
 """Utilities Assured Workloads API, Client Generation Functions."""
 
 
+import types
+from typing import Optional
+
+from apitools.base.py import base_api
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope.base import ReleaseTrack
 
 VERSION_MAP = {
     ReleaseTrack.ALPHA: 'v1beta1',
     ReleaseTrack.BETA: 'v1beta1',
-    ReleaseTrack.GA: 'v1'
+    ReleaseTrack.GA: 'v1',
 }
 API_NAME = 'assuredworkloads'
 
 
-def GetMessagesModule(release_track=ReleaseTrack.GA):
-  api_version = VERSION_MAP.get(release_track)
+def GetMessagesModule(
+    release_track: ReleaseTrack = ReleaseTrack.GA,
+    api_version: Optional[str] = None,
+) -> types.ModuleType:
+  api_version = api_version or GetApiVersion(release_track)
   return apis.GetMessagesModule(API_NAME, api_version)
 
 
-def GetClientInstance(release_track=ReleaseTrack.GA, no_http=False):
-  api_version = VERSION_MAP.get(release_track)
+def GetClientInstance(
+    release_track: ReleaseTrack = ReleaseTrack.GA,
+    api_version: Optional[str] = None,
+    no_http: bool = False,
+) -> base_api.BaseApiClient:
+  api_version = api_version or GetApiVersion(release_track)
   return apis.GetClientInstance(API_NAME, api_version, no_http)
 
 
-def GetApiVersion(release_track=ReleaseTrack.GA):
-  return VERSION_MAP.get(release_track)
+def GetApiVersion(
+    release_track: ReleaseTrack = ReleaseTrack.GA,
+    api_version: Optional[str] = None,
+) -> Optional[str]:
+  return api_version or VERSION_MAP.get(release_track)

@@ -24,6 +24,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import progress_tracker
 
+_MAX_WAIT_MS = 1800 * 60 * 1000  # 30 hours in milliseconds
+
 
 class UnsupportedReleaseTrackError(Exception):
   """Raised when requesting API version for an unsupported release track."""
@@ -271,6 +273,7 @@ def WaitForOperation(poller, operation_ref, message):
       operation_ref,
       custom_tracker=tracker,
       tracker_update_func=_TrackerUpdateFunc,
+      max_wait_ms=_MAX_WAIT_MS,
   )
 
 
@@ -324,4 +327,5 @@ def WaitForSession(
       session_ref,
       custom_tracker=tracker,
       tracker_update_func=_TrackerUpdateFunc,
+      max_wait_ms=_MAX_WAIT_MS,
   )

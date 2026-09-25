@@ -614,6 +614,9 @@ class Cluster(_messages.Message):
     LabelsValue: Optional. Labels to represent user-provided metadata.
     RedisConfigsValue: Optional. Key/Value pairs of customer overrides for
       mutable Redis Configs
+    TagsValue: Optional. Input only. Immutable. Holds tag keys/values directly
+      bound to this resource. Tag keys must be in the format "/". For example:
+      `"123/environment"`: `"production"`, `"123/costCenter"`: `"marketing"`
 
   Fields:
     aclPolicy: Optional. The ACL policy to be applied to the cluster.
@@ -704,6 +707,9 @@ class Cluster(_messages.Message):
       READY, UPDATING, DELETING and SUSPENDED
     stateInfo: Output only. Additional information about the current state of
       the cluster.
+    tags: Optional. Input only. Immutable. Holds tag keys/values directly
+      bound to this resource. Tag keys must be in the format "/". For example:
+      `"123/environment"`: `"production"`, `"123/costCenter"`: `"marketing"`
     transitEncryptionMode: Optional. The in-transit encryption for the Redis
       cluster. If not provided, encryption is disabled for the cluster.
     uid: Output only. System assigned, unique identifier for the cluster.
@@ -848,6 +854,32 @@ class Cluster(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class TagsValue(_messages.Message):
+    r"""Optional. Input only. Immutable. Holds tag keys/values directly bound
+    to this resource. Tag keys must be in the format "/". For example:
+    `"123/environment"`: `"production"`, `"123/costCenter"`: `"marketing"`
+
+    Messages:
+      AdditionalProperty: An additional property for a TagsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type TagsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a TagsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   aclPolicy = _messages.StringField(1)
   aclPolicyInSync = _messages.BooleanField(2)
   aclPolicyInfo = _messages.MessageField('AclPolicyInfo', 3)
@@ -891,9 +923,10 @@ class Cluster(_messages.Message):
   sizeGb = _messages.IntegerField(41, variant=_messages.Variant.INT32)
   state = _messages.EnumField('StateValueValuesEnum', 42)
   stateInfo = _messages.MessageField('StateInfo', 43)
-  transitEncryptionMode = _messages.EnumField('TransitEncryptionModeValueValuesEnum', 44)
-  uid = _messages.StringField(45)
-  zoneDistributionConfig = _messages.MessageField('ZoneDistributionConfig', 46)
+  tags = _messages.MessageField('TagsValue', 44)
+  transitEncryptionMode = _messages.EnumField('TransitEncryptionModeValueValuesEnum', 45)
+  uid = _messages.StringField(46)
+  zoneDistributionConfig = _messages.MessageField('ZoneDistributionConfig', 47)
 
 
 class ClusterAclPolicyAttachment(_messages.Message):

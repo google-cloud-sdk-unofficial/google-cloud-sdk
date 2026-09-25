@@ -17,9 +17,8 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class BindingMatchingResources(base.Group):
-  """Manage Backup and DR BindingMatchingResources."""
-  pass
+  """Manage Backup and DR binding matching resources."""
+  category = base.STORAGE_CATEGORY

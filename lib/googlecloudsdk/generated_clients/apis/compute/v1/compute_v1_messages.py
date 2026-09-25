@@ -6616,9 +6616,10 @@ class BackendServiceHAPolicyLeaderNetworkEndpoint(_messages.Message):
   Fields:
     instance: The name of the VM instance of the leader network endpoint. The
       instance must already be attached to the NEG specified in the
-      haPolicy.leader.backendGroup.  The name must be 1-63 characters long,
-      and comply with RFC1035. Authorization requires the following IAM
-      permission on the specified resource instance: compute.instances.use
+      haPolicy.leader.backendGroup.  The value must be a valid RFC1035 name
+      (1-63 characters) or a valid instance URL. Authorization requires the
+      following IAM permission on the specified resource instance:
+      compute.instances.use
   """
 
   instance = _messages.StringField(1)
@@ -8596,6 +8597,416 @@ class CalendarModeRecommendation(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   recommendationsPerSpec = _messages.MessageField('RecommendationsPerSpecValue', 1)
+
+
+class CapacityAdviceRequest(_messages.Message):
+  r"""A request to provide Assistant Scores. These scores determine VM
+  obtainability and preemption likelihood.
+
+  Fields:
+    distributionPolicy: Policy specifying the distribution of instances across
+      zones within the requested region.
+    instanceFlexibilityPolicy: Policy for instance selectors.
+    instanceProperties: Instance properties for this request.
+    size: The number of VM instances to request.
+  """
+
+  distributionPolicy = _messages.MessageField('CapacityAdviceRequestDistributionPolicy', 1)
+  instanceFlexibilityPolicy = _messages.MessageField('CapacityAdviceRequestInstanceFlexibilityPolicy', 2)
+  instanceProperties = _messages.MessageField('CapacityAdviceRequestInstanceProperties', 3)
+  size = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+
+
+class CapacityAdviceRequestDistributionPolicy(_messages.Message):
+  r"""Distribution policy.
+
+  Enums:
+    TargetShapeValueValuesEnum: Target distribution shape. You can specify the
+      following values:ANY, ANY_SINGLE_ZONE, or BALANCED.
+
+  Fields:
+    targetShape: Target distribution shape. You can specify the following
+      values:ANY, ANY_SINGLE_ZONE, or BALANCED.
+    zones: Zones where Capacity Advisor looks for capacity.
+  """
+
+  class TargetShapeValueValuesEnum(_messages.Enum):
+    r"""Target distribution shape. You can specify the following values:ANY,
+    ANY_SINGLE_ZONE, or BALANCED.
+
+    Values:
+      ANY: Picks zones for creating VM instances to fulfill the requested
+        number of VMs within present resource constraints.
+      ANY_SINGLE_ZONE: Creates all VM instances within a single zone. The zone
+        is selected based on the present resource constraints.
+      BALANCED: Prioritizes acquisition of resources, scheduling VMs in zones
+        where resources are available while distributing VMs as evenly as
+        possible across selected zones to minimize the impact of zonal
+        failure.
+      TARGET_SHAPE_UNSPECIFIED: Default value, unused.
+    """
+    ANY = 0
+    ANY_SINGLE_ZONE = 1
+    BALANCED = 2
+    TARGET_SHAPE_UNSPECIFIED = 3
+
+  targetShape = _messages.EnumField('TargetShapeValueValuesEnum', 1)
+  zones = _messages.MessageField('CapacityAdviceRequestDistributionPolicyZoneConfiguration', 2, repeated=True)
+
+
+class CapacityAdviceRequestDistributionPolicyZoneConfiguration(_messages.Message):
+  r"""Zone configuration for the distribution policy.
+
+  Fields:
+    zone: The URL of the zone. It can be a partial or full URL. For example,
+      the following are valid values:               -
+      https://www.googleapis.com/compute/v1/projects/project/zones/zone     -
+      projects/project/zones/zone     - zones/zone
+  """
+
+  zone = _messages.StringField(1)
+
+
+class CapacityAdviceRequestInstanceFlexibilityPolicy(_messages.Message):
+  r"""Specification of alternative, flexible instance configurations.
+
+  Messages:
+    InstanceSelectionsValue: Named instance selections to configure
+      properties. The key is an arbitrary, unique RFC1035 string that
+      identifies the instance selection.
+
+  Fields:
+    instanceSelections: Named instance selections to configure properties. The
+      key is an arbitrary, unique RFC1035 string that identifies the instance
+      selection.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class InstanceSelectionsValue(_messages.Message):
+    r"""Named instance selections to configure properties. The key is an
+    arbitrary, unique RFC1035 string that identifies the instance selection.
+
+    Messages:
+      AdditionalProperty: An additional property for a InstanceSelectionsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        InstanceSelectionsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a InstanceSelectionsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A
+          CapacityAdviceRequestInstanceFlexibilityPolicyInstanceSelection
+          attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('CapacityAdviceRequestInstanceFlexibilityPolicyInstanceSelection', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  instanceSelections = _messages.MessageField('InstanceSelectionsValue', 1)
+
+
+class CapacityAdviceRequestInstanceFlexibilityPolicyInstanceSelection(_messages.Message):
+  r"""Machine specification.
+
+  Fields:
+    disks: Local SSDs.
+    guestAccelerators: Accelerators configuration.
+    machineTypes: Full machine-type names, e.g. "n1-standard-16".
+  """
+
+  disks = _messages.MessageField('CapacityAdviceRequestInstanceFlexibilityPolicyInstanceSelectionAttachedDisk', 1, repeated=True)
+  guestAccelerators = _messages.MessageField('AcceleratorConfig', 2, repeated=True)
+  machineTypes = _messages.StringField(3, repeated=True)
+
+
+class CapacityAdviceRequestInstanceFlexibilityPolicyInstanceSelectionAttachedDisk(_messages.Message):
+  r"""Attached disk configuration.
+
+  Enums:
+    TypeValueValuesEnum: Specifies the type of the disk.
+
+  Fields:
+    type: Specifies the type of the disk.
+  """
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""Specifies the type of the disk.
+
+    Values:
+      DISK_TYPE_UNSPECIFIED: Default value, unspecified disk type.
+      SCRATCH: Scratch disk (Local SSD).
+    """
+    DISK_TYPE_UNSPECIFIED = 0
+    SCRATCH = 1
+
+  type = _messages.EnumField('TypeValueValuesEnum', 1)
+
+
+class CapacityAdviceRequestInstanceProperties(_messages.Message):
+  r"""Instance provisioning properties.
+
+  Fields:
+    scheduling: Specifies the scheduling options.
+  """
+
+  scheduling = _messages.MessageField('CapacityAdviceRequestInstancePropertiesScheduling', 1)
+
+
+class CapacityAdviceRequestInstancePropertiesScheduling(_messages.Message):
+  r"""Defines the instance scheduling options.
+
+  Enums:
+    ProvisioningModelValueValuesEnum: Specifies the provisioning model.
+
+  Fields:
+    provisioningModel: Specifies the provisioning model.
+  """
+
+  class ProvisioningModelValueValuesEnum(_messages.Enum):
+    r"""Specifies the provisioning model.
+
+    Values:
+      FLEX_START: Instance is provisioned using the Flex Start provisioning
+        model and has a limited runtime.
+      RESERVATION_BOUND: Bound to the lifecycle of the reservation in which it
+        is provisioned.
+      SPOT: Heavily discounted, no guaranteed runtime.
+      STANDARD: Standard provisioning with user controlled runtime, no
+        discounts.
+    """
+    FLEX_START = 0
+    RESERVATION_BOUND = 1
+    SPOT = 2
+    STANDARD = 3
+
+  provisioningModel = _messages.EnumField('ProvisioningModelValueValuesEnum', 1)
+
+
+class CapacityAdviceResponse(_messages.Message):
+  r"""A response contains scoring recommendations.
+
+  Fields:
+    recommendations: Initially the API will provide one recommendation which
+      balances the individual scores according to the service provider's
+      preference.
+  """
+
+  recommendations = _messages.MessageField('CapacityAdviceResponseRecommendation', 1, repeated=True)
+
+
+class CapacityAdviceResponseRecommendation(_messages.Message):
+  r"""Recommendation.
+
+  Fields:
+    scores: Scores for the recommendation.
+    shards: Shards represent blocks of uniform capacity in recommendations.
+  """
+
+  scores = _messages.MessageField('CapacityAdviceResponseRecommendationScores', 1)
+  shards = _messages.MessageField('CapacityAdviceResponseRecommendationShard', 2, repeated=True)
+
+
+class CapacityAdviceResponseRecommendationScores(_messages.Message):
+  r"""Groups information about a shard of capacity.
+
+  Fields:
+    estimatedUptime: The estimated run time of the majority of Spot VMs in the
+      request before preemption. The estimate is best-effort only. It is based
+      on historical data and current conditions.
+    obtainability: The obtainability score indicates the likelihood of
+      successfully obtaining (provisioning) the requested number of VMs. The
+      score range is 0.0 through 1.0. Higher is better.
+  """
+
+  estimatedUptime = _messages.StringField(1)
+  obtainability = _messages.FloatField(2)
+
+
+class CapacityAdviceResponseRecommendationShard(_messages.Message):
+  r"""Shards represent blocks of uniform capacity in recommendations. Each
+  shard is for a single zone and a single machine shape. Each shard defines a
+  size expressed as the number of VMs.
+
+  Enums:
+    ProvisioningModelValueValuesEnum: The provisioning model that you want to
+      view recommendations for.
+
+  Fields:
+    instanceCount: The number of instances.
+    machineType: The machine type corresponds to the instance selection in the
+      request.
+    provisioningModel: The provisioning model that you want to view
+      recommendations for.
+    zone: Output only. The zone name for this shard.
+  """
+
+  class ProvisioningModelValueValuesEnum(_messages.Enum):
+    r"""The provisioning model that you want to view recommendations for.
+
+    Values:
+      FLEX_START: Instance is provisioned using the Flex Start provisioning
+        model and has a limited runtime.
+      RESERVATION_BOUND: Bound to the lifecycle of the reservation in which it
+        is provisioned.
+      SPOT: Heavily discounted, no guaranteed runtime.
+      STANDARD: Standard provisioning with user controlled runtime, no
+        discounts.
+    """
+    FLEX_START = 0
+    RESERVATION_BOUND = 1
+    SPOT = 2
+    STANDARD = 3
+
+  instanceCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  machineType = _messages.StringField(2)
+  provisioningModel = _messages.EnumField('ProvisioningModelValueValuesEnum', 3)
+  zone = _messages.StringField(4)
+
+
+class CapacityHistoryRequest(_messages.Message):
+  r"""A request to get the capacity history.
+
+  Enums:
+    TypesValueListEntryValuesEnum:
+
+  Fields:
+    instanceProperties: Instance properties for this request.
+    locationPolicy: Location policy for this request.
+    types: List of history types to get capacity history for.
+  """
+
+  class TypesValueListEntryValuesEnum(_messages.Enum):
+    r"""TypesValueListEntryValuesEnum enum type.
+
+    Values:
+      HISTORY_TYPE_UNSPECIFIED: Default value, unused.
+      PREEMPTION: Preemption history.
+      PRICE: Price history.
+    """
+    HISTORY_TYPE_UNSPECIFIED = 0
+    PREEMPTION = 1
+    PRICE = 2
+
+  instanceProperties = _messages.MessageField('CapacityHistoryRequestInstanceProperties', 1)
+  locationPolicy = _messages.MessageField('CapacityHistoryRequestLocationPolicy', 2)
+  types = _messages.EnumField('TypesValueListEntryValuesEnum', 3, repeated=True)
+
+
+class CapacityHistoryRequestInstanceProperties(_messages.Message):
+  r"""Instance properties for this request.
+
+  Fields:
+    machineType: The machine type for the VM, such as `n2-standard-4`.
+    scheduling: Specifies the scheduling options.
+  """
+
+  machineType = _messages.StringField(1)
+  scheduling = _messages.MessageField('CapacityHistoryRequestInstancePropertiesScheduling', 2)
+
+
+class CapacityHistoryRequestInstancePropertiesScheduling(_messages.Message):
+  r"""Scheduling options.
+
+  Enums:
+    ProvisioningModelValueValuesEnum: The provisioning model to get capacity
+      history for. This field must be set to SPOT.  For more information, see
+      Compute Engine instances provisioning models.
+
+  Fields:
+    provisioningModel: The provisioning model to get capacity history for.
+      This field must be set to SPOT.  For more information, see Compute
+      Engine instances provisioning models.
+  """
+
+  class ProvisioningModelValueValuesEnum(_messages.Enum):
+    r"""The provisioning model to get capacity history for. This field must be
+    set to SPOT.  For more information, see Compute Engine instances
+    provisioning models.
+
+    Values:
+      FLEX_START: Instance is provisioned using the Flex Start provisioning
+        model and has a limited runtime.
+      RESERVATION_BOUND: Bound to the lifecycle of the reservation in which it
+        is provisioned.
+      SPOT: Heavily discounted, no guaranteed runtime.
+      STANDARD: Standard provisioning with user controlled runtime, no
+        discounts.
+    """
+    FLEX_START = 0
+    RESERVATION_BOUND = 1
+    SPOT = 2
+    STANDARD = 3
+
+  provisioningModel = _messages.EnumField('ProvisioningModelValueValuesEnum', 1)
+
+
+class CapacityHistoryRequestLocationPolicy(_messages.Message):
+  r"""Location policy for this request.
+
+  Fields:
+    location: The region or zone to get capacity history for.  It can be a
+      partial or full URL. For example, the following are valid values:
+      - https://www.googleapis.com/compute/v1/projects/project/zones/zone
+      - projects/project/zones/zone     - zones/zone    This field is
+      optional.
+  """
+
+  location = _messages.StringField(1)
+
+
+class CapacityHistoryResponse(_messages.Message):
+  r"""Contains the capacity history.
+
+  Fields:
+    location: Output only. The location (region or zone) for which the
+      capacity history is returned. It is returned as a URL - For example,http
+      s://www.googleapis.com/compute/v1/projects/project/zones/zone.
+    machineType: The machine type for which the capacity history is returned.
+    preemptionHistory: The preemption history for the requested machine type
+      and location.
+    priceHistory: The price history for the requested machine type and
+      location.
+  """
+
+  location = _messages.StringField(1)
+  machineType = _messages.StringField(2)
+  preemptionHistory = _messages.MessageField('CapacityHistoryResponsePreemptionRecord', 3, repeated=True)
+  priceHistory = _messages.MessageField('CapacityHistoryResponsePriceRecord', 4, repeated=True)
+
+
+class CapacityHistoryResponsePreemptionRecord(_messages.Message):
+  r"""A record of Spot VM preemption history.
+
+  Fields:
+    interval: The time interval for this preemption record.
+    preemptionRate: The preemption rate during the interval, representing the
+      fraction of Spot VMs that were preempted. Range: 0.0 to 1.0. Preemption
+      rate is calculated as (total preempted Spots) / (total Spots that
+      stopped running).
+  """
+
+  interval = _messages.MessageField('Interval', 1)
+  preemptionRate = _messages.FloatField(2)
+
+
+class CapacityHistoryResponsePriceRecord(_messages.Message):
+  r"""A record of price history.
+
+  Fields:
+    interval: The time interval for this price record.
+    listPrice: The Spot VM list price during the interval.
+  """
+
+  interval = _messages.MessageField('Interval', 1)
+  listPrice = _messages.MessageField('Money', 2)
 
 
 class CircuitBreakers(_messages.Message):
@@ -10664,6 +11075,36 @@ class ComputeAdviceCalendarModeRequest(_messages.Message):
   """
 
   calendarModeAdviceRequest = _messages.MessageField('CalendarModeAdviceRequest', 1)
+  project = _messages.StringField(2, required=True)
+  region = _messages.StringField(3, required=True)
+
+
+class ComputeAdviceCapacityHistoryRequest(_messages.Message):
+  r"""A ComputeAdviceCapacityHistoryRequest object.
+
+  Fields:
+    capacityHistoryRequest: A CapacityHistoryRequest resource to be passed as
+      the request body.
+    project: Project ID for this request.
+    region: Name of the region for this request.
+  """
+
+  capacityHistoryRequest = _messages.MessageField('CapacityHistoryRequest', 1)
+  project = _messages.StringField(2, required=True)
+  region = _messages.StringField(3, required=True)
+
+
+class ComputeAdviceCapacityRequest(_messages.Message):
+  r"""A ComputeAdviceCapacityRequest object.
+
+  Fields:
+    capacityAdviceRequest: A CapacityAdviceRequest resource to be passed as
+      the request body.
+    project: Project ID for this request.
+    region: Name of the region for this request.
+  """
+
+  capacityAdviceRequest = _messages.MessageField('CapacityAdviceRequest', 1)
   project = _messages.StringField(2, required=True)
   region = _messages.StringField(3, required=True)
 
@@ -61187,6 +61628,8 @@ class InstancePropertiesPatch(_messages.Message):
       the instance. For more information, see Project and instance metadata.
 
   Fields:
+    exposeHostTopology: This optional flag exposes the hashed physical host
+      ID.
     labels: The label key-value pairs that you want to patch onto the
       instance.
     metadata: The metadata key-value pairs that you want to patch onto the
@@ -61242,8 +61685,9 @@ class InstancePropertiesPatch(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  labels = _messages.MessageField('LabelsValue', 1)
-  metadata = _messages.MessageField('MetadataValue', 2)
+  exposeHostTopology = _messages.BooleanField(1)
+  labels = _messages.MessageField('LabelsValue', 2)
+  metadata = _messages.MessageField('MetadataValue', 3)
 
 
 class InstanceReference(_messages.Message):
@@ -67977,6 +68421,24 @@ class InterconnectsGetMacsecConfigResponse(_messages.Message):
   result = _messages.MessageField('InterconnectMacsecConfig', 2)
 
 
+class Interval(_messages.Message):
+  r"""Represents a time interval, encoded as a Timestamp start (inclusive) and
+  a Timestamp end (exclusive).  The start must be less than or equal to the
+  end. When the start equals the end, the interval is empty (matches no time).
+  When both start and end are unspecified, the interval matches any time.
+
+  Fields:
+    endTime: Optional. Exclusive end of the interval.  If specified, a
+      Timestamp matching this interval will have to be before the end.
+    startTime: Optional. Inclusive start of the interval.  If specified, a
+      Timestamp matching this interval will have to be the same or after the
+      start.
+  """
+
+  endTime = _messages.StringField(1)
+  startTime = _messages.StringField(2)
+
+
 class License(_messages.Message):
   r"""Represents a License resource.  A License represents billing and
   aggregate usage data forpublic andmarketplace images.  *Caution* This
@@ -70250,6 +70712,26 @@ class MetadataFilterLabelMatch(_messages.Message):
 
   name = _messages.StringField(1)
   value = _messages.StringField(2)
+
+
+class Money(_messages.Message):
+  r"""Represents an amount of money with its currency type.
+
+  Fields:
+    currencyCode: The three-letter currency code defined in ISO 4217.
+    nanos: Number of nano (10^-9) units of the amount. The value must be
+      between -999,999,999 and +999,999,999 inclusive. If `units` is positive,
+      `nanos` must be positive or zero. If `units` is zero, `nanos` can be
+      positive, zero, or negative. If `units` is negative, `nanos` must be
+      negative or zero. For example $-1.75 is represented as `units`=-1 and
+      `nanos`=-750,000,000.
+    units: The whole units of the amount. For example if `currencyCode` is
+      `"USD"`, then 1 unit is one US dollar.
+  """
+
+  currencyCode = _messages.StringField(1)
+  nanos = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  units = _messages.IntegerField(3)
 
 
 class NamedPort(_messages.Message):
@@ -91806,6 +92288,8 @@ class Scheduling(_messages.Message):
       instance in. The value must be a number between 1 and the number of
       availability domains specified in the spread placement policy attached
       to the instance.
+    exposeHostTopology: This optional flag exposes the hashed physical host ID
+      in the ResourceStatus resource of the VM.
     gracefulShutdown: A SchedulingGracefulShutdown attribute.
     hostErrorTimeoutSeconds: Specify the time in seconds for host error
       detection, the value must be within the range of [90, 330] with the
@@ -91900,21 +92384,22 @@ class Scheduling(_messages.Message):
 
   automaticRestart = _messages.BooleanField(1)
   availabilityDomain = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  gracefulShutdown = _messages.MessageField('SchedulingGracefulShutdown', 3)
-  hostErrorTimeoutSeconds = _messages.IntegerField(4, variant=_messages.Variant.INT32)
-  instanceTerminationAction = _messages.EnumField('InstanceTerminationActionValueValuesEnum', 5)
-  localSsdRecoveryTimeout = _messages.MessageField('Duration', 6)
-  locationHint = _messages.StringField(7)
-  maxRunDuration = _messages.MessageField('Duration', 8)
-  minNodeCpus = _messages.IntegerField(9, variant=_messages.Variant.INT32)
-  nodeAffinities = _messages.MessageField('SchedulingNodeAffinity', 10, repeated=True)
-  onHostMaintenance = _messages.EnumField('OnHostMaintenanceValueValuesEnum', 11)
-  onInstanceStopAction = _messages.MessageField('SchedulingOnInstanceStopAction', 12)
-  preemptible = _messages.BooleanField(13)
-  preemptionNoticeDuration = _messages.MessageField('Duration', 14)
-  provisioningModel = _messages.EnumField('ProvisioningModelValueValuesEnum', 15)
-  skipGuestOsShutdown = _messages.BooleanField(16)
-  terminationTime = _messages.StringField(17)
+  exposeHostTopology = _messages.BooleanField(3)
+  gracefulShutdown = _messages.MessageField('SchedulingGracefulShutdown', 4)
+  hostErrorTimeoutSeconds = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  instanceTerminationAction = _messages.EnumField('InstanceTerminationActionValueValuesEnum', 6)
+  localSsdRecoveryTimeout = _messages.MessageField('Duration', 7)
+  locationHint = _messages.StringField(8)
+  maxRunDuration = _messages.MessageField('Duration', 9)
+  minNodeCpus = _messages.IntegerField(10, variant=_messages.Variant.INT32)
+  nodeAffinities = _messages.MessageField('SchedulingNodeAffinity', 11, repeated=True)
+  onHostMaintenance = _messages.EnumField('OnHostMaintenanceValueValuesEnum', 12)
+  onInstanceStopAction = _messages.MessageField('SchedulingOnInstanceStopAction', 13)
+  preemptible = _messages.BooleanField(14)
+  preemptionNoticeDuration = _messages.MessageField('Duration', 15)
+  provisioningModel = _messages.EnumField('ProvisioningModelValueValuesEnum', 16)
+  skipGuestOsShutdown = _messages.BooleanField(17)
+  terminationTime = _messages.StringField(18)
 
 
 class SchedulingGracefulShutdown(_messages.Message):

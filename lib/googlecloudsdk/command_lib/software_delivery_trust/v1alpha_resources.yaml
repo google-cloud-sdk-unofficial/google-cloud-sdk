@@ -66,18 +66,6 @@ projects_locations_policy_bindings:
     attribute_name: policy_binding
     help: The policyBinding id of the {resource} resource.
   disable_auto_completers: false
-projects_locations_signers:
-  name: signer
-  plural_name: signers
-  collection: softwaredeliverytrust.projects.locations.signers
-  attributes:
-  - *project
-  - *location
-  - &signer
-    parameter_name: signersId
-    attribute_name: signer
-    help: The signer id of the {resource} resource.
-  disable_auto_completers: false
 projects_locations_policies_revisions:
   name: revision
   plural_name: revisions

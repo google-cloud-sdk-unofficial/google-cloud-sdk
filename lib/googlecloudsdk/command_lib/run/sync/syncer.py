@@ -32,7 +32,10 @@ from googlecloudsdk.core.util import files
 # Using `-p` ensures that the tarball is extracted with the permissions set
 # by the syncer, this is important for files that are not owned by root created
 # by buildpacks.
-_TAR_EXTRACT_COMMAND = ['tar', '-xpf', '-', '-C', '/']
+# Using `--overwrite` ensures existing files are overwritten in place rather
+# than unlinked, preserving file inodes so inotify watchers (e.g. node --watch)
+# do not lose track of watched files.
+_TAR_EXTRACT_COMMAND = ['tar', '--overwrite', '-xpf', '-', '-C', '/']
 
 # Using `-f` ensures that the container's `rm` silently returns success if
 # the target file is already gone.

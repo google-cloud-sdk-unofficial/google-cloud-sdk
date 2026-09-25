@@ -65,7 +65,7 @@ DETAILED_HELP = {
 
         $ {command} my-cluster --location=us-central1-a \
         --update-slurm-node-sets=id=nodeset1,staticNodeCount=2,maxDynamicNodeCount=10 \
-        --update-slurm-partitions=id=partition1,nodesetIds=[nodeset0],exclusive=true
+        --update-slurm-partitions=id=partition1,nodesetIds=[nodeset0]
 
         Remove slurm node sets, slurm partitions and compute instances and update default partition:
 
@@ -195,6 +195,9 @@ class Update(base.UpdateCommand):
           parser=flag_group, api_version=api_version, include_update_flags=True
       )
       flags.AddSlurmConfig(
+          parser=flag_group, api_version=api_version, include_update_flags=True
+      )
+      flags.AddSlurmConfFile(
           parser=flag_group, api_version=api_version, include_update_flags=True
       )
       flags.AddSlurmDisableHealthCheckProgram(

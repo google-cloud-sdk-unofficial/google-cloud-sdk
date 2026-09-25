@@ -136,7 +136,7 @@ class Deploy(base.Command):
     flags.AddInvokerIamCheckFlag(parser)
     flags.AddPublicFlag(parser)
     flags.AddRestartPolicyFlag(parser)
-    flags.AddSshFlag(parser)
+    flags.AddSshFlag(parser, hidden=True)
     flags.AddDefaultUrlFlag(parser, resource_kind='instance')
 
     polling_group = parser.add_mutually_exclusive_group()

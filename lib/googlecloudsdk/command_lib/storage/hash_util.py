@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import fast_crc32c_util
 from googlecloudsdk.command_lib.util import crc32c
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.updater import installers
 from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import hashing
@@ -202,6 +203,79 @@ def validate_object_hashes_match(object_path, source_hash, destination_hash):
     raise errors.HashMismatchError(
         'Source hash {} does not match destination hash {}'
         ' for object {}.'.format(source_hash, destination_hash, object_path))
+
+
+def validate_composed_hash_matches(source_resources, destination_resource):
+  """Validates that the composed object's hash matches the expected hash.
+
+  Args:
+    source_resources (list[Resource]): The source resources.
+    destination_resource (Resource): The destination resource.
+
+  Raises:
+    HashMismatchError: If hashes do not match.
+    Error: If hash validation is required but cannot be performed.
+  """
+  check_hashes = properties.VALUES.storage.check_hashes.Get()
+  if check_hashes == properties.CheckHashes.NEVER.value:
+    return
+
+  # 1. Check destination and source resources exist.
+  if not destination_resource or not source_resources:
+    log.warning(
+        'Could not perform checksum validation for composed object'
+        ' due to missing destination or source resources.'
+    )
+    return
+
+  # 3. Check source resources metadata
+  source_checksums_and_sizes = []
+  for resource in source_resources:
+    if (
+        not getattr(resource, 'crc32c_hash', None)
+        or getattr(resource, 'size', None) is None
+    ):
+      log.warning(
+          'Could not perform checksum validation for composed object due to'
+          ' missing metadata (crc32c_hash or size) in source.'
+      )
+      return
+    source_checksums_and_sizes.append((resource.crc32c_hash, resource.size))
+
+  # 4. Check destination resource metadata
+  if not getattr(destination_resource, 'crc32c_hash', None):
+    log.warning(
+        'Skipping checksum validation for composed object due to missing'
+        ' metadata (crc32c_hash) in destination.'
+    )
+    return
+
+  try:
+    first_hash, _ = source_checksums_and_sizes[0]
+    expected_checksum = int.from_bytes(
+        get_bytes_from_base64_string(first_hash), byteorder='big'
+    )
+
+    for next_hash, next_size in source_checksums_and_sizes[1:]:
+      next_checksum = int.from_bytes(
+          get_bytes_from_base64_string(next_hash), byteorder='big'
+      )
+      expected_checksum = crc32c.concat_checksums(
+          expected_checksum, next_checksum, next_size
+      )
+
+    expected_b64 = crc32c.get_crc32c_hash_string_from_checksum(
+        expected_checksum
+    )
+
+  except Exception as e:  # pylint: disable=broad-except
+    raise errors.Error('Failed to calculate expected checksum: %s' % e)
+
+  validate_object_hashes_match(
+      destination_resource.storage_url.url_string,
+      expected_b64,
+      destination_resource.crc32c_hash,
+  )
 
 
 def update_digesters(digesters, data):

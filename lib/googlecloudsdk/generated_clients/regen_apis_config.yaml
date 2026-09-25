@@ -133,6 +133,11 @@ apis:
       discovery_doc: aiplatform_v1.json
       gcloud_gapic_library: google/cloud/aiplatform/v1:aiplatform_v1_py
       resources:
+        # Manual `projects` parent registration required to satisfy the
+        # ConflictingCollection check in gcloud's regen script for aiplatform
+        # v1. See go/yaqs/7381979231888080896.
+        projects:
+          path: projects/{projectsId}
         projects.locations:
           path: projects/{projectsId}/locations/{locationsId}
         projects.locations.models.operations:
@@ -147,6 +152,18 @@ apis:
         projects.locations.indexEndpoints.operations:
           path:
             projects/{projectsId}/locations/{locationsId}/indexEndpoints/{indexEndpointsId}/operations/{operationsId}
+        # Intermediate parent collections for the publisher-scoped variant of
+        # PredictionService.GetResponse / DeleteResponse (from cl/962641563).
+        # Auto-generation produces broken paths for these because the RPCs use
+        # `additional_bindings` with a routing-only URI shape; declaring them
+        # here makes the regen use these correct paths instead. See
+        # go/yaqs/7381979231888080896.
+        projects.locations.publishers:
+          path:
+            projects/{projectsId}/locations/{locationsId}/publishers/{publishersId}
+        projects.locations.publishers.v1:
+          path:
+            projects/{projectsId}/locations/{locationsId}/publishers/{publishersId}/v1
         projects.locations.semanticGovernancePolicies:
           path:
             projects/{projectsId}/locations/{locationsId}/semanticGovernancePolicies/{semanticGovernancePoliciesId}
@@ -233,6 +250,10 @@ apis:
     v1beta:
       discovery_doc: appoptimize_v1beta.json
       default: true
+  apptopology:
+    v1:
+      discovery_doc: apptopology_v1.json
+      default: true
   artifactregistry:
     v1beta1:
       discovery_doc: artifactregistry_v1beta1.json
@@ -251,6 +272,8 @@ apis:
     v1:
       discovery_doc: assuredworkloads_v1.json
       default: true
+    v2:
+      discovery_doc: assuredworkloads_v2.json
   authztoolkit:
     v1alpha:
       discovery_doc: authztoolkit_v1alpha.json
@@ -309,6 +332,8 @@ apis:
     v1:
       discovery_doc: biglake_v1.json
       default: true
+      skip:
+        bug: b/555192601
     delta_v1:
       discovery_doc: biglake_delta_v1.json
       default: false
@@ -679,6 +704,8 @@ apis:
         reservationBlocks:
           path:
             projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}
+      skip:
+        bug: b/555193392
     beta:
       discovery_doc: compute_beta.json
       unelidable_request_methods:
@@ -1492,8 +1519,6 @@ apis:
       default: true
   logging:
     v2:
-      skip:
-        bug: b/489462171
       discovery_doc: logging_v2.json
       gcloud_gapic_library: google/logging/v2:logging_v2_py
       default: true
@@ -1615,6 +1640,10 @@ apis:
       discovery_doc: networkmanagement_v1beta1.json
     v1alpha1:
       discovery_doc: networkmanagement_v1alpha1.json
+  hstprof:
+    v1alpha:
+      discovery_doc: hstprof_v1alpha.json
+      default: true
   networkservices:
     v1alpha1:
       discovery_doc: networkservices_v1alpha1.json
@@ -2446,6 +2475,10 @@ apis:
         organizations.locations.serviceProducers:
           path:
             organizations/{organization}/locations/{location}/serviceProducers/{serviceProducer}
+  useronboarding:
+    v1alpha:
+      discovery_doc: useronboarding_v1alpha.json
+      default: true
 canonical_surfaces:
   accessapproval:
     name: accessapproval
@@ -2498,6 +2531,10 @@ canonical_surfaces:
   appoptimize:
     name: appoptimize
     command: app-optimize
+  apptopology:
+    name: apptopology
+    command: app-topology
+    hidden: true
   artifactregistry:
     name: artifactregistry
     command: artifacts
@@ -2803,6 +2840,9 @@ canonical_surfaces:
   language:
     name: language
     command: ml language
+  logging:
+    name: logging
+    command: logging
   lustre:
     name: lustre
     command: lustre
@@ -3075,3 +3115,7 @@ canonical_surfaces:
   vectorsearch:
     name: vectorsearch
     command: vector-search
+  useronboarding:
+    name: useronboarding
+    command: onboarding
+

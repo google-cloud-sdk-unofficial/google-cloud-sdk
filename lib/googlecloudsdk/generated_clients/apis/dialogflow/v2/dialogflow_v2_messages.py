@@ -15285,6 +15285,9 @@ class GoogleCloudDialogflowV2InputAudioConfig(_messages.Message):
       StreamingRecognitionResult with information about the recognized speech
       words, e.g. start and end time offsets. If false or unspecified, Speech
       doesn't return any word-level information.
+    geminiAsrConfig: Optional. Configuration for using Gemini ASR models
+      served via Vertex AI. This field is only used when `use_gemini_asr` is
+      true.
     languageCode: Required. The language of the supplied audio. Dialogflow
       does not do translations. See [Language
       Support](https://cloud.google.com/dialogflow/docs/reference/language)
@@ -15327,6 +15330,9 @@ class GoogleCloudDialogflowV2InputAudioConfig(_messages.Message):
     speechContexts: Context information to assist speech recognition. See [the
       Cloud Speech documentation](https://cloud.google.com/speech-to-
       text/docs/basics#phrase-hints) for more details.
+    useGeminiAsr: Optional. If true, Gemini ASR will be used for transcription
+      instead of Cloud Speech-to-Text. If false, Cloud Speech-to-Text will be
+      used. If unset, this setting is inherited from the ConversationProfile.
   """
 
   class AudioEncodingValueValuesEnum(_messages.Enum):
@@ -15411,15 +15417,17 @@ class GoogleCloudDialogflowV2InputAudioConfig(_messages.Message):
   enableAutomaticPunctuation = _messages.BooleanField(3)
   enableVoiceActivityEvents = _messages.BooleanField(4)
   enableWordInfo = _messages.BooleanField(5)
-  languageCode = _messages.StringField(6)
-  model = _messages.StringField(7)
-  modelVariant = _messages.EnumField('ModelVariantValueValuesEnum', 8)
-  optOutConformerModelMigration = _messages.BooleanField(9)
-  phraseHints = _messages.StringField(10, repeated=True)
-  phraseSets = _messages.StringField(11, repeated=True)
-  sampleRateHertz = _messages.IntegerField(12, variant=_messages.Variant.INT32)
-  singleUtterance = _messages.BooleanField(13)
-  speechContexts = _messages.MessageField('GoogleCloudDialogflowV2SpeechContext', 14, repeated=True)
+  geminiAsrConfig = _messages.MessageField('GoogleCloudDialogflowV2SpeechToTextConfigGeminiAsrConfig', 6)
+  languageCode = _messages.StringField(7)
+  model = _messages.StringField(8)
+  modelVariant = _messages.EnumField('ModelVariantValueValuesEnum', 9)
+  optOutConformerModelMigration = _messages.BooleanField(10)
+  phraseHints = _messages.StringField(11, repeated=True)
+  phraseSets = _messages.StringField(12, repeated=True)
+  sampleRateHertz = _messages.IntegerField(13, variant=_messages.Variant.INT32)
+  singleUtterance = _messages.BooleanField(14)
+  speechContexts = _messages.MessageField('GoogleCloudDialogflowV2SpeechContext', 15, repeated=True)
+  useGeminiAsr = _messages.BooleanField(16)
 
 
 class GoogleCloudDialogflowV2InputConfig(_messages.Message):
@@ -18942,6 +18950,10 @@ class GoogleCloudDialogflowV2SpeechToTextConfig(_messages.Message):
       StreamingRecognitionResult with information about the recognized speech
       words, e.g. start and end time offsets. If false or unspecified, Speech
       doesn't return any word-level information.
+    geminiAsrConfig: Optional. Configuration for using Gemini ASR models
+      served via Vertex AI, overriding the default Gemini ASR model or
+      providing additional advanced parameters. This field is only used when
+      `use_gemini_asr` is true.
     languageCode: The language of the supplied audio. Dialogflow does not do
       translations. See [Language
       Support](https://cloud.google.com/dialogflow/docs/reference/language)
@@ -18977,6 +18989,8 @@ class GoogleCloudDialogflowV2SpeechToTextConfig(_messages.Message):
       StreamingAnalyzeContentRequest request. If enhanced model variant is
       specified and an enhanced version of the specified model for the
       language does not exist, then it would emit an error.
+    useGeminiAsr: Optional. If true, Gemini ASR will be used for transcription
+      instead of Cloud Speech-to-Text.
     useTimeoutBasedEndpointing: Use timeout based endpointing, interpreting
       endpointer sensitivity as seconds of timeout value.
   """
@@ -19065,12 +19079,70 @@ class GoogleCloudDialogflowV2SpeechToTextConfig(_messages.Message):
 
   audioEncoding = _messages.EnumField('AudioEncodingValueValuesEnum', 1)
   enableWordInfo = _messages.BooleanField(2)
-  languageCode = _messages.StringField(3)
-  model = _messages.StringField(4)
-  phraseSets = _messages.StringField(5, repeated=True)
-  sampleRateHertz = _messages.IntegerField(6, variant=_messages.Variant.INT32)
-  speechModelVariant = _messages.EnumField('SpeechModelVariantValueValuesEnum', 7)
-  useTimeoutBasedEndpointing = _messages.BooleanField(8)
+  geminiAsrConfig = _messages.MessageField('GoogleCloudDialogflowV2SpeechToTextConfigGeminiAsrConfig', 3)
+  languageCode = _messages.StringField(4)
+  model = _messages.StringField(5)
+  phraseSets = _messages.StringField(6, repeated=True)
+  sampleRateHertz = _messages.IntegerField(7, variant=_messages.Variant.INT32)
+  speechModelVariant = _messages.EnumField('SpeechModelVariantValueValuesEnum', 8)
+  useGeminiAsr = _messages.BooleanField(9)
+  useTimeoutBasedEndpointing = _messages.BooleanField(10)
+
+
+class GoogleCloudDialogflowV2SpeechToTextConfigGeminiAsrConfig(_messages.Message):
+  r"""Configuration for using Gemini ASR models served via Vertex AI. This
+  message is used to override the default Gemini ASR model or provide
+  additional advanced parameters.
+
+  Enums:
+    EndOfSpeechSensitivityValueValuesEnum: Optional. End of speech
+      sensitivity.
+    StartOfSpeechSensitivityValueValuesEnum: Optional. Start of speech
+      sensitivity.
+
+  Fields:
+    endOfSpeechSensitivity: Optional. End of speech sensitivity.
+    modelId: Optional. The Gemini ASR model ID used for transcription. This
+      value overrides the default model ID configured on the server. Example:
+      "gemini-3-flash-lite-asr-preview"
+    prefixPaddingMs: Optional. The required duration of detected speech before
+      start-of-speech is committed.
+    silenceDurationMs: Optional. The required duration of detected silence (or
+      non-speech) before end-of-speech is committed.
+    startOfSpeechSensitivity: Optional. Start of speech sensitivity.
+  """
+
+  class EndOfSpeechSensitivityValueValuesEnum(_messages.Enum):
+    r"""Optional. End of speech sensitivity.
+
+    Values:
+      END_SENSITIVITY_UNSPECIFIED: The default is END_SENSITIVITY_LOW.
+      END_SENSITIVITY_HIGH: Automatic detection ends speech more often.
+      END_SENSITIVITY_LOW: Automatic detection ends speech less often.
+    """
+    END_SENSITIVITY_UNSPECIFIED = 0
+    END_SENSITIVITY_HIGH = 1
+    END_SENSITIVITY_LOW = 2
+
+  class StartOfSpeechSensitivityValueValuesEnum(_messages.Enum):
+    r"""Optional. Start of speech sensitivity.
+
+    Values:
+      START_SENSITIVITY_UNSPECIFIED: The default is START_SENSITIVITY_LOW.
+      START_SENSITIVITY_HIGH: Automatic detection will detect the start of
+        speech more often.
+      START_SENSITIVITY_LOW: Automatic detection will detect the start of
+        speech less often.
+    """
+    START_SENSITIVITY_UNSPECIFIED = 0
+    START_SENSITIVITY_HIGH = 1
+    START_SENSITIVITY_LOW = 2
+
+  endOfSpeechSensitivity = _messages.EnumField('EndOfSpeechSensitivityValueValuesEnum', 1)
+  modelId = _messages.StringField(2)
+  prefixPaddingMs = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  silenceDurationMs = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  startOfSpeechSensitivity = _messages.EnumField('StartOfSpeechSensitivityValueValuesEnum', 5)
 
 
 class GoogleCloudDialogflowV2SpeechWordInfo(_messages.Message):

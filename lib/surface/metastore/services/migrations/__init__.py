@@ -18,6 +18,9 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class Migrations(base.Group):
   """Manage the migration to a Dataproc Metastore service."""

@@ -47,7 +47,8 @@ class SslPolicyHelper(object):
       min_tls_version,
       custom_features,
       post_quantum_key_exchange=None,
-      tls_mode=None
+      tls_mode=None,
+      tls_settings_subject_alt_names=None
   ):
     """Returns the SslPolicy message for an insert request.
 
@@ -66,6 +67,8 @@ class SslPolicyHelper(object):
         'ENABLED' or 'DEFERRED'.
       tls_mode: String representing the TLS mode. Can be one of 'SIMPLE' or
         'MUTUAL'.
+      tls_settings_subject_alt_names: A list of alternate names used to verify
+        the subject identity.
 
     Returns:
       The SslPolicy message object that can be used in an insert request.
@@ -75,18 +78,28 @@ class SslPolicyHelper(object):
         description=description,
         profile=self._messages.SslPolicy.ProfileValueValuesEnum(profile),
         minTlsVersion=self._messages.SslPolicy.MinTlsVersionValueValuesEnum(
-            min_tls_version),
-        customFeatures=custom_features)
+            min_tls_version
+        ),
+        customFeatures=custom_features,
+    )
     if post_quantum_key_exchange:
       ssl_policy.postQuantumKeyExchange = (
           self._messages.SslPolicy.PostQuantumKeyExchangeValueValuesEnum(
-              post_quantum_key_exchange))
+              post_quantum_key_exchange
+          )
+      )
     if tls_mode is not None and hasattr(self._messages, 'ServerTlsSettings'):
       if ssl_policy.tlsSettings is None:
         ssl_policy.tlsSettings = self._messages.ServerTlsSettings()
       ssl_policy.tlsSettings.tlsMode = (
           self._messages.ServerTlsSettings.TlsModeValueValuesEnum(tls_mode)
       )
+    if tls_settings_subject_alt_names is not None and hasattr(
+        self._messages, 'ServerTlsSettings'
+    ):
+      if ssl_policy.tlsSettings is None:
+        ssl_policy.tlsSettings = self._messages.ServerTlsSettings()
+      ssl_policy.tlsSettings.subjectAltNames = tls_settings_subject_alt_names
     return ssl_policy
 
   def GetSslPolicyForPatch(
@@ -96,7 +109,8 @@ class SslPolicyHelper(object):
       min_tls_version=None,
       custom_features=None,
       post_quantum_key_exchange=None,
-      tls_mode=None
+      tls_mode=None,
+      tls_settings_subject_alt_names=None
   ):
     """Returns the SslPolicy message for a patch request.
 
@@ -114,6 +128,8 @@ class SslPolicyHelper(object):
         'ENABLED' or 'DEFERRED'.
       tls_mode: String representing the TLS mode. Can be one of 'SIMPLE' or
         'MUTUAL'.
+      tls_settings_subject_alt_names: A list of alternate names used to verify
+        the subject identity.
     """
     messages = self._messages
     ssl_policy = messages.SslPolicy(fingerprint=fingerprint)
@@ -121,19 +137,28 @@ class SslPolicyHelper(object):
       ssl_policy.profile = messages.SslPolicy.ProfileValueValuesEnum(profile)
     if min_tls_version:
       ssl_policy.minTlsVersion = (
-          messages.SslPolicy.MinTlsVersionValueValuesEnum(min_tls_version))
+          messages.SslPolicy.MinTlsVersionValueValuesEnum(min_tls_version)
+      )
     if custom_features is not None:
       ssl_policy.customFeatures = custom_features
     if post_quantum_key_exchange:
       ssl_policy.postQuantumKeyExchange = (
           messages.SslPolicy.PostQuantumKeyExchangeValueValuesEnum(
-              post_quantum_key_exchange))
+              post_quantum_key_exchange
+          )
+      )
     if tls_mode is not None and hasattr(messages, 'ServerTlsSettings'):
       if ssl_policy.tlsSettings is None:
         ssl_policy.tlsSettings = messages.ServerTlsSettings()
       ssl_policy.tlsSettings.tlsMode = (
           messages.ServerTlsSettings.TlsModeValueValuesEnum(tls_mode)
       )
+    if tls_settings_subject_alt_names is not None and hasattr(
+        messages, 'ServerTlsSettings'
+    ):
+      if ssl_policy.tlsSettings is None:
+        ssl_policy.tlsSettings = messages.ServerTlsSettings()
+      ssl_policy.tlsSettings.subjectAltNames = tls_settings_subject_alt_names
     return ssl_policy
 
   def WaitForOperation(self, ssl_policy_ref, operation_ref, wait_message):

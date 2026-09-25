@@ -51,3 +51,26 @@ class PullRequestsClient(object):
         pullRequest=pull_request,
     )
     return self._service.Create(create_req)
+
+  def Update(self, pull_request_ref, title=None, body=None, update_mask=None):
+    """Update a pull request."""
+    name = pull_request_ref.RelativeName()
+    pull_request = self.messages.PullRequest(name=name, title=title, body=body)
+    update_mask_str = (
+        ",".join(update_mask) if isinstance(update_mask, list) else update_mask
+    )
+    update_req = self.messages.SecuresourcemanagerProjectsLocationsRepositoriesPullRequestsPatchRequest(
+        name=name,
+        pullRequest=pull_request,
+        updateMask=update_mask_str,
+    )
+    return self._service.Patch(update_req)
+
+  def Close(self, pull_request_ref):
+    """Close a pull request."""
+    name = pull_request_ref.RelativeName()
+    close_req = self.messages.SecuresourcemanagerProjectsLocationsRepositoriesPullRequestsCloseRequest(
+        name=name,
+        closePullRequestRequest=self.messages.ClosePullRequestRequest(),
+    )
+    return self._service.Close(close_req)

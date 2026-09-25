@@ -480,6 +480,10 @@ def ParseUpdateOptionsBase(args, locations):
       disable_scheduled_upgrades=getattr(
           args, 'disable_scheduled_upgrades', None
       ),
+      target_node_version=getattr(args, 'target_node_version', None),
+      clear_target_node_version=getattr(
+          args, 'clear_target_node_version', None
+      ),
   )
 
   if (args.disable_addons and

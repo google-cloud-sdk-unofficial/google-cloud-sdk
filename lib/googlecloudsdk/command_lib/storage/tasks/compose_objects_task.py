@@ -19,7 +19,9 @@ from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.api_lib.storage import request_config_factory
 from googlecloudsdk.command_lib.storage import errors as command_errors
+from googlecloudsdk.command_lib.storage import hash_util
 from googlecloudsdk.command_lib.storage.tasks import task
+from googlecloudsdk.command_lib.storage.tasks.rm import delete_task
 from googlecloudsdk.core import log
 
 
@@ -66,7 +68,6 @@ class ComposeObjectsTask(task.Task):
     self._user_request_args = user_request_args
 
   def execute(self, task_status_queue=None):
-    del task_status_queue  # Unused.
     provider = self._destination_resource.storage_url.scheme
     api = api_factory.get_api(provider)
     if cloud_api.Capability.COMPOSE_OBJECTS not in api.capabilities:
@@ -74,7 +75,8 @@ class ComposeObjectsTask(task.Task):
           'Compose is not available with requested provider: {}'.format(
               provider))
     for source_resource in self._source_resources:
-      if source_resource.storage_url.bucket_name != self._destination_resource.storage_url.bucket_name:
+      if (source_resource.storage_url.bucket_name !=
+          self._destination_resource.storage_url.bucket_name):
         raise command_errors.Error(
             'Inter-bucket composing not supported')
     request_config = request_config_factory.get_request_config(
@@ -93,6 +95,20 @@ class ComposeObjectsTask(task.Task):
         original_source_resource=self._original_source_resource,
         posix_to_set=self._posix_to_set,
     )
+
+    try:
+      hash_util.validate_composed_hash_matches(
+          self._source_resources, created_resource
+      )
+    except command_errors.HashMismatchError:
+      if not self._delete_source_objects:
+        # Clean up destination to avoid leaving corrupted objects,
+        # but only if sources are still available to avoid data loss.
+        delete_task.DeleteObjectTask(
+            created_resource.storage_url,
+            user_request_args=self._user_request_args
+        ).execute(task_status_queue=task_status_queue)
+      raise
 
     return task.Output(
         messages=[

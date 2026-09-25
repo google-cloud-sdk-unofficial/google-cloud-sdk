@@ -592,5 +592,4 @@ def AddMySqlHomogeneousConfigFlag(parser):
       help=(
           'Whether the destination for the migration job is a primary instance.'
       ),
-      hidden=True,
   )

@@ -17,7 +17,6 @@
 import enum
 import os
 import textwrap
-from typing import List
 
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
 from googlecloudsdk.api_lib.compute import utils
@@ -400,6 +399,59 @@ def _TransformHealthState(instance):
   return _Colorize(health_state, color)
 
 
+def _TransformPreservedState(instance):
+  """Transform for the PRESERVED_STATE field in the table output.
+
+  PRESERVED_STATE is generated from the fields preservedStateFromPolicy and
+  preservedStateFromConfig fields in the managedInstance message.
+
+  Args:
+    instance: instance dictionary for transform
+
+  Returns:
+    Preserved state status as one of ('POLICY', 'CONFIG', 'POLICY,CONFIG')
+  """
+  preserved_state_value = ''
+  if ('preservedStateFromPolicy' in instance and
+      instance['preservedStateFromPolicy']):
+    preserved_state_value += 'POLICY,'
+  if ('preservedStateFromConfig' in instance and
+      instance['preservedStateFromConfig']):
+    preserved_state_value += 'CONFIG'
+  if preserved_state_value.endswith(','):
+    preserved_state_value = preserved_state_value[:-1]
+  return preserved_state_value
+
+
+class DynamicField(str):
+  """Represents dynamic fields in list managed instances output."""
+
+  @staticmethod
+  def _HasGracefulShutdownTimestamp(instance):
+    scheduling = getattr(instance, 'scheduling', None)
+    return bool(
+        scheduling
+        and getattr(scheduling, 'gracefulShutdownTimestamp', None) is not None
+    )
+
+  @staticmethod
+  def _HasTerminationTimestamp(instance):
+    scheduling = getattr(instance, 'scheduling', None)
+    return bool(
+        scheduling
+        and getattr(scheduling, 'terminationTimestamp', None) is not None
+    )
+
+  _DYNAMIC_FIELD_VERIFIERS = {
+      'GRACEFUL_SHUTDOWN_TIMESTAMP': '_HasGracefulShutdownTimestamp',
+      'TERMINATION_TIMESTAMP': '_HasTerminationTimestamp',
+  }
+
+  def IsPresentInAny(self, instances) -> bool:
+    """Returns True if this dynamic field is present in any of the instances."""
+    verifier = getattr(self, self._DYNAMIC_FIELD_VERIFIERS[self])
+    return any(verifier(instance) for instance in instances)
+
 _LIST_INSTANCES_FORMAT = """\
         table(name:label=NAME,
               instance.scope().segment(0):label=ZONE,
@@ -452,7 +504,7 @@ _RELEASE_TRACK_TO_LIST_INSTANCES_FORMAT = {
     base.ReleaseTrack.ALPHA: _LIST_INSTANCES_FORMAT_ALPHA,
 }
 
-_LIST_INSTANCES_STATIC_FIELDS_GA = [
+_LIST_INSTANCES_FIELDS_GA = (
     'NAME',
     'ZONE',
     'STATUS',
@@ -460,10 +512,12 @@ _LIST_INSTANCES_STATIC_FIELDS_GA = [
     'ACTION',
     'INSTANCE_TEMPLATE',
     'VERSION_NAME',
-    'LAST_ERROR'
-]
-_LIST_INSTANCES_STATIC_FIELDS_BETA = _LIST_INSTANCES_STATIC_FIELDS_GA
-_LIST_INSTANCES_STATIC_FIELDS_ALPHA = [
+    'LAST_ERROR',
+    DynamicField('GRACEFUL_SHUTDOWN_TIMESTAMP'),
+    DynamicField('TERMINATION_TIMESTAMP'),
+)
+_LIST_INSTANCES_FIELDS_BETA = _LIST_INSTANCES_FIELDS_GA
+_LIST_INSTANCES_FIELDS_ALPHA = (
     'NAME',
     'ZONE',
     'STATUS',
@@ -472,112 +526,22 @@ _LIST_INSTANCES_STATIC_FIELDS_ALPHA = [
     'PRESERVED_STATE',
     'INSTANCE_TEMPLATE',
     'VERSION_NAME',
-    'LAST_ERROR'
-]
+    'LAST_ERROR',
+    DynamicField('GRACEFUL_SHUTDOWN_TIMESTAMP'),
+    DynamicField('TERMINATION_TIMESTAMP'),
+)
 
-_RELEASE_TRACK_TO_LIST_INSTANCES_BASE_STATIC_FIELDS = {
-    base.ReleaseTrack.GA: _LIST_INSTANCES_STATIC_FIELDS_GA,
-    base.ReleaseTrack.BETA: _LIST_INSTANCES_STATIC_FIELDS_BETA,
-    base.ReleaseTrack.ALPHA: _LIST_INSTANCES_STATIC_FIELDS_ALPHA,
+_RELEASE_TRACK_TO_LIST_INSTANCES_FIELDS = {
+    base.ReleaseTrack.GA: _LIST_INSTANCES_FIELDS_GA,
+    base.ReleaseTrack.BETA: _LIST_INSTANCES_FIELDS_BETA,
+    base.ReleaseTrack.ALPHA: _LIST_INSTANCES_FIELDS_ALPHA,
 }
 
 
-class DynamicField:
-  """Represents dynamic fields in list managed instances output."""
-
-  TERMINATION_TIMESTAMP = 'TERMINATION_TIMESTAMP'
-  GRACEFUL_SHUTDOWN_TIMESTAMP = 'GRACEFUL_SHUTDOWN_TIMESTAMP'
-
-  ALL_ORDERED = [
-      GRACEFUL_SHUTDOWN_TIMESTAMP,
-      TERMINATION_TIMESTAMP,
-  ]
-
-  @classmethod
-  def GetManagedInstanceDynamicFields(cls, instance) -> List[str]:
-    """Returns dynamic fields for a managed instance based on its properties.
-
-    Args:
-      instance: Managed instance.
-    Returns:
-      List of dynamic fields.
-    """
-    dynamic_fields = []
-
-    if cls._HasTerminationTimestamp(instance):
-      dynamic_fields.append(cls.TERMINATION_TIMESTAMP)
-
-    if cls._HasGracefulShutdownTimestamp(instance):
-      dynamic_fields.append(cls.GRACEFUL_SHUTDOWN_TIMESTAMP)
-
-    return dynamic_fields
-
-  @classmethod
-  def _HasTerminationTimestamp(cls, instance):
-    return (
-        hasattr(instance, 'scheduling')
-        and hasattr(instance.scheduling, 'terminationTimestamp')
-        and instance.scheduling.terminationTimestamp is not None
-    )
-
-  @classmethod
-  def _HasGracefulShutdownTimestamp(cls, instance):
-    return (
-        hasattr(instance, 'scheduling')
-        and hasattr(instance.scheduling, 'gracefulShutdownTimestamp')
-        and instance.scheduling.gracefulShutdownTimestamp is not None
-    )
-
-
-def _GetIgmDynamicFields(managed_instances) -> List[str]:
-  """Returns dynamic fields for a list of managed instances.
-
-  Dynamic fields are determined based on the properties of the instances
-  and the release track.
-
-  Args:
-    managed_instances: List of managed instances.
-  Returns:
-    List of dynamic fields.
-  """
-  dynamic_fields = set()
-  max_possible_fields = len(DynamicField.ALL_ORDERED)
-  for instance in managed_instances:
-    dynamic_fields.update(
-        DynamicField.GetManagedInstanceDynamicFields(instance)
-    )
-    if len(dynamic_fields) == max_possible_fields:
-      break
-
-  return [
-      field
-      for field in DynamicField.ALL_ORDERED
-      if field in dynamic_fields
-  ]
-
-
-def _TransformPreservedState(instance):
-  """Transform for the PRESERVED_STATE field in the table output.
-
-  PRESERVED_STATE is generated from the fields preservedStateFromPolicy and
-  preservedStateFromConfig fields in the managedInstance message.
-
-  Args:
-    instance: instance dictionary for transform
-
-  Returns:
-    Preserved state status as one of ('POLICY', 'CONFIG', 'POLICY,CONFIG')
-  """
-  preserved_state_value = ''
-  if ('preservedStateFromPolicy' in instance and
-      instance['preservedStateFromPolicy']):
-    preserved_state_value += 'POLICY,'
-  if ('preservedStateFromConfig' in instance and
-      instance['preservedStateFromConfig']):
-    preserved_state_value += 'CONFIG'
-  if preserved_state_value.endswith(','):
-    preserved_state_value = preserved_state_value[:-1]
-  return preserved_state_value
+def _IsFieldActive(field, managed_instances) -> bool:
+  if isinstance(field, DynamicField):
+    return field.IsPresentInAny(managed_instances)
+  return True
 
 
 def GetListInstancesOutputWithDynamicFields(
@@ -595,14 +559,15 @@ def GetListInstancesOutputWithDynamicFields(
   Returns:
       The complete output format.
   """
-  static_fields = _RELEASE_TRACK_TO_LIST_INSTANCES_BASE_STATIC_FIELDS[
-      release_track
+  fields = _RELEASE_TRACK_TO_LIST_INSTANCES_FIELDS[release_track]
+
+  active_fields = [
+      str(field)
+      for field in fields
+      if _IsFieldActive(field, managed_instances)
   ]
 
-  dynamic_fields = _GetIgmDynamicFields(managed_instances)
-  complete_fields = static_fields + dynamic_fields
-  complete_format = '(%s)' % ','.join(complete_fields)
-  return complete_format
+  return '(%s)' % ','.join(active_fields)
 
 
 def AddListInstancesOutputFormat(parser, release_track=base.ReleaseTrack.GA):

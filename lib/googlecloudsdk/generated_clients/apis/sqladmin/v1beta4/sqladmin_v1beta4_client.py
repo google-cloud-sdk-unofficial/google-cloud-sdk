@@ -1042,6 +1042,32 @@ class SqladminV1beta4(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def DeleteByoCertificate(self, request, global_params=None):
+      r"""Delete BYOC (Bring Your Own Certificate) bundle for an existing Cloud SQL instance.
+
+      Args:
+        request: (SqlSslCertsDeleteByoCertificateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('DeleteByoCertificate')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    DeleteByoCertificate.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='DELETE',
+        method_id='sql.sslCerts.deleteByoCertificate',
+        ordered_params=['project', 'instance'],
+        path_params=['instance', 'project'],
+        query_params=['bundle'],
+        relative_path='sql/v1beta4/projects/{project}/instances/{instance}:deleteByoCertificate',
+        request_field='',
+        request_type_name='SqlSslCertsDeleteByoCertificateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Demote(self, request, global_params=None):
       r"""Demotes an existing standalone instance to be a Cloud SQL read replica for an external database server.
 
@@ -1299,6 +1325,32 @@ class SqladminV1beta4(base_api.BaseApiClient):
         request_field='',
         request_type_name='SqlInstancesListRequest',
         response_type_name='InstancesListResponse',
+        supports_download=False,
+    )
+
+    def ListByoCertificates(self, request, global_params=None):
+      r"""List all BYOC (Bring Your Own Certificate) bundles for an existing Cloud SQL instance.
+
+      Args:
+        request: (SqlSslCertsListByoCertificatesRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListByoCertificatesResponse) The response message.
+      """
+      config = self.GetMethodConfig('ListByoCertificates')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ListByoCertificates.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='sql.sslCerts.listByoCertificates',
+        ordered_params=['project', 'instance'],
+        path_params=['instance', 'project'],
+        query_params=[],
+        relative_path='sql/v1beta4/projects/{project}/instances/{instance}:listByoCertificates',
+        request_field='',
+        request_type_name='SqlSslCertsListByoCertificatesRequest',
+        response_type_name='ListByoCertificatesResponse',
         supports_download=False,
     )
 
@@ -1745,6 +1797,32 @@ class SqladminV1beta4(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def UpdateByoCertificate(self, request, global_params=None):
+      r"""Upload and update BYOC (Bring Your Own Certificate) bundle for an existing Cloud SQL instance.
+
+      Args:
+        request: (SqlSslCertsUpdateByoCertificateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('UpdateByoCertificate')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    UpdateByoCertificate.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='PATCH',
+        method_id='sql.sslCerts.updateByoCertificate',
+        ordered_params=['project', 'instance'],
+        path_params=['instance', 'project'],
+        query_params=[],
+        relative_path='sql/v1beta4/projects/{project}/instances/{instance}:updateByoCertificate',
+        request_field='updateByoCertificateRequest',
+        request_type_name='SqlSslCertsUpdateByoCertificateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class OperationsService(base_api.BaseApiService):
     """Service class for the operations resource."""
 
@@ -1917,6 +1995,32 @@ class SqladminV1beta4(base_api.BaseApiClient):
         relative_path='sql/v1beta4/projects/{project}/instances/{instance}/performDiskShrink',
         request_field='performDiskShrinkContext',
         request_type_name='SqlProjectsInstancesPerformDiskShrinkRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def ReconcileNetworking(self, request, global_params=None):
+      r"""To repair and re-create networking resources for a given instance. Example: reconcile PSC networking - this operation will re-create the PSC DNS write endpoints on mentioned VPC networks, and disable and re-enable the service connection mapping for the given instance.
+
+      Args:
+        request: (SqlProjectsInstancesReconcileNetworkingRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('ReconcileNetworking')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ReconcileNetworking.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='sql.projects.instances.reconcileNetworking',
+        ordered_params=['project', 'instance'],
+        path_params=['instance', 'project'],
+        query_params=[],
+        relative_path='sql/v1beta4/projects/{project}/instances/{instance}:reconcileNetworking',
+        request_field='sqlInstancesReconcileNetworkingRequest',
+        request_type_name='SqlProjectsInstancesReconcileNetworkingRequest',
         response_type_name='Operation',
         supports_download=False,
     )

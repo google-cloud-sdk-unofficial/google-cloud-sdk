@@ -662,6 +662,8 @@ class Attachment(_messages.Message):
     name: Identifier. The resource name of the attachment, in the format:
       projects/{project}/locations/{location}/attachments/{attachment}
     state: Output only. The current state of the attachment.
+    uid: Output only. The unique identifier for the attachment. The service
+      generates this value when it creates the attachment.
     updateTime: Output only. The time when the attachment was last updated.
   """
 
@@ -713,7 +715,8 @@ class Attachment(_messages.Message):
   labels = _messages.MessageField('LabelsValue', 4)
   name = _messages.StringField(5)
   state = _messages.EnumField('StateValueValuesEnum', 6)
-  updateTime = _messages.StringField(7)
+  uid = _messages.StringField(7)
+  updateTime = _messages.StringField(8)
 
 
 class AttachmentOperationMetadata(_messages.Message):
@@ -2123,6 +2126,21 @@ class ConsolidatedExecutorSummary(_messages.Message):
   totalTasks = _messages.IntegerField(17, variant=_messages.Variant.INT32)
 
 
+class CreateEmptyOpRequest(_messages.Message):
+  r"""Request message for CreateEmptyOpRequest.
+
+  Fields:
+    emptyOpRequestId: Optional. A unique ID used to identify the request.
+    sleepCount: Optional. The number of times to sleep.
+    sleepDuration: Optional. The sleep duration for the empty operation. Will
+      sleep this much for every sleep_count.
+  """
+
+  emptyOpRequestId = _messages.StringField(1)
+  sleepCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  sleepDuration = _messages.StringField(3)
+
+
 class DataprocMetastoreConfig(_messages.Message):
   r"""Dataproc Metastore configuration for the workload.
 
@@ -2260,6 +2278,144 @@ class DataprocProjectsLocationsAttachmentsPatchRequest(_messages.Message):
   name = _messages.StringField(2, required=True)
   requestId = _messages.StringField(3)
   updateMask = _messages.StringField(4)
+
+
+class DataprocProjectsLocationsAttachmentsVirtualClustersCreateRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsAttachmentsVirtualClustersCreateRequest
+  object.
+
+  Fields:
+    parent: Required. The parent resource where this virtual cluster will be
+      created. Format:
+      projects/{project}/locations/{location}/attachments/{attachment}
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request.For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate
+      commitments.The request ID must be a valid UUID with the exception that
+      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
+    virtualCluster: A VirtualCluster resource to be passed as the request
+      body.
+    virtualClusterId: Required. The ID to use for the VirtualCluster, which
+      will become the final component of the VirtualCluster's resource name.
+      This value must be 4-63 characters, and valid characters are [a-z0-9-].
+      The first character must be a letter, and the last character cannot be a
+      hyphen.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  virtualCluster = _messages.MessageField('VirtualCluster', 3)
+  virtualClusterId = _messages.StringField(4)
+
+
+class DataprocProjectsLocationsAttachmentsVirtualClustersDeleteRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsAttachmentsVirtualClustersDeleteRequest
+  object.
+
+  Fields:
+    name: Required. The name of the virtual cluster to delete. Format: project
+      s/{project}/locations/{location}/attachments/{attachment}/virtualCluster
+      s/{virtual_cluster}
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request.For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate
+      commitments.The request ID must be a valid UUID with the exception that
+      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class DataprocProjectsLocationsAttachmentsVirtualClustersGetRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsAttachmentsVirtualClustersGetRequest object.
+
+  Fields:
+    name: Required. The name of the virtual cluster to retrieve. Format: proje
+      cts/{project}/locations/{location}/attachments/{attachment}/virtualClust
+      ers/{virtual_cluster}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class DataprocProjectsLocationsAttachmentsVirtualClustersListRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsAttachmentsVirtualClustersListRequest object.
+
+  Fields:
+    filter: Optional. A filter for the VirtualClusters to return in the
+      response.A filter is a logical expression constraining the values of
+      various fields in each VirtualCluster resource. Filters are case
+      sensitive, and may contain multiple clauses combined with logical
+      operators (AND/OR).Supported fields: * name * uid * create_time *
+      labelsExamples: * name = {vc_name} * uid = {vc_uid} * create_time <
+      "2026-01-01T00:00:00Z" * labels.env = "prod"See
+      https://google.aip.dev/assets/misc/ebnf-filtering.txt for a detailed
+      description of the filter syntax and a list of supported comparisons.
+    orderBy: Optional. Hint for how to order the results.Currently the only
+      supported sort orders are unspecified (empty) and create_time desc to
+      sort by most recently created virtual clusters first.See
+      https://google.aip.dev/132#ordering for more details.
+    pageSize: Optional. The maximum number of VirtualClusters to return in
+      each response. The service may return fewer than this value. If
+      unspecified, the server will pick an appropriate default of 20. The
+      maximum allowed value is 1000; values above 1000 will be coerced to
+      1000.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. The parent, which owns this collection of virtual
+      clusters. Format:
+      projects/{project}/locations/{location}/attachments/{attachment}
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class DataprocProjectsLocationsAttachmentsVirtualClustersPatchRequest(_messages.Message):
+  r"""A DataprocProjectsLocationsAttachmentsVirtualClustersPatchRequest
+  object.
+
+  Fields:
+    name: Identifier. The resource name of the virtual cluster, in the format:
+      projects/{project}/locations/{location}/attachments/{attachment}/virtual
+      Clusters/{virtual_cluster}
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request.For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate
+      commitments.The request ID must be a valid UUID with the exception that
+      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the VirtualCluster resource by the update.
+    virtualCluster: A VirtualCluster resource to be passed as the request
+      body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  updateMask = _messages.StringField(3)
+  virtualCluster = _messages.MessageField('VirtualCluster', 4)
 
 
 class DataprocProjectsLocationsAutoscalingPoliciesCreateRequest(_messages.Message):
@@ -4965,6 +5121,21 @@ class DataprocProjectsRegionsClustersTestIamPermissionsRequest(_messages.Message
   testIamPermissionsRequest = _messages.MessageField('TestIamPermissionsRequest', 2)
 
 
+class DataprocProjectsRegionsEmptyOpsCreateEmptyOpRequest(_messages.Message):
+  r"""A DataprocProjectsRegionsEmptyOpsCreateEmptyOpRequest object.
+
+  Fields:
+    createEmptyOpRequest: A CreateEmptyOpRequest resource to be passed as the
+      request body.
+    projectId: Optional. The ID of the project the cluster belongs to.
+    region: Optional. The region in which to handle the request.
+  """
+
+  createEmptyOpRequest = _messages.MessageField('CreateEmptyOpRequest', 1)
+  projectId = _messages.StringField(2, required=True)
+  region = _messages.StringField(3, required=True)
+
+
 class DataprocProjectsRegionsJobsCancelRequest(_messages.Message):
   r"""A DataprocProjectsRegionsJobsCancelRequest object.
 
@@ -6261,6 +6432,9 @@ class GceClusterConfig(_messages.Message):
       instances (see Project and instance metadata
       (https://cloud.google.com/compute/docs/storing-retrieving-
       metadata#project_and_instance_metadata)).
+    multiZoneConfig: Optional. Controls how instances within this Cluster are
+      allowed to exist in multiple Zones within the Region. Only one of
+      zone_uri or multi_zone_config must be set.
     networkUri: Optional. The Compute Engine network to be used for machine
       communications. Cannot be specified with subnetwork_uri. If neither
       network_uri nor subnetwork_uri is specified, the "default" network of
@@ -6397,17 +6571,18 @@ class GceClusterConfig(_messages.Message):
   confidentialInstanceConfig = _messages.MessageField('ConfidentialInstanceConfig', 2)
   internalIpOnly = _messages.BooleanField(3)
   metadata = _messages.MessageField('MetadataValue', 4)
-  networkUri = _messages.StringField(5)
-  nodeGroupAffinity = _messages.MessageField('NodeGroupAffinity', 6)
-  privateIpv6GoogleAccess = _messages.EnumField('PrivateIpv6GoogleAccessValueValuesEnum', 7)
-  reservationAffinity = _messages.MessageField('ReservationAffinity', 8)
-  resourceManagerTags = _messages.MessageField('ResourceManagerTagsValue', 9)
-  serviceAccount = _messages.StringField(10)
-  serviceAccountScopes = _messages.StringField(11, repeated=True)
-  shieldedInstanceConfig = _messages.MessageField('ShieldedInstanceConfig', 12)
-  subnetworkUri = _messages.StringField(13)
-  tags = _messages.StringField(14, repeated=True)
-  zoneUri = _messages.StringField(15)
+  multiZoneConfig = _messages.MessageField('MultiZoneConfig', 5)
+  networkUri = _messages.StringField(6)
+  nodeGroupAffinity = _messages.MessageField('NodeGroupAffinity', 7)
+  privateIpv6GoogleAccess = _messages.EnumField('PrivateIpv6GoogleAccessValueValuesEnum', 8)
+  reservationAffinity = _messages.MessageField('ReservationAffinity', 9)
+  resourceManagerTags = _messages.MessageField('ResourceManagerTagsValue', 10)
+  serviceAccount = _messages.StringField(11)
+  serviceAccountScopes = _messages.StringField(12, repeated=True)
+  shieldedInstanceConfig = _messages.MessageField('ShieldedInstanceConfig', 13)
+  subnetworkUri = _messages.StringField(14)
+  tags = _messages.StringField(15, repeated=True)
+  zoneUri = _messages.StringField(16)
 
 
 class GdceClusterConfig(_messages.Message):
@@ -8320,6 +8495,21 @@ class ListSessionsResponse(_messages.Message):
   sessions = _messages.MessageField('Session', 2, repeated=True)
 
 
+class ListVirtualClustersResponse(_messages.Message):
+  r"""Message for response to listing VirtualClusters
+
+  Fields:
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    unreachable: Unordered list. Locations that could not be reached.
+    virtualClusters: The list of VirtualCluster
+  """
+
+  nextPageToken = _messages.StringField(1)
+  unreachable = _messages.StringField(2, repeated=True)
+  virtualClusters = _messages.MessageField('VirtualCluster', 3, repeated=True)
+
+
 class ListWorkflowTemplatesResponse(_messages.Message):
   r"""A response to a request to list workflow templates in a project.
 
@@ -8595,6 +8785,37 @@ class Metric(_messages.Message):
 
   metricOverrides = _messages.StringField(1, repeated=True)
   metricSource = _messages.EnumField('MetricSourceValueValuesEnum', 2)
+
+
+class MultiZoneConfig(_messages.Message):
+  r"""Configuration for multi-zonal clusters that can create instances across
+  multiple Zones within the Region.
+
+  Enums:
+    TargetShapeValueValuesEnum: Optional. The distribution shape of the nodes
+      in the multi-zonal cluster.
+
+  Fields:
+    targetShape: Optional. The distribution shape of the nodes in the multi-
+      zonal cluster.
+  """
+
+  class TargetShapeValueValuesEnum(_messages.Enum):
+    r"""Optional. The distribution shape of the nodes in the multi-zonal
+    cluster.
+
+    Values:
+      TARGET_SHAPE_UNSPECIFIED: Target shape is unspecified. Setting this will
+        cause error.
+      ANY: Instances may exist in any Zones within the Region.
+      EVEN: Instances are spread evenly across all zones. Intended only for
+        testing purposes to force multi-zones.
+    """
+    TARGET_SHAPE_UNSPECIFIED = 0
+    ANY = 1
+    EVEN = 2
+
+  targetShape = _messages.EnumField('TargetShapeValueValuesEnum', 1)
 
 
 class NamespacedGkeDeploymentTarget(_messages.Message):
@@ -13817,6 +14038,55 @@ class ValueValidation(_messages.Message):
   values = _messages.StringField(1, repeated=True)
 
 
+class VirtualCluster(_messages.Message):
+  r"""Message describing VirtualCluster object
+
+  Messages:
+    LabelsValue: Optional. User-provided labels for the virtual cluster.
+
+  Fields:
+    createTime: Output only. The time when the virtual cluster was created.
+    labels: Optional. User-provided labels for the virtual cluster.
+    name: Identifier. The resource name of the virtual cluster, in the format:
+      projects/{project}/locations/{location}/attachments/{attachment}/virtual
+      Clusters/{virtual_cluster}
+    uid: Output only. The unique identifier for the virtual cluster. The
+      service generates this value when it creates the virtual cluster.
+    updateTime: Output only. The time when the virtual cluster was last
+      updated.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. User-provided labels for the virtual cluster.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  labels = _messages.MessageField('LabelsValue', 2)
+  name = _messages.StringField(3)
+  uid = _messages.StringField(4)
+  updateTime = _messages.StringField(5)
+
+
 class VirtualClusterConfig(_messages.Message):
   r"""The cluster config for a cluster that does not directly control the
   underlying compute resources, such as a GKE cluster
@@ -13842,6 +14112,76 @@ class VirtualClusterConfig(_messages.Message):
   auxiliaryServicesConfig = _messages.MessageField('AuxiliaryServicesConfig', 1)
   kubernetesClusterConfig = _messages.MessageField('KubernetesClusterConfig', 2)
   stagingBucket = _messages.StringField(3)
+
+
+class VirtualClusterOperationMetadata(_messages.Message):
+  r"""Metadata describing the VirtualCluster operation.
+
+  Enums:
+    OperationTypeValueValuesEnum: Output only. The operation type.
+
+  Messages:
+    LabelsValue: Output only. Labels associated with the operation.
+
+  Fields:
+    createTime: Output only. The time when the operation was created.
+    description: Output only. Short description of the operation.
+    doneTime: Output only. The time when the operation finished.
+    labels: Output only. Labels associated with the operation.
+    operationType: Output only. The operation type.
+    virtualCluster: Output only. Name of the virtual cluster for the
+      operation.
+    virtualClusterUuid: Output only. VirtualCluster UUID for the operation.
+    warnings: Output only. Warnings encountered during operation execution.
+  """
+
+  class OperationTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The operation type.
+
+    Values:
+      VIRTUAL_CLUSTER_OPERATION_TYPE_UNSPECIFIED: VirtualCluster operation
+        type is unknown.
+      CREATE: Create VirtualCluster operation type.
+      UPDATE: Update VirtualCluster operation type.
+      DELETE: Delete VirtualCluster operation type.
+    """
+    VIRTUAL_CLUSTER_OPERATION_TYPE_UNSPECIFIED = 0
+    CREATE = 1
+    UPDATE = 2
+    DELETE = 3
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Output only. Labels associated with the operation.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  doneTime = _messages.StringField(3)
+  labels = _messages.MessageField('LabelsValue', 4)
+  operationType = _messages.EnumField('OperationTypeValueValuesEnum', 5)
+  virtualCluster = _messages.StringField(6)
+  virtualClusterUuid = _messages.StringField(7)
+  warnings = _messages.StringField(8, repeated=True)
 
 
 class WorkflowGraph(_messages.Message):

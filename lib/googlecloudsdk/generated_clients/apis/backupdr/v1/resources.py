@@ -176,6 +176,52 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_RESTORETEMPLATES = (
+      'projects.locations.restoreTemplates',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'restoreTemplates/{restoreTemplatesId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_RESTORETEMPLATES_EXECUTIONS = (
+      'projects.locations.restoreTemplates.executions',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'restoreTemplates/{restoreTemplatesId}/executions/'
+              '{executionsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_RESTOREVERIFICATIONPLANS = (
+      'projects.locations.restoreVerificationPlans',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'restoreVerificationPlans/{restoreVerificationPlansId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_RESTOREVERIFICATIONPLANS_ASSOCIATIONS = (
+      'projects.locations.restoreVerificationPlans.associations',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'restoreVerificationPlans/{restoreVerificationPlansId}/'
+              'associations/{associationsId}',
+      },
+      ['name'],
+      True
+  )
 
   def __init__(self, collection_name, path, flat_paths, params,
                enable_uri_parsing):

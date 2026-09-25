@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA]
+  hints:
+    read_only: true
 
   help_text:
     brief: List compliance states for OS policies that are applied to VMs.

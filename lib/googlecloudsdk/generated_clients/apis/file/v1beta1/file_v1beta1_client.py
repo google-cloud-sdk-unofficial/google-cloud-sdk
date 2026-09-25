@@ -1009,6 +1009,60 @@ class FileV1beta1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def DirectCreate(self, request, global_params=None):
+      r"""Creates a volume directly on the CLH, bypassing CCFE. This is a temporary PoC that will be used for testing and removed.
+
+      Args:
+        request: (FileProjectsLocationsVolumePoolsVolumesDirectCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Volume) The response message.
+      """
+      config = self.GetMethodConfig('DirectCreate')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    DirectCreate.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/volumePools/{volumePoolsId}/volumes:directCreate',
+        http_method='POST',
+        method_id='file.projects.locations.volumePools.volumes.directCreate',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['volumeId'],
+        relative_path='v1beta1/{+parent}/volumes:directCreate',
+        request_field='volume',
+        request_type_name='FileProjectsLocationsVolumePoolsVolumesDirectCreateRequest',
+        response_type_name='Volume',
+        supports_download=False,
+    )
+
+    def DirectDelete(self, request, global_params=None):
+      r"""Deletes a volume directly on the CLH, bypassing CCFE. This is a temporary PoC that will be used for testing and removed.
+
+      Args:
+        request: (FileProjectsLocationsVolumePoolsVolumesDirectDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('DirectDelete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    DirectDelete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/volumePools/{volumePoolsId}/volumes/{volumesId}:directDelete',
+        http_method='POST',
+        method_id='file.projects.locations.volumePools.volumes.directDelete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}:directDelete',
+        request_field='deleteVolumeRequest',
+        request_type_name='FileProjectsLocationsVolumePoolsVolumesDirectDeleteRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Gets the details of a specific volume.
 

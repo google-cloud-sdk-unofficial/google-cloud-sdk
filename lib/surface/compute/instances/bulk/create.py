@@ -166,7 +166,7 @@ class Create(base.Command):
   _support_identity_type = False
   _support_instance_selection_min_cpu_platform = False
   _support_vsock_mode = False
-  _support_expose_host_topology = False
+  _support_expose_host_topology = True
 
   _log_async = False
 
@@ -418,6 +418,7 @@ class CreateBeta(Create):
         support_identity_type=cls._support_identity_type,
         support_instance_selection_min_cpu_platform=cls._support_instance_selection_min_cpu_platform,
         support_vsock_mode=cls._support_vsock_mode,
+        support_expose_host_topology=cls._support_expose_host_topology,
         include_kms_key_service_account=True,
     )
     cls.AddSourceInstanceTemplate(parser)

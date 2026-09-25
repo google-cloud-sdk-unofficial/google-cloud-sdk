@@ -74,7 +74,6 @@ def _CommonArgs(
     support_display_device=False,
     support_skip_guest_os_shutdown=False,
     support_preemption_notice_duration=False,
-    support_enable_vpc_scoped_dns=False,
     support_workload_identity_config=False,
     support_identity_type=False,
     support_alias_ipv6_ranges=False,
@@ -116,7 +115,6 @@ def _CommonArgs(
       support_vlan_nic=support_vlan_nic,
       support_ipv6_only=support_ipv6_only,
       support_igmp_query=support_igmp_query,
-      support_enable_vpc_scoped_dns=support_enable_vpc_scoped_dns,
       support_alias_ipv6_ranges=support_alias_ipv6_ranges,
       support_dns64_eligible=support_dns64_eligible,
       support_nat64_eligible=support_nat64_eligible,
@@ -641,7 +639,6 @@ def _RunCreate(
     support_display_device=False,
     support_skip_guest_os_shutdown=False,
     support_preemption_notice_duration=False,
-    support_enable_vpc_scoped_dns=False,
     support_workload_identity_config=False,
     support_identity_type=False,
     support_alias_ipv6_ranges=False,
@@ -713,8 +710,6 @@ def _RunCreate(
         supported.
       support_preemption_notice_duration: Indicate whether preemption notice
         duration is supported.
-      support_enable_vpc_scoped_dns: Indicate whether enable-vpc-scoped-dns is
-        supported.
       support_workload_identity_config: Indicate whether workload identity
         config is supported.
       support_identity_type: Indicate whether identity type is supported.
@@ -783,7 +778,6 @@ def _RunCreate(
         messages=client.messages,
         network_interface_arg=args.network_interface,
         subnet_region=subnet_region,
-        support_enable_vpc_scoped_dns=support_enable_vpc_scoped_dns,
         support_alias_ipv6_ranges=support_alias_ipv6_ranges,
         support_dns64_eligible=support_dns64_eligible,
         support_nat64_eligible=support_nat64_eligible,
@@ -1332,14 +1326,13 @@ class Create(base.CreateCommand):
   _support_display_device = False
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = False
-  _support_enable_vpc_scoped_dns = False
   _support_workload_identity_config = True
   _support_identity_type = False
   _support_alias_ipv6_ranges = False
   _support_dns64_eligible = False
   _support_nat64_eligible = False
   _support_vsock_mode = False
-  _support_expose_host_topology = False
+  _support_expose_host_topology = True
   _support_external_ip_tier = False
   _support_windows_license_optimization_mode = False
 
@@ -1374,13 +1367,13 @@ class Create(base.CreateCommand):
         support_display_device=cls._support_display_device,
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
-        support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
         support_workload_identity_config=cls._support_workload_identity_config,
         support_identity_type=cls._support_identity_type,
         support_alias_ipv6_ranges=cls._support_alias_ipv6_ranges,
         support_dns64_eligible=cls._support_dns64_eligible,
         support_nat64_eligible=cls._support_nat64_eligible,
         support_vsock_mode=cls._support_vsock_mode,
+        support_expose_host_topology=cls._support_expose_host_topology,
         support_external_ip_tier=cls._support_external_ip_tier,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
@@ -1440,13 +1433,13 @@ class Create(base.CreateCommand):
         support_display_device=self._support_display_device,
         support_skip_guest_os_shutdown=self._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=self._support_preemption_notice_duration,
-        support_enable_vpc_scoped_dns=self._support_enable_vpc_scoped_dns,
         support_workload_identity_config=self._support_workload_identity_config,
         support_identity_type=self._support_identity_type,
         support_alias_ipv6_ranges=self._support_alias_ipv6_ranges,
         support_dns64_eligible=self._support_dns64_eligible,
         support_nat64_eligible=self._support_nat64_eligible,
         support_vsock_mode=self._support_vsock_mode,
+        support_expose_host_topology=self._support_expose_host_topology,
     )
 
 
@@ -1499,7 +1492,6 @@ class CreateBeta(Create):
   _support_display_device = True
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = True
-  _support_enable_vpc_scoped_dns = False
   _support_workload_identity_config = True
   _support_identity_type = False
   _support_alias_ipv6_ranges = True
@@ -1537,13 +1529,13 @@ class CreateBeta(Create):
         support_display_device=cls._support_display_device,
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
-        support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
         support_workload_identity_config=cls._support_workload_identity_config,
         support_identity_type=cls._support_identity_type,
         support_alias_ipv6_ranges=cls._support_alias_ipv6_ranges,
         support_dns64_eligible=cls._support_dns64_eligible,
         support_nat64_eligible=cls._support_nat64_eligible,
         support_vsock_mode=cls._support_vsock_mode,
+        support_expose_host_topology=cls._support_expose_host_topology,
         include_kms_key_service_account=True,
         support_external_ip_tier=cls._support_external_ip_tier,
     )
@@ -1607,13 +1599,13 @@ class CreateBeta(Create):
         support_display_device=self._support_display_device,
         support_skip_guest_os_shutdown=self._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=self._support_preemption_notice_duration,
-        support_enable_vpc_scoped_dns=self._support_enable_vpc_scoped_dns,
         support_workload_identity_config=self._support_workload_identity_config,
         support_identity_type=self._support_identity_type,
         support_alias_ipv6_ranges=self._support_alias_ipv6_ranges,
         support_dns64_eligible=self._support_dns64_eligible,
         support_nat64_eligible=self._support_nat64_eligible,
         support_vsock_mode=self._support_vsock_mode,
+        support_expose_host_topology=self._support_expose_host_topology,
     )
 
 
@@ -1666,7 +1658,6 @@ class CreateAlpha(Create):
   _support_display_device = True
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = True
-  _support_enable_vpc_scoped_dns = True
   _support_workload_identity_config = True
   _support_identity_type = True
   _support_alias_ipv6_ranges = True
@@ -1710,7 +1701,6 @@ class CreateAlpha(Create):
         support_display_device=cls._support_display_device,
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
-        support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
         support_workload_identity_config=cls._support_workload_identity_config,
         support_identity_type=cls._support_identity_type,
         support_alias_ipv6_ranges=cls._support_alias_ipv6_ranges,
@@ -1786,7 +1776,6 @@ class CreateAlpha(Create):
         support_display_device=self._support_display_device,
         support_skip_guest_os_shutdown=self._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=self._support_preemption_notice_duration,
-        support_enable_vpc_scoped_dns=self._support_enable_vpc_scoped_dns,
         support_workload_identity_config=self._support_workload_identity_config,
         support_identity_type=self._support_identity_type,
         support_alias_ipv6_ranges=self._support_alias_ipv6_ranges,

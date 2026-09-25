@@ -611,3 +611,39 @@ def AddRemoteProfileResourceArg(parser, desc):
       group_help='Name of the remote transport profile {}.'.format(desc),
   )
   concept_parsers.ConceptParser([presentation_spec]).AddToParser(parser)
+
+
+def MacsecKeyGroupAttributeConfig():
+  return concepts.ResourceParameterAttributeConfig(
+      name='macsec_key_group', help_text='The MACsec key group Id.'
+  )
+
+
+def RegionAttributeConfig():
+  return concepts.ResourceParameterAttributeConfig(
+      name='region',
+      help_text='The Google Cloud region.',
+  )
+
+
+def GetMacsecKeyGroupResourceSpec():
+  return concepts.ResourceSpec(
+      'networkconnectivity.projects.locations.interconnectKeyGroups',
+      resource_name='macsec_key_group',
+      interconnectKeyGroupsId=MacsecKeyGroupAttributeConfig(),
+      locationsId=RegionAttributeConfig(),
+      projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
+      api_version='v1beta',
+      disable_auto_completers=False,
+  )
+
+
+def AddMacsecKeyGroupResourceArg(parser, desc):
+  """Add a resource argument for a MACsec key group."""
+  presentation_spec = presentation_specs.ResourcePresentationSpec(
+      name='MACSEC_KEY_GROUP',
+      concept_spec=GetMacsecKeyGroupResourceSpec(),
+      required=True,
+      group_help='Name of the MACsec key group {}.'.format(desc),
+  )
+  concept_parsers.ConceptParser([presentation_spec]).AddToParser(parser)

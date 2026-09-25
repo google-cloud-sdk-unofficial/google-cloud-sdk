@@ -17,13 +17,20 @@
 import enum
 
 
-BASE_URL = 'https://biglake.googleapis.com/iceberg/v1/'
+BASE_URL = 'https://biglake.googleapis.com/hive/v1/'
 DOCS_URL = 'https://cloud.google.com/bigquery/'
 
 
 class Collections(enum.Enum):
   """Collections for all supported apis."""
 
+  HIVE_V1_PROJECTS = (
+      'hive.v1.projects',
+      'projects/{projectsId}',
+      {},
+      ['projectsId'],
+      True
+  )
   ICEBERG_V1_RESTCATALOG_EXTENSIONS_PROJECTS = (
       'iceberg.v1.restcatalog.extensions.projects',
       'restcatalog/extensions/projects/{projectsId}',
@@ -43,6 +50,38 @@ class Collections(enum.Enum):
       'restcatalog/v1/projects/{projectsId}/catalogs/{catalogsId}',
       {},
       ['projectsId', 'catalogsId'],
+      True
+  )
+  HIVE_V1_PROJECTS_CATALOGS = (
+      'hive.v1.projects.catalogs',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/catalogs/{catalogsId}',
+      },
+      ['name'],
+      True
+  )
+  HIVE_V1_PROJECTS_CATALOGS_DATABASES = (
+      'hive.v1.projects.catalogs.databases',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/catalogs/{catalogsId}/databases/'
+              '{databasesId}',
+      },
+      ['name'],
+      True
+  )
+  HIVE_V1_PROJECTS_CATALOGS_DATABASES_TABLES = (
+      'hive.v1.projects.catalogs.databases.tables',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/catalogs/{catalogsId}/databases/'
+              '{databasesId}/tables/{tablesId}',
+      },
+      ['name'],
       True
   )
   ICEBERG_V1_RESTCATALOG_EXTENSIONS_PROJECTS_CATALOGS = (

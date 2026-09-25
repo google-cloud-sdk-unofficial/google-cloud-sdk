@@ -341,20 +341,14 @@ def MaybeLogDefaultGpuTypeMessageForV2Resource(args, resource):
 
 
 def LogInstancePostDeploymentMessages(instance, region, release_track):
-  """Logs post-deployment messages for an instance (logs tail, SSH, URL, proxy)."""
+  """Logs post-deployment messages for an instance (logs read, URL, proxy)."""
   release_track_prefix = (
       f' {release_track.prefix}' if release_track.prefix else ''
   )
-  if release_track.prefix == 'alpha':
-    log.status.Print(
-        f'\nSee logs with:\ngcloud{release_track_prefix} run instances'
-        f' logs tail {instance.name} --region {region}'
-    )
-  if instance.annotations.get(k8s_object.SSH_ENABLED_ANNOTATION) == 'true':
-    log.status.Print(
-        f'\nSSH with:\ngcloud{release_track_prefix} run instances ssh'
-        f' {instance.name} --region {region}'
-    )
+  log.status.Print(
+      f'\nSee logs with:\ngcloud{release_track_prefix} run instances'
+      f' logs read {instance.name} --region {region}'
+  )
   if instance.urls:
     log.status.Print(f'\nURL: {instance.urls[0]}')
     if (

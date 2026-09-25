@@ -395,9 +395,14 @@ class BigLakeMetastoreMigrationConfig(_messages.Message):
       MIGRATION_MODE_UNSPECIFIED: The migration mode is unspecified.
       BACKFILL: Performs the metadata migration of requested resources. The
         migration completes once the backfill is finished.
+      INCREMENTAL_SYNC: Performs the initial backfill, then transitions to an
+        incremental synchronization state to replicate ongoing source writes.
+        Requires an explicit CompleteMigration or CancelMigration call to end
+        the migration. Note: Supported only for Iceberg migrations.
     """
     MIGRATION_MODE_UNSPECIFIED = 0
     BACKFILL = 1
+    INCREMENTAL_SYNC = 2
 
   backfillStatus = _messages.MessageField('BackfillStatus', 1)
   conflictPolicy = _messages.EnumField('ConflictPolicyValueValuesEnum', 2)
@@ -597,109 +602,6 @@ class CatalogSummary(_messages.Message):
   catalog = _messages.StringField(1)
   catalogType = _messages.EnumField('CatalogTypeValueValuesEnum', 2)
   databaseSummaries = _messages.MessageField('DatabaseSummary', 3, repeated=True)
-
-
-class CdcConfig(_messages.Message):
-  r"""Configuration information to start the Change Data Capture (CDC) streams
-  from customer database to backend database of Dataproc Metastore.
-
-  Fields:
-    bucket: Optional. The bucket to write the intermediate stream event data
-      in. The bucket name must be without any prefix like "gs://". See the
-      bucket naming requirements
-      (https://cloud.google.com/storage/docs/buckets#naming). This field is
-      optional. If not set, the Artifacts Cloud Storage bucket will be used.
-    password: Required. Input only. The password for the user that Datastream
-      service should use for the MySQL connection. This field is not returned
-      on request.
-    reverseProxySubnet: Required. The URL of the subnetwork resource to create
-      the VM instance hosting the reverse proxy in. More context in
-      https://cloud.google.com/datastream/docs/private-connectivity#reverse-
-      csql-proxy The subnetwork should reside in the network provided in the
-      request that Datastream will peer to and should be in the same region as
-      Datastream, in the following format.
-      projects/{project_id}/regions/{region_id}/subnetworks/{subnetwork_id}
-    rootPath: Optional. The root path inside the Cloud Storage bucket. The
-      stream event data will be written to this path. The default value is
-      /migration.
-    subnetIpRange: Required. A /29 CIDR IP range for peering with datastream.
-    username: Required. The username that the Datastream service should use
-      for the MySQL connection.
-    vpcNetwork: Required. Fully qualified name of the Cloud SQL instance's VPC
-      network or the shared VPC network that Datastream will peer to, in the
-      following format:
-      projects/{project_id}/locations/global/networks/{network_id}. More
-      context in https://cloud.google.com/datastream/docs/network-
-      connectivity-options#privateconnectivity
-  """
-
-  bucket = _messages.StringField(1)
-  password = _messages.StringField(2)
-  reverseProxySubnet = _messages.StringField(3)
-  rootPath = _messages.StringField(4)
-  subnetIpRange = _messages.StringField(5)
-  username = _messages.StringField(6)
-  vpcNetwork = _messages.StringField(7)
-
-
-class CloudSQLConnectionConfig(_messages.Message):
-  r"""Configuration information to establish customer database connection
-  before the cutover phase of migration
-
-  Fields:
-    hiveDatabaseName: Required. The hive database name.
-    instanceConnectionName: Required. Cloud SQL database connection name
-      (project_id:region:instance_name)
-    ipAddress: Required. The private IP address of the Cloud SQL instance.
-    natSubnet: Required. The relative resource name of the subnetwork to be
-      used for Private Service Connect. Note that this cannot be a regular
-      subnet and is used only for NAT.
-      (https://cloud.google.com/vpc/docs/about-vpc-hosted-services#psc-
-      subnets) This subnet is used to publish the SOCKS5 proxy service. The
-      subnet size must be at least /29 and it should reside in a network
-      through which the Cloud SQL instance is accessible. The resource name
-      should be in the format,
-      projects/{project_id}/regions/{region_id}/subnetworks/{subnetwork_id}
-    password: Required. Input only. The password for the user that Dataproc
-      Metastore service will be using to connect to the database. This field
-      is not returned on request.
-    port: Required. The network port of the database.
-    proxySubnet: Required. The relative resource name of the subnetwork to
-      deploy the SOCKS5 proxy service in. The subnetwork should reside in a
-      network through which the Cloud SQL instance is accessible. The resource
-      name should be in the format,
-      projects/{project_id}/regions/{region_id}/subnetworks/{subnetwork_id}
-    username: Required. The username that Dataproc Metastore service will use
-      to connect to the database.
-  """
-
-  hiveDatabaseName = _messages.StringField(1)
-  instanceConnectionName = _messages.StringField(2)
-  ipAddress = _messages.StringField(3)
-  natSubnet = _messages.StringField(4)
-  password = _messages.StringField(5)
-  port = _messages.IntegerField(6, variant=_messages.Variant.INT32)
-  proxySubnet = _messages.StringField(7)
-  username = _messages.StringField(8)
-
-
-class CloudSQLMigrationConfig(_messages.Message):
-  r"""Deprecated: Migrations to Dataproc Metastore are no longer supported.
-  Use BigLake Metastore migration instead. Configuration information for
-  migrating from self-managed hive metastore on Google Cloud using Cloud SQL
-  as the backend database to Dataproc Metastore.
-
-  Fields:
-    cdcConfig: Required. Configuration information to start the Change Data
-      Capture (CDC) streams from customer database to backend database of
-      Dataproc Metastore. Dataproc Metastore switches to using its backend
-      database after the cutover phase of migration.
-    cloudSqlConnectionConfig: Required. Configuration information to establish
-      customer database connection before the cutover phase of migration
-  """
-
-  cdcConfig = _messages.MessageField('CdcConfig', 1)
-  cloudSqlConnectionConfig = _messages.MessageField('CloudSQLConnectionConfig', 2)
 
 
 class CompleteMigrationRequest(_messages.Message):
@@ -3087,11 +2989,6 @@ class MigrationExecution(_messages.Message):
   Fields:
     biglakeMetastoreMigrationConfig: Configuration information specific to
       migrating from Dataproc Metastore to BigLake Metastore.
-    cloudSqlMigrationConfig: Deprecated: Migrations to Dataproc Metastore are
-      no longer supported. Use BigLake Metastore migration instead.
-      Configuration information specific to migrating from self-managed hive
-      metastore on Google Cloud using Cloud SQL as the backend database to
-      Dataproc Metastore.
     createTime: Output only. The time when the migration execution was
       started.
     endTime: Output only. The time when the migration execution finished.
@@ -3160,13 +3057,12 @@ class MigrationExecution(_messages.Message):
     ROLLED_BACK = 9
 
   biglakeMetastoreMigrationConfig = _messages.MessageField('BigLakeMetastoreMigrationConfig', 1)
-  cloudSqlMigrationConfig = _messages.MessageField('CloudSQLMigrationConfig', 2)
-  createTime = _messages.StringField(3)
-  endTime = _messages.StringField(4)
-  name = _messages.StringField(5)
-  phase = _messages.EnumField('PhaseValueValuesEnum', 6)
-  state = _messages.EnumField('StateValueValuesEnum', 7)
-  stateMessage = _messages.StringField(8)
+  createTime = _messages.StringField(2)
+  endTime = _messages.StringField(3)
+  name = _messages.StringField(4)
+  phase = _messages.EnumField('PhaseValueValuesEnum', 5)
+  state = _messages.EnumField('StateValueValuesEnum', 6)
+  stateMessage = _messages.StringField(7)
 
 
 class MigrationReport(_messages.Message):

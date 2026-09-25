@@ -4922,8 +4922,6 @@ class GooglePrivacyDlpV2ContentPolicy(_messages.Message):
     inputTooLarge: Optional. Action to take if the content is a supported file
       type but is too large to be scanned.
     inspectConfig: Optional. InspectConfig to use to produce findings.
-    inspectTemplate: Optional. InspectTemplate to use to produce findings.
-      Deprecated: use inspect_config instead.
     loggingConfigs: Optional. Log the actions taken by the content policy to
       external systems.
     name: Output only. Resource name of the policy.
@@ -4942,12 +4940,11 @@ class GooglePrivacyDlpV2ContentPolicy(_messages.Message):
   failedToScanSupportedFileType = _messages.MessageField('GooglePrivacyDlpV2PolicyAction', 5)
   inputTooLarge = _messages.MessageField('GooglePrivacyDlpV2PolicyAction', 6)
   inspectConfig = _messages.MessageField('GooglePrivacyDlpV2InspectConfig', 7)
-  inspectTemplate = _messages.MessageField('GooglePrivacyDlpV2InspectTemplate', 8)
-  loggingConfigs = _messages.MessageField('GooglePrivacyDlpV2LoggingConfig', 9, repeated=True)
-  name = _messages.StringField(10)
-  rules = _messages.MessageField('GooglePrivacyDlpV2PolicyRule', 11, repeated=True)
-  unsupportedFileType = _messages.MessageField('GooglePrivacyDlpV2PolicyAction', 12)
-  updateTime = _messages.StringField(13)
+  loggingConfigs = _messages.MessageField('GooglePrivacyDlpV2LoggingConfig', 8, repeated=True)
+  name = _messages.StringField(9)
+  rules = _messages.MessageField('GooglePrivacyDlpV2PolicyRule', 10, repeated=True)
+  unsupportedFileType = _messages.MessageField('GooglePrivacyDlpV2PolicyAction', 11)
+  updateTime = _messages.StringField(12)
 
 
 class GooglePrivacyDlpV2Conversation(_messages.Message):
@@ -10162,38 +10159,15 @@ class GooglePrivacyDlpV2PolicyRule(_messages.Message):
   r"""A single policy rule. The first rule to match from the list above
   controls the result.
 
-  Enums:
-    ReturnVerdictValueValuesEnum: If set, the verdict will be returned to the
-      user. Deprecated: Use `action` instead.
-
   Fields:
     action: Required. Action to take if this rule applies.
     conditions: Optional. Conditions that must match for this rule to apply.
       All conditions must match (`AND`). For `OR` conditions, use multiple
       rules.
-    returnVerdict: If set, the verdict will be returned to the user.
-      Deprecated: Use `action` instead.
   """
-
-  class ReturnVerdictValueValuesEnum(_messages.Enum):
-    r"""If set, the verdict will be returned to the user. Deprecated: Use
-    `action` instead.
-
-    Values:
-      CONTENT_POLICY_VERDICT_UNSPECIFIED: Not used.
-      ALLOW: The policy allows the provided content to be used.
-      BLOCK: The policy prevents the provided content from being used. This
-        should result in a blocked file upload, exclusion from training
-        dataset, or other similar block action. (specific action will depend
-        on the caller).
-    """
-    CONTENT_POLICY_VERDICT_UNSPECIFIED = 0
-    ALLOW = 1
-    BLOCK = 2
 
   action = _messages.MessageField('GooglePrivacyDlpV2PolicyAction', 1)
   conditions = _messages.MessageField('GooglePrivacyDlpV2PolicyCondition', 2, repeated=True)
-  returnVerdict = _messages.EnumField('ReturnVerdictValueValuesEnum', 3)
 
 
 class GooglePrivacyDlpV2PrimitiveTransformation(_messages.Message):

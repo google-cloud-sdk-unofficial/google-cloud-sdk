@@ -320,6 +320,25 @@ def get_anywhere_cache_resource_from_metadata(metadata):
   )
 
 
+def get_rapid_cache_resource_from_metadata(metadata):
+  return gcs_resource_reference.GcsRapidCacheResource(
+      admission_policy=metadata.admissionPolicy,
+      bucket=metadata.bucket,
+      cache_type=metadata.cacheType,
+      create_time=metadata.createTime,
+      id_string=metadata.id,
+      ingest_on_write=metadata.ingestOnWrite,
+      kind=metadata.kind,
+      metadata=metadata,
+      pending_update=metadata.pendingUpdate,
+      rapid_cache_id=metadata.rapidCacheId,
+      state=metadata.state,
+      ttl=metadata.ttl,
+      update_time=metadata.updateTime,
+      zone=metadata.zone,
+  )
+
+
 def parse_custom_contexts_dict_from_resource_contexts_dict(
     resource_contexts_dict,
 ):

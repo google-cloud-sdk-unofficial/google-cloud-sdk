@@ -18,7 +18,7 @@ import enum
 
 
 BASE_URL = 'https://devicerun.googleapis.com/v1alpha/'
-DOCS_URL = 'https://cloud.google.com/docs'
+DOCS_URL = 'https://docs.cloud.google.com/developer-device-platform/device-run'
 
 
 class Collections(enum.Enum):

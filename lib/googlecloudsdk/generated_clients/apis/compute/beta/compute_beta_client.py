@@ -23713,6 +23713,33 @@ resources.
         supports_download=False,
     )
 
+    def GetIamPolicy(self, request, global_params=None):
+      r"""Gets the access control policy for a resource. May be empty if no such.
+policy or resource exists.
+
+      Args:
+        request: (ComputeRegionSslPoliciesGetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('GetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.regionSslPolicies.getIamPolicy',
+        ordered_params=['project', 'region', 'resource'],
+        path_params=['project', 'region', 'resource'],
+        query_params=['optionsRequestedPolicyVersion'],
+        relative_path='projects/{project}/regions/{region}/sslPolicies/{resource}/getIamPolicy',
+        request_field='',
+        request_type_name='ComputeRegionSslPoliciesGetIamPolicyRequest',
+        response_type_name='Policy',
+        supports_download=False,
+    )
+
     def Insert(self, request, global_params=None):
       r"""Creates a new policy in the specified project and region using the data.
 included in the request.
@@ -23817,6 +23844,33 @@ custom profile.
         request_field='sslPolicyResource',
         request_type_name='ComputeRegionSslPoliciesPatchRequest',
         response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def SetIamPolicy(self, request, global_params=None):
+      r"""Sets the access control policy on the specified resource.
+Replaces any existing policy.
+
+      Args:
+        request: (ComputeRegionSslPoliciesSetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('SetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.regionSslPolicies.setIamPolicy',
+        ordered_params=['project', 'region', 'resource'],
+        path_params=['project', 'region', 'resource'],
+        query_params=[],
+        relative_path='projects/{project}/regions/{region}/sslPolicies/{resource}/setIamPolicy',
+        request_field='regionSetPolicyRequest',
+        request_type_name='ComputeRegionSslPoliciesSetIamPolicyRequest',
+        response_type_name='Policy',
         supports_download=False,
     )
 
@@ -28514,6 +28568,33 @@ resources.
         supports_download=False,
     )
 
+    def GetIamPolicy(self, request, global_params=None):
+      r"""Gets the access control policy for a resource. May be empty if no such.
+policy or resource exists.
+
+      Args:
+        request: (ComputeSslPoliciesGetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('GetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.sslPolicies.getIamPolicy',
+        ordered_params=['project', 'resource'],
+        path_params=['project', 'resource'],
+        query_params=['optionsRequestedPolicyVersion'],
+        relative_path='projects/{project}/global/sslPolicies/{resource}/getIamPolicy',
+        request_field='',
+        request_type_name='ComputeSslPoliciesGetIamPolicyRequest',
+        response_type_name='Policy',
+        supports_download=False,
+    )
+
     def Insert(self, request, global_params=None):
       r"""Returns the specified SSL policy resource.
 
@@ -28617,6 +28698,33 @@ custom profile.
         request_field='sslPolicyResource',
         request_type_name='ComputeSslPoliciesPatchRequest',
         response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def SetIamPolicy(self, request, global_params=None):
+      r"""Sets the access control policy on the specified resource.
+Replaces any existing policy.
+
+      Args:
+        request: (ComputeSslPoliciesSetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('SetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.sslPolicies.setIamPolicy',
+        ordered_params=['project', 'resource'],
+        path_params=['project', 'resource'],
+        query_params=[],
+        relative_path='projects/{project}/global/sslPolicies/{resource}/setIamPolicy',
+        request_field='globalSetPolicyRequest',
+        request_type_name='ComputeSslPoliciesSetIamPolicyRequest',
+        response_type_name='Policy',
         supports_download=False,
     )
 

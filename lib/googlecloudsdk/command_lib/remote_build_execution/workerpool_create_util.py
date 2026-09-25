@@ -15,10 +15,28 @@
 
 """Utilities for remotebuildexecution workerpool create command."""
 
+from googlecloudsdk.command_lib.remote_build_execution import workerpool_util
+
 
 def RemoveDiskTypeForMacOS(ref, args, request):
   del ref, args
-  if (request.workerPool.hostOs is not None
-      and request.workerPool.hostOs.startswith('macos-')):
-    request.workerPool.workerConfig.diskType = None
+  if (
+      request.workerPool
+      and request.workerPool.hostOs is not None
+      and request.workerPool.hostOs.startswith('macos-')
+  ):
+    if request.workerPool.workerConfig:
+      request.workerPool.workerConfig.diskType = None
   return request
+
+
+def SetBackupVmInstanceSpecDefaults(ref, args, request):
+  """Sets default values for diskType and diskSizeGb in backup_vm_instance_specs."""
+  del ref, args
+  if request.workerPool:
+    workerpool_util.SetDefaultBackupVmInstanceSpecs(
+        request.workerPool.workerConfig
+    )
+  return request
+
+

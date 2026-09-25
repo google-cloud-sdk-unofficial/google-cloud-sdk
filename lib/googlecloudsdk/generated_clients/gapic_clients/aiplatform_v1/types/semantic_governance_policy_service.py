@@ -34,6 +34,7 @@ __protobuf__ = proto.module(
         'ListSemanticGovernancePoliciesResponse',
         'UpdateSemanticGovernancePolicyRequest',
         'DeleteSemanticGovernancePolicyRequest',
+        'AgentResponseCustomization',
         'CreateSemanticGovernancePolicyOperationMetadata',
         'UpdateSemanticGovernancePolicyOperationMetadata',
         'DeleteSemanticGovernancePolicyOperationMetadata',
@@ -86,6 +87,11 @@ class SemanticGovernancePolicy(proto.Message):
 
             Example:
             ``principal://agents.global.org-ORGANIZATION_ID.system.id.goog/resources/aiplatform/projects/PROJECT_NUMBER/locations/LOCATION/reasoningEngines/AGENT_ENGINE_ID``
+        agent_response_customization (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.AgentResponseCustomization):
+            Optional. Settings for customizing the
+            agent's response to end users when this policy
+            is evaluated, such as messages displayed when
+            the policy denies a request.
     """
 
     class McpTool(proto.Message):
@@ -155,6 +161,11 @@ class SemanticGovernancePolicy(proto.Message):
     agent_identity: str = proto.Field(
         proto.STRING,
         number=10,
+    )
+    agent_response_customization: 'AgentResponseCustomization' = proto.Field(
+        proto.MESSAGE,
+        number=12,
+        message='AgentResponseCustomization',
     )
 
 
@@ -328,6 +339,25 @@ class DeleteSemanticGovernancePolicyRequest(proto.Message):
     etag: str = proto.Field(
         proto.STRING,
         number=2,
+    )
+
+
+class AgentResponseCustomization(proto.Message):
+    r"""Customizes the agent's response to the end user when a
+    ``SemanticGovernancePolicy`` is evaluated (for example, with a
+    custom message shown on denial).
+
+    Attributes:
+        denial_message (str):
+            Optional. Custom message shown to the end
+            user when the policy check results in a denial.
+            Use this to explain the rationale to the user.
+            Max 1000 characters.
+    """
+
+    denial_message: str = proto.Field(
+        proto.STRING,
+        number=1,
     )
 
 

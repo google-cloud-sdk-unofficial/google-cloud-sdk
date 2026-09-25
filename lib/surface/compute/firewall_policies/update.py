@@ -34,6 +34,7 @@ class Update(base.UpdateCommand):
 
   FIREWALL_POLICY_ARG = None
   support_rollout_plan = False
+  support_security_profile_fallback_action = False
 
   @classmethod
   def Args(cls, parser):
@@ -42,6 +43,8 @@ class Update(base.UpdateCommand):
     )
     cls.FIREWALL_POLICY_ARG.AddArgument(parser, operation_type='update')
     flags.AddArgsUpdateFirewallPolicy(parser)
+    if cls.support_security_profile_fallback_action:
+      flags.AddSecurityProfileFallbackAction(parser, required=False)
     if cls.support_rollout_plan:
       flags.AddRolloutPlan(parser)
 
@@ -77,10 +80,20 @@ class Update(base.UpdateCommand):
           )
       )
 
+    security_profile_fallback_action = None
+    if self.support_security_profile_fallback_action and args.IsSpecified(
+        'security_profile_fallback_action'
+    ):
+      security_profile_fallback_action = args.security_profile_fallback_action
+
     firewall_policy = holder.client.messages.FirewallPolicy(
         description=args.description,
         fingerprint=existing_firewall_policy.fingerprint,
     )
+    if security_profile_fallback_action is not None:
+      firewall_policy.applySecurityProfileFallbackAction = (
+          security_profile_fallback_action
+      )
     if self.support_rollout_plan:
       firewall_policy.rolloutOperation = rollout_operation
 
@@ -113,6 +126,7 @@ class UpdateAlpha(Update):
   """
 
   support_rollout_plan = True
+  support_security_profile_fallback_action = True
 
 
 Update.detailed_help = {

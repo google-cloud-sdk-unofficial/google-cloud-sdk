@@ -32,6 +32,7 @@ class Create(base.CreateCommand):
   """
 
   support_falcon_policy_type = False
+  support_security_profile_fallback_action = False
   NETWORK_FIREWALL_POLICY_ARG = None
 
   @classmethod
@@ -41,7 +42,8 @@ class Create(base.CreateCommand):
     )
     cls.NETWORK_FIREWALL_POLICY_ARG.AddArgument(parser, operation_type='create')
     flags.AddArgNetworkFirewallPolicyCreation(parser)
-
+    if cls.support_security_profile_fallback_action:
+      flags.AddSecurityProfileFallbackAction(parser)
     additional_policy_types = []
     if cls.support_falcon_policy_type:
       additional_policy_types.append('RDMA_FALCON_POLICY')
@@ -64,9 +66,18 @@ class Create(base.CreateCommand):
           ref, compute_client=holder.client
       )
 
+    security_profile_fallback_action = None
+    if self.support_security_profile_fallback_action:
+      if args.IsSpecified('security_profile_fallback_action'):
+        security_profile_fallback_action = args.security_profile_fallback_action
+
     firewall_policy = holder.client.messages.FirewallPolicy(
         description=args.description, name=ref.Name()
     )
+    if security_profile_fallback_action is not None:
+      firewall_policy.applySecurityProfileFallbackAction = (
+          security_profile_fallback_action
+      )
     if args.IsSpecified('policy_type'):
       firewall_policy.policyType = (
           holder.client.messages.FirewallPolicy.PolicyTypeValueValuesEnum(
@@ -99,6 +110,7 @@ class CreateAlpha(Create):
   """
 
   support_falcon_policy_type = True
+  support_security_profile_fallback_action = True
 
 
 Create.detailed_help = {

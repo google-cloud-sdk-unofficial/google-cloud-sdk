@@ -2898,6 +2898,8 @@ class Dependency(_messages.Message):
       default source as well).
     genericArtifact: Represents a generic artifact as a build dependency.
     gitSource: Represents a git repository as a build dependency.
+    invokeBlaze: Represents an Invoke Blaze dependency. Only available for
+      Trusted Pools users.
     piperSource: Represents a Piper source as a build dependency. Only
       available for Trusted Pools users.
   """
@@ -2905,7 +2907,8 @@ class Dependency(_messages.Message):
   empty = _messages.BooleanField(1)
   genericArtifact = _messages.MessageField('GenericArtifactDependency', 2)
   gitSource = _messages.MessageField('GitSourceDependency', 3)
-  piperSource = _messages.MessageField('PiperSourceDependency', 4)
+  invokeBlaze = _messages.MessageField('InvokeBlazeDependency', 4)
+  piperSource = _messages.MessageField('PiperSourceDependency', 5)
 
 
 class DepotSource(_messages.Message):
@@ -3804,6 +3807,46 @@ class Installation(_messages.Message):
   projectId = _messages.StringField(6)
   projectNum = _messages.IntegerField(7)
   repositorySettingList = _messages.MessageField('GitHubRepositorySettingList', 8)
+
+
+class InvokeBlazeDependency(_messages.Message):
+  r"""Represents an Invoke Blaze dependency.
+
+  Enums:
+    CommandValueValuesEnum: Required. The Blaze command to run.
+
+  Fields:
+    architecture: Optional. The architecture to fetch the package for. This is
+      only supported for MPM commands.
+    command: Required. The Blaze command to run.
+    destPath: Required. Where should the files be placed on the worker.
+    flags: Optional. One or more blaze flags.
+    piperRevision: Optional. The piper revision associated with the invoke
+      blaze dependency. If not provided, it will default to DepotSource with
+      Piper HEAD.
+    targets: Required. Build targets should be valid blaze target patterns.
+  """
+
+  class CommandValueValuesEnum(_messages.Enum):
+    r"""Required. The Blaze command to run.
+
+    Values:
+      UNKNOWN_COMMAND: Default value. This value is unused.
+      BUILD: Runs blaze build.
+      MPM: Runs blaze build and creates an MPM package.
+      TEST: Runs blaze test.
+    """
+    UNKNOWN_COMMAND = 0
+    BUILD = 1
+    MPM = 2
+    TEST = 3
+
+  architecture = _messages.StringField(1)
+  command = _messages.EnumField('CommandValueValuesEnum', 2)
+  destPath = _messages.StringField(3)
+  flags = _messages.StringField(4, repeated=True)
+  piperRevision = _messages.MessageField('PiperRevision', 5)
+  targets = _messages.StringField(6, repeated=True)
 
 
 class LinuxPool(_messages.Message):
@@ -5212,6 +5255,7 @@ class TrustedPoolConfig(_messages.Message):
       Artifact Registry and Cloud Storage.
     waitingForQuota: Output only. Indicates if this trusted pool is waiting
       for quota.
+    windowsPool: Windows pool sets the windows pool type.
     workerCount: Required. Worker count sets the number of workers in the
       pool.
   """
@@ -5240,7 +5284,8 @@ class TrustedPoolConfig(_messages.Message):
   linuxPool = _messages.MessageField('LinuxPool', 4)
   resourceAccessAccount = _messages.StringField(5)
   waitingForQuota = _messages.BooleanField(6)
-  workerCount = _messages.MessageField('WorkerCount', 7)
+  windowsPool = _messages.MessageField('WindowsPool', 7)
+  workerCount = _messages.MessageField('WorkerCount', 8)
 
 
 class TrustedPoolDiskConfig(_messages.Message):
@@ -5269,6 +5314,19 @@ class TrustedPoolDiskConfig(_messages.Message):
 
   diskSizeGb = _messages.IntegerField(1)
   diskType = _messages.EnumField('DiskTypeValueValuesEnum', 2)
+
+
+class TrustedPoolDiskImage(_messages.Message):
+  r"""Configuration for a disk image.
+
+  Fields:
+    diskConfig: Optional. Disk configuration for the image.
+    diskImage: Optional. The path to the custom disk image to use. Format:
+      `projects/{project}/global/images/{image}`
+  """
+
+  diskConfig = _messages.MessageField('TrustedPoolDiskConfig', 1)
+  diskImage = _messages.StringField(2)
 
 
 class TrustedPoolMachineConfig(_messages.Message):
@@ -5602,6 +5660,41 @@ class WebhookConfig(_messages.Message):
 
   secret = _messages.StringField(1)
   state = _messages.EnumField('StateValueValuesEnum', 2)
+
+
+class WindowsPool(_messages.Message):
+  r"""This section is used to configure the Windows pool for Trusted Pools in
+  TBI.
+
+  Enums:
+    WindowsHostOsValueValuesEnum: Required. Windows host OS to use for the
+      pool.
+
+  Fields:
+    diskConfig: Required. Disk configuration for the pool.
+    dockerRootDisk: Optional. Docker root disk image for the pool.
+    machineConfig: Required. Machine configuration for the pool.
+    windowsHostOs: Required. Windows host OS to use for the pool.
+  """
+
+  class WindowsHostOsValueValuesEnum(_messages.Enum):
+    r"""Required. Windows host OS to use for the pool.
+
+    Values:
+      WINDOWS_HOST_OS_UNSPECIFIED: WINDOWS_HOST_OS_UNSPECIFIED
+      WINDOWS_HOST_OS_SERVER_2019: WINDOWS_HOST_OS_SERVER_2019
+      WINDOWS_HOST_OS_SERVER_2022: WINDOWS_HOST_OS_SERVER_2022
+      WINDOWS_HOST_OS_SERVER_2025: WINDOWS_HOST_OS_SERVER_2025
+    """
+    WINDOWS_HOST_OS_UNSPECIFIED = 0
+    WINDOWS_HOST_OS_SERVER_2019 = 1
+    WINDOWS_HOST_OS_SERVER_2022 = 2
+    WINDOWS_HOST_OS_SERVER_2025 = 3
+
+  diskConfig = _messages.MessageField('TrustedPoolDiskConfig', 1)
+  dockerRootDisk = _messages.MessageField('TrustedPoolDiskImage', 2)
+  machineConfig = _messages.MessageField('TrustedPoolMachineConfig', 3)
+  windowsHostOs = _messages.EnumField('WindowsHostOsValueValuesEnum', 4)
 
 
 class WorkerConfig(_messages.Message):

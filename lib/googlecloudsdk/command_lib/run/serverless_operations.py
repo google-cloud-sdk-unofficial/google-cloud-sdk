@@ -887,7 +887,6 @@ class ServerlessOperations(object):
       skip_activation_prompt=False,
       dry_run=False,
       generate_name=False,
-      delegate_builds=False,
       base_image=None,
       build_service_account=None,
       deploy_from_source_container_name='',
@@ -934,7 +933,6 @@ class ServerlessOperations(object):
         services
       dry_run: bool. If true, only validate the configuration.
       generate_name: bool. If true, create a revision name, otherwise add nonce.
-      delegate_builds: bool. If true, use the Build API to submit builds.
       base_image: The build base image to opt-in automatic build image updates.
       build_service_account: The service account to use to execute the build.
       deploy_from_source_container_name: The name of the ingress container that
@@ -1058,7 +1056,6 @@ class ServerlessOperations(object):
             skip_activation_prompt,
             region,
             service_ref,
-            delegate_builds,
             base_image,
             build_service_account,
             build_worker_pool,

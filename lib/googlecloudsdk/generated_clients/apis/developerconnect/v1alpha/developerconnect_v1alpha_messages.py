@@ -1522,6 +1522,20 @@ class FetchUserRepositoriesResponse(_messages.Message):
   userRepos = _messages.MessageField('UserRepository', 2, repeated=True)
 
 
+class FieldVisibility(_messages.Message):
+  r"""Visibility rules for individual tool parameters (fields). This allows
+  producers to hide specific fields in tools/list and tools/call.
+
+  Fields:
+    restriction: The visibility restriction labels for this field (comma-
+      separated).
+    selector: The name of the parameter in the input_schema or output_schema.
+  """
+
+  restriction = _messages.StringField(1)
+  selector = _messages.StringField(2)
+
+
 class FinishOAuthResponse(_messages.Message):
   r"""Message for responding to finishing an OAuth flow.
 
@@ -2212,6 +2226,44 @@ class ListUsersResponse(_messages.Message):
   nextPageToken = _messages.StringField(1)
   unreachable = _messages.StringField(2, repeated=True)
   users = _messages.MessageField('User', 3, repeated=True)
+
+
+class McpToolVisibility(_messages.Message):
+  r"""Profile describing the visibility restriction of an MCP tool. Key:
+  "google.com/tool.profiles/visibility.restriction"
+
+  Enums:
+    VisibilityEnforcementStrategyValueValuesEnum: The strategy used to enforce
+      visibility restrictions. DO NOT USE. This field is not yet implemented.
+
+  Fields:
+    fieldVisibility: A list of field-level visibility restrictions.
+    visibilityEnforcementStrategy: The strategy used to enforce visibility
+      restrictions. DO NOT USE. This field is not yet implemented.
+    visibilityRestriction: The visibility restriction labels for the tool
+      itself (e.g., "PRODUCER_DEFINED_PREVIEW"). Multiple labels can be
+      provided as a comma-separated string.
+  """
+
+  class VisibilityEnforcementStrategyValueValuesEnum(_messages.Enum):
+    r"""The strategy used to enforce visibility restrictions. DO NOT USE. This
+    field is not yet implemented.
+
+    Values:
+      VISIBILITY_ENFORCEMENT_STRATEGY_UNSPECIFIED: Default. Equivalent to
+        COMBINE.
+      COMBINE: The principal must satisfy both API-level tool-level)
+        visibility restrictions.
+      OVERRIDE: Bypasses the API-level visibility restrictions check; access
+        is determined solely by the tool-level visibility restrictions.
+    """
+    VISIBILITY_ENFORCEMENT_STRATEGY_UNSPECIFIED = 0
+    COMBINE = 1
+    OVERRIDE = 2
+
+  fieldVisibility = _messages.MessageField('FieldVisibility', 1, repeated=True)
+  visibilityEnforcementStrategy = _messages.EnumField('VisibilityEnforcementStrategyValueValuesEnum', 2)
+  visibilityRestriction = _messages.StringField(3)
 
 
 class OAuthCredential(_messages.Message):

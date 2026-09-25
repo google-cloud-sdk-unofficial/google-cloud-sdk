@@ -61,6 +61,8 @@ __protobuf__ = proto.module(
         'GenerateVideoResponse',
         'EmbedContentRequest',
         'EmbedContentResponse',
+        'GetResponseRequest',
+        'DeleteResponseRequest',
     },
 )
 
@@ -1201,6 +1203,8 @@ class GenerateContentResponse(proto.Message):
                     Type for Priority Pay-As-You-Go traffic.
                 ON_DEMAND_FLEX (4):
                     Type for Flex traffic.
+                ON_DEMAND_OFFPEAK (5):
+                    Type for Off-Peak Pay-As-You-Go traffic.
                 PROVISIONED_THROUGHPUT (2):
                     Type for Provisioned Throughput traffic.
             """
@@ -1208,6 +1212,7 @@ class GenerateContentResponse(proto.Message):
             ON_DEMAND = 1
             ON_DEMAND_PRIORITY = 3
             ON_DEMAND_FLEX = 4
+            ON_DEMAND_OFFPEAK = 5
             PROVISIONED_THROUGHPUT = 2
 
         prompt_token_count: int = proto.Field(
@@ -1646,6 +1651,39 @@ class EmbedContentResponse(proto.Message):
     truncated: bool = proto.Field(
         proto.BOOL,
         number=4,
+    )
+
+
+class GetResponseRequest(proto.Message):
+    r"""Request message for
+    [PredictionService.GetResponse][google.cloud.aiplatform.v1.PredictionService.GetResponse].
+
+    Attributes:
+        name (str):
+            Required. The name of the Response resource. Format:
+            ``projects/{project}/locations/{location}/endpoints/{endpoint}/responses/{response}``
+    """
+
+    name: str = proto.Field(
+        proto.STRING,
+        number=1,
+    )
+
+
+class DeleteResponseRequest(proto.Message):
+    r"""Request message for
+    [PredictionService.DeleteResponse][google.cloud.aiplatform.v1.PredictionService.DeleteResponse].
+
+    Attributes:
+        name (str):
+            Required. The name of the Response resource to be deleted.
+            Format:
+            ``projects/{project}/locations/{location}/endpoints/{endpoint}/responses/{response}``
+    """
+
+    name: str = proto.Field(
+        proto.STRING,
+        number=1,
     )
 
 

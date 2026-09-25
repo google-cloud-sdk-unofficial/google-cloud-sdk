@@ -83,6 +83,9 @@ class Backup(_messages.Message):
       used to create this backup.
     sourceInstanceTier: Output only. The service tier of the source Filestore
       instance that this backup is created from.
+    sourceVolume: Optional. The resource name of the Filestore volume that the
+      backup is created from. Should be in the format: projects/{project_id}/l
+      ocations/{location_id}/volumePools/{volume_pool_id}/volumes/{volume_id}
     state: Output only. The backup state.
     storageBytes: Output only. The size of the storage used by the backup. As
       backups share storage, this number is expected to change with backup
@@ -233,9 +236,10 @@ class Backup(_messages.Message):
   sourceFileShare = _messages.StringField(11)
   sourceInstance = _messages.StringField(12)
   sourceInstanceTier = _messages.EnumField('SourceInstanceTierValueValuesEnum', 13)
-  state = _messages.EnumField('StateValueValuesEnum', 14)
-  storageBytes = _messages.IntegerField(15)
-  tags = _messages.MessageField('TagsValue', 16)
+  sourceVolume = _messages.StringField(14)
+  state = _messages.EnumField('StateValueValuesEnum', 15)
+  storageBytes = _messages.IntegerField(16)
+  tags = _messages.MessageField('TagsValue', 17)
 
 
 class CancelOperationRequest(_messages.Message):
@@ -279,6 +283,10 @@ class Date(_messages.Message):
   day = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   month = _messages.IntegerField(2, variant=_messages.Variant.INT32)
   year = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+
+
+class DeleteVolumeRequest(_messages.Message):
+  r"""DeleteVolumeRequest deletes a volume."""
 
 
 class DenyMaintenancePeriod(_messages.Message):
@@ -951,6 +959,36 @@ class FileProjectsLocationsVolumePoolsVolumesDeleteRequest(_messages.Message):
   """
 
   name = _messages.StringField(1, required=True)
+
+
+class FileProjectsLocationsVolumePoolsVolumesDirectCreateRequest(_messages.Message):
+  r"""A FileProjectsLocationsVolumePoolsVolumesDirectCreateRequest object.
+
+  Fields:
+    parent: Required. The parent volume pool path, in the format
+      `projects/{project}/locations/{location}/volumePools/{volume_pool}`.
+    volume: A Volume resource to be passed as the request body.
+    volumeId: Required. The ID to use for the volume. The ID must be unique
+      within the specified volume pool.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  volume = _messages.MessageField('Volume', 2)
+  volumeId = _messages.StringField(3)
+
+
+class FileProjectsLocationsVolumePoolsVolumesDirectDeleteRequest(_messages.Message):
+  r"""A FileProjectsLocationsVolumePoolsVolumesDirectDeleteRequest object.
+
+  Fields:
+    deleteVolumeRequest: A DeleteVolumeRequest resource to be passed as the
+      request body.
+    name: Required. The volume resource name, in the format `projects/{project
+      }/locations/{location}/volumePools/{volume_pool}/volumes/{volume}`.
+  """
+
+  deleteVolumeRequest = _messages.MessageField('DeleteVolumeRequest', 1)
+  name = _messages.StringField(2, required=True)
 
 
 class FileProjectsLocationsVolumePoolsVolumesGetRequest(_messages.Message):

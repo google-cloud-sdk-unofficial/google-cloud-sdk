@@ -154,11 +154,10 @@ class CreateHelper(object):
         parser, support_identity=True
     )
     flags.AddServiceBindings(parser)
-    neg_group = parser.add_group(mutex=False, required=False, hidden=True)
+    neg_group = parser.add_group(mutex=False, required=False)
     neg_group_arg = flags.GetNetworkEndpointGroupArg(
         support_global_neg=True, support_region_neg=True
     )
-    neg_group_arg.required = False
     neg_group_arg.AddArgument(
         neg_group, operation_type='create the backend service'
     )

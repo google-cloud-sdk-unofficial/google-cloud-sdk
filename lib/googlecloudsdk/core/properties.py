@@ -878,6 +878,9 @@ class _SectionApiEndpointOverrides(_Section):
     )
     self.appengine = self._Add('appengine', command='gcloud app')
     self.apphub = self._Add('apphub', command='gcloud apphub')
+    self.apptopology = self._Add(
+        'apptopology', command='gcloud app-topology', hidden=True
+    )
     self.appoptimize = self._Add('appoptimize', command='gcloud app-optimize')
     self.artifactregistry = self._Add(
         'artifactregistry', command='gcloud artifacts'
@@ -1222,6 +1225,9 @@ class _SectionApiEndpointOverrides(_Section):
     self.transfer = self._Add('transfer', command='gcloud transfer')
     self.transferappliance = self._Add(
         'transferappliance', command='gcloud transfer appliances'
+    )
+    self.useronboarding = self._Add(
+        'useronboarding', command='gcloud onboarding'
     )
     self.vectorsearch = self._Add(
         'vectorsearch', command='gcloud vector-search'

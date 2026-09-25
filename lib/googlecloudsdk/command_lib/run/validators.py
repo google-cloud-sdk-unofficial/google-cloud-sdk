@@ -198,12 +198,12 @@ def IsNoBuildFromSource(release_track, build_from_source):
   return container.IsSpecified('no_build')
 
 
-def HasValidLocalBuildFromSource(release_track, build_from_source):
+def GetValidLocalBuildSourceContainer(release_track, build_from_source):
   """Checks if this is a local build source deployment."""
   if release_track != base.ReleaseTrack.ALPHA:
-    return False
+    return None
   if not build_from_source:
-    return False
+    return None
   local_build_containers = [
       container
       for container in build_from_source.values()
@@ -218,8 +218,9 @@ def HasValidLocalBuildFromSource(release_track, build_from_source):
 
   if local_build_containers:
     local_build.ValidateLocalBuildSource(local_build_containers[0].source)
+    return local_build_containers[0]
 
-  return bool(local_build_containers)
+  return None
 
 
 def ValidateServiceNameFromImage(image_uri, service_id):

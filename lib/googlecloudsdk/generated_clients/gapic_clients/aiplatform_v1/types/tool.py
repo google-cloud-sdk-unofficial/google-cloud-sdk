@@ -57,363 +57,383 @@ __protobuf__ = proto.module(
 
 
 class Tool(proto.Message):
-  r"""Tool details that the model may use to generate response.
+    r"""Tool details that the model may use to generate response.
 
-  A ``Tool`` is a piece of code that enables the system to interact
-  with external systems to perform an action, or set of actions,
-  outside of knowledge and scope of the model. A Tool object should
-  contain exactly one type of Tool (e.g FunctionDeclaration, Retrieval
-  or GoogleSearchRetrieval).
-
-  Attributes: function_declarations
-  (MutableSequence[googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.FunctionDeclaration]):
-  Optional. Function tool type. One or more function declarations to be passed
-  to the model along with the current user query. Model may decide to call a
-  subset of these functions by populating
-  [FunctionCall][google.cloud.aiplatform.v1.Part.function_call] in the response.
-  User should provide a
-  [FunctionResponse][google.cloud.aiplatform.v1.Part.function_response] for each
-  function call in the next turn. Based on the function responses, Model will
-  generate the final response back to the user. Maximum 512 function
-  declarations can be provided. retrieval
-  (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Retrieval):
-  Optional. Retrieval tool type. System will always execute the provided
-  retrieval tool(s) to get external knowledge to answer the prompt. Retrieval
-  results are presented to the model for generation. google_search
-  (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Tool.GoogleSearch):
-  Optional. GoogleSearch tool type. Tool to support Google Search in Model.
-  Powered by Google. google_search_retrieval
-  (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.GoogleSearchRetrieval):
-  Optional. Specialized retrieval tool that is powered by Google Search.
-  google_maps
-  (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.GoogleMaps):
-  Optional. GoogleMaps tool type. Tool to support Google Maps in Model.
-  enterprise_web_search
-  (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.EnterpriseWebSearch):
-  Optional. Tool to support searching public web data, powered by Vertex AI
-  Search and Sec4 compliance. parallel_ai_search
-  (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Tool.ParallelAiSearch):
-  Optional. If specified, Vertex AI will use Parallel.ai to search for
-  information to answer user queries. The search results will be grounded on
-  Parallel.ai and presented to the model for response generation exa_ai_search
-  (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Tool.ExaAiSearch):
-  Optional. Uses Exa.ai to search for information to answer user queries. The
-  search results will be grounded on Exa.ai and presented to the model for
-  response generation code_execution
-  (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Tool.CodeExecution):
-  Optional. CodeExecution tool type. Enables the model to execute code as part
-  of generation. url_context
-  (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.UrlContext):
-  Optional. Tool to support URL context retrieval. computer_use
-  (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Tool.ComputerUse):
-  Optional. Tool to support the model interacting directly with the computer. If
-  enabled, it automatically populates computer-use specific Function
-  Declarations.
-  """
-
-  class PhishBlockThreshold(proto.Enum):
-    r"""These are available confidence level user can set to block
-
-    malicious urls with chosen confidence and above. For
-    understanding different confidence of webrisk, please refer to
-    https://cloud.google.com/web-risk/docs/reference/rpc/google.cloud.webrisk.v1eap1#confidencelevel
-
-    Values:
-        PHISH_BLOCK_THRESHOLD_UNSPECIFIED (0):
-            Defaults to unspecified.
-        BLOCK_LOW_AND_ABOVE (30):
-            Blocks Low and above confidence URL that is
-            risky.
-        BLOCK_MEDIUM_AND_ABOVE (40):
-            Blocks Medium and above confidence URL that
-            is risky.
-        BLOCK_HIGH_AND_ABOVE (50):
-            Blocks High and above confidence URL that is
-            risky.
-        BLOCK_HIGHER_AND_ABOVE (55):
-            Blocks Higher and above confidence URL that
-            is risky.
-        BLOCK_VERY_HIGH_AND_ABOVE (60):
-            Blocks Very high and above confidence URL
-            that is risky.
-        BLOCK_ONLY_EXTREMELY_HIGH (100):
-            Blocks Extremely high confidence URL that is
-            risky.
-    """
-
-    PHISH_BLOCK_THRESHOLD_UNSPECIFIED = 0
-    BLOCK_LOW_AND_ABOVE = 30
-    BLOCK_MEDIUM_AND_ABOVE = 40
-    BLOCK_HIGH_AND_ABOVE = 50
-    BLOCK_HIGHER_AND_ABOVE = 55
-    BLOCK_VERY_HIGH_AND_ABOVE = 60
-    BLOCK_ONLY_EXTREMELY_HIGH = 100
-
-  class GoogleSearch(proto.Message):
-    r"""GoogleSearch tool type.
-
-    Tool to support Google Search in Model. Powered by Google.
-
-    .. _oneof:
-    https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+    A ``Tool`` is a piece of code that enables the system to interact
+    with external systems to perform an action, or set of actions,
+    outside of knowledge and scope of the model. A Tool object should
+    contain exactly one type of Tool (e.g FunctionDeclaration, Retrieval
+    or GoogleSearchRetrieval).
 
     Attributes:
-        exclude_domains (MutableSequence[str]): Optional. List of domains to be
-          excluded from the search results. The default limit is 2000 domains.
-          Example: ["amazon.com", "facebook.com"]. blocking_confidence
-            (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Tool.PhishBlockThreshold):
-            Optional. Sites with confidence level chosen & above this value will
-            be blocked from the search results.  This field is a member of
-            `oneof`_ ``_blocking_confidence``. search_types
-            (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Tool.GoogleSearch.SearchTypes):
-            Optional. The set of search types to enable. If not set, web search
-            is enabled by default.
+        function_declarations (MutableSequence[googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.FunctionDeclaration]):
+            Optional. Function tool type. One or more function
+            declarations to be passed to the model along with the
+            current user query. Model may decide to call a subset of
+            these functions by populating
+            [FunctionCall][google.cloud.aiplatform.v1.Part.function_call]
+            in the response. User should provide a
+            [FunctionResponse][google.cloud.aiplatform.v1.Part.function_response]
+            for each function call in the next turn. Based on the
+            function responses, Model will generate the final response
+            back to the user. Maximum 512 function declarations can be
+            provided.
+        retrieval (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Retrieval):
+            Optional. Retrieval tool type.
+            System will always execute the provided
+            retrieval tool(s) to get external knowledge to
+            answer the prompt. Retrieval results are
+            presented to the model for generation.
+        google_search (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Tool.GoogleSearch):
+            Optional. GoogleSearch tool type.
+            Tool to support Google Search in Model. Powered
+            by Google.
+        google_search_retrieval (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.GoogleSearchRetrieval):
+            Optional. Specialized retrieval tool that is
+            powered by Google Search.
+        google_maps (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.GoogleMaps):
+            Optional. GoogleMaps tool type.
+            Tool to support Google Maps in Model.
+        enterprise_web_search (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.EnterpriseWebSearch):
+            Optional. Tool to support searching public
+            web data, powered by Vertex AI Search and Sec4
+            compliance.
+        parallel_ai_search (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Tool.ParallelAiSearch):
+            Optional. If specified, Vertex AI will use
+            Parallel.ai to search for information to answer
+            user queries. The search results will be
+            grounded on Parallel.ai and presented to the
+            model for response generation
+        exa_ai_search (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Tool.ExaAiSearch):
+            Optional. Uses Exa.ai to search for
+            information to answer user queries. The search
+            results will be grounded on Exa.ai and presented
+            to the model for response generation
+        code_execution (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Tool.CodeExecution):
+            Optional. CodeExecution tool type.
+            Enables the model to execute code as part of
+            generation.
+        url_context (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.UrlContext):
+            Optional. Tool to support URL context
+            retrieval.
+        computer_use (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Tool.ComputerUse):
+            Optional. Tool to support the model
+            interacting directly with the computer. If
+            enabled, it automatically populates computer-use
+            specific Function Declarations.
     """
+    class PhishBlockThreshold(proto.Enum):
+        r"""These are available confidence level user can set to block
+        malicious urls with chosen confidence and above. For
+        understanding different confidence of webrisk, please refer to
+        https://cloud.google.com/web-risk/docs/reference/rpc/google.cloud.webrisk.v1eap1#confidencelevel
 
-    class WebSearch(proto.Message):
-      r"""Standard web search for grounding and related configurations.
+        Values:
+            PHISH_BLOCK_THRESHOLD_UNSPECIFIED (0):
+                Defaults to unspecified.
+            BLOCK_LOW_AND_ABOVE (30):
+                Blocks Low and above confidence URL that is
+                risky.
+            BLOCK_MEDIUM_AND_ABOVE (40):
+                Blocks Medium and above confidence URL that
+                is risky.
+            BLOCK_HIGH_AND_ABOVE (50):
+                Blocks High and above confidence URL that is
+                risky.
+            BLOCK_HIGHER_AND_ABOVE (55):
+                Blocks Higher and above confidence URL that
+                is risky.
+            BLOCK_VERY_HIGH_AND_ABOVE (60):
+                Blocks Very high and above confidence URL
+                that is risky.
+            BLOCK_ONLY_EXTREMELY_HIGH (100):
+                Blocks Extremely high confidence URL that is
+                risky.
+        """
+        PHISH_BLOCK_THRESHOLD_UNSPECIFIED = 0
+        BLOCK_LOW_AND_ABOVE = 30
+        BLOCK_MEDIUM_AND_ABOVE = 40
+        BLOCK_HIGH_AND_ABOVE = 50
+        BLOCK_HIGHER_AND_ABOVE = 55
+        BLOCK_VERY_HIGH_AND_ABOVE = 60
+        BLOCK_ONLY_EXTREMELY_HIGH = 100
 
-      Only text results are returned.
-      """
+    class GoogleSearch(proto.Message):
+        r"""GoogleSearch tool type.
+        Tool to support Google Search in Model. Powered by Google.
 
-    class ImageSearch(proto.Message):
-      r"""Image search for grounding and related configurations."""
 
-    class SearchTypes(proto.Message):
-      r"""Different types of search that can be enabled on the
+        .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
 
-      GoogleSearch tool.
+        Attributes:
+            exclude_domains (MutableSequence[str]):
+                Optional. List of domains to be excluded from the search
+                results. The default limit is 2000 domains. Example:
+                ["amazon.com", "facebook.com"].
+            blocking_confidence (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Tool.PhishBlockThreshold):
+                Optional. Sites with confidence level chosen
+                & above this value will be blocked from the
+                search results.
 
-      Attributes: web_search
-      (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Tool.GoogleSearch.WebSearch):
-      Optional. Setting this field enables web search. Only text results are
-      returned. image_search
-      (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Tool.GoogleSearch.ImageSearch):
-      Optional. Setting this field enables image search. Image bytes are
-      returned.
-      """
+                This field is a member of `oneof`_ ``_blocking_confidence``.
+            search_types (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Tool.GoogleSearch.SearchTypes):
+                Optional. The set of search types to enable.
+                If not set, web search is enabled by default.
+        """
 
-      web_search: 'Tool.GoogleSearch.WebSearch' = proto.Field(
-          proto.MESSAGE,
-          number=1,
-          message='Tool.GoogleSearch.WebSearch',
-      )
-      image_search: 'Tool.GoogleSearch.ImageSearch' = proto.Field(
-          proto.MESSAGE,
-          number=2,
-          message='Tool.GoogleSearch.ImageSearch',
-      )
+        class WebSearch(proto.Message):
+            r"""Standard web search for grounding and related configurations.
+            Only text results are returned.
 
-    exclude_domains: MutableSequence[str] = proto.RepeatedField(
-        proto.STRING,
+            """
+
+        class ImageSearch(proto.Message):
+            r"""Image search for grounding and related configurations.
+            """
+
+        class SearchTypes(proto.Message):
+            r"""Different types of search that can be enabled on the
+            GoogleSearch tool.
+
+            Attributes:
+                web_search (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Tool.GoogleSearch.WebSearch):
+                    Optional. Setting this field enables web
+                    search. Only text results are returned.
+                image_search (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Tool.GoogleSearch.ImageSearch):
+                    Optional. Setting this field enables image
+                    search. Image bytes are returned.
+            """
+
+            web_search: 'Tool.GoogleSearch.WebSearch' = proto.Field(
+                proto.MESSAGE,
+                number=1,
+                message='Tool.GoogleSearch.WebSearch',
+            )
+            image_search: 'Tool.GoogleSearch.ImageSearch' = proto.Field(
+                proto.MESSAGE,
+                number=2,
+                message='Tool.GoogleSearch.ImageSearch',
+            )
+
+        exclude_domains: MutableSequence[str] = proto.RepeatedField(
+            proto.STRING,
+            number=3,
+        )
+        blocking_confidence: 'Tool.PhishBlockThreshold' = proto.Field(
+            proto.ENUM,
+            number=4,
+            optional=True,
+            enum='Tool.PhishBlockThreshold',
+        )
+        search_types: 'Tool.GoogleSearch.SearchTypes' = proto.Field(
+            proto.MESSAGE,
+            number=6,
+            message='Tool.GoogleSearch.SearchTypes',
+        )
+
+    class ParallelAiSearch(proto.Message):
+        r"""ParallelAiSearch tool type.
+        A tool that uses the Parallel.ai search engine for grounding.
+
+        Attributes:
+            api_key (str):
+                Optional. The API key for ParallelAiSearch.
+                If an API key is not provided, the system will
+                attempt to verify access by checking for an
+                active Parallel.ai subscription through the
+                Google Cloud Marketplace.
+                See
+                https://docs.parallel.ai/search/search-quickstart
+                for more details.
+            enable_data_retention (bool):
+                Optional. Deprecated: Use ``enable_zero_data_retention``
+                instead. Instructs Vertex Grounding to use Parallel's Zero
+                Data Retention Marketplace product. If this value is "false"
+                or omitted, the Parallel Web Search for Grounding standard
+                subscription will be used. If this value is "true", the
+                Parallel Web Search for Grounding - ZDR subscription will be
+                used.
+            enable_zero_data_retention (bool):
+                Optional. Instructs Vertex Grounding to use
+                Parallel's Zero Data Retention Marketplace
+                product. If this value is "false" or omitted,
+                the Parallel Web Search for Grounding standard
+                subscription will be used. If this value is
+                "true", the Parallel Web Search for Grounding -
+                ZDR subscription will be used.
+            custom_configs (google.protobuf.struct_pb2.Struct):
+                Optional. Custom configs for ParallelAiSearch. This field
+                can be used to pass any parameter from the Parallel.ai
+                Search API. See the Parallel.ai documentation for the full
+                list of available parameters and their usage:
+                https://docs.parallel.ai/api-reference/search-beta/search
+                Currently only ``source_policy``, ``excerpts``,
+                ``max_results``, ``mode``, ``fetch_policy`` can be set via
+                this field. For example: { "source_policy": {
+                "include_domains": ["google.com", "wikipedia.org"],
+                "exclude_domains": ["example.com"] }, "fetch_policy": {
+                "max_age_seconds": 3600 } }
+        """
+
+        api_key: str = proto.Field(
+            proto.STRING,
+            number=1,
+        )
+        enable_data_retention: bool = proto.Field(
+            proto.BOOL,
+            number=2,
+        )
+        enable_zero_data_retention: bool = proto.Field(
+            proto.BOOL,
+            number=4,
+        )
+        custom_configs: struct_pb2.Struct = proto.Field(
+            proto.MESSAGE,
+            number=3,
+            message=struct_pb2.Struct,
+        )
+
+    class ExaAiSearch(proto.Message):
+        r"""ExaAiSearch tool type.
+        A tool that uses the Exa.ai search engine for grounding.
+
+        Attributes:
+            api_key (str):
+                Required. The API key for ExaAiSearch.
+            custom_configs (google.protobuf.struct_pb2.Struct):
+                Optional. This field can be used to pass any
+                parameter from the Exa.ai Search API.
+        """
+
+        api_key: str = proto.Field(
+            proto.STRING,
+            number=1,
+        )
+        custom_configs: struct_pb2.Struct = proto.Field(
+            proto.MESSAGE,
+            number=2,
+            message=struct_pb2.Struct,
+        )
+
+    class CodeExecution(proto.Message):
+        r"""Tool that executes code generated by the model, and automatically
+        returns the result to the model.
+
+        See also [ExecutableCode][google.cloud.aiplatform.v1.ExecutableCode]
+        and
+        [CodeExecutionResult][google.cloud.aiplatform.v1.CodeExecutionResult],
+        which are input and output to this tool.
+
+        """
+
+    class ComputerUse(proto.Message):
+        r"""Tool to support computer use.
+
+        Attributes:
+            environment (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Tool.ComputerUse.Environment):
+                Required. The environment being operated.
+            excluded_predefined_functions (MutableSequence[str]):
+                Optional. By default, `predefined
+                functions <https://cloud.google.com/vertex-ai/generative-ai/docs/computer-use#supported-actions>`__
+                are included in the final model call. Some of them can be
+                explicitly excluded from being automatically included. This
+                can serve two purposes:
+
+                1. Using a more restricted / different action space.
+                2. Improving the definitions / instructions of predefined
+                   functions.
+            enable_prompt_injection_detection (bool):
+                Optional. Enables the prompt injection
+                detection check on computer-use request.
+        """
+        class Environment(proto.Enum):
+            r"""Represents the environment being operated, such as a web
+            browser.
+
+            Values:
+                ENVIRONMENT_UNSPECIFIED (0):
+                    Defaults to browser.
+                ENVIRONMENT_BROWSER (1):
+                    Operates in a web browser.
+                ENVIRONMENT_MOBILE (2):
+                    Operates in a mobile environment.
+                ENVIRONMENT_DESKTOP (3):
+                    Operates in a desktop environment.
+            """
+            ENVIRONMENT_UNSPECIFIED = 0
+            ENVIRONMENT_BROWSER = 1
+            ENVIRONMENT_MOBILE = 2
+            ENVIRONMENT_DESKTOP = 3
+
+        environment: 'Tool.ComputerUse.Environment' = proto.Field(
+            proto.ENUM,
+            number=1,
+            enum='Tool.ComputerUse.Environment',
+        )
+        excluded_predefined_functions: MutableSequence[str] = proto.RepeatedField(
+            proto.STRING,
+            number=2,
+        )
+        enable_prompt_injection_detection: bool = proto.Field(
+            proto.BOOL,
+            number=3,
+        )
+
+    function_declarations: MutableSequence['FunctionDeclaration'] = proto.RepeatedField(
+        proto.MESSAGE,
+        number=1,
+        message='FunctionDeclaration',
+    )
+    retrieval: 'Retrieval' = proto.Field(
+        proto.MESSAGE,
+        number=2,
+        message='Retrieval',
+    )
+    google_search: GoogleSearch = proto.Field(
+        proto.MESSAGE,
+        number=7,
+        message=GoogleSearch,
+    )
+    google_search_retrieval: 'GoogleSearchRetrieval' = proto.Field(
+        proto.MESSAGE,
         number=3,
+        message='GoogleSearchRetrieval',
     )
-    blocking_confidence: 'Tool.PhishBlockThreshold' = proto.Field(
-        proto.ENUM,
-        number=4,
-        optional=True,
-        enum='Tool.PhishBlockThreshold',
+    google_maps: 'GoogleMaps' = proto.Field(
+        proto.MESSAGE,
+        number=5,
+        message='GoogleMaps',
     )
-    search_types: 'Tool.GoogleSearch.SearchTypes' = proto.Field(
+    enterprise_web_search: 'EnterpriseWebSearch' = proto.Field(
         proto.MESSAGE,
         number=6,
-        message='Tool.GoogleSearch.SearchTypes',
+        message='EnterpriseWebSearch',
     )
-
-  class ParallelAiSearch(proto.Message):
-    r"""ParallelAiSearch tool type.
-
-    A tool that uses the Parallel.ai search engine for grounding.
-
-    Attributes:
-        api_key (str): Optional. The API key for ParallelAiSearch. If an API key
-          is not provided, the system will attempt to verify access by checking
-          for an active Parallel.ai subscription through the Google Cloud
-          Marketplace. See
-            https://docs.parallel.ai/search/search-quickstart for more details.
-        enable_data_retention (bool): Optional. Deprecated: Use
-          ``enable_zero_data_retention`` instead. Instructs Vertex Grounding to
-          use Parallel's Zero Data Retention Marketplace product. If this value
-          is "false" or omitted, the Parallel Web Search for Grounding standard
-          subscription will be used. If this value is "true", the Parallel Web
-          Search for Grounding - ZDR subscription will be used.
-        enable_zero_data_retention (bool): Optional. Instructs Vertex Grounding
-          to use Parallel's Zero Data Retention Marketplace product. If this
-          value is "false" or omitted, the Parallel Web Search for Grounding
-          standard subscription will be used. If this value is "true", the
-          Parallel Web Search for Grounding - ZDR subscription will be used.
-        custom_configs (google.protobuf.struct_pb2.Struct): Optional. Custom
-          configs for ParallelAiSearch. This field can be used to pass any
-          parameter from the Parallel.ai Search API. See the Parallel.ai
-          documentation for the full list of available parameters and their
-          usage:
-            https://docs.parallel.ai/api-reference/search-beta/search Currently
-              only ``source_policy``, ``excerpts``, ``max_results``, ``mode``,
-              ``fetch_policy`` can be set via this field. For example: {
-              "source_policy": { "include_domains": ["google.com",
-              "wikipedia.org"], "exclude_domains": ["example.com"] },
-              "fetch_policy": { "max_age_seconds": 3600 } }
-    """
-
-    api_key: str = proto.Field(
-        proto.STRING,
-        number=1,
+    parallel_ai_search: ParallelAiSearch = proto.Field(
+        proto.MESSAGE,
+        number=13,
+        message=ParallelAiSearch,
     )
-    enable_data_retention: bool = proto.Field(
-        proto.BOOL,
-        number=2,
+    exa_ai_search: ExaAiSearch = proto.Field(
+        proto.MESSAGE,
+        number=15,
+        message=ExaAiSearch,
     )
-    enable_zero_data_retention: bool = proto.Field(
-        proto.BOOL,
+    code_execution: CodeExecution = proto.Field(
+        proto.MESSAGE,
         number=4,
+        message=CodeExecution,
     )
-    custom_configs: struct_pb2.Struct = proto.Field(
+    url_context: 'UrlContext' = proto.Field(
         proto.MESSAGE,
-        number=3,
-        message=struct_pb2.Struct,
+        number=10,
+        message='UrlContext',
     )
-
-  class ExaAiSearch(proto.Message):
-    r"""ExaAiSearch tool type.
-
-    A tool that uses the Exa.ai search engine for grounding.
-
-    Attributes:
-        api_key (str): Required. The API key for ExaAiSearch.
-        custom_configs (google.protobuf.struct_pb2.Struct): Optional. This field
-          can be used to pass any parameter from the Exa.ai Search API.
-    """
-
-    api_key: str = proto.Field(
-        proto.STRING,
-        number=1,
-    )
-    custom_configs: struct_pb2.Struct = proto.Field(
+    computer_use: ComputerUse = proto.Field(
         proto.MESSAGE,
-        number=2,
-        message=struct_pb2.Struct,
+        number=11,
+        message=ComputerUse,
     )
-
-  class CodeExecution(proto.Message):
-    r"""Tool that executes code generated by the model, and automatically
-
-    returns the result to the model.
-
-    See also [ExecutableCode][google.cloud.aiplatform.v1.ExecutableCode]
-    and
-    [CodeExecutionResult][google.cloud.aiplatform.v1.CodeExecutionResult],
-    which are input and output to this tool.
-    """
-
-  class ComputerUse(proto.Message):
-    r"""Tool to support computer use.
-
-    Attributes: environment
-    (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Tool.ComputerUse.Environment):
-    Required. The environment being operated.
-        excluded_predefined_functions (MutableSequence[str]): Optional. By
-        default, `predefined functions
-        <https://cloud.google.com/vertex-ai/generative-ai/docs/computer-use#supported-actions>`__
-        are included in the final model call. Some of them can be explicitly
-        excluded from being automatically included. This can serve two
-          purposes:  1. Using a more restricted / different action space. 2.
-          Improving the definitions / instructions of predefined functions.
-        enable_prompt_injection_detection (bool): Optional. Enables the prompt
-        injection detection check on computer-use request.
-    """
-
-    class Environment(proto.Enum):
-      r"""Represents the environment being operated, such as a web
-
-      browser.
-
-      Values:
-          ENVIRONMENT_UNSPECIFIED (0):
-              Defaults to browser.
-          ENVIRONMENT_BROWSER (1):
-              Operates in a web browser.
-          ENVIRONMENT_MOBILE (2):
-              Operates in a mobile environment.
-          ENVIRONMENT_DESKTOP (3):
-              Operates in a desktop environment.
-      """
-
-      ENVIRONMENT_UNSPECIFIED = 0
-      ENVIRONMENT_BROWSER = 1
-      ENVIRONMENT_MOBILE = 2
-      ENVIRONMENT_DESKTOP = 3
-
-    environment: 'Tool.ComputerUse.Environment' = proto.Field(
-        proto.ENUM,
-        number=1,
-        enum='Tool.ComputerUse.Environment',
-    )
-    excluded_predefined_functions: MutableSequence[str] = proto.RepeatedField(
-        proto.STRING,
-        number=2,
-    )
-    enable_prompt_injection_detection: bool = proto.Field(
-        proto.BOOL,
-        number=3,
-    )
-
-  function_declarations: MutableSequence['FunctionDeclaration'] = (
-      proto.RepeatedField(
-          proto.MESSAGE,
-          number=1,
-          message='FunctionDeclaration',
-      )
-  )
-  retrieval: 'Retrieval' = proto.Field(
-      proto.MESSAGE,
-      number=2,
-      message='Retrieval',
-  )
-  google_search: GoogleSearch = proto.Field(
-      proto.MESSAGE,
-      number=7,
-      message=GoogleSearch,
-  )
-  google_search_retrieval: 'GoogleSearchRetrieval' = proto.Field(
-      proto.MESSAGE,
-      number=3,
-      message='GoogleSearchRetrieval',
-  )
-  google_maps: 'GoogleMaps' = proto.Field(
-      proto.MESSAGE,
-      number=5,
-      message='GoogleMaps',
-  )
-  enterprise_web_search: 'EnterpriseWebSearch' = proto.Field(
-      proto.MESSAGE,
-      number=6,
-      message='EnterpriseWebSearch',
-  )
-  parallel_ai_search: ParallelAiSearch = proto.Field(
-      proto.MESSAGE,
-      number=13,
-      message=ParallelAiSearch,
-  )
-  exa_ai_search: ExaAiSearch = proto.Field(
-      proto.MESSAGE,
-      number=15,
-      message=ExaAiSearch,
-  )
-  code_execution: CodeExecution = proto.Field(
-      proto.MESSAGE,
-      number=4,
-      message=CodeExecution,
-  )
-  url_context: 'UrlContext' = proto.Field(
-      proto.MESSAGE,
-      number=10,
-      message='UrlContext',
-  )
-  computer_use: ComputerUse = proto.Field(
-      proto.MESSAGE,
-      number=11,
-      message=ComputerUse,
-  )
 
 
 class UrlContext(proto.Message):
@@ -573,6 +593,10 @@ class FunctionCall(proto.Message):
     values.
 
     Attributes:
+        id (str):
+            Optional. The unique id of the function call. If populated,
+            the client to execute the ``function_call`` and return the
+            response with the matching ``id``.
         name (str):
             Optional. The name of the function to call. Matches
             [FunctionDeclaration.name][google.cloud.aiplatform.v1.FunctionDeclaration.name].
@@ -593,6 +617,10 @@ class FunctionCall(proto.Message):
             to follow.
     """
 
+    id: str = proto.Field(
+        proto.STRING,
+        number=3,
+    )
     name: str = proto.Field(
         proto.STRING,
         number=1,
@@ -811,6 +839,10 @@ class FunctionResponse(proto.Message):
     .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
 
     Attributes:
+        id (str):
+            Optional. The id of the function call this response is for.
+            Populated by the client to match the corresponding function
+            call ``id``.
         name (str):
             Required. The name of the function to call. Matches
             [FunctionDeclaration.name][google.cloud.aiplatform.v1.FunctionDeclaration.name]
@@ -857,6 +889,10 @@ class FunctionResponse(proto.Message):
         WHEN_IDLE = 2
         INTERRUPT = 3
 
+    id: str = proto.Field(
+        proto.STRING,
+        number=3,
+    )
     name: str = proto.Field(
         proto.STRING,
         number=1,
@@ -888,11 +924,20 @@ class ExecutableCode(proto.Message):
     [CodeExecutionResult][google.cloud.aiplatform.v1.CodeExecutionResult]
     will also be generated.
 
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
     Attributes:
         language (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.ExecutableCode.Language):
             Required. Programming language of the ``code``.
         code (str):
             Required. The code to be executed.
+        id (str):
+            Optional. Unique identifier of the ``ExecutableCode`` part.
+            The server returns the ``CodeExecutionResult`` with the
+            matching ``id``.
+
+            This field is a member of `oneof`_ ``_id``.
     """
     class Language(proto.Enum):
         r"""Supported programming languages for the generated code.
@@ -917,6 +962,11 @@ class ExecutableCode(proto.Message):
         proto.STRING,
         number=2,
     )
+    id: str = proto.Field(
+        proto.STRING,
+        number=3,
+        optional=True,
+    )
 
 
 class CodeExecutionResult(proto.Message):
@@ -925,6 +975,9 @@ class CodeExecutionResult(proto.Message):
 
     Generated only when the ``CodeExecution`` tool is used.
 
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
     Attributes:
         outcome (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.CodeExecutionResult.Outcome):
             Required. Outcome of the code execution.
@@ -932,6 +985,12 @@ class CodeExecutionResult(proto.Message):
             Optional. Contains stdout when code execution
             is successful, stderr or other description
             otherwise.
+        id (str):
+            Optional. The identifier of the ``ExecutableCode`` part this
+            result is for. Only populated if the corresponding
+            ``ExecutableCode`` has an id.
+
+            This field is a member of `oneof`_ ``_id``.
     """
     class Outcome(proto.Enum):
         r"""Enumeration of possible outcomes of the code execution.
@@ -963,6 +1022,11 @@ class CodeExecutionResult(proto.Message):
     output: str = proto.Field(
         proto.STRING,
         number=2,
+    )
+    id: str = proto.Field(
+        proto.STRING,
+        number=3,
+        optional=True,
     )
 
 
@@ -1319,11 +1383,58 @@ class GoogleMaps(proto.Message):
 
             If true, include the widget context token in the
             response.
+        grounding_types (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.GoogleMaps.GroundingTypes):
+            Optional. Specifies the types of Google Maps grounding to
+            enable. Defaults to ``places`` when unset.
     """
+
+    class Places(proto.Message):
+        r"""Grounding with Google Maps Places data (e.g. QueryPlaces).
+        This is the default Google Maps grounding type when no other
+        type is specified.
+
+        """
+
+    class Routing(proto.Message):
+        r"""Grounding with Google Maps Routing APIs (ComputeRoutes and
+        SearchAlongRoute).
+
+        """
+
+    class GroundingTypes(proto.Message):
+        r"""Defines the types of Google Maps grounding that can be
+        enabled and their configurations.
+
+        Attributes:
+            places (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.GoogleMaps.Places):
+                Optional. Enables grounding with Google Maps Places. This is
+                the default grounding type when no ``GroundingTypes`` are
+                specified.
+            routing (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.GoogleMaps.Routing):
+                Optional. Enables grounding with Google Maps
+                Routing APIs (ComputeRoutes and
+                SearchAlongRoute).
+        """
+
+        places: 'GoogleMaps.Places' = proto.Field(
+            proto.MESSAGE,
+            number=2,
+            message='GoogleMaps.Places',
+        )
+        routing: 'GoogleMaps.Routing' = proto.Field(
+            proto.MESSAGE,
+            number=3,
+            message='GoogleMaps.Routing',
+        )
 
     enable_widget: bool = proto.Field(
         proto.BOOL,
         number=3,
+    )
+    grounding_types: GroundingTypes = proto.Field(
+        proto.MESSAGE,
+        number=4,
+        message=GroundingTypes,
     )
 
 

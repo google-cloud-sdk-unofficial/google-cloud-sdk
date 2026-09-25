@@ -65,6 +65,18 @@
       To create the component `my-component` in application template `my-app-template`, space `my-space`, project `my-project` and location `us-central1` as a separate root module, run:
 
         $ {command} my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --shared-template-revision-uri=projects/my-project/locations/us-central1/spaces/my-space/sharedTemplates/my-shared-template/revisions/rev1 --use-as-root-module
+
+      To create the component `my-component` with input variable alias mapping of `variable=db_password,alias=database_password` in application template `my-app-template`, space `my-space`, project `my-project` and location `us-central1`, run the following shorthand example:
+
+        $ {command} my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --shared-template-revision-uri=projects/my-project/locations/us-central1/spaces/my-space/sharedTemplates/my-shared-template/revisions/rev1 --input-variable-aliases=variable=db_password,alias=database_password
+
+      Or run the following JSON example:
+
+        $ {command} my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --shared-template-revision-uri=projects/my-project/locations/us-central1/spaces/my-space/sharedTemplates/my-shared-template/revisions/rev1 --input-variable-aliases='[{"variable": "db_password", "alias": "database_password"}]'
+
+      Or create a YAML or JSON file with the input variable aliases and run the following file example:
+
+        $ {command} my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --shared-template-revision-uri=projects/my-project/locations/us-central1/spaces/my-space/sharedTemplates/my-shared-template/revisions/rev1 --input-variable-aliases=my-aliases.yaml
   arguments:
     params:
     - help_text: |-
@@ -311,6 +323,21 @@
         a composite application template. If this is false, then native components
         will be exported as a submodule of a separate terraform root module.
       default: null
+    - arg_name: input-variable-aliases
+      api_field: component.inputVariableAliases
+      required: false
+      repeated: true
+      help_text: |-
+        Input variable aliases defined on this live component.
+      spec:
+      - api_field: variable
+        help_text: |-
+          Name of the input variable inside the component's underlying template or
+          module.
+      - api_field: alias
+        help_text: |-
+          Alias for the variable name to be exposed at the root level of the
+          composite template.
   request:
     api_version: v1alpha
     collection:

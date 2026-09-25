@@ -20,6 +20,7 @@
     collection: remotebuildexecution.projects.instances.workerpools
     modify_request_hooks:
     - googlecloudsdk.command_lib.remote_build_execution.workerpool_create_util:RemoveDiskTypeForMacOS
+    - googlecloudsdk.command_lib.remote_build_execution.workerpool_create_util:SetBackupVmInstanceSpecDefaults
     static_fields:
       workerPool.workerConfig.diskType: "pd-standard"
 
@@ -196,5 +197,34 @@
       required: false
       help_text: |
         The network allowlist mode for the worker pool. If per_action, the network allowlist will be applied per action.
+    - api_field: workerPool.workerConfig.backupVmInstanceSpecs
+      arg_name: backup-vm-instance-spec
+      repeated: true
+      type: arg_object
+      required: false
+      help_text: |
+        Backup VM instance specification for flexible worker pools. If specified, the pool can
+        use these backup specifications in order of preference if the primary machine type is unavailable.
+
+        Can be specified multiple times for multiple fallback options, or as a JSON/YAML list or file.
+      spec:
+      - api_field: machineType
+        json_name: machine-type
+        required: true
+        help_text: Machine type of the backup VM instance (e.g. 'c2-standard-4').
+      - api_field: minCpuPlatform
+        json_name: min-cpu-platform
+        required: false
+        help_text: Minimum CPU platform for the backup VM instance.
+      - api_field: diskType
+        json_name: disk-type
+        required: false
+        help_text: |
+          Type of persistent disk the backup worker VMs will use. Default is pd-standard.
+      - api_field: diskSizeGb
+        json_name: disk-size
+        type: int
+        required: false
+        help_text: Size of the disk attached to the backup VM, in GB. Default is 200.
     labels:
       api_field: workerPool.workerConfig.labels

@@ -88,6 +88,9 @@ class TaskTemplate(proto.Message):
             disabled on this task template.
 
             This field is a member of `oneof`_ ``_gpu_zonal_redundancy_disabled``.
+        workload_identity_config (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.WorkloadIdentityConfig):
+            Optional. The Task's workload identity
+            settings.
         termination_grace_period (google.protobuf.duration_pb2.Duration):
             Optional. Configured graceful termination
             period for this task. This is the time between
@@ -146,6 +149,11 @@ class TaskTemplate(proto.Message):
         proto.BOOL,
         number=12,
         optional=True,
+    )
+    workload_identity_config: vendor_settings.WorkloadIdentityConfig = proto.Field(
+        proto.MESSAGE,
+        number=13,
+        message=vendor_settings.WorkloadIdentityConfig,
     )
     termination_grace_period: duration_pb2.Duration = proto.Field(
         proto.MESSAGE,

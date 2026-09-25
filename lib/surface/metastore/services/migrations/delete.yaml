@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [GA, BETA, ALPHA]
   hints:
     read_only: false
   help_text:
@@ -18,6 +18,8 @@
           $ {command} my-migration --service=my-service
 
   request:
+    GA:
+      api_version: v1
     ALPHA:
       api_version: v1alpha
     BETA:

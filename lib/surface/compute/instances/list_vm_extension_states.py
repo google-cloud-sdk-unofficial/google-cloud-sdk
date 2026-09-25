@@ -37,7 +37,7 @@ _DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ListVmExtensionStates(base.ListCommand):
   """List VM extension states for a Compute Engine instance."""
 

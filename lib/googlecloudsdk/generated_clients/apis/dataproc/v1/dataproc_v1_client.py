@@ -37,6 +37,7 @@ class DataprocV1(base_api.BaseApiClient):
         default_global_params=default_global_params,
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
+    self.projects_locations_attachments_virtualClusters = self.ProjectsLocationsAttachmentsVirtualClustersService(self)
     self.projects_locations_attachments = self.ProjectsLocationsAttachmentsService(self)
     self.projects_locations_autoscalingPolicies = self.ProjectsLocationsAutoscalingPoliciesService(self)
     self.projects_locations_batches_sparkApplications = self.ProjectsLocationsBatchesSparkApplicationsService(self)
@@ -51,11 +52,157 @@ class DataprocV1(base_api.BaseApiClient):
     self.projects_regions_autoscalingPolicies = self.ProjectsRegionsAutoscalingPoliciesService(self)
     self.projects_regions_clusters_nodeGroups = self.ProjectsRegionsClustersNodeGroupsService(self)
     self.projects_regions_clusters = self.ProjectsRegionsClustersService(self)
+    self.projects_regions_emptyOps = self.ProjectsRegionsEmptyOpsService(self)
     self.projects_regions_jobs = self.ProjectsRegionsJobsService(self)
     self.projects_regions_operations = self.ProjectsRegionsOperationsService(self)
     self.projects_regions_workflowTemplates = self.ProjectsRegionsWorkflowTemplatesService(self)
     self.projects_regions = self.ProjectsRegionsService(self)
     self.projects = self.ProjectsService(self)
+
+  class ProjectsLocationsAttachmentsVirtualClustersService(base_api.BaseApiService):
+    """Service class for the projects_locations_attachments_virtualClusters resource."""
+
+    _NAME = 'projects_locations_attachments_virtualClusters'
+
+    def __init__(self, client):
+      super(DataprocV1.ProjectsLocationsAttachmentsVirtualClustersService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new VirtualCluster in a given attachment.
+
+      Args:
+        request: (DataprocProjectsLocationsAttachmentsVirtualClustersCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/attachments/{attachmentsId}/virtualClusters',
+        http_method='POST',
+        method_id='dataproc.projects.locations.attachments.virtualClusters.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['requestId', 'virtualClusterId'],
+        relative_path='v1/{+parent}/virtualClusters',
+        request_field='virtualCluster',
+        request_type_name='DataprocProjectsLocationsAttachmentsVirtualClustersCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single VirtualCluster.
+
+      Args:
+        request: (DataprocProjectsLocationsAttachmentsVirtualClustersDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/attachments/{attachmentsId}/virtualClusters/{virtualClustersId}',
+        http_method='DELETE',
+        method_id='dataproc.projects.locations.attachments.virtualClusters.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='DataprocProjectsLocationsAttachmentsVirtualClustersDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single VirtualCluster.
+
+      Args:
+        request: (DataprocProjectsLocationsAttachmentsVirtualClustersGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (VirtualCluster) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/attachments/{attachmentsId}/virtualClusters/{virtualClustersId}',
+        http_method='GET',
+        method_id='dataproc.projects.locations.attachments.virtualClusters.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='DataprocProjectsLocationsAttachmentsVirtualClustersGetRequest',
+        response_type_name='VirtualCluster',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists VirtualClusters in a given attachment.
+
+      Args:
+        request: (DataprocProjectsLocationsAttachmentsVirtualClustersListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListVirtualClustersResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/attachments/{attachmentsId}/virtualClusters',
+        http_method='GET',
+        method_id='dataproc.projects.locations.attachments.virtualClusters.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/virtualClusters',
+        request_field='',
+        request_type_name='DataprocProjectsLocationsAttachmentsVirtualClustersListRequest',
+        response_type_name='ListVirtualClustersResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single VirtualCluster.
+
+      Args:
+        request: (DataprocProjectsLocationsAttachmentsVirtualClustersPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/attachments/{attachmentsId}/virtualClusters/{virtualClustersId}',
+        http_method='PATCH',
+        method_id='dataproc.projects.locations.attachments.virtualClusters.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1/{+name}',
+        request_field='virtualCluster',
+        request_type_name='DataprocProjectsLocationsAttachmentsVirtualClustersPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
 
   class ProjectsLocationsAttachmentsService(base_api.BaseApiService):
     """Service class for the projects_locations_attachments resource."""
@@ -3748,6 +3895,42 @@ class DataprocV1(base_api.BaseApiClient):
         request_field='testIamPermissionsRequest',
         request_type_name='DataprocProjectsRegionsClustersTestIamPermissionsRequest',
         response_type_name='TestIamPermissionsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsRegionsEmptyOpsService(base_api.BaseApiService):
+    """Service class for the projects_regions_emptyOps resource."""
+
+    _NAME = 'projects_regions_emptyOps'
+
+    def __init__(self, client):
+      super(DataprocV1.ProjectsRegionsEmptyOpsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def CreateEmptyOp(self, request, global_params=None):
+      r"""EmptyOp triggers an empty long running operation. This will always be an internal method. It will never be made public. It is used for load testing cluster-clh.
+
+      Args:
+        request: (DataprocProjectsRegionsEmptyOpsCreateEmptyOpRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('CreateEmptyOp')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    CreateEmptyOp.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='dataproc.projects.regions.emptyOps.createEmptyOp',
+        ordered_params=['projectId', 'region'],
+        path_params=['projectId', 'region'],
+        query_params=[],
+        relative_path='v1/projects/{projectId}/regions/{region}/emptyOps:createEmptyOp',
+        request_field='createEmptyOpRequest',
+        request_type_name='DataprocProjectsRegionsEmptyOpsCreateEmptyOpRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

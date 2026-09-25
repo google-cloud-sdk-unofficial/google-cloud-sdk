@@ -320,6 +320,7 @@ class Deploy(base.Command):
         source_containers, self.ReleaseTrack()
     )
     validators.ValidateNoBuildFromSource(source_containers, self.ReleaseTrack())
+
     return source_containers
 
   def _GetBaseImageForSourceContainer(self, container_args, service):
@@ -506,9 +507,7 @@ class Deploy(base.Command):
       build_type = BuildType.BUILDPACKS
     image = None if pack else container_args.image
 
-    if flags.FlagIsExplicitlySet(args, 'delegate_builds') or (
-        base_image is not None and base_image != service_lib.DEFAULT_BASE_IMAGE
-    ):
+    if base_image is not None and base_image != service_lib.DEFAULT_BASE_IMAGE:
       image = pack[0].get('image') if pack else image
     build_service_account = build_util.GetBuildServiceAccount(
         args, annotated_build_service_account, container_args, service, changes
@@ -705,10 +704,9 @@ class Deploy(base.Command):
       has_latest,
       iap,
       skip_build,
-      include_local_build=False,
   ):
     requires_build = (
-        bool(build_from_source) and not skip_build and not include_local_build
+        bool(build_from_source) and not skip_build
     )
 
     deployment_stages = stages.ServiceStages(
@@ -723,7 +721,6 @@ class Deploy(base.Command):
         include_iap=(iap or (iap is not None and service is not None)),
         include_domain_mapping=getattr(args, 'domain', None) is not None,
         regions_list=self._GetRegionsForMultiRegion(),
-        include_local_build=include_local_build,
     )
     dry_run = getattr(args, 'dry_run', False)
     if dry_run:
@@ -756,34 +753,32 @@ class Deploy(base.Command):
         suppress_output=args.async_ or dry_run,
     )
 
-  def _IsAlphaSourceDeployBuild(
-      self, deploy_from_source, is_no_build_from_source
-  ):
-    return (
-        bool(deploy_from_source)
-        and not is_no_build_from_source
-        and self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+  def _EnableBuildApiEnablementOptimization(self, require_build):
+    return require_build and (
+        self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+        or self.ReleaseTrack() == base.ReleaseTrack.BETA
     )
 
-  def _GetRequiredApis(
-      self, deploy_from_source, is_no_build_from_source, is_local_build=False
-  ):
+  def _GetRequiredApis(self, require_build):
     apis = []
     if (
         self.ReleaseTrack() == base.ReleaseTrack.GA
-        or self._IsAlphaSourceDeployBuild(
-            deploy_from_source, is_no_build_from_source
-        )
+        or self._EnableBuildApiEnablementOptimization(require_build)
     ):
       apis.append(api_enabler.get_run_api())
-    if (
-        deploy_from_source
-        and not is_no_build_from_source
-        and not is_local_build
-    ):
+    if require_build:
       apis.append('artifactregistry.googleapis.com')
       apis.append('cloudbuild.googleapis.com')
     return apis
+
+  def _RequireBuild(self, source_containers):
+    """Returns whether the deployment requires a build."""
+    for _, container_args in source_containers.items():
+      if not getattr(container_args, 'local_build', False) and not getattr(
+          container_args, 'no_build', False
+      ):
+        return True
+    return False
 
   def _DisplaySuccessMessage(
       self, service, args, allow_unauth, operations, service_ref, records=None
@@ -885,7 +880,7 @@ class Deploy(base.Command):
 
     containers = self._ValidateAndGetContainers(args)
     source_container = self._ValidateAndGetSourceContainer(containers)
-    is_local_build = validators.HasValidLocalBuildFromSource(
+    local_build_container = validators.GetValidLocalBuildSourceContainer(
         self.ReleaseTrack(), source_container
     )
     is_no_build_from_source = validators.IsNoBuildFromSource(
@@ -914,23 +909,24 @@ class Deploy(base.Command):
       domain_mapping_util.VerifyDomain(domain_mapping_ref)
     project_id = properties.VALUES.core.project.Get(required=True)
 
-    required_apis = self._GetRequiredApis(
-        source_container, is_no_build_from_source, is_local_build
-    )
-
-    is_alpha_source_deploy_build = self._IsAlphaSourceDeployBuild(
-        source_container, is_no_build_from_source
+    require_build = self._RequireBuild(source_container)
+    required_apis = self._GetRequiredApis(require_build)
+    enable_build_api_enablement_optimization = (
+        self._EnableBuildApiEnablementOptimization(require_build)
     )
     custom_check_response = None
     skip_activation_prompt = False
-    if is_alpha_source_deploy_build and platform == platforms.PLATFORM_MANAGED:
+    if (
+        enable_build_api_enablement_optimization
+        and platform == platforms.PLATFORM_MANAGED
+    ):
       custom_check_response = api_enabler.check_response_and_enable_apis(
           project_id, required_apis
       )
     elif (
         required_apis
         and platform == platforms.PLATFORM_MANAGED
-        and not is_alpha_source_deploy_build
+        and not enable_build_api_enablement_optimization
     ):
       skip_activation_prompt = api_enabler.check_and_enable_apis(
           project_id, required_apis
@@ -942,9 +938,9 @@ class Deploy(base.Command):
     pack = None
     source = None
     operation_message = 'Deploying container to'
-    if is_local_build:
+    if local_build_container and len(source_container) == 1:
       operation_message = 'Deploying locally-built source to'
-    elif is_no_build_from_source:
+    elif len(source_container) == len(containers):
       operation_message = 'Deploying sources to'
     repo_to_create = None
     is_function = False
@@ -973,17 +969,16 @@ class Deploy(base.Command):
         custom_check_response_func=custom_check_response,
     ) as operations, (
         tempfile.TemporaryDirectory()
-        if is_local_build
+        if local_build_container
         else contextlib.nullcontext()
     ) as local_build_dir:
       service = operations.GetService(service_ref)
-      if is_local_build:
+      if local_build_container:
         container_name, container_args = next(
             (name, c)
             for name, c in source_container.items()
             if getattr(c, 'local_build', False)
         )
-        local_build.ValidateLocalBuildSource(container_args.source)
         maker_path = local_build.GetUniversalMakerPath()
         with progress_tracker.StagedProgressTracker(
             'Building application locally...',
@@ -1016,7 +1011,8 @@ class Deploy(base.Command):
           )
 
       # Build an image from source if source specified
-      if is_no_build_from_source or is_local_build:
+      # Legacy build is mutually exclusive with new ways of source deployment.
+      if is_no_build_from_source or local_build_container:
         image = 'scratch'
         skip_build = True
         deploy_from_source_container_name, container_args = next(
@@ -1027,7 +1023,7 @@ class Deploy(base.Command):
           deploy_from_source_container_name = (
               service.template.container.name or ''
           )
-        if is_local_build:
+        if local_build_container:
           source = local_build_dir
         else:
           source = container_args.source
@@ -1066,7 +1062,7 @@ class Deploy(base.Command):
             project_id=properties.VALUES.core.project.Get(required=True),
             region=flags.GetRegion(args),
             build_service_account=build_service_account,
-            skip_build_sa_permission_check=is_alpha_source_deploy_build,
+            skip_build_sa_permission_check=enable_build_api_enablement_optimization,
         )
       # Deploy a container with an image
       changes = self._GetBaseChanges(args)
@@ -1136,7 +1132,6 @@ class Deploy(base.Command):
             has_latest,
             iap,
             skip_build,
-            include_local_build=False,
         ) as tracker:
           released_service = operations.ReleaseService(
               service_ref,
@@ -1157,9 +1152,6 @@ class Deploy(base.Command):
                   flags.FlagIsExplicitlySet(args, 'revision_suffix')
                   or flags.FlagIsExplicitlySet(args, 'tag')
               ),
-              delegate_builds=flags.FlagIsExplicitlySet(
-                  args, 'delegate_builds'
-              ),
               base_image=base_image,
               deploy_from_source_container_name=deploy_from_source_container_name,
               build_service_account=build_service_account,
@@ -1173,7 +1165,7 @@ class Deploy(base.Command):
               iap_enabled=iap,
               skip_build=skip_build,
               upload_through_run_api=upload_through_run_api,
-              **kwargs
+              **kwargs,
           )
           records = []
           if domain_mapping_ref:
@@ -1271,7 +1263,6 @@ class AlphaDeploy(BetaDeploy):
     container_parser.AddContainerFlags(
         parser, container_args, cls.ReleaseTrack()
     )
-    flags.AddDelegateBuildsFlag(parser)
     flags.AddOverflowScalingFlag(parser)
     flags.AddCpuUtilizationFlag(parser)
     flags.AddConcurrencyUtilizationFlag(parser)

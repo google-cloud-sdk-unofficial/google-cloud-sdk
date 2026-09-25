@@ -1,0 +1,30 @@
+- release_tracks: [BETA]
+  hidden: true
+
+  help_text:
+    brief: List MACsec key groups.
+    description: Retrieve and display a list of all MACsec key groups in the specified region.
+    examples: |
+      To list all MACsec key groups in us-central1, run:
+
+        $ {command} --region=us-central1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:regionDefaultAll
+      help_text: Region of the MACsec key groups to display.
+
+  response:
+    id_field: name
+
+  output:
+    format: table(
+      name.basename(),
+      name.segment(3):label=LOCATION,
+      description,
+      createTime)
+
+  request:
+    BETA:
+      api_version: v1beta
+    collection: networkconnectivity.projects.locations.interconnectKeyGroups

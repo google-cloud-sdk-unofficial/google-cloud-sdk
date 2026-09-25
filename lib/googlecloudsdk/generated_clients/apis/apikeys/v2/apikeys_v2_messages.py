@@ -55,14 +55,41 @@ class ApikeysProjectsLocationsKeysCreateRequest(_messages.Message):
 class ApikeysProjectsLocationsKeysDeleteRequest(_messages.Message):
   r"""A ApikeysProjectsLocationsKeysDeleteRequest object.
 
+  Enums:
+    CheckExistingUsageValueValuesEnum: Optional. Defines the behavior for
+      checking existing usage when deleting a key.
+
   Fields:
+    checkExistingUsage: Optional. Defines the behavior for checking existing
+      usage when deleting a key.
     etag: Optional. The etag known to the client for the expected state of the
       key. This is to be used for optimistic concurrency.
     name: Required. The resource name of the API key to be deleted.
   """
 
-  etag = _messages.StringField(1)
-  name = _messages.StringField(2, required=True)
+  class CheckExistingUsageValueValuesEnum(_messages.Enum):
+    r"""Optional.
+
+    Defines the behavior for checking existing usage when deleting a key.
+
+    Values:
+      CHECK_EXISTING_USAGE_UNSPECIFIED: When unset, the default behavior is
+        used, which is SKIP.
+      SKIP: If set, skip checking existing usage when deleting a key.
+      CHECK: If set, existing usage is checked when deleting the key. If the
+        key has usage in the last 7 days, the request returns a
+        FAILED_PRECONDITION error.
+    """
+
+    CHECK_EXISTING_USAGE_UNSPECIFIED = 0
+    SKIP = 1
+    CHECK = 2
+
+  checkExistingUsage = _messages.EnumField(
+      'CheckExistingUsageValueValuesEnum', 1
+  )
+  etag = _messages.StringField(2)
+  name = _messages.StringField(3, required=True)
 
 
 class ApikeysProjectsLocationsKeysGetKeyStringRequest(_messages.Message):
@@ -106,7 +133,13 @@ class ApikeysProjectsLocationsKeysListRequest(_messages.Message):
 class ApikeysProjectsLocationsKeysPatchRequest(_messages.Message):
   r"""A ApikeysProjectsLocationsKeysPatchRequest object.
 
+  Enums:
+    CheckExistingUsageValueValuesEnum: Optional. Defines the behavior for
+      checking existing usage when updating a key.
+
   Fields:
+    checkExistingUsage: Optional. Defines the behavior for checking existing
+      usage when updating a key.
     name: Output only. The resource name of the key. The `name` has the form:
       `projects//locations/global/keys/`. For example: `projects/123456867718/
       locations/global/keys/b7ff1f9f-8275-410a-94dd-3855ee9b5dd2` NOTE: Key is
@@ -122,9 +155,30 @@ class ApikeysProjectsLocationsKeysPatchRequest(_messages.Message):
     v2Key: A V2Key resource to be passed as the request body.
   """
 
-  name = _messages.StringField(1, required=True)
-  updateMask = _messages.StringField(2)
-  v2Key = _messages.MessageField('V2Key', 3)
+  class CheckExistingUsageValueValuesEnum(_messages.Enum):
+    r"""Optional.
+
+    Defines the behavior for checking existing usage when updating a key.
+
+    Values:
+      CHECK_EXISTING_USAGE_UNSPECIFIED: When unset, the default behavior is
+        used, which is SKIP.
+      SKIP: If set, skip checking existing usage when updating a key.
+      CHECK: If set, existing usage is checked when updating the key. If the
+        key has usage in the last 7 days, the request returns a
+        FAILED_PRECONDITION error.
+    """
+
+    CHECK_EXISTING_USAGE_UNSPECIFIED = 0
+    SKIP = 1
+    CHECK = 2
+
+  checkExistingUsage = _messages.EnumField(
+      'CheckExistingUsageValueValuesEnum', 1
+  )
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
+  v2Key = _messages.MessageField('V2Key', 4)
 
 
 class ApikeysProjectsLocationsKeysUndeleteRequest(_messages.Message):

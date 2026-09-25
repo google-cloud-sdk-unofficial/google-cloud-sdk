@@ -704,23 +704,19 @@ class _SearchConfigTypeWrapper(arg_parsers_usage_text.DefaultArgTypeWrapper):
     return self.arg_type(val)
 
 
-def AddFieldConfigFlag(parser, is_search_released):
+def AddFieldConfigFlag(parser):
   """Adds the repeated --field-config flag to the given parser.
 
   Args:
     parser: The argparse parser.
-    is_search_released: Whether search is released in gcloud.
   """
   field_config_spec = {
       FIELD_CONFIG_FIELD_PATH: _FIELD_PATH_SPEC,
       FIELD_CONFIG_ARRAY_CONFIG: _ARRAY_CONFIG_SPEC,
       FIELD_CONFIG_ORDER: _ORDER_SPEC,
       FIELD_CONFIG_VECTOR_CONFIG: _VECTOR_CONFIG_SPEC,
-  } | (
-      {FIELD_CONFIG_SEARCH_CONFIG: _SearchConfigTypeWrapper()}
-      if is_search_released
-      else {}
-  )
+      FIELD_CONFIG_SEARCH_CONFIG: _SearchConfigTypeWrapper(),
+  }
 
   help_text = 'Configuration for an index field.'
 
@@ -854,18 +850,16 @@ _SEARCH_INDEX_OPTIONS_SPEC = arg_parsers.ArgObject(
 )
 
 
-def AddSearchIndexOptionsFlag(parser, is_search_released):
+def AddSearchIndexOptionsFlag(parser):
   """Adds the --search-index-options flag to the given parser.
 
   Args:
     parser: The argparse parser.
-    is_search_released: Whether search is released in gcloud.
   """
-  if is_search_released:
-    search_index_help = 'Optional. Configuration options for search indexes.'
-    parser.add_argument(
-        '--search-index-options',
-        type=_SEARCH_INDEX_OPTIONS_SPEC,
-        required=False,
-        help=search_index_help,
-    )
+  search_index_help = 'Optional. Configuration options for search indexes.'
+  parser.add_argument(
+      '--search-index-options',
+      type=_SEARCH_INDEX_OPTIONS_SPEC,
+      required=False,
+      help=search_index_help,
+  )

@@ -92,7 +92,7 @@ def AddTableRegisterArgs(parser):
   )
 
 
-def AddKmsKeyResourceArg(parser, resource='catalog', hidden=True):
+def AddKmsKeyResourceArg(parser, resource='catalog'):
   """Adds argument for Cloud KMS key."""
   kms_resource_args.AddKmsKeyResourceArg(
       parser,
@@ -102,7 +102,6 @@ def AddKmsKeyResourceArg(parser, resource='catalog', hidden=True):
           ' (bq-<project_number>@bigquery-encryption.iam.gserviceaccount.com)'
           " must hold permission 'Cloud KMS CryptoKey Encrypter/Decrypter'"
       ),
-      hidden=hidden,
   )
 
 
@@ -137,6 +136,7 @@ def AddCatalogsCreateArgs(parser):
   AddRestrictedLocationsArg(parser)
   AddDefaultLocationArg(parser)
   AddKmsKeyResourceArg(parser)
+  AddCrossCloudCacheArg(parser)
 
 
 def AddServiceDirectoryNameArg(parser):
@@ -189,7 +189,6 @@ def AddFederatedCatalogArgs(
     choices.append('snowflake')
   if support_workday:
     choices.append('workday')
-    hidden_choices.append('workday')
 
   parser.add_argument(
       '--federated-catalog-type',
@@ -318,6 +317,18 @@ def AddRestrictedLocationsArg(parser):
   )
 
 
+def AddCrossCloudCacheArg(parser):
+  """Adds argument for cross-cloud cache options."""
+  parser.add_argument(
+      '--cross-cloud-cache',
+      choices=['enabled', 'disabled'],
+      help=(
+          'Whether to enable caching of remote data on Google Cloud. '
+          'This may result in data being temporarily persisted on Google Cloud.'
+      ),
+  )
+
+
 def AddGlueAwsRoleArnArg(parser):
   """Adds Glue AWS role ARN argument."""
   parser.add_argument(
@@ -354,12 +365,10 @@ def AddWorkdayCatalogArgs(parser):
   """Adds arguments for Workday catalogs."""
   parser.add_argument(
       '--workday-base-url',
-      hidden=True,
       help='The base URL of the Workday instance.',
   )
   parser.add_argument(
       '--workday-tenant',
-      hidden=True,
       help='The Workday tenant name.',
   )
 

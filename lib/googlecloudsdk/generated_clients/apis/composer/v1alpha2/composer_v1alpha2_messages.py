@@ -1634,6 +1634,9 @@ class EnvironmentConfig(_messages.Message):
       in the development mode.
     softwareConfig: Optional. The configuration settings for software inside
       the environment.
+    userWorkloadsConfig: Optional. The configuration for the user workloads.
+      This field is supported for Cloud Composer environments in versions
+      `composer-3.*.*-airflow-*.*.*` and newer.
     webServerConfig: Optional. The configuration settings for the Airflow web
       server App Engine instance. This field is supported for Cloud Composer
       environments in versions composer-1.*.*-airflow-*.*.*.
@@ -1696,9 +1699,10 @@ class EnvironmentConfig(_messages.Message):
   resilienceMode = _messages.EnumField('ResilienceModeValueValuesEnum', 15)
   scheduledHibernationConfig = _messages.MessageField('ScheduledHibernationConfig', 16)
   softwareConfig = _messages.MessageField('SoftwareConfig', 17)
-  webServerConfig = _messages.MessageField('WebServerConfig', 18)
-  webServerNetworkAccessControl = _messages.MessageField('WebServerNetworkAccessControl', 19)
-  workloadsConfig = _messages.MessageField('WorkloadsConfig', 20)
+  userWorkloadsConfig = _messages.MessageField('UserWorkloadsConfig', 18)
+  webServerConfig = _messages.MessageField('WebServerConfig', 19)
+  webServerNetworkAccessControl = _messages.MessageField('WebServerNetworkAccessControl', 20)
+  workloadsConfig = _messages.MessageField('WorkloadsConfig', 21)
 
 
 class ExecuteAirflowCommandRequest(_messages.Message):
@@ -3537,6 +3541,19 @@ class TriggererResource(_messages.Message):
   memoryGb = _messages.FloatField(3, variant=_messages.Variant.FLOAT)
 
 
+class UserWorkloadsConfig(_messages.Message):
+  r"""Configuration for user workloads in a Composer environment.
+
+  Fields:
+    serviceAccounts: Optional. A list of service accounts used by user
+      workloads. Currently, only KubernetesPodOperator workloads support
+      custom service accounts. There is a limit of 100 user workloads service
+      accounts per Composer environment. Only used in Composer 3.
+  """
+
+  serviceAccounts = _messages.MessageField('UserWorkloadsServiceAccount', 1, repeated=True)
+
+
 class UserWorkloadsConfigMap(_messages.Message):
   r"""User workloads ConfigMap used by Airflow tasks that run with Kubernetes
   executor or KubernetesPodOperator.
@@ -3649,6 +3666,21 @@ class UserWorkloadsSecret(_messages.Message):
   data = _messages.MessageField('DataValue', 1)
   name = _messages.StringField(2)
   type = _messages.StringField(3)
+
+
+class UserWorkloadsServiceAccount(_messages.Message):
+  r"""Describes a Kubernetes Service Account and its corresponding Google
+  Service Account.
+
+  Fields:
+    googleServiceAccount: Required. The email address of the Google Service
+      Account that will be used by the Kubernetes Service Account.
+    kubernetesServiceAccount: Required. The name of the Kubernetes Service
+      Account to be created in the Kubernetes cluster.
+  """
+
+  googleServiceAccount = _messages.StringField(1)
+  kubernetesServiceAccount = _messages.StringField(2)
 
 
 class WebServerConfig(_messages.Message):

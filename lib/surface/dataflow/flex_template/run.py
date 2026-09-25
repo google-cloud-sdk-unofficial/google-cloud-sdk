@@ -188,8 +188,11 @@ class Run(base.Command):
         metavar='PARAMETERS',
         type=arg_parsers.ArgDict(),
         action=arg_parsers.UpdateAction,
-        help=
-        ('Parameters to pass to the job.'))
+        help=(
+            'Parameters to pass to the job. For information about specifying'
+            ' an alternative delimiter, see `gcloud topic escaping`.'
+        ),
+    )
     streaming_update_args = parser.add_argument_group()
     streaming_update_args.add_argument(
         '--transform-name-mappings',

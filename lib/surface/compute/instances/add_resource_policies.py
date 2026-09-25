@@ -22,6 +22,7 @@ from googlecloudsdk.command_lib.compute.resource_policies import flags
 from googlecloudsdk.command_lib.compute.resource_policies import util
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA,
     base.ReleaseTrack.BETA,
@@ -32,8 +33,9 @@ class InstancesAddResourcePolicies(base.UpdateCommand):
   """Add resource policies to Compute Engine VM instances.
 
     *{command}* adds resource policies to Compute Engine
-    virtual instances. These policies define time windows in which
-    live migrations take place.
+    virtual instances. These policies can define schedules for starting
+    and stopping instances, specify how instances are placed across
+    physical hardware, or define maintenance window constraints.
 
     ## EXAMPLES
 

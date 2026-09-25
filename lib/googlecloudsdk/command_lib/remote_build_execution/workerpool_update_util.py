@@ -20,6 +20,7 @@
 
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.remote_build_execution import workerpool_util
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.args import labels_util
 
@@ -110,4 +111,24 @@ def AddFieldToMask(field, request):
       request.updateMask = request.updateMask + ',' + field
   else:
     request.updateMask = field
+  return request
+
+
+def UpdateBackupVmInstanceSpecs(ref, args, request):
+  """Handles updating or clearing backup_vm_instance_specs and setting updateMask."""
+  del ref
+  req = (
+      request.googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest
+  )
+  if args.IsSpecified('clear_backup_vm_instance_specs'):
+    arg_utils.SetFieldInMessage(
+        req, 'workerPool.workerConfig.backupVmInstanceSpecs', []
+    )
+    AddFieldToMask('workerConfig.backupVmInstanceSpecs', req)
+  elif args.IsSpecified('backup_vm_instance_spec'):
+    if req.workerPool:
+      workerpool_util.SetDefaultBackupVmInstanceSpecs(
+          req.workerPool.workerConfig
+      )
+    AddFieldToMask('workerConfig.backupVmInstanceSpecs', req)
   return request

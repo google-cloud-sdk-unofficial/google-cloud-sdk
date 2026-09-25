@@ -123,9 +123,16 @@ class Update(base.UpdateCommand):
 class UpdateBeta(Update):
   """Update an AlloyDB cluster within a given project and region."""
 
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.parameters.append('--enable-agent-mode')
+
   @classmethod
   def Args(cls, parser):
-    super(UpdateBeta, UpdateBeta).Args(parser)
+    super(UpdateBeta, cls).Args(parser)
+    flags.AddAgentModeFlags(parser)
+    alloydb_messages = api_util.GetMessagesModule(cls.ReleaseTrack())
+    flags.AddEdition(parser, alloydb_messages)
 
   def ConstructPatchRequestFromArgs(self, alloydb_messages, cluster_ref, args):
     return cluster_helper.ConstructPatchRequestFromArgsBeta(

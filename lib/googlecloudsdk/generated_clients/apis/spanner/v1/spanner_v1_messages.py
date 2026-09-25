@@ -2574,11 +2574,6 @@ class Instance(_messages.Message):
       response, if the value of `default_backup_schedule_type` isn't set, or
       set to `NONE`, Spanner doesn't create a default backup schedule for new
       databases in the instance.
-    DefaultStorageTypeValueValuesEnum: Deprecated: Field is not used and
-      storage type support is determined by instance config
-      allowed_storage_types. The `StorageType` of the current instance. If
-      unspecified, it will default to the first StorageType in the list of
-      allowed_storage_types in the `InstanceConfig` for this instance.
     EditionValueValuesEnum: Optional. The `Edition` of the current instance.
     InstanceTypeValueValuesEnum: The `InstanceType` of the current instance.
     StateValueValuesEnum: Output only. The current instance state. For
@@ -2625,11 +2620,6 @@ class Instance(_messages.Message):
       value of `default_backup_schedule_type` isn't set, or set to `NONE`,
       Spanner doesn't create a default backup schedule for new databases in
       the instance.
-    defaultStorageType: Deprecated: Field is not used and storage type support
-      is determined by instance config allowed_storage_types. The
-      `StorageType` of the current instance. If unspecified, it will default
-      to the first StorageType in the list of allowed_storage_types in the
-      `InstanceConfig` for this instance.
     displayName: Required. The descriptive name for this instance as it
       appears in UIs. Must be unique per project and between 4 and 30
       characters in length.
@@ -2729,21 +2719,6 @@ class Instance(_messages.Message):
     DEFAULT_BACKUP_SCHEDULE_TYPE_UNSPECIFIED = 0
     NONE = 1
     AUTOMATIC = 2
-
-  class DefaultStorageTypeValueValuesEnum(_messages.Enum):
-    r"""Deprecated: Field is not used and storage type support is determined
-    by instance config allowed_storage_types. The `StorageType` of the current
-    instance. If unspecified, it will default to the first StorageType in the
-    list of allowed_storage_types in the `InstanceConfig` for this instance.
-
-    Values:
-      STORAGE_TYPE_UNSPECIFIED: Storage type not specified.
-      SSD: Flash (SSD) storage should be used.
-      HDD: Magnetic drive (HDD) storage should be used.
-    """
-    STORAGE_TYPE_UNSPECIFIED = 0
-    SSD = 1
-    HDD = 2
 
   class EditionValueValuesEnum(_messages.Enum):
     r"""Optional. The `Edition` of the current instance.
@@ -2859,21 +2834,20 @@ class Instance(_messages.Message):
   config = _messages.StringField(2)
   createTime = _messages.StringField(3)
   defaultBackupScheduleType = _messages.EnumField('DefaultBackupScheduleTypeValueValuesEnum', 4)
-  defaultStorageType = _messages.EnumField('DefaultStorageTypeValueValuesEnum', 5)
-  displayName = _messages.StringField(6)
-  edition = _messages.EnumField('EditionValueValuesEnum', 7)
-  endpointUris = _messages.StringField(8, repeated=True)
-  freeInstanceMetadata = _messages.MessageField('FreeInstanceMetadata', 9)
-  instanceType = _messages.EnumField('InstanceTypeValueValuesEnum', 10)
-  labels = _messages.MessageField('LabelsValue', 11)
-  name = _messages.StringField(12)
-  nodeCount = _messages.IntegerField(13, variant=_messages.Variant.INT32)
-  processingUnits = _messages.IntegerField(14, variant=_messages.Variant.INT32)
-  replicaComputeCapacity = _messages.MessageField('ReplicaComputeCapacity', 15, repeated=True)
-  ssdCache = _messages.StringField(16)
-  state = _messages.EnumField('StateValueValuesEnum', 17)
-  tags = _messages.MessageField('TagsValue', 18)
-  updateTime = _messages.StringField(19)
+  displayName = _messages.StringField(5)
+  edition = _messages.EnumField('EditionValueValuesEnum', 6)
+  endpointUris = _messages.StringField(7, repeated=True)
+  freeInstanceMetadata = _messages.MessageField('FreeInstanceMetadata', 8)
+  instanceType = _messages.EnumField('InstanceTypeValueValuesEnum', 9)
+  labels = _messages.MessageField('LabelsValue', 10)
+  name = _messages.StringField(11)
+  nodeCount = _messages.IntegerField(12, variant=_messages.Variant.INT32)
+  processingUnits = _messages.IntegerField(13, variant=_messages.Variant.INT32)
+  replicaComputeCapacity = _messages.MessageField('ReplicaComputeCapacity', 14, repeated=True)
+  ssdCache = _messages.StringField(15)
+  state = _messages.EnumField('StateValueValuesEnum', 16)
+  tags = _messages.MessageField('TagsValue', 17)
+  updateTime = _messages.StringField(18)
 
 
 class InstanceConfig(_messages.Message):
@@ -2916,8 +2890,7 @@ class InstanceConfig(_messages.Message):
     allowedStorageTypes: Output only. Deprecated: Use the equivalent Cascading
       Options field (kAllowedStorageTypes) instead. The allowed storage types
       for this configuration. The first storage type is considered the default
-      storage type for any instance that has its default_storage_type field
-      unset or set to STORAGE_TYPE_UNSPECIFIED.
+      storage type for any instance.
     baseConfig: Base configuration name, e.g. projects//instanceConfigs/nam3,
       based on which this configuration is created. Only set for user-managed
       configurations. `base_config` must refer to a configuration of type

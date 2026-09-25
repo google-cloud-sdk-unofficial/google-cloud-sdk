@@ -21,11 +21,15 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.iam import util as iam_api_util
 from googlecloudsdk.api_lib.run import service as service_lib
+from googlecloudsdk.api_lib.util import api_enablement
+from googlecloudsdk.api_lib.util import exceptions as api_exceptions
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import exceptions as serverless_exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
+from googlecloudsdk.core.console import console_io
 
 _LEGACY_BUILD_SA_FORMAT = r'^\d+@cloudbuild\.gserviceaccount\.com$'
 _PROJECT_TOML_FILE_NAME = 'project.toml'
@@ -84,7 +88,21 @@ def ValidateBuildServiceAccountAndPromptWarning(
   """
 
   if build_service_account is None:
-    build_service_account = _GetDefaultBuildServiceAccount(project_id, region)
+    try:
+      build_service_account = _GetDefaultBuildServiceAccount(project_id, region)
+    except api_exceptions.HttpException as e:
+      if skip_build_sa_permission_check:
+        enablement_info = api_enablement.GetApiEnablementInfo(
+            e.payload.status_message
+        )
+        # gcloud-disable-gdu-domain
+        if (
+            enablement_info
+            and enablement_info[1] == 'cloudbuild.googleapis.com'
+        ):
+          if properties.VALUES.core.should_prompt_to_enable_api.GetBool():
+            raise console_io.OperationCancelledError('Aborted by user.')
+      raise
   service_account_email = _ExtractServiceAccountEmail(build_service_account)
 
   if skip_build_sa_permission_check:

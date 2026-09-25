@@ -207,6 +207,29 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_RESTOREVERIFICATIONPLANS = (
+      'projects.locations.restoreVerificationPlans',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'restoreVerificationPlans/{restoreVerificationPlansId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_RESTOREVERIFICATIONPLANS_ASSOCIATIONS = (
+      'projects.locations.restoreVerificationPlans.associations',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'restoreVerificationPlans/{restoreVerificationPlansId}/'
+              'associations/{associationsId}',
+      },
+      ['name'],
+      True
+  )
 
   def __init__(self, collection_name, path, flat_paths, params,
                enable_uri_parsing):

@@ -755,3 +755,19 @@ def AddTargetForwardingRules(parser, required=False):
           ' accepts full or partial resource URLs.'
       ),
   )
+
+
+def AddSecurityProfileFallbackAction(parser, required=False):
+  """Adds the security profile fallback action argument to the argparse."""
+  parser.add_argument(
+      '--security-profile-fallback-action',
+      choices=['allow', 'deny'],
+      type=lambda x: x.lower(),
+      required=required,
+      help=(
+          'The action to take if the security profile group cannot be applied.'
+          ' If unspecified, the effective action defaults to allow for'
+          ' backwards compatibility, and will not be displayed in describe'
+          ' output unless explicitly set.'
+      ),
+  )

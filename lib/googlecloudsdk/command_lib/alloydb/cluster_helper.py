@@ -212,6 +212,27 @@ def _AddEnforcedRetentionToContinuousBackupConfig(
   return continuous_backup_config
 
 
+def _AddAgentModeConfig(
+    cluster: messages.Message,
+    alloydb_messages: types.ModuleType,
+    args: argparse.Namespace,
+) -> None:
+  """Sets agentModeConfig on cluster if enable_agent_mode is specified in args.
+
+  Args:
+    cluster: The cluster message to populate.
+    alloydb_messages: The AlloyDB messages module.
+    args: The parsed command-line arguments.
+  """
+  if getattr(args, 'enable_agent_mode', None) is not None:
+    agent_mode = (
+        alloydb_messages.AgentModeConfig.ModeValueValuesEnum.ENABLED
+        if args.enable_agent_mode
+        else alloydb_messages.AgentModeConfig.ModeValueValuesEnum.DISABLED
+    )
+    cluster.agentModeConfig = alloydb_messages.AgentModeConfig(mode=agent_mode)
+
+
 def _ConstructClusterForCreateRequestBeta(alloydb_messages, args):
   """Returns the cluster for beta create request based on args."""
   cluster = _ConstructClusterForCreateRequestGA(alloydb_messages, args)
@@ -223,6 +244,9 @@ def _ConstructClusterForCreateRequestBeta(alloydb_messages, args):
           cluster.continuousBackupConfig, args
       )
   )
+  if getattr(args, 'edition', None) is not None:
+    cluster.edition = args.edition
+  _AddAgentModeConfig(cluster, alloydb_messages, args)
 
   return cluster
 
@@ -559,6 +583,9 @@ def _ConstructClusterAndMaskForPatchRequestBeta(alloydb_messages, args):
   cluster, update_masks = _ConstructClusterAndMaskForPatchRequestGA(
       alloydb_messages, args
   )
+  if getattr(args, 'edition', None) is not None:
+    cluster.edition = args.edition
+    update_masks.append('edition')
   if args.automated_backup_enforced_retention is not None:
     if cluster.automatedBackupPolicy is None:
       cluster.automatedBackupPolicy = _ConstructAutomatedBackupPolicy(
@@ -581,6 +608,9 @@ def _ConstructClusterAndMaskForPatchRequestBeta(alloydb_messages, args):
             cluster.continuousBackupConfig, args
         )
     )
+  if getattr(args, 'enable_agent_mode', None) is not None:
+    _AddAgentModeConfig(cluster, alloydb_messages, args)
+    update_masks.append('agent_mode_config.mode')
 
   return cluster, update_masks
 

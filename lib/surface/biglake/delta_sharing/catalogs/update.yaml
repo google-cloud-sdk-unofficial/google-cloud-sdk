@@ -3,6 +3,10 @@
     brief: Update a BigLake Delta Sharing catalog.
     description: |
       Update a BigLake Delta Sharing catalog.
+    examples: |-
+      To update the Cloud KMS key of a BigLake Delta Sharing catalog named `my-catalog`, run:
+
+        $ {command} my-catalog --kms-key=projects/my-project/locations/us-central1/keyRings/my-ring/cryptoKeys/my-new-key
   request:
     collection: biglake.deltasharing.v1.projects.catalogs
     api_version: delta_v1
@@ -22,6 +26,9 @@
           parameter_name: catalogsId
           help: The Delta Sharing Catalog for the resource.
     params:
+    - arg_name: kms-key
+      api_field: deltaSharingCatalog.encryptionConfig.kmsKeyName
+      help_text: Cloud KMS key name for encryption of resources in the catalog.
     - arg_name: connector-endpoint
       api_field: deltaSharingCatalog.sapConfig.sapBdcEnrollmentConfig.connectorEndpoint
       help_text: The SAP BDC Connector Endpoint.
@@ -41,6 +48,10 @@
     brief: Update a BigLake Delta Sharing catalog.
     description: |
       Update a BigLake Delta Sharing catalog.
+    examples: |-
+      To update the Cloud KMS key of a BigLake Delta Sharing catalog named `my-catalog`, run:
+
+        $ {command} my-catalog --kms-key=projects/my-project/locations/us-central1/keyRings/my-ring/cryptoKeys/my-new-key
   request:
     collection: biglake.deltasharing.v1alpha.projects.catalogs
     api_version: delta_v1alpha
@@ -60,6 +71,9 @@
           parameter_name: catalogsId
           help: The Delta Sharing Catalog for the resource.
     params:
+    - arg_name: kms-key
+      api_field: deltaSharingCatalog.encryptionConfig.kmsKeyName
+      help_text: Cloud KMS key name for encryption of resources in the catalog.
     - arg_name: connector-endpoint
       api_field: deltaSharingCatalog.sapConfig.sapBdcEnrollmentConfig.connectorEndpoint
       help_text: The SAP BDC Connector Endpoint.

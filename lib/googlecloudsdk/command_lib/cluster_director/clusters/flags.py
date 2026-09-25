@@ -1201,6 +1201,57 @@ def AddSlurmConfig(
   )
 
 
+def AddSlurmConfFile(
+    parser, api_version=None, hidden=False, include_update_flags=False
+):
+  """Adds a slurm conf file flag for the given API version."""
+  if api_version not in ["v1alpha"]:
+    raise ValueError(
+        f"Unsupported API version for slurm-conf-file: {api_version!r}"
+    )
+  flag_name = "slurm-conf-file"
+  if include_update_flags:
+    help_text = f"""
+        Path to the slurm.conf file.
+
+        When updating, the provided configuration file declaratively replaces
+        the cluster's existing Slurm configuration across global settings, node
+        set configurations, and partition configurations:
+        - Global directives in the file replace the existing cluster Slurm global
+          configuration (omitted global settings or an empty file will clear
+          existing custom global config).
+        - NodeName and PartitionName directives in the file replace the
+          configurations of matching existing node sets and partitions in the
+          cluster (node sets or partitions not present in the file have their
+          custom configurations cleared).
+
+        See https://slurm.schedmd.com/slurm.conf.html for more details.
+
+        For example --{flag_name}=path/to/slurm.conf
+    """
+  else:
+    help_text = f"""
+        Path to the slurm.conf file.
+
+        Global Slurm parameters, node set configurations (NodeName directives,
+        including bracket ranges like compute-[0-99]), and partition
+        configurations (PartitionName directives) defined in the file are
+        applied to the cluster, replacing any default or flag-provided
+        configurations. Any configuration omitted from the file will remain
+        unset.
+
+        See https://slurm.schedmd.com/slurm.conf.html for more details.
+
+        For example --{flag_name}=path/to/slurm.conf
+    """
+  parser.add_argument(
+      f"--{flag_name}",
+      help=textwrap.dedent(help_text),
+      type=str,
+      hidden=hidden,
+  )
+
+
 def AddSlurmDisableHealthCheckProgram(
     parser, api_version=None, hidden=False, include_update_flags=False
 ):

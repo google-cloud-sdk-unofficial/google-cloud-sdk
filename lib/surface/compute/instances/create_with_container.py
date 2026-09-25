@@ -203,7 +203,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_workload_identity_config = True
   _support_identity_type = False
   _support_vsock_mode = False
-  _support_expose_host_topology = False
+  _support_expose_host_topology = True
   _support_external_ip_tier = False
 
   @staticmethod
@@ -227,6 +227,7 @@ class CreateWithContainer(base.CreateCommand):
         support_workload_identity_config=True,
         support_identity_type=False,
         support_vsock_mode=False,
+        support_expose_host_topology=CreateWithContainer._support_expose_host_topology,
         support_external_ip_tier=CreateWithContainer._support_external_ip_tier,
     )
     instances_flags.AddNetworkTierArgs(parser, instance=True)
@@ -624,6 +625,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         support_workload_identity_config=True,
         support_identity_type=False,
         support_vsock_mode=False,
+        support_expose_host_topology=CreateWithContainerBeta._support_expose_host_topology,
         support_external_ip_tier=CreateWithContainerBeta._support_external_ip_tier,
     )
     instances_flags.AddNetworkTierArgs(parser, instance=True)

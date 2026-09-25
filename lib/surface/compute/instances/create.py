@@ -121,7 +121,6 @@ def _CommonArgs(
     support_source_snapshot_region=False,
     support_skip_guest_os_shutdown=False,
     support_preemption_notice_duration=False,
-    support_enable_vpc_scoped_dns=False,
     support_workload_identity_config=False,
     support_identity_type=False,
     support_alias_ipv6_ranges=False,
@@ -167,7 +166,6 @@ def _CommonArgs(
       support_vlan_nic=support_vlan_nic,
       support_ipv6_only=support_ipv6_only,
       support_igmp_query=support_igmp_query,
-      support_enable_vpc_scoped_dns=support_enable_vpc_scoped_dns,
       support_alias_ipv6_ranges=support_alias_ipv6_ranges,
       support_dns64_eligible=support_dns64_eligible,
       support_nat64_eligible=support_nat64_eligible,
@@ -371,14 +369,13 @@ class Create(base.CreateCommand):
   _support_source_snapshot_region = False
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = False
-  _support_enable_vpc_scoped_dns = False
   _support_workload_identity_config = True
   _support_identity_type = False
   _support_alias_ipv6_ranges = False
   _support_dns64_eligible = False
   _support_nat64_eligible = False
   _support_vsock_mode = False
-  _support_expose_host_topology = False
+  _support_expose_host_topology = True
   _support_external_ip_tier = False
   _support_windows_license_optimization_mode = False
   _support_current_memory = False
@@ -412,7 +409,6 @@ class Create(base.CreateCommand):
         support_source_snapshot_region=cls._support_source_snapshot_region,
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
-        support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
         support_workload_identity_config=cls._support_workload_identity_config,
         support_identity_type=cls._support_identity_type,
         support_alias_ipv6_ranges=cls._support_alias_ipv6_ranges,
@@ -420,6 +416,7 @@ class Create(base.CreateCommand):
         support_nat64_eligible=cls._support_nat64_eligible,
         support_vsock_mode=cls._support_vsock_mode,
         support_local_ssd_encryption_mode=cls._support_local_ssd_encryption_mode,
+        support_expose_host_topology=cls._support_expose_host_topology,
         support_external_ip_tier=cls._support_external_ip_tier,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
@@ -524,7 +521,6 @@ class Create(base.CreateCommand):
         support_public_dns=self._support_public_dns,
         support_ipv6_assignment=self._support_ipv6_assignment,
         support_internal_ipv6_reservation=self._support_internal_ipv6_reservation,
-        support_enable_vpc_scoped_dns=self._support_enable_vpc_scoped_dns,
         support_alias_ipv6_ranges=self._support_alias_ipv6_ranges,
         support_dns64_eligible=self._support_dns64_eligible,
         support_nat64_eligible=self._support_nat64_eligible,
@@ -951,7 +947,6 @@ class CreateBeta(Create):
   _support_source_snapshot_region = True
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = True
-  _support_enable_vpc_scoped_dns = False
   _support_workload_identity_config = True
   _support_identity_type = False
   _support_alias_ipv6_ranges = True
@@ -1003,7 +998,6 @@ class CreateBeta(Create):
         support_source_snapshot_region=cls._support_source_snapshot_region,
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
-        support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
         support_workload_identity_config=cls._support_workload_identity_config,
         support_identity_type=cls._support_identity_type,
         support_alias_ipv6_ranges=cls._support_alias_ipv6_ranges,
@@ -1011,6 +1005,7 @@ class CreateBeta(Create):
         support_vsock_mode=cls._support_vsock_mode,
         support_local_ssd_encryption_mode=cls._support_local_ssd_encryption_mode,
         support_standard_tier=True,
+        support_expose_host_topology=cls._support_expose_host_topology,
         include_kms_key_service_account=True,
         support_external_ip_tier=cls._support_external_ip_tier,
     )
@@ -1096,7 +1091,7 @@ class CreateAlpha(CreateBeta):
   _support_source_snapshot_region = True
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = True
-  _support_enable_vpc_scoped_dns = True
+
   _support_workload_identity_config = True
   _support_identity_type = True
   _support_vsock_mode = True
@@ -1142,7 +1137,6 @@ class CreateAlpha(CreateBeta):
         support_source_snapshot_region=cls._support_source_snapshot_region,
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
-        support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
         support_workload_identity_config=cls._support_workload_identity_config,
         support_identity_type=cls._support_identity_type,
         support_alias_ipv6_ranges=cls._support_alias_ipv6_ranges,

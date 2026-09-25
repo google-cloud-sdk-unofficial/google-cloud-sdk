@@ -623,6 +623,10 @@ class ClusterUpgradeFleetState(_messages.Message):
       manually upgraded clusters can be ignored if they are newer than the
       default versions of its release channel. The membership resource is in
       the format: `projects/{p}/locations/{l}/membership/{m}`.
+    sequenceHostProject: Output only. The host project of the Rollout Sequence
+      that this fleet is part of. This field is applicable only for Rollout
+      Sequencing with custom stages. Expected format:
+      `projects/{project_number}` or `projects/{project_id}`.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -655,6 +659,7 @@ class ClusterUpgradeFleetState(_messages.Message):
   downstreamFleets = _messages.StringField(1, repeated=True)
   gkeState = _messages.MessageField('ClusterUpgradeGKEUpgradeFeatureState', 2)
   ignored = _messages.MessageField('IgnoredValue', 3)
+  sequenceHostProject = _messages.StringField(4)
 
 
 class ClusterUpgradeGKEUpgrade(_messages.Message):
@@ -8117,7 +8122,7 @@ class Role(_messages.Message):
 
 
 class Rollout(_messages.Message):
-  r"""Rollout contains the Rollout metadata and configuration. Next ID: 31
+  r"""Rollout contains the Rollout metadata and configuration. Next ID: 32
 
   Enums:
     IntentValueValuesEnum: Output only. The intent of the rollout.
@@ -8168,6 +8173,10 @@ class Rollout(_messages.Message):
       is the state of the cluster.
     name: Identifier. The full, unique resource name of this Rollout in the
       format of `projects/{project}/locations/global/rollouts/{rollout}`.
+    prioritized: Optional. If set to true, conflicting rollouts will be
+      paused, to allow this rollout to progress through the sequence.
+      Conflicting rollouts running on the first stage will be canceled, to
+      allow this rollout to be created.
     rolloutSequence: Optional. Immutable. The full, unique resource name of
       the rollout sequence that initiatied this Rollout. In the format of `pro
       jects/{project}/locations/global/rolloutSequences/{rollout_sequence}`.
@@ -8402,19 +8411,20 @@ class Rollout(_messages.Message):
   managedRolloutConfig = _messages.MessageField('ManagedRolloutConfig', 15)
   membershipStates = _messages.MessageField('MembershipStatesValue', 16)
   name = _messages.StringField(17)
-  rolloutSequence = _messages.StringField(18)
-  schedule = _messages.MessageField('Schedule', 19)
-  scheduledStartTime = _messages.StringField(20)
-  stageSoakDurationOverrides = _messages.MessageField('StageSoakDurationOverridesValue', 21)
-  stages = _messages.MessageField('RolloutStage', 22, repeated=True)
-  state = _messages.EnumField('StateValueValuesEnum', 23)
-  stateReason = _messages.StringField(24)
-  stateReasonType = _messages.EnumField('StateReasonTypeValueValuesEnum', 25)
-  systemConfigIgnored = _messages.BooleanField(26)
-  trigger = _messages.EnumField('TriggerValueValuesEnum', 27)
-  uid = _messages.StringField(28)
-  updateTime = _messages.StringField(29)
-  versionUpgrade = _messages.MessageField('VersionUpgrade', 30)
+  prioritized = _messages.BooleanField(18)
+  rolloutSequence = _messages.StringField(19)
+  schedule = _messages.MessageField('Schedule', 20)
+  scheduledStartTime = _messages.StringField(21)
+  stageSoakDurationOverrides = _messages.MessageField('StageSoakDurationOverridesValue', 22)
+  stages = _messages.MessageField('RolloutStage', 23, repeated=True)
+  state = _messages.EnumField('StateValueValuesEnum', 24)
+  stateReason = _messages.StringField(25)
+  stateReasonType = _messages.EnumField('StateReasonTypeValueValuesEnum', 26)
+  systemConfigIgnored = _messages.BooleanField(27)
+  trigger = _messages.EnumField('TriggerValueValuesEnum', 28)
+  uid = _messages.StringField(29)
+  updateTime = _messages.StringField(30)
+  versionUpgrade = _messages.MessageField('VersionUpgrade', 31)
 
 
 class RolloutCreationScope(_messages.Message):
@@ -10337,6 +10347,10 @@ class UpgradeRolloutSequenceRequest(_messages.Message):
     patchOnly: Optional. If set to true, the rollout will only upgrade
       clusters that match the minor version of the `version` field, but are on
       an earlier patch version.
+    prioritized: Optional. If set to true, conflicting rollouts will be
+      paused, to allow this rollout to progress through the sequence.
+      Conflicting rollouts running on the first stage will be canceled, to
+      allow this rollout to be created.
     soakDurationOverrideAllStages: Optional. Overrides the soak duration for
       all stages of the rollout.
     soakDurationOverridePerStage: Optional. Overrides the soak durations for
@@ -10373,10 +10387,11 @@ class UpgradeRolloutSequenceRequest(_messages.Message):
   ignoreClusterDisruptionBudgets = _messages.BooleanField(2)
   ignoreMaintenancePolicies = _messages.BooleanField(3)
   patchOnly = _messages.BooleanField(4)
-  soakDurationOverrideAllStages = _messages.StringField(5)
-  soakDurationOverridePerStage = _messages.MessageField('PerStageSoakDurationOverrides', 6)
-  upgradeType = _messages.EnumField('UpgradeTypeValueValuesEnum', 7)
-  version = _messages.StringField(8)
+  prioritized = _messages.BooleanField(5)
+  soakDurationOverrideAllStages = _messages.StringField(6)
+  soakDurationOverridePerStage = _messages.MessageField('PerStageSoakDurationOverrides', 7)
+  upgradeType = _messages.EnumField('UpgradeTypeValueValuesEnum', 8)
+  version = _messages.StringField(9)
 
 
 class ValidateCreateMembershipRequest(_messages.Message):

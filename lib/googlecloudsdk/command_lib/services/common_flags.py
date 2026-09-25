@@ -340,6 +340,44 @@ def add_key_update_args(parser):
   )
   _annotations(update_set_annotation_group)
   _add_clear_annotations_arg(update_set_annotation_group)
+  check_existing_usage_flag(parser, action='updated')
+
+
+def check_existing_usage_flag(parser, action='updated'):
+  """Adds --check-existing-usage flag to parser.
+
+  Args:
+    parser: The argparse parser.
+    action: Past participle of the verb describing the operation (e.g.
+      'updated', 'deleted').
+  """
+  base.Argument(
+      '--check-existing-usage',
+      action=arg_parsers.StoreTrueFalseAction,
+      help=(
+          'If true, existing usage will be checked before the key is {0}. '
+          'If the key has traffic in the last 7 days that is incompatible with '
+          'the requested change, the request fails with an error. '
+          'Defaults to true. Set to false (--no-check-existing-usage) to '
+          'skip the check.'.format(action)
+      ),
+  ).AddToParser(parser)
+
+
+def get_check_existing_usage_enum(args, enum_cls):
+  """Resolves the CheckExistingUsage enum value, defaulting to CHECK.
+
+  Args:
+    args: The parsed argparse namespace.
+    enum_cls: The CheckExistingUsageValueValuesEnum class.
+
+  Returns:
+    The CheckExistingUsageValueValuesEnum value (SKIP or CHECK).
+  """
+  check_existing_usage = getattr(args, 'check_existing_usage', None)
+  if check_existing_usage is not None and not check_existing_usage:
+    return enum_cls.SKIP
+  return enum_cls.CHECK
 
 
 def add_key_create_args(parser):

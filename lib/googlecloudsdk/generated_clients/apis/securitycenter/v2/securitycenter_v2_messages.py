@@ -4425,7 +4425,7 @@ class GoogleCloudSecuritycenterV2AttackExposure(_messages.Message):
       Example: `organizations/123/simulations/456/attackExposureResults/789`
     exposedHighValueResourcesCount: The number of high value resources that
       are exposed as a result of this finding.
-    exposedLowValueResourcesCount: The number of high value resources that are
+    exposedLowValueResourcesCount: The number of low value resources that are
       exposed as a result of this finding.
     exposedMediumValueResourcesCount: The number of medium value resources
       that are exposed as a result of this finding.
@@ -6102,11 +6102,11 @@ class GoogleCloudSecuritycenterV2Finding(_messages.Message):
       ative_resource_name This field is immutable after creation time. The
       following list shows some examples: +
       `organizations/{organization_id}/sources/{source_id}` +
-      `folders/{folders_id}/sources/{source_id}` +
-      `projects/{projects_id}/sources/{source_id}` + `organizations/{organizat
-      ion_id}/sources/{source_id}/locations/{location_id}` +
-      `folders/{folders_id}/sources/{source_id}/locations/{location_id}` +
-      `projects/{projects_id}/sources/{source_id}/locations/{location_id}`
+      `folders/{folder_id}/sources/{source_id}` +
+      `projects/{project_id}/sources/{source_id}` + `organizations/{organizati
+      on_id}/sources/{source_id}/locations/{location_id}` +
+      `folders/{folder_id}/sources/{source_id}/locations/{location_id}` +
+      `projects/{project_id}/sources/{source_id}/locations/{location_id}`
     parentDisplayName: Output only. The human readable display name of the
       finding source such as "Event Threat Detection" or "Security Health
       Analytics".
@@ -9303,8 +9303,9 @@ class GroupFindingsRequest(_messages.Message):
 
   Fields:
     filter: Expression that defines the filter to apply across findings. The
-      expression is a list of one or more restrictions combined via logical
-      operators `AND` and `OR`. Parentheses are supported, and `OR` has higher
+      expression follows standard Google Cloud API filter syntax (AIP-160) and
+      is a list of one or more restrictions combined via logical operators
+      `AND` and `OR`. Parentheses are supported, and `OR` has higher
       precedence than `AND`. Restrictions have the form ` ` and may have a `-`
       character in front of them to indicate negation. Examples include: *
       name * security_marks.marks.marka The supported operators are: * `=` for
@@ -11979,19 +11980,19 @@ class SecuritycenterFoldersSourcesFindingsGroupRequest(_messages.Message):
       request body.
     parent: Required. Name of the source to groupBy. If no location is
       specified, finding is assumed to be in global. The following list shows
-      some examples: + `organizations/[organization_id]/sources/[source_id]` +
-      `organizations/[organization_id]/sources/[source_id]/locations/[location
-      _id]` + `folders/[folder_id]/sources/[source_id]` +
-      `folders/[folder_id]/sources/[source_id]/locations/[location_id]` +
-      `projects/[project_id]/sources/[source_id]` +
-      `projects/[project_id]/sources/[source_id]/locations/[location_id]` To
+      some examples: + `organizations/{organization_id}/sources/{source_id}` +
+      `organizations/{organization_id}/sources/{source_id}/locations/{location
+      _id}` + `folders/{folder_id}/sources/{source_id}` +
+      `folders/{folder_id}/sources/{source_id}/locations/{location_id}` +
+      `projects/{project_id}/sources/{source_id}` +
+      `projects/{project_id}/sources/{source_id}/locations/{location_id}` To
       groupBy across all sources provide a source_id of `-`. The following
       list shows some examples: + `organizations/{organization_id}/sources/-`
-      + `organizations/{organization_id}/sources/-/locations/[location_id]` +
+      + `organizations/{organization_id}/sources/-/locations/{location_id}` +
       `folders/{folder_id}/sources/-` +
-      `folders/{folder_id}/sources/-/locations/[location_id]` +
+      `folders/{folder_id}/sources/-/locations/{location_id}` +
       `projects/{project_id}/sources/-` +
-      `projects/{project_id}/sources/-/locations/[location_id]`
+      `projects/{project_id}/sources/-/locations/{location_id}`
   """
 
   groupFindingsRequest = _messages.MessageField('GroupFindingsRequest', 1)
@@ -12005,8 +12006,9 @@ class SecuritycenterFoldersSourcesFindingsListRequest(_messages.Message):
     fieldMask: A field mask to specify the Finding fields to be listed in the
       response. An empty field mask will list all fields.
     filter: Expression that defines the filter to apply across findings. The
-      expression is a list of one or more restrictions combined via logical
-      operators `AND` and `OR`. Parentheses are supported, and `OR` has higher
+      expression follows standard Google Cloud API filter syntax (AIP-160) and
+      is a list of one or more restrictions combined via logical operators
+      `AND` and `OR`. Parentheses are supported, and `OR` has higher
       precedence than `AND`. Restrictions have the form ` ` and may have a `-`
       character in front of them to indicate negation. Examples include: *
       name * security_marks.marks.marka The supported operators are: * `=` for
@@ -12032,8 +12034,9 @@ class SecuritycenterFoldersSourcesFindingsListRequest(_messages.Message):
       should be appended to the field name. For example: "name desc,parent".
       Redundant space characters in the syntax are insignificant. "name
       desc,parent" and " name desc , parent " are equivalent. The following
-      fields are supported: name parent state category resource_name
-      event_time security_marks.marks
+      fields are supported: `name` `parent` `state` `category` `resource_name`
+      `event_time` `create_time` `severity` `finding_class`
+      `attack_exposure.score` `security_marks.marks`
     pageSize: The maximum number of results to return in a single response.
       Default is 10, minimum is 1, maximum is 1000.
     pageToken: The value returned by the last `ListFindingsResponse`;
@@ -12041,19 +12044,19 @@ class SecuritycenterFoldersSourcesFindingsListRequest(_messages.Message):
       and that the system should return the next page of data.
     parent: Required. Name of the source the findings belong to. If no
       location is specified, the default is global. The following list shows
-      some examples: + `organizations/[organization_id]/sources/[source_id]` +
-      `organizations/[organization_id]/sources/[source_id]/locations/[location
-      _id]` + `folders/[folder_id]/sources/[source_id]` +
-      `folders/[folder_id]/sources/[source_id]/locations/[location_id]` +
-      `projects/[project_id]/sources/[source_id]` +
-      `projects/[project_id]/sources/[source_id]/locations/[location_id]` To
+      some examples: + `organizations/{organization_id}/sources/{source_id}` +
+      `organizations/{organization_id}/sources/{source_id}/locations/{location
+      _id}` + `folders/{folder_id}/sources/{source_id}` +
+      `folders/{folder_id}/sources/{source_id}/locations/{location_id}` +
+      `projects/{project_id}/sources/{source_id}` +
+      `projects/{project_id}/sources/{source_id}/locations/{location_id}` To
       list across all sources provide a source_id of `-`. The following list
       shows some examples: + `organizations/{organization_id}/sources/-` +
       `organizations/{organization_id}/sources/-/locations/{location_id}` +
       `folders/{folder_id}/sources/-` +
-      `folders/{folder_id}/sources/-locations/{location_id}` +
-      `projects/{projects_id}/sources/-` +
-      `projects/{projects_id}/sources/-/locations/{location_id}`
+      `folders/{folder_id}/sources/-/locations/{location_id}` +
+      `projects/{project_id}/sources/-` +
+      `projects/{project_id}/sources/-/locations/{location_id}`
   """
 
   fieldMask = _messages.StringField(1)
@@ -12176,8 +12179,8 @@ class SecuritycenterFoldersSourcesListRequest(_messages.Message):
       that this is a continuation of a prior `ListSources` call, and that the
       system should return the next page of data.
     parent: Required. Resource name of the parent of sources to list. Its
-      format should be `organizations/[organization_id]`,
-      `folders/[folder_id]`, or `projects/[project_id]`.
+      format should be: + `organizations/{organization_id}` +
+      `folders/{folder_id}` + `projects/{project_id}`
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -12235,19 +12238,19 @@ class SecuritycenterFoldersSourcesLocationsFindingsGroupRequest(_messages.Messag
       request body.
     parent: Required. Name of the source to groupBy. If no location is
       specified, finding is assumed to be in global. The following list shows
-      some examples: + `organizations/[organization_id]/sources/[source_id]` +
-      `organizations/[organization_id]/sources/[source_id]/locations/[location
-      _id]` + `folders/[folder_id]/sources/[source_id]` +
-      `folders/[folder_id]/sources/[source_id]/locations/[location_id]` +
-      `projects/[project_id]/sources/[source_id]` +
-      `projects/[project_id]/sources/[source_id]/locations/[location_id]` To
+      some examples: + `organizations/{organization_id}/sources/{source_id}` +
+      `organizations/{organization_id}/sources/{source_id}/locations/{location
+      _id}` + `folders/{folder_id}/sources/{source_id}` +
+      `folders/{folder_id}/sources/{source_id}/locations/{location_id}` +
+      `projects/{project_id}/sources/{source_id}` +
+      `projects/{project_id}/sources/{source_id}/locations/{location_id}` To
       groupBy across all sources provide a source_id of `-`. The following
       list shows some examples: + `organizations/{organization_id}/sources/-`
-      + `organizations/{organization_id}/sources/-/locations/[location_id]` +
+      + `organizations/{organization_id}/sources/-/locations/{location_id}` +
       `folders/{folder_id}/sources/-` +
-      `folders/{folder_id}/sources/-/locations/[location_id]` +
+      `folders/{folder_id}/sources/-/locations/{location_id}` +
       `projects/{project_id}/sources/-` +
-      `projects/{project_id}/sources/-/locations/[location_id]`
+      `projects/{project_id}/sources/-/locations/{location_id}`
   """
 
   groupFindingsRequest = _messages.MessageField('GroupFindingsRequest', 1)
@@ -12261,8 +12264,9 @@ class SecuritycenterFoldersSourcesLocationsFindingsListRequest(_messages.Message
     fieldMask: A field mask to specify the Finding fields to be listed in the
       response. An empty field mask will list all fields.
     filter: Expression that defines the filter to apply across findings. The
-      expression is a list of one or more restrictions combined via logical
-      operators `AND` and `OR`. Parentheses are supported, and `OR` has higher
+      expression follows standard Google Cloud API filter syntax (AIP-160) and
+      is a list of one or more restrictions combined via logical operators
+      `AND` and `OR`. Parentheses are supported, and `OR` has higher
       precedence than `AND`. Restrictions have the form ` ` and may have a `-`
       character in front of them to indicate negation. Examples include: *
       name * security_marks.marks.marka The supported operators are: * `=` for
@@ -12288,8 +12292,9 @@ class SecuritycenterFoldersSourcesLocationsFindingsListRequest(_messages.Message
       should be appended to the field name. For example: "name desc,parent".
       Redundant space characters in the syntax are insignificant. "name
       desc,parent" and " name desc , parent " are equivalent. The following
-      fields are supported: name parent state category resource_name
-      event_time security_marks.marks
+      fields are supported: `name` `parent` `state` `category` `resource_name`
+      `event_time` `create_time` `severity` `finding_class`
+      `attack_exposure.score` `security_marks.marks`
     pageSize: The maximum number of results to return in a single response.
       Default is 10, minimum is 1, maximum is 1000.
     pageToken: The value returned by the last `ListFindingsResponse`;
@@ -12297,19 +12302,19 @@ class SecuritycenterFoldersSourcesLocationsFindingsListRequest(_messages.Message
       and that the system should return the next page of data.
     parent: Required. Name of the source the findings belong to. If no
       location is specified, the default is global. The following list shows
-      some examples: + `organizations/[organization_id]/sources/[source_id]` +
-      `organizations/[organization_id]/sources/[source_id]/locations/[location
-      _id]` + `folders/[folder_id]/sources/[source_id]` +
-      `folders/[folder_id]/sources/[source_id]/locations/[location_id]` +
-      `projects/[project_id]/sources/[source_id]` +
-      `projects/[project_id]/sources/[source_id]/locations/[location_id]` To
+      some examples: + `organizations/{organization_id}/sources/{source_id}` +
+      `organizations/{organization_id}/sources/{source_id}/locations/{location
+      _id}` + `folders/{folder_id}/sources/{source_id}` +
+      `folders/{folder_id}/sources/{source_id}/locations/{location_id}` +
+      `projects/{project_id}/sources/{source_id}` +
+      `projects/{project_id}/sources/{source_id}/locations/{location_id}` To
       list across all sources provide a source_id of `-`. The following list
       shows some examples: + `organizations/{organization_id}/sources/-` +
       `organizations/{organization_id}/sources/-/locations/{location_id}` +
       `folders/{folder_id}/sources/-` +
-      `folders/{folder_id}/sources/-locations/{location_id}` +
-      `projects/{projects_id}/sources/-` +
-      `projects/{projects_id}/sources/-/locations/{location_id}`
+      `folders/{folder_id}/sources/-/locations/{location_id}` +
+      `projects/{project_id}/sources/-` +
+      `projects/{project_id}/sources/-/locations/{location_id}`
   """
 
   fieldMask = _messages.StringField(1)
@@ -12454,18 +12459,18 @@ class SecuritycenterOrganizationsAttackPathsListRequest(_messages.Message):
 
   Fields:
     filter: The filter expression that filters the attack path in the
-      response. Supported fields: * `valued_resources` supports =
+      response. Follows standard Google Cloud API filter syntax (AIP-160).
     pageSize: The maximum number of results to return in a single response.
       Default is 10, minimum is 1, maximum is 1000.
     pageToken: The value returned by the last `ListAttackPathsResponse`;
       indicates that this is a continuation of a prior `ListAttackPaths` call,
       and that the system should return the next page of data.
-    parent: Required. Name of parent to list attack paths. Valid formats:
-      `organizations/{organization}`,
-      `organizations/{organization}/simulations/{simulation}` `organizations/{
-      organization}/simulations/{simulation}/attackExposureResults/{attack_exp
-      osure_result_v2}` `organizations/{organization}/simulations/{simulation}
-      /valuedResources/{valued_resource}`
+    parent: Required. Name of parent to list attack paths. Valid formats: +
+      `organizations/{organization_id}` +
+      `organizations/{organization_id}/simulations/{simulation_id}` + `organiz
+      ations/{organization_id}/simulations/{simulation_id}/attackExposureResul
+      ts/{attack_exposure_result_v2_id}` + `organizations/{organization_id}/si
+      mulations/{simulation_id}/valuedResources/{valued_resource_id}`
   """
 
   filter = _messages.StringField(1)
@@ -12907,18 +12912,18 @@ class SecuritycenterOrganizationsLocationsSimulationsAttackExposureResultsAttack
 
   Fields:
     filter: The filter expression that filters the attack path in the
-      response. Supported fields: * `valued_resources` supports =
+      response. Follows standard Google Cloud API filter syntax (AIP-160).
     pageSize: The maximum number of results to return in a single response.
       Default is 10, minimum is 1, maximum is 1000.
     pageToken: The value returned by the last `ListAttackPathsResponse`;
       indicates that this is a continuation of a prior `ListAttackPaths` call,
       and that the system should return the next page of data.
-    parent: Required. Name of parent to list attack paths. Valid formats:
-      `organizations/{organization}`,
-      `organizations/{organization}/simulations/{simulation}` `organizations/{
-      organization}/simulations/{simulation}/attackExposureResults/{attack_exp
-      osure_result_v2}` `organizations/{organization}/simulations/{simulation}
-      /valuedResources/{valued_resource}`
+    parent: Required. Name of parent to list attack paths. Valid formats: +
+      `organizations/{organization_id}` +
+      `organizations/{organization_id}/simulations/{simulation_id}` + `organiz
+      ations/{organization_id}/simulations/{simulation_id}/attackExposureResul
+      ts/{attack_exposure_result_v2_id}` + `organizations/{organization_id}/si
+      mulations/{simulation_id}/valuedResources/{valued_resource_id}`
   """
 
   filter = _messages.StringField(1)
@@ -12946,18 +12951,18 @@ class SecuritycenterOrganizationsLocationsSimulationsValuedResourcesAttackPathsL
 
   Fields:
     filter: The filter expression that filters the attack path in the
-      response. Supported fields: * `valued_resources` supports =
+      response. Follows standard Google Cloud API filter syntax (AIP-160).
     pageSize: The maximum number of results to return in a single response.
       Default is 10, minimum is 1, maximum is 1000.
     pageToken: The value returned by the last `ListAttackPathsResponse`;
       indicates that this is a continuation of a prior `ListAttackPaths` call,
       and that the system should return the next page of data.
-    parent: Required. Name of parent to list attack paths. Valid formats:
-      `organizations/{organization}`,
-      `organizations/{organization}/simulations/{simulation}` `organizations/{
-      organization}/simulations/{simulation}/attackExposureResults/{attack_exp
-      osure_result_v2}` `organizations/{organization}/simulations/{simulation}
-      /valuedResources/{valued_resource}`
+    parent: Required. Name of parent to list attack paths. Valid formats: +
+      `organizations/{organization_id}` +
+      `organizations/{organization_id}/simulations/{simulation_id}` + `organiz
+      ations/{organization_id}/simulations/{simulation_id}/attackExposureResul
+      ts/{attack_exposure_result_v2_id}` + `organizations/{organization_id}/si
+      mulations/{simulation_id}/valuedResources/{valued_resource_id}`
   """
 
   filter = _messages.StringField(1)
@@ -13224,18 +13229,18 @@ class SecuritycenterOrganizationsSimulationsAttackExposureResultsAttackPathsList
 
   Fields:
     filter: The filter expression that filters the attack path in the
-      response. Supported fields: * `valued_resources` supports =
+      response. Follows standard Google Cloud API filter syntax (AIP-160).
     pageSize: The maximum number of results to return in a single response.
       Default is 10, minimum is 1, maximum is 1000.
     pageToken: The value returned by the last `ListAttackPathsResponse`;
       indicates that this is a continuation of a prior `ListAttackPaths` call,
       and that the system should return the next page of data.
-    parent: Required. Name of parent to list attack paths. Valid formats:
-      `organizations/{organization}`,
-      `organizations/{organization}/simulations/{simulation}` `organizations/{
-      organization}/simulations/{simulation}/attackExposureResults/{attack_exp
-      osure_result_v2}` `organizations/{organization}/simulations/{simulation}
-      /valuedResources/{valued_resource}`
+    parent: Required. Name of parent to list attack paths. Valid formats: +
+      `organizations/{organization_id}` +
+      `organizations/{organization_id}/simulations/{simulation_id}` + `organiz
+      ations/{organization_id}/simulations/{simulation_id}/attackExposureResul
+      ts/{attack_exposure_result_v2_id}` + `organizations/{organization_id}/si
+      mulations/{simulation_id}/valuedResources/{valued_resource_id}`
   """
 
   filter = _messages.StringField(1)
@@ -13283,18 +13288,18 @@ class SecuritycenterOrganizationsSimulationsAttackPathsListRequest(_messages.Mes
 
   Fields:
     filter: The filter expression that filters the attack path in the
-      response. Supported fields: * `valued_resources` supports =
+      response. Follows standard Google Cloud API filter syntax (AIP-160).
     pageSize: The maximum number of results to return in a single response.
       Default is 10, minimum is 1, maximum is 1000.
     pageToken: The value returned by the last `ListAttackPathsResponse`;
       indicates that this is a continuation of a prior `ListAttackPaths` call,
       and that the system should return the next page of data.
-    parent: Required. Name of parent to list attack paths. Valid formats:
-      `organizations/{organization}`,
-      `organizations/{organization}/simulations/{simulation}` `organizations/{
-      organization}/simulations/{simulation}/attackExposureResults/{attack_exp
-      osure_result_v2}` `organizations/{organization}/simulations/{simulation}
-      /valuedResources/{valued_resource}`
+    parent: Required. Name of parent to list attack paths. Valid formats: +
+      `organizations/{organization_id}` +
+      `organizations/{organization_id}/simulations/{simulation_id}` + `organiz
+      ations/{organization_id}/simulations/{simulation_id}/attackExposureResul
+      ts/{attack_exposure_result_v2_id}` + `organizations/{organization_id}/si
+      mulations/{simulation_id}/valuedResources/{valued_resource_id}`
   """
 
   filter = _messages.StringField(1)
@@ -13323,18 +13328,18 @@ class SecuritycenterOrganizationsSimulationsValuedResourcesAttackPathsListReques
 
   Fields:
     filter: The filter expression that filters the attack path in the
-      response. Supported fields: * `valued_resources` supports =
+      response. Follows standard Google Cloud API filter syntax (AIP-160).
     pageSize: The maximum number of results to return in a single response.
       Default is 10, minimum is 1, maximum is 1000.
     pageToken: The value returned by the last `ListAttackPathsResponse`;
       indicates that this is a continuation of a prior `ListAttackPaths` call,
       and that the system should return the next page of data.
-    parent: Required. Name of parent to list attack paths. Valid formats:
-      `organizations/{organization}`,
-      `organizations/{organization}/simulations/{simulation}` `organizations/{
-      organization}/simulations/{simulation}/attackExposureResults/{attack_exp
-      osure_result_v2}` `organizations/{organization}/simulations/{simulation}
-      /valuedResources/{valued_resource}`
+    parent: Required. Name of parent to list attack paths. Valid formats: +
+      `organizations/{organization_id}` +
+      `organizations/{organization_id}/simulations/{simulation_id}` + `organiz
+      ations/{organization_id}/simulations/{simulation_id}/attackExposureResul
+      ts/{attack_exposure_result_v2_id}` + `organizations/{organization_id}/si
+      mulations/{simulation_id}/valuedResources/{valued_resource_id}`
   """
 
   filter = _messages.StringField(1)
@@ -13458,19 +13463,19 @@ class SecuritycenterOrganizationsSourcesFindingsGroupRequest(_messages.Message):
       request body.
     parent: Required. Name of the source to groupBy. If no location is
       specified, finding is assumed to be in global. The following list shows
-      some examples: + `organizations/[organization_id]/sources/[source_id]` +
-      `organizations/[organization_id]/sources/[source_id]/locations/[location
-      _id]` + `folders/[folder_id]/sources/[source_id]` +
-      `folders/[folder_id]/sources/[source_id]/locations/[location_id]` +
-      `projects/[project_id]/sources/[source_id]` +
-      `projects/[project_id]/sources/[source_id]/locations/[location_id]` To
+      some examples: + `organizations/{organization_id}/sources/{source_id}` +
+      `organizations/{organization_id}/sources/{source_id}/locations/{location
+      _id}` + `folders/{folder_id}/sources/{source_id}` +
+      `folders/{folder_id}/sources/{source_id}/locations/{location_id}` +
+      `projects/{project_id}/sources/{source_id}` +
+      `projects/{project_id}/sources/{source_id}/locations/{location_id}` To
       groupBy across all sources provide a source_id of `-`. The following
       list shows some examples: + `organizations/{organization_id}/sources/-`
-      + `organizations/{organization_id}/sources/-/locations/[location_id]` +
+      + `organizations/{organization_id}/sources/-/locations/{location_id}` +
       `folders/{folder_id}/sources/-` +
-      `folders/{folder_id}/sources/-/locations/[location_id]` +
+      `folders/{folder_id}/sources/-/locations/{location_id}` +
       `projects/{project_id}/sources/-` +
-      `projects/{project_id}/sources/-/locations/[location_id]`
+      `projects/{project_id}/sources/-/locations/{location_id}`
   """
 
   groupFindingsRequest = _messages.MessageField('GroupFindingsRequest', 1)
@@ -13484,8 +13489,9 @@ class SecuritycenterOrganizationsSourcesFindingsListRequest(_messages.Message):
     fieldMask: A field mask to specify the Finding fields to be listed in the
       response. An empty field mask will list all fields.
     filter: Expression that defines the filter to apply across findings. The
-      expression is a list of one or more restrictions combined via logical
-      operators `AND` and `OR`. Parentheses are supported, and `OR` has higher
+      expression follows standard Google Cloud API filter syntax (AIP-160) and
+      is a list of one or more restrictions combined via logical operators
+      `AND` and `OR`. Parentheses are supported, and `OR` has higher
       precedence than `AND`. Restrictions have the form ` ` and may have a `-`
       character in front of them to indicate negation. Examples include: *
       name * security_marks.marks.marka The supported operators are: * `=` for
@@ -13511,8 +13517,9 @@ class SecuritycenterOrganizationsSourcesFindingsListRequest(_messages.Message):
       should be appended to the field name. For example: "name desc,parent".
       Redundant space characters in the syntax are insignificant. "name
       desc,parent" and " name desc , parent " are equivalent. The following
-      fields are supported: name parent state category resource_name
-      event_time security_marks.marks
+      fields are supported: `name` `parent` `state` `category` `resource_name`
+      `event_time` `create_time` `severity` `finding_class`
+      `attack_exposure.score` `security_marks.marks`
     pageSize: The maximum number of results to return in a single response.
       Default is 10, minimum is 1, maximum is 1000.
     pageToken: The value returned by the last `ListFindingsResponse`;
@@ -13520,19 +13527,19 @@ class SecuritycenterOrganizationsSourcesFindingsListRequest(_messages.Message):
       and that the system should return the next page of data.
     parent: Required. Name of the source the findings belong to. If no
       location is specified, the default is global. The following list shows
-      some examples: + `organizations/[organization_id]/sources/[source_id]` +
-      `organizations/[organization_id]/sources/[source_id]/locations/[location
-      _id]` + `folders/[folder_id]/sources/[source_id]` +
-      `folders/[folder_id]/sources/[source_id]/locations/[location_id]` +
-      `projects/[project_id]/sources/[source_id]` +
-      `projects/[project_id]/sources/[source_id]/locations/[location_id]` To
+      some examples: + `organizations/{organization_id}/sources/{source_id}` +
+      `organizations/{organization_id}/sources/{source_id}/locations/{location
+      _id}` + `folders/{folder_id}/sources/{source_id}` +
+      `folders/{folder_id}/sources/{source_id}/locations/{location_id}` +
+      `projects/{project_id}/sources/{source_id}` +
+      `projects/{project_id}/sources/{source_id}/locations/{location_id}` To
       list across all sources provide a source_id of `-`. The following list
       shows some examples: + `organizations/{organization_id}/sources/-` +
       `organizations/{organization_id}/sources/-/locations/{location_id}` +
       `folders/{folder_id}/sources/-` +
-      `folders/{folder_id}/sources/-locations/{location_id}` +
-      `projects/{projects_id}/sources/-` +
-      `projects/{projects_id}/sources/-/locations/{location_id}`
+      `folders/{folder_id}/sources/-/locations/{location_id}` +
+      `projects/{project_id}/sources/-` +
+      `projects/{project_id}/sources/-/locations/{location_id}`
   """
 
   fieldMask = _messages.StringField(1)
@@ -13667,7 +13674,7 @@ class SecuritycenterOrganizationsSourcesGetRequest(_messages.Message):
 
   Fields:
     name: Required. Relative resource name of the source. Its format is
-      `organizations/[organization_id]/source/[source_id]`.
+      `organizations/{organization_id}/sources/{source_id}`.
   """
 
   name = _messages.StringField(1, required=True)
@@ -13683,8 +13690,8 @@ class SecuritycenterOrganizationsSourcesListRequest(_messages.Message):
       that this is a continuation of a prior `ListSources` call, and that the
       system should return the next page of data.
     parent: Required. Resource name of the parent of sources to list. Its
-      format should be `organizations/[organization_id]`,
-      `folders/[folder_id]`, or `projects/[project_id]`.
+      format should be: + `organizations/{organization_id}` +
+      `folders/{folder_id}` + `projects/{project_id}`
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -13764,19 +13771,19 @@ class SecuritycenterOrganizationsSourcesLocationsFindingsGroupRequest(_messages.
       request body.
     parent: Required. Name of the source to groupBy. If no location is
       specified, finding is assumed to be in global. The following list shows
-      some examples: + `organizations/[organization_id]/sources/[source_id]` +
-      `organizations/[organization_id]/sources/[source_id]/locations/[location
-      _id]` + `folders/[folder_id]/sources/[source_id]` +
-      `folders/[folder_id]/sources/[source_id]/locations/[location_id]` +
-      `projects/[project_id]/sources/[source_id]` +
-      `projects/[project_id]/sources/[source_id]/locations/[location_id]` To
+      some examples: + `organizations/{organization_id}/sources/{source_id}` +
+      `organizations/{organization_id}/sources/{source_id}/locations/{location
+      _id}` + `folders/{folder_id}/sources/{source_id}` +
+      `folders/{folder_id}/sources/{source_id}/locations/{location_id}` +
+      `projects/{project_id}/sources/{source_id}` +
+      `projects/{project_id}/sources/{source_id}/locations/{location_id}` To
       groupBy across all sources provide a source_id of `-`. The following
       list shows some examples: + `organizations/{organization_id}/sources/-`
-      + `organizations/{organization_id}/sources/-/locations/[location_id]` +
+      + `organizations/{organization_id}/sources/-/locations/{location_id}` +
       `folders/{folder_id}/sources/-` +
-      `folders/{folder_id}/sources/-/locations/[location_id]` +
+      `folders/{folder_id}/sources/-/locations/{location_id}` +
       `projects/{project_id}/sources/-` +
-      `projects/{project_id}/sources/-/locations/[location_id]`
+      `projects/{project_id}/sources/-/locations/{location_id}`
   """
 
   groupFindingsRequest = _messages.MessageField('GroupFindingsRequest', 1)
@@ -13790,8 +13797,9 @@ class SecuritycenterOrganizationsSourcesLocationsFindingsListRequest(_messages.M
     fieldMask: A field mask to specify the Finding fields to be listed in the
       response. An empty field mask will list all fields.
     filter: Expression that defines the filter to apply across findings. The
-      expression is a list of one or more restrictions combined via logical
-      operators `AND` and `OR`. Parentheses are supported, and `OR` has higher
+      expression follows standard Google Cloud API filter syntax (AIP-160) and
+      is a list of one or more restrictions combined via logical operators
+      `AND` and `OR`. Parentheses are supported, and `OR` has higher
       precedence than `AND`. Restrictions have the form ` ` and may have a `-`
       character in front of them to indicate negation. Examples include: *
       name * security_marks.marks.marka The supported operators are: * `=` for
@@ -13817,8 +13825,9 @@ class SecuritycenterOrganizationsSourcesLocationsFindingsListRequest(_messages.M
       should be appended to the field name. For example: "name desc,parent".
       Redundant space characters in the syntax are insignificant. "name
       desc,parent" and " name desc , parent " are equivalent. The following
-      fields are supported: name parent state category resource_name
-      event_time security_marks.marks
+      fields are supported: `name` `parent` `state` `category` `resource_name`
+      `event_time` `create_time` `severity` `finding_class`
+      `attack_exposure.score` `security_marks.marks`
     pageSize: The maximum number of results to return in a single response.
       Default is 10, minimum is 1, maximum is 1000.
     pageToken: The value returned by the last `ListFindingsResponse`;
@@ -13826,19 +13835,19 @@ class SecuritycenterOrganizationsSourcesLocationsFindingsListRequest(_messages.M
       and that the system should return the next page of data.
     parent: Required. Name of the source the findings belong to. If no
       location is specified, the default is global. The following list shows
-      some examples: + `organizations/[organization_id]/sources/[source_id]` +
-      `organizations/[organization_id]/sources/[source_id]/locations/[location
-      _id]` + `folders/[folder_id]/sources/[source_id]` +
-      `folders/[folder_id]/sources/[source_id]/locations/[location_id]` +
-      `projects/[project_id]/sources/[source_id]` +
-      `projects/[project_id]/sources/[source_id]/locations/[location_id]` To
+      some examples: + `organizations/{organization_id}/sources/{source_id}` +
+      `organizations/{organization_id}/sources/{source_id}/locations/{location
+      _id}` + `folders/{folder_id}/sources/{source_id}` +
+      `folders/{folder_id}/sources/{source_id}/locations/{location_id}` +
+      `projects/{project_id}/sources/{source_id}` +
+      `projects/{project_id}/sources/{source_id}/locations/{location_id}` To
       list across all sources provide a source_id of `-`. The following list
       shows some examples: + `organizations/{organization_id}/sources/-` +
       `organizations/{organization_id}/sources/-/locations/{location_id}` +
       `folders/{folder_id}/sources/-` +
-      `folders/{folder_id}/sources/-locations/{location_id}` +
-      `projects/{projects_id}/sources/-` +
-      `projects/{projects_id}/sources/-/locations/{location_id}`
+      `folders/{folder_id}/sources/-/locations/{location_id}` +
+      `projects/{project_id}/sources/-` +
+      `projects/{project_id}/sources/-/locations/{location_id}`
   """
 
   fieldMask = _messages.StringField(1)
@@ -14539,19 +14548,19 @@ class SecuritycenterProjectsSourcesFindingsGroupRequest(_messages.Message):
       request body.
     parent: Required. Name of the source to groupBy. If no location is
       specified, finding is assumed to be in global. The following list shows
-      some examples: + `organizations/[organization_id]/sources/[source_id]` +
-      `organizations/[organization_id]/sources/[source_id]/locations/[location
-      _id]` + `folders/[folder_id]/sources/[source_id]` +
-      `folders/[folder_id]/sources/[source_id]/locations/[location_id]` +
-      `projects/[project_id]/sources/[source_id]` +
-      `projects/[project_id]/sources/[source_id]/locations/[location_id]` To
+      some examples: + `organizations/{organization_id}/sources/{source_id}` +
+      `organizations/{organization_id}/sources/{source_id}/locations/{location
+      _id}` + `folders/{folder_id}/sources/{source_id}` +
+      `folders/{folder_id}/sources/{source_id}/locations/{location_id}` +
+      `projects/{project_id}/sources/{source_id}` +
+      `projects/{project_id}/sources/{source_id}/locations/{location_id}` To
       groupBy across all sources provide a source_id of `-`. The following
       list shows some examples: + `organizations/{organization_id}/sources/-`
-      + `organizations/{organization_id}/sources/-/locations/[location_id]` +
+      + `organizations/{organization_id}/sources/-/locations/{location_id}` +
       `folders/{folder_id}/sources/-` +
-      `folders/{folder_id}/sources/-/locations/[location_id]` +
+      `folders/{folder_id}/sources/-/locations/{location_id}` +
       `projects/{project_id}/sources/-` +
-      `projects/{project_id}/sources/-/locations/[location_id]`
+      `projects/{project_id}/sources/-/locations/{location_id}`
   """
 
   groupFindingsRequest = _messages.MessageField('GroupFindingsRequest', 1)
@@ -14565,8 +14574,9 @@ class SecuritycenterProjectsSourcesFindingsListRequest(_messages.Message):
     fieldMask: A field mask to specify the Finding fields to be listed in the
       response. An empty field mask will list all fields.
     filter: Expression that defines the filter to apply across findings. The
-      expression is a list of one or more restrictions combined via logical
-      operators `AND` and `OR`. Parentheses are supported, and `OR` has higher
+      expression follows standard Google Cloud API filter syntax (AIP-160) and
+      is a list of one or more restrictions combined via logical operators
+      `AND` and `OR`. Parentheses are supported, and `OR` has higher
       precedence than `AND`. Restrictions have the form ` ` and may have a `-`
       character in front of them to indicate negation. Examples include: *
       name * security_marks.marks.marka The supported operators are: * `=` for
@@ -14592,8 +14602,9 @@ class SecuritycenterProjectsSourcesFindingsListRequest(_messages.Message):
       should be appended to the field name. For example: "name desc,parent".
       Redundant space characters in the syntax are insignificant. "name
       desc,parent" and " name desc , parent " are equivalent. The following
-      fields are supported: name parent state category resource_name
-      event_time security_marks.marks
+      fields are supported: `name` `parent` `state` `category` `resource_name`
+      `event_time` `create_time` `severity` `finding_class`
+      `attack_exposure.score` `security_marks.marks`
     pageSize: The maximum number of results to return in a single response.
       Default is 10, minimum is 1, maximum is 1000.
     pageToken: The value returned by the last `ListFindingsResponse`;
@@ -14601,19 +14612,19 @@ class SecuritycenterProjectsSourcesFindingsListRequest(_messages.Message):
       and that the system should return the next page of data.
     parent: Required. Name of the source the findings belong to. If no
       location is specified, the default is global. The following list shows
-      some examples: + `organizations/[organization_id]/sources/[source_id]` +
-      `organizations/[organization_id]/sources/[source_id]/locations/[location
-      _id]` + `folders/[folder_id]/sources/[source_id]` +
-      `folders/[folder_id]/sources/[source_id]/locations/[location_id]` +
-      `projects/[project_id]/sources/[source_id]` +
-      `projects/[project_id]/sources/[source_id]/locations/[location_id]` To
+      some examples: + `organizations/{organization_id}/sources/{source_id}` +
+      `organizations/{organization_id}/sources/{source_id}/locations/{location
+      _id}` + `folders/{folder_id}/sources/{source_id}` +
+      `folders/{folder_id}/sources/{source_id}/locations/{location_id}` +
+      `projects/{project_id}/sources/{source_id}` +
+      `projects/{project_id}/sources/{source_id}/locations/{location_id}` To
       list across all sources provide a source_id of `-`. The following list
       shows some examples: + `organizations/{organization_id}/sources/-` +
       `organizations/{organization_id}/sources/-/locations/{location_id}` +
       `folders/{folder_id}/sources/-` +
-      `folders/{folder_id}/sources/-locations/{location_id}` +
-      `projects/{projects_id}/sources/-` +
-      `projects/{projects_id}/sources/-/locations/{location_id}`
+      `folders/{folder_id}/sources/-/locations/{location_id}` +
+      `projects/{project_id}/sources/-` +
+      `projects/{project_id}/sources/-/locations/{location_id}`
   """
 
   fieldMask = _messages.StringField(1)
@@ -14737,8 +14748,8 @@ class SecuritycenterProjectsSourcesListRequest(_messages.Message):
       that this is a continuation of a prior `ListSources` call, and that the
       system should return the next page of data.
     parent: Required. Resource name of the parent of sources to list. Its
-      format should be `organizations/[organization_id]`,
-      `folders/[folder_id]`, or `projects/[project_id]`.
+      format should be: + `organizations/{organization_id}` +
+      `folders/{folder_id}` + `projects/{project_id}`
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -14796,19 +14807,19 @@ class SecuritycenterProjectsSourcesLocationsFindingsGroupRequest(_messages.Messa
       request body.
     parent: Required. Name of the source to groupBy. If no location is
       specified, finding is assumed to be in global. The following list shows
-      some examples: + `organizations/[organization_id]/sources/[source_id]` +
-      `organizations/[organization_id]/sources/[source_id]/locations/[location
-      _id]` + `folders/[folder_id]/sources/[source_id]` +
-      `folders/[folder_id]/sources/[source_id]/locations/[location_id]` +
-      `projects/[project_id]/sources/[source_id]` +
-      `projects/[project_id]/sources/[source_id]/locations/[location_id]` To
+      some examples: + `organizations/{organization_id}/sources/{source_id}` +
+      `organizations/{organization_id}/sources/{source_id}/locations/{location
+      _id}` + `folders/{folder_id}/sources/{source_id}` +
+      `folders/{folder_id}/sources/{source_id}/locations/{location_id}` +
+      `projects/{project_id}/sources/{source_id}` +
+      `projects/{project_id}/sources/{source_id}/locations/{location_id}` To
       groupBy across all sources provide a source_id of `-`. The following
       list shows some examples: + `organizations/{organization_id}/sources/-`
-      + `organizations/{organization_id}/sources/-/locations/[location_id]` +
+      + `organizations/{organization_id}/sources/-/locations/{location_id}` +
       `folders/{folder_id}/sources/-` +
-      `folders/{folder_id}/sources/-/locations/[location_id]` +
+      `folders/{folder_id}/sources/-/locations/{location_id}` +
       `projects/{project_id}/sources/-` +
-      `projects/{project_id}/sources/-/locations/[location_id]`
+      `projects/{project_id}/sources/-/locations/{location_id}`
   """
 
   groupFindingsRequest = _messages.MessageField('GroupFindingsRequest', 1)
@@ -14822,8 +14833,9 @@ class SecuritycenterProjectsSourcesLocationsFindingsListRequest(_messages.Messag
     fieldMask: A field mask to specify the Finding fields to be listed in the
       response. An empty field mask will list all fields.
     filter: Expression that defines the filter to apply across findings. The
-      expression is a list of one or more restrictions combined via logical
-      operators `AND` and `OR`. Parentheses are supported, and `OR` has higher
+      expression follows standard Google Cloud API filter syntax (AIP-160) and
+      is a list of one or more restrictions combined via logical operators
+      `AND` and `OR`. Parentheses are supported, and `OR` has higher
       precedence than `AND`. Restrictions have the form ` ` and may have a `-`
       character in front of them to indicate negation. Examples include: *
       name * security_marks.marks.marka The supported operators are: * `=` for
@@ -14849,8 +14861,9 @@ class SecuritycenterProjectsSourcesLocationsFindingsListRequest(_messages.Messag
       should be appended to the field name. For example: "name desc,parent".
       Redundant space characters in the syntax are insignificant. "name
       desc,parent" and " name desc , parent " are equivalent. The following
-      fields are supported: name parent state category resource_name
-      event_time security_marks.marks
+      fields are supported: `name` `parent` `state` `category` `resource_name`
+      `event_time` `create_time` `severity` `finding_class`
+      `attack_exposure.score` `security_marks.marks`
     pageSize: The maximum number of results to return in a single response.
       Default is 10, minimum is 1, maximum is 1000.
     pageToken: The value returned by the last `ListFindingsResponse`;
@@ -14858,19 +14871,19 @@ class SecuritycenterProjectsSourcesLocationsFindingsListRequest(_messages.Messag
       and that the system should return the next page of data.
     parent: Required. Name of the source the findings belong to. If no
       location is specified, the default is global. The following list shows
-      some examples: + `organizations/[organization_id]/sources/[source_id]` +
-      `organizations/[organization_id]/sources/[source_id]/locations/[location
-      _id]` + `folders/[folder_id]/sources/[source_id]` +
-      `folders/[folder_id]/sources/[source_id]/locations/[location_id]` +
-      `projects/[project_id]/sources/[source_id]` +
-      `projects/[project_id]/sources/[source_id]/locations/[location_id]` To
+      some examples: + `organizations/{organization_id}/sources/{source_id}` +
+      `organizations/{organization_id}/sources/{source_id}/locations/{location
+      _id}` + `folders/{folder_id}/sources/{source_id}` +
+      `folders/{folder_id}/sources/{source_id}/locations/{location_id}` +
+      `projects/{project_id}/sources/{source_id}` +
+      `projects/{project_id}/sources/{source_id}/locations/{location_id}` To
       list across all sources provide a source_id of `-`. The following list
       shows some examples: + `organizations/{organization_id}/sources/-` +
       `organizations/{organization_id}/sources/-/locations/{location_id}` +
       `folders/{folder_id}/sources/-` +
-      `folders/{folder_id}/sources/-locations/{location_id}` +
-      `projects/{projects_id}/sources/-` +
-      `projects/{projects_id}/sources/-/locations/{location_id}`
+      `folders/{folder_id}/sources/-/locations/{location_id}` +
+      `projects/{project_id}/sources/-` +
+      `projects/{project_id}/sources/-/locations/{location_id}`
   """
 
   fieldMask = _messages.StringField(1)

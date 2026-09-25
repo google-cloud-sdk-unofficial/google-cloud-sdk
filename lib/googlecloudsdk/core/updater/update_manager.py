@@ -28,6 +28,7 @@ from typing import Any, TypeVar
 
 from googlecloudsdk.core import argv_utils
 from googlecloudsdk.core import config
+from googlecloudsdk.core import context_aware
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
@@ -98,6 +99,15 @@ BUNDLED_PYTHON_COMPONENTS = ['bundled-python3', 'bundled-python3-unix']
 BUNDLED_PYTHON_REMOVAL_WARNING = (
     'This command is running using a bundled installation of Python. '
     'If you remove it, you may have no way to run this command.\n'
+)
+
+MINIKUBE_DEPRECATION_WARNING = (
+    'The \'minikube\' component in Google Cloud CLI is deprecated and will be '
+    'removed after January 31, 2027. Existing local configurations and '
+    'clusters in ~/.minikube will be preserved. Minikube is an open-source '
+    'project and continues to be actively maintained. To avoid disruptions, '
+    'please migrate to standard OSS Minikube installations: '
+    'https://minikube.sigs.k8s.io/docs/start/\n'
 )
 
 _DONT_CANCEL_MESSAGE = (
@@ -1067,6 +1077,9 @@ version [{1}].  To clear your fixed version setting, run:
       log.warning(BUNDLED_PYTHON_REMOVAL_WARNING)
     self._RestartIfUsingBundledPython(args=restart_args)
 
+    if 'minikube' in to_install:
+      log.warning(MINIKUBE_DEPRECATION_WARNING)
+
     # If explicitly listing components, you are probably installing and not
     # doing a full update, change the message to be more clear.
     if original_update_seed:
@@ -1832,3 +1845,17 @@ def RestartCommand(command=None, args=None, python=None, block=True):
           return '"' + encoding.Decode(s) + '"'
         args = 'cmd.exe /c "{0} & pause"'.format(' '.join(map(Quote, args)))
     subprocess.Popen(args, shell=True, **popen_args)
+
+
+def _DefaultUpdaterFactory(sdk_root, platform):
+  return UpdateManager(sdk_root=sdk_root, url=None, platform_filter=platform)
+
+
+def _DefaultRestartCommand():
+  RestartCommand()
+
+
+context_aware.SetECPRepairHandler(
+    updater_factory=_DefaultUpdaterFactory,
+    restart_command_fn=_DefaultRestartCommand,
+)

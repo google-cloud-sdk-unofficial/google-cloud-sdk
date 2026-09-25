@@ -23,6 +23,18 @@ from googlecloudsdk.command_lib.storage.tasks import task_status
 from googlecloudsdk.command_lib.storage.tasks.buckets.anywhere_caches import pause_anywhere_cache_task
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'The `gcloud storage buckets anywhere-caches pause` command is'
+        ' deprecated and will be removed on September 23, 2026. Pause'
+        ' functionality will no longer be supported.'
+    ),
+    error=(
+        'The `gcloud storage buckets anywhere-caches pause` command has been'
+        ' removed. Pause functionality is no longer supported.'
+    ),
+)
 @base.DefaultUniverseOnly
 class Pause(base.Command):
   """Pause Anywhere Cache instances."""

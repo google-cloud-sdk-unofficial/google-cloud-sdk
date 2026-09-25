@@ -558,6 +558,77 @@ class SourcesAnnotationChange(TemplateConfigChanger):
 
 
 @dataclasses.dataclass(frozen=True)
+class BuildConfigAnnotationChange(TemplateConfigChanger):
+  """Represents the user intent to update the 'build-config' template annotation.
+
+  The value of the annotation `run.googleapis.com/build-config` is a
+  JSON-formatted string representing a map of (container name, BuildConfig)
+  entries, where container name is either empty and corresponds to the
+  ingress container or has a name and corresponds to the container with
+  the same name, and BuildConfig is a JSON representation of a
+  V2.Service.Template.Container.BuildConfig object. E.g.:
+  '{"":{"imageRepository":"us-central1-docker.pkg.dev/my-proj/repo/app"}}'.
+
+  Attributes:
+    updates: {container: build_config_dict} map of values that need to be
+      added/updated.
+    deletes: List of containers whose build config needs to be deleted.
+  """
+
+  updates: dict[str, dict[str, Any]] = dataclasses.field(default_factory=dict)
+  deletes: list[str] = dataclasses.field(default_factory=list)
+
+  def _mergeBuildConfig(
+      self,
+      resource: revision.Revision,
+      existing_configs: dict[str, Any],
+      updates: dict[str, dict[str, Any]],
+      deletes: list[str],
+  ):
+    if deletes:
+      for container in deletes:
+        if container in existing_configs:
+          del existing_configs[container]
+    if updates:
+      for container, config in updates.items():
+        existing_configs[container] = config
+    return self._constructBuildConfig(resource, existing_configs)
+
+  def _constructBuildConfig(
+      self, resource: revision.Revision, configs: dict[str, Any]
+  ):
+    containers = frozenset(
+        [x or '' for x in resource.template.containers.keys()]
+    )
+    return json.dumps(
+        {x: y for x, y in configs.items() if x in containers},
+        separators=(',', ':'),
+    )
+
+  def Adjust(self, resource: revision.Revision):
+    """Updates the revision with build configurations."""
+
+    annotations = resource.template.annotations
+    existing_value = annotations.get(revision.BUILD_CONFIG_ANNOTATION, '')
+
+    if existing_value:
+      existing_configs = json.loads(existing_value)
+      new_value = self._mergeBuildConfig(
+          resource, existing_configs, self.updates, self.deletes
+      )
+    else:
+      new_value = self._constructBuildConfig(resource, self.updates)
+
+    if new_value and new_value != '{}':
+      resource.template.annotations[revision.BUILD_CONFIG_ANNOTATION] = (
+          new_value
+      )
+    elif revision.BUILD_CONFIG_ANNOTATION in annotations:
+      del resource.template.annotations[revision.BUILD_CONFIG_ANNOTATION]
+    return resource
+
+
+@dataclasses.dataclass(frozen=True)
 class IngressContainerBaseImagesAnnotationChange(BaseImagesAnnotationChange):
   """Represents the user intent to update the 'base-images' template annotation.
 

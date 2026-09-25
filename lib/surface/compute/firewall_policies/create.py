@@ -33,10 +33,13 @@ class Create(base.CreateCommand):
 
   FIREWALL_POLICY_ARG = None
   support_rollout_plan = False
+  support_security_profile_fallback_action = False
 
   @classmethod
   def Args(cls, parser):
     flags.AddArgFirewallPolicyCreation(parser)
+    if cls.support_security_profile_fallback_action:
+      flags.AddSecurityProfileFallbackAction(parser)
     if cls.support_rollout_plan:
       flags.AddRolloutPlan(parser)
     parser.display_info.AddCacheUpdater(flags.FirewallPoliciesCompleter)
@@ -68,10 +71,20 @@ class Create(base.CreateCommand):
           )
       )
 
+    security_profile_fallback_action = None
+    if self.support_security_profile_fallback_action and args.IsSpecified(
+        'security_profile_fallback_action'
+    ):
+      security_profile_fallback_action = args.security_profile_fallback_action
+
     firewall_policy = holder.client.messages.FirewallPolicy(
         description=args.description,
         displayName=args.short_name,
     )
+    if security_profile_fallback_action is not None:
+      firewall_policy.applySecurityProfileFallbackAction = (
+          security_profile_fallback_action
+      )
     if self.support_rollout_plan:
       firewall_policy.rolloutOperation = rollout_operation
 
@@ -104,6 +117,7 @@ class CreateAlpha(Create):
   """
 
   support_rollout_plan = True
+  support_security_profile_fallback_action = True
 
 
 Create.detailed_help = {

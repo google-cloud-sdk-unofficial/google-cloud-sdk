@@ -73,6 +73,7 @@ class Update(base.UpdateCommand):
     flags.AddWorkloadIdentityConfigArgs(parser)
     flags.AddMostDisruptiveAllowedActionArgs(parser)
     flags.AddGracefulShutdownArgs(parser)
+    flags.AddExposeHostTopologyArg(parser)
 
   def Run(self, args):
     return self._Run(args)
@@ -606,6 +607,7 @@ class UpdateBeta(Update):
     flags.AddGracefulShutdownArgs(parser)
     flags.AddWorkloadIdentityConfigArgs(parser)
     flags.AddMostDisruptiveAllowedActionArgs(parser)
+    flags.AddExposeHostTopologyArg(parser)
 
   def Run(self, args):
     return self._Run(args)

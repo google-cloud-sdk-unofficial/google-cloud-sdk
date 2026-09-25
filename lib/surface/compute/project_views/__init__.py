@@ -19,8 +19,9 @@ from googlecloudsdk.calliope import base
 
 @base.UniverseCompatible
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.GA,
     base.ReleaseTrack.BETA,
+    base.ReleaseTrack.ALPHA,
 )
 class ProjectViews(base.Group):
   """Read project views with regional context."""

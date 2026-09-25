@@ -986,6 +986,16 @@ class GenerateAuditScopeReportRequest(_messages.Message):
       regulatory requirements) that the audit scope report is run against. Use
       the `compliance_framework` field instead.
     reportFormat: Required. Format for the audit scope report.
+    validateOnly: Optional. If `true`, only validates the request and does not
+      generate the audit scope report. This executes standard request
+      validation (such as schema, framework existence, scope, and IAM checks)
+      and skips the apply phase. Use this field for the following purposes: *
+      **Infrastructure as Code (IaC)**: Allow tools like Terraform to run dry-
+      run mutations (e.g., `terraform plan`) without creating real resources
+      or incurring costs. * **User Interface Validation**: Enable real-time
+      form and permission validation in custom UIs before submitting requests.
+      * **CI/CD & Automation**: Test your scripts, permissions, and parameters
+      safely without consuming resource quotas.
   """
 
   class ReportFormatValueValuesEnum(_messages.Enum):
@@ -1002,6 +1012,7 @@ class GenerateAuditScopeReportRequest(_messages.Message):
   complianceFramework = _messages.StringField(1)
   complianceStandard = _messages.StringField(2)
   reportFormat = _messages.EnumField('ReportFormatValueValuesEnum', 3)
+  validateOnly = _messages.BooleanField(4)
 
 
 class ListAuditReportsResponse(_messages.Message):

@@ -16,6 +16,7 @@
 """A collection of CLI walkers."""
 
 
+import collections
 import io
 import os
 
@@ -25,6 +26,7 @@ from googlecloudsdk.calliope import cli_tree
 from googlecloudsdk.calliope import markdown
 from googlecloudsdk.calliope import walker
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import yaml
 from googlecloudsdk.core.document_renderers import render_document
 from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import pkg_resources
@@ -41,37 +43,25 @@ _HELP_HTML_DATA_FILES = [
 
 _FLATTENING_TRACKS = ['alpha', 'beta', 'preview']
 
-_OVERVIEW_TAB = """    - name: Overview
-      path: /sdk/docs
-      contents:
-      - include: /sdk/_overview_tab.yaml\n"""
-
-_GUIDES_TAB = """    - name: "Guides"
-      path: /sdk/docs/overview
-      contents:
-      - include: /sdk/_guides_tab.yaml\n"""
-
-_RESOURCES_TAB = """    - name: "Resources"
-      contents:
-      - include: /sdk/_resources_tab.yaml\n"""
-
 
 class DevSiteGenerator(walker.Walker):
   """Generates DevSite reference HTML in a directory hierarchy.
 
-  This implements gcloud meta generate-help-docs --manpage-dir=DIRECTORY.
+  This implements gcloud meta generate-help-docs --devsite-dir=DIRECTORY.
 
   Attributes:
-    _directory: The DevSite reference output directory. _need_section_tag[]:
-      _need_section_tag[i] is True if there are section subitems at depth i.
-      This prevents the creation of empty 'section:' tags in the '_toc' files.
-    _toc_root: The root TOC output stream.
-    _toc_main: The current main (just under root) TOC output stream.
-    _toc_sub: The current sub (under alpha/beta/preview) TOC output stream.
+    _directory: The DevSite reference output directory.
+    _nodes: List of (command_path_tuple, is_group) for every visited node during
+      the walk; the TOC/book structure is derived from it in Done().
+    _top_level_items: List of (path, is_group) for the "flattening" items: the
+      depth-1 groups/commands and the depth-2 groups/commands under the
+      alpha/beta/preview tracks. Used to pick each page's _book.yaml sidebar and
+      to decide which groups get a _book.yaml.
   """
 
   _REFERENCE = '/sdk/gcloud/reference'  # TOC reference directory offset.
   _TOC = '_toc.yaml'
+  _BOOK = '_book.yaml'
 
   def __init__(
       self, cli, directory, hidden=False, progress_callback=None, restrict=None
@@ -93,19 +83,11 @@ class DevSiteGenerator(walker.Walker):
         cli, progress_callback=progress_callback, restrict=restrict)
     self._directory = directory
     files.MakeDir(self._directory)
-    self._need_section_tag = []
-    toc_path = os.path.join(self._directory, self._TOC)
-    self._toc_root = files.FileWriter(toc_path)
-    self._toc_root.write('toc:\n')
-    self._toc_root.write('- title: "gcloud Reference"\n')
-    self._toc_root.write('  path: %s\n' % self._REFERENCE)
-    self._toc_root.write('  section:\n')
-    self._toc_main = None
-    self._toc_sub = None
     self._top_level_items = []
+    self._nodes = []
 
   def Visit(self, node, parent, is_group):
-    """Updates the TOC and Renders a DevSite doc for each node in the CLI tree.
+    """Renders a DevSite doc for each node and collects TOC/Book data.
 
     Args:
       node: group/command CommandCommon info.
@@ -126,112 +108,7 @@ class DevSiteGenerator(walker.Walker):
       if (item_path, is_group) not in self._top_level_items:
         self._top_level_items.append((item_path, is_group))
 
-    def _UpdateTOC():
-      """Updates the DevSIte TOC."""
-      depth = len(command) - 1
-      if not depth:
-        return
-
-      if depth == 1:
-        title = ' '.join(command)
-      else:
-        title = command[-1]
-
-      while depth >= len(self._need_section_tag):
-        self._need_section_tag.append(False)
-
-      if depth == 1:
-        toc = self._toc_root
-        indent = '  '
-        # Depth 1 groups are flat links in the root TOC to reduce bloat.
-        if is_group:
-          if self._toc_sub:
-            self._toc_sub.close()
-            self._toc_sub = None
-          if self._toc_main:
-            self._toc_main.close()
-          toc_path = os.path.join(directory, self._TOC)
-          self._toc_main = files.FileWriter(toc_path)
-          self._toc_main.write('toc:\n')
-          self._toc_main.write('- title: "gcloud %s"\n' % command[1])
-          self._toc_main.write(
-              '  path: %s\n' % '/'.join([self._REFERENCE, command[1]])
-          )
-          self._need_section_tag[depth] = True
-
-        if self._need_section_tag[depth - 1]:
-          self._need_section_tag[depth - 1] = False
-          if indent or toc == self._toc_root:
-            toc.write('%ssection:\n' % indent)
-
-        # Write the item to the root TOC.
-        toc.write('%s- title: "%s"\n' % (indent, title))
-        toc.write(
-            '%s  path: %s\n'
-            % (indent, '/'.join([self._REFERENCE] + command[1:]))
-        )
-        self._need_section_tag[depth] = is_group
-        return
-
-      elif depth == 2 and command[1] in _FLATTENING_TRACKS:
-        toc = self._toc_main
-        indent = '  '  # Children of the track start at indent 2 in modular TOC.
-
-        if self._need_section_tag[depth - 1]:
-          self._need_section_tag[depth - 1] = False
-          if indent or toc == self._toc_root:
-            toc.write('%ssection:\n' % indent)
-
-        # Depth 2 groups under alpha/beta/preview are flat links in track TOC.
-        if is_group:
-          if self._toc_sub:
-            self._toc_sub.close()
-            self._toc_sub = None
-          toc_path = os.path.join(directory, self._TOC)
-          self._toc_sub = files.FileWriter(toc_path)
-          self._toc_sub.write('toc:\n')
-          self._toc_sub.write('- title: "%s"\n' % command[-1])
-          self._toc_sub.write(
-              '  path: %s\n' % '/'.join([self._REFERENCE] + command[1:])
-          )
-          self._need_section_tag[depth] = True
-
-        # Write the item to the track TOC.
-        toc.write('%s- title: "%s"\n' % (indent, title))
-        toc.write(
-            '%s  path: %s\n'
-            % (indent, '/'.join([self._REFERENCE] + command[1:]))
-        )
-        self._need_section_tag[depth] = is_group
-        return
-
-      else:
-        if command[1] in _FLATTENING_TRACKS and self._toc_sub:
-          toc = self._toc_sub
-          indent = '  ' * (depth - 2)
-        elif self._toc_main:
-          toc = self._toc_main
-          indent = '  ' * (depth - 1)
-        else:
-          toc = self._toc_root
-          indent = '  ' * (depth - 1)
-
-        if self._need_section_tag[depth - 1]:
-          self._need_section_tag[depth - 1] = False
-          # Modular TOCs should not have a 'section:' header at indent 0.
-          if indent or toc == self._toc_root:
-            toc.write('%ssection:\n' % indent)
-        title = command[-1]
-
-      # Write the item to the selected TOC
-      toc.write('%s- title: "%s"\n' % (indent, title))
-      toc.write(
-          '%s  path: %s\n' % (indent, '/'.join([self._REFERENCE] + command[1:]))
-      )
-      self._need_section_tag[depth] = is_group
-
     # Set up the destination dir for this level.
-    command = node.GetPath()
     if is_group:
       directory = os.path.join(self._directory, *command[1:])
       files.MakeDir(directory, mode=0o755)
@@ -242,16 +119,16 @@ class DevSiteGenerator(walker.Walker):
     book_path = '/sdk/_book.yaml'
     if len(command) > 1:
       # Prefer deeper flattening groups (depth 2 for alpha/beta)
-      if len(command) > 2 and command[1] in ['alpha', 'beta', 'preview']:
+      if len(command) > 2 and command[1] in _FLATTENING_TRACKS:
         sub_group = '/'.join(command[1:3])
         if (sub_group, True) in self._top_level_items:
-          book_path = '/'.join([self._REFERENCE, sub_group, '_book.yaml'])
+          book_path = '/'.join([self._REFERENCE, sub_group, self._BOOK])
 
       # Fallback to top-level flattening group
       if book_path == '/sdk/_book.yaml':
         top_item = command[1]
         if (top_item, True) in self._top_level_items:
-          book_path = '/'.join([self._REFERENCE, top_item, '_book.yaml'])
+          book_path = '/'.join([self._REFERENCE, top_item, self._BOOK])
 
     # Render the DevSite document.
     path = (
@@ -280,84 +157,247 @@ class DevSiteGenerator(walker.Walker):
 
     # reset universe_domain
     properties.VALUES.core.universe_domain.Set(universe_domain)
-    _UpdateTOC()
+
+    # Collect data for _toc.yaml / _book.yaml generation in Done().
+    self._nodes.append((tuple(command), is_group))
     return parent
 
   def Done(self):
-    """Closes the TOC files and generates _book.yaml files."""
-    self._toc_root.close()
-    if self._toc_main:
-      self._toc_main.close()
-    if self._toc_sub:
-      self._toc_sub.close()
-      self._toc_sub = None
+    """Builds all _toc.yaml and _book.yaml files from the collected nodes."""
+    nodes = sorted(self._nodes)
+    children_by_parent = collections.defaultdict(list)
+    for command, _ in nodes:
+      if len(command) > 1:
+        children_by_parent[command[:-1]].append(command)
 
-    # Generate _book.yaml for each flattening group.
-    groups = sorted([path for path, is_g in self._top_level_items if is_g])
-    roots = sorted([i for i, g in self._top_level_items if '/' not in i])
+    self._WriteTocFiles(nodes, children_by_parent)
+    self._WriteBookFiles()
 
-    # Constants moved here to allow dynamic formatting if needed.
-    for group in groups:
-      book_path = os.path.join(self._directory, group, '_book.yaml')
-      with files.FileWriter(book_path) as f:
-        f.write('# WARNING: THIS FILE IS AUTO-GENERATED, DO NOT EDIT\n')
-        f.write('extends: /docs/_book.yaml\n\n')
-        f.write('upper_tabs:\n')
-        f.write('  global-documentation-upper:\n')
-        f.write('    lower_tabs:\n')
-        f.write(_OVERVIEW_TAB)
-        f.write(_GUIDES_TAB)
-        f.write('    - name: "Reference"\n')
-        f.write('      contents:\n')
-        f.write('      - heading: "Cloud Client Libraries"\n')
-        f.write('      - title: "Cloud Client Libraries references"\n')
-        f.write('        path: /sdk/docs/libraries-reference\n')
-        f.write('      - heading: "Google Cloud CLI"\n')
-        f.write('      - title: "gcloud Reference"\n')
-        f.write('        path: %s\n' % self._REFERENCE)
-        f.write('        section:\n')
+  def _RefPath(self, command):
+    """Returns the devsite reference path for a command path tuple."""
+    return '/'.join([self._REFERENCE, *command[1:]])
 
-        for root in roots:
-          if root == group:
-            # Active top-level group, expand it.
-            f.write(
-                '        - include: %s\n'
-                % '/'.join([self._REFERENCE, root, self._TOC])
+  def _WriteYaml(self, path, data):
+    """Serializes data to path as a DevSite YAML file."""
+    with files.FileWriter(path) as f:
+      f.write(yaml.dump(data, round_trip=True))
+
+  def _BuildTocSubtree(self, command, children_by_parent):
+    """Recursively builds a nested TOC entry for command and its descendants.
+
+    Args:
+      command: The command path tuple for this entry.
+      children_by_parent: {command_tuple: [child_command_tuple, ...]} in sorted
+        order.
+
+    Returns:
+      An ordered mapping TOC entry with 'title', 'path', and (if the node has
+      children) a nested 'section' list.
+    """
+    entry = collections.OrderedDict(
+        title=yaml.DoubleQuotedScalarString(command[-1]),
+        path=self._RefPath(command),
+    )
+    children = children_by_parent.get(command)
+    if children:
+      entry['section'] = [
+          self._BuildTocSubtree(c, children_by_parent) for c in children]
+    return entry
+
+  def _WriteTocFiles(self, nodes, children_by_parent):
+    """Writes the root, per-track, and per-group modular _toc.yaml files.
+
+    Args:
+      nodes: Sorted list of (command_tuple, is_group) for every visited node.
+      children_by_parent: {command_tuple: [child_command_tuple, ...]} in sorted
+        order.
+    """
+    # Root _toc.yaml: flat links to every depth-1 command/group.
+    root_section = [
+        collections.OrderedDict(
+            title=yaml.DoubleQuotedScalarString('gcloud %s' % command[1]),
+            path=self._RefPath(command),
+        )
+        for command, _ in nodes
+        if len(command) == 2
+    ]
+    self._WriteYaml(
+        os.path.join(self._directory, self._TOC),
+        collections.OrderedDict(
+            toc=[
+                collections.OrderedDict(
+                    title=yaml.DoubleQuotedScalarString('gcloud Reference'),
+                    path=self._REFERENCE,
+                    section=root_section,
+                )
+            ]
+        ),
+    )
+
+    # Each depth-1 group and each depth-2 group under a track gets its own
+    # modular _toc.yaml. Every other group is nested inside an ancestor's file.
+    for command, is_group in nodes:
+      if not is_group:
+        continue
+      depth = len(command) - 1
+      toc_path = os.path.join(
+          self._directory, *command[1:], self._TOC)
+      if depth == 1 and command[1] in _FLATTENING_TRACKS:
+        # Track TOC: flat links to its depth-2 items. Each depth-2 group gets
+        # its own modular file in a separate iteration of this loop.
+        item = collections.OrderedDict(
+            title=yaml.DoubleQuotedScalarString('gcloud %s' % command[1]),
+            path=self._RefPath(command),
+        )
+        entries = [
+            collections.OrderedDict(
+                title=yaml.DoubleQuotedScalarString(child[-1]),
+                path=self._RefPath(child),
             )
-          elif root in _FLATTENING_TRACKS:
-            # Alpha/Beta/Preview section.
-            is_active_root = group == root or group.startswith(root + '/')
-            f.write('        - title: "gcloud %s"\n' % root)
-            f.write('          path: %s\n' % '/'.join([self._REFERENCE, root]))
-            if is_active_root:
-              f.write('          section:\n')
-              # List all flattened sub-groups under alpha/beta.
-              subs = sorted([
-                  i
-                  for i, g in self._top_level_items
-                  if i.startswith(root + '/')
-              ])
-              for sub in subs:
-                name = sub.split('/')[-1]
-                if sub == group:
-                  # Active sub-group, expand it.
-                  f.write(
-                      '          - include: %s\n'
-                      % '/'.join([self._REFERENCE, sub, self._TOC])
-                  )
-                else:
-                  # Sibling sub-group, show as flat link.
-                  f.write('          - title: "%s"\n' % name)
-                  f.write(
-                      '            path: %s\n'
-                      % '/'.join([self._REFERENCE, sub])
-                  )
-          else:
-            # Other top-level group, show as flat link.
-            f.write('        - title: "gcloud %s"\n' % root)
-            f.write('          path: %s\n' % '/'.join([self._REFERENCE, root]))
+            for child in children_by_parent.get(command, [])
+        ]
+        if entries:
+          item['section'] = entries
+        self._WriteYaml(toc_path, collections.OrderedDict(toc=[item]))
+      elif depth == 1:
+        # Non-track top-level group: a single fully-nested modular TOC.
+        item = self._BuildTocSubtree(command, children_by_parent)
+        item['title'] = yaml.DoubleQuotedScalarString(
+            'gcloud %s' % command[1]
+        )
+        self._WriteYaml(toc_path, collections.OrderedDict(toc=[item]))
+      elif depth == 2 and command[1] in _FLATTENING_TRACKS:
+        # Flattened subgroup under a track: its own fully-nested modular TOC.
+        item = self._BuildTocSubtree(command, children_by_parent)
+        self._WriteYaml(toc_path, collections.OrderedDict(toc=[item]))
 
-        f.write(_RESOURCES_TAB)
+  def _WriteBookFiles(self):
+    """Writes a _book.yaml sidebar for every flattening group."""
+    roots = sorted(
+        path for path, _ in self._top_level_items if '/' not in path)
+    groups = sorted(
+        path for path, is_group in self._top_level_items if is_group)
+    track_subgroups = collections.defaultdict(list)
+    for sub, _ in self._top_level_items:
+      parts = sub.split('/')
+      if len(parts) == 2 and parts[0] in _FLATTENING_TRACKS:
+        track_subgroups[parts[0]].append(sub)
+    for track in track_subgroups:
+      track_subgroups[track].sort()
+
+    for group in groups:
+      book_path = os.path.join(
+          self._directory, *group.split('/'), self._BOOK)
+      contents = (
+          '# WARNING: THIS FILE IS AUTO-GENERATED, DO NOT EDIT\n'
+          'extends: /docs/_book.yaml\n\n'
+          + yaml.dump(
+              self._BuildBookData(group, roots, track_subgroups),
+              round_trip=True,
+          )
+      )
+      with files.FileWriter(book_path) as f:
+        f.write(contents)
+
+  def _BuildBookData(self, group, roots, track_subgroups):
+    """Builds the structured _book.yaml document for the given group.
+
+    Args:
+      group: The flattening group path (e.g. 'ai' or 'alpha/compute') whose
+        sidebar is being generated.
+      roots: Sorted list of the depth-1 item paths.
+      track_subgroups: {track: [subgroup_path, ...]}.
+
+    Returns:
+      An ordered mapping representing the _book.yaml 'upper_tabs' document (the
+      leading comment and 'extends' preamble are written separately).
+    """
+    section = []
+    for root in roots:
+      if root == group:
+        # Active top-level group: expand its modular TOC.
+        section.append(
+            collections.OrderedDict(
+                include='/'.join([self._REFERENCE, root, self._TOC])
+            )
+        )
+      else:
+        entry = collections.OrderedDict(
+            title=yaml.DoubleQuotedScalarString('gcloud %s' % root),
+            path='/'.join([self._REFERENCE, root]),
+        )
+        if root in _FLATTENING_TRACKS and group.startswith(root + '/'):
+          # The active group lives under this track: list its sibling subgroups
+          # and expand the active one.
+          sub_entries = []
+          for sub in track_subgroups.get(root, []):
+            if sub == group:
+              sub_entries.append(
+                  collections.OrderedDict(
+                      include='/'.join([self._REFERENCE, sub, self._TOC])
+                  )
+              )
+            else:
+              sub_entries.append(
+                  collections.OrderedDict(
+                      title=yaml.DoubleQuotedScalarString(sub.split('/')[-1]),
+                      path='/'.join([self._REFERENCE, sub]),
+                  )
+              )
+          entry['section'] = sub_entries
+        section.append(entry)
+
+    reference_contents = [
+        collections.OrderedDict(
+            heading=yaml.DoubleQuotedScalarString('Cloud Client Libraries')
+        ),
+        collections.OrderedDict(
+            title=yaml.DoubleQuotedScalarString(
+                'Cloud Client Libraries references'
+            ),
+            path='/sdk/docs/libraries-reference',
+        ),
+        collections.OrderedDict(
+            heading=yaml.DoubleQuotedScalarString('Google Cloud CLI')
+        ),
+        collections.OrderedDict(
+            title=yaml.DoubleQuotedScalarString('gcloud Reference'),
+            path=self._REFERENCE,
+            section=section,
+        ),
+    ]
+    lower_tabs = [
+        collections.OrderedDict(
+            name='Overview',
+            path='/sdk/docs',
+            contents=[
+                collections.OrderedDict(include='/sdk/_overview_tab.yaml')
+            ],
+        ),
+        collections.OrderedDict(
+            name=yaml.DoubleQuotedScalarString('Guides'),
+            path='/sdk/docs/overview',
+            contents=[
+                collections.OrderedDict(include='/sdk/_guides_tab.yaml')
+            ],
+        ),
+        collections.OrderedDict(
+            name=yaml.DoubleQuotedScalarString('Reference'),
+            contents=reference_contents,
+        ),
+        collections.OrderedDict(
+            name=yaml.DoubleQuotedScalarString('Resources'),
+            contents=[
+                collections.OrderedDict(include='/sdk/_resources_tab.yaml')
+            ],
+        ),
+    ]
+    return collections.OrderedDict(
+        upper_tabs=collections.OrderedDict(
+            [('global-documentation-upper',
+              collections.OrderedDict(lower_tabs=lower_tabs))]
+        )
+    )
 
 
 class HelpTextGenerator(walker.Walker):

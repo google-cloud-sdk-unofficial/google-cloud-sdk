@@ -20,6 +20,7 @@ import textwrap
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.netapp import flags
+from googlecloudsdk.command_lib.netapp import util as netapp_util
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
@@ -122,10 +123,18 @@ def AddBackupRetentionPolicyArg(parser):
   """Adds the Backup Retention Policy arg to the arg parser."""
   backup_retention_policy_arg_spec = {
       'backup-minimum-enforced-retention-days': int,
-      'daily-backup-immutable': bool,
-      'weekly-backup-immutable': bool,
-      'monthly-backup-immutable': bool,
-      'manual-backup-immutable': bool
+      'daily-backup-immutable': arg_parsers.ArgBoolean(
+          truthy_strings=netapp_util.truthy, falsey_strings=netapp_util.falsey
+      ),
+      'weekly-backup-immutable': arg_parsers.ArgBoolean(
+          truthy_strings=netapp_util.truthy, falsey_strings=netapp_util.falsey
+      ),
+      'monthly-backup-immutable': arg_parsers.ArgBoolean(
+          truthy_strings=netapp_util.truthy, falsey_strings=netapp_util.falsey
+      ),
+      'manual-backup-immutable': arg_parsers.ArgBoolean(
+          truthy_strings=netapp_util.truthy, falsey_strings=netapp_util.falsey
+      ),
   }
   backup_retention_policy_help = textwrap.dedent("""\
     Backup Retention Policy of the Backup Vault.

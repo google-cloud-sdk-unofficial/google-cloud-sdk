@@ -1040,6 +1040,73 @@ class BlueGreenDeploymentInfo(_messages.Message):
   target = _messages.MessageField('TargetRole', 4)
 
 
+class ByoCert(_messages.Message):
+  r"""A single certificate or key in a BYOC bundle.
+
+  Enums:
+    CertificateTypeValueValuesEnum: Required. The certificate type.
+
+  Fields:
+    certificateType: Required. The certificate type.
+    content: Required. Input only. The PEM-encoded certificate or key content
+      in base64 format.
+  """
+
+  class CertificateTypeValueValuesEnum(_messages.Enum):
+    r"""Required. The certificate type.
+
+    Values:
+      CERTIFICATE_TYPE_UNSPECIFIED: Unspecified certificate type.
+      CERTIFICATE_TYPE_PEER_SERVER_CA: The x509 PEM-encoded certificate of the
+        CA that signed the source database server's certificate.
+      CERTIFICATE_TYPE_PEER_CLIENT_KEY: The unencrypted PKCS#1 or PKCS#8 PEM-
+        encoded private key associated with the Client Certificate.
+      CERTIFICATE_TYPE_PEER_CLIENT_CERTIFICATE: The x509 PEM-encoded
+        certificate used by the client to authenticate against the source
+        database server.
+    """
+    CERTIFICATE_TYPE_UNSPECIFIED = 0
+    CERTIFICATE_TYPE_PEER_SERVER_CA = 1
+    CERTIFICATE_TYPE_PEER_CLIENT_KEY = 2
+    CERTIFICATE_TYPE_PEER_CLIENT_CERTIFICATE = 3
+
+  certificateType = _messages.EnumField('CertificateTypeValueValuesEnum', 1)
+  content = _messages.BytesField(2)
+
+
+class ByocSslConfig(_messages.Message):
+  r"""BYOC (Bring Your Own Certificate) SSL configuration.
+
+  Enums:
+    IntentValueValuesEnum: Required. The intent for this BYOC configuration.
+
+  Fields:
+    bundle: Required. The name of the BYOC SSL config. This name will be used
+      to identify a certificate bundle.
+    byoCerts: Required. The server CA certificate, client key and client
+      certificate.
+    intent: Required. The intent for this BYOC configuration.
+    primaryDnsRecord: DNS name associated with the primary instance in a
+      replication topology. This is needed to insert a DNS entry in a replica
+      VM.
+  """
+
+  class IntentValueValuesEnum(_messages.Enum):
+    r"""Required. The intent for this BYOC configuration.
+
+    Values:
+      INTENT_UNSPECIFIED: Unspecified intent.
+      PG_LOGICAL: Setting up for pg_logical extension.
+    """
+    INTENT_UNSPECIFIED = 0
+    PG_LOGICAL = 1
+
+  bundle = _messages.StringField(1)
+  byoCerts = _messages.MessageField('ByoCert', 2, repeated=True)
+  intent = _messages.EnumField('IntentValueValuesEnum', 3)
+  primaryDnsRecord = _messages.MessageField('DNSEntry', 4)
+
+
 class CancelSessionRequest(_messages.Message):
   r"""The request message for cancelling an agent session."""
 
@@ -1482,6 +1549,18 @@ class ConnectionPoolFlags(_messages.Message):
 
   name = _messages.StringField(1)
   value = _messages.StringField(2)
+
+
+class DNSEntry(_messages.Message):
+  r"""DNS Entry for the primary instance in a replication topology.
+
+  Fields:
+    dns: Required. The DNS name.
+    ipv4Address: Required. The IP address.
+  """
+
+  dns = _messages.StringField(1)
+  ipv4Address = _messages.StringField(2)
 
 
 class DataCacheConfig(_messages.Message):
@@ -4116,6 +4195,17 @@ class ListBlueGreenDeploymentsResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
+class ListByoCertificatesResponse(_messages.Message):
+  r"""Response message for SqlSslCertsService.ListByoCertificates.
+
+  Fields:
+    byocSslConfigs: Required. List of BYOC SSL configurations for the
+      instance.
+  """
+
+  byocSslConfigs = _messages.MessageField('ByocSslConfig', 1, repeated=True)
+
+
 class ListSessionsResponse(_messages.Message):
   r"""The response message for listing `Session` resources.
 
@@ -4572,6 +4662,8 @@ class Operation(_messages.Message):
       STOP_WORKLOAD_CAPTURE: Stops workload capture.
       START_WORKLOAD_REPLAY: Starts workload replay.
       STOP_WORKLOAD_REPLAY: Stops workload replay.
+      RECONCILE_NETWORKING: Reconciles network infrastructure (e.g. SCM,
+        Automated DNS Records).
     """
     SQL_OPERATION_TYPE_UNSPECIFIED = 0
     IMPORT = 1
@@ -4635,6 +4727,7 @@ class Operation(_messages.Message):
     STOP_WORKLOAD_CAPTURE = 59
     START_WORKLOAD_REPLAY = 60
     STOP_WORKLOAD_REPLAY = 61
+    RECONCILE_NETWORKING = 62
 
   class StatusValueValuesEnum(_messages.Enum):
     r"""The status of an operation.
@@ -5360,6 +5453,25 @@ class PscConfig(_messages.Message):
   pscAutoDnsEnabled = _messages.BooleanField(5)
   pscEnabled = _messages.BooleanField(6)
   pscWriteEndpointDnsEnabled = _messages.BooleanField(7)
+
+
+class PscDnsReconcileNetworkingRequest(_messages.Message):
+  r"""Request parameters specific to PSC DNS networking reconciliation.
+
+  Fields:
+    force: Optional. Set `true` to force service connection mapping
+      disablement and enablement. Use this option only when standard
+      reconciliation fails to resolve networking issues. You might need this
+      if you see errors indicating that service connection maps are stuck in
+      updating/creating states.
+    networks: Optional. List of specific consumer VPC networks to reconcile.
+      They must be specified as full resource names (e.g., "projects/my-
+      consumer-project/global/networks/prod-vpc"). If empty, recreates Write
+      Endpoints for all the consumer networks associated with this instance.
+  """
+
+  force = _messages.BooleanField(1)
+  networks = _messages.StringField(2, repeated=True)
 
 
 class QueryResult(_messages.Message):
@@ -7501,6 +7613,19 @@ class SqlInstancesPromoteReplicaRequest(_messages.Message):
   project = _messages.StringField(4, required=True)
 
 
+class SqlInstancesReconcileNetworkingRequest(_messages.Message):
+  r"""Request message for SqlInstancesService.ReconcileNetworking.
+
+  Fields:
+    location: Optional. Region of the Cloud SQL instance.
+    pscDns: Request to recreate PSC DNS write endpoints, disable and re-enable
+      service connection mapping for the instance.
+  """
+
+  location = _messages.StringField(1)
+  pscDns = _messages.MessageField('PscDnsReconcileNetworkingRequest', 2)
+
+
 class SqlInstancesReencryptRequest(_messages.Message):
   r"""A SqlInstancesReencryptRequest object.
 
@@ -8112,6 +8237,22 @@ class SqlProjectsInstancesPerformDiskShrinkRequest(_messages.Message):
   project = _messages.StringField(4, required=True)
 
 
+class SqlProjectsInstancesReconcileNetworkingRequest(_messages.Message):
+  r"""A SqlProjectsInstancesReconcileNetworkingRequest object.
+
+  Fields:
+    instance: Required. Cloud SQL instance ID.
+    project: Required. Project ID of the project that contains the instance.
+    sqlInstancesReconcileNetworkingRequest: A
+      SqlInstancesReconcileNetworkingRequest resource to be passed as the
+      request body.
+  """
+
+  instance = _messages.StringField(1, required=True)
+  project = _messages.StringField(2, required=True)
+  sqlInstancesReconcileNetworkingRequest = _messages.MessageField('SqlInstancesReconcileNetworkingRequest', 3)
+
+
 class SqlProjectsInstancesRescheduleMaintenanceRequest(_messages.Message):
   r"""A SqlProjectsInstancesRescheduleMaintenanceRequest object.
 
@@ -8343,6 +8484,21 @@ class SqlSslCertsCreateEphemeralRequest(_messages.Message):
   sslCertsCreateEphemeralRequest = _messages.MessageField('SslCertsCreateEphemeralRequest', 4)
 
 
+class SqlSslCertsDeleteByoCertificateRequest(_messages.Message):
+  r"""A SqlSslCertsDeleteByoCertificateRequest object.
+
+  Fields:
+    bundle: Required. Name tag of the BYOC certificate bundle to delete.
+    instance: Required. Cloud SQL instance ID. This does not include the
+      project ID.
+    project: Required. Project ID of the project that contains the instance.
+  """
+
+  bundle = _messages.StringField(1)
+  instance = _messages.StringField(2, required=True)
+  project = _messages.StringField(3, required=True)
+
+
 class SqlSslCertsDeleteRequest(_messages.Message):
   r"""A SqlSslCertsDeleteRequest object.
 
@@ -8386,6 +8542,19 @@ class SqlSslCertsInsertRequest(_messages.Message):
   sslCertsInsertRequest = _messages.MessageField('SslCertsInsertRequest', 3)
 
 
+class SqlSslCertsListByoCertificatesRequest(_messages.Message):
+  r"""A SqlSslCertsListByoCertificatesRequest object.
+
+  Fields:
+    instance: Required. Cloud SQL instance ID. This does not include the
+      project ID.
+    project: Required. Project ID of the project that contains the instance.
+  """
+
+  instance = _messages.StringField(1, required=True)
+  project = _messages.StringField(2, required=True)
+
+
 class SqlSslCertsListRequest(_messages.Message):
   r"""A SqlSslCertsListRequest object.
 
@@ -8396,6 +8565,22 @@ class SqlSslCertsListRequest(_messages.Message):
 
   instance = _messages.StringField(1, required=True)
   project = _messages.StringField(2, required=True)
+
+
+class SqlSslCertsUpdateByoCertificateRequest(_messages.Message):
+  r"""A SqlSslCertsUpdateByoCertificateRequest object.
+
+  Fields:
+    instance: Required. Cloud SQL instance ID. This does not include the
+      project ID.
+    project: Required. Project ID of the project that contains the instance.
+    updateByoCertificateRequest: A UpdateByoCertificateRequest resource to be
+      passed as the request body.
+  """
+
+  instance = _messages.StringField(1, required=True)
+  project = _messages.StringField(2, required=True)
+  updateByoCertificateRequest = _messages.MessageField('UpdateByoCertificateRequest', 3)
 
 
 class SqlSubOperationType(_messages.Message):
@@ -9342,6 +9527,22 @@ class UncMapping(_messages.Message):
   gcsPath = _messages.StringField(1)
   mode = _messages.EnumField('ModeValueValuesEnum', 2)
   uncPath = _messages.StringField(3)
+
+
+class UpdateByoCertificateRequest(_messages.Message):
+  r"""Request message for SqlSslCertsService.UpdateByoCertificate.
+
+  Fields:
+    allowMissing: Optional. If set to true, and the BYOC SSL configuration is
+      not found, a new BYOC SSL configuration will be created. In this
+      situation, `update_mask` is ignored.
+    byocSslConfig: Required. The BYOC SSL configuration to upsert.
+    updateMask: Optional. The list of fields to be updated.
+  """
+
+  allowMissing = _messages.BooleanField(1)
+  byocSslConfig = _messages.MessageField('ByocSslConfig', 2)
+  updateMask = _messages.StringField(3)
 
 
 class User(_messages.Message):

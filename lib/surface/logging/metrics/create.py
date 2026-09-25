@@ -27,6 +27,9 @@ DETAILED_HELP = {
           Create a logs-based metric to count the number of log entries that
           match a filter expression. Logs-based metrics can also be used to
           extract values from logs and create a distribution of the values.
+
+          For more information, see the logs-based metrics overview at:
+          [](https://cloud.google.com/logging/docs/logs-based-metrics).
       """,
     'EXAMPLES':
         """\
@@ -44,7 +47,11 @@ DETAILED_HELP = {
             $ {command} my_metric --config-from-file=$PATH_TO_FILE
 
           The config file can be in YAML or JSON format. Detailed information
-          about how to configure metrics can be found at: [](https://cloud.google.com/logging/docs/reference/v2/rest/v2/projects.metrics#LogMetric).
+          about how to configure metrics can be found at:
+          [](https://cloud.google.com/logging/docs/reference/v2/rest/v2/projects.metrics#LogMetric).
+
+          For an example of the file structure for a distribution metric, see:
+          [](https://cloud.google.com/logging/docs/logs-based-metrics/distribution-metrics#example).
 
           To create a bucket log-based metric, run:
 
@@ -53,6 +60,7 @@ DETAILED_HELP = {
 }
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
@@ -78,10 +86,15 @@ class Create(base.CreateCommand):
     legacy_mode_group.add_argument(
         '--bucket-name',
         help='The Log Bucket name which owns the log-based metric.')
-    config_group.add_argument('--config-from-file',
-                              help=('A path to a YAML or JSON file specifying '
-                                    'the logs-based metric to create.'),
-                              type=arg_parsers.FileContents())
+    config_group.add_argument(
+        '--config-from-file',
+        help=(
+            'A path to a YAML or JSON file specifying the logs-based metric to'
+            ' create. For an example of the file structure, see'
+            ' https://cloud.google.com/logging/docs/logs-based-metrics/distribution-metrics#example.'
+        ),
+        type=arg_parsers.FileContents(),
+    )
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

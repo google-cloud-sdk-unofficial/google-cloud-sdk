@@ -22,6 +22,71 @@ from apitools.base.py import extra_types
 package = 'alloydb'
 
 
+class AgentModeConfig(_messages.Message):
+  r"""Message describing the Agent Mode configuration.
+
+  Enums:
+    ModeValueValuesEnum: Optional. Desired agent mode of the cluster.
+
+  Fields:
+    mode: Optional. Desired agent mode of the cluster.
+  """
+
+  class ModeValueValuesEnum(_messages.Enum):
+    r"""Optional. Desired agent mode of the cluster.
+
+    Values:
+      AGENT_MODE_UNSPECIFIED: Agent mode not specified. Defaults to disabled.
+      DISABLED: Agent mode disabled.
+      ENABLED: Agent mode enabled.
+    """
+
+    AGENT_MODE_UNSPECIFIED = 0
+    DISABLED = 1
+    ENABLED = 2
+
+  mode = _messages.EnumField('ModeValueValuesEnum', 1)
+
+
+class AgentModeInfo(_messages.Message):
+  r"""Describes the current operational state of Agent Mode for the cluster.
+
+  Enums:
+    StateValueValuesEnum: Output only. The current state of Agent Mode. When
+      the agent mode is turned on, it won't be effective if the cluster does
+      not have a primary instance. The state field indicates the state of
+      provisioning.
+
+  Fields:
+    state: Output only. The current state of Agent Mode. When the agent mode
+      is turned on, it won't be effective if the cluster does not have a
+      primary instance. The state field indicates the state of provisioning.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current state of Agent Mode.
+
+    When the agent mode is turned on, it won't be effective if the cluster does
+    not have a primary instance. The state field indicates the state of
+    provisioning.
+
+    Values:
+      STATE_UNSPECIFIED: Unspecified.
+      DISABLED: Agent mode is disabled.
+      PROVISIONING: Agent mode is being enabled/provisioned.
+      ACTIVE: Agent mode is enabled and active. Requires a primary instance.
+      FAILED: Agent mode enablement failed.
+    """
+
+    STATE_UNSPECIFIED = 0
+    DISABLED = 1
+    PROVISIONING = 2
+    ACTIVE = 3
+    FAILED = 4
+
+  state = _messages.EnumField('StateValueValuesEnum', 1)
+
+
 class AlloydbProjectsLocationsBackupsCreateRequest(_messages.Message):
   r"""A AlloydbProjectsLocationsBackupsCreateRequest object.
 
@@ -1236,6 +1301,9 @@ class Backup(_messages.Message):
     DatabaseVersionValueValuesEnum: Output only. The database engine major
       version of the cluster this backup was created from. Any restored
       cluster created from this backup will have the same database version.
+    EditionValueValuesEnum: Output only. The edition of the cluster this
+      backup was created from. Any restored cluster created from this backup
+      will have the same edition.
     StateValueValuesEnum: Output only. The current state of the backup.
     TypeValueValuesEnum: The backup type, which suggests the trigger for the
       backup.
@@ -1268,6 +1336,9 @@ class Backup(_messages.Message):
     deleteTime: Output only. Delete time stamp
     description: User-provided description of the backup.
     displayName: User-settable and human-readable display name for the Backup.
+    edition: Output only. The edition of the cluster this backup was created
+      from. Any restored cluster created from this backup will have the same
+      edition.
     encryptionConfig: Optional. The encryption config can be specified to
       encrypt the backup with a customer-managed encryption key (CMEK). When
       this field is not specified, the backup will then use default encryption
@@ -1333,6 +1404,19 @@ class Backup(_messages.Message):
     POSTGRES_17 = 5
     POSTGRES_18 = 6
     POSTGRES_19 = 7
+
+  class EditionValueValuesEnum(_messages.Enum):
+    r"""Output only. The edition of the cluster this backup was created from.
+    Any restored cluster created from this backup will have the same edition.
+
+    Values:
+      EDITION_UNSPECIFIED: An unknown Edition type.
+      EDITION_ALLOYDB: Standard AlloyDB cluster.
+      EDITION_ALLOYDB_DEVELOPER: Developer edition cluster.
+    """
+    EDITION_UNSPECIFIED = 0
+    EDITION_ALLOYDB = 1
+    EDITION_ALLOYDB_DEVELOPER = 2
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. The current state of the backup.
@@ -1453,22 +1537,23 @@ class Backup(_messages.Message):
   deleteTime = _messages.StringField(8)
   description = _messages.StringField(9)
   displayName = _messages.StringField(10)
-  encryptionConfig = _messages.MessageField('EncryptionConfig', 11)
-  encryptionInfo = _messages.MessageField('EncryptionInfo', 12)
-  enforcedRetention = _messages.BooleanField(13)
-  etag = _messages.StringField(14)
-  expiryQuantity = _messages.MessageField('QuantityBasedExpiry', 15)
-  expiryTime = _messages.StringField(16)
-  labels = _messages.MessageField('LabelsValue', 17)
-  name = _messages.StringField(18)
-  reconciling = _messages.BooleanField(19)
-  satisfiesPzs = _messages.BooleanField(20)
-  sizeBytes = _messages.IntegerField(21)
-  state = _messages.EnumField('StateValueValuesEnum', 22)
-  tags = _messages.MessageField('TagsValue', 23)
-  type = _messages.EnumField('TypeValueValuesEnum', 24)
-  uid = _messages.StringField(25)
-  updateTime = _messages.StringField(26)
+  edition = _messages.EnumField('EditionValueValuesEnum', 11)
+  encryptionConfig = _messages.MessageField('EncryptionConfig', 12)
+  encryptionInfo = _messages.MessageField('EncryptionInfo', 13)
+  enforcedRetention = _messages.BooleanField(14)
+  etag = _messages.StringField(15)
+  expiryQuantity = _messages.MessageField('QuantityBasedExpiry', 16)
+  expiryTime = _messages.StringField(17)
+  labels = _messages.MessageField('LabelsValue', 18)
+  name = _messages.StringField(19)
+  reconciling = _messages.BooleanField(20)
+  satisfiesPzs = _messages.BooleanField(21)
+  sizeBytes = _messages.IntegerField(22)
+  state = _messages.EnumField('StateValueValuesEnum', 23)
+  tags = _messages.MessageField('TagsValue', 24)
+  type = _messages.EnumField('TypeValueValuesEnum', 25)
+  uid = _messages.StringField(26)
+  updateTime = _messages.StringField(27)
 
 
 class BackupDrBackupSource(_messages.Message):
@@ -1633,9 +1718,10 @@ class CloudSQLBackupRunSource(_messages.Message):
 
 
 class Cluster(_messages.Message):
-  r"""A cluster is a collection of regional AlloyDB resources. It can include
-  a primary instance and one or more read pool instances. All cluster
-  resources share a storage layer, which scales as needed.
+  r"""A cluster is a collection of regional AlloyDB resources.
+
+  It can include a primary instance and one or more read pool instances. All
+  cluster resources share a storage layer, which scales as needed.
 
   Enums:
     ClusterTypeValueValuesEnum: Output only. The type of the cluster. This is
@@ -1647,6 +1733,8 @@ class Cluster(_messages.Message):
       version. This is an optional field and it is populated at the Cluster
       creation time. If a database version is not supplied at cluster creation
       time, then a default database version will be used.
+    EditionValueValuesEnum: Optional. Edition of the cluster. If left
+      unspecified, the cluster behaves as `EDITION_ALLOYDB`.
     MaintenanceVersionSelectionPolicyValueValuesEnum: Input only. Policy to
       use to automatically select the maintenance version to which to update
       the cluster's instances.
@@ -1665,6 +1753,8 @@ class Cluster(_messages.Message):
       "123/costCenter": "marketing" ```
 
   Fields:
+    agentModeConfig: Optional. Agent mode configuration of the cluster.
+    agentModeInfo: Output only. Agent mode information of the cluster.
     annotations: Annotations to allow client tools to store small amount of
       arbitrary data. This is distinct from labels. https://google.aip.dev/128
     automatedBackupPolicy: The automated backup policy for this cluster. If no
@@ -1696,6 +1786,8 @@ class Cluster(_messages.Message):
     deleteTime: Output only. Delete time stamp
     displayName: User-settable and human-readable display name for the
       Cluster.
+    edition: Optional. Edition of the cluster. If left unspecified, the
+      cluster behaves as `EDITION_ALLOYDB`.
     encryptionConfig: Optional. The encryption config can be specified to
       encrypt the data disks and other persistent data resources of a cluster
       with a customer-managed encryption key (CMEK). When this field is not
@@ -1802,6 +1894,19 @@ class Cluster(_messages.Message):
     POSTGRES_17 = 5
     POSTGRES_18 = 6
     POSTGRES_19 = 7
+
+  class EditionValueValuesEnum(_messages.Enum):
+    r"""Optional. Edition of the cluster. If left unspecified, the cluster
+    behaves as `EDITION_ALLOYDB`.
+
+    Values:
+      EDITION_UNSPECIFIED: An unknown Edition type.
+      EDITION_ALLOYDB: Standard AlloyDB cluster.
+      EDITION_ALLOYDB_DEVELOPER: Developer edition cluster.
+    """
+    EDITION_UNSPECIFIED = 0
+    EDITION_ALLOYDB = 1
+    EDITION_ALLOYDB_DEVELOPER = 2
 
   class MaintenanceVersionSelectionPolicyValueValuesEnum(_messages.Enum):
     r"""Input only. Policy to use to automatically select the maintenance
@@ -1946,47 +2051,54 @@ class Cluster(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  annotations = _messages.MessageField('AnnotationsValue', 1)
-  automatedBackupPolicy = _messages.MessageField('AutomatedBackupPolicy', 2)
-  backupSource = _messages.MessageField('BackupSource', 3)
-  backupdrBackupSource = _messages.MessageField('BackupDrBackupSource', 4)
-  backupdrInfo = _messages.MessageField('BackupDrInfo', 5)
-  cloudsqlBackupRunSource = _messages.MessageField('CloudSQLBackupRunSource', 6)
-  clusterType = _messages.EnumField('ClusterTypeValueValuesEnum', 7)
-  continuousBackupConfig = _messages.MessageField('ContinuousBackupConfig', 8)
-  continuousBackupInfo = _messages.MessageField('ContinuousBackupInfo', 9)
-  createTime = _messages.StringField(10)
-  databaseVersion = _messages.EnumField('DatabaseVersionValueValuesEnum', 11)
-  dataplexConfig = _messages.MessageField('DataplexConfig', 12)
-  deleteTime = _messages.StringField(13)
-  displayName = _messages.StringField(14)
-  encryptionConfig = _messages.MessageField('EncryptionConfig', 15)
-  encryptionInfo = _messages.MessageField('EncryptionInfo', 16)
-  etag = _messages.StringField(17)
-  geminiConfig = _messages.MessageField('GeminiClusterConfig', 18)
-  initialUser = _messages.MessageField('UserPassword', 19)
-  labels = _messages.MessageField('LabelsValue', 20)
-  maintenanceSchedule = _messages.MessageField('MaintenanceSchedule', 21)
-  maintenanceUpdatePolicy = _messages.MessageField('MaintenanceUpdatePolicy', 22)
-  maintenanceVersionSelectionPolicy = _messages.EnumField('MaintenanceVersionSelectionPolicyValueValuesEnum', 23)
-  migrationSource = _messages.MessageField('MigrationSource', 24)
-  name = _messages.StringField(25)
-  network = _messages.StringField(26)
-  networkConfig = _messages.MessageField('NetworkConfig', 27)
-  primaryConfig = _messages.MessageField('PrimaryConfig', 28)
-  pscConfig = _messages.MessageField('PscConfig', 29)
-  reconciling = _messages.BooleanField(30)
-  satisfiesPzs = _messages.BooleanField(31)
-  secondaryConfig = _messages.MessageField('SecondaryConfig', 32)
-  secondaryInfo = _messages.MessageField('SecondaryInfo', 33)
-  serviceAccountEmail = _messages.StringField(34)
-  sslConfig = _messages.MessageField('SslConfig', 35)
-  state = _messages.EnumField('StateValueValuesEnum', 36)
-  subscriptionType = _messages.EnumField('SubscriptionTypeValueValuesEnum', 37)
-  tags = _messages.MessageField('TagsValue', 38)
-  trialMetadata = _messages.MessageField('TrialMetadata', 39)
-  uid = _messages.StringField(40)
-  updateTime = _messages.StringField(41)
+  agentModeConfig = _messages.MessageField('AgentModeConfig', 1)
+  agentModeInfo = _messages.MessageField('AgentModeInfo', 2)
+  annotations = _messages.MessageField('AnnotationsValue', 3)
+  automatedBackupPolicy = _messages.MessageField('AutomatedBackupPolicy', 4)
+  backupSource = _messages.MessageField('BackupSource', 5)
+  backupdrBackupSource = _messages.MessageField('BackupDrBackupSource', 6)
+  backupdrInfo = _messages.MessageField('BackupDrInfo', 7)
+  cloudsqlBackupRunSource = _messages.MessageField('CloudSQLBackupRunSource', 8)
+  clusterType = _messages.EnumField('ClusterTypeValueValuesEnum', 9)
+  continuousBackupConfig = _messages.MessageField('ContinuousBackupConfig', 10)
+  continuousBackupInfo = _messages.MessageField('ContinuousBackupInfo', 11)
+  createTime = _messages.StringField(12)
+  databaseVersion = _messages.EnumField('DatabaseVersionValueValuesEnum', 13)
+  dataplexConfig = _messages.MessageField('DataplexConfig', 14)
+  deleteTime = _messages.StringField(15)
+  displayName = _messages.StringField(16)
+  edition = _messages.EnumField('EditionValueValuesEnum', 17)
+  encryptionConfig = _messages.MessageField('EncryptionConfig', 18)
+  encryptionInfo = _messages.MessageField('EncryptionInfo', 19)
+  etag = _messages.StringField(20)
+  geminiConfig = _messages.MessageField('GeminiClusterConfig', 21)
+  initialUser = _messages.MessageField('UserPassword', 22)
+  labels = _messages.MessageField('LabelsValue', 23)
+  maintenanceSchedule = _messages.MessageField('MaintenanceSchedule', 24)
+  maintenanceUpdatePolicy = _messages.MessageField(
+      'MaintenanceUpdatePolicy', 25
+  )
+  maintenanceVersionSelectionPolicy = _messages.EnumField(
+      'MaintenanceVersionSelectionPolicyValueValuesEnum', 26
+  )
+  migrationSource = _messages.MessageField('MigrationSource', 27)
+  name = _messages.StringField(28)
+  network = _messages.StringField(29)
+  networkConfig = _messages.MessageField('NetworkConfig', 30)
+  primaryConfig = _messages.MessageField('PrimaryConfig', 31)
+  pscConfig = _messages.MessageField('PscConfig', 32)
+  reconciling = _messages.BooleanField(33)
+  satisfiesPzs = _messages.BooleanField(34)
+  secondaryConfig = _messages.MessageField('SecondaryConfig', 35)
+  secondaryInfo = _messages.MessageField('SecondaryInfo', 36)
+  serviceAccountEmail = _messages.StringField(37)
+  sslConfig = _messages.MessageField('SslConfig', 38)
+  state = _messages.EnumField('StateValueValuesEnum', 39)
+  subscriptionType = _messages.EnumField('SubscriptionTypeValueValuesEnum', 40)
+  tags = _messages.MessageField('TagsValue', 41)
+  trialMetadata = _messages.MessageField('TrialMetadata', 42)
+  uid = _messages.StringField(43)
+  updateTime = _messages.StringField(44)
 
 
 class ClusterUpgradeDetails(_messages.Message):
@@ -2399,13 +2511,49 @@ class DenyMaintenancePeriod(_messages.Message):
   time = _messages.MessageField('GoogleTypeTimeOfDay', 3)
 
 
+class DnsAutomationInfo(_messages.Message):
+  r"""DnsAutomationInfo contains information about the DNS automation for the
+  instance.
+
+  Enums:
+    StateValueValuesEnum: Output only. The state of the DNS automation.
+
+  Fields:
+    fullyQualifiedDomainName: Output only. The fully qualified domain name of
+      the instance for DNS automation. Example: "...alloydb.goog.". Note: The
+      AUDIT directive is intentionally omitted because this field contains
+      sensitive network topology information.
+    state: Output only. The state of the DNS automation.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the DNS automation.
+
+    Values:
+      STATE_UNSPECIFIED: Default value. This value is unused.
+      PENDING_CREATE: DNS record creation is pending.
+      ACTIVE: DNS record is active.
+      PENDING_DELETE: DNS record deletion is pending.
+      CREATE_FAILED: DNS record creation failed.
+      DELETE_FAILED: DNS record deletion failed.
+    """
+    STATE_UNSPECIFIED = 0
+    PENDING_CREATE = 1
+    ACTIVE = 2
+    PENDING_DELETE = 3
+    CREATE_FAILED = 4
+    DELETE_FAILED = 5
+
+  fullyQualifiedDomainName = _messages.StringField(1)
+  state = _messages.EnumField('StateValueValuesEnum', 2)
+
+
 class Empty(_messages.Message):
   r"""A generic empty message that you can re-use to avoid defining duplicated
   empty messages in your APIs. A typical example is to use it as the request
   or the response type of an API method. For instance: service Foo { rpc
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
-
 
 
 class EncryptionConfig(_messages.Message):
@@ -4098,8 +4246,18 @@ class PscAutoConnectionConfig(_messages.Message):
       matching ServiceConnectionPolicy.
     consumerProject: The consumer project to which the PSC service automation
       endpoint will be created.
+    dnsAutomationInfos: Output only. List of DNS automation info for the PSC
+      auto connection.
     ipAddress: Output only. The IP address of the PSC service automation
       endpoint.
+    serviceConnectionPolicy: Output only. The PSC service connection policy
+      name. The format is "projects//regions//serviceConnectionPolicies/"
+    serviceConnectionPolicyCreationState: Output only. The creation state or
+      result of the connection policy. Possible values include: - `ACTIVE`:
+      The policy was created successfully. - `PERMISSION_DENIED`: Sufficient
+      permissions were not provided. Note that this field is an unstructured
+      output and customers should not rely on the specific string value or
+      error message directly.
     status: Output only. The status of the PSC service automation connection.
       Possible values: "STATE_UNSPECIFIED" - An invalid state as the default
       case. "ACTIVE" - The connection has been created successfully. "FAILED"
@@ -4114,8 +4272,11 @@ class PscAutoConnectionConfig(_messages.Message):
   consumerNetwork = _messages.StringField(1)
   consumerNetworkStatus = _messages.StringField(2)
   consumerProject = _messages.StringField(3)
-  ipAddress = _messages.StringField(4)
-  status = _messages.StringField(5)
+  dnsAutomationInfos = _messages.MessageField('DnsAutomationInfo', 4, repeated=True)
+  ipAddress = _messages.StringField(5)
+  serviceConnectionPolicy = _messages.StringField(6)
+  serviceConnectionPolicyCreationState = _messages.StringField(7)
+  status = _messages.StringField(8)
 
 
 class PscConfig(_messages.Message):

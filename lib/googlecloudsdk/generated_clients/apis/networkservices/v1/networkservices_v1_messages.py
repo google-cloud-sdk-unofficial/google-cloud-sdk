@@ -6155,6 +6155,9 @@ class NetworkservicesProjectsLocationsAgentGatewaysListRequest(_messages.Message
   r"""A NetworkservicesProjectsLocationsAgentGatewaysListRequest object.
 
   Fields:
+    filter: Optional. A filter expression to filter the results listed in the
+      response. The expression must follow the syntax described in
+      [AIP-160](https://google.aip.dev/160).
     pageSize: Optional. Maximum number of AgentGateways to return per call.
     pageToken: Optional. The value returned by the last
       `ListAgentGatewaysResponse` Indicates that this is a continuation of a
@@ -6167,10 +6170,11 @@ class NetworkservicesProjectsLocationsAgentGatewaysListRequest(_messages.Message
       locations is down or unreachable, the Aggregated List request will fail.
   """
 
-  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
-  returnPartialSuccess = _messages.BooleanField(4)
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+  returnPartialSuccess = _messages.BooleanField(5)
 
 
 class NetworkservicesProjectsLocationsAgentGatewaysPatchRequest(_messages.Message):

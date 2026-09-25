@@ -42,7 +42,6 @@ class _OperationPoller(waiter.CloudOperationPollerNoResources):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.Command):
   """Create a new composite index."""
 
@@ -77,16 +76,14 @@ class Create(base.Command):
 
   @classmethod
   def Args(cls, parser):
-    is_search_released = cls._IsSearchReleased()
-
     resource_args.AddCollectionGroupResourceArg(parser)
-    firestore_flags.AddFieldConfigFlag(parser, is_search_released)
+    firestore_flags.AddFieldConfigFlag(parser)
     firestore_flags.AddQueryScopeFlag(parser)
     firestore_flags.AddApiScopeFlag(parser)
     firestore_flags.AddDensityFlag(parser)
     firestore_flags.AddMultikeyFlag(parser)
     firestore_flags.AddUniqueFlag(parser)
-    firestore_flags.AddSearchIndexOptionsFlag(parser, is_search_released)
+    firestore_flags.AddSearchIndexOptionsFlag(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
     # Silences the default terminal output
@@ -97,10 +94,7 @@ class Create(base.Command):
     project = ref.projectsId
     database = ref.databasesId
     collection_group = ref.collectionGroupsId
-
-    search_index_options = (
-        args.search_index_options if self._IsSearchReleased() else None
-    )
+    search_index_options = args.search_index_options
 
     index_message = index_create_utils.BuildIndexMessage(
         field_configs=args.field_config,
@@ -128,19 +122,23 @@ class Create(base.Command):
 
     return self._WaitForIndex(operation)
 
-  @classmethod
-  def _IsSearchReleased(cls):
-    """Returns whether search indexes are released for this release track."""
-    return cls.ReleaseTrack() in (
-        base.ReleaseTrack.ALPHA,
-        base.ReleaseTrack.BETA,
-    )
-
   def _ValidateIndexMessage(self, index_message):
     """Validates the index message."""
 
     field_configs = index_message.fields
     self._ValidateFieldConfig(field_configs)
+    self._ValidateSearchIndexOptions(index_message)
+
+  def _ValidateSearchIndexOptions(self, index_message):
+    """Validates that search index options are only specified for search indexes."""
+    if index_message.searchIndexOptions and not any(
+        fc.searchConfig is not None for fc in index_message.fields
+    ):
+      raise calliope_exceptions.InvalidArgumentException(
+          '--search-index-options',
+          'Can only be specified for search indexes, which require a'
+          " 'search-config' in [--field-config].",
+      )
 
   def _ValidateFieldConfig(self, field_configs):
     """Validates the combination of field configuration types."""
@@ -158,26 +156,14 @@ class Create(base.Command):
         invalid_field_configs.append(field_config)
 
     if invalid_field_configs:
-      if self.ReleaseTrack() == base.ReleaseTrack.GA:
-        error_msg = (
-            "Exactly one of 'order', 'array-config', or 'vector-config' must be"
-        )
-      else:
-        error_msg = (
-            "Exactly one of 'order', 'array-config', 'vector-config', or"
-            " 'search-config' must be"
-        )
-
-      error_msg += (
-          ' specified for the {field_word} with the following {path_word}:'
-          ' [{paths}].'.format(
-              field_word=text.Pluralize(len(invalid_field_configs), 'field'),
-              path_word=text.Pluralize(len(invalid_field_configs), 'path'),
-              paths=', '.join(
-                  field_config.fieldPath
-                  for field_config in invalid_field_configs
-              ),
-          )
+      count = len(invalid_field_configs)
+      field_word = text.Pluralize(count, 'field')
+      path_word = text.Pluralize(count, 'path')
+      paths = ', '.join(fc.fieldPath for fc in invalid_field_configs)
+      error_msg = (
+          "Exactly one of 'order', 'array-config', 'vector-config', or"
+          f" 'search-config' must be specified for the {field_word} with the"
+          f' following {path_word}: [{paths}].'
       )
       raise calliope_exceptions.InvalidArgumentException(
           '--field-config', error_msg

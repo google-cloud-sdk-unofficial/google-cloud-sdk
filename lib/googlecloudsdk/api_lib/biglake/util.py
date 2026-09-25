@@ -229,6 +229,33 @@ def GetCredentialModeEnumMapper(release_track):
   )
 
 
+def GetIdentityModeEnumMapper(release_track, hidden=False):
+  messages = GetMessagesModule(release_track)
+  identity_mode_enum = (
+      messages.FederatedCatalogOptions.IdentityModeValueValuesEnum
+  )
+  return arg_utils.ChoiceEnumMapper(
+      '--federated-catalog-identity-mode',
+      identity_mode_enum,
+      hidden=hidden,
+      help_str='The identity mode for the federated catalog.',
+      custom_mappings={
+          'IDENTITY_MODE_SERVICE_IDENTITY': (
+              'service-identity',
+              'Queries execute using the BigLake service account.',
+          ),
+          'IDENTITY_MODE_USER_IDENTITY_FEDERATION': (
+              'user-identity-federation',
+              (
+                  "Queries execute using the end user's identity and are"
+                  ' propagated to the remote catalog. Identity federation'
+                  ' must be configured in the remote catalog.'
+              ),
+          ),
+      },
+  )
+
+
 def GcsBucketLinkValidator(value):
   if not value.startswith('gs://'):
     raise arg_parsers.ArgumentTypeError(
@@ -540,6 +567,7 @@ def CheckValidFederatedArgCombinations(args):
     arg_parsers.ArgumentTypeError: If an invalid argument combination is found.
   """
   federated_flags = [
+      'federated_catalog_identity_mode',
       'secret_name',
       'unity_catalog_name',
       'unity_instance_name',
@@ -742,6 +770,8 @@ def _BuildFederatedCatalogOptions(options):
   federated_catalog_options = {}
   if hasattr(options, 'secret_name') and options.secret_name:
     federated_catalog_options['secret-name'] = options.secret_name
+  if hasattr(options, 'identity_mode') and options.identity_mode:
+    federated_catalog_options['identity-mode'] = str(options.identity_mode)
   if (
       hasattr(options, 'service_directory_name')
       and options.service_directory_name
@@ -821,14 +851,21 @@ def CreateCatalog(catalog_id, catalog_msg, primary_location=None):
             catalog_msg.restricted_locations_config.restricted_locations
         )
     }
+  if (
+      hasattr(catalog_msg, 'cross_cloud_cache_options')
+      and catalog_msg.cross_cloud_cache_options
+  ):
+    body['cross-cloud-cache-options'] = {
+        'enabled': catalog_msg.cross_cloud_cache_options.enabled
+    }
 
   if (
-      hasattr(catalog_msg, 'encryption_configuration')
-      and catalog_msg.encryption_configuration
-      and catalog_msg.encryption_configuration.kms_key_name
+      hasattr(catalog_msg, 'encryption_config')
+      and catalog_msg.encryption_config
+      and catalog_msg.encryption_config.kms_key_name
   ):
-    body['encryption-configuration'] = {
-        'kms-key-name': catalog_msg.encryption_configuration.kms_key_name
+    body['encryption-config'] = {
+        'kms-key-name': catalog_msg.encryption_config.kms_key_name
     }
 
   if (

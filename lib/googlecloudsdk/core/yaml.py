@@ -310,6 +310,18 @@ def SingleQuotedScalarString(value):  # pylint:disable=invalid-name
   return yaml.scalarstring.SingleQuotedScalarString(value)
 
 
+def DoubleQuotedScalarString(value):  # pylint:disable=invalid-name
+  """Double quotes the value using DoubleQuotedScalarString.
+
+  Args:
+    value: The value to wrap.
+
+  Returns:
+    The value wrapped in DoubleQuotedScalarString.
+  """
+  return yaml.scalarstring.DoubleQuotedScalarString(value)
+
+
 def list_like(item):
   """Return True if the item is like a list: a MutableSequence."""
   return isinstance(item, collections_abc.MutableSequence)

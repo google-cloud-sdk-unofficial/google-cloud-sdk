@@ -1,4 +1,5 @@
-- help_text:
+- release_tracks: [ALPHA]
+  help_text:
     brief: List available Blockchain Node Engine locations.
     description: List available Blockchain Node Engine locations.
     examples: |

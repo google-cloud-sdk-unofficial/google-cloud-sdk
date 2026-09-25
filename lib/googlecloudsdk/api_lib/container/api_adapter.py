@@ -1485,6 +1485,8 @@ class UpdateClusterOptions(object):
       wiz_sensor_registry_secret_uri=None,
       wiz_sensor_api_key_secret_uri=None,
       wiz_sensor_proxy_secret_uri=None,
+      target_node_version=None,
+      clear_target_node_version=None,
   ):
     self.version = version
     self.update_master = bool(update_master)
@@ -1743,6 +1745,8 @@ class UpdateClusterOptions(object):
     self.wiz_sensor_registry_secret_uri = wiz_sensor_registry_secret_uri
     self.wiz_sensor_api_key_secret_uri = wiz_sensor_api_key_secret_uri
     self.wiz_sensor_proxy_secret_uri = wiz_sensor_proxy_secret_uri
+    self.target_node_version = target_node_version
+    self.clear_target_node_version = clear_target_node_version
 
 
 class SetMasterAuthOptions(object):
@@ -8400,6 +8404,10 @@ class APIAdapter(object):
         window.maintenanceExclusionOptions = self.messages.MaintenanceExclusionOptions(
             scope=self.messages.MaintenanceExclusionOptions.ScopeValueValuesEnum.NO_MINOR_OR_NODE_UPGRADES
         )
+      if window_scope == 'no_target_node_version_update':
+        window.maintenanceExclusionOptions = self.messages.MaintenanceExclusionOptions(
+            scope=self.messages.MaintenanceExclusionOptions.ScopeValueValuesEnum.NO_TARGET_NODE_VERSION_UPDATE
+        )
     if window_until_end_of_support:
       if window.maintenanceExclusionOptions is None:
         window.maintenanceExclusionOptions = self.messages.MaintenanceExclusionOptions(
@@ -10520,6 +10528,13 @@ class V1Beta1Adapter(V1Adapter):
               enabled=False
           )
       )
+    if options.target_node_version is not None:
+      update = self.messages.ClusterUpdate(
+          desiredTargetNodeVersion=options.target_node_version
+      )
+    elif options.clear_target_node_version is not None:
+      update = self.messages.ClusterUpdate(desiredTargetNodeVersion='')
+
     if options.jwt_authenticator_config is not None:
       if update is None:
         update = self.messages.ClusterUpdate()

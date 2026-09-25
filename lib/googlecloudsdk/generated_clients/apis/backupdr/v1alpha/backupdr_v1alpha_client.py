@@ -59,6 +59,8 @@ class BackupdrV1alpha(base_api.BaseApiClient):
     self.projects_locations_resourceBackupConfigs = self.ProjectsLocationsResourceBackupConfigsService(self)
     self.projects_locations_restoreTemplates_executions = self.ProjectsLocationsRestoreTemplatesExecutionsService(self)
     self.projects_locations_restoreTemplates = self.ProjectsLocationsRestoreTemplatesService(self)
+    self.projects_locations_restoreVerificationPlans_associations = self.ProjectsLocationsRestoreVerificationPlansAssociationsService(self)
+    self.projects_locations_restoreVerificationPlans = self.ProjectsLocationsRestoreVerificationPlansService(self)
     self.projects_locations_serviceConfig = self.ProjectsLocationsServiceConfigService(self)
     self.projects_locations_trial = self.ProjectsLocationsTrialService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
@@ -2333,6 +2335,296 @@ class BackupdrV1alpha(base_api.BaseApiClient):
         request_field='runRestoreTemplateRequest',
         request_type_name='BackupdrProjectsLocationsRestoreTemplatesRunRequest',
         response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsRestoreVerificationPlansAssociationsService(base_api.BaseApiService):
+    """Service class for the projects_locations_restoreVerificationPlans_associations resource."""
+
+    _NAME = 'projects_locations_restoreVerificationPlans_associations'
+
+    def __init__(self, client):
+      super(BackupdrV1alpha.ProjectsLocationsRestoreVerificationPlansAssociationsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new RestoreVerificationPlanAssociation in a given RestoreVerificationPlan.
+
+      Args:
+        request: (BackupdrProjectsLocationsRestoreVerificationPlansAssociationsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/restoreVerificationPlans/{restoreVerificationPlansId}/associations',
+        http_method='POST',
+        method_id='backupdr.projects.locations.restoreVerificationPlans.associations.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['requestId', 'restoreVerificationPlanAssociationId'],
+        relative_path='v1alpha/{+parent}/associations',
+        request_field='restoreVerificationPlanAssociation',
+        request_type_name='BackupdrProjectsLocationsRestoreVerificationPlansAssociationsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single RestoreVerificationPlanAssociation in a given RestoreVerificationPlan.
+
+      Args:
+        request: (BackupdrProjectsLocationsRestoreVerificationPlansAssociationsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/restoreVerificationPlans/{restoreVerificationPlansId}/associations/{associationsId}',
+        http_method='DELETE',
+        method_id='backupdr.projects.locations.restoreVerificationPlans.associations.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='BackupdrProjectsLocationsRestoreVerificationPlansAssociationsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single RestoreVerificationPlanAssociation in a given RestoreVerificationPlan.
+
+      Args:
+        request: (BackupdrProjectsLocationsRestoreVerificationPlansAssociationsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (RestoreVerificationPlanAssociation) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/restoreVerificationPlans/{restoreVerificationPlansId}/associations/{associationsId}',
+        http_method='GET',
+        method_id='backupdr.projects.locations.restoreVerificationPlans.associations.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='BackupdrProjectsLocationsRestoreVerificationPlansAssociationsGetRequest',
+        response_type_name='RestoreVerificationPlanAssociation',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists RestoreVerificationPlanAssociations in a given RestoreVerificationPlan.
+
+      Args:
+        request: (BackupdrProjectsLocationsRestoreVerificationPlansAssociationsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListRestoreVerificationPlanAssociationsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/restoreVerificationPlans/{restoreVerificationPlansId}/associations',
+        http_method='GET',
+        method_id='backupdr.projects.locations.restoreVerificationPlans.associations.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/associations',
+        request_field='',
+        request_type_name='BackupdrProjectsLocationsRestoreVerificationPlansAssociationsListRequest',
+        response_type_name='ListRestoreVerificationPlanAssociationsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single RestoreVerificationPlanAssociation in a given RestoreVerificationPlan.
+
+      Args:
+        request: (BackupdrProjectsLocationsRestoreVerificationPlansAssociationsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/restoreVerificationPlans/{restoreVerificationPlansId}/associations/{associationsId}',
+        http_method='PATCH',
+        method_id='backupdr.projects.locations.restoreVerificationPlans.associations.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1alpha/{+name}',
+        request_field='restoreVerificationPlanAssociation',
+        request_type_name='BackupdrProjectsLocationsRestoreVerificationPlansAssociationsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def TriggerRestoreVerification(self, request, global_params=None):
+      r"""Triggers a new Restore Verification for the association in a given RestoreVerificationPlan.
+
+      Args:
+        request: (BackupdrProjectsLocationsRestoreVerificationPlansAssociationsTriggerRestoreVerificationRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('TriggerRestoreVerification')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    TriggerRestoreVerification.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/restoreVerificationPlans/{restoreVerificationPlansId}/associations/{associationsId}:triggerRestoreVerification',
+        http_method='POST',
+        method_id='backupdr.projects.locations.restoreVerificationPlans.associations.triggerRestoreVerification',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:triggerRestoreVerification',
+        request_field='triggerRestoreVerificationRequest',
+        request_type_name='BackupdrProjectsLocationsRestoreVerificationPlansAssociationsTriggerRestoreVerificationRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsRestoreVerificationPlansService(base_api.BaseApiService):
+    """Service class for the projects_locations_restoreVerificationPlans resource."""
+
+    _NAME = 'projects_locations_restoreVerificationPlans'
+
+    def __init__(self, client):
+      super(BackupdrV1alpha.ProjectsLocationsRestoreVerificationPlansService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new RestoreVerificationPlan in a given project and location.
+
+      Args:
+        request: (BackupdrProjectsLocationsRestoreVerificationPlansCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/restoreVerificationPlans',
+        http_method='POST',
+        method_id='backupdr.projects.locations.restoreVerificationPlans.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['requestId', 'restoreVerificationPlanId'],
+        relative_path='v1alpha/{+parent}/restoreVerificationPlans',
+        request_field='restoreVerificationPlan',
+        request_type_name='BackupdrProjectsLocationsRestoreVerificationPlansCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single RestoreVerificationPlan. If the `force` flag is set to `true`, any RestoreVerificationPlanAssociations linked to this RestoreVerificationPlan will also be deleted.
+
+      Args:
+        request: (BackupdrProjectsLocationsRestoreVerificationPlansDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/restoreVerificationPlans/{restoreVerificationPlansId}',
+        http_method='DELETE',
+        method_id='backupdr.projects.locations.restoreVerificationPlans.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['force', 'requestId'],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='BackupdrProjectsLocationsRestoreVerificationPlansDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single RestoreVerificationPlan. Returns the requested RestoreVerificationPlan.
+
+      Args:
+        request: (BackupdrProjectsLocationsRestoreVerificationPlansGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (RestoreVerificationPlan) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/restoreVerificationPlans/{restoreVerificationPlansId}',
+        http_method='GET',
+        method_id='backupdr.projects.locations.restoreVerificationPlans.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='BackupdrProjectsLocationsRestoreVerificationPlansGetRequest',
+        response_type_name='RestoreVerificationPlan',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists RestoreVerificationPlans in a given project and location.
+
+      Args:
+        request: (BackupdrProjectsLocationsRestoreVerificationPlansListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListRestoreVerificationPlansResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/restoreVerificationPlans',
+        http_method='GET',
+        method_id='backupdr.projects.locations.restoreVerificationPlans.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/restoreVerificationPlans',
+        request_field='',
+        request_type_name='BackupdrProjectsLocationsRestoreVerificationPlansListRequest',
+        response_type_name='ListRestoreVerificationPlansResponse',
         supports_download=False,
     )
 

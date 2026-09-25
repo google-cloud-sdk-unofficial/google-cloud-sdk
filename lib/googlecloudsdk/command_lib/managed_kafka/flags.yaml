@@ -443,7 +443,6 @@ public-cluster:
   action: store_true_false
   help_text: |
     Enable a public cluster. If disabled, public cluster config is cleared.
-    Use --public-cluster to enable it, and --no-public-cluster to disable it.
 
 allowed-source-ip-ranges:
   arg_name: allowed-source-ip-ranges

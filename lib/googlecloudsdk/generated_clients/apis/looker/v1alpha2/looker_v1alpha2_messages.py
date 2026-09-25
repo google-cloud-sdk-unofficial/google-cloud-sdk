@@ -124,6 +124,7 @@ class Empty(_messages.Message):
   """
 
 
+
 class EncryptionConfig(_messages.Message):
   r"""Encryption configuration (i.e. CMEK).
 
@@ -445,13 +446,14 @@ class Instance(_messages.Message):
       LOOKER_CORE_TRIAL_ENTERPRISE: Represents the Looker Core Trial
         Enterprise edition.
       LOOKER_CORE_TRIAL_EMBED: Represents the Looker Core Trial Embed edition.
-      LOOKER_CORE_S_ANNUAL: Represents the Looker Core Standard Annual edition.
+      LOOKER_CORE_S_ANNUAL: Represents the Looker Core Standard Annual
+        edition.
       LOOKER_CORE_M_ANNUAL: Represents the Looker Core Enterprise Annual
         edition.
       LOOKER_CORE_L_ANNUAL: Represents the Looker Core Enterprise Plus Annual
         edition.
-      LOOKER_CORE_XL_ANNUAL: Represents the Looker Core Enterprise Ultra Annual
-      edition.
+      LOOKER_CORE_XL_ANNUAL: Represents the Looker Core Enterprise Ultra
+        Annual edition.
       LOOKER_CORE_NONPROD_M_ANNUAL: Represents the Looker Core Nonprod
         Enterprise Annual edition.
       LOOKER_CORE_NONPROD_L_ANNUAL: Represents the Looker Core Nonprod

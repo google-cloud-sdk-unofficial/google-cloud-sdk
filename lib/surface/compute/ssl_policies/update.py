@@ -127,6 +127,7 @@ class UpdateAlpha(Update):
   def Args(cls, parser):
     super(UpdateAlpha, cls).Args(parser)
     flags.GetTlsModeFlag().AddToParser(parser)
+    flags.GetTlsSettingsSubjectAltNamesFlag().AddToParser(parser)
 
   def Run(self, args):
     """Issues the request to update a SSL policy."""
@@ -145,7 +146,8 @@ class UpdateAlpha(Update):
         min_tls_version=flags.ParseTlsVersion(args.min_tls_version),
         custom_features=custom_features,
         post_quantum_key_exchange=args.post_quantum_key_exchange,
-        tls_mode=args.tls_mode
+        tls_mode=args.tls_mode,
+        tls_settings_subject_alt_names=args.tls_settings_subject_alt_names
     )
     operation_ref = helper.Patch(
         ssl_policy_ref,

@@ -83,6 +83,369 @@ class AuditLogConfig(_messages.Message):
   logType = _messages.EnumField('LogTypeValueValuesEnum', 2)
 
 
+class BatchCreatePartitionsRequest(_messages.Message):
+  r"""Request message for the BatchCreatePartitions method.
+
+  Fields:
+    requests: Required. Requests to add partitions to the table.
+    skipExistingPartitions: Optional. Corresponds to the `ifNotExists` flag in
+      the Hive Metastore APIs. If the flag is set to false, the server will
+      return ALREADY_EXISTS if any partition already exists. If the flag is
+      set to true, the server will skip existing partitions and insert only
+      the non-existing partitions. A maximum of 900 partitions can be inserted
+      in a batch.
+  """
+
+  requests = _messages.MessageField('CreatePartitionRequest', 1, repeated=True)
+  skipExistingPartitions = _messages.BooleanField(2)
+
+
+class BatchCreatePartitionsResponse(_messages.Message):
+  r"""Response message for BatchCreatePartitions.
+
+  Fields:
+    partitions: The list of partitions that have been added.
+  """
+
+  partitions = _messages.MessageField('Partition', 1, repeated=True)
+
+
+class BatchDeletePartitionsRequest(_messages.Message):
+  r"""Request message for BatchDeletePartitions. The Partition is uniquely
+  identified by values, which is an ordered list. Hence, there is no separate
+  name or partition id field.
+
+  Fields:
+    partitionValues: Required. The list of partitions (identified by its
+      values) to be deleted. A maximum of 900 partitions can be deleted in a
+      batch.
+  """
+
+  partitionValues = _messages.MessageField('PartitionValues', 1, repeated=True)
+
+
+class BatchUpdatePartitionsRequest(_messages.Message):
+  r"""Request message for BatchUpdatePartitions.
+
+  Fields:
+    requests: Required. Requests to update partitions in the table.
+  """
+
+  requests = _messages.MessageField('UpdatePartitionRequest', 1, repeated=True)
+
+
+class BatchUpdatePartitionsResponse(_messages.Message):
+  r"""Response message for BatchUpdatePartitions.
+
+  Fields:
+    partitions: The list of partitions that have been updated. A maximum of
+      900 partitions can be updated in a batch.
+  """
+
+  partitions = _messages.MessageField('Partition', 1, repeated=True)
+
+
+class BiglakeHiveV1ProjectsCatalogsCreateRequest(_messages.Message):
+  r"""A BiglakeHiveV1ProjectsCatalogsCreateRequest object.
+
+  Fields:
+    hiveCatalog: A HiveCatalog resource to be passed as the request body.
+    hiveCatalogId: Required. The Hive Catalog ID to use for the catalog that
+      will become the final component of the catalog's resource name. The
+      maximum length is 256 characters.
+    parent: Required. The parent resource where this catalog will be created.
+      Format: projects/{project_id_or_number}
+    primary_location: Required. The GCP region that specifies where the
+      catalog metadata is stored, e.g. us-central1, EU, etc.
+  """
+
+  hiveCatalog = _messages.MessageField('HiveCatalog', 1)
+  hiveCatalogId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  primary_location = _messages.StringField(4)
+
+
+class BiglakeHiveV1ProjectsCatalogsDatabasesCreateRequest(_messages.Message):
+  r"""A BiglakeHiveV1ProjectsCatalogsDatabasesCreateRequest object.
+
+  Fields:
+    hiveDatabase: A HiveDatabase resource to be passed as the request body.
+    hiveDatabaseId: Required. The ID to use for the Hive Database. The maximum
+      length is 128 characters.
+    parent: Required. The parent resource where this database will be created.
+      Format: projects/{project_id_or_number}/catalogs/{catalog_id}
+  """
+
+  hiveDatabase = _messages.MessageField('HiveDatabase', 1)
+  hiveDatabaseId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class BiglakeHiveV1ProjectsCatalogsDatabasesDeleteRequest(_messages.Message):
+  r"""A BiglakeHiveV1ProjectsCatalogsDatabasesDeleteRequest object.
+
+  Fields:
+    name: Required. The name of the database to delete. Format: projects/{proj
+      ect_id_or_number}/catalogs/{catalog_id}/databases/{database_id}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class BiglakeHiveV1ProjectsCatalogsDatabasesGetRequest(_messages.Message):
+  r"""A BiglakeHiveV1ProjectsCatalogsDatabasesGetRequest object.
+
+  Fields:
+    name: Required. The name of the database to retrieve. Format: projects/{pr
+      oject_id_or_number}/catalogs/{catalog_id}/databases/{database_id}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class BiglakeHiveV1ProjectsCatalogsDatabasesListRequest(_messages.Message):
+  r"""A BiglakeHiveV1ProjectsCatalogsDatabasesListRequest object.
+
+  Fields:
+    pageSize: Optional. Page size for pagination.
+    pageToken: Optional. PageToken for pagination.
+    parent: Required. The hive catalog to list databases from. Format:
+      projects/{project_id_or_number}/catalogs/{catalog_id}
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class BiglakeHiveV1ProjectsCatalogsDatabasesPatchRequest(_messages.Message):
+  r"""A BiglakeHiveV1ProjectsCatalogsDatabasesPatchRequest object.
+
+  Fields:
+    hiveDatabase: A HiveDatabase resource to be passed as the request body.
+    name: Identifier. The resource name. Format: projects/{project_id_or_numbe
+      r}/catalogs/{catalog_id}/databases/{database_id}
+    updateMask: Optional. The list of fields to update.
+  """
+
+  hiveDatabase = _messages.MessageField('HiveDatabase', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
+
+
+class BiglakeHiveV1ProjectsCatalogsDatabasesTablesCreateRequest(_messages.Message):
+  r"""A BiglakeHiveV1ProjectsCatalogsDatabasesTablesCreateRequest object.
+
+  Fields:
+    hiveTable: A HiveTable resource to be passed as the request body.
+    hiveTableId: Required. The Hive Table ID to use for the table that will
+      become the final component of the table's resource name. The maximum
+      length is 256 characters.
+    parent: Required. The parent resource for the table to be created. Format:
+      projects/{project_id_or_number}/catalogs/{catalog_id}/databases/{databas
+      e_id}
+  """
+
+  hiveTable = _messages.MessageField('HiveTable', 1)
+  hiveTableId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class BiglakeHiveV1ProjectsCatalogsDatabasesTablesDeleteRequest(_messages.Message):
+  r"""A BiglakeHiveV1ProjectsCatalogsDatabasesTablesDeleteRequest object.
+
+  Fields:
+    name: Required. The name of the database to delete. Format: projects/{proj
+      ect_id_or_number}/catalogs/{catalog_id}/databases/{database_id}/tables/{
+      table_id}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class BiglakeHiveV1ProjectsCatalogsDatabasesTablesGetRequest(_messages.Message):
+  r"""A BiglakeHiveV1ProjectsCatalogsDatabasesTablesGetRequest object.
+
+  Fields:
+    name: Required. The name of the table to retrieve. Format: projects/{proje
+      ct_id_or_number}/catalogs/{catalog_id}/databases/{database_id}/tables/{t
+      able_id}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class BiglakeHiveV1ProjectsCatalogsDatabasesTablesListRequest(_messages.Message):
+  r"""A BiglakeHiveV1ProjectsCatalogsDatabasesTablesListRequest object.
+
+  Fields:
+    pageSize: Optional. Page size for pagination.
+    pageToken: Optional. PageToken for pagination.
+    parent: Required. The database to list tables from. Format: projects/{proj
+      ect_id_or_number}/catalogs/{catalog_id}/databases/{database_id}
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class BiglakeHiveV1ProjectsCatalogsDatabasesTablesPartitionsBatchCreateRequest(_messages.Message):
+  r"""A
+  BiglakeHiveV1ProjectsCatalogsDatabasesTablesPartitionsBatchCreateRequest
+  object.
+
+  Fields:
+    batchCreatePartitionsRequest: A BatchCreatePartitionsRequest resource to
+      be passed as the request body.
+    parent: Required. Reference to the table to where the partitions to be
+      added, in the format of projects/{project}/catalogs/{catalogs}/databases
+      /{database}/tables/{table}.
+  """
+
+  batchCreatePartitionsRequest = _messages.MessageField('BatchCreatePartitionsRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
+class BiglakeHiveV1ProjectsCatalogsDatabasesTablesPartitionsBatchDeleteRequest(_messages.Message):
+  r"""A
+  BiglakeHiveV1ProjectsCatalogsDatabasesTablesPartitionsBatchDeleteRequest
+  object.
+
+  Fields:
+    batchDeletePartitionsRequest: A BatchDeletePartitionsRequest resource to
+      be passed as the request body.
+    parent: Required. Reference to the table to which these partitions belong,
+      in the format of projects/{project}/catalogs/{catalogs}/databases/{datab
+      ase}/tables/{table}.
+  """
+
+  batchDeletePartitionsRequest = _messages.MessageField('BatchDeletePartitionsRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
+class BiglakeHiveV1ProjectsCatalogsDatabasesTablesPartitionsBatchUpdateRequest(_messages.Message):
+  r"""A
+  BiglakeHiveV1ProjectsCatalogsDatabasesTablesPartitionsBatchUpdateRequest
+  object.
+
+  Fields:
+    batchUpdatePartitionsRequest: A BatchUpdatePartitionsRequest resource to
+      be passed as the request body.
+    parent: Required. Reference to the table to which these partitions belong,
+      in the format of projects/{project}/catalogs/{catalogs}/databases/{datab
+      ase}/tables/{table}.
+  """
+
+  batchUpdatePartitionsRequest = _messages.MessageField('BatchUpdatePartitionsRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
+class BiglakeHiveV1ProjectsCatalogsDatabasesTablesPartitionsListRequest(_messages.Message):
+  r"""A BiglakeHiveV1ProjectsCatalogsDatabasesTablesPartitionsListRequest
+  object.
+
+  Fields:
+    filter: Optional. SQL text filtering statement, similar to a `WHERE`
+      clause in a query. Only supports single-row expressions. Aggregate
+      functions are not supported. Examples: * `"int_field > 5"` *
+      `"date_field = CAST('2014-9-27' as DATE)"` * `"nullable_field is not
+      NULL"` * `"st_equals(geo_field, st_geofromtext("POINT(2, 2)"))"` *
+      `"numeric_field BETWEEN 1.0 AND 5.0"` Restricted to a maximum length of
+      1 MB.
+    parent: Required. Reference to the table to which these partitions belong,
+      in the format of projects/{project}/catalogs/{catalogs}/databases/{datab
+      ase}/tables/{table}.
+  """
+
+  filter = _messages.StringField(1)
+  parent = _messages.StringField(2, required=True)
+
+
+class BiglakeHiveV1ProjectsCatalogsDatabasesTablesPatchRequest(_messages.Message):
+  r"""A BiglakeHiveV1ProjectsCatalogsDatabasesTablesPatchRequest object.
+
+  Fields:
+    hiveTable: A HiveTable resource to be passed as the request body.
+    name: Identifier. The resource name. Format: projects/{project_id_or_numbe
+      r}/catalogs/{catalog_id}/databases/{database_id}/tables/{table_id}
+    updateMask: Optional. The list of fields to update.
+  """
+
+  hiveTable = _messages.MessageField('HiveTable', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
+
+
+class BiglakeHiveV1ProjectsCatalogsDeleteRequest(_messages.Message):
+  r"""A BiglakeHiveV1ProjectsCatalogsDeleteRequest object.
+
+  Fields:
+    name: Required. The name of the catalog to delete. Format:
+      projects/{project_id_or_number}/catalogs/{catalog_id}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class BiglakeHiveV1ProjectsCatalogsFailoverRequest(_messages.Message):
+  r"""A BiglakeHiveV1ProjectsCatalogsFailoverRequest object.
+
+  Fields:
+    failoverHiveCatalogRequest: A FailoverHiveCatalogRequest resource to be
+      passed as the request body.
+    name: Required. The name of the catalog in the form
+      "projects/{project_id}/catalogs/{catalog_id}"
+  """
+
+  failoverHiveCatalogRequest = _messages.MessageField('FailoverHiveCatalogRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class BiglakeHiveV1ProjectsCatalogsGetRequest(_messages.Message):
+  r"""A BiglakeHiveV1ProjectsCatalogsGetRequest object.
+
+  Fields:
+    name: Required. The name of the catalog to retrieve. Format:
+      projects/{project_id_or_number}/catalogs/{catalog_id}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class BiglakeHiveV1ProjectsCatalogsListRequest(_messages.Message):
+  r"""A BiglakeHiveV1ProjectsCatalogsListRequest object.
+
+  Fields:
+    pageSize: Optional. Page size for pagination.
+    pageToken: Optional. Page token for pagination.
+    parent: Required. The project to list catalogs from. Format:
+      projects/{project_id_or_number}
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class BiglakeHiveV1ProjectsCatalogsPatchRequest(_messages.Message):
+  r"""A BiglakeHiveV1ProjectsCatalogsPatchRequest object.
+
+  Fields:
+    hiveCatalog: A HiveCatalog resource to be passed as the request body.
+    name: Identifier. The resource name. Format:
+      projects/{project_id_or_number}/catalogs/{catalog_id}
+    updateMask: Optional. The list of fields to update. For the `FieldMask`
+      definition, see https://developers.google.com/protocol-
+      buffers/docs/reference/google.protobuf#fieldmask If not set, defaults to
+      all of the fields that are allowed to update.
+  """
+
+  hiveCatalog = _messages.MessageField('HiveCatalog', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
+
+
 class BiglakeIcebergV1RestcatalogExtensionsProjectsCatalogsCreateRequest(_messages.Message):
   r"""A BiglakeIcebergV1RestcatalogExtensionsProjectsCatalogsCreateRequest
   object.
@@ -712,6 +1075,22 @@ class CreateIcebergTableRequest(_messages.Message):
   httpBody = _messages.MessageField('HttpBody', 1)
 
 
+class CreatePartitionRequest(_messages.Message):
+  r"""Request message for CreatePartition. The Partition is uniquely
+  identified by values, which is an ordered list. Hence, there is no separate
+  name or partition id field.
+
+  Fields:
+    parent: Required. Reference to the table to where the partition to be
+      added, in the format of projects/{project}/catalogs/{catalogs}/databases
+      /{databases}/tables/{table}.
+    partition: Required. The partition to be added.
+  """
+
+  parent = _messages.StringField(1)
+  partition = _messages.MessageField('Partition', 2)
+
+
 class CrossCloudCacheOptions(_messages.Message):
   r"""Configuration options for cross-cloud caching of data and metadata
   files.
@@ -737,7 +1116,7 @@ class Empty(_messages.Message):
 
 
 
-class EncryptionConfiguration(_messages.Message):
+class EncryptionConfig(_messages.Message):
   r"""Custom encryption configuration (e.g., Cloud KMS keys).
 
   Fields:
@@ -785,6 +1164,45 @@ class Expr(_messages.Message):
   title = _messages.StringField(4)
 
 
+class FailoverHiveCatalogRequest(_messages.Message):
+  r"""Request message for FailoverHiveCatalog.
+
+  Fields:
+    conditionalFailoverReplicationTime: Optional. If unset, wait for all data
+      from the source region to replicate to the new primary region before
+      completing the failover, with no data loss (also called "soft
+      failover"). If set, failover immediately, accepting the loss of any data
+      committed in the source region after this timestamp, that has not yet
+      replicated. If any data committed before this time has not replicated,
+      the failover will not be performed and an error will be returned (also
+      called "hard failover").
+    primaryReplica: Required. The region being assigned as the new primary
+      replica region. For example "us-east1". This must be one of the replica
+      regions in the catalog's list of replicas marked as a "secondary".
+    validateOnly: Optional. If set, only validate the request, but do not
+      perform the update. This can be used to inspect the replication_time at
+      any time, including before performing a fail-over.
+  """
+
+  conditionalFailoverReplicationTime = _messages.StringField(1)
+  primaryReplica = _messages.StringField(2)
+  validateOnly = _messages.BooleanField(3)
+
+
+class FailoverHiveCatalogResponse(_messages.Message):
+  r"""Response message for FailoverHiveCatalog.
+
+  Fields:
+    replicationTime: Output only. The min timestamp for which all namespaces
+      and table metadata have been replicated in the region specified as the
+      new primary_replica. Some resources may have been replicated more
+      recently than this timestamp. If empty, the replica has just been
+      created and has not yet been fully initialized.
+  """
+
+  replicationTime = _messages.StringField(1)
+
+
 class FailoverIcebergCatalogRequest(_messages.Message):
   r"""Request message for FailoverIcebergCatalog.
 
@@ -829,9 +1247,14 @@ class FailoverIcebergCatalogResponse(_messages.Message):
 class FederatedCatalogOptions(_messages.Message):
   r"""Configuration options for a federated catalog.
 
+  Enums:
+    IdentityModeValueValuesEnum: Optional. The identity mode for the federated
+      catalog.
+
   Fields:
     glue_catalog_info: Optional. Information specific to AWS Glue Data
       Catalog.
+    identity_mode: Optional. The identity mode for the federated catalog.
     refresh_options: Optional. Refresh configuration.
     refresh_status: Output only. The status of the background refresh
       operations.
@@ -856,14 +1279,46 @@ class FederatedCatalogOptions(_messages.Message):
     workday_catalog_info: Optional. Information specific to Workday Data Lake.
   """
 
+  class IdentityModeValueValuesEnum(_messages.Enum):
+    r"""Optional. The identity mode for the federated catalog.
+
+    Values:
+      IDENTITY_MODE_UNSPECIFIED: Default value. This value is unused.
+      IDENTITY_MODE_SERVICE_IDENTITY: Queries execute using the service
+        account in
+        google.cloud.biglake.v1main.IcebergCatalog.biglake_service_account.
+      IDENTITY_MODE_USER_IDENTITY_FEDERATION: Queries execute using the end
+        user's identity and are propagated to the remote catalog. Identity
+        federation must be configured in the remote catalog.
+    """
+    IDENTITY_MODE_UNSPECIFIED = 0
+    IDENTITY_MODE_SERVICE_IDENTITY = 1
+    IDENTITY_MODE_USER_IDENTITY_FEDERATION = 2
+
   glue_catalog_info = _messages.MessageField('GlueCatalogInfo', 1)
-  refresh_options = _messages.MessageField('RefreshOptions', 2)
-  refresh_status = _messages.MessageField('RefreshStatus', 3)
-  secret_name = _messages.StringField(4)
-  service_directory_name = _messages.StringField(5)
-  snowflake_catalog_info = _messages.MessageField('SnowflakeCatalogInfo', 6)
-  unity_catalog_info = _messages.MessageField('UnityCatalogInfo', 7)
-  workday_catalog_info = _messages.MessageField('WorkdayCatalogInfo', 8)
+  identity_mode = _messages.EnumField('IdentityModeValueValuesEnum', 2)
+  refresh_options = _messages.MessageField('RefreshOptions', 3)
+  refresh_status = _messages.MessageField('RefreshStatus', 4)
+  secret_name = _messages.StringField(5)
+  service_directory_name = _messages.StringField(6)
+  snowflake_catalog_info = _messages.MessageField('SnowflakeCatalogInfo', 7)
+  unity_catalog_info = _messages.MessageField('UnityCatalogInfo', 8)
+  workday_catalog_info = _messages.MessageField('WorkdayCatalogInfo', 9)
+
+
+class FieldSchema(_messages.Message):
+  r"""Field schema information.
+
+  Fields:
+    comment: Optional. Comment of the field. The maximum length is 256
+      characters.
+    name: Required. Name of the field. The maximum length is 767 characters.
+    type: Required. Type of the field. The maximum length is 128 characters.
+  """
+
+  comment = _messages.StringField(1)
+  name = _messages.StringField(2)
+  type = _messages.StringField(3)
 
 
 class GlueCatalogInfo(_messages.Message):
@@ -889,6 +1344,200 @@ class GlueCatalogInfo(_messages.Message):
   aws_region = _messages.StringField(1)
   aws_role_arn = _messages.StringField(2)
   warehouse = _messages.StringField(3)
+
+
+class HiveCatalog(_messages.Message):
+  r"""The HiveCatalog contains spark/hive databases and tables in the BigLake
+  Metastore. While creating resources under a catalog, ideally ensure that the
+  storage bucket location, spark / hive engine location or any other compute
+  location match. Catalog can be viewed as the destination for migrating an
+  on-prem Hive metastore to GCP.
+
+  Fields:
+    createTime: Output only. The creation time of the catalog.
+    description: Optional. Stores the catalog description. The maximum length
+      is 4000 characters.
+    encryptionConfiguration: Optional. Custom encryption configuration (e.g.,
+      Cloud KMS keys).
+    locationUri: Required. The Cloud Storage location path where the catalog
+      exists. Format: gs://bucket/path/to/catalog The maximum length is 4000
+      characters.
+    name: Identifier. The resource name. Format:
+      projects/{project_id_or_number}/catalogs/{catalog_id}
+    replicas: Output only. The replicas for the catalog metadata.
+    updateTime: Output only. The update time of the catalog.
+  """
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  encryptionConfiguration = _messages.MessageField('HiveCatalogEncryptionConfiguration', 3)
+  locationUri = _messages.StringField(4)
+  name = _messages.StringField(5)
+  replicas = _messages.MessageField('HiveCatalogReplica', 6, repeated=True)
+  updateTime = _messages.StringField(7)
+
+
+class HiveCatalogEncryptionConfiguration(_messages.Message):
+  r"""Custom encryption configuration (e.g., Cloud KMS keys).
+
+  Fields:
+    kmsKeyName: Optional. Optional Cloud KMS key name for encryption of
+      resources in the catalog. Format: projects/{project}/locations/{location
+      }/keyRings/{keyRing}/cryptoKeys/{cryptoKey}
+  """
+
+  kmsKeyName = _messages.StringField(1)
+
+
+class HiveCatalogReplica(_messages.Message):
+  r"""The replica of the Catalog.
+
+  Enums:
+    StateValueValuesEnum: Output only. The current state of the replica.
+
+  Fields:
+    region: Output only. The region of the replica. For example `us-east1`.
+    state: Output only. The current state of the replica.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current state of the replica.
+
+    Values:
+      STATE_UNSPECIFIED: The replica state is unknown.
+      STATE_PRIMARY: Indicates the replica is the writable primary.
+      STATE_PRIMARY_IN_PROGRESS: Indicates the replica has been recently
+        assigned as the primary, but not all databases are writeable yet.
+      STATE_SECONDARY: Indicates the replica is a read-only secondary replica.
+    """
+    STATE_UNSPECIFIED = 0
+    STATE_PRIMARY = 1
+    STATE_PRIMARY_IN_PROGRESS = 2
+    STATE_SECONDARY = 3
+
+  region = _messages.StringField(1)
+  state = _messages.EnumField('StateValueValuesEnum', 2)
+
+
+class HiveDatabase(_messages.Message):
+  r"""Stores the hive database information. It includes the database name,
+  description, location and properties associated with the database.
+
+  Messages:
+    ParametersValue: Optional. Stores the properties associated with the
+      database. The maximum size is 2 MiB.
+
+  Fields:
+    createTime: Output only. The creation time of the database.
+    description: Optional. Stores the database description. The maximum length
+      is 4000 characters.
+    locationUri: Optional. The Cloud Storage location path where the database
+      exists. Format: `gs://bucket/path/to/database` If unspecified, the
+      database will be stored in the catalog location. The maximum length is
+      4000 characters.
+    name: Identifier. The resource name. Format: projects/{project_id_or_numbe
+      r}/catalogs/{catalog_id}/databases/{database_id}
+    parameters: Optional. Stores the properties associated with the database.
+      The maximum size is 2 MiB.
+    updateTime: Output only. The update time of the database.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ParametersValue(_messages.Message):
+    r"""Optional. Stores the properties associated with the database. The
+    maximum size is 2 MiB.
+
+    Messages:
+      AdditionalProperty: An additional property for a ParametersValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type ParametersValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ParametersValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  locationUri = _messages.StringField(3)
+  name = _messages.StringField(4)
+  parameters = _messages.MessageField('ParametersValue', 5)
+  updateTime = _messages.StringField(6)
+
+
+class HiveTable(_messages.Message):
+  r"""Stores the hive table information. It includes the table name, schema
+  (column names and types), data location, storage format, serde info, etc.
+  This message closely matches the Table object in the IMetastoreClient
+
+  Messages:
+    ParametersValue: Optional. Stores the properties associated with the
+      table. The maximum size is 4MiB.
+
+  Fields:
+    createTime: Output only. The creation time of the table.
+    description: Optional. Description of the table. The maximum length is
+      4000 characters.
+    name: Identifier. The resource name. Format: projects/{project_id_or_numbe
+      r}/catalogs/{catalog_id}/databases/{database_id}/tables/{table_id}
+    parameters: Optional. Stores the properties associated with the table. The
+      maximum size is 4MiB.
+    partitionKeys: Optional. The partition keys of the table.
+    storageDescriptor: Required. Storage descriptor of the table.
+    tableType: Output only. The type of the table. This is EXTERNAL for
+      BigLake hive tables.
+    updateTime: Output only. The update time of the table.
+    viewExpandedText: Optional. The expanded view text. Empty for non-view.
+      The maximum size is 16MiB.
+    viewOriginalText: Optional. The original view text. Empty for non-view.
+      The maximum size is 16MiB.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ParametersValue(_messages.Message):
+    r"""Optional. Stores the properties associated with the table. The maximum
+    size is 4MiB.
+
+    Messages:
+      AdditionalProperty: An additional property for a ParametersValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type ParametersValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ParametersValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  name = _messages.StringField(3)
+  parameters = _messages.MessageField('ParametersValue', 4)
+  partitionKeys = _messages.MessageField('FieldSchema', 5, repeated=True)
+  storageDescriptor = _messages.MessageField('StorageDescriptor', 6)
+  tableType = _messages.StringField(7)
+  updateTime = _messages.StringField(8)
+  viewExpandedText = _messages.StringField(9)
+  viewOriginalText = _messages.StringField(10)
 
 
 class HttpBody(_messages.Message):
@@ -989,7 +1638,7 @@ class IcebergCatalog(_messages.Message):
     description: Optional. A user-provided description of the catalog. The
       description must be a UTF-8 string with a maximum length of 1024
       characters.
-    encryption_configuration: Optional. Custom encryption configuration (e.g.,
+    encryption_config: Optional. Custom encryption configuration (e.g.,
       Cloud KMS keys).
     federated_catalog_options: Optional. Configuration options for federated
       catalogs.
@@ -1060,7 +1709,7 @@ class IcebergCatalog(_messages.Message):
   cross_cloud_cache_options = _messages.MessageField('CrossCloudCacheOptions', 6)
   default_location = _messages.StringField(7)
   description = _messages.StringField(8)
-  encryption_configuration = _messages.MessageField('EncryptionConfiguration', 9)
+  encryption_config = _messages.MessageField('EncryptionConfig', 9)
   federated_catalog_options = _messages.MessageField('FederatedCatalogOptions', 10)
   name = _messages.StringField(11)
   replicas = _messages.MessageField('Replica', 12, repeated=True)
@@ -1224,6 +1873,53 @@ class IcebergNamespaceUpdate(_messages.Message):
   updates = _messages.MessageField('UpdatesValue', 2)
 
 
+class ListHiveCatalogsResponse(_messages.Message):
+  r"""Response message for the ListHiveCatalogs method.
+
+  Fields:
+    catalogs: Output only. The catalogs from the specified project.
+    nextPageToken: Output only. A token, which can be sent as `page_token` to
+      retrieve the next page. If this field is omitted, there are no
+      subsequent pages.
+    unreachable: Output only. The list of unreachable cloud regions. If non-
+      empty, the result set might be incomplete.
+  """
+
+  catalogs = _messages.MessageField('HiveCatalog', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListHiveDatabasesResponse(_messages.Message):
+  r"""Response message for the ListHiveDatabases method.
+
+  Fields:
+    databases: Output only. The databases from the specified project and
+      catalog.
+    nextPageToken: Output only. A token, which can be sent as `page_token` to
+      retrieve the next page. If this field is omitted, there are no
+      subsequent pages.
+  """
+
+  databases = _messages.MessageField('HiveDatabase', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
+class ListHiveTablesResponse(_messages.Message):
+  r"""Response message for the ListHiveTables method.
+
+  Fields:
+    nextPageToken: Output only. A token, which can be sent as `page_token` to
+      retrieve the next page. If this field is omitted, there are no
+      subsequent pages.
+    tables: Output only. The tables from the specified project, catalog and
+      database.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  tables = _messages.MessageField('HiveTable', 2, repeated=True)
+
+
 class ListIcebergCatalogsResponse(_messages.Message):
   r"""The response message for the `ListIcebergCatalogs` API.
 
@@ -1266,6 +1962,16 @@ class ListIcebergTableIdentifiersResponse(_messages.Message):
   next_page_token = _messages.StringField(2)
 
 
+class ListPartitionsResponse(_messages.Message):
+  r"""Response message for ListPartitions.
+
+  Fields:
+    partitions: Output only. List of partitions.
+  """
+
+  partitions = _messages.MessageField('Partition', 1, repeated=True)
+
+
 class LoadIcebergTableCredentialsResponse(_messages.Message):
   r"""The response message for the `LoadCredentials` API.
 
@@ -1274,6 +1980,69 @@ class LoadIcebergTableCredentialsResponse(_messages.Message):
   """
 
   storage_credentials = _messages.MessageField('StorageCredential', 1, repeated=True)
+
+
+class Partition(_messages.Message):
+  r"""Information about a Hive partition.
+
+  Messages:
+    ParametersValue: Optional. Additional parameters or metadata associated
+      with the partition. Maximum size 10 KiB.
+
+  Fields:
+    createTime: Output only. The creation time of the partition.
+    fields: Optional. List of columns.
+    parameters: Optional. Additional parameters or metadata associated with
+      the partition. Maximum size 10 KiB.
+    storageDescriptor: Optional. Contains information about the physical
+      storage of the data in the partition.
+    values: Required. Represents the values of the partition keys, where each
+      value corresponds to a specific partition key in the order in which the
+      keys are defined. Each value is limited to 1024 characters.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ParametersValue(_messages.Message):
+    r"""Optional. Additional parameters or metadata associated with the
+    partition. Maximum size 10 KiB.
+
+    Messages:
+      AdditionalProperty: An additional property for a ParametersValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type ParametersValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ParametersValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  fields = _messages.MessageField('FieldSchema', 2, repeated=True)
+  parameters = _messages.MessageField('ParametersValue', 3)
+  storageDescriptor = _messages.MessageField('StorageDescriptor', 4)
+  values = _messages.StringField(5, repeated=True)
+
+
+class PartitionValues(_messages.Message):
+  r"""Represents the values of a partition.
+
+  Fields:
+    values: Required. The values of the partition keys, where each value
+      corresponds to a specific partition key in the order in which the keys
+      are defined.
+  """
+
+  values = _messages.StringField(1, repeated=True)
 
 
 class Policy(_messages.Message):
@@ -1482,6 +2251,76 @@ class RestrictedLocationsConfig(_messages.Message):
   restricted_locations = _messages.StringField(1, repeated=True)
 
 
+class SerdeInfo(_messages.Message):
+  r"""Serialization and deserialization information.
+
+  Enums:
+    SerdeTypeValueValuesEnum: Optional. The serde type.
+
+  Messages:
+    ParametersValue: Optional. Parameters of the serde. The maximum size is
+      10Kib.
+
+  Fields:
+    description: Optional. Description of the serde. The maximum length is
+      4000 characters.
+    deserializerClass: Optional. The fully qualified Java class name of the
+      deserializer. The maximum length is 4000 characters.
+    name: Required. Name of the SerDe. Table name by default. The maximum
+      length is 128 characters.
+    parameters: Optional. Parameters of the serde. The maximum size is 10Kib.
+    serdeType: Optional. The serde type.
+    serializationLib: Required. The fully qualified Java class name of the
+      serialization library. The maximum length is 4000 characters.
+    serializerClass: Optional. The fully qualified Java class name of the
+      serializer. The maximum length is 4000 characters.
+  """
+
+  class SerdeTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The serde type.
+
+    Values:
+      SERDE_TYPE_UNSPECIFIED: The serde type is not specified.
+      HIVE: Hive.
+      SCHEMA_REGISTRY: Schema registry.
+    """
+    SERDE_TYPE_UNSPECIFIED = 0
+    HIVE = 1
+    SCHEMA_REGISTRY = 2
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ParametersValue(_messages.Message):
+    r"""Optional. Parameters of the serde. The maximum size is 10Kib.
+
+    Messages:
+      AdditionalProperty: An additional property for a ParametersValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type ParametersValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ParametersValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  description = _messages.StringField(1)
+  deserializerClass = _messages.StringField(2)
+  name = _messages.StringField(3)
+  parameters = _messages.MessageField('ParametersValue', 4)
+  serdeType = _messages.EnumField('SerdeTypeValueValuesEnum', 5)
+  serializationLib = _messages.StringField(6)
+  serializerClass = _messages.StringField(7)
+
+
 class SetIamPolicyRequest(_messages.Message):
   r"""Request message for `SetIamPolicy` method.
 
@@ -1680,6 +2519,125 @@ class StorageCredential(_messages.Message):
   prefix = _messages.StringField(2)
 
 
+class StorageDescriptor(_messages.Message):
+  r"""Contains information about the physical storage of the table data.
+
+  Messages:
+    ParametersValue: Optional. Key-value pairs for the storage descriptor. The
+      maximum size is 10Kib.
+
+  Fields:
+    bucketCols: Optional. Reducer grouping columns and clustering columns and
+      bucketing columns
+    columns: Required. Specifies the columns of the table.
+    compressed: Optional. Whether the table is compressed.
+    inputFormat: Optional. The fully qualified Java class name of the input
+      format. The maximum length is 4000 characters.
+    locationUri: Optional. The Cloud storage uri where the table is located.
+      Defaults to `/`. The maximum length is 4000 characters.
+    numBuckets: Optional. The number of buckets in the table.
+    outputFormat: Optional. The fully qualified Java class name of the output
+      format. The maximum length is 4000 characters.
+    parameters: Optional. Key-value pairs for the storage descriptor. The
+      maximum size is 10Kib.
+    serdeInfo: Optional. Serialization and deserialization information.
+    skewedInfo: Optional. Table data skew information.
+    sortCols: Optional. Sort order of the data in each bucket
+    storedAsSubDirs: Optional. Whether the table is stored as sub directories.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ParametersValue(_messages.Message):
+    r"""Optional. Key-value pairs for the storage descriptor. The maximum size
+    is 10Kib.
+
+    Messages:
+      AdditionalProperty: An additional property for a ParametersValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type ParametersValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ParametersValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  bucketCols = _messages.StringField(1, repeated=True)
+  columns = _messages.MessageField('FieldSchema', 2, repeated=True)
+  compressed = _messages.BooleanField(3)
+  inputFormat = _messages.StringField(4)
+  locationUri = _messages.StringField(5)
+  numBuckets = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  outputFormat = _messages.StringField(7)
+  parameters = _messages.MessageField('ParametersValue', 8)
+  serdeInfo = _messages.MessageField('SerdeInfo', 9)
+  skewedInfo = _messages.MessageField('StorageDescriptorSkewedInfo', 10)
+  sortCols = _messages.MessageField('StorageDescriptorOrder', 11, repeated=True)
+  storedAsSubDirs = _messages.BooleanField(12)
+
+
+class StorageDescriptorOrder(_messages.Message):
+  r"""Sort order of the stored data per column.
+
+  Fields:
+    col: Required. The column name. The maximum length is 767 characters.
+    order: Required. Defines the sort order of the column. Ascending if 1,
+      descending if 0.
+  """
+
+  col = _messages.StringField(1)
+  order = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+
+
+class StorageDescriptorSkewedInfo(_messages.Message):
+  r"""Stores all the information about skewed table.
+
+  Fields:
+    skewedColNames: Required. The column names that are skewed. The maximum
+      length is 256 characters per column name.
+    skewedColValues: Required. The skewed column values.
+    skewedKeyValuesLocations: Required. The skewed key values locations.
+  """
+
+  skewedColNames = _messages.StringField(1, repeated=True)
+  skewedColValues = _messages.MessageField('StorageDescriptorSkewedInfoSkewedColumnValue', 2, repeated=True)
+  skewedKeyValuesLocations = _messages.MessageField('StorageDescriptorSkewedInfoSkewedKeyValuesLocation', 3, repeated=True)
+
+
+class StorageDescriptorSkewedInfoSkewedColumnValue(_messages.Message):
+  r"""The skewed column values.
+
+  Fields:
+    values: Required. The skewed column values. The maximum length is 256
+      characters per value.
+  """
+
+  values = _messages.StringField(1, repeated=True)
+
+
+class StorageDescriptorSkewedInfoSkewedKeyValuesLocation(_messages.Message):
+  r"""The skewed key values and their corresponding location.
+
+  Fields:
+    location: Required. The location of the skewed column values. The maximum
+      length is 4000 characters.
+    values: Required. The skewed column values. The maximum length is 256
+      characters per value.
+  """
+
+  location = _messages.StringField(1)
+  values = _messages.StringField(2, repeated=True)
+
+
 class TableIdentifier(_messages.Message):
   r"""The table identifier.
 
@@ -1764,6 +2722,18 @@ class UpdateIcebergTableRequest(_messages.Message):
   httpBody = _messages.MessageField('HttpBody', 1)
 
 
+class UpdatePartitionRequest(_messages.Message):
+  r"""Request message for UpdatePartition.
+
+  Fields:
+    partition: Required. The partition to be updated.
+    updateMask: Optional. The list of fields to update.
+  """
+
+  partition = _messages.MessageField('Partition', 1)
+  updateMask = _messages.StringField(2)
+
+
 class WorkdayCatalogInfo(_messages.Message):
   r"""Information specific to Workday Data Lake. The Iceberg REST Catalog
   endpoint is of the form:
@@ -1780,9 +2750,11 @@ class WorkdayCatalogInfo(_messages.Message):
 
 
 encoding.AddCustomJsonFieldMapping(
-    EncryptionConfiguration, 'kms_key_name', 'kms-key-name')
+    EncryptionConfig, 'kms_key_name', 'kms-key-name')
 encoding.AddCustomJsonFieldMapping(
     FederatedCatalogOptions, 'glue_catalog_info', 'glue-catalog-info')
+encoding.AddCustomJsonFieldMapping(
+    FederatedCatalogOptions, 'identity_mode', 'identity-mode')
 encoding.AddCustomJsonFieldMapping(
     FederatedCatalogOptions, 'refresh_options', 'refresh-options')
 encoding.AddCustomJsonFieldMapping(
@@ -1816,7 +2788,7 @@ encoding.AddCustomJsonFieldMapping(
 encoding.AddCustomJsonFieldMapping(
     IcebergCatalog, 'default_location', 'default-location')
 encoding.AddCustomJsonFieldMapping(
-    IcebergCatalog, 'encryption_configuration', 'encryption-configuration')
+    IcebergCatalog, 'encryption_config', 'encryption-config')
 encoding.AddCustomJsonFieldMapping(
     IcebergCatalog, 'federated_catalog_options', 'federated-catalog-options')
 encoding.AddCustomJsonFieldMapping(

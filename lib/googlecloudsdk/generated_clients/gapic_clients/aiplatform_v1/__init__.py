@@ -30,6 +30,8 @@ from .types.auth import AuthConfig
 from .types.auth import AuthType
 from .types.auth import HttpElementLocation
 from .types.content import AudioResponseFormat
+from .types.content import AudioTranscription
+from .types.content import AudioTranscriptionConfig
 from .types.content import Blob
 from .types.content import Candidate
 from .types.content import Citation
@@ -109,6 +111,7 @@ from .types.operation import GenericOperationMetadata
 from .types.prediction_service import ChatCompletionsRequest
 from .types.prediction_service import CountTokensRequest
 from .types.prediction_service import CountTokensResponse
+from .types.prediction_service import DeleteResponseRequest
 from .types.prediction_service import DirectPredictRequest
 from .types.prediction_service import DirectPredictResponse
 from .types.prediction_service import DirectRawPredictRequest
@@ -121,6 +124,7 @@ from .types.prediction_service import FetchPredictOperationRequest
 from .types.prediction_service import GenerateContentRequest
 from .types.prediction_service import GenerateContentResponse
 from .types.prediction_service import GenerateVideoResponse
+from .types.prediction_service import GetResponseRequest
 from .types.prediction_service import InvokeRequest
 from .types.prediction_service import PredictLongRunningRequest
 from .types.prediction_service import PredictRequest
@@ -142,6 +146,7 @@ from .types.semantic_governance_policy_engine_service import GetSemanticGovernan
 from .types.semantic_governance_policy_engine_service import SemanticGovernancePolicyEngine
 from .types.semantic_governance_policy_engine_service import UpdateSemanticGovernancePolicyEngineOperationMetadata
 from .types.semantic_governance_policy_engine_service import UpdateSemanticGovernancePolicyEngineRequest
+from .types.semantic_governance_policy_service import AgentResponseCustomization
 from .types.semantic_governance_policy_service import CreateSemanticGovernancePolicyOperationMetadata
 from .types.semantic_governance_policy_service import CreateSemanticGovernancePolicyRequest
 from .types.semantic_governance_policy_service import DeleteSemanticGovernancePolicyOperationMetadata
@@ -201,9 +206,12 @@ __all__ = (
     'PredictionServiceAsyncClient',
     'SemanticGovernancePolicyEngineServiceAsyncClient',
     'SemanticGovernancePolicyServiceAsyncClient',
+'AgentResponseCustomization',
 'ApiAuth',
 'Attribution',
 'AudioResponseFormat',
+'AudioTranscription',
+'AudioTranscriptionConfig',
 'AuthConfig',
 'AuthType',
 'AvroSource',
@@ -227,6 +235,7 @@ __all__ = (
 'CsvDestination',
 'CsvSource',
 'DeleteOperationMetadata',
+'DeleteResponseRequest',
 'DeleteSemanticGovernancePolicyOperationMetadata',
 'DeleteSemanticGovernancePolicyRequest',
 'DeprovisionSemanticGovernancePolicyEngineOperationMetadata',
@@ -274,6 +283,7 @@ __all__ = (
 'GenerateVideoResponse',
 'GenerationConfig',
 'GenericOperationMetadata',
+'GetResponseRequest',
 'GetSemanticGovernancePolicyEngineRequest',
 'GetSemanticGovernancePolicyRequest',
 'GoogleDriveSource',

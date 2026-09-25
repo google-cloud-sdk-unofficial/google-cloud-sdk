@@ -183,7 +183,9 @@ class Create(base.CreateCommand):
       flags.AddSlurmTaskEpilogBashScripts(
           parser=flag_group, api_version=api_version
       )
-      flags.AddSlurmConfig(parser=flag_group, api_version=api_version)
+      slurm_config_group = flag_group.add_group(mutex=True)
+      flags.AddSlurmConfig(parser=slurm_config_group, api_version=api_version)
+      flags.AddSlurmConfFile(parser=slurm_config_group, api_version=api_version)
       flags.AddSlurmDisableHealthCheckProgram(
           parser=flag_group, api_version=api_version
       )

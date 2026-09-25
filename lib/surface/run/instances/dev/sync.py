@@ -184,6 +184,23 @@ class Sync(base.Command):
     with serverless_operations.Connect(conn_context) as client:
       return client.GetInstance(instance_ref)
 
+  def _ValidateInstanceRunning(self, release_track, region, instance):
+    """Validates that the instance is in a running state for dev sync."""
+    if not instance:
+      raise exceptions.ConfigurationError(
+          'Failed to retrieve instance details.'
+      )
+    if not getattr(instance, 'is_running', True):
+      err_msg = f'Instance [{instance.name}] is not running.'
+      release_track_prefix = (
+          f' {release_track.prefix}' if release_track.prefix else ''
+      )
+      err_msg += (
+          f'\nSee logs with:\n  $ gcloud{release_track_prefix} run instances'
+          f' logs read {instance.name} --region {region}'
+      )
+      raise exceptions.ConfigurationError(err_msg)
+
   def Run(self, args):
     flags.ValidatePublicFlags(args)
 
@@ -224,18 +241,14 @@ class Sync(base.Command):
 
     args.deployment_name = instance_ref.Name()
     instance = self._GetInstance(args, instance_ref)
-    instance_exists = instance is not None
+    existing_instance = instance is not None
 
-    if instance_exists:
+    if existing_instance:
       if args.cleanup:
         raise exceptions.ArgumentError(
             'The --cleanup flag is not supported for dev sync to an existing'
             ' Instance.'
         )
-
-      pretty_print.Info(f'Syncing to existing instance: {instance.name}')
-      if instance.urls:
-        pretty_print.Info(f'Instance URL: {{bold}}{instance.urls[0]}{{reset}}')
     else:
       changes = NecessaryChangesForInstancesDevSync(args)
       deploy_util.DeployInstanceFromSource(
@@ -246,6 +259,14 @@ class Sync(base.Command):
           release_track=self.ReleaseTrack(),
           changes=changes,
       )
+      instance = self._GetInstance(args, instance_ref)
+
+    self._ValidateInstanceRunning(args.release_track, args.region, instance)
+
+    if existing_instance:
+      pretty_print.Info(f'Syncing to existing instance: {instance.name}')
+      if instance.urls:
+        pretty_print.Info(f'Instance URL: {{bold}}{instance.urls[0]}{{reset}}')
 
     try:
       with execution_utils.RaisesKeyboardInterrupt():
@@ -259,5 +280,5 @@ class Sync(base.Command):
           'Received Keyboard Interrupt... Dev Sync Session terminated'
       )
     finally:
-      if args.cleanup and not instance_exists:
+      if args.cleanup and not existing_instance:
         self._Cleanup(args, instance_ref)

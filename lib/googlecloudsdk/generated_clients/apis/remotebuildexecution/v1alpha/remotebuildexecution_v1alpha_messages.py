@@ -2548,6 +2548,23 @@ class GoogleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest(_mes
   workerPool = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaWorkerPool', 3)
 
 
+class GoogleDevtoolsRemotebuildexecutionAdminV1alphaVmInstanceSpec(_messages.Message):
+  r"""VmInstanceSpec defines the configuration for a backup VM instance.
+
+  Fields:
+    diskSizeGb: Required. Size of the disk attached to the VM, in GB.
+    diskType: Required. Disk Type to use for the VM.
+    machineType: Required. Machine type of the VM, such as `e2-standard-2`.
+    minCpuPlatform: Optional. Minimum CPU platform to use when creating the
+      VM.
+  """
+
+  diskSizeGb = _messages.IntegerField(1)
+  diskType = _messages.StringField(2)
+  machineType = _messages.StringField(3)
+  minCpuPlatform = _messages.StringField(4)
+
+
 class GoogleDevtoolsRemotebuildexecutionAdminV1alphaWorkerConfig(_messages.Message):
   r"""Defines the configuration to be used for creating workers in the worker
   pool.
@@ -2562,6 +2579,9 @@ class GoogleDevtoolsRemotebuildexecutionAdminV1alphaWorkerConfig(_messages.Messa
   Fields:
     accelerator: The accelerator card attached to each VM.
     attachedDisks: Optional. Specifies the disks that will be attached.
+    backupVmInstanceSpecs: Optional. Backup VM instance specifications for the
+      pool. If specified, the pool is a flexible pool and can use these backup
+      specs if the primary machine type is unavailable.
     diskSizeGb: Required. Size of the disk attached to the worker, in GB. See
       https://cloud.google.com/compute/docs/disks/
     diskType: Required. Disk Type to use for the worker. See [Storage
@@ -2639,19 +2659,20 @@ class GoogleDevtoolsRemotebuildexecutionAdminV1alphaWorkerConfig(_messages.Messa
 
   accelerator = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaAcceleratorConfig', 1)
   attachedDisks = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaDisks', 2)
-  diskSizeGb = _messages.IntegerField(3)
-  diskType = _messages.StringField(4)
-  labels = _messages.MessageField('LabelsValue', 5)
-  machineType = _messages.StringField(6)
-  maxConcurrentActions = _messages.IntegerField(7)
-  minCpuPlatform = _messages.StringField(8)
-  networkAccess = _messages.StringField(9)
-  networkAllowlist = _messages.StringField(10)
-  reserved = _messages.BooleanField(11)
-  soleTenantNodeType = _messages.StringField(12)
-  userServiceAccounts = _messages.StringField(13, repeated=True)
-  vmImage = _messages.StringField(14)
-  zones = _messages.StringField(15, repeated=True)
+  backupVmInstanceSpecs = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaVmInstanceSpec', 3, repeated=True)
+  diskSizeGb = _messages.IntegerField(4)
+  diskType = _messages.StringField(5)
+  labels = _messages.MessageField('LabelsValue', 6)
+  machineType = _messages.StringField(7)
+  maxConcurrentActions = _messages.IntegerField(8)
+  minCpuPlatform = _messages.StringField(9)
+  networkAccess = _messages.StringField(10)
+  networkAllowlist = _messages.StringField(11)
+  reserved = _messages.BooleanField(12)
+  soleTenantNodeType = _messages.StringField(13)
+  userServiceAccounts = _messages.StringField(14, repeated=True)
+  vmImage = _messages.StringField(15)
+  zones = _messages.StringField(16, repeated=True)
 
 
 class GoogleDevtoolsRemotebuildexecutionAdminV1alphaWorkerPool(_messages.Message):

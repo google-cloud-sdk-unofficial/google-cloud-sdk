@@ -65,6 +65,7 @@ class UpdateAutoscaling(base.Command):
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
+    mig_utils.ValidateCpuAggregationArgs(args)
     igm_ref = instance_groups_flags.CreateGroupReference(
         client, holder.resources, args)
 
@@ -89,18 +90,35 @@ class UpdateAutoscaling(base.Command):
     if args.IsSpecified('clear_scale_in_control'):
       new_autoscaler.autoscalingPolicy.scaleInControl = None
     else:
-      new_autoscaler.autoscalingPolicy.scaleInControl = \
-        mig_utils.BuildScaleIn(args, client.messages)
+      new_autoscaler.autoscalingPolicy.scaleInControl = (
+          mig_utils.BuildScaleIn(args, client.messages)
+      )
 
     if self.clear_scale_down and args.IsSpecified('clear_scale_down_control'):
       new_autoscaler.autoscalingPolicy.scaleDownControl = None
 
-    if args.IsSpecified('cpu_utilization_predictive_method'):
-      cpu_predictive_enum = client.messages.AutoscalingPolicyCpuUtilization.PredictiveMethodValueValuesEnum
-      new_autoscaler.autoscalingPolicy.cpuUtilization = client.messages.AutoscalingPolicyCpuUtilization(
-      )
-      new_autoscaler.autoscalingPolicy.cpuUtilization.predictiveMethod = arg_utils.ChoiceToEnum(
-          args.cpu_utilization_predictive_method, cpu_predictive_enum)
+    if (
+        args.IsKnownAndSpecified('cpu_utilization_predictive_method')
+        or args.IsKnownAndSpecified('cpu_time_aggregation')
+        or args.IsKnownAndSpecified('cpu_signal_aggregation')
+    ):
+      cpu_message = client.messages.AutoscalingPolicyCpuUtilization()
+      if args.IsKnownAndSpecified('cpu_utilization_predictive_method'):
+        cpu_predictive_enum = (
+            client.messages.AutoscalingPolicyCpuUtilization.PredictiveMethodValueValuesEnum
+        )
+        cpu_message.predictiveMethod = arg_utils.ChoiceToEnum(
+            args.cpu_utilization_predictive_method, cpu_predictive_enum
+        )
+      if args.IsKnownAndSpecified('cpu_time_aggregation'):
+        cpu_message.timeAggregation = mig_utils.BuildCpuTimeAggregation(
+            args, client.messages
+        )
+      if args.IsKnownAndSpecified('cpu_signal_aggregation'):
+        cpu_message.signalAggregation = mig_utils.BuildCpuSignalAggregation(
+            args, client.messages
+        )
+      new_autoscaler.autoscalingPolicy.cpuUtilization = cpu_message
 
     scheduled = mig_utils.BuildSchedules(args, client.messages)
     if scheduled:
@@ -157,6 +175,7 @@ class UpdateAutoscalingAlpha(UpdateAutoscalingBeta):
     _CommonArgs(parser)
     mig_utils.AddPredictiveAutoscaling(parser)
     mig_utils.AddClearScaleDownControlFlag(parser)
+    mig_utils.AddCpuAggregationArgs(parser)
 
 UpdateAutoscaling.detailed_help = {
     'brief': 'Update autoscaling parameters of a managed instance group',

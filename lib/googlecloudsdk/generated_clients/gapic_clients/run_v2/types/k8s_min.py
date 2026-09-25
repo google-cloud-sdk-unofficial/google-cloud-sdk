@@ -68,7 +68,8 @@ class Container(proto.Message):
             Container Registry. If the host is not provided,
             Dockerhub is assumed.
         source_code (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.SourceCode):
-            Optional. Location of the source.
+            Optional. Location of the source. This field
+            is only supported in Cloud Run Service.
         command (MutableSequence[str]):
             Entrypoint array. Not executed within a
             shell. The docker image's ENTRYPOINT is used if
@@ -1120,7 +1121,8 @@ class SourceCode(proto.Message):
         inlined_source (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.SourceCode.InlinedSource):
             Optional. Input only. Source code inlined in the request.
             Cloud Run will store the inlined_source to Cloud Storage and
-            replace the field with cloud_storage_source.
+            replace the field with cloud_storage_source. This field is
+            only supported in Cloud Run Service.
 
             This field is a member of `oneof`_ ``source_type``.
     """

@@ -1,4 +1,6 @@
 - release_tracks: [GA]
+  hints:
+    read_only: true
   help_text:
     brief: |
       Get all VM Manager project feature settings.

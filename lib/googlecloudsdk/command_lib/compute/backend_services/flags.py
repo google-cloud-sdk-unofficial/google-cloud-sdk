@@ -1640,7 +1640,7 @@ def AddResourceManagerTags(parser):
   )
 
 
-def AddHaPolicyCreateFlags(parser, hidden=True):
+def AddHaPolicyCreateFlags(parser, hidden=False):
   """Adds HA policy create-only flags to the given parser."""
   parser.add_argument(
       '--ha-policy-fast-ip-move',
@@ -1653,7 +1653,7 @@ def AddHaPolicyCreateFlags(parser, hidden=True):
   )
 
 
-def AddHaPolicyLeaderFlags(parser, hidden=True):
+def AddHaPolicyLeaderFlags(parser, hidden=False):
   """Adds HA policy leader flags to the given parser."""
   parser.add_argument(
       '--ha-policy-leader-backend-group',

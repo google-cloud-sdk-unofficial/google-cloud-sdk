@@ -1306,6 +1306,62 @@ class WorkerPoolInstancesChange(config_changes.NonTemplateConfigChanger):
     return worker_pool_resource
 
 
+@dataclasses.dataclass(frozen=True)
+class WorkerPoolAutoScalingChange(config_changes.NonTemplateConfigChanger):
+  """Represents the user intent to enable automatic scaling mode.
+
+  Also ensures a default CPU scaling configuration is present if no other
+  scaling factors exist, preserving the system default.
+  """
+
+  def Adjust(
+      self, resource: worker_pool_objects.WorkerPool
+  ) -> worker_pool_objects.WorkerPool:
+    resource.scaling.scaling_mode = (
+        vendor_settings.WorkerPoolScaling.ScalingMode.AUTOMATIC
+    )
+    resource.scaling.manual_instance_count = None
+    # When switching to AUTOMATIC mode without other scaling factors (e.g.
+    # Pub/Sub), set an explicit default cpu_scaling: {} so the default CPU
+    # target is preserved.
+    if (
+        not resource.scaling.pubsub_scalings
+        and not resource.scaling.cpu_scaling
+    ):
+      resource.scaling.cpu_scaling = vendor_settings.CpuScaling()
+    return resource
+
+
+@dataclasses.dataclass(frozen=True)
+class WorkerPoolClearCpuScalingChange(config_changes.NonTemplateConfigChanger):
+  """Represents the user intent to clear worker pool CPU scaling.
+
+  Attributes:
+    allow_empty: Whether to allow clearing CPU scaling without raising an error
+      (e.g. when Pub/Sub scaling additions will follow to replace it).
+  """
+
+  allow_empty: bool = False
+
+  def Adjust(
+      self, resource: worker_pool_objects.WorkerPool
+  ) -> worker_pool_objects.WorkerPool:
+    if (
+        resource.scaling.scaling_mode
+        != vendor_settings.WorkerPoolScaling.ScalingMode.MANUAL
+        and not resource.scaling.pubsub_scalings
+        and not self.allow_empty
+    ):
+      raise exceptions.ConfigurationError(
+          'Cannot clear CPU scaling target because it is the only active'
+          ' scaling factor on this worker pool. To switch to manual scaling,'
+          ' specify --instances. To use the default CPU target, specify'
+          ' --scaling-cpu-target=default.'
+      )
+    resource.scaling.cpu_scaling = None
+    return resource
+
+
 @dataclasses.dataclass(frozen=True, kw_only=True)
 class WorkerPoolCpuScalingChange(config_changes.NonTemplateConfigChanger):
   """Represents the user intent to adjust worker pool CPU scaling."""
@@ -1324,12 +1380,6 @@ class WorkerPoolCpuScalingChange(config_changes.NonTemplateConfigChanger):
       )
       resource.scaling.manual_instance_count = None
 
-    elif self.cpu_utilization == 0.0:
-      # Handled as "disabled"
-      if not resource.scaling.cpu_scaling:
-        resource.scaling.cpu_scaling = vendor_settings.CpuScaling()
-      resource.scaling.cpu_scaling.cpu_utilization = 0.0
-
     elif self.cpu_utilization is not None:
       if not resource.scaling.cpu_scaling:
         # Ensure the sub-object exists
@@ -1341,20 +1391,6 @@ class WorkerPoolCpuScalingChange(config_changes.NonTemplateConfigChanger):
       # Clear manual instance count when autoscaling is enabled
       resource.scaling.manual_instance_count = None
 
-    elif (
-        resource.scaling.scaling_mode
-        != vendor_settings.WorkerPoolScaling.ScalingMode.AUTOMATIC
-    ):
-      # If cpu_utilization is None and we are transitioning from MANUAL to
-      # AUTOMATIC mode, enable CPU scaling to use the default target.
-      resource.scaling.cpu_scaling = vendor_settings.CpuScaling()
-      resource.scaling.scaling_mode = (
-          vendor_settings.WorkerPoolScaling.ScalingMode.AUTOMATIC
-      )
-      resource.scaling.manual_instance_count = None
-
-    # If already in AUTOMATIC mode and no target is specified, we fall through
-    # as a no-op to preserve existing settings.
     return resource
 
 
@@ -1385,87 +1421,121 @@ def _QualifySubscription(subscription: str, project: str) -> str:
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
 class PubSubScalingSpec:
-  subscription: str | None = None
+  subscription: str
   target_value: int | None = None
 
 
-@dataclasses.dataclass(frozen=True, kw_only=True)
-class WorkerPoolPubSubScalingChange(config_changes.NonTemplateConfigChanger):
-  """Represents the user intent to adjust worker pool Pub/Sub scaling."""
+def _ValidateCanClearOrRemoveAllPubSub(
+    resource: worker_pool_objects.WorkerPool, error_message: str
+) -> None:
+  if (
+      resource.scaling.scaling_mode
+      != vendor_settings.WorkerPoolScaling.ScalingMode.MANUAL
+      and (
+          resource.scaling.cpu_scaling is None
+          or 'cpu_scaling' not in resource.scaling
+      )
+  ):
+    raise exceptions.ConfigurationError(error_message)
 
-  subscription: str | None = None
-  target_value: int | None = None
-  pubsub_scalings: Sequence[PubSubScalingSpec] = ()
+
+@dataclasses.dataclass(frozen=True)
+class WorkerPoolClearPubSubScalingChange(
+    config_changes.NonTemplateConfigChanger
+):
+  """Represents the user intent to clear worker pool Pub/Sub scaling.
+
+  Attributes:
+    allow_empty: Whether to allow clearing Pub/Sub scaling without raising an
+      error (e.g. when CPU scaling will follow).
+  """
+
+  allow_empty: bool = False
 
   def Adjust(
       self, resource: worker_pool_objects.WorkerPool
   ) -> worker_pool_objects.WorkerPool:
-    """Adjusts the worker pool resource with the specified Pub/Sub scaling settings.
-
-    If multiple pubsub_scalings specs are provided (from grouped flag parsing),
-    they are applied directly. Otherwise, if individual subscription and/or
-    target_value flags are specified, they are merged with any existing
-    Pub/Sub scaling specification on the resource.
-
-    Args:
-      resource: The worker pool resource to adjust.
-
-    Returns:
-      The adjusted worker pool resource.
-    """
-    specs = list(self.pubsub_scalings)
-    # Check if single flat flags (--scaling-pubsub-subscription or
-    # --scaling-pubsub-target) were provided when grouped scaling specs are not
-    # present. If so, construct a new spec merging with existing scaling config.
-    if not specs and (
-        self.subscription is not None or self.target_value is not None
-    ):
-      existing_scaling = None
-      if resource.scaling.pubsub_scalings:
-        existing_scaling = resource.scaling.pubsub_scalings[0]
-
-      sub = self.subscription
-      if not sub and existing_scaling:
-        sub = existing_scaling.subscription
-
-      target = self.target_value
-      if not target and existing_scaling:
-        target = existing_scaling.target_value
-
-      specs.append(
-          PubSubScalingSpec(subscription=sub, target_value=target)
+    """Adjusts the worker pool by clearing Pub/Sub scaling subscriptions."""
+    if not self.allow_empty:
+      _ValidateCanClearOrRemoveAllPubSub(
+          resource,
+          'Cannot clear Pub/Sub scaling because it is the only active scaling'
+          ' factor on this worker pool. To switch to manual scaling, specify'
+          ' --instances.',
       )
+    resource.scaling.pubsub_scalings = []
+    return resource
 
-    if not specs:
-      return resource
 
+@dataclasses.dataclass(frozen=True)
+class WorkerPoolRemovePubSubScalingChange(
+    config_changes.NonTemplateConfigChanger
+):
+  """Removes Pub/Sub scaling subscriptions from the worker pool.
+
+  Attributes:
+    removed_subscriptions: The subscriptions to remove.
+    allow_empty: Whether to allow removing all subscriptions without raising an
+      error (e.g. when additions will follow to replace them).
+  """
+
+  removed_subscriptions: Iterable[str]
+  allow_empty: bool = False
+
+  def Adjust(
+      self, resource: worker_pool_objects.WorkerPool
+  ) -> worker_pool_objects.WorkerPool:
+    """Adjusts the worker pool by removing Pub/Sub scaling subscriptions."""
     project, _, _, _ = resource_name_conversion.GetInfoFromFullName(
         resource.name
     )
+    current_scalings = {
+        s.subscription: s for s in (resource.scaling.pubsub_scalings or [])
+    }
+    for sub in self.removed_subscriptions:
+      current_scalings.pop(_QualifySubscription(sub, project), None)
+    if not current_scalings and not self.allow_empty:
+      _ValidateCanClearOrRemoveAllPubSub(
+          resource,
+          'Cannot remove all Pub/Sub scaling subscriptions because there are'
+          ' no other active scaling factors on this worker pool. To switch to'
+          ' manual scaling, specify --instances.',
+      )
+    resource.scaling.pubsub_scalings = list(current_scalings.values())
+    return resource
 
-    new_scalings = []
-    for spec in specs:
-      sub = spec.subscription
-      target = spec.target_value
 
-      if not sub:
-        raise exceptions.ConfigurationError(
-            'Subscription must be specified when enabling Pub/Sub scaling.'
-        )
-      qualified_subscription = _QualifySubscription(sub, project)
-      kwargs = {
-          'subscription': qualified_subscription,
-      }
-      if target is not None:
-        kwargs['target_value'] = target
-      scaling = vendor_settings.PubSubScaling(**kwargs)
-      new_scalings.append(scaling)
+@dataclasses.dataclass(frozen=True)
+class WorkerPoolAddPubSubScalingChange(config_changes.NonTemplateConfigChanger):
+  """Adds or updates Pub/Sub scaling subscriptions on the worker pool.
 
-    resource.scaling.pubsub_scalings = new_scalings
+  Attributes:
+    new_pubsub_scalings: The Pub/Sub scaling specifications to add or update.
+  """
+
+  new_pubsub_scalings: Iterable[PubSubScalingSpec]
+
+  def Adjust(
+      self, resource: worker_pool_objects.WorkerPool
+  ) -> worker_pool_objects.WorkerPool:
+    """Adjusts the worker pool by adding or updating Pub/Sub scaling subscriptions."""
+    project, _, _, _ = resource_name_conversion.GetInfoFromFullName(
+        resource.name
+    )
+    current_scalings = {
+        s.subscription: s for s in (resource.scaling.pubsub_scalings or [])
+    }
+    for spec in self.new_pubsub_scalings:
+      sub = _QualifySubscription(spec.subscription, project)
+      kwargs = {'subscription': sub}
+      if spec.target_value is not None:
+        kwargs['target_value'] = spec.target_value
+      current_scalings[sub] = vendor_settings.PubSubScaling(**kwargs)
+
+    resource.scaling.pubsub_scalings = list(current_scalings.values())
     resource.scaling.scaling_mode = (
         vendor_settings.WorkerPoolScaling.ScalingMode.AUTOMATIC
     )
-    # Clear manual instance count when autoscaling is enabled
     resource.scaling.manual_instance_count = None
 
     return resource

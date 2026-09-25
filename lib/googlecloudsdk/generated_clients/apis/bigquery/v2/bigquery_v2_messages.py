@@ -5722,18 +5722,29 @@ class JobStatistics(_messages.Message):
     finalExecutionDurationMs: Output only. The duration in milliseconds of the
       execution of the final attempt of this job, as BigQuery may internally
       re-attempt to execute the job.
-    globalQueryRemoteRegions: Output only. Regions where the global query
-      accesses data.
+    globalQueryRemoteRegions: Output only. The list of remote regions from
+      which a global query accesses data. This field is populated only for
+      parent global query jobs in the primary execution region. It is empty
+      for child global query jobs and single-region queries. For more
+      information, see [Global
+      queries](https://cloud.google.com/bigquery/docs/global-queries).
     load: Output only. Statistics for a load job.
     numChildJobs: Output only. Number of child jobs executed.
-    parentGlobalQueryJob: Output only. The global query that created this job.
+    parentGlobalQueryJob: Output only. Reference to the parent global query
+      job, if this is a child global query job. This field is populated only
+      for child global query jobs (remote subqueries or cross-region table
+      copy jobs) executed in remote regions on behalf of a global query. It
+      contains the project ID, job ID, and location of the parent global query
+      job. It is unset for parent global query jobs and single-region queries.
+      For more information, see [Global
+      queries](https://cloud.google.com/bigquery/docs/global-queries).
     parentJobId: Output only. If this is a child job, specifies the job ID of
       the parent.
     query: Output only. Statistics for a query job.
     quotaDeferments: Output only. Quotas which delayed this job's start time.
     reservationGroupPath: Output only. The reservation group path of the
       reservation assigned to this job. This field has a limit of 10 nested
-      reservation groups. This is to maintain consistency between reservatins
+      reservation groups. This is to maintain consistency between reservations
       info schema and jobs info schema. The first reservation group is the
       root reservation group and the last is the leaf or lowest level
       reservation group.

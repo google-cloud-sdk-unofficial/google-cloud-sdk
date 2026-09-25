@@ -1439,6 +1439,35 @@ class BackupRule(_messages.Message):
   standardSchedule = _messages.MessageField('StandardSchedule', 5)
 
 
+class BackupSelectionConfig(_messages.Message):
+  r"""Configuration for selecting a backup.
+
+  Enums:
+    SelectionCriteriaValueValuesEnum: Optional. The backup selection criteria.
+      Defaults to LATEST when unspecified.
+
+  Fields:
+    dataSource: Required. Immutable. The fully qualified URI of the backupdr
+      data source.
+    selectionCriteria: Optional. The backup selection criteria. Defaults to
+      LATEST when unspecified.
+  """
+
+  class SelectionCriteriaValueValuesEnum(_messages.Enum):
+    r"""Optional. The backup selection criteria. Defaults to LATEST when
+    unspecified.
+
+    Values:
+      BACKUP_SELECTION_CRITERIA_UNSPECIFIED: Selection criteria not specified.
+      LATEST: Select the latest backup.
+    """
+    BACKUP_SELECTION_CRITERIA_UNSPECIFIED = 0
+    LATEST = 1
+
+  dataSource = _messages.StringField(1)
+  selectionCriteria = _messages.EnumField('SelectionCriteriaValueValuesEnum', 2)
+
+
 class BackupVault(_messages.Message):
   r"""Message describing a BackupVault object.
 
@@ -3338,6 +3367,421 @@ class BackupdrProjectsLocationsResourceBackupConfigsListRequest(_messages.Messag
   parent = _messages.StringField(5, required=True)
 
 
+class BackupdrProjectsLocationsRestoreTemplatesCreateRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsRestoreTemplatesCreateRequest object.
+
+  Fields:
+    parent: Required. The restore template project and location in the format
+      'projects/{project_id}/locations/{location}'.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      request ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+    restoreTemplate: A RestoreTemplate resource to be passed as the request
+      body.
+    restoreTemplateId: Required. The ID of the restore template to create. The
+      ID must be unique for the specified project and location.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  restoreTemplate = _messages.MessageField('RestoreTemplate', 3)
+  restoreTemplateId = _messages.StringField(4)
+
+
+class BackupdrProjectsLocationsRestoreTemplatesDeleteRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsRestoreTemplatesDeleteRequest object.
+
+  Fields:
+    force: Optional. If set to true, any child RestoreTemplateExecutions will
+      also be deleted. If false and the RestoreTemplate has any child
+      executions, the request will fail.
+    name: Required. The name of the restore template to delete. Format: 'proje
+      cts/{project_id}/locations/{location}/restoreTemplates/{restore_template
+      _id}'
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      request ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  force = _messages.BooleanField(1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+
+
+class BackupdrProjectsLocationsRestoreTemplatesExecutionsGetRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsRestoreTemplatesExecutionsGetRequest object.
+
+  Fields:
+    name: Required. The name of the restore template execution to retrieve.
+      Format: 'projects/{project_id}/locations/{location}/restoreTemplates/{re
+      store_template_id}/executions/{execution_id}'
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class BackupdrProjectsLocationsRestoreTemplatesExecutionsListRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsRestoreTemplatesExecutionsListRequest object.
+
+  Fields:
+    filter: Optional. Filtering results.
+    orderBy: Optional. Hint for how to order the results.
+    pageSize: Optional. Requested page size.
+    pageToken: Optional. A token identifying a page of results.
+    parent: Required. The project, location, and restore template for which to
+      retrieve executions information. Format: `projects/{project}/locations/{
+      location}/restoreTemplates/{restore_template}`.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class BackupdrProjectsLocationsRestoreTemplatesExecutionsTriggerRestoreCleanupRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsRestoreTemplatesExecutionsTriggerRestoreClean
+  upRequest object.
+
+  Fields:
+    name: Required. Name of the restore template execution. Format: 'projects/
+      {project_id}/locations/{location}/restoreTemplates/{restore_template_id}
+      /executions/{execution_id}'
+    triggerRestoreCleanupRequest: A TriggerRestoreCleanupRequest resource to
+      be passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  triggerRestoreCleanupRequest = _messages.MessageField('TriggerRestoreCleanupRequest', 2)
+
+
+class BackupdrProjectsLocationsRestoreTemplatesGetRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsRestoreTemplatesGetRequest object.
+
+  Fields:
+    name: Required. The name of the restore template to retrieve. Format: 'pro
+      jects/{project_id}/locations/{location}/restoreTemplates/{restore_templa
+      te_id}'
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class BackupdrProjectsLocationsRestoreTemplatesListRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsRestoreTemplatesListRequest object.
+
+  Fields:
+    filter: Optional. Field match expression used to filter the results.
+    orderBy: Optional. Field by which to sort the results.
+    pageSize: Optional. The maximum number of items to return.
+    pageToken: Optional. A page token, received from a previous
+      `ListRestoreTemplates` call.
+    parent: Required. The project and location from which to list the restore
+      templates. Format: `projects/{project}/locations/{location}`.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class BackupdrProjectsLocationsRestoreTemplatesPatchRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsRestoreTemplatesPatchRequest object.
+
+  Fields:
+    name: Identifier. The resource name of the RestoreTemplate.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      request ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+    restoreTemplate: A RestoreTemplate resource to be passed as the request
+      body.
+    updateMask: Optional. The list of fields to update. Field mask is used to
+      specify the fields to be overwritten in the RestoreTemplate resource by
+      the update. The fields specified in the update_mask are relative to the
+      resource, not the full request. A field will be overwritten if it is in
+      the mask.
+    validateOnly: Optional. Only validate the request, but do not perform
+      mutations. The default is 'false'.
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  restoreTemplate = _messages.MessageField('RestoreTemplate', 3)
+  updateMask = _messages.StringField(4)
+  validateOnly = _messages.BooleanField(5)
+
+
+class BackupdrProjectsLocationsRestoreTemplatesRunRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsRestoreTemplatesRunRequest object.
+
+  Fields:
+    name: Required. The name of the restore template to run. Format: 'projects
+      /{project_id}/locations/{location}/restoreTemplates/{restore_template_id
+      }'
+    runRestoreTemplateRequest: A RunRestoreTemplateRequest resource to be
+      passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  runRestoreTemplateRequest = _messages.MessageField('RunRestoreTemplateRequest', 2)
+
+
+class BackupdrProjectsLocationsRestoreVerificationPlansAssociationsCreateRequest(_messages.Message):
+  r"""A
+  BackupdrProjectsLocationsRestoreVerificationPlansAssociationsCreateRequest
+  object.
+
+  Fields:
+    parent: Required. The parent resource where this association will be
+      created. Format: `projects/{project}/locations/{location}/restoreVerific
+      ationPlans/{restore_verification_plan}`
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know that the server has already received the duplicate request and
+      can avoid responding with an error. The request ID must be a valid UUID
+      with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+    restoreVerificationPlanAssociation: A RestoreVerificationPlanAssociation
+      resource to be passed as the request body.
+    restoreVerificationPlanAssociationId: Required. The ID to use for the
+      association, which will become the final component of the association's
+      resource name. This value should be 1-63 characters, and valid
+      characters are /[a-z0-9_-]/.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  restoreVerificationPlanAssociation = _messages.MessageField('RestoreVerificationPlanAssociation', 3)
+  restoreVerificationPlanAssociationId = _messages.StringField(4)
+
+
+class BackupdrProjectsLocationsRestoreVerificationPlansAssociationsDeleteRequest(_messages.Message):
+  r"""A
+  BackupdrProjectsLocationsRestoreVerificationPlansAssociationsDeleteRequest
+  object.
+
+  Fields:
+    name: Required. The resource name of the
+      RestoreVerificationPlanAssociation to delete. Format: `projects/{project
+      }/locations/{location}/restoreVerificationPlans/{restore_verification_pl
+      an}/associations/{association}`
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know that the server has already received the duplicate request and
+      can avoid responding with an error. The request ID must be a valid UUID
+      with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class BackupdrProjectsLocationsRestoreVerificationPlansAssociationsGetRequest(_messages.Message):
+  r"""A
+  BackupdrProjectsLocationsRestoreVerificationPlansAssociationsGetRequest
+  object.
+
+  Fields:
+    name: Required. The resource name of the
+      RestoreVerificationPlanAssociation to retrieve. Format: `projects/{proje
+      ct}/locations/{location}/restoreVerificationPlans/{restore_verification_
+      plan}/associations/{association}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class BackupdrProjectsLocationsRestoreVerificationPlansAssociationsListRequest(_messages.Message):
+  r"""A
+  BackupdrProjectsLocationsRestoreVerificationPlansAssociationsListRequest
+  object.
+
+  Fields:
+    filter: Optional. Filtering results.
+    orderBy: Optional. Hint for how to order the results.
+    pageSize: Optional. The maximum number of associations to return. The
+      service may return fewer than this value. If unspecified, at most 500
+      associations will be returned. The maximum value is 1000; values above
+      1000 will be coerced to 1000.
+    pageToken: Optional. A page token, received from a previous
+      `ListRestoreVerificationPlanAssociations` call. Provide this to retrieve
+      the subsequent page. When paginating, all other parameters provided to
+      `ListRestoreVerificationPlanAssociations` must match the call that
+      provided the page token.
+    parent: Required. The parent RestoreVerificationPlan name. Format: `projec
+      ts/{project}/locations/{location}/restoreVerificationPlans/{restore_veri
+      fication_plan}`
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class BackupdrProjectsLocationsRestoreVerificationPlansAssociationsPatchRequest(_messages.Message):
+  r"""A
+  BackupdrProjectsLocationsRestoreVerificationPlansAssociationsPatchRequest
+  object.
+
+  Fields:
+    name: Output only. Identifier. The resource name of
+      RestoreVerificationPlanAssociation in below format Format : projects/{pr
+      oject}/locations/{location}/restoreVerificationPlans/{restore_verificati
+      on_plan}/associations/{association}
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know that the server has already received the duplicate request and
+      can avoid responding with an error. The request ID must be a valid UUID
+      with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+    restoreVerificationPlanAssociation: A RestoreVerificationPlanAssociation
+      resource to be passed as the request body.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the RestoreVerificationPlanAssociation resource by the
+      update. The fields specified in the update_mask are relative to the
+      resource, not the full request. A field will be overwritten if it is in
+      the mask.
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  restoreVerificationPlanAssociation = _messages.MessageField('RestoreVerificationPlanAssociation', 3)
+  updateMask = _messages.StringField(4)
+
+
+class BackupdrProjectsLocationsRestoreVerificationPlansAssociationsTriggerRestoreVerificationRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsRestoreVerificationPlansAssociationsTriggerRe
+  storeVerificationRequest object.
+
+  Fields:
+    name: Required. The resource name of the
+      RestoreVerificationPlanAssociation to trigger. Format: `projects/{projec
+      t}/locations/{location}/restoreVerificationPlans/{restore_verification_p
+      lan}/associations/{association}`
+    triggerRestoreVerificationRequest: A TriggerRestoreVerificationRequest
+      resource to be passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  triggerRestoreVerificationRequest = _messages.MessageField('TriggerRestoreVerificationRequest', 2)
+
+
+class BackupdrProjectsLocationsRestoreVerificationPlansCreateRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsRestoreVerificationPlansCreateRequest object.
+
+  Fields:
+    parent: Required. The `RestoreVerificationPlan` project and location in
+      the format `projects/{project}/locations/{location}`. In Google Cloud
+      Backup and DR locations map to Google Cloud regions, for example **us-
+      central1**.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    restoreVerificationPlan: A RestoreVerificationPlan resource to be passed
+      as the request body.
+    restoreVerificationPlanId: Required. The name of the
+      `RestoreVerificationPlan` to create. The name must be unique for the
+      specified project and location. The name must start with a lowercase
+      letter followed by up to 62 lowercase letters, numbers, or hyphens.
+      Pattern, `^[a-z]([-a-z0-9]*[a-z0-9])?$`.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  restoreVerificationPlan = _messages.MessageField('RestoreVerificationPlan', 3)
+  restoreVerificationPlanId = _messages.StringField(4)
+
+
+class BackupdrProjectsLocationsRestoreVerificationPlansDeleteRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsRestoreVerificationPlansDeleteRequest object.
+
+  Fields:
+    force: Optional. If set to true, any RestoreVerificationPlanAssociations
+      linked to this RestoreVerificationPlan will also be deleted.
+    name: Required. The resource name of the `RestoreVerificationPlan` to
+      delete. Format: `projects/{project}/locations/{location}/restoreVerifica
+      tionPlans/{restoreVerificationPlan}`
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  force = _messages.BooleanField(1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+
+
+class BackupdrProjectsLocationsRestoreVerificationPlansGetRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsRestoreVerificationPlansGetRequest object.
+
+  Fields:
+    name: Required. The resource name of the `RestoreVerificationPlan` to
+      retrieve. Format: `projects/{project}/locations/{location}/restoreVerifi
+      cationPlans/{restoreVerificationPlan}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class BackupdrProjectsLocationsRestoreVerificationPlansListRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsRestoreVerificationPlansListRequest object.
+
+  Fields:
+    filter: Optional. Field match expression used to filter the results.
+    orderBy: Optional. Field by which to sort the results.
+    pageSize: Optional. The maximum number of `RestoreVerificationPlans` to
+      return in a single response. If not specified, a default value will be
+      chosen by the service. Note that the response may include a partial list
+      and a caller should only rely on the response's next_page_token to
+      determine if there are more instances left to be queried.
+    pageToken: Optional. The value of next_page_token received from a previous
+      `ListRestoreVerificationPlans` call. Provide this to retrieve the
+      subsequent page in a multi-page list of results. When paginating, all
+      other parameters provided to `ListRestoreVerificationPlans` must match
+      the call that provided the page token.
+    parent: Required. The project and location for which to retrieve
+      `RestoreVerificationPlans` information. Format:
+      `projects/{project}/locations/{location}`. In Google Cloud Backup and
+      DR, locations map to Google Cloud regions, for example **us-central1**.
+      To retrieve restore verification plans for all locations, use "-" for
+      the `{location}` value.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
 class BackupdrProjectsLocationsServiceConfigInitializeRequest(_messages.Message):
   r"""A BackupdrProjectsLocationsServiceConfigInitializeRequest object.
 
@@ -3528,6 +3972,58 @@ class BindingSummary(_messages.Message):
 
 class CancelOperationRequest(_messages.Message):
   r"""The request message for Operations.CancelOperation."""
+
+
+class CleanupPhaseInfo(_messages.Message):
+  r"""Info for Cleanup phase execution.
+
+  Enums:
+    PhaseStateValueValuesEnum: Output only. The state of this phase.
+
+  Fields:
+    cleanupDuration: Output only. Time taken to perform the cleanup of
+      restored resource.
+    cleanupTime: Output only. The time when the resources will be cleaned up.
+    endTime: Output only. End time of the phase.
+    error: Output only. Error details if the phase failed.
+    failureCleanupRule: Output only. Snapshot of cleanup rule provided for
+      this execution when execution is failed.
+    phaseState: Output only. The state of this phase.
+    startTime: Output only. Start time of the phase.
+    successCleanupRule: Output only. Snapshot of cleanup rule provided for
+      this execution when execution is successful.
+  """
+
+  class PhaseStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of this phase.
+
+    Values:
+      PHASE_STATE_UNSPECIFIED: Phase state is not set.
+      PENDING: This phase is pending execution.
+      RUNNING: The phase is actively executing.
+      SUCCEEDED: The phase completed successfully.
+      FAILED: The phase encountered an error and failed.
+      TIMED_OUT: The phase timed out.
+      SKIPPED: The phase was skipped.
+      WAITING: The phase is waiting to be executed.
+    """
+    PHASE_STATE_UNSPECIFIED = 0
+    PENDING = 1
+    RUNNING = 2
+    SUCCEEDED = 3
+    FAILED = 4
+    TIMED_OUT = 5
+    SKIPPED = 6
+    WAITING = 7
+
+  cleanupDuration = _messages.StringField(1)
+  cleanupTime = _messages.StringField(2)
+  endTime = _messages.StringField(3)
+  error = _messages.MessageField('Status', 4)
+  failureCleanupRule = _messages.MessageField('RestoreVerificationCleanupRule', 5)
+  phaseState = _messages.EnumField('PhaseStateValueValuesEnum', 6)
+  startTime = _messages.StringField(7)
+  successCleanupRule = _messages.MessageField('RestoreVerificationCleanupRule', 8)
 
 
 class CloudSqlInstanceBackupPlanAssociationProperties(_messages.Message):
@@ -4713,6 +5209,40 @@ class Entry(_messages.Message):
   value = _messages.StringField(2)
 
 
+class ExecutionSummary(_messages.Message):
+  r"""Summary of the last execution.
+
+  Enums:
+    LastExecutionStateValueValuesEnum: Output only. The state of the last
+      execution.
+
+  Fields:
+    lastExecution: Output only. The resource name of the last execution.
+      Format: `projects/{project}/locations/{location}/restoreTemplates/{resto
+      re_template}/executions/{execution}`
+    lastExecutionState: Output only. The state of the last execution.
+  """
+
+  class LastExecutionStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the last execution.
+
+    Values:
+      EXECUTION_STATE_UNSPECIFIED: State not set.
+      RUNNING: Execution is running.
+      SUCCEEDED: Execution succeeded.
+      FAILED: Execution failed.
+      DELETING: Resources are being deleted (cleanup).
+    """
+    EXECUTION_STATE_UNSPECIFIED = 0
+    RUNNING = 1
+    SUCCEEDED = 2
+    FAILED = 3
+    DELETING = 4
+
+  lastExecution = _messages.StringField(1)
+  lastExecutionState = _messages.EnumField('LastExecutionStateValueValuesEnum', 2)
+
+
 class Expr(_messages.Message):
   r"""Represents a textual expression in the Common Expression Language (CEL)
   syntax. CEL is a C-like expression language. The syntax and semantics of CEL
@@ -5591,6 +6121,74 @@ class ListResourceBackupConfigsResponse(_messages.Message):
   resourceBackupConfigs = _messages.MessageField('ResourceBackupConfig', 2, repeated=True)
 
 
+class ListRestoreTemplateExecutionsResponse(_messages.Message):
+  r"""Response message for listing RestoreTemplateExecutions.
+
+  Fields:
+    nextPageToken: A token identifying a page of results.
+    restoreTemplateExecutions: The list of RestoreTemplateExecution instances.
+    unreachable: Locations that could not be reached.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  restoreTemplateExecutions = _messages.MessageField('RestoreTemplateExecution', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListRestoreTemplatesResponse(_messages.Message):
+  r"""Response message for listing RestoreTemplates.
+
+  Fields:
+    nextPageToken: A token which may be sent as `page_token` in a subsequent
+      `ListRestoreTemplates` call.
+    restoreTemplates: The list of RestoreTemplates.
+    unreachable: Locations that could not be reached.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  restoreTemplates = _messages.MessageField('RestoreTemplate', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListRestoreVerificationPlanAssociationsResponse(_messages.Message):
+  r"""Response message for ListRestoreVerificationPlanAssociations.
+
+  Fields:
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+    restoreVerificationPlanAssociations: The list of
+      RestoreVerificationPlanAssociations.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  restoreVerificationPlanAssociations = _messages.MessageField('RestoreVerificationPlanAssociation', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListRestoreVerificationPlansResponse(_messages.Message):
+  r"""The response message for getting a list of `RestoreVerificationPlans`.
+
+  Fields:
+    nextPageToken: A token which may be sent as page_token in a subsequent
+      `ListRestoreVerificationPlans` call to retrieve the next page of
+      results. If this field is omitted or empty, then there are no more
+      results to return.
+    restoreVerificationPlans: The list of `RestoreVerificationPlans` in the
+      project for the specified location. If the `{location}` value in the
+      request is "-", the response contains a list of resources from all
+      locations. In case any location is unreachable, the response will only
+      return restore verification plans in reachable locations and the
+      'unreachable' field will be populated with a list of unreachable
+      locations.
+    unreachable: Locations that could not be reached.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  restoreVerificationPlans = _messages.MessageField('RestoreVerificationPlan', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class Location(_messages.Message):
   r"""A resource that represents a Google Cloud location.
 
@@ -6368,6 +6966,179 @@ class PolicyEvaluationSummary(_messages.Message):
   protectedResourceCount = _messages.IntegerField(3)
 
 
+class PostRestoreConfig(_messages.Message):
+  r"""Configuration for Post-Restore.
+
+  Fields:
+    cloudRunJob: Cloud Run job action to execute. Format:
+      `projects/{project}/locations/{location}/jobs/{job}`
+    timeout: Optional. The timeout for this phase.
+  """
+
+  cloudRunJob = _messages.StringField(1)
+  timeout = _messages.StringField(2)
+
+
+class PostRestorePhaseInfo(_messages.Message):
+  r"""Info for Post-Restore phase execution.
+
+  Enums:
+    PhaseStateValueValuesEnum: Output only. The state of this phase.
+
+  Fields:
+    cloudRunExecution: Output only. The fully qualified URI of the Cloud Run
+      Execution triggered for post-restore actions.
+    endTime: Output only. End time of the phase.
+    error: Output only. Error details if the phase failed.
+    phaseState: Output only. The state of this phase.
+    postRestoreConfig: Output only. Snapshot of config that will be executed
+      after successful restore operation.
+    startTime: Output only. Start time of the phase.
+  """
+
+  class PhaseStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of this phase.
+
+    Values:
+      PHASE_STATE_UNSPECIFIED: Phase state is not set.
+      PENDING: This phase is pending execution.
+      RUNNING: The phase is actively executing.
+      SUCCEEDED: The phase completed successfully.
+      FAILED: The phase encountered an error and failed.
+      TIMED_OUT: The phase timed out.
+      SKIPPED: The phase was skipped.
+      WAITING: The phase is waiting to be executed.
+    """
+    PHASE_STATE_UNSPECIFIED = 0
+    PENDING = 1
+    RUNNING = 2
+    SUCCEEDED = 3
+    FAILED = 4
+    TIMED_OUT = 5
+    SKIPPED = 6
+    WAITING = 7
+
+  cloudRunExecution = _messages.StringField(1)
+  endTime = _messages.StringField(2)
+  error = _messages.MessageField('Status', 3)
+  phaseState = _messages.EnumField('PhaseStateValueValuesEnum', 4)
+  postRestoreConfig = _messages.MessageField('PostRestoreConfig', 5)
+  startTime = _messages.StringField(6)
+
+
+class PreRestoreConfig(_messages.Message):
+  r"""Configuration for Pre-Restore.
+
+  Fields:
+    cloudRunJob: Cloud Run job action to execute. Format:
+      `projects/{project}/locations/{location}/jobs/{job}`
+    timeout: Optional. The timeout for this phase.
+  """
+
+  cloudRunJob = _messages.StringField(1)
+  timeout = _messages.StringField(2)
+
+
+class PreRestorePhaseInfo(_messages.Message):
+  r"""Info for Pre-Restore phase execution.
+
+  Enums:
+    PhaseStateValueValuesEnum: Output only. The state of this phase.
+
+  Fields:
+    cloudRunExecution: Output only. The fully qualified URI of the Cloud Run
+      Execution triggered for pre-restore actions.
+    endTime: Output only. End time of the phase.
+    error: Output only. Error details if the phase failed.
+    phaseState: Output only. The state of this phase.
+    preRestoreConfig: Output only. Snapshot of config that will be executed
+      before restore operation.
+    startTime: Output only. Start time of the phase.
+  """
+
+  class PhaseStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of this phase.
+
+    Values:
+      PHASE_STATE_UNSPECIFIED: Phase state is not set.
+      PENDING: This phase is pending execution.
+      RUNNING: The phase is actively executing.
+      SUCCEEDED: The phase completed successfully.
+      FAILED: The phase encountered an error and failed.
+      TIMED_OUT: The phase timed out.
+      SKIPPED: The phase was skipped.
+      WAITING: The phase is waiting to be executed.
+    """
+    PHASE_STATE_UNSPECIFIED = 0
+    PENDING = 1
+    RUNNING = 2
+    SUCCEEDED = 3
+    FAILED = 4
+    TIMED_OUT = 5
+    SKIPPED = 6
+    WAITING = 7
+
+  cloudRunExecution = _messages.StringField(1)
+  endTime = _messages.StringField(2)
+  error = _messages.MessageField('Status', 3)
+  phaseState = _messages.EnumField('PhaseStateValueValuesEnum', 4)
+  preRestoreConfig = _messages.MessageField('PreRestoreConfig', 5)
+  startTime = _messages.StringField(6)
+
+
+class PreparePhaseInfo(_messages.Message):
+  r"""Info for Prepare phase execution.
+
+  Enums:
+    PhaseStateValueValuesEnum: Output only. The state of this phase.
+
+  Fields:
+    backup: Output only. The source backup used for the restore. The fully
+      qualified URI of the backupdr backup.
+    backupSelectionConfig: Output only. Snapshot of config used in this
+      execution.
+    endTime: Output only. End time of the phase.
+    error: Output only. Error details if the phase failed.
+    isBackupExplicitlyPassed: Output only. Indicates whether the backup was
+      explicitly passed in the request.
+    phaseState: Output only. The state of this phase.
+    restoreVerificationPlanAssociation: Output only. The restore verification
+      plan association associated with the execution.
+    startTime: Output only. Start time of the phase.
+  """
+
+  class PhaseStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of this phase.
+
+    Values:
+      PHASE_STATE_UNSPECIFIED: Phase state is not set.
+      PENDING: This phase is pending execution.
+      RUNNING: The phase is actively executing.
+      SUCCEEDED: The phase completed successfully.
+      FAILED: The phase encountered an error and failed.
+      TIMED_OUT: The phase timed out.
+      SKIPPED: The phase was skipped.
+      WAITING: The phase is waiting to be executed.
+    """
+    PHASE_STATE_UNSPECIFIED = 0
+    PENDING = 1
+    RUNNING = 2
+    SUCCEEDED = 3
+    FAILED = 4
+    TIMED_OUT = 5
+    SKIPPED = 6
+    WAITING = 7
+
+  backup = _messages.StringField(1)
+  backupSelectionConfig = _messages.MessageField('BackupSelectionConfig', 2)
+  endTime = _messages.StringField(3)
+  error = _messages.MessageField('Status', 4)
+  isBackupExplicitlyPassed = _messages.BooleanField(5)
+  phaseState = _messages.EnumField('PhaseStateValueValuesEnum', 6)
+  restoreVerificationPlanAssociation = _messages.StringField(7)
+  startTime = _messages.StringField(8)
+
+
 class RegionDiskTargetEnvironment(_messages.Message):
   r"""RegionDiskTargetEnvironment represents the target environment for the
   disk.
@@ -6564,6 +7335,521 @@ class RestoreDiskFromInstanceOptions(_messages.Message):
   sourceDeviceName = _messages.StringField(2)
 
 
+class RestorePhaseInfo(_messages.Message):
+  r"""Info for Restore phase execution.
+
+  Enums:
+    PhaseStateValueValuesEnum: Output only. The state of this phase.
+
+  Messages:
+    RestorePropertiesValue: Output only. Snapshot of environment config used
+      during restore of this RestoreTemplateExecution.
+    RestoreResourcePropertiesValue: Output only. Properties of the restored
+      resource.
+
+  Fields:
+    endTime: Output only. End time of the phase.
+    error: Output only. Error details if the phase failed.
+    phaseState: Output only. The state of this phase.
+    restoreDuration: Output only. Time taken to restore the resource.
+    restoreProperties: Output only. Snapshot of environment config used during
+      restore of this RestoreTemplateExecution.
+    restoreResource: Output only. The resource created or restored by this
+      execution.
+    restoreResourceProperties: Output only. Properties of the restored
+      resource.
+    startTime: Output only. Start time of the phase.
+  """
+
+  class PhaseStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of this phase.
+
+    Values:
+      PHASE_STATE_UNSPECIFIED: Phase state is not set.
+      PENDING: This phase is pending execution.
+      RUNNING: The phase is actively executing.
+      SUCCEEDED: The phase completed successfully.
+      FAILED: The phase encountered an error and failed.
+      TIMED_OUT: The phase timed out.
+      SKIPPED: The phase was skipped.
+      WAITING: The phase is waiting to be executed.
+    """
+    PHASE_STATE_UNSPECIFIED = 0
+    PENDING = 1
+    RUNNING = 2
+    SUCCEEDED = 3
+    FAILED = 4
+    TIMED_OUT = 5
+    SKIPPED = 6
+    WAITING = 7
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class RestorePropertiesValue(_messages.Message):
+    r"""Output only. Snapshot of environment config used during restore of
+    this RestoreTemplateExecution.
+
+    Messages:
+      AdditionalProperty: An additional property for a RestorePropertiesValue
+        object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a RestorePropertiesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class RestoreResourcePropertiesValue(_messages.Message):
+    r"""Output only. Properties of the restored resource.
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        RestoreResourcePropertiesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        RestoreResourcePropertiesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a RestoreResourcePropertiesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  endTime = _messages.StringField(1)
+  error = _messages.MessageField('Status', 2)
+  phaseState = _messages.EnumField('PhaseStateValueValuesEnum', 3)
+  restoreDuration = _messages.StringField(4)
+  restoreProperties = _messages.MessageField('RestorePropertiesValue', 5)
+  restoreResource = _messages.StringField(6)
+  restoreResourceProperties = _messages.MessageField('RestoreResourcePropertiesValue', 7)
+  startTime = _messages.StringField(8)
+
+
+class RestoreTemplate(_messages.Message):
+  r"""A `RestoreTemplate` encapsulates DR readiness configurations for
+  validating backups.
+
+  Enums:
+    StateValueValuesEnum: Output only. The state of the restore template.
+
+  Messages:
+    LabelsValue: Optional. User-defined labels.
+    RestorePropertiesValue: Required. Defines target environments where the
+      resource will be restored.
+
+  Fields:
+    backupSelectionConfig: Required. Backup selection configuration.
+    createTime: Output only. The time when the restore template was created.
+    description: Optional. User-provided description of the restore template.
+    etag: Optional. Etag for concurrency control.
+    executionSummary: Output only. Summary of the last execution.
+    labels: Optional. User-defined labels.
+    name: Identifier. The resource name of the RestoreTemplate.
+    postRestoreConfig: Optional. Post-restore configuration.
+    preRestoreConfig: Optional. Pre-restore configuration.
+    resourceType: Required. Immutable. The specific type of the workload being
+      restored. The format is "{service_name}/{resource_kind}", for example,
+      "compute.googleapis.com/Instance".
+    restoreProperties: Required. Defines target environments where the
+      resource will be restored.
+    state: Output only. The state of the restore template.
+    updateTime: Output only. The time when the restore template was last
+      updated.
+    verificationConfig: Optional. Verification configuration.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the restore template.
+
+    Values:
+      STATE_UNSPECIFIED: State not specified.
+      CREATING: The template is being created.
+      ACTIVE: The template is active and ready to use.
+      UPDATING: The template is being updated.
+      DELETING: The template is being deleted.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+    UPDATING = 3
+    DELETING = 4
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. User-defined labels.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class RestorePropertiesValue(_messages.Message):
+    r"""Required. Defines target environments where the resource will be
+    restored.
+
+    Messages:
+      AdditionalProperty: An additional property for a RestorePropertiesValue
+        object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a RestorePropertiesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  backupSelectionConfig = _messages.MessageField('BackupSelectionConfig', 1)
+  createTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  etag = _messages.StringField(4)
+  executionSummary = _messages.MessageField('ExecutionSummary', 5)
+  labels = _messages.MessageField('LabelsValue', 6)
+  name = _messages.StringField(7)
+  postRestoreConfig = _messages.MessageField('PostRestoreConfig', 8)
+  preRestoreConfig = _messages.MessageField('PreRestoreConfig', 9)
+  resourceType = _messages.StringField(10)
+  restoreProperties = _messages.MessageField('RestorePropertiesValue', 11)
+  state = _messages.EnumField('StateValueValuesEnum', 12)
+  updateTime = _messages.StringField(13)
+  verificationConfig = _messages.MessageField('VerificationConfig', 14)
+
+
+class RestoreTemplateExecution(_messages.Message):
+  r"""A `RestoreTemplateExecution` represents a single historical or active
+  execution run.
+
+  Enums:
+    PhaseValueValuesEnum: Output only. The current active phase.
+    StateValueValuesEnum: Output only. State of the execution.
+    TypeValueValuesEnum: Output only. The type of the execution.
+
+  Fields:
+    cleanupPhaseInfo: Output only. Info for the cleanup phase.
+    createTime: Output only. Create time of the execution.
+    name: Identifier. Resource name of the execution.
+    phase: Output only. The current active phase.
+    postRestorePhaseInfo: Output only. Info for the post-restore phase.
+    preRestorePhaseInfo: Output only. Info for the pre-restore phase.
+    preparePhaseInfo: Output only. Info for the prepare phase.
+    resourceType: Output only. The workload resource type being restored. The
+      format is "{service_name}/{resource_kind}", for example,
+      "compute.googleapis.com/Instance".
+    restorePhaseInfo: Output only. Info for the restore phase.
+    state: Output only. State of the execution.
+    type: Output only. The type of the execution.
+    updateTime: Output only. Update time of the execution.
+    verificationPhaseInfo: Output only. Info for the verification phase.
+  """
+
+  class PhaseValueValuesEnum(_messages.Enum):
+    r"""Output only. The current active phase.
+
+    Values:
+      EXECUTION_PHASE_UNSPECIFIED: Execution phase not specified.
+      PREPARING: Preparing for execution.
+      EXECUTING_PRE_RESTORE_ACTION: Executing pre-restore action.
+      RESTORING: Restoring the resource.
+      EXECUTING_POST_RESTORE_ACTION: Executing post-restore action.
+      VERIFYING: Verifying the restored resource.
+      CLEANING_UP: Cleaning up resources.
+      COMPLETED: Execution completed.
+    """
+    EXECUTION_PHASE_UNSPECIFIED = 0
+    PREPARING = 1
+    EXECUTING_PRE_RESTORE_ACTION = 2
+    RESTORING = 3
+    EXECUTING_POST_RESTORE_ACTION = 4
+    VERIFYING = 5
+    CLEANING_UP = 6
+    COMPLETED = 7
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. State of the execution.
+
+    Values:
+      EXECUTION_STATE_UNSPECIFIED: State not set.
+      RUNNING: Execution is running.
+      SUCCEEDED: Execution succeeded.
+      FAILED: Execution failed.
+      DELETING: Resources are being deleted (cleanup).
+    """
+    EXECUTION_STATE_UNSPECIFIED = 0
+    RUNNING = 1
+    SUCCEEDED = 2
+    FAILED = 3
+    DELETING = 4
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The type of the execution.
+
+    Values:
+      EXECUTION_TYPE_UNSPECIFIED: Execution type not specified.
+      SCHEDULED: Scheduled execution.
+      ON_DEMAND: On-demand execution.
+    """
+    EXECUTION_TYPE_UNSPECIFIED = 0
+    SCHEDULED = 1
+    ON_DEMAND = 2
+
+  cleanupPhaseInfo = _messages.MessageField('CleanupPhaseInfo', 1)
+  createTime = _messages.StringField(2)
+  name = _messages.StringField(3)
+  phase = _messages.EnumField('PhaseValueValuesEnum', 4)
+  postRestorePhaseInfo = _messages.MessageField('PostRestorePhaseInfo', 5)
+  preRestorePhaseInfo = _messages.MessageField('PreRestorePhaseInfo', 6)
+  preparePhaseInfo = _messages.MessageField('PreparePhaseInfo', 7)
+  resourceType = _messages.StringField(8)
+  restorePhaseInfo = _messages.MessageField('RestorePhaseInfo', 9)
+  state = _messages.EnumField('StateValueValuesEnum', 10)
+  type = _messages.EnumField('TypeValueValuesEnum', 11)
+  updateTime = _messages.StringField(12)
+  verificationPhaseInfo = _messages.MessageField('VerificationPhaseInfo', 13)
+
+
+class RestoreVerificationCleanupRule(_messages.Message):
+  r"""Defines the specific cleanup action.
+
+  Fields:
+    cleanupDelay: Optional. Duration after restore finishes when cleanup
+      triggers. Delay must be at most 30 days (2592000 seconds).
+    skipCleanup: Optional. If set to true, the restored resource will not be
+      cleaned up.
+  """
+
+  cleanupDelay = _messages.StringField(1)
+  skipCleanup = _messages.BooleanField(2)
+
+
+class RestoreVerificationPlan(_messages.Message):
+  r"""A `RestoreVerificationPlan` specifies the scheduling and clean-up
+  template for automated restore verification. It contains a
+  `RestoreVerificationSchedule` to dictate when the verifications should run,
+  and a `CleanupConfig` for post-verification resource deletion.
+
+  Enums:
+    StateValueValuesEnum: Output only. The `State` for the
+      `RestoreVerificationPlan`.
+
+  Messages:
+    LabelsValue: Optional. User-defined labels.
+
+  Fields:
+    createTime: Output only. When the `RestoreVerificationPlan` was created.
+    description: Optional. The description of the `RestoreVerificationPlan`
+      resource. The description allows for additional details about
+      `RestoreVerificationPlan` and its use cases to be provided. An example
+      description is the following: "This is a restore verification plan that
+      performs a daily verification and cleans up the resources immediately
+      after." The description must be at most 2048 characters.
+    failureCleanupRule: Optional. The cleanup rule to apply if the restore
+      verification fails.
+    labels: Optional. User-defined labels.
+    name: Output only. Identifier. The resource name of the
+      `RestoreVerificationPlan`. Format: `projects/{project}/locations/{locati
+      on}/restoreVerificationPlans/{restoreVerificationPlan}`
+    schedule: Required. Describes the schedule on which the restore
+      verification will be executed. The schedule is specified as a
+      [Crontab](https://en.wikipedia.org/wiki/Cron#Overview) string.
+    state: Output only. The `State` for the `RestoreVerificationPlan`.
+    successCleanupRule: Optional. The cleanup rule to apply if the restore
+      verification succeeds.
+    timeZone: Optional. Specifies the time zone to be used in interpreting
+      schedule. The value of this field must be a time zone name from the [tz
+      database](https://en.wikipedia.org/wiki/Tz_database), like
+      "America/New_York" or "UTC". Defaults to `UTC` if not specified.
+    updateTime: Output only. When the `RestoreVerificationPlan` was last
+      updated.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The `State` for the `RestoreVerificationPlan`.
+
+    Values:
+      STATE_UNSPECIFIED: State not set.
+      CREATING: The resource is being created.
+      ACTIVE: The resource has been created and is fully usable.
+      DELETING: The resource is being deleted.
+      INACTIVE: The resource has been created but is not usable.
+      UPDATING: The resource is being updated.
+      ERROR: The resource is in an error state due to a configuration issue.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+    DELETING = 3
+    INACTIVE = 4
+    UPDATING = 5
+    ERROR = 6
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. User-defined labels.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  failureCleanupRule = _messages.MessageField('RestoreVerificationCleanupRule', 3)
+  labels = _messages.MessageField('LabelsValue', 4)
+  name = _messages.StringField(5)
+  schedule = _messages.StringField(6)
+  state = _messages.EnumField('StateValueValuesEnum', 7)
+  successCleanupRule = _messages.MessageField('RestoreVerificationCleanupRule', 8)
+  timeZone = _messages.StringField(9)
+  updateTime = _messages.StringField(10)
+
+
+class RestoreVerificationPlanAssociation(_messages.Message):
+  r"""A `RestoreVerificationPlanAssociation` binds a specific workload to a
+  `RestoreVerificationPlan`.
+
+  Enums:
+    StateValueValuesEnum: Output only. The `State` for the
+      `RestoreVerificationPlanAssociation`.
+
+  Messages:
+    LabelsValue: Optional. User-defined labels.
+
+  Fields:
+    createTime: Output only. The time when the association was created.
+    description: Optional. The description of the
+      `RestoreVerificationPlanAssociation` resource.
+    labels: Optional. User-defined labels.
+    name: Output only. Identifier. The resource name of
+      RestoreVerificationPlanAssociation in below format Format : projects/{pr
+      oject}/locations/{location}/restoreVerificationPlans/{restore_verificati
+      on_plan}/associations/{association}
+    resourceType: Required. Immutable. The type of the Google Cloud resource
+      (e.g., `compute.googleapis.com/Instance`,
+      `sqladmin.googleapis.com/Instance`).
+    restoreTemplate: Required. Immutable. The canonical name of the
+      RestoreTemplate to trigger.
+    state: Output only. The `State` for the
+      `RestoreVerificationPlanAssociation`.
+    triggerSummary: Output only. Results of the most recent automated restore
+      initiation and the next scheduled execution time.
+    updateTime: Output only. The time when the association was updated.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The `State` for the `RestoreVerificationPlanAssociation`.
+
+    Values:
+      STATE_UNSPECIFIED: State not set.
+      CREATING: The resource is being created.
+      ACTIVE: The resource has been created and is fully usable.
+      DELETING: The resource is being deleted.
+      INACTIVE: The resource has been created but is not usable.
+      UPDATING: The resource is being updated.
+      ERROR: The resource is in an error state due to a configuration issue.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+    DELETING = 3
+    INACTIVE = 4
+    UPDATING = 5
+    ERROR = 6
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. User-defined labels.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  labels = _messages.MessageField('LabelsValue', 3)
+  name = _messages.StringField(4)
+  resourceType = _messages.StringField(5)
+  restoreTemplate = _messages.StringField(6)
+  state = _messages.EnumField('StateValueValuesEnum', 7)
+  triggerSummary = _messages.MessageField('TriggerSummary', 8)
+  updateTime = _messages.StringField(9)
+
+
 class RuleConfigInfo(_messages.Message):
   r"""Message for rules config info.
 
@@ -6601,6 +7887,26 @@ class RuleConfigInfo(_messages.Message):
   lastBackupState = _messages.EnumField('LastBackupStateValueValuesEnum', 2)
   lastSuccessfulBackupConsistencyTime = _messages.StringField(3)
   ruleId = _messages.StringField(4)
+
+
+class RunRestoreTemplateRequest(_messages.Message):
+  r"""Request message for running a RestoreTemplate.
+
+  Fields:
+    backup: Optional. The resource name of the Backup to restore from. If not
+      specified, the latest backup matching the backup selection configuration
+      in the RestoreTemplate will be used. Format: 'projects/{project}/locatio
+      ns/{location}/backupVaults/{backup_vault}/dataSources/{data_source}/back
+      ups/{backup}'
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      request ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  backup = _messages.StringField(1)
+  requestId = _messages.StringField(2)
 
 
 class Scheduling(_messages.Message):
@@ -7202,6 +8508,114 @@ class TriggerBackupRequest(_messages.Message):
   labels = _messages.MessageField('LabelsValue', 2)
   requestId = _messages.StringField(3)
   ruleId = _messages.StringField(4)
+
+
+class TriggerRestoreCleanupRequest(_messages.Message):
+  r"""Request message for triggering a restore cleanup.
+
+  Fields:
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. The request ID must be a valid UUID with the exception that
+      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  requestId = _messages.StringField(1)
+
+
+class TriggerRestoreVerificationRequest(_messages.Message):
+  r"""Request message for TriggerRestoreVerification.
+
+  Fields:
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know that the server has already received the duplicate request and
+      can avoid responding with an error. The request ID must be a valid UUID
+      with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+  """
+
+  requestId = _messages.StringField(1)
+
+
+class TriggerSummary(_messages.Message):
+  r"""`TriggerSummary` contains the results of the most recent automated
+  restore initiation and the next scheduled execution time.
+
+  Fields:
+    lastTriggerError: Output only. The error status of the most recent failed
+      trigger.
+    lastTriggerTime: Output only. The time of the most recent trigger
+      initiation.
+    nextTriggerTime: Output only. The scheduled time of the next trigger
+      initiation.
+  """
+
+  lastTriggerError = _messages.MessageField('Status', 1)
+  lastTriggerTime = _messages.StringField(2)
+  nextTriggerTime = _messages.StringField(3)
+
+
+class VerificationConfig(_messages.Message):
+  r"""Configuration for Verification.
+
+  Fields:
+    cloudRunJob: Cloud Run job action to execute. Format:
+      `projects/{project}/locations/{location}/jobs/{job}`
+    timeout: Optional. The timeout for this phase.
+  """
+
+  cloudRunJob = _messages.StringField(1)
+  timeout = _messages.StringField(2)
+
+
+class VerificationPhaseInfo(_messages.Message):
+  r"""Info for Verification phase execution.
+
+  Enums:
+    PhaseStateValueValuesEnum: Output only. The state of this phase.
+
+  Fields:
+    cloudRunExecution: Output only. The fully qualified URI of the Cloud Run
+      Execution triggered for verification.
+    endTime: Output only. End time of the phase.
+    error: Output only. Error details if the phase failed.
+    phaseState: Output only. The state of this phase.
+    startTime: Output only. Start time of the phase.
+    verificationConfig: Output only. Snapshot of config that will be executed
+      after successful post restore validation.
+  """
+
+  class PhaseStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of this phase.
+
+    Values:
+      PHASE_STATE_UNSPECIFIED: Phase state is not set.
+      PENDING: This phase is pending execution.
+      RUNNING: The phase is actively executing.
+      SUCCEEDED: The phase completed successfully.
+      FAILED: The phase encountered an error and failed.
+      TIMED_OUT: The phase timed out.
+      SKIPPED: The phase was skipped.
+      WAITING: The phase is waiting to be executed.
+    """
+    PHASE_STATE_UNSPECIFIED = 0
+    PENDING = 1
+    RUNNING = 2
+    SUCCEEDED = 3
+    FAILED = 4
+    TIMED_OUT = 5
+    SKIPPED = 6
+    WAITING = 7
+
+  cloudRunExecution = _messages.StringField(1)
+  endTime = _messages.StringField(2)
+  error = _messages.MessageField('Status', 3)
+  phaseState = _messages.EnumField('PhaseStateValueValuesEnum', 4)
+  startTime = _messages.StringField(5)
+  verificationConfig = _messages.MessageField('VerificationConfig', 6)
 
 
 class WeekDayOfMonth(_messages.Message):

@@ -1608,13 +1608,8 @@ class GcpUserAccessBinding(_messages.Message):
       "organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N"
     principal: Optional. Immutable. The principal that is subject to the
       access policies in this policy binding.
-    restrictedClientApplications: Optional. Deprecated: Use
-      `scoped_access_settings` instead. A list of applications that are
-      subject to this binding's restrictions. If the list is empty, the
-      binding restrictions will universally apply to all applications.
     scopedAccessSettings: Optional. A list of scoped access settings that set
-      this binding's restrictions on a subset of applications. This field
-      cannot be set if restricted_client_applications is set.
+      this binding's restrictions on a subset of applications.
     sessionSettings: Optional. The Google Cloud session length (GCSL) policy
       for the group key.
   """
@@ -1624,9 +1619,8 @@ class GcpUserAccessBinding(_messages.Message):
   groupKey = _messages.StringField(3)
   name = _messages.StringField(4)
   principal = _messages.MessageField('Principal', 5)
-  restrictedClientApplications = _messages.MessageField('Application', 6, repeated=True)
-  scopedAccessSettings = _messages.MessageField('ScopedAccessSettings', 7, repeated=True)
-  sessionSettings = _messages.MessageField('SessionSettings', 8)
+  scopedAccessSettings = _messages.MessageField('ScopedAccessSettings', 6, repeated=True)
+  sessionSettings = _messages.MessageField('SessionSettings', 7)
 
 
 class GetIamPolicyRequest(_messages.Message):
@@ -2195,11 +2189,9 @@ class Project(_messages.Message):
     name: The Google Cloud project resource name. Format:
       `projects/{project_number}`. Only the project number is supported.
       Example: `projects/1234567890`
-    projectNumber: Deprecated: Use `name` instead.
   """
 
   name = _messages.StringField(1)
-  projectNumber = _messages.StringField(2)
 
 
 class ReplaceAccessLevelsRequest(_messages.Message):

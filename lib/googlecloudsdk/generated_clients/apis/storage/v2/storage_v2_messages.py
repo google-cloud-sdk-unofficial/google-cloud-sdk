@@ -789,26 +789,6 @@ class CustomerSuppliedEncryptionEnforcementConfig(_messages.Message):
   restrictionMode = _messages.StringField(2)
 
 
-class DataDeletionControlViolation(_messages.Message):
-  r"""Detail message for Data Deletion Control Violation.
-
-  Fields:
-    bucketViolationDetails: Output only. Bucket level violation details.
-  """
-
-  bucketViolationDetails = _messages.MessageField('BucketSecurityControlViolation', 1)
-
-
-class DataRetentionControlViolation(_messages.Message):
-  r"""Detail message for Data Retention Control Violation.
-
-  Fields:
-    bucketViolationDetails: Output only. Bucket level violation details.
-  """
-
-  bucketViolationDetails = _messages.MessageField('BucketSecurityControlViolation', 1)
-
-
 class Date(_messages.Message):
   r"""Represents a whole or partial calendar date, such as a birthday. The
   time of day and time zone are either specified elsewhere or are
@@ -1001,16 +981,6 @@ class Encryption(_messages.Message):
   customerSuppliedEncryptionEnforcementConfig = _messages.MessageField('CustomerSuppliedEncryptionEnforcementConfig', 2)
   defaultKmsKey = _messages.StringField(3)
   googleManagedEncryptionEnforcementConfig = _messages.MessageField('GoogleManagedEncryptionEnforcementConfig', 4)
-
-
-class EncryptionControlViolation(_messages.Message):
-  r"""Detail message for Encryption Control Violation.
-
-  Fields:
-    bucketViolationDetails: Output only. Bucket level violation details.
-  """
-
-  bucketViolationDetails = _messages.MessageField('BucketSecurityControlViolation', 1)
 
 
 class EnforcedEncryptionViolation(_messages.Message):
@@ -1208,14 +1178,6 @@ class FindingSummary(_messages.Message):
         storage above the expected trend.
       FINDING_TYPE_BANDWIDTH_QUOTA_NEAR_LIMIT: Finding is about bandwidth
         consumption approaching the quota limit.
-      FINDING_TYPE_PUBLIC_ACCESS_CONTROL_VIOLATION: Finding is about objects
-        within the bucket violating Public Access Control.
-      FINDING_TYPE_ENCRYPTION_CONTROL_VIOLATION: Finding is about objects
-        within the bucket violating Encryption Control.
-      FINDING_TYPE_DATA_RETENTION_CONTROL_VIOLATION: Finding is about objects
-        within the bucket violating Data Retention Control.
-      FINDING_TYPE_DATA_DELETION_CONTROL_VIOLATION: Finding is about objects
-        within the bucket violating Data Deletion Control.
       FINDING_TYPE_INEFFICIENT_OBJECT_SIZE: Finding is about inefficient
         object sizes in a bucket.
       FINDING_TYPE_STALE_TEMPORARY_DATA: Finding is about stale temporary data
@@ -1245,21 +1207,17 @@ class FindingSummary(_messages.Message):
     FINDING_TYPE_CROSS_REGION_EGRESS_SPIKE = 3
     FINDING_TYPE_STORAGE_GROWTH_ABOVE_TREND = 4
     FINDING_TYPE_BANDWIDTH_QUOTA_NEAR_LIMIT = 5
-    FINDING_TYPE_PUBLIC_ACCESS_CONTROL_VIOLATION = 6
-    FINDING_TYPE_ENCRYPTION_CONTROL_VIOLATION = 7
-    FINDING_TYPE_DATA_RETENTION_CONTROL_VIOLATION = 8
-    FINDING_TYPE_DATA_DELETION_CONTROL_VIOLATION = 9
-    FINDING_TYPE_INEFFICIENT_OBJECT_SIZE = 10
-    FINDING_TYPE_STALE_TEMPORARY_DATA = 11
-    FINDING_TYPE_DORMANT_BUCKET = 12
-    FINDING_TYPE_INEFFICIENT_OVERWRITE = 13
-    FINDING_TYPE_ANOMALOUS_DELETE_SPIKE = 14
-    FINDING_TYPE_MISSING_SOFT_DELETE = 15
-    FINDING_TYPE_EXCESSIVE_NON_CURRENT_VERSION = 16
-    FINDING_TYPE_ZERO_BYTE_OBJECT = 17
-    FINDING_TYPE_BANDWIDTH_SPIKE = 18
-    FINDING_TYPE_DEFAULT_CMEK_ENCRYPTION_VIOLATION = 19
-    FINDING_TYPE_ENFORCED_ENCRYPTION_VIOLATION = 20
+    FINDING_TYPE_INEFFICIENT_OBJECT_SIZE = 6
+    FINDING_TYPE_STALE_TEMPORARY_DATA = 7
+    FINDING_TYPE_DORMANT_BUCKET = 8
+    FINDING_TYPE_INEFFICIENT_OVERWRITE = 9
+    FINDING_TYPE_ANOMALOUS_DELETE_SPIKE = 10
+    FINDING_TYPE_MISSING_SOFT_DELETE = 11
+    FINDING_TYPE_EXCESSIVE_NON_CURRENT_VERSION = 12
+    FINDING_TYPE_ZERO_BYTE_OBJECT = 13
+    FINDING_TYPE_BANDWIDTH_SPIKE = 14
+    FINDING_TYPE_DEFAULT_CMEK_ENCRYPTION_VIOLATION = 15
+    FINDING_TYPE_ENFORCED_ENCRYPTION_VIOLATION = 16
 
   category = _messages.EnumField('CategoryValueValuesEnum', 1)
   createTime = _messages.StringField(2)
@@ -1596,17 +1554,11 @@ class IntelligenceFinding(_messages.Message):
     createTime: Output only. The time at which the finding was created.
     crossRegionEgressSpike: Output only. `IntelligenceFinding` about a spike
       in cross-region egress.
-    dataDeletionControlViolation: Output only. `IntelligenceFinding` about
-      objects violating Data Deletion Control.
-    dataRetentionControlViolation: Output only. `IntelligenceFinding` about
-      objects violating Data Retention Control.
     defaultCmekEncryptionViolation: Output only. `IntelligenceFinding` about
       objects missing default CMEK encryption.
     description: Output only. A short description about the finding.
     dormantBucket: Output only. `IntelligenceFinding` about dormant buckets
       with no recent activity.
-    encryptionControlViolation: Output only. `IntelligenceFinding` about
-      objects violating Encryption Control.
     enforcedEncryptionViolation: Output only. `IntelligenceFinding` about
       objects violating bucket-enforced encryption rules.
     excessiveNonCurrentVersion: Output only. `IntelligenceFinding` about
@@ -1622,8 +1574,6 @@ class IntelligenceFinding(_messages.Message):
       finding}`
     observationPeriod: Output only. The time interval during which the
       underlying data was used to generate this `IntelligenceFinding`.
-    publicAccessControlViolation: Output only. `IntelligenceFinding` about
-      objects violating Public Access Control.
     severity: Output only. Severity of the finding.
     staleTemporaryData: Output only. `IntelligenceFinding` about stale
       temporary data ( objects with tmp/ or staging/) in a bucket.
@@ -1683,14 +1633,6 @@ class IntelligenceFinding(_messages.Message):
         storage above the expected trend.
       FINDING_TYPE_BANDWIDTH_QUOTA_NEAR_LIMIT: Finding is about bandwidth
         consumption approaching the quota limit.
-      FINDING_TYPE_PUBLIC_ACCESS_CONTROL_VIOLATION: Finding is about objects
-        within the bucket violating Public Access Control.
-      FINDING_TYPE_ENCRYPTION_CONTROL_VIOLATION: Finding is about objects
-        within the bucket violating Encryption Control.
-      FINDING_TYPE_DATA_RETENTION_CONTROL_VIOLATION: Finding is about objects
-        within the bucket violating Data Retention Control.
-      FINDING_TYPE_DATA_DELETION_CONTROL_VIOLATION: Finding is about objects
-        within the bucket violating Data Deletion Control.
       FINDING_TYPE_INEFFICIENT_OBJECT_SIZE: Finding is about inefficient
         object sizes in a bucket.
       FINDING_TYPE_STALE_TEMPORARY_DATA: Finding is about stale temporary data
@@ -1720,21 +1662,17 @@ class IntelligenceFinding(_messages.Message):
     FINDING_TYPE_CROSS_REGION_EGRESS_SPIKE = 3
     FINDING_TYPE_STORAGE_GROWTH_ABOVE_TREND = 4
     FINDING_TYPE_BANDWIDTH_QUOTA_NEAR_LIMIT = 5
-    FINDING_TYPE_PUBLIC_ACCESS_CONTROL_VIOLATION = 6
-    FINDING_TYPE_ENCRYPTION_CONTROL_VIOLATION = 7
-    FINDING_TYPE_DATA_RETENTION_CONTROL_VIOLATION = 8
-    FINDING_TYPE_DATA_DELETION_CONTROL_VIOLATION = 9
-    FINDING_TYPE_INEFFICIENT_OBJECT_SIZE = 10
-    FINDING_TYPE_STALE_TEMPORARY_DATA = 11
-    FINDING_TYPE_DORMANT_BUCKET = 12
-    FINDING_TYPE_INEFFICIENT_OVERWRITE = 13
-    FINDING_TYPE_ANOMALOUS_DELETE_SPIKE = 14
-    FINDING_TYPE_MISSING_SOFT_DELETE = 15
-    FINDING_TYPE_EXCESSIVE_NON_CURRENT_VERSION = 16
-    FINDING_TYPE_ZERO_BYTE_OBJECT = 17
-    FINDING_TYPE_BANDWIDTH_SPIKE = 18
-    FINDING_TYPE_DEFAULT_CMEK_ENCRYPTION_VIOLATION = 19
-    FINDING_TYPE_ENFORCED_ENCRYPTION_VIOLATION = 20
+    FINDING_TYPE_INEFFICIENT_OBJECT_SIZE = 6
+    FINDING_TYPE_STALE_TEMPORARY_DATA = 7
+    FINDING_TYPE_DORMANT_BUCKET = 8
+    FINDING_TYPE_INEFFICIENT_OVERWRITE = 9
+    FINDING_TYPE_ANOMALOUS_DELETE_SPIKE = 10
+    FINDING_TYPE_MISSING_SOFT_DELETE = 11
+    FINDING_TYPE_EXCESSIVE_NON_CURRENT_VERSION = 12
+    FINDING_TYPE_ZERO_BYTE_OBJECT = 13
+    FINDING_TYPE_BANDWIDTH_SPIKE = 14
+    FINDING_TYPE_DEFAULT_CMEK_ENCRYPTION_VIOLATION = 15
+    FINDING_TYPE_ENFORCED_ENCRYPTION_VIOLATION = 16
 
   anomalousDeleteSpike = _messages.MessageField('AnomalousDeleteSpike', 1)
   associatedResources = _messages.StringField(2, repeated=True)
@@ -1744,28 +1682,24 @@ class IntelligenceFinding(_messages.Message):
   coldlineAndArchivalStorageOperationsSpike = _messages.MessageField('ColdlineAndArchivalStorageOperationsSpike', 6)
   createTime = _messages.StringField(7)
   crossRegionEgressSpike = _messages.MessageField('CrossRegionEgressSpike', 8)
-  dataDeletionControlViolation = _messages.MessageField('DataDeletionControlViolation', 9)
-  dataRetentionControlViolation = _messages.MessageField('DataRetentionControlViolation', 10)
-  defaultCmekEncryptionViolation = _messages.MessageField('DefaultCmekEncryptionViolation', 11)
-  description = _messages.StringField(12)
-  dormantBucket = _messages.MessageField('DormantBucket', 13)
-  encryptionControlViolation = _messages.MessageField('EncryptionControlViolation', 14)
-  enforcedEncryptionViolation = _messages.MessageField('EnforcedEncryptionViolation', 15)
-  excessiveNonCurrentVersion = _messages.MessageField('ExcessiveNonCurrentVersion', 16)
-  inefficientObjectSize = _messages.MessageField('InefficientObjectSize', 17)
-  inefficientOverwrite = _messages.MessageField('InefficientOverwrite', 18)
-  missingSoftDelete = _messages.MessageField('MissingSoftDelete', 19)
-  name = _messages.StringField(20)
-  observationPeriod = _messages.MessageField('Interval', 21)
-  publicAccessControlViolation = _messages.MessageField('PublicAccessControlViolation', 22)
-  severity = _messages.EnumField('SeverityValueValuesEnum', 23)
-  staleTemporaryData = _messages.MessageField('StaleTemporaryData', 24)
-  storageGrowthAboveTrend = _messages.MessageField('StorageGrowthAboveTrend', 25)
-  targetResource = _messages.StringField(26)
-  throttledRequestsSpike = _messages.MessageField('ThrottledRequestSpike', 27)
-  type = _messages.EnumField('TypeValueValuesEnum', 28)
-  updateTime = _messages.StringField(29)
-  zeroByteObject = _messages.MessageField('ZeroByteObject', 30)
+  defaultCmekEncryptionViolation = _messages.MessageField('DefaultCmekEncryptionViolation', 9)
+  description = _messages.StringField(10)
+  dormantBucket = _messages.MessageField('DormantBucket', 11)
+  enforcedEncryptionViolation = _messages.MessageField('EnforcedEncryptionViolation', 12)
+  excessiveNonCurrentVersion = _messages.MessageField('ExcessiveNonCurrentVersion', 13)
+  inefficientObjectSize = _messages.MessageField('InefficientObjectSize', 14)
+  inefficientOverwrite = _messages.MessageField('InefficientOverwrite', 15)
+  missingSoftDelete = _messages.MessageField('MissingSoftDelete', 16)
+  name = _messages.StringField(17)
+  observationPeriod = _messages.MessageField('Interval', 18)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 19)
+  staleTemporaryData = _messages.MessageField('StaleTemporaryData', 20)
+  storageGrowthAboveTrend = _messages.MessageField('StorageGrowthAboveTrend', 21)
+  targetResource = _messages.StringField(22)
+  throttledRequestsSpike = _messages.MessageField('ThrottledRequestSpike', 23)
+  type = _messages.EnumField('TypeValueValuesEnum', 24)
+  updateTime = _messages.StringField(25)
+  zeroByteObject = _messages.MessageField('ZeroByteObject', 26)
 
 
 class IntelligenceFindingAnomalousDeleteSpikePrefixContribution(_messages.Message):
@@ -3127,16 +3061,6 @@ class ProjectTeam(_messages.Message):
 
   projectNumber = _messages.StringField(1)
   team = _messages.StringField(2)
-
-
-class PublicAccessControlViolation(_messages.Message):
-  r"""Detail message for Public Access Control Violation.
-
-  Fields:
-    bucketViolationDetails: Output only. Bucket level violation details.
-  """
-
-  bucketViolationDetails = _messages.MessageField('BucketSecurityControlViolation', 1)
 
 
 class PublicNetworkSource(_messages.Message):

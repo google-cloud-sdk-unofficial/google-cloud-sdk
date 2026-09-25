@@ -30,7 +30,6 @@ AutoProtectionPoliciesClient = (
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-@base.Hidden
 class Create(base.CreateCommand):
   """Create a Backup and DR AutoProtectionPolicy."""
 
@@ -41,7 +40,7 @@ class Create(base.CreateCommand):
         To create an AutoProtectionPolicy 'my-policy' in 'us-central1' with a criteria label, run:
 
           # gcloud-disable-gdu-domain
-          $ {command} my-policy --location=us-central1 --criteria=key=environment,value=prod --description="My Policy" --backup-plan-details="resource-type=compute.googleapis.com/Instance,backup-plan=projects/my-proj/locations/us-central1/backupPlans/my-plan"
+          $ {command} my-policy --location=us-central1 --criteria=key=environment,values=prod --description="My Policy" --backup-plan-details="resource-type=compute.googleapis.com/Instance,backup-plan=projects/my-proj/locations/us-central1/backupPlans/my-plan"
       """,
   }
 
@@ -63,11 +62,11 @@ class Create(base.CreateCommand):
 
     parser.add_argument(
         '--criteria',
-        type=arg_parsers.ArgDict(
-            spec={'key': str, 'value': str}, required_keys=['key', 'value']
-        ),
+        action=flags.CriteriaStoreOnceAction,
+        type=flags.ParseCriteria,
+        metavar='key=KEY,values=VALUES',
         required=True,
-        help='Criteria of the policy in format key=VALUE,value=VALUE.',
+        help='Criteria of the policy in format key=KEY,values=VALUE.',
     )
 
     parser.add_argument(

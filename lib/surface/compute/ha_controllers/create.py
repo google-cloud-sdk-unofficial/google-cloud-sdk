@@ -233,10 +233,14 @@ class Create(base.CreateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
     ha_controller_ref = args.CONCEPTS.ha_controller.Parse()
-    if len(args.zone_configuration) != 2 and args.migrate_disks_to_regional:
+    # Safely extract valid zones
+    configuration_zones = [
+        c.get('zone') for c in args.zone_configuration if 'zone' in c
+    ]
+    if len(configuration_zones) != 2 and args.migrate_disks_to_regional:
       raise compute_exceptions.AbortedError(
           'If you migrate zonal disks to regional disks, then you must specify'
-          ' both zone configurations.'
+          ' both zone configurations with a valid "zone" key.'
       )
     ha_controller = client.messages.HaController(
         name=ha_controller_ref.Name(),
@@ -249,14 +253,21 @@ class Create(base.CreateCommand):
             args.network_auto_configuration
         ),
     )
-    if args.migrate_disks_to_regional:
-      utils.MigrateZonalDisksToRegional(
+    if len(configuration_zones) == 2 and args.migrate_disks_to_regional:
+      instance, primary_zone, secondary_zone = utils.ValidateReplicaZones(
           holder,
           args.instance_name,
           ha_controller_ref.project,
           ha_controller_ref.region,
-          ha_controller.zoneConfigurations.additionalProperties[0].key,
-          ha_controller.zoneConfigurations.additionalProperties[1].key,
+          configuration_zones,
+      )
+      utils.MigrateZonalDisksToRegional(
+          holder,
+          instance,
+          ha_controller_ref.project,
+          ha_controller_ref.region,
+          primary_zone,
+          secondary_zone,
       )
     if args.backend_service:
       ha_controller.backendServices = args.backend_service

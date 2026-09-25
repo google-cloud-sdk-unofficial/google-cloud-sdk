@@ -2153,6 +2153,8 @@ class ExpressLinkConnectionStatus(_messages.Message):
     error: Output only. Code representing the type of error encountered.
     errorMessage: Output only. Detailed error message explaining the binding
       failure.
+    hostnames: Output only. The list of hostnames that will route to this
+      destination.
     routeType: Output only. The route type of the connection (e.g. HTTP).
     workloadUri: Output only. The URI of the source workload this status
       applies to.
@@ -2206,8 +2208,20 @@ class ExpressLinkConnectionStatus(_messages.Message):
   credentialType = _messages.EnumField('CredentialTypeValueValuesEnum', 1)
   error = _messages.EnumField('ErrorValueValuesEnum', 2)
   errorMessage = _messages.StringField(3)
-  routeType = _messages.EnumField('RouteTypeValueValuesEnum', 4)
-  workloadUri = _messages.StringField(5)
+  hostnames = _messages.MessageField('ExpressLinkConnectionStatusHostnameInfo', 4, repeated=True)
+  routeType = _messages.EnumField('RouteTypeValueValuesEnum', 5)
+  workloadUri = _messages.StringField(6)
+
+
+class ExpressLinkConnectionStatusHostnameInfo(_messages.Message):
+  r"""HostnameInfo provides details about a hostname that routes to this
+  destination.
+
+  Fields:
+    hostname: Output only. The hostname string.
+  """
+
+  hostname = _messages.StringField(1)
 
 
 class ExpressLinkDestination(_messages.Message):
@@ -7624,6 +7638,9 @@ class NetworkservicesProjectsLocationsAgentGatewaysListRequest(_messages.Message
   r"""A NetworkservicesProjectsLocationsAgentGatewaysListRequest object.
 
   Fields:
+    filter: Optional. A filter expression to filter the results listed in the
+      response. The expression must follow the syntax described in
+      [AIP-160](https://google.aip.dev/160).
     pageSize: Optional. Maximum number of AgentGateways to return per call.
     pageToken: Optional. The value returned by the last
       `ListAgentGatewaysResponse` Indicates that this is a continuation of a
@@ -7636,10 +7653,11 @@ class NetworkservicesProjectsLocationsAgentGatewaysListRequest(_messages.Message
       locations is down or unreachable, the Aggregated List request will fail.
   """
 
-  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
-  returnPartialSuccess = _messages.BooleanField(4)
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+  returnPartialSuccess = _messages.BooleanField(5)
 
 
 class NetworkservicesProjectsLocationsAgentGatewaysPatchRequest(_messages.Message):

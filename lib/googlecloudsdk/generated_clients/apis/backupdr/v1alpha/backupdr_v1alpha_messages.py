@@ -1450,12 +1450,30 @@ class BackupRule(_messages.Message):
 class BackupSelectionConfig(_messages.Message):
   r"""Configuration for selecting a backup.
 
+  Enums:
+    SelectionCriteriaValueValuesEnum: Optional. The backup selection criteria.
+      Defaults to LATEST when unspecified.
+
   Fields:
     dataSource: Required. Immutable. The fully qualified URI of the backupdr
       data source.
+    selectionCriteria: Optional. The backup selection criteria. Defaults to
+      LATEST when unspecified.
   """
 
+  class SelectionCriteriaValueValuesEnum(_messages.Enum):
+    r"""Optional. The backup selection criteria. Defaults to LATEST when
+    unspecified.
+
+    Values:
+      BACKUP_SELECTION_CRITERIA_UNSPECIFIED: Selection criteria not specified.
+      LATEST: Select the latest backup.
+    """
+    BACKUP_SELECTION_CRITERIA_UNSPECIFIED = 0
+    LATEST = 1
+
   dataSource = _messages.StringField(1)
+  selectionCriteria = _messages.EnumField('SelectionCriteriaValueValuesEnum', 2)
 
 
 class BackupVault(_messages.Message):
@@ -3527,6 +3545,253 @@ class BackupdrProjectsLocationsRestoreTemplatesRunRequest(_messages.Message):
 
   name = _messages.StringField(1, required=True)
   runRestoreTemplateRequest = _messages.MessageField('RunRestoreTemplateRequest', 2)
+
+
+class BackupdrProjectsLocationsRestoreVerificationPlansAssociationsCreateRequest(_messages.Message):
+  r"""A
+  BackupdrProjectsLocationsRestoreVerificationPlansAssociationsCreateRequest
+  object.
+
+  Fields:
+    parent: Required. The parent resource where this association will be
+      created. Format: `projects/{project}/locations/{location}/restoreVerific
+      ationPlans/{restore_verification_plan}`
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know that the server has already received the duplicate request and
+      can avoid responding with an error. The request ID must be a valid UUID
+      with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+    restoreVerificationPlanAssociation: A RestoreVerificationPlanAssociation
+      resource to be passed as the request body.
+    restoreVerificationPlanAssociationId: Required. The ID to use for the
+      association, which will become the final component of the association's
+      resource name. This value should be 1-63 characters, and valid
+      characters are /[a-z0-9_-]/.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  restoreVerificationPlanAssociation = _messages.MessageField('RestoreVerificationPlanAssociation', 3)
+  restoreVerificationPlanAssociationId = _messages.StringField(4)
+
+
+class BackupdrProjectsLocationsRestoreVerificationPlansAssociationsDeleteRequest(_messages.Message):
+  r"""A
+  BackupdrProjectsLocationsRestoreVerificationPlansAssociationsDeleteRequest
+  object.
+
+  Fields:
+    name: Required. The resource name of the
+      RestoreVerificationPlanAssociation to delete. Format: `projects/{project
+      }/locations/{location}/restoreVerificationPlans/{restore_verification_pl
+      an}/associations/{association}`
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know that the server has already received the duplicate request and
+      can avoid responding with an error. The request ID must be a valid UUID
+      with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class BackupdrProjectsLocationsRestoreVerificationPlansAssociationsGetRequest(_messages.Message):
+  r"""A
+  BackupdrProjectsLocationsRestoreVerificationPlansAssociationsGetRequest
+  object.
+
+  Fields:
+    name: Required. The resource name of the
+      RestoreVerificationPlanAssociation to retrieve. Format: `projects/{proje
+      ct}/locations/{location}/restoreVerificationPlans/{restore_verification_
+      plan}/associations/{association}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class BackupdrProjectsLocationsRestoreVerificationPlansAssociationsListRequest(_messages.Message):
+  r"""A
+  BackupdrProjectsLocationsRestoreVerificationPlansAssociationsListRequest
+  object.
+
+  Fields:
+    filter: Optional. Filtering results.
+    orderBy: Optional. Hint for how to order the results.
+    pageSize: Optional. The maximum number of associations to return. The
+      service may return fewer than this value. If unspecified, at most 500
+      associations will be returned. The maximum value is 1000; values above
+      1000 will be coerced to 1000.
+    pageToken: Optional. A page token, received from a previous
+      `ListRestoreVerificationPlanAssociations` call. Provide this to retrieve
+      the subsequent page. When paginating, all other parameters provided to
+      `ListRestoreVerificationPlanAssociations` must match the call that
+      provided the page token.
+    parent: Required. The parent RestoreVerificationPlan name. Format: `projec
+      ts/{project}/locations/{location}/restoreVerificationPlans/{restore_veri
+      fication_plan}`
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class BackupdrProjectsLocationsRestoreVerificationPlansAssociationsPatchRequest(_messages.Message):
+  r"""A
+  BackupdrProjectsLocationsRestoreVerificationPlansAssociationsPatchRequest
+  object.
+
+  Fields:
+    name: Output only. Identifier. The resource name of
+      RestoreVerificationPlanAssociation in below format Format : projects/{pr
+      oject}/locations/{location}/restoreVerificationPlans/{restore_verificati
+      on_plan}/associations/{association}
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know that the server has already received the duplicate request and
+      can avoid responding with an error. The request ID must be a valid UUID
+      with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+    restoreVerificationPlanAssociation: A RestoreVerificationPlanAssociation
+      resource to be passed as the request body.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the RestoreVerificationPlanAssociation resource by the
+      update. The fields specified in the update_mask are relative to the
+      resource, not the full request. A field will be overwritten if it is in
+      the mask.
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  restoreVerificationPlanAssociation = _messages.MessageField('RestoreVerificationPlanAssociation', 3)
+  updateMask = _messages.StringField(4)
+
+
+class BackupdrProjectsLocationsRestoreVerificationPlansAssociationsTriggerRestoreVerificationRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsRestoreVerificationPlansAssociationsTriggerRe
+  storeVerificationRequest object.
+
+  Fields:
+    name: Required. The resource name of the
+      RestoreVerificationPlanAssociation to trigger. Format: `projects/{projec
+      t}/locations/{location}/restoreVerificationPlans/{restore_verification_p
+      lan}/associations/{association}`
+    triggerRestoreVerificationRequest: A TriggerRestoreVerificationRequest
+      resource to be passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  triggerRestoreVerificationRequest = _messages.MessageField('TriggerRestoreVerificationRequest', 2)
+
+
+class BackupdrProjectsLocationsRestoreVerificationPlansCreateRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsRestoreVerificationPlansCreateRequest object.
+
+  Fields:
+    parent: Required. The `RestoreVerificationPlan` project and location in
+      the format `projects/{project}/locations/{location}`. In Google Cloud
+      Backup and DR locations map to Google Cloud regions, for example **us-
+      central1**.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    restoreVerificationPlan: A RestoreVerificationPlan resource to be passed
+      as the request body.
+    restoreVerificationPlanId: Required. The name of the
+      `RestoreVerificationPlan` to create. The name must be unique for the
+      specified project and location. The name must start with a lowercase
+      letter followed by up to 62 lowercase letters, numbers, or hyphens.
+      Pattern, `^[a-z]([-a-z0-9]*[a-z0-9])?$`.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  restoreVerificationPlan = _messages.MessageField('RestoreVerificationPlan', 3)
+  restoreVerificationPlanId = _messages.StringField(4)
+
+
+class BackupdrProjectsLocationsRestoreVerificationPlansDeleteRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsRestoreVerificationPlansDeleteRequest object.
+
+  Fields:
+    force: Optional. If set to true, any RestoreVerificationPlanAssociations
+      linked to this RestoreVerificationPlan will also be deleted.
+    name: Required. The resource name of the `RestoreVerificationPlan` to
+      delete. Format: `projects/{project}/locations/{location}/restoreVerifica
+      tionPlans/{restoreVerificationPlan}`
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  force = _messages.BooleanField(1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+
+
+class BackupdrProjectsLocationsRestoreVerificationPlansGetRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsRestoreVerificationPlansGetRequest object.
+
+  Fields:
+    name: Required. The resource name of the `RestoreVerificationPlan` to
+      retrieve. Format: `projects/{project}/locations/{location}/restoreVerifi
+      cationPlans/{restoreVerificationPlan}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class BackupdrProjectsLocationsRestoreVerificationPlansListRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsRestoreVerificationPlansListRequest object.
+
+  Fields:
+    filter: Optional. Field match expression used to filter the results.
+    orderBy: Optional. Field by which to sort the results.
+    pageSize: Optional. The maximum number of `RestoreVerificationPlans` to
+      return in a single response. If not specified, a default value will be
+      chosen by the service. Note that the response may include a partial list
+      and a caller should only rely on the response's next_page_token to
+      determine if there are more instances left to be queried.
+    pageToken: Optional. The value of next_page_token received from a previous
+      `ListRestoreVerificationPlans` call. Provide this to retrieve the
+      subsequent page in a multi-page list of results. When paginating, all
+      other parameters provided to `ListRestoreVerificationPlans` must match
+      the call that provided the page token.
+    parent: Required. The project and location for which to retrieve
+      `RestoreVerificationPlans` information. Format:
+      `projects/{project}/locations/{location}`. In Google Cloud Backup and
+      DR, locations map to Google Cloud regions, for example **us-central1**.
+      To retrieve restore verification plans for all locations, use "-" for
+      the `{location}` value.
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
 
 
 class BackupdrProjectsLocationsServiceConfigInitializeRequest(_messages.Message):
@@ -5885,6 +6150,45 @@ class ListRestoreTemplatesResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class ListRestoreVerificationPlanAssociationsResponse(_messages.Message):
+  r"""Response message for ListRestoreVerificationPlanAssociations.
+
+  Fields:
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+    restoreVerificationPlanAssociations: The list of
+      RestoreVerificationPlanAssociations.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  restoreVerificationPlanAssociations = _messages.MessageField('RestoreVerificationPlanAssociation', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListRestoreVerificationPlansResponse(_messages.Message):
+  r"""The response message for getting a list of `RestoreVerificationPlans`.
+
+  Fields:
+    nextPageToken: A token which may be sent as page_token in a subsequent
+      `ListRestoreVerificationPlans` call to retrieve the next page of
+      results. If this field is omitted or empty, then there are no more
+      results to return.
+    restoreVerificationPlans: The list of `RestoreVerificationPlans` in the
+      project for the specified location. If the `{location}` value in the
+      request is "-", the response contains a list of resources from all
+      locations. In case any location is unreachable, the response will only
+      return restore verification plans in reachable locations and the
+      'unreachable' field will be populated with a list of unreachable
+      locations.
+    unreachable: Locations that could not be reached.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  restoreVerificationPlans = _messages.MessageField('RestoreVerificationPlan', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class Location(_messages.Message):
   r"""A resource that represents a Google Cloud location.
 
@@ -7384,6 +7688,190 @@ class RestoreVerificationCleanupRule(_messages.Message):
   skipCleanup = _messages.BooleanField(2)
 
 
+class RestoreVerificationPlan(_messages.Message):
+  r"""A `RestoreVerificationPlan` specifies the scheduling and clean-up
+  template for automated restore verification. It contains a
+  `RestoreVerificationSchedule` to dictate when the verifications should run,
+  and a `CleanupConfig` for post-verification resource deletion.
+
+  Enums:
+    StateValueValuesEnum: Output only. The `State` for the
+      `RestoreVerificationPlan`.
+
+  Messages:
+    LabelsValue: Optional. User-defined labels.
+
+  Fields:
+    createTime: Output only. When the `RestoreVerificationPlan` was created.
+    description: Optional. The description of the `RestoreVerificationPlan`
+      resource. The description allows for additional details about
+      `RestoreVerificationPlan` and its use cases to be provided. An example
+      description is the following: "This is a restore verification plan that
+      performs a daily verification and cleans up the resources immediately
+      after." The description must be at most 2048 characters.
+    failureCleanupRule: Optional. The cleanup rule to apply if the restore
+      verification fails.
+    labels: Optional. User-defined labels.
+    name: Output only. Identifier. The resource name of the
+      `RestoreVerificationPlan`. Format: `projects/{project}/locations/{locati
+      on}/restoreVerificationPlans/{restoreVerificationPlan}`
+    schedule: Required. Describes the schedule on which the restore
+      verification will be executed. The schedule is specified as a
+      [Crontab](https://en.wikipedia.org/wiki/Cron#Overview) string.
+    state: Output only. The `State` for the `RestoreVerificationPlan`.
+    successCleanupRule: Optional. The cleanup rule to apply if the restore
+      verification succeeds.
+    timeZone: Optional. Specifies the time zone to be used in interpreting
+      schedule. The value of this field must be a time zone name from the [tz
+      database](https://en.wikipedia.org/wiki/Tz_database), like
+      "America/New_York" or "UTC". Defaults to `UTC` if not specified.
+    updateTime: Output only. When the `RestoreVerificationPlan` was last
+      updated.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The `State` for the `RestoreVerificationPlan`.
+
+    Values:
+      STATE_UNSPECIFIED: State not set.
+      CREATING: The resource is being created.
+      ACTIVE: The resource has been created and is fully usable.
+      DELETING: The resource is being deleted.
+      INACTIVE: The resource has been created but is not usable.
+      UPDATING: The resource is being updated.
+      ERROR: The resource is in an error state due to a configuration issue.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+    DELETING = 3
+    INACTIVE = 4
+    UPDATING = 5
+    ERROR = 6
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. User-defined labels.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  failureCleanupRule = _messages.MessageField('RestoreVerificationCleanupRule', 3)
+  labels = _messages.MessageField('LabelsValue', 4)
+  name = _messages.StringField(5)
+  schedule = _messages.StringField(6)
+  state = _messages.EnumField('StateValueValuesEnum', 7)
+  successCleanupRule = _messages.MessageField('RestoreVerificationCleanupRule', 8)
+  timeZone = _messages.StringField(9)
+  updateTime = _messages.StringField(10)
+
+
+class RestoreVerificationPlanAssociation(_messages.Message):
+  r"""A `RestoreVerificationPlanAssociation` binds a specific workload to a
+  `RestoreVerificationPlan`.
+
+  Enums:
+    StateValueValuesEnum: Output only. The `State` for the
+      `RestoreVerificationPlanAssociation`.
+
+  Messages:
+    LabelsValue: Optional. User-defined labels.
+
+  Fields:
+    createTime: Output only. The time when the association was created.
+    description: Optional. The description of the
+      `RestoreVerificationPlanAssociation` resource.
+    labels: Optional. User-defined labels.
+    name: Output only. Identifier. The resource name of
+      RestoreVerificationPlanAssociation in below format Format : projects/{pr
+      oject}/locations/{location}/restoreVerificationPlans/{restore_verificati
+      on_plan}/associations/{association}
+    resourceType: Required. Immutable. The type of the Google Cloud resource
+      (e.g., `compute.googleapis.com/Instance`,
+      `sqladmin.googleapis.com/Instance`).
+    restoreTemplate: Required. Immutable. The canonical name of the
+      RestoreTemplate to trigger.
+    state: Output only. The `State` for the
+      `RestoreVerificationPlanAssociation`.
+    triggerSummary: Output only. Results of the most recent automated restore
+      initiation and the next scheduled execution time.
+    updateTime: Output only. The time when the association was updated.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The `State` for the `RestoreVerificationPlanAssociation`.
+
+    Values:
+      STATE_UNSPECIFIED: State not set.
+      CREATING: The resource is being created.
+      ACTIVE: The resource has been created and is fully usable.
+      DELETING: The resource is being deleted.
+      INACTIVE: The resource has been created but is not usable.
+      UPDATING: The resource is being updated.
+      ERROR: The resource is in an error state due to a configuration issue.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+    DELETING = 3
+    INACTIVE = 4
+    UPDATING = 5
+    ERROR = 6
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. User-defined labels.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  labels = _messages.MessageField('LabelsValue', 3)
+  name = _messages.StringField(4)
+  resourceType = _messages.StringField(5)
+  restoreTemplate = _messages.StringField(6)
+  state = _messages.EnumField('StateValueValuesEnum', 7)
+  triggerSummary = _messages.MessageField('TriggerSummary', 8)
+  updateTime = _messages.StringField(9)
+
+
 class RuleConfigInfo(_messages.Message):
   r"""Message for rules config info.
 
@@ -8042,6 +8530,39 @@ class TriggerRestoreCleanupRequest(_messages.Message):
   """
 
   requestId = _messages.StringField(1)
+
+
+class TriggerRestoreVerificationRequest(_messages.Message):
+  r"""Request message for TriggerRestoreVerification.
+
+  Fields:
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know that the server has already received the duplicate request and
+      can avoid responding with an error. The request ID must be a valid UUID
+      with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+  """
+
+  requestId = _messages.StringField(1)
+
+
+class TriggerSummary(_messages.Message):
+  r"""`TriggerSummary` contains the results of the most recent automated
+  restore initiation and the next scheduled execution time.
+
+  Fields:
+    lastTriggerError: Output only. The error status of the most recent failed
+      trigger.
+    lastTriggerTime: Output only. The time of the most recent trigger
+      initiation.
+    nextTriggerTime: Output only. The scheduled time of the next trigger
+      initiation.
+  """
+
+  lastTriggerError = _messages.MessageField('Status', 1)
+  lastTriggerTime = _messages.StringField(2)
+  nextTriggerTime = _messages.StringField(3)
 
 
 class VerificationConfig(_messages.Message):

@@ -36,6 +36,7 @@ from googlecloudsdk.core.configurations import named_configs
 from googlecloudsdk.core.credentials import creds as c_creds
 from googlecloudsdk.core.credentials import exceptions as creds_exceptions
 from googlecloudsdk.core.credentials import gce as c_gce
+from googlecloudsdk.core.credentials import iam_endpoint
 from googlecloudsdk.core.util import encoding
 from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import times
@@ -1294,7 +1295,6 @@ def _RefreshServiceAccountIdTokenGoogleAuth(cred, request_client):
   from google.auth import exceptions as google_auth_exceptions
   from google.auth import iam as google_auth_iam
   from google.oauth2 import service_account as google_auth_service_account
-  from googlecloudsdk.api_lib.iamcredentials import util as iam_credentials_util
   # pylint: enable=g-import-not-at-top
 
   id_token_cred = google_auth_service_account.IDTokenCredentials(
@@ -1306,8 +1306,8 @@ def _RefreshServiceAccountIdTokenGoogleAuth(cred, request_client):
   )
   google_auth_iam._IAM_IDTOKEN_ENDPOINT = (  # pylint: disable=protected-access
       google_auth_iam._IAM_IDTOKEN_ENDPOINT.replace(  # pylint: disable=protected-access
-          iam_credentials_util.IAM_ENDPOINT_GDU,
-          iam_credentials_util.GetEffectiveIamEndpoint(),
+          iam_endpoint.IAM_ENDPOINT_GDU,
+          iam_endpoint.GetEffectiveIamEndpoint(),
       )
   )
 

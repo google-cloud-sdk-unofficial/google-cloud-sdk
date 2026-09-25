@@ -2264,6 +2264,19 @@ class GoogleCloudApihubV1Addon(_messages.Message):
     StateValueValuesEnum: Output only. The state of the addon.
 
   Fields:
+    boostSpecGeminiRegionId: Output only. The Vertex AI region where the
+      BoostSpec Gemini model calls run for this API Hub instance. Populated
+      only for the SpecGen addon (`system-spec-generation`); other addons
+      leave this field empty. `gemini-2.5-flash` is not available in every API
+      Hub region, so the effective region may differ from the API Hub
+      instance's own region. The value follows these semantics: - `""`:
+      BoostSpec is disabled in this region (the addon is not SpecGen, or the
+      API Hub instance region has no configured Gemini endpoint or fallback).
+      - Equal to the API Hub instance region: BoostSpec calls run in-region. -
+      Differs from the API Hub instance region: BoostSpec calls run in the
+      specified fallback region. Callers rendering this field can derive the
+      three display states from this single field combined with the API Hub
+      instance region.
     config: Required. The configuration of the addon.
     createTime: Output only. The time at which the addon was created.
     dataSource: Required. The data source on which the addon operates. This
@@ -2306,14 +2319,15 @@ class GoogleCloudApihubV1Addon(_messages.Message):
     ERROR = 3
     INACTIVE = 4
 
-  config = _messages.MessageField('GoogleCloudApihubV1AddonConfig', 1)
-  createTime = _messages.StringField(2)
-  dataSource = _messages.EnumField('DataSourceValueValuesEnum', 3)
-  description = _messages.StringField(4)
-  displayName = _messages.StringField(5)
-  name = _messages.StringField(6)
-  state = _messages.EnumField('StateValueValuesEnum', 7)
-  updateTime = _messages.StringField(8)
+  boostSpecGeminiRegionId = _messages.StringField(1)
+  config = _messages.MessageField('GoogleCloudApihubV1AddonConfig', 2)
+  createTime = _messages.StringField(3)
+  dataSource = _messages.EnumField('DataSourceValueValuesEnum', 4)
+  description = _messages.StringField(5)
+  displayName = _messages.StringField(6)
+  name = _messages.StringField(7)
+  state = _messages.EnumField('StateValueValuesEnum', 8)
+  updateTime = _messages.StringField(9)
 
 
 class GoogleCloudApihubV1AddonConfig(_messages.Message):

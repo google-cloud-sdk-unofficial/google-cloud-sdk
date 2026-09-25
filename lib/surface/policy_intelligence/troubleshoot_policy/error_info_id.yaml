@@ -1,0 +1,27 @@
+release_tracks: [ALPHA, BETA]
+help_text:
+  brief: Troubleshoot an IAM policy using an error ID.
+  description: |
+    Checks the access request associated with the error identifier and explains why the access is denied by IAM policies.
+
+  examples: |
+    To troubleshoot a denied access request using an error ID, run:
+
+      $ {command} ERROR_INFO_ID
+
+request:
+  collection: policytroubleshooter.iam
+  ALPHA:
+    api_version: v3alpha
+  BETA:
+    api_version: v3beta
+  method: troubleshootError
+
+arguments:
+  params:
+  - arg_name: error_info_id
+    api_field: errorInfoId
+    required: true
+    is_positional: true
+    help_text: |
+      This identifier is returned in the `ErrorInfo.metadata` with key 'error_info_id' when an access request is denied by the IAM service.

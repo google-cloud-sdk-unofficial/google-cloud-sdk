@@ -26,7 +26,7 @@ import six
 # Python modules to install into virtual env environment
 MODULES = [
     'crcmod',
-    'grpcio==1.80.0',
+    'grpcio==1.83.0',
     'pyopenssl==26.0.0',
     'google_crc32c',
     'certifi',

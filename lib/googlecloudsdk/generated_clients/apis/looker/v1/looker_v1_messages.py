@@ -124,6 +124,7 @@ class Empty(_messages.Message):
   """
 
 
+
 class EncryptionConfig(_messages.Message):
   r"""Encryption configuration (i.e. CMEK).
 

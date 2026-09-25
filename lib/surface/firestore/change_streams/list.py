@@ -21,7 +21,7 @@ from googlecloudsdk.core import properties
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   r"""List change streams under a Firestore database.
 

@@ -21,6 +21,6 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
 )
-@base.Hidden
 class AutoProtectionPolicies(base.Group):
   """Manage Backup and DR AutoProtectionPolicies."""
+  category = base.STORAGE_CATEGORY

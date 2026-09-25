@@ -276,7 +276,6 @@ def CreateNetworkInterfaceMessages(
     messages,
     network_interface_arg,
     subnet_region,
-    support_enable_vpc_scoped_dns=False,
     support_alias_ipv6_ranges=False,
     support_dns64_eligible=False,
     support_nat64_eligible=False,
@@ -289,8 +288,6 @@ def CreateNetworkInterfaceMessages(
     messages: creates resources.
     network_interface_arg: CLI argument specifying network interfaces.
     subnet_region: region of the subnetwork.
-    support_enable_vpc_scoped_dns: Indicates whether setting enable vpc scoped
-      dns on network interfaces is supported.
     support_alias_ipv6_ranges: Indicates whether setting alias IPv6 ranges on
       network interfaces is supported.
     support_dns64_eligible: If True, indicates that this network interface is
@@ -315,9 +312,7 @@ def CreateNetworkInterfaceMessages(
 
       network_tier = interface.get('network-tier', None)
       nic_type = interface.get('nic-type', None)
-      enable_vpc_scoped_dns = None
-      if support_enable_vpc_scoped_dns:
-        enable_vpc_scoped_dns = 'enable-vpc-scoped-dns' in interface
+      enable_vpc_scoped_dns = 'enable-vpc-scoped-dns' in interface
       service_class_id = interface.get('service-class-id', None)
       dns64_eligible = (
           'dns64-eligible' in interface if support_dns64_eligible else None

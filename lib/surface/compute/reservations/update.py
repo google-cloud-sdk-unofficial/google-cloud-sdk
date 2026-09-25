@@ -294,7 +294,8 @@ def _GetShareSettingUpdateRequest(
           for project in getattr(args, 'share_with', [])
       ])
   else:
-    setting_configs = 'projects'
+    if not setting_configs:
+      setting_configs = 'projects'
   if args.IsKnownAndSpecified('add_share_with_folder'):
     share_settings = util.MakeShareSettingsWithArgs(
         messages, args, 'folders', share_with='add_share_with_folder'
@@ -569,7 +570,7 @@ class Update(base.UpdateCommand):
   _support_auto_delete = False
   _support_reservation_sharing_policy = True
   _support_emergent_maintenance = True
-  _support_share_type = False
+  _support_share_type = True
   _support_scheduling_type = True
   _support_early_access_maintenance = True
   _support_folder_share_setting = False
@@ -585,6 +586,9 @@ class Update(base.UpdateCommand):
     r_flags.GetVmCountFlag(False).AddToParser(parser)
     r_flags.GetReservationSharingPolicyFlag().AddToParser(parser)
     r_flags.GetEnableEmergentMaintenanceFlag().AddToParser(parser)
+    r_flags.GetSharedSettingFlag(
+        support_folder_share_setting=cls._support_folder_share_setting
+    ).AddToParser(parser)
     r_flags.GetSchedulingTypeFlag().AddToParser(parser)
     r_flags.GetEarlyAccessMaintenanceFlag().AddToParser(parser)
 
@@ -781,7 +785,7 @@ class UpdateBeta(Update):
     r_flags.GetReservationSharingPolicyFlag().AddToParser(parser)
     r_flags.GetEnableEmergentMaintenanceFlag().AddToParser(parser)
     r_flags.GetSharedSettingFlag(
-        support_folder_share_setting=False
+        support_folder_share_setting=cls._support_folder_share_setting
     ).AddToParser(parser)
     r_flags.GetSchedulingTypeFlag().AddToParser(parser)
     r_flags.GetEarlyAccessMaintenanceFlag().AddToParser(parser)
@@ -827,9 +831,9 @@ class UpdateAlpha(Update):
     r_flags.GetVmCountFlag(False).AddToParser(parser)
     r_flags.GetReservationSharingPolicyFlag().AddToParser(parser)
     r_flags.GetEnableEmergentMaintenanceFlag().AddToParser(parser)
-    r_flags.GetSharedSettingFlag(support_folder_share_setting=True).AddToParser(
-        parser
-    )
+    r_flags.GetSharedSettingFlag(
+        support_folder_share_setting=cls._support_folder_share_setting
+    ).AddToParser(parser)
     r_flags.GetSchedulingTypeFlag().AddToParser(parser)
     r_flags.GetEarlyAccessMaintenanceFlag().AddToParser(parser)
 

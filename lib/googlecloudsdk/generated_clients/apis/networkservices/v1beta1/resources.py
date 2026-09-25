@@ -74,6 +74,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_CDNEDGEEXTENSIONS = (
+      'projects.locations.cdnEdgeExtensions',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'cdnEdgeExtensions/{cdnEdgeExtensionsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_ENDPOINTPOLICIES = (
       'projects.locations.endpointPolicies',
       '{+name}',
@@ -92,6 +103,17 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/expressLinks/'
               '{expressLinksId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_EXTENSIONBINDINGS = (
+      'projects.locations.extensionBindings',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'extensionBindings/{extensionBindingsId}',
       },
       ['name'],
       True
@@ -317,6 +339,17 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/operations/'
               '{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_PRODUCEREXTENSIONS = (
+      'projects.locations.producerExtensions',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'producerExtensions/{producerExtensionsId}',
       },
       ['name'],
       True

@@ -920,6 +920,41 @@ def add_admission_policy_flag(parser):
   )
 
 
+def add_rapid_cache_flags(parser):
+  """Adds the --ttl and --admission-policy flags for Rapid Cache commands."""
+  parser.add_argument(
+      '--ttl',
+      type=arg_parsers.Duration(),
+      help='Cache entry time-to-live.',
+  )
+  parser.add_argument(
+      '--admission-policy',
+      choices=[
+          'ADMIT_ON_FIRST_MISS',
+          'ADMIT_ON_SECOND_MISS',
+          'NO_READ_ADMISSION',
+      ],
+      help=(
+          'The cache admission policy decides for each cache miss, whether'
+          ' to insert the missed block or not.'
+      ),
+  )
+
+
+def add_async_flag(parser):
+  """Adds the --async flag for commands supporting asynchronous operations."""
+  parser.add_argument(
+      '--async',
+      action=arg_parsers.StoreTrueFalseAction,
+      dest='async_',
+      help=(
+          'Return immediately, without waiting for the operation in'
+          ' progress to complete. Defaults to async behavior if no flag'
+          ' is specified.'
+      ),
+  )
+
+
 def add_read_paths_from_stdin_flag(
     parser, help_text='Read the list of URLs from stdin.'
 ):

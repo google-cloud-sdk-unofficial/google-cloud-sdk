@@ -228,6 +228,8 @@ class Instance(_messages.Message):
 
   Fields:
     accessRulesOptions: Optional. The access rules options for the instance.
+    availableVersion: Output only. The available version that this instance
+      can be upgraded to. Format: `Lustre_YYYYMMDD.NN_pXX`
     capacityGib: Required. The storage capacity of the instance in gibibytes
       (GiB). Allowed values depend on the `perUnitStorageThroughput`. See
       [Performance tiers](https://docs.cloud.google.com/managed-
@@ -239,6 +241,8 @@ class Instance(_messages.Message):
       on the Dynamic tier. See [Performance
       tiers](https://docs.cloud.google.com/managed-lustre/docs/performance-
       tiers) for more information.
+    effectiveVersion: Output only. The effective version of the instance.
+      Format: `Lustre_YYYYMMDD.NN_pXX`
     filesystem: Required. Immutable. The filesystem name for this instance.
       This name is used by client-side tools, including when mounting the
       instance. Must be eight characters or less and can only contain letters
@@ -273,6 +277,9 @@ class Instance(_messages.Message):
     state: Output only. The state of the instance.
     stateReason: Output only. The reason why the instance is in a certain
       state (e.g. SUSPENDED).
+    targetVersion: Optional. The target version of the instance. Setting this
+      field triggers a self-service update to the specified version. Format:
+      `Lustre_YYYYMMDD.NN_pXX` or `latest`
     uid: Output only. Unique ID of the resource. This is unrelated to the
       access rules which allow specifying the root squash uid.
     upcomingMaintenanceSchedule: Output only. Date and time of upcoming
@@ -330,25 +337,28 @@ class Instance(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   accessRulesOptions = _messages.MessageField('AccessRulesOptions', 1)
-  capacityGib = _messages.IntegerField(2)
-  createTime = _messages.StringField(3)
-  description = _messages.StringField(4)
-  dynamicTierOptions = _messages.MessageField('DynamicTierOptions', 5)
-  filesystem = _messages.StringField(6)
-  gkeSupportEnabled = _messages.BooleanField(7)
-  kmsKey = _messages.StringField(8)
-  labels = _messages.MessageField('LabelsValue', 9)
-  maintenancePolicy = _messages.MessageField('MaintenancePolicy', 10)
-  mountPoint = _messages.StringField(11)
-  name = _messages.StringField(12)
-  network = _messages.StringField(13)
-  perUnitStorageThroughput = _messages.IntegerField(14)
-  placementPolicy = _messages.StringField(15)
-  state = _messages.EnumField('StateValueValuesEnum', 16)
-  stateReason = _messages.StringField(17)
-  uid = _messages.StringField(18)
-  upcomingMaintenanceSchedule = _messages.MessageField('MaintenanceSchedule', 19)
-  updateTime = _messages.StringField(20)
+  availableVersion = _messages.StringField(2)
+  capacityGib = _messages.IntegerField(3)
+  createTime = _messages.StringField(4)
+  description = _messages.StringField(5)
+  dynamicTierOptions = _messages.MessageField('DynamicTierOptions', 6)
+  effectiveVersion = _messages.StringField(7)
+  filesystem = _messages.StringField(8)
+  gkeSupportEnabled = _messages.BooleanField(9)
+  kmsKey = _messages.StringField(10)
+  labels = _messages.MessageField('LabelsValue', 11)
+  maintenancePolicy = _messages.MessageField('MaintenancePolicy', 12)
+  mountPoint = _messages.StringField(13)
+  name = _messages.StringField(14)
+  network = _messages.StringField(15)
+  perUnitStorageThroughput = _messages.IntegerField(16)
+  placementPolicy = _messages.StringField(17)
+  state = _messages.EnumField('StateValueValuesEnum', 18)
+  stateReason = _messages.StringField(19)
+  targetVersion = _messages.StringField(20)
+  uid = _messages.StringField(21)
+  upcomingMaintenanceSchedule = _messages.MessageField('MaintenanceSchedule', 22)
+  updateTime = _messages.StringField(23)
 
 
 class ListInstancesResponse(_messages.Message):

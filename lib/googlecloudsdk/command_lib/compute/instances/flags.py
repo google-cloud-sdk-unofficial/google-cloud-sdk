@@ -1703,7 +1703,6 @@ def AddAddressArgs(
     support_vlan_nic=True,
     support_ipv6_only=False,
     support_igmp_query=False,
-    support_enable_vpc_scoped_dns=False,
     support_alias_ipv6_ranges=False,
     support_dns64_eligible=False,
     support_nat64_eligible=False,
@@ -1725,8 +1724,6 @@ def AddAddressArgs(
     support_ipv6_only: indicates whether IPV6_ONLY stack type is supported.
     support_igmp_query: indicates whether setting igmp query on network
       interfaces is supported.
-    support_enable_vpc_scoped_dns: indicates whether setting enable vpc scoped
-      dns on network interfaces is supported.
     support_alias_ipv6_ranges: indicates whether setting alias ipv6 ranges on
       network interfaces is supported.
     support_dns64_eligible: indicates whether setting dns64 eligible on
@@ -1993,9 +1990,8 @@ def AddAddressArgs(
         *--subnet* flags.
       """)
 
-  if support_enable_vpc_scoped_dns:
-    network_interface_help_texts.append("""
-      *enable-vpc-scoped-dns*::: If specified with network_attachment, DNS
+  network_interface_help_texts.append("""
+      *enable-vpc-scoped-dns*::: If specified with network-attachment, DNS
       resolution will be enabled over this interface.
       """)
 

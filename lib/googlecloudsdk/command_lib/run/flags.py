@@ -513,8 +513,11 @@ def AddRevisionArg(parser):
   )
 
 
-def AddSshFlag(parser):
+def AddSshFlag(parser, hidden=False):
   """Adds the --ssh flag to the given parser."""
+  kwargs = {}
+  if hidden:
+    kwargs['hidden'] = True
   parser.add_argument(
       '--ssh',
       action=arg_parsers.StoreTrueFalseAction,
@@ -522,6 +525,7 @@ def AddSshFlag(parser):
           'Whether to enable SSH access to the container for'
           ' inspection and debugging.'
       ),
+      **kwargs,
   )
 
 
@@ -1648,8 +1652,8 @@ class ScaleValue:
         )
 
 
-class UtilizationValue:
-  """Type for scaling utilization target values."""
+class ServiceUtilizationValue:
+  """Type for service scaling utilization target values."""
 
   def __init__(self, value):
     self.restore_default = value == 'default'
@@ -1673,6 +1677,20 @@ class UtilizationValue:
         raise serverless_exceptions.ArgumentError(
             'Utilization value %s is greater than 0.95.' % value
         )
+
+
+class WorkerPoolUtilizationValue:
+  """Type for worker pool scaling utilization target values."""
+
+  def __init__(self, value):
+    self.restore_default = value == 'default'
+    if not self.restore_default:
+      try:
+        self.utilization = float(value)
+      except (TypeError, ValueError) as e:
+        raise serverless_exceptions.ArgumentError(
+            "Utilization value %s is not a decimal or 'default'." % value
+        ) from e
 
 
 class ScalingValue:
@@ -2487,72 +2505,108 @@ def AddOverflowScalingFlag(parser):
   )
 
 
-def AddCpuUtilizationFlag(
-    parser, *, hidden=False, resource_kind='service'
-) -> None:
-  """Add flag to modify cpu utilization scaling target."""
+def AddCpuUtilizationFlag(parser, *, hidden=False) -> None:
+  """Add flag to modify cpu utilization scaling target for services."""
   help_text = (
       'This represents the CPU utilization target threshold for scaling up'
       ' new instances. Set any value between 0.1 and 0.95 inclusive. To'
       ' unset this field, pass the special value "default". To disable this'
       ' scaling factor, pass the value "disabled". Please note that values'
-      ' are rounded at the second decimal place.'
+      ' are rounded at the second decimal place. CPU and concurrency scaling'
+      ' cannot both be disabled.'
   )
-  help_text += (
-      ' CPU and concurrency scaling cannot both be disabled.'
-      if resource_kind == 'service'
-      else ''
-  )
-
   parser.add_argument(
       '--scaling-cpu-target',
       hidden=hidden,
-      type=UtilizationValue,
+      type=ServiceUtilizationValue,
       help=help_text,
   )
 
 
-def PubsubSubscriptionFlag() -> base.Argument:
-  """Returns flag to specify Pub/Sub subscription for scaling."""
-  return base.Argument(
-      '--scaling-pubsub-subscription',
-      hidden=True,
+def AddWorkerPoolCpuUtilizationFlag(parser, *, hidden=False) -> None:
+  """Add flag to modify cpu utilization scaling target for worker pools."""
+  help_text = (
+      'This represents the CPU utilization target threshold for scaling up'
+      ' new instances. Set a value between 0.1 and 0.90 inclusive, or "default"'
+      ' to use the system default target. To remove this scaling factor, use'
+      ' --clear-scaling-cpu-target. Values are rounded to the second decimal'
+      ' place. When no scaling factors are configured and --scaling=auto is'
+      ' used, the default CPU utilization target is applied automatically.'
+  )
+  parser.add_argument(
+      '--scaling-cpu-target',
+      hidden=hidden,
+      type=WorkerPoolUtilizationValue,
+      help=help_text,
+  )
+
+
+def AddWorkerPoolClearCpuUtilizationFlag(parser, *, hidden=False) -> None:
+  """Add flag to clear cpu utilization scaling target for worker pools."""
+  parser.add_argument(
+      '--clear-scaling-cpu-target',
+      action='store_true',
+      hidden=hidden,
+      help='Clears the CPU utilization scaling target.',
+  )
+
+
+def AddWorkerPoolAddPubsubSubscriptionFlag(parser, *, hidden=False) -> None:
+  """Add flag to add a Pub/Sub scaling subscription to a worker pool."""
+  parser.add_argument(
+      '--add-scaling-pubsub-subscription',
+      hidden=hidden,
+      type=arg_parsers.ArgDict(required_keys=['subscription']),
+      action='append',
+      metavar='KEY=VALUE',
       help=(
-          'The Pub/Sub subscription to monitor for scaling. '
-          'Must be in the same project as the worker pool. '
-          'Format: projects/{project}/subscriptions/{sub} or just {sub}.'
+          'Adds a Pub/Sub subscription scaling target to the worker pool. To'
+          ' add more than one subscription, specify this flag multiple times.'
+          ' Keys supported:\n\n'
+          '*subscription*::: (Required) The Pub/Sub subscription name or'
+          ' resource name (e.g. `my-sub` or'
+          ' `projects/PROJECT/subscriptions/my-sub`).\n\n'
+          '*target*::: (Optional) The target value for the unacknowledged'
+          ' messages backlog per instance. Set to a positive integer, or'
+          ' "default". If omitted or set to "default", the system default'
+          ' target is used.'
       ),
   )
 
 
-def AddPubsubSubscriptionFlag(parser) -> None:
-  """Add flag to specify Pub/Sub subscription for scaling."""
-  PubsubSubscriptionFlag().AddToParser(parser)
-
-
-def PubsubTargetFlag() -> base.Argument:
-  """Returns flag to specify Pub/Sub target value for scaling."""
-  return base.Argument(
-      '--scaling-pubsub-target',
-      hidden=True,
-      type=arg_parsers.BoundedInt(lower_bound=1),
+def AddWorkerPoolRemovePubsubSubscriptionFlag(parser, *, hidden=False) -> None:
+  """Add flag to remove Pub/Sub scaling subscriptions from a worker pool."""
+  parser.add_argument(
+      '--remove-scaling-pubsub-subscription',
+      hidden=hidden,
+      type=arg_parsers.ArgList(),
+      action=arg_parsers.UpdateAction,
+      metavar='SUBSCRIPTION',
       help=(
-          'The target value for the Pub/Sub subscription backlog metric '
-          'to scale on. Must be a positive integer.'
+          'Removes one or more Pub/Sub scaling subscriptions from the worker'
+          ' pool. Subscriptions can be specified as a name (e.g. `my-sub`) or'
+          ' full resource name (e.g. `projects/PROJECT/subscriptions/my-sub`).'
+          ' Specify a comma-separated list or pass the flag multiple times.'
       ),
   )
 
 
-def AddPubsubTargetFlag(parser) -> None:
-  """Add flag to specify Pub/Sub target value for scaling."""
-  PubsubTargetFlag().AddToParser(parser)
+def AddWorkerPoolClearPubsubSubscriptionsFlag(parser, *, hidden=False) -> None:
+  """Add flag to clear all Pub/Sub scaling subscriptions from a worker pool."""
+  parser.add_argument(
+      '--clear-scaling-pubsub-subscriptions',
+      hidden=hidden,
+      action='store_true',
+      default=False,
+      help='Clears all Pub/Sub scaling subscriptions from the worker pool.',
+  )
 
 
 def AddConcurrencyUtilizationFlag(parser):
   """Add flag to modify scaling concurrency utilization."""
   parser.add_argument(
       '--scaling-concurrency-target',
-      type=UtilizationValue,
+      type=ServiceUtilizationValue,
       help=(
           'This represents the concurrency utilization target threshold for'
           ' scaling up new instances. Set any value between 0.1 and 0.95'
@@ -5559,18 +5613,6 @@ def AddCommandAndFunctionFlag():
   group.AddArgument(FunctionArg())
   group.AddArgument(CommandFlag())
   return group
-
-
-def AddDelegateBuildsFlag(parser):
-  """Adds flag to indicate using Build API for source deploy builds."""
-  parser.add_argument(
-      '--delegate-builds',
-      action='store_true',
-      help="""\
-      Specifies that the source deploy for run will use the Build API
-      to submit the build.
-      """,
-  )
 
 
 def BuildServiceAccountMutexGroup():

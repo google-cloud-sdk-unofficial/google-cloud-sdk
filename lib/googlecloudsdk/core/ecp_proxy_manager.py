@@ -25,7 +25,11 @@ from typing import Optional
 from googlecloudsdk.core import context_aware
 from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import encoding
+from googlecloudsdk.core.util import http_proxy_types
+import requests as pip_requests
+
 
 _CLOUDSDK_ECP_HTTP_PROXY_PORT = 'CLOUDSDK_ECP_HTTP_PROXY_PORT'
 _ECP_HTTP_PROXY_MANAGER_INSTANCE = None
@@ -60,10 +64,7 @@ class _ECPHTTPProxyManager(object):
     self.nonce_token = secrets.token_hex(16)
     self.startup_timeout = startup_timeout
 
-    # pylint:disable=g-import-not-at-top
-    from googlecloudsdk.core import requests as core_requests
-
-    self.gcloud_proxy_url = core_requests.GetProxyInfo()
+    self.gcloud_proxy_url = http_proxy_types.GetProxyInfo(properties)
 
     # Register a cleanup function to terminate the proxy process on exit.
     atexit.register(self.close)
@@ -174,10 +175,6 @@ class _ECPHTTPProxyManager(object):
       )
 
     try:
-      # pylint:disable=g-import-not-at-top
-      # local import to avoid circular dependency
-      import requests as pip_requests
-
       readyz_url = f'http://{self.proxy_host}:{proxy_port}/readyz'
       response = pip_requests.get(readyz_url, timeout=1)
       if response.status_code != 200:

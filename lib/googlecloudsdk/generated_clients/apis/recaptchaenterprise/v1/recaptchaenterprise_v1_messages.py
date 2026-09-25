@@ -1765,6 +1765,9 @@ class GoogleCloudRecaptchaenterpriseV1TokenProperties(_messages.Message):
     action: Output only. Action name provided at token generation.
     androidPackageName: Output only. The name of the Android package with
       which the token was generated (Android keys only).
+    clientSignalsFailed: Output only. Indicates a failure collecting reCAPTCHA
+      signals at token generation. This might be a transient condition, or
+      persistent for a user's environment.
     createTime: Output only. The timestamp corresponding to the generation of
       the token.
     hostname: Output only. The hostname of the page on which the token was
@@ -1814,11 +1817,12 @@ class GoogleCloudRecaptchaenterpriseV1TokenProperties(_messages.Message):
 
   action = _messages.StringField(1)
   androidPackageName = _messages.StringField(2)
-  createTime = _messages.StringField(3)
-  hostname = _messages.StringField(4)
-  invalidReason = _messages.EnumField('InvalidReasonValueValuesEnum', 5)
-  iosBundleId = _messages.StringField(6)
-  valid = _messages.BooleanField(7)
+  clientSignalsFailed = _messages.BooleanField(3)
+  createTime = _messages.StringField(4)
+  hostname = _messages.StringField(5)
+  invalidReason = _messages.EnumField('InvalidReasonValueValuesEnum', 6)
+  iosBundleId = _messages.StringField(7)
+  valid = _messages.BooleanField(8)
 
 
 class GoogleCloudRecaptchaenterpriseV1TransactionData(_messages.Message):
@@ -2176,8 +2180,9 @@ class GoogleCloudRecaptchaenterpriseV1WebKeySettings(_messages.Message):
   Enums:
     ChallengeSecurityPreferenceValueValuesEnum: Optional. Settings for the
       frequency and difficulty at which this key triggers captcha challenges.
-      This should only be specified for `IntegrationType` CHECKBOX, INVISIBLE
-      or POLICY_BASED_CHALLENGE.
+      This should only be specified for `IntegrationType` CHECKBOX (defaults
+      to BALANCE), INVISIBLE (defaults to USABILITY), or
+      POLICY_BASED_CHALLENGE (defaults to USABILITY).
     IntegrationTypeValueValuesEnum: Required. Describes how this key is
       integrated with the website.
 
@@ -2198,8 +2203,9 @@ class GoogleCloudRecaptchaenterpriseV1WebKeySettings(_messages.Message):
       your list of allowed domains.
     challengeSecurityPreference: Optional. Settings for the frequency and
       difficulty at which this key triggers captcha challenges. This should
-      only be specified for `IntegrationType` CHECKBOX, INVISIBLE or
-      POLICY_BASED_CHALLENGE.
+      only be specified for `IntegrationType` CHECKBOX (defaults to BALANCE),
+      INVISIBLE (defaults to USABILITY), or POLICY_BASED_CHALLENGE (defaults
+      to USABILITY).
     challengeSettings: Optional. Challenge settings.
     integrationType: Required. Describes how this key is integrated with the
       website.
@@ -2208,7 +2214,8 @@ class GoogleCloudRecaptchaenterpriseV1WebKeySettings(_messages.Message):
   class ChallengeSecurityPreferenceValueValuesEnum(_messages.Enum):
     r"""Optional. Settings for the frequency and difficulty at which this key
     triggers captcha challenges. This should only be specified for
-    `IntegrationType` CHECKBOX, INVISIBLE or POLICY_BASED_CHALLENGE.
+    `IntegrationType` CHECKBOX (defaults to BALANCE), INVISIBLE (defaults to
+    USABILITY), or POLICY_BASED_CHALLENGE (defaults to USABILITY).
 
     Values:
       CHALLENGE_SECURITY_PREFERENCE_UNSPECIFIED: Default type that indicates

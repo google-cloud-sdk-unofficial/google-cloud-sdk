@@ -1029,7 +1029,6 @@ def CreateNetworkInterfaceMessages(
     *,
     network_interface_json=None,
     support_internal_ipv6_reservation=False,
-    support_enable_vpc_scoped_dns=False,
     support_alias_ipv6_ranges=False,
     support_dns64_eligible=False,
     support_nat64_eligible=False,
@@ -1049,8 +1048,6 @@ def CreateNetworkInterfaceMessages(
       a JSON string directly in the command or in a file.
     support_internal_ipv6_reservation: The flag indicates whether internal IPv6
       reservation is supported.
-    support_enable_vpc_scoped_dns: The flag indicates whether VPC scoped DNS is
-      supported.
     support_alias_ipv6_ranges: The flag indicates whether alias IPv6 ranges are
       supported.
     support_dns64_eligible: The flag indicates whether DNS64 is supported.
@@ -1073,9 +1070,7 @@ def CreateNetworkInterfaceMessages(
         internal_ipv6_prefix_length = interface.get(
             'internal-ipv6-prefix-length', None
         )
-      enable_vpc_scoped_dns = None
-      if support_enable_vpc_scoped_dns:
-        enable_vpc_scoped_dns = 'enable-vpc-scoped-dns' in interface
+      enable_vpc_scoped_dns = 'enable-vpc-scoped-dns' in interface
       service_class_id = interface.get('service-class-id', None)
       dns64_eligible = (
           'dns64-eligible' in interface if support_dns64_eligible else None
@@ -1151,7 +1146,6 @@ def GetNetworkInterfacesWithValidation(
     support_public_dns=False,
     support_ipv6_assignment=False,
     support_internal_ipv6_reservation=False,
-    support_enable_vpc_scoped_dns=False,
     support_alias_ipv6_ranges=False,
     support_dns64_eligible=False,
     support_nat64_eligible=False,
@@ -1174,7 +1168,6 @@ def GetNetworkInterfacesWithValidation(
         location=location,
         scope=scope,
         support_internal_ipv6_reservation=support_internal_ipv6_reservation,
-        support_enable_vpc_scoped_dns=support_enable_vpc_scoped_dns,
         support_alias_ipv6_ranges=support_alias_ipv6_ranges,
         support_dns64_eligible=support_dns64_eligible,
         support_nat64_eligible=support_nat64_eligible,

@@ -132,6 +132,9 @@ class RevisionTemplate(proto.Message):
         node_selector (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.NodeSelector):
             Optional. The node selector for the revision
             template.
+        workload_identity_config (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.WorkloadIdentityConfig):
+            Optional. The Revision's workload identity
+            settings.
         gpu_zonal_redundancy_disabled (bool):
             Optional. True if GPU zonal redundancy is
             disabled on this revision.
@@ -237,6 +240,11 @@ class RevisionTemplate(proto.Message):
         proto.MESSAGE,
         number=21,
         message=vendor_settings.NodeSelector,
+    )
+    workload_identity_config: vendor_settings.WorkloadIdentityConfig = proto.Field(
+        proto.MESSAGE,
+        number=27,
+        message=vendor_settings.WorkloadIdentityConfig,
     )
     gpu_zonal_redundancy_disabled: bool = proto.Field(
         proto.BOOL,

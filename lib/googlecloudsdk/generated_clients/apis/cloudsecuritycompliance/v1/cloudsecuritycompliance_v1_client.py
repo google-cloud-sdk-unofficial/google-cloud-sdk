@@ -1169,6 +1169,33 @@ class CloudsecuritycomplianceV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Patch(self, request, global_params=None):
+      r"""Updates a framework deployment.
+
+      Args:
+        request: (CloudsecuritycomplianceOrganizationsLocationsFrameworkDeploymentsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/organizations/{organizationsId}/locations/{locationsId}/frameworkDeployments/{frameworkDeploymentsId}',
+        http_method='PATCH',
+        method_id='cloudsecuritycompliance.organizations.locations.frameworkDeployments.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1/{+name}',
+        request_field='frameworkDeployment',
+        request_type_name='CloudsecuritycomplianceOrganizationsLocationsFrameworkDeploymentsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class OrganizationsLocationsFrameworksService(base_api.BaseApiService):
     """Service class for the organizations_locations_frameworks resource."""
 
@@ -2234,6 +2261,33 @@ class CloudsecuritycomplianceV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='CloudsecuritycomplianceProjectsLocationsFrameworkDeploymentsListRequest',
         response_type_name='ListFrameworkDeploymentsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates a framework deployment.
+
+      Args:
+        request: (CloudsecuritycomplianceProjectsLocationsFrameworkDeploymentsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/frameworkDeployments/{frameworkDeploymentsId}',
+        http_method='PATCH',
+        method_id='cloudsecuritycompliance.projects.locations.frameworkDeployments.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1/{+name}',
+        request_field='frameworkDeployment',
+        request_type_name='CloudsecuritycomplianceProjectsLocationsFrameworkDeploymentsPatchRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

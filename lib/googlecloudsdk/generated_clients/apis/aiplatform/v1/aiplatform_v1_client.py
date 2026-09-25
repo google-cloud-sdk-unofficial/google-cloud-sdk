@@ -13,7 +13,7 @@ class AiplatformV1(base_api.BaseApiClient):
   MTLS_BASE_URL = 'https://aiplatform.mtls.googleapis.com/'
 
   _PACKAGE = 'aiplatform'
-  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/cloud-platform.read-only']
+  _SCOPES = ['https://www.googleapis.com/auth/aiplatform', 'https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/cloud-platform.read-only']
   _VERSION = 'v1'
   _CLIENT_ID = 'CLIENT_ID'
   _CLIENT_SECRET = 'CLIENT_SECRET'
@@ -49,6 +49,7 @@ class AiplatformV1(base_api.BaseApiClient):
     self.projects_locations_datasets_savedQueries = self.ProjectsLocationsDatasetsSavedQueriesService(self)
     self.projects_locations_datasets = self.ProjectsLocationsDatasetsService(self)
     self.projects_locations_deploymentResourcePools = self.ProjectsLocationsDeploymentResourcePoolsService(self)
+    self.projects_locations_endpoints_responses = self.ProjectsLocationsEndpointsResponsesService(self)
     self.projects_locations_endpoints = self.ProjectsLocationsEndpointsService(self)
     self.projects_locations_featureGroups_features = self.ProjectsLocationsFeatureGroupsFeaturesService(self)
     self.projects_locations_featureGroups = self.ProjectsLocationsFeatureGroupsService(self)
@@ -80,6 +81,8 @@ class AiplatformV1(base_api.BaseApiClient):
     self.projects_locations_persistentResources = self.ProjectsLocationsPersistentResourcesService(self)
     self.projects_locations_pipelineJobs = self.ProjectsLocationsPipelineJobsService(self)
     self.projects_locations_publishers_models = self.ProjectsLocationsPublishersModelsService(self)
+    self.projects_locations_publishers_v1_responses = self.ProjectsLocationsPublishersV1ResponsesService(self)
+    self.projects_locations_publishers_v1 = self.ProjectsLocationsPublishersV1Service(self)
     self.projects_locations_publishers = self.ProjectsLocationsPublishersService(self)
     self.projects_locations_ragCorpora_ragFiles = self.ProjectsLocationsRagCorporaRagFilesService(self)
     self.projects_locations_ragCorpora = self.ProjectsLocationsRagCorporaService(self)
@@ -1477,6 +1480,70 @@ class AiplatformV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='AiplatformProjectsLocationsDeploymentResourcePoolsQueryDeployedModelsRequest',
         response_type_name='GoogleCloudAiplatformV1QueryDeployedModelsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsEndpointsResponsesService(base_api.BaseApiService):
+    """Service class for the projects_locations_endpoints_responses resource."""
+
+    _NAME = 'projects_locations_endpoints_responses'
+
+    def __init__(self, client):
+      super(AiplatformV1.ProjectsLocationsEndpointsResponsesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes the response from the endpoint.
+
+      Args:
+        request: (AiplatformProjectsLocationsEndpointsResponsesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleApiHttpBody) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/endpoints/{endpointsId}/responses/{responsesId}',
+        http_method='DELETE',
+        method_id='aiplatform.projects.locations.endpoints.responses.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsEndpointsResponsesDeleteRequest',
+        response_type_name='GoogleApiHttpBody',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets the response from the endpoint.
+
+      Args:
+        request: (AiplatformProjectsLocationsEndpointsResponsesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleApiHttpBody) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/endpoints/{endpointsId}/responses/{responsesId}',
+        http_method='GET',
+        method_id='aiplatform.projects.locations.endpoints.responses.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsEndpointsResponsesGetRequest',
+        response_type_name='GoogleApiHttpBody',
         supports_download=False,
     )
 
@@ -7811,6 +7878,80 @@ class AiplatformV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsPublishersV1ResponsesService(base_api.BaseApiService):
+    """Service class for the projects_locations_publishers_v1_responses resource."""
+
+    _NAME = 'projects_locations_publishers_v1_responses'
+
+    def __init__(self, client):
+      super(AiplatformV1.ProjectsLocationsPublishersV1ResponsesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes the response from the endpoint.
+
+      Args:
+        request: (AiplatformProjectsLocationsPublishersV1ResponsesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleApiHttpBody) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/publishers/{publishersId}/v1/responses/{responsesId}',
+        http_method='DELETE',
+        method_id='aiplatform.projects.locations.publishers.v1.responses.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsPublishersV1ResponsesDeleteRequest',
+        response_type_name='GoogleApiHttpBody',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets the response from the endpoint.
+
+      Args:
+        request: (AiplatformProjectsLocationsPublishersV1ResponsesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleApiHttpBody) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/publishers/{publishersId}/v1/responses/{responsesId}',
+        http_method='GET',
+        method_id='aiplatform.projects.locations.publishers.v1.responses.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsPublishersV1ResponsesGetRequest',
+        response_type_name='GoogleApiHttpBody',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsPublishersV1Service(base_api.BaseApiService):
+    """Service class for the projects_locations_publishers_v1 resource."""
+
+    _NAME = 'projects_locations_publishers_v1'
+
+    def __init__(self, client):
+      super(AiplatformV1.ProjectsLocationsPublishersV1Service, self).__init__(client)
+      self._upload_configs = {
+          }
+
   class ProjectsLocationsPublishersService(base_api.BaseApiService):
     """Service class for the projects_locations_publishers resource."""
 
@@ -8366,6 +8507,33 @@ class AiplatformV1(base_api.BaseApiClient):
       super(AiplatformV1.ProjectsLocationsReasoningEnginesSandboxEnvironmentsService, self).__init__(client)
       self._upload_configs = {
           }
+
+    def AuthorizeAccess(self, request, global_params=None):
+      r"""Checks whether the caller is authorized to access the sandbox environment. Authorization is performed entirely by the API infrastructure from the `method_policy` below; the handler is a no-op. A successful response means the caller holds `sandboxEnvironments.execute` on the named sandbox. Used by the sandbox data-plane proxy, which forwards the caller's credential and proxies traffic only on success.
+
+      Args:
+        request: (AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsAuthorizeAccessRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudAiplatformV1AuthorizeSandboxEnvironmentAccessResponse) The response message.
+      """
+      config = self.GetMethodConfig('AuthorizeAccess')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    AuthorizeAccess.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/reasoningEngines/{reasoningEnginesId}/sandboxEnvironments/{sandboxEnvironmentsId}:authorizeAccess',
+        http_method='POST',
+        method_id='aiplatform.projects.locations.reasoningEngines.sandboxEnvironments.authorizeAccess',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:authorizeAccess',
+        request_field='googleCloudAiplatformV1AuthorizeSandboxEnvironmentAccessRequest',
+        request_type_name='AiplatformProjectsLocationsReasoningEnginesSandboxEnvironmentsAuthorizeAccessRequest',
+        response_type_name='GoogleCloudAiplatformV1AuthorizeSandboxEnvironmentAccessResponse',
+        supports_download=False,
+    )
 
     def Create(self, request, global_params=None):
       r"""Creates a SandboxEnvironment in a given reasoning engine.
@@ -8964,6 +9132,33 @@ class AiplatformV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def GetIamPolicy(self, request, global_params=None):
+      r"""Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.
+
+      Args:
+        request: (AiplatformProjectsLocationsReasoningEnginesGetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleIamV1Policy) The response message.
+      """
+      config = self.GetMethodConfig('GetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/reasoningEngines/{reasoningEnginesId}:getIamPolicy',
+        http_method='POST',
+        method_id='aiplatform.projects.locations.reasoningEngines.getIamPolicy',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=['options_requestedPolicyVersion'],
+        relative_path='v1/{+resource}:getIamPolicy',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsReasoningEnginesGetIamPolicyRequest',
+        response_type_name='GoogleIamV1Policy',
+        supports_download=False,
+    )
+
     def List(self, request, global_params=None):
       r"""Lists reasoning engines in a location.
 
@@ -9045,6 +9240,33 @@ class AiplatformV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def SetIamPolicy(self, request, global_params=None):
+      r"""Sets the access control policy on the specified resource. Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.
+
+      Args:
+        request: (AiplatformProjectsLocationsReasoningEnginesSetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleIamV1Policy) The response message.
+      """
+      config = self.GetMethodConfig('SetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/reasoningEngines/{reasoningEnginesId}:setIamPolicy',
+        http_method='POST',
+        method_id='aiplatform.projects.locations.reasoningEngines.setIamPolicy',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=[],
+        relative_path='v1/{+resource}:setIamPolicy',
+        request_field='googleIamV1SetIamPolicyRequest',
+        request_type_name='AiplatformProjectsLocationsReasoningEnginesSetIamPolicyRequest',
+        response_type_name='GoogleIamV1Policy',
+        supports_download=False,
+    )
+
     def StreamQuery(self, request, global_params=None):
       r"""Streams queries using a reasoning engine.
 
@@ -9069,6 +9291,33 @@ class AiplatformV1(base_api.BaseApiClient):
         request_field='googleCloudAiplatformV1StreamQueryReasoningEngineRequest',
         request_type_name='AiplatformProjectsLocationsReasoningEnginesStreamQueryRequest',
         response_type_name='GoogleApiHttpBody',
+        supports_download=False,
+    )
+
+    def TestIamPermissions(self, request, global_params=None):
+      r"""Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may "fail open" without warning.
+
+      Args:
+        request: (AiplatformProjectsLocationsReasoningEnginesTestIamPermissionsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleIamV1TestIamPermissionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('TestIamPermissions')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/reasoningEngines/{reasoningEnginesId}:testIamPermissions',
+        http_method='POST',
+        method_id='aiplatform.projects.locations.reasoningEngines.testIamPermissions',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=['permissions'],
+        relative_path='v1/{+resource}:testIamPermissions',
+        request_field='',
+        request_type_name='AiplatformProjectsLocationsReasoningEnginesTestIamPermissionsRequest',
+        response_type_name='GoogleIamV1TestIamPermissionsResponse',
         supports_download=False,
     )
 

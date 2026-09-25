@@ -22,7 +22,6 @@ from typing import Any
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.metastore import parsers
 
-
 STRING_MAX_LENGTH = 1000
 METASTORE_TYPE_DICT = {
     'dpms': 'DATAPROC_METASTORE',
@@ -167,6 +166,31 @@ def ValidateDatabaseOrNamespaceList(arg_name):
     return items_list
 
   return Process
+
+
+def PopulateBigLakeMigrationDefaults(unused_ref, args, req):
+  """Populates and defaults Hive and Iceberg configs for BigLake migration."""
+  config = (
+      req.startMigrationRequest.migrationExecution.biglakeMetastoreMigrationConfig
+  )
+  if not config:
+    return req
+
+  # Default databases to ['*'] if --hive-databases was omitted.
+  if args.IsSpecified('hive_catalog'):
+    if not config.hiveConfig.databases:
+      config.hiveConfig.databases = ['*']
+  else:
+    config.hiveConfig = None
+
+  # Default namespaces to ['*'] if --iceberg-namespaces was omitted.
+  if args.IsSpecified('iceberg_catalog'):
+    if not config.icebergConfig.namespaces:
+      config.icebergConfig.namespaces = ['*']
+  else:
+    config.icebergConfig = None
+
+  return req
 
 
 def ValidateServiceMutexConfig(unused_ref, unused_args, req):
@@ -413,8 +437,10 @@ def ValidateKmsKeys(unused_ref, unused_args, req):
           collection other than the one specified.
   """
 
-  if (req.service.encryptionConfig is None or
-      req.service.encryptionConfig.kmsKeys is None):
+  if (
+      req.service.encryptionConfig is None
+      or req.service.encryptionConfig.kmsKeys is None
+  ):
     return req
   for kms_key in req.service.encryptionConfig.kmsKeys:
     parsers.ParseCloudKmsKey(kms_key)

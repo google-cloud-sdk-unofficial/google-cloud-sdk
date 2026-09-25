@@ -26,7 +26,6 @@ from apitools.base.protorpclite import protojson
 from apitools.base.py import encoding
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.compute import exceptions
-from googlecloudsdk.api_lib.compute import instance_utils
 from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.api_lib.compute import path_simplifier
 from googlecloudsdk.api_lib.compute import request_helper
@@ -74,7 +73,29 @@ ARGS_CONFLICTING_WITH_AUTOSCALING_FILE_BETA = [
 
 ARGS_CONFLICTING_WITH_AUTOSCALING_FILE_ALPHA = (
     ARGS_CONFLICTING_WITH_AUTOSCALING_FILE_BETA
+    + [
+        'cpu_time_aggregation',
+        'cpu_signal_aggregation',
+    ]
 )
+
+_ALLOWED_TIME_AGGREGATION_STATISTICS = (
+    'average',
+    'min',
+    'max',
+    'percentile',
+    'last-value',
+)
+
+_ALLOWED_SIGNAL_AGGREGATION_STATISTICS = (
+    'average',
+    'min',
+    'max',
+    'percentile',
+)
+
+_AUTOSCALER_CPU_TIME_AGGREGATION_MIN_WINDOW_SECONDS = '30s'
+_AUTOSCALER_CPU_TIME_AGGREGATION_MAX_WINDOW_SECONDS = '5m'
 
 
 _MAX_AUTOSCALER_NAME_LENGTH = 63
@@ -413,6 +434,59 @@ VM instances are ready in time to cover the predicted peak.
   )
 
 
+def AddCpuAggregationArgs(parser):
+  """Adds CPU time and signal aggregation arguments to the parser."""
+  parser.add_argument(
+      '--cpu-time-aggregation',
+      type=arg_parsers.ArgDict(
+          spec={
+              'statistic': str,
+              'time-window': arg_parsers.Duration(
+                  lower_bound=_AUTOSCALER_CPU_TIME_AGGREGATION_MIN_WINDOW_SECONDS,
+                  upper_bound=_AUTOSCALER_CPU_TIME_AGGREGATION_MAX_WINDOW_SECONDS,
+              ),
+              'percentile': arg_parsers.BoundedInt(0, 100),
+          },
+      ),
+      help="""\
+        Defines how CPU utilization is aggregated over time per instance.
+
+        *statistic*::: The aggregator used to aggregate CPU utilization
+        samples over the time window. Allowed statistics are: `average`, `min`,
+        `max`, `percentile`, `last-value`.
+
+        *time-window*::: The duration of the time window over which the
+        utilization samples are aggregated. Must be between {0} and {1}
+        inclusive.
+
+        *percentile*::: Percentile value (0 to 100 inclusive) to use when
+        statistic is `percentile`.
+      """.format(
+          _AUTOSCALER_CPU_TIME_AGGREGATION_MIN_WINDOW_SECONDS,
+          _AUTOSCALER_CPU_TIME_AGGREGATION_MAX_WINDOW_SECONDS,
+      ),
+  )
+  parser.add_argument(
+      '--cpu-signal-aggregation',
+      type=arg_parsers.ArgDict(
+          spec={
+              'statistic': str,
+              'percentile': arg_parsers.BoundedInt(0, 100),
+          },
+      ),
+      help="""\
+        Defines how CPU utilization is aggregated across the instance group.
+
+        *statistic*::: The aggregator used to aggregate utilization samples
+        across the instance group. Allowed statistics are: `average`, `min`,
+        `max`, `percentile`.
+
+        *percentile*::: Percentile value (0 to 100 inclusive) to use when
+        statistic is `percentile`.
+      """,
+  )
+
+
 def AddScheduledAutoscaling(parser, patch_args):
   """Add parameters controlling scheduled autoscaling."""
   if patch_args:
@@ -566,7 +640,7 @@ def AddScheduledAutoscalingConfigurationArguments(arg_group):
 def ValidateConflictsWithAutoscalingFile(args, conflicting_args):
   if hasattr(args, 'autoscaling_file') and args.IsSpecified('autoscaling_file'):
     for arg in conflicting_args:
-      if args.IsSpecified(arg):
+      if args.IsKnownAndSpecified(arg):
         conflicting_flags = [
             '--' + a.replace('_', '-') for a in conflicting_args
         ]
@@ -685,8 +759,83 @@ def ValidateGeneratedAutoscalerIsValid(args, autoscaler):
     )
 
 
+def ValidateCpuAggregationArgs(args):
+  """Validates CPU time and signal aggregation arguments."""
+  if args.IsKnownAndSpecified('cpu_time_aggregation'):
+    time_agg = args.cpu_time_aggregation
+    if 'statistic' not in time_agg:
+      raise calliope_exceptions.InvalidArgumentException(
+          '--cpu-time-aggregation', 'statistic not present.'
+      )
+    if 'time-window' not in time_agg:
+      raise calliope_exceptions.InvalidArgumentException(
+          '--cpu-time-aggregation', 'time-window not present.'
+      )
+    statistic = time_agg['statistic'].lower().replace('_', '-')
+    if statistic not in _ALLOWED_TIME_AGGREGATION_STATISTICS:
+      raise calliope_exceptions.InvalidArgumentException(
+          '--cpu-time-aggregation statistic',
+          'allowed statistics are {}.'.format(
+              ', '.join(_ALLOWED_TIME_AGGREGATION_STATISTICS)
+          ),
+      )
+    if statistic == 'percentile':
+      if 'percentile' not in time_agg:
+        raise calliope_exceptions.InvalidArgumentException(
+            '--cpu-time-aggregation percentile',
+            'percentile is required when statistic is percentile.',
+        )
+    else:
+      if 'percentile' in time_agg:
+        raise calliope_exceptions.InvalidArgumentException(
+            '--cpu-time-aggregation percentile',
+            'percentile can only be specified when statistic is percentile.',
+        )
+    time_window = time_agg['time-window']
+    if time_window < arg_parsers.Duration()(
+        _AUTOSCALER_CPU_TIME_AGGREGATION_MIN_WINDOW_SECONDS
+    ) or time_window > arg_parsers.Duration()(
+        _AUTOSCALER_CPU_TIME_AGGREGATION_MAX_WINDOW_SECONDS
+    ):
+      raise calliope_exceptions.InvalidArgumentException(
+          '--cpu-time-aggregation time-window',
+          'time window must be between {0} and {1} inclusive.'.format(
+              _AUTOSCALER_CPU_TIME_AGGREGATION_MIN_WINDOW_SECONDS,
+              _AUTOSCALER_CPU_TIME_AGGREGATION_MAX_WINDOW_SECONDS,
+          ),
+      )
+
+  if args.IsKnownAndSpecified('cpu_signal_aggregation'):
+    signal_agg = args.cpu_signal_aggregation
+    if 'statistic' not in signal_agg:
+      raise calliope_exceptions.InvalidArgumentException(
+          '--cpu-signal-aggregation', 'statistic not present.'
+      )
+    statistic = signal_agg['statistic'].lower().replace('_', '-')
+    if statistic not in _ALLOWED_SIGNAL_AGGREGATION_STATISTICS:
+      raise calliope_exceptions.InvalidArgumentException(
+          '--cpu-signal-aggregation statistic',
+          'allowed statistics are {}.'.format(
+              ', '.join(_ALLOWED_SIGNAL_AGGREGATION_STATISTICS)
+          ),
+      )
+    if statistic == 'percentile':
+      if 'percentile' not in signal_agg:
+        raise calliope_exceptions.InvalidArgumentException(
+            '--cpu-signal-aggregation percentile',
+            'percentile is required when statistic is percentile.',
+        )
+    else:
+      if 'percentile' in signal_agg:
+        raise calliope_exceptions.InvalidArgumentException(
+            '--cpu-signal-aggregation percentile',
+            'percentile can only be specified when statistic is percentile.',
+        )
+
+
 def ValidateAutoscalerArgs(args):
   """Validates args."""
+  ValidateCpuAggregationArgs(args)
   if args.min_num_replicas and args.max_num_replicas:
     if args.min_num_replicas > args.max_num_replicas:
       raise calliope_exceptions.InvalidArgumentException(
@@ -988,25 +1137,65 @@ def AddAutoscalersToMigs(
     yield mig
 
 
+def BuildCpuTimeAggregation(args, messages):
+  """Builds AutoscalingPolicyTimeAggregation message."""
+  if not hasattr(messages, 'AutoscalingPolicyTimeAggregation'):
+    return None
+  time_agg = args.cpu_time_aggregation
+  stat_enum = messages.AutoscalingPolicyTimeAggregation.StatisticValueValuesEnum
+  statistic = arg_utils.ChoiceToEnum(time_agg['statistic'], stat_enum)
+  time_window_sec = int(time_agg['time-window'])
+  percentile = int(time_agg['percentile']) if 'percentile' in time_agg else None
+  return messages.AutoscalingPolicyTimeAggregation(
+      statistic=statistic,
+      timeWindowSec=time_window_sec,
+      percentile=percentile,
+  )
+
+
+def BuildCpuSignalAggregation(args, messages):
+  """Builds AutoscalingPolicySignalAggregation message."""
+  if not hasattr(messages, 'AutoscalingPolicySignalAggregation'):
+    return None
+  signal_agg = args.cpu_signal_aggregation
+  stat_enum = (
+      messages.AutoscalingPolicySignalAggregation.StatisticValueValuesEnum
+  )
+  statistic = arg_utils.ChoiceToEnum(signal_agg['statistic'], stat_enum)
+  percentile = (
+      int(signal_agg['percentile']) if 'percentile' in signal_agg else None
+  )
+  return messages.AutoscalingPolicySignalAggregation(
+      statistic=statistic,
+      percentile=percentile,
+  )
+
+
 def _BuildCpuUtilization(args, messages):
   """Builds the CPU Utilization message given relevant arguments."""
   flags_to_check = [
       'target_cpu_utilization',
       'scale_based_on_cpu',
       'cpu_utilization_predictive_method',
+      'cpu_time_aggregation',
+      'cpu_signal_aggregation',
   ]
 
-  if instance_utils.IsAnySpecified(args, *flags_to_check):
+  if any(args.IsKnownAndSpecified(dest) for dest in flags_to_check):
     cpu_message = messages.AutoscalingPolicyCpuUtilization()
-    if args.target_cpu_utilization:
+    if args.IsKnownAndSpecified('target_cpu_utilization'):
       cpu_message.utilizationTarget = args.target_cpu_utilization
-    if args.cpu_utilization_predictive_method:
+    if args.IsKnownAndSpecified('cpu_utilization_predictive_method'):
       cpu_predictive_enum = (
           messages.AutoscalingPolicyCpuUtilization.PredictiveMethodValueValuesEnum
       )
       cpu_message.predictiveMethod = arg_utils.ChoiceToEnum(
           args.cpu_utilization_predictive_method, cpu_predictive_enum
       )
+    if args.IsKnownAndSpecified('cpu_time_aggregation'):
+      cpu_message.timeAggregation = BuildCpuTimeAggregation(args, messages)
+    if args.IsKnownAndSpecified('cpu_signal_aggregation'):
+      cpu_message.signalAggregation = BuildCpuSignalAggregation(args, messages)
     return cpu_message
   return None
 

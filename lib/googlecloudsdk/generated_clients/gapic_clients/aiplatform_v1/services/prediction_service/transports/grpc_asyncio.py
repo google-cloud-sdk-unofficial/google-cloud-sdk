@@ -520,7 +520,9 @@ class PredictionServiceGrpcAsyncIOTransport(PredictionServiceTransport):
             Awaitable[prediction_service.StreamingPredictResponse]]:
         r"""Return a callable for the streaming predict method over gRPC.
 
-        Perform a streaming online prediction request for
+        Deprecated: Renamed to
+        [PredictionService.StreamDirectPredict][google.cloud.aiplatform.v1.PredictionService.StreamDirectPredict]
+        (b/323233534). Perform a streaming online prediction request for
         Vertex first-party products and frameworks.
 
         Returns:
@@ -674,6 +676,58 @@ class PredictionServiceGrpcAsyncIOTransport(PredictionServiceTransport):
                 response_deserializer=httpbody_pb2.HttpBody.FromString,
             )
         return self._stubs['invoke']
+
+    @property
+    def get_response(self) -> Callable[
+            [prediction_service.GetResponseRequest],
+            Awaitable[httpbody_pb2.HttpBody]]:
+        r"""Return a callable for the get response method over gRPC.
+
+        Gets the response from the endpoint.
+
+        Returns:
+            Callable[[~.GetResponseRequest],
+                    Awaitable[~.HttpBody]]:
+                A function that, when called, will call the underlying RPC
+                on the server.
+        """
+        # Generate a "stub function" on-the-fly which will actually make
+        # the request.
+        # gRPC handles serialization and deserialization, so we just need
+        # to pass in the functions for each.
+        if 'get_response' not in self._stubs:
+            self._stubs['get_response'] = self._logged_channel.unary_unary(
+                '/google.cloud.aiplatform.v1.PredictionService/GetResponse',
+                request_serializer=prediction_service.GetResponseRequest.serialize,
+                response_deserializer=httpbody_pb2.HttpBody.FromString,
+            )
+        return self._stubs['get_response']
+
+    @property
+    def delete_response(self) -> Callable[
+            [prediction_service.DeleteResponseRequest],
+            Awaitable[httpbody_pb2.HttpBody]]:
+        r"""Return a callable for the delete response method over gRPC.
+
+        Deletes the response from the endpoint.
+
+        Returns:
+            Callable[[~.DeleteResponseRequest],
+                    Awaitable[~.HttpBody]]:
+                A function that, when called, will call the underlying RPC
+                on the server.
+        """
+        # Generate a "stub function" on-the-fly which will actually make
+        # the request.
+        # gRPC handles serialization and deserialization, so we just need
+        # to pass in the functions for each.
+        if 'delete_response' not in self._stubs:
+            self._stubs['delete_response'] = self._logged_channel.unary_unary(
+                '/google.cloud.aiplatform.v1.PredictionService/DeleteResponse',
+                request_serializer=prediction_service.DeleteResponseRequest.serialize,
+                response_deserializer=httpbody_pb2.HttpBody.FromString,
+            )
+        return self._stubs['delete_response']
 
     @property
     def explain(self) -> Callable[
@@ -882,6 +936,16 @@ class PredictionServiceGrpcAsyncIOTransport(PredictionServiceTransport):
             ),
             self.invoke: self._wrap_method(
                 self.invoke,
+                default_timeout=None,
+                client_info=client_info,
+            ),
+            self.get_response: self._wrap_method(
+                self.get_response,
+                default_timeout=None,
+                client_info=client_info,
+            ),
+            self.delete_response: self._wrap_method(
+                self.delete_response,
                 default_timeout=None,
                 client_info=client_info,
             ),

@@ -1457,6 +1457,28 @@ class CloudsecuritycomplianceOrganizationsLocationsFrameworkDeploymentsListReque
   parent = _messages.StringField(5, required=True)
 
 
+class CloudsecuritycomplianceOrganizationsLocationsFrameworkDeploymentsPatchRequest(_messages.Message):
+  r"""A CloudsecuritycomplianceOrganizationsLocationsFrameworkDeploymentsPatch
+  Request object.
+
+  Fields:
+    frameworkDeployment: A FrameworkDeployment resource to be passed as the
+      request body.
+    name: Identifier. The name of the framework deployment, in the format `org
+      anizations/{organization}/locations/{location}/frameworkDeployments/{fra
+      mework_deployment}` or `projects/{project}/locations/{location}/framewor
+      kDeployments/{framework_deployment}`. The only supported location is
+      `global`.
+    updateMask: Optional. Include the fields that you want to overwrite in the
+      field mask. Specify fields relative to the resource, not the full
+      request. If you don't provide a mask, then all fields are overwritten.
+  """
+
+  frameworkDeployment = _messages.MessageField('FrameworkDeployment', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
+
+
 class CloudsecuritycomplianceOrganizationsLocationsFrameworksCreateRequest(_messages.Message):
   r"""A CloudsecuritycomplianceOrganizationsLocationsFrameworksCreateRequest
   object.
@@ -2141,6 +2163,29 @@ class CloudsecuritycomplianceProjectsLocationsFrameworkDeploymentsListRequest(_m
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   parent = _messages.StringField(5, required=True)
+
+
+class CloudsecuritycomplianceProjectsLocationsFrameworkDeploymentsPatchRequest(_messages.Message):
+  r"""A
+  CloudsecuritycomplianceProjectsLocationsFrameworkDeploymentsPatchRequest
+  object.
+
+  Fields:
+    frameworkDeployment: A FrameworkDeployment resource to be passed as the
+      request body.
+    name: Identifier. The name of the framework deployment, in the format `org
+      anizations/{organization}/locations/{location}/frameworkDeployments/{fra
+      mework_deployment}` or `projects/{project}/locations/{location}/framewor
+      kDeployments/{framework_deployment}`. The only supported location is
+      `global`.
+    updateMask: Optional. Include the fields that you want to overwrite in the
+      field mask. Specify fields relative to the resource, not the full
+      request. If you don't provide a mask, then all fields are overwritten.
+  """
+
+  frameworkDeployment = _messages.MessageField('FrameworkDeployment', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
 
 
 class CloudsecuritycomplianceProjectsLocationsFrameworksCreateRequest(_messages.Message):

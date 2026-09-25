@@ -14,10 +14,14 @@
 # limitations under the License.
 """Command to tail logs for a Cloud Run instance."""
 
+import subprocess
+import sys
+
 from googlecloudsdk.api_lib.run import ssh as run_ssh
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run.sync import log_tailer
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -55,6 +59,32 @@ class Tail(base.Command):
     )
     parser.add_argument('instance', help='Name for a Cloud Run instance.')
 
+  def _StreamLogs(self, ssh_cmd, env):
+    """Executes the SSH command and streams filtered log lines."""
+    cmd = ssh_cmd.Build(env)
+    process = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        bufsize=1,
+    )
+    try:
+      for line in iter(process.stdout.readline, ''):
+        line = log_tailer.FormatLogLineForTail(line)
+        sys.stdout.write(line)
+        sys.stdout.flush()
+    except KeyboardInterrupt:
+      pass
+    finally:
+      if process.poll() is None:
+        process.terminate()
+        try:
+          process.wait(timeout=2)
+        except subprocess.TimeoutExpired:
+          process.kill()
+    return process.poll() or 0
+
   def Run(self, args):
     """Executes the tail logs command on the target instance."""
     args.project = flags.GetProjectID(args)
@@ -85,4 +115,4 @@ class Tail(base.Command):
             '/usr/local/gcp/bin/tail_logs',
         ],
     )
-    return ssh_cmd.Run(components.env)
+    return self._StreamLogs(ssh_cmd, components.env)

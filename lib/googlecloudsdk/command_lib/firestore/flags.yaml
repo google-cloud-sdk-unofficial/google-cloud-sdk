@@ -55,6 +55,24 @@ enable_pitr:
   - arg_value: false
     enum_value: POINT_IN_TIME_RECOVERY_DISABLED
 
+enable_realtime_updates:
+  api_field: googleFirestoreAdminV1Database.realtimeUpdatesMode
+  arg_name: enable-realtime-updates
+  action: store_true
+  default: null
+  required: false
+  release_tracks: [ALPHA]
+  # TODO(b/441062774): Remove hidden once the feature is ready to launch.
+  hidden: true
+  help_text: |
+    If set to true, the Firestore database will be updated to enable Realtime Updates. You can
+    disable this feature via --no-enable-realtime-updates.
+  choices:
+  - arg_value: true
+    enum_value: REALTIME_UPDATES_MODE_ENABLED
+  - arg_value: false
+    enum_value: REALTIME_UPDATES_MODE_DISABLED
+
 # entity-group simulation is not listed here as it is a legacy feature, disallowed by most databases
 # and we don't want to promote its usage or confuse users around it.
 concurrency_mode:

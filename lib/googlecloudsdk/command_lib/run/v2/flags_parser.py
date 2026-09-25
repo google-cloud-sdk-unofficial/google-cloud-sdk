@@ -15,7 +15,8 @@
 """Parsers given command arguments for the Cloud Run V2 command surface into configuration changes."""
 
 import argparse
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
+from typing import Any
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import config_changes as run_config_changes
 from googlecloudsdk.command_lib.run import exceptions
@@ -555,19 +556,73 @@ def _HasWorkerPoolScalingChanges(
         'instances',
         'scaling',
         'scaling_cpu_target',
+        'clear_scaling_cpu_target',
         'min',
         'max',
-        'scaling_pubsub_target',
-        'scaling_pubsub_subscription',
+        'add_scaling_pubsub_subscription',
+        'remove_scaling_pubsub_subscription',
+        'clear_scaling_pubsub_subscriptions',
     ]
-    if getattr(args, 'pubsub_scalings', None):
-      return True
   else:
     scaling_flags = [
         'instances',
         'scaling',
     ]
   return flags.HasChanges(args, scaling_flags)
+
+
+_ALLOWED_PUBSUB_KEYS = frozenset({'subscription', 'target'})
+
+
+def _ValidateAddPubSubScalingKeys(item: dict[str, Any]) -> None:
+  """Validates allowed and required keys for an add Pub/Sub scaling item."""
+  extra_keys = set(item.keys()) - _ALLOWED_PUBSUB_KEYS
+  if extra_keys:
+    raise exceptions.ConfigurationError(
+        'Invalid key(s) ['
+        + ', '.join(sorted(extra_keys))
+        + '] in --add-scaling-pubsub-subscription. Allowed keys are'
+        ' subscription, target.'
+    )
+  if not item.get('subscription'):
+    raise exceptions.ConfigurationError(
+        'Missing required key [subscription] in'
+        ' --add-scaling-pubsub-subscription.'
+    )
+
+
+def _ValidateAndParsePubSubScalingTarget(target_raw: str | None) -> int | None:
+  """Validates and parses the target for an add Pub/Sub scaling item."""
+  if target_raw is None or target_raw == 'default':
+    return None
+  try:
+    target_val = int(target_raw)
+    if target_val <= 0:
+      raise ValueError()
+    return target_val
+  except (ValueError, TypeError) as exc:
+    raise exceptions.ConfigurationError(
+        f'Invalid target [{target_raw}] in'
+        ' --add-scaling-pubsub-subscription. Target must be a'
+        " positive integer or 'default'."
+    ) from exc
+
+
+def _ParseAddPubSubScalingSpecs(
+    items: Iterable[dict[str, Any]],
+) -> list[config_changes.PubSubScalingSpec]:
+  """Parses and validates --add-scaling-pubsub-subscription items into specs."""
+  specs = []
+  for item in items:
+    _ValidateAddPubSubScalingKeys(item)
+    target_val = _ValidateAndParsePubSubScalingTarget(item.get('target'))
+    specs.append(
+        config_changes.PubSubScalingSpec(
+            subscription=item['subscription'],
+            target_value=target_val,
+        )
+    )
+  return specs
 
 
 def _GetWorkerPoolScalingChanges(
@@ -578,17 +633,20 @@ def _GetWorkerPoolScalingChanges(
   has_instances = flags.FlagIsExplicitlySet(args, 'instances')
   has_scaling = flags.FlagIsExplicitlySet(args, 'scaling')
   has_cpu_scaling = flags.FlagIsExplicitlySet(args, 'scaling_cpu_target')
+  has_clear_cpu_scaling = flags.FlagIsExplicitlySet(
+      args, 'clear_scaling_cpu_target'
+  )
   has_min = flags.FlagIsExplicitlySet(args, 'min')
   has_max = flags.FlagIsExplicitlySet(args, 'max')
-  has_pubsub_target = flags.FlagIsExplicitlySet(args, 'scaling_pubsub_target')
-  has_pubsub_subscription = flags.FlagIsExplicitlySet(
-      args, 'scaling_pubsub_subscription'
+  has_add_pubsub = flags.FlagIsExplicitlySet(
+      args, 'add_scaling_pubsub_subscription'
   )
-  pubsub_scalings_list = getattr(args, 'pubsub_scalings', None)
-  has_pubsub_scaling = (
-      has_pubsub_target or has_pubsub_subscription or bool(pubsub_scalings_list)
+  has_remove_pubsub = flags.FlagIsExplicitlySet(
+      args, 'remove_scaling_pubsub_subscription'
   )
-
+  has_clear_pubsub = flags.FlagIsExplicitlySet(
+      args, 'clear_scaling_pubsub_subscriptions'
+  )
   if release_track == base.ReleaseTrack.ALPHA:
     if has_instances and has_scaling:
       raise exceptions.ConfigurationError(
@@ -608,31 +666,37 @@ def _GetWorkerPoolScalingChanges(
         raise exceptions.ConfigurationError(
             f'Cannot specify both {manual_flag} and --max.'
         )
+      if has_cpu_scaling:
+        raise exceptions.ConfigurationError(
+            f'Cannot specify both {manual_flag} and --scaling-cpu-target.'
+        )
+      if has_add_pubsub:
+        raise exceptions.ConfigurationError(
+            f'Cannot specify both {manual_flag} and'
+            ' --add-scaling-pubsub-subscription.'
+        )
+      if has_remove_pubsub:
+        raise exceptions.ConfigurationError(
+            f'Cannot specify both {manual_flag} and'
+            ' --remove-scaling-pubsub-subscription.'
+        )
+      if has_clear_pubsub:
+        raise exceptions.ConfigurationError(
+            f'Cannot specify both {manual_flag} and'
+            ' --clear-scaling-pubsub-subscriptions.'
+        )
 
-    if has_instances and has_cpu_scaling:
+    if has_cpu_scaling and has_clear_cpu_scaling:
       raise exceptions.ConfigurationError(
-          'Cannot specify both --instances and --scaling-cpu-target.'
+          'Cannot specify both --scaling-cpu-target and'
+          ' --clear-scaling-cpu-target.'
       )
 
-    def _CheckPubSubConflicts(flag_name, has_flag):
-      if not has_flag:
-        return
-      if has_pubsub_target:
-        raise exceptions.ConfigurationError(
-            f'Cannot specify both --{flag_name} and --scaling-pubsub-target.'
-        )
-      if has_pubsub_subscription or pubsub_scalings_list:
-        raise exceptions.ConfigurationError(
-            f'Cannot specify both --{flag_name} and'
-            ' --scaling-pubsub-subscription.'
-        )
-
-    _CheckPubSubConflicts('instances', has_instances)
-    _CheckPubSubConflicts('scaling', has_scaling_manual)
-
-    if has_scaling_manual and has_cpu_scaling:
+    if has_clear_pubsub and (has_add_pubsub or has_remove_pubsub):
       raise exceptions.ConfigurationError(
-          'Cannot specify both --scaling and --scaling-cpu-target.'
+          'Cannot specify both --clear-scaling-pubsub-subscriptions and'
+          ' --add-scaling-pubsub-subscription or'
+          ' --remove-scaling-pubsub-subscription.'
       )
 
     if has_instances:
@@ -644,8 +708,42 @@ def _GetWorkerPoolScalingChanges(
       changes.append(
           config_changes.WorkerPoolInstancesChange(instances=instances)
       )
+    elif has_scaling_auto:
+      changes.append(config_changes.WorkerPoolAutoScalingChange())
 
-    if has_cpu_scaling:
+    if has_clear_pubsub and args.clear_scaling_pubsub_subscriptions:
+      changes.append(
+          config_changes.WorkerPoolClearPubSubScalingChange(
+              allow_empty=bool(has_cpu_scaling)
+          )
+      )
+
+    if has_remove_pubsub and args.remove_scaling_pubsub_subscription:
+      changes.append(
+          config_changes.WorkerPoolRemovePubSubScalingChange(
+              removed_subscriptions=list(
+                  args.remove_scaling_pubsub_subscription
+              ),
+              allow_empty=bool(has_add_pubsub or has_cpu_scaling),
+          )
+      )
+
+    if has_add_pubsub and args.add_scaling_pubsub_subscription:
+      changes.append(
+          config_changes.WorkerPoolAddPubSubScalingChange(
+              new_pubsub_scalings=_ParseAddPubSubScalingSpecs(
+                  args.add_scaling_pubsub_subscription
+              )
+          )
+      )
+
+    if has_clear_cpu_scaling:
+      changes.append(
+          config_changes.WorkerPoolClearCpuScalingChange(
+              allow_empty=bool(has_add_pubsub)
+          )
+      )
+    elif has_cpu_scaling:
       changes.append(
           config_changes.WorkerPoolCpuScalingChange(
               cpu_utilization=(
@@ -656,44 +754,12 @@ def _GetWorkerPoolScalingChanges(
               restore_default=args.scaling_cpu_target.restore_default,
           )
       )
-    elif has_scaling_auto:
-      changes.append(
-          config_changes.WorkerPoolCpuScalingChange(cpu_utilization=None)
-      )
 
     if has_min or has_max:
       changes.append(
           config_changes.WorkerPoolMinMaxScalingChange(
               min_instances=args.min if has_min else None,
               max_instances=args.max if has_max else None,
-          )
-      )
-
-    if has_pubsub_scaling:
-      specs = []
-      if pubsub_scalings_list:
-        for ps in pubsub_scalings_list:
-          sub = getattr(ps, 'scaling_pubsub_subscription', None)
-          target = getattr(ps, 'scaling_pubsub_target', None)
-          specs.append(
-              config_changes.PubSubScalingSpec(
-                  subscription=sub, target_value=target
-              )
-          )
-      else:
-        specs.append(
-            config_changes.PubSubScalingSpec(
-                subscription=args.scaling_pubsub_subscription
-                if has_pubsub_subscription
-                else None,
-                target_value=args.scaling_pubsub_target
-                if has_pubsub_target
-                else None,
-            )
-        )
-      changes.append(
-          config_changes.WorkerPoolPubSubScalingChange(
-              pubsub_scalings=specs
           )
       )
 

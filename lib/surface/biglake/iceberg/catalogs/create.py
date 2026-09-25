@@ -35,6 +35,13 @@ help_text = textwrap.dedent("""\
     To create a catalog `my-lakehouse-catalog` with catalog type lakehouse, run:
 
       $ {command} my-lakehouse-catalog --catalog-type=lakehouse --default-location=gs://my-bucket
+    To create a catalog `my-lakehouse-catalog` with cross-cloud cache enabled, run:
+
+      $ {command} my-lakehouse-catalog --catalog-type=lakehouse --default-location=gs://my-bucket --cross-cloud-cache=enabled
+
+    To create a catalog `my-lakehouse-catalog` with CMEK encryption, run:
+
+      $ {command} my-lakehouse-catalog --catalog-type=lakehouse --default-location=gs://my-bucket --kms-key=projects/my-project/locations/us-central1/keyRings/my-ring/cryptoKeys/my-key
     """)
 # TODO(b/539807179): Uncomment when --kms-key flag visibility is updated.
 # To create a catalog `my-lakehouse-catalog` with CMEK encryption, run:
@@ -50,7 +57,7 @@ help_text_preview = textwrap.dedent("""\
     """)
 
 
-def _BuildFederatedCatalogMessage(args, messages):
+def _BuildFederatedCatalogMessage(args, messages, release_track=None):
   """Builds FederatedCatalogMessage for federated catalogs."""
   if args.federated_catalog_type == 'unity':
     federated_catalog_options = messages.FederatedCatalogOptions(
@@ -94,6 +101,14 @@ def _BuildFederatedCatalogMessage(args, messages):
     )
   else:
     federated_catalog_options = messages.FederatedCatalogOptions()
+
+  if release_track and args.IsKnownAndSpecified(
+      'federated_catalog_identity_mode'
+  ):
+    federated_catalog_options.identity_mode = util.GetIdentityModeEnumMapper(
+        release_track
+    ).GetEnumForChoice(args.federated_catalog_identity_mode)
+
   # Refresh options are supported for all federated catalog types.
   refresh_options = messages.RefreshOptions()
   if args.refresh_interval:
@@ -125,6 +140,7 @@ class CreateCatalog(base.CreateCommand):
   _support_snowflake_catalog = False
   _support_workday_catalog = False
   _support_unity_service_principal_application_id = False
+  _support_identity_mode = False
 
   @classmethod
   def Args(cls, parser):
@@ -132,6 +148,10 @@ class CreateCatalog(base.CreateCommand):
     util.GetCredentialModeEnumMapper(
         cls.ReleaseTrack()
     ).choice_arg.AddToParser(parser)
+    if cls._support_identity_mode:
+      util.GetIdentityModeEnumMapper(
+          cls.ReleaseTrack(), hidden=True
+      ).choice_arg.AddToParser(parser)
     util.GetCatalogTypeEnumMapper(
         cls.ReleaseTrack()
     ).choice_arg.AddToParser(parser)
@@ -175,6 +195,10 @@ class CreateCatalog(base.CreateCommand):
         ).GetEnumForChoice(args.catalog_type),
         credential_mode=credential_mode,
     )
+    if args.IsSpecified('cross_cloud_cache'):
+      catalog.cross_cloud_cache_options = messages.CrossCloudCacheOptions(
+          enabled=(args.cross_cloud_cache == 'enabled')
+      )
     if args.IsSpecified('description'):
       catalog.description = args.description
     if args.IsSpecified('default_location'):
@@ -188,13 +212,13 @@ class CreateCatalog(base.CreateCommand):
 
     kms_key = arguments.GetAndValidateKmsKeyName(args)
     if kms_key:
-      catalog.encryption_configuration = messages.EncryptionConfiguration(
+      catalog.encryption_config = messages.EncryptionConfig(
           kms_key_name=kms_key
       )
 
     if self._support_federated_catalog and args.catalog_type == 'federated':
       catalog.federated_catalog_options = _BuildFederatedCatalogMessage(
-          args, messages
+          args, messages, release_track=self.ReleaseTrack()
       )
 
     response = util.CreateCatalog(
@@ -241,3 +265,4 @@ class CreateAlpha(CreateBeta):
   _support_glue_catalog = True
   _support_snowflake_catalog = True
   _support_workday_catalog = True
+  _support_identity_mode = True

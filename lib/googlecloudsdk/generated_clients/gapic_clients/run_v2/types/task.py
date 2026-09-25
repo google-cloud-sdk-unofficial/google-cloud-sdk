@@ -269,6 +269,9 @@ class Task(proto.Message):
             redundancy is disabled on this task.
 
             This field is a member of `oneof`_ ``_gpu_zonal_redundancy_disabled``.
+        workload_identity_config (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.WorkloadIdentityConfig):
+            Optional. The Task's workload identity
+            settings.
         etag (str):
             Output only. A system-generated fingerprint
             for this version of the resource. May be used to
@@ -430,6 +433,11 @@ class Task(proto.Message):
         proto.BOOL,
         number=37,
         optional=True,
+    )
+    workload_identity_config: vendor_settings.WorkloadIdentityConfig = proto.Field(
+        proto.MESSAGE,
+        number=38,
+        message=vendor_settings.WorkloadIdentityConfig,
     )
     etag: str = proto.Field(
         proto.STRING,

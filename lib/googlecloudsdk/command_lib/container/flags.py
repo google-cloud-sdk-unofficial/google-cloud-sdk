@@ -3045,7 +3045,10 @@ https://cloud.google.com/kubernetes-engine/docs/how-to/credential-rotation."""
 
 
 def AddMaintenanceWindowGroup(
-    parser, hidden=False, recurring_windows_hidden=False
+    parser,
+    hidden=False,
+    recurring_windows_hidden=False,
+    release_track=base.ReleaseTrack.GA,
 ):
   """Adds a mutex for --maintenance-window and --maintenance-window-*."""
   maintenance_group = parser.add_group(hidden=hidden, mutex=True)
@@ -3055,7 +3058,9 @@ be set.
 """
   AddDailyMaintenanceWindowFlag(maintenance_group)
   AddRecurringMaintenanceWindowFlags(
-      maintenance_group, hidden=recurring_windows_hidden
+      maintenance_group,
+      hidden=recurring_windows_hidden,
+      release_track=release_track,
   )
 
 
@@ -3100,7 +3105,9 @@ To remove an existing maintenance window from the cluster, use
   )
 
 
-def AddRecurringMaintenanceWindowFlags(parser, hidden=False, is_update=False):
+def AddRecurringMaintenanceWindowFlags(
+    parser, hidden=False, is_update=False, release_track=base.ReleaseTrack.GA
+):
   """Adds flags related to recurring maintenance windows to the parser."""
   hidden_for_create = hidden and not is_update  # for surface spec validation
   if is_update:
@@ -3203,10 +3210,12 @@ If set, remove the maintenance window that was set with --maintenance-window
 family of flags.
 """,
     )
-    AddMaintenanceExclusionFlags(group)
+    AddMaintenanceExclusionFlags(group, release_track=release_track)
 
 
-def AddMaintenanceExclusionFlags(parser, hidden=False, enable_scope=True):
+def AddMaintenanceExclusionFlags(
+    parser, hidden=False, enable_scope=True, release_track=base.ReleaseTrack.GA
+):
   """Adds flags related to adding a maintenance exclusion to the parser."""
   help_text = """\
 Sets a period of time in which maintenance should not occur. This is compatible
@@ -3282,20 +3291,35 @@ End time of the exclusion window is the end of the cluster's support.
 """,
   )
 
+  if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
+    scope_validator = arg_parsers.RegexpValidator(
+        r'^(no_upgrades|no_minor_upgrades|no_minor_or_node_upgrades|no_target_node_version_update)$',
+        'Must be in one of "no_upgrades", "no_minor_upgrades",'
+        ' "no_minor_or_node_upgrades" or "no_target_node_version_update"',
+    )
+    scope_help = """\
+Scope of the exclusion window to specify the type of upgrades that the exclusion
+will apply to. Must be in one of no_upgrades, no_minor_upgrades, no_minor_or_node_upgrades or no_target_node_version_update.
+If not specified in an exclusion, defaults to no_upgrades.
+"""
+  else:
+    scope_validator = arg_parsers.RegexpValidator(
+        r'^(no_upgrades|no_minor_upgrades|no_minor_or_node_upgrades)$',
+        'Must be in one of "no_upgrades", "no_minor_upgrades",'
+        ' or "no_minor_or_node_upgrades"',
+    )
+    scope_help = """\
+Scope of the exclusion window to specify the type of upgrades that the exclusion
+will apply to. Must be in one of no_upgrades, no_minor_upgrades, or no_minor_or_node_upgrades.
+If not specified in an exclusion, defaults to no_upgrades.
+"""
+
   group.add_argument(
       '--add-maintenance-exclusion-scope',
-      type=arg_parsers.RegexpValidator(
-          r'^(no_upgrades|no_minor_upgrades|no_minor_or_node_upgrades)$',
-          'Must be in one of "no_upgrades", "no_minor_upgrades" or'
-          ' "no_minor_or_node_upgrades"',
-      ),
+      type=scope_validator,
       required=False,
       metavar='SCOPE',
-      help="""\
-Scope of the exclusion window to specify the type of upgrades that the exclusion
-will apply to. Must be in one of no_upgrades, no_minor_upgrades or no_minor_or_node_upgrades.
-If not specified in an exclusion, defaults to no_upgrades.
-""",
+      help=scope_help,
       hidden=not enable_scope,
   )
 
@@ -3993,6 +4017,7 @@ def AddAddonsFlagsWithOptions(parser, addon_options):
       if addon
       not in [
           api_adapter.APPLICATIONMANAGER,
+          api_adapter.PARALLELSTORECSIDRIVER,
           api_adapter.STATEFULHA,
           api_adapter.WIZ_SENSOR,
           # TODO: b/482020381 - Remove once KUEUE is GA, so it appears in the
@@ -9353,3 +9378,42 @@ Select scalability mode for dataplane v2.
       help=help_text,
       hidden=hidden,
   )
+
+
+def AddTargetNodeVersionFlags(parser, hidden=False, is_update=False):
+  """Adds --target-node-version and optionally --clear-target-node-version flags to parser."""
+  if is_update:
+    group = parser.add_group(mutex=True, hidden=hidden)
+    group.add_argument(
+        '--target-node-version',
+        type=arg_parsers.RegexpValidator(
+            r'^.+$',
+            'Value cannot be empty. Use --clear-target-node-version to clear'
+            ' the target node version.',
+        ),
+        hidden=hidden,
+        help="""\
+Target node version for the cluster to declare the desired node version.
+""",
+    )
+    group.add_argument(
+        '--clear-target-node-version',
+        action='store_true',
+        default=None,
+        hidden=hidden,
+        help="""\
+Clears the target node version for the cluster.
+""",
+    )
+  else:
+    parser.add_argument(
+        '--target-node-version',
+        type=arg_parsers.RegexpValidator(
+            r'^.+$',
+            'Value cannot be empty.',
+        ),
+        hidden=hidden,
+        help="""\
+Target node version for the cluster to declare the desired node version.
+""",
+    )

@@ -1,4 +1,6 @@
 - release_tracks: [GA]
+  hints:
+    read_only: false
   help_text:
     brief: |
       Update VM Manager project feature settings.

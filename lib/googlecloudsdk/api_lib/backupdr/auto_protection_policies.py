@@ -44,7 +44,7 @@ class AutoProtectionPoliciesClient(util.BackupDrClientBase):
               self.messages.MatchingCondition(
                   labelCondition=self.messages.KeyValuePair(
                       key=criteria_label['key'],
-                      values=[criteria_label['value']]
+                      values=[criteria_label['values']]
                   )
               )
           ]
@@ -98,7 +98,7 @@ class AutoProtectionPoliciesClient(util.BackupDrClientBase):
               self.messages.MatchingCondition(
                   labelCondition=self.messages.KeyValuePair(
                       key=criteria_label['key'],
-                      values=[criteria_label['value']]
+                      values=[criteria_label['values']]
                   )
               )
           ]

@@ -1185,3 +1185,50 @@ def AddAutoProtectionPolicyResourceArg(parser, help_text):
       help_text,
       required=True,
   ).AddToParser(parser)
+
+
+def _ValidateValues(value):
+  if ',' in value:
+    raise arg_parsers.ArgumentTypeError(
+        'Values cannot contain commas, Multiple values are not supported.'
+    )
+  return value
+
+
+class CriteriaStoreOnceAction(argparse.Action):
+
+  def __call__(self, parser, namespace, values, option_string=None):
+    if getattr(namespace, self.dest, None) is not None:
+      raise argparse.ArgumentError(
+          self,
+          f'"{self.dest}" argument cannot be specified multiple times',
+      )
+    setattr(namespace, self.dest, values)
+
+
+def ParseCriteria(value: str) -> dict[str, str]:
+  """Parses and validates --criteria flag.
+
+  Ensures the string doesn't contain duplicate 'key=' or 'values=' entries.
+
+  Args:
+    value: The string value passed to the --criteria flag.
+
+  Returns:
+    A dictionary containing the parsed 'key' and 'values' from the input.
+  """
+  items = arg_parsers.ArgList(custom_delim_char=',')(value)
+  keys = []
+  for item in items:
+    if '=' in item:
+      key = item.split('=', 1)[0].strip()
+      keys.append(key)
+  if keys.count('key') > 1 or keys.count('values') > 1:
+    raise arg_parsers.ArgumentTypeError(
+        'Multiple key= or values= entries in a single --criteria flag are not'
+        ' supported.'
+    )
+  return arg_parsers.ArgDict(
+      spec={'key': str, 'values': _ValidateValues},
+      required_keys=['key', 'values'],
+  )(value)

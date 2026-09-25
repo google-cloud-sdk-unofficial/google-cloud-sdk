@@ -147,7 +147,9 @@ def get_display_dict_for_resource(
 
   else:
     # Avoid printing all the attributes of StorageUrl.
-    display_data = {'storage_url': resource.storage_url.url_string}
+    display_data = {}
+    if getattr(resource, 'storage_url', None) is not None:
+      display_data['storage_url'] = resource.storage_url.url_string
 
     formatted_acl_dict = resource.get_formatted_acl()
     for field in display_titles_and_defaults._fields:

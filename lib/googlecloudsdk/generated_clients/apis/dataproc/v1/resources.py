@@ -49,6 +49,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_ATTACHMENTS_VIRTUALCLUSTERS = (
+      'projects.locations.attachments.virtualClusters',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/attachments/'
+              '{attachmentsId}/virtualClusters/{virtualClustersId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_AUTOSCALINGPOLICIES = (
       'projects.locations.autoscalingPolicies',
       '{+name}',

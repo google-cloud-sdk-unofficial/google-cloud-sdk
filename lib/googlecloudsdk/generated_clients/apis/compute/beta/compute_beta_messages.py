@@ -6794,9 +6794,10 @@ class BackendServiceHAPolicyLeaderNetworkEndpoint(_messages.Message):
   Fields:
     instance: The name of the VM instance of the leader network endpoint. The
       instance must already be attached to the NEG specified in the
-      haPolicy.leader.backendGroup.  The name must be 1-63 characters long,
-      and comply with RFC1035. Authorization requires the following IAM
-      permission on the specified resource instance: compute.instances.use
+      haPolicy.leader.backendGroup.  The value must be a valid RFC1035 name
+      (1-63 characters) or a valid instance URL. Authorization requires the
+      following IAM permission on the specified resource instance:
+      compute.instances.use
   """
 
   instance = _messages.StringField(1)
@@ -8421,6 +8422,12 @@ class CacheInvalidationRule(_messages.Message):
   r"""A CacheInvalidationRule object.
 
   Fields:
+    backendService: If set, this invalidation rule will only apply to requests
+      routed to the given backend service or backend bucket. For example, for
+      a backend bucket `bb1` in the same scope as the URL map, the path would
+      be `projects/my-project/global/backendBuckets/bb1`; and for a backend
+      service `bs1` in the same scope as the URL map, the path would be
+      `projects/my-project/global/backendServices/bs1`.
     cacheTags: A list of cache tags used to identify cached objects.         -
       Cache tags are specified when the response is first cached, by setting
       the `Cache-Tag` response header at the origin.    - Multiple cache tags
@@ -8428,14 +8435,22 @@ class CacheInvalidationRule(_messages.Message):
       example, `tag1 OR tag2 OR tag3`.    - If other fields are also
       specified, these are treated as Boolean `AND`    with any tags.   Up to
       10 tags can be specified in a single invalidation request.
+    contentType: If set, this invalidation rule will only apply to responses
+      with the given content-type. Parameters are not allowed and are ignored
+      from the response when matching. Wildcards are not allowed.
     host: If set, this invalidation rule will only apply to requests with a
       Host header matching host.
+    httpStatus: If set, this invalidation rule will only apply to responses
+      with the given HTTP status. Valid range is 200-599.
     path: A string attribute.
   """
 
-  cacheTags = _messages.StringField(1, repeated=True)
-  host = _messages.StringField(2)
-  path = _messages.StringField(3)
+  backendService = _messages.StringField(1)
+  cacheTags = _messages.StringField(2, repeated=True)
+  contentType = _messages.StringField(3)
+  host = _messages.StringField(4)
+  httpStatus = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  path = _messages.StringField(6)
 
 
 class CacheKeyPolicy(_messages.Message):
@@ -8900,7 +8915,7 @@ class CapacityAdviceRequestDistributionPolicy(_messages.Message):
         where resources are available while distributing VMs as evenly as
         possible across selected zones to minimize the impact of zonal
         failure.
-      TARGET_SHAPE_UNSPECIFIED: <no description>
+      TARGET_SHAPE_UNSPECIFIED: Default value, unused.
     """
     ANY = 0
     ANY_SINGLE_ZONE = 1
@@ -9144,7 +9159,7 @@ class CapacityHistoryRequest(_messages.Message):
     r"""TypesValueListEntryValuesEnum enum type.
 
     Values:
-      HISTORY_TYPE_UNSPECIFIED: <no description>
+      HISTORY_TYPE_UNSPECIFIED: Default value, unused.
       PREEMPTION: Preemption history.
       PRICE: Price history.
     """
@@ -36446,6 +36461,22 @@ class ComputeRegionSslPoliciesDeleteRequest(_messages.Message):
   sslPolicy = _messages.StringField(4, required=True)
 
 
+class ComputeRegionSslPoliciesGetIamPolicyRequest(_messages.Message):
+  r"""A ComputeRegionSslPoliciesGetIamPolicyRequest object.
+
+  Fields:
+    optionsRequestedPolicyVersion: Requested IAM Policy version.
+    project: Project ID for this request.
+    region: The name of the region for this request.
+    resource: Name or id of the resource for this request.
+  """
+
+  optionsRequestedPolicyVersion = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  project = _messages.StringField(2, required=True)
+  region = _messages.StringField(3, required=True)
+  resource = _messages.StringField(4, required=True)
+
+
 class ComputeRegionSslPoliciesGetRequest(_messages.Message):
   r"""A ComputeRegionSslPoliciesGetRequest object.
 
@@ -36654,6 +36685,23 @@ class ComputeRegionSslPoliciesPatchRequest(_messages.Message):
   requestId = _messages.StringField(3)
   sslPolicy = _messages.StringField(4, required=True)
   sslPolicyResource = _messages.MessageField('SslPolicy', 5)
+
+
+class ComputeRegionSslPoliciesSetIamPolicyRequest(_messages.Message):
+  r"""A ComputeRegionSslPoliciesSetIamPolicyRequest object.
+
+  Fields:
+    project: Project ID for this request.
+    region: The name of the region for this request.
+    regionSetPolicyRequest: A RegionSetPolicyRequest resource to be passed as
+      the request body.
+    resource: Name or id of the resource for this request.
+  """
+
+  project = _messages.StringField(1, required=True)
+  region = _messages.StringField(2, required=True)
+  regionSetPolicyRequest = _messages.MessageField('RegionSetPolicyRequest', 3)
+  resource = _messages.StringField(4, required=True)
 
 
 class ComputeRegionSslPoliciesTestIamPermissionsRequest(_messages.Message):
@@ -41938,6 +41986,20 @@ class ComputeSslPoliciesDeleteRequest(_messages.Message):
   sslPolicy = _messages.StringField(3, required=True)
 
 
+class ComputeSslPoliciesGetIamPolicyRequest(_messages.Message):
+  r"""A ComputeSslPoliciesGetIamPolicyRequest object.
+
+  Fields:
+    optionsRequestedPolicyVersion: Requested IAM Policy version.
+    project: Project ID for this request.
+    resource: Name or id of the resource for this request.
+  """
+
+  optionsRequestedPolicyVersion = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  project = _messages.StringField(2, required=True)
+  resource = _messages.StringField(3, required=True)
+
+
 class ComputeSslPoliciesGetRequest(_messages.Message):
   r"""A ComputeSslPoliciesGetRequest object.
 
@@ -42136,6 +42198,21 @@ class ComputeSslPoliciesPatchRequest(_messages.Message):
   requestId = _messages.StringField(2)
   sslPolicy = _messages.StringField(3, required=True)
   sslPolicyResource = _messages.MessageField('SslPolicy', 4)
+
+
+class ComputeSslPoliciesSetIamPolicyRequest(_messages.Message):
+  r"""A ComputeSslPoliciesSetIamPolicyRequest object.
+
+  Fields:
+    globalSetPolicyRequest: A GlobalSetPolicyRequest resource to be passed as
+      the request body.
+    project: Project ID for this request.
+    resource: Name or id of the resource for this request.
+  """
+
+  globalSetPolicyRequest = _messages.MessageField('GlobalSetPolicyRequest', 1)
+  project = _messages.StringField(2, required=True)
+  resource = _messages.StringField(3, required=True)
 
 
 class ComputeSslPoliciesTestIamPermissionsRequest(_messages.Message):
@@ -49917,11 +49994,16 @@ class DistributionPolicyZoneConfiguration(_messages.Message):
   r"""A DistributionPolicyZoneConfiguration object.
 
   Fields:
+    maxSize: Optional. The maximum size of the group in this zone. This value
+      can be either a fixed number or, a percentage. If you set a percentage,
+      the number of instances is rounded up if necessary. If unset, it is
+      interpreted as unbounded.
     zone: The URL of thezone. The zone must exist in the region where the
       managed instance group is located.
   """
 
-  zone = _messages.StringField(1)
+  maxSize = _messages.MessageField('FixedOrPercent', 1)
+  zone = _messages.StringField(2)
 
 
 class Duration(_messages.Message):
@@ -49942,6 +50024,34 @@ class Duration(_messages.Message):
 
   nanos = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   seconds = _messages.IntegerField(2)
+
+
+class DynamicCompressionPolicy(_messages.Message):
+  r"""Dynamic compression policy for this URL Map's route.
+
+  Enums:
+    CompressionModeValueValuesEnum: Compress text responses using Brotli or
+      gzip compression, based on the client's Accept-Encoding header.
+
+  Fields:
+    compressionMode: Compress text responses using Brotli or gzip compression,
+      based on the client's Accept-Encoding header.
+  """
+
+  class CompressionModeValueValuesEnum(_messages.Enum):
+    r"""Compress text responses using Brotli or gzip compression, based on the
+    client's Accept-Encoding header.
+
+    Values:
+      AUTOMATIC: Automatically uses the best compression based on the Accept-
+        Encoding header sent by the client.
+      DISABLED: Disables compression. Existing compressed responses cached by
+        Cloud CDN will not be served to clients.
+    """
+    AUTOMATIC = 0
+    DISABLED = 1
+
+  compressionMode = _messages.EnumField('CompressionModeValueValuesEnum', 1)
 
 
 class ErrorInfo(_messages.Message):
@@ -60087,6 +60197,8 @@ class HttpRouteAction(_messages.Message):
       requests. For more information about the W3C recommendation for cross-
       origin resource sharing (CORS), see Fetch API Living Standard.  Not
       supported when the URL map is bound to a target gRPC proxy.
+    dynamicCompressionPolicy: Dynamic compression policy for this URL Map's
+      route. Available only for Global EXTERNAL_MANAGED load balancer schemes.
     faultInjectionPolicy: The specification for fault injection introduced
       into traffic to test the resiliency of clients to backend service
       failure. As part of fault injection, when clients send requests to a
@@ -60148,14 +60260,15 @@ class HttpRouteAction(_messages.Message):
 
   cachePolicy = _messages.MessageField('CachePolicy', 1)
   corsPolicy = _messages.MessageField('CorsPolicy', 2)
-  faultInjectionPolicy = _messages.MessageField('HttpFaultInjection', 3)
-  imageOptimizationPolicy = _messages.MessageField('ImageOptimizationPolicy', 4)
-  maxStreamDuration = _messages.MessageField('Duration', 5)
-  requestMirrorPolicy = _messages.MessageField('RequestMirrorPolicy', 6)
-  retryPolicy = _messages.MessageField('HttpRetryPolicy', 7)
-  timeout = _messages.MessageField('Duration', 8)
-  urlRewrite = _messages.MessageField('UrlRewrite', 9)
-  weightedBackendServices = _messages.MessageField('WeightedBackendService', 10, repeated=True)
+  dynamicCompressionPolicy = _messages.MessageField('DynamicCompressionPolicy', 3)
+  faultInjectionPolicy = _messages.MessageField('HttpFaultInjection', 4)
+  imageOptimizationPolicy = _messages.MessageField('ImageOptimizationPolicy', 5)
+  maxStreamDuration = _messages.MessageField('Duration', 6)
+  requestMirrorPolicy = _messages.MessageField('RequestMirrorPolicy', 7)
+  retryPolicy = _messages.MessageField('HttpRetryPolicy', 8)
+  timeout = _messages.MessageField('Duration', 9)
+  urlRewrite = _messages.MessageField('UrlRewrite', 10)
+  weightedBackendServices = _messages.MessageField('WeightedBackendService', 11, repeated=True)
 
 
 class HttpRouteRule(_messages.Message):
@@ -62773,6 +62886,8 @@ class InstanceGroupManagerInstanceFlexibilityPolicy(_messages.Message):
       that the group will use when creating new VMs.
 
   Fields:
+    constraints: Constraints applied to instance flexibility spreading and
+      selection.
     instanceSelections: Named instance selections configuring properties that
       the group will use when creating new VMs.
     provisioningModelMix: Provisioning model configuration used by this
@@ -62808,8 +62923,21 @@ class InstanceGroupManagerInstanceFlexibilityPolicy(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  instanceSelections = _messages.MessageField('InstanceSelectionsValue', 1)
-  provisioningModelMix = _messages.MessageField('InstanceGroupManagerInstanceFlexibilityPolicyProvisioningModelMix', 2)
+  constraints = _messages.MessageField('InstanceGroupManagerInstanceFlexibilityPolicyConstraints', 1)
+  instanceSelections = _messages.MessageField('InstanceSelectionsValue', 2)
+  provisioningModelMix = _messages.MessageField('InstanceGroupManagerInstanceFlexibilityPolicyProvisioningModelMix', 3)
+
+
+class InstanceGroupManagerInstanceFlexibilityPolicyConstraints(_messages.Message):
+  r"""Constraints applied to instance flexibility spreading and selection.
+
+  Fields:
+    singleMachineType: When set to true, all instances in the group will be
+      provisioned with the exact same machine type, ensuring cluster
+      homogeneity across zones. Defaults to false.
+  """
+
+  singleMachineType = _messages.BooleanField(1)
 
 
 class InstanceGroupManagerInstanceFlexibilityPolicyInstanceSelection(_messages.Message):
@@ -66579,6 +66707,8 @@ class InstancePropertiesPatch(_messages.Message):
       the instance. For more information, see Project and instance metadata.
 
   Fields:
+    exposeHostTopology: This optional flag exposes the hashed physical host
+      ID.
     labels: The label key-value pairs that you want to patch onto the
       instance.
     metadata: The metadata key-value pairs that you want to patch onto the
@@ -66634,8 +66764,9 @@ class InstancePropertiesPatch(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  labels = _messages.MessageField('LabelsValue', 1)
-  metadata = _messages.MessageField('MetadataValue', 2)
+  exposeHostTopology = _messages.BooleanField(1)
+  labels = _messages.MessageField('LabelsValue', 2)
+  metadata = _messages.MessageField('MetadataValue', 3)
 
 
 class InstanceReference(_messages.Message):
@@ -100465,6 +100596,8 @@ class Scheduling(_messages.Message):
       instance in. The value must be a number between 1 and the number of
       availability domains specified in the spread placement policy attached
       to the instance.
+    exposeHostTopology: This optional flag exposes the hashed physical host ID
+      in the ResourceStatus resource of the VM.
     gracefulShutdown: A SchedulingGracefulShutdown attribute.
     hostErrorTimeoutSeconds: Specify the time in seconds for host error
       detection, the value must be within the range of [90, 330] with the
@@ -100589,23 +100722,24 @@ class Scheduling(_messages.Message):
 
   automaticRestart = _messages.BooleanField(1)
   availabilityDomain = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  gracefulShutdown = _messages.MessageField('SchedulingGracefulShutdown', 3)
-  hostErrorTimeoutSeconds = _messages.IntegerField(4, variant=_messages.Variant.INT32)
-  instanceTerminationAction = _messages.EnumField('InstanceTerminationActionValueValuesEnum', 5)
-  localSsdRecoveryTimeout = _messages.MessageField('Duration', 6)
-  locationHint = _messages.StringField(7)
-  maintenanceFreezeDurationHours = _messages.IntegerField(8, variant=_messages.Variant.INT32)
-  maintenanceInterval = _messages.EnumField('MaintenanceIntervalValueValuesEnum', 9)
-  maxRunDuration = _messages.MessageField('Duration', 10)
-  minNodeCpus = _messages.IntegerField(11, variant=_messages.Variant.INT32)
-  nodeAffinities = _messages.MessageField('SchedulingNodeAffinity', 12, repeated=True)
-  onHostMaintenance = _messages.EnumField('OnHostMaintenanceValueValuesEnum', 13)
-  onInstanceStopAction = _messages.MessageField('SchedulingOnInstanceStopAction', 14)
-  preemptible = _messages.BooleanField(15)
-  preemptionNoticeDuration = _messages.MessageField('Duration', 16)
-  provisioningModel = _messages.EnumField('ProvisioningModelValueValuesEnum', 17)
-  skipGuestOsShutdown = _messages.BooleanField(18)
-  terminationTime = _messages.StringField(19)
+  exposeHostTopology = _messages.BooleanField(3)
+  gracefulShutdown = _messages.MessageField('SchedulingGracefulShutdown', 4)
+  hostErrorTimeoutSeconds = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  instanceTerminationAction = _messages.EnumField('InstanceTerminationActionValueValuesEnum', 6)
+  localSsdRecoveryTimeout = _messages.MessageField('Duration', 7)
+  locationHint = _messages.StringField(8)
+  maintenanceFreezeDurationHours = _messages.IntegerField(9, variant=_messages.Variant.INT32)
+  maintenanceInterval = _messages.EnumField('MaintenanceIntervalValueValuesEnum', 10)
+  maxRunDuration = _messages.MessageField('Duration', 11)
+  minNodeCpus = _messages.IntegerField(12, variant=_messages.Variant.INT32)
+  nodeAffinities = _messages.MessageField('SchedulingNodeAffinity', 13, repeated=True)
+  onHostMaintenance = _messages.EnumField('OnHostMaintenanceValueValuesEnum', 14)
+  onInstanceStopAction = _messages.MessageField('SchedulingOnInstanceStopAction', 15)
+  preemptible = _messages.BooleanField(16)
+  preemptionNoticeDuration = _messages.MessageField('Duration', 17)
+  provisioningModel = _messages.EnumField('ProvisioningModelValueValuesEnum', 18)
+  skipGuestOsShutdown = _messages.BooleanField(19)
+  terminationTime = _messages.StringField(20)
 
 
 class SchedulingGracefulShutdown(_messages.Message):

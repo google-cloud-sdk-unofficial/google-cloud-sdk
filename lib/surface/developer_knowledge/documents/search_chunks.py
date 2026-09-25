@@ -19,7 +19,7 @@ from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class SearchChunks(base.ListCommand):
   """Search for developer knowledge across Google's developer documentation."""
@@ -44,7 +44,7 @@ class SearchChunks(base.ListCommand):
             $ {command} --query="Compute Engine instances" --page-size=10 --limit=20
           """,
       'API REFERENCE': """\
-          This command uses the developerknowledge/v1alpha API. The full
+          This command uses the developerknowledge API. The full
           documentation for this API can be found at:
           https://developers.google.com/knowledge
           """,
@@ -72,8 +72,12 @@ class SearchChunks(base.ListCommand):
     )
 
   def Run(self, args):
-    client = apis.GetClientInstance('developerknowledge', 'v1alpha')
-    messages = apis.GetMessagesModule('developerknowledge', 'v1alpha')
+    if self.ReleaseTrack() == base.ReleaseTrack.BETA:
+      api_version = 'v1'
+    else:
+      api_version = 'v1alpha'
+    client = apis.GetClientInstance('developerknowledge', api_version)
+    messages = apis.GetMessagesModule('developerknowledge', api_version)
     request = messages.DeveloperknowledgeDocumentsSearchDocumentChunksRequest(
         query=args.query,
         filter=args.query_filter,

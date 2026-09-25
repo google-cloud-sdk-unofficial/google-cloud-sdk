@@ -31,7 +31,6 @@ AutoProtectionPoliciesClient = (
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-@base.Hidden
 class Update(base.UpdateCommand):
   """Update a Backup and DR AutoProtectionPolicy."""
 
@@ -63,11 +62,11 @@ class Update(base.UpdateCommand):
 
     parser.add_argument(
         '--criteria',
-        type=arg_parsers.ArgDict(
-            spec={'key': str, 'value': str}, required_keys=['key', 'value']
-        ),
+        action=flags.CriteriaStoreOnceAction,
+        type=flags.ParseCriteria,
+        metavar='key=KEY,values=VALUES',
         required=False,
-        help='Criteria of the policy in format key=VALUE,value=VALUE.',
+        help='Criteria of the policy in format key=KEY,values=VALUE.',
     )
 
     parser.add_argument(
