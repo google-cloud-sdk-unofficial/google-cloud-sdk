@@ -528,6 +528,23 @@ class CloudcommerceconsumerprocurementProjectsEntitlementsListRequest(_messages.
   parent = _messages.StringField(4, required=True)
 
 
+class CloudcommerceconsumerprocurementProjectsEntitlementsReviewRequest(_messages.Message):
+  r"""A CloudcommerceconsumerprocurementProjectsEntitlementsReviewRequest
+  object.
+
+  Fields:
+    googleCloudCommerceConsumerProcurementV1alpha1ReviewEntitlementRequest: A
+      GoogleCloudCommerceConsumerProcurementV1alpha1ReviewEntitlementRequest
+      resource to be passed as the request body.
+    name: Required. The resource name of the entitlement to review. Format:
+      `projects/{project_number}/entitlements/{entitlement_id}` or
+      `projects/{project_id}/entitlements/{entitlement_id}`.
+  """
+
+  googleCloudCommerceConsumerProcurementV1alpha1ReviewEntitlementRequest = _messages.MessageField('GoogleCloudCommerceConsumerProcurementV1alpha1ReviewEntitlementRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
 class CloudcommerceconsumerprocurementProjectsFreeTrialsCreateRequest(_messages.Message):
   r"""A CloudcommerceconsumerprocurementProjectsFreeTrialsCreateRequest
   object.
@@ -2095,6 +2112,22 @@ class GoogleCloudCommerceConsumerProcurementV1alpha1PlaceQuoteOrderRequest(_mess
   """
 
   quoteExternalName = _messages.StringField(1)
+
+
+class GoogleCloudCommerceConsumerProcurementV1alpha1ReviewEntitlementRequest(_messages.Message):
+  r"""Request message for ConsumerProcurementService.ReviewEntitlement."""
+
+
+class GoogleCloudCommerceConsumerProcurementV1alpha1ReviewEntitlementResponse(_messages.Message):
+  r"""Response message for ConsumerProcurementService.ReviewEntitlement.
+
+  Fields:
+    expireTime: The expiration time of the generated token.
+    token: The generated random token to be passed to the review partner.
+  """
+
+  expireTime = _messages.StringField(1)
+  token = _messages.StringField(2)
 
 
 class GoogleCloudCommerceConsumerProcurementV1alpha1RevokeConsentRequest(_messages.Message):

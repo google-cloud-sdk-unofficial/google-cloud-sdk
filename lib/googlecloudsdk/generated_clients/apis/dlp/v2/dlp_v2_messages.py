@@ -3484,22 +3484,25 @@ class GooglePrivacyDlpV2AdjustByMatchingInfoTypes(_messages.Message):
       MATCHING_TYPE_FULL_MATCH: Full match. - Dictionary: join of Dictionary
         results matched the complete finding quote - Regex: all regex matches
         fill a finding quote from start to end - Exclude infoType: completely
-        inside affecting infoTypes findings
+        inside affecting infoTypes findings - Exclude by prompt: finding
+        matches the prompt definition
       MATCHING_TYPE_PARTIAL_MATCH: Partial match. - Dictionary: at least one
         of the tokens in the finding matches - Regex: substring of the finding
         matches - Exclude infoType: intersects with affecting infoTypes
-        findings
+        findings - Exclude by prompt: not supported
       MATCHING_TYPE_INVERSE_MATCH: Inverse match. - Dictionary: no tokens in
         the finding match the dictionary - Regex: finding doesn't match the
         regex - Exclude infoType: no intersection with affecting infoTypes
-        findings
+        findings - Exclude by prompt: finding does not match the prompt
+        definition
       MATCHING_TYPE_RULE_SPECIFIC: Rule-specific match. The matching logic is
         based on the specific rule being used. This is required for rules
         where the matching behavior is not a simple string comparison (e.g.,
         image containment). This matching type can only be used with the
         `ExcludeByImageFindings` rule. - Exclude by image findings: The
         matching logic is defined within `ExcludeByImageFindings` based on
-        spatial relationships between bounding boxes.
+        spatial relationships between bounding boxes. - Exclude by prompt: not
+        supported
     """
     MATCHING_TYPE_UNSPECIFIED = 0
     MATCHING_TYPE_FULL_MATCH = 1
@@ -7351,22 +7354,25 @@ class GooglePrivacyDlpV2ExclusionRule(_messages.Message):
       MATCHING_TYPE_FULL_MATCH: Full match. - Dictionary: join of Dictionary
         results matched the complete finding quote - Regex: all regex matches
         fill a finding quote from start to end - Exclude infoType: completely
-        inside affecting infoTypes findings
+        inside affecting infoTypes findings - Exclude by prompt: finding
+        matches the prompt definition
       MATCHING_TYPE_PARTIAL_MATCH: Partial match. - Dictionary: at least one
         of the tokens in the finding matches - Regex: substring of the finding
         matches - Exclude infoType: intersects with affecting infoTypes
-        findings
+        findings - Exclude by prompt: not supported
       MATCHING_TYPE_INVERSE_MATCH: Inverse match. - Dictionary: no tokens in
         the finding match the dictionary - Regex: finding doesn't match the
         regex - Exclude infoType: no intersection with affecting infoTypes
-        findings
+        findings - Exclude by prompt: finding does not match the prompt
+        definition
       MATCHING_TYPE_RULE_SPECIFIC: Rule-specific match. The matching logic is
         based on the specific rule being used. This is required for rules
         where the matching behavior is not a simple string comparison (e.g.,
         image containment). This matching type can only be used with the
         `ExcludeByImageFindings` rule. - Exclude by image findings: The
         matching logic is defined within `ExcludeByImageFindings` based on
-        spatial relationships between bounding boxes.
+        spatial relationships between bounding boxes. - Exclude by prompt: not
+        supported
     """
     MATCHING_TYPE_UNSPECIFIED = 0
     MATCHING_TYPE_FULL_MATCH = 1

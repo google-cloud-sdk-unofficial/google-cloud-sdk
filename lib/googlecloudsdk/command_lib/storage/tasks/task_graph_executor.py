@@ -43,6 +43,7 @@ from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import transport
+from googlecloudsdk.core import transport_base
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.credentials import creds_context_managers
 from googlecloudsdk.core.util import encoding
@@ -241,7 +242,7 @@ class SharedProcessContext:
         creds_context_managers.CredentialProvidersManager()
     )
     self._key_store = encryption_util._key_store
-    self._invocation_id = transport.INVOCATION_ID
+    self._invocation_id = transport_base.INVOCATION_ID
 
   def __enter__(self):
     """Sets global state in child processes."""
@@ -255,6 +256,7 @@ class SharedProcessContext:
     self._environment_context_manager.__enter__()
     self._creds_context_manager.__enter__()
     encryption_util._key_store = self._key_store
+    transport_base.INVOCATION_ID = self._invocation_id
     transport.INVOCATION_ID = self._invocation_id
 
     # Passing None causes log settings to be refreshed based on property values.

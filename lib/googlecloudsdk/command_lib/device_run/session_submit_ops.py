@@ -16,7 +16,7 @@
 
 import datetime
 import os
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 import uuid
 
 from googlecloudsdk.api_lib import device_run
@@ -31,6 +31,40 @@ def GetRunId() -> str:
   timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M.%S%f')
   random_suffix = uuid.uuid4().hex[:4].upper()
   return f'{timestamp}_{random_suffix}'
+
+
+# Prefix and random suffix length used by the server when it generates a session
+# ID. See the `{session_id_OR_GENERATE_UUID_8_WITH_PREFIX_session-}` name
+# template of `AutomationSession.CreateSession`. Client-generated IDs use the
+# same format so that session names look the same no matter who generated them.
+_SESSION_ID_PREFIX = 'session-'
+_SESSION_ID_RANDOM_LENGTH = 8
+
+
+def GenerateSessionAndRequestIds() -> Tuple[str, str]:
+  """Returns a (session_id, request_id) pair for a CreateSession request.
+
+  Passing only a `request_id` is not enough to make CreateSession idempotent:
+  when `session_id` is omitted the server generates a new one for every request
+  it processes, so a transparently retried request (for example after a
+  transient 5xx or a lost response) targets a different session name than the
+  original one. The API frontend then rejects the retry with "attempted to reuse
+  'request_id' for incompatible requests" even though the first attempt
+  succeeded.
+
+  Sending a client-generated `session_id` alongside the `request_id` keeps the
+  target resource name stable across retries, so a retry returns the original
+  operation instead of failing.
+
+  Returns:
+    A tuple of (session_id, request_id).
+  """
+  request_id = str(uuid.uuid4())
+  # Mirror the server-side format: the prefix plus the last 8 characters of the
+  # UUID. Deriving both IDs from the same UUID also makes it easy to correlate a
+  # session with the request that created it.
+  session_id = f'{_SESSION_ID_PREFIX}{request_id[-_SESSION_ID_RANDOM_LENGTH:]}'
+  return session_id, request_id
 
 
 def UploadFileIfNeeded(

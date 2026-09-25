@@ -207,6 +207,46 @@ def _check_for_incompatibility(
         continue
       if not value_restricted_features[key].validate(val):
         incompatible_list.append(value_restricted_features[key])
+
+  has_direct_vpc = any(
+      input_key_value_pairs.get(k) for k in util.DIRECT_VPC_KEYS
+  )
+  has_vpc_connector = any(
+      input_key_value_pairs.get(k) for k in util.VPC_CONNECTOR_KEYS
+  )
+  if has_direct_vpc and has_vpc_connector:
+    incompatible_list.append(
+        feature_helper.UnsupportedFeature(
+            path={
+                'app_yaml': 'vpc_access_connector.name',
+                'admin_api': 'vpcAccessConnector.name',
+            },
+            severity='minor',
+            reason=(
+                'Both Direct VPC and VPC Access Connector are specified; Cloud'
+                ' Run does not support both simultaneously. Prioritizing'
+                ' Direct VPC and ignoring VPC Access Connector.'
+            ),
+        )
+    )
+  forwarded_ports = input_key_value_pairs.get(
+      'network.forwarded_ports'
+  ) or input_key_value_pairs.get('network.forwardedPorts')
+  if isinstance(forwarded_ports, list) and len(forwarded_ports) > 1:
+    incompatible_list.append(
+        feature_helper.UnsupportedFeature(
+            path={
+                'app_yaml': 'network.forwarded_ports',
+                'admin_api': 'network.forwardedPorts',
+            },
+            severity='minor',
+            reason=(
+                'Multiple forwarded ports specified; Cloud Run only supports a'
+                ' single container port per service. Only the first port will'
+                ' be configured.'
+            ),
+        )
+    )
   return incompatible_list
 
 

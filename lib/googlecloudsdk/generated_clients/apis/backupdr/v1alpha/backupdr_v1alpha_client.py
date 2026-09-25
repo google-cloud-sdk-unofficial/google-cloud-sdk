@@ -50,6 +50,7 @@ class BackupdrV1alpha(base_api.BaseApiClient):
     self.projects_locations_backupPlanAssociations = self.ProjectsLocationsBackupPlanAssociationsService(self)
     self.projects_locations_backupPlans_revisions = self.ProjectsLocationsBackupPlansRevisionsService(self)
     self.projects_locations_backupPlans = self.ProjectsLocationsBackupPlansService(self)
+    self.projects_locations_backupVaults_backupInsightPlans = self.ProjectsLocationsBackupVaultsBackupInsightPlansService(self)
     self.projects_locations_backupVaults_dataSources_backups = self.ProjectsLocationsBackupVaultsDataSourcesBackupsService(self)
     self.projects_locations_backupVaults_dataSources = self.ProjectsLocationsBackupVaultsDataSourcesService(self)
     self.projects_locations_backupVaults = self.ProjectsLocationsBackupVaultsService(self)
@@ -949,6 +950,124 @@ class BackupdrV1alpha(base_api.BaseApiClient):
         request_field='backupPlan',
         request_type_name='BackupdrProjectsLocationsBackupPlansPatchRequest',
         response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsBackupVaultsBackupInsightPlansService(base_api.BaseApiService):
+    """Service class for the projects_locations_backupVaults_backupInsightPlans resource."""
+
+    _NAME = 'projects_locations_backupVaults_backupInsightPlans'
+
+    def __init__(self, client):
+      super(BackupdrV1alpha.ProjectsLocationsBackupVaultsBackupInsightPlansService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new BackupInsightPlan in a given project and location.
+
+      Args:
+        request: (BackupdrProjectsLocationsBackupVaultsBackupInsightPlansCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/backupVaults/{backupVaultsId}/backupInsightPlans',
+        http_method='POST',
+        method_id='backupdr.projects.locations.backupVaults.backupInsightPlans.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['backupInsightPlanId', 'requestId'],
+        relative_path='v1alpha/{+parent}/backupInsightPlans',
+        request_field='backupInsightPlan',
+        request_type_name='BackupdrProjectsLocationsBackupVaultsBackupInsightPlansCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single BackupInsightPlan.
+
+      Args:
+        request: (BackupdrProjectsLocationsBackupVaultsBackupInsightPlansDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/backupVaults/{backupVaultsId}/backupInsightPlans/{backupInsightPlansId}',
+        http_method='DELETE',
+        method_id='backupdr.projects.locations.backupVaults.backupInsightPlans.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['etag', 'requestId'],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='BackupdrProjectsLocationsBackupVaultsBackupInsightPlansDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single BackupInsightPlan.
+
+      Args:
+        request: (BackupdrProjectsLocationsBackupVaultsBackupInsightPlansGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (BackupInsightPlan) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/backupVaults/{backupVaultsId}/backupInsightPlans/{backupInsightPlansId}',
+        http_method='GET',
+        method_id='backupdr.projects.locations.backupVaults.backupInsightPlans.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='BackupdrProjectsLocationsBackupVaultsBackupInsightPlansGetRequest',
+        response_type_name='BackupInsightPlan',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists BackupInsightPlans in a given project and location.
+
+      Args:
+        request: (BackupdrProjectsLocationsBackupVaultsBackupInsightPlansListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListBackupInsightPlansResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/backupVaults/{backupVaultsId}/backupInsightPlans',
+        http_method='GET',
+        method_id='backupdr.projects.locations.backupVaults.backupInsightPlans.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/backupInsightPlans',
+        request_field='',
+        request_type_name='BackupdrProjectsLocationsBackupVaultsBackupInsightPlansListRequest',
+        response_type_name='ListBackupInsightPlansResponse',
         supports_download=False,
     )
 

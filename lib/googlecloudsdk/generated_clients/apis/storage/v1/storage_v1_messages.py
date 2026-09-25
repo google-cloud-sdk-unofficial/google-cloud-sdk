@@ -1900,14 +1900,16 @@ class ObjectCustomContextPayload(_messages.Message):
   Fields:
     createTime: The time at which the object context was created in RFC 3339
       format.
+    extendedDataTypeUrl: The type URL of the object context's extended data.
     updateTime: The time at which the object context was last updated in RFC
       3339 format.
     value: The value of the object context.
   """
 
   createTime = _message_types.DateTimeField(1)
-  updateTime = _message_types.DateTimeField(2)
-  value = _messages.StringField(3)
+  extendedDataTypeUrl = _messages.StringField(2)
+  updateTime = _message_types.DateTimeField(3)
+  value = _messages.StringField(4)
 
 
 class Objects(_messages.Message):

@@ -20,7 +20,7 @@ import re
 from googlecloudsdk.command_lib.storage import errors
 
 
-_BUCKET_OPERATION_NAME_REGEX = r'projects/.+/buckets/(?P<bucket>.+)'
+_BUCKET_OPERATION_NAME_REGEX = r'projects/[^/]+/buckets/(?P<bucket>[^/]+)'
 _BUCKET_AND_ID_OPERATION_NAME_REGEX = (
     _BUCKET_OPERATION_NAME_REGEX + r'/operations/(?P<id>.+)'
 )
@@ -38,6 +38,13 @@ def is_location_operations_resource(operation_name):
 def is_location_parent_resource(resource_name):
   """Returns True if the resource name is a location (parent of operations)."""
   return re.match(_LOCATION_PARENT_REGEX, resource_name) is not None
+
+
+def is_bucket_operations_resource(operation_name):
+  """Returns True if the operation name is bucket-scoped."""
+  return (
+      re.match(_BUCKET_AND_ID_OPERATION_NAME_REGEX, operation_name) is not None
+  )
 
 
 def get_operation_bucket_from_name(operation_name):

@@ -569,6 +569,49 @@ def AddLustres(
     )
 
 
+def AddNfs(
+    parser,
+    name="nfs",
+    api_version=None,
+    hidden=False,
+    include_update_flags=False,
+):
+  """Adds an NFS storage flag for the given API version."""
+  if api_version not in ["v1alpha", "v1beta"]:
+    raise ValueError(f"Unsupported API version for nfs: {api_version!r}")
+  remove_flag_name = "remove-nfs"
+  if include_update_flags:
+    name = "add-nfs"
+  parser.add_argument(
+      f"--{name}",
+      help=textwrap.dedent(f"""
+        Reference of existing NFS storage to import into your cluster.
+
+        id: ID of the storage resource, used to refer to this resource in storage-configs.
+        serverIpAddress: IP address of the NFS server.
+        remoteMount: Remote mount path on the NFS server.
+        mountOptions: Optional mount options for mounting the NFS share (e.g., ro,nosuid).
+
+        For example --{name} id=my-nfs,serverIpAddress=10.0.0.1,remoteMount=/share,mountOptions=ro
+      """),
+      type=flag_types.FlagTypes(api_version).GetNfsObject(),
+      action=arg_parsers.FlattenAction(),
+      hidden=hidden,
+  )
+  if include_update_flags:
+    parser.add_argument(
+        f"--{remove_flag_name}",
+        help=textwrap.dedent(f"""
+          Parameters to remove NFS storage resource config by storage ID.
+
+          For example --{remove_flag_name} my-nfs-1,my-nfs-2,...
+        """),
+        type=arg_parsers.ArgList(element_type=str),
+        action=arg_parsers.FlattenAction(),
+        hidden=hidden,
+    )
+
+
 def AddOnDemandInstances(
     parser,
     name="on-demand-instances",
@@ -1298,5 +1341,23 @@ def AddSlurmDisableHealthCheckProgram(
         For example --{flag_name}
       """),
       action="store_true",
+      hidden=hidden,
+  )
+
+
+def AddControllerVersion(parser, api_version=None, hidden=False):
+  """Adds a controller version flag for the given API version."""
+  if api_version not in ["v1alpha"]:
+    raise ValueError(
+        f"Unsupported API version for controller-version: {api_version!r}"
+    )
+  parser.add_argument(
+      "--controller-version",
+      help=textwrap.dedent("""
+        The slurm controller version for the cluster.
+
+        For example --controller-version="26.05"
+      """),
+      type=str,
       hidden=hidden,
   )

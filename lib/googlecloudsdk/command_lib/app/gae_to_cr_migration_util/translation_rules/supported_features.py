@@ -52,10 +52,15 @@ def translate_supported_features(
 ) -> Sequence[str]:
   """Translate supported features."""
   output_flags = []
+  has_direct_vpc = any(input_data.get(k) for k in util.DIRECT_VPC_KEYS)
   for key, feature in supported_features.items():
     if key in input_data:
       # excluded features are handled in separate translation rules.
       if key in _EXCLUDE_FEATURES:
+        continue
+      if has_direct_vpc and any(
+          flag in ('--vpc-connector', '--vpc-egress') for flag in feature.flags
+      ):
         continue
       input_value = f'"{input_data[key]}"'
       output_flags += util.generate_output_flags(feature.flags, input_value)

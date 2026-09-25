@@ -17,7 +17,7 @@
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import progress_callbacks
-from googlecloudsdk.command_lib.storage import storage_url
+from googlecloudsdk.command_lib.storage import rapid_caches_util
 from googlecloudsdk.command_lib.storage.tasks import task_executor
 from googlecloudsdk.command_lib.storage.tasks import task_graph_executor
 from googlecloudsdk.command_lib.storage.tasks import task_status
@@ -44,7 +44,7 @@ class Update(base.UpdateCommand):
       Rapid Cache Ultra instance ``my-bucket/my-cache-id'':
 
         $ {command} my-bucket/my-cache-id --ttl=6h \\
-            --admission-policy=admit-on-second-miss
+            --admission-policy=admit-on-first-miss
 
       The following command updates cache entry's ttl of Rapid Cache Ultra
       instances in ``bucket-1/cache-1'' and ``bucket-2/cache-2'':
@@ -78,8 +78,8 @@ class Update(base.UpdateCommand):
     is_async = args.async_ if args.async_ is not None else True
 
     for id_str in args.id:
-      bucket_name, _, rapid_cache_id = id_str.rpartition(
-          storage_url.CLOUD_URL_DELIMITER
+      bucket_name, rapid_cache_id = (
+          rapid_caches_util.validate_and_parse_rapid_cache_id(id_str)
       )
       yield patch_rapid_cache_task.PatchRapidCacheTask(
           bucket_name,
@@ -90,6 +90,9 @@ class Update(base.UpdateCommand):
       )
 
   def Run(self, args):
+    for id_str in args.id:
+      rapid_caches_util.validate_and_parse_rapid_cache_id(id_str)
+
     task_status_queue = task_graph_executor.multiprocessing_context.Queue()
     task_iterator = self._get_task_iterator(args, task_status_queue)
 

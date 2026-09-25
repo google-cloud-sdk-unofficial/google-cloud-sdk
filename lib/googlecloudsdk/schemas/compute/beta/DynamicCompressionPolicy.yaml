@@ -1,0 +1,35 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: compute beta DynamicCompressionPolicy export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  compressionMode:
+    description: |-
+      Compress text responses using Brotli or gzip compression, based on the
+      client's Accept-Encoding header.
+    type: string
+    enum:
+    - AUTOMATIC
+    - DISABLED

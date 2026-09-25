@@ -155,9 +155,7 @@ def translate_from_image(
   if not input_data:
     return []
   target_service = service or _get_service_name(input_data)
-  image = input_data.get(
-      'deployment'
-  ).container.image  # Get image before flattening
+  image = util.get_container_image(input_data)
   input_flatten_as_appyaml = _convert_admin_api_input_to_app_yaml(input_data)
 
   flags = _get_cloud_run_flags(

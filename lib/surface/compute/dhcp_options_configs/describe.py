@@ -21,7 +21,7 @@ from googlecloudsdk.command_lib.compute.dhcp_options_configs import flags
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe a Google Compute Engine DHCP options configuration."""
 

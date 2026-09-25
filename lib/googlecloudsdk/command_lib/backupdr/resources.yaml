@@ -311,3 +311,34 @@ appliedAutoProtectionPolicyDefault:
     - value: "-"
       hint: |
         default is all applied auto protection policies
+
+backupInsightPlan:
+  name: backup_insight_plan
+  collection: backupdr.projects.locations.backupVaults.backupInsightPlans
+  request_id_field: backupInsightPlanId
+  attributes:
+  - *project
+  - *location
+  - *backupVaultId
+  - &backupInsightPlanId
+    parameter_name: backupInsightPlansId
+    attribute_name: backup_insight_plan
+    help: The ID of the Backup Insight Plan.
+  disable_auto_completers: false
+
+backupInsightPlanDefault:
+  name: backup_insight_plan
+  collection: backupdr.projects.locations.backupVaults.backupInsightPlans
+  request_id_field: backupInsightPlanId
+  attributes:
+  - *project
+  - *locationDefaultGlobal
+  - *backupVaultDefault
+  - &backupInsightPlanDefault
+    parameter_name: backupInsightPlansId
+    attribute_name: backup_insight_plan
+    help: The ID of the Backup Insight Plan.
+    fallthroughs:
+    - value: "-"
+      hint: |
+        default is all backup insight plans

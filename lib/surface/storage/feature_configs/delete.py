@@ -17,6 +17,7 @@
 
 from googlecloudsdk.api_lib.storage import feature_config_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
@@ -54,4 +55,10 @@ class Delete(base.Command):
     name = (
         f'projects/{project}/locations/global/featureConfigs/{args.CONFIG_ID}'
     )
-    return client.delete_feature_config(name, is_async=args.async_)
+    operation = client.delete_feature_config(name, is_async=args.async_)
+    if args.async_:
+      return operation
+    # Returning None keeps stdout empty so that Calliope's default resource
+    # printer does not render the raw google.protobuf.Empty response.
+    # log.DeletedResource writes the status message to stderr.
+    log.DeletedResource(args.CONFIG_ID, kind='feature config')

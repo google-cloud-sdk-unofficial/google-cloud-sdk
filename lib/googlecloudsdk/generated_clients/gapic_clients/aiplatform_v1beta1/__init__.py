@@ -20,6 +20,8 @@ __version__ = package_version.__version__
 
 from .services.prediction_service import PredictionServiceClient
 from .services.prediction_service import PredictionServiceAsyncClient
+from .services.semantic_governance_policy_engine_service import SemanticGovernancePolicyEngineServiceClient
+from .services.semantic_governance_policy_engine_service import SemanticGovernancePolicyEngineServiceAsyncClient
 from .services.semantic_governance_policy_service import SemanticGovernancePolicyServiceClient
 from .services.semantic_governance_policy_service import SemanticGovernancePolicyServiceAsyncClient
 
@@ -28,6 +30,8 @@ from .types.auth import AuthConfig
 from .types.auth import AuthType
 from .types.auth import HttpElementLocation
 from .types.content import AudioResponseFormat
+from .types.content import AudioTranscription
+from .types.content import AudioTranscriptionConfig
 from .types.content import Blob
 from .types.content import Candidate
 from .types.content import Citation
@@ -57,6 +61,7 @@ from .types.content import Segment
 from .types.content import SpeakerVoiceConfig
 from .types.content import SpeechConfig
 from .types.content import TextResponseFormat
+from .types.content import TranslationConfig
 from .types.content import UrlContextMetadata
 from .types.content import UrlMetadata
 from .types.content import VideoMetadata
@@ -137,6 +142,14 @@ from .types.prediction_service import StreamingPredictResponse
 from .types.prediction_service import StreamingRawPredictRequest
 from .types.prediction_service import StreamingRawPredictResponse
 from .types.prediction_service import StreamRawPredictRequest
+from .types.semantic_governance_policy_engine_service import DeprovisionSemanticGovernancePolicyEngineOperationMetadata
+from .types.semantic_governance_policy_engine_service import DeprovisionSemanticGovernancePolicyEngineRequest
+from .types.semantic_governance_policy_engine_service import GatewayConfig
+from .types.semantic_governance_policy_engine_service import GetSemanticGovernancePolicyEngineRequest
+from .types.semantic_governance_policy_engine_service import SemanticGovernancePolicyEngine
+from .types.semantic_governance_policy_engine_service import UpdateSemanticGovernancePolicyEngineOperationMetadata
+from .types.semantic_governance_policy_engine_service import UpdateSemanticGovernancePolicyEngineRequest
+from .types.semantic_governance_policy_service import AgentResponseCustomization
 from .types.semantic_governance_policy_service import CreateSemanticGovernancePolicyOperationMetadata
 from .types.semantic_governance_policy_service import CreateSemanticGovernancePolicyRequest
 from .types.semantic_governance_policy_service import DeleteSemanticGovernancePolicyOperationMetadata
@@ -202,10 +215,14 @@ from .types.vertex_rag_data import VertexAiSearchConfig
 
 __all__ = (
     'PredictionServiceAsyncClient',
+    'SemanticGovernancePolicyEngineServiceAsyncClient',
     'SemanticGovernancePolicyServiceAsyncClient',
+'AgentResponseCustomization',
 'ApiAuth',
 'Attribution',
 'AudioResponseFormat',
+'AudioTranscription',
+'AudioTranscriptionConfig',
 'AuthConfig',
 'AuthType',
 'AvroSource',
@@ -232,6 +249,8 @@ __all__ = (
 'DeleteResponseRequest',
 'DeleteSemanticGovernancePolicyOperationMetadata',
 'DeleteSemanticGovernancePolicyRequest',
+'DeprovisionSemanticGovernancePolicyEngineOperationMetadata',
+'DeprovisionSemanticGovernancePolicyEngineRequest',
 'DirectPredictRequest',
 'DirectPredictResponse',
 'DirectRawPredictRequest',
@@ -267,6 +286,7 @@ __all__ = (
 'FunctionResponseBlob',
 'FunctionResponseFileData',
 'FunctionResponsePart',
+'GatewayConfig',
 'GcsDestination',
 'GcsSource',
 'GenerateContentRequest',
@@ -275,6 +295,7 @@ __all__ = (
 'GenerationConfig',
 'GenericOperationMetadata',
 'GetResponseRequest',
+'GetSemanticGovernancePolicyEngineRequest',
 'GetSemanticGovernancePolicyRequest',
 'GoogleDriveSource',
 'GoogleMaps',
@@ -341,6 +362,8 @@ __all__ = (
 'SearchEntryPoint',
 'Segment',
 'SemanticGovernancePolicy',
+'SemanticGovernancePolicyEngine',
+'SemanticGovernancePolicyEngineServiceClient',
 'SemanticGovernancePolicyServiceClient',
 'SharePointSources',
 'SlackSource',
@@ -363,7 +386,10 @@ __all__ = (
 'Tool',
 'ToolConfig',
 'ToolUseExample',
+'TranslationConfig',
 'Type',
+'UpdateSemanticGovernancePolicyEngineOperationMetadata',
+'UpdateSemanticGovernancePolicyEngineRequest',
 'UpdateSemanticGovernancePolicyOperationMetadata',
 'UpdateSemanticGovernancePolicyRequest',
 'UploadRagFileConfig',

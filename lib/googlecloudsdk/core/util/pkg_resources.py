@@ -202,13 +202,14 @@ def _IterModules(file_list, extra_extensions, prefix=None):
 def _ListPackagesAndFiles(path):
   """List packages or modules which can be imported at given path."""
   importables = []
-  for filename in os.listdir(path):
-    if os.path.isfile(os.path.join(path, filename)):
-      importables.append(filename)
-    else:
-      pkg_init_filepath = os.path.join(path, filename, '__init__.py')
-      if os.path.isfile(pkg_init_filepath):
-        importables.append(os.path.join(filename, '__init__.py'))
+  with os.scandir(path) as entries:
+    for entry in entries:
+      if entry.is_file():
+        importables.append(entry.name)
+      elif entry.is_dir():
+        pkg_init_filepath = os.path.join(entry.path, '__init__.py')
+        if os.path.isfile(pkg_init_filepath):
+          importables.append(os.path.join(entry.name, '__init__.py'))
   return importables
 
 

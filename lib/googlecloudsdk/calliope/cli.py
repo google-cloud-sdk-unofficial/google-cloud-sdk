@@ -18,6 +18,7 @@
 
 import argparse
 import collections
+import json
 import os
 import re
 import sys
@@ -540,6 +541,7 @@ class CLILoader(object):
     calliope_base.FLAGS_FILE_FLAG.AddToParser(top_element.ai)
     calliope_base.FLATTEN_FLAG.AddToParser(top_element.ai)
     calliope_base.FORMAT_FLAG.AddToParser(top_element.ai)
+    calliope_base.ASSERT_FLAG.AddToParser(top_element.ai)
 
     if self.__version_func is not None:
       top_element.ai.add_argument(
@@ -905,8 +907,6 @@ class CLI(object):
 
     # Convert py2 args to text.
     argv = [console_attr.Decode(arg) for arg in args] if six.PY2 else args
-    old_user_output_enabled = None
-    old_verbosity = None
     try:
       args = self.__parser.parse_args(_ApplyFlagsFile(argv))
       if args.CONCEPT_ARGS is not None:
@@ -931,20 +931,83 @@ class CLI(object):
 
       # -h|--help|--document are dispatched by parse_args and never get here.
 
-      # Now that we have parsed the args, reload the settings so the flags will
-      # take effect.  These will use the values from the properties.
-      old_user_output_enabled = log.SetUserOutputEnabled(None)
-      old_verbosity = log.SetVerbosity(None)
+      return self._RunCommand(
+          calliope_command, args, command_path_string, specified_arg_names
+      )
 
-      # Set the command_name property so it is persisted until the process ends.
-      # Only do this for the top level command that can be detected by looking
-      # at the stack. It will have one initial level, and another level added by
-      # the PushInvocationValues earlier in this method.
+    except exceptions.DryRunError as exc:
+      return exc.request
+    except Exception as exc:  # pylint: disable=broad-except
+      self._HandleAllErrors(exc, command_path_string, specified_arg_names)
+
+    finally:
+      properties.VALUES.PopInvocationValues()
+      named_configs.FLAG_OVERRIDE_STACK.Pop()
+
+  def ExecutePayload(self, payload):
+    """Execute the CLI tool with a parsed JSON payload from Go."""
+    if isinstance(payload, (str, bytes)):
+      payload = json.loads(payload)
+
+    cmd_path = payload.get('command_path', [])
+    if not cmd_path:
+      raise ValueError('Payload missing command_path')
+
+    lookup_path = list(cmd_path)
+    if lookup_path and (
+        lookup_path[0] == self.__name or lookup_path[0] == 'gcloud'
+    ):
+      lookup_path = lookup_path[1:]
+
+    calliope_command = self.__top_element.LoadSubElementByPath(lookup_path)
+    if calliope_command is None:
+      raise ValueError('Command not found: {}'.format('.'.join(cmd_path)))
+
+    named_configs.FLAG_OVERRIDE_STACK.PushFromArgs([])
+    properties.VALUES.PushInvocationValues()
+
+    command_path_string = '.'.join(calliope_command.GetPath())
+    # Specified arg names is implemented in a follow-up.
+    specified_arg_names = []
+
+    try:
+      # Namespace hydration is implemented in a follow-up.
+      args = parser_extensions.Namespace()
+      return self._RunCommand(
+          calliope_command, args, command_path_string, specified_arg_names
+      )
+
+    except exceptions.DryRunError as exc:
+      return exc.request
+    except Exception as exc:  # pylint: disable=broad-except
+      self._HandleAllErrors(exc, command_path_string, specified_arg_names)
+
+    finally:
+      properties.VALUES.PopInvocationValues()
+      named_configs.FLAG_OVERRIDE_STACK.Pop()
+
+  def _RunCommand(
+      self, calliope_command, args, command_path_string, specified_arg_names
+  ):
+    """Executes a resolved Calliope command and manages hooks, metrics, and error handling."""
+    # Now that we have parsed the args, reload the settings so the flags will
+    # take effect.  These will use the values from the properties.
+    old_user_output_enabled = log.SetUserOutputEnabled(None)
+    old_verbosity = log.SetVerbosity(None)
+
+    # Set the command_name property so it is persisted until the process ends.
+    # Only do this for the top level command that can be detected by looking
+    # at the stack. It will have one initial level, and another level added by
+    # the PushInvocationValues earlier in this method.
+    try:
       if len(properties.VALUES.GetInvocationStack()) == 2:
         properties.VALUES.metrics.command_name.Set(command_path_string)
       # Set the invocation value for all commands, this is lost when popped
       properties.VALUES.SetInvocationValue(
-          properties.VALUES.metrics.command_name, command_path_string, None)
+          properties.VALUES.metrics.command_name, command_path_string, None
+      )
+
+      self._ValidateAssertions(calliope_command)
 
       for hook in self.__pre_run_hooks:
         hook.Run(command_path_string)
@@ -962,6 +1025,22 @@ class CLI(object):
           try:
             for resource in resources:
               yield resource
+
+            # Do this last. If there is an error, the error handler will log the
+            # command execution along with the error.
+            metrics.Commands(
+                command_path_string,
+                config.CLOUD_SDK_VERSION,
+                specified_arg_names,
+            )
+          except GeneratorExit:
+            # Records success if partially consumed (e.g. halted by --limit).
+            metrics.Commands(
+                command_path_string,
+                config.CLOUD_SDK_VERSION,
+                specified_arg_names,
+            )
+            raise
           except Exception as exc:  # pylint: disable=broad-except
             self._HandleAllErrors(exc, command_path_string, specified_arg_names)
 
@@ -974,14 +1053,7 @@ class CLI(object):
       )
       return resources
 
-    except exceptions.DryRunError as exc:
-      return exc.request
-    except Exception as exc:  # pylint: disable=broad-except
-      self._HandleAllErrors(exc, command_path_string, specified_arg_names)
-
     finally:
-      properties.VALUES.PopInvocationValues()
-      named_configs.FLAG_OVERRIDE_STACK.Pop()
       # Reset these values to their previous state now that we popped the flag
       # values.
       if old_user_output_enabled is not None:
@@ -1022,3 +1094,87 @@ class CLI(object):
                   error_extra_info=error_extra_info)
 
     exceptions.HandleError(exc, command_path_string, self.__known_error_handler)
+
+  def _ValidateAssertions(self, calliope_command):
+    """Validates execution assertions specified via --assert or property.
+
+    Args:
+      calliope_command: backend.CommandCommon, The command being executed.
+
+    Raises:
+      exceptions.CommandAssertionError: If an assertion is violated.
+    """
+    if getattr(calliope_command, 'is_group', False):
+      return
+
+    # Use getattr because un-spec'd MagicMocks (e.g. mocking properties.VALUES
+    # in unit tests) raise AttributeError on attributes starting with 'assert'.
+    assert_prop = getattr(properties.VALUES.core, 'assert_', None)
+    assertion = assert_prop.Get() if assert_prop is not None else None
+    if not assertion:
+      return
+
+    if assertion == 'readonly':
+      self._ValidateReadOnlyAssertion(calliope_command)
+
+  def _ValidateReadOnlyAssertion(self, calliope_command):
+    """Validates the readonly assertion against command metadata.
+
+    Args:
+      calliope_command: backend.CommandCommon, The command being executed.
+
+    Raises:
+      exceptions.CommandAssertionError: If the command is mutating or
+        unannotated.
+    """
+    hints = getattr(calliope_command, 'hints', None)
+    read_only = getattr(hints, 'read_only', None)
+
+    if read_only:
+      return
+
+    command_path = ' '.join(calliope_command.GetPath())
+
+    if read_only is None:
+      # read_only is None (unannotated)
+      raise exceptions.CommandAssertionError(
+          command_path=command_path,
+          assertion='readonly',
+          certainty='Unannotated (unknown safety)',
+          reason='This command is not annotated as read-only.',
+          warning=(
+              'This command may be read-only, but is not annotated as'
+              ' read-only. When --assert=readonly is specified, unannotated'
+              ' commands are blocked by default to prevent accidental changes.'
+          ),
+          can_retry_without_assert=True,
+          remediation_items=[
+              (
+                  'To inspect what this command does before running it,'
+                  f' run:\n      {command_path} --help'
+              ),
+              (
+                  'If the help text confirms this command does not modify'
+                  ' resources, re-run without the --assert=readonly flag.'
+              ),
+          ],
+      )
+
+    # read_only is False (confirmed mutating)
+    raise exceptions.CommandAssertionError(
+        command_path=command_path,
+        assertion='readonly',
+        certainty='Certain (confirmed mutating)',
+        reason='This command is annotated as modifying resources or state.',
+        can_retry_without_assert=False,
+        remediation_items=[
+            (
+                'This command modifies resources. Do not run it if read-only'
+                ' behavior is required.'
+            ),
+            (
+                'If you intend to modify resources, re-run without the'
+                ' --assert=readonly flag.'
+            ),
+        ],
+    )

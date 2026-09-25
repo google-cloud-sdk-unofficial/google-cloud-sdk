@@ -172,6 +172,14 @@ def ValidateStorageConfigs(
             f"For Bucket storage [{storage_id}], local mount prefix must "
             "be '/data'."
         )
+    elif getattr(config, "existingNfs", None):
+      if not (
+          local_mount.startswith("/nfs") or local_mount.startswith("/shared")
+      ):
+        raise ClusterDirectorError(
+            f"For NFS storage [{storage_id}], local mount prefix must "
+            "be '/nfs' or '/shared'."
+        )
 
 
 def ValidateLustreFilesystemName(name: str) -> None:
@@ -220,4 +228,15 @@ def ValidateSlurmConfigExclusiveFlags(
     raise ClusterDirectorError(
         "Cannot specify more than one of --slurm-config (or"
         " --update-slurm-config) and --slurm-conf-file."
+    )
+
+
+def ValidateControllerVersion(version: str) -> None:
+  """Validates that the controller version matches the format ab.cd."""
+  if not version:
+    return
+  if not re.match(r"^\d{2}\.\d{2}$", version):
+    raise ClusterDirectorError(
+        "Controller version must be in the format 'ab.cd' (e.g., '25.05'),"
+        f" found '{version}'."
     )

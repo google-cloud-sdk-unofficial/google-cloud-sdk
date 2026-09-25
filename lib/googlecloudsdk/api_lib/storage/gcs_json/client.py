@@ -50,7 +50,6 @@ from googlecloudsdk.command_lib.storage import user_request_args_factory
 from googlecloudsdk.command_lib.storage.resources import gcs_resource_reference
 from googlecloudsdk.command_lib.storage.resources import resource_reference
 from googlecloudsdk.command_lib.storage.tasks.cp import copy_util
-from googlecloudsdk.command_lib.storage.tasks.cp import download_util
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -247,23 +246,36 @@ def _update_api_version_for_uploads_if_needed(client):
       'v1', api_version)
 
 
+def _extract_operation_name(operation_ref):
+  """Extracts operation name from string, message, or resource reference."""
+  if isinstance(operation_ref, str):
+    return operation_ref
+  name = getattr(operation_ref, 'name', None)
+  if isinstance(name, str):
+    return name
+  relative_name = getattr(operation_ref, 'RelativeName', None)
+  if callable(relative_name):
+    res = relative_name()
+    if isinstance(res, str):
+      return res
+  return None
+
+
 class CloudStorageLroPoller(waiter.CloudOperationPollerNoResources):
   """Poller for Storage LROs."""
 
   _MESSAGES = core_apis.GetMessagesModule('storage', 'v1')
 
+  def __init__(self, operation_service, get_name_func=None):
+    super(CloudStorageLroPoller, self).__init__(
+        operation_service,
+        get_name_func=get_name_func or _extract_operation_name,
+    )
+
   def Poll(self, operation_ref):
     """Overrides."""
-    if operations_util.is_location_operations_resource(operation_ref.name):
-      return operations_api.OperationsApi().get(operation_ref.name)
-
-    try:
-      bucket, operation_id = (
-          operations_util.get_operation_bucket_and_id_from_name(
-              operation_ref.name
-          )
-      )
-    except command_errors.Error:
+    operation_name = self.get_name(operation_ref)
+    if not operation_name:
       log.warning(
           'We could not wait for the operation to complete because the required'
           ' data was incorrect. The operation may still have completed in the'
@@ -272,9 +284,41 @@ class CloudStorageLroPoller(waiter.CloudOperationPollerNoResources):
       )
       raise cloud_errors.GcsApiError(
           'Invalid operation data initiated for this command:'
-          f' {operation_ref.name}. Please check if command completed in the'
-          ' background before '
+          f' {operation_ref}. Please check if command completed in the'
+          ' background before retrying.'
       )
+
+    if operations_util.is_location_operations_resource(operation_name):
+      return operations_api.OperationsApi().get(operation_name)
+
+    google_longrunning_operation = getattr(
+        self._MESSAGES, 'GoogleLongrunningOperation', ()
+    )
+    # OperationsApi().get() calls projects_locations_operations.Get under the
+    # hood. In Apitools, this method uses relative_path='v2/{+name}', so passing
+    # bucket-scoped paths (projects/_/buckets/.../operations/...) correctly
+    # dispatches to the Storage Control v2 operations endpoint.
+    if operations_util.is_bucket_operations_resource(operation_name) and (
+        not isinstance(operation_ref, google_longrunning_operation)
+    ):
+      return operations_api.OperationsApi().get(operation_name)
+
+    try:
+      bucket, operation_id = (
+          operations_util.get_operation_bucket_and_id_from_name(operation_name)
+      )
+    except command_errors.Error as exc:
+      log.warning(
+          'We could not wait for the operation to complete because the required'
+          ' data was incorrect. The operation may still have completed in the'
+          ' background. Please check if the operation has completed'
+          ' before retrying.'
+      )
+      raise cloud_errors.GcsApiError(
+          'Invalid operation data initiated for this command:'
+          f' {operation_name}. Please check if command completed in the'
+          ' background before retrying.'
+      ) from exc
 
     request = self._MESSAGES.StorageBucketsOperationsGetRequest(
         bucket=bucket, operationId=operation_id
@@ -312,6 +356,8 @@ class JsonClient(cloud_api.CloudApi):
         headers_util.get_additional_header_dict())
 
     self.messages = core_apis.GetMessagesModule('storage', 'v1')
+    self._client_v2 = None
+    self._messages_v2 = None
     self._stream_response_handler = _StorageStreamResponseHandler()
     self._download_http_client = None
     self._upload_http_client = None
@@ -742,6 +788,44 @@ class JsonClient(cloud_api.CloudApi):
     )
     return self.client.buckets.Relocate(relocate_request)
 
+  @property
+  def client_v2(self):
+    if self._client_v2 is None:
+      self._client_v2 = core_apis.GetClientInstance('storage', 'v2')
+      self._client_v2.additional_http_headers = (
+          headers_util.get_additional_header_dict()
+      )
+    return self._client_v2
+
+  @property
+  def messages_v2(self):
+    if self._messages_v2 is None:
+      self._messages_v2 = core_apis.GetMessagesModule('storage', 'v2')
+    return self._messages_v2
+
+  @error_util.catch_http_error_raise_gcs_api_error()
+  def rotate_bucket_encryption_key(
+      self, bucket_name, kms_key_version, request_id=None
+  ):
+    """See CloudApi class."""
+    parent = (
+        bucket_name
+        if bucket_name and bucket_name.startswith('projects/')
+        else f'projects/_/buckets/{bucket_name}'
+    )
+
+    rotate_bucket_encryption_key_request = (
+        self.messages_v2.RotateBucketEncryptionKeyRequest(
+            kmsKey=kms_key_version,
+            requestId=request_id or uuid.uuid4().hex,
+        )
+    )
+    request = self.messages_v2.StorageProjectsBucketsRotateBucketEncryptionKeyRequest(
+        parent=parent,
+        rotateBucketEncryptionKeyRequest=rotate_bucket_encryption_key_request,
+    )
+    return self.client_v2.projects_buckets.RotateBucketEncryptionKey(request)
+
   @error_util.catch_http_error_raise_gcs_api_error()
   def lock_bucket_retention_policy(self, bucket_resource, request_config):
     metageneration_precondition = (
@@ -1158,7 +1242,7 @@ class JsonClient(cloud_api.CloudApi):
                       start_byte=0,
                       end_byte=None):
     """See super class."""
-    if download_util.return_and_report_if_nothing_to_download(
+    if cloud_api.return_and_report_if_nothing_to_download(
         cloud_resource, progress_callback
     ):
       return None
@@ -1954,7 +2038,7 @@ class JsonClient(cloud_api.CloudApi):
     """See CloudApi class for function doc strings."""
 
     poller = CloudStorageLroPoller(
-        self.client.operations, (lambda ref: ref.name)
+        self.client.operations, _extract_operation_name
     )
 
     return waiter.WaitFor(poller, operation_ref)

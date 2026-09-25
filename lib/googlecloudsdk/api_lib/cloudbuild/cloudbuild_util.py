@@ -89,6 +89,7 @@ def GetClientInstance(
     use_http=True,
     skip_activation_prompt=False,
     location=None,
+    enable_by_default=False,
 ):
   """Returns an instance of the Cloud Build client.
 
@@ -101,6 +102,7 @@ def GetClientInstance(
       command.
     location: str, The location to create the client for. Used to create a REP
       client when regional endpoints are enabled.
+    enable_by_default: bool, The default choice for the enablement prompt.
 
   Returns:
     base_api.BaseApiClient, An instance of the Cloud Build client.
@@ -111,6 +113,7 @@ def GetClientInstance(
       no_http=(not use_http),
       skip_activation_prompt=skip_activation_prompt,
       location=location,
+      enable_by_default=enable_by_default,
   )
 
 

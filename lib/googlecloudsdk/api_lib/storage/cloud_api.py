@@ -106,6 +106,15 @@ DEFAULT_PROVIDER = storage_url.ProviderPrefix.GCS
 NUM_ITEMS_PER_LIST_PAGE = 1000
 
 
+def return_and_report_if_nothing_to_download(cloud_resource, progress_callback):
+  """Returns valid download range bool and reports progress if not."""
+  if cloud_resource.size == 0:
+    if progress_callback:
+      progress_callback(0)
+    return True
+  return False
+
+
 class CloudApi(object):
   """Abstract base class for interacting with cloud storage providers.
 
@@ -502,6 +511,28 @@ class CloudApi(object):
         this interface.
     """
     raise NotImplementedError('relocate_bucket must be overridden.')
+
+  def rotate_bucket_encryption_key(
+      self, bucket_name, kms_key_version, request_id=None
+  ):
+    """Rotates a Cloud KMS encryption key version used by a bucket to the latest primary key version.
+
+    Args:
+      bucket_name (str): Name of the bucket.
+      kms_key_version (str): Full KMS key version resource path.
+      request_id (str|None): Optional UUID4 hex string for idempotency.
+
+    Returns:
+      The long-running operation representing the rotation.
+
+    Raises:
+      CloudApiError: API returned an error.
+      NotImplementedError: This function was not implemented by a class using
+        this interface.
+    """
+    raise NotImplementedError(
+        'rotate_bucket_encryption_key must be overridden.'
+    )
 
   def lock_bucket_retention_policy(self, bucket_resource, request_config):
     """Locks a bucket's retention policy.

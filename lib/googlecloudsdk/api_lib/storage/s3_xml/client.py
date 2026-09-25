@@ -32,7 +32,6 @@ from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage.resources import resource_reference
 from googlecloudsdk.command_lib.storage.resources import resource_util
 from googlecloudsdk.command_lib.storage.resources import s3_resource_reference
-from googlecloudsdk.command_lib.storage.tasks.cp import download_util
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -559,7 +558,7 @@ class S3XmlClient(cloud_api.CloudApi):
                       end_byte=None):
     """See super class."""
     del request_config, do_not_decompress  # Unused.
-    if download_util.return_and_report_if_nothing_to_download(
+    if cloud_api.return_and_report_if_nothing_to_download(
         cloud_resource, progress_callback
     ):
       return None

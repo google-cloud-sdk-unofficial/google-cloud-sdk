@@ -609,6 +609,38 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  MEMORYBANKS_MEMORIES_OPERATIONS = (
+      'memoryBanks.memories.operations',
+      '{+name}',
+      {
+          '':
+              'memoryBanks/{memoryBanksId}/memories/{memoriesId}/operations/'
+              '{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  MEMORYBANKS_MEMORIES_REVISIONS = (
+      'memoryBanks.memories.revisions',
+      '{+name}',
+      {
+          '':
+              'memoryBanks/{memoryBanksId}/memories/{memoriesId}/revisions/'
+              '{revisionsId}',
+      },
+      ['name'],
+      True
+  )
+  MEMORYBANKS_OPERATIONS = (
+      'memoryBanks.operations',
+      '{+name}',
+      {
+          '':
+              'memoryBanks/{memoryBanksId}/operations/{operationsId}',
+      },
+      ['name'],
+      True
+  )
   METADATASTORES = (
       'metadataStores',
       'metadataStores/{metadataStoresId}',
@@ -1210,6 +1242,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_EVALUATIONEXPERIMENTS = (
+      'projects.locations.evaluationExperiments',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'evaluationExperiments/{evaluationExperimentsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_EVALUATIONITEMS = (
       'projects.locations.evaluationItems',
       '{+name}',
@@ -1657,6 +1700,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_INTERACTIONSHTTP = (
+      'projects.locations.interactionsHttp',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'interactionsHttp/{interactionsHttpId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_MEMORYBANKS = (
       'projects.locations.memoryBanks',
       'projects/{projectsId}/locations/{locationsId}/memoryBanks/'
@@ -1672,6 +1726,40 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/memoryBanks/'
               '{memoryBanksId}/memories/{memoriesId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_MEMORYBANKS_MEMORIES_OPERATIONS = (
+      'projects.locations.memoryBanks.memories.operations',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/memoryBanks/'
+              '{memoryBanksId}/memories/{memoriesId}/operations/'
+              '{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_MEMORYBANKS_MEMORIES_REVISIONS = (
+      'projects.locations.memoryBanks.memories.revisions',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/memoryBanks/'
+              '{memoryBanksId}/memories/{memoriesId}/revisions/{revisionsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_MEMORYBANKS_OPERATIONS = (
+      'projects.locations.memoryBanks.operations',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/memoryBanks/'
+              '{memoryBanksId}/operations/{operationsId}',
       },
       ['name'],
       True
@@ -2115,6 +2203,33 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_PUBLISHERS = (
+      'projects.locations.publishers',
+      'projects/{projectsId}/locations/{locationsId}/publishers/'
+      '{publishersId}',
+      {},
+      ['projectsId', 'locationsId', 'publishersId'],
+      True
+  )
+  PROJECTS_LOCATIONS_PUBLISHERS_V1 = (
+      'projects.locations.publishers.v1',
+      'projects/{projectsId}/locations/{locationsId}/publishers/'
+      '{publishersId}/v1',
+      {},
+      ['projectsId', 'locationsId', 'publishersId'],
+      True
+  )
+  PROJECTS_LOCATIONS_PUBLISHERS_V1_RESPONSES = (
+      'projects.locations.publishers.v1.responses',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/publishers/'
+              '{publishersId}/v1/responses/{responsesId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_RAGCORPORA = (
       'projects.locations.ragCorpora',
       '{+name}',
@@ -2237,10 +2352,14 @@ class Collections(enum.Enum):
   )
   PROJECTS_LOCATIONS_REASONINGENGINES_FEEDBACKENTRIES = (
       'projects.locations.reasoningEngines.feedbackEntries',
-      'projects/{projectsId}/locations/{locationsId}/reasoningEngines/'
-      '{reasoningEnginesId}/feedbackEntries/{feedbackEntriesId}',
-      {},
-      ['projectsId', 'locationsId', 'reasoningEnginesId', 'feedbackEntriesId'],
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'reasoningEngines/{reasoningEnginesId}/feedbackEntries/'
+              '{feedbackEntriesId}',
+      },
+      ['name'],
       True
   )
   PROJECTS_LOCATIONS_REASONINGENGINES_FEEDBACKENTRIES_OPERATIONS = (
@@ -2489,10 +2608,13 @@ class Collections(enum.Enum):
   )
   PROJECTS_LOCATIONS_SERVINGPROFILES = (
       'projects.locations.servingProfiles',
-      'projects/{projectsId}/locations/{locationsId}/servingProfiles/'
-      '{servingProfilesId}',
-      {},
-      ['projectsId', 'locationsId', 'servingProfilesId'],
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/servingProfiles/'
+              '{servingProfilesId}',
+      },
+      ['name'],
       True
   )
   PROJECTS_LOCATIONS_SERVINGPROFILES_OPERATIONS = (
@@ -2619,6 +2741,36 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/studies/'
               '{studiesId}/trials/{trialsId}/operations/{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_TASKSTORES = (
+      'projects.locations.taskStores',
+      'projects/{projectsId}/locations/{locationsId}/taskStores/'
+      '{taskStoresId}',
+      {},
+      ['projectsId', 'locationsId', 'taskStoresId'],
+      True
+  )
+  PROJECTS_LOCATIONS_TASKSTORES_A2ATASKRECORDS = (
+      'projects.locations.taskStores.a2aTaskRecords',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/taskStores/'
+              '{taskStoresId}/a2aTaskRecords/{a2aTaskRecordsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_TASKSTORES_OPERATIONS = (
+      'projects.locations.taskStores.operations',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/taskStores/'
+              '{taskStoresId}/operations/{operationsId}',
       },
       ['name'],
       True
@@ -3154,6 +3306,23 @@ class Collections(enum.Enum):
           '':
               'studies/{studiesId}/trials/{trialsId}/operations/'
               '{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  TASKSTORES = (
+      'taskStores',
+      'taskStores/{taskStoresId}',
+      {},
+      ['taskStoresId'],
+      True
+  )
+  TASKSTORES_OPERATIONS = (
+      'taskStores.operations',
+      '{+name}',
+      {
+          '':
+              'taskStores/{taskStoresId}/operations/{operationsId}',
       },
       ['name'],
       True

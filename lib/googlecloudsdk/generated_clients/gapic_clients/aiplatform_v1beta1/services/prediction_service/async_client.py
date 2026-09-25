@@ -17,6 +17,7 @@ import logging as std_logging
 from collections import OrderedDict
 import re
 from typing import Dict, Callable, Mapping, MutableMapping, MutableSequence, Optional, AsyncIterable, Awaitable, AsyncIterator, Sequence, Tuple, Type, Union
+import warnings
 
 from googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1 import gapic_version as package_version
 
@@ -1128,8 +1129,10 @@ class PredictionServiceAsyncClient:
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
             metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> Awaitable[AsyncIterable[prediction_service.StreamingPredictResponse]]:
-        r"""Perform a streaming online prediction request for
-        Vertex first-party products and frameworks.
+        r"""Deprecated: Renamed to
+        [PredictionService.StreamDirectPredict][google.cloud.aiplatform.v1beta1.PredictionService.StreamDirectPredict].
+        Perform a streaming online prediction request for Vertex
+        first-party products and frameworks.
 
         .. code-block:: python
 
@@ -1191,6 +1194,8 @@ class PredictionServiceAsyncClient:
                    [PredictionService.StreamingPredict][google.cloud.aiplatform.v1beta1.PredictionService.StreamingPredict].
 
         """
+        warnings.warn("PredictionServiceAsyncClient.streaming_predict is deprecated",
+            DeprecationWarning)
 
         # Wrap the RPC method; this adds retry and timeout information,
         # and friendly error handling.

@@ -17,8 +17,9 @@
 from googlecloudsdk.calliope import base
 
 
+@base.Hidden
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class DhcpOptionsConfigs(base.Group):
   """Manage Google Compute Engine DHCP options configurations."""
 

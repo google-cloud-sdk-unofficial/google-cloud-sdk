@@ -29,7 +29,7 @@ import textwrap
 
 from apitools.base.py import exceptions
 from googlecloudsdk.api_lib.oslogin import client as oslogin_client
-from googlecloudsdk.api_lib.run import ssh
+from googlecloudsdk.api_lib.run import constants as run_constants
 from googlecloudsdk.command_lib.oslogin import oslogin_utils
 from googlecloudsdk.command_lib.util import gaia
 from googlecloudsdk.core import config
@@ -1195,13 +1195,13 @@ def _SignAndWriteCloudRunCertificate(
   region = cloud_run_params['region']
   deployment_name = cloud_run_params['deployment_name']
   workload_type = cloud_run_params['workload_type']
-  if workload_type == ssh.Ssh.WorkloadType.SERVICE:
+  if workload_type == run_constants.WorkloadType.SERVICE:
     workload_type = 'services'
-  elif workload_type == ssh.Ssh.WorkloadType.JOB:
+  elif workload_type == run_constants.WorkloadType.JOB:
     workload_type = 'jobs'
-  elif workload_type == ssh.Ssh.WorkloadType.WORKER_POOL:
+  elif workload_type == run_constants.WorkloadType.WORKER_POOL:
     workload_type = 'workerPools'
-  elif workload_type == ssh.Ssh.WorkloadType.INSTANCE:
+  elif workload_type == run_constants.WorkloadType.INSTANCE:
     workload_type = 'instances'
   else:
     raise ValueError(f'Unsupported workload type: {workload_type}')

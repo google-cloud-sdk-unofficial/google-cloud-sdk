@@ -23,7 +23,8 @@ from googlecloudsdk.command_lib.tasks import parsers
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateAppEngine(base.CreateCommand):
   """Create and add a task that targets App Engine."""
   detailed_help = {
@@ -39,7 +40,9 @@ class CreateAppEngine(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddCreateAppEngineTaskFlags(parser)
+    flags.AddCreateAppEngineTaskFlags(
+        parser, release_track=base.ReleaseTrack.GA
+    )
     flags.AddLocationFlag(parser)
 
   def Run(self, args):
@@ -59,6 +62,36 @@ class CreateAppEngine(base.CreateCommand):
     return create_response
 
 
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class BetaCreateAppEngine(CreateAppEngine):
+  """Create and add a task that targets App Engine."""
+
+  @staticmethod
+  def Args(parser):
+    flags.AddCreateAppEngineTaskFlags(
+        parser, release_track=base.ReleaseTrack.BETA)
+    flags.AddLocationFlag(parser)
+
+  def Run(self, args):
+    api = GetApiAdapter(self.ReleaseTrack())
+    tasks_client = api.tasks
+    queue_ref = parsers.ParseQueue(args.queue, args.location)
+    task_ref = parsers.ParseTask(args.task,
+                                 queue_ref) if args.task else None
+    task_config = parsers.ParseCreateTaskArgs(
+        args, constants.APP_ENGINE_TASK, api.messages,
+        release_track=self.ReleaseTrack())
+    create_response = tasks_client.Create(
+        queue_ref, task_ref,
+        schedule_time=task_config.scheduleTime,
+        app_engine_http_request=task_config.appEngineHttpRequest,
+        retry_config=getattr(task_config, 'retryConfig', None))
+    log.CreatedResource(create_response.name, 'task')
+    return create_response
+
+
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaCreateAppEngine(base.CreateCommand):
   """Create and add a task that targets App Engine."""
@@ -75,7 +108,8 @@ class AlphaCreateAppEngine(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddCreateAppEngineTaskFlags(parser, is_alpha=True)
+    flags.AddCreateAppEngineTaskFlags(
+        parser, is_alpha=True, release_track=base.ReleaseTrack.ALPHA)
     flags.AddLocationFlag(parser)
 
   def Run(self, args):
@@ -90,6 +124,8 @@ class AlphaCreateAppEngine(base.CreateCommand):
     create_response = tasks_client.Create(
         queue_ref, task_ref,
         schedule_time=task_config.scheduleTime,
-        app_engine_http_request=task_config.appEngineHttpRequest)
+        app_engine_http_request=task_config.appEngineHttpRequest,
+        retry_config=getattr(task_config, 'retryConfig', None))
     log.CreatedResource(create_response.name, 'task')
     return create_response
+

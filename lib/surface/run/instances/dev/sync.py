@@ -16,7 +16,7 @@
 
 import uuid
 
-from googlecloudsdk.api_lib.run import ssh as run_ssh
+from googlecloudsdk.api_lib.run import constants
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
@@ -145,6 +145,12 @@ class Sync(base.Command):
     flags.AddBinAuthzPolicyFlags(parser, with_clear=False)
     flags.AddBinAuthzBreakglassFlag(parser)
     flags.AddCmekKeyFlag(parser, with_clear=False)
+    flags.AddCmekKeyRevocationActionTypeFlag(
+        parser, with_clear=False, hidden=True
+    )
+    flags.AddEncryptionKeyShutdownHoursFlag(
+        parser, with_clear=False, hidden=True
+    )
     flags.AddGeneralAnnotationFlags(parser)
     flags.AddVolumesFlags(parser, cls.ReleaseTrack())
     flags.AddIngressFlag(parser)
@@ -272,7 +278,7 @@ class Sync(base.Command):
       with execution_utils.RaisesKeyboardInterrupt():
         sync_util.Sync(
             args=args,
-            workload_type=run_ssh.Ssh.WorkloadType.INSTANCE,
+            workload_type=constants.WorkloadType.INSTANCE,
             source=args.source,
         ).Run()
     except KeyboardInterrupt:

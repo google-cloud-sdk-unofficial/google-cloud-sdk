@@ -16,8 +16,8 @@
 
 import argparse
 
+from googlecloudsdk.api_lib.run import constants
 from googlecloudsdk.api_lib.run import service
-from googlecloudsdk.api_lib.run import ssh as run_ssh
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
@@ -304,7 +304,7 @@ class Sync(base.Command):
       with execution_utils.RaisesKeyboardInterrupt():
         sync_util.Sync(
             args=args,
-            workload_type=run_ssh.Ssh.WorkloadType.SERVICE,
+            workload_type=constants.WorkloadType.SERVICE,
             source=args.source,
         ).Run()
     except KeyboardInterrupt:

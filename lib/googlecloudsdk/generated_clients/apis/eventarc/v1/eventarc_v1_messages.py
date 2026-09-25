@@ -2236,17 +2236,17 @@ class GoogleCloudEventarcV1PipelineDestinationFirebaseCloudMessagingMessageTempl
     data: Optional. A CEL expression that constructs the data payload within
       the [message](https://firebase.google.com/docs/reference/fcm/rest/v1/pro
       jects.messages#resource:-message). Must return a map of key/value pairs.
-      Example: `{ "name": "wrench", "mass": "1.3kg", "count": "3" }`
+      Example 1: `message.data` Example 2: ``` { "name": message.data.name,
+      "mass": message.data.mass, "count": string(message.data.count) } ```
     fcmOptions: Optional. A CEL expression that constructs the [FcmOptions](ht
       tps://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages#F
       cmOptions) object. Example: `{ "analytics_label": "SOME_LABEL" }`
     notification: Optional. A CEL expression that constructs a [notification](
       https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages
-      #notification) object. Example 1: ``` { "title": "Welcome", "body":
-      "Welcome to this awesome app", "image": "https://example.com/image.png"
-      } ``` Example 2: `message.data.notification` Example 3: ``` { "title":
-      message.data.notification.title, "body": message.data.notification.body,
-      "image": message.data.notification.image } ```
+      #notification) object. Example 1: `message.data.notification` Example 2:
+      ``` { "title": message.data.notification.title, "body":
+      message.data.notification.body, "image": message.data.notification.image
+      } ```
     token: Optional. A CEL expression that constructs a registration token to
       send a message to. Example 1 (use a known token):
       "bk3RNwTe3H0:CI2k_HHwgIpoDKCIZvvDMExUdFQ3P1..." Example 2 (populate the

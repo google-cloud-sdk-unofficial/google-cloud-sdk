@@ -98,6 +98,13 @@ class Collections(enum.Enum):
       ['project'],
       True
   )
+  WORKLOADCAPTURES = (
+      'workloadCaptures',
+      'projects/{project}/instances/{instance}/workloadCaptures/{workloadId}',
+      {},
+      ['project', 'instance', 'workloadId'],
+      True
+  )
 
   def __init__(self, collection_name, path, flat_paths, params,
                enable_uri_parsing):

@@ -38,9 +38,9 @@ def GetNamespaceResourceSpec(
   """Gets the resource spec for a BigLake Iceberg/Hive namespace/database."""
   if catalog_type == 'Hive':
     return concepts.ResourceSpec(
-        'biglake.hive.v1beta.projects.catalogs.databases',
+        'biglake.hive.v1.projects.catalogs.databases',
         resource_name=namespace_type,
-        api_version='v1beta',
+        api_version='v1',
         projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
         catalogsId=concepts.ResourceParameterAttributeConfig(
             'catalog', f'The {catalog_type} Catalog for the resource.'
@@ -69,9 +69,9 @@ def GetTableResourceSpec(catalog_type='Iceberg', namespace_type='namespace'):
   """Gets the resource spec for a BigLake Iceberg/Hive table."""
   if catalog_type == 'Hive':
     return concepts.ResourceSpec(
-        'biglake.hive.v1beta.projects.catalogs.databases.tables',
+        'biglake.hive.v1.projects.catalogs.databases.tables',
         resource_name='table',
-        api_version='v1beta',
+        api_version='v1',
         projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
         catalogsId=concepts.ResourceParameterAttributeConfig(
             'catalog', f'The {catalog_type} Catalog for the resource.'

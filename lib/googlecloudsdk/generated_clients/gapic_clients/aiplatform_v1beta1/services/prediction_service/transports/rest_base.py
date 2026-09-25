@@ -216,6 +216,10 @@ class _BasePredictionServiceRestTransport(PredictionServiceTransport):
                 'method': 'delete',
                 'uri': '/v1beta1/{name=projects/*/locations/*/endpoints/*/responses/*}',
             },
+        {
+                'method': 'delete',
+                'uri': '/v1beta1/{name=projects/*/locations/*/publishers/*/v1/responses/*}',
+            },
             ]
             return http_options
 
@@ -558,6 +562,10 @@ class _BasePredictionServiceRestTransport(PredictionServiceTransport):
                 'method': 'get',
                 'uri': '/v1beta1/{name=projects/*/locations/*/endpoints/*/responses/*}',
             },
+        {
+                'method': 'get',
+                'uri': '/v1beta1/{name=projects/*/locations/*/publishers/*/v1/responses/*}',
+            },
             ]
             return http_options
 
@@ -613,6 +621,16 @@ class _BasePredictionServiceRestTransport(PredictionServiceTransport):
         {
                 'method': 'post',
                 'uri': '/v1beta1/{endpoint=projects/*/locations/*/endpoints/openapi}/responses',
+                'body': 'http_body',
+            },
+        {
+                'method': 'post',
+                'uri': '/v1beta1/{endpoint=projects/*/locations/*/publishers/*}/v1/responses',
+                'body': 'http_body',
+            },
+        {
+                'method': 'post',
+                'uri': '/v1beta1/{endpoint=projects/*/locations/*/publishers/*}/v1/responses/compact',
                 'body': 'http_body',
             },
         {

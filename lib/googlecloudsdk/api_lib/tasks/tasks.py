@@ -19,8 +19,12 @@ from apitools.base.py import list_pager
 from googlecloudsdk.core import exceptions
 
 
-class ModifyingPullAndAppEngineTaskError(exceptions.InternalError):
-  """Error for when attempt to create a queue as both pull and App Engine."""
+class IncompatibleTaskConfigurationError(exceptions.InternalError):
+  """Error when creating a task with incompatible configurations."""
+
+
+# Alias for backwards compatibility.
+ModifyingPullAndAppEngineTaskError = IncompatibleTaskConfigurationError
 
 
 class BaseTasks(object):
@@ -57,12 +61,44 @@ class BaseTasks(object):
             name=task_ref.RelativeName()))
     return self.tasks_service.Run(request)
 
+  def BatchCreateTasks(
+      self, parent_ref, create_task_requests, request_id=None
+  ):
+    """Prepares and sends a batch BatchCreateTasks request for creating tasks."""
+    request = (
+        self.messages.CloudtasksProjectsLocationsQueuesTasksBatchCreateRequest(
+            parent=parent_ref.RelativeName(),
+            batchCreateTasksRequest=self.messages.BatchCreateTasksRequest(
+                requests=create_task_requests,
+                requestId=request_id,
+            ),
+        )
+    )
+    return self.tasks_service.BatchCreate(request)
+
+  def BatchDeleteTasks(self, parent_ref, task_refs):
+    """Prepares and sends a BatchDeleteTasks request."""
+    if not hasattr(self.tasks_service, 'BatchDelete'):
+      raise NotImplementedError(
+          'BatchDelete is not supported by this API version.'
+      )
+    request = (
+        self.messages.CloudtasksProjectsLocationsQueuesTasksBatchDeleteRequest(
+            parent=parent_ref.RelativeName(),
+            batchDeleteTasksRequest=self.messages.BatchDeleteTasksRequest(
+                names=[t.RelativeName() for t in task_refs],
+            ),
+        )
+    )
+    return self.tasks_service.BatchDelete(request)
+
 
 class Tasks(BaseTasks):
   """API client for Cloud Tasks tasks."""
 
   def Create(self, parent_ref, task_ref=None, schedule_time=None,
-             app_engine_http_request=None, http_request=None):
+             app_engine_http_request=None, http_request=None,
+             retry_config=None):
     """Prepares and sends a Create request for creating a task."""
     name = task_ref.RelativeName() if task_ref else None
     task = self.messages.Task(
@@ -70,6 +106,8 @@ class Tasks(BaseTasks):
         appEngineHttpRequest=app_engine_http_request)
     if http_request:
       task.httpRequest = http_request
+    if retry_config and hasattr(task, 'retryConfig'):
+      task.retryConfig = retry_config
     request = (
         self.messages.CloudtasksProjectsLocationsQueuesTasksCreateRequest(
             createTaskRequest=self.messages.CreateTaskRequest(task=task),
@@ -95,16 +133,22 @@ class AlphaTasks(BaseTasks):
     return self.tasks_service.Buffer(request)
 
   def Create(self, parent_ref, task_ref=None, schedule_time=None,
-             pull_message=None, app_engine_http_request=None):
+             pull_message=None, app_engine_http_request=None,
+             retry_config=None):
     """Prepares and sends a Create request for creating a task."""
     if pull_message and app_engine_http_request:
-      raise ModifyingPullAndAppEngineTaskError(
+      raise IncompatibleTaskConfigurationError(
           'Attempting to send PullMessage and AppEngineHttpRequest '
           'simultaneously')
+    if pull_message and retry_config:
+      raise IncompatibleTaskConfigurationError(
+          'Attempting to send PullMessage and RetryConfig simultaneously')
     name = task_ref.RelativeName() if task_ref else None
     task = self.messages.Task(
         name=name, scheduleTime=schedule_time, pullMessage=pull_message,
         appEngineHttpRequest=app_engine_http_request)
+    if retry_config and hasattr(task, 'retryConfig'):
+      task.retryConfig = retry_config
     request = (
         self.messages.CloudtasksProjectsLocationsQueuesTasksCreateRequest(
             createTaskRequest=self.messages.CreateTaskRequest(task=task),

@@ -1,0 +1,30 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  hints:
+    read_only: true
+
+  help_text:
+    brief: Describe a Backup and DR Backup Insight Plan.
+    description: |
+      Describe a Backup and DR Backup Insight Plan.
+    examples: |
+      To describe a Backup Insight Plan named 'my-insight-plan' in backup vault 'my-vault' and location 'us-central1':
+
+        $ {command} my-insight-plan --backup-vault=my-vault --location=us-central1
+
+  request:
+    collection: backupdr.projects.locations.backupVaults.backupInsightPlans
+    ALPHA:
+      api_version: v1alpha
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: The Backup Insight Plan to describe.
+      spec: !REF googlecloudsdk.command_lib.backupdr.resources:backupInsightPlan
+      is_positional: true
+
+  output:
+    format: json

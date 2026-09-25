@@ -64,7 +64,30 @@ class _ECPHTTPProxyManager(object):
     self.nonce_token = secrets.token_hex(16)
     self.startup_timeout = startup_timeout
 
-    self.gcloud_proxy_url = http_proxy_types.GetProxyInfo(properties)
+    proxy_type = properties.VALUES.proxy.proxy_type.Get()
+    proxy_address = properties.VALUES.proxy.address.Get()
+    proxy_port = properties.VALUES.proxy.port.GetInt()
+
+    # Validate the core proxy properties before reading the optional ones, so
+    # that a malformed optional property cannot mask this error.
+    try:
+      proxy_configured = http_proxy_types.IsProxyConfigured(
+          proxy_type, proxy_address, proxy_port
+      )
+    except ValueError as e:
+      raise properties.InvalidValueError(str(e))
+
+    if not proxy_configured:
+      self.gcloud_proxy_url = None
+    else:
+      self.gcloud_proxy_url = http_proxy_types.FormatProxyUrl(
+          proxy_type=proxy_type,
+          proxy_address=proxy_address,
+          proxy_port=proxy_port,
+          proxy_rdns=properties.VALUES.proxy.rdns.GetBool(),
+          proxy_user=properties.VALUES.proxy.username.Get(),
+          proxy_pass=properties.VALUES.proxy.password.Get(),
+      )
 
     # Register a cleanup function to terminate the proxy process on exit.
     atexit.register(self.close)

@@ -124,9 +124,11 @@ def AddTaskIdFlag(parser):
   argument.AddToParser(parser)
 
 
-def AddTaskResourceArgs(parser, verb):
+def AddTaskResourceArgs(parser, verb, required=True):
+  nargs = '*' if not required else None
   base.Argument(
-      'task', help='The task {}.\n\n'.format(verb)).AddToParser(parser)
+      'task', nargs=nargs, help='The task {}.\n\n'.format(verb)
+  ).AddToParser(parser)
   AddQueueResourceFlag(parser, required=False)
 
 
@@ -278,7 +280,9 @@ def AddCreatePullTaskFlags(parser):
   _AddPayloadFlags(parser, True)
 
 
-def AddCreateAppEngineTaskFlags(parser, is_alpha=False):
+def AddCreateAppEngineTaskFlags(
+    parser, is_alpha=False, release_track=base.ReleaseTrack.GA
+):
   """Add flags needed for creating a App Engine task to the parser."""
   AddQueueResourceFlag(parser, required=True)
   _GetTaskIdFlag().AddToParser(parser)
@@ -286,9 +290,14 @@ def AddCreateAppEngineTaskFlags(parser, is_alpha=False):
   for flag in flags:
     flag.AddToParser(parser)
   _AddPayloadFlags(parser, is_alpha)
+  if is_alpha or release_track in (
+      base.ReleaseTrack.ALPHA,
+      base.ReleaseTrack.BETA,
+  ):
+    AddRetryConfigFlags(parser)
 
 
-def AddCreateHttpTaskFlags(parser):
+def AddCreateHttpTaskFlags(parser, release_track=base.ReleaseTrack.GA):
   """Add flags needed for creating a HTTP task to the parser."""
   AddQueueResourceFlag(parser, required=True)
   _GetTaskIdFlag().AddToParser(parser)
@@ -296,6 +305,78 @@ def AddCreateHttpTaskFlags(parser):
     flag.AddToParser(parser)
   _AddPayloadFlags(parser)
   _AddAuthFlags(parser)
+  if release_track in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
+    AddRetryConfigFlags(parser)
+
+
+def AddRetryConfigFlags(parser):
+  """Add flags for task-level retry configuration."""
+  retry_config_group = base.ArgumentGroup(
+      help='Flags for configuring task-level retry behaviors.',
+      hidden=True,
+  )
+  retry_config_group.AddArgument(
+      base.Argument(
+          '--max-attempts',
+          type=int,
+          help=(
+              'The maximum number of times the system will attempt to run'
+              ' the task. Use 1 for no retries, and -1 for unlimited.'
+          ),
+      )
+  )
+  retry_config_group.AddArgument(
+      base.Argument(
+          '--max-retry-duration',
+          type=arg_parsers.Duration(),
+          help=(
+              'The maximum time window allowed for retrying a failed task'
+              ' (e.g. 3600s).'
+          ),
+      )
+  )
+  retry_config_group.AddArgument(
+      base.Argument(
+          '--min-backoff',
+          type=arg_parsers.Duration(),
+          help='The minimum time to wait before retrying (e.g. 10s).',
+      )
+  )
+  retry_config_group.AddArgument(
+      base.Argument(
+          '--max-backoff',
+          type=arg_parsers.Duration(),
+          help='The maximum time to wait before retrying (e.g. 300s).',
+      )
+  )
+  retry_config_group.AddArgument(
+      base.Argument(
+          '--max-doublings',
+          type=int,
+          help='The maximum number of times the backoff period will double.',
+      )
+  )
+  retry_config_group.AddToParser(parser)
+
+
+def AddBatchDeleteTaskFlags(parser):
+  """Add flags for batch task deletion."""
+  parser.add_argument(
+      '--from-file',
+      hidden=True,
+      help=(
+          'Path to a file containing task IDs/names to delete, one per line'
+          ' or in JSON/YAML format.'
+      ),
+  )
+  parser.add_argument(
+      '--failed-tasks-file',
+      hidden=True,
+      help=(
+          'Path to a file to output JSON details of tasks that failed or were'
+          ' skipped during batch deletion.'
+      ),
+  )
 
 
 def _PullQueueFlags():
@@ -721,3 +802,34 @@ def GetTaskResponseViewMapper(release_track):
       .ResponseViewValueValuesEnum,
       default='basic',
       help_str='Task response view.')
+
+
+def AddBatchCreateTaskFlags(parser):
+  """Adds flags for creating tasks in batch."""
+  parser.add_argument(
+      '--tasks-from-file',
+      required=True,
+      hidden=True,
+      help=(
+          'Path to a JSON or YAML file containing a list of tasks to create, or'
+          ' - to read from stdin.'
+      ),
+  )
+  parser.add_argument(
+      '--failed-tasks-file',
+      hidden=True,
+      help=(
+          'Optional path to a file where a JSON record of failed tasks will'
+          ' be written.'
+      ),
+  )
+  parser.add_argument(
+      '--dry-run',
+      action='store_true',
+      default=False,
+      hidden=True,
+      help=(
+          'If set to true, validates the task specifications without creating'
+          ' the tasks.'
+      ),
+  )

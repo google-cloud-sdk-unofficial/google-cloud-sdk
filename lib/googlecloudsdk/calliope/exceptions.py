@@ -106,12 +106,8 @@ class FailedSubCommand(core_exceptions.Error):
     )
 
 
-class DryRunError(core_exceptions.Error):
-  """Raised when a dry run request is made."""
-
-  def __init__(self, request):
-    super().__init__()
-    self.request = request
+# Re-export DryRunError from core_exceptions for backward compatibility.
+DryRunError = core_exceptions.DryRunError
 
 
 def RaiseErrorInsteadOf(error, *error_types):
@@ -403,6 +399,71 @@ class MinimumArgumentException(ToolException):
 
 class BadFileException(ToolException):
   """BadFileException is for problems reading or writing a file."""
+
+
+class CommandAssertionError(core_exceptions.Error):
+  """Exception raised when a command violates an execution assertion.
+
+  Attributes:
+    command_path: str, The space-separated command path (e.g. 'gcloud compute
+      instances list').
+    assertion: str, The assertion key that failed (e.g. 'readonly').
+    certainty: str, The certainty classification of the assertion failure
+      ('Certain (confirmed mutating)' or 'Unannotated (unknown safety)').
+    reason: str, The technical reason explaining why the assertion failed.
+    warning: str or None, Optional warning message providing additional context
+      for unannotated commands.
+    remediation_items: list[str], Actionable remediation steps for the user or
+      caller.
+    can_retry_without_assert: bool, True if the command is safe to retry without
+      the assertion flag (e.g. unannotated commands after manual verification).
+  """
+
+  def __init__(
+      self,
+      command_path,
+      assertion,
+      certainty,
+      reason,
+      warning=None,
+      remediation_items=None,
+      can_retry_without_assert=None,
+  ):
+    """Initializes CommandAssertionError.
+
+    Args:
+      command_path: str, The space-separated command path.
+      assertion: str, The assertion key that failed (e.g. 'readonly').
+      certainty: str, The certainty classification of the assertion failure.
+      reason: str, The technical reason explaining why the assertion failed.
+      warning: str or None, Optional warning message for unannotated commands.
+      remediation_items: list[str] or None, Actionable remediation steps.
+      can_retry_without_assert: bool or None, True if the command is safe to
+        retry without the assertion flag.
+    """
+    message_lines = [
+        f'Command [{command_path}] violated assertion: --assert={assertion}.',
+        f'Certainty: {certainty}.',
+        f'Reason: {reason}',
+    ]
+    if warning:
+      message_lines.append(f'\nWARNING: {warning}')
+    if remediation_items:
+      message_lines.append('\nRemediation:')
+      for item in remediation_items:
+        message_lines.append(f'  - {item}')
+
+    super().__init__('\n'.join(message_lines), exit_code=1)
+    self.command_path = command_path
+    self.assertion = assertion
+    self.certainty = certainty
+    self.reason = reason
+    self.warning = warning
+    self.remediation_items = remediation_items or []
+    if can_retry_without_assert is None:
+      self.can_retry_without_assert = certainty.startswith('Unannotated')
+    else:
+      self.can_retry_without_assert = can_retry_without_assert
 
 
 # In general, lower level libraries should be catching exceptions and re-raising

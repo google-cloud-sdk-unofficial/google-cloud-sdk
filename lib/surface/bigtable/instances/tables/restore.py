@@ -14,24 +14,27 @@
 # limitations under the License.
 """bigtable tables restore command."""
 
-
 import textwrap
 
+from googlecloudsdk.api_lib.bigtable import tables
 from googlecloudsdk.api_lib.bigtable import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bigtable import arguments
 from googlecloudsdk.core import log
 
 
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class RestoreTables(base.RestoreCommand):
   """Restore a Cloud Bigtable backup to a new table."""
+
+  _support_custom_table_properties = False
+
   detailed_help = {
-      'DESCRIPTION':
-          textwrap.dedent("""
+      'DESCRIPTION': textwrap.dedent("""
           This command restores a Cloud Bigtable backup to a new table.
           """),
-      'EXAMPLES':
-          textwrap.dedent("""
+      'EXAMPLES': textwrap.dedent("""
           To restore table 'table2' from backup 'backup1', run:
 
             $ {command} --source-instance=instance1 --source-cluster=cluster1 --source=backup1 --destination-instance=instance1 --destination=table2
@@ -42,11 +45,18 @@ class RestoreTables(base.RestoreCommand):
           """),
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Register flags for this command."""
     arguments.AddTableRestoreResourceArg(parser)
     arguments.ArgAdder(parser).AddAsync()
+
+    if cls._support_custom_table_properties:
+      (
+          arguments.ArgAdder(parser)
+          .AddRestoredTableDeletionProtection()
+          .AddAutomatedBackupPolicyArgs()
+      )
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -63,16 +73,39 @@ class RestoreTables(base.RestoreCommand):
     backup_ref = args.CONCEPTS.source.Parse()  # backup
     table_ref = args.CONCEPTS.destination.Parse()  # table
 
+    table_msg = None
+    update_mask_list = []
+
+    if self._support_custom_table_properties:
+      table_kwargs = {}
+      # 1. Handle deletion protection
+      if args.deletion_protection is not None:
+        table_kwargs['deletionProtection'] = args.deletion_protection
+        update_mask_list.append('deletion_protection')
+      # 2. Handle automated backup policy
+      policy = tables.BuildAutomatedBackupPolicyFromArgs(
+          args, locations=args.automated_backup_locations
+      )
+      if policy is not None:
+        table_kwargs['automatedBackupPolicy'] = policy
+        update_mask_list.append('automated_backup_policy')
+      if update_mask_list:
+        table_msg = msgs.Table(**table_kwargs)
+
     restore_request = msgs.RestoreTableRequest(
         # Full backup name.
         backup=backup_ref.RelativeName(),
         # Table id
-        tableId=table_ref.Name())
+        tableId=table_ref.Name(),
+        table=table_msg,
+        updateMask=','.join(update_mask_list) if update_mask_list else None,
+    )
 
-    msg = (msgs.BigtableadminProjectsInstancesTablesRestoreRequest(
+    msg = msgs.BigtableadminProjectsInstancesTablesRestoreRequest(
         # The name of the instance in which to create the restored table.
         parent=table_ref.Parent().RelativeName(),
-        restoreTableRequest=restore_request))
+        restoreTableRequest=restore_request,
+    )
 
     operation = cli.projects_instances_tables.Restore(msg)
     operation_ref = util.GetOperationRef(operation)
@@ -80,8 +113,17 @@ class RestoreTables(base.RestoreCommand):
       log.CreatedResource(
           operation_ref.RelativeName(),
           kind='bigtable table {0}'.format(table_ref.Name()),
-          is_async=True)
+          is_async=True,
+      )
       return
     return util.AwaitTable(
-        operation_ref,
-        'Creating bigtable table {0}'.format(table_ref.Name()))
+        operation_ref, 'Creating bigtable table {0}'.format(table_ref.Name())
+    )
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class RestoreTablesAlpha(RestoreTables):
+  """Restore a Cloud Bigtable backup to a new table."""
+
+  _support_custom_table_properties = True

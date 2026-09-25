@@ -24,6 +24,8 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
+from googlecloudsdk.core.util import encoding
+from googlecloudsdk.core.util import files
 
 
 def ProjectAttributeConfig():
@@ -106,7 +108,10 @@ class Download(base.Command):
     """Run the download command."""
     revision_ref = args.CONCEPTS.revision.Parse()
 
-    destination = os.path.expanduser(args.destination)
+    destination = files.ExpandHomeDir(args.destination)
+    bwd = encoding.GetEncodedValue(os.environ, 'BUILD_WORKING_DIRECTORY')
+    if bwd and not os.path.isabs(destination):
+      destination = os.path.join(bwd, destination)
     if os.path.isdir(destination):
       filename = '{}.zip'.format(revision_ref.revisionsId)
       final_path = os.path.join(destination, filename)

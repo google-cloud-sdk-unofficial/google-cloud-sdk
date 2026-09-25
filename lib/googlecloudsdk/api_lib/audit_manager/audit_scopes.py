@@ -65,7 +65,7 @@ class AuditScopesClient(object):
 
     inner_req = self.messages.GenerateAuditScopeReportRequest()
     inner_req.complianceStandard = compliance_standard
-    inner_req.reportFormat = self.report_format_map[report_format]
+    inner_req.reportFormat = self.report_format_map[report_format.lower()]
 
     if is_parent_folder:
       service = self.client.folders_locations_auditScopeReports

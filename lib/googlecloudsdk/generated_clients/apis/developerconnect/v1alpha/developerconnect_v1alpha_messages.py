@@ -1740,7 +1740,8 @@ class GitLabEnterpriseConfig(_messages.Message):
 
 
 class GitProxyConfig(_messages.Message):
-  r"""The git proxy configuration.
+  r"""Configuration for proxies. For legacy reasons, this message is named
+  `GitProxyConfig`, but it includes settings for both Git and HTTP proxy.
 
   Fields:
     enabled: Optional. Setting this to true allows the git proxy to be used

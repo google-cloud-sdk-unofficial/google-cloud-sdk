@@ -253,11 +253,25 @@ class GoogleCloudVectorsearchV1betaBatchSearchDataObjectsRequest(_messages.Messa
   Fields:
     combine: Optional. Options for combining the results of the batch search
       operations.
+    metadataOptions: Optional. Options controlling which metadata is included
+      in the search results.
     searches: Required. A list of search requests to execute in parallel.
   """
 
   combine = _messages.MessageField('GoogleCloudVectorsearchV1betaBatchSearchDataObjectsRequestCombineResultsOptions', 1)
-  searches = _messages.MessageField('GoogleCloudVectorsearchV1betaSearch', 2, repeated=True)
+  metadataOptions = _messages.MessageField('GoogleCloudVectorsearchV1betaBatchSearchDataObjectsRequestBatchSearchMetadataOptions', 2)
+  searches = _messages.MessageField('GoogleCloudVectorsearchV1betaSearch', 3, repeated=True)
+
+
+class GoogleCloudVectorsearchV1betaBatchSearchDataObjectsRequestBatchSearchMetadataOptions(_messages.Message):
+  r"""Options controlling which metadata is included in the search results.
+
+  Fields:
+    searchSignalsEnabled: Optional. If `true`, per-result quality signals are
+      returned in SearchResult.search_result_metadata.
+  """
+
+  searchSignalsEnabled = _messages.BooleanField(1)
 
 
 class GoogleCloudVectorsearchV1betaBatchSearchDataObjectsRequestCombineResultsOptions(_messages.Message):
@@ -451,6 +465,34 @@ class GoogleCloudVectorsearchV1betaCollection(_messages.Message):
   schema = _messages.MessageField('SchemaValue', 8)
   updateTime = _messages.StringField(9)
   vectorSchema = _messages.MessageField('VectorSchemaValue', 10)
+
+
+class GoogleCloudVectorsearchV1betaCombinedQuery(_messages.Message):
+  r"""A query that combines multiple sub-queries with a boolean operator.
+
+  Enums:
+    OpValueValuesEnum: Required. The boolean operator used to combine the sub-
+      queries.
+
+  Fields:
+    op: Required. The boolean operator used to combine the sub-queries.
+    subQueries: Required. The sub-queries to be combined.
+  """
+
+  class OpValueValuesEnum(_messages.Enum):
+    r"""Required. The boolean operator used to combine the sub-queries.
+
+    Values:
+      OPERATOR_UNSPECIFIED: Default value. This value is unused.
+      AND: All sub-queries must match.
+      OR: At least one sub-query must match.
+    """
+    OPERATOR_UNSPECIFIED = 0
+    AND = 1
+    OR = 2
+
+  op = _messages.EnumField('OpValueValuesEnum', 1)
+  subQueries = _messages.MessageField('GoogleCloudVectorsearchV1betaStructuredQuery', 2, repeated=True)
 
 
 class GoogleCloudVectorsearchV1betaCreateDataObjectRequest(_messages.Message):
@@ -995,6 +1037,21 @@ class GoogleCloudVectorsearchV1betaQueryDataObjectsResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
+class GoogleCloudVectorsearchV1betaQueryEnhancement(_messages.Message):
+  r"""Query enhancement settings. When enabled, expands the search terms with
+  stemming, synonyms, and spelling corrections, and removes stop words.
+
+  Fields:
+    enabled: Optional. Whether query enhancement is enabled.
+    languageCode: Optional. The IETF BCP 47 language tag, such as "en-US", for
+      query enhancement. If unset, the language is detected automatically. See
+      .
+  """
+
+  enabled = _messages.BooleanField(1)
+  languageCode = _messages.StringField(2)
+
+
 class GoogleCloudVectorsearchV1betaRanker(_messages.Message):
   r"""Defines a ranker to combine results from multiple searches.
 
@@ -1112,13 +1169,20 @@ class GoogleCloudVectorsearchV1betaSearchHintIndexHintDenseScannParams(_messages
 
   Fields:
     initialCandidateCount: Optional. The number of initial candidates. Must be
-      a positive integer (> 0).
+      a positive integer (> 0). Not supported for `STORAGE_OPTIMIZED` indexes.
+      Cannot be set together with `target_recall`.
     searchLeavesPct: Optional. Dense ANN param overrides to control recall and
-      latency. The percentage of leaves to search, in the range [0, 100].
+      latency. The percentage of leaves to search, in the range [0, 100]. Not
+      supported for `STORAGE_OPTIMIZED` indexes. Cannot be set together with
+      `target_recall`.
+    targetRecall: Optional. The target recall for the search. Must be a double
+      in the range [0, 1]. While the search aims to achieve this level of
+      recall, it is not guaranteed.
   """
 
   initialCandidateCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   searchLeavesPct = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  targetRecall = _messages.FloatField(3)
 
 
 class GoogleCloudVectorsearchV1betaSearchHintKnnHint(_messages.Message):
@@ -1163,10 +1227,77 @@ class GoogleCloudVectorsearchV1betaSearchResult(_messages.Message):
     dataObject: Output only. The matching data object.
     distance: Output only. Similarity distance or ranker score returned by
       BatchSearchDataObjects.
+    searchResultMetadata: Output only. Quality signals for this result. Only
+      populated when BatchSearchDataObjectsRequest.BatchSearchMetadataOptions.
+      search_signals_enabled is `true`.
   """
 
   dataObject = _messages.MessageField('GoogleCloudVectorsearchV1betaDataObject', 1)
   distance = _messages.FloatField(2)
+  searchResultMetadata = _messages.MessageField('GoogleCloudVectorsearchV1betaSearchResultSearchResultMetadata', 3)
+
+
+class GoogleCloudVectorsearchV1betaSearchResultSearchResultMetadata(_messages.Message):
+  r"""Quality signals describing how this result was retrieved, combined and
+  re-ranked. Only populated when BatchSearchDataObjectsRequest.BatchSearchMeta
+  dataOptions.search_signals_enabled is `true`.
+
+  Fields:
+    rrfRankerResult: Output only. The RRF combination signals for this data
+      object. Only set when the request combines results using RRF.
+    searchDistances: Output only. The per-search distances for this data
+      object, one entry per batch search that returned it.
+    vertexRankerResult: Output only. The Vertex re-ranking signals for this
+      data object. Only set when the request re-ranks results using the Vertex
+      ranker.
+  """
+
+  rrfRankerResult = _messages.MessageField('GoogleCloudVectorsearchV1betaSearchResultSearchResultMetadataRrfRankerResult', 1)
+  searchDistances = _messages.MessageField('GoogleCloudVectorsearchV1betaSearchResultSearchResultMetadataSearchDistance', 2, repeated=True)
+  vertexRankerResult = _messages.MessageField('GoogleCloudVectorsearchV1betaSearchResultSearchResultMetadataVertexRankerResult', 3)
+
+
+class GoogleCloudVectorsearchV1betaSearchResultSearchResultMetadataRrfRankerResult(_messages.Message):
+  r"""The rank and score assigned by the Reciprocal Rank Fusion ranker when
+  combining the results of the batch searches.
+
+  Fields:
+    rank: Output only. The rank of this data object after RRF combination.
+    score: Output only. The score of this data object after RRF combination.
+  """
+
+  rank = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  score = _messages.FloatField(2)
+
+
+class GoogleCloudVectorsearchV1betaSearchResultSearchResultMetadataSearchDistance(_messages.Message):
+  r"""The rank and distance of this data object within a single search of the
+  batch.
+
+  Fields:
+    distance: Output only. The similarity distance of this data object for the
+      search.
+    rank: Output only. The order of this data object in the search's result
+      list, starting at 1 for the top (best-ranked) result.
+    searchIndex: Output only. The index of the search in the
+      BatchSearchDataObjectsRequest.searches this distance corresponds to.
+  """
+
+  distance = _messages.FloatField(1)
+  rank = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  searchIndex = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+
+
+class GoogleCloudVectorsearchV1betaSearchResultSearchResultMetadataVertexRankerResult(_messages.Message):
+  r"""The rank and score assigned by the Vertex re-ranker.
+
+  Fields:
+    rank: Output only. The rank of this data object after Vertex re-ranking.
+    score: Output only. The score of this data object after Vertex re-ranking.
+  """
+
+  rank = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  score = _messages.FloatField(2)
 
 
 class GoogleCloudVectorsearchV1betaSemanticSearch(_messages.Message):
@@ -1279,6 +1410,69 @@ class GoogleCloudVectorsearchV1betaSparseVectorField(_messages.Message):
   r"""Message describing a sparse vector field."""
 
 
+class GoogleCloudVectorsearchV1betaStructuredQuery(_messages.Message):
+  r"""A structured query for text search. Allows expressing field-targeted
+  text queries combined via boolean operators, with optional per-node
+  boosting.
+
+  Fields:
+    boost: Optional. Optional multiplier applied to this query node's
+      contribution to the final relevance score. Must be non-negative; if
+      unset or 0, defaults to 1.0. Values greater than 1.0 increase its
+      influence on ranking, values between 0.0 and 1.0 decrease it.
+    combine: Optional. A query that combines multiple sub-queries with a
+      boolean operator.
+    text: Optional. A leaf-level text query.
+    unary: Optional. A query that applies a unary operator to a sub-query.
+  """
+
+  boost = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
+  combine = _messages.MessageField('GoogleCloudVectorsearchV1betaCombinedQuery', 2)
+  text = _messages.MessageField('GoogleCloudVectorsearchV1betaTextQuery', 3)
+  unary = _messages.MessageField('GoogleCloudVectorsearchV1betaUnaryQuery', 4)
+
+
+class GoogleCloudVectorsearchV1betaTextQuery(_messages.Message):
+  r"""A leaf-level text query targeting one or more data fields. When multiple
+  fields are specified, this is equivalent to combining per-field matches with
+  an OR operator (i.e. the query matches if the text is found in any of the
+  listed fields).
+
+  Enums:
+    MatchTypeValueValuesEnum: Optional. The matching strategy to apply for
+      this query. If unset, defaults to `STANDARD`.
+
+  Fields:
+    fields: Required. The data fields to search against.
+    matchType: Optional. The matching strategy to apply for this query. If
+      unset, defaults to `STANDARD`.
+    queryEnhancement: Optional. The query enhancement settings to apply for
+      this query.
+    text: Required. The text to search for.
+  """
+
+  class MatchTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The matching strategy to apply for this query. If unset,
+    defaults to `STANDARD`.
+
+    Values:
+      MATCH_TYPE_UNSPECIFIED: Defaults to `STANDARD`.
+      TEXT: Treats `text` as individual search terms combined with an implicit
+        AND: every term must appear in the field, in any order and any
+        position. Case-insensitive.
+      EXACT: Matches only when the entire field value is exactly equal to
+        `text`.
+    """
+    MATCH_TYPE_UNSPECIFIED = 0
+    TEXT = 1
+    EXACT = 2
+
+  fields = _messages.StringField(1, repeated=True)
+  matchType = _messages.EnumField('MatchTypeValueValuesEnum', 2)
+  queryEnhancement = _messages.MessageField('GoogleCloudVectorsearchV1betaQueryEnhancement', 3)
+  text = _messages.StringField(4)
+
+
 class GoogleCloudVectorsearchV1betaTextSearch(_messages.Message):
   r"""Defines a text search operation.
 
@@ -1294,6 +1488,11 @@ class GoogleCloudVectorsearchV1betaTextSearch(_messages.Message):
     outputFields: Optional. The fields to return in the search results.
     searchText: Optional. The query text. Required when using the default text
       search mode.
+    structuredQuery: Optional. Structured query definition. When set,
+      `search_text` and `data_field_names` must be left empty; otherwise the
+      request will be rejected with an `INVALID_ARGUMENT` error. Conversely,
+      when `structured_query` is unset, both `search_text` and
+      `data_field_names` are required.
     topK: Optional. The number of results to return.
   """
 
@@ -1326,7 +1525,33 @@ class GoogleCloudVectorsearchV1betaTextSearch(_messages.Message):
   filter = _messages.MessageField('FilterValue', 2)
   outputFields = _messages.MessageField('GoogleCloudVectorsearchV1betaOutputFields', 3)
   searchText = _messages.StringField(4)
-  topK = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  structuredQuery = _messages.MessageField('GoogleCloudVectorsearchV1betaStructuredQuery', 5)
+  topK = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+
+
+class GoogleCloudVectorsearchV1betaUnaryQuery(_messages.Message):
+  r"""A query that applies a unary operator to a sub-query.
+
+  Enums:
+    OpValueValuesEnum: Required. The unary operator to apply.
+
+  Fields:
+    op: Required. The unary operator to apply.
+    subQuery: Required. The sub-query the operator is applied to.
+  """
+
+  class OpValueValuesEnum(_messages.Enum):
+    r"""Required. The unary operator to apply.
+
+    Values:
+      OPERATOR_UNSPECIFIED: Default value. This value is unused.
+      NOT: Negates the sub-query.
+    """
+    OPERATOR_UNSPECIFIED = 0
+    NOT = 1
+
+  op = _messages.EnumField('OpValueValuesEnum', 1)
+  subQuery = _messages.MessageField('GoogleCloudVectorsearchV1betaStructuredQuery', 2)
 
 
 class GoogleCloudVectorsearchV1betaUpdateDataObjectRequest(_messages.Message):

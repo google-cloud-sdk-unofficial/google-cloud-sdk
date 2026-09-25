@@ -636,7 +636,7 @@ class DatamigrationV1(base_api.BaseApiClient):
         method_id='datamigration.projects.locations.conversionWorkspaces.fetchEntitiesStatusView',
         ordered_params=['conversionWorkspace'],
         path_params=['conversionWorkspace'],
-        query_params=['commitId', 'fetchView', 'filter', 'pageSize', 'pageToken', 'tree'],
+        query_params=['fetchView', 'filter', 'pageSize', 'pageToken', 'tree'],
         relative_path='v1/{+conversionWorkspace}:fetchEntitiesStatusView',
         request_field='',
         request_type_name='DatamigrationProjectsLocationsConversionWorkspacesFetchEntitiesStatusViewRequest',

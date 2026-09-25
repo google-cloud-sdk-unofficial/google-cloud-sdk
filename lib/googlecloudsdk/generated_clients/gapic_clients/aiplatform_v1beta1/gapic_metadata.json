@@ -339,6 +339,70 @@
         }
       }
     },
+    "SemanticGovernancePolicyEngineService": {
+      "clients": {
+        "grpc": {
+          "libraryClient": "SemanticGovernancePolicyEngineServiceClient",
+          "rpcs": {
+            "DeprovisionSemanticGovernancePolicyEngine": {
+              "methods": [
+                "deprovision_semantic_governance_policy_engine"
+              ]
+            },
+            "GetSemanticGovernancePolicyEngine": {
+              "methods": [
+                "get_semantic_governance_policy_engine"
+              ]
+            },
+            "UpdateSemanticGovernancePolicyEngine": {
+              "methods": [
+                "update_semantic_governance_policy_engine"
+              ]
+            }
+          }
+        },
+        "grpc-async": {
+          "libraryClient": "SemanticGovernancePolicyEngineServiceAsyncClient",
+          "rpcs": {
+            "DeprovisionSemanticGovernancePolicyEngine": {
+              "methods": [
+                "deprovision_semantic_governance_policy_engine"
+              ]
+            },
+            "GetSemanticGovernancePolicyEngine": {
+              "methods": [
+                "get_semantic_governance_policy_engine"
+              ]
+            },
+            "UpdateSemanticGovernancePolicyEngine": {
+              "methods": [
+                "update_semantic_governance_policy_engine"
+              ]
+            }
+          }
+        },
+        "rest": {
+          "libraryClient": "SemanticGovernancePolicyEngineServiceClient",
+          "rpcs": {
+            "DeprovisionSemanticGovernancePolicyEngine": {
+              "methods": [
+                "deprovision_semantic_governance_policy_engine"
+              ]
+            },
+            "GetSemanticGovernancePolicyEngine": {
+              "methods": [
+                "get_semantic_governance_policy_engine"
+              ]
+            },
+            "UpdateSemanticGovernancePolicyEngine": {
+              "methods": [
+                "update_semantic_governance_policy_engine"
+              ]
+            }
+          }
+        }
+      }
+    },
     "SemanticGovernancePolicyService": {
       "clients": {
         "grpc": {

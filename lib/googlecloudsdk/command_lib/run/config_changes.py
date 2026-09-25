@@ -439,11 +439,11 @@ class BaseImagesAnnotationChange(TemplateConfigChanger):
 
   def _mergeBaseImageUrls(
       self,
-      resource: revision.Revision,
+      resource: k8s_object.KubernetesObject,
       existing_base_image_urls: dict[str, str],
       updates: dict[str, str],
       deletes: list[str],
-  ):
+  ) -> str:
 
     if deletes:
       for container in deletes:
@@ -455,8 +455,8 @@ class BaseImagesAnnotationChange(TemplateConfigChanger):
     return self._constructBaseImageUrls(resource, existing_base_image_urls)
 
   def _constructBaseImageUrls(
-      self, resource: revision.Revision, urls: dict[str, str]
-  ):
+      self, resource: k8s_object.KubernetesObject, urls: dict[str, str]
+  ) -> str:
     containers = frozenset(
         [x or '' for x in resource.template.containers.keys()]
     )
@@ -465,8 +465,10 @@ class BaseImagesAnnotationChange(TemplateConfigChanger):
     )
     return '{' + base_images_str + '}' if base_images_str else ''
 
-  def Adjust(self, resource: revision.Revision):
-    """Updates the revision to use automatic base image updates."""
+  def Adjust(
+      self, resource: k8s_object.KubernetesObject
+  ) -> k8s_object.KubernetesObject:
+    """Updates the resource to use automatic base image updates."""
 
     annotations = resource.template.annotations
     existing_value = annotations.get(revision.BASE_IMAGES_ANNOTATION, '')
@@ -481,13 +483,15 @@ class BaseImagesAnnotationChange(TemplateConfigChanger):
 
     if new_value:
       resource.template.annotations[revision.BASE_IMAGES_ANNOTATION] = new_value
-      resource.template.spec.runtimeClassName = (
-          revision.BASE_IMAGE_UPDATE_RUNTIME_CLASS_NAME
-      )
+      if resource.kind == service.Service.KIND:
+        resource.template.spec.runtimeClassName = (
+            revision.BASE_IMAGE_UPDATE_RUNTIME_CLASS_NAME
+        )
     elif revision.BASE_IMAGES_ANNOTATION in annotations:
       del resource.template.annotations[revision.BASE_IMAGES_ANNOTATION]
       if (
-          resource.template.spec.runtimeClassName
+          resource.kind == service.Service.KIND
+          and resource.template.spec.runtimeClassName
           == revision.BASE_IMAGE_UPDATE_RUNTIME_CLASS_NAME
       ):
         resource.template.spec.runtimeClassName = ''
@@ -645,8 +649,10 @@ class IngressContainerBaseImagesAnnotationChange(BaseImagesAnnotationChange):
 
   base_image: str | None = None
 
-  def Adjust(self, resource: revision.Revision):
-    """Updates the revision to use automatic base image updates."""
+  def Adjust(
+      self, resource: k8s_object.KubernetesObject
+  ) -> k8s_object.KubernetesObject:
+    """Updates the resource to use automatic base image updates."""
 
     if self.base_image:
       self.updates[resource.template.container.name or ''] = self.base_image
@@ -1831,6 +1837,101 @@ class SandboxLauncherChange(ContainerConfigChanger):
 
   def AdjustContainer(self, container, messages_mod):
     container.sandboxLauncher = self.sandbox_launcher
+
+
+@dataclasses.dataclass(frozen=True)
+class ContainerSandboxChange(ContainerConfigChanger):
+  """Represents the user intent to change the sandbox for the container.
+
+  Attributes that are `None` leave the corresponding sandbox setting untouched,
+  so a command that specifies a single sandbox flag preserves the rest of the
+  container's existing sandbox configuration.
+
+  Attributes:
+    sandbox: Whether the container is sandboxed. `False` removes the sandbox
+      and all related settings.
+    identity: The identity to assign to the sandbox. The API treats an unset
+      identity as `none`, so `none` is how an already assigned identity is
+      taken away.
+    allow_egress: Whether outbound traffic is allowed from the sandbox.
+      `False` removes the egress configuration and all related settings.
+    tls_interception: Whether TLS interception is enabled for outbound traffic.
+  """
+
+  sandbox: bool | None = None
+  identity: str | None = None
+  allow_egress: bool | None = None
+  tls_interception: bool | None = None
+
+  def _ContainerName(self):
+    if self.container_name is None:
+      return 'the container'
+    return 'container [{}]'.format(self.container_name)
+
+  def AdjustContainer(self, container, messages_mod):
+    # `sandbox` is tri-state: None means the flag was not specified at all,
+    # while False means --no-sandbox was passed.
+    if self.sandbox is not None and not self.sandbox:
+      conflicting = [
+          flag
+          for flag, value in (
+              ('--sandbox-identity', self.identity),
+              ('--sandbox-allow-egress', self.allow_egress),
+              ('--sandbox-tls-interception', self.tls_interception),
+          )
+          if value is not None
+      ]
+      if conflicting:
+        raise exceptions.ConfigurationError(
+            'Cannot specify [{}] together with --no-sandbox, which removes the'
+            ' sandbox and all related settings.'.format(
+                ', '.join(conflicting)
+            )
+        )
+      container.sandbox = None
+      return
+
+    if self.sandbox is None and container.sandbox is None:
+      raise exceptions.ConfigurationError(
+          'Cannot configure the sandbox because {} is not sandboxed. Specify'
+          ' --sandbox to enable sandboxing.'.format(self._ContainerName())
+      )
+
+    sandbox = container.sandbox or messages_mod.Sandbox()
+
+    # `none` is a reserved keyword that the API accepts in place of an unset
+    # identity, so it does not need any special handling here.
+    if self.identity is not None:
+      sandbox.identity = self.identity
+
+    # Resolve the resulting egress state before touching the message. Deriving
+    # it this way means --sandbox-tls-interception alone is accepted when the
+    # container already allows egress, and --no-sandbox-tls-interception alone
+    # cannot accidentally enable egress by creating an empty AllowEgress.
+    if self.allow_egress is None:
+      egress_allowed = sandbox.allowEgress is not None
+    else:
+      egress_allowed = self.allow_egress
+
+    if self.tls_interception and not egress_allowed:
+      raise exceptions.ConfigurationError(
+          'Cannot enable --sandbox-tls-interception for {} because egress is'
+          ' not enabled. Specify --sandbox-allow-egress.'.format(
+              self._ContainerName()
+          )
+      )
+
+    if not egress_allowed:
+      sandbox.allowEgress = None
+    else:
+      # Reuse any existing message so that re-specifying --sandbox-allow-egress
+      # does not discard an already configured tlsInterception value.
+      if sandbox.allowEgress is None:
+        sandbox.allowEgress = messages_mod.AllowEgress()
+      if self.tls_interception is not None:
+        sandbox.allowEgress.tlsInterception = self.tls_interception
+
+    container.sandbox = sandbox
 
 
 _HTTP2_NAME = 'h2c'

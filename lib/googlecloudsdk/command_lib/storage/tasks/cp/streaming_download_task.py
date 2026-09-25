@@ -28,6 +28,7 @@ from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.api_lib.storage import request_config_factory
 from googlecloudsdk.command_lib.storage import bucket_detection_util
+from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import hash_util
 from googlecloudsdk.command_lib.storage import progress_callbacks
 from googlecloudsdk.command_lib.storage.resources import resource_reference
@@ -85,6 +86,7 @@ class StreamingDownloadTask(copy_util.ObjectCopyTask):
       end_byte=None,
       user_request_args=None,
       verbose=False,
+      follow=False,
   ):
     """Initializes task.
 
@@ -104,6 +106,7 @@ class StreamingDownloadTask(copy_util.ObjectCopyTask):
       end_byte (int|None): The byte index to stop streaming from.
       user_request_args (UserRequestArgs|None): See parent class.
       verbose (bool): See parent class.
+      follow (bool): Whether to follow the download stream for more data.
     """
     super(StreamingDownloadTask, self).__init__(
         source_resource,
@@ -117,6 +120,7 @@ class StreamingDownloadTask(copy_util.ObjectCopyTask):
     self._show_url = show_url
     self._start_byte = start_byte
     self._end_byte = end_byte
+    self._follow = follow
 
   @property
   def is_bidi_download(self):
@@ -142,8 +146,13 @@ class StreamingDownloadTask(copy_util.ObjectCopyTask):
     else:
       progress_callback = None
 
-    if (self._source_resource.size and
-        self._start_byte >= self._source_resource.size):
+    if (
+        self._source_resource.size
+        and self._start_byte >= self._source_resource.size
+        and not (
+            self._follow and self._start_byte == self._source_resource.size
+        )
+    ):
       if progress_callback:
         progress_callback(self._source_resource.size)
       return
@@ -159,9 +168,13 @@ class StreamingDownloadTask(copy_util.ObjectCopyTask):
     if properties.VALUES.storage.enable_zonal_buckets_bidi_streaming.GetBool():
       args.append(self._source_resource.storage_url.bucket_name)
     api = api_factory.get_api(*args)
-    is_full_download = self._start_byte == 0 and (
-        self._end_byte is None
-        or self._end_byte >= self._source_resource.size - 1
+    is_full_download = (
+        not self._follow
+        and self._start_byte == 0
+        and (
+            self._end_byte is None
+            or self._end_byte >= self._source_resource.size - 1
+        )
     )
     # Populate digesters only if the API supports on-the-fly checksums or if
     # the download is a full download.
@@ -184,6 +197,19 @@ class StreamingDownloadTask(copy_util.ObjectCopyTask):
           ' Bypassing.'
       )
       properties.VALUES.storage.preallocate_disk_space.Set(False)
+
+    download_kwargs = {}
+    if self._follow:
+      if not (
+          self.is_bidi_download
+          and properties.VALUES.storage.enable_zonal_buckets_bidi_streaming.GetBool()
+      ):
+        raise errors.Error(
+            'The --follow flag is only supported for appendable objects in'
+            ' RAPID storage.'
+        )
+      download_kwargs['follow'] = True
+
     try:
       api.download_object(
           self._source_resource,
@@ -194,6 +220,7 @@ class StreamingDownloadTask(copy_util.ObjectCopyTask):
           progress_callback=progress_callback,
           start_byte=self._start_byte,
           end_byte=self._end_byte,
+          **download_kwargs,
       )
     finally:
       properties.VALUES.storage.preallocate_disk_space.Set(original_preallocate)
@@ -218,4 +245,5 @@ class StreamingDownloadTask(copy_util.ObjectCopyTask):
         and self._show_url == other._show_url
         and self._start_byte == other._start_byte
         and self._end_byte == other._end_byte
+        and self._follow == other._follow
     )

@@ -41,6 +41,7 @@ from googlecloudsdk.core.credentials import devshell as c_devshell
 from googlecloudsdk.core.survey import survey_check
 from googlecloudsdk.core.updater import local_state
 
+from googlecloudsdk.core.util import encoding
 from googlecloudsdk.core.util import keyboard_interrupt
 from googlecloudsdk.core.util import platforms
 import surface
@@ -220,9 +221,14 @@ def main(gcloud_cli=None, credential_providers=None):
   if gcloud_cli is None:
     gcloud_cli = CreateCLI([])
 
+  payload_str = encoding.GetEncodedValue(os.environ, 'GOCLOUD_PAYLOAD')
+
   with creds_context_managers.CredentialProvidersManager(credential_providers):
     try:
-      gcloud_cli.Execute()
+      if payload_str:
+        gcloud_cli.ExecutePayload(payload_str)
+      else:
+        gcloud_cli.Execute()
       # Flush stdout so that if we've received a SIGPIPE we handle the broken
       # pipe within this try block, instead of potentially during interpreter
       # shutdown.

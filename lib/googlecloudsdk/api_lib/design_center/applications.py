@@ -468,3 +468,20 @@ class ApplicationsClient(object):
         )
     )
 
+  def RecommendIAMRoles(self, name: str) -> Any | None:
+    """Calls the RecommendIAMRoles RPC.
+
+    Args:
+      name: The full resource name of the Application.
+
+    Returns:
+      The response from the API call.
+    """
+    if not name:
+      raise ValueError('Application name cannot be empty or None.')
+
+    return self._service.RecommendIAMRoles(
+        self.messages.DesigncenterProjectsLocationsSpacesApplicationsRecommendIAMRolesRequest(
+            name=name,
+        )
+    )

@@ -27,8 +27,8 @@ properties:
       type: string
   baseProtocolMethodsOption:
     description: |-
-      Optional. If specified, matches on the MCP protocol's non-access
-      specific methods namely:
+      If specified, matches on the MCP protocol's non-access specific methods
+      namely:
       * initialize
       * completion/
       * logging/
@@ -43,11 +43,10 @@ properties:
   methods:
     description: |-
       A list of MCP methods and associated parameters to match on. It is
-      recommended to use this field to match on tools, prompts and
-      resource accesses while setting the baseProtocolMethodsOption to
-      MATCH_BASE_PROTOCOL_METHODS to match on all the other MCP
-      protocol methods.
-      Limited to 10 MCP methods per Authorization Policy.
+      recommended to use this field to match on tools, prompts and resource
+      accesses while setting the baseProtocolMethodsOption to
+      MATCH_BASE_PROTOCOL_METHODS to match on all the other MCP protocol
+      methods. Limited to 10 MCP methods per Authorization Policy.
     type: array
     items:
       $ref: AuthzPolicyAuthzRuleToRequestOperationMCPMethod.yaml

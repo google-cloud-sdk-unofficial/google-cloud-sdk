@@ -43,8 +43,6 @@
   output:
     format: |-
       table(name.basename():label=ID,
-            policy,
-            policyRevision,
-            enforcementMode,
-            createTime,
-            updateTime)
+            policy.basename():label=POLICY,
+            policyRevision.basename():label=REVISION,
+            enforcementMode)

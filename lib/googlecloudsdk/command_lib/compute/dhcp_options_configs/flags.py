@@ -34,7 +34,7 @@ class DhcpOptionsConfigsCompleter(compute_completers.ListCommandCompleter):
   def __init__(self, **kwargs):
     super(DhcpOptionsConfigsCompleter, self).__init__(
         collection='compute.dhcpOptionsConfigs',
-        list_command='alpha compute dhcp-options-configs list --uri',
+        list_command='beta compute dhcp-options-configs list --uri',
         **kwargs
     )
 

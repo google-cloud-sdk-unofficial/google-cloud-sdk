@@ -21,6 +21,7 @@ from googlecloudsdk.api_lib.run import api_enabler
 from googlecloudsdk.api_lib.run import run_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
+from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.artifacts import docker_util
 from googlecloudsdk.command_lib.run import artifact_registry
 from googlecloudsdk.command_lib.run import connection_context
@@ -32,12 +33,14 @@ from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import resource_name_conversion
 from googlecloudsdk.command_lib.run import stages
+from googlecloudsdk.command_lib.run.sourcedeploys import source_container_context
 from googlecloudsdk.command_lib.run.v2 import config_changes as config_changes_mod
 from googlecloudsdk.command_lib.run.v2 import flags_parser
 from googlecloudsdk.command_lib.run.v2 import worker_pools_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
 
@@ -162,7 +165,9 @@ class Deploy(base.Command):
     changes.append(config_changes_mod.SetLaunchStageChange(self.ReleaseTrack()))
     return changes
 
-  def _ValidateAndGetContainers(self, args):
+  def _ValidateAndGetContainers(
+      self, args: parser_extensions.Namespace
+  ) -> dict[str, parser_extensions.Namespace]:
     if flags.FlagIsExplicitlySet(args, 'containers'):
       containers = args.containers
     else:
@@ -174,8 +179,10 @@ class Deploy(base.Command):
       )
     return containers
 
-  def _ValidateAndGetBuildFromSource(self, containers):
-    build_from_source = {
+  def _ValidateAndGetLegacyBuildContainers(
+      self, containers: dict[str, parser_extensions.Namespace]
+  ) -> dict[str, parser_extensions.Namespace]:
+    legacy_build_containers = {
         name: container
         for name, container in containers.items()
         if (
@@ -183,10 +190,10 @@ class Deploy(base.Command):
             or flags.FlagIsExplicitlySet(container, 'source')
         )
     }
-    if len(build_from_source) > 1:
+    if len(legacy_build_containers) > 1:
       needs_image = [
           name
-          for name, container in build_from_source.items()
+          for name, container in legacy_build_containers.items()
           if not flags.FlagIsExplicitlySet(container, 'source')
       ]
       if needs_image:
@@ -194,7 +201,7 @@ class Deploy(base.Command):
       raise c_exceptions.InvalidArgumentException(
           '--container', 'At most one container can be deployed from source.'
       )
-    for name, container in build_from_source.items():
+    for name, container in legacy_build_containers.items():
       if not flags.FlagIsExplicitlySet(container, 'source'):
         if console_io.CanPrompt():
           container.source = flags.PromptForDefaultSource(name)
@@ -215,22 +222,22 @@ class Deploy(base.Command):
               '--image',
               message,
           )
-    return build_from_source
+    return legacy_build_containers
 
   def _GetRequiredApis(self):
     if self.ReleaseTrack() == base.ReleaseTrack.GA:
       return [api_enabler.get_run_api()]
     return []
 
-  def _BuildFromSource(
+  def _PrepareLegacyBuildContext(
       self,
-      args,
-      build_from_source,
-      skip_activation_prompt,
-      worker_pool_ref,
-  ):
-    # Only one container can deployed from source
-    name, container_args = next(iter(build_from_source.items()))
+      args: parser_extensions.Namespace,
+      legacy_build_containers: dict[str, parser_extensions.Namespace],
+      skip_activation_prompt: bool,
+      worker_pool_ref: resources.Resource,
+  ) -> tuple[source_container_context.LegacyBuildSourceContainerContext, str]:
+    # Only one container can be deployed from source
+    name, container_args = next(iter(legacy_build_containers.items()))
     pack = None
     build_type = None
     repo_to_create = None
@@ -263,25 +270,33 @@ class Deploy(base.Command):
         'Building using {build_type} and deploying container to'
     ).format(build_type=build_type.value)
 
-    return (
-        image,
-        pack,
-        source,
-        operation_message,
-        repo_to_create,
-        name,
+    legacy_build_context = (
+        source_container_context.LegacyBuildSourceContainerContext(
+            build_image=image,
+            build_pack=pack,
+            build_source=source,
+            repo_to_create=repo_to_create,
+            deploy_from_source_container_name=name,
+        )
     )
 
-  def Run(self, args):
+    return (
+        legacy_build_context,
+        operation_message,
+    )
+
+  def Run(self, args: parser_extensions.Namespace):
     """Deploy a WorkerPool container to Cloud Run."""
     containers = self._ValidateAndGetContainers(args)
-    build_from_source = self._ValidateAndGetBuildFromSource(containers)
+    legacy_build_containers = self._ValidateAndGetLegacyBuildContainers(
+        containers
+    )
 
     worker_pool_ref = args.CONCEPTS.worker_pool.Parse()
     flags.ValidateResource(worker_pool_ref)
 
     required_apis = self._GetRequiredApis()
-    if build_from_source:
+    if legacy_build_containers:
       required_apis.append('artifactregistry.googleapis.com')
       required_apis.append('cloudbuild.googleapis.com')
     skip_activation_prompt = False
@@ -310,23 +325,17 @@ class Deploy(base.Command):
           args, worker_pool
       )
 
-      build_image = None
-      build_pack = None
-      build_source = None
+      legacy_build_context = None
       operation_message = 'Deploying container to'
-      repo_to_create = None
-      # Name of the container to be deployed from source.
-      container_name = None
-      if build_from_source:
+      if legacy_build_containers:
         (
-            build_image,
-            build_pack,
-            build_source,
+            legacy_build_context,
             operation_message,
-            repo_to_create,
-            container_name,
-        ) = self._BuildFromSource(
-            args, build_from_source, skip_activation_prompt, worker_pool_ref
+        ) = self._PrepareLegacyBuildContext(
+            args,
+            legacy_build_containers,
+            skip_activation_prompt,
+            worker_pool_ref,
         )
       pretty_print.Info(
           messages_util.GetStartDeployMessage(
@@ -345,14 +354,19 @@ class Deploy(base.Command):
       if dry_run:
         header = 'Validating...'
 
-      include_build = bool(build_from_source) and not dry_run
-      include_create_repo = repo_to_create is not None and not dry_run
+      include_legacy_build = bool(legacy_build_containers) and not dry_run
+      include_create_repo = bool(
+          legacy_build_context
+          and legacy_build_context.repo_to_create
+          and not dry_run
+      )
 
       with progress_tracker.StagedProgressTracker(
           header,
           stages.WorkerPoolStages(
-              include_build=include_build,
+              include_build=include_legacy_build,
               include_create_repo=include_create_repo,
+              include_upload_source=include_legacy_build,
           ),
           failure_message='Deployment failed',
           suppress_output=args.async_ or dry_run,
@@ -367,11 +381,7 @@ class Deploy(base.Command):
             self.ReleaseTrack(),
             tracker=tracker,
             prefetch=worker_pool,
-            build_image=build_image,
-            build_pack=build_pack,
-            build_source=build_source,
-            build_from_source_container_name=container_name,
-            repo_to_create=repo_to_create,
+            legacy_build_context=legacy_build_context,
             skip_activation_prompt=skip_activation_prompt,
             force_new_revision=True,
             **kwargs

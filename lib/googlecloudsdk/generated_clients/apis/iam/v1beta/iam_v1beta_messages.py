@@ -301,10 +301,13 @@ class GoogleIamV1betaWorkloadIdentityPoolProvider(_messages.Message):
       `google`: The Google attributes mapped from the assertion in the
       `attribute_mappings`. * `attribute`: The custom attributes mapped from
       the assertion in the `attribute_mappings`. The maximum length of the
-      condition expression is 4096 characters. If unspecified, all valid
-      authentication credentials are accepted. The following example shows how
-      to only allow credentials with a mapped `google.groups` value of
-      `admins`: ``` "'admins' in google.groups" ```
+      `attribute_condition` expression is 4,096 characters; longer expressions
+      will result in an error. If unspecified, all valid authentication
+      credentials are accepted. However, multi-tenant identity providers (such
+      as GitHub or Terraform Cloud) require an `attribute_condition` to
+      prevent token spoofing. The following example shows how to only allow
+      credentials with a mapped `google.groups` value of `admins`: ```
+      "'admins' in google.groups" ```
     attributeMapping: Maps attributes from authentication credentials issued
       by an external identity provider to Google Cloud attributes, such as
       `subject` and `segment`. Each key must be a string specifying the Google

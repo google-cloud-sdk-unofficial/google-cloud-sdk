@@ -1013,11 +1013,20 @@ class ExecutableCode(proto.Message):
     [CodeExecutionResult][google.cloud.aiplatform.v1beta1.CodeExecutionResult]
     will also be generated.
 
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
     Attributes:
         language (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.ExecutableCode.Language):
             Required. Programming language of the ``code``.
         code (str):
             Required. The code to be executed.
+        id (str):
+            Optional. Unique identifier of the ``ExecutableCode`` part.
+            The server returns the ``CodeExecutionResult`` with the
+            matching ``id``.
+
+            This field is a member of `oneof`_ ``_id``.
     """
     class Language(proto.Enum):
         r"""Supported programming languages for the generated code.
@@ -1042,6 +1051,11 @@ class ExecutableCode(proto.Message):
         proto.STRING,
         number=2,
     )
+    id: str = proto.Field(
+        proto.STRING,
+        number=3,
+        optional=True,
+    )
 
 
 class CodeExecutionResult(proto.Message):
@@ -1050,6 +1064,9 @@ class CodeExecutionResult(proto.Message):
 
     Generated only when the ``CodeExecution`` tool is used.
 
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
     Attributes:
         outcome (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.CodeExecutionResult.Outcome):
             Required. Outcome of the code execution.
@@ -1057,6 +1074,12 @@ class CodeExecutionResult(proto.Message):
             Optional. Contains stdout when code execution
             is successful, stderr or other description
             otherwise.
+        id (str):
+            Optional. The identifier of the ``ExecutableCode`` part this
+            result is for. Only populated if the corresponding
+            ``ExecutableCode`` has an id.
+
+            This field is a member of `oneof`_ ``_id``.
     """
     class Outcome(proto.Enum):
         r"""Enumeration of possible outcomes of the code execution.
@@ -1088,6 +1111,11 @@ class CodeExecutionResult(proto.Message):
     output: str = proto.Field(
         proto.STRING,
         number=2,
+    )
+    id: str = proto.Field(
+        proto.STRING,
+        number=3,
+        optional=True,
     )
 
 
@@ -1463,11 +1491,58 @@ class GoogleMaps(proto.Message):
 
             If true, include the widget context token in the
             response.
+        grounding_types (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.GoogleMaps.GroundingTypes):
+            Optional. Specifies the types of Google Maps grounding to
+            enable. Defaults to ``places`` when unset.
     """
+
+    class Places(proto.Message):
+        r"""Grounding with Google Maps Places data (e.g. QueryPlaces).
+        This is the default Google Maps grounding type when no other
+        type is specified.
+
+        """
+
+    class Routing(proto.Message):
+        r"""Grounding with Google Maps Routing APIs (ComputeRoutes and
+        SearchAlongRoute).
+
+        """
+
+    class GroundingTypes(proto.Message):
+        r"""Defines the types of Google Maps grounding that can be
+        enabled and their configurations.
+
+        Attributes:
+            places (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.GoogleMaps.Places):
+                Optional. Enables grounding with Google Maps Places. This is
+                the default grounding type when no ``GroundingTypes`` are
+                specified.
+            routing (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.GoogleMaps.Routing):
+                Optional. Enables grounding with Google Maps
+                Routing APIs (ComputeRoutes and
+                SearchAlongRoute).
+        """
+
+        places: 'GoogleMaps.Places' = proto.Field(
+            proto.MESSAGE,
+            number=2,
+            message='GoogleMaps.Places',
+        )
+        routing: 'GoogleMaps.Routing' = proto.Field(
+            proto.MESSAGE,
+            number=3,
+            message='GoogleMaps.Routing',
+        )
 
     enable_widget: bool = proto.Field(
         proto.BOOL,
         number=3,
+    )
+    grounding_types: GroundingTypes = proto.Field(
+        proto.MESSAGE,
+        number=4,
+        message=GroundingTypes,
     )
 
 

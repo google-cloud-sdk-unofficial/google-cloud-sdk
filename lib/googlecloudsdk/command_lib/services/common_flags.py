@@ -29,7 +29,7 @@ from googlecloudsdk.core import properties
 _SERVICES_LEGACY_LIST_COMMAND = ('services list --format=disable '
                                  '--flatten=serviceName')
 _SERVICES_LIST_COMMAND = ('beta services list --format=disable '
-                          '--flatten=config.name')
+                          '--flatten=name')
 
 _OPERATION_NAME_RE = re.compile(r'operations/(?P<namespace>\w+)\.(?P<id>.*)')
 
@@ -324,11 +324,7 @@ def add_resource_args(parser):
 
 def add_key_update_args(parser):
   """Adds args for api-keys update command."""
-  update_set_restriction_group = parser.add_mutually_exclusive_group(
-      required=False
-  )
-  _add_clear_restrictions_arg(update_set_restriction_group)
-  restriction_group = update_set_restriction_group.add_argument_group()
+  restriction_group = parser.add_argument_group()
   client_restriction_group = restriction_group.add_mutually_exclusive_group()
   _allowed_referrers_arg(client_restriction_group)
   _allowed_ips_arg(client_restriction_group)
@@ -390,13 +386,6 @@ def add_key_create_args(parser):
   _allowed_application(client_restriction_group)
   _api_targets_arg(restriction_group)
   _annotations(parser)
-
-
-def _add_clear_restrictions_arg(parser):
-  base.Argument(
-      '--clear-restrictions',
-      action='store_true',
-      help='If set, clear all restrictions on the key.').AddToParser(parser)
 
 
 def _add_clear_annotations_arg(parser):

@@ -20,9 +20,9 @@ import operator
 import os
 import re
 import time
-from apitools.base.protorpclite import messages as protorpc_messages
 from typing import Optional
 
+from apitools.base.protorpclite import messages as protorpc_messages
 
 from apitools.base.py import encoding
 from apitools.base.py import exceptions as apitools_exceptions
@@ -41,6 +41,7 @@ from googlecloudsdk.core import resources as cloud_resources
 from googlecloudsdk.core import yaml
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
+from googlecloudsdk.core.util import scaled_integer
 from googlecloudsdk.core.util import times
 import six
 from six.moves import range  # pylint: disable=redefined-builtin
@@ -370,6 +371,10 @@ MAX_AUTHORIZED_NETWORKS_CIDRS_PUBLIC = 50
 INGRESS = 'HttpLoadBalancing'
 HPA = 'HorizontalPodAutoscaling'
 DASHBOARD = 'KubernetesDashboard'
+
+_PERMISSION_CHECK_ENABLED = 'ENABLED'
+_PERMISSION_CHECK_DISABLED = 'DISABLED'
+
 CLOUDBUILD = 'CloudBuild'
 BACKUPRESTORE = 'BackupRestore'
 CONFIGCONNECTOR = 'ConfigConnector'
@@ -2330,6 +2335,40 @@ class UpdateNodePoolOptions(object):
 
 class APIAdapter(object):
   """Handles making api requests in a version-agnostic way."""
+
+  def _ParseAutoprovisioningRestrictionConfig(self, restriction_config_dict):
+    """Parses autoprovisioning restriction config from dictionary."""
+    if not restriction_config_dict:
+      return None
+    permission_check = restriction_config_dict.get(
+        util.SERVICE_ACCOUNT_PERMISSION_CHECK
+    )
+    authorized_sas = restriction_config_dict.get(
+        util.AUTHORIZED_SERVICE_ACCOUNTS
+    )
+    if permission_check is None and authorized_sas is None:
+      return None
+
+    restriction_config = self.messages.AutoprovisioningRestrictionConfig()
+    if permission_check is not None:
+      mode_str = str(permission_check).upper()
+      if mode_str == _PERMISSION_CHECK_ENABLED:
+        restriction_config.serviceAccountPermissionCheck = (
+            self.messages.AutoprovisioningRestrictionConfig.ServiceAccountPermissionCheckValueValuesEnum.ENABLED
+        )
+      elif mode_str == _PERMISSION_CHECK_DISABLED:
+        restriction_config.serviceAccountPermissionCheck = (
+            self.messages.AutoprovisioningRestrictionConfig.ServiceAccountPermissionCheckValueValuesEnum.DISABLED
+        )
+      else:
+        raise exceptions.InvalidArgumentException(
+            '--autoprovisioning-config-file',
+            'Invalid serviceAccountPermissionCheck value [{}]. Must be one of:'
+            ' ENABLED, DISABLED.'.format(permission_check),
+        )
+    if authorized_sas is not None:
+      restriction_config.authorizedServiceAccounts = authorized_sas
+    return restriction_config
 
   def __init__(
       self, registry, client, messages, compute_messages, compute_client
@@ -4722,6 +4761,7 @@ class APIAdapter(object):
             ENABLE_INTEGRITY_MONITORING
         )
     else:
+      config = None
       resource_limits = self.ResourceLimitsFromFlags(options)
       service_account = options.autoprovisioning_service_account
       scopes = options.autoprovisioning_scopes
@@ -4773,22 +4813,23 @@ class APIAdapter(object):
         shielded_instance_config.enableIntegrityMonitoring = (
             enable_integrity_monitoring
         )
-      if for_update:
-        autoscaling.autoprovisioningNodePoolDefaults = (
-            self.messages.AutoprovisioningNodePoolDefaults(
-                serviceAccount=service_account,
-                oauthScopes=scopes,
-                upgradeSettings=upgrade_settings,
-                management=management,
-                minCpuPlatform=min_cpu_platform,
-                bootDiskKmsKey=boot_disk_kms_key,
-                diskSizeGb=disk_size_gb,
-                diskType=disk_type,
-                imageType=autoprovisioning_image_type,
-                shieldedInstanceConfig=shielded_instance_config,
-            )
-        )
-      else:
+      has_node_pool_defaults = any([
+          service_account is not None,
+          bool(scopes),
+          upgrade_settings is not None,
+          management is not None,
+          min_cpu_platform is not None,
+          boot_disk_kms_key is not None,
+          disk_size_gb is not None,
+          disk_type is not None,
+          autoprovisioning_image_type is not None,
+          shielded_instance_config is not None,
+      ])
+      if (
+          options.enable_autoprovisioning is not None
+          or bool(resource_limits)
+          or has_node_pool_defaults
+      ):
         autoscaling.autoprovisioningNodePoolDefaults = (
             self.messages.AutoprovisioningNodePoolDefaults(
                 serviceAccount=service_account,
@@ -4807,6 +4848,17 @@ class APIAdapter(object):
         autoscaling.autoprovisioningLocations = sorted(
             autoprovisioning_locations
         )
+      restriction_config_dict = (
+          config.get(util.AUTOPROVISIONING_RESTRICTION_CONFIG)
+          if config
+          else None
+      )
+      if restriction_config_dict:
+        restriction_config = self._ParseAutoprovisioningRestrictionConfig(
+            restriction_config_dict
+        )
+        if restriction_config:
+          autoscaling.autoprovisioningRestrictionConfig = restriction_config
 
     if options.autoscaling_profile is not None:
       autoscaling.autoscalingProfile = self.CreateAutoscalingProfileCommon(
@@ -6588,9 +6640,17 @@ class APIAdapter(object):
     dcount = None
     if options.data_cache_count is not None:
       dcount = int(options.data_cache_count)
+    capacity_gb = None
+    if 'capacity' in config and config['capacity'] is not None:
+      capacity_bytes = config['capacity']
+      capacity_gb = int(
+          capacity_bytes // scaled_integer.GetBinaryUnitSize('GB')
+      )
     node_config.ephemeralStorageLocalSsdConfig = (
         self.messages.EphemeralStorageLocalSsdConfig(
-            localSsdCount=count, dataCacheCount=dcount
+            localSsdCount=count,
+            dataCacheCount=dcount,
+            ephemeralCapacityGb=capacity_gb,
         )
     )
     # pylint: enable=line-too-long
@@ -10911,6 +10971,9 @@ class V1Beta1Adapter(V1Adapter):
 
     resource_limits = []
     if options.autoprovisioning_config_file is not None:
+      util.ValidateAutoprovisioningConfigFile(
+          options.autoprovisioning_config_file
+      )
       # Create using config file only.
       config = yaml.load(options.autoprovisioning_config_file)
       resource_limits = config.get(RESOURCE_LIMITS)
@@ -10943,6 +11006,7 @@ class V1Beta1Adapter(V1Adapter):
             ENABLE_INTEGRITY_MONITORING
         )
     else:
+      config = None
       resource_limits = self.ResourceLimitsFromFlags(options)
       service_account = options.autoprovisioning_service_account
       scopes = options.autoprovisioning_scopes
@@ -10992,22 +11056,23 @@ class V1Beta1Adapter(V1Adapter):
         shielded_instance_config.enableIntegrityMonitoring = (
             enable_integrity_monitoring
         )
-      if for_update:
-        autoscaling.autoprovisioningNodePoolDefaults = (
-            self.messages.AutoprovisioningNodePoolDefaults(
-                serviceAccount=service_account,
-                oauthScopes=scopes,
-                upgradeSettings=upgrade_settings,
-                management=management,
-                minCpuPlatform=min_cpu_platform,
-                bootDiskKmsKey=boot_disk_kms_key,
-                diskSizeGb=disk_size_gb,
-                diskType=disk_type,
-                imageType=autoprovisioning_image_type,
-                shieldedInstanceConfig=shielded_instance_config,
-            )
-        )
-      else:
+      has_node_pool_defaults = any([
+          service_account is not None,
+          bool(scopes),
+          upgrade_settings is not None,
+          management is not None,
+          min_cpu_platform is not None,
+          boot_disk_kms_key is not None,
+          disk_size_gb is not None,
+          disk_type is not None,
+          autoprovisioning_image_type is not None,
+          shielded_instance_config is not None,
+      ])
+      if (
+          options.enable_autoprovisioning is not None
+          or bool(resource_limits)
+          or has_node_pool_defaults
+      ):
         autoscaling.autoprovisioningNodePoolDefaults = (
             self.messages.AutoprovisioningNodePoolDefaults(
                 serviceAccount=service_account,
@@ -11026,6 +11091,17 @@ class V1Beta1Adapter(V1Adapter):
         autoscaling.autoprovisioningLocations = sorted(
             autoprovisioning_locations
         )
+      restriction_config_dict = (
+          config.get(util.AUTOPROVISIONING_RESTRICTION_CONFIG)
+          if config
+          else None
+      )
+      if restriction_config_dict:
+        restriction_config = self._ParseAutoprovisioningRestrictionConfig(
+            restriction_config_dict
+        )
+        if restriction_config:
+          autoscaling.autoprovisioningRestrictionConfig = restriction_config
 
     if options.autoscaling_profile is not None:
       autoscaling.autoscalingProfile = self.CreateAutoscalingProfileCommon(
@@ -11667,6 +11743,9 @@ class V1Alpha1Adapter(V1Beta1Adapter):
 
     resource_limits = []
     if options.autoprovisioning_config_file is not None:
+      util.ValidateAutoprovisioningConfigFile(
+          options.autoprovisioning_config_file
+      )
       # Create using config file only.
       config = yaml.load(options.autoprovisioning_config_file)
       resource_limits = config.get(RESOURCE_LIMITS)
@@ -11699,6 +11778,7 @@ class V1Alpha1Adapter(V1Beta1Adapter):
             ENABLE_INTEGRITY_MONITORING
         )
     else:
+      config = None
       resource_limits = self.ResourceLimitsFromFlags(options)
       service_account = options.autoprovisioning_service_account
       scopes = options.autoprovisioning_scopes
@@ -11750,22 +11830,23 @@ class V1Alpha1Adapter(V1Beta1Adapter):
         shielded_instance_config.enableIntegrityMonitoring = (
             enable_integrity_monitoring
         )
-      if for_update:
-        autoscaling.autoprovisioningNodePoolDefaults = (
-            self.messages.AutoprovisioningNodePoolDefaults(
-                serviceAccount=service_account,
-                oauthScopes=scopes,
-                upgradeSettings=upgrade_settings,
-                management=management,
-                minCpuPlatform=min_cpu_platform,
-                bootDiskKmsKey=boot_disk_kms_key,
-                diskSizeGb=disk_size_gb,
-                diskType=disk_type,
-                imageType=autoprovisioning_image_type,
-                shieldedInstanceConfig=shielded_instance_config,
-            )
-        )
-      else:
+      has_node_pool_defaults = any([
+          service_account is not None,
+          bool(scopes),
+          upgrade_settings is not None,
+          management is not None,
+          min_cpu_platform is not None,
+          boot_disk_kms_key is not None,
+          disk_size_gb is not None,
+          disk_type is not None,
+          autoprovisioning_image_type is not None,
+          shielded_instance_config is not None,
+      ])
+      if (
+          options.enable_autoprovisioning is not None
+          or bool(resource_limits)
+          or has_node_pool_defaults
+      ):
         autoscaling.autoprovisioningNodePoolDefaults = (
             self.messages.AutoprovisioningNodePoolDefaults(
                 serviceAccount=service_account,
@@ -11784,6 +11865,17 @@ class V1Alpha1Adapter(V1Beta1Adapter):
         autoscaling.autoprovisioningLocations = sorted(
             autoprovisioning_locations
         )
+      restriction_config_dict = (
+          config.get(util.AUTOPROVISIONING_RESTRICTION_CONFIG)
+          if config
+          else None
+      )
+      if restriction_config_dict:
+        restriction_config = self._ParseAutoprovisioningRestrictionConfig(
+            restriction_config_dict
+        )
+        if restriction_config:
+          autoscaling.autoprovisioningRestrictionConfig = restriction_config
 
     if options.autoscaling_profile is not None:
       autoscaling.autoscalingProfile = self.CreateAutoscalingProfileCommon(

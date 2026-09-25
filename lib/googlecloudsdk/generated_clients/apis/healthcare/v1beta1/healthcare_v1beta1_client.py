@@ -3549,6 +3549,33 @@ class HealthcareV1beta1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def ExecuteCohort(self, request, global_params=None):
+      r"""Executes and materializes a cohort definition from a FHIR store. This method returns an Operation that can be used to track the status of the cohort execution by calling GetOperation. Immediate fatal errors appear in the error field, errors are also logged to Cloud Logging (see [Viewing error logs in Cloud Logging](https://cloud.google.com/healthcare/docs/how-tos/logging)). Otherwise, when the operation finishes, a detailed response of type ExecuteCohortResponse is returned in the response field. The metadata field type for this operation is OperationMetadata.
+
+      Args:
+        request: (HealthcareProjectsLocationsDatasetsFhirStoresExecuteCohortRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('ExecuteCohort')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ExecuteCohort.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/datasets/{datasetsId}/fhirStores/{fhirStoresId}:executeCohort',
+        http_method='POST',
+        method_id='healthcare.projects.locations.datasets.fhirStores.executeCohort',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta1/{+name}:executeCohort',
+        request_field='executeCohortRequest',
+        request_type_name='HealthcareProjectsLocationsDatasetsFhirStoresExecuteCohortRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def ExplainDataAccess(self, request, global_params=None):
       r"""Explains all the permitted/denied actor, purpose and environment for a given resource. FHIR Consent is not supported in DSTU2 or R5.
 

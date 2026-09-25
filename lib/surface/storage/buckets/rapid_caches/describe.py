@@ -19,6 +19,7 @@ import collections
 from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import flags
+from googlecloudsdk.command_lib.storage import rapid_caches_util
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage.resources import resource_util
 
@@ -77,8 +78,8 @@ class Describe(base.DescribeCommand):
     flags.add_raw_display_flag(parser)
 
   def Run(self, args):
-    bucket_name, _, rapid_cache_id = args.id.rpartition(
-        storage_url.CLOUD_URL_DELIMITER
+    bucket_name, rapid_cache_id = (
+        rapid_caches_util.validate_and_parse_rapid_cache_id(args.id)
     )
 
     result = api_factory.get_api(

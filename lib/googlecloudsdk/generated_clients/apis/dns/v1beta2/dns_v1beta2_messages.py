@@ -67,7 +67,7 @@ class ChangesListResponse(_messages.Message):
 
   Fields:
     changes: The requested changes.
-    kind: Type of resource.
+    kind: Output only. Type of resource.
     nextPageToken: This field indicates that more results are available beyond
       the last page displayed. To fetch the results, make another list request
       and use this value as your page token. This lets you retrieve the
@@ -388,7 +388,7 @@ class DnsKeysListResponse(_messages.Message):
 
   Fields:
     dnsKeys: The requested resources.
-    kind: Type of resource.
+    kind: Output only. Type of resource.
     nextPageToken: This field indicates that more results are available beyond
       the last page displayed. To fetch the results, make another list request
       and use this value as your page token. This lets you retrieve the
@@ -724,14 +724,10 @@ class DnsProjectsGetRequest(_messages.Message):
   r"""A DnsProjectsGetRequest object.
 
   Fields:
-    clientOperationId: For mutating operation requests only. An optional
-      identifier specified by the client. Must be unique for operation
-      resources in the Operations collection.
     project: Identifies the project addressed by this request.
   """
 
-  clientOperationId = _messages.StringField(1)
-  project = _messages.StringField(2, required=True)
+  project = _messages.StringField(1, required=True)
 
 
 class DnsResourceRecordSetsCreateRequest(_messages.Message):
@@ -1802,7 +1798,7 @@ class ManagedZoneOperationsListResponse(_messages.Message):
   r"""A ManagedZoneOperationsListResponse object.
 
   Fields:
-    kind: Type of resource.
+    kind: Output only. Type of resource.
     nextPageToken: This field indicates that more results are available beyond
       the last page displayed. To fetch the results, make another list request
       and use this value as your page token. This lets you retrieve the
@@ -1942,7 +1938,7 @@ class ManagedZonesListResponse(_messages.Message):
   r"""A ManagedZonesListResponse object.
 
   Fields:
-    kind: Type of resource.
+    kind: Output only. Type of resource.
     managedZones: The managed zone resources.
     nextPageToken: This field indicates that more results are available beyond
       the last page displayed. To fetch the results, make another list request
@@ -2045,7 +2041,7 @@ class PoliciesListResponse(_messages.Message):
   r"""A PoliciesListResponse object.
 
   Fields:
-    kind: Type of resource.
+    kind: Output only. Type of resource.
     nextPageToken: This field indicates that more results are available beyond
       the last page displayed. To fetch the results, make another list request
       and use this value as your page token. This lets you retrieve the
@@ -2562,7 +2558,7 @@ class ResourceRecordSet(_messages.Message):
       resolution) or a `routing_policy` (for dynamic resolution).
     rrdatas: As defined in RFC 1035 (section 5) and RFC 1034 (section 3.6.1)
       -- see examples.
-    signatureRrdatas: As defined in RFC 4034 (section 3.2).
+    signatureRrdatas: A string attribute.
     ttl: Number of seconds that this `ResourceRecordSet` can be cached by
       resolvers.
     type: The identifier of a supported record type. See the list of Supported
@@ -2582,7 +2578,7 @@ class ResourceRecordSetsListResponse(_messages.Message):
   r"""A ResourceRecordSetsListResponse object.
 
   Fields:
-    kind: Type of resource.
+    kind: Output only. Type of resource.
     nextPageToken: This field indicates that more results are available beyond
       the last page displayed. To fetch the results, make another list request
       and use this value as your page token. This lets you retrieve the

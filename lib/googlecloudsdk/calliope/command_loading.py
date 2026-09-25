@@ -129,15 +129,15 @@ def _GenerateElementInfo(impl_path, names):
   """
   elements = {}
   for name in names:
-    if re.search('[A-Z]', name):
+    if name != name.lower():
       raise LayoutException(
           'Commands and groups cannot have capital letters: {0}.'.format(name)
       )
-    cli_name = name[:-5] if name.endswith('.yaml') else name
     sub_path = os.path.join(impl_path, name)
-
+    cli_name = name[:-5] if name.endswith('.yaml') else name
     existing = elements.setdefault(cli_name, [])
     existing.append(sub_path)
+
   return elements
 
 
@@ -234,6 +234,21 @@ def _GetAllImplementations(
     tracks it is valid for.
   """
   implementations = []
+
+  # Command Groups are guaranteed to be implemented in a single python package
+  # directory.
+  if not is_command:
+    if len(impl_paths) > 1:
+      raise CommandLoadFailure(
+          '.'.join(path),
+          Exception('Command groups cannot be implemented in multiple files'),
+      )
+    if impl_paths[0].endswith('.yaml'):
+      raise CommandLoadFailure(
+          '.'.join(path),
+          Exception('Command groups cannot be implemented in yaml'),
+      )
+
   for impl_file in impl_paths:
     if impl_file.endswith('.yaml'):
 

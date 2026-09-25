@@ -17,7 +17,7 @@
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import progress_callbacks
-from googlecloudsdk.command_lib.storage import storage_url
+from googlecloudsdk.command_lib.storage import rapid_caches_util
 from googlecloudsdk.command_lib.storage.tasks import task_executor
 from googlecloudsdk.command_lib.storage.tasks import task_graph_executor
 from googlecloudsdk.command_lib.storage.tasks import task_status
@@ -74,14 +74,17 @@ class Disable(base.Command):
     is_async = args.async_ if args.async_ is not None else True
 
     for id_str in args.id:
-      bucket_name, _, rapid_cache_id = id_str.rpartition(
-          storage_url.CLOUD_URL_DELIMITER
+      bucket_name, rapid_cache_id = (
+          rapid_caches_util.validate_and_parse_rapid_cache_id(id_str)
       )
       yield disable_rapid_cache_task.DisableRapidCacheTask(
           bucket_name, rapid_cache_id, is_async=is_async
       )
 
   def Run(self, args):
+    for id_str in args.id:
+      rapid_caches_util.validate_and_parse_rapid_cache_id(id_str)
+
     task_status_queue = task_graph_executor.multiprocessing_context.Queue()
     task_iterator = self._get_task_iterator(args, task_status_queue)
 

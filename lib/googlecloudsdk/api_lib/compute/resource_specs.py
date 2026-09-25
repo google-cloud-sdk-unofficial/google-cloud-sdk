@@ -18,8 +18,7 @@
 import collections
 
 from apitools.base.protorpclite import messages
-
-from googlecloudsdk.api_lib.compute import instance_utils
+from googlecloudsdk.api_lib.compute import machine_type_utils
 from googlecloudsdk.api_lib.compute import path_simplifier
 from googlecloudsdk.api_lib.compute import property_selector
 import six
@@ -157,8 +156,9 @@ def _FormatCustomMachineTypeName(mt):
 
   Helper function for _MachineTypeNameToCell
   """
-  custom_family, custom_cpu, custom_ram = \
-    instance_utils.GetCpuRamVmFamilyFromCustomName(mt)
+  custom_family, custom_cpu, custom_ram = (
+      machine_type_utils.GetCpuRamVmFamilyFromCustomName(mt)
+  )
   if custom_cpu and custom_ram and custom_family:
     # Restricting output to 2 decimal places
     custom_ram_gb = '{0:.2f}'.format(custom_ram / (2**10))

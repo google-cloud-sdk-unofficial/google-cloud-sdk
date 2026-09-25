@@ -17,6 +17,7 @@
 from apitools.base.py import encoding
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.firebase import exceptions as firebase_exceptions
+from googlecloudsdk.api_lib.firebase import projects
 from googlecloudsdk.api_lib.firebase import util as firebase_util
 from googlecloudsdk.api_lib.util import waiter
 
@@ -88,6 +89,9 @@ class AppsClient:
     Returns:
       list of dicts containing app details.
     """
+    projects.EnsureFirebaseAdded(
+        project_id, client=self.client, messages=self.messages
+    )
     parent = firebase_util.GetProjectRef(project_id).RelativeName()
     filter_platform = platform.lower() if platform else None
     listed = []
@@ -139,6 +143,9 @@ class AppsClient:
           f'Unsupported platform: {platform}'
       )
 
+    projects.EnsureFirebaseAdded(
+        project_id, client=self.client, messages=self.messages
+    )
     parent = firebase_util.GetProjectRef(project_id).RelativeName()
 
     try:

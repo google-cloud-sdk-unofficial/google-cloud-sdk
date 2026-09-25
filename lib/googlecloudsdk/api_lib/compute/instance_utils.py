@@ -44,30 +44,6 @@ _DEFAULT_DEVICE_NAME_CONTAINER_WARNING = (
 _SECONDS_PER_HOUR = 3600
 
 
-def GetCpuRamVmFamilyFromCustomName(name):
-  """Gets the CPU and memory specs from the custom machine type name.
-
-  Args:
-    name: the custom machine type name for the 'instance create' call
-
-  Returns:
-    A three-tuple with the vm family, number of cpu and amount of memory for the
-    custom machine type.
-    custom_family, the name of the VM family
-    custom_cpu, the number of cpu desired for the custom machine type instance
-    custom_memory_mib, the amount of ram desired in MiB for the custom machine
-      type instance
-    None for both variables otherwise
-  """
-  check_custom = re.search('([a-zA-Z0-9]+)-custom-([0-9]+)-([0-9]+)', name)
-  if check_custom:
-    custom_family = check_custom.group(1)
-    custom_cpu = check_custom.group(2)
-    custom_memory_mib = check_custom.group(3)
-    return custom_family, custom_cpu, custom_memory_mib
-  return None, None, None
-
-
 def GetNameForCustom(custom_cpu, custom_memory_mib, ext=False, vm_type=False):
   """Creates a custom machine type name from the desired CPU and memory specs.
 

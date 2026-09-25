@@ -54,7 +54,7 @@ class EventarcpublishingV1(base_api.BaseApiClient):
           }
 
     def PublishEvents(self, request, global_params=None):
-      r"""Publish events to a ChannelConnection in a partner's project.
+      r"""Publishes events to a ChannelConnection in a partner's project.
 
       Args:
         request: (EventarcpublishingProjectsLocationsChannelConnectionsPublishEventsRequest) input message
@@ -91,7 +91,7 @@ class EventarcpublishingV1(base_api.BaseApiClient):
           }
 
     def PublishEvents(self, request, global_params=None):
-      r"""Publish events to a subscriber's channel.
+      r"""Publishes events to a subscriber's channel.
 
       Args:
         request: (EventarcpublishingProjectsLocationsChannelsPublishEventsRequest) input message
@@ -128,7 +128,7 @@ class EventarcpublishingV1(base_api.BaseApiClient):
           }
 
     def Publish(self, request, global_params=None):
-      r"""Publish events to a message bus.
+      r"""Publishes events to a message bus.
 
       Args:
         request: (EventarcpublishingProjectsLocationsMessageBusesPublishRequest) input message

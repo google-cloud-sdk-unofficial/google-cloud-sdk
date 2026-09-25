@@ -127,7 +127,7 @@ class DnsV1alpha2(base_api.BaseApiClient):
     List.method_config = lambda: base_api.ApiMethodInfo(
         http_method='GET',
         method_id='dns.activePeeringZones.list',
-        ordered_params=['project', 'targetNetwork'],
+        ordered_params=['project'],
         path_params=['project'],
         query_params=['maxResults', 'pageToken', 'targetNetwork'],
         relative_path='dns/v1alpha2/projects/{project}/activePeeringZones',
@@ -800,7 +800,7 @@ class DnsV1alpha2(base_api.BaseApiClient):
         method_id='dns.projects.get',
         ordered_params=['project'],
         path_params=['project'],
-        query_params=['clientOperationId'],
+        query_params=[],
         relative_path='dns/v1alpha2/projects/{project}',
         request_field='',
         request_type_name='DnsProjectsGetRequest',

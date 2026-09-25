@@ -115,6 +115,7 @@ def AddReportFormatFlag(parser, required=True):
       '--report-format',
       required=required,
       choices=_AUDIT_REPORT_FORMATS,
+      type=str.lower,
       help='The format in which the audit report should be created.',
   )
 
@@ -124,6 +125,7 @@ def AddScopeReportFormatFlag(parser, required=True):
       '--report-format',
       required=required,
       choices=_AUDIT_SCOPE_REPORT_FORMATS,
+      type=str.lower,
       help='The format in which the audit scope report should be created.',
   )
 
@@ -166,4 +168,68 @@ def AddEligibleDestinationsFlags(parser, required=True):
           'Eligible cloud storage buckets where report and evidence can be'
           ' uploaded.'
       ),
+  )
+
+
+def AddAuditScheduleIdFlag(parser, required=True):
+  """Adds the audit schedule ID flag to the given parser.
+
+  Args:
+    parser: An argparse.ArgumentParser-like object. It is mocked out in tests.
+    required: bool, whether the flag is required. Default is True.
+  """
+  parser.add_argument(
+      '--audit-schedule-id',
+      required=required,
+      help='ID to use for the audit schedule.',
+  )
+
+
+def AddScheduleConfigFlags(parser):
+  """Adds flags for configuring an audit schedule to the given parser.
+
+  Args:
+    parser: An argparse.ArgumentParser-like object. It is mocked out in tests.
+  """
+  parser.add_argument(
+      '--start-time',
+      required=True,
+      help=(
+          'Date and time when the first audit run is triggered in RFC 3339'
+          ' format.'
+      ),
+  )
+  parser.add_argument(
+      '--end-time',
+      required=False,
+      help='Date and time that the schedule stops in RFC 3339 format.',
+  )
+  parser.add_argument(
+      '--frequency',
+      required=True,
+      choices=['daily', 'weekly', 'monthly', 'quarterly', 'annually'],
+      type=str.lower,
+      help='Frequency of audit runs.',
+  )
+  parser.add_argument(
+      '--time-zone',
+      required=False,
+      help=(
+          'Time zone for the audit schedule in IANA format (e.g.'
+          ' America/New_York).'
+      ),
+  )
+
+
+def AddDisplayNameFlag(parser, required=False):
+  """Adds the display name flag to the given parser.
+
+  Args:
+    parser: An argparse.ArgumentParser-like object. It is mocked out in tests.
+    required: bool, whether the flag is required. Default is False.
+  """
+  parser.add_argument(
+      '--display-name',
+      required=required,
+      help='Display name for the audit schedule.',
   )

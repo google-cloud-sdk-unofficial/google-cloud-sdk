@@ -274,6 +274,31 @@ def MakeClusterStorages(
               ),
           )
       )
+  if hasattr(args, "nfs") and args.IsSpecified("nfs"):
+    for nfs in args.nfs:
+      storage_id = nfs.get("id")
+      _validator.ValidateResourceID(storage_id)
+      if storage_id in storage_ids:
+        raise ClusterDirectorError(
+            f"Duplicate storage resource id: {storage_id}"
+        )
+      storage_ids.add(storage_id)
+      existing_nfs = message_module.ExistingNfsConfig(
+          serverIpAddress=nfs.get("serverIpAddress"),
+          remoteMount=nfs.get("remoteMount"),
+      )
+      if nfs.get("mountOptions"):
+        existing_nfs.mountOptions = nfs.get("mountOptions")
+      storages.additionalProperties.append(
+          message_module.Cluster.StorageResourcesValue.AdditionalProperty(
+              key=storage_id,
+              value=message_module.StorageResource(
+                  config=message_module.StorageResourceConfig(
+                      existingNfs=existing_nfs
+                  ),
+              ),
+          )
+      )
   return storages
 
 
@@ -387,6 +412,29 @@ def MakeClusterStoragesPatch(
     if found_lustres != lustres_to_remove:
       not_found = lustres_to_remove - found_lustres
       raise ClusterDirectorError(f"Lustre(s) not found: {', '.join(not_found)}")
+
+    for storage_id in storage_ids_to_remove:
+      storages.pop(storage_id)
+    is_storage_updated = True
+
+  if hasattr(args, "remove_nfs") and args.IsSpecified("remove_nfs"):
+    nfs_to_remove = set(args.remove_nfs)
+    storage_ids_to_remove = set()
+    found_nfs = set()
+
+    for storage_id, storage_resource in storages.items():
+      config = storage_resource.config
+      if config and getattr(config, "existingNfs", None):
+        if storage_id in nfs_to_remove:
+          storage_ids_to_remove.add(storage_id)
+          found_nfs.add(storage_id)
+
+    if found_nfs != nfs_to_remove:
+      not_found = nfs_to_remove - found_nfs
+      missing = ", ".join(sorted(not_found))
+      raise ClusterDirectorError(
+          f"NFS storage resource(s) not found: {missing}"
+      )
 
     for storage_id in storage_ids_to_remove:
       storages.pop(storage_id)
@@ -629,6 +677,42 @@ def MakeClusterStoragesPatch(
         )
       storages[storage_id] = message_module.StorageResource(
           config=message_module.StorageResourceConfig(newBucket=gcs)
+      )
+    is_storage_updated = True
+
+  if hasattr(args, "add_nfs") and args.IsSpecified("add_nfs"):
+    for nfs in args.add_nfs:
+      storage_id = nfs.get("id")
+      _validator.ValidateResourceID(storage_id)
+      if storage_id in storages:
+        raise ClusterDirectorError(
+            f"Duplicate storage resource id: {storage_id}"
+        )
+      server_ip = nfs.get("serverIpAddress")
+      remote_mount = nfs.get("remoteMount")
+      for storage_resource in storages.values():
+        config = storage_resource.config
+        if (
+            config
+            and getattr(config, "existingNfs", None)
+            and config.existingNfs.serverIpAddress == server_ip
+            and config.existingNfs.remoteMount == remote_mount
+        ):
+          raise ClusterDirectorError(
+              f"NFS share {server_ip}:{remote_mount} already exists."
+          )
+
+      existing_nfs = message_module.ExistingNfsConfig(
+          serverIpAddress=server_ip,
+          remoteMount=remote_mount,
+      )
+      if nfs.get("mountOptions"):
+        existing_nfs.mountOptions = nfs.get("mountOptions")
+
+      storages[storage_id] = message_module.StorageResource(
+          config=message_module.StorageResourceConfig(
+              existingNfs=existing_nfs
+          )
       )
     is_storage_updated = True
 

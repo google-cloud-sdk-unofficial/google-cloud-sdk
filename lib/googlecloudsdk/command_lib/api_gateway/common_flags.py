@@ -36,9 +36,9 @@ def AddEnableStreamingFlag(parser):
       action='store_true',
       default=None,
       help="""\
-      Creates the gateway with response streaming enabled, which supports
-      server-sent events, HTTP chunked transfer, WebSockets, and gRPC/HTTP2
-      bidirectional streaming.
+      Creates the gateway with streaming enabled, which supports Server-Sent
+      Events (SSE), HTTP/2 streaming, HTTP chunked transfer, WebSockets, and
+      gRPC bidirectional streaming.
 
       This can only be set when the gateway is created and cannot be changed
       afterwards. When omitted, API Gateway selects the streaming mode.

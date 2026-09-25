@@ -1,0 +1,102 @@
+# -*- coding: utf-8 -*- #
+# Copyright 2026 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    Create and start a High-Speed Telemetry (HST) collection task.
+  description: |
+    Create and start a High-Speed Telemetry (HST) collection task for target VM
+    instances or network switches to export raw microsecond-resolution switch
+    telemetry traces into a customer-owned Cloud Storage bucket.
+  examples: |
+    To start a 10-minute HST collection task targeting instances to a Cloud Storage bucket:
+
+      $ {command} my-task --location=us-central1 --instances=projects/my-project/zones/us-central1-a/instances/instance-1,projects/my-project/zones/us-central1-a/instances/instance-2 --duration=10m --destination-uri=gs://my-bucket/traces/
+
+    To start a 5-minute HST collection task targeting specific switch hostnames:
+
+      $ {command} my-task --location=us-central1 --switch-names=switch-1,switch-2 --duration=5m --destination-uri=gs://my-bucket/traces/
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_management.resources:hstCollectionTask
+    help_text: |
+      Name of the HST collection task to create.
+
+  params:
+  - group:
+      mutex: true
+      required: true
+      help_text: |
+        Target selection for collection task.
+      params:
+      - arg_name: instances
+        api_field: hstCollectionTask.instances
+        type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+        metavar: INSTANCE
+        help_text: |
+          List of target Compute Engine VM instance resource URIs to resolve
+          connected Top-of-Rack (ToR) switches from (VM Instance Mode).
+
+      - arg_name: switch-names
+        api_field: hstCollectionTask.switchNames
+        type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
+        metavar: SWITCH_NAME
+        help_text: |
+          List of target network switch hostnames to collect traces from directly (Direct Switch Mode).
+
+  - arg_name: duration
+    api_field: hstCollectionTask.collectionDuration
+    type: "googlecloudsdk.calliope.arg_parsers:Duration:"
+    processor: googlecloudsdk.command_lib.network_management.hstprof_util:GetDurationString
+    required: true
+    help_text: |
+      Duration of the telemetry trace collection (e.g. 10m, 300s).
+
+  - arg_name: destination-uri
+    api_field: hstCollectionTask.destinationUri
+    type: googlecloudsdk.command_lib.network_management.hstprof_util:ValidateDestinationUri
+    required: true
+    help_text: |
+      Destination Cloud Storage URI (e.g. `gs://my-bucket/traces/`) for collected telemetry trace data.
+
+  - arg_name: start-time
+    api_field: hstCollectionTask.collectionStartTime
+    type: googlecloudsdk.calliope.arg_parsers:Datetime.Parse
+    processor: googlecloudsdk.command_lib.network_management.hstprof_util:FormatDateTimeAsRfc3339
+    help_text: |
+      Scheduled start time for telemetry trace collection in RFC 3339 format.
+
+  - arg_name: labels
+    api_field: hstCollectionTask.labels.additionalProperties
+    metavar: KEY=VALUE
+    type:
+      arg_dict:
+        flatten: true
+        spec:
+        - api_field: key
+        - api_field: value
+    help_text: |
+      List of label KEY=VALUE pairs to add.
+
+async:
+  collection: hstprof.projects.locations.operations
+
+request:
+  ALPHA:
+    api_version: v1alpha
+  collection: hstprof.projects.locations.hstCollectionTasks
+  method: create

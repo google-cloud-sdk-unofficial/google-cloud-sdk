@@ -27,6 +27,7 @@ class GetSerialPortOutputException(exceptions.Error):
   """An error occurred while tailing the serial port."""
 
 
+@base.DefaultUniverseOnly
 class GetSerialPortOutput(base.Command):
   """Read output from a virtual machine instance's serial port.
 
@@ -100,11 +101,20 @@ class GetSerialPortOutput(base.Command):
     return response
 
   def Epilog(self, unused_resources_were_displayed):
-    if self._start and self._response.start != self._start:
-      log.warning(
-          'Some serial port output was lost due to a limited buffer. The '
-          'oldest byte of output returned was at offset {0}.'.format(
-              self._response.start))
+    if self._start is not None:
+      warning = False
+      if self._start < 0:
+        requested_start = self._response.next + self._start
+        if self._response.start > max(0, requested_start):
+          warning = True
+      elif self._response.start != self._start:
+        warning = True
+
+      if warning:
+        log.warning(
+            'Some serial port output was lost due to a limited buffer. The '
+            'oldest byte of output returned was at offset {0}.'.format(
+                self._response.start))
     log.status.Print(
         '\nSpecify --start={0} in the next get-serial-port-output invocation '
         'to get only the new output starting from here.'.format(

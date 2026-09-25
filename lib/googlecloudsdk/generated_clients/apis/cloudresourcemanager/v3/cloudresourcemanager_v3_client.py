@@ -374,7 +374,7 @@ class CloudresourcemanagerV3(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Retrieves the Capability Config identified by the specified `name` (for example, `folders/123456789/capabilityConfigs/my-capability-config`).
+      r"""Retrieves the CapabilityConfig identified by the specified `name` (for example, `folders/123456789/capabilityConfigs/my-capability-config`).
 
       Args:
         request: (CloudresourcemanagerFoldersCapabilityConfigsGetRequest) input message
@@ -1441,7 +1441,7 @@ class CloudresourcemanagerV3(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Retrieves the Capability Config identified by the specified `name` (for example, `folders/123456789/capabilityConfigs/my-capability-config`).
+      r"""Retrieves the CapabilityConfig identified by the specified `name` (for example, `folders/123456789/capabilityConfigs/my-capability-config`).
 
       Args:
         request: (CloudresourcemanagerOrganizationsCapabilityConfigsGetRequest) input message
@@ -1939,7 +1939,7 @@ class CloudresourcemanagerV3(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Retrieves the Capability Config identified by the specified `name` (for example, `folders/123456789/capabilityConfigs/my-capability-config`).
+      r"""Retrieves the CapabilityConfig identified by the specified `name` (for example, `folders/123456789/capabilityConfigs/my-capability-config`).
 
       Args:
         request: (CloudresourcemanagerProjectsCapabilityConfigsGetRequest) input message

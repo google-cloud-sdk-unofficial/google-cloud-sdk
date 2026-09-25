@@ -137,6 +137,10 @@ class ListExpandedMembersException(Error):
   """Exception for list expanded members."""
 
 
+class ListCatalogMembersException(Error):
+  """Exception for list catalog members."""
+
+
 class ListAncestorGroupsPermissionDeniedException(Error):
   """Permission denied exception for list ancestor groups."""
 

@@ -77,6 +77,7 @@ class SetSchedulingInstances(base.SilentCommand):
     flags.AddHostErrorTimeoutSecondsArgs(parser)
     flags.AddSkipGuestOsShutdownArgs(parser)
     flags.AddGracefulShutdownArgs(parser)
+    flags.AddPreemptionNoticeDurationArgs(parser)
 
   def _Run(self, args):
     """Issues request necessary for setting scheduling options."""

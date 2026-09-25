@@ -678,12 +678,14 @@ class AutonomousDatabaseProperties(_messages.Message):
       AJD: Autonomous JSON Database.
       APEX: Autonomous Database with the Oracle APEX Application Development
         workload type.
+      LH: Autonomous Database with the Lakehouse workload type.
     """
     DB_WORKLOAD_UNSPECIFIED = 0
     OLTP = 1
     DW = 2
     AJD = 3
     APEX = 4
+    LH = 5
 
   class LicenseTypeValueValuesEnum(_messages.Enum):
     r"""Required. Immutable. The license type used for the Autonomous
@@ -1096,12 +1098,14 @@ class AutonomousDbVersion(_messages.Message):
       AJD: Autonomous JSON Database.
       APEX: Autonomous Database with the Oracle APEX Application Development
         workload type.
+      LH: Autonomous Database with the Lakehouse workload type.
     """
     DB_WORKLOAD_UNSPECIFIED = 0
     OLTP = 1
     DW = 2
     AJD = 3
     APEX = 4
+    LH = 5
 
   dbWorkload = _messages.EnumField('DbWorkloadValueValuesEnum', 1)
   name = _messages.StringField(2)

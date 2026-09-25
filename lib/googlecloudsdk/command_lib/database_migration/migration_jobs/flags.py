@@ -170,6 +170,17 @@ def AddDumpParallelLevelFlag(parser):
   parser.add_argument('--dump-parallel-level', help=help_text, choices=choices)
 
 
+def AddLoadParallelLevelFlag(parser):
+  """Adds a --load-parallel-level flag to the given parser."""
+  help_text = (
+      'Parallelization level during initial load of the migration job. If not'
+      ' specified, will be defaulted to OPTIMAL. Only applicable for MySQL to'
+      ' MySQL migrations.'
+  )
+  choices = ['MIN', 'OPTIMAL', 'MAX']
+  parser.add_argument('--load-parallel-level', help=help_text, choices=choices)
+
+
 def AddDumpTypeFlag(parser):
   """Adds a --dump-type flag to the given parser."""
   help_text = (

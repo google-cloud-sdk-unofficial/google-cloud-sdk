@@ -15,14 +15,69 @@
 
 """Bigtable schema bundles API helper."""
 
+import json
+import os
+from typing import List
 
 from cloudsdk.google.protobuf import descriptor_pb2
 from cloudsdk.google.protobuf import text_format
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.util import files
 from googlecloudsdk.generated_clients.apis.bigtableadmin.v2 import bigtableadmin_v2_messages
+
+# Extensions of the files that are treated as Avro schema files when
+# --avro-schema-path points at a directory.
+_AVRO_SCHEMA_FILE_EXTENSIONS = ('.avsc', '.json')
+
+
+def _ReadAvroSchemas(path: str) -> List[str]:
+  """Reads the JSON Avro schemas located at the given path.
+
+  Args:
+    path: path of an Avro schema file, or of a directory containing one or many
+      Avro schema files.
+
+  Returns:
+    The contents of the Avro schema files, in JSON format.
+
+  Raises:
+    BadArgumentException: if the directory contains no Avro schema file, or if
+      any of the Avro schema files is not valid JSON.
+  """
+  if os.path.isdir(path):
+    schema_files = sorted(
+        os.path.join(path, entry)
+        for entry in os.listdir(path)
+        if entry.lower().endswith(_AVRO_SCHEMA_FILE_EXTENSIONS)
+        and os.path.isfile(os.path.join(path, entry))
+    )
+    if not schema_files:
+      raise exceptions.BadArgumentException(
+          '--avro-schema-path',
+          'No {} files found in directory [{}].'.format(
+              ' or '.join(_AVRO_SCHEMA_FILE_EXTENSIONS), path
+          ),
+      )
+  else:
+    schema_files = [path]
+
+  json_schemas = []
+  for schema_file in schema_files:
+    contents = files.ReadFileContents(schema_file)
+    # Validates that the file contains a valid/parsable JSON document. The
+    # Avro schema itself is validated by the backend service.
+    try:
+      json.loads(contents)
+    except ValueError as e:
+      raise exceptions.BadArgumentException(
+          '--avro-schema-path',
+          'Invalid Avro schema file [{}]: {}'.format(schema_file, e),
+      ) from e
+    json_schemas.append(contents)
+  return json_schemas
 
 
 def ModifyCreateSchemaBundleRequest(
@@ -35,7 +90,7 @@ def ModifyCreateSchemaBundleRequest(
   """Parse argument and construct create schema bundle request.
 
   This function is used to modify the create schema bundle request to include
-  the proto descriptors file content if provided.
+  the proto descriptors file content or the Avro schemas if provided.
 
   Args:
     unused_ref: the gcloud resource (unused).
@@ -47,6 +102,7 @@ def ModifyCreateSchemaBundleRequest(
 
   Raises:
     ValueError: if the proto descriptors file is invalid.
+    BadArgumentException: if the Avro schema path is invalid.
   """
   if args.proto_descriptors_file:
     proto_desc_content = files.ReadBinaryFileContents(
@@ -55,6 +111,10 @@ def ModifyCreateSchemaBundleRequest(
     # Validates that the file contains a valid/parsable FileDescriptorSet.
     descriptor_pb2.FileDescriptorSet.FromString(proto_desc_content)
     req.schemaBundle.protoSchema.protoDescriptors = proto_desc_content
+  if args.avro_schema_path is not None:
+    req.schemaBundle.avroSchema.jsonSchemas = _ReadAvroSchemas(
+        args.avro_schema_path
+    )
 
   # By specifying the request_id_field for the schema bundle resource in the
   # declarative yaml file, the req.schemaBundleId and the req.parent will be
@@ -72,7 +132,7 @@ def ModifyUpdateSchemaBundleRequest(
   """Parse argument and construct update schema bundle request.
 
   This function is used to modify the update schema bundle request to include
-  the proto descriptors file content if provided.
+  the proto descriptors file content or the Avro schemas if provided.
 
   Args:
     unused_ref: the gcloud resource (unused).
@@ -84,6 +144,7 @@ def ModifyUpdateSchemaBundleRequest(
 
   Raises:
     ValueError: if the proto descriptors file is invalid.
+    BadArgumentException: if the Avro schema path is invalid.
   """
   if args.proto_descriptors_file:
     proto_desc_content = files.ReadBinaryFileContents(
@@ -92,6 +153,10 @@ def ModifyUpdateSchemaBundleRequest(
     # Validates that the file contains a valid/parsable FileDescriptorSet.
     descriptor_pb2.FileDescriptorSet.FromString(proto_desc_content)
     req.schemaBundle.protoSchema.protoDescriptors = proto_desc_content
+  if args.avro_schema_path is not None:
+    req.schemaBundle.avroSchema.jsonSchemas = _ReadAvroSchemas(
+        args.avro_schema_path
+    )
   if args.ignore_warnings:
     req.ignoreWarnings = True
 

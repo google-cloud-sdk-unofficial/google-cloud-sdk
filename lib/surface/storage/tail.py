@@ -14,11 +14,66 @@
 # limitations under the License.
 """Implementation of Unix-like tail command for cloud storage providers."""
 
+import os
+
+from googlecloudsdk.api_lib.storage import api_factory
+from googlecloudsdk.api_lib.storage import cloud_api
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import encryption_util
 from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import storage_url
+from googlecloudsdk.command_lib.storage.resources import resource_reference
+from googlecloudsdk.command_lib.storage.tasks.cp import streaming_download_task
+
+
+def _validate_bytes_flag(value: str) -> str:
+  """Validates that the --bytes flag value is a valid integer or +integer.
+
+  Args:
+    value: The raw string passed to the --bytes flag.
+
+  Returns:
+    The validated string.
+
+  Raises:
+    arg_parsers.ArgumentTypeError: If value cannot be parsed as an integer.
+  """
+  try:
+    int(value)
+    return value
+  except ValueError as exc:
+    raise arg_parsers.ArgumentTypeError(
+        'Invalid --bytes value: {}. Must be an integer or +integer.'.format(
+            value
+        )
+    ) from exc
+
+
+def _calculate_start_byte(
+    object_size: int | None, bytes_to_read: str | int
+) -> int:
+  """Calculates the absolute start byte position for tailing.
+
+  Formula:
+    - For +BYTES: min(object_size, max(0, int(BYTES))).
+    - For BYTES: max(0, object_size - abs(int(BYTES))).
+  Does not rely on negative slicing or backend offsets.
+
+  Args:
+    object_size (int|None): Total size of the source object in bytes.
+    bytes_to_read (str|int): Number of bytes requested from the end of the
+      object, or starting byte offset when prefixed with '+'.
+
+  Returns:
+    int: Absolute byte offset to begin reading from.
+  """
+  if not object_size or object_size <= 0:
+    return 0
+  if isinstance(bytes_to_read, str) and bytes_to_read.startswith('+'):
+    return min(object_size, max(0, int(bytes_to_read[1:])))
+  return max(0, object_size - abs(int(bytes_to_read)))
 
 
 @base.Hidden
@@ -58,11 +113,12 @@ class Tail(base.Command):
     parser.add_argument('url', help='The URL of the object to tail.')
     parser.add_argument(
         '--bytes',
-        default=1000,
-        type=int,
+        default='1000',
+        type=_validate_bytes_flag,
         help=(
             'Output the last BYTES bytes of the object, or use +BYTES to'
-            ' output starting with byte BYTES of the object. Default is 1000.'
+            ' output starting with byte BYTES of the object (capped at object'
+            ' size). Default is 1000.'
         ),
     )
     parser.add_argument(
@@ -78,13 +134,32 @@ class Tail(base.Command):
 
   def Run(self, args):
     encryption_util.initialize_key_store(args)
-    if args.url:
-      url_object = storage_url.storage_url_from_string(args.url)
-      if not isinstance(url_object, storage_url.CloudUrl):
-        raise errors.InvalidUrlError(
-            'tail only works for valid cloud URLs. {} is an invalid cloud URL.'
-            .format(url_object.url_string)
-        )
 
-    # TODO(b/500229519): Implement tail command execution logic.
-    raise NotImplementedError('tail command is not yet implemented.')
+    url_object = storage_url.storage_url_from_string(args.url)
+    if not isinstance(url_object, storage_url.CloudUrl):
+      raise errors.InvalidUrlError(
+          'tail only works for valid cloud URLs. {} is an invalid cloud URL.'
+          .format(url_object.url_string)
+      )
+    client = api_factory.get_api(url_object.scheme)
+    resource = client.get_object_metadata(
+        url_object.bucket_name,
+        url_object.resource_name,
+        generation=url_object.generation,
+        fields_scope=cloud_api.FieldsScope.NO_ACL,
+    )
+
+    # Set up direct unbuffered stdout stream.
+    stdout_stream = os.fdopen(1, 'wb', closefd=False)
+    dummy_destination_resource = resource_reference.FileObjectResource(
+        storage_url.FileUrl('-')
+    )
+    task = streaming_download_task.StreamingDownloadTask(
+        source_resource=resource,
+        destination_resource=dummy_destination_resource,
+        download_stream=stdout_stream,
+        start_byte=_calculate_start_byte(resource.size, args.bytes),
+        end_byte=None,
+        follow=args.follow,
+    )
+    task.execute()

@@ -680,7 +680,7 @@ class DeviceSession(_messages.Message):
   Fields:
     activeStartTime: Output only. The timestamp that the session first became
       ACTIVE.
-    androidDevice: Required. The requested device
+    androidDevice: Required. The requested device.
     createTime: Output only. The time that the Session was created.
     displayName: Output only. The title of the DeviceSession to be presented
       in the UI.

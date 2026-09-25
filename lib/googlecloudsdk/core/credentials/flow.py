@@ -108,7 +108,7 @@ def HandleOauth2FlowErrors():
       rfc6749_errors.InvalidGrantError,
   ) as e:
     six.raise_from(AuthRequestRejectedError(e), e)
-  except rfc6749_errors.MissingTokenError:
+  except rfc6749_errors.MissingTokenError as exc:
     # The real error is swallowed by the requests-oauthlib library. The
     # exception we catch here just says "Missing access token parameter.". It's
     # not helpful, so here we raise a new error to ask the user to run with
@@ -119,7 +119,7 @@ def HandleOauth2FlowErrors():
             ' with --log-http to view the error response.'
         )
     )
-    raise six.raise_from(AuthRequestFailedError(e), e)
+    raise AuthRequestFailedError(e) from exc
   except ValueError as e:
     raise six.raise_from(AuthRequestFailedError(e), e)
   except rfc6749_errors.OAuth2Error as e:
@@ -247,10 +247,8 @@ class InstalledAppFlow(
                                       _PORT_SEARCH_END)
       self.redirect_uri = 'http://{}:{}/'.format(self.host,
                                                  self.server.server_port)
-    elif redirect_uri:
-      self.redirect_uri = redirect_uri
     else:
-      self.redirect_uri = self._OOB_REDIRECT_URI
+      self.redirect_uri = redirect_uri
     # include_client_id should be set to True for 1P, and False for 3P.
     self.include_client_id = self.client_config.get('3pi') is None
 
@@ -394,58 +392,6 @@ class FullWebFlow(InstalledAppFlow):
       self.oauth2session.scope = granted_scope
 
 
-# TODO(b/206804357): Remove OOB flow from gcloud.
-class OobFlow(InstalledAppFlow):
-  """Out-of-band flow.
-
-  This class supports user account login using "gcloud auth login" without
-  browser.
-  """
-
-  def __init__(self,
-               oauth2session,
-               client_type,
-               client_config,
-               redirect_uri=None,
-               code_verifier=None,
-               autogenerate_code_verifier=False):
-    super(OobFlow, self).__init__(
-        oauth2session,
-        client_type,
-        client_config,
-        redirect_uri=redirect_uri,
-        code_verifier=code_verifier,
-        autogenerate_code_verifier=autogenerate_code_verifier,
-        require_local_server=False)
-
-  def _Run(self, **kwargs):
-    """Run the flow using the console strategy.
-
-    The console strategy instructs the user to open the authorization URL
-    in their browser. Once the authorization is complete the authorization
-    server will give the user a code. The user then must copy & paste this
-    code into the application. The code is then exchanged for a token.
-
-    Args:
-        **kwargs: Additional keyword arguments passed through to
-          "authorization_url".
-
-    Returns:
-        google.oauth2.credentials.Credentials: The OAuth 2.0 credentials
-          for the user.
-    """
-    kwargs.setdefault('prompt', 'consent')
-    auth_url, _ = self.authorization_url(**kwargs)
-
-    authorization_prompt_message = (
-        'Go to the following link in your browser:\n\n    {url}\n')
-    code = PromptForAuthCode(authorization_prompt_message, auth_url)
-    # TODO(b/204953716): Remove verify=None
-    self.fetch_token(code=code, include_client_id=True, verify=None)
-
-    return self.credentials
-
-
 class UrlManager(object):
   """A helper for url manipulation."""
 
@@ -557,16 +503,14 @@ def ImportReadline(client_config):
 class NoBrowserFlow(InstalledAppFlow):
   """Flow to authorize gcloud on a machine without access to web browsers.
 
-  Out-of-band flow (OobFlow) is deprecated. This flow together with the helper
-  flow NoBrowserHelperFlow is the replacement. gcloud in
-  environments without access to browsers (i.e. access via ssh) can use this
-  flow to authorize gcloud. This flow will print authorization parameters
-  which will be taken by the helper flow to build the final authorization
-  request. The helper flow (run by a gcloud instance
-  with access to browsers) will launch the browser and ask for user's
-  authorization. After the authorization, the helper flow will print the
-  authorization response to pass back to this flow to continue the process
-  (exchanging for the refresh/access tokens).
+  This flow together with the helper flow NoBrowserHelperFlow is used by gcloud
+  in environments without access to browsers (i.e. access via ssh) to authorize
+  gcloud. This flow will print authorization parameters which will be taken by
+  the helper flow to build the final authorization request. The helper flow
+  (run by a gcloud instance with access to browsers) will launch the browser
+  and ask for user's authorization. After the authorization, the helper flow
+  will print the authorization response to pass back to this flow to continue
+  the process (exchanging for the refresh/access tokens).
   """
 
    # These _REQUIRED_VERSIONs are used in the --no-browser flows, which are
@@ -630,15 +574,11 @@ class NoBrowserFlow(InstalledAppFlow):
     )
 
   def _Run(self, **kwargs):
+    # when the parameter token_usage=remote is present, the DUSI of the token is
+    # not attached to the local device whose browser is used to provide consent.
+    kwargs.setdefault('token_usage', 'remote')
     auth_url, _ = self.authorization_url(**kwargs)
-    url_manager = UrlManager(auth_url)
-    # redirect_uri needs to be provided by the helper flow because the helper
-    # will dynamically select a port on its localhost to handle redirect.
-    url_manager.RemoveQueryParams(['redirect_uri'])
-    # token_usage=remote is to indicate that the authorization is to bootstrap a
-    # a different gcloud instance.
-    url_manager.UpdateQueryParams([('token_usage', 'remote')])
-    auth_response = self._PromptForAuthResponse(url_manager.GetUrl())
+    auth_response = self._PromptForAuthResponse(auth_url)
     _ValidateAuthResponse(auth_response)
     redirect_port = UrlManager(auth_response).GetPort()
     # Even though we started the local service using "localhost" as host name,
@@ -751,7 +691,7 @@ class NoBrowserHelperFlow(InstalledAppFlow):
 class RemoteLoginWithAuthProxyFlow(InstalledAppFlow):
   """Flow to authorize gcloud on a machine without access to web browsers.
 
-  Out-of-band flow (OobFlow) is deprecated. gcloud in
+  Out-of-band flow is deprecated. gcloud in
   environments without access to browsers (eg. access via ssh) can use this
   flow to authorize gcloud. This flow will print a url which the user has to
   copy to a browser in any machine and perform authorization. After the

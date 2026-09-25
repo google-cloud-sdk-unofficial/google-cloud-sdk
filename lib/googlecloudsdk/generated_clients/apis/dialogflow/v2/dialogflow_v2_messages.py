@@ -12382,9 +12382,8 @@ class GoogleCloudDialogflowV2ConversationContextReferenceContextContent(_message
     ContentFormatValueValuesEnum: Required. The format of the ingested string.
 
   Fields:
-    answerRecord: If the context content was generated from a tool call,
-      specify the answer record associated with the tool call. Format:
-      `projects//locations//answerRecords/`.
+    answerRecord: Optional. The answer record of the tool execution result.
+      Format: `projects//locations//answerRecords/`.
     content: Required. The information ingested in a single request.
     contentFormat: Required. The format of the ingested string.
     ingestionTime: Output only. The time when this information was

@@ -1538,11 +1538,25 @@ class ClusterConfig(_messages.Message):
     lifecycleConfig: Optional. Lifecycle setting for the cluster.
     masterConfig: Optional. The Compute Engine config settings for the
       cluster's master instance.
+    masterFlexibleConfig: Optional. The High Obtainability (HO) config
+      settings for the cluster's master instance.Only one of master_config or
+      master_flexible_config can be set.High Obtainability (HO) mode requires
+      consistent configuration across node groups: * For single-node clusters:
+      master_flexible_config must be specified, and no worker configs should
+      be set. * For multi-node (standard) clusters: both
+      master_flexible_config and worker_flexible_config must be specified.
+      Mixing standard and flexible configs across node groups is not allowed.
     metastoreConfig: Optional. Metastore configuration.
     schedulingConfig: Optional. Config for scheduling the resources to be
       allocated when available.
     secondaryWorkerConfig: Optional. The Compute Engine config settings for a
       cluster's secondary worker instances
+    secondaryWorkerFlexibleConfig: Optional. The High Obtainability (HO)
+      config settings for a cluster's secondary worker instances.Only one of
+      secondary_worker_config or secondary_worker_flexible_config can be
+      set.In High Obtainability (HO) mode, secondary workers are optional. If
+      secondary workers are used in an HO cluster, they must be configured
+      using secondary_worker_flexible_config (not secondary_worker_config).
     securityConfig: Optional. Security settings for the cluster.
     softwareConfig: Optional. The config settings for cluster software.
     tempBucket: Optional. A Cloud Storage bucket used to store ephemeral
@@ -1558,6 +1572,13 @@ class ClusterConfig(_messages.Message):
       name, not a gs://... URI to a Cloud Storage bucket.
     workerConfig: Optional. The Compute Engine config settings for the
       cluster's worker instances.
+    workerFlexibleConfig: Optional. The High Obtainability (HO) config
+      settings for the cluster's worker instances.Only one of worker_config or
+      worker_flexible_config can be set.In High Obtainability (HO) mode, for
+      multi-node (standard) clusters, both master_flexible_config and
+      worker_flexible_config must be specified. Mixing standard and flexible
+      configs across node groups is not allowed. Single-node clusters do not
+      specify worker configs.
   """
 
   class ClusterTierValueValuesEnum(_messages.Enum):
@@ -1620,13 +1641,16 @@ class ClusterConfig(_messages.Message):
   initializationActions = _messages.MessageField('NodeInitializationAction', 13, repeated=True)
   lifecycleConfig = _messages.MessageField('LifecycleConfig', 14)
   masterConfig = _messages.MessageField('InstanceGroupConfig', 15)
-  metastoreConfig = _messages.MessageField('MetastoreConfig', 16)
-  schedulingConfig = _messages.MessageField('SchedulingConfig', 17)
-  secondaryWorkerConfig = _messages.MessageField('InstanceGroupConfig', 18)
-  securityConfig = _messages.MessageField('SecurityConfig', 19)
-  softwareConfig = _messages.MessageField('SoftwareConfig', 20)
-  tempBucket = _messages.StringField(21)
-  workerConfig = _messages.MessageField('InstanceGroupConfig', 22)
+  masterFlexibleConfig = _messages.MessageField('FlexibleInstanceGroupConfig', 16)
+  metastoreConfig = _messages.MessageField('MetastoreConfig', 17)
+  schedulingConfig = _messages.MessageField('SchedulingConfig', 18)
+  secondaryWorkerConfig = _messages.MessageField('InstanceGroupConfig', 19)
+  secondaryWorkerFlexibleConfig = _messages.MessageField('FlexibleInstanceGroupConfig', 20)
+  securityConfig = _messages.MessageField('SecurityConfig', 21)
+  softwareConfig = _messages.MessageField('SoftwareConfig', 22)
+  tempBucket = _messages.StringField(23)
+  workerConfig = _messages.MessageField('InstanceGroupConfig', 24)
+  workerFlexibleConfig = _messages.MessageField('FlexibleInstanceGroupConfig', 25)
 
 
 class ClusterMetrics(_messages.Message):
@@ -6322,6 +6346,54 @@ class FallbackReason(_messages.Message):
 
   fallbackNode = _messages.StringField(1)
   fallbackReason = _messages.StringField(2)
+
+
+class FlexibleInstanceGroupConfig(_messages.Message):
+  r"""The configuration for High Obtainability (HO) flexible instance groups.
+
+  Enums:
+    HardwareClassValueValuesEnum: Optional. The hardware class of the
+      instances.
+
+  Fields:
+    bootDiskSizeGb: Optional. The boot disk size in GB.
+    coreCount: Optional. The number of vCPUs per instance. Must be a power of
+      2 (2, 4, 8, 16, 32).
+    hardwareClass: Optional. The hardware class of the instances.
+    instanceCount: Optional. The number of VM instances in the instance group.
+  """
+
+  class HardwareClassValueValuesEnum(_messages.Enum):
+    r"""Optional. The hardware class of the instances.
+
+    Values:
+      HARDWARE_CLASS_UNSPECIFIED: Unspecified hardware class.
+      STANDARD: Standard hardware class. Provides a balanced compute
+        configuration with approximately 4GB of memory per vCPU and standard
+        disk storage tiers.Candidate machine types include n4-standard,
+        n4d-standard, n2-standard, n2d-standard, c4-standard, and c4d-standard
+        (for requested core counts 2, 4, 8, 16, 32).Warning: The specific
+        machine families and types selected for this hardware class are
+        subject to change. Users should not take a dependency on the
+        underlying machine type selection.
+      PERFORMANCE: Performance hardware class. Provides a high-performance
+        configuration with approximately 8GB of memory per vCPU (e.g. high-
+        memory machine types) and higher-tier disk configurations (e.g. higher
+        IOPS and throughput).Candidate machine types include n4-highmem,
+        n4d-highmem, n2-highmem, n2d-highmem, c4-highmem, and c4d-highmem (for
+        requested core counts 2, 4, 8, 16, 32) with provisioned
+        storage.Warning: The specific machine families and types selected for
+        this hardware class are subject to change. Users should not take a
+        dependency on the underlying machine type selection.
+    """
+    HARDWARE_CLASS_UNSPECIFIED = 0
+    STANDARD = 1
+    PERFORMANCE = 2
+
+  bootDiskSizeGb = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  coreCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  hardwareClass = _messages.EnumField('HardwareClassValueValuesEnum', 3)
+  instanceCount = _messages.IntegerField(4, variant=_messages.Variant.INT32)
 
 
 class FlinkJob(_messages.Message):

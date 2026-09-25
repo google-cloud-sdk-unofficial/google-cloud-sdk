@@ -702,37 +702,9 @@ def AddHPAProfilesFlag(parser, hidden=False):
   )
 
 
-def AddAutoprovisioningFlags(
-    parser,
-    hidden=False,
-):
-  """Adds node autoprovisioning related flags to parser.
-
-  Autoprovisioning related flags are: --enable-autoprovisioning
-  --min-cpu --max-cpu --min-memory --max-memory --autoprovisioning-image-type
-  flags.
-
-  Args:
-    parser: A given parser.
-    hidden: If true, suppress help text for added options.
-  """
-
-  group = parser.add_argument_group('Node autoprovisioning', hidden=hidden)
-  group.add_argument(
-      '--enable-autoprovisioning',
-      required=False,
-      default=None,
-      help="""\
-Enables  node autoprovisioning for a cluster.
-
-Cluster Autoscaler will be able to create new node pools. Requires maximum CPU
-and memory limits to be specified.""",
-      hidden=hidden,
-      action='store_true',
-  )
-
-  limits_group = group.add_mutually_exclusive_group()
-  limits_group.add_argument(
+def AddAutoprovisioningConfigFileFlag(parser, hidden=False):
+  """Adds --autoprovisioning-config-file flag to parser."""
+  parser.add_argument(
       '--autoprovisioning-config-file',
       type=arg_parsers.FileContents(),
       hidden=hidden,
@@ -803,6 +775,39 @@ Customer Managed Encryption Keys (CMEK) used by new auto-provisioned node pools
 can be specified in the 'bootDiskKmsKey' field.
 """,
   )
+
+
+def AddAutoprovisioningFlags(
+    parser,
+    hidden=False,
+):
+  """Adds node autoprovisioning related flags to parser.
+
+  Autoprovisioning related flags are: --enable-autoprovisioning
+  --min-cpu --max-cpu --min-memory --max-memory --autoprovisioning-image-type
+  flags.
+
+  Args:
+    parser: A given parser.
+    hidden: If true, suppress help text for added options.
+  """
+
+  group = parser.add_argument_group('Node autoprovisioning', hidden=hidden)
+  group.add_argument(
+      '--enable-autoprovisioning',
+      required=False,
+      default=None,
+      help="""\
+Enables  node autoprovisioning for a cluster.
+
+Cluster Autoscaler will be able to create new node pools. Requires maximum CPU
+and memory limits to be specified.""",
+      hidden=hidden,
+      action='store_true',
+  )
+
+  limits_group = group.add_mutually_exclusive_group()
+  AddAutoprovisioningConfigFileFlag(limits_group, hidden=hidden)
 
   from_flags_group = limits_group.add_argument_group(
       'Flags to configure autoprovisioned nodes'
@@ -1984,7 +1989,7 @@ Examples:
   $ {{command}} {0} --ephemeral-storage-local-ssd count=2
 
 'count' specifies the number of local SSDs to use to back ephemeral
-storage. Local SDDs use NVMe interfaces. For first- and second-generation
+storage. Local SSDs use NVMe interfaces. For first- and second-generation
 machine types, a nonzero count field is required for local ssd to be configured.
 For third-generation machine types, the count field is optional because the count
 is inferred from the machine type.
@@ -1995,12 +2000,18 @@ See https://cloud.google.com/compute/docs/disks/local-ssd for more information.
       if for_node_pool
       else 'example_cluster'
   )
+  # TODO(b/549320796): Document capacity sub-property upon launch.
   parser.add_argument(
       '--ephemeral-storage-local-ssd',
       help=help_text,
       hidden=hidden,
       nargs='?',
-      type=arg_parsers.ArgDict(spec={'count': int}),
+      type=arg_parsers.ArgDict(
+          spec={
+              'count': int,
+              'capacity': arg_parsers.BinarySize(default_unit='GB'),
+          }
+      ),
   )
 
 
@@ -6151,14 +6162,13 @@ Note: Updating the containerd configuration of an existing cluster or node pool 
   )
 
 
-def AddCostManagementConfigFlag(parser, is_update=False):
-  """Adds flags related to GKE cost management to the given parser."""
+def AddCostAllocationConfigFlag(parser, is_update=False):
+  """Adds flags related to GKE cost allocation to the given parser."""
   group = parser.add_group(mutex=False)
-
   help_text = """
-Enable the cost management feature.
+Enable the cost allocation feature.
 
-When enabled, you can get informational GKE cost breakdowns by cluster,
+When enabled, you can get informational GKE cost allocation by cluster,
 namespace and label in your billing data exported to BigQuery
 (https://cloud.google.com/billing/docs/how-to/export-data-bigquery).
 """
@@ -6178,7 +6188,7 @@ Use --no-enable-cost-allocation to disable this feature.
   egress_help_text = """\
 Enable network egress cost allocation.
 
-When enabled, you can get GKE network egress cost breakdowns for egress usages
+When enabled, you can get GKE network egress cost allocation for egress usages
 sampled by VPC Flow logs (https://docs.cloud.google.com/vpc/docs/flow-logs).
 
 Network egress cost allocation is disabled if this flag is omitted, or when

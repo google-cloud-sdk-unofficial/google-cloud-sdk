@@ -23153,6 +23153,32 @@ class ComputeInterconnectsSetLabelsRequest(_messages.Message):
   resource = _messages.StringField(3, required=True)
 
 
+class ComputeInterconnectsSetNameRequest(_messages.Message):
+  r"""A ComputeInterconnectsSetNameRequest object.
+
+  Fields:
+    interconnect: Name of the interconnect to update.
+    interconnectsSetNameRequest: A InterconnectsSetNameRequest resource to be
+      passed as the request body.
+    project: Project ID for this request.
+    requestId: An optional request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed.  For example,
+      consider a situation where you make an initial request and the request
+      times out. If you make the request again with the same request ID, the
+      server can check if original operation with the same request ID was
+      received, and if so, will ignore the second request. This prevents
+      clients from accidentally creating duplicate commitments.  The request
+      ID must be a valid UUID with the exception that zero UUID is not
+      supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  interconnect = _messages.StringField(1, required=True)
+  interconnectsSetNameRequest = _messages.MessageField('InterconnectsSetNameRequest', 2)
+  project = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
 class ComputeInterconnectsTestIamPermissionsRequest(_messages.Message):
   r"""A ComputeInterconnectsTestIamPermissionsRequest object.
 
@@ -73797,6 +73823,20 @@ class InterconnectsGetMacsecConfigResponse(_messages.Message):
   result = _messages.MessageField('InterconnectMacsecConfig', 2)
 
 
+class InterconnectsSetNameRequest(_messages.Message):
+  r"""Request to rename an interconnect.
+
+  Fields:
+    currentName: The current name of the interconnect. The name must be 1-63
+      characters long, and comply with RFC1035.
+    name: The new name of the interconnect. The name must be 1-63 characters
+      long, and comply with RFC1035.
+  """
+
+  currentName = _messages.StringField(1)
+  name = _messages.StringField(2)
+
+
 class Interval(_messages.Message):
   r"""Represents a time interval, encoded as a Timestamp start (inclusive) and
   a Timestamp end (exclusive).  The start must be less than or equal to the
@@ -99449,9 +99489,10 @@ class RouterNatRule(_messages.Message):
       match expressions for public NAT:  `inIpRange(destination.ip,
       '1.1.0.0/16') || inIpRange(destination.ip,      '2.2.0.0/16')`
       `destination.ip == '1.1.0.1' || destination.ip == '8.8.8.8'`  The
-      following example is a valid match expression for private NAT:
-      `nexthop.hub == '//networkconnectivity.googleapis.com/projects/my-
-      project/locations/global/hubs/hub-1'`
+      following examples are valid match expressions for private NAT:  (NAT
+      44) `nexthop.hub == '//networkconnectivity.googleapis.com/projects/my-
+      project/locations/global/hubs/hub-1'`  `nexthop.is_hybrid`  (NAT 64)
+      `isIPv6(source.ip)`
     ruleNumber: An integer uniquely identifying a rule in the list. The rule
       number must be a positive value between 0 and 65000, and must be unique
       among rules within a NAT.

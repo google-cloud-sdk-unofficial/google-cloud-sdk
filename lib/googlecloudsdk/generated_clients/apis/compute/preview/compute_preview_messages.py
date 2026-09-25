@@ -89017,6 +89017,8 @@ class SecurityPolicyRulePreconfiguredWafConfigExclusion(_messages.Message):
   r"""A SecurityPolicyRulePreconfiguredWafConfigExclusion object.
 
   Fields:
+    requestBodiesToExclude: A list of request body fields to be excluded from
+      inspection during preconfigured WAF evaluation.
     requestCookiesToExclude: A list of request cookie names whose value will
       be excluded from inspection during preconfigured WAF evaluation.
     requestHeadersToExclude: A list of request header names whose value will
@@ -89035,12 +89037,13 @@ class SecurityPolicyRulePreconfiguredWafConfigExclusion(_messages.Message):
       exclusion.
   """
 
-  requestCookiesToExclude = _messages.MessageField('SecurityPolicyRulePreconfiguredWafConfigExclusionFieldParams', 1, repeated=True)
-  requestHeadersToExclude = _messages.MessageField('SecurityPolicyRulePreconfiguredWafConfigExclusionFieldParams', 2, repeated=True)
-  requestQueryParamsToExclude = _messages.MessageField('SecurityPolicyRulePreconfiguredWafConfigExclusionFieldParams', 3, repeated=True)
-  requestUrisToExclude = _messages.MessageField('SecurityPolicyRulePreconfiguredWafConfigExclusionFieldParams', 4, repeated=True)
-  targetRuleIds = _messages.StringField(5, repeated=True)
-  targetRuleSet = _messages.StringField(6)
+  requestBodiesToExclude = _messages.MessageField('SecurityPolicyRulePreconfiguredWafConfigExclusionFieldParams', 1, repeated=True)
+  requestCookiesToExclude = _messages.MessageField('SecurityPolicyRulePreconfiguredWafConfigExclusionFieldParams', 2, repeated=True)
+  requestHeadersToExclude = _messages.MessageField('SecurityPolicyRulePreconfiguredWafConfigExclusionFieldParams', 3, repeated=True)
+  requestQueryParamsToExclude = _messages.MessageField('SecurityPolicyRulePreconfiguredWafConfigExclusionFieldParams', 4, repeated=True)
+  requestUrisToExclude = _messages.MessageField('SecurityPolicyRulePreconfiguredWafConfigExclusionFieldParams', 5, repeated=True)
+  targetRuleIds = _messages.StringField(6, repeated=True)
+  targetRuleSet = _messages.StringField(7)
 
 
 class SecurityPolicyRulePreconfiguredWafConfigExclusionFieldParams(_messages.Message):

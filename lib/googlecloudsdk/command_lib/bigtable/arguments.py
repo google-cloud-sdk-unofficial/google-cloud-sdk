@@ -16,6 +16,7 @@
 
 import textwrap
 
+from googlecloudsdk.api_lib.bigtable import tables
 from googlecloudsdk.api_lib.bigtable import util
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
@@ -364,6 +365,8 @@ class ArgAdder(object):
     )
     return self
 
+  # For logical and materialized views; uses ArgBoolean
+  # (--deletion-protection=true|false) to specify deletion protection.
   def AddDeletionProtection(self, required: bool = False):
     """Add argument for deletion protection to the parser."""
     self.parser.add_argument(
@@ -731,6 +734,27 @@ class ArgAdder(object):
         type=arg_parsers.ArgDict(),
         action=arg_parsers.UpdateAction,
     )
+    return self
+
+  # For restored tables; uses StoreTrueFalseAction (--[no-]deletion-protection)
+  # to specify deletion protection.
+  def AddRestoredTableDeletionProtection(self):
+    """Add argument for table deletion protection to the parser."""
+    self.parser.add_argument(
+        '--deletion-protection',
+        action=arg_parsers.StoreTrueFalseAction,
+        help=(
+            'Indicates whether the restored table is protected against'
+            ' deletion. Defaults to disabled if not specified.'
+        ),
+        required=False,
+    )
+    return self
+
+  def AddAutomatedBackupPolicyArgs(self):
+    """Add argument group for automated backup policy to the parser."""
+    for arg_group in tables.AddAutomatedBackupPolicyCreateTableArgs():
+      arg_group.AddToParser(self.parser)
     return self
 
 

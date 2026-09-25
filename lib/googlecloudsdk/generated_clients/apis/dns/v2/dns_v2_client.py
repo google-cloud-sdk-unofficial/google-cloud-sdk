@@ -700,7 +700,7 @@ class DnsV2(base_api.BaseApiClient):
         method_id='dns.projects.get',
         ordered_params=['project', 'location'],
         path_params=['location', 'project'],
-        query_params=['clientOperationId'],
+        query_params=[],
         relative_path='dns/v2/projects/{project}/locations/{location}',
         request_field='',
         request_type_name='DnsProjectsGetRequest',

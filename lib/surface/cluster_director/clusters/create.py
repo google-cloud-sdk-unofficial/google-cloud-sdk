@@ -164,6 +164,8 @@ class Create(base.CreateCommand):
     flags.AddGcsBuckets(parser=flag_group, api_version=api_version)
     flags.AddCreateLustres(parser=flag_group, api_version=api_version)
     flags.AddLustres(parser=flag_group, api_version=api_version)
+    if api_version in ["v1alpha", "v1beta"]:
+      flags.AddNfs(parser=flag_group, api_version=api_version)
     flags.AddOnDemandInstances(parser=flag_group, api_version=api_version)
     flags.AddSpotInstances(parser=flag_group, api_version=api_version)
     flags.AddReservedInstances(parser=flag_group, api_version=api_version)
@@ -177,6 +179,7 @@ class Create(base.CreateCommand):
     flags.AddSlurmPrologBashScripts(parser=flag_group, api_version=api_version)
     flags.AddSlurmEpilogBashScripts(parser=flag_group, api_version=api_version)
     if api_version == "v1alpha":
+      flags.AddControllerVersion(parser=flag_group, api_version=api_version)
       flags.AddSlurmTaskPrologBashScripts(
           parser=flag_group, api_version=api_version
       )

@@ -38,7 +38,7 @@ class List(base.ListCommand):
 
        To list Feature Configurations with custom filtering:
 
-         $ {command} --filter="auto_annotate_config"
+         $ {command} --filter="type: 'AUTO_ANNOTATE'"
       """
       ),
   }

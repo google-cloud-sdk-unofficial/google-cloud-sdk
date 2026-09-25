@@ -47,6 +47,4 @@
   output:
     format: |-
       table(name.basename():label=ID,
-            predicateType,
-            verificationTime,
-            createTime)
+            predicateType)

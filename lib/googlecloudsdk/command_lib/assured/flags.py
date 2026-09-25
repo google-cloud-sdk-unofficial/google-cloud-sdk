@@ -18,12 +18,15 @@
 from googlecloudsdk.api_lib.assured import message_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base as calliope_base
+from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.command_lib.assured import resource_args
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
-def AddListWorkloadsFlags(parser):
+def AddListWorkloadsFlags(
+    parser: parser_arguments.ArgumentInterceptor,
+) -> None:
   parser.add_argument(
       '--location',
       required=True,
@@ -44,7 +47,9 @@ def AddListWorkloadsFlags(parser):
   )
 
 
-def AddListOperationsFlags(parser):
+def AddListOperationsFlags(
+    parser: parser_arguments.ArgumentInterceptor,
+) -> None:
   parser.add_argument(
       '--location',
       required=True,
@@ -65,7 +70,10 @@ def AddListOperationsFlags(parser):
   )
 
 
-def AddCreateWorkloadFlags(parser, release_track):
+def AddCreateWorkloadFlags(
+    parser: parser_arguments.ArgumentInterceptor,
+    release_track: calliope_base.ReleaseTrack,
+) -> None:
   """Adds required flags to the assured workloads create command.
 
   Args:
@@ -193,7 +201,10 @@ def AddCreateWorkloadFlags(parser, release_track):
   _AddResourceSettingsFlag(parser, release_track)
 
 
-def _AddResourceSettingsFlag(parser, release_track):
+def _AddResourceSettingsFlag(
+    parser: parser_arguments.ArgumentInterceptor,
+    release_track: calliope_base.ReleaseTrack,
+) -> None:
   """Adds the resource settings flag to the assured workloads create command.
 
   Args:
@@ -250,7 +261,9 @@ def _AddResourceSettingsFlag(parser, release_track):
     )
 
 
-def AddDeleteWorkloadFlags(parser):
+def AddDeleteWorkloadFlags(
+    parser: parser_arguments.ArgumentInterceptor,
+) -> None:
   AddWorkloadResourceArgToParser(parser, verb='delete')
   parser.add_argument(
       '--etag',
@@ -261,19 +274,39 @@ def AddDeleteWorkloadFlags(parser):
   )
 
 
-def AddDescribeWorkloadFlags(parser):
+def AddDeleteWorkloadV2Flags(
+    parser: parser_arguments.ArgumentInterceptor,
+) -> None:
+  """Adds flags to the assured v2 workloads delete command."""
+  AddWorkloadResourceArgToParser(parser, verb='delete')
+  parser.add_argument(
+      '--etag',
+      help='The etag acquired by reading the Assured Workloads environment.',
+  )
+  calliope_base.ASYNC_FLAG.AddToParser(parser)
+
+
+def AddDescribeWorkloadFlags(
+    parser: parser_arguments.ArgumentInterceptor,
+) -> None:
   AddWorkloadResourceArgToParser(parser, verb='describe')
 
 
-def AddDescribeViolationFlags(parser):
+def AddDescribeViolationFlags(
+    parser: parser_arguments.ArgumentInterceptor,
+) -> None:
   AddViolationResourceArgToParser(parser, verb='describe')
 
 
-def AddEnableResourceMonitoringFlags(parser):
+def AddEnableResourceMonitoringFlags(
+    parser: parser_arguments.ArgumentInterceptor,
+) -> None:
   AddWorkloadResourceArgToParser(parser, verb='enable-resource-monitoring')
 
 
-def AddUpdateWorkloadFlags(parser):
+def AddUpdateWorkloadFlags(
+    parser: parser_arguments.ArgumentInterceptor,
+) -> None:
   """Method to add update workload flags."""
   AddWorkloadResourceArgToParser(parser, verb='update')
   parser.add_argument(
@@ -306,7 +339,9 @@ def AddUpdateWorkloadFlags(parser):
   )
 
 
-def AddDescribeOperationFlags(parser):
+def AddDescribeOperationFlags(
+    parser: parser_arguments.ArgumentInterceptor,
+) -> None:
   concept_parsers.ConceptParser.ForResource(
       'operation',
       resource_args.GetOperationResourceSpec(),
@@ -315,7 +350,9 @@ def AddDescribeOperationFlags(parser):
   ).AddToParser(parser)
 
 
-def AddWorkloadResourceArgToParser(parser, verb):
+def AddWorkloadResourceArgToParser(
+    parser: parser_arguments.ArgumentInterceptor, verb: str
+) -> None:
   concept_parsers.ConceptParser.ForResource(
       'workload',
       resource_args.GetWorkloadResourceSpec(),
@@ -324,7 +361,9 @@ def AddWorkloadResourceArgToParser(parser, verb):
   ).AddToParser(parser)
 
 
-def AddViolationResourceArgToParser(parser, verb):
+def AddViolationResourceArgToParser(
+    parser: parser_arguments.ArgumentInterceptor, verb: str
+) -> None:
   concept_parsers.ConceptParser.ForResource(
       'violation',
       resource_args.GetViolationResourceSpec(),
@@ -333,7 +372,9 @@ def AddViolationResourceArgToParser(parser, verb):
   ).AddToParser(parser)
 
 
-def AddListViolationsFlags(parser):
+def AddListViolationsFlags(
+    parser: parser_arguments.ArgumentInterceptor,
+) -> None:
   """Method to add list violations flags."""
   AddListWorkloadsFlags(parser)
   parser.add_argument(
@@ -346,7 +387,9 @@ def AddListViolationsFlags(parser):
   )
 
 
-def AddAcknowledgeViolationsFlags(parser):
+def AddAcknowledgeViolationsFlags(
+    parser: parser_arguments.ArgumentInterceptor,
+) -> None:
   """Method to add acknowledge violations flags."""
   AddViolationResourceArgToParser(parser, verb='acknowledge')
   parser.add_argument(
@@ -361,3 +404,162 @@ def AddAcknowledgeViolationsFlags(parser):
       EXISTING_CHILD_RESOURCE_VIOLATIONS - to acknowledge specified org policy
       violation and all associated child resource violations.""",
   )
+
+
+def AddCreateWorkloadV2Flags(
+    parser: parser_arguments.ArgumentInterceptor,
+) -> None:
+  """Adds flags to the assured workloads create command for V2 (ALPHA/BETA)."""
+  id_group = parser.add_mutually_exclusive_group()
+  id_group.add_argument(
+      'workload_id',
+      nargs='?',
+      default=None,
+      help=(
+          'User-assigned unique identifier for the workload. If omitted, '
+          'generated by the server.'
+      ),
+  )
+  id_group.add_argument(
+      '--workload-id',
+      dest='flag_workload_id',
+      help='User-assigned unique identifier for the workload.',
+  )
+  id_group.add_argument(
+      '--external-identifier',
+      dest='external_identifier',
+      help='Backwards-compatible alias for --workload-id.',
+  )
+  parser.add_argument(
+      '--location',
+      required=True,
+      help=(
+          'The location of the Assured Workloads environment. For a '
+          'current list of supported LOCATION values, see '
+          '[Assured Workloads locations]'
+          '(https://cloud.google.com/assured-workloads/docs/locations).'
+      ),
+  )
+  parser.add_argument(
+      '--organization',
+      required=True,
+      help=(
+          'The parent organization of the Assured Workloads environment, '
+          'provided as an organization ID.'
+      ),
+  )
+  parser.add_argument(
+      '--description',
+      help='User-friendly description for the workload.',
+  )
+
+  target_group = parser.add_mutually_exclusive_group(required=True)
+  target_group.add_argument(
+      '--target-project',
+      help=(
+          'Existing Project ID or project number to onboard into Assured'
+          ' Workloads.'
+      ),
+  )
+  target_group.add_argument(
+      '--target-folder',
+      help='Existing Folder ID to onboard into Assured Workloads.',
+  )
+  target_group.add_argument(
+      '--new-project-config',
+      type=arg_parsers.ArgDict(
+          spec={
+              'parent': str,
+              'display_name': str,
+              'billing_account': str,
+          }
+      ),
+      metavar='PROPERTY=VALUE',
+      help='JSON/YAML specification for provisioning a new project.',
+  )
+  target_group.add_argument(
+      '--new-folder-config',
+      type=arg_parsers.ArgDict(
+          spec={
+              'parent': str,
+              'display_name': str,
+          }
+      ),
+      metavar='PROPERTY=VALUE',
+      help='JSON/YAML specification for provisioning a new folder.',
+  )
+
+  parser.add_argument(
+      '--framework',
+      required=True,
+      help='Compliance framework resource name or ID (e.g. fedramp-moderate).',
+  )
+  parser.add_argument(
+      '--framework-major-revision',
+      type=int,
+      help='Major revision ID of the compliance framework.',
+  )
+  controls_group = parser.add_mutually_exclusive_group()
+  controls_group.add_argument(
+      '--cloud-control-config',
+      action='append',
+      type=arg_parsers.ArgDict(),
+      metavar='PROPERTY=VALUE',
+      help='Repeated inline control configuration.',
+  )
+  controls_group.add_argument(
+      '--cloud-control-configs-from-file',
+      help='Path to JSON/YAML file specifying multiple control configurations.',
+  )
+  parser.add_argument(
+      '--cmek-key-ring',
+      help='KMS Key Ring resource path for Customer-Managed Encryption Keys.',
+  )
+  parser.add_argument(
+      '--cmek-dedicated-project-config',
+      type=arg_parsers.ArgDict(
+          spec={
+              'project_id': str,
+              'billing_account': str,
+              'display_name': str,
+          }
+      ),
+      metavar='PROPERTY=VALUE',
+      help=(
+          'Dedicated KMS project configuration (valid only with folder'
+          ' targets).'
+      ),
+  )
+  calliope_base.ASYNC_FLAG.AddToParser(parser)
+
+
+def AddUpdateWorkloadV2Flags(
+    parser: parser_arguments.ArgumentInterceptor,
+) -> None:
+  """Adds flags to the assured workloads update command for V2 (ALPHA/BETA)."""
+  AddWorkloadResourceArgToParser(parser, verb='update')
+  parser.add_argument(
+      '--etag',
+      help='ETag for optimistic concurrency control.',
+  )
+  updatable_group = parser.add_group(
+      required=True,
+      help='Settings that can be updated on the Assured Workloads environment.',
+  )
+  updatable_group.add_argument(
+      '--description',
+      help='Updated description for the workload.',
+  )
+  controls_group = updatable_group.add_mutually_exclusive_group()
+  controls_group.add_argument(
+      '--cloud-control-config',
+      action='append',
+      type=arg_parsers.ArgDict(),
+      metavar='PROPERTY=VALUE',
+      help='Updated repeated inline control configuration.',
+  )
+  controls_group.add_argument(
+      '--cloud-control-configs-from-file',
+      help='Path to JSON/YAML file specifying updated control configurations.',
+  )
+  calliope_base.ASYNC_FLAG.AddToParser(parser)

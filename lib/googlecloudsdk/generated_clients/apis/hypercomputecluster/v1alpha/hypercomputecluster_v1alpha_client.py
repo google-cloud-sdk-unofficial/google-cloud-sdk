@@ -37,6 +37,7 @@ class HypercomputeclusterV1alpha(base_api.BaseApiClient):
         default_global_params=default_global_params,
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
+    self.projects_locations_benchmarkingTrials = self.ProjectsLocationsBenchmarkingTrialsService(self)
     self.projects_locations_clusters_nodes = self.ProjectsLocationsClustersNodesService(self)
     self.projects_locations_clusters = self.ProjectsLocationsClustersService(self)
     self.projects_locations_machineLearningRuns_monitoredEvents = self.ProjectsLocationsMachineLearningRunsMonitoredEventsService(self)
@@ -47,6 +48,70 @@ class HypercomputeclusterV1alpha(base_api.BaseApiClient):
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects = self.ProjectsService(self)
+
+  class ProjectsLocationsBenchmarkingTrialsService(base_api.BaseApiService):
+    """Service class for the projects_locations_benchmarkingTrials resource."""
+
+    _NAME = 'projects_locations_benchmarkingTrials'
+
+    def __init__(self, client):
+      super(HypercomputeclusterV1alpha.ProjectsLocationsBenchmarkingTrialsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Gets a BenchmarkingTrial.
+
+      Args:
+        request: (HypercomputeclusterProjectsLocationsBenchmarkingTrialsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (BenchmarkingTrial) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/benchmarkingTrials/{benchmarkingTrialsId}',
+        http_method='GET',
+        method_id='hypercomputecluster.projects.locations.benchmarkingTrials.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='HypercomputeclusterProjectsLocationsBenchmarkingTrialsGetRequest',
+        response_type_name='BenchmarkingTrial',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists BenchmarkingTrials.
+
+      Args:
+        request: (HypercomputeclusterProjectsLocationsBenchmarkingTrialsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListBenchmarkingTrialsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/benchmarkingTrials',
+        http_method='GET',
+        method_id='hypercomputecluster.projects.locations.benchmarkingTrials.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/benchmarkingTrials',
+        request_field='',
+        request_type_name='HypercomputeclusterProjectsLocationsBenchmarkingTrialsListRequest',
+        response_type_name='ListBenchmarkingTrialsResponse',
+        supports_download=False,
+    )
 
   class ProjectsLocationsClustersNodesService(base_api.BaseApiService):
     """Service class for the projects_locations_clusters_nodes resource."""

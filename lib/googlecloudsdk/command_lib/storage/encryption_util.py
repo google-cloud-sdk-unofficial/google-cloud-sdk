@@ -33,6 +33,13 @@ _CMEK_REGEX = re.compile('projects/([^/]+)/'
                          'locations/([a-zA-Z0-9_-]{1,63})/'
                          'keyRings/([a-zA-Z0-9_-]{1,63})/'
                          'cryptoKeys/([a-zA-Z0-9_-]{1,63})$')
+_KMS_KEY_VERSION_REGEX = re.compile(
+    r'^projects/([^/]+)/'
+    r'locations/([a-zA-Z0-9_-]{1,63})/'
+    r'keyRings/([a-zA-Z0-9_-]{1,63})/'
+    r'cryptoKeys/([a-zA-Z0-9_-]{1,63})/'
+    r'cryptoKeyVersions/([a-zA-Z0-9_-]{1,63})$'
+)
 ENCRYPTION_ALGORITHM = 'AES256'
 
 
@@ -95,6 +102,48 @@ def validate_cmek(raw_key):
         'Invalid KMS key name: {}.\nKMS keys should follow the format '
         '"projects/<project-id>/locations/<location>/keyRings/<keyring>/'
         'cryptoKeys/<key-name>"'.format(raw_key))
+
+
+def validate_kms_key_version_resource_path(raw_key):
+  """Validates that a KMS key version resource path is formatted correctly.
+
+  Args:
+    raw_key (str): The Cloud KMS CryptoKeyVersion resource path to validate.
+
+  Raises:
+    errors.Error: If the key version resource path is empty, not a string,
+      starts with a leading slash, is versionless, or does not match the
+      CryptoKeyVersion resource format.
+  """
+  if raw_key in (None, ''):
+    raise errors.Error('Key is empty.')
+
+  if not isinstance(raw_key, str):
+    raise errors.Error('Invalid KMS key version: key must be a string.')
+
+  if raw_key.startswith('/'):
+    raise errors.Error(
+        'KMS key version should not start with leading slash (/): ' + raw_key
+    )
+
+  if _CMEK_REGEX.match(raw_key.rstrip('/')):
+    raise errors.Error(
+        'Invalid KMS key version: {}.\n'
+        'Received versionless KMS key. Please provide a fully qualified'
+        ' resource name ending in /cryptoKeyVersions/<version-id> (e.g.'
+        ' "projects/<project-id>/locations/<location>/keyRings/<keyring>/'
+        'cryptoKeys/<key-name>/cryptoKeyVersions/<version-id>").'.format(
+            raw_key
+        )
+    )
+
+  if not _KMS_KEY_VERSION_REGEX.match(raw_key):
+    raise errors.Error(
+        'Invalid KMS key version: {}.\n'
+        'KMS key versions should follow the format'
+        ' "projects/<project-id>/locations/<location>/keyRings/<keyring>/'
+        'cryptoKeys/<key-name>/cryptoKeyVersions/<version-id>".'.format(raw_key)
+    )
 
 
 def parse_key(raw_key):

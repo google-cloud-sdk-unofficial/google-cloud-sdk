@@ -17,6 +17,8 @@
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.util import apis as core_apis
 
+_DEFAULT_PAGE_SIZE = 100
+
 
 class OperationsApi:
   """Client for GCS operations API (V2)."""
@@ -40,7 +42,7 @@ class OperationsApi:
     )
     return self.client.projects_locations_operations.Cancel(request)
 
-  def list(self, name, server_side_filter=None):
+  def list(self, name, server_side_filter=None, page_size=None):
     """Lists operations under a parent resource."""
     if name.endswith("/operations"):
       name = name[: -len("/operations")]
@@ -50,6 +52,7 @@ class OperationsApi:
     return list_pager.YieldFromList(
         self.client.projects_locations_operations,
         request,
+        batch_size=page_size if page_size is not None else _DEFAULT_PAGE_SIZE,
         batch_size_attribute="pageSize",
         field="operations",
         current_token_attribute="pageToken",

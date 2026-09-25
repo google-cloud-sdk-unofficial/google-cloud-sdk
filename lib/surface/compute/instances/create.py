@@ -368,7 +368,7 @@ class Create(base.CreateCommand):
   _support_ipv6_only = True
   _support_source_snapshot_region = False
   _support_skip_guest_os_shutdown = True
-  _support_preemption_notice_duration = False
+  _support_preemption_notice_duration = True
   _support_workload_identity_config = True
   _support_identity_type = False
   _support_alias_ipv6_ranges = False

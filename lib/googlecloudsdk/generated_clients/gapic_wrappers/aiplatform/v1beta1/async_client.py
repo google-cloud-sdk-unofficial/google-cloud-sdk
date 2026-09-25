@@ -42,11 +42,15 @@ class GapicWrapperClient(object):
         aiplatform_v1beta1.services.prediction_service.async_client.PredictionServiceAsyncClient,
         credentials, **kwargs)
     self.semantic = gapic_util.MakeAsyncClient(
+        aiplatform_v1beta1.services.semantic_governance_policy_engine_service.async_client.SemanticGovernancePolicyEngineServiceAsyncClient,
+        credentials, **kwargs)
+    self.semantic = gapic_util.MakeAsyncClient(
         aiplatform_v1beta1.services.semantic_governance_policy_service.async_client.SemanticGovernancePolicyServiceAsyncClient,
         credentials, **kwargs)
 
   async def __aenter__(self):
     await self._aexit_stack.enter_async_context(self.prediction)
+    await self._aexit_stack.enter_async_context(self.semantic)
     await self._aexit_stack.enter_async_context(self.semantic)
     return self
 

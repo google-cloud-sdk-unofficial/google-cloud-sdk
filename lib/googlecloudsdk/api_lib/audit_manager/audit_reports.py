@@ -67,7 +67,7 @@ class AuditReportsClient(object):
 
     inner_req = self.messages.GenerateAuditReportRequest()
     inner_req.complianceFramework = compliance_framework
-    inner_req.reportFormat = self.report_format_map[report_format]
+    inner_req.reportFormat = self.report_format_map[report_format.lower()]
     inner_req.gcsUri = gcs_uri
 
     if is_parent_folder:

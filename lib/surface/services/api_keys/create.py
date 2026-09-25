@@ -14,6 +14,7 @@
 # limitations under the License.
 """services api-keys create command."""
 
+# gcloud-disable-gdu-domain
 
 from googlecloudsdk.api_lib.services import apikeys
 from googlecloudsdk.api_lib.services import services_util
@@ -25,38 +26,40 @@ from googlecloudsdk.core import properties
 
 OP_BASE_CMD = 'gcloud services operations '
 OP_WAIT_CMD = OP_BASE_CMD + 'wait {0}'
-_DETAILED_HELP = {'EXAMPLES': """
-        To create a key with display name and allowed IPs specified:
+_DETAILED_HELP = {
+    'EXAMPLES': (
+        """
+        To create a key with display name, allowed IPs, and allowed API targets specified:
 
-          $ {command} --display-name="test name" --allowed-ips=2620:15c:2c4:203:2776:1f90:6b3b:217,104.133.8.78
+          $ {command} --display-name="test name" --allowed-ips=2620:15c:2c4:203:2776:1f90:6b3b:217,104.133.8.78 --api-target=service=bar.googleapis.com
 
-        To create a key with annotations:
+        To create a key with annotations and allowed API targets:
 
-         $ {command} --annotations=foo=bar,abc=def
+         $ {command} --annotations=foo=bar,abc=def --api-target=service=bar.googleapis.com
 
-        To create a key with user-specified key ID:
+        To create a key with user-specified key ID and allowed API targets:
 
-          $ {command} --key-id="my-key-id"
+          $ {command} --key-id="my-key-id" --api-target=service=bar.googleapis.com
 
-        To create a key with allowed referrers restriction:
+        To create a key with allowed referrers restriction and allowed API targets:
 
-          $ {command} --allowed-referrers="https://www.example.com/*,http://sub.example.com/*"
+          $ {command} --allowed-referrers="https://www.example.com/*,http://sub.example.com/*" --api-target=service=bar.googleapis.com
 
-        To create a key with allowed IOS app bundle IDs:
+        To create a key with allowed IOS app bundle IDs and allowed API targets:
 
-          $ {command} --allowed-bundle-ids=my.app
+          $ {command} --allowed-bundle-ids=my.app --api-target=service=bar.googleapis.com
 
-        To create a key with allowed Android application:
+        To create a key with allowed Android application and allowed API targets:
 
-          $ {command} --allowed-application=sha1_fingerprint=foo1,package_name=bar.foo --allowed-application=sha1_fingerprint=foo2,package_name=foo.bar
+          $ {command} --allowed-application=sha1_fingerprint=foo1,package_name=bar.foo --allowed-application=sha1_fingerprint=foo2,package_name=foo.bar --api-target=service=bar.googleapis.com
 
         To create a key with allowed API targets (service name only):
 
-          $ {command} --api-target=service=bar.service.com --api-target=service=foo.service.com
+          $ {command} --api-target=service=bar.googleapis.com --api-target=service=foo.googleapis.com
 
-        To create a key with service account:
+        To create a key with service account and allowed API targets:
 
-          $ {command} --service-account=my-service-account
+          $ {command} --service-account=my-service-account --api-target=service=bar.googleapis.com
 
         To create a key with allowed API targets (service and methods are
         specified):
@@ -67,18 +70,22 @@ _DETAILED_HELP = {'EXAMPLES': """
 
         ```
         - --api-target:
-            service: "foo.service.com"
+            service: "foo.googleapis.com"
         - --api-target:
-            service: "bar.service.com"
+            service: "bar.googleapis.com"
             methods:
               - "foomethod"
               - "barmethod"
         ```
-        """}
+        """
+    )
+}
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class Create(base.CreateCommand):
   """Create an API key."""
 
@@ -98,8 +105,15 @@ class Create(base.CreateCommand):
         command invocation.
 
     Returns:
-      None
+      The Operation object.
     """
+    if not args.IsSpecified('api_target'):
+      raise exceptions.InvalidArgumentException(
+          '--api-target',
+          'API keys must be created with API target restrictions. Please'
+          ' specify `--api-target`.',
+      )
+
     project_id = properties.VALUES.core.project.GetOrFail()
 
     client = apikeys.GetClientInstance()
@@ -130,8 +144,7 @@ class Create(base.CreateCommand):
               )
           )
       )
-    if args.IsSpecified('api_target'):
-      key_proto.restrictions.apiTargets = apikeys.GetApiTargets(args, messages)
+    key_proto.restrictions.apiTargets = apikeys.GetApiTargets(args, messages)
     if args.IsSpecified('annotations'):
       key_proto.annotations = apikeys.GetAnnotations(args, messages)
     if args.IsSpecified('service_account'):
@@ -160,34 +173,3 @@ class Create(base.CreateCommand):
     services_util.PrintOperationWithResponse(op)
     return op
   detailed_help = _DETAILED_HELP
-
-
-@base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaCreate(Create):
-  """Create an API key with secure default restrictions."""
-
-  def Run(self, args):
-    """Run the create command for Alpha release track with secure defaults.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      The LRO object.
-
-    Raises:
-      googlecloudsdk.calliope.exceptions.InvalidArgumentException: If the key
-        lacks API target restrictions.
-    """
-    has_api_restriction = args.IsSpecified('api_target')
-
-    if not has_api_restriction:
-      raise exceptions.InvalidArgumentException(
-          '--api-target',
-          'API keys must be created with API target restrictions. Please'
-          ' specify `--api-target`.',
-      )
-
-    return super(AlphaCreate, self).Run(args)

@@ -58,6 +58,8 @@ Container Flags
   group.AddArgument(flags.WorkdirFlag())
   if release_track != base.ReleaseTrack.GA:
     group.AddArgument(flags.SandboxLauncherFlag())
+  if release_track == base.ReleaseTrack.ALPHA:
+    group.AddArgument(flags.SandboxFlags())
   group.AddArgument(flags.CommandFlag())
   group.AddArgument(flags.ArgsFlag())
   group.AddArgument(flags.SecretsFlags())
@@ -431,6 +433,7 @@ class AlphaUpdate(BetaUpdate):
     flags.FunctionalTypeFlag(resource='service').AddToParser(parser)
     flags.MESH_DATAPLANE_FLAG.AddToParser(parser)
     flags.AMBIENT_NETWORKING_FLAG.AddToParser(parser)
+    flags.AMBIENT_SCOPE_FLAG.AddToParser(parser)
     flags.AddOverflowScalingFlag(parser)
     flags.AddCpuUtilizationFlag(parser)
     flags.AddConcurrencyUtilizationFlag(parser)

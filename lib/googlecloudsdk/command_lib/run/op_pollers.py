@@ -16,7 +16,9 @@
 # pylint: disable=raise-missing-from
 """Pollers for Serverless operations."""
 
-from typing import TYPE_CHECKING
+from __future__ import annotations
+
+import typing
 
 from googlecloudsdk.api_lib.run import instance
 from googlecloudsdk.api_lib.util import waiter
@@ -26,15 +28,44 @@ from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import resources
 
 
-# pylint: disable=g-bad-import-order
-if TYPE_CHECKING:
-  from googlecloudsdk.command_lib.run import serverless_operations  # pylint: disable=g-import-not-at-top
+class DomainMappingGetter(typing.Protocol):
+  """Protocol for fetching a DomainMapping resource."""
+
+  def GetDomainMapping(
+      self, domain_mapping_ref: resources.Resource
+  ) -> typing.Any:
+    ...
+
+
+class InstanceGetter(typing.Protocol):
+  """Protocol for fetching an Instance resource."""
+
+  def GetInstance(
+      self, instance_ref: resources.Resource
+  ) -> instance.Instance | None:
+    ...
+
+
+class RevisionGetter(typing.Protocol):
+  """Protocol for fetching a Revision resource."""
+
+  def GetRevision(self, revision_ref: resources.Resource) -> typing.Any:
+    ...
+
+
+class NonceRevisionGetter(typing.Protocol):
+  """Protocol for fetching Revision resources by nonce."""
+
+  def GetRevisionsByNonce(
+      self, namespace_ref: resources.Resource, nonce: str
+  ) -> list[typing.Any]:
+    ...
 
 
 class DomainMappingResourceRecordPoller(waiter.OperationPoller):
   """Poll for when a DomainMapping first has resourceRecords."""
 
-  def __init__(self, ops):
+  def __init__(self, ops: DomainMappingGetter):
     self._ops = ops
 
   def IsDone(self, mapping):
@@ -340,7 +371,7 @@ class InstanceConditionPoller(ConditionPoller):
 class InstanceStartPoller(waiter.OperationPoller):
   """A Poller for starting instances."""
 
-  def __init__(self, operations: 'serverless_operations.ServerlessOperations'):
+  def __init__(self, operations: InstanceGetter):
     """Supply getter as the resource getter."""
     self._operations = operations
     self._ret = None
@@ -366,7 +397,7 @@ class InstanceStartPoller(waiter.OperationPoller):
 class RevisionNameBasedPoller(waiter.OperationPoller):
   """Poll for the revision with the given name to exist."""
 
-  def __init__(self, operations, revision_ref_getter):
+  def __init__(self, operations: RevisionGetter, revision_ref_getter):
     self._operations = operations
     self._revision_ref_getter = revision_ref_getter
 
@@ -384,7 +415,7 @@ class RevisionNameBasedPoller(waiter.OperationPoller):
 class NonceBasedRevisionPoller(waiter.OperationPoller):
   """To poll for exactly one revision with the given nonce to appear."""
 
-  def __init__(self, operations, namespace_ref):
+  def __init__(self, operations: NonceRevisionGetter, namespace_ref):
     self._operations = operations
     self._namespace = namespace_ref
 

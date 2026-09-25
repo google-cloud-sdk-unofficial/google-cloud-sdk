@@ -26,6 +26,26 @@
       To create a GitHub connection named `my-connection` in `us-central1` run:
 
       $ {command} my-connection --github-config-app=developer-connect --github-config-authorizer-credential-oauth-token-secret-version=projects/my-project/secrets/my-oauth-token/versions/1 --github-config-app-installation-id=12345 --location=us-central1
+
+      To create a GitHub Enterprise connection named `my-connection` in `us-central1` run:
+
+      $ {command} my-connection --github-enterprise-config-host-uri=https://ghe.mycompany.com --github-enterprise-config-app-id=12345 --location=us-central1
+
+      To create a GitLab connection named `my-connection` in `us-central1` run:
+
+      $ {command} my-connection --gitlab-config-authorizer-credential-user-token-secret-version=projects/my-project/secrets/my-pat/versions/1 --gitlab-config-read-authorizer-credential-user-token-secret-version=projects/my-project/secrets/my-read-pat/versions/1 --gitlab-config-webhook-secret-version=projects/my-project/secrets/my-webhook-secret/versions/1 --location=us-central1
+
+      To create a GitLab Enterprise connection named `my-connection` in `us-central1` run:
+
+      $ {command} my-connection --gitlab-enterprise-config-host-uri=https://gitlab.mycompany.com --gitlab-enterprise-config-authorizer-credential-user-token-secret-version=projects/my-project/secrets/my-pat/versions/1 --gitlab-enterprise-config-read-authorizer-credential-user-token-secret-version=projects/my-project/secrets/my-read-pat/versions/1 --gitlab-enterprise-config-webhook-secret-version=projects/my-project/secrets/my-webhook-secret/versions/1 --location=us-central1
+
+      To create a Bitbucket Data Center connection named `my-connection` in `us-central1` run:
+
+      $ {command} my-connection --bitbucket-data-center-config-host-uri=https://bitbucket.mycompany.com --bitbucket-data-center-config-authorizer-credential-user-token-secret-version=projects/my-project/secrets/my-pat/versions/1 --bitbucket-data-center-config-read-authorizer-credential-user-token-secret-version=projects/my-project/secrets/my-read-pat/versions/1 --bitbucket-data-center-config-webhook-secret-version=projects/my-project/secrets/my-webhook-secret/versions/1 --location=us-central1
+
+      To create a Bitbucket Cloud connection named `my-connection` in `us-central1` run:
+
+      $ {command} my-connection --bitbucket-cloud-config-workspace=my-workspace --bitbucket-cloud-config-authorizer-credential-user-token-secret-version=projects/my-project/secrets/my-pat/versions/1 --bitbucket-cloud-config-read-authorizer-credential-user-token-secret-version=projects/my-project/secrets/my-read-pat/versions/1 --bitbucket-cloud-config-webhook-secret-version=projects/my-project/secrets/my-webhook-secret/versions/1 --location=us-central1
   arguments:
     params:
     - group:

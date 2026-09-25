@@ -17,6 +17,7 @@
 import dataclasses
 import enum
 import os
+from typing import Any, Mapping
 import uuid
 
 from apitools.base.py import exceptions as api_exceptions
@@ -39,7 +40,6 @@ from googlecloudsdk.core.util import times
 
 _GCS_PREFIX = 'gs://'
 _MAX_BUCKET_NAME_LENGTH = 63
-MAX_RUN_UPLOAD_SOURCE_SIZE_BYTES = 248 * 1024 * 1024
 
 
 class BucketNameError(core_exceptions.Error):
@@ -111,6 +111,17 @@ def UploadThroughCloudRun(
         response = run_client.projects_locations_sourceUploads.Upload(
             request, upload=upload
         )
+      # handle the case where the source is too big to upload through Cloud Run
+      # API. The exception and message is from
+      # apitools/base/py/transfer.py
+      except api_exceptions.InvalidUserInputError as e:
+        if 'Upload too big' in str(e):
+          log.error(
+              'Source code is too large to upload through Cloud Run API. Please'
+              ' use preuploaded Cloud Storage object or use --no-run-upload to'
+              ' upload through GCS.'
+          )
+        raise e
       finally:
         upload.stream.close()
   else:
@@ -122,6 +133,17 @@ def UploadThroughCloudRun(
       response = run_client.projects_locations_sourceUploads.Upload(
           request, upload=upload
       )
+    # handle the case where the source is too big to upload through Cloud Run
+    # API. The exception and message is from
+    # apitools/base/py/transfer.py
+    except api_exceptions.InvalidUserInputError as e:
+      if 'Upload too big' in str(e):
+        log.error(
+            'Source code is too large to upload through Cloud Run API. Please'
+            ' use preuploaded Cloud Storage object or use --no-run-upload to'
+            ' upload through GCS.'
+        )
+      raise e
     finally:
       upload.stream.close()
 
@@ -196,30 +218,9 @@ def IsGcsObject(source: str) -> bool:
   return isinstance(source, str) and source.startswith(_GCS_PREFIX)
 
 
-def GetSourceSizeBytes(source_path: str) -> int:
-  """Returns the size of the source path in bytes.
-
-  Args:
-    source_path: The local file or directory path, or GCS object.
-
-  Returns:
-    The size in bytes. Returns -1 if source_path does not exist or is a GCS
-    object.
-  """
-  if (
-      not source_path
-      or IsGcsObject(source_path)
-      or not os.path.exists(source_path)
-  ):
-    return -1
-  if os.path.isfile(source_path):
-    return os.path.getsize(source_path)
-  if os.path.isdir(source_path):
-    return files.GetTreeSizeBytes(source_path)
-  return -1
-
-
-def ShouldUploadThroughRunApi(deploy_from_source, release_track) -> bool:
+def ShouldUploadThroughRunApi(
+    deploy_from_source: Mapping[str, Any], release_track: Any
+) -> bool:
   """Returns True if the source should be uploaded via Cloud Run Upload Source API."""
   if not flags.IsRunUploadSupported(release_track):
     return False
@@ -235,9 +236,9 @@ def ShouldUploadThroughRunApi(deploy_from_source, release_track) -> bool:
   if flags.FlagIsExplicitlySet(container_args, 'run_upload'):
     return bool(container_args.run_upload)
 
+  # make no-build deployments to use Cloud Run Upload Source API as the default.
   if validators.IsNoBuildFromSource(release_track, deploy_from_source):
-    source_size = GetSourceSizeBytes(source_path)
-    return 0 <= source_size < MAX_RUN_UPLOAD_SOURCE_SIZE_BYTES
+    return True
 
   return False
 

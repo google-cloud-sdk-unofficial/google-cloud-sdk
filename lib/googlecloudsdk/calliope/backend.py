@@ -187,6 +187,11 @@ class CommandCommon(object):
     """Gets the regional endpoint compatibility of this command or group."""
     return self._common_type.RegionalEndpointCompatibility()
 
+  @property
+  def hints(self):
+    """Gets the hints of this command or group."""
+    return getattr(self._common_type, 'hints', None)
+
   def IsRoot(self):
     """Returns True if this is the root element in the CLI tree."""
     return not self._parent_group

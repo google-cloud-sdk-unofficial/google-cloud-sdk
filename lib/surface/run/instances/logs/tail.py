@@ -17,6 +17,7 @@
 import subprocess
 import sys
 
+from googlecloudsdk.api_lib.run import constants
 from googlecloudsdk.api_lib.run import ssh as run_ssh
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import exceptions
@@ -104,7 +105,7 @@ class Tail(base.Command):
     args.instance = None
     args.release_track = self.ReleaseTrack()
 
-    ssh_instance = run_ssh.Ssh(args, run_ssh.Ssh.WorkloadType.INSTANCE)
+    ssh_instance = run_ssh.Ssh(args, constants.WorkloadType.INSTANCE)
     components = ssh_instance.GetSshCommandComponents()
 
     ssh_cmd = run_ssh.ssh.SSHCommand(

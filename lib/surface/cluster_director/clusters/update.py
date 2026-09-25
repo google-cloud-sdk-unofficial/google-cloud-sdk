@@ -159,6 +159,10 @@ class Update(base.UpdateCommand):
     flags.AddLustres(
         parser=flag_group, api_version=api_version, include_update_flags=True
     )
+    if api_version in ["v1alpha", "v1beta"]:
+      flags.AddNfs(
+          parser=flag_group, api_version=api_version, include_update_flags=True
+      )
     flags.AddOnDemandInstances(
         parser=flag_group, api_version=api_version, include_update_flags=True
     )

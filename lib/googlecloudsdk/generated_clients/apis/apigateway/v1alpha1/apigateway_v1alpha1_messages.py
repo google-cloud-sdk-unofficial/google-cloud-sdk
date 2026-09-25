@@ -500,13 +500,13 @@ class ApigatewayGateway(_messages.Message):
       this gateway is actually served with, which the service resolves at
       creation from `streaming_mode`, the referenced API Config, and the
       platform default at the time. Read this rather than `streaming_mode` to
-      determine whether a gateway supports response streaming.
+      determine whether a gateway supports streaming.
     StateValueValuesEnum: Output only. The current state of the Gateway.
-    StreamingModeValueValuesEnum: Optional. Immutable. Requests response
-      streaming for a new gateway. An attempt to change it on update is
-      rejected. If unset, the service selects the mode. This field records
-      only what was requested and is never modified by the service; read
-      `effective_streaming_mode` for the mode the gateway is served with.
+    StreamingModeValueValuesEnum: Optional. Immutable. Requests streaming for
+      a new gateway. An attempt to change it on update is rejected. If unset,
+      the service selects the mode. This field records only what was requested
+      and is never modified by the service; read `effective_streaming_mode`
+      for the mode the gateway is served with.
 
   Messages:
     LabelsValue: Optional. Resource labels to represent user-provided
@@ -518,25 +518,25 @@ class ApigatewayGateway(_messages.Message):
       Format:
       projects/{project}/locations/global/apis/{api}/configs/{apiConfig}
     createTime: Output only. Created time.
-    defaultHostname: Output only. The default API Gateway host name of the
-      form `{gateway_id}-{hash}.{region_code}.gateway.dev`.
+    defaultHostname: Output only. The default hostname that serves traffic for
+      this Gateway.
     displayName: Optional. Display name.
     effectiveStreamingMode: Output only. The streaming mode this gateway is
       actually served with, which the service resolves at creation from
       `streaming_mode`, the referenced API Config, and the platform default at
       the time. Read this rather than `streaming_mode` to determine whether a
-      gateway supports response streaming.
+      gateway supports streaming.
     labels: Optional. Resource labels to represent user-provided metadata.
       Refer to cloud documentation on labels for more details.
       https://cloud.google.com/compute/docs/labeling-resources
     name: Output only. Resource name of the Gateway. Format:
       projects/{project}/locations/{location}/gateways/{gateway}
     state: Output only. The current state of the Gateway.
-    streamingMode: Optional. Immutable. Requests response streaming for a new
-      gateway. An attempt to change it on update is rejected. If unset, the
-      service selects the mode. This field records only what was requested and
-      is never modified by the service; read `effective_streaming_mode` for
-      the mode the gateway is served with.
+    streamingMode: Optional. Immutable. Requests streaming for a new gateway.
+      An attempt to change it on update is rejected. If unset, the service
+      selects the mode. This field records only what was requested and is
+      never modified by the service; read `effective_streaming_mode` for the
+      mode the gateway is served with.
     uniqueId: Output only. The unique resource ID.
     updateTime: Output only. Updated time.
   """
@@ -546,16 +546,16 @@ class ApigatewayGateway(_messages.Message):
     which the service resolves at creation from `streaming_mode`, the
     referenced API Config, and the platform default at the time. Read this
     rather than `streaming_mode` to determine whether a gateway supports
-    response streaming.
+    streaming.
 
     Values:
-      EFFECTIVE_STREAMING_MODE_UNSPECIFIED: The service has not resolved a
-        mode. Every gateway returned by `GetGateway` and `ListGateways`
-        carries a resolved mode, so this value should not be returned under
-        normal circumstances.
-      EFFECTIVE_STREAMING_MODE_DISABLED: The gateway does not support response
-        streaming.
-      EFFECTIVE_STREAMING_MODE_ENABLED: The gateway supports response
+      EFFECTIVE_STREAMING_MODE_UNSPECIFIED: Indicates that the service has not
+        resolved a mode. Every gateway returned by `GetGateway` and
+        `ListGateways` carries a resolved mode, so this value should not be
+        returned under normal circumstances.
+      EFFECTIVE_STREAMING_MODE_DISABLED: Indicates that the gateway does not
+        support streaming.
+      EFFECTIVE_STREAMING_MODE_ENABLED: Indicates that the gateway supports
         streaming.
     """
     EFFECTIVE_STREAMING_MODE_UNSPECIFIED = 0
@@ -581,17 +581,17 @@ class ApigatewayGateway(_messages.Message):
     UPDATING = 5
 
   class StreamingModeValueValuesEnum(_messages.Enum):
-    r"""Optional. Immutable. Requests response streaming for a new gateway. An
-    attempt to change it on update is rejected. If unset, the service selects
-    the mode. This field records only what was requested and is never modified
-    by the service; read `effective_streaming_mode` for the mode the gateway
-    is served with.
+    r"""Optional. Immutable. Requests streaming for a new gateway. An attempt
+    to change it on update is rejected. If unset, the service selects the
+    mode. This field records only what was requested and is never modified by
+    the service; read `effective_streaming_mode` for the mode the gateway is
+    served with.
 
     Values:
-      STREAMING_MODE_UNSPECIFIED: The service selects the streaming mode.
-      STREAMING_MODE_ENABLED: Streaming is enabled. The gateway supports
-        response streaming: server-sent events, HTTP chunked transfer,
-        WebSockets, and gRPC/HTTP2 bidirectional streaming.
+      STREAMING_MODE_UNSPECIFIED: Lets the service select the streaming mode.
+      STREAMING_MODE_ENABLED: Enables streaming. The gateway supports Server-
+        Sent Events (SSE), HTTP/2 streaming, HTTP chunked transfer,
+        WebSockets, and gRPC bidirectional streaming.
     """
     STREAMING_MODE_UNSPECIFIED = 0
     STREAMING_MODE_ENABLED = 1

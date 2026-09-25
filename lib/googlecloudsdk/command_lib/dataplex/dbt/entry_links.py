@@ -336,7 +336,6 @@ def _emit_macro_references(
 def _index_uid_by_key(
     mapping: dict[str, Any] | None,
     key_fn: abc.Callable[[dict[str, Any]], Any],
-    predicate: abc.Callable[[dict[str, Any]], bool] = lambda _: True,
 ) -> dict[Any, str]:
   """Indexes a mapping of unique_id -> resource by a custom key.
 
@@ -347,8 +346,6 @@ def _index_uid_by_key(
     mapping: A dictionary of unique_id -> resource dict.
     key_fn: A function that takes a resource dict and returns the index key.
       Must return a hashable value. If it returns None, the resource is skipped.
-    predicate: An optional filter function that takes a resource dict and
-      returns True if it should be indexed.
 
   Returns:
     A dictionary of key -> unique_id.
@@ -356,8 +353,6 @@ def _index_uid_by_key(
   index = {}
   ambiguous = set()
   for uid, node in (mapping or {}).items():
-    if not predicate(node):
-      continue
     key = key_fn(node)
     if key is None:
       continue
@@ -370,9 +365,6 @@ def _index_uid_by_key(
   return index
 
 
-# DBT resource types that materialize to a physical BigQuery table.
-_MATERIALIZED_RESOURCE_TYPES = frozenset(['model', 'seed', 'snapshot'])
-
 # An `ephemeral` model is inlined into its dependents as a CTE and never becomes
 # a relation so it shouldn't emit a represents link.
 _EPHEMERAL_MATERIALIZATION = 'ephemeral'
@@ -380,7 +372,7 @@ _EPHEMERAL_MATERIALIZATION = 'ephemeral'
 
 def _materializes_to_bigquery(node: dict[str, Any]) -> bool:
   """Whether a dbt node becomes a physical BigQuery relation."""
-  if node.get('resource_type') not in _MATERIALIZED_RESOURCE_TYPES:
+  if node.get('resource_type') not in naming.MATERIALIZED_RESOURCE_TYPES:
     return False
   materialized = (node.get('config') or {}).get('materialized')
   return str(materialized or '').strip().lower() != _EPHEMERAL_MATERIALIZATION
@@ -390,6 +382,34 @@ def _source_key(src: dict[str, Any]) -> tuple[str, str] | None:
   src_name = src.get('source_name')
   tbl_name = src.get('name')
   return (src_name, tbl_name) if src_name and tbl_name else None
+
+
+def _tested_target(test_node: dict[str, Any]) -> str | None:
+  """The resource a relationships test points its ``to:`` at, per dbt.
+
+  A ``to: ref('orders')`` names no version, but dbt has already resolved one
+  into the test's ``depends_on``, alongside the node under test. Reading it
+  back from there is what tells one version of a model from another.
+
+  The two dependencies are not written in a stable order: dbt 1.x lists the
+  ``to:`` target first and the tested node second, while dbt 2.x and Fusion
+  list them the other way round. The tested node is named outright, so it is
+  removed by name rather than by position.
+
+  Args:
+    test_node: the dbt relationships test node.
+
+  Returns:
+    The target's unique_id, or None when dbt resolved anything other than
+    exactly one node besides the one under test.
+  """
+  attached = test_node.get('attached_node')
+  targets = [
+      uid
+      for uid in (test_node.get('depends_on') or {}).get('nodes') or []
+      if uid != attached
+  ]
+  return targets[0] if len(targets) == 1 else None
 
 
 def _emit_schema_join(
@@ -417,12 +437,8 @@ def _emit_schema_join(
   nodes = manifest.get(_NODES) or {}
   sources = manifest.get(_SOURCES) or {}
 
-  # Index models by name (filtering for materialized resources)
-  models_by_name = _index_uid_by_key(
-      nodes,
-      key_fn=lambda n: n.get('name'),
-      predicate=lambda n: n.get('resource_type')
-      in _MATERIALIZED_RESOURCE_TYPES,
+  models_by_name = naming.index_by_name(
+      nodes, naming.MATERIALIZED_RESOURCE_TYPES
   )
 
   # Index sources by (source_name, table_name)
@@ -450,14 +466,17 @@ def _emit_schema_join(
     if not (to_expr and target_field and source_field):
       continue
 
-    target_uid = None
-    ref_model = naming.parse_ref(to_expr)
-    if ref_model:
-      target_uid = models_by_name.get(ref_model)
-    else:
-      ref_source = naming.parse_source(to_expr)
-      if ref_source:
-        target_uid = sources_by_name.get(ref_source)
+    # dbt's own resolution first; the `to:` string is only parsed when it names
+    # something dbt did not resolve, such as a bare relation.
+    target_uid = _tested_target(test_node)
+    if not target_uid:
+      ref_model = naming.parse_ref(to_expr)
+      if ref_model:
+        target_uid = models_by_name.get(ref_model)
+      else:
+        ref_source = naming.parse_source(to_expr)
+        if ref_source:
+          target_uid = sources_by_name.get(ref_source)
 
     if not target_uid:
       continue

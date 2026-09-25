@@ -48,6 +48,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  LOCATIONS_WORKFORCEPOOLS_INSTALLEDAPPS = (
+      'locations.workforcePools.installedApps',
+      '{+name}',
+      {
+          '':
+              'locations/{locationsId}/workforcePools/{workforcePoolsId}/'
+              'installedApps/{installedAppsId}',
+      },
+      ['name'],
+      True
+  )
   LOCATIONS_WORKFORCEPOOLS_OPERATIONS = (
       'locations.workforcePools.operations',
       '{+name}',

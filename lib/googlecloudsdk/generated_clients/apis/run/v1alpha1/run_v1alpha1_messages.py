@@ -199,7 +199,7 @@ class ObjectMeta(_messages.Message):
       `run.googleapis.com/custom-audiences`: Service. *
       `run.googleapis.com/default-url-disabled`: Service. *
       `run.googleapis.com/description`: Service. *
-      `run.googleapis.com/encryption-key-shutdown-hours`: Revision *
+      `run.googleapis.com/encryption-key-shutdown-hours`: Revision. *
       `run.googleapis.com/encryption-key`: Revision, Execution, Instance. *
       `run.googleapis.com/execution-environment`: Revision, Execution. *
       `run.googleapis.com/gc-traffic-tags`: Service. *
@@ -251,7 +251,7 @@ class ObjectMeta(_messages.Message):
       `run.googleapis.com/custom-audiences`: Service. *
       `run.googleapis.com/default-url-disabled`: Service. *
       `run.googleapis.com/description`: Service. *
-      `run.googleapis.com/encryption-key-shutdown-hours`: Revision *
+      `run.googleapis.com/encryption-key-shutdown-hours`: Revision. *
       `run.googleapis.com/encryption-key`: Revision, Execution, Instance. *
       `run.googleapis.com/execution-environment`: Revision, Execution. *
       `run.googleapis.com/gc-traffic-tags`: Service. *
@@ -333,7 +333,7 @@ class ObjectMeta(_messages.Message):
     `run.googleapis.com/custom-audiences`: Service. *
     `run.googleapis.com/default-url-disabled`: Service. *
     `run.googleapis.com/description`: Service. *
-    `run.googleapis.com/encryption-key-shutdown-hours`: Revision *
+    `run.googleapis.com/encryption-key-shutdown-hours`: Revision. *
     `run.googleapis.com/encryption-key`: Revision, Execution, Instance. *
     `run.googleapis.com/execution-environment`: Revision, Execution. *
     `run.googleapis.com/gc-traffic-tags`: Service. * `run.googleapis.com/gpu-

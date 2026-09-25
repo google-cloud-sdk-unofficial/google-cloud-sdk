@@ -115,6 +115,9 @@ class GoogleCloudRunV2BuildConfiguration(_messages.Message):
     dockerBuild: Optional. Builds the source using Docker.
     imageRepositoryUri: Required. Artifact Registry URI to store the built
       image.
+    serviceAccount: Optional. The service account to use for the build. Its
+      resource name in the format
+      `projects/{project}/serviceAccounts/{email}`.
     tags: Optional. Tags to add to the build.
     workerConfiguration: Optional. Configuration for the worker.
   """
@@ -122,8 +125,9 @@ class GoogleCloudRunV2BuildConfiguration(_messages.Message):
   buildpacksBuild = _messages.MessageField('GoogleCloudRunV2BuildConfigurationBuildpacksBuild', 1)
   dockerBuild = _messages.MessageField('GoogleCloudRunV2BuildConfigurationDockerBuild', 2)
   imageRepositoryUri = _messages.StringField(3)
-  tags = _messages.StringField(4, repeated=True)
-  workerConfiguration = _messages.MessageField('GoogleCloudRunV2WorkerConfiguration', 5)
+  serviceAccount = _messages.StringField(4)
+  tags = _messages.StringField(5, repeated=True)
+  workerConfiguration = _messages.MessageField('GoogleCloudRunV2WorkerConfiguration', 6)
 
 
 class GoogleCloudRunV2BuildConfigurationBuildpacksBuild(_messages.Message):
@@ -1473,6 +1477,7 @@ class GoogleCloudRunV2Instance(_messages.Message):
     sandboxes: Optional. Configuration for sandboxes.
     satisfiesPzs: Output only. Reserved for future use.
     serviceAccount: A string attribute.
+    sshEnabled: Optional. Enables SSH access to the Instance.
     terminalCondition: Output only. The Condition of this Instance, containing
       its readiness status, and detailed error information in case it did not
       reach a serving state. See comments in `reconciling` for additional
@@ -1671,13 +1676,14 @@ class GoogleCloudRunV2Instance(_messages.Message):
   sandboxes = _messages.MessageField('GoogleCloudRunV2SandboxConfiguration', 32)
   satisfiesPzs = _messages.BooleanField(33)
   serviceAccount = _messages.StringField(34)
-  terminalCondition = _messages.MessageField('GoogleCloudRunV2Condition', 35)
-  terminationGracePeriod = _messages.StringField(36)
-  uid = _messages.StringField(37)
-  updateTime = _messages.StringField(38)
-  urls = _messages.StringField(39, repeated=True)
-  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 40, repeated=True)
-  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 41)
+  sshEnabled = _messages.BooleanField(35)
+  terminalCondition = _messages.MessageField('GoogleCloudRunV2Condition', 36)
+  terminationGracePeriod = _messages.StringField(37)
+  uid = _messages.StringField(38)
+  updateTime = _messages.StringField(39)
+  urls = _messages.StringField(40, repeated=True)
+  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 41, repeated=True)
+  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 42)
 
 
 class GoogleCloudRunV2InstanceSplit(_messages.Message):
@@ -1752,6 +1758,7 @@ class GoogleCloudRunV2Job(_messages.Message):
   container image that is run to completion.
 
   Enums:
+    FunctionalTypeValueValuesEnum: Optional. The functional type of the Job.
     LaunchStageValueValuesEnum: The launch stage as defined by [Google Cloud
       Platform Launch Stages](https://cloud.google.com/terms/launch-stages).
       Cloud Run supports `ALPHA`, `BETA`, and `GA`. If no value is specified,
@@ -1807,6 +1814,7 @@ class GoogleCloudRunV2Job(_messages.Message):
     executionCount: Output only. Number of executions created for this job.
     expireTime: Output only. For a deleted resource, the time after which it
       will be permamently deleted.
+    functionalType: Optional. The functional type of the Job.
     generation: Output only. A number that monotonically increases every time
       the user modifies the desired state.
     labels: Unstructured key value map that can be used to organize and
@@ -1871,6 +1879,19 @@ class GoogleCloudRunV2Job(_messages.Message):
       resource is deleted.
     updateTime: Output only. The last-modified time.
   """
+
+  class FunctionalTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The functional type of the Job.
+
+    Values:
+      FUNCTIONAL_TYPE_UNSPECIFIED: Specifies that the functional type is
+        unspecified.
+      FUNCTIONAL_TYPE_AGENT: Represents an AGENT functional type.
+      FUNCTIONAL_TYPE_MCP_SERVER: Represents an MCP_SERVER functional type.
+    """
+    FUNCTIONAL_TYPE_UNSPECIFIED = 0
+    FUNCTIONAL_TYPE_AGENT = 1
+    FUNCTIONAL_TYPE_MCP_SERVER = 2
 
   class LaunchStageValueValuesEnum(_messages.Enum):
     r"""The launch stage as defined by [Google Cloud Platform Launch
@@ -1999,21 +2020,22 @@ class GoogleCloudRunV2Job(_messages.Message):
   etag = _messages.StringField(9)
   executionCount = _messages.IntegerField(10, variant=_messages.Variant.INT32)
   expireTime = _messages.StringField(11)
-  generation = _messages.IntegerField(12)
-  labels = _messages.MessageField('LabelsValue', 13)
-  lastModifier = _messages.StringField(14)
-  latestCreatedExecution = _messages.MessageField('GoogleCloudRunV2ExecutionReference', 15)
-  launchStage = _messages.EnumField('LaunchStageValueValuesEnum', 16)
-  name = _messages.StringField(17)
-  observedGeneration = _messages.IntegerField(18)
-  reconciling = _messages.BooleanField(19)
-  runExecutionToken = _messages.StringField(20)
-  satisfiesPzs = _messages.BooleanField(21)
-  startExecutionToken = _messages.StringField(22)
-  template = _messages.MessageField('GoogleCloudRunV2ExecutionTemplate', 23)
-  terminalCondition = _messages.MessageField('GoogleCloudRunV2Condition', 24)
-  uid = _messages.StringField(25)
-  updateTime = _messages.StringField(26)
+  functionalType = _messages.EnumField('FunctionalTypeValueValuesEnum', 12)
+  generation = _messages.IntegerField(13)
+  labels = _messages.MessageField('LabelsValue', 14)
+  lastModifier = _messages.StringField(15)
+  latestCreatedExecution = _messages.MessageField('GoogleCloudRunV2ExecutionReference', 16)
+  launchStage = _messages.EnumField('LaunchStageValueValuesEnum', 17)
+  name = _messages.StringField(18)
+  observedGeneration = _messages.IntegerField(19)
+  reconciling = _messages.BooleanField(20)
+  runExecutionToken = _messages.StringField(21)
+  satisfiesPzs = _messages.BooleanField(22)
+  startExecutionToken = _messages.StringField(23)
+  template = _messages.MessageField('GoogleCloudRunV2ExecutionTemplate', 24)
+  terminalCondition = _messages.MessageField('GoogleCloudRunV2Condition', 25)
+  uid = _messages.StringField(26)
+  updateTime = _messages.StringField(27)
 
 
 class GoogleCloudRunV2ListExecutionsResponse(_messages.Message):
@@ -3026,6 +3048,8 @@ class GoogleCloudRunV2Service(_messages.Message):
   decisions such as rollout policy and team resource ownership.
 
   Enums:
+    FunctionalTypeValueValuesEnum: Optional. The functional type of the
+      Service.
     IngressValueValuesEnum: Optional. Provides the ingress settings for this
       Service. On output, returns the currently observed ingress settings, or
       INGRESS_TRAFFIC_UNSPECIFIED if no revision is active.
@@ -3097,6 +3121,7 @@ class GoogleCloudRunV2Service(_messages.Message):
       resource. May be used to detect modification conflict during updates.
     expireTime: Output only. For a deleted resource, the time after which it
       will be permanently deleted.
+    functionalType: Optional. The functional type of the Service.
     generation: Output only. A number that monotonically increases every time
       the user modifies the desired state. Please note that unlike v1, this is
       an int64 value. As with most Google APIs, its JSON representation will
@@ -3189,6 +3214,19 @@ class GoogleCloudRunV2Service(_messages.Message):
     uri: Output only. The main URI in which this Service is serving traffic.
     urls: Output only. All URLs serving traffic for this Service.
   """
+
+  class FunctionalTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The functional type of the Service.
+
+    Values:
+      FUNCTIONAL_TYPE_UNSPECIFIED: Specifies that the functional type is
+        unspecified.
+      FUNCTIONAL_TYPE_AGENT: Represents an AGENT functional type.
+      FUNCTIONAL_TYPE_MCP_SERVER: Represents an MCP_SERVER functional type.
+    """
+    FUNCTIONAL_TYPE_UNSPECIFIED = 0
+    FUNCTIONAL_TYPE_AGENT = 1
+    FUNCTIONAL_TYPE_MCP_SERVER = 2
 
   class IngressValueValuesEnum(_messages.Enum):
     r"""Optional. Provides the ingress settings for this Service. On output,
@@ -3339,31 +3377,32 @@ class GoogleCloudRunV2Service(_messages.Message):
   description = _messages.StringField(12)
   etag = _messages.StringField(13)
   expireTime = _messages.StringField(14)
-  generation = _messages.IntegerField(15)
-  iapEnabled = _messages.BooleanField(16)
-  ingress = _messages.EnumField('IngressValueValuesEnum', 17)
-  invokerIamDisabled = _messages.BooleanField(18)
-  labels = _messages.MessageField('LabelsValue', 19)
-  lastModifier = _messages.StringField(20)
-  latestCreatedRevision = _messages.StringField(21)
-  latestReadyRevision = _messages.StringField(22)
-  launchStage = _messages.EnumField('LaunchStageValueValuesEnum', 23)
-  multiRegionSettings = _messages.MessageField('GoogleCloudRunV2MultiRegionSettings', 24)
-  name = _messages.StringField(25)
-  observedGeneration = _messages.IntegerField(26)
-  reconciling = _messages.BooleanField(27)
-  satisfiesPzs = _messages.BooleanField(28)
-  scaling = _messages.MessageField('GoogleCloudRunV2ServiceScaling', 29)
-  sshEnabled = _messages.BooleanField(30)
-  template = _messages.MessageField('GoogleCloudRunV2RevisionTemplate', 31)
-  terminalCondition = _messages.MessageField('GoogleCloudRunV2Condition', 32)
-  threatDetectionEnabled = _messages.BooleanField(33)
-  traffic = _messages.MessageField('GoogleCloudRunV2TrafficTarget', 34, repeated=True)
-  trafficStatuses = _messages.MessageField('GoogleCloudRunV2TrafficTargetStatus', 35, repeated=True)
-  uid = _messages.StringField(36)
-  updateTime = _messages.StringField(37)
-  uri = _messages.StringField(38)
-  urls = _messages.StringField(39, repeated=True)
+  functionalType = _messages.EnumField('FunctionalTypeValueValuesEnum', 15)
+  generation = _messages.IntegerField(16)
+  iapEnabled = _messages.BooleanField(17)
+  ingress = _messages.EnumField('IngressValueValuesEnum', 18)
+  invokerIamDisabled = _messages.BooleanField(19)
+  labels = _messages.MessageField('LabelsValue', 20)
+  lastModifier = _messages.StringField(21)
+  latestCreatedRevision = _messages.StringField(22)
+  latestReadyRevision = _messages.StringField(23)
+  launchStage = _messages.EnumField('LaunchStageValueValuesEnum', 24)
+  multiRegionSettings = _messages.MessageField('GoogleCloudRunV2MultiRegionSettings', 25)
+  name = _messages.StringField(26)
+  observedGeneration = _messages.IntegerField(27)
+  reconciling = _messages.BooleanField(28)
+  satisfiesPzs = _messages.BooleanField(29)
+  scaling = _messages.MessageField('GoogleCloudRunV2ServiceScaling', 30)
+  sshEnabled = _messages.BooleanField(31)
+  template = _messages.MessageField('GoogleCloudRunV2RevisionTemplate', 32)
+  terminalCondition = _messages.MessageField('GoogleCloudRunV2Condition', 33)
+  threatDetectionEnabled = _messages.BooleanField(34)
+  traffic = _messages.MessageField('GoogleCloudRunV2TrafficTarget', 35, repeated=True)
+  trafficStatuses = _messages.MessageField('GoogleCloudRunV2TrafficTargetStatus', 36, repeated=True)
+  uid = _messages.StringField(37)
+  updateTime = _messages.StringField(38)
+  uri = _messages.StringField(39)
+  urls = _messages.StringField(40, repeated=True)
 
 
 class GoogleCloudRunV2ServiceMesh(_messages.Message):

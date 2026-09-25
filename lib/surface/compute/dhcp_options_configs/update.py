@@ -21,9 +21,11 @@ from googlecloudsdk.command_lib.compute.dhcp_options_configs import flags
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Update(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(base.UpdateCommand):
   """Update a Google Compute Engine DHCP options configuration."""
+
+  _support_add_dns_server_addresses = False
 
   detailed_help = {
       'brief': 'Update a Google Compute Engine DHCP options configuration.',
@@ -79,13 +81,14 @@ class Update(base.UpdateCommand):
     flags.AddDomainName(domain_group)
     flags.AddClearDomainName(domain_group)
 
-    dns_v4_group = parser.add_mutually_exclusive_group()
-    flags.AddDnsServerIpv4Addresses(dns_v4_group)
-    flags.AddClearDnsServerIpv4Addresses(dns_v4_group)
+    if cls._support_add_dns_server_addresses:
+      dns_v4_group = parser.add_mutually_exclusive_group()
+      flags.AddDnsServerIpv4Addresses(dns_v4_group)
+      flags.AddClearDnsServerIpv4Addresses(dns_v4_group)
 
-    dns_v6_group = parser.add_mutually_exclusive_group()
-    flags.AddDnsServerIpv6Addresses(dns_v6_group)
-    flags.AddClearDnsServerIpv6Addresses(dns_v6_group)
+      dns_v6_group = parser.add_mutually_exclusive_group()
+      flags.AddDnsServerIpv6Addresses(dns_v6_group)
+      flags.AddClearDnsServerIpv6Addresses(dns_v6_group)
 
     dns_search_group = parser.add_mutually_exclusive_group()
     flags.AddDnsSearchPaths(dns_search_group)
@@ -250,28 +253,29 @@ class Update(base.UpdateCommand):
       update_mask.append('domainName')
 
     # Apply IPv4 DNS server addresses update or clear.
-    if (
-        args.clear_dns_server_ipv4_addresses
-        or args.dns_server_ipv4_addresses is not None
-    ):
-      kwargs['dnsServerIpv4Addresses'] = (
-          []
-          if args.clear_dns_server_ipv4_addresses
-          else args.dns_server_ipv4_addresses
-      )
-      update_mask.append('dnsServerIpv4Addresses')
+    if self._support_add_dns_server_addresses:
+      if (
+          args.clear_dns_server_ipv4_addresses
+          or args.dns_server_ipv4_addresses is not None
+      ):
+        kwargs['dnsServerIpv4Addresses'] = (
+            []
+            if args.clear_dns_server_ipv4_addresses
+            else args.dns_server_ipv4_addresses
+        )
+        update_mask.append('dnsServerIpv4Addresses')
 
-    # Apply IPv6 DNS server addresses update or clear.
-    if (
-        args.clear_dns_server_ipv6_addresses
-        or args.dns_server_ipv6_addresses is not None
-    ):
-      kwargs['dnsServerIpv6Addresses'] = (
-          []
-          if args.clear_dns_server_ipv6_addresses
-          else args.dns_server_ipv6_addresses
-      )
-      update_mask.append('dnsServerIpv6Addresses')
+      # Apply IPv6 DNS server addresses update or clear.
+      if (
+          args.clear_dns_server_ipv6_addresses
+          or args.dns_server_ipv6_addresses is not None
+      ):
+        kwargs['dnsServerIpv6Addresses'] = (
+            []
+            if args.clear_dns_server_ipv6_addresses
+            else args.dns_server_ipv6_addresses
+        )
+        update_mask.append('dnsServerIpv6Addresses')
 
     # Apply DNS search paths update or clear.
     if args.clear_dns_search_paths or args.dns_search_paths is not None:
@@ -356,3 +360,11 @@ class Update(base.UpdateCommand):
 
     collection = client.apitools_client.dhcpOptionsConfigs
     return client.MakeRequests([(collection, 'Patch', request)])
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
+  """Update a Google Compute Engine DHCP options configuration."""
+
+  _support_add_dns_server_addresses = True

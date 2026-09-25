@@ -148,6 +148,13 @@ class BetaCreate(Create):
   def Args(parser):
     Create.CommonArgs(parser)
 
+  def VerifyDomain(self, domain_mapping_ref):
+    """Verify the domain ownership. Skip for custom URLs."""
+    if not domain_mapping_util.IsCustomUrl(domain_mapping_ref.Name()):
+      # Check if the provided domain has already been verified
+      # if mapping to a non-CRoGKE service
+      domain_mapping_util.VerifyDomain(domain_mapping_ref)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaCreate(BetaCreate):
@@ -156,10 +163,3 @@ class AlphaCreate(BetaCreate):
   @staticmethod
   def Args(parser):
     Create.CommonArgs(parser)
-
-  def VerifyDomain(self, domain_mapping_ref):
-    """Verify the domain ownership. Skip for custom URLs."""
-    if not domain_mapping_util.IsCustomUrl(domain_mapping_ref.Name()):
-      # Check if the provided domain has already been verified
-      # if mapping to a non-CRoGKE service
-      domain_mapping_util.VerifyDomain(domain_mapping_ref)

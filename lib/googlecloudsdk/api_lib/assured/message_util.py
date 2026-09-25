@@ -939,6 +939,7 @@ def CreateAssuredWorkloadV2(
     cloud_control_configs: List[Any],
     description: Optional[str] = None,
     cmek_config: Optional[Any] = None,
+    target_resource_display_name: Optional[str] = None,
     etag: Optional[str] = None,
     release_track: ReleaseTrack = ReleaseTrack.ALPHA,
 ) -> Any:
@@ -950,6 +951,7 @@ def CreateAssuredWorkloadV2(
     cloud_control_configs: List of CloudControlConfig messages.
     description: Optional description for the workload environment.
     cmek_config: Optional CMEK configuration message.
+    target_resource_display_name: Optional display name for the target resource.
     etag: Optional optimistic concurrency control etag.
     release_track: gcloud release track being used.
 
@@ -962,6 +964,8 @@ def CreateAssuredWorkloadV2(
       framework=framework,
       cloudControlConfigs=cloud_control_configs,
   )
+  if target_resource_display_name:
+    workload.targetResourceDisplayName = target_resource_display_name
   if description:
     workload.description = description
   if cmek_config:
@@ -990,3 +994,31 @@ def CreateUpdateMaskV2(
   if cloud_control_configs is not None:
     update_mask.append('cloud_control_configs')
   return ','.join(update_mask)
+
+
+def CreateAssuredWorkloadForUpdateV2(
+    description: Optional[str] = None,
+    cloud_control_configs: Optional[List[Any]] = None,
+    etag: Optional[str] = None,
+    release_track: ReleaseTrack = ReleaseTrack.ALPHA,
+) -> Any:
+  """Constructs a GoogleCloudAssuredworkloadsV2Workload message for update.
+
+  Args:
+    description: Optional description for the workload environment.
+    cloud_control_configs: Optional list of CloudControlConfig messages.
+    etag: Optional optimistic concurrency control etag.
+    release_track: gcloud release track being used.
+
+  Returns:
+    GoogleCloudAssuredworkloadsV2Workload message.
+  """
+  messages = GetMessagesV2(release_track)
+  workload = messages.GoogleCloudAssuredworkloadsV2Workload()
+  if description is not None:
+    workload.description = description
+  if cloud_control_configs is not None:
+    workload.cloudControlConfigs = cloud_control_configs
+  if etag is not None:
+    workload.etag = etag
+  return workload

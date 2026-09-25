@@ -95,9 +95,9 @@ class Create(base.CreateCommand):
           'Failed to parse YAML/JSON from file [{}]: {}'.format(args.file, e)
       )
 
-    # We use v1beta client for Hive metastore operations.
-    client = apis.GetClientInstance('biglake', 'v1beta')
-    messages = apis.GetMessagesModule('biglake', 'v1beta')
+    # We use v1 client for Hive metastore operations.
+    client = apis.GetClientInstance('biglake', 'v1')
+    messages = apis.GetMessagesModule('biglake', 'v1')
 
     try:
       hive_table = encoding.PyValueToMessage(messages.HiveTable, data)
@@ -118,14 +118,14 @@ class Create(base.CreateCommand):
       )
 
     request = (
-        messages.BiglakeHiveV1betaProjectsCatalogsDatabasesTablesCreateRequest(
+        messages.BiglakeHiveV1ProjectsCatalogsDatabasesTablesCreateRequest(
             parent=parent,
             hiveTableId=table_id,
             hiveTable=hive_table,
         )
     )
 
-    response = client.hive_v1beta_projects_catalogs_databases_tables.Create(
+    response = client.hive_v1_projects_catalogs_databases_tables.Create(
         request
     )
 

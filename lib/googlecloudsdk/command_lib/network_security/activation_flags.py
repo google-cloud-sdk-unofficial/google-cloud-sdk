@@ -14,16 +14,20 @@
 # limitations under the License.
 """Flags for Firewall Plus Endpoint commands."""
 
+from __future__ import annotations
+
+import argparse
+from collections.abc import Sequence
 
 from googlecloudsdk.api_lib.network_security.firewall_endpoints import activation_api
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.calliope.concepts import deps as deps_lib
 from googlecloudsdk.calliope.concepts import multitype
-from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import properties
@@ -423,6 +427,291 @@ def AddBlockPartialHttpArg(
   )
 
 
+def _ExtractResourceSegment(
+    path_segments: Sequence[str], collection_name: str
+) -> str | None:
+  """Returns the segment immediately following collection_name in path segments."""
+  target = collection_name.lower()
+  for i, segment in enumerate(path_segments[:-1]):
+    if segment.lower() == target:
+      return path_segments[i + 1]
+  return None
+
+
+def _StripResourcePrefix(
+    value: str | None,
+    collection_name: str,
+    *,
+    strip_parent_path: bool = False,
+) -> str | None:
+  """Strips resource collection prefix or full parent path from a resource name.
+
+  Args:
+    value: The resource name or path to clean.
+    collection_name: The collection name (e.g. 'cryptoKeys', 'keyrings').
+    strip_parent_path: If True, strips parent path segments to return only the
+      resource ID. If False, only strips the immediate collection prefix for
+      short names, preserving full resource paths.
+
+  Returns:
+    The cleaned resource name, or None/empty string if input was None/empty.
+  """
+  if not value or not isinstance(value, str):
+    return value
+  cleaned = value.strip().rstrip("/")
+  if not cleaned:
+    return value
+  if strip_parent_path:
+    segments = cleaned.split("/")
+    return _ExtractResourceSegment(segments, collection_name) or segments[-1]
+  target_prefix = f"{collection_name.lower()}/"
+  if cleaned.lower().startswith(target_prefix):
+    return cleaned[len(target_prefix) :].split("/")[0]
+  return cleaned
+
+
+def _StripCryptoKeyPrefix(
+    key_name: str | None,
+) -> str | None:
+  """Strips cryptoKeys/ prefix if present on short key names."""
+  return _StripResourcePrefix(
+      key_name, "cryptoKeys", strip_parent_path=False
+  )
+
+
+def _StripKeyringPrefix(
+    keyring_name: str | None,
+) -> str | None:
+  """Strips keyRings/ and parent path prefixes if present on keyring names."""
+  return _StripResourcePrefix(
+      keyring_name, "keyrings", strip_parent_path=True
+  )
+
+
+def _DeriveRegionFromZone(zone_or_location: str) -> str:
+  """Derives a region from a zone name or path."""
+  zone_name = zone_or_location.strip().rstrip("/").split("/")[-1]
+  region, sep, zone_suffix = zone_name.rpartition("-")
+  if sep and len(zone_suffix) == 1 and zone_suffix.isalpha():
+    return region
+  return zone_name
+
+
+class ZoneToRegionFallthrough(deps_lib.ArgFallthrough):
+  """Fallthrough to derive KMS region from endpoint --zone or --location."""
+
+  def __init__(self):
+    """Initializes the ZoneToRegionFallthrough."""
+    super().__init__("--zone")
+    self._hint = (
+        "provide the argument `--zone` or `--kms-location` on the command line"
+    )
+
+  def _Call(self, parsed_args: argparse.Namespace) -> str | None:
+    """See base class."""
+    for candidate in (
+        super()._Call(parsed_args),
+        getattr(parsed_args, "location", None),
+    ):
+      if candidate and str(candidate).strip():
+        return _DeriveRegionFromZone(str(candidate))
+
+    try:
+      property_zone = properties.VALUES.compute.zone.Get()
+      if property_zone and str(property_zone).strip():
+        return _DeriveRegionFromZone(str(property_zone))
+    except properties.Error:
+      # Property could not be read or is invalid; fall through to returning
+      # None.
+      pass
+
+    return None
+
+
+class _KeyringAttributeFallthrough(deps_lib.ArgFallthrough):
+  """Base fallthrough to extract an attribute from a --kms-keyring argument."""
+
+  def __init__(self, collection_name: str):
+    """Initializes the _KeyringAttributeFallthrough."""
+    super().__init__("--kms-keyring")
+    self._collection_name = collection_name
+
+  def _Call(self, parsed_args: argparse.Namespace) -> str | None:
+    """See base class."""
+    keyring = super()._Call(parsed_args)
+    if not keyring or not isinstance(keyring, str):
+      return None
+    keyring_trimmed = keyring.strip()
+    if not keyring_trimmed:
+      return None
+    segments = keyring_trimmed.rstrip("/").split("/")
+    return _ExtractResourceSegment(segments, self._collection_name)
+
+
+class KeyringLocationFallthrough(_KeyringAttributeFallthrough):
+  """Fallthrough to extract location from a full --kms-keyring path."""
+
+  def __init__(self):
+    """Initializes the KeyringLocationFallthrough."""
+    super().__init__(collection_name="locations")
+
+
+class KeyringProjectFallthrough(_KeyringAttributeFallthrough):
+  """Fallthrough to extract project from a full --kms-keyring path."""
+
+  def __init__(self):
+    """Initializes the KeyringProjectFallthrough."""
+    super().__init__(collection_name="projects")
+
+
+def KmsKeyringAttributeConfig() -> concepts.ResourceParameterAttributeConfig:
+  """Returns the ResourceParameterAttributeConfig for the KMS keyring."""
+  return concepts.ResourceParameterAttributeConfig(
+      name="kms-keyring",
+      help_text="The KMS keyring of the {resource}.",
+  )
+
+
+def KmsLocationAttributeConfig() -> concepts.ResourceParameterAttributeConfig:
+  """Returns the ResourceParameterAttributeConfig for the KMS location."""
+  return concepts.ResourceParameterAttributeConfig(
+      name="kms-location",
+      help_text=(
+          "The Google Cloud location for the {resource}. Defaults to the"
+          " region derived from the endpoint --zone to satisfy Cloud NGFW"
+          " Enterprise regional co-location requirements."
+      ),
+      fallthroughs=[
+          KeyringLocationFallthrough(),
+          ZoneToRegionFallthrough(),
+      ],
+  )
+
+
+def KmsProjectAttributeConfig() -> concepts.ResourceParameterAttributeConfig:
+  """Returns the ResourceParameterAttributeConfig for the KMS project."""
+  return concepts.ResourceParameterAttributeConfig(
+      name="kms-project",
+      help_text="The Google Cloud project for the {resource}.",
+      fallthroughs=[
+          KeyringProjectFallthrough(),
+          deps_lib.ArgFallthrough("--project"),
+          deps_lib.PropertyFallthrough(properties.VALUES.core.project),
+      ],
+  )
+
+
+def KmsKeyResourceSpec() -> concepts.ResourceSpec:
+  """Returns the ResourceSpec for the Cloud KMS cryptokey."""
+  return concepts.ResourceSpec(
+      "cloudkms.projects.locations.keyRings.cryptoKeys",
+      resource_name="key",
+      cryptoKeysId=concepts.ResourceParameterAttributeConfig(
+          name="kms-key",
+          help_text="The KMS key of the {resource}.",
+          value_type=_StripCryptoKeyPrefix,
+      ),
+      keyRingsId=KmsKeyringAttributeConfig(),
+      locationsId=KmsLocationAttributeConfig(),
+      projectsId=KmsProjectAttributeConfig(),
+      disable_auto_completers=False,
+  )
+
+
+_KMS_FLAG_NAMES = ("kms_key", "kms_keyring", "kms_location", "kms_project")
+
+
+def _IsKmsFlagSpecified(args: argparse.Namespace, flag: str) -> bool:
+  """Returns True if the KMS flag was specified in the parsed args.
+
+  Args:
+    args: The parsed command-line arguments.
+    flag: The destination name of the flag to check.
+
+  Returns:
+    True if the flag was specified on the command line or has a non-None value.
+  """
+  is_specified = getattr(args, "IsSpecified", None)
+  if callable(is_specified) and hasattr(args, flag):
+    return is_specified(flag)
+  return getattr(args, flag, None) is not None
+
+
+def HasKmsArgs(args: argparse.Namespace) -> bool:
+  """Returns True if any KMS argument was specified in the parsed args.
+
+  Args:
+    args: The parsed command-line arguments.
+
+  Returns:
+    True if any KMS argument was specified.
+  """
+  return any(_IsKmsFlagSpecified(args, flag) for flag in _KMS_FLAG_NAMES)
+
+
+def GetSpecifiedKmsFlag(args: argparse.Namespace) -> str:
+  """Returns the CLI flag name of the first specified KMS argument.
+
+  Args:
+    args: The parsed command-line arguments.
+
+  Returns:
+    The CLI flag name (e.g. '--kms-key', '--kms-keyring') or '--kms-key'.
+  """
+  for flag in _KMS_FLAG_NAMES:
+    if _IsKmsFlagSpecified(args, flag):
+      flag_name = flag.replace("_", "-")
+      return f"--{flag_name}"
+  return "--kms-key"
+
+
+def GetAndValidateKmsKeyName(args: argparse.Namespace) -> str | None:
+  """Parses and validates the KMS key resource argument.
+
+  Args:
+    args: The parsed command-line arguments.
+
+  Returns:
+    The fully-qualified KMS key relative name, or None if no KMS flags
+    were specified.
+
+  Raises:
+    exceptions.InvalidArgumentException: If KMS arguments were specified but
+      failed to parse into a valid fully-qualified KMS key.
+  """
+  kms_ref = None
+  concepts_holder = getattr(args, "CONCEPTS", None)
+  kms_concept = getattr(concepts_holder, "kms_key", None)
+  if kms_concept is not None:
+    try:
+      kms_ref = kms_concept.Parse()
+    except concepts.InitializationError:
+      kms_ref = None
+
+  if kms_ref:
+    keyring_id = getattr(kms_ref, "keyRingsId", None)
+    clean_keyring = _StripKeyringPrefix(keyring_id)
+    if clean_keyring and clean_keyring != keyring_id:
+      clean_crypto_key = _StripCryptoKeyPrefix(
+          getattr(kms_ref, "cryptoKeysId", None)
+      ) or kms_ref.cryptoKeysId
+      return (
+          f"projects/{kms_ref.projectsId}/locations/{kms_ref.locationsId}/"
+          f"keyRings/{clean_keyring}/cryptoKeys/{clean_crypto_key}"
+      )
+    return kms_ref.RelativeName()
+
+  # If parsing failed but KMS args were specified, raise error.
+  if HasKmsArgs(args):
+    raise exceptions.InvalidArgumentException(
+        "--kms-project --kms-location --kms-keyring --kms-key",
+        "Specify fully qualified KMS key ID with --kms-key, or use "
+        "combination of --kms-project, --kms-location, --kms-keyring and "
+        "--kms-key to specify the key ID in pieces.",
+    )
+  return None
+
+
 def AddKmsKeyArg(
     parser: parser_arguments.ArgumentInterceptor,
     release_track: base.ReleaseTrack,
@@ -431,9 +720,9 @@ def AddKmsKeyArg(
   """Adds --kms-key flag for Firewall Plus endpoints.
 
   Args:
-    parser: ArgumentInterceptor, An argparse parser.
-    release_track: base.ReleaseTrack, The release track of the command.
-    hidden: bool, Whether to hide this argument.
+    parser: An argparse parser.
+    release_track: The release track of the command.
+    hidden: Whether to hide this argument.
   """
   if release_track not in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
     return
@@ -441,10 +730,14 @@ def AddKmsKeyArg(
       "The 'Network Security Service Agent' service account must hold"
       " permission 'Cloud KMS CryptoKey Encrypter/Decrypter'"
   )
-  kms_resource_args.AddKmsKeyResourceArg(
-      parser=parser,
-      resource="firewall endpoint",
-      permission_info=permission_info,
+  group_help = (
+      "The Cloud KMS (Key Management Service) cryptokey that will be"
+      f" used to protect the firewall endpoint. {permission_info}."
+  )
+  concept_parsers.ConceptParser.ForResource(
+      "--kms-key",
+      KmsKeyResourceSpec(),
+      group_help,
       required=False,
       hidden=hidden,
-  )
+  ).AddToParser(parser)

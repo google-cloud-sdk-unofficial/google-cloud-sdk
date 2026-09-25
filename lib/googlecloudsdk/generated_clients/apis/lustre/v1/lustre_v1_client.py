@@ -37,10 +37,356 @@ class LustreV1(base_api.BaseApiClient):
         default_global_params=default_global_params,
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
+    self.projects_locations_instances_directoryPolicies = self.ProjectsLocationsInstancesDirectoryPoliciesService(self)
+    self.projects_locations_instances_mirrors = self.ProjectsLocationsInstancesMirrorsService(self)
     self.projects_locations_instances = self.ProjectsLocationsInstancesService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects = self.ProjectsService(self)
+
+  class ProjectsLocationsInstancesDirectoryPoliciesService(base_api.BaseApiService):
+    """Service class for the projects_locations_instances_directoryPolicies resource."""
+
+    _NAME = 'projects_locations_instances_directoryPolicies'
+
+    def __init__(self, client):
+      super(LustreV1.ProjectsLocationsInstancesDirectoryPoliciesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a directory policy resource.
+
+      Args:
+        request: (LustreProjectsLocationsInstancesDirectoryPoliciesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}/directoryPolicies',
+        http_method='POST',
+        method_id='lustre.projects.locations.instances.directoryPolicies.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['directoryPolicyId'],
+        relative_path='v1/{+parent}/directoryPolicies',
+        request_field='directoryPolicy',
+        request_type_name='LustreProjectsLocationsInstancesDirectoryPoliciesCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a directory policy resource.
+
+      Args:
+        request: (LustreProjectsLocationsInstancesDirectoryPoliciesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}/directoryPolicies/{directoryPoliciesId}',
+        http_method='DELETE',
+        method_id='lustre.projects.locations.instances.directoryPolicies.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='LustreProjectsLocationsInstancesDirectoryPoliciesDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single directory policy.
+
+      Args:
+        request: (LustreProjectsLocationsInstancesDirectoryPoliciesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (DirectoryPolicy) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}/directoryPolicies/{directoryPoliciesId}',
+        http_method='GET',
+        method_id='lustre.projects.locations.instances.directoryPolicies.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='LustreProjectsLocationsInstancesDirectoryPoliciesGetRequest',
+        response_type_name='DirectoryPolicy',
+        supports_download=False,
+    )
+
+    def GetIamPolicy(self, request, global_params=None):
+      r"""Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.
+
+      Args:
+        request: (LustreProjectsLocationsInstancesDirectoryPoliciesGetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('GetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}/directoryPolicies/{directoryPoliciesId}:getIamPolicy',
+        http_method='GET',
+        method_id='lustre.projects.locations.instances.directoryPolicies.getIamPolicy',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=['options_requestedPolicyVersion'],
+        relative_path='v1/{+resource}:getIamPolicy',
+        request_field='',
+        request_type_name='LustreProjectsLocationsInstancesDirectoryPoliciesGetIamPolicyRequest',
+        response_type_name='Policy',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Gets details of multiple directory policies under a given instance.
+
+      Args:
+        request: (LustreProjectsLocationsInstancesDirectoryPoliciesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListDirectoryPoliciesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}/directoryPolicies',
+        http_method='GET',
+        method_id='lustre.projects.locations.instances.directoryPolicies.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/directoryPolicies',
+        request_field='',
+        request_type_name='LustreProjectsLocationsInstancesDirectoryPoliciesListRequest',
+        response_type_name='ListDirectoryPoliciesResponse',
+        supports_download=False,
+    )
+
+    def SetIamPolicy(self, request, global_params=None):
+      r"""Sets the access control policy on the specified resource. Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.
+
+      Args:
+        request: (LustreProjectsLocationsInstancesDirectoryPoliciesSetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('SetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}/directoryPolicies/{directoryPoliciesId}:setIamPolicy',
+        http_method='POST',
+        method_id='lustre.projects.locations.instances.directoryPolicies.setIamPolicy',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=[],
+        relative_path='v1/{+resource}:setIamPolicy',
+        request_field='setIamPolicyRequest',
+        request_type_name='LustreProjectsLocationsInstancesDirectoryPoliciesSetIamPolicyRequest',
+        response_type_name='Policy',
+        supports_download=False,
+    )
+
+    def TestIamPermissions(self, request, global_params=None):
+      r"""Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may "fail open" without warning.
+
+      Args:
+        request: (LustreProjectsLocationsInstancesDirectoryPoliciesTestIamPermissionsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TestIamPermissionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('TestIamPermissions')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}/directoryPolicies/{directoryPoliciesId}:testIamPermissions',
+        http_method='POST',
+        method_id='lustre.projects.locations.instances.directoryPolicies.testIamPermissions',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=[],
+        relative_path='v1/{+resource}:testIamPermissions',
+        request_field='testIamPermissionsRequest',
+        request_type_name='LustreProjectsLocationsInstancesDirectoryPoliciesTestIamPermissionsRequest',
+        response_type_name='TestIamPermissionsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsInstancesMirrorsService(base_api.BaseApiService):
+    """Service class for the projects_locations_instances_mirrors resource."""
+
+    _NAME = 'projects_locations_instances_mirrors'
+
+    def __init__(self, client):
+      super(LustreV1.ProjectsLocationsInstancesMirrorsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new mirror in a given instance.
+
+      Args:
+        request: (LustreProjectsLocationsInstancesMirrorsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}/mirrors',
+        http_method='POST',
+        method_id='lustre.projects.locations.instances.mirrors.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['mirrorId', 'requestId'],
+        relative_path='v1/{+parent}/mirrors',
+        request_field='mirror',
+        request_type_name='LustreProjectsLocationsInstancesMirrorsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single mirror.
+
+      Args:
+        request: (LustreProjectsLocationsInstancesMirrorsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}/mirrors/{mirrorsId}',
+        http_method='DELETE',
+        method_id='lustre.projects.locations.instances.mirrors.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='LustreProjectsLocationsInstancesMirrorsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single mirror.
+
+      Args:
+        request: (LustreProjectsLocationsInstancesMirrorsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Mirror) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}/mirrors/{mirrorsId}',
+        http_method='GET',
+        method_id='lustre.projects.locations.instances.mirrors.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='LustreProjectsLocationsInstancesMirrorsGetRequest',
+        response_type_name='Mirror',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Gets details of multiple mirrors under a given instance.
+
+      Args:
+        request: (LustreProjectsLocationsInstancesMirrorsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListMirrorsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}/mirrors',
+        http_method='GET',
+        method_id='lustre.projects.locations.instances.mirrors.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/mirrors',
+        request_field='',
+        request_type_name='LustreProjectsLocationsInstancesMirrorsListRequest',
+        response_type_name='ListMirrorsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single mirror.
+
+      Args:
+        request: (LustreProjectsLocationsInstancesMirrorsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}/mirrors/{mirrorsId}',
+        http_method='PATCH',
+        method_id='lustre.projects.locations.instances.mirrors.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1/{+name}',
+        request_field='mirror',
+        request_type_name='LustreProjectsLocationsInstancesMirrorsPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
 
   class ProjectsLocationsInstancesService(base_api.BaseApiService):
     """Service class for the projects_locations_instances resource."""
@@ -160,6 +506,33 @@ class LustreV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def GetIamPolicy(self, request, global_params=None):
+      r"""Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.
+
+      Args:
+        request: (LustreProjectsLocationsInstancesGetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('GetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}:getIamPolicy',
+        http_method='GET',
+        method_id='lustre.projects.locations.instances.getIamPolicy',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=['options_requestedPolicyVersion'],
+        relative_path='v1/{+resource}:getIamPolicy',
+        request_field='',
+        request_type_name='LustreProjectsLocationsInstancesGetIamPolicyRequest',
+        response_type_name='Policy',
+        supports_download=False,
+    )
+
     def ImportData(self, request, global_params=None):
       r"""Imports data from Cloud Storage to a Managed Lustre instance.
 
@@ -265,6 +638,60 @@ class LustreV1(base_api.BaseApiClient):
         request_field='rescheduleMaintenanceRequest',
         request_type_name='LustreProjectsLocationsInstancesRescheduleMaintenanceRequest',
         response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def SetIamPolicy(self, request, global_params=None):
+      r"""Sets the access control policy on the specified resource. Replaces any existing policy. Can return `NOT_FOUND`, `INVALID_ARGUMENT`, and `PERMISSION_DENIED` errors.
+
+      Args:
+        request: (LustreProjectsLocationsInstancesSetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('SetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}:setIamPolicy',
+        http_method='POST',
+        method_id='lustre.projects.locations.instances.setIamPolicy',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=[],
+        relative_path='v1/{+resource}:setIamPolicy',
+        request_field='setIamPolicyRequest',
+        request_type_name='LustreProjectsLocationsInstancesSetIamPolicyRequest',
+        response_type_name='Policy',
+        supports_download=False,
+    )
+
+    def TestIamPermissions(self, request, global_params=None):
+      r"""Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may "fail open" without warning.
+
+      Args:
+        request: (LustreProjectsLocationsInstancesTestIamPermissionsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TestIamPermissionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('TestIamPermissions')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}:testIamPermissions',
+        http_method='POST',
+        method_id='lustre.projects.locations.instances.testIamPermissions',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=[],
+        relative_path='v1/{+resource}:testIamPermissions',
+        request_field='testIamPermissionsRequest',
+        request_type_name='LustreProjectsLocationsInstancesTestIamPermissionsRequest',
+        response_type_name='TestIamPermissionsResponse',
         supports_download=False,
     )
 

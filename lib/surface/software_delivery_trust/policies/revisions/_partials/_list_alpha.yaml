@@ -43,4 +43,4 @@
   output:
     format: |-
       table(name.basename():label=REVISION,
-            createTime)
+            policySnapshot.celExpression:label=CEL_EXPRESSION)

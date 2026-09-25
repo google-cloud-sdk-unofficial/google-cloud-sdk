@@ -17,7 +17,6 @@
 import argparse
 from collections.abc import Sequence
 import dataclasses
-import enum
 import json
 import subprocess
 from typing import Any
@@ -95,8 +94,8 @@ def CreateSshTunnelArgs(
     project_number: str, the project number (string with digits).
     project: str, the project id.
     deployment_name: str, the name of the deployment. For services this will be
-        of the form {service-name}/revisions/{revision-id}.
-    workload_type: Ssh.WorkloadType, the type of the workload.
+      of the form {service-name}/revisions/{revision-id}.
+    workload_type: constants.WorkloadType, the type of the workload.
     region: str, the region of the deployment.
     instance_id: str, the instance id (optional).
     container_id: str, the container id (optional).
@@ -143,15 +142,9 @@ class SshCommandComponents:
 class Ssh:
   """SSH into a Cloud Run Deployment."""
 
-  class WorkloadType(enum.Enum):
-    """The type of the deployment."""
-
-    WORKER_POOL = "worker_pool"
-    JOB = "job"
-    SERVICE = "service"
-    INSTANCE = "instance"
-
-  def __init__(self, args: argparse.Namespace, workload_type: WorkloadType):
+  def __init__(
+      self, args: argparse.Namespace, workload_type: constants.WorkloadType
+  ):
     """Initialize the SSH library."""
     self.deployment_name = args.deployment_name
     self.workload_type = workload_type
@@ -168,7 +161,7 @@ class Ssh:
     workload_json = self._GetWorkloadJson()
     _ValidateSSHEnabled(workload_json)
 
-    if self.workload_type == self.WorkloadType.SERVICE:
+    if self.workload_type == constants.WorkloadType.SERVICE:
       self.revision = self._GetOrValidateRevision(workload_json)
 
     self.service_account = self._GetServiceAccountFromWorkloadJson(
@@ -255,13 +248,13 @@ class Ssh:
         if self.release_track and self.release_track.prefix
         else []
     )
-    if self.workload_type == self.WorkloadType.SERVICE:
+    if self.workload_type == constants.WorkloadType.SERVICE:
       command.extend(track_prefix + ["run", "services", "describe"])
-    elif self.workload_type == self.WorkloadType.WORKER_POOL:
+    elif self.workload_type == constants.WorkloadType.WORKER_POOL:
       command.extend(["beta", "run", "worker-pools", "describe"])
-    elif self.workload_type == self.WorkloadType.JOB:
+    elif self.workload_type == constants.WorkloadType.JOB:
       command.extend(track_prefix + ["run", "jobs", "describe"])
-    elif self.workload_type == self.WorkloadType.INSTANCE:
+    elif self.workload_type == constants.WorkloadType.INSTANCE:
       command.extend(["alpha", "run", "instances", "describe"])
     else:
       raise ValueError(f"Unsupported workload type: {self.workload_type}")
@@ -297,7 +290,7 @@ class Ssh:
     Raises:
       ValueError: If the service account is not found in the workload JSON.
     """
-    if self.workload_type == self.WorkloadType.INSTANCE:
+    if self.workload_type == constants.WorkloadType.INSTANCE:
       service_account = workload_json.get(constants.SPEC, {}).get(
           constants.SERVICE_ACCOUNT_NAME
       )

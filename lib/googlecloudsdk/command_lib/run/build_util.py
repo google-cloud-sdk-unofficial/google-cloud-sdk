@@ -35,9 +35,13 @@ _LEGACY_BUILD_SA_FORMAT = r'^\d+@cloudbuild\.gserviceaccount\.com$'
 _PROJECT_TOML_FILE_NAME = 'project.toml'
 
 
-def _GetDefaultBuildServiceAccount(project_id, region='global'):
+def _GetDefaultBuildServiceAccount(
+    project_id, region='global', enable_by_default=True
+):
   """Gets the default build service account for a project."""
-  client = cloudbuild_util.GetClientInstance(location=region)
+  client = cloudbuild_util.GetClientInstance(
+      location=region, enable_by_default=enable_by_default
+  )
   name = f'projects/{project_id}/locations/{region}/defaultServiceAccount'
   return client.projects_locations.GetDefaultServiceAccount(
       client.MESSAGES_MODULE.CloudbuildProjectsLocationsGetDefaultServiceAccountRequest(
@@ -69,6 +73,7 @@ def ValidateBuildServiceAccountAndPromptWarning(
     region,
     build_service_account=None,
     skip_build_sa_permission_check=False,
+    enable_by_default=True,
 ):
   """Util to validate the default build service account permission.
 
@@ -81,6 +86,7 @@ def ValidateBuildServiceAccountAndPromptWarning(
       if user doesn't provide it.
     skip_build_sa_permission_check: whether to skip the build service account
       permission check.
+    enable_by_default: bool, The default choice for the enablement prompt.
 
   Raises:
     ServiceAccountError: if the build service account is disabled/not
@@ -89,7 +95,9 @@ def ValidateBuildServiceAccountAndPromptWarning(
 
   if build_service_account is None:
     try:
-      build_service_account = _GetDefaultBuildServiceAccount(project_id, region)
+      build_service_account = _GetDefaultBuildServiceAccount(
+          project_id, region, enable_by_default=enable_by_default
+      )
     except api_exceptions.HttpException as e:
       if skip_build_sa_permission_check:
         enablement_info = api_enablement.GetApiEnablementInfo(
@@ -234,4 +242,3 @@ def _ShouldClearBuildServiceAccount(args, build_service_account):
   ):
     return True
   return False
-

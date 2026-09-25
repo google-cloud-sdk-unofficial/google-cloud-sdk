@@ -77,6 +77,8 @@ Container Flags
   group.AddArgument(flags.StartupProbeFlag())
   if release_track != base.ReleaseTrack.GA:
     group.AddArgument(flags.SandboxLauncherFlag())
+  if release_track == base.ReleaseTrack.ALPHA:
+    group.AddArgument(flags.BaseImageArg(hidden=True))
 
   return group
 

@@ -33,40 +33,58 @@ REVERSE_PROXY_TYPE_MAP = {
 }
 
 
-def GetProxyInfo(properties_module=None):
-  """Returns the proxy string for use by requests from gcloud properties.
+def IsProxyConfigured(proxy_type, proxy_address, proxy_port):
+  """Checks whether the core proxy settings describe a usable proxy.
 
   Args:
-    properties_module: Module, optional properties module to read proxy settings
-      from.
+    proxy_type: str, type of proxy ('http', 'socks4', 'socks5', etc.).
+    proxy_address: str, proxy host address.
+    proxy_port: int, proxy port number.
 
   Returns:
-    str or None: The proxy URL string if configured, otherwise None.
+    bool: True if all three core values are set, False if none of them are set.
 
-  See https://requests.readthedocs.io/en/master/user/advanced/#proxies.
+  Raises:
+    ValueError: If only some of the core values are set.
   """
-  if not properties_module:
-    return None
-
-  proxy_type = properties_module.VALUES.proxy.proxy_type.Get()
-  proxy_address = properties_module.VALUES.proxy.address.Get()
-  proxy_port = properties_module.VALUES.proxy.port.GetInt()
-
   proxy_prop_set = len(
       [f for f in (proxy_type, proxy_address, proxy_port) if f]
   )
   if proxy_prop_set > 0 and proxy_prop_set != 3:
-    raise properties_module.InvalidValueError(
+    raise ValueError(
         'Please set all or none of the following properties: '
         'proxy/type, proxy/address and proxy/port'
     )
+  return proxy_prop_set == 3
 
-  if not proxy_prop_set:
-    return
 
-  proxy_rdns = properties_module.VALUES.proxy.rdns.GetBool()
-  proxy_user = properties_module.VALUES.proxy.username.Get()
-  proxy_pass = properties_module.VALUES.proxy.password.Get()
+def FormatProxyUrl(
+    proxy_type,
+    proxy_address,
+    proxy_port,
+    proxy_rdns=False,
+    proxy_user=None,
+    proxy_pass=None,
+):
+  """Formats a proxy URL string from explicit primitive configuration values.
+
+  Args:
+    proxy_type: str, type of proxy ('http', 'socks4', 'socks5', etc.).
+    proxy_address: str, proxy host address.
+    proxy_port: int, proxy port number.
+    proxy_rdns: bool, whether to use remote DNS resolution.
+    proxy_user: str, optional proxy username.
+    proxy_pass: str, optional proxy password.
+
+  Returns:
+    str or None: The proxy URL string if configured, otherwise None.
+
+  Raises:
+    KeyError: If proxy_type is not in PROXY_TYPE_MAP.
+    ValueError: If partial proxy configuration is specified.
+  """
+  if not IsProxyConfigured(proxy_type, proxy_address, proxy_port):
+    return None
 
   http_proxy_type = PROXY_TYPE_MAP[proxy_type]
   if http_proxy_type == socks.PROXY_TYPE_SOCKS4:
@@ -75,14 +93,12 @@ def GetProxyInfo(properties_module=None):
     proxy_scheme = 'socks5h' if proxy_rdns else 'socks5'
   elif http_proxy_type == socks.PROXY_TYPE_HTTP:
     proxy_scheme = 'http'
-  else:
-    raise ValueError('Unsupported proxy type: {}'.format(proxy_type))
 
   if proxy_user or proxy_pass:
-    proxy_auth = ':'.join(
-        urllib.parse.quote(x) or '' for x in (proxy_user, proxy_pass)
+    proxy_auth = (
+        ':'.join(urllib.parse.quote(x or '') for x in (proxy_user, proxy_pass))
+        + '@'
     )
-    proxy_auth += '@'
   else:
     proxy_auth = ''
   return '{}://{}{}:{}'.format(

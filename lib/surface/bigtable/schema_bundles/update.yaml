@@ -20,17 +20,31 @@
       help_text: Bigtable schema bundle to update.
       spec: !REF googlecloudsdk.command_lib.bigtable.resources:schema_bundle
     params:
-    - arg_name: proto-descriptors-file
-      api_field: schemaBundle.protoSchema.protoDescriptors
-      required: true
-      help_text: |
+    - group:
+        help_text: |
+          The schema to include in the bundle.
+        mutex: true
+        required: true
+        params:
+        - arg_name: proto-descriptors-file
+          api_field: schemaBundle.protoSchema.protoDescriptors
+          help_text: |
             Path of a file that contains a protobuf-serialized `google.protobuf.FileDescriptorSet` message. If specified, the schema bundle contains the protobuf schema.
             To generate the file, install and run `protoc` with the following command:
 
               protoc --proto_path=IMPORT_PATH --include_imports --descriptor_set_out=DESCRIPTOR_OUTPUT_LOCATION path/to/file.proto
 
-            where the --proto_path option specificies where to look for .proto files when resolving import directives (the current directory is used if you do not provide a value),
+            where the --proto_path option specifies where to look for .proto files when resolving import directives (the current directory is used if you do not provide a value),
             and the --descriptor_set_out option specifies where you want the generated FileDescriptorSet to be written.
+        - arg_name: avro-schema-path
+          api_field: schemaBundle.avroSchema.jsonSchemas
+          repeated: false
+          hidden: true
+          help_text: |
+            Path to a JSON-formatted Avro schema file (`.avsc` or `.json`), or to a directory that contains one or more of these files.
+            If specified, the schema bundle contains the Avro schemas.
+            Each file must contain a valid, self-contained Avro schema, as described in https://avro.apache.org/docs/1.8.1/spec.html.
+            You can't modify an existing Avro schema. You can only add new Avro schemas to the schema bundle.
     - arg_name: ignore-warnings
       type: bool
       default: false

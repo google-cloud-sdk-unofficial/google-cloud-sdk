@@ -941,15 +941,12 @@ def add_rapid_cache_flags(parser):
       '--admission-policy',
       choices=[
           'admit-on-first-miss',
-          'admit-on-second-miss',
           'no-read-admission',
           'ADMIT_ON_FIRST_MISS',
-          'ADMIT_ON_SECOND_MISS',
           'NO_READ_ADMISSION',
       ],
       hidden_choices=[
           'ADMIT_ON_FIRST_MISS',
-          'ADMIT_ON_SECOND_MISS',
           'NO_READ_ADMISSION',
       ],
       help=(

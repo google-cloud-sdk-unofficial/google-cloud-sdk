@@ -2414,7 +2414,8 @@ class PackageData(_messages.Message):
     ingestionSources: The list of sources that were scanned to find this
       package. This can be a Docker image, an SBOM attachment, or both, for
       example.
-    layerDetails: A LayerDetails attribute.
+    layerDetails: Deprecated: Layer details are captured per file location in
+      FileLocation.layer_details. Top-level layer details is not persisted.
     licenses: The list of licenses found that are related to a given package.
       Note that licenses may also be stored on the BinarySourceInfo. If there
       is no BinarySourceInfo (because there's no concept of source vs binary),

@@ -34,6 +34,9 @@ __protobuf__ = proto.module(
         'Modality',
         'Content',
         'Part',
+        'AudioTranscription',
+        'AudioTranscriptionConfig',
+        'TranslationConfig',
         'Blob',
         'FileData',
         'VideoMetadata',
@@ -258,7 +261,31 @@ class Part(proto.Message):
         media_resolution (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.Part.MediaResolution):
             per part media resolution.
             Media resolution for the input media.
+        media_processing (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.Part.MediaProcessing):
+            Optional. How the model processes this part's media for
+            understanding. Only meaningful for video parts
+            (``inline_data`` or ``file_data`` with video mime).
+            Non-video parts ignore this field.
+        audio_transcription (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.AudioTranscription):
+            Optional. Audio (input or output) transcription. This is
+            only set when this ``Part`` contains audio data.
     """
+    class MediaProcessing(proto.Enum):
+        r"""How the model processes input media for understanding.
+
+        Values:
+            MEDIA_PROCESSING_UNSPECIFIED (0):
+                Defaults to model-specific processing.
+            STATIC (1):
+                Fixed-rate frame extraction. All frames
+                placed in context.
+            AGENTIC (2):
+                Model-driven dynamic navigation. Recommended
+                for most use cases.
+        """
+        MEDIA_PROCESSING_UNSPECIFIED = 0
+        STATIC = 1
+        AGENTIC = 2
 
     class MediaResolution(proto.Message):
         r"""per part media resolution.
@@ -362,6 +389,205 @@ class Part(proto.Message):
         proto.MESSAGE,
         number=12,
         message=MediaResolution,
+    )
+    media_processing: MediaProcessing = proto.Field(
+        proto.ENUM,
+        number=20,
+        enum=MediaProcessing,
+    )
+    audio_transcription: 'AudioTranscription' = proto.Field(
+        proto.MESSAGE,
+        number=16,
+        message='AudioTranscription',
+    )
+
+
+class AudioTranscription(proto.Message):
+    r"""The transcription of an audio part. For multi-speaker audio, each
+    speaker segment is a separate ``Part`` with its own
+    ``AudioTranscription`` carrying the ``speaker_label``.
+
+    Attributes:
+        text (str):
+            Required. The transcription text of this
+            audio segment.
+        speaker_label (str):
+            Optional. A label identifying the speaker of this audio
+            segment (e.g. ``spk_1``, ``spk_2``). Present when
+            ``diarization`` is set.
+        words (MutableSequence[googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.AudioTranscription.WordInfo]):
+            Optional. Detailed word-level transcriptions and timing
+            details. Present when ``word_timestamp`` is set.
+    """
+
+    class WordInfo(proto.Message):
+        r"""Information about a single recognized word.
+
+        Attributes:
+            word (str):
+                Required. Transcript of the word.
+            start_offset (google.protobuf.duration_pb2.Duration):
+                Optional. Start offset in time of the word
+                relative to the start of the audio.
+            end_offset (google.protobuf.duration_pb2.Duration):
+                Optional. End offset in time of the word
+                relative to the start of the audio.
+        """
+
+        word: str = proto.Field(
+            proto.STRING,
+            number=1,
+        )
+        start_offset: duration_pb2.Duration = proto.Field(
+            proto.MESSAGE,
+            number=2,
+            message=duration_pb2.Duration,
+        )
+        end_offset: duration_pb2.Duration = proto.Field(
+            proto.MESSAGE,
+            number=3,
+            message=duration_pb2.Duration,
+        )
+
+    text: str = proto.Field(
+        proto.STRING,
+        number=1,
+    )
+    speaker_label: str = proto.Field(
+        proto.STRING,
+        number=2,
+    )
+    words: MutableSequence[WordInfo] = proto.RepeatedField(
+        proto.MESSAGE,
+        number=3,
+        message=WordInfo,
+    )
+
+
+class AudioTranscriptionConfig(proto.Message):
+    r"""Configuration for speech recognition (transcription).
+
+    This message has `oneof`_ fields (mutually exclusive fields).
+    For each oneof, at most one member field can be set at the same time.
+    Setting any member of the oneof automatically clears all other
+    members.
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
+    Attributes:
+        language_auto (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.AudioTranscriptionConfig.LanguageAuto):
+            Optional. Deprecated: Use top-level ``language_codes``
+            instead. The model will detect the language automatically.
+
+            This field is a member of `oneof`_ ``language_config``.
+        language_hints (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.AudioTranscriptionConfig.LanguageHints):
+            Optional. Deprecated: Use top-level ``language_codes``
+            instead. Specifies one or more languages in the audio.
+
+            This field is a member of `oneof`_ ``language_config``.
+        language_codes (MutableSequence[str]):
+            Optional. BCP-47 language codes providing
+            hints about the languages present in the audio.
+            If omitted or empty, defaults to automatic
+            language detection.
+        adaptation_phrases (MutableSequence[str]):
+            Optional. Deprecated: Use ``custom_vocabulary`` instead. A
+            list of phrases to bias the speech recognition model
+            towards.
+        custom_vocabulary (MutableSequence[str]):
+            Optional. A list of custom vocabulary phrases
+            to bias the speech recognition model toward
+            recognizing specific terms.
+        word_timestamp (bool):
+            Optional. Configures word-level timestamp
+            generation.
+        diarization (bool):
+            Optional. Configures speaker diarization.
+    """
+
+    class LanguageAuto(proto.Message):
+        r"""Deprecated: Use top-level ``language_codes`` instead. Indicates the
+        language of the audio should be automatically detected.
+
+        """
+
+    class LanguageHints(proto.Message):
+        r"""Deprecated: Use top-level ``language_codes`` instead. Provides hints
+        to the model about possible languages present in the audio.
+
+        Attributes:
+            language_codes (MutableSequence[str]):
+                Required. Deprecated: Use top-level ``language_codes``
+                instead. BCP-47 language codes. At least one must be
+                specified.
+        """
+
+        language_codes: MutableSequence[str] = proto.RepeatedField(
+            proto.STRING,
+            number=1,
+        )
+
+    language_auto: LanguageAuto = proto.Field(
+        proto.MESSAGE,
+        number=2,
+        oneof='language_config',
+        message=LanguageAuto,
+    )
+    language_hints: LanguageHints = proto.Field(
+        proto.MESSAGE,
+        number=3,
+        oneof='language_config',
+        message=LanguageHints,
+    )
+    language_codes: MutableSequence[str] = proto.RepeatedField(
+        proto.STRING,
+        number=8,
+    )
+    adaptation_phrases: MutableSequence[str] = proto.RepeatedField(
+        proto.STRING,
+        number=4,
+    )
+    custom_vocabulary: MutableSequence[str] = proto.RepeatedField(
+        proto.STRING,
+        number=7,
+    )
+    word_timestamp: bool = proto.Field(
+        proto.BOOL,
+        number=5,
+    )
+    diarization: bool = proto.Field(
+        proto.BOOL,
+        number=6,
+    )
+
+
+class TranslationConfig(proto.Message):
+    r"""Config for translation features.
+
+    .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
+
+    Attributes:
+        echo_target_language (bool):
+            Optional. If ``true``, the model will generate audio when
+            the target language is spoken, essentially it will parrot
+            the input. If ``false``, we will not produce audio for the
+            target language.
+
+            This field is a member of `oneof`_ ``_echo_target_language``.
+        target_language_code (str):
+            Required. The target language for
+            translation. Supported values are BCP-47
+            language codes (e.g. "en", "es", "fr").
+    """
+
+    echo_target_language: bool = proto.Field(
+        proto.BOOL,
+        number=1,
+        optional=True,
+    )
+    target_language_code: str = proto.Field(
+        proto.STRING,
+        number=2,
     )
 
 
@@ -1001,6 +1227,15 @@ class GenerationConfig(proto.Message):
             Optional. New response format field for the
             model to configure output formatting and
             delivery.
+        audio_transcription_config (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.AudioTranscriptionConfig):
+            Optional. Configuration for audio
+            transcription (speech recognition).
+
+            This field is a member of `oneof`_ ``_audio_transcription_config``.
+        translation_config (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.TranslationConfig):
+            Optional. Config for translation.
+
+            This field is a member of `oneof`_ ``_translation_config``.
     """
     class Modality(proto.Enum):
         r"""The modalities of the response.
@@ -1378,6 +1613,18 @@ class GenerationConfig(proto.Message):
         number=35,
         message='ResponseFormat',
     )
+    audio_transcription_config: 'AudioTranscriptionConfig' = proto.Field(
+        proto.MESSAGE,
+        number=37,
+        optional=True,
+        message='AudioTranscriptionConfig',
+    )
+    translation_config: 'TranslationConfig' = proto.Field(
+        proto.MESSAGE,
+        number=39,
+        optional=True,
+        message='TranslationConfig',
+    )
 
 
 class ResponseFormat(proto.Message):
@@ -1724,6 +1971,9 @@ class VideoResponseFormat(proto.Message):
             Optional. The duration for the video output.
 
             This field is a member of `oneof`_ ``_duration``.
+        resolution (str):
+            Optional. The video output resolution.
+            Supported values: "360p", "720p", "1080p", "4k".
     """
     class AspectRatio(proto.Enum):
         r"""Supported aspect ratios for video output.
@@ -1759,6 +2009,10 @@ class VideoResponseFormat(proto.Message):
         number=4,
         optional=True,
         message=duration_pb2.Duration,
+    )
+    resolution: str = proto.Field(
+        proto.STRING,
+        number=5,
     )
 
 

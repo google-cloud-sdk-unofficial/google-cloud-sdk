@@ -1147,9 +1147,10 @@ class LustreProjectsLocationsInstancesMirrorsCreateRequest(_messages.Message):
 
   Fields:
     mirror: A Mirror resource to be passed as the request body.
-    mirrorId: Required. ID to use for the mirror. This value should be 1-63
-      characters, must use lowercase letters, numbers, or underscores
-      `[a-z0-9_]`. Must start with a letter. Immutable.
+    mirrorId: Required. The ID to use for the mirror. * Must contain only
+      lowercase letters, numbers, and hyphens. * Must start with a letter. *
+      Must be between 1-63 characters. * Must end with a number or a letter.
+      The ID cannot be changed after the mirror is created.
     parent: Required. Parent instance resource where the mirror will be
       created, in the format:
       projects/{project}/locations/{location}/instances/{instance}

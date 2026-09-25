@@ -52,6 +52,50 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_AIAPPLICATIONS = (
+      'projects.locations.aiApplications',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/aiApplications/'
+              '{aiApplicationsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_AIAPPLICATIONS_AGENTS = (
+      'projects.locations.aiApplications.agents',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/aiApplications/'
+              '{aiApplicationsId}/agents/{agentsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_AIAPPLICATIONS_ENDPOINTS = (
+      'projects.locations.aiApplications.endpoints',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/aiApplications/'
+              '{aiApplicationsId}/endpoints/{endpointsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_AIAPPLICATIONS_MCPSERVERS = (
+      'projects.locations.aiApplications.mcpServers',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/aiApplications/'
+              '{aiApplicationsId}/mcpServers/{mcpServersId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_BINDINGS = (
       'projects.locations.bindings',
       '{+name}',

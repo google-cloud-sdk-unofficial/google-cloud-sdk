@@ -420,12 +420,12 @@ class AssuredworkloadsOrganizationsLocationsWorkloadsListRequest(_messages.Messa
   r"""A AssuredworkloadsOrganizationsLocationsWorkloadsListRequest object.
 
   Fields:
-    filter: A custom filter for filtering by properties of a workload. At this
-      time, only filtering by labels is supported.
-    pageSize: Page size.
-    pageToken: Page token returned from previous request. Page token contains
-      context from previous request. Page token needs to be passed in the
-      second and following requests.
+    filter: Optional. A custom filter for filtering by properties of a
+      workload. At this time, only filtering by labels is supported.
+    pageSize: Optional. Page size.
+    pageToken: Optional. Page token returned from previous request. Page token
+      contains context from previous request. Page token needs to be passed in
+      the second and following requests.
     parent: Required. Parent Resource to list workloads from. Must be of the
       form `organizations/{org_id}/locations/{location}`.
   """

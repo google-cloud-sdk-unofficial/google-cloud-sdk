@@ -6293,6 +6293,7 @@ class LocationMetadata(_messages.Message):
       ALLOY_DB: <no description>
       FILESTORE: <no description>
       BV_AF: <no description>
+      GOOGLE_CLOUD_NETAPP_VOLUME: <no description>
       CEP_MONITORING_COMPUTE_INSTANCE: <no description>
       CEP_MONITORING_DISK: <no description>
       BV_CUSTOM_PROBERS: Remove once parity achieved between BV_AF and
@@ -6308,10 +6309,11 @@ class LocationMetadata(_messages.Message):
     ALLOY_DB = 6
     FILESTORE = 7
     BV_AF = 8
-    CEP_MONITORING_COMPUTE_INSTANCE = 9
-    CEP_MONITORING_DISK = 10
-    BV_CUSTOM_PROBERS = 11
-    FT_CUSTOM_PROBERS = 12
+    GOOGLE_CLOUD_NETAPP_VOLUME = 9
+    CEP_MONITORING_COMPUTE_INSTANCE = 10
+    CEP_MONITORING_DISK = 11
+    BV_CUSTOM_PROBERS = 12
+    FT_CUSTOM_PROBERS = 13
 
   unsupportedFeatures = _messages.EnumField('UnsupportedFeaturesValueListEntryValuesEnum', 1, repeated=True)
 
@@ -6911,7 +6913,8 @@ class PostRestoreConfig(_messages.Message):
   Fields:
     cloudRunJob: Cloud Run job action to execute. Format:
       `projects/{project}/locations/{location}/jobs/{job}`
-    timeout: Optional. The timeout for this phase.
+    timeout: Optional. The `timeout` for this phase. If set, the `timeout`
+      must be positive and less than or equal to 24 hours (86400s).
   """
 
   cloudRunJob = _messages.StringField(1)
@@ -6971,7 +6974,8 @@ class PreRestoreConfig(_messages.Message):
   Fields:
     cloudRunJob: Cloud Run job action to execute. Format:
       `projects/{project}/locations/{location}/jobs/{job}`
-    timeout: Optional. The timeout for this phase.
+    timeout: Optional. The `timeout` for this phase. If set, the `timeout`
+      must be positive and less than or equal to 24 hours (86400s).
   """
 
   cloudRunJob = _messages.StringField(1)
@@ -8507,7 +8511,8 @@ class VerificationConfig(_messages.Message):
   Fields:
     cloudRunJob: Cloud Run job action to execute. Format:
       `projects/{project}/locations/{location}/jobs/{job}`
-    timeout: Optional. The timeout for this phase.
+    timeout: Optional. The `timeout` for this phase. If set, the `timeout`
+      must be positive and less than or equal to 24 hours (86400s).
   """
 
   cloudRunJob = _messages.StringField(1)

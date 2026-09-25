@@ -25,6 +25,7 @@ from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.credentials import transports
+from googlecloudsdk.core.util import encoding
 from googlecloudsdk.core.util import files
 
 
@@ -40,7 +41,10 @@ def Download(
   client = apis.GetClientInstance('agentregistry', 'v1alpha')
   messages = apis.GetMessagesModule('agentregistry', 'v1alpha')
 
-  dest_path = os.path.expanduser(dest_path)
+  dest_path = files.ExpandHomeDir(dest_path)
+  bwd = encoding.GetEncodedValue(os.environ, 'BUILD_WORKING_DIRECTORY')
+  if bwd and not os.path.isabs(dest_path):
+    dest_path = os.path.join(bwd, dest_path)
 
   # Only move the file to the user specified path if overwrites are allowed.
   if os.path.exists(dest_path) and not allow_overwrite:

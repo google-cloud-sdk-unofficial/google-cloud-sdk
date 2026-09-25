@@ -30,7 +30,6 @@ from googlecloudsdk.command_lib.storage import gzip_util
 from googlecloudsdk.command_lib.storage import tracker_file_util
 from googlecloudsdk.command_lib.storage import user_request_args_factory
 from googlecloudsdk.command_lib.storage.tasks.cp import copy_util
-from googlecloudsdk.command_lib.storage.tasks.cp import download_util
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -402,7 +401,7 @@ class GrpcClientWithJsonFallback(gcs_json_client.JsonClient):
       end_byte=None,
   ):
     """See super class."""
-    if download_util.return_and_report_if_nothing_to_download(
+    if cloud_api.return_and_report_if_nothing_to_download(
         cloud_resource, progress_callback
     ):
       return None

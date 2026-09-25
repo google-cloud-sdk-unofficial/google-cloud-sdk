@@ -14,6 +14,57 @@ from apitools.base.py import extra_types
 package = 'hypercomputecluster'
 
 
+class AnalysisExecution(_messages.Message):
+  r"""Execution details and session metadata for the diagnostic analysis.
+
+  Enums:
+    PhaseValueValuesEnum: Optional. Execution phase of the diagnostic
+      analysis.
+
+  Fields:
+    endTime: Optional. Timestamp indicating when analysis execution completed.
+    phase: Optional. Execution phase of the diagnostic analysis.
+    startTime: Optional. Timestamp indicating when analysis execution started.
+    status: Optional. Detailed status containing standard gRPC error codes.
+  """
+
+  class PhaseValueValuesEnum(_messages.Enum):
+    r"""Optional. Execution phase of the diagnostic analysis.
+
+    Values:
+      PHASE_UNSPECIFIED: Phase is unspecified.
+      PENDING: Analysis execution request received, but not yet started.
+      RUNNING: Diagnostic agent analysis is actively running.
+      SUCCEEDED: Diagnostic analysis completed successfully.
+      FAILED: Diagnostic analysis failed.
+    """
+    PHASE_UNSPECIFIED = 0
+    PENDING = 1
+    RUNNING = 2
+    SUCCEEDED = 3
+    FAILED = 4
+
+  endTime = _messages.StringField(1)
+  phase = _messages.EnumField('PhaseValueValuesEnum', 2)
+  startTime = _messages.StringField(3)
+  status = _messages.MessageField('Status', 4)
+
+
+class AnalysisReport(_messages.Message):
+  r"""Synthesized diagnostic analysis report artifact.
+
+  Fields:
+    reportUri: Output only. URI to retrieve and view the synthesized report in
+      the UI. Example:
+      `https://{backend_id}.dot.{region}.machinelearningtools-
+      dev.googleusercontent.com/analysis?resource=projects/my-
+      project/locations/us-central1/machineLearningRuns/run-
+      abc/profilerSessions/session-123`
+  """
+
+  reportUri = _messages.StringField(1)
+
+
 class AnalyzerReport(_messages.Message):
   r"""A detailed report from a specific analyzer.
 
@@ -24,6 +75,11 @@ class AnalyzerReport(_messages.Message):
   Fields:
     analyzer: Required. Name of the system executed analyzer. Example -
       "Thermal Throttling Analyzer"
+    autoCaptureConfig: Optional. Configuration for automatic capture of
+      profiler sessions.
+    autoCaptureDetails: Output only. Represents the resolved execution state
+      of the automatic capture (e.g. SUCCEEDED, CONFLICTED, or FAILED).
+      Includes details of the captured profiler sessions.
     details: Optional. A summary details of the analyzer findings.
     detectionState: Output only. Detection state produced by the analyzer.
     recommendedActions: Optional. Recommended actions to take.
@@ -42,9 +98,11 @@ class AnalyzerReport(_messages.Message):
     NOT_DETECTED = 2
 
   analyzer = _messages.StringField(1)
-  details = _messages.StringField(2)
-  detectionState = _messages.EnumField('DetectionStateValueValuesEnum', 3)
-  recommendedActions = _messages.MessageField('RecommendedAction', 4, repeated=True)
+  autoCaptureConfig = _messages.MessageField('AutoCaptureConfig', 2)
+  autoCaptureDetails = _messages.MessageField('AutoCaptureDetail', 3, repeated=True)
+  details = _messages.StringField(4)
+  detectionState = _messages.EnumField('DetectionStateValueValuesEnum', 5)
+  recommendedActions = _messages.MessageField('RecommendedAction', 6, repeated=True)
 
 
 class Artifacts(_messages.Message):
@@ -56,6 +114,177 @@ class Artifacts(_messages.Message):
   """
 
   gcsPath = _messages.StringField(1)
+
+
+class AutoCaptureConfig(_messages.Message):
+  r"""Configuration for auto-capture of profiler sessions. Typically populated
+  by the analyzer when a degradation is detected.
+
+  Fields:
+    duration: Optional. Capture duration for auto capture. If not set, it will
+      use the default duration in the auto capture setting.
+    profilerTargets: Optional. List of profiler targets on which session
+      capture will be performed. If not set, it will use the default profiler
+      targets in the auto capture setting. Format: projects/{project}/location
+      s/{location}/machineLearningRuns/{machine_learning_run}/profilerTargets/
+      {profiler_target}
+  """
+
+  duration = _messages.StringField(1)
+  profilerTargets = _messages.StringField(2, repeated=True)
+
+
+class AutoCaptureDetail(_messages.Message):
+  r"""Details of the execution result of an auto-capture request.
+
+  Enums:
+    StateValueValuesEnum: Output only. State of the auto capture request.
+
+  Fields:
+    createTime: Output only. Creation timestamp for the auto capture.
+    profilerSession: Output only. The resource name of the created
+      ProfilerSession.
+    state: Output only. State of the auto capture request.
+    status: Output only. Detailed error status if the auto capture request
+      failed. Only populated when state is FAILED.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. State of the auto capture request.
+
+    Values:
+      REQUEST_STATE_UNSPECIFIED: Request state is not specified.
+      SUCCEEDED: Request succeeded.
+      CONFLICTED: Session capture conflicted with an existing session.
+      FAILED: Request failed.
+    """
+    REQUEST_STATE_UNSPECIFIED = 0
+    SUCCEEDED = 1
+    CONFLICTED = 2
+    FAILED = 3
+
+  createTime = _messages.StringField(1)
+  profilerSession = _messages.StringField(2)
+  state = _messages.EnumField('StateValueValuesEnum', 3)
+  status = _messages.MessageField('Status', 4)
+
+
+class AutoCaptureSettings(_messages.Message):
+  r"""Configuration for auto-capturing profiler sessions upon degradation
+  events.
+
+  Enums:
+    CaptureTypeValueValuesEnum: Optional. Capture type for profiler session.
+    DeviceTracerLevelValueValuesEnum: Optional. The device tracer level for
+      the profiler session activity.
+    HostTracerLevelValueValuesEnum: Optional. The host tracer level for the
+      profiler session activity.
+    PythonTracerLevelValueValuesEnum: Optional. The python tracer level for
+      the profiler session activity.
+
+  Fields:
+    captureType: Optional. Capture type for profiler session.
+    defaultDuration: Optional. Default duration for on-demand profiler session
+      during auto-capture. If not set, value of 10 seconds will be used by
+      backend.
+    defaultProfilerTargets: Optional. Targets actively being profiled. This
+      will be used only if targets are not specified during capture request.
+      If not set, all targets will be profiled. Format: projects/{project}/loc
+      ations/{location}/machineLearningRuns/{machine_learning_run}/profilerTar
+      gets/{profiler_target}
+    deviceTracerLevel: Optional. The device tracer level for the profiler
+      session activity.
+    enabled: Optional. Enable auto-capture, defaults to false.
+    hostTracerLevel: Optional. The host tracer level for the profiler session
+      activity.
+    maxSessionCountPerEvent: Optional. Max number of profiler sessions per
+      monitored event. If not set, max of 500 sessions are allowed.
+    pythonTracerLevel: Optional. The python tracer level for the profiler
+      session activity.
+  """
+
+  class CaptureTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. Capture type for profiler session.
+
+    Values:
+      CAPTURE_TYPE_UNSPECIFIED: Capture type is not specified.
+      SNAPSHOT_OVER_ON_DEMAND: Capture snapshot first, if not possible then
+        try to capture on-demand.
+      ON_DEMAND_OVER_SNAPSHOT: Capture on-demand, if not possible then try to
+        capture snapshot.
+      ONLY_ON_DEMAND: Capture only on-demand session.
+      ONLY_SNAPSHOT: Capture only snapshot.
+    """
+    CAPTURE_TYPE_UNSPECIFIED = 0
+    SNAPSHOT_OVER_ON_DEMAND = 1
+    ON_DEMAND_OVER_SNAPSHOT = 2
+    ONLY_ON_DEMAND = 3
+    ONLY_SNAPSHOT = 4
+
+  class DeviceTracerLevelValueValuesEnum(_messages.Enum):
+    r"""Optional. The device tracer level for the profiler session activity.
+
+    Values:
+      DEVICE_TRACER_LEVEL_UNSPECIFIED: Tracer level is unspecified.
+      DEVICE_TRACER_LEVEL_DISABLED: Tracer level is disabled.
+      DEVICE_TRACER_LEVEL_ENABLED: Tracer level is enabled.
+    """
+    DEVICE_TRACER_LEVEL_UNSPECIFIED = 0
+    DEVICE_TRACER_LEVEL_DISABLED = 1
+    DEVICE_TRACER_LEVEL_ENABLED = 2
+
+  class HostTracerLevelValueValuesEnum(_messages.Enum):
+    r"""Optional. The host tracer level for the profiler session activity.
+
+    Values:
+      HOST_TRACER_LEVEL_UNSPECIFIED: Tracer level is unspecified.
+      HOST_TRACER_LEVEL_DISABLED: Tracer level is disabled.
+      HOST_TRACER_LEVEL_CRITICAL: Tracer level is critical.
+      HOST_TRACER_LEVEL_INFO: Tracer level is info.
+      HOST_TRACER_LEVEL_VERBOSE: Tracer level is verbose.
+    """
+    HOST_TRACER_LEVEL_UNSPECIFIED = 0
+    HOST_TRACER_LEVEL_DISABLED = 1
+    HOST_TRACER_LEVEL_CRITICAL = 2
+    HOST_TRACER_LEVEL_INFO = 3
+    HOST_TRACER_LEVEL_VERBOSE = 4
+
+  class PythonTracerLevelValueValuesEnum(_messages.Enum):
+    r"""Optional. The python tracer level for the profiler session activity.
+
+    Values:
+      PYTHON_TRACER_LEVEL_UNSPECIFIED: Tracer level is unspecified.
+      PYTHON_TRACER_LEVEL_DISABLED: Tracer level is disabled.
+      PYTHON_TRACER_LEVEL_ENABLED: Tracer level is enabled.
+    """
+    PYTHON_TRACER_LEVEL_UNSPECIFIED = 0
+    PYTHON_TRACER_LEVEL_DISABLED = 1
+    PYTHON_TRACER_LEVEL_ENABLED = 2
+
+  captureType = _messages.EnumField('CaptureTypeValueValuesEnum', 1)
+  defaultDuration = _messages.StringField(2)
+  defaultProfilerTargets = _messages.StringField(3, repeated=True)
+  deviceTracerLevel = _messages.EnumField('DeviceTracerLevelValueValuesEnum', 4)
+  enabled = _messages.BooleanField(5)
+  hostTracerLevel = _messages.EnumField('HostTracerLevelValueValuesEnum', 6)
+  maxSessionCountPerEvent = _messages.IntegerField(7, variant=_messages.Variant.INT32)
+  pythonTracerLevel = _messages.EnumField('PythonTracerLevelValueValuesEnum', 8)
+
+
+class BenchmarkingTrial(_messages.Message):
+  r"""A benchmarking trial represents an execution of a benchmark.
+
+  Fields:
+    createTime: Output only. Create time of the benchmarking trial.
+    name: Identifier. The resource name of the benchmarking trial. Format: pro
+      jects/{project}/locations/{location}/benchmarkingTrials/{benchmarking_tr
+      ial}
+    updateTime: Output only. Update time of the benchmarking trial.
+  """
+
+  createTime = _messages.StringField(1)
+  name = _messages.StringField(2)
+  updateTime = _messages.StringField(3)
 
 
 class BootDisk(_messages.Message):
@@ -115,6 +344,7 @@ class CheckClusterHealth(_messages.Message):
   """
 
 
+
 class Cluster(_messages.Message):
   r"""A collection of virtual machines and connected resources forming a high-
   performance computing cluster capable of running large-scale, tightly
@@ -172,11 +402,13 @@ class Cluster(_messages.Message):
     reconciling: Output only. Indicates whether changes to the cluster are
       currently in flight. If this is `true`, then the current state might not
       match the cluster's intended state.
+    statuses: Output only. Statuses of the problems detected by the system.
     storageResources: Optional. Storage resources available to the cluster.
       Keys specify the ID of the storage resource by which it can be
       referenced elsewhere, and must conform to
       [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034) (lower-case,
       alphanumeric, and at most 63 characters).
+    uid: Output only. The globally unique identifier for this Cluster.
     updateTime: Output only. Time that the cluster was most recently updated.
   """
 
@@ -304,14 +536,18 @@ class Cluster(_messages.Message):
   networkResources = _messages.MessageField('NetworkResourcesValue', 8)
   orchestrator = _messages.MessageField('Orchestrator', 9)
   reconciling = _messages.BooleanField(10)
-  storageResources = _messages.MessageField('StorageResourcesValue', 11)
-  updateTime = _messages.StringField(12)
+  statuses = _messages.MessageField('Status', 11, repeated=True)
+  storageResources = _messages.MessageField('StorageResourcesValue', 12)
+  uid = _messages.StringField(13)
+  updateTime = _messages.StringField(14)
 
 
 class ComputeEngineNodeDetails(_messages.Message):
   r"""Compute Engine-specific details for a Node.
 
   Fields:
+    externalIpAddress: Output only. The external IP address of the VM
+      instance.
     instance: Output only. [Relative resource
       name](https://google.aip.dev/122) of the VM instance, in the format
       `projects/{project}/zones/{zone}/instances/{instance}`.
@@ -320,18 +556,26 @@ class ComputeEngineNodeDetails(_messages.Message):
       format `projects/{project}/zones/{zone}/instanceGroupManagers/{instance_
       group_manager}`. or `projects/{project}/regions/{region}/instanceGroupMa
       nagers/{instance_group_manager}`
+    internalIpAddress: Output only. The internal IP address of the VM
+      instance.
     machineType: Output only. Name of the Compute Engine [machine
       type](https://cloud.google.com/compute/docs/machine-resource) to use,
       e.g. `n2-standard-2`.
+    sourceImage: Output only. The resolved concrete Compute Engine image used
+      as the boot disk for this instance in the format
+      `projects/{project}/global/images/{image}`.
     state: Output only. The Compute Engine VM [instance lifecycle
       state](https://cloud.google.com/compute/docs/instances/instance-
       lifecycle).
   """
 
-  instance = _messages.StringField(1)
-  instanceGroupManager = _messages.StringField(2)
-  machineType = _messages.StringField(3)
-  state = _messages.StringField(4)
+  externalIpAddress = _messages.StringField(1)
+  instance = _messages.StringField(2)
+  instanceGroupManager = _messages.StringField(3)
+  internalIpAddress = _messages.StringField(4)
+  machineType = _messages.StringField(5)
+  sourceImage = _messages.StringField(6)
+  state = _messages.StringField(7)
 
 
 class ComputeEngineOrchestrator(_messages.Message):
@@ -503,8 +747,6 @@ class ComputeResourceConfig(_messages.Message):
   r"""Describes how a compute resource should be created at runtime.
 
   Fields:
-    existingInstances: Optional. Immutable. Deprecated: No longer supported.
-      If set, indicates that this resource should use existing VMs.
     newFlexStartInstances: Optional. Immutable. If set, indicates that this
       resource should use flex-start VMs.
     newOnDemandInstances: Optional. Immutable. If set, indicates that this
@@ -515,11 +757,10 @@ class ComputeResourceConfig(_messages.Message):
       resource should use spot VMs.
   """
 
-  existingInstances = _messages.MessageField('ExistingInstancesConfig', 1)
-  newFlexStartInstances = _messages.MessageField('NewFlexStartInstancesConfig', 2)
-  newOnDemandInstances = _messages.MessageField('NewOnDemandInstancesConfig', 3)
-  newReservedInstances = _messages.MessageField('NewReservedInstancesConfig', 4)
-  newSpotInstances = _messages.MessageField('NewSpotInstancesConfig', 5)
+  newFlexStartInstances = _messages.MessageField('NewFlexStartInstancesConfig', 1)
+  newOnDemandInstances = _messages.MessageField('NewOnDemandInstancesConfig', 2)
+  newReservedInstances = _messages.MessageField('NewReservedInstancesConfig', 3)
+  newSpotInstances = _messages.MessageField('NewSpotInstancesConfig', 4)
 
 
 class Configs(_messages.Message):
@@ -855,6 +1096,7 @@ class CreateLoginNode(_messages.Message):
   """
 
 
+
 class CreateLustreInstance(_messages.Message):
   r"""When set in OperationStep, indicates that a new lustre instance should
   be created.
@@ -895,6 +1137,7 @@ class CreateOrchestrator(_messages.Message):
   """
 
 
+
 class CreatePartition(_messages.Message):
   r"""When set in OperationStep, indicates that a partition should be created.
 
@@ -911,6 +1154,7 @@ class CreatePrivateServiceAccess(_messages.Message):
   """
 
 
+
 class CreateStorageBucket(_messages.Message):
   r"""When set in OperationStep, indicates that a new storage bucket should be
   created.
@@ -920,6 +1164,21 @@ class CreateStorageBucket(_messages.Message):
   """
 
   bucket = _messages.StringField(1)
+
+
+class CustomWorkloadDetails(_messages.Message):
+  r"""Workload details for Custom orchestrator.
+
+  Fields:
+    createTime: Optional. Time when the workload was created.
+    displayName: Required. The display name of the workload. Example -
+      training-workload
+    id: Required. The identifier of the workload. Example - 1234567890
+  """
+
+  createTime = _messages.StringField(1)
+  displayName = _messages.StringField(2)
+  id = _messages.StringField(3)
 
 
 class DeleteFilestoreInstance(_messages.Message):
@@ -949,6 +1208,7 @@ class DeleteLoginNode(_messages.Message):
   r"""When set in OperationStep, indicates that a login node should be
   deleted.
   """
+
 
 
 class DeleteLustreInstance(_messages.Message):
@@ -991,6 +1251,7 @@ class DeleteOrchestrator(_messages.Message):
   """
 
 
+
 class DeletePartition(_messages.Message):
   r"""When set in OperationStep, indicates that a partition should be deleted.
 
@@ -1007,6 +1268,7 @@ class DeletePrivateServiceAccess(_messages.Message):
   """
 
 
+
 class DeleteStorageBucket(_messages.Message):
   r"""When set in OperationStep, indicates that Cloud Storage bucket should be
   deleted.
@@ -1016,6 +1278,17 @@ class DeleteStorageBucket(_messages.Message):
   """
 
   bucket = _messages.StringField(1)
+
+
+class DiagnosticsAgent(_messages.Message):
+  r"""DiagnosticsAgent related metadata for a Machine Learning run tool.
+
+  Fields:
+    summary: Output only. A high-level summary of the diagnostics agent's
+      status (e.g., whether EasySaaS provisioning succeeded).
+  """
+
+  summary = _messages.StringField(1)
 
 
 class DynamicTierOptions(_messages.Message):
@@ -1052,6 +1325,7 @@ class Empty(_messages.Message):
   """
 
 
+
 class ExistingBucketConfig(_messages.Message):
   r"""When set in a StorageResourceConfig, indicates that an existing [Google
   Cloud Storage](https://cloud.google.com/storage) bucket should be imported.
@@ -1061,6 +1335,21 @@ class ExistingBucketConfig(_messages.Message):
   """
 
   bucket = _messages.StringField(1)
+
+
+class ExistingContainerClusterOrchestrator(_messages.Message):
+  r"""Configuration for using an existing container cluster (e.g., GKE) as the
+  orchestrator.
+
+  Fields:
+    cluster: Required. Immutable. Resource reference to the GKE cluster.
+      Format: projects/{project}/locations/{location}/clusters/{cluster}
+    kubernetesNamespace: Required. Immutable. The Kubernetes namespace to
+      monitor.
+  """
+
+  cluster = _messages.StringField(1)
+  kubernetesNamespace = _messages.StringField(2)
 
 
 class ExistingFilestoreConfig(_messages.Message):
@@ -1094,6 +1383,8 @@ class ExistingInstances(_messages.Message):
       Instances from the source will be included only if they contain each of
       these labels. If no labels are specified, all instances from the source
       will be included. Example: {"env": "prod", "app": "worker"}
+    project: Optional. Immutable. Project containing the instances, in the
+      format `projects/{project}`.
     regionInstanceGroupManager: Optional. Immutable. Regional managed instance
       group containing the instances, in the format `projects/{project}/region
       s/{region}/instanceGroupManagers/{instanceGroupManager}`.
@@ -1137,77 +1428,11 @@ class ExistingInstances(_messages.Message):
 
   instanceGroupManager = _messages.StringField(1)
   labels = _messages.MessageField('LabelsValue', 2)
-  regionInstanceGroupManager = _messages.StringField(3)
-  reservation = _messages.StringField(4)
-  reservationBlock = _messages.StringField(5)
-  reservationSubBlock = _messages.StringField(6)
-
-
-class ExistingInstancesConfig(_messages.Message):
-  r"""Deprecated: No longer supported. When set in a ComputeResourceConfig,
-  indicates that VM instances should be imported from an existing source.
-
-  Messages:
-    LabelsValue: Optional. Immutable. Labels specifying the instances to
-      include. Instances from the source will be included only if they contain
-      each of these labels. If no labels are specified, all instances from the
-      source will be included. Example: {"env": "prod", "app": "worker"}
-
-  Fields:
-    instanceGroupManager: Optional. Immutable. Managed instance group
-      containing the instances, in the format `projects/{project}/zones/{zone}
-      /instanceGroupManagers/{instanceGroupManager}`.
-    labels: Optional. Immutable. Labels specifying the instances to include.
-      Instances from the source will be included only if they contain each of
-      these labels. If no labels are specified, all instances from the source
-      will be included. Example: {"env": "prod", "app": "worker"}
-    regionInstanceGroupManager: Optional. Immutable. Regional managed instance
-      group containing the instances, in the format `projects/{project}/region
-      s/{region}/instanceGroupManagers/{instanceGroupManager}`.
-    reservation: Optional. Immutable. Reservation containing the instances, in
-      the format `projects/{project}/zones/{zone}/reservations/{reservation}`.
-    reservationBlock: Optional. Immutable. Reservation block containing the
-      instances, in the format `projects/{project}/zones/{zone}/reservations/{
-      reservation}/reservationBlocks/{reservationBlock}`.
-    reservationSubBlock: Optional. Immutable. Reservation sub block containing
-      the instances, in the format `projects/{project}/zones/{zone}/reservatio
-      ns/{reservation}/reservationBlocks/{reservationBlock}/reservationSubBloc
-      ks/{reservationSubBlock}`.
-  """
-
-  @encoding.MapUnrecognizedFields('additionalProperties')
-  class LabelsValue(_messages.Message):
-    r"""Optional. Immutable. Labels specifying the instances to include.
-    Instances from the source will be included only if they contain each of
-    these labels. If no labels are specified, all instances from the source
-    will be included. Example: {"env": "prod", "app": "worker"}
-
-    Messages:
-      AdditionalProperty: An additional property for a LabelsValue object.
-
-    Fields:
-      additionalProperties: Additional properties of type LabelsValue
-    """
-
-    class AdditionalProperty(_messages.Message):
-      r"""An additional property for a LabelsValue object.
-
-      Fields:
-        key: Name of the additional property.
-        value: A string attribute.
-      """
-
-      key = _messages.StringField(1)
-      value = _messages.StringField(2)
-
-    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
-
-  instanceGroupManager = _messages.StringField(1)
-  labels = _messages.MessageField('LabelsValue', 2)
-  regionInstanceGroupManager = _messages.StringField(3)
-  reservation = _messages.StringField(4)
-  reservationBlock = _messages.StringField(5)
-  reservationSubBlock = _messages.StringField(6)
+  project = _messages.StringField(3)
+  regionInstanceGroupManager = _messages.StringField(4)
+  reservation = _messages.StringField(5)
+  reservationBlock = _messages.StringField(6)
+  reservationSubBlock = _messages.StringField(7)
 
 
 class ExistingLustreConfig(_messages.Message):
@@ -1420,6 +1645,46 @@ class HealthChecks(_messages.Message):
 
   disabledNodeActions = _messages.EnumField('DisabledNodeActionsValueListEntryValuesEnum', 1, repeated=True)
   enableStandardChecks = _messages.BooleanField(2)
+
+
+class HypercomputeclusterProjectsLocationsBenchmarkingTrialsGetRequest(_messages.Message):
+  r"""A HypercomputeclusterProjectsLocationsBenchmarkingTrialsGetRequest
+  object.
+
+  Fields:
+    name: Required. The name of the benchmarking trial to retrieve. Format: pr
+      ojects/{project}/locations/{location}/benchmarkingTrials/{benchmarking_t
+      rial}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class HypercomputeclusterProjectsLocationsBenchmarkingTrialsListRequest(_messages.Message):
+  r"""A HypercomputeclusterProjectsLocationsBenchmarkingTrialsListRequest
+  object.
+
+  Fields:
+    filter: Optional. Filtering results.
+    orderBy: Optional. Hint for how to order the results.
+    pageSize: Optional. The maximum number of benchmarking trials to return.
+      The service may return fewer than this value. If unspecified, at most 50
+      trials will be returned. The maximum value is 1000; values above 1000
+      will be coerced to 1000.
+    pageToken: Optional. A page token, received from a previous
+      `ListBenchmarkingTrials` call. Provide this to retrieve the subsequent
+      page. When paginating, all other parameters provided to
+      `ListBenchmarkingTrials` must match the call that provided the page
+      token.
+    parent: Required. The parent Location to list benchmarking trials for.
+      Format: projects/{project}/locations/{location}
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
 
 
 class HypercomputeclusterProjectsLocationsClustersCreateRequest(_messages.Message):
@@ -2052,6 +2317,19 @@ class HypercomputeclusterProjectsLocationsOperationsListRequest(_messages.Messag
   returnPartialSuccess = _messages.BooleanField(5)
 
 
+class ListBenchmarkingTrialsResponse(_messages.Message):
+  r"""Response message for Benchmarking.ListBenchmarkingTrials.
+
+  Fields:
+    benchmarkingTrials: The list of benchmarking trials.
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+  """
+
+  benchmarkingTrials = _messages.MessageField('BenchmarkingTrial', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
 class ListClustersResponse(_messages.Message):
   r"""Response message for ListClusters.
 
@@ -2281,6 +2559,8 @@ class MachineLearningRun(_messages.Message):
 
   Fields:
     artifacts: Optional. Artifacts for the run.
+    autoCaptureSettings: Optional. Auto capture settings for the Machine
+      Learning run.
     configs: Optional. Tracks configuration for this run, example: batch_size,
       jax_version, tpu_generation etc.
     continuousProfilingSweep: Output only. Continuous profiling sweep for the
@@ -2318,12 +2598,14 @@ class MachineLearningRun(_messages.Message):
       ORCHESTRATOR_UNSPECIFIED: Orchestrator type is not specified.
       GCE: Google Compute Engine orchestrator.
       GKE: Google Kubernetes Engine orchestrator.
-      SLURM: Slurm cluster orchestrator.
+      SLURM: Slurm orchestrator.
+      CUSTOM: Custom orchestrator.
     """
     ORCHESTRATOR_UNSPECIFIED = 0
     GCE = 1
     GKE = 2
     SLURM = 3
+    CUSTOM = 4
 
   class RunPhaseValueValuesEnum(_messages.Enum):
     r"""Optional. RunPhase defines the phase of the run.
@@ -2379,24 +2661,25 @@ class MachineLearningRun(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   artifacts = _messages.MessageField('Artifacts', 1)
-  configs = _messages.MessageField('Configs', 2)
-  continuousProfilingSweep = _messages.MessageField('ContinuousProfilingSweep', 3)
-  createTime = _messages.StringField(4)
-  displayName = _messages.StringField(5)
-  endTime = _messages.StringField(6)
-  errorDetails = _messages.StringField(7)
-  etag = _messages.StringField(8)
-  labels = _messages.MessageField('LabelsValue', 9)
-  metrics = _messages.MessageField('Metrics', 10)
-  name = _messages.StringField(11)
-  orchestrator = _messages.EnumField('OrchestratorValueValuesEnum', 12)
-  runGroup = _messages.StringField(13)
-  runPhase = _messages.EnumField('RunPhaseValueValuesEnum', 14)
-  runSet = _messages.StringField(15)
-  state = _messages.EnumField('StateValueValuesEnum', 16)
-  tools = _messages.MessageField('Tool', 17, repeated=True)
-  updateTime = _messages.StringField(18)
-  workloadDetails = _messages.MessageField('WorkloadDetails', 19)
+  autoCaptureSettings = _messages.MessageField('AutoCaptureSettings', 2)
+  configs = _messages.MessageField('Configs', 3)
+  continuousProfilingSweep = _messages.MessageField('ContinuousProfilingSweep', 4)
+  createTime = _messages.StringField(5)
+  displayName = _messages.StringField(6)
+  endTime = _messages.StringField(7)
+  errorDetails = _messages.StringField(8)
+  etag = _messages.StringField(9)
+  labels = _messages.MessageField('LabelsValue', 10)
+  metrics = _messages.MessageField('Metrics', 11)
+  name = _messages.StringField(12)
+  orchestrator = _messages.EnumField('OrchestratorValueValuesEnum', 13)
+  runGroup = _messages.StringField(14)
+  runPhase = _messages.EnumField('RunPhaseValueValuesEnum', 15)
+  runSet = _messages.StringField(16)
+  state = _messages.EnumField('StateValueValuesEnum', 17)
+  tools = _messages.MessageField('Tool', 18, repeated=True)
+  updateTime = _messages.StringField(19)
+  workloadDetails = _messages.MessageField('WorkloadDetails', 20)
 
 
 class MaintenancePolicy(_messages.Message):
@@ -2465,6 +2748,8 @@ class ManagedInstanceGroup(_messages.Message):
     bootDisk: Optional. Boot disk for the managed instance group.
     computeId: Required. ID of the compute resource used to create this
       managed instance group.
+    enablePublicIps: Optional. Whether to enable public IPs for the instances
+      in the managed instance group.
     instanceGroupManager: Output only. Name of the managed instance group, in
       the format `projects/{project}/zones/{zone}/instanceGroupManagers/{insta
       nce_group_manager}`. or `projects/{project}/regions/{region}/instanceGro
@@ -2483,12 +2768,13 @@ class ManagedInstanceGroup(_messages.Message):
 
   bootDisk = _messages.MessageField('BootDisk', 1)
   computeId = _messages.StringField(2)
-  instanceGroupManager = _messages.StringField(3)
-  instanceTemplate = _messages.StringField(4)
-  resourcePolicyConfig = _messages.MessageField('ResourcePolicyConfig', 5)
-  startupScript = _messages.StringField(6)
-  storageConfigs = _messages.MessageField('StorageConfig', 7, repeated=True)
-  targetSize = _messages.IntegerField(8)
+  enablePublicIps = _messages.BooleanField(3)
+  instanceGroupManager = _messages.StringField(4)
+  instanceTemplate = _messages.StringField(5)
+  resourcePolicyConfig = _messages.MessageField('ResourcePolicyConfig', 6)
+  startupScript = _messages.StringField(7)
+  storageConfigs = _messages.MessageField('StorageConfig', 8, repeated=True)
+  targetSize = _messages.IntegerField(9)
 
 
 class Metrics(_messages.Message):
@@ -3351,12 +3637,15 @@ class Orchestrator(_messages.Message):
   Fields:
     computeEngine: Optional. If set, indicates that the cluster should use
       Compute Engine as the orchestrator.
+    existingContainerCluster: Optional. If set, indicates that the cluster
+      should use an existing container cluster as the orchestrator.
     slurm: Optional. If set, indicates that the cluster should use Slurm as
       the orchestrator.
   """
 
   computeEngine = _messages.MessageField('ComputeEngineOrchestrator', 1)
-  slurm = _messages.MessageField('SlurmOrchestrator', 2)
+  existingContainerCluster = _messages.MessageField('ExistingContainerClusterOrchestrator', 2)
+  slurm = _messages.MessageField('SlurmOrchestrator', 3)
 
 
 class PreemptParameters(_messages.Message):
@@ -3364,14 +3653,28 @@ class PreemptParameters(_messages.Message):
 
   Fields:
     minExemptPriority: Optional. Priority threshold below which jobs are
-      eligible for preemption.
-    reclaimLicenses: Optional. Preempt to reclaim licenses.
-    reorderCount: Optional. Number of reorder attempts.
-    sendUserSignal: Optional. Send --signal at preemption.
-    strictOrder: Optional. Reorder tested job to front (cons_tres).
+      eligible for preemption. For more details, see the Slurm documentation
+      for PreemptParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_min_exempt_priority
+    reclaimLicenses: Optional. Preempt to reclaim licenses. For more details,
+      see the Slurm documentation for PreemptParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_reclaim_licenses
+    reorderCount: Optional. Number of reorder attempts. For more details, see
+      the Slurm documentation for PreemptParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_reorder_count
+    sendUserSignal: Optional. Send --signal at preemption. For more details,
+      see the Slurm documentation for PreemptParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_send_user_signal
+    strictOrder: Optional. Reorder tested job to front (cons_tres). For more
+      details, see the Slurm documentation for PreemptParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_strict_order
     suspendGraceTime: Optional. Grace period (seconds) for job suspension
-      under PreemptMode=SUSPEND.
-    youngestFirst: Optional. Preempt younger jobs first.
+      under PreemptMode=SUSPEND. For more details, see the Slurm documentation
+      for PreemptParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_suspend_grace_time
+    youngestFirst: Optional. Preempt younger jobs first. For more details, see
+      the Slurm documentation for PreemptParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_youngest_first
   """
 
   minExemptPriority = _messages.StringField(1)
@@ -3426,6 +3729,12 @@ class ProfilerSession(_messages.Message):
       Key is the target name from `profiler_targets` field.
 
   Fields:
+    analysisExecution: Optional. Execution progress and lifecycle status for
+      the diagnostic analysis.
+    analysisReport: Output only. URI to retrieve and view the synthesized
+      report.
+    autoCaptured: Output only. Indicates whether this profiler session was
+      automatically captured (e.g., triggered by a degradation event).
     createTime: Output only. The creation time of the session.
     dashboardUri: Output only. The URI to dashboard to see session specific
       data. Not specified if URI is not ready yet. Form https://? Could
@@ -3442,6 +3751,10 @@ class ProfilerSession(_messages.Message):
     isTraceEnabled: Optional. Customer setting to enable trace level details
       for the session.
     kind: Optional. Profiler session kind.
+    monitoredEvents: Output only. The resource names of the MonitoredEvents
+      associated with this session. Format: projects/{project}/locations/{loca
+      tion}/machineLearningRuns/{machine_learning_run}/monitoredEvents/{monito
+      red_event}
     name: Identifier. The name of the profiler session. Format: projects/{proj
       ect}/locations/{location}/machineLearningRuns/{machine_learning_run}/pro
       filerSessions/{profiler_session}
@@ -3567,24 +3880,28 @@ class ProfilerSession(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  createTime = _messages.StringField(1)
-  dashboardUri = _messages.StringField(2)
-  deviceTracerLevel = _messages.EnumField('DeviceTracerLevelValueValuesEnum', 3)
-  duration = _messages.StringField(4)
-  endTime = _messages.StringField(5)
-  etag = _messages.StringField(6)
-  hostTracerLevel = _messages.EnumField('HostTracerLevelValueValuesEnum', 7)
-  isTraceEnabled = _messages.BooleanField(8)
-  kind = _messages.EnumField('KindValueValuesEnum', 9)
-  name = _messages.StringField(10)
-  profilerTargets = _messages.StringField(11, repeated=True)
-  pythonTracerLevel = _messages.EnumField('PythonTracerLevelValueValuesEnum', 12)
-  startTime = _messages.StringField(13)
-  state = _messages.EnumField('StateValueValuesEnum', 14)
-  status = _messages.MessageField('Status', 15)
-  storageFolderUri = _messages.StringField(16)
-  targetSessions = _messages.MessageField('TargetSessionsValue', 17)
-  xprofServerPort = _messages.IntegerField(18, variant=_messages.Variant.INT32)
+  analysisExecution = _messages.MessageField('AnalysisExecution', 1)
+  analysisReport = _messages.MessageField('AnalysisReport', 2)
+  autoCaptured = _messages.BooleanField(3)
+  createTime = _messages.StringField(4)
+  dashboardUri = _messages.StringField(5)
+  deviceTracerLevel = _messages.EnumField('DeviceTracerLevelValueValuesEnum', 6)
+  duration = _messages.StringField(7)
+  endTime = _messages.StringField(8)
+  etag = _messages.StringField(9)
+  hostTracerLevel = _messages.EnumField('HostTracerLevelValueValuesEnum', 10)
+  isTraceEnabled = _messages.BooleanField(11)
+  kind = _messages.EnumField('KindValueValuesEnum', 12)
+  monitoredEvents = _messages.StringField(13, repeated=True)
+  name = _messages.StringField(14)
+  profilerTargets = _messages.StringField(15, repeated=True)
+  pythonTracerLevel = _messages.EnumField('PythonTracerLevelValueValuesEnum', 16)
+  startTime = _messages.StringField(17)
+  state = _messages.EnumField('StateValueValuesEnum', 18)
+  status = _messages.MessageField('Status', 19)
+  storageFolderUri = _messages.StringField(20)
+  targetSessions = _messages.MessageField('TargetSessionsValue', 21)
+  xprofServerPort = _messages.IntegerField(22, variant=_messages.Variant.INT32)
 
 
 class ProfilerTarget(_messages.Message):
@@ -3637,18 +3954,41 @@ class SchedulerParameters(_messages.Message):
   r"""Parameters used to control various scheduling behaviors.
 
   Fields:
-    bfBusyNodes: Optional. Prefer busy nodes during backfill (cons_tres).
-    bfContinue: Optional. Resume backfill after lock release.
-    bfInterval: Optional. Seconds between backfill cycles.
-    bfMaxJobPart: Optional. Per-partition backfill job cap.
-    bfMaxJobTest: Optional. Max jobs evaluated per backfill cycle.
-    bfMaxJobUser: Optional. Per-user backfill job cap.
+    bfBusyNodes: Optional. Prefer busy nodes during backfill (cons_tres). For
+      more details, see the Slurm documentation for SchedulerParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_bf_busy_nodes
+    bfContinue: Optional. Resume backfill after lock release. If unset, this
+      is enabled by default in the cluster configuration. For more details,
+      see the Slurm documentation for SchedulerParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_bf_continue
+    bfInterval: Optional. Seconds between backfill cycles. For more details,
+      see the Slurm documentation for SchedulerParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_bf_interval
+    bfMaxJobPart: Optional. Per-partition backfill job cap. For more details,
+      see the Slurm documentation for SchedulerParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_bf_max_job_part
+    bfMaxJobTest: Optional. Max jobs evaluated per backfill cycle. For more
+      details, see the Slurm documentation for SchedulerParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_bf_max_job_test
+    bfMaxJobUser: Optional. Per-user backfill job cap. For more details, see
+      the Slurm documentation for SchedulerParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_bf_max_job_user
     bfMinAgeReserve: Optional. Job age (seconds) before it can reserve
-      resources.
-    bfResolution: Optional. Backfill time resolution (seconds).
-    bfWindow: Optional. Minutes of backfill scheduling look-ahead.
-    defaultQueueDepth: Optional. Main scheduler jobs considered per cycle.
+      resources. For more details, see the Slurm documentation for
+      SchedulerParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_bf_min_age_reserve
+    bfResolution: Optional. Backfill time resolution (seconds). For more
+      details, see the Slurm documentation for SchedulerParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_bf_resolution
+    bfWindow: Optional. Minutes of backfill scheduling look-ahead. For more
+      details, see the Slurm documentation for SchedulerParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_bf_window
+    defaultQueueDepth: Optional. Main scheduler jobs considered per cycle. For
+      more details, see the Slurm documentation for SchedulerParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_default_queue_depth
     noholdOnPrologFail: Optional. Don't hold jobs on prolog script failure.
+      For more details, see the Slurm documentation for SchedulerParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_nohold_on_prolog_fail
   """
 
   bfBusyNodes = _messages.BooleanField(1)
@@ -3700,10 +4040,31 @@ class SlurmConfig(_messages.Message):
     accountingStorageEnforceFlags: Optional. Flags to control the level of
       association to impose on job submissions. By default no flags are set.
       Corresponds to AccountingStorageEnforce.
+    accountingStorageTres: Optional. Comma-separated list of additional
+      resources you wish to track on the cluster in Slurm accounting. gres/gpu
+      and gres/tpu are always tracked by default, in addition to standard
+      resources tracked per SchedMD documentation. For more details, see the
+      Slurm documentation for AccountingStorageTRES:
+      https://slurm.schedmd.com/tres.html#AccountingStorageTRES
     additionalSettings: Optional. Additional
       [slurm.conf](https://slurm.schedmd.com/slurm.conf.html) settings. Keys
       and values are injected directly into slurm.conf without any semantic
       validation.
+    defMemPerCpu: Optional. Default real memory size available per allocated
+      CPU in megabytes. For more details, see the Slurm documentation for
+      DefMemPerCPU: https://slurm.schedmd.com/slurm.conf.html#OPT_DefMemPerCPU
+    enforcePartLimits: Optional. Enforces partition limits at job submission
+      and/or run time. For more details, see the Slurm documentation for
+      EnforcePartLimits:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_EnforcePartLimits
+    fairShareDampeningFactor: Optional. Dampens the effect of tree structure
+      of associations in fairshare calculation. For more details, see the
+      Slurm documentation for FairShareDampeningFactor:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_FairShareDampeningFactor
+    firstJobId: Optional. The job ID to be used for the first job submitted to
+      Slurm after the system starts. For more details, see the Slurm
+      documentation for FirstJobId:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_FirstJobId
     healthCheckInterval: Optional. The interval in seconds between executions
       of HealthCheckProgram. If provided, must be > 0. To disable health
       checks, use disable_health_check_program instead.
@@ -3713,16 +4074,50 @@ class SlurmConfig(_messages.Message):
       separator.
     healthCheckProgram: Optional. The fully-qualified path to the health check
       program to be executed.
+    jobRequeue: Optional. Controls the default ability for batch jobs to be
+      requeued. For more details, see the Slurm documentation for JobRequeue:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_JobRequeue
+    overTimeLimit: Optional. Number of minutes by which a job can exceed its
+      time limit before being canceled. For more details, see the Slurm
+      documentation for OverTimeLimit:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_OverTimeLimit
     preemptExemptTime: Optional. Specifies minimum run time of jobs before
       they are considered for preemption.
     preemptMode: Optional. Specifies the mechanism used to preempt jobs or
       enable gang scheduling.
-    preemptParameters: Optional. Preempt parameters for Slurm configuration.
+    preemptParameters: Optional. Parameters used to control various preemption
+      behaviors. For more details, see the Slurm documentation for
+      PreemptParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_PreemptParameters
     preemptType: Optional. Specifies the plugin used to identify which jobs
       can be preempted in order to start a pending job.
+    priorityCalcPeriod: Optional. The period of time in seconds between
+      recalculations of job priority. For more details, see the Slurm
+      documentation for PriorityCalcPeriod:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_PriorityCalcPeriod
+    priorityDecayHalfLife: Optional. The period of time in days, hours,
+      minutes, or seconds across which historical usage will be decayed. For
+      more details, see the Slurm documentation for PriorityDecayHalfLife:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_PriorityDecayHalfLife
+    priorityFavorSmall: Optional. Specifies that small jobs should be given
+      priority over large jobs. For more details, see the Slurm documentation
+      for PriorityFavorSmall:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_PriorityFavorSmall
+    priorityFlags: Optional. Flags which modify priority factor calculation.
+      Multiple comma-separated values can be provided together as a single
+      string. For more details, see the Slurm documentation for PriorityFlags:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_PriorityFlags
+    priorityMaxAge: Optional. Specifies the time period across which the age
+      factor is scaled up to 1.0. For more details, see the Slurm
+      documentation for PriorityMaxAge:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_PriorityMaxAge
     priorityType: Optional. Specifies the plugin to be used in establishing a
       job's scheduling priority. Set this value to "priority/multifactor" to
       enable the Multifactor Job Priority Plugin.
+    priorityUsageResetPeriod: Optional. Period of time after which usage is
+      reset to zero for all users. For more details, see the Slurm
+      documentation for PriorityUsageResetPeriod:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_PriorityUsageResetPeriod
     priorityWeightAge: Optional. An unsigned integer that scales the
       contribution of the age factor.
     priorityWeightAssoc: Optional. An unsigned integer that scales the
@@ -3751,7 +4146,16 @@ class SlurmConfig(_messages.Message):
       released manually by the user. Default is empty. Corresponds to
       RequeueExitHold.
     schedulerParameters: Optional. Parameters used to control various
-      scheduling behaviors.
+      scheduling behaviors. For more details, see the Slurm documentation for
+      SchedulerParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_SchedulerParameters
+    selectTypeParameters: Optional. Parameters used to control various
+      resource allocation behaviors. Multiple comma-separated values can be
+      provided together as a single string. Note that `SelectType` is set to
+      `select/cons_tres`, so only parameters that correspond to that algorithm
+      are supported. If unspecified, the default is `CR_Core_Memory`. For more
+      details, see the Slurm documentation for SelectTypeParameters:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_SelectTypeParameters
   """
 
   class AccountingStorageEnforceFlagsValueListEntryValuesEnum(_messages.Enum):
@@ -3917,27 +4321,41 @@ class SlurmConfig(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   accountingStorageEnforceFlags = _messages.EnumField('AccountingStorageEnforceFlagsValueListEntryValuesEnum', 1, repeated=True)
-  additionalSettings = _messages.MessageField('AdditionalSettingsValue', 2)
-  healthCheckInterval = _messages.IntegerField(3)
-  healthCheckNodeState = _messages.StringField(4)
-  healthCheckProgram = _messages.StringField(5)
-  preemptExemptTime = _messages.StringField(6)
-  preemptMode = _messages.EnumField('PreemptModeValueListEntryValuesEnum', 7, repeated=True)
-  preemptParameters = _messages.MessageField('PreemptParameters', 8)
-  preemptType = _messages.EnumField('PreemptTypeValueValuesEnum', 9)
-  priorityType = _messages.EnumField('PriorityTypeValueValuesEnum', 10)
-  priorityWeightAge = _messages.IntegerField(11)
-  priorityWeightAssoc = _messages.IntegerField(12)
-  priorityWeightFairshare = _messages.IntegerField(13)
-  priorityWeightJobSize = _messages.IntegerField(14)
-  priorityWeightPartition = _messages.IntegerField(15)
-  priorityWeightQos = _messages.IntegerField(16)
-  priorityWeightTres = _messages.StringField(17)
-  prologEpilogTimeout = _messages.StringField(18)
-  prologFlags = _messages.EnumField('PrologFlagsValueListEntryValuesEnum', 19, repeated=True)
-  requeueExitCodes = _messages.IntegerField(20, repeated=True)
-  requeueHoldExitCodes = _messages.IntegerField(21, repeated=True)
-  schedulerParameters = _messages.MessageField('SchedulerParameters', 22)
+  accountingStorageTres = _messages.StringField(2)
+  additionalSettings = _messages.MessageField('AdditionalSettingsValue', 3)
+  defMemPerCpu = _messages.StringField(4)
+  enforcePartLimits = _messages.StringField(5)
+  fairShareDampeningFactor = _messages.StringField(6)
+  firstJobId = _messages.StringField(7)
+  healthCheckInterval = _messages.IntegerField(8)
+  healthCheckNodeState = _messages.StringField(9)
+  healthCheckProgram = _messages.StringField(10)
+  jobRequeue = _messages.StringField(11)
+  overTimeLimit = _messages.StringField(12)
+  preemptExemptTime = _messages.StringField(13)
+  preemptMode = _messages.EnumField('PreemptModeValueListEntryValuesEnum', 14, repeated=True)
+  preemptParameters = _messages.MessageField('PreemptParameters', 15)
+  preemptType = _messages.EnumField('PreemptTypeValueValuesEnum', 16)
+  priorityCalcPeriod = _messages.StringField(17)
+  priorityDecayHalfLife = _messages.StringField(18)
+  priorityFavorSmall = _messages.StringField(19)
+  priorityFlags = _messages.StringField(20)
+  priorityMaxAge = _messages.StringField(21)
+  priorityType = _messages.EnumField('PriorityTypeValueValuesEnum', 22)
+  priorityUsageResetPeriod = _messages.StringField(23)
+  priorityWeightAge = _messages.IntegerField(24)
+  priorityWeightAssoc = _messages.IntegerField(25)
+  priorityWeightFairshare = _messages.IntegerField(26)
+  priorityWeightJobSize = _messages.IntegerField(27)
+  priorityWeightPartition = _messages.IntegerField(28)
+  priorityWeightQos = _messages.IntegerField(29)
+  priorityWeightTres = _messages.StringField(30)
+  prologEpilogTimeout = _messages.StringField(31)
+  prologFlags = _messages.EnumField('PrologFlagsValueListEntryValuesEnum', 32, repeated=True)
+  requeueExitCodes = _messages.IntegerField(33, repeated=True)
+  requeueHoldExitCodes = _messages.IntegerField(34, repeated=True)
+  schedulerParameters = _messages.MessageField('SchedulerParameters', 35)
+  selectTypeParameters = _messages.StringField(36)
 
 
 class SlurmLoginNodes(_messages.Message):
@@ -4024,17 +4442,28 @@ class SlurmLoginNodes(_messages.Message):
 
 
 class SlurmNodeConfig(_messages.Message):
-  r"""Slurm configuration for nodes in a nodeset.
+  r"""Slurm configuration for a node.
 
   Fields:
     coreSpecCount: Optional. Number of physical cores reserved for system use.
+      Cannot be specified if `cpu_spec_list` is set. For more details, see the
+      Slurm documentation for CoreSpecCount:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_CoreSpecCount
     cpuSpecList: Optional. Comma-separated list of Slurm abstract CPU IDs
-      reserved for system use.
-    features: Optional. Comma-separated list of arbitrary strings indicative of
-      some characteristic associated with the node.
+      reserved for system use. Cannot be specified if `core_spec_count` is
+      set. For more details, see the Slurm documentation for CpuSpecList:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_CpuSpecList
+    features: Optional. Comma-separated list of arbitrary strings indicative
+      of some characteristic associated with the node. For more details, see
+      the Slurm documentation for Features:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_Features
     memSpecLimit: Optional. Amount of RealMemory, in mebibytes, reserved for
-      system use.
-    weight: Optional. Weight of the nodes in the nodeset.
+      system use and not available for user allocations. For more details, see
+      the Slurm documentation for MemSpecLimit:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_MemSpecLimit
+    weight: Optional. Weight of the nodes in the nodeset. For more details,
+      see the Slurm documentation for Weight:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_Weight
   """
 
   coreSpecCount = _messages.StringField(1)
@@ -4141,6 +4570,10 @@ class SlurmOrchestrator(_messages.Message):
   Fields:
     config: Optional. Unstable: Contact hypercompute-service-eng@ before
       using.
+    controllerVersion: Optional. The version of the Slurm controller to deploy
+      (e.g. "25.05", "26.05"). This value acts as an absolute floor. The
+      system may automatically upgrade the cluster to a higher supported
+      version, but will never downgrade it below this specified value.
     defaultPartition: Optional. Default partition to use for submitted jobs
       that do not explicitly specify a partition. Required if and only if
       there is more than one partition, in which case it must match the id of
@@ -4149,6 +4582,13 @@ class SlurmOrchestrator(_messages.Message):
       service-eng@ before using. If true, health checking is disabled, and
       health_check_interval, health_check_node_state, and health_check_program
       should not be passed in.
+    effectiveControllerVersion: Output only. The effective version of the
+      Slurm controller deployed (e.g. "25.05", "26.05"). If
+      `controller_version` is non-empty, this field will be set to the same
+      value as `controller_version`. Otherwise, this field will be set to a
+      system-selected version. If the system performs an automated migration
+      of the cluster, this field will be updated to reflect the new deployed
+      version. `controller_version` will remain unchanged in this case.
     epilogBashScripts: Optional. Slurm [epilog
       scripts](https://slurm.schedmd.com/prolog_epilog.html), which will be
       executed by compute nodes whenever a node finishes running a job. Values
@@ -4172,15 +4612,17 @@ class SlurmOrchestrator(_messages.Message):
   """
 
   config = _messages.MessageField('SlurmConfig', 1)
-  defaultPartition = _messages.StringField(2)
-  disableHealthCheckProgram = _messages.BooleanField(3)
-  epilogBashScripts = _messages.StringField(4, repeated=True)
-  loginNodes = _messages.MessageField('SlurmLoginNodes', 5)
-  nodeSets = _messages.MessageField('SlurmNodeSet', 6, repeated=True)
-  partitions = _messages.MessageField('SlurmPartition', 7, repeated=True)
-  prologBashScripts = _messages.StringField(8, repeated=True)
-  taskEpilogBashScripts = _messages.StringField(9, repeated=True)
-  taskPrologBashScripts = _messages.StringField(10, repeated=True)
+  controllerVersion = _messages.StringField(2)
+  defaultPartition = _messages.StringField(3)
+  disableHealthCheckProgram = _messages.BooleanField(4)
+  effectiveControllerVersion = _messages.StringField(5)
+  epilogBashScripts = _messages.StringField(6, repeated=True)
+  loginNodes = _messages.MessageField('SlurmLoginNodes', 7)
+  nodeSets = _messages.MessageField('SlurmNodeSet', 8, repeated=True)
+  partitions = _messages.MessageField('SlurmPartition', 9, repeated=True)
+  prologBashScripts = _messages.StringField(10, repeated=True)
+  taskEpilogBashScripts = _messages.StringField(11, repeated=True)
+  taskPrologBashScripts = _messages.StringField(12, repeated=True)
 
 
 class SlurmPartition(_messages.Message):
@@ -4211,31 +4653,62 @@ class SlurmPartitionConfig(_messages.Message):
 
   Fields:
     allowAccounts: Optional. Comma-separated list of accounts allowed to run
-      jobs in this partition.
+      jobs in this partition. For more details, see the Slurm documentation
+      for AllowAccounts:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_AllowAccounts
     allowQos: Optional. Comma-separated list of QOS allowed to run jobs in
-      this partition.
+      this partition. For more details, see the Slurm documentation for
+      AllowQos: https://slurm.schedmd.com/slurm.conf.html#OPT_AllowQos
     defMemPerCpu: Optional. Default real memory size available per allocated
-      CPU in megabytes.
-    defaultTime: Optional. Default job run time limit for the partition.
+      CPU in megabytes. For more details, see the Slurm documentation for
+      DefMemPerCPU: https://slurm.schedmd.com/slurm.conf.html#OPT_DefMemPerCPU
+    defaultTime: Optional. Default run time limit for jobs submitted to the
+      partition. For more details, see the Slurm documentation for
+      DefaultTime: https://slurm.schedmd.com/slurm.conf.html#OPT_DefaultTime
     denyAccounts: Optional. Comma-separated list of accounts denied from
-      running jobs in this partition.
+      running jobs in this partition. For more details, see the Slurm
+      documentation for DenyAccounts:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_DenyAccounts
     denyQos: Optional. Comma-separated list of QOS denied from running jobs in
-      this partition.
-    exclusiveUser: Optional. Controls whether nodes are dedicated to a single
-      user.
-    graceTime: Optional. Grace time in seconds for job preemption.
+      this partition. For more details, see the Slurm documentation for
+      DenyQos: https://slurm.schedmd.com/slurm.conf.html#OPT_DenyQos
+    exclusiveUser: Optional. Controls whether nodes are allocated exclusively
+      to single users. For more details, see the Slurm documentation for
+      ExclusiveUser:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_ExclusiveUser
+    graceTime: Optional. Time in seconds allowed for preemption grace period.
+      For more details, see the Slurm documentation for GraceTime:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_GraceTime
     maxNodes: Optional. Maximum count of nodes which may be allocated to any
-      single job.
-    maxTime: Optional. Maximum job run time limit for the partition.
+      single job. For more details, see the Slurm documentation for MaxNodes:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_MaxNodes
+    maxTime: Optional. Maximum run time limit for jobs submitted to the
+      partition. For more details, see the Slurm documentation for MaxTime:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_MaxTime
     overSubscribe: Optional. Controls whether nodes or CPUs can be
-      oversubscribed by multiple jobs.
-    overTimeLimit: Optional. Number of minutes by which a job can exceed its
-      time limit before being canceled.
-    preemptMode: Optional. Mechanism used to preempt jobs in this partition.
-    priorityJobFactor: Optional. Priority job factor for the partition.
-    priorityTier: Optional. Priority tier for the partition.
-    qos: Optional. Specific QOS for the partition.
-    tresBillingWeights: Optional. TRES billing weights for the partition.
+      oversubscribed by multiple jobs. For more details, see the Slurm
+      documentation for OverSubscribe:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_OverSubscribe
+    overTimeLimit: Optional. Number of minutes by which jobs can exceed their
+      time limit. For more details, see the Slurm documentation for
+      OverTimeLimit:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_OverTimeLimit
+    preemptMode: Optional. Preemption mechanism used for jobs in this
+      partition. For more details, see the Slurm documentation for
+      PreemptMode: https://slurm.schedmd.com/slurm.conf.html#OPT_PreemptMode
+    priorityJobFactor: Optional. Priority job factor for the partition. For
+      more details, see the Slurm documentation for PriorityJobFactor:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_PriorityJobFactor
+    priorityTier: Optional. Priority tier for the partition. For more details,
+      see the Slurm documentation for PriorityTier:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_PriorityTier
+    qos: Optional. Quality of Service (QOS) associated with the partition. For
+      more details, see the Slurm documentation for QOS:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_QOS
+    tresBillingWeights: Optional. TRES billing weights used for calculating
+      job cost in the partition. For more details, see the Slurm documentation
+      for TRESBillingWeights:
+      https://slurm.schedmd.com/slurm.conf.html#OPT_TRESBillingWeights
   """
 
   allowAccounts = _messages.StringField(1)
@@ -4635,19 +5108,22 @@ class Tool(_messages.Message):
   r"""A tool for a Machine Learning run.
 
   Fields:
+    diagnosticsAgent: Optional. Diagnostics AI Agent metadata.
     smon: Optional. Smon (System Monitored) tool Signifies that the workload
       is under active monitoring.
     xprof: Optional. XProf related metadata
   """
 
-  smon = _messages.MessageField('Smon', 1)
-  xprof = _messages.MessageField('Xprof', 2)
+  diagnosticsAgent = _messages.MessageField('DiagnosticsAgent', 1)
+  smon = _messages.MessageField('Smon', 2)
+  xprof = _messages.MessageField('Xprof', 3)
 
 
 class UpdateLoginNode(_messages.Message):
   r"""When set in OperationStep, indicates that a login node should be
   updated.
   """
+
 
 
 class UpdateNodeset(_messages.Message):
@@ -4666,6 +5142,7 @@ class UpdateOrchestrator(_messages.Message):
   """
 
 
+
 class UpdatePartition(_messages.Message):
   r"""When set in OperationStep, indicates that a partition should be updated.
 
@@ -4682,16 +5159,18 @@ class WorkloadDetails(_messages.Message):
   cluster, Google Compute Engine instance etc.
 
   Fields:
+    custom: Custom Orchestrator Workload metadata.
     gce: GCE Workload metadata.
     gke: GKE Workload metadata.
     slurm: Slurm Workload metadata.
     targets: Optional. List of Targets/Hosts associated with the workload.
   """
 
-  gce = _messages.MessageField('GCEWorkloadDetails', 1)
-  gke = _messages.MessageField('GKEWorkloadDetails', 2)
-  slurm = _messages.MessageField('SlurmWorkloadDetails', 3)
-  targets = _messages.MessageField('WorkloadTarget', 4, repeated=True)
+  custom = _messages.MessageField('CustomWorkloadDetails', 1)
+  gce = _messages.MessageField('GCEWorkloadDetails', 2)
+  gke = _messages.MessageField('GKEWorkloadDetails', 3)
+  slurm = _messages.MessageField('SlurmWorkloadDetails', 4)
+  targets = _messages.MessageField('WorkloadTarget', 5, repeated=True)
 
 
 class WorkloadTarget(_messages.Message):

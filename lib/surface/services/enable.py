@@ -144,11 +144,14 @@ class EnableAlpha(base.SilentCommand):
     Returns:
       Nothing.
     """
-    project = (
-        args.project
-        if args.IsSpecified('project')
-        else properties.VALUES.core.project.Get(required=True)
-    )
+    if not (args.IsSpecified('folder') or args.IsSpecified('organization')):
+      project = (
+          args.project
+          if args.IsSpecified('project')
+          else properties.VALUES.core.project.Get(required=True)
+      )
+    else:
+      project = args.project
     folder = args.folder if args.IsSpecified('folder') else None
     organization = (
         args.organization if args.IsSpecified('organization') else None
@@ -195,26 +198,10 @@ class Enable(base.SilentCommand):
 
   @staticmethod
   def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
-    """
     common_flags.available_service_flag(suffix='to enable').AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
-    """Run 'services enable'.
-
-    Args:
-      args: argparse.Namespace, The arguments that this command was invoked
-          with.
-
-    Returns:
-      Nothing.
-    """
     project = properties.VALUES.core.project.Get(required=True)
     if len(args.service) == 1:
       op = serviceusage.EnableApiCall(project, args.service[0])

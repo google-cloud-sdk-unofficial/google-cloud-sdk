@@ -134,6 +134,24 @@ class RevisionPrinter(cp.CustomPrinterBase):
     return k8s_util.GetThreatDetectionEnabled(record)
 
   @staticmethod
+  def GetAmbientNetworkingEnabled(record: revision.Revision) -> str:
+    val = (
+        record.annotations.get(revision.AMBIENT_NETWORKING_ANNOTATION) or ''
+    ).lower()
+    if val == 'true':
+      return 'Enabled'
+    return ''
+
+  @staticmethod
+  def GetAmbientScope(record: revision.Revision) -> str:
+    if not RevisionPrinter.GetAmbientNetworkingEnabled(record):
+      return ''
+    return (
+        record.annotations.get(revision.AMBIENT_SCOPE_ANNOTATION, '')
+        or 'global'
+    )
+
+  @staticmethod
   def _GetIdentityLabels(record):
     identity_type = RevisionPrinter.GetIdentityType(record)
     if identity_type in ['workload-identity', 'agent-identity']:
@@ -192,6 +210,11 @@ class RevisionPrinter(cp.CustomPrinterBase):
         ),
         ('Volumes', container_util.GetVolumes(record)),
         ('Threat Detection', RevisionPrinter.GetThreatDetectionEnabled(record)),
+        (
+            'Ambient Networking',
+            RevisionPrinter.GetAmbientNetworkingEnabled(record),
+        ),
+        ('Ambient Scope', RevisionPrinter.GetAmbientScope(record)),
     ])
     return cp.Lines([container_util.GetContainers(record), cp.Labeled(labels)])
 

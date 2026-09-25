@@ -11475,6 +11475,32 @@ Resources documentation.
         supports_download=False,
     )
 
+    def SetName(self, request, global_params=None):
+      r"""Sets name of an interconnect.
+
+      Args:
+        request: (ComputeInterconnectsSetNameRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('SetName')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SetName.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.interconnects.setName',
+        ordered_params=['project', 'interconnect'],
+        path_params=['interconnect', 'project'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/global/interconnects/{interconnect}/setName',
+        request_field='interconnectsSetNameRequest',
+        request_type_name='ComputeInterconnectsSetNameRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def TestIamPermissions(self, request, global_params=None):
       r"""Returns permissions that a caller has on the specified resource.
 

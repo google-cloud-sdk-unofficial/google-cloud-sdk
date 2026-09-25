@@ -1,0 +1,35 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    Import a `CdnEdgeExtension` resource.
+  description: |
+    Import a `CdnEdgeExtension` resource defined in a YAML file.
+  examples: |
+    To import a global `CdnEdgeExtension` resource named
+    `my-cdn-edge-extension` from a YAML file, run:
+
+        $ {command} my-cdn-edge-extension --source=my-cdn-edge-extension.yaml --location=global
+
+request:
+  collection: networkservices.projects.locations.cdnEdgeExtensions
+  ALPHA:
+    api_version: v1alpha1
+
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.service_extensions.resources:cdnEdgeExtension
+    help_text: |
+      ID of the new or updated `CdnEdgeExtension` resource.
+
+async:
+  collection: networkservices.projects.locations.operations
+
+import:
+  abort_if_equivalent: true
+  create_if_not_exists: true
+  create_request:
+    collection: networkservices.projects.locations.cdnEdgeExtensions
+    ALPHA:
+      api_version: v1alpha1
+    method: create

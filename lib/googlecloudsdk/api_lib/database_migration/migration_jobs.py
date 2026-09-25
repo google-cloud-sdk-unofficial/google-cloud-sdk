@@ -267,18 +267,27 @@ class MigrationJobsClient(object):
     return conversion_workspace
 
   def _GetPerformanceConfig(self, args):
-    """Returns the performance config with dump parallel level.
+    """Returns the performance config with dump and load parallel level.
 
     Args:
       args: argparse.Namespace, the arguments that this command was invoked
         with.
     """
-    performance_config_obj = self.messages.PerformanceConfig
-    return performance_config_obj(
-        dumpParallelLevel=performance_config_obj.DumpParallelLevelValueValuesEnum.lookup_by_name(
-            args.dump_parallel_level
-        )
-    )
+    performance_config = self.messages.PerformanceConfig()
+    if args.IsKnownAndSpecified('dump_parallel_level'):
+      performance_config.dumpParallelLevel = self.messages.PerformanceConfig.DumpParallelLevelValueValuesEnum.lookup_by_name(
+          args.dump_parallel_level
+      )
+    if args.IsKnownAndSpecified('load_parallel_level'):
+      enum_name = (
+          args.load_parallel_level
+          if args.load_parallel_level.startswith('LOAD_')
+          else f'LOAD_{args.load_parallel_level}'
+      )
+      performance_config.loadParallelLevel = self.messages.PerformanceConfig.LoadParallelLevelValueValuesEnum.lookup_by_name(
+          enum_name
+      )
+    return performance_config
 
   def _GetSqlServerDatabaseBackups(
       self, sqlserver_databases, sqlserver_encrypted_databases
@@ -813,7 +822,9 @@ class MigrationJobsClient(object):
       )
       migration_job_obj.filter = server_filter
 
-    if args.IsKnownAndSpecified('dump_parallel_level'):
+    if args.IsKnownAndSpecified(
+        'dump_parallel_level'
+    ) or args.IsKnownAndSpecified('load_parallel_level'):
       migration_job_obj.performanceConfig = self._GetPerformanceConfig(args)
 
     if args.IsKnownAndSpecified('dump_type'):
@@ -1061,6 +1072,8 @@ class MigrationJobsClient(object):
       update_fields.append('vpcPeeringConnectivity.vpc')
     if args.IsKnownAndSpecified('dump_parallel_level'):
       update_fields.append('performanceConfig.dumpParallelLevel')
+    if args.IsKnownAndSpecified('load_parallel_level'):
+      update_fields.append('performanceConfig.loadParallelLevel')
     if args.IsKnownAndSpecified('dump_type'):
       update_fields.append('dumpType')
     if args.IsKnownAndSpecified('filter'):
@@ -1139,7 +1152,9 @@ class MigrationJobsClient(object):
       migration_job.source = source_ref.RelativeName()
     if args.IsSpecified('destination'):
       migration_job.destination = destination_ref.RelativeName()
-    if args.IsKnownAndSpecified('dump_parallel_level'):
+    if args.IsKnownAndSpecified(
+        'dump_parallel_level'
+    ) or args.IsKnownAndSpecified('load_parallel_level'):
       migration_job.performanceConfig = self._GetPerformanceConfig(args)
     if args.IsKnownAndSpecified('filter'):
       args.filter, server_filter = filter_rewrite.Rewriter().Rewrite(

@@ -25,6 +25,17 @@ class Addressable(_messages.Message):
   url = _messages.StringField(1)
 
 
+class AllowEgress(_messages.Message):
+  r"""Egress configuration for the sandbox.
+
+  Fields:
+    tlsInterception: Optional. Whether to enable TLS interception for outbound
+      traffic.
+  """
+
+  tlsInterception = _messages.BooleanField(1)
+
+
 class AuditConfig(_messages.Message):
   r"""Specifies the audit configuration for a service. The configuration
   determines which permission types are logged, and what identities, if any,
@@ -421,6 +432,7 @@ class Container(_messages.Message):
       environment variable for the container to listen on.
     readinessProbe: Readiness probe to be used for health checks.
     resources: Compute Resources required by this container.
+    sandbox: Optional. Sandbox configuration for the container.
     sandboxLauncher: Optional. Indicates that this container can act as a
       sandbox supervisor and launch sandboxes.
     securityContext: Not supported by Cloud Run.
@@ -460,13 +472,14 @@ class Container(_messages.Message):
   ports = _messages.MessageField('ContainerPort', 9, repeated=True)
   readinessProbe = _messages.MessageField('Probe', 10)
   resources = _messages.MessageField('ResourceRequirements', 11)
-  sandboxLauncher = _messages.BooleanField(12)
-  securityContext = _messages.MessageField('SecurityContext', 13)
-  startupProbe = _messages.MessageField('Probe', 14)
-  terminationMessagePath = _messages.StringField(15)
-  terminationMessagePolicy = _messages.StringField(16)
-  volumeMounts = _messages.MessageField('VolumeMount', 17, repeated=True)
-  workingDir = _messages.StringField(18)
+  sandbox = _messages.MessageField('Sandbox', 12)
+  sandboxLauncher = _messages.BooleanField(13)
+  securityContext = _messages.MessageField('SecurityContext', 14)
+  startupProbe = _messages.MessageField('Probe', 15)
+  terminationMessagePath = _messages.StringField(16)
+  terminationMessagePolicy = _messages.StringField(17)
+  volumeMounts = _messages.MessageField('VolumeMount', 18, repeated=True)
+  workingDir = _messages.StringField(19)
 
 
 class ContainerOverride(_messages.Message):
@@ -3555,7 +3568,7 @@ class ObjectMeta(_messages.Message):
       `run.googleapis.com/custom-audiences`: Service. *
       `run.googleapis.com/default-url-disabled`: Service. *
       `run.googleapis.com/description`: Service. *
-      `run.googleapis.com/encryption-key-shutdown-hours`: Revision *
+      `run.googleapis.com/encryption-key-shutdown-hours`: Revision. *
       `run.googleapis.com/encryption-key`: Revision, Execution, Instance. *
       `run.googleapis.com/execution-environment`: Revision, Execution. *
       `run.googleapis.com/gc-traffic-tags`: Service. *
@@ -3607,7 +3620,7 @@ class ObjectMeta(_messages.Message):
       `run.googleapis.com/custom-audiences`: Service. *
       `run.googleapis.com/default-url-disabled`: Service. *
       `run.googleapis.com/description`: Service. *
-      `run.googleapis.com/encryption-key-shutdown-hours`: Revision *
+      `run.googleapis.com/encryption-key-shutdown-hours`: Revision. *
       `run.googleapis.com/encryption-key`: Revision, Execution, Instance. *
       `run.googleapis.com/execution-environment`: Revision, Execution. *
       `run.googleapis.com/gc-traffic-tags`: Service. *
@@ -3689,7 +3702,7 @@ class ObjectMeta(_messages.Message):
     `run.googleapis.com/custom-audiences`: Service. *
     `run.googleapis.com/default-url-disabled`: Service. *
     `run.googleapis.com/description`: Service. *
-    `run.googleapis.com/encryption-key-shutdown-hours`: Revision *
+    `run.googleapis.com/encryption-key-shutdown-hours`: Revision. *
     `run.googleapis.com/encryption-key`: Revision, Execution, Instance. *
     `run.googleapis.com/execution-environment`: Revision, Execution. *
     `run.googleapis.com/gc-traffic-tags`: Service. * `run.googleapis.com/gpu-
@@ -5863,6 +5876,21 @@ class RunProjectsLocationsWorkerpoolsTestIamPermissionsRequest(_messages.Message
 
   resource = _messages.StringField(1, required=True)
   testIamPermissionsRequest = _messages.MessageField('TestIamPermissionsRequest', 2)
+
+
+class Sandbox(_messages.Message):
+  r"""Settings for the secure sandbox environment.
+
+  Fields:
+    allowEgress: Optional. Egress configuration for the sandbox. If this field
+      is not set, egress is disabled by default.
+    identity: Optional. The identity assigned to the sandbox. Keywords "none"
+      and "passthrough" are reserved for standard platform identities. If not
+      specified, the system defaults to "none".
+  """
+
+  allowEgress = _messages.MessageField('AllowEgress', 1)
+  identity = _messages.StringField(2)
 
 
 class SandboxConfiguration(_messages.Message):

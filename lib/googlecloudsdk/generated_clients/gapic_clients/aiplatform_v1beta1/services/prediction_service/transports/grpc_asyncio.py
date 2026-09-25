@@ -520,8 +520,10 @@ class PredictionServiceGrpcAsyncIOTransport(PredictionServiceTransport):
             Awaitable[prediction_service.StreamingPredictResponse]]:
         r"""Return a callable for the streaming predict method over gRPC.
 
-        Perform a streaming online prediction request for
-        Vertex first-party products and frameworks.
+        Deprecated: Renamed to
+        [PredictionService.StreamDirectPredict][google.cloud.aiplatform.v1beta1.PredictionService.StreamDirectPredict].
+        Perform a streaming online prediction request for Vertex
+        first-party products and frameworks.
 
         Returns:
             Callable[[~.StreamingPredictRequest],

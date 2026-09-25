@@ -43,6 +43,4 @@
   output:
     format: |-
       table(name.basename():label=ID,
-            celExpression,
-            createTime,
-            updateTime)
+            celExpression)

@@ -9,8 +9,8 @@
         $ {command} my-database --catalog=my-catalog
 
   request:
-    collection: biglake.hive.v1beta.projects.catalogs.databases
-    api_version: v1beta
+    collection: biglake.hive.v1.projects.catalogs.databases
+    api_version: v1
     method: delete
 
   arguments:

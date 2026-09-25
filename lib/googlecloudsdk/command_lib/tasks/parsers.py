@@ -15,18 +15,24 @@
 """Utilities for parsing arguments to `gcloud tasks` commands."""
 
 
+import datetime
 import re
+import sys
 
 from apitools.base.py import encoding
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.calliope import parser_errors
 from googlecloudsdk.command_lib.tasks import app
 from googlecloudsdk.command_lib.tasks import constants
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
+from googlecloudsdk.core import yaml
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import http_encoding
+from googlecloudsdk.core.util import times
 import six  # pylint: disable=unused-import
 from six.moves import filter  # pylint:disable=redefined-builtin
 from six.moves import map  # pylint:disable=redefined-builtin
@@ -150,7 +156,9 @@ class QueueUpdatableConfiguration(object):
         config.rate_limits_mask_prefix = 'rateLimits'
         config.app_engine_routing_override_mask_prefix = 'appEngineHttpQueue'
         config.http_target_mask_prefix = 'httpTarget'
-        config.stackdriver_logging_config_mask_prefix = 'stackdriverLoggingConfig'
+        config.stackdriver_logging_config_mask_prefix = (
+            'stackdriverLoggingConfig'
+        )
       else:
         config.retry_config = {
             'max_attempts': 'maxAttempts',
@@ -549,17 +557,22 @@ def ParseCreateTaskArgs(args, task_type, messages,
                         release_track=base.ReleaseTrack.GA):
   """Parses task level args."""
   if release_track == base.ReleaseTrack.ALPHA:
-    return messages.Task(
+    task = messages.Task(
         scheduleTime=args.schedule_time,
         pullMessage=_ParsePullMessageArgs(args, task_type, messages),
         appEngineHttpRequest=_ParseAlphaAppEngineHttpRequestArgs(
             args, task_type, messages))
   else:
-    return messages.Task(
+    task = messages.Task(
         scheduleTime=args.schedule_time,
         appEngineHttpRequest=_ParseAppEngineHttpRequestArgs(args, task_type,
                                                             messages),
         httpRequest=_ParseHttpRequestArgs(args, task_type, messages))
+  if release_track in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
+    retry_config = ParseRetryConfigArgs(args, messages)
+    if retry_config and hasattr(task, 'retryConfig'):
+      task.retryConfig = retry_config
+  return task
 
 
 def CheckUpdateArgsSpecified(args, queue_type,
@@ -976,3 +989,250 @@ def LocationsUriFunc(task):
       task.name,
       params={'projectsId': _PROJECT},
       collection=constants.LOCATIONS_COLLECTION).SelfLink()
+
+
+def _SanitizeTaskDict(d):
+  """Recursively converts datetime and date objects in dicts to RFC 3339 strings."""
+  if isinstance(d, dict):
+    return {k: _SanitizeTaskDict(v) for k, v in d.items()}
+  elif isinstance(d, list):
+    return [_SanitizeTaskDict(v) for v in d]
+  elif isinstance(d, datetime.datetime):
+    if d.tzinfo:
+      utc_dt = d.astimezone(times.UTC)
+    else:
+      local_dt = times.LocalizeDateTime(d, times.LOCAL)
+      utc_dt = local_dt.astimezone(times.UTC)
+    if utc_dt.microsecond:
+      return utc_dt.strftime('%Y-%m-%dT%H:%M:%S.%f').rstrip('0') + 'Z'
+    return utc_dt.strftime('%Y-%m-%dT%H:%M:%SZ')
+  elif isinstance(d, datetime.date):
+    return d.strftime('%Y-%m-%dT00:00:00Z')
+  return d
+
+
+def ParseBatchCreateTasksArgs(args, messages):
+  """Parses batch create task specifications from file or stdin into task proto list."""
+  file_path = args.tasks_from_file
+  content = console_io.ReadFromFileOrStdin(file_path, binary=False)
+  docs = [d for d in yaml.load_all(content) if d is not None]
+  if not docs:
+    raise exceptions.Error(
+        '--tasks-from-file: File content must contain at least one task'
+        ' specification.'
+    )
+
+  data = []
+  for doc in docs:
+    if isinstance(doc, list):
+      data.extend(doc)
+    elif isinstance(doc, dict):
+      data.append(doc)
+    else:
+      raise exceptions.Error(
+          '--tasks-from-file: File content must be a YAML or JSON array of task'
+          ' specifications.'
+      )
+
+  if not data:
+    raise exceptions.Error(
+        '--tasks-from-file: File content must contain at least one task'
+        ' specification.'
+    )
+
+  tasks = []
+  for index, item in enumerate(data):
+    if not isinstance(item, dict):
+      raise exceptions.Error(
+          '--tasks-from-file: Task at index {} is invalid. Each task must be a'
+          ' YAML/JSON mapping/object, but found: {}.'.format(
+              index, type(item).__name__
+          )
+      )
+    sanitized_item = _SanitizeTaskDict(item)
+    try:
+      task = encoding.PyValueToMessage(messages.Task, sanitized_item)
+    except Exception as e:  # pylint: disable=broad-exception-caught
+      raise exceptions.Error(
+          '--tasks-from-file: Failed to parse task at index {}: {}'.format(
+              index, e
+          )
+      )
+    tasks.append(task)
+  return tasks
+
+
+def ParseTasksFromDeleteArgs(args, queue_ref=None):
+  """Parses task references for deletion from positional args or --from-file."""
+  from_file = getattr(args, 'from_file', None)
+  tasks_arg = getattr(args, 'task', None)
+
+  if from_file and tasks_arg:
+    raise calliope_exceptions.ConflictingArgumentsException(
+        'TASK', '--from-file'
+    )
+
+  skipped_tasks = []
+  if from_file:
+    file_path = from_file
+    if file_path == '-':
+      if sys.stdin.isatty():
+        raise exceptions.Error(
+            'Cannot read tasks from standard input because standard input is'
+            ' connected to a terminal. Pipe tasks into the command instead'
+            ' (e.g. cat tasks.txt | gcloud tasks delete --from-file=-).'
+        )
+      content = sys.stdin.read()
+    else:
+      content = files.ReadFileContents(file_path)
+    first_char = next((c for c in content if not c.isspace()), '')
+    if first_char in ('[', '{'):
+      try:
+        data = yaml.load(content)
+        task_ids = data if isinstance(data, list) else [data]
+      except (yaml.YAMLParseError, yaml.FileLoadError):
+        task_ids = [
+            line.strip() for line in content.splitlines() if line.strip()
+        ]
+    else:
+      task_ids = [line.strip() for line in content.splitlines() if line.strip()]
+
+    task_refs = []
+    for item in task_ids:
+      if isinstance(item, dict):
+        task_id = item.get('name') or item.get('id')
+        if not task_id:
+          skipped_tasks.append(
+              (item, "Missing 'name' or 'id' key in "
+               "task object: {}".format(item))
+          )
+          continue
+      else:
+        task_id = item
+      if not task_id or not str(task_id).strip():
+        skipped_tasks.append((item, 'Encountered empty or invalid task ID.'))
+        continue
+      task_ref = ParseTask(str(task_id), queue_ref)
+      task_refs.append(task_ref)
+
+    if not task_refs:
+      target = 'standard input' if file_path == '-' else file_path
+      raise exceptions.Error('No valid tasks found in {}.'.format(target))
+
+  elif tasks_arg:
+    if isinstance(tasks_arg, list):
+      task_refs = [ParseTask(t, queue_ref) for t in tasks_arg]
+    else:
+      task_refs = [ParseTask(tasks_arg, queue_ref)]
+
+  else:
+    raise exceptions.Error(
+        'Must specify task ID or --from-file to delete tasks.'
+    )
+
+  unique_refs = []
+  seen = set()
+  for ref in task_refs:
+    key = ref.RelativeName()
+    if key not in seen:
+      seen.add(key)
+      unique_refs.append(ref)
+  return unique_refs, skipped_tasks
+
+
+def DetermineBatchExitCode(failed_count, total_count):
+  """Returns CLI exit status for batch operations.
+
+  Args:
+    failed_count: int, number of failed tasks.
+    total_count: int, total number of tasks.
+
+  Returns:
+    int: 0 for success, 2 for partial failure, 1 for all failed.
+  """
+  if failed_count == 0:
+    return 0
+  if failed_count < total_count:
+    return 2
+  return 1
+
+
+def ResolveBatchDeleteQueue(queue_ref, task_refs):
+  """Determines the queue that a batch delete request should target.
+
+  BatchDeleteTasks sends a single parent queue alongside the task names, so the
+  queue must be known even when `--queue` is omitted and the caller passes
+  fully qualified task paths instead.
+
+  Args:
+    queue_ref: The queue resource reference from `--queue`, or None if the flag
+      was not provided.
+    task_refs: The task resource references to be deleted.
+
+  Returns:
+    The queue resource reference that all tasks belong to, or the passed-in
+    queue_ref if there are no tasks to delete.
+
+  Raises:
+    exceptions.Error: If the tasks do not all belong to a single queue.
+  """
+  if not task_refs:
+    return queue_ref
+
+  resolved_queue_ref = queue_ref or task_refs[0].Parent()
+  expected_queue = resolved_queue_ref.RelativeName()
+
+  mismatched_tasks = [
+      task_ref.RelativeName()
+      for task_ref in task_refs
+      if task_ref.Parent().RelativeName() != expected_queue
+  ]
+  if mismatched_tasks:
+    raise exceptions.Error(
+        'All tasks in a batch delete must belong to the same queue. Expected '
+        'every task to be in [{}], but found {} task(s) in another queue, '
+        'starting with [{}]. Delete the tasks one queue at a time.'.format(
+            expected_queue, len(mismatched_tasks), mismatched_tasks[0]
+        )
+    )
+  return resolved_queue_ref
+
+
+def ParseRetryConfigArgs(args, messages):
+  """Parses task-level retry config arguments from the command line."""
+  has_retry_flag = (
+      getattr(args, 'max_attempts', None) is not None
+      or getattr(args, 'max_retry_duration', None) is not None
+      or getattr(args, 'min_backoff', None) is not None
+      or getattr(args, 'max_backoff', None) is not None
+      or getattr(args, 'max_doublings', None) is not None
+  )
+  if not has_retry_flag:
+    return None
+
+  max_retry_duration = (
+      FormatLeaseDuration(args.max_retry_duration)
+      if getattr(args, 'max_retry_duration', None) is not None
+      else None
+  )
+  min_backoff = (
+      FormatLeaseDuration(args.min_backoff)
+      if getattr(args, 'min_backoff', None) is not None
+      else None
+  )
+  max_backoff = (
+      FormatLeaseDuration(args.max_backoff)
+      if getattr(args, 'max_backoff', None) is not None
+      else None
+  )
+
+  return messages.RetryConfig(
+      maxAttempts=getattr(args, 'max_attempts', None),
+      maxRetryDuration=max_retry_duration,
+      minBackoff=min_backoff,
+      maxBackoff=max_backoff,
+      maxDoublings=getattr(args, 'max_doublings', None),
+  )
+
+
+

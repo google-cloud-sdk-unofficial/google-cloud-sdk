@@ -158,7 +158,8 @@ class AgentSpec(_messages.Message):
   r"""The spec of the agent.
 
   Enums:
-    TypeValueValuesEnum: Required. The type of the agent spec content.
+    TypeValueValuesEnum: Required. Immutable. The type of the agent spec
+      content.
 
   Messages:
     ContentValue: Optional. The content of the Agent spec in the JSON format.
@@ -169,11 +170,11 @@ class AgentSpec(_messages.Message):
     content: Optional. The content of the Agent spec in the JSON format. This
       payload is validated against the schema for the specified type. The
       content size is limited to `10KB`.
-    type: Required. The type of the agent spec content.
+    type: Required. Immutable. The type of the agent spec content.
   """
 
   class TypeValueValuesEnum(_messages.Enum):
-    r"""Required. The type of the agent spec content.
+    r"""Required. Immutable. The type of the agent spec content.
 
     Values:
       TYPE_UNSPECIFIED: Unspecified type.
@@ -280,6 +281,204 @@ class AgentregistryProjectsLocationsAgentsSearchRequest(_messages.Message):
   searchAgentsRequest = _messages.MessageField('SearchAgentsRequest', 2)
 
 
+class AgentregistryProjectsLocationsAiApplicationsAgentsCreateRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsAiApplicationsAgentsCreateRequest
+  object.
+
+  Fields:
+    createAiApplicationAgentRequest: A CreateAiApplicationAgentRequest
+      resource to be passed as the request body.
+    parent: Required. Parent AI Application resource under which to create the
+      Agent. Format: `projects/{project}/locations/{location}/aiApplications/{
+      ai_application}`
+  """
+
+  createAiApplicationAgentRequest = _messages.MessageField('CreateAiApplicationAgentRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
+class AgentregistryProjectsLocationsAiApplicationsAgentsDeleteRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsAiApplicationsAgentsDeleteRequest
+  object.
+
+  Fields:
+    name: Required. Name of the resource. Format: `projects/{project}/location
+      s/{location}/aiApplications/{ai_application}/agents/{agent}`
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class AgentregistryProjectsLocationsAiApplicationsAgentsGetRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsAiApplicationsAgentsGetRequest object.
+
+  Fields:
+    name: Required. Name of the resource. Format: `projects/{project}/location
+      s/{location}/aiApplications/{ai_application}/agents/{agent}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class AgentregistryProjectsLocationsAiApplicationsAgentsListRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsAiApplicationsAgentsListRequest object.
+
+  Fields:
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Parent value (AI Application) for
+      ListAiApplicationAgentsRequest. Format: `projects/{project}/locations/{l
+      ocation}/aiApplications/{ai_application}`
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class AgentregistryProjectsLocationsAiApplicationsCreateRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsAiApplicationsCreateRequest object.
+
+  Fields:
+    aiApplication: A AiApplication resource to be passed as the request body.
+    aiApplicationId: Required. User-defined ID for this AI Application. Must
+      be unique within the parent project and location. Format: 4-43
+      characters containing only lowercase letters, numbers, and hyphens.
+      Regex: `^a-z{2,41}[a-z0-9]$`.
+    parent: Required. The project and location to create the AI Application
+      in. Format: `projects/{project}/locations/{location}`
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  aiApplication = _messages.MessageField('AiApplication', 1)
+  aiApplicationId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class AgentregistryProjectsLocationsAiApplicationsDeleteRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsAiApplicationsDeleteRequest object.
+
+  Fields:
+    force: Optional. If set to true, any child resources under this
+      AIApplication will also be deleted. Otherwise, the request will only
+      succeed if the AIApplication has no child resources.
+    name: Required. Target AI Application resource to remove. Format:
+      `projects/{project}/locations/{location}/aiApplications/{ai_application}
+      `
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  force = _messages.BooleanField(1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+
+
+class AgentregistryProjectsLocationsAiApplicationsEndpointsCreateRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsAiApplicationsEndpointsCreateRequest
+  object.
+
+  Fields:
+    createAiApplicationEndpointRequest: A CreateAiApplicationEndpointRequest
+      resource to be passed as the request body.
+    parent: Required. Parent AI Application resource under which to create the
+      Endpoint. Format: `projects/{project}/locations/{location}/aiApplication
+      s/{ai_application}`
+  """
+
+  createAiApplicationEndpointRequest = _messages.MessageField('CreateAiApplicationEndpointRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
+class AgentregistryProjectsLocationsAiApplicationsEndpointsDeleteRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsAiApplicationsEndpointsDeleteRequest
+  object.
+
+  Fields:
+    name: Required. Name of the resource. Format: `projects/{project}/location
+      s/{location}/aiApplications/{ai_application}/endpoints/{endpoint}`
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class AgentregistryProjectsLocationsAiApplicationsEndpointsGetRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsAiApplicationsEndpointsGetRequest
+  object.
+
+  Fields:
+    name: Required. Name of the resource. Format: `projects/{project}/location
+      s/{location}/aiApplications/{ai_application}/endpoints/{endpoint}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class AgentregistryProjectsLocationsAiApplicationsEndpointsListRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsAiApplicationsEndpointsListRequest
+  object.
+
+  Fields:
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Parent value (AI Application) for
+      ListAiApplicationEndpointsRequest. Format: `projects/{project}/locations
+      /{location}/aiApplications/{ai_application}`
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
 class AgentregistryProjectsLocationsAiApplicationsGetIamPolicyRequest(_messages.Message):
   r"""A AgentregistryProjectsLocationsAiApplicationsGetIamPolicyRequest
   object.
@@ -305,6 +504,138 @@ class AgentregistryProjectsLocationsAiApplicationsGetIamPolicyRequest(_messages.
 
   options_requestedPolicyVersion = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   resource = _messages.StringField(2, required=True)
+
+
+class AgentregistryProjectsLocationsAiApplicationsGetRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsAiApplicationsGetRequest object.
+
+  Fields:
+    name: Required. Target AI Application resource name. Format:
+      `projects/{project}/locations/{location}/aiApplications/{ai_application}
+      `
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class AgentregistryProjectsLocationsAiApplicationsListRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsAiApplicationsListRequest object.
+
+  Fields:
+    filter: Optional. Filtering results.
+    orderBy: Optional. Hint for how to order the results.
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Parent project and location to query. Format:
+      `projects/{project}/locations/{location}`
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class AgentregistryProjectsLocationsAiApplicationsMcpServersCreateRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsAiApplicationsMcpServersCreateRequest
+  object.
+
+  Fields:
+    createAiApplicationMcpServerRequest: A CreateAiApplicationMcpServerRequest
+      resource to be passed as the request body.
+    parent: Required. Parent AI Application resource under which to create the
+      McpServer. Format: `projects/{project}/locations/{location}/aiApplicatio
+      ns/{ai_application}`
+  """
+
+  createAiApplicationMcpServerRequest = _messages.MessageField('CreateAiApplicationMcpServerRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
+class AgentregistryProjectsLocationsAiApplicationsMcpServersDeleteRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsAiApplicationsMcpServersDeleteRequest
+  object.
+
+  Fields:
+    name: Required. Name of the resource. Format: `projects/{project}/location
+      s/{location}/aiApplications/{ai_application}/mcpServers/{mcp_server}`
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class AgentregistryProjectsLocationsAiApplicationsMcpServersGetRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsAiApplicationsMcpServersGetRequest
+  object.
+
+  Fields:
+    name: Required. Name of the resource. Format: `projects/{project}/location
+      s/{location}/aiApplications/{ai_application}/mcpServers/{mcp_server}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class AgentregistryProjectsLocationsAiApplicationsMcpServersListRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsAiApplicationsMcpServersListRequest
+  object.
+
+  Fields:
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Parent value (AI Application) for
+      ListAiApplicationMcpServersRequest. Format: `projects/{project}/location
+      s/{location}/aiApplications/{ai_application}`
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class AgentregistryProjectsLocationsAiApplicationsPatchRequest(_messages.Message):
+  r"""A AgentregistryProjectsLocationsAiApplicationsPatchRequest object.
+
+  Fields:
+    aiApplication: A AiApplication resource to be passed as the request body.
+    name: Identifier. Resource name of the AI Application. Format:
+      `projects/{project}/locations/{location}/aiApplications/{ai_application}
+      `
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. Standard update target mask mapping relative fields.
+  """
+
+  aiApplication = _messages.MessageField('AiApplication', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
 
 
 class AgentregistryProjectsLocationsAiApplicationsSetIamPolicyRequest(_messages.Message):
@@ -1155,6 +1486,51 @@ class AgentregistryProjectsLocationsSkillsTestIamPermissionsRequest(_messages.Me
   resource = _messages.StringField(2, required=True)
 
 
+class AiApplication(_messages.Message):
+  r"""Represents an AI Application.
+
+  Enums:
+    StateValueValuesEnum: Output only. The current state of the AI
+      Application.
+
+  Fields:
+    attributes: Optional. Consumer provided attributes.
+    createTime: Output only. Creation time.
+    description: Optional. User-defined description of the AI Application.
+    displayName: Optional. User-defined name for the AI Application.
+    name: Identifier. Resource name of the AI Application. Format:
+      `projects/{project}/locations/{location}/aiApplications/{ai_application}
+      `
+    state: Output only. The current state of the AI Application.
+    uid: Output only. Universally unique identifier (UUID4) for the AI
+      Application.
+    updateTime: Output only. Last update time.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current state of the AI Application.
+
+    Values:
+      STATE_UNSPECIFIED: Default value. This value is unused.
+      CREATING: The resource is being provisioned or created.
+      ACTIVE: The resource is active and ready for use.
+      DELETING: The resource is in the process of being deleted.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+    DELETING = 3
+
+  attributes = _messages.MessageField('Attributes', 1)
+  createTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  displayName = _messages.StringField(4)
+  name = _messages.StringField(5)
+  state = _messages.EnumField('StateValueValuesEnum', 6)
+  uid = _messages.StringField(7)
+  updateTime = _messages.StringField(8)
+
+
 class Annotations(_messages.Message):
   r"""Annotations describing the characteristics and behavior of a tool or
   operation.
@@ -1193,6 +1569,27 @@ class ArchiveUploadSource(_messages.Message):
   """
 
   archiveContent = _messages.BytesField(1)
+
+
+class Attributes(_messages.Message):
+  r"""Consumer provided attributes.
+
+  Fields:
+    businessOwners: Optional. Business team that ensures user needs are met
+      and value is delivered
+    criticality: Optional. User-defined criticality information.
+    developerOwners: Optional. Developer team that owns development and
+      coding.
+    environment: Optional. User-defined environment information.
+    operatorOwners: Optional. Operator team that ensures runtime and
+      operations.
+  """
+
+  businessOwners = _messages.MessageField('ContactInfo', 1, repeated=True)
+  criticality = _messages.MessageField('Criticality', 2)
+  developerOwners = _messages.MessageField('ContactInfo', 3, repeated=True)
+  environment = _messages.MessageField('Environment', 4)
+  operatorOwners = _messages.MessageField('ContactInfo', 5, repeated=True)
 
 
 class AuthProviderBinding(_messages.Message):
@@ -1293,6 +1690,132 @@ class Card(_messages.Message):
 
   content = _messages.MessageField('ContentValue', 1)
   type = _messages.EnumField('TypeValueValuesEnum', 2)
+
+
+class Channel(_messages.Message):
+  r"""Separate message to accommodate custom formats across IRC and Slack.
+
+  Fields:
+    uri: Required. URI of the channel.
+  """
+
+  uri = _messages.StringField(1)
+
+
+class ContactInfo(_messages.Message):
+  r"""Contact information of stakeholders.
+
+  Fields:
+    channel: Optional. Communication channel of the contacts.
+    displayName: Optional. Contact's name. Can have a maximum length of 63
+      characters.
+    email: Required. Email address of the contacts.
+  """
+
+  channel = _messages.MessageField('Channel', 1)
+  displayName = _messages.StringField(2)
+  email = _messages.StringField(3)
+
+
+class CreateAiApplicationAgentRequest(_messages.Message):
+  r"""Message for creating an Agent under an AI Application.
+
+  Fields:
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    targetAgent: Required. The resource identifier of the Agent to create. It
+      refers to a GCP resource name (e.g., `//service.googleapis.com/...`).
+  """
+
+  requestId = _messages.StringField(1)
+  targetAgent = _messages.StringField(2)
+
+
+class CreateAiApplicationEndpointRequest(_messages.Message):
+  r"""Message for creating an Endpoint under an AI Application.
+
+  Fields:
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request.
+    targetEndpoint: Required. The resource identifier of the Endpoint to
+      create. It refers to a GCP resource name (e.g.,
+      `//service.googleapis.com/...`).
+  """
+
+  requestId = _messages.StringField(1)
+  targetEndpoint = _messages.StringField(2)
+
+
+class CreateAiApplicationMcpServerRequest(_messages.Message):
+  r"""Message for creating an McpServer under an AI Application.
+
+  Fields:
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+    targetMcpServer: Required. The resource identifier of the McpServer to
+      create. It refers to a GCP resource name (e.g.,
+      `//service.googleapis.com/...`).
+  """
+
+  requestId = _messages.StringField(1)
+  targetMcpServer = _messages.StringField(2)
+
+
+class Criticality(_messages.Message):
+  r"""Criticality of the Application, Service, or Workload
+
+  Enums:
+    TypeValueValuesEnum: Required. Criticality Type.
+
+  Fields:
+    level: Optional. Criticality level. Can contain only lowercase letters,
+      numeric characters, underscores, and dashes. Can have a maximum length
+      of 63 characters. Deprecated: Please refer to type instead.
+    missionCritical: Optional. Indicates mission-critical Application,
+      Service, or Workload. Deprecated: Please refer to type instead.
+    type: Required. Criticality Type.
+  """
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""Required. Criticality Type.
+
+    Values:
+      TYPE_UNSPECIFIED: Unspecified type.
+      MISSION_CRITICAL: Mission critical service, application or workload.
+      HIGH: High impact.
+      MEDIUM: Medium impact.
+      LOW: Low impact.
+    """
+    TYPE_UNSPECIFIED = 0
+    MISSION_CRITICAL = 1
+    HIGH = 2
+    MEDIUM = 3
+    LOW = 4
+
+  level = _messages.StringField(1)
+  missionCritical = _messages.BooleanField(2)
+  type = _messages.EnumField('TypeValueValuesEnum', 3)
 
 
 class Empty(_messages.Message):
@@ -1400,7 +1923,8 @@ class EndpointSpec(_messages.Message):
   r"""The spec of the endpoint.
 
   Enums:
-    TypeValueValuesEnum: Required. The type of the endpoint spec content.
+    TypeValueValuesEnum: Required. Immutable. The type of the endpoint spec
+      content.
 
   Messages:
     ContentValue: Optional. The content of the endpoint spec. Reserved for
@@ -1409,11 +1933,11 @@ class EndpointSpec(_messages.Message):
   Fields:
     content: Optional. The content of the endpoint spec. Reserved for future
       use.
-    type: Required. The type of the endpoint spec content.
+    type: Required. Immutable. The type of the endpoint spec content.
   """
 
   class TypeValueValuesEnum(_messages.Enum):
-    r"""Required. The type of the endpoint spec content.
+    r"""Required. Immutable. The type of the endpoint spec content.
 
     Values:
       TYPE_UNSPECIFIED: Unspecified type.
@@ -1450,6 +1974,39 @@ class EndpointSpec(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   content = _messages.MessageField('ContentValue', 1)
+  type = _messages.EnumField('TypeValueValuesEnum', 2)
+
+
+class Environment(_messages.Message):
+  r"""Environment of the Application, Service, or Workload
+
+  Enums:
+    TypeValueValuesEnum: Required. Environment Type.
+
+  Fields:
+    environment: Optional. Environment name. Can contain only lowercase
+      letters, numeric characters, underscores, and dashes. Can have a maximum
+      length of 63 characters. Deprecated: Please refer to type instead.
+    type: Required. Environment Type.
+  """
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""Required. Environment Type.
+
+    Values:
+      TYPE_UNSPECIFIED: Unspecified type.
+      PRODUCTION: Production environment.
+      STAGING: Staging environment.
+      TEST: Test environment.
+      DEVELOPMENT: Development environment.
+    """
+    TYPE_UNSPECIFIED = 0
+    PRODUCTION = 1
+    STAGING = 2
+    TEST = 3
+    DEVELOPMENT = 4
+
+  environment = _messages.StringField(1)
   type = _messages.EnumField('TypeValueValuesEnum', 2)
 
 
@@ -1952,6 +2509,60 @@ class ListAgentsResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
+class ListAiApplicationAgentsResponse(_messages.Message):
+  r"""Message for response to listing Agents under an AI Application.
+
+  Fields:
+    agents: The list of Agents.
+    nextPageToken: A token identifying a page of results the server should
+      return.
+  """
+
+  agents = _messages.MessageField('Agent', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
+class ListAiApplicationEndpointsResponse(_messages.Message):
+  r"""Message for response to listing Endpoints under an AI Application.
+
+  Fields:
+    endpoints: The list of Endpoints.
+    nextPageToken: A token identifying a page of results the server should
+      return.
+  """
+
+  endpoints = _messages.MessageField('Endpoint', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
+class ListAiApplicationMcpServersResponse(_messages.Message):
+  r"""Message for response to listing McpServers under an AI Application.
+
+  Fields:
+    mcpServers: The list of McpServers.
+    nextPageToken: A token identifying a page of results the server should
+      return.
+  """
+
+  mcpServers = _messages.MessageField('McpServer', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
+class ListAiApplicationsResponse(_messages.Message):
+  r"""Message for response to listing AiApplications.
+
+  Fields:
+    aiApplications: The list of AiApplications.
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  aiApplications = _messages.MessageField('AiApplication', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListBindingsResponse(_messages.Message):
   r"""Message for response to listing Bindings
 
@@ -2276,7 +2887,8 @@ class McpServerSpec(_messages.Message):
   r"""The spec of the MCP Server.
 
   Enums:
-    TypeValueValuesEnum: Required. The type of the MCP Server spec content.
+    TypeValueValuesEnum: Required. Immutable. The type of the MCP Server spec
+      content.
 
   Messages:
     ContentValue: Optional. The content of the MCP Server spec. This payload
@@ -2287,11 +2899,11 @@ class McpServerSpec(_messages.Message):
     content: Optional. The content of the MCP Server spec. This payload is
       validated against the schema for the specified type. The content size is
       limited to `10KB`.
-    type: Required. The type of the MCP Server spec content.
+    type: Required. Immutable. The type of the MCP Server spec content.
   """
 
   class TypeValueValuesEnum(_messages.Enum):
-    r"""Required. The type of the MCP Server spec content.
+    r"""Required. Immutable. The type of the MCP Server spec content.
 
     Values:
       TYPE_UNSPECIFIED: Unspecified type.

@@ -12,16 +12,6 @@ from apitools.base.py import extra_types
 package = 'datamigration'
 
 
-class AdditionalDdlProperties(_messages.Message):
-  r"""Additional properties of a DDL.
-
-  Fields:
-    userVerified: Whether the DDL was verified by the user.
-  """
-
-  userVerified = _messages.BooleanField(1)
-
-
 class AlloyDbConnectionProfile(_messages.Message):
   r"""Specifies required connection parameters, and the parameters required to
   create an AlloyDB destination cluster.
@@ -168,36 +158,6 @@ class ApplyJobDetails(_messages.Message):
 
   connectionProfile = _messages.StringField(1)
   filter = _messages.StringField(2)
-
-
-class AssessmentsInfo(_messages.Message):
-  r"""An assessments info overview.
-
-  Enums:
-    OverallQualityValueValuesEnum: The overall quality.
-
-  Fields:
-    functionalEquivalenceAssessmentInfo: The functional equivalence assessment
-      info.
-    overallQuality: The overall quality.
-  """
-
-  class OverallQualityValueValuesEnum(_messages.Enum):
-    r"""The overall quality.
-
-    Values:
-      ASSESSMENT_QUALITY_UNSPECIFIED: Unspecified quality.
-      ASSESSMENT_QUALITY_LOW: Low quality.
-      ASSESSMENT_QUALITY_MEDIUM: Medium quality.
-      ASSESSMENT_QUALITY_HIGH: High quality.
-    """
-    ASSESSMENT_QUALITY_UNSPECIFIED = 0
-    ASSESSMENT_QUALITY_LOW = 1
-    ASSESSMENT_QUALITY_MEDIUM = 2
-    ASSESSMENT_QUALITY_HIGH = 3
-
-  functionalEquivalenceAssessmentInfo = _messages.MessageField('FunctionalEquivalenceAssessmentInfo', 1)
-  overallQuality = _messages.EnumField('OverallQualityValueValuesEnum', 2)
 
 
 class AssignSpecificValue(_messages.Message):
@@ -1148,27 +1108,6 @@ class ConstraintEntity(_messages.Message):
   type = _messages.StringField(7)
 
 
-class ConversionQualityMetrics(_messages.Message):
-  r"""Metrics related to the quality of the conversion.
-
-  Fields:
-    cleanStatements: The number of statements for which a clean and correct
-      output was generated.
-    errorStatements: The number of statements for which invalid or no output
-      was generated.
-    modifiedStatements: This is the sum of the clean, warning and error
-      statements when an entity was edited by the user.
-    warningStatements: The number of statements for which a good output was
-      generated, but some features were not available or requires some user
-      review.
-  """
-
-  cleanStatements = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  errorStatements = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  modifiedStatements = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  warningStatements = _messages.IntegerField(4, variant=_messages.Variant.INT32)
-
-
 class ConversionWorkspace(_messages.Message):
   r"""The main conversion workspace resource entity.
 
@@ -1198,9 +1137,13 @@ class ConversionWorkspace(_messages.Message):
       skip_triggers=false, ignore_non_table_synonyms=true
     hasUncommittedChanges: Output only. Whether the workspace has uncommitted
       changes (changes which were made after the workspace was committed).
+    latestApplyTime: Optional. Output only. The timestamp when the workspace
+      was last applied.
     latestCommitId: Output only. The latest commit ID.
     latestCommitTime: Output only. The timestamp when the workspace was
       committed.
+    latestConvertTime: Optional. Output only. The timestamp when the workspace
+      was last converted.
     name: Full name of the workspace resource, in the form of: projects/{proje
       ct}/locations/{location}/conversionWorkspaces/{conversion_workspace}.
     source: Required. The source engine details.
@@ -1292,12 +1235,14 @@ class ConversionWorkspace(_messages.Message):
   displayName = _messages.StringField(4)
   globalSettings = _messages.MessageField('GlobalSettingsValue', 5)
   hasUncommittedChanges = _messages.BooleanField(6)
-  latestCommitId = _messages.StringField(7)
-  latestCommitTime = _messages.StringField(8)
-  name = _messages.StringField(9)
-  source = _messages.MessageField('DatabaseEngineInfo', 10)
-  sourceProvider = _messages.EnumField('SourceProviderValueValuesEnum', 11)
-  updateTime = _messages.StringField(12)
+  latestApplyTime = _messages.StringField(7)
+  latestCommitId = _messages.StringField(8)
+  latestCommitTime = _messages.StringField(9)
+  latestConvertTime = _messages.StringField(10)
+  name = _messages.StringField(11)
+  source = _messages.MessageField('DatabaseEngineInfo', 12)
+  sourceProvider = _messages.EnumField('SourceProviderValueValuesEnum', 13)
+  updateTime = _messages.StringField(14)
 
 
 class ConversionWorkspaceInfo(_messages.Message):
@@ -1990,8 +1935,6 @@ class DatamigrationProjectsLocationsConversionWorkspacesFetchEntitiesStatusViewR
     TreeValueValuesEnum: Required. The tree to fetch.
 
   Fields:
-    commitId: Optional. Request a specific commit ID. If not specified, the
-      entities from the latest commit are returned.
     conversionWorkspace: Required. Name of the conversion workspace resource
       whose database entities are described. Must be in the form of: projects/
       {project}/locations/{location}/conversionWorkspaces/{conversion_workspac
@@ -2038,13 +1981,12 @@ class DatamigrationProjectsLocationsConversionWorkspacesFetchEntitiesStatusViewR
     SOURCE_TREE = 1
     DRAFT_TREE = 2
 
-  commitId = _messages.StringField(1)
-  conversionWorkspace = _messages.StringField(2, required=True)
-  fetchView = _messages.EnumField('FetchViewValueValuesEnum', 3)
-  filter = _messages.StringField(4)
-  pageSize = _messages.IntegerField(5, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(6)
-  tree = _messages.EnumField('TreeValueValuesEnum', 7)
+  conversionWorkspace = _messages.StringField(1, required=True)
+  fetchView = _messages.EnumField('FetchViewValueValuesEnum', 2)
+  filter = _messages.StringField(3)
+  pageSize = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(5)
+  tree = _messages.EnumField('TreeValueValuesEnum', 6)
 
 
 class DatamigrationProjectsLocationsConversionWorkspacesFetchIssuesRequest(_messages.Message):
@@ -2052,8 +1994,8 @@ class DatamigrationProjectsLocationsConversionWorkspacesFetchIssuesRequest(_mess
   object.
 
   Enums:
-    IssueTypeValueValuesEnum: The issue type to fetch. Deprecated: Use
-      "issue.type" in the filter instead.
+    IssueTypeValueValuesEnum: Optional. Deprecated: Use "issue.type" in the
+      filter instead. The issue type to fetch.
     TreeValueValuesEnum: Optional. The tree to fetch issues from. If not
       specified, source tree is assumed.
 
@@ -2076,8 +2018,8 @@ class DatamigrationProjectsLocationsConversionWorkspacesFetchIssuesRequest(_mess
       `issue.origin`: The origin of the issue (e.g. `DETERMINISTIC`, `AI`). -
       `issue.category_id`: The category ID of the issue. - `issue.group_id`:
       The group ID of the issue.
-    issueType: The issue type to fetch. Deprecated: Use "issue.type" in the
-      filter instead.
+    issueType: Optional. Deprecated: Use "issue.type" in the filter instead.
+      The issue type to fetch.
     pageSize: Optional. The maximum number of issues to return. The service
       may return fewer issues than the value specifies.
     pageToken: Optional. The FetchIssuesResponse.next_page_token value
@@ -2091,8 +2033,8 @@ class DatamigrationProjectsLocationsConversionWorkspacesFetchIssuesRequest(_mess
   """
 
   class IssueTypeValueValuesEnum(_messages.Enum):
-    r"""The issue type to fetch. Deprecated: Use "issue.type" in the filter
-    instead.
+    r"""Optional. Deprecated: Use "issue.type" in the filter instead. The
+    issue type to fetch.
 
     Values:
       ISSUE_TYPE_UNSPECIFIED: Unspecified issue type.
@@ -3654,11 +3596,6 @@ class EntityStatusView(_messages.Message):
       DDL_KIND_UNSPECIFIED. Relevant only for FULL view.
 
   Fields:
-    additionalProperties: Optional. The additional properties of the draft
-      DDL.
-    assessmentsInfo: Optional. The assessments info of the current draft DDL.
-    conversionQualityMetrics: Optional. Deprecated: Use summary_view_info
-      instead.
     dependencies: Optional. The set of entities that this entity directly
       depends on, i.e., it does not include transitive dependencies. Provided
       only for FULL_WITH_DEPENDENCIES view. Dependencies are provided
@@ -3671,14 +3608,11 @@ class EntityStatusView(_messages.Message):
     editedDdlKind: If ddl_kind is USER_EDIT, this holds the DDL kind of the
       original content - DETERMINISTIC or AI. Otherwise, this is
       DDL_KIND_UNSPECIFIED. Relevant only for FULL view.
-    entitiesCount: Optional. Deprecated: Use summary_view_info instead.
     issues: Unresolved issues information according to the current Draft
       DdlKind.
     resolvedIssues: Resolved issues information according to the current Draft
       DdlKind.
     sourceEntity: The entity short name and type from the SOURCE tree.
-    summaryViewInfo: Optional. Summarized information. Provided only for
-      SUMMARY view.
     testedEntity: Optional. Whether the entity has successfully generated and
       executed validation tests.
     wasApplied: Was the entity applied on the destination. Relevant only for
@@ -3721,20 +3655,15 @@ class EntityStatusView(_messages.Message):
     AI = 3
     USER_EDIT = 4
 
-  additionalProperties = _messages.MessageField('AdditionalDdlProperties', 1)
-  assessmentsInfo = _messages.MessageField('AssessmentsInfo', 2)
-  conversionQualityMetrics = _messages.MessageField('ConversionQualityMetrics', 3)
-  dependencies = _messages.MessageField('EntityId', 4, repeated=True)
-  draftDdlKind = _messages.EnumField('DraftDdlKindValueValuesEnum', 5)
-  draftEntity = _messages.MessageField('EntityId', 6)
-  editedDdlKind = _messages.EnumField('EditedDdlKindValueValuesEnum', 7)
-  entitiesCount = _messages.IntegerField(8, variant=_messages.Variant.INT32)
-  issues = _messages.MessageField('IssueAggregateData', 9)
-  resolvedIssues = _messages.MessageField('IssueAggregateData', 10)
-  sourceEntity = _messages.MessageField('EntityId', 11)
-  summaryViewInfo = _messages.MessageField('SummaryViewInfo', 12)
-  testedEntity = _messages.BooleanField(13)
-  wasApplied = _messages.BooleanField(14)
+  dependencies = _messages.MessageField('EntityId', 1, repeated=True)
+  draftDdlKind = _messages.EnumField('DraftDdlKindValueValuesEnum', 2)
+  draftEntity = _messages.MessageField('EntityId', 3)
+  editedDdlKind = _messages.EnumField('EditedDdlKindValueValuesEnum', 4)
+  issues = _messages.MessageField('IssueAggregateData', 5)
+  resolvedIssues = _messages.MessageField('IssueAggregateData', 6)
+  sourceEntity = _messages.MessageField('EntityId', 7)
+  testedEntity = _messages.BooleanField(8)
+  wasApplied = _messages.BooleanField(9)
 
 
 class ErrorInfo(_messages.Message):
@@ -4020,35 +3949,6 @@ class FunctionEntity(_messages.Message):
 
   customFeatures = _messages.MessageField('CustomFeaturesValue', 1)
   sqlCode = _messages.StringField(2)
-
-
-class FunctionalEquivalenceAssessmentInfo(_messages.Message):
-  r"""A functional equivalence assessment info overview.
-
-  Enums:
-    QualityValueValuesEnum: The quality.
-
-  Fields:
-    findingCount: The number of findings.
-    quality: The quality.
-  """
-
-  class QualityValueValuesEnum(_messages.Enum):
-    r"""The quality.
-
-    Values:
-      ASSESSMENT_QUALITY_UNSPECIFIED: Unspecified quality.
-      ASSESSMENT_QUALITY_LOW: Low quality.
-      ASSESSMENT_QUALITY_MEDIUM: Medium quality.
-      ASSESSMENT_QUALITY_HIGH: High quality.
-    """
-    ASSESSMENT_QUALITY_UNSPECIFIED = 0
-    ASSESSMENT_QUALITY_LOW = 1
-    ASSESSMENT_QUALITY_MEDIUM = 2
-    ASSESSMENT_QUALITY_HIGH = 3
-
-  findingCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  quality = _messages.EnumField('QualityValueValuesEnum', 2)
 
 
 class GcsSource(_messages.Message):
@@ -5333,6 +5233,9 @@ class MigrationJob(_messages.Message):
       PREPARING_THE_DUMP: Only RDS flow - the sources writes stopped, waiting
         for dump to begin
       READY_FOR_PROMOTE: The migration job is ready to be promoted.
+      PHASE_FAILBACK: The migration job is in the failback phase. This phase
+        is currently used only for SQL Server Distributed Availability Group
+        (DAG) migrations.
     """
     PHASE_UNSPECIFIED = 0
     FULL_DUMP = 1
@@ -5341,6 +5244,7 @@ class MigrationJob(_messages.Message):
     WAITING_FOR_SOURCE_WRITES_TO_STOP = 4
     PREPARING_THE_DUMP = 5
     READY_FOR_PROMOTE = 6
+    PHASE_FAILBACK = 7
 
   class PurposeValueValuesEnum(_messages.Enum):
     r"""Output only. Migration job mode. Migration jobs can be standard
@@ -8014,68 +7918,6 @@ class StoredProcedureEntity(_messages.Message):
 
   customFeatures = _messages.MessageField('CustomFeaturesValue', 1)
   sqlCode = _messages.StringField(2)
-
-
-class SummaryViewInfo(_messages.Message):
-  r"""Summarized information of the entity type matching the
-  google.cloud.clouddms.v1.EntityStatusView.draft_entity.type value. Provided
-  only for SUMMARY view.
-
-  Fields:
-    appliedCount: Output only. Number of objects that have been applied to the
-      destination. Only provided when looking at the DRAFT tree.
-    conversionQualityMetrics: Output only. Metrics related to the quality of
-      the conversion according to the current Draft DdlKind. Provided only for
-      SOURCE_TREE summary view.
-    entityAssessedCount: Output only. The number of entities (including sub-
-      entities) that have an assessment.
-    entityConversionStatusNoIssuesCount: Output only. The number of entities
-      (including sub-entities) that have no unresolved issues.
-    entityConversionStatusReviewRecommendedCount: Output only. The number of
-      entities (including sub-entities) for which a review is recommended,
-      i.e. that have unresolved warnings but no unresolved errors.
-    entityConvertedUsingGeminiCount: Output only. The number of entities
-      (including sub-entities) for which their current DDL was converted with
-      Gemini.
-    entityCount: Output only. The number of
-      google.cloud.clouddms.v1.EntityStatusView.draft_entity.type entities.
-      Note that a TABLE type, for instance, will include the number of TABLE
-      entities in the schema and won't include the number of sub-entities like
-      indexes. That number of all sub-entities of the type is in the
-      sub_entity_count field.
-    entityHasErrorCount: Output only. The number of entities (including sub-
-      entities) with unresolved errors. Those entities may also have issues of
-      other severities.
-    entityHasWarningCount: Output only. The number of entities (including sub-
-      entities) with unresolved warnings. Those entities may also have issues
-      of other severities.
-    entityHighQualityAssessedCount: Output only. The number of entities
-      (including sub-entities) that have a high quality assessment.
-    entityUserModifiedCount: Output only. The number of entities (including
-      sub-entities) that were modified (edited) by the user.
-    entityUserVerifiedCount: Output only. The number of entities (including
-      sub-entities) that were marked as verified by the user.
-    subEntityCount: Output only. The total number of sub-entities (indexes,
-      constraints and triggers) of entities of
-      google.cloud.clouddms.v1.EntityStatusView.draft_entity.type type.
-    testedObjectsCount: Output only. Number of objects that have at least one
-      test generated and executed on the target.
-  """
-
-  appliedCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  conversionQualityMetrics = _messages.MessageField('ConversionQualityMetrics', 2)
-  entityAssessedCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  entityConversionStatusNoIssuesCount = _messages.IntegerField(4, variant=_messages.Variant.INT32)
-  entityConversionStatusReviewRecommendedCount = _messages.IntegerField(5, variant=_messages.Variant.INT32)
-  entityConvertedUsingGeminiCount = _messages.IntegerField(6, variant=_messages.Variant.INT32)
-  entityCount = _messages.IntegerField(7, variant=_messages.Variant.INT32)
-  entityHasErrorCount = _messages.IntegerField(8, variant=_messages.Variant.INT32)
-  entityHasWarningCount = _messages.IntegerField(9, variant=_messages.Variant.INT32)
-  entityHighQualityAssessedCount = _messages.IntegerField(10, variant=_messages.Variant.INT32)
-  entityUserModifiedCount = _messages.IntegerField(11, variant=_messages.Variant.INT32)
-  entityUserVerifiedCount = _messages.IntegerField(12, variant=_messages.Variant.INT32)
-  subEntityCount = _messages.IntegerField(13, variant=_messages.Variant.INT32)
-  testedObjectsCount = _messages.IntegerField(14, variant=_messages.Variant.INT32)
 
 
 class SynonymEntity(_messages.Message):

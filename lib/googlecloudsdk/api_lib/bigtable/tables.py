@@ -14,7 +14,6 @@
 # limitations under the License.
 """Bigtable tables API helper."""
 
-
 import base64
 
 from apitools.base.py import encoding
@@ -407,7 +406,7 @@ def AddTieredStorageConfigUpdateTableArgs():
 
 
 def AddAutomatedBackupPolicyCreateTableArgs():
-  """Adds automated backup policy commands to create table CLI.
+  """Adds automated backup policy commands to create/update/restore table CLI.
 
   This can't be defined in the yaml because that automatically generates the
   inverse for any boolean args and we don't want the nonsensical
@@ -424,6 +423,7 @@ def AddAutomatedBackupPolicyCreateTableArgs():
           help=(
               'Once set, enables the default automated backup policy'
               ' (retention_period=7d, frequency=1d) for the table.'
+              ' Defaults to no automated backup policy if omitted.'
           ),
           action='store_const',
           const=True,
@@ -440,7 +440,7 @@ def AddAutomatedBackupPolicyCreateTableArgs():
           help=(
               'The retention period of automated backup in the format of `30d`'
               ' for 30 days. Min retention period is `3d` and max is `90d`.'
-              ' Setting this flag will enable automated backup for the table.'
+              ' Setting this flag enables automated backup for the table.'
               ' If automated backup retention period is not specified, it'
               ' defaults to 7 days.'
           ),
@@ -452,11 +452,11 @@ def AddAutomatedBackupPolicyCreateTableArgs():
           type=arg_parsers.ArgList(),
           metavar='LOCATION',
           help=(
-              'List of Cloud Bigtable zones where automated backups are allowed'
-              ' to be created. If empty, automated backups will be created in'
-              ' all zones of the instance. Locations are in the format '
-              ' `projects/{project}/locations/{zone}`. Setting this flag will'
-              ' enable automated backup for the table. If automated backup'
+              'List of Cloud Bigtable zones where you can create automated'
+              ' backups. If empty, automated backups will be created in'
+              ' all zones of the instance. Locations are in the format'
+              ' `projects/{project}/locations/{zone}`. Setting this flag'
+              ' enables automated backup for the table. If automated backup'
               ' retention period is not specified, it defaults to 7 days.'
           ),
       )
@@ -501,7 +501,7 @@ def AddAutomatedBackupPolicyUpdateTableArgs():
           help=(
               'The retention period of automated backup in the format of `30d`'
               ' for 30 days. Min retention period is `3d` and max is `90d`.'
-              ' Setting this flag will enable automated backup for the table.'
+              ' Setting this flag enables automated backup for the table.'
           ),
       )
   )
@@ -516,8 +516,8 @@ def AddAutomatedBackupPolicyUpdateTableArgs():
               'List of Cloud Bigtable zones where automated backups are allowed'
               ' to be created. If empty, automated backups will be created in'
               ' all zones of the instance. Locations are in the format '
-              ' `projects/{project}/locations/{zone}`. Setting this flag will'
-              ' enable automated backup for the table.'
+              ' `projects/{project}/locations/{zone}`. Setting this flag '
+              ' enables automated backup for the table.'
           ),
       )
   )
@@ -542,19 +542,11 @@ def HandleChangeStreamArgs(unused_ref, args, req):
 
 def HandleAutomatedBackupPolicyCreateTableArgs(unused_ref, args, req):
   """Handles automated backup policy args for create table CLI."""
-  locations = args.automated_backup_locations
-  retention = args.automated_backup_retention_period
-
-  if args.enable_automated_backup:
-    req.createTableRequest.table.automatedBackupPolicy = (
-        CreateDefaultAutomatedBackupPolicy()
-    )
-  elif retention or locations is not None:
-    req.createTableRequest.table.automatedBackupPolicy = (
-        CreateAutomatedBackupPolicy(
-            retention or '7d', None, locations=locations
-        )
-    )
+  policy = BuildAutomatedBackupPolicyFromArgs(
+      args, locations=args.automated_backup_locations
+  )
+  if policy is not None:
+    req.createTableRequest.table.automatedBackupPolicy = policy
   return req
 
 
@@ -579,14 +571,9 @@ def HandleAutomatedBackupPolicyUpdateTableArgs(unused_ref, args, req):
   locations = args.automated_backup_locations
   if getattr(args, 'clear_automated_backup_locations', False):
     locations = []
-  retention = args.automated_backup_retention_period
-
-  if args.enable_automated_backup:
-    req.table.automatedBackupPolicy = CreateDefaultAutomatedBackupPolicy()
-  elif retention or locations is not None:
-    req.table.automatedBackupPolicy = CreateAutomatedBackupPolicy(
-        retention or '7d', None, locations=locations
-    )
+  policy = BuildAutomatedBackupPolicyFromArgs(args, locations=locations)
+  if policy is not None:
+    req.table.automatedBackupPolicy = policy
   return req
 
 
@@ -759,3 +746,15 @@ def ParseRowKeySchemaFromDefinitionFile(definition_file, pre_encoded):
         )
     )
   return parsed_row_key_schema
+
+
+def BuildAutomatedBackupPolicyFromArgs(args, locations=None):
+  """Returns the AutomatedBackupPolicy implied by args, or None if unset."""
+  if getattr(args, 'enable_automated_backup', False):
+    return CreateDefaultAutomatedBackupPolicy()
+  retention = getattr(args, 'automated_backup_retention_period', None)
+  if retention or locations is not None:
+    return CreateAutomatedBackupPolicy(
+        retention or '7d', None, locations=locations
+    )
+  return None

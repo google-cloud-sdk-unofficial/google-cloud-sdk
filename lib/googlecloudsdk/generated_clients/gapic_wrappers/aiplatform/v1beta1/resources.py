@@ -99,6 +99,22 @@ class Collections(enum.Enum):
       ['projectsId', 'locationsId', 'modelsId', 'operationsId'],
       True
   )
+  PROJECTS_LOCATIONS_PUBLISHERS = (
+      'projects.locations.publishers',
+      'projects/{projectsId}/locations/{locationsId}/publishers/'
+      '{publishersId}',
+      {},
+      ['projectsId', 'locationsId', 'publishersId'],
+      True
+  )
+  PROJECTS_LOCATIONS_PUBLISHERS_V1 = (
+      'projects.locations.publishers.v1',
+      'projects/{projectsId}/locations/{locationsId}/publishers/'
+      '{publishersId}/v1',
+      {},
+      ['projectsId', 'locationsId', 'publishersId'],
+      True
+  )
   PROJECTS_LOCATIONS_RAGCORPORA = (
       'projects.locations.ragCorpora',
       'projects/{project}/locations/{location}/ragCorpora/{rag_corpus}',

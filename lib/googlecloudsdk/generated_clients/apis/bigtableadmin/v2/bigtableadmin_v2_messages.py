@@ -167,6 +167,12 @@ class AutomatedBackupPolicy(_messages.Message):
     frequency: How frequently automated backups should occur. The only
       supported value at this time is 24 hours. An undefined frequency is
       treated as 24 hours.
+    keepHotDuration: Optional. The amount of time that the automated backups
+      remain hot. If specified, the backups created by this policy are `HOT`
+      backups. If not specified, the backups are `STANDARD` backups. The value
+      must be at least 24 hours and at most 10 days, and can't exceed the
+      policy's `retention_period`. Only SSD instances support `HOT` automated
+      backups.
     locations: Optional. A list of Cloud Bigtable zones where automated
       backups are allowed to be created. If empty, automated backups will be
       created in all zones of the instance. Locations are in the format
@@ -177,8 +183,9 @@ class AutomatedBackupPolicy(_messages.Message):
   """
 
   frequency = _messages.StringField(1)
-  locations = _messages.StringField(2, repeated=True)
-  retentionPeriod = _messages.StringField(3)
+  keepHotDuration = _messages.StringField(2)
+  locations = _messages.StringField(3, repeated=True)
+  retentionPeriod = _messages.StringField(4)
 
 
 class AutoscalingLimits(_messages.Message):

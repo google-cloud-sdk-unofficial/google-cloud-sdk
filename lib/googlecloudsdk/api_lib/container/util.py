@@ -119,6 +119,10 @@ INVALID_NC_KERNEL_MODULE_LOADING_FLAG_CONFIG_OVERLAP = (
     'or the value in the config file.'
 )
 
+AUTOPROVISIONING_RESTRICTION_CONFIG = 'autoprovisioningRestrictionConfig'
+SERVICE_ACCOUNT_PERMISSION_CHECK = 'serviceAccountPermissionCheck'
+AUTHORIZED_SERVICE_ACCOUNTS = 'authorizedServiceAccounts'
+
 INVALID_NC_FLAG_MAX_CONTAINER_RESTART_PERIOD = (
     'value of maxContainerRestartPeriod must be a duration between 1s and 300s.'
 )
@@ -2319,6 +2323,7 @@ def ValidateAutoprovisioningConfigFile(nap_config_file):
       'diskSizeGb',
       'diskType',
       'shieldedInstanceConfig',
+      'autoprovisioningRestrictionConfig',
   }
   err = HasUnknownKeys(nap_config, nap_params)
   if err:
@@ -2345,6 +2350,27 @@ def ValidateAutoprovisioningConfigFile(nap_config_file):
     )
     if err:
       raise AutoprovisioningConfigError(err)
+
+  if nap_config.get('autoprovisioningRestrictionConfig'):
+    restriction_config = nap_config.get('autoprovisioningRestrictionConfig')
+    restriction_params = {
+        'serviceAccountPermissionCheck',
+        'authorizedServiceAccounts',
+    }
+    err = HasUnknownKeys(restriction_config, restriction_params)
+    if err:
+      raise AutoprovisioningConfigError(err)
+    permission_check = restriction_config.get('serviceAccountPermissionCheck')
+    if permission_check is not None:
+      valid_modes = {
+          'ENABLED',
+          'DISABLED',
+      }
+      if str(permission_check).upper() not in valid_modes:
+        raise AutoprovisioningConfigError(
+            'Invalid serviceAccountPermissionCheck value [{}]. Must be one of:'
+            ' ENABLED, DISABLED.'.format(permission_check)
+        )
 
 
 def CheckForContainerFileSystemApiEnablementWithPrompt(project):

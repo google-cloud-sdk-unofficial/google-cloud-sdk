@@ -117,22 +117,25 @@ def IdentityTypeFlag(release_track=base.ReleaseTrack.GA, hidden=False):
   )
 
 
-_AMBIENT_NETWORKING_CHOICES = {
-    'disable': 'Disable ambient networking.',
-    'regional': 'Use regional ambient networking.',
-    'global': 'Use global ambient networking.',
-}
-
-_TO_ANNOTATION_AMBIENT_NETWORKING_STR = {
-    'disable': '',
-    'regional': 'regional',
-    'global': 'global',
-}
-
-AMBIENT_NETWORKING_FLAG = base.ChoiceArgument(
+AMBIENT_NETWORKING_FLAG = base.Argument(
     '--ambient-networking',
-    choices=_AMBIENT_NETWORKING_CHOICES,
-    help_str='Configures ambient networking mode used by the resource.',
+    action=arg_parsers.StoreTrueFalseAction,
+    help=(
+        'Enables ambient networking for the resource, allowing it to'
+        ' participate in a service mesh without sidecar injection.'
+    ),
+    hidden=True,
+)
+
+_AMBIENT_SCOPE_CHOICES = {
+    'global': 'Use global ambient networking.',
+    'regional': 'Use regional ambient networking.',
+}
+
+AMBIENT_SCOPE_FLAG = base.ChoiceArgument(
+    '--ambient-scope',
+    choices=_AMBIENT_SCOPE_CHOICES,
+    help_str='Configures the ambient networking scope.',
     hidden=True,
 )
 
@@ -225,6 +228,16 @@ _INGRESS_MODES = {
 _SANDBOX_CHOICES = {
     'gen1': 'Run the application in a first generation execution environment.',
     'gen2': 'Run the application in a second generation execution environment.',
+}
+
+_SANDBOX_IDENTITY_CHOICES = {
+    'none': (
+        'The sandboxed container is not given an identity and cannot reach the'
+        ' metadata server.'
+    ),
+    'passthrough': (
+        "The sandboxed container inherits the revision's identity."
+    ),
 }
 
 _DEFAULT_KUBECONFIG_PATH = '~/.kube/config'
@@ -1994,6 +2007,68 @@ def SandboxLauncherFlag():
   )
 
 
+def SandboxFlags():
+  """Returns an argument group with all per-container sandbox flags."""
+  help_text = """\
+Sandbox Flags
+
+The following flags configure the sandbox for a container. The container must
+already be sandboxed, or be sandboxed by `--sandbox` in the same command, for
+the other flags in this group to be accepted.
+
+Settings that are not named are left unchanged, so a single flag can be updated
+without restating the rest of the sandbox configuration.
+"""
+  group = base.ArgumentGroup(help=help_text, hidden=True)
+  group.AddArgument(
+      base.Argument(
+          '--sandbox',
+          action=arg_parsers.StoreTrueFalseAction,
+          hidden=True,
+          help=(
+              'Run this container in a sandbox, isolating it from the host.'
+              ' Specify `--no-sandbox` to remove the sandbox along with every'
+              ' setting nested under it.'
+          ),
+      )
+  )
+  group.AddArgument(
+      base.ChoiceArgument(
+          '--sandbox-identity',
+          choices=_SANDBOX_IDENTITY_CHOICES,
+          hidden=True,
+          help_str=(
+              'Configure the identity given to the sandboxed container.'
+              ' Defaults to `none`.'
+          ),
+      )
+  )
+  group.AddArgument(
+      base.Argument(
+          '--sandbox-allow-egress',
+          action=arg_parsers.StoreTrueFalseAction,
+          hidden=True,
+          help=(
+              'Allow outbound network traffic from the sandboxed container.'
+              ' Egress is disabled by default. Specify'
+              ' `--no-sandbox-allow-egress` to disable egress.'
+          ),
+      )
+  )
+  group.AddArgument(
+      base.Argument(
+          '--sandbox-tls-interception',
+          action=arg_parsers.StoreTrueFalseAction,
+          hidden=True,
+          help=(
+              'Enable TLS interception for outbound traffic from the sandboxed'
+              ' container. Egress must be enabled.'
+          ),
+      )
+  )
+  return group
+
+
 def AddDeployHealthCheckFlag(parser):
   """Add flag enable and disable deploy health check."""
   parser.add_argument(
@@ -2110,37 +2185,43 @@ def AddCmekKeyFlag(parser, with_clear=True):
   )
 
 
-def AddCmekKeyRevocationActionTypeFlag(parser, with_clear=True):
+def AddCmekKeyRevocationActionTypeFlag(
+    parser, with_clear=True, hidden=False
+):
   """Add post CMEK key revocation action type flag."""
   policy_group = parser
   if with_clear:
-    policy_group = parser.add_mutually_exclusive_group()
+    policy_group = parser.add_mutually_exclusive_group(hidden=hidden)
     policy_group.add_argument(
         '--clear-post-key-revocation-action-type',
         default=False,
         action='store_true',
+        hidden=hidden,
         help='Remove any previously set post CMEK key revocation action type.',
     )
   policy_group.add_argument(
       '--post-key-revocation-action-type',
       choices=_POST_CMEK_KEY_REVOCATION_ACTION_TYPE_CHOICES,
+      hidden=hidden,
       help='Action type after CMEK key revocation.',
   )
 
 
-def AddEncryptionKeyShutdownHoursFlag(parser, with_clear=True):
+def AddEncryptionKeyShutdownHoursFlag(parser, with_clear=True, hidden=False):
   """Add Cmek key shutdown hours flag."""
   policy_group = parser
   if with_clear:
-    policy_group = parser.add_mutually_exclusive_group()
+    policy_group = parser.add_mutually_exclusive_group(hidden=hidden)
     policy_group.add_argument(
         '--clear-encryption-key-shutdown-hours',
         default=False,
         action='store_true',
+        hidden=hidden,
         help='Remove any previously set CMEK key shutdown hours setting.',
     )
   policy_group.add_argument(
       '--encryption-key-shutdown-hours',
+      hidden=hidden,
       help=(
           'The number of hours to wait before an automatic shutdown server'
           ' after CMEK key revocation is detected.'
@@ -3187,6 +3268,39 @@ def _PrependClientNameAndVersionChange(args, changes):
     )
 
 
+_SANDBOX_FLAG_DESTS = (
+    'sandbox',
+    'sandbox_identity',
+    'sandbox_allow_egress',
+    'sandbox_tls_interception',
+)
+
+
+def _GetSandboxChanges(args, container_name=None):
+  """Returns sandbox config changes for args, if any sandbox flag is set.
+
+  All four sandbox flags are folded into a single change so that the changer
+  can resolve them against each other and against the container's existing
+  sandbox configuration.
+
+  Args:
+    args: The parsed args to read the sandbox flags from.
+    container_name: Name of the container to modify, or None for the primary
+      container.
+  """
+  if not any(FlagIsExplicitlySet(args, dest) for dest in _SANDBOX_FLAG_DESTS):
+    return []
+  return [
+      config_changes.ContainerSandboxChange(
+          sandbox=getattr(args, 'sandbox', None),
+          identity=getattr(args, 'sandbox_identity', None),
+          allow_egress=getattr(args, 'sandbox_allow_egress', None),
+          tls_interception=getattr(args, 'sandbox_tls_interception', None),
+          container_name=container_name,
+      )
+  ]
+
+
 def _GetConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
   """Returns a list of changes shared by multiple resources, based on the flags set."""
   changes = []
@@ -3269,6 +3383,7 @@ def _GetConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
             sandbox_launcher=args.sandbox_launcher
         )
     )
+  changes.extend(_GetSandboxChanges(args))
   if FlagIsExplicitlySet(args, 'gpu_zonal_redundancy'):
     changes.append(
         config_changes.GpuZonalRedundancyChange(
@@ -3506,11 +3621,39 @@ def _GetConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
             args.mesh_dataplane,
         )
     )
+  if (
+      FlagIsExplicitlySet(args, 'ambient_scope')
+      and FlagIsExplicitlySet(args, 'ambient_networking')
+      and not args.ambient_networking
+  ):
+    raise serverless_exceptions.ArgumentError(
+        'Cannot specify --ambient-scope with --no-ambient-networking.'
+    )
   if FlagIsExplicitlySet(args, 'ambient_networking'):
+    if args.ambient_networking:
+      changes.append(
+          config_changes.SetTemplateAnnotationChange(
+              revision.AMBIENT_NETWORKING_ANNOTATION,
+              'true',
+          )
+      )
+    else:
+      changes.append(
+          config_changes.SetTemplateAnnotationChange(
+              revision.AMBIENT_NETWORKING_ANNOTATION,
+              'false',
+          )
+      )
+      changes.append(
+          config_changes.DeleteTemplateAnnotationChange(
+              revision.AMBIENT_SCOPE_ANNOTATION,
+          )
+      )
+  if FlagIsExplicitlySet(args, 'ambient_scope'):
     changes.append(
         config_changes.SetTemplateAnnotationChange(
-            revision.AMBIENT_NETWORKING_ANNOTATION,
-            _TO_ANNOTATION_AMBIENT_NETWORKING_STR[args.ambient_networking],
+            revision.AMBIENT_SCOPE_ANNOTATION,
+            args.ambient_scope,
         )
     )
 
@@ -3639,6 +3782,9 @@ def _GetContainerConfigurationChanges(container_args, container_name=None):
             container_name=container_name,
         )
     )
+  changes.extend(
+      _GetSandboxChanges(container_args, container_name=container_name)
+  )
   if FlagIsExplicitlySet(container_args, 'startup_probe'):
     if container_args.startup_probe:
       changes.append(
@@ -3965,6 +4111,9 @@ def GetJobConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
       changes.append(
           config_changes.ContainerDependenciesChange(dependency_changes)
       )
+    base_image_changes = _GetBaseImageChanges(args)
+    if base_image_changes:
+      changes.extend(base_image_changes)
 
   return changes
 
@@ -5568,12 +5717,13 @@ def FunctionArg():
 
 
 # TODO(b/312784518) link to/list supported values
-def BaseImageArg():
+def BaseImageArg(hidden: bool = False) -> base.ArgumentGroup:
   """Adds automatic base image update related flags."""
-  group = base.ArgumentGroup(mutex=True)
+  group = base.ArgumentGroup(mutex=True, hidden=hidden)
   group.AddArgument(
       base.Argument(
           '--base-image',
+          hidden=hidden,
           help=(
               'Specifies the base image to be used for automatic base image'
               ' updates. When deploying from source using the Google Cloud'
@@ -5588,6 +5738,7 @@ def BaseImageArg():
       base.Argument(
           '--clear-base-image',
           action='store_true',
+          hidden=hidden,
           help='Opts out of automatic base image updates.',
       )
   )

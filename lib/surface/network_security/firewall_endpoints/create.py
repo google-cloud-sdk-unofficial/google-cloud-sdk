@@ -107,19 +107,15 @@ class Create(base.CreateCommand):
         args, client.messages.FirewallEndpoint.LabelsValue
     )
 
-    kms_ref = (
-        args.CONCEPTS.kms_key.Parse()
-        if hasattr(args.CONCEPTS, 'kms_key')
-        else None
-    )
-    kms_key = kms_ref.RelativeName() if kms_ref else None
-
-    if kms_key and not project_scoped:
+    if not project_scoped and activation_flags.HasKmsArgs(args):
+      specified_flag = activation_flags.GetSpecifiedKmsFlag(args)
       raise exceptions.InvalidArgumentException(
-          '--kms-key',
+          specified_flag,
           'KMS key cannot be specified for organization-scoped firewall'
           ' endpoints.',
       )
+
+    kms_key = activation_flags.GetAndValidateKmsKeyName(args)
 
     is_async = args.async_
     max_wait = datetime.timedelta(seconds=args.max_wait)
@@ -136,7 +132,9 @@ class Create(base.CreateCommand):
         enable_wildfire=getattr(args, 'enable_wildfire', None),
         wildfire_region=getattr(args, 'wildfire_region', None),
         content_cloud_region=getattr(args, 'content_cloud_region', None),
-        wildfire_lookup_timeout=getattr(args, 'wildfire_lookup_timeout', None),
+        wildfire_lookup_timeout=getattr(
+            args, 'wildfire_lookup_timeout', None
+        ),
         wildfire_lookup_action=getattr(args, 'wildfire_lookup_action', None),
         wildfire_analysis_timeout=getattr(
             args, 'wildfire_analysis_timeout', None
@@ -174,7 +172,7 @@ class CreateAlpha(Create):
 
   @classmethod
   def Args(cls, parser):
-    super(CreateAlpha, cls).Args(parser)
+    super().Args(parser)
     activation_flags.AddTargetFirewallAttachmentArg(parser)
 
   def Run(self, args):
@@ -182,14 +180,14 @@ class CreateAlpha(Create):
         args, 'target_firewall_attachment', None
     )
 
-    if target_firewall_attachment is not None:
-      return self._Run(
-          args, target_firewall_attachment, endpoint_type='THIRD_PARTY'
-      )
-    else:
-      return self._Run(
-          args, target_firewall_attachment, endpoint_type='TYPE_UNSPECIFIED'
-      )
+    endpoint_type = (
+        'THIRD_PARTY'
+        if target_firewall_attachment is not None
+        else 'TYPE_UNSPECIFIED'
+    )
+    return self._Run(
+        args, target_firewall_attachment, endpoint_type=endpoint_type
+    )
 
 
 Create.detailed_help = DETAILED_HELP

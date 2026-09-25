@@ -14,7 +14,7 @@
 # limitations under the License.
 """Command to SSH into a Cloud Run job."""
 
-from googlecloudsdk.api_lib.run import ssh as run_ssh
+from googlecloudsdk.api_lib.run import constants
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import ssh_command
@@ -51,7 +51,7 @@ class Ssh(ssh_command.BaseSshCommand):
   def Run(self, args):
     self.RunSsh(
         args,
-        run_ssh.Ssh.WorkloadType.JOB,
+        constants.WorkloadType.JOB,
         args.job,
         getattr(args, 'instance', None),
     )

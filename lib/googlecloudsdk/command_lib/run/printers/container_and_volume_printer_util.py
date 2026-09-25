@@ -17,7 +17,7 @@
 
 import collections
 import json
-from typing import Mapping, Sequence
+from typing import Mapping, Optional, Sequence
 
 from googlecloudsdk.api_lib.run import container_resource
 from googlecloudsdk.api_lib.run import k8s_object
@@ -68,6 +68,7 @@ def GetContainer(
           'Sandbox launcher',
           'true' if getattr(container, 'sandboxLauncher', None) else None,
       ),
+      ('Sandbox', GetSandbox(container)),
       (
           'Port',
           ' '.join(str(p.containerPort) for p in container.ports),
@@ -90,6 +91,36 @@ def GetContainer(
       ('Liveness Probe', k8s_util.GetLivenessProbe(container)),
       ('Readiness Probe', k8s_util.GetReadinessProbe(container)),
       ('Container Dependencies', ', '.join(dependencies)),
+  ])
+
+
+def GetSandbox(
+    container: container_resource.Container,
+) -> Optional[cp.Table]:
+  """Returns a print mapping for a container's sandbox configuration.
+
+  Nothing is printed for a container that is not sandboxed; the absence of the
+  block implies the container is not sandboxed. For a sandboxed container both
+  egress and TLS interception are always printed, so that a user never has to
+  infer a security-relevant setting from an omitted field.
+
+  Args:
+    container: The container whose sandbox configuration to print.
+  """
+  sandbox = getattr(container, 'sandbox', None)
+  if sandbox is None:
+    return None
+  allow_egress = sandbox.allowEgress
+  if allow_egress is None:
+    egress = 'disabled'
+  else:
+    egress = cp.Labeled([(
+        'TLS interception',
+        'enabled' if allow_egress.tlsInterception else 'disabled',
+    )])
+  return cp.Labeled([
+      ('Egress', egress),
+      ('Identity', sandbox.identity or 'none'),
   ])
 
 

@@ -697,7 +697,7 @@ class DnsV1(base_api.BaseApiClient):
         method_id='dns.projects.get',
         ordered_params=['project'],
         path_params=['project'],
-        query_params=['clientOperationId'],
+        query_params=[],
         relative_path='projects/{project}',
         request_field='',
         request_type_name='DnsProjectsGetRequest',

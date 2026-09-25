@@ -43,7 +43,7 @@ Pythonicness of the Transform*() methods:
 
 
 from googlecloudsdk.api_lib.compute import constants
-from googlecloudsdk.api_lib.compute import instance_utils
+from googlecloudsdk.api_lib.compute import machine_type_utils
 from googlecloudsdk.api_lib.compute import path_simplifier
 from googlecloudsdk.core.resource import resource_transform
 import six
@@ -169,8 +169,9 @@ def TransformMachineType(r, undefined=''):
   """
   if not isinstance(r, six.string_types):
     return undefined
-  custom_family, custom_cpu, custom_ram = \
-    instance_utils.GetCpuRamVmFamilyFromCustomName(r)
+  custom_family, custom_cpu, custom_ram = (
+      machine_type_utils.GetCpuRamVmFamilyFromCustomName(r)
+  )
   if not custom_family or not custom_cpu or not custom_ram:
     return r
   # Restricting output to 2 decimal places

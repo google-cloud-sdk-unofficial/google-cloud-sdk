@@ -145,6 +145,12 @@ class Create(base.Command):
     flags.AddBinAuthzPolicyFlags(parser, with_clear=False)
     flags.AddBinAuthzBreakglassFlag(parser)
     flags.AddCmekKeyFlag(parser, with_clear=False)
+    flags.AddCmekKeyRevocationActionTypeFlag(
+        parser, with_clear=False, hidden=True
+    )
+    flags.AddEncryptionKeyShutdownHoursFlag(
+        parser, with_clear=False, hidden=True
+    )
     flags.AddGeneralAnnotationFlags(parser)
     flags.AddVolumesFlags(parser, cls.ReleaseTrack())
     flags.AddIngressFlag(parser)

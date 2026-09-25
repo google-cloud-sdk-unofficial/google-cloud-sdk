@@ -1,4 +1,4 @@
-- release_tracks: [BETA]
+- release_tracks: [GA, BETA]
   help_text:
     brief: Update Observability settings configured on a project, folder, or organization.
     description: |
@@ -8,7 +8,7 @@
       The following command updates Observability settings for the project named `sample-project` in location
       `global`:
 
-      $ {command} --project=sample-project --location=global --update-mask=default-storage-location --default-storage-location="us"
+      $ {command} --project=sample-project --location=global --update-mask=default_storage_location --default-storage-location="us"
 
   request:
     ALPHA:

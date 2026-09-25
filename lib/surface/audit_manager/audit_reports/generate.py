@@ -91,7 +91,6 @@ class Generate(base.CreateCommand):
         exc.suggested_command = (
             f'{flags.GetCommandPrefix(args.command_path)} enrollments add'
             f' {flags.GetProjectOrFolderOrOrganizationParam(args)}'
-            f' {flags.GetLocationParam(args)}'
             f' {flags.GetEligibleGcsBucketParam(args)}'
         )
       elif exc.has_error_info(exception_utils.ERROR_REASON_PERMISSION_DENIED):

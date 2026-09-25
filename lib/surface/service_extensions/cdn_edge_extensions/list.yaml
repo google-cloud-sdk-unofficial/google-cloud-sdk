@@ -1,0 +1,34 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    List `CdnEdgeExtension` resources.
+  description: |
+    List all `CdnEdgeExtension` resources in the specified location of the
+    current project.
+  examples: |
+      To list all global `CdnEdgeExtension` resources in the current project, run:
+
+        $ {command} --location=global
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+
+  collection: networkservices.projects.locations.cdnEdgeExtensions
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.service_extensions.resources:location
+    help_text: |
+      Parent location.
+
+response:
+  id_field: name
+
+output:
+  format: |
+      table(
+        name.basename():label=NAME,
+        updateTime.date(unit=1000, tz_default=UTC):label=LAST_MODIFIED
+      )

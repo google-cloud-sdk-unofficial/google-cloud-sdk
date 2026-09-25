@@ -240,6 +240,12 @@ def _GetStorageConfigs(message_module, cluster, existing_storage_configs=None):
           counters["bucket"] = max(counters["bucket"], val + 1)
         except ValueError:
           pass
+      elif existing_sc.localMount.startswith("/nfs"):
+        try:
+          val = int(existing_sc.localMount[len("/nfs"):])
+          counters["nfs"] = max(counters["nfs"], val + 1)
+        except ValueError:
+          pass
 
   new_storages = [
       s for s in sorted_storages if s.key not in existing_mounts_by_id
@@ -286,6 +292,12 @@ def _GetStorageConfigs(message_module, cluster, existing_storage_configs=None):
       ):
         local_mount = f"/data{counters['bucket']}"
         counters["bucket"] += 1
+      elif (
+          hasattr(storage.value.config, "existingNfs")
+          and storage.value.config.existingNfs
+      ):
+        local_mount = f"/nfs{counters['nfs']}"
+        counters["nfs"] += 1
     if not local_mount:
       raise ClusterDirectorError("Storage configuration is not supported.")
 
@@ -639,6 +651,9 @@ def MakeClusterSlurmOrchestrator(
           partition.config = None
   if args.IsKnownAndSpecified("slurm_disable_health_check_program"):
     slurm.disableHealthCheckProgram = args.slurm_disable_health_check_program
+  if args.IsKnownAndSpecified("controller_version"):
+    _validator.ValidateControllerVersion(args.controller_version)
+    slurm.controllerVersion = args.controller_version
   return slurm
 
 
@@ -860,7 +875,7 @@ def MakeClusterSlurmOrchestratorPatch(
           if existing_node_set.config:
             for k, v in node_config.items():
               if hasattr(existing_node_set.config, k):
-                setattr(existing_node_set.config, k, None if v == "" else v)
+                setattr(existing_node_set.config, k, v if v else None)
 
       slurm_node_sets[node_set_id] = existing_node_set
       is_node_sets_updated = True
@@ -967,7 +982,7 @@ def MakeClusterSlurmOrchestratorPatch(
           if existing_partition.config:
             for k, v in partition_config.items():
               if hasattr(existing_partition.config, k):
-                setattr(existing_partition.config, k, None if v == "" else v)
+                setattr(existing_partition.config, k, v if v else None)
       slurm_partitions[partition_id] = existing_partition
       is_partitions_updated = True
   if args.IsSpecified("add_slurm_partitions"):

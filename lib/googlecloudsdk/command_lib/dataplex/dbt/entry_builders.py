@@ -488,15 +488,16 @@ def _build_model_entry(
     deleted.add(contracts_key)
 
   project_name = node.get('package_name') or _DEFAULT_PROJECT_NAME
-  resource_name = node.get('name') or ''
-  fqn = ctx.dbt_resource_fqn('dbt-model', project_name, resource_name)
+  fqn = ctx.dbt_resource_fqn(
+      'dbt-model', project_name, naming.resource_name(node)
+  )
   return _entry(
       ctx,
       unique_id,
       'dbt-model',
       aspects_map,
       fqn,
-      display_name=resource_name,
+      display_name=naming.display_name(node),
       description=node.get('description'),
       labels=_resource_labels(node),
       stale_aspects=stale,
@@ -1194,34 +1195,6 @@ def _sole_dependency(node: dict[str, Any]) -> str | None:
   return deps[0] if len(deps) == 1 else None
 
 
-def model_uids_by_name(nodes: dict[str, Any]) -> dict[str, str]:
-  """Indexes the manifest's models by name, for resolving a ``ref()`` target.
-
-  Args:
-    nodes: the manifest ``nodes`` section.
-
-  Returns:
-    A dict of model name -> unique_id, over models only. A name carried by more
-    than one model (versioned models, or two packages defining the same name) is
-    left out rather than resolved to an arbitrary one of them.
-  """
-  index: dict[str, str] = {}
-  ambiguous = set()
-  for uid, node in nodes.items():
-    if node.get('resource_type') != 'model':
-      continue
-    name = node.get('name')
-    if not name:
-      continue
-    if name in index:
-      ambiguous.add(name)
-      continue
-    index[name] = uid
-  for name in ambiguous:
-    del index[name]
-  return index
-
-
 def primary_entity_uids(
     semantic_models: dict[str, Any],
 ) -> dict[str, str]:
@@ -1256,7 +1229,9 @@ def primary_entity_uids(
 
 
 def described_model(
-    sm: dict[str, Any], model_uid_by_name: dict[str, str]
+    sm: dict[str, Any],
+    nodes: dict[str, Any],
+    model_uid_by_name: dict[str, str],
 ) -> str | None:
   """The unique_id of the one model a semantic model describes.
 
@@ -1265,20 +1240,32 @@ def described_model(
   (a filter referencing another model, say), which would make the relationship
   ambiguous even though dbt named it outright.
 
+  The declared name is matched against ``depends_on`` rather than resolved from
+  the name index, because a ``ref()`` string names no version while dbt has
+  already resolved one into the dependency graph.
+
   Args:
     sm: the dbt semantic model.
-    model_uid_by_name: model name -> unique_id, from ``model_uids_by_name``.
+    nodes: the manifest ``nodes`` section.
+    model_uid_by_name: model name -> unique_id, from ``naming.index_by_name``.
 
   Returns:
     The backing model's unique_id, or None when it cannot be resolved.
   """
-  declared = model_uid_by_name.get(naming.parse_ref(sm.get('model')) or '')
-  # A ``ref()`` carries only a short name, so accept the resolution only when
-  # dbt's own dependency graph agrees the semantic model reads that node.
+  declared = naming.parse_ref(sm.get('model'))
   if declared:
     depends_on = (sm.get('depends_on') or {}).get('nodes') or []
-    if not depends_on or declared in depends_on:
-      return declared
+    described = [
+        uid
+        for uid in depends_on
+        if (nodes.get(uid) or {}).get('resource_type') == 'model'
+        and nodes[uid].get('name') == declared
+    ]
+    if len(described) == 1:
+      return described[0]
+    # Nothing to match against, so fall back to the declared name alone.
+    if not depends_on and declared in model_uid_by_name:
+      return model_uid_by_name[declared]
   return _sole_dependency(sm)
 
 
@@ -1396,28 +1383,21 @@ def build_entries(
   # all. Anything that does not resolve to exactly one node is left off the
   # constraint rather than guessed at -- a wrong `referencedTable` reads as
   # authoritative lineage, which is worse than none.
-  uid_by_name = {}
+  uid_by_name = naming.index_by_name(nodes, naming.MATERIALIZED_RESOURCE_TYPES)
+  uid_by_name_and_version = naming.index_by_name_and_version(
+      nodes, naming.MATERIALIZED_RESOURCE_TYPES
+  )
   uid_by_relation = {}
-  ambiguous_names = set()
   ambiguous_relations = set()
   for unique_id, node in nodes.items():
-    if node.get('resource_type') not in ('model', 'seed', 'snapshot'):
+    if node.get('resource_type') not in naming.MATERIALIZED_RESOURCE_TYPES:
       continue
-    name = node.get('name')
-    if name:
-      # Versioned models share a name, as do two packages defining the same one.
-      if name in uid_by_name:
-        ambiguous_names.add(name)
-      else:
-        uid_by_name[name] = unique_id
     relation = _normalize_relation(node.get('relation_name'))
     if relation:
       if relation in uid_by_relation:
         ambiguous_relations.add(relation)
       else:
         uid_by_relation[relation] = unique_id
-  for name in ambiguous_names:
-    del uid_by_name[name]
   for relation in ambiguous_relations:
     del uid_by_relation[relation]
 
@@ -1445,7 +1425,7 @@ def build_entries(
     return ctx.dbt_resource_fqn(
         'dbt-{0}'.format(resource_type.replace('_', '-')),
         node.get('package_name') or _DEFAULT_PROJECT_NAME,
-        node.get('name') or '',
+        naming.resource_name(node),
     )
 
   entries = []
@@ -1500,7 +1480,14 @@ def build_entries(
 
   def resolve_target(to: str) -> str | None:
     """Maps a foreign key's raw `to` to the referenced resource's FQN."""
-    target = uid_by_name.get(naming.parse_ref(to) or '')
+    name = naming.parse_ref(to)
+    version = naming.parse_ref_version(to)
+    if version:
+      # A pinned version that resolves to nothing is left unresolved rather
+      # than falling back to the name, which would answer with the latest.
+      target = uid_by_name_and_version.get((name, version))
+    else:
+      target = uid_by_name.get(name or '')
     if not target:
       target = uid_by_relation.get(_normalize_relation(to))
     return node_fqn(target) if target else None
@@ -1544,7 +1531,7 @@ def build_entries(
     add(unique_id, _build_macro_entry(ctx, unique_id, macro), project_id)
 
   # Materialized resources nest under their dbt group when they declare one.
-  model_uid_by_name = model_uids_by_name(nodes)
+  model_uid_by_name = naming.index_by_name(nodes, ('model',))
   for unique_id, node in by_type['model']:
     add(
         unique_id,
@@ -1584,7 +1571,7 @@ def build_entries(
     return resolve
 
   for unique_id, sm in semantic_models.items():
-    model_uid = described_model(sm, model_uid_by_name)
+    model_uid = described_model(sm, nodes, model_uid_by_name)
     model_columns = aspects.merged_columns(
         (catalog_nodes.get(model_uid) or {}).get('columns'),
         (nodes.get(model_uid) or {}).get('columns'),

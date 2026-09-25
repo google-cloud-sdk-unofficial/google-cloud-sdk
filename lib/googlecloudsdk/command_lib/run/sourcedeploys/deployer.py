@@ -447,6 +447,7 @@ def _SubmitBuild(
     tracker,
     submit_build_request,
     region,
+    enable_by_default=True,
 ):
   """Call Build API to submit a build.
 
@@ -454,6 +455,7 @@ def _SubmitBuild(
     tracker: StagedProgressTracker, to report on the progress of releasing.
     submit_build_request: SubmitBuildRequest, the request to submit build.
     region: The region to submit the build in.
+    enable_by_default: bool, The default choice for the enablement prompt.
 
   Returns:
     response_dict: Build resource returned by Cloud build.
@@ -462,7 +464,10 @@ def _SubmitBuild(
     be used in automatic base image update.
   """
   run_client = apis.GetClientInstance(
-      global_methods.SERVERLESS_API_NAME, 'v2', location=region
+      global_methods.SERVERLESS_API_NAME,
+      'v2',
+      location=region,
+      enable_by_default=enable_by_default,
   )
   build_messages = cloudbuild_util.GetMessagesModule()
 
@@ -491,19 +496,23 @@ def _SubmitBuild(
           build_log_url=build_log_url
       ),
   )
-  response_dict = _PollUntilBuildCompletes(build_op_ref, build_region)
+  response_dict = _PollUntilBuildCompletes(
+      build_op_ref, build_region, enable_by_default=enable_by_default
+  )
   return response_dict, build_log_url, build_response.baseImageUri
 
 
 def _PollUntilBuildCompletes(
     build_op_ref: resources.Resource,
     region: str,
+    enable_by_default: bool = True,
 ) -> dict[str, Any]:
   """Poll the build operation until it completes.
 
   Args:
     build_op_ref: The resource reference for the Cloud Build operation.
     region: The region to poll the build operation in.
+    enable_by_default: bool, The default choice for the enablement prompt.
 
   Returns:
     A dictionary representation of the completed build operation's response.
@@ -512,7 +521,9 @@ def _PollUntilBuildCompletes(
     waiter.TimeoutError: If the build operation does not complete within the
       maximum wait time.
   """
-  client = cloudbuild_util.GetClientInstance(location=region)
+  client = cloudbuild_util.GetClientInstance(
+      location=region, enable_by_default=enable_by_default
+  )
   poller = waiter.CloudOperationPoller(
       client.projects_builds, client.operations
   )

@@ -296,10 +296,9 @@ class AppEngineToCloudRun(replace.Replace):
 
     # For Flex environments, extract the existing container image.
     if util.is_flex_env(input_data):
-      if 'deployment' in input_data and hasattr(
-          input_data['deployment'], 'container'
-      ):
-        return input_data['deployment'].container.image, None
+      image = util.get_container_image(input_data)
+      if image:
+        return image, None
       return None, None
 
     if preview_only:
@@ -448,6 +447,20 @@ class AppEngineToCloudRun(replace.Replace):
         args, input_data, project, preview_only=True
     )
 
+    if (
+        getattr(args, 'from_image', False)
+        and util.is_flex_env(input_data)
+        and not image
+    ):
+      version = getattr(args, 'version', None)
+      version_str = f' version [{version}]' if version else ''
+      raise core_exceptions.Error(
+          'No container image found in deployment metadata for App Engine'
+          f' Flexible service [{target_service}]{version_str}. Cannot migrate'
+          ' using --from-image. Deploy from source using "gcloud app'
+          ' migrate-to-run" without --from-image, or provide an image.'
+      )
+
     if not image:
       service_yaml['spec']['template']['spec']['containers'][0][
           'image'
@@ -508,6 +521,15 @@ class AppEngineToCloudRun(replace.Replace):
         final_image, runtime_base_image = self._get_image(
             args, input_data, project, preview_only=False
         )
+        if not final_image:
+          version = getattr(args, 'version', None)
+          version_str = f' version [{version}]' if version else ''
+          raise core_exceptions.Error(
+              'No container image could be resolved for service'
+              f' [{target_service}]{version_str}. Cannot deploy using'
+              ' --from-image. Deploy from source using "gcloud app'
+              ' migrate-to-run" without --from-image, or provide an image.'
+          )
       else:
         final_image, runtime_base_image = self._build_image_from_source(
             args, input_data, input_type, project, target_service

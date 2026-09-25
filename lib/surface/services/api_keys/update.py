@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+# gcloud-disable-gdu-domain
+
 import argparse
 from collections.abc import Callable, Sequence
 import dataclasses
@@ -35,10 +37,6 @@ OP_WAIT_CMD = OP_BASE_CMD + 'wait {0}'
 DETAILED_HELP = {
     'EXAMPLES': (
         """
-        To remove all restrictions of the key:
-
-          $ {command} projects/myproject/locations/global/keys/my-key-id --clear-restrictions
-
         To update display name and set allowed ips as server key restrictions:
 
           $ {command} projects/myproject/locations/global/keys/my-key-id --display-name="test name" --allowed-ips=2620:15c:2c4:203:2776:1f90:6b3b:217,104.133.8.78
@@ -61,19 +59,19 @@ DETAILED_HELP = {
 
         To update keys' allowed api target with multiple services:
 
-          $ {command} projects/myproject/locations/global/keys/my-key-id --api-target=service=bar.service.com --api-target=service=foo.service.com
+          $ {command} projects/myproject/locations/global/keys/my-key-id --api-target=service=bar.googleapis.com --api-target=service=foo.googleapis.com
 
         To update keys' allowed api target with service and method:
 
           $ {command} projects/myproject/locations/global/keys/my-key-id  --flags-file=my-flags.yaml
 
-          The content of 'my-flags.yaml' is as following:
+          The content of 'my-flags.yaml' is as follows:
 
           ```
             - --api-target:
-                service: "foo.service.com"
+                service: "foo.googleapis.com"
             - --api-target:
-                service: "bar.service.com"
+                service: "bar.googleapis.com"
                 methods:
                 - "foomethod"
                 - "barmethod"
@@ -81,14 +79,16 @@ DETAILED_HELP = {
 
         To append allowed referrers and api targets to an existing key:
 
-          $ {command} projects/myproject/locations/global/keys/my-key-id --append --allowed-referrers="https://www.example.com/*" --api-target=service=foo.service.com
+          $ {command} projects/myproject/locations/global/keys/my-key-id --append --allowed-referrers="https://www.example.com/*" --api-target=service=foo.googleapis.com
         """
     )
 }
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class Update(base.UpdateCommand):
   """Update an API key's metadata."""
 
@@ -121,15 +121,34 @@ class Update(base.UpdateCommand):
       The LRO object.
 
     Raises:
-      googlecloudsdk.calliope.exceptions.InvalidArgumentException: If attempting
-        to append a different client restriction type than already exists on the
-        key.
+      googlecloudsdk.calliope.exceptions.InvalidArgumentException: If the
+        updated key lacks API target restrictions, or if attempting to append a
+        different client restriction type than already exists on the key.
     """
 
     client = apikeys.GetClientInstance(self.ReleaseTrack())
     messages = client.MESSAGES_MODULE
 
     key_ref = args.CONCEPTS.key.Parse()
+
+    if current_key is None:
+      request = messages.ApikeysProjectsLocationsKeysGetRequest(
+          name=key_ref.RelativeName()
+      )
+      current_key = client.projects_locations_keys.Get(request)
+
+    current_has_api_targets = bool(
+        current_key.restrictions and current_key.restrictions.apiTargets
+    )
+    is_specifying_api_target = args.IsSpecified('api_target')
+
+    if not (current_has_api_targets or is_specifying_api_target):
+      raise exceptions.InvalidArgumentException(
+          '--api-target',
+          'API keys must have API target restrictions. Please specify '
+          '`--api-target` to restrict this key.',
+      )
+
     update_mask = []
     key_proto = messages.V2Key(
         name=key_ref.RelativeName(), restrictions=messages.V2Restrictions()
@@ -144,12 +163,6 @@ class Update(base.UpdateCommand):
       update_mask.append('annotations')
 
     if args.append:
-      if current_key is None:
-        request = messages.ApikeysProjectsLocationsKeysGetRequest(
-            name=key_ref.RelativeName()
-        )
-        current_key = client.projects_locations_keys.Get(request)
-
       # Copy etag from current key to ensure the update is based on the
       # latest version, preventing race conditions.
       if current_key.etag:
@@ -206,42 +219,39 @@ class Update(base.UpdateCommand):
         key_proto.restrictions.apiTargets = merged_targets
         update_mask.append('restrictions.api_targets')
     else:
-      if args.IsSpecified('clear_restrictions'):
-        update_mask.append('restrictions')
-      else:
-        if args.IsSpecified('allowed_referrers'):
-          update_mask.append('restrictions.browser_key_restrictions')
-          key_proto.restrictions.browserKeyRestrictions = (
-              messages.V2BrowserKeyRestrictions(
-                  allowedReferrers=args.allowed_referrers
-              )
-          )
-        elif args.IsSpecified('allowed_ips'):
-          update_mask.append('restrictions.server_key_restrictions')
-          key_proto.restrictions.serverKeyRestrictions = (
-              messages.V2ServerKeyRestrictions(allowedIps=args.allowed_ips)
-          )
-        elif args.IsSpecified('allowed_bundle_ids'):
-          update_mask.append('restrictions.ios_key_restrictions')
-          key_proto.restrictions.iosKeyRestrictions = (
-              messages.V2IosKeyRestrictions(
-                  allowedBundleIds=args.allowed_bundle_ids
-              )
-          )
-        elif args.IsSpecified('allowed_application'):
-          update_mask.append('restrictions.android_key_restrictions')
-          key_proto.restrictions.androidKeyRestrictions = (
-              messages.V2AndroidKeyRestrictions(
-                  allowedApplications=apikeys.GetAllowedAndroidApplications(
-                      args, messages
-                  )
-              )
-          )
-        if args.IsSpecified('api_target'):
-          update_mask.append('restrictions.api_targets')
-          key_proto.restrictions.apiTargets = apikeys.GetApiTargets(
-              args, messages
-          )
+      if args.IsSpecified('allowed_referrers'):
+        update_mask.append('restrictions.browser_key_restrictions')
+        key_proto.restrictions.browserKeyRestrictions = (
+            messages.V2BrowserKeyRestrictions(
+                allowedReferrers=args.allowed_referrers
+            )
+        )
+      elif args.IsSpecified('allowed_ips'):
+        update_mask.append('restrictions.server_key_restrictions')
+        key_proto.restrictions.serverKeyRestrictions = (
+            messages.V2ServerKeyRestrictions(allowedIps=args.allowed_ips)
+        )
+      elif args.IsSpecified('allowed_bundle_ids'):
+        update_mask.append('restrictions.ios_key_restrictions')
+        key_proto.restrictions.iosKeyRestrictions = (
+            messages.V2IosKeyRestrictions(
+                allowedBundleIds=args.allowed_bundle_ids
+            )
+        )
+      elif args.IsSpecified('allowed_application'):
+        update_mask.append('restrictions.android_key_restrictions')
+        key_proto.restrictions.androidKeyRestrictions = (
+            messages.V2AndroidKeyRestrictions(
+                allowedApplications=apikeys.GetAllowedAndroidApplications(
+                    args, messages
+                )
+            )
+        )
+      if args.IsSpecified('api_target'):
+        update_mask.append('restrictions.api_targets')
+        key_proto.restrictions.apiTargets = apikeys.GetApiTargets(
+            args, messages
+        )
 
     enum_cls = (
         messages.ApikeysProjectsLocationsKeysPatchRequest.CheckExistingUsageValueValuesEnum
@@ -270,57 +280,6 @@ class Update(base.UpdateCommand):
     return op
 
   detailed_help = DETAILED_HELP
-
-
-@base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaUpdate(Update):
-  """A surface for updating API keys, including append support."""
-
-  def Run(self, args: argparse.Namespace) -> Any:
-    """Run the update command for Alpha release track with secure defaults.
-
-    Args:
-      args: An argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      The LRO object.
-
-    Raises:
-      googlecloudsdk.calliope.exceptions.InvalidArgumentException: If the
-        --clear-restrictions flag is specified or if the updated key lacks API
-        target restrictions.
-    """
-    client = apikeys.GetClientInstance(self.ReleaseTrack())
-    messages = client.MESSAGES_MODULE
-    key_ref = args.CONCEPTS.key.Parse()
-    request = messages.ApikeysProjectsLocationsKeysGetRequest(
-        name=key_ref.RelativeName()
-    )
-    current_key = client.projects_locations_keys.Get(request)
-
-    current_has_api_targets = (
-        current_key.restrictions is not None
-        and current_key.restrictions.apiTargets
-    )
-    is_clearing = args.IsSpecified('clear_restrictions')
-    is_specifying_api_target = args.IsSpecified('api_target')
-
-    if is_clearing:
-      raise exceptions.InvalidArgumentException(
-          '--clear-restrictions',
-          'The --clear-restrictions flag is not supported on the ALPHA track.',
-      )
-
-    if not (current_has_api_targets or is_specifying_api_target):
-      raise exceptions.InvalidArgumentException(
-          '--api-target',
-          'API keys must have API target restrictions. Please specify '
-          '`--api-target` to restrict this key.',
-      )
-
-    return super(AlphaUpdate, self).Run(args, current_key=current_key)
 
 
 @dataclasses.dataclass

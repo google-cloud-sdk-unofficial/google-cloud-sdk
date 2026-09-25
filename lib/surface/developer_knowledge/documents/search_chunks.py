@@ -19,7 +19,9 @@ from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.DefaultUniverseOnly
 class SearchChunks(base.ListCommand):
   """Search for developer knowledge across Google's developer documentation."""
@@ -72,7 +74,7 @@ class SearchChunks(base.ListCommand):
     )
 
   def Run(self, args):
-    if self.ReleaseTrack() == base.ReleaseTrack.BETA:
+    if self.ReleaseTrack() in (base.ReleaseTrack.BETA, base.ReleaseTrack.GA):
       api_version = 'v1'
     else:
       api_version = 'v1alpha'

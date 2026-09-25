@@ -68,6 +68,8 @@ CPU_UTILIZATION_ANNOTATION = 'run.googleapis.com/scaling-cpu-target'
 CONCURRENCY_UTILIZATION_ANNOTATION = 'run.googleapis.com/scaling-concurrency-target'
 # gcloud-disable-gdu-domain
 AMBIENT_NETWORKING_ANNOTATION = 'run.googleapis.com/ambient-networking'
+# gcloud-disable-gdu-domain
+AMBIENT_SCOPE_ANNOTATION = 'run.googleapis.com/ambient-scope'
 
 
 class Revision(container_resource.ContainerResource):

@@ -15,8 +15,11 @@
 """Utility functions for performing download operation."""
 
 import os
+import typing
 from typing import Any
 
+from googlecloudsdk.api_lib.storage import api_factory
+from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import fast_crc32c_util
 from googlecloudsdk.command_lib.storage import gzip_util
@@ -191,13 +194,25 @@ def validate_download_hash_and_delete_corrupt_files(download_path, source_hash,
     raise
 
 
-def return_and_report_if_nothing_to_download(cloud_resource, progress_callback):
-  """Returns valid download range bool and reports progress if not."""
-  if cloud_resource.size == 0:
-    if progress_callback:
-      progress_callback(0)
-    return True
-  return False
+@typing.runtime_checkable
+class _GrpcBidiClient(typing.Protocol):
+  """Protocol for API clients supporting gRPC bidi object metadata."""
+
+  def get_grpc_bidi_object_metadata(
+      self,
+      bucket_name: str,
+      object_name: str,
+      source_resource: Any = None,
+      destination_resource: Any = None,
+      request_config: Any = None,
+      generation: Any = None,
+  ) -> Any:
+    ...
+
+
+return_and_report_if_nothing_to_download = (
+    cloud_api.return_and_report_if_nothing_to_download
+)
 
 
 def get_crc32c_hash_for_resource(resource):
@@ -210,17 +225,10 @@ def get_crc32c_hash_for_resource(resource):
     return resource.crc32c_hash
 
   try:
-    # pylint: disable=g-import-not-at-top,redefined-outer-name
-    from googlecloudsdk.api_lib.storage import api_factory
-    from googlecloudsdk.api_lib.storage.gcs_grpc_bidi_streaming import client as gcs_grpc_bidi_streaming_client
-    # pylint: enable=g-import-not-at-top,redefined-outer-name
-
     provider = resource.storage_url.scheme
     bucket_name = resource.storage_url.bucket_name
     api = api_factory.get_api(provider, bucket_name=bucket_name)
-    if isinstance(
-        api, gcs_grpc_bidi_streaming_client.GcsGrpcBidiStreamingClient
-    ):
+    if isinstance(api, _GrpcBidiClient):
       metadata = api.get_grpc_bidi_object_metadata(
           bucket_name=resource.storage_url.bucket_name,
           object_name=resource.storage_url.resource_name,
@@ -239,7 +247,8 @@ def get_crc32c_hash_for_resource(resource):
       )
       return metadata.crc32c_hash
   except ImportError:
-    # Non Zonal buckets not necesarily need to import gRPC dependent libraries.
+    # Non Zonal buckets not necessarily need to import gRPC dependent libraries.
     # For Non Zonal buckets, we will continue to use the existing flow.
     pass
+
   return resource.crc32c_hash

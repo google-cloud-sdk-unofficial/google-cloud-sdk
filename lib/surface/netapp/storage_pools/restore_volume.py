@@ -33,6 +33,8 @@ class RestoreVolume(base.Command):
       'DESCRIPTION': textwrap.dedent("""\
           Restores a backup to a volume within the specified Storage Pool.
 
+          This command supports restoring from both Cloud NetApp Volumes backups and GCBDR (BackupDR) backups.
+
           This command supports both full backup restore and selective file restore:
 
           *Full Backup Restore*: The `--volume-uuid` must reference a Data Protection (DP) volume where the backup will be restored.
@@ -45,6 +47,10 @@ class RestoreVolume(base.Command):
           The following command restores full backup from a backup with full resource name `projects/my-project/locations/us-central1/backupVaults/my-vault/backups/backup-1` to an ONTAP-mode volume with UUID 5dc61a44-3d99-11f1-b8ff-39021cc41d7a in Storage Pool named NAME.
 
               $ {command} NAME --location=us-central1 --backup=projects/my-project/locations/us-central1/backupVaults/my-vault/backups/backup-1 --volume-uuid=5dc61a44-3d99-11f1-b8ff-39021cc41d7a
+
+          The following command restores full backup from a GCBDR (BackupDR) backup with full resource name `projects/my-project/locations/us-central1/backupVaults/my-vault/dataSources/my-ds/backups/backup-1` to an ONTAP-mode volume with UUID 5dc61a44-3d99-11f1-b8ff-39021cc41d7a in Storage Pool named NAME.
+
+              $ {command} NAME --location=us-central1 --backup=projects/my-project/locations/us-central1/backupVaults/my-vault/dataSources/my-ds/backups/backup-1 --volume-uuid=5dc61a44-3d99-11f1-b8ff-39021cc41d7a
 
           The following command restores file1.txt from the same backup to an ONTAP-mode volume with UUID 5dc61a44-3d99-11f1-b8ff-39021cc41d7a in Storage Pool named NAME to the directory /my_restore_destination.
 
@@ -59,7 +65,6 @@ class RestoreVolume(base.Command):
   def Run(self, args):
     """Run the restore command."""
     storagepool_ref = args.CONCEPTS.storage_pool.Parse()
-    backup_ref = args.CONCEPTS.backup.Parse()
     client = storagepools_client.StoragePoolsClient(
         release_track=self._RELEASE_TRACK
     )
@@ -71,9 +76,15 @@ class RestoreVolume(base.Command):
     if not console_io.PromptContinue(message=warning):
       return None
 
+    if args.backup and '/dataSources/' in args.backup:
+      backup = args.backup
+    else:
+      backup_ref = args.CONCEPTS.backup.Parse()
+      backup = backup_ref.RelativeName()
+
     result = client.RestoreVolume(
         storagepool_ref,
-        backup_ref.RelativeName(),
+        backup,
         args.file_list,
         args.volume_uuid,
         args.restore_destination_path,

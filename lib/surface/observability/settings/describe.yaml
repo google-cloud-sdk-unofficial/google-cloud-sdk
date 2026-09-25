@@ -1,4 +1,4 @@
-- release_tracks: [BETA]
+- release_tracks: [GA, BETA]
   help_text:
     brief: Show details of Observability settings on a resource.
     description: Show details of Observability settings on a resource.

@@ -14,6 +14,7 @@
 # limitations under the License.
 """Shared resource arguments for Device Run commands."""
 
+from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.calliope.concepts import deps
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
@@ -45,6 +46,15 @@ def DeviceAttributeConfig():
   return concepts.ResourceParameterAttributeConfig(
       name='device',
       help_text='The device ID.',
+  )
+
+
+def SoftwareVersionAttributeConfig() -> (
+    concepts.ResourceParameterAttributeConfig
+):
+  return concepts.ResourceParameterAttributeConfig(
+      name='software_version',
+      help_text='The software version ID.',
   )
 
 
@@ -87,6 +97,16 @@ def GetDeviceResourceSpec():
   )
 
 
+def GetSoftwareVersionResourceSpec() -> concepts.ResourceSpec:
+  return concepts.ResourceSpec(
+      'devicerun.projects.locations.softwareVersions',
+      resource_name='software_version',
+      projectsId=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
+      locationsId=LocationAttributeConfig(),
+      softwareVersionsId=SoftwareVersionAttributeConfig(),
+  )
+
+
 def AddLocationResourceArg(parser, verb):
   concept_parsers.ConceptParser.ForResource(
       '--location',
@@ -122,3 +142,15 @@ def AddDeviceResourceArg(parser, verb, positional=True):
       required=True,
   ).AddToParser(parser)
 
+
+def AddSoftwareVersionResourceArg(
+    parser: parser_arguments.ArgumentInterceptor,
+    verb: str,
+    positional: bool = True,
+) -> None:
+  concept_parsers.ConceptParser.ForResource(
+      'software_version' if positional else '--software-version',
+      GetSoftwareVersionResourceSpec(),
+      'Software version to {}.'.format(verb),
+      required=True,
+  ).AddToParser(parser)

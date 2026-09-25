@@ -450,7 +450,9 @@ allowed-source-ip-ranges:
   help_text: |
     A comma-separated list of IPv4 ranges in CIDR notation that are allowed to connect
     to the public cluster. Use this flag only if --public-cluster is enabled.
-    Example: --allowed-source-ip-ranges=203.0.113.0/24,198.51.100.0/24
+    Example: `--allowed-source-ip-ranges=203.0.113.0/24,198.51.100.0/24`.
+    To protect your cluster, allow access from only trusted external IP ranges. Don't expose your
+    cluster to untrusted ranges.
 
 dns-zone-target:
   arg_name: dns-zone-target

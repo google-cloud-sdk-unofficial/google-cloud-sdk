@@ -38,6 +38,9 @@ class AgentregistryV1alpha(base_api.BaseApiClient):
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
     self.projects_locations_agents = self.ProjectsLocationsAgentsService(self)
+    self.projects_locations_aiApplications_agents = self.ProjectsLocationsAiApplicationsAgentsService(self)
+    self.projects_locations_aiApplications_endpoints = self.ProjectsLocationsAiApplicationsEndpointsService(self)
+    self.projects_locations_aiApplications_mcpServers = self.ProjectsLocationsAiApplicationsMcpServersService(self)
     self.projects_locations_aiApplications = self.ProjectsLocationsAiApplicationsService(self)
     self.projects_locations_bindings = self.ProjectsLocationsBindingsService(self)
     self.projects_locations_endpoints = self.ProjectsLocationsEndpointsService(self)
@@ -169,6 +172,360 @@ class AgentregistryV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsAiApplicationsAgentsService(base_api.BaseApiService):
+    """Service class for the projects_locations_aiApplications_agents resource."""
+
+    _NAME = 'projects_locations_aiApplications_agents'
+
+    def __init__(self, client):
+      super(AgentregistryV1alpha.ProjectsLocationsAiApplicationsAgentsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new Agent under an AI Application.
+
+      Args:
+        request: (AgentregistryProjectsLocationsAiApplicationsAgentsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/aiApplications/{aiApplicationsId}/agents',
+        http_method='POST',
+        method_id='agentregistry.projects.locations.aiApplications.agents.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1alpha/{+parent}/agents',
+        request_field='createAiApplicationAgentRequest',
+        request_type_name='AgentregistryProjectsLocationsAiApplicationsAgentsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes an Agent under an AI Application.
+
+      Args:
+        request: (AgentregistryProjectsLocationsAiApplicationsAgentsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/aiApplications/{aiApplicationsId}/agents/{agentsId}',
+        http_method='DELETE',
+        method_id='agentregistry.projects.locations.aiApplications.agents.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='AgentregistryProjectsLocationsAiApplicationsAgentsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single Agent under an AI Application.
+
+      Args:
+        request: (AgentregistryProjectsLocationsAiApplicationsAgentsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Agent) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/aiApplications/{aiApplicationsId}/agents/{agentsId}',
+        http_method='GET',
+        method_id='agentregistry.projects.locations.aiApplications.agents.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='AgentregistryProjectsLocationsAiApplicationsAgentsGetRequest',
+        response_type_name='Agent',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists Agents under an AI Application.
+
+      Args:
+        request: (AgentregistryProjectsLocationsAiApplicationsAgentsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListAiApplicationAgentsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/aiApplications/{aiApplicationsId}/agents',
+        http_method='GET',
+        method_id='agentregistry.projects.locations.aiApplications.agents.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/agents',
+        request_field='',
+        request_type_name='AgentregistryProjectsLocationsAiApplicationsAgentsListRequest',
+        response_type_name='ListAiApplicationAgentsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsAiApplicationsEndpointsService(base_api.BaseApiService):
+    """Service class for the projects_locations_aiApplications_endpoints resource."""
+
+    _NAME = 'projects_locations_aiApplications_endpoints'
+
+    def __init__(self, client):
+      super(AgentregistryV1alpha.ProjectsLocationsAiApplicationsEndpointsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new Endpoint under an AI Application.
+
+      Args:
+        request: (AgentregistryProjectsLocationsAiApplicationsEndpointsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/aiApplications/{aiApplicationsId}/endpoints',
+        http_method='POST',
+        method_id='agentregistry.projects.locations.aiApplications.endpoints.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1alpha/{+parent}/endpoints',
+        request_field='createAiApplicationEndpointRequest',
+        request_type_name='AgentregistryProjectsLocationsAiApplicationsEndpointsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes an Endpoint under an AI Application.
+
+      Args:
+        request: (AgentregistryProjectsLocationsAiApplicationsEndpointsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/aiApplications/{aiApplicationsId}/endpoints/{endpointsId}',
+        http_method='DELETE',
+        method_id='agentregistry.projects.locations.aiApplications.endpoints.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='AgentregistryProjectsLocationsAiApplicationsEndpointsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single Endpoint under an AI Application.
+
+      Args:
+        request: (AgentregistryProjectsLocationsAiApplicationsEndpointsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Endpoint) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/aiApplications/{aiApplicationsId}/endpoints/{endpointsId}',
+        http_method='GET',
+        method_id='agentregistry.projects.locations.aiApplications.endpoints.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='AgentregistryProjectsLocationsAiApplicationsEndpointsGetRequest',
+        response_type_name='Endpoint',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists Endpoints under an AI Application.
+
+      Args:
+        request: (AgentregistryProjectsLocationsAiApplicationsEndpointsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListAiApplicationEndpointsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/aiApplications/{aiApplicationsId}/endpoints',
+        http_method='GET',
+        method_id='agentregistry.projects.locations.aiApplications.endpoints.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/endpoints',
+        request_field='',
+        request_type_name='AgentregistryProjectsLocationsAiApplicationsEndpointsListRequest',
+        response_type_name='ListAiApplicationEndpointsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsAiApplicationsMcpServersService(base_api.BaseApiService):
+    """Service class for the projects_locations_aiApplications_mcpServers resource."""
+
+    _NAME = 'projects_locations_aiApplications_mcpServers'
+
+    def __init__(self, client):
+      super(AgentregistryV1alpha.ProjectsLocationsAiApplicationsMcpServersService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new McpServer under an AI Application.
+
+      Args:
+        request: (AgentregistryProjectsLocationsAiApplicationsMcpServersCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/aiApplications/{aiApplicationsId}/mcpServers',
+        http_method='POST',
+        method_id='agentregistry.projects.locations.aiApplications.mcpServers.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1alpha/{+parent}/mcpServers',
+        request_field='createAiApplicationMcpServerRequest',
+        request_type_name='AgentregistryProjectsLocationsAiApplicationsMcpServersCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes an McpServer under an AI Application.
+
+      Args:
+        request: (AgentregistryProjectsLocationsAiApplicationsMcpServersDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/aiApplications/{aiApplicationsId}/mcpServers/{mcpServersId}',
+        http_method='DELETE',
+        method_id='agentregistry.projects.locations.aiApplications.mcpServers.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='AgentregistryProjectsLocationsAiApplicationsMcpServersDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single McpServer under an AI Application.
+
+      Args:
+        request: (AgentregistryProjectsLocationsAiApplicationsMcpServersGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (McpServer) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/aiApplications/{aiApplicationsId}/mcpServers/{mcpServersId}',
+        http_method='GET',
+        method_id='agentregistry.projects.locations.aiApplications.mcpServers.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='AgentregistryProjectsLocationsAiApplicationsMcpServersGetRequest',
+        response_type_name='McpServer',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists McpServers under an AI Application.
+
+      Args:
+        request: (AgentregistryProjectsLocationsAiApplicationsMcpServersListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListAiApplicationMcpServersResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/aiApplications/{aiApplicationsId}/mcpServers',
+        http_method='GET',
+        method_id='agentregistry.projects.locations.aiApplications.mcpServers.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/mcpServers',
+        request_field='',
+        request_type_name='AgentregistryProjectsLocationsAiApplicationsMcpServersListRequest',
+        response_type_name='ListAiApplicationMcpServersResponse',
+        supports_download=False,
+    )
+
   class ProjectsLocationsAiApplicationsService(base_api.BaseApiService):
     """Service class for the projects_locations_aiApplications resource."""
 
@@ -178,6 +535,87 @@ class AgentregistryV1alpha(base_api.BaseApiClient):
       super(AgentregistryV1alpha.ProjectsLocationsAiApplicationsService, self).__init__(client)
       self._upload_configs = {
           }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new AI Application in a given project and location.
+
+      Args:
+        request: (AgentregistryProjectsLocationsAiApplicationsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/aiApplications',
+        http_method='POST',
+        method_id='agentregistry.projects.locations.aiApplications.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['aiApplicationId', 'requestId'],
+        relative_path='v1alpha/{+parent}/aiApplications',
+        request_field='aiApplication',
+        request_type_name='AgentregistryProjectsLocationsAiApplicationsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single AI Application.
+
+      Args:
+        request: (AgentregistryProjectsLocationsAiApplicationsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/aiApplications/{aiApplicationsId}',
+        http_method='DELETE',
+        method_id='agentregistry.projects.locations.aiApplications.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['force', 'requestId'],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='AgentregistryProjectsLocationsAiApplicationsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single AI Application.
+
+      Args:
+        request: (AgentregistryProjectsLocationsAiApplicationsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (AiApplication) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/aiApplications/{aiApplicationsId}',
+        http_method='GET',
+        method_id='agentregistry.projects.locations.aiApplications.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='AgentregistryProjectsLocationsAiApplicationsGetRequest',
+        response_type_name='AiApplication',
+        supports_download=False,
+    )
 
     def GetIamPolicy(self, request, global_params=None):
       r"""Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.
@@ -203,6 +641,60 @@ class AgentregistryV1alpha(base_api.BaseApiClient):
         request_field='',
         request_type_name='AgentregistryProjectsLocationsAiApplicationsGetIamPolicyRequest',
         response_type_name='GoogleIamV1Policy',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists AI Applications in a given project and location.
+
+      Args:
+        request: (AgentregistryProjectsLocationsAiApplicationsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListAiApplicationsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/aiApplications',
+        http_method='GET',
+        method_id='agentregistry.projects.locations.aiApplications.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/aiApplications',
+        request_field='',
+        request_type_name='AgentregistryProjectsLocationsAiApplicationsListRequest',
+        response_type_name='ListAiApplicationsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single AI Application.
+
+      Args:
+        request: (AgentregistryProjectsLocationsAiApplicationsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/aiApplications/{aiApplicationsId}',
+        http_method='PATCH',
+        method_id='agentregistry.projects.locations.aiApplications.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1alpha/{+name}',
+        request_field='aiApplication',
+        request_type_name='AgentregistryProjectsLocationsAiApplicationsPatchRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

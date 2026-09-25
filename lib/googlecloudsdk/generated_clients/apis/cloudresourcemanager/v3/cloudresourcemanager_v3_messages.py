@@ -291,7 +291,7 @@ class CapabilityConfig(_messages.Message):
       CapabilityConfig. When present it must be between 4 to 30 characters.
       Allowed characters are: lowercase and uppercase letters, numbers,
       hyphen, single-quote, double-quote, space, and exclamation point.
-      Example: `My Capability Config`
+      Example: `My CapabilityConfig`
     etag: This checksum is computed by the server based on the value of other
       fields, and may be sent on update and delete requests to ensure the
       client has an up-to-date value before proceeding.

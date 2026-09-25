@@ -1098,6 +1098,60 @@ class BackupGcpResource(_messages.Message):
   type = _messages.StringField(3)
 
 
+class BackupInsightPlan(_messages.Message):
+  r"""Message describing a BackupInsightPlan object.
+
+  Enums:
+    BackupInsightTypeValueValuesEnum: Required. Immutable. The type of insight
+      this plan enables.
+    StateValueValuesEnum: Output only. The current state of the
+      BackupInsightPlan.
+
+  Fields:
+    backupInsightType: Required. Immutable. The type of insight this plan
+      enables.
+    backupMetadataInsightSettings: Settings for backup metadata insight.
+    createTime: Output only. The timestamp when the plan was created.
+    etag: Optional. Server specified ETag for the resource to prevent
+      simultaneous updates from overwriting each other.
+    name: Identifier. The resource name of the BackupInsightPlan. Format: `projects/{project}/locations/{location}/backupVaults/{backup_vault}/backupInsightPlans/{backup_insight_plan}`
+    state: Output only. The current state of the BackupInsightPlan.
+  """
+
+  class BackupInsightTypeValueValuesEnum(_messages.Enum):
+    r"""Required. Immutable. The type of insight this plan enables.
+
+    Values:
+      BACKUP_INSIGHT_TYPE_UNSPECIFIED: The insight type is unspecified.
+      BACKUP_METADATA_INDEXING: Backup metadata indexing insight.
+    """
+    BACKUP_INSIGHT_TYPE_UNSPECIFIED = 0
+    BACKUP_METADATA_INDEXING = 1
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current state of the BackupInsightPlan.
+
+    Values:
+      STATE_UNSPECIFIED: The state of the plan is unspecified.
+      CREATING: The plan is being created.
+      ACTIVE: The plan is active.
+      DELETING: The plan is being deleted.
+      ERROR: The plan is in an error state.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATING = 1
+    ACTIVE = 2
+    DELETING = 3
+    ERROR = 4
+
+  backupInsightType = _messages.EnumField('BackupInsightTypeValueValuesEnum', 1)
+  backupMetadataInsightSettings = _messages.MessageField('BackupMetadataInsightSettings', 2)
+  createTime = _messages.StringField(3)
+  etag = _messages.StringField(4)
+  name = _messages.StringField(5)
+  state = _messages.EnumField('StateValueValuesEnum', 6)
+
+
 class BackupLocation(_messages.Message):
   r"""BackupLocation represents a cloud location where a backup can be stored.
 
@@ -1144,6 +1198,10 @@ class BackupLock(_messages.Message):
   backupApplianceLockInfo = _messages.MessageField('BackupApplianceLockInfo', 1)
   lockUntilTime = _messages.StringField(2)
   serviceLockInfo = _messages.MessageField('ServiceLockInfo', 3)
+
+
+class BackupMetadataInsightSettings(_messages.Message):
+  r"""Settings for backup metadata insight."""
 
 
 class BackupPlan(_messages.Message):
@@ -2353,6 +2411,103 @@ class BackupdrProjectsLocationsBackupPlansRevisionsListRequest(_messages.Message
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
+
+
+class BackupdrProjectsLocationsBackupVaultsBackupInsightPlansCreateRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsBackupVaultsBackupInsightPlansCreateRequest
+  object.
+
+  Fields:
+    backupInsightPlan: A BackupInsightPlan resource to be passed as the
+      request body.
+    backupInsightPlanId: Required. The ID to use for the plan. This will
+      become the final component of the plan's resource name.
+    parent: Required. The parent resource where this plan will be created.
+      Format:
+      projects/{project}/locations/{location}/backupVaults/{backup_vault}
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  backupInsightPlan = _messages.MessageField('BackupInsightPlan', 1)
+  backupInsightPlanId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class BackupdrProjectsLocationsBackupVaultsBackupInsightPlansDeleteRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsBackupVaultsBackupInsightPlansDeleteRequest
+  object.
+
+  Fields:
+    etag: Optional. The current etag of the backup insight plan. If an etag is
+      provided and does not match the current etag of the resource, deletion
+      will be blocked.
+    name: Required. The name of the plan to delete. Format: projects/{project}
+      /locations/{location}/backupVaults/{backup_vault}/backupInsightPlans/{ba
+      ckup_insight_plan}
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      This prevents clients from accidentally creating duplicate commitments.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+
+
+class BackupdrProjectsLocationsBackupVaultsBackupInsightPlansGetRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsBackupVaultsBackupInsightPlansGetRequest
+  object.
+
+  Fields:
+    name: Required. The name of the plan to retrieve. Format: projects/{projec
+      t}/locations/{location}/backupVaults/{backup_vault}/backupInsightPlans/{
+      backup_insight_plan}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class BackupdrProjectsLocationsBackupVaultsBackupInsightPlansListRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsBackupVaultsBackupInsightPlansListRequest
+  object.
+
+  Fields:
+    filter: Optional. A filter expression that filters resources listed in the
+      response.
+    orderBy: Optional. An expression that sorts the results in the response.
+    pageSize: Optional. The maximum number of plans to return in a single
+      page.
+    pageToken: Optional. A page token, received from a previous
+      `ListBackupInsightPlans` call.
+    parent: Required. The backup vault for which to retrieve the list of
+      plans. Format:
+      projects/{project}/locations/{location}/backupVaults/{backup_vault}
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
 
 
 class BackupdrProjectsLocationsBackupVaultsCreateRequest(_messages.Message):
@@ -5901,6 +6056,21 @@ class ListAutoProtectionPolicyBindingsResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class ListBackupInsightPlansResponse(_messages.Message):
+  r"""Response message for ListBackupInsightPlans.
+
+  Fields:
+    backupInsightPlans: A list of the BackupInsightPlan resources found.
+    nextPageToken: A token that can be sent as `page_token` to retrieve the
+      next page.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  backupInsightPlans = _messages.MessageField('BackupInsightPlan', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListBackupPlanAssociationsResponse(_messages.Message):
   r"""Response message for List BackupPlanAssociation
 
@@ -6293,6 +6463,7 @@ class LocationMetadata(_messages.Message):
       ALLOY_DB: <no description>
       FILESTORE: <no description>
       BV_AF: <no description>
+      GOOGLE_CLOUD_NETAPP_VOLUME: <no description>
       CEP_MONITORING_COMPUTE_INSTANCE: <no description>
       CEP_MONITORING_DISK: <no description>
       BV_CUSTOM_PROBERS: Remove once parity achieved between BV_AF and
@@ -6308,10 +6479,11 @@ class LocationMetadata(_messages.Message):
     ALLOY_DB = 6
     FILESTORE = 7
     BV_AF = 8
-    CEP_MONITORING_COMPUTE_INSTANCE = 9
-    CEP_MONITORING_DISK = 10
-    BV_CUSTOM_PROBERS = 11
-    FT_CUSTOM_PROBERS = 12
+    GOOGLE_CLOUD_NETAPP_VOLUME = 9
+    CEP_MONITORING_COMPUTE_INSTANCE = 10
+    CEP_MONITORING_DISK = 11
+    BV_CUSTOM_PROBERS = 12
+    FT_CUSTOM_PROBERS = 13
 
   unsupportedFeatures = _messages.EnumField('UnsupportedFeaturesValueListEntryValuesEnum', 1, repeated=True)
 
@@ -6911,7 +7083,8 @@ class PostRestoreConfig(_messages.Message):
   Fields:
     cloudRunJob: Cloud Run job action to execute. Format:
       `projects/{project}/locations/{location}/jobs/{job}`
-    timeout: Optional. The timeout for this phase.
+    timeout: Optional. The timeout for this phase. If set, the timeout must be
+      positive and less than or equal to 24 hours (86400s).
   """
 
   cloudRunJob = _messages.StringField(1)
@@ -6971,7 +7144,8 @@ class PreRestoreConfig(_messages.Message):
   Fields:
     cloudRunJob: Cloud Run job action to execute. Format:
       `projects/{project}/locations/{location}/jobs/{job}`
-    timeout: Optional. The timeout for this phase.
+    timeout: Optional. The timeout for this phase. If set, the timeout must be
+      positive and less than or equal to 24 hours (86400s).
   """
 
   cloudRunJob = _messages.StringField(1)
@@ -8514,7 +8688,8 @@ class VerificationConfig(_messages.Message):
   Fields:
     cloudRunJob: Cloud Run job action to execute. Format:
       `projects/{project}/locations/{location}/jobs/{job}`
-    timeout: Optional. The timeout for this phase.
+    timeout: Optional. The timeout for this phase. If set, the timeout must be
+      positive and less than or equal to 24 hours (86400s).
   """
 
   cloudRunJob = _messages.StringField(1)

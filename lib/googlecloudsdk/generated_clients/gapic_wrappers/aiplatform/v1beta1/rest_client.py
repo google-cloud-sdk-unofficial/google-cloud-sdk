@@ -39,5 +39,8 @@ class GapicWrapperClient(object):
         aiplatform_v1beta1.services.prediction_service.client.PredictionServiceClient,
         credentials, **kwargs)
     self.semantic = gapic_util.MakeRestClient(
+        aiplatform_v1beta1.services.semantic_governance_policy_engine_service.client.SemanticGovernancePolicyEngineServiceClient,
+        credentials, **kwargs)
+    self.semantic = gapic_util.MakeRestClient(
         aiplatform_v1beta1.services.semantic_governance_policy_service.client.SemanticGovernancePolicyServiceClient,
         credentials, **kwargs)

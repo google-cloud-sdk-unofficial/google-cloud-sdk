@@ -2371,11 +2371,13 @@ class Operation(_messages.Message):
           result in the creation of a VM that uses global DNS.
         RATE_LIMIT_EXCEEDED: Resource can't be retrieved due to api quota
           exceeded.
+        ASYNC_REPLICATION_SECONDARY_UPDATE_PENDING: Primary disk resized.
+          Secondary disk resize is in-progress and awaiting resource
+          allocation in the secondary region.
         UPCOMING_MAINTENANCES_UNAVAILABLE: Upcoming maintenance schedule is
           unavailable for the resource.
-        RESERVED_ENTRY_136: Reserved entries for quickly adding new warnings
+        RESERVED_ENTRY_139: Reserved entries for quickly adding new warnings
           without breaking dependent clients.
-        RESERVED_ENTRY_139: <no description>
         RESERVED_ENTRY_141: <no description>
         RESERVED_ENTRY_142: <no description>
         RESERVED_ENTRY_143: <no description>
@@ -2415,8 +2417,8 @@ class Operation(_messages.Message):
       QUOTA_INFO_UNAVAILABLE = 32
       RESOURCE_USES_GLOBAL_DNS = 33
       RATE_LIMIT_EXCEEDED = 34
-      UPCOMING_MAINTENANCES_UNAVAILABLE = 35
-      RESERVED_ENTRY_136 = 36
+      ASYNC_REPLICATION_SECONDARY_UPDATE_PENDING = 35
+      UPCOMING_MAINTENANCES_UNAVAILABLE = 36
       RESERVED_ENTRY_139 = 37
       RESERVED_ENTRY_141 = 38
       RESERVED_ENTRY_142 = 39
@@ -2846,11 +2848,13 @@ class Resource(_messages.Message):
           result in the creation of a VM that uses global DNS.
         RATE_LIMIT_EXCEEDED: Resource can't be retrieved due to api quota
           exceeded.
+        ASYNC_REPLICATION_SECONDARY_UPDATE_PENDING: Primary disk resized.
+          Secondary disk resize is in-progress and awaiting resource
+          allocation in the secondary region.
         UPCOMING_MAINTENANCES_UNAVAILABLE: Upcoming maintenance schedule is
           unavailable for the resource.
-        RESERVED_ENTRY_136: Reserved entries for quickly adding new warnings
+        RESERVED_ENTRY_139: Reserved entries for quickly adding new warnings
           without breaking dependent clients.
-        RESERVED_ENTRY_139: <no description>
         RESERVED_ENTRY_141: <no description>
         RESERVED_ENTRY_142: <no description>
         RESERVED_ENTRY_143: <no description>
@@ -2890,8 +2894,8 @@ class Resource(_messages.Message):
       QUOTA_INFO_UNAVAILABLE = 32
       RESOURCE_USES_GLOBAL_DNS = 33
       RATE_LIMIT_EXCEEDED = 34
-      UPCOMING_MAINTENANCES_UNAVAILABLE = 35
-      RESERVED_ENTRY_136 = 36
+      ASYNC_REPLICATION_SECONDARY_UPDATE_PENDING = 35
+      UPCOMING_MAINTENANCES_UNAVAILABLE = 36
       RESERVED_ENTRY_139 = 37
       RESERVED_ENTRY_141 = 38
       RESERVED_ENTRY_142 = 39
@@ -3176,11 +3180,13 @@ class ResourceUpdate(_messages.Message):
           result in the creation of a VM that uses global DNS.
         RATE_LIMIT_EXCEEDED: Resource can't be retrieved due to api quota
           exceeded.
+        ASYNC_REPLICATION_SECONDARY_UPDATE_PENDING: Primary disk resized.
+          Secondary disk resize is in-progress and awaiting resource
+          allocation in the secondary region.
         UPCOMING_MAINTENANCES_UNAVAILABLE: Upcoming maintenance schedule is
           unavailable for the resource.
-        RESERVED_ENTRY_136: Reserved entries for quickly adding new warnings
+        RESERVED_ENTRY_139: Reserved entries for quickly adding new warnings
           without breaking dependent clients.
-        RESERVED_ENTRY_139: <no description>
         RESERVED_ENTRY_141: <no description>
         RESERVED_ENTRY_142: <no description>
         RESERVED_ENTRY_143: <no description>
@@ -3220,8 +3226,8 @@ class ResourceUpdate(_messages.Message):
       QUOTA_INFO_UNAVAILABLE = 32
       RESOURCE_USES_GLOBAL_DNS = 33
       RATE_LIMIT_EXCEEDED = 34
-      UPCOMING_MAINTENANCES_UNAVAILABLE = 35
-      RESERVED_ENTRY_136 = 36
+      ASYNC_REPLICATION_SECONDARY_UPDATE_PENDING = 35
+      UPCOMING_MAINTENANCES_UNAVAILABLE = 36
       RESERVED_ENTRY_139 = 37
       RESERVED_ENTRY_141 = 38
       RESERVED_ENTRY_142 = 39

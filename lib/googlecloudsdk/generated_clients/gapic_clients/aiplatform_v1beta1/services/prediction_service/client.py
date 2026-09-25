@@ -1492,8 +1492,10 @@ class PredictionServiceClient(metaclass=PredictionServiceClientMeta):
             timeout: Union[float, object] = gapic_v1.method.DEFAULT,
             metadata: Sequence[Tuple[str, Union[str, bytes]]] = (),
             ) -> Iterable[prediction_service.StreamingPredictResponse]:
-        r"""Perform a streaming online prediction request for
-        Vertex first-party products and frameworks.
+        r"""Deprecated: Renamed to
+        [PredictionService.StreamDirectPredict][google.cloud.aiplatform.v1beta1.PredictionService.StreamDirectPredict].
+        Perform a streaming online prediction request for Vertex
+        first-party products and frameworks.
 
         .. code-block:: python
 
@@ -1555,6 +1557,8 @@ class PredictionServiceClient(metaclass=PredictionServiceClientMeta):
                    [PredictionService.StreamingPredict][google.cloud.aiplatform.v1beta1.PredictionService.StreamingPredict].
 
         """
+        warnings.warn("PredictionServiceClient.streaming_predict is deprecated",
+            DeprecationWarning)
 
         # Wrap the RPC method; this adds retry and timeout information,
         # and friendly error handling.

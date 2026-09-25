@@ -1300,13 +1300,15 @@ class DnsPeeringConfig(_messages.Message):
   r"""DNS Peering configuration.
 
   Fields:
-    domain: Optional. The domain to peer.
+    domain: Optional. Deprecated: Use `domains` instead. The domain to peer.
+    domains: Optional. The domains to peer.
     targetNetwork: Optional. The target network resource name for DNS peering.
       Format: projects/{project}/global/networks/{network_id}
   """
 
   domain = _messages.StringField(1)
-  targetNetwork = _messages.StringField(2)
+  domains = _messages.StringField(2, repeated=True)
+  targetNetwork = _messages.StringField(3)
 
 
 class EdgeCacheKeyset(_messages.Message):
@@ -1659,7 +1661,7 @@ class EdgeCacheService(_messages.Message):
 
 
 class EgressNetworkConfig(_messages.Message):
-  r"""A EgressNetworkConfig object.
+  r"""Egress network config
 
   Enums:
     VpcEgressValueValuesEnum: Optional. The VPC egress setting.
@@ -1669,6 +1671,7 @@ class EgressNetworkConfig(_messages.Message):
     networkAttachment: Optional. The network attachment resource name. Format:
       projects/{project}/regions/{region}/networkAttachments/{network_attachme
       nt_id}
+    tlsConfig: Optional. The TLS configuration for the egress traffic.
     trustConfig: Optional. Deprecated: Use tls_config instead. The trust
       config resource name. Format:
       projects/{project}/locations/{location}/trustConfigs/{trust_config}
@@ -1690,8 +1693,39 @@ class EgressNetworkConfig(_messages.Message):
 
   dnsPeeringConfig = _messages.MessageField('DnsPeeringConfig', 1)
   networkAttachment = _messages.StringField(2)
-  trustConfig = _messages.StringField(3)
-  vpcEgress = _messages.EnumField('VpcEgressValueValuesEnum', 4)
+  tlsConfig = _messages.MessageField('EgressNetworkConfigTlsConfig', 3)
+  trustConfig = _messages.StringField(4)
+  vpcEgress = _messages.EnumField('VpcEgressValueValuesEnum', 5)
+
+
+class EgressNetworkConfigTlsConfig(_messages.Message):
+  r"""Configuration for TLS connections.
+
+  Enums:
+    AdditionalRootsValueValuesEnum: Optional. The additional roots to trust.
+
+  Fields:
+    additionalRoots: Optional. The additional roots to trust.
+    trustConfig: Optional. The trust config resource name. Format:
+      projects/{project}/locations/{location}/trustConfigs/{trust_config}
+  """
+
+  class AdditionalRootsValueValuesEnum(_messages.Enum):
+    r"""Optional. The additional roots to trust.
+
+    Values:
+      ADDITIONAL_ROOTS_UNSPECIFIED: Unspecified additional roots.
+      NO_ADDITIONAL_ROOTS: Trust only the certificates provided in
+        `trust_config`.
+      PUBLICLY_TRUSTED_ROOTS: Trust certificates provided in `trust_config`
+        and publicly trusted roots.
+    """
+    ADDITIONAL_ROOTS_UNSPECIFIED = 0
+    NO_ADDITIONAL_ROOTS = 1
+    PUBLICLY_TRUSTED_ROOTS = 2
+
+  additionalRoots = _messages.EnumField('AdditionalRootsValueValuesEnum', 1)
+  trustConfig = _messages.StringField(2)
 
 
 class EgressRouting(_messages.Message):

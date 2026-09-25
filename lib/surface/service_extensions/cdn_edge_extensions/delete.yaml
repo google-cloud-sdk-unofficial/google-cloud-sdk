@@ -1,0 +1,27 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    Delete a `CdnEdgeExtension` resource.
+  description: |
+    Delete the specified `CdnEdgeExtension` resource.
+  examples: |
+      To delete a global `CdnEdgeExtension` resource named
+      `my-cdn-edge-extension`, run:
+
+        $ {command} my-cdn-edge-extension --location=global
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.service_extensions.resources:cdnEdgeExtension
+    help_text: |
+      ID of the deleted `CdnEdgeExtension` resource.
+
+async:
+  collection: networkservices.projects.locations.operations
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+
+  collection: networkservices.projects.locations.cdnEdgeExtensions

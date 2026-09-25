@@ -17123,6 +17123,33 @@ instead.
       self._upload_configs = {
           }
 
+    def Delete(self, request, global_params=None):
+      r"""Deletes a specified zone VM extension policy within an organization.
+
+      Args:
+        request: (ComputeOrganizationZoneVmExtensionPoliciesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='organizations/{organizationsId}/zones/{zone}/vmExtensionPolicies/{vmExtensionPolicy}',
+        http_method='DELETE',
+        method_id='compute.organizationZoneVmExtensionPolicies.delete',
+        ordered_params=['organization', 'zone', 'vmExtensionPolicy'],
+        path_params=['organization', 'vmExtensionPolicy', 'zone'],
+        query_params=['requestId'],
+        relative_path='{+organization}/zones/{zone}/vmExtensionPolicies/{vmExtensionPolicy}',
+        request_field='',
+        request_type_name='ComputeOrganizationZoneVmExtensionPoliciesDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Retrieves details of a specific zone VM extension policy within an.
 organization.

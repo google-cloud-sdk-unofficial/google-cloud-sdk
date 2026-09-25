@@ -106,7 +106,7 @@
             - arg_name: type
               api_field: validateMessageRequest.schema.type
               help_text: |
-                Type of inline schema.
+                Type of the schema.
               required: true
               choices:
               - arg_value: avro

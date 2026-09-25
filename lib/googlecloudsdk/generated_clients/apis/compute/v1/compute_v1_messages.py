@@ -91567,9 +91567,10 @@ class RouterNatRule(_messages.Message):
       match expressions for public NAT:  `inIpRange(destination.ip,
       '1.1.0.0/16') || inIpRange(destination.ip,      '2.2.0.0/16')`
       `destination.ip == '1.1.0.1' || destination.ip == '8.8.8.8'`  The
-      following example is a valid match expression for private NAT:
-      `nexthop.hub == '//networkconnectivity.googleapis.com/projects/my-
-      project/locations/global/hubs/hub-1'`
+      following examples are valid match expressions for private NAT:  (NAT
+      44) `nexthop.hub == '//networkconnectivity.googleapis.com/projects/my-
+      project/locations/global/hubs/hub-1'`  `nexthop.is_hybrid`  (NAT 64)
+      `isIPv6(source.ip)`
     ruleNumber: An integer uniquely identifying a rule in the list. The rule
       number must be a positive value between 0 and 65000, and must be unique
       among rules within a NAT.

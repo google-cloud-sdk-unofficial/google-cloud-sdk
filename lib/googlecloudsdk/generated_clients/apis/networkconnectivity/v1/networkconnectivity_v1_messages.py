@@ -1930,6 +1930,7 @@ class InternalRange(_messages.Message):
     OverlapsValueListEntryValuesEnum:
     PeeringValueValuesEnum: Optional. The type of peering set for this
       internal range.
+    RangeStatusValueValuesEnum: Output only. Status of the Internal Range.
     UsageValueValuesEnum: Optional. The type of usage set for this
       InternalRange.
 
@@ -1972,6 +1973,7 @@ class InternalRange(_messages.Message):
       during updates to change the range size. NOTE: For IPv6 this field only
       works if ip_cidr_range is set as well, and both fields must match. In
       other words, with IPv6 this field only works as a redundant parameter.
+    rangeStatus: Output only. Status of the Internal Range.
     targetCidrRange: Optional. Can be set to narrow down or pick a different
       address space while searching for a free range. If not set, defaults to
       the ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"] address space (for
@@ -2032,6 +2034,26 @@ class InternalRange(_messages.Message):
     FOR_SELF = 1
     FOR_PEER = 2
     NOT_SHARED = 3
+
+  class RangeStatusValueValuesEnum(_messages.Enum):
+    r"""Output only. Status of the Internal Range.
+
+    Values:
+      RANGE_STATUS_UNSPECIFIED: Unspecified status is the default value for an
+        Internal Range.
+      ACTIVE: Ranges with ACTIVE status will reserve the CIDR block from the
+        given VPC.
+      OBSOLETE: A range becomes OBSOLETE if its VPC network is deleted. An
+        OBSOLETE range is inactive, doesn't reserve any CIDR blocks, and can
+        only be deleted or have its labels and description updated.
+      CREATING: The resource is being created.
+      DELETING: The resource is being deleted.
+    """
+    RANGE_STATUS_UNSPECIFIED = 0
+    ACTIVE = 1
+    OBSOLETE = 2
+    CREATING = 3
+    DELETING = 4
 
   class UsageValueValuesEnum(_messages.Enum):
     r"""Optional. The type of usage set for this InternalRange.
@@ -2095,10 +2117,11 @@ class InternalRange(_messages.Message):
   overlaps = _messages.EnumField('OverlapsValueListEntryValuesEnum', 11, repeated=True)
   peering = _messages.EnumField('PeeringValueValuesEnum', 12)
   prefixLength = _messages.IntegerField(13, variant=_messages.Variant.INT32)
-  targetCidrRange = _messages.StringField(14, repeated=True)
-  updateTime = _messages.StringField(15)
-  usage = _messages.EnumField('UsageValueValuesEnum', 16)
-  users = _messages.StringField(17, repeated=True)
+  rangeStatus = _messages.EnumField('RangeStatusValueValuesEnum', 14)
+  targetCidrRange = _messages.StringField(15, repeated=True)
+  updateTime = _messages.StringField(16)
+  usage = _messages.EnumField('UsageValueValuesEnum', 17)
+  users = _messages.StringField(18, repeated=True)
 
 
 class IpRangeReservation(_messages.Message):
@@ -7009,7 +7032,7 @@ class Spoke(_messages.Message):
     etag: Optional. This checksum is computed by the server based on the value
       of other fields, and may be sent on update and delete requests to ensure
       the client has an up-to-date value before proceeding.
-    fieldPathsPendingUpdate: Optional. The list of fields waiting for hub
+    fieldPathsPendingUpdate: Output only. The list of fields waiting for hub
       administrator's approval.
     gateway: Optional. This is a gateway that can apply specialized processing
       to traffic going through it.

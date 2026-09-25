@@ -1,6 +1,6 @@
 project:
   name: project
-  collection: biglake.hive.v1beta.projects
+  collection: biglake.hive.v1.projects
   attributes:
   - &project
     parameter_name: projectsId
@@ -11,7 +11,7 @@ project:
 
 hive_catalog:
   name: hive_catalog
-  collection: biglake.hive.v1beta.projects.catalogs
+  collection: biglake.hive.v1.projects.catalogs
   request_id_field: hiveCatalogId
   attributes:
   - *project
@@ -23,7 +23,7 @@ hive_catalog:
 
 hive_database:
   name: hive_database
-  collection: biglake.hive.v1beta.projects.catalogs.databases
+  collection: biglake.hive.v1.projects.catalogs.databases
   request_id_field: hiveDatabaseId
   attributes:
   - *project
@@ -36,7 +36,7 @@ hive_database:
 
 hive_table:
   name: hive_table
-  collection: biglake.hive.v1beta.projects.catalogs.databases.tables
+  collection: biglake.hive.v1.projects.catalogs.databases.tables
   request_id_field: hiveTableId
   attributes:
   - *project

@@ -132,6 +132,8 @@ class VpnTunnelHelper(object):
       support_tagging_at_creation=False,
       support_capacity_tier=False,
       capacity_tier=None,
+      pqc_phase1=None,
+      pqc_phase2=None,
   ):
     """Returns the HA VpnTunnel message for an insert request.
 
@@ -161,6 +163,10 @@ class VpnTunnelHelper(object):
         at creation.
       support_capacity_tier: Boolean representing the support of capacity tier.
       capacity_tier: String representing the capacity tier of the VPN tunnel.
+      pqc_phase1: VpnTunnelPqc message representing the PQC configuration for
+        Phase 1.
+      pqc_phase2: VpnTunnelPqc message representing the PQC configuration for
+        Phase 2.
 
     Returns:
       The VpnTunnel message object that can be used in an insert request.
@@ -184,6 +190,12 @@ class VpnTunnelHelper(object):
 
     if support_capacity_tier and capacity_tier is not None:
       vpn_tunnel_args['capacityTier'] = capacity_tier
+
+    if pqc_phase1 is not None:
+      vpn_tunnel_args['pqcPhase1'] = pqc_phase1
+
+    if pqc_phase2 is not None:
+      vpn_tunnel_args['pqcPhase2'] = pqc_phase2
 
     return self._messages.VpnTunnel(
         **vpn_tunnel_args
@@ -253,6 +265,8 @@ class VpnTunnelHelper(object):
       cipher_suite=None,
       params=None,
       support_tagging_at_creation=False,
+      pqc_phase1=None,
+      pqc_phase2=None,
   ):
     """Returns the Classic VpnTunnel message for an insert request.
 
@@ -275,6 +289,10 @@ class VpnTunnelHelper(object):
       params: Dictionary of params to set on the request.
       support_tagging_at_creation: Boolean representing the support of tagging
         at creation.
+      pqc_phase1: VpnTunnelPqc message representing the PQC configuration for
+        Phase 1.
+      pqc_phase2: VpnTunnelPqc message representing the PQC configuration for
+        Phase 2.
 
     Returns:
       The VpnTunnel message object that can be used in an insert request.
@@ -294,6 +312,12 @@ class VpnTunnelHelper(object):
     }
     if (support_tagging_at_creation and params is not None):
       vpn_tunnel_args['params'] = params
+
+    if pqc_phase1 is not None:
+      vpn_tunnel_args['pqcPhase1'] = pqc_phase1
+
+    if pqc_phase2 is not None:
+      vpn_tunnel_args['pqcPhase2'] = pqc_phase2
 
     return self._messages.VpnTunnel(
         **vpn_tunnel_args
@@ -333,6 +357,81 @@ class VpnTunnelHelper(object):
       return phase2_algorithms
     else:
       return None
+
+  def GetVpnTunnelAdditionalKeyExchanges(
+      self,
+      ke1s=None,
+      ke2s=None,
+      ke3s=None,
+      ke4s=None,
+      ke5s=None,
+      ke6s=None,
+      ke7s=None,
+  ):
+    """Returns the VpnTunnelAdditionalKeyExchanges message object."""
+    keys = self._messages.VpnTunnelAdditionalKeyExchanges()
+    has_keys = False
+
+    def _ConvertToEnum(values, enum_class):
+      return [enum_class(val) for val in values] if values else None
+
+    if ke1s:
+      has_keys = True
+      keys.ke1s = _ConvertToEnum(
+          ke1s,
+          self._messages.VpnTunnelAdditionalKeyExchanges.Ke1sValueListEntryValuesEnum,
+      )
+    if ke2s:
+      has_keys = True
+      keys.ke2s = _ConvertToEnum(
+          ke2s,
+          self._messages.VpnTunnelAdditionalKeyExchanges.Ke2sValueListEntryValuesEnum,
+      )
+    if ke3s:
+      has_keys = True
+      keys.ke3s = _ConvertToEnum(
+          ke3s,
+          self._messages.VpnTunnelAdditionalKeyExchanges.Ke3sValueListEntryValuesEnum,
+      )
+    if ke4s:
+      has_keys = True
+      keys.ke4s = _ConvertToEnum(
+          ke4s,
+          self._messages.VpnTunnelAdditionalKeyExchanges.Ke4sValueListEntryValuesEnum,
+      )
+    if ke5s:
+      has_keys = True
+      keys.ke5s = _ConvertToEnum(
+          ke5s,
+          self._messages.VpnTunnelAdditionalKeyExchanges.Ke5sValueListEntryValuesEnum,
+      )
+    if ke6s:
+      has_keys = True
+      keys.ke6s = _ConvertToEnum(
+          ke6s,
+          self._messages.VpnTunnelAdditionalKeyExchanges.Ke6sValueListEntryValuesEnum,
+      )
+    if ke7s:
+      has_keys = True
+      keys.ke7s = _ConvertToEnum(
+          ke7s,
+          self._messages.VpnTunnelAdditionalKeyExchanges.Ke7sValueListEntryValuesEnum,
+      )
+
+    if has_keys:
+      return keys
+    return None
+
+  def GetVpnTunnelPqc(self, mode=None, keys=None):
+    """Returns the VpnTunnelPqc message object."""
+    if not mode and not keys:
+      return None
+    pqc = self._messages.VpnTunnelPqc()
+    if mode:
+      pqc.mode = self._messages.VpnTunnelPqc.ModeValueValuesEnum(mode)
+    if keys:
+      pqc.keys = keys
+    return pqc
 
   def WaitForOperation(self, vpn_tunnel_ref, operation_ref, wait_message):
     """Waits for the specified operation to complete and returns the target.

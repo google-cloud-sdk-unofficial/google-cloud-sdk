@@ -115,6 +115,7 @@ def AddAutoFlags(parser, release_track):
   flags.AddReleaseChannelFlag(parser, autopilot=True)
   flags.AddEnableBackupRestoreFlag(parser)
   flags.AddAutoprovisioningResourceManagerTagsCreate(parser)
+  flags.AddAutoprovisioningConfigFileFlag(parser, hidden=True)
   flags.AddAdditiveVPCScopeFlags(parser)
   flags.AddIPAliasRelatedFlags(parser, autopilot=True)
   flags.AddEnableConfidentialNodesFlag(parser)

@@ -1061,7 +1061,11 @@ class GrantDnsBindPermissionRequest(_messages.Message):
       error.
     principal: Required. The consumer provided user/service account which
       needs to be granted permission to bind with the intranet VPC
-      corresponding to the consumer project.
+      corresponding to the consumer project. Principal can be a user or a
+      service account. For example, to specify the user `user@example.com`,
+      use `"principal": {"user": "user@example.com"}` and to specify the
+      service account `service-account@gserviceaccount.com`, use `"principal":
+      {"serviceAccount": "service-account@gserviceaccount.com"}`.
     requestId: Optional. A request ID to identify requests. Specify a unique
       request ID so that if you must retry your request, the server will know
       to ignore the request if it has already been completed. The server
@@ -2886,7 +2890,11 @@ class Policy(_messages.Message):
 
 class Principal(_messages.Message):
   r"""Users/Service accounts which have access for DNS binding on the intranet
-  VPC corresponding to the consumer project.
+  VPC corresponding to the consumer project. Principal can be a user or a
+  service account. For example: For specifying user `user@example.com` use
+  `{"user": "user@example.com"}` and for specifying service account `service-
+  account@gserviceaccount.com` use `{"serviceAccount": "service-
+  account@gserviceaccount.com"}`.
 
   Fields:
     serviceAccount: The service account which needs to be granted the
@@ -3259,7 +3267,11 @@ class RevokeDnsBindPermissionRequest(_messages.Message):
       error.
     principal: Required. The consumer provided user/service account which
       needs to be granted permission to bind with the intranet VPC
-      corresponding to the consumer project.
+      corresponding to the consumer project. Principal can be a user or a
+      service account. For example, to specify the user `user@example.com`,
+      use `"principal": {"user": "user@example.com"}` and to specify the
+      service account `service-account@gserviceaccount.com`, use `"principal":
+      {"serviceAccount": "service-account@gserviceaccount.com"}`.
     requestId: Optional. A request ID to identify requests. Specify a unique
       request ID so that if you must retry your request, the server will know
       to ignore the request if it has already been completed. The server

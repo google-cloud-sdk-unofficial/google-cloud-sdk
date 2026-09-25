@@ -1798,7 +1798,7 @@ class RolloutKind(_messages.Message):
       filter string against Unit. The filter will be applied to determine the
       eligible unit population. This filter can only reduce, but not expand
       the scope of the rollout.
-    unitKind: Required. Immutable. UnitKind that this rollout kind corresponds
+    unitKind: Optional. Immutable. UnitKind that this rollout kind corresponds
       to. Rollouts stemming from this rollout kind will target the units of
       this unit kind. In other words, this defines the population of target
       units to be upgraded by rollouts.
@@ -4836,6 +4836,8 @@ class UnitGroupOperation(_messages.Message):
       modifying objects. More info: https://kubernetes.io/docs/user-
       guide/annotations
     createTime: Output only. The timestamp when the resource was created.
+    deleteTime: Output only. The timestamp when the resource was marked for
+      deletion (deletion is an asynchronous operation).
     etag: Output only. An opaque value that uniquely identifies a version or
       generation of a resource. It can be used to confirm that the client and
       server agree on the ordering of a resource being written.
@@ -4909,11 +4911,12 @@ class UnitGroupOperation(_messages.Message):
 
   annotations = _messages.MessageField('AnnotationsValue', 1)
   createTime = _messages.StringField(2)
-  etag = _messages.StringField(3)
-  labels = _messages.MessageField('LabelsValue', 4)
-  name = _messages.StringField(5)
-  uid = _messages.StringField(6)
-  updateTime = _messages.StringField(7)
+  deleteTime = _messages.StringField(3)
+  etag = _messages.StringField(4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  name = _messages.StringField(6)
+  uid = _messages.StringField(7)
+  updateTime = _messages.StringField(8)
 
 
 class UnitKind(_messages.Message):

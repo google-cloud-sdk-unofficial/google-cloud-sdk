@@ -21,9 +21,11 @@ from googlecloudsdk.command_lib.compute.dhcp_options_configs import flags
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(base.CreateCommand):
   """Create a Google Compute Engine DHCP options configuration."""
+
+  _support_add_dns_server_addresses = False
 
   detailed_help = {
       'brief': 'Create a Google Compute Engine DHCP options configuration.',
@@ -36,9 +38,9 @@ class Create(base.CreateCommand):
       ),
       'EXAMPLES': (
           """\
-      To create a DHCP options config with custom DNS servers and domain suffix, run:
+      To create a DHCP options config with custom domain name and search paths, run:
 
-        $ {command} my-dhcp-config --region=us-central1 --domain-name=corp.example.com --dns-server-ipv4-addresses=192.168.1.10,192.168.1.11
+        $ {command} my-dhcp-config --region=us-central1 --domain-name=corp.example.com --dns-search-paths=example.com
       """
       ),
   }
@@ -57,8 +59,9 @@ class Create(base.CreateCommand):
     flags.AddDescription(parser)
     flags.AddLeaseTime(parser)
     flags.AddDomainName(parser)
-    flags.AddDnsServerIpv4Addresses(parser)
-    flags.AddDnsServerIpv6Addresses(parser)
+    if cls._support_add_dns_server_addresses:
+      flags.AddDnsServerIpv4Addresses(parser)
+      flags.AddDnsServerIpv6Addresses(parser)
     flags.AddDnsSearchPaths(parser)
     flags.AddNtpServerIpv4Addresses(parser)
     flags.AddNtpServerIpv6Addresses(parser)
@@ -76,13 +79,11 @@ class Create(base.CreateCommand):
         args, holder.resources, default_scope=compute_scope.ScopeEnum.REGION
     )
 
-    dhcp_options_config = client.messages.DhcpOptionsConfig(
+    kwargs = dict(
         name=dhcp_config_ref.Name(),
         description=args.description,
         leaseTimeSec=args.lease_time,
         domainName=args.domain_name,
-        dnsServerIpv4Addresses=args.dns_server_ipv4_addresses or [],
-        dnsServerIpv6Addresses=args.dns_server_ipv6_addresses or [],
         dnsSearchPaths=args.dns_search_paths or [],
         ntpServerIpv4Addresses=args.ntp_server_ipv4_addresses or [],
         ntpServerIpv6Addresses=args.ntp_server_ipv6_addresses or [],
@@ -93,6 +94,12 @@ class Create(base.CreateCommand):
         bootFileIpv6Parameters=args.boot_file_params or [],
     )
 
+    if self._support_add_dns_server_addresses:
+      kwargs['dnsServerIpv4Addresses'] = args.dns_server_ipv4_addresses or []
+      kwargs['dnsServerIpv6Addresses'] = args.dns_server_ipv6_addresses or []
+
+    dhcp_options_config = client.messages.DhcpOptionsConfig(**kwargs)
+
     request = client.messages.ComputeDhcpOptionsConfigsInsertRequest(
         project=dhcp_config_ref.project,
         region=dhcp_config_ref.region,
@@ -101,3 +108,11 @@ class Create(base.CreateCommand):
 
     collection = client.apitools_client.dhcpOptionsConfigs
     return client.MakeRequests([(collection, 'Insert', request)])
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create a Google Compute Engine DHCP options configuration."""
+
+  _support_add_dns_server_addresses = True

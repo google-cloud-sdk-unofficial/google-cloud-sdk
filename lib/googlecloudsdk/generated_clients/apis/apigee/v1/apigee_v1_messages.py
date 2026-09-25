@@ -14923,8 +14923,7 @@ class GoogleCloudApigeeV1TargetServer(_messages.Message):
       TargetServers are used in load balancing configurations, and one or more
       TargetServers need to taken out of rotation periodically. Defaults to
       true.
-    name: Required. The resource id of this target server. Values must match
-      the regular expression
+    name: Required. The resource id of this target server.
     port: Required. The port number this target connects to on the given host.
       Value must be between 1 and 65535, inclusive.
     protocol: Immutable. The protocol used by this TargetServer.
@@ -14944,8 +14943,7 @@ class GoogleCloudApigeeV1TargetServer(_messages.Message):
       HTTP2: The TargetSever uses HTTP2.
       GRPC_TARGET: The TargetServer uses GRPC.
       GRPC: GRPC TargetServer to be used in ExternalCallout Policy. Prefer to
-        use EXTERNAL_CALLOUT instead. TODO(b/266125112) deprecate once
-        EXTERNAL _CALLOUT generally available.
+        use EXTERNAL_CALLOUT instead.
       EXTERNAL_CALLOUT: The TargetServer is to be used in the ExternalCallout
         Policy
     """
@@ -14992,8 +14990,7 @@ class GoogleCloudApigeeV1TargetServerConfig(_messages.Message):
       HTTP2: The TargetSever uses HTTP2.
       GRPC_TARGET: The TargetServer uses GRPC.
       GRPC: GRPC TargetServer to be used in ExternalCallout Policy. Prefer to
-        use EXTERNAL_CALLOUT instead. TODO(b/266125112) deprecate once
-        EXTERNAL _CALLOUT generally available.
+        use EXTERNAL_CALLOUT instead.
       EXTERNAL_CALLOUT: The TargetServer is to be used in the ExternalCallout
         Policy
     """

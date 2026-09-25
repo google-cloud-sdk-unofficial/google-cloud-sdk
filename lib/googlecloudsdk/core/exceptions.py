@@ -60,6 +60,14 @@ class Error(_Error):
     self.exit_code = kwargs.get('exit_code', 1)
 
 
+class DryRunError(Error):
+  """Raised when a dry run request is made."""
+
+  def __init__(self, request):
+    super(DryRunError, self).__init__()
+    self.request = request
+
+
 class MultiError(Error):
   """Collection of Error instances as single exception."""
 

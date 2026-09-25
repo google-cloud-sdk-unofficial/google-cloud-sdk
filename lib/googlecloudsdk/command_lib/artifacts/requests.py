@@ -53,13 +53,16 @@ def SkipRetryOn500Errors(response, original_check_response=None):
   return http_wrapper.CheckResponse(response)
 
 
-def GetClient(skip_activation_prompt=False, location=None):
+def GetClient(
+    skip_activation_prompt=False, location=None, enable_by_default=False
+):
   """Returns the API client for the Artifact Registry service."""
   client = apis.GetClientInstance(
       ARTIFACTREGISTRY_API_NAME,
       ARTIFACTREGISTRY_API_VERSION,
       skip_activation_prompt=skip_activation_prompt,
       location=location,
+      enable_by_default=enable_by_default,
   )
   original_check_response = client.check_response_func
 
@@ -293,9 +296,15 @@ def ListFiles(
   )
 
 
-def GetRepository(repo, skip_activation_prompt=False, location=None):
+def GetRepository(
+    repo, skip_activation_prompt=False, location=None, enable_by_default=False
+):
   """Gets the repository given its name."""
-  client = GetClient(skip_activation_prompt, location=location)
+  client = GetClient(
+      skip_activation_prompt,
+      location=location,
+      enable_by_default=enable_by_default,
+  )
   messages = GetMessages()
   get_repo_req = (
       messages.ArtifactregistryProjectsLocationsRepositoriesGetRequest(
@@ -336,7 +345,11 @@ def SetIamPolicy(repo_res, policy):
 
 
 def CreateRepository(
-    project, location, repository, skip_activation_prompt=False
+    project,
+    location,
+    repository,
+    skip_activation_prompt=False,
+    enable_by_default=False,
 ):
   """Creates the repository given its parent.
 
@@ -345,11 +358,16 @@ def CreateRepository(
     location: str: The region to create the repository in.
     repository: messages.Repository to create.
     skip_activation_prompt: bool: If true, do not prompt for service activation
+    enable_by_default: bool: The default choice for the enablement prompt.
 
   Returns:
     The resulting operation from the create request.
   """
-  client = GetClient(skip_activation_prompt, location=location)
+  client = GetClient(
+      skip_activation_prompt,
+      location=location,
+      enable_by_default=enable_by_default,
+  )
   messages = GetMessages()
   request = messages.ArtifactregistryProjectsLocationsRepositoriesCreateRequest(
       parent="projects/{}/locations/{}".format(project, location),

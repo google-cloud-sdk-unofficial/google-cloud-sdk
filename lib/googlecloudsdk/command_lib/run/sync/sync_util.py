@@ -18,7 +18,7 @@ import argparse
 import contextlib
 import os
 
-from googlecloudsdk.api_lib.run import ssh as run_ssh
+from googlecloudsdk.api_lib.run import constants
 from googlecloudsdk.command_lib.run import log_tailer
 from googlecloudsdk.command_lib.run import stages
 from googlecloudsdk.command_lib.run.sync import polling_watcher
@@ -34,7 +34,7 @@ class Sync:
   def __init__(
       self,
       args: argparse.Namespace,
-      workload_type: run_ssh.Ssh.WorkloadType,
+      workload_type: constants.WorkloadType,
       source: str,
   ):
     """Initialize the Sync library."""

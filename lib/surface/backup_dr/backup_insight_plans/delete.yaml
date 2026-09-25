@@ -1,0 +1,28 @@
+- release_tracks: [ALPHA]
+  hidden: true
+
+  help_text:
+    brief: Delete a Backup and DR Backup Insight Plan.
+    description: |
+      Delete a Backup and DR Backup Insight Plan.
+    examples: |
+      To delete a Backup Insight Plan named 'my-insight-plan' in backup vault 'my-vault' and location 'us-central1':
+
+        $ {command} my-insight-plan --backup-vault=my-vault --location=us-central1
+
+  request:
+    collection: backupdr.projects.locations.backupVaults.backupInsightPlans
+    display_resource_type: backup insight plan
+    ALPHA:
+      api_version: v1alpha
+
+  async:
+    collection: backupdr.projects.locations.operations
+    ALPHA:
+      api_version: v1alpha
+
+  arguments:
+    resource:
+      help_text: The Backup Insight Plan to delete.
+      spec: !REF googlecloudsdk.command_lib.backupdr.resources:backupInsightPlan
+      is_positional: true

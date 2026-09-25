@@ -2698,7 +2698,7 @@ class GoogleCloudNetworkconnectivityV1betaSpoke(_messages.Message):
     etag: Optional. This checksum is computed by the server based on the value
       of other fields, and may be sent on update and delete requests to ensure
       the client has an up-to-date value before proceeding.
-    fieldPathsPendingUpdate: Optional. The list of fields waiting for hub
+    fieldPathsPendingUpdate: Output only. The list of fields waiting for hub
       administrator's approval.
     gateway: Optional. This is a gateway that can apply specialized processing
       to traffic going through it.

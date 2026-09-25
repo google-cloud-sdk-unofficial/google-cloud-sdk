@@ -143,6 +143,35 @@ SUPPORTED_OP_REGIONS = (
     'us-west8',
 )
 
+# LINT.IfChange(supported_ap_regions)
+# Available regions specifically for Agent Platform / Agent Engine.
+SUPPORTED_AP_REGIONS = (
+    'asia-east1',
+    'asia-east2',
+    'asia-northeast1',
+    'asia-northeast3',
+    'asia-south1',
+    'asia-southeast1',
+    'asia-southeast2',
+    'australia-southeast2',
+    'europe-southwest1',
+    'europe-west1',
+    'europe-west2',
+    'europe-west3',
+    'europe-west4',
+    'europe-west6',
+    'europe-west8',
+    'me-west1',
+    'northamerica-northeast1',
+    'northamerica-northeast2',
+    'southamerica-east1',
+    'us-central1',
+    'us-east1',
+    'us-east4',
+    'us-west1',
+)
+# LINT.ThenChange(../../../../devsite/cloud/en/gemini-enterprise-agent-platform/resources/agent-locations.md:supported_ap_regions)
+
 # NOTE: GDU-specific, see comment above SUPPORTED_REGION.
 # Available regions specifically for deployment resource pools
 SUPPORTED_DEPLOYMENT_RESOURCE_POOL_REGIONS = (
@@ -198,6 +227,8 @@ DEFAULT_OPERATION_COLLECTION = 'aiplatform.projects.locations.operations'
 DEPLOYMENT_RESOURCE_POOLS_COLLECTION = 'aiplatform.projects.locations.deploymentResourcePools'
 
 ENDPOINTS_COLLECTION = 'aiplatform.projects.locations.endpoints'
+
+AGENT_RUNTIMES_COLLECTION = 'aiplatform.projects.locations.reasoningEngines'
 
 INDEX_ENDPOINTS_COLLECTION = 'aiplatform.projects.locations.indexEndpoints'
 INDEXES_COLLECTION = 'aiplatform.projects.locations.indexes'

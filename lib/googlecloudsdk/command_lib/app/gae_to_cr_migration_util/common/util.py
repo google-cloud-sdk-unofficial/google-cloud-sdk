@@ -27,6 +27,10 @@ from googlecloudsdk.core.util import files
 class InvalidAppYamlPathError(exceptions.Error):
   """An error that is raised when invalid app.yaml path is provided."""
 
+
+class ConflictingInputError(exceptions.Error):
+  """An error that is raised when conflicting migration inputs are provided."""
+
 # Entrypoint for these runtimes must be specified in a Procfile
 # instead of via the `--command` flag at the gcloud run deploy
 # command.
@@ -51,12 +55,52 @@ RUNTIMES_WITH_PROCFILE_ENTRYPOINT: Sequence[str] = (
 )
 _FLATTEN_EXCLUDE_KEYS: Sequence[str] = ['env_variables', 'envVariables']
 _ALLOW_FLEX_ENV_VALUES = ('flex', 'flexible')
+DIRECT_VPC_KEYS: Sequence[str] = (
+    'network.name',
+    'network.subnetwork_name',
+    'network.subnetworkName',
+    'network.instance_tag',
+    'network.instanceTag',
+)
+VPC_CONNECTOR_KEYS: Sequence[str] = (
+    'vpc_access_connector.name',
+    'vpcAccessConnector.name',
+)
 
 
 def is_flex_env(input_data: Mapping[str, Any]) -> bool:
   """Detect whether input app.yaml is for flex environment."""
 
   return input_data.get('env') in _ALLOW_FLEX_ENV_VALUES
+
+
+def get_container_image(input_data: Mapping[str, Any]) -> str | None:
+  """Extracts container image from deployment metadata if present.
+
+  Args:
+    input_data: The configuration data parsed from input.
+
+  Returns:
+    The container image URI string, or None if not present or empty.
+  """
+  if not input_data:
+    return None
+  deployment = input_data.get('deployment')
+  if not deployment:
+    return None
+  container = (
+      deployment.get('container')
+      if isinstance(deployment, dict)
+      else getattr(deployment, 'container', None)
+  )
+  if not container:
+    return None
+  image = (
+      container.get('image')
+      if isinstance(container, dict)
+      else getattr(container, 'image', None)
+  )
+  return image or None
 
 
 def generate_output_flags(flags: Sequence[str], value: str) -> Sequence[str]:
@@ -154,18 +198,20 @@ def get_version_data(
     -   A mapping of the input data as Python objects, or None if the
         input data could not be retrieved.
     -   The feature_helper.InputType (either ADMIN_API or APP_YAML).
+
+  Raises:
+    ConflictingInputError: If both `appyaml` and `service`/`version` are
+      provided.
   """
 
   appyaml_param_specified = appyaml is not None
   deployed_version_specified = service is not None and version is not None
   if appyaml_param_specified and deployed_version_specified:
-    logging.error(
-        '[Error] Invalid input, only one of app.yaml or deployed               '
-        '   version can be used as an input. Use --appyaml flag t            '
-        '     specify the app.yaml, or use --service and --version             '
-        '     to specify the deployed version.'
+    raise ConflictingInputError(
+        'Invalid input, only one of app.yaml or deployed version can be '
+        'used as an input. Use --appyaml flag to specify the app.yaml, '
+        'or use --service and --version to specify the deployed version.'
     )
-    return (None, None)
 
   # If user runs `gcloud app migrate app-engine-to-cloudrun`
   # without providing any parameters,

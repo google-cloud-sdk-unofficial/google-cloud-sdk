@@ -22,8 +22,8 @@ from googlecloudsdk.api_lib.artifacts import exceptions as ar_exceptions
 from googlecloudsdk.api_lib.util import common_args
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.command_lib.artifacts import containeranalysis_util as ca_util
+from googlecloudsdk.command_lib.artifacts import package_name_util
 from googlecloudsdk.command_lib.artifacts import requests as ar_requests
-from googlecloudsdk.command_lib.artifacts import util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -115,26 +115,26 @@ GCR_DOCKER_DOMAIN_SCOPED_REPO_REGEX = r"^(?P<repo>(us\.|eu\.|asia\.)?gcr.io)\/(?
 
 
 def _GetDockerRepoRegex():
-  return r"^(?P<location>.*)[.-]docker.(?P<domain>{})\/(?P<project>[^\/]+)\/(?P<repo>[^\/]+)".format(
+  return r"^(?P<location>.*)[.-]docker.(?P<domain>{})\/(?P<project>[^\/]+\.[^\/]+\/[^\/]+|[^\/]+)\/(?P<repo>[^\/]+)".format(
       _GetArtifactRegistryDomain()
   )
 
 
 def _GetDockerImgByTagRegex():
   return (
-      r"^.*[.-]docker.(?P<domain>{})\/[^\/]+\/[^\/]+\/(?P<img>.*):(?P<tag>.*)"
+      r"^.*[.-]docker.(?P<domain>{})\/(?:[^\/]+\.[^\/]+\/[^\/]+|[^\/]+)\/[^\/]+\/(?P<img>.*):(?P<tag>.*)"
       .format(_GetArtifactRegistryDomain())
   )
 
 
 def _GetDockerImgByDigestRegex():
-  return r"^.*[.-]docker.(?P<domain>{})\/[^\/]+\/[^\/]+\/(?P<img>.*)@(?P<digest>sha256:.*)".format(
+  return r"^.*[.-]docker.(?P<domain>{})\/(?:[^\/]+\.[^\/]+\/[^\/]+|[^\/]+)\/[^\/]+\/(?P<img>.*)@(?P<digest>sha256:.*)".format(
       _GetArtifactRegistryDomain()
   )
 
 
 def _GetDockerImgRegex():
-  return r"^.*[.-]docker.(?P<domain>{})\/[^\/]+\/[^\/]+\/(?P<img>.*)".format(
+  return r"^.*[.-]docker.(?P<domain>{})\/(?:[^\/]+\.[^\/]+\/[^\/]+|[^\/]+)\/[^\/]+\/(?P<img>.*)".format(
       _GetArtifactRegistryDomain()
   )
 
@@ -165,10 +165,10 @@ def _GetDefaultResources():
 
 
 def _ParseInput(input_str):
-  """Parses user input into project, location, and repository values.
+  """Validates and parses a user input docker string into a DockerRepo.
 
   Args:
-    input_str: str, user input. Ex: us-docker.pkg.dev/my-proj/my-repo/my-img
+    input_str: str, User input docker formatted string.
 
   Raises:
     ar_exceptions.InvalidInputValueError if user input is invalid.
@@ -177,6 +177,8 @@ def _ParseInput(input_str):
   Returns:
     A DockerRepo.
   """
+  if input_str.startswith("https://"):
+    input_str = input_str[len("https://") :]
   # To support testing in staging, we have to check if artifact registry
   # endpoints have a prefix and if so remove them before making API
   # calls to artifact registy.
@@ -188,6 +190,8 @@ def _ParseInput(input_str):
     raise ar_exceptions.InvalidInputValueError()
   location = matches.group("location")
   project_id = matches.group("project")
+  if "/" in project_id:
+    project_id = project_id.replace("/", ":")
   return DockerRepo(project_id, location, matches.group("repo"))
 
 
@@ -196,18 +200,24 @@ def ParseDockerImagePath(img_path):
   if not img_path:
     return _GetDefaultResources()
 
-  resource_val_list = list(filter(None, img_path.split("/")))
+  clean_path = img_path
+  if clean_path.startswith("https://"):
+    clean_path = clean_path[len("https://") :]
+  resource_val_list = list(filter(None, clean_path.split("/")))
   try:
-    docker_repo = _ParseInput(img_path)
+    docker_repo = _ParseInput(clean_path)
   except ar_exceptions.InvalidInputValueError:
     raise ar_exceptions.InvalidInputValueError(
         _FormatErrorMessage(_INVALID_IMAGE_PATH_ERROR)
     )
 
-  if len(resource_val_list) == 3:
+  repo_index = 3 if docker_repo.project not in clean_path else 2
+  if len(resource_val_list) == repo_index + 1:
     return docker_repo
-  elif len(resource_val_list) > 3:
-    return DockerImage(docker_repo, "/".join(resource_val_list[3:]))
+  elif len(resource_val_list) > repo_index + 1:
+    return DockerImage(
+        docker_repo, "/".join(resource_val_list[repo_index + 1 :])
+    )
   raise ar_exceptions.InvalidInputValueError(
       _FormatErrorMessage(_INVALID_IMAGE_PATH_ERROR)
   )
@@ -278,7 +288,7 @@ def ParseDockerVersionStr(version_str):
                 match.group("location"),
                 match.group("repository"),
             ),
-            util.EscapePackageStr(match.group("package")),
+            package_name_util.EscapePackageStr(match.group("package")),
         ),
         match.group("version"),
     )
@@ -883,7 +893,7 @@ def DescribeDockerImage(args):
             image.docker_repo.GetDockerString(),
             "{}/{}".format(
                 image.docker_repo.repo,  # AR repo name is the gcr_host
-                image.docker_repo.project,
+                image.docker_repo.project.replace(":", "/"),
             ),
         ),
     )

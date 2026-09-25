@@ -51,6 +51,7 @@ from googlecloudsdk.api_lib.util import apis_internal
 from googlecloudsdk.api_lib.util import exceptions as api_lib_exceptions
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.run import config_changes as config_changes_mod
 from googlecloudsdk.command_lib.run import domain_mapping_util
@@ -879,14 +880,12 @@ class ServerlessOperations(object):
       multiregion_regions=None,
       for_replace=False,
       prefetch=False,
+      # legacy submit build flags === start ===
       build_image=None,
       build_pack=None,
       build_region=None,
       build_source=None,
       repo_to_create=None,
-      skip_activation_prompt=False,
-      dry_run=False,
-      generate_name=False,
       base_image=None,
       build_service_account=None,
       deploy_from_source_container_name='',
@@ -894,12 +893,16 @@ class ServerlessOperations(object):
       build_machine_type=None,
       build_env_vars=None,
       enable_automatic_updates=False,
-      is_verbose=False,
       source_bucket=None,
+      # legacy submit build flags === end ===
+      skip_activation_prompt=False,
+      dry_run=False,
+      generate_name=False,
+      is_verbose=False,
       kms_key=None,
       iap_enabled=None,
-      skip_build=False,
       upload_through_run_api=False,
+      source_container_context=None,
   ):
     """Change the given service in prod using the given config_changes.
 
@@ -929,10 +932,6 @@ class ServerlessOperations(object):
       repo_to_create: Optional
         googlecloudsdk.command_lib.artifacts.docker_util.DockerRepo defining a
         repository to be created.
-      skip_activation_prompt: bool. If true, skip activation prompts for
-        services
-      dry_run: bool. If true, only validate the configuration.
-      generate_name: bool. If true, create a revision name, otherwise add nonce.
       base_image: The build base image to opt-in automatic build image updates.
       build_service_account: The service account to use to execute the build.
       deploy_from_source_container_name: The name of the ingress container that
@@ -945,21 +944,34 @@ class ServerlessOperations(object):
       build_env_vars: Dictionary of build env vars to send to submit build.
       enable_automatic_updates: If true, opt-in automatic build image updates.
         If false, opt-out automatic build image updates.
-      is_verbose: Print verbose output. Forces polling instead of waiting.
       source_bucket: The existing bucket to use for source uploads. Leave it as
         None to create a new bucket.
+      skip_activation_prompt: bool. If true, skip activation prompts for
+        services
+      dry_run: bool. If true, only validate the configuration.
+      generate_name: bool. If true, create a revision name, otherwise add nonce.
+      is_verbose: Print verbose output. Forces polling instead of waiting.
       kms_key: The KMS key to use for the deployment.
       iap_enabled: If true, assign run.invoker access to IAP P4SA, if false,
         remove run.invoker access from IAP P4SA.
-      skip_build: If true, skip the cloud build step.
       upload_through_run_api: bool. If true, upload the source via Upload Source
         API.
+      source_container_context: SourceContainerContext, the source container
+        context to use for the deployment. Must not be used together with legacy
+        build source.
 
     Returns:
       service.Service, the service as returned by the server on the POST/PUT
        request to create/update the service.
     """
-    requires_build = build_source is not None and not skip_build
+    if build_source and source_container_context:
+      raise c_exceptions.InvalidArgumentException(
+          '--source',
+          'Source build and --no-build source cannot both be specified.',
+      )
+
+    # legacy build through SubmitBuild API and local orchestration
+    requires_legacy_build = build_source is not None
 
     region = build_region or self._region
 
@@ -978,9 +990,9 @@ class ServerlessOperations(object):
       tracker = progress_tracker.NoOpStagedProgressTracker(
           stages.ServiceStages(
               allow_unauthenticated is not None,
-              include_validate_service=requires_build,
-              include_upload_source=build_source is not None,
-              include_build=requires_build,
+              include_validate_service=requires_legacy_build,
+              include_upload_source=build_source or source_container_context,
+              include_build=requires_legacy_build,
               include_create_repo=repo_to_create is not None,
               include_iap=iap_enabled is not None,
           ),
@@ -988,38 +1000,51 @@ class ServerlessOperations(object):
           aborted_message='aborted',
       )
 
-    if build_source is not None and skip_build:
+    if source_container_context:
       tracker.StartStage(stages.UPLOAD_SOURCE)
       try:
-        if sources.IsGcsObject(build_source):
+        if sources.IsGcsObject(source_container_context.source):
           tracker.UpdateHeaderMessage(
               'Using the source from the specified bucket.'
           )
-          source_path = build_source
+          source_path = source_container_context.source
+        elif kms_key:
+          # kms validation for newer source containers that require a
+          # pre-configured bucket.
+          # Similar check should be added for image repository when adding
+          # support for unified build with local repo management.
+          raise serverless_exceptions.ArgumentError(
+              f'Invalid source location: {source_container_context.source}.'
+              ' Deployments encrypted with a customer-managed encryption key'
+              ' (CMEK) expect the source to be passed in a pre-configured'
+              ' Cloud Storage bucket. See'
+              ' https://cloud.google.com/run/docs/securing/using-cmek#source-deploy'
+              ' for more details.'
+          )
         elif upload_through_run_api:
           tracker.UpdateHeaderMessage('Uploading sources...')
           source_object = sources.UploadThroughCloudRun(
-              source_to_upload=build_source,
+              source_to_upload=source_container_context.source,
               region=region,
               service_ref=service_ref,
               kms_key=kms_key,
-              skip_build=skip_build,
+              skip_build=True,
           )
           source_path = sources.GetGsutilUri(source_object)
         else:
           tracker.UpdateHeaderMessage('Uploading sources...')
           source = sources.Upload(
-              build_source,
+              source_container_context.source,
               region,
               service_ref,
-              source_bucket,
+              source_container_context.source_bucket,
               sources.ArchiveType.TAR,
               respect_gitignore=False,
           )
           source_path = sources.GetGsutilUri(source)
         config_changes.append(
             config_changes_mod.SourcesAnnotationChange(
-                updates={deploy_from_source_container_name: source_path}
+                updates={source_container_context.name: source_path}
             )
         )
         tracker.UpdateHeaderMessage(
@@ -1030,7 +1055,7 @@ class ServerlessOperations(object):
         tracker.CompleteStageWithWarning(stages.UPLOAD_SOURCE, str(e))
         raise e
 
-    elif requires_build:
+    elif requires_legacy_build:
       new_conn = self._conn_context.GetContextWithRegionOverride(region)
       with new_conn:
         validated_service = self._ValidateServiceBeforeSourceDeploy(
@@ -1086,7 +1111,7 @@ class ServerlessOperations(object):
         config_changes.append(_AddDigestToImageChange(image_digest))
     if prefetch is None:
       serv = None
-    elif build_source:
+    elif build_source or source_container_context:
       # if we're building from source, we want to force a new fetch
       # because building takes a while which leaves a long time for
       # potential write conflicts.

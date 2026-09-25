@@ -1,0 +1,24 @@
+# proto-file: devtools/blueprint/blueprint_file.proto
+# proto-message: BlueprintFile
+# DO NOT EDIT! Regenerate the contents by running go/bluze after changing any BUILD file or the Blueprint.
+# Override the default values in third_party.gae_xrt_java.blueprint instead.
+
+buildable_unit: {
+  name: "third_party.gae_xrt_java"
+  build_pattern: "//third_party/gae-xrt-java/..."
+  test_pattern: "//third_party/gae-xrt-java/..."
+  test_tag_filter: "-nofastbuild"
+  build_tag_filter: "-nofastbuild"
+  enable_coverage: true
+  enable_presubmit: true
+  enable_continuous_build: true
+  continuous_build_email: {
+    build_cop_email_id: "google-cloud-cli-eng+universe-descriptor-data+buildgardener@google.com"
+  }
+  enable_release: false
+}
+arm_variant_mode: VARIANT_MODE_RELEASE
+continuous_tests: {
+  name: "third_party.gae_xrt_java"
+  buildable_unit_name: "third_party.gae_xrt_java"
+}

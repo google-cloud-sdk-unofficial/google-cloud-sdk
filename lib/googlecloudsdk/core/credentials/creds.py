@@ -375,10 +375,12 @@ class _SqlCursor(object):
     try:
       connection = getattr(self._local, 'connection', None)
       if connection:
-        if not exc_type:
-          # Don't try to commit if exception is in progress.
-          connection.commit()
-        connection.close()
+        try:
+          if not exc_type:
+            # Don't try to commit if exception is in progress.
+            connection.commit()
+        finally:
+          connection.close()
     finally:
       self._local.connection = None
       self._local.cursor = None
@@ -584,57 +586,65 @@ class AccessTokenCache(object):
   See go/gcloud-multi-universe-auth-cache section 3.2, 3.3 for more details.
   """
 
+  _COLUMNS = (
+      ('account_id', 'TEXT PRIMARY KEY'),
+      ('access_token', 'TEXT'),
+      ('token_expiry', 'TIMESTAMP'),
+      ('rapt_token', 'TEXT'),
+      ('id_token', 'TEXT'),
+      ('regional_access_boundary', 'TEXT'),
+      ('regional_access_boundary_expiry', 'TIMESTAMP'),
+  )
+
   def __init__(self, store_file, cache_only_rapt=False):
     self._cache_only_rapt = cache_only_rapt
     self._cursor = _SqlCursor(store_file)
-    self._Execute(
-        'CREATE TABLE IF NOT EXISTS "{}" '
-        '(account_id TEXT PRIMARY KEY, '
-        'access_token TEXT, '
-        'token_expiry TIMESTAMP, '
-        'rapt_token TEXT, '
-        'id_token TEXT, '
-        'regional_access_boundary TEXT, '
-        'regional_access_boundary_expiry TIMESTAMP)'.format(_ACCESS_TOKEN_TABLE)
-    )
-
-    # Older versions of the access_tokens database may not have the id_token
-    # column, so we will add it if we can't access it.
     try:
-      self._Execute(
-          'SELECT id_token FROM "{}" LIMIT 1'.format(_ACCESS_TOKEN_TABLE))
-    except sqlite3.OperationalError:
-      self._Execute('ALTER TABLE "{}" ADD COLUMN id_token TEXT'.format(
-          _ACCESS_TOKEN_TABLE))
-    # Older versions of the access_tokens database may not have the
-    # regional_access_boundary column, so we will add it if we can't access it.
-    try:
-      self._Execute(
-          'SELECT regional_access_boundary FROM "{}" LIMIT 1'.format(
-              _ACCESS_TOKEN_TABLE
-          )
-      )
-    except sqlite3.OperationalError:
-      self._Execute(
-          'ALTER TABLE "{}" ADD COLUMN regional_access_boundary TEXT'.format(
-              _ACCESS_TOKEN_TABLE
-          )
+      self._InitializeSchema()
+    except sqlite3.OperationalError as e:
+      log.warning(
+          'Could not initialize access token cache schema: {}'.format(str(e))
       )
 
-    # Older versions of the access_tokens database may not have the
-    # regional_access_boundary_expiry column, so we will add it if we can't
-    # access it.
-    try:
-      self._Execute(
-          'SELECT regional_access_boundary_expiry FROM "{}" LIMIT 1'.format(
-              _ACCESS_TOKEN_TABLE
+  def _InitializeSchema(self) -> None:
+    """Creates the access token table and migrates any missing columns."""
+    with self._cursor as cur:
+      existing_columns = {
+          row[1]
+          for row in cur.Execute(
+              'PRAGMA table_info("{}")'.format(_ACCESS_TOKEN_TABLE)
+          ).fetchall()
+      }
+      required_columns = {col for col, _ in self._COLUMNS}
+      if not required_columns.issubset(existing_columns):
+        # Acquire a write lock before re-checking and modifying the schema so
+        # concurrent processes serialize cleanly via SQLite's busy_timeout
+        # instead of racing on ALTER TABLE ADD COLUMN.
+        cur.Execute('BEGIN IMMEDIATE')
+        existing_columns = {
+            row[1]
+            for row in cur.Execute(
+                'PRAGMA table_info("{}")'.format(_ACCESS_TOKEN_TABLE)
+            ).fetchall()
+        }
+        if not existing_columns:
+          columns_ddl = ', '.join(
+              '{} {}'.format(col_name, col_type)
+              for col_name, col_type in self._COLUMNS
           )
-      )
-    except sqlite3.OperationalError:
-      self._Execute(
-          'ALTER TABLE "{}" ADD COLUMN regional_access_boundary_expiry'
-          ' TIMESTAMP'.format(_ACCESS_TOKEN_TABLE)
-      )
+          cur.Execute(
+              'CREATE TABLE IF NOT EXISTS "{}" ({})'.format(
+                  _ACCESS_TOKEN_TABLE, columns_ddl
+              )
+          )
+        else:
+          for column_name, column_type in self._COLUMNS:
+            if column_name not in existing_columns:
+              cur.Execute(
+                  'ALTER TABLE "{}" ADD COLUMN {} {}'.format(
+                      _ACCESS_TOKEN_TABLE, column_name, column_type
+                  )
+              )
 
   def _Execute(self, *args):
     with self._cursor as cur:

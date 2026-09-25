@@ -14,8 +14,6 @@
 # limitations under the License.
 """Command to submit a Device Run instrumentation session."""
 
-import uuid
-
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib import device_run
 from googlecloudsdk.api_lib.storage import storage_api
@@ -754,9 +752,14 @@ targets in the module will be run.
     )
 
     session = messages.Session(sessionConfig=session_config)
-    request_id = str(uuid.uuid4())
+    # The session ID is generated client-side so that the request stays
+    # idempotent if it is retried; see GenerateSessionAndRequestIds.
+    session_id, request_id = session_submit_ops.GenerateSessionAndRequestIds()
     operation = client.Create(
-        location_ref, session=session, request_id=request_id
+        location_ref,
+        session=session,
+        session_id=session_id,
+        request_id=request_id,
     )
     operation_id = operation.name.split('/')[-1]
 

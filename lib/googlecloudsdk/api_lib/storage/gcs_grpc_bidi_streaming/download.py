@@ -26,6 +26,7 @@ from typing import Any, Callable, Generator, NamedTuple, Optional, Tuple
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.api_lib.storage import errors as cloud_errors
 from googlecloudsdk.api_lib.storage import gcs_download
+from googlecloudsdk.api_lib.storage import retry_util as storage_retry_util
 from googlecloudsdk.api_lib.storage.gcs_grpc import grpc_util
 from googlecloudsdk.api_lib.storage.gcs_grpc import retry_util as grpc_retry_util
 from googlecloudsdk.api_lib.storage.gcs_grpc_bidi_streaming import retry_util
@@ -36,10 +37,32 @@ from googlecloudsdk.command_lib.storage import posix_util
 from googlecloudsdk.command_lib.util import crc32c
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.util import retry
+
+
+class FollowStreamState:
+  """Stream's state to follow the download stream."""
+
+  def __init__(
+      self,
+      start_byte: int = 0,
+  ):
+    self.start_byte = start_byte
+    self.end_byte = None
 
 
 class BidiDownloadIncompleteError(cloud_errors.RetryableApiError):
   """Raised when BiDi download is incomplete and should be retried."""
+
+  def __init__(
+      self,
+      message: str = 'Stream ended prematurely.',
+      processed_bytes: int | None = None,
+      read_handle: Any = None,
+  ):
+    super().__init__(message)
+    self.processed_bytes = processed_bytes
+    self.read_handle = read_handle
 
 
 # read_id is hardcoded to 1 for simple downloads as we only have one range.
@@ -215,6 +238,7 @@ def _process_response_ranges(
     download_strategy,
     progress_callback=None,
     processed_bytes=0,
+    stream_follow=None,
 ):
   """Processes and writes all data ranges in a BidiReadObjectResponse.
 
@@ -225,15 +249,19 @@ def _process_response_ranges(
     download_strategy: Strategy for download (ONE_SHOT or RESUMABLE).
     progress_callback: Optional callback invoked with total processed bytes.
     processed_bytes (int): Total bytes processed before this response.
+    stream_follow (FollowStreamState): Stream follow state.
 
   Returns:
-    tuple[int, bool]: (updated_processed_bytes, destination_pipe_is_broken).
+    tuple[int, bool, bool]: (updated_processed_bytes,
+      destination_pipe_is_broken, is_range_end).
   """
   if not response or not response.object_data_ranges:
-    return processed_bytes, False
+    return processed_bytes, False, False
 
+  is_range_end = False
   for object_range_data in response.object_data_ranges:
     data = object_range_data.checksummed_data.content
+    is_range_end = is_range_end or object_range_data.range_end
     if not data:
       continue
 
@@ -245,20 +273,25 @@ def _process_response_ranges(
 
     try:
       download_stream.write(data)
+      if stream_follow:
+        download_stream.flush()
     except BrokenPipeError:
       if download_strategy == cloud_api.DownloadStrategy.ONE_SHOT:
         log.info('Writing to download stream raised broken pipe error.')
-        return processed_bytes, True
+        return processed_bytes, True, is_range_end
       raise
 
     if digesters:
       _update_digesters(digesters, data, chunk_crc32c)
 
-    processed_bytes += len(data)
+    data_len = len(data)
+    processed_bytes += data_len
     if progress_callback:
       progress_callback(processed_bytes)
+    if stream_follow:
+      stream_follow.start_byte += data_len
 
-  return processed_bytes, False
+  return processed_bytes, False, is_range_end
 
 
 def _process_data_from_bidi_read_object_rpc(
@@ -273,8 +306,12 @@ def _process_data_from_bidi_read_object_rpc(
     decryption_key,
     redirection_handler,
     read_handle=None,
+    stream_follow=None,
 ):
   """Receives data from the bidi read object RPC."""
+  end_byte = stream_follow.end_byte if stream_follow else end_byte
+  start_byte = stream_follow.start_byte if stream_follow else start_byte
+
   bidi_read_object_request = _get_bidi_read_object_request(
       gapic_client,
       cloud_resource,
@@ -292,7 +329,8 @@ def _process_data_from_bidi_read_object_rpc(
   destination_pipe_is_broken = False
   received_read_handle = read_handle
   try:
-    bidi_read_object_rpc.requests_done()
+    if stream_follow is None:
+      bidi_read_object_rpc.requests_done()
 
     while bidi_read_object_rpc.is_active:
       try:
@@ -303,7 +341,13 @@ def _process_data_from_bidi_read_object_rpc(
             and bidi_read_object_response.read_handle.handle
         ):
           received_read_handle = bidi_read_object_response.read_handle
-      except (StopIteration, EOFError):
+      except (StopIteration, EOFError) as e:
+        if stream_follow:
+          raise BidiDownloadIncompleteError(
+              'Stream ended unexpectedly in follow mode.',
+              processed_bytes=processed_bytes,
+              read_handle=received_read_handle,
+          ) from e
         break
       except Exception as exc_value:  # pylint: disable=broad-except
         if grpc_retry_util.is_retriable(exc_value=exc_value):
@@ -311,19 +355,38 @@ def _process_data_from_bidi_read_object_rpc(
               'Retriable error during bidi_read_object_rpc.recv(): %s',
               exc_value,
           )
-          break
+          # Preserve processed bytes and read handle so the retryer can resume
+          # without restarting or losing progress.
+          raise BidiDownloadIncompleteError(
+              f'Stream interrupted by error: {exc_value}',
+              processed_bytes=processed_bytes,
+              read_handle=received_read_handle,
+          ) from exc_value
         raise
 
-      processed_bytes, destination_pipe_is_broken = _process_response_ranges(
-          bidi_read_object_response,
-          download_stream,
-          digesters,
-          download_strategy,
-          progress_callback=progress_callback,
-          processed_bytes=processed_bytes,
+      processed_bytes, destination_pipe_is_broken, is_range_end = (
+          _process_response_ranges(
+              bidi_read_object_response,
+              download_stream,
+              digesters,
+              download_strategy,
+              progress_callback=progress_callback,
+              processed_bytes=processed_bytes,
+              stream_follow=stream_follow,
+          )
       )
       if destination_pipe_is_broken:
         break
+      if stream_follow and is_range_end:
+        bidi_read_object_rpc.send(
+            gapic_client.types.BidiReadObjectRequest(
+                read_ranges=[
+                    _get_bidi_read_range(
+                        gapic_client, stream_follow.start_byte, None
+                    )
+                ],
+            )
+        )
   finally:
     # Ensures the stream is closed even if an exception is raised.
     bidi_read_object_rpc.close()
@@ -358,6 +421,7 @@ def bidi_download_object(
     download_strategy,
     decryption_key,
     redirection_handler,
+    follow=False,
 ):
   """Downloads the object using gRPC bidi streaming API.
 
@@ -380,10 +444,11 @@ def bidi_download_object(
       be used to download the object if the object is encrypted.
     redirection_handler (retry_util.BidiRedirectedTokenErrorHandler): The
       redirection handler to handle redirected token errors.
+    follow (bool): Whether to follow the download stream for more data.
   """
 
   target_size = _get_target_size(cloud_resource, start_byte, end_byte)
-  processed_bytes, destination_pipe_is_broken = retry_util.run_with_retries(
+  processed_bytes, destination_pipe_is_broken = run_with_retries(
       _process_data_from_bidi_read_object_rpc,
       gapic_client,
       cloud_resource,
@@ -396,6 +461,7 @@ def bidi_download_object(
       decryption_key,
       target_size,
       redirection_handler,
+      follow=follow,
   )
 
   total_downloaded_data = processed_bytes - start_byte
@@ -436,6 +502,7 @@ class BidiDownloader:
       decryption_key: 'encryption_util.EncryptionKey' | None,
       target_size: int | None,
       redirection_handler: retry_util.BidiRedirectedTokenErrorHandler,
+      stream_follow: FollowStreamState | None = None,
   ):
     """Initializes a BidiDownloader instance.
 
@@ -457,11 +524,14 @@ class BidiDownloader:
         None, download the rest of the object.
       download_strategy (cloud_api.DownloadStrategy): Download strategy used to
         perform the download.
-      decryption_key (EncryptionKey | None): The decryption key to
-        be used to download the object if the object is encrypted.
+      decryption_key (EncryptionKey | None): The decryption key to be used to
+        download the object if the object is encrypted.
       target_size (int | None): The total number of bytes to download.
       redirection_handler (retry_util.BidiRedirectedTokenErrorHandler): The
         redirection handler to handle redirected token errors.
+      stream_follow (FollowStreamState | None): Whether to follow the download
+        stream for more data. If None, the download will be performed without
+        following the stream.
     """
     self.process_chunk_func = process_chunk_func
     self.gapic_client = gapic_client
@@ -478,6 +548,7 @@ class BidiDownloader:
     self.redirection_handler = redirection_handler
     self.destination_pipe_is_broken = False
     self.read_handle = None
+    self.stream_follow = stream_follow
 
   def download_chunk(self):
     """Performs one download attempt and updates processed_bytes.
@@ -494,50 +565,182 @@ class BidiDownloader:
       - int: The total number of bytes processed.
       - bool: True if the destination pipe is broken, False otherwise.
     """
-    (
-        self.processed_bytes,
-        self.destination_pipe_is_broken,
-        self.read_handle,
-    ) = self.process_chunk_func(
-        self.gapic_client,
-        self.cloud_resource,
-        self.download_stream,
-        self.digesters,
-        self.progress_callback,
-        self.processed_bytes,  # Resume from last processed byte.
-        self.end_byte,
-        self.download_strategy,
-        self.decryption_key,
-        self.redirection_handler,
-        read_handle=self.read_handle,
-    )
+    if self.stream_follow:
+      self.processed_bytes = self.stream_follow.start_byte
+
+    try:
+      (
+          self.processed_bytes,
+          self.destination_pipe_is_broken,
+          self.read_handle,
+      ) = self.process_chunk_func(
+          self.gapic_client,
+          self.cloud_resource,
+          self.download_stream,
+          self.digesters,
+          self.progress_callback,
+          self.processed_bytes,  # Resume from last processed byte.
+          self.end_byte,
+          self.download_strategy,
+          self.decryption_key,
+          self.redirection_handler,
+          read_handle=self.read_handle,
+          stream_follow=self.stream_follow,
+      )
+    except BidiDownloadIncompleteError as e:
+      if e.processed_bytes is not None:
+        self.processed_bytes = e.processed_bytes
+      if e.read_handle is not None:
+        self.read_handle = e.read_handle
+      raise
     total_downloaded_data = self.processed_bytes - self.start_byte
     if self.destination_pipe_is_broken:
       return self.processed_bytes, self.destination_pipe_is_broken
     if self.target_size is None or total_downloaded_data >= self.target_size:
       # Download complete.
       return self.processed_bytes, self.destination_pipe_is_broken
-    raise BidiDownloadIncompleteError('Stream ended prematurely.')
+    raise BidiDownloadIncompleteError(
+        'Stream ended prematurely.',
+        processed_bytes=self.processed_bytes,
+        read_handle=self.read_handle,
+    )
+
+
+def _should_retry_bidi(exc_type, exc_value, exc_traceback, state=None):
+  """Returns True if the BiDi download error is retryable."""
+  if isinstance(exc_value, BrokenPipeError):
+    return False
+  if isinstance(
+      exc_value, BidiDownloadIncompleteError
+  ) or grpc_retry_util.is_retriable(exc_type, exc_value, exc_traceback, state):
+    log.debug(
+        'BiDi download interrupted by error, checking if retryable: %s',
+        exc_value,
+    )
+    return True
+  return False
+
+
+def run_with_retries(
+    process_chunk_func,
+    gapic_client,
+    cloud_resource,
+    download_stream,
+    digesters,
+    progress_callback,
+    start_byte,
+    end_byte,
+    download_strategy,
+    decryption_key,
+    target_size,
+    redirection_handler,
+    follow=False,
+):
+  """Executes download with retries, resuming from processed_bytes."""
+  stream_follow = FollowStreamState(start_byte=start_byte) if follow else None
+  bidi_downloader = BidiDownloader(
+      process_chunk_func,
+      gapic_client,
+      cloud_resource,
+      download_stream,
+      digesters,
+      progress_callback,
+      start_byte,
+      end_byte,
+      download_strategy,
+      decryption_key,
+      target_size,
+      redirection_handler,
+      stream_follow=stream_follow,
+  )
+
+  def _should_retry_bidi_with_reset(exc_type, exc_value, exc_traceback, state):
+    """Wrapper for _should_retry_bidi that resets state if retry is needed."""
+    should_retry = _should_retry_bidi(exc_type, exc_value, exc_traceback, state)
+    if not should_retry:
+      return False
+
+    if isinstance(exc_value, BidiDownloadIncompleteError):
+      # If download is incomplete, download_stream is consistent with
+      # processed_bytes and digesters state. Thus, we can resume.
+      log.debug(
+          'Resuming Bidi download from byte %s with read_handle %s',
+          bidi_downloader.processed_bytes,
+          bidi_downloader.read_handle,
+      )
+    else:
+      # If stream broke unexpectedly (e.g. gRPC error), reset stream state to
+      # processed_bytes.
+      if not bidi_downloader.download_stream.seekable():
+        if bidi_downloader.stream_follow:
+          # For follow mode on non-seekable streams (like stdout), we resume
+          # from processed_bytes without seeking.
+          log.debug(
+              'Resuming Bidi download in follow mode from byte %s',
+              bidi_downloader.stream_follow.start_byte,
+          )
+          bidi_downloader.read_handle = None
+          return True
+        log.debug(
+            'Cannot reset non-seekable stream for retry. Download will fail.'
+        )
+        return False
+      log.debug(
+          'Bidi stream failed unexpectedly. Resuming download for byte range'
+          ' (%s, %s) from offset %s. Error: %s',
+          bidi_downloader.start_byte,
+          bidi_downloader.end_byte,
+          bidi_downloader.processed_bytes,
+          exc_value,
+      )
+      bidi_downloader.download_stream.seek(bidi_downloader.processed_bytes)
+      bidi_downloader.read_handle = None
+    return True
+
+  try:
+    storage_retry_util.retryer(
+        target=bidi_downloader.download_chunk,
+        should_retry_if=_should_retry_bidi_with_reset,
+    )
+  except (
+      BidiDownloadIncompleteError,
+      retry.MaxRetrialsException,
+  ) as e:
+    # Retries exhausted.
+    if target_size is None:
+      error_message = (
+          f'Download not completed for {cloud_resource}. The input stream'
+          ' terminated before the entire content was read and retries were'
+          f' exhausted: {e}'
+      )
+      raise cloud_errors.RetryableApiError(error_message) from e
+  return (
+      bidi_downloader.processed_bytes,
+      bidi_downloader.destination_pipe_is_broken,
+  )
 
 
 class BidiGrpcDownload(gcs_download.GcsDownload):
   """Perform GCS Download using gRPC bidi streaming API."""
 
-  def __init__(self,
-               gapic_client,
-               cloud_resource,
-               download_stream,
-               start_byte,
-               end_byte,
-               digesters,
-               progress_callback,
-               download_strategy,
-               decryption_key):
+  def __init__(
+      self,
+      gapic_client,
+      cloud_resource,
+      download_stream,
+      start_byte,
+      end_byte,
+      digesters,
+      progress_callback,
+      download_strategy,
+      decryption_key,
+      follow=False,
+  ):
     """Initializes a BidiGrpcDownload instance.
 
     Args:
-      gapic_client (StorageClient): The GAPIC API client to interact with
-        GCS using gRPC.
+      gapic_client (StorageClient): The GAPIC API client to interact with GCS
+        using gRPC.
       cloud_resource (resource_reference.ObjectResource): See
         cloud_api.CloudApi.download_object.
       download_stream (stream): Stream to send the object data to.
@@ -549,6 +752,7 @@ class BidiGrpcDownload(gcs_download.GcsDownload):
         perform the download.
       decryption_key (encryption_util.EncryptionKey|None): The decryption key to
         be used to download the object if the object is encrypted.
+      follow (bool): Whether to follow the download stream for more data.
     """
     super(BidiGrpcDownload, self).__init__(
         download_stream, start_byte, end_byte
@@ -559,6 +763,7 @@ class BidiGrpcDownload(gcs_download.GcsDownload):
     self._progress_callback = progress_callback
     self._download_strategy = download_strategy
     self._decryption_key = decryption_key
+    self._follow = follow
     self._redirection_handler = retry_util.BidiRedirectedTokenErrorHandler(
         self._gapic_client,
         source_resource=self._cloud_resource,
@@ -571,7 +776,10 @@ class BidiGrpcDownload(gcs_download.GcsDownload):
 
   def launch(self):
     """See super class."""
-    if properties.VALUES.storage.use_mrd_bidi_downloads.GetBool():
+    if (
+        properties.VALUES.storage.use_mrd_bidi_downloads.GetBool()
+        and not self._follow
+    ):
       return bidi_download_object_mrd(
           gapic_client=self._gapic_client,
           cloud_resource=self._cloud_resource,
@@ -595,6 +803,7 @@ class BidiGrpcDownload(gcs_download.GcsDownload):
         download_strategy=self._download_strategy,
         decryption_key=self._decryption_key,
         redirection_handler=self._redirection_handler,
+        follow=self._follow,
     )
 
   @grpc_retry_util.grpc_default_retryer
@@ -881,7 +1090,8 @@ def bidi_download_object_mrd(
       posix_util.preallocate_disk_space(
           download_stream, alloc_start_byte, target_size
       )
-  processed_bytes, destination_pipe_is_broken = retry_util.run_with_retries(
+
+  processed_bytes, destination_pipe_is_broken = run_with_retries(
       _process_data_from_mrd_rpc,
       gapic_client,
       cloud_resource,
@@ -981,8 +1191,10 @@ def _process_data_from_mrd_rpc(
     decryption_key: Optional[bytes],
     redirection_handler: Any,
     read_handle: Any = None,
+    stream_follow: FollowStreamState | None = None,
 ) -> _MrdRpcResult:
   """Constructs ranges and receives data from the bidi read object RPC using Multi-Range Requests."""
+  del stream_follow  # Unused.
   bucket_name = grpc_util.get_full_bucket_name(
       cloud_resource.storage_url.bucket_name
   )

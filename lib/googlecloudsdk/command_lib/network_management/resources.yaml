@@ -49,5 +49,5 @@ hstCollectionTask:
   - *location
   - &hstCollectionTask
     parameter_name: hstCollectionTasksId
-    attribute_name: hst_collection_task
+    attribute_name: collection_task
     help: ID of the HST collection task.

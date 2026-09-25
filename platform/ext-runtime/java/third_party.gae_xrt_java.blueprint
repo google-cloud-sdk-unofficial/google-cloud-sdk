@@ -1,0 +1,25 @@
+include "devtools/blueprint/bluze/public/bluze.ncl";
+include bytes "third_party/gae-xrt-java/bluze.textproto" as textproto;
+
+// See go/bluze/guide before editing. To check the generated final blueprint run
+// rncl third_party/gae-xrt-java/third_party.gae_xrt_java.blueprint printproto blueprint_file
+
+blueprint_file = ::bluze::BlueprintFile(
+  textproto,
+
+  project_name = "third_party.gae_xrt_java",
+  teams_product_id = 12217806235,
+  tech_lead = [
+    "ferha",
+    "gerb",
+    "markgm",
+    "wujames",
+    "yonathanz",
+  ],
+  dev_mailing_list = "google-cloud-cli-eng+universe-descriptor-data@google.com",
+  mdb_groups = ["universe-descriptor-data-releaser"],
+  buganizer_component_ids = [80295],
+  metadata_path = "//depot/google3/third_party/gae-xrt-java/METADATA",
+
+// Customize your blueprint here: go/blueprint/howto-write.
+);

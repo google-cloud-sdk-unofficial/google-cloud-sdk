@@ -327,6 +327,16 @@ def _GetClearedFieldsForImageOptimizationPolicy(image_optimization_policy,
   return cleared_fields
 
 
+def _GetClearedFieldsForDynamicCompressionPolicy(
+    dynamic_compression_policy, field_prefix
+):
+  """Gets a list of fields cleared by the user for DynamicCompressionPolicy."""
+  cleared_fields = []
+  if not dynamic_compression_policy.compressionMode:
+    cleared_fields.append(field_prefix + 'compressionMode')
+  return cleared_fields
+
+
 def _GetClearedFieldsForRoutAction(route_action, field_prefix):
   """Gets a list of fields cleared by the user for HttpRouteAction."""
   cleared_fields = []
@@ -402,6 +412,17 @@ def _GetClearedFieldsForRoutAction(route_action, field_prefix):
           _GetClearedFieldsForImageOptimizationPolicy(
               route_action.imageOptimizationPolicy,
               field_prefix + 'imageOptimizationPolicy.',
+          )
+      )
+
+  if hasattr(route_action, 'dynamicCompressionPolicy'):
+    if not route_action.dynamicCompressionPolicy:
+      cleared_fields.append(field_prefix + 'dynamicCompressionPolicy')
+    else:
+      cleared_fields.extend(
+          _GetClearedFieldsForDynamicCompressionPolicy(
+              route_action.dynamicCompressionPolicy,
+              field_prefix + 'dynamicCompressionPolicy.',
           )
       )
   return cleared_fields

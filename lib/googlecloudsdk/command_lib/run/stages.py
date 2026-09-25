@@ -14,7 +14,6 @@
 # limitations under the License.
 """Gather stage/condition information for any important objects here."""
 
-
 from googlecloudsdk.core.console import progress_tracker
 
 READY = 'Ready'
@@ -235,17 +234,19 @@ def InstanceStages(
 
 
 def WorkerPoolStages(
-    include_build=False,
-    include_create_repo=False,
-    include_create_revision=True,
-):
+    include_build: bool = False,
+    include_create_repo: bool = False,
+    include_create_revision: bool = True,
+    include_upload_source: bool = False,
+) -> list[progress_tracker.Stage]:
   """Return the progress tracker Stages for conditions of a Worker Pool."""
   stages = []
   if include_create_repo:
     stages.append(_CreateRepoStage())
   if include_build:
-    stages.append(_UploadSourceStage())
     stages.append(_BuildContainerStage())
+  if include_upload_source:
+    stages.append(_UploadSourceStage())
   if include_create_revision:
     stages.append(progress_tracker.Stage('Creating Revision...', key=READY))
   return stages

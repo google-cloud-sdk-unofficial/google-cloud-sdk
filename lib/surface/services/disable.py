@@ -113,11 +113,14 @@ class DisableAlpha(base.SilentCommand):
     Returns:
       Nothing.
     """
-    project = (
-        args.project
-        if args.IsSpecified('project')
-        else properties.VALUES.core.project.Get(required=True)
-    )
+    if not (args.IsSpecified('folder') or args.IsSpecified('organization')):
+      project = (
+          args.project
+          if args.IsSpecified('project')
+          else properties.VALUES.core.project.Get(required=True)
+      )
+    else:
+      project = args.project
     folder = args.folder if args.IsSpecified('folder') else None
     organization = (
         args.organization if args.IsSpecified('organization') else None
@@ -147,6 +150,10 @@ class DisableAlpha(base.SilentCommand):
 
     service_names = []
     for service_name in args.service:
+      if service_name.startswith('catalogs/'):
+        service_names.append(service_name)
+        continue
+
       service_name = arg_parsers.GetServiceNameFromArg(service_name)
 
       protected_msg = serviceusage.GetProtectedServiceWarning(service_name)
@@ -183,6 +190,7 @@ class DisableAlpha(base.SilentCommand):
           'Asynchronous operation is in progress... Use the following'
           f' command to wait for its completion:\n {cmd}'
       )
+      return
     op = services_util.WaitOperation(op.name, serviceusage.GetOperationV2Beta)
 
     if args.validate_only:
@@ -220,12 +228,6 @@ class Disable(base.SilentCommand):
 
   @staticmethod
   def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Args:
-      parser: An argparse parser that you can use to add arguments that go on
-        the command line after this command. Positional arguments are allowed.
-    """
     common_flags.consumer_service_flag(suffix='to disable').AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     parser.add_argument(
@@ -241,15 +243,6 @@ class Disable(base.SilentCommand):
     )
 
   def Run(self, args):
-    """Run 'services disable'.
-
-    Args:
-      args: argparse.Namespace, The arguments that this command was invoked
-        with.
-
-    Returns:
-      Nothing.
-    """
     project = properties.VALUES.core.project.Get(required=True)
     for service_name in args.service:
       service_name = arg_parsers.GetServiceNameFromArg(service_name)

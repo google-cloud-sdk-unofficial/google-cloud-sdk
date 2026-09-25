@@ -89,10 +89,12 @@ def GetCredentialsConfigFromFile(filename):
     content = yaml.load_path(filename)
   except UnicodeDecodeError as e:
     raise BadCredentialFileException(
-        'File {0} is not utf-8 encoded: {1}'.format(filename, e))
+        'File {0} is not utf-8 encoded: {1}'.format(filename, e)
+    ) from e
   except yaml.YAMLParseError as e:
-    raise BadCredentialFileException('Could not read json file {0}: {1}'.format(
-        filename, e))
+    raise BadCredentialFileException(
+        'Could not read json file {0}: {1}'.format(filename, e)
+    ) from e
 
   # Require the JSON content to be an object.
   # Credentials and configs are always objects.
@@ -145,20 +147,6 @@ class FlowRunner(six.with_metaclass(abc.ABCMeta, object)):
       raise
 
 
-class OobFlowRunner(FlowRunner):
-  """A flow runner to run OobFlow."""
-
-  def _CreateFlow(self):
-    # pylint: disable=g-import-not-at-top
-    from googlecloudsdk.core.credentials import flow as c_flow
-    # pylint: enable=g-import-not-at-top
-    return c_flow.OobFlow.from_client_config(
-        self._client_config,
-        self._scopes,
-        autogenerate_code_verifier=not properties.VALUES.auth
-        .disable_code_verifier.GetBool())
-
-
 class NoBrowserFlowRunner(FlowRunner):
   """A flow runner to run NoBrowserFlow."""
 
@@ -206,32 +194,6 @@ class NoBrowserHelperRunner(FlowRunner):
                 'redirection. Please run this command on a machine where '
                 'gcloud can start a local server.')
       raise
-
-
-class BrowserFlowWithOobFallbackRunner(FlowRunner):
-  """A flow runner to try normal web flow and fall back to oob flow."""
-
-  _FLOW_ERROR_HELP_MSG = ('There was a problem with web authentication. '
-                          'Try running again with --no-launch-browser.')
-
-  def _CreateFlow(self):
-    # pylint: disable=g-import-not-at-top
-    from googlecloudsdk.core.credentials import flow as c_flow
-    # pylint: enable=g-import-not-at-top
-    try:
-      return c_flow.FullWebFlow.from_client_config(
-          self._client_config,
-          self._scopes,
-          autogenerate_code_verifier=not properties.VALUES.auth
-          .disable_code_verifier.GetBool())
-    except c_flow.LocalServerCreationError as e:
-      log.warning(e)
-      log.warning('Defaulting to URL copy/paste mode.')
-      return c_flow.OobFlow.from_client_config(
-          self._client_config,
-          self._scopes,
-          autogenerate_code_verifier=not properties.VALUES.auth
-          .disable_code_verifier.GetBool())
 
 
 class BrowserFlowWithNoBrowserFallbackRunner(FlowRunner):
@@ -387,13 +349,15 @@ def AssertClientSecretIsInstalledType(client_id_file):
   )
   try:
     obj = json.loads(files.ReadFileContents(client_id_file))
-  except files.Error:
-    raise InvalidClientSecretsError(f'Cannot read file: "{client_id_file}".')
-  except json.JSONDecodeError:
+  except files.Error as exc:
+    raise InvalidClientSecretsError(
+        f'Cannot read file: "{client_id_file}".'
+    ) from exc
+  except json.JSONDecodeError as exc:
     raise InvalidClientSecretsError(
         f'Client ID file {client_id_file} is not a valid JSON file.'
         f' {actionable_message}'
-    )
+    ) from exc
   if len(obj) != 1:
     raise InvalidClientSecretsError(
         'Expected a JSON object with a single property for an "installed"'

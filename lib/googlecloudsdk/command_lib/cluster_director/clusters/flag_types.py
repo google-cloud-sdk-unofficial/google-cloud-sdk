@@ -79,6 +79,18 @@ EXISTING_LUSTRES_TYPE = arg_parsers.ArgObject(
     repeated=True,
 )
 
+EXISTING_NFS_TYPE = arg_parsers.ArgObject(
+    spec={
+        "id": str,
+        "serverIpAddress": str,
+        "remoteMount": str,
+        "mountOptions": str,
+    },
+    required_keys=["id", "serverIpAddress", "remoteMount"],
+    enable_shorthand=True,
+    repeated=True,
+)
+
 
 SERVICE_ACCOUNT_TYPE = arg_parsers.ArgObject(
     spec={
@@ -137,6 +149,7 @@ class FlagTypes:
   Attributes:
     messages: The messages module for the given API version.
     is_alpha: True if the API version is v1alpha.
+    is_beta: True if the API version is v1beta.
   """
 
   def __init__(self, api_version: str) -> None:
@@ -150,6 +163,10 @@ class FlagTypes:
         api_utils.GetReleaseTrack(api_version)
     )
     self.is_alpha = api_version == "v1alpha"
+    self.is_beta = api_version == "v1beta"
+
+  def GetNfsObject(self) -> arg_parsers.ArgObject:
+    return EXISTING_NFS_TYPE
 
   def GetFilestoresObject(self) -> arg_parsers.ArgObject:
     return arg_parsers.ArgObject(
@@ -238,11 +255,16 @@ class FlagTypes:
     )
 
   def GetOnDemandInstancesObject(self) -> arg_parsers.ArgObject:
+    """Returns an ArgObject for parsing on demand instance configurations."""
     spec = {
         "id": str,
         "zone": str,
         "machineType": str,
     }
+    if self.is_alpha or self.is_beta:
+      spec["networkTags"] = arg_parsers.ArgObject(
+          value_type=str, repeated=True
+      )
     return arg_parsers.ArgObject(
         spec=spec,
         required_keys=["id", "zone", "machineType"],
@@ -251,6 +273,7 @@ class FlagTypes:
     )
 
   def GetSpotInstancesObject(self) -> arg_parsers.ArgObject:
+    """Returns an ArgObject for parsing spot instance configurations."""
     spec = {
         "id": str,
         "zone": str,
@@ -259,6 +282,10 @@ class FlagTypes:
             self.messages.NewSpotInstancesConfig.TerminationActionValueValuesEnum
         ),
     }
+    if self.is_alpha or self.is_beta:
+      spec["networkTags"] = arg_parsers.ArgObject(
+          value_type=str, repeated=True
+      )
     return arg_parsers.ArgObject(
         spec=spec,
         required_keys=["id", "zone", "machineType"],
@@ -267,10 +294,15 @@ class FlagTypes:
     )
 
   def GetReservedInstancesObject(self) -> arg_parsers.ArgObject:
+    """Returns an ArgObject for parsing reserved instance configurations."""
     spec = {
         "id": str,
         "reservation": str,
     }
+    if self.is_alpha or self.is_beta:
+      spec["networkTags"] = arg_parsers.ArgObject(
+          value_type=str, repeated=True
+      )
     if self.is_alpha:
       spec.update({
           "reservationBlock": str,
@@ -284,12 +316,17 @@ class FlagTypes:
     )
 
   def GetFlexStartInstancesObject(self) -> arg_parsers.ArgObject:
+    """Returns an ArgObject for parsing flex start instance configurations."""
     spec = {
         "id": str,
         "zone": str,
         "machineType": str,
         "maxDuration": str,
     }
+    if self.is_alpha or self.is_beta:
+      spec["networkTags"] = arg_parsers.ArgObject(
+          value_type=str, repeated=True
+      )
     return arg_parsers.ArgObject(
         spec=spec,
         required_keys=["id", "zone", "machineType", "maxDuration"],
@@ -489,6 +526,7 @@ class FlagTypes:
       new_on_demand_instances_spec = {
           "machineType": str,
           "zone": str,
+          "networkTags": arg_parsers.ArgObject(value_type=str, repeated=True),
       }
       new_spot_instances_spec = new_on_demand_instances_spec | {
           "terminationAction": str
@@ -664,6 +702,13 @@ class FlagTypes:
                               "existingLustre": arg_parsers.ArgObject(
                                   spec={"lustre": str}
                               ),
+                              "existingNfs": arg_parsers.ArgObject(
+                                  spec={
+                                      "serverIpAddress": str,
+                                      "remoteMount": str,
+                                      "mountOptions": str,
+                                  }
+                              ),
                               "newBucket": arg_parsers.ArgObject(
                                   spec=bucket_config_spec
                               ),
@@ -679,11 +724,15 @@ class FlagTypes:
               ),
           ),
       }
-    else:  # Beta
+    else:  # Beta or GA
       new_on_demand_instances_beta_spec = {
           "machineType": str,
           "zone": str,
       }
+      if self.is_beta:
+        new_on_demand_instances_beta_spec["networkTags"] = (
+            arg_parsers.ArgObject(value_type=str, repeated=True)
+        )
       new_spot_instances_beta_spec = new_on_demand_instances_beta_spec | {
           "terminationAction": str
       }
@@ -693,6 +742,10 @@ class FlagTypes:
       new_reserved_instances_beta_spec = {
           "reservation": str,
       }
+      if self.is_beta:
+        new_reserved_instances_beta_spec["networkTags"] = (
+            arg_parsers.ArgObject(value_type=str, repeated=True)
+        )
       bucket_config_beta_spec = {
           "autoclass": arg_parsers.ArgObject(
               spec={
@@ -705,6 +758,24 @@ class FlagTypes:
           ),
           "storageClass": str,
       }
+      storage_config_beta_spec = {
+          "existingBucket": arg_parsers.ArgObject(spec={"bucket": str}),
+          "existingFilestore": arg_parsers.ArgObject(spec={"filestore": str}),
+          "existingLustre": arg_parsers.ArgObject(spec={"lustre": str}),
+          "newBucket": arg_parsers.ArgObject(spec=bucket_config_beta_spec),
+          "newFilestore": arg_parsers.ArgObject(spec=FILESTORE_CONFIG_SPEC),
+          "newLustre": arg_parsers.ArgObject(
+              spec=LUSTRE_CONFIG_SPEC | {"perUnitStorageThroughput": int}
+          ),
+      }
+      if self.is_beta:
+        storage_config_beta_spec["existingNfs"] = arg_parsers.ArgObject(
+            spec={
+                "serverIpAddress": str,
+                "remoteMount": str,
+                "mountOptions": str,
+            }
+        )
       return {
           "computeResources": arg_parsers.ArgObject(
               key_type=str,
@@ -789,27 +860,7 @@ class FlagTypes:
               value_type=arg_parsers.ArgObject(
                   spec={
                       "config": arg_parsers.ArgObject(
-                          spec={
-                              "existingBucket": arg_parsers.ArgObject(
-                                  spec={"bucket": str}
-                              ),
-                              "existingFilestore": arg_parsers.ArgObject(
-                                  spec={"filestore": str}
-                              ),
-                              "existingLustre": arg_parsers.ArgObject(
-                                  spec={"lustre": str}
-                              ),
-                              "newBucket": arg_parsers.ArgObject(
-                                  spec=bucket_config_beta_spec
-                              ),
-                              "newFilestore": arg_parsers.ArgObject(
-                                  spec=FILESTORE_CONFIG_SPEC
-                              ),
-                              "newLustre": arg_parsers.ArgObject(
-                                  spec=LUSTRE_CONFIG_SPEC
-                                  | {"perUnitStorageThroughput": int}
-                              ),
-                          },
+                          spec=storage_config_beta_spec
                       )
                   }
               ),

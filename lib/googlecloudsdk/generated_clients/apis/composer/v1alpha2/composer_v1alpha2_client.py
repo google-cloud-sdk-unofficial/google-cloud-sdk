@@ -886,6 +886,33 @@ class ComposerV1alpha2(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def FetchCapabilities(self, request, global_params=None):
+      r"""Fetches environment capabilities, sizing presets, and resource validation rules for the specified parent location and image version.
+
+      Args:
+        request: (ComposerProjectsLocationsEnvironmentsFetchCapabilitiesRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (FetchCapabilitiesResponse) The response message.
+      """
+      config = self.GetMethodConfig('FetchCapabilities')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    FetchCapabilities.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha2/projects/{projectsId}/locations/{locationsId}/environments:fetchCapabilities',
+        http_method='GET',
+        method_id='composer.projects.locations.environments.fetchCapabilities',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['imageVersion', 'mode'],
+        relative_path='v1alpha2/{+parent}/environments:fetchCapabilities',
+        request_field='',
+        request_type_name='ComposerProjectsLocationsEnvironmentsFetchCapabilitiesRequest',
+        response_type_name='FetchCapabilitiesResponse',
+        supports_download=False,
+    )
+
     def FetchDatabaseProperties(self, request, global_params=None):
       r"""Fetches database properties.
 

@@ -26,8 +26,10 @@ DATAFLOW_APITOOLS_CLIENT_KEY = 'dataflow_client'
 DATAFLOW_REGISTRY_KEY = 'dataflow_registry'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Dataflow(base.Group):
   """Manage Google Cloud Dataflow resources.
 
@@ -46,11 +48,17 @@ class Dataflow(base.Group):
   category = base.DATA_ANALYTICS_CATEGORY
 
   def Filter(self, context, args):
-    # TODO(b/190530367):  Determine if command group works with project number
-    base.RequireProjectID(args)
-    del context, args
+    del context
     base.DisableUserProjectQuota()
 
     self.EnableSelfSignedJwtForTracks(
         [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]
     )
+
+    # b/190530367: Dataflow config-store-settings commands require numeric
+    # project numbers. Other subcommands continue to require project IDs.
+    if not (
+        hasattr(args, 'command_path')
+        and 'config-store-settings' in args.command_path
+    ):
+      base.RequireProjectID(args)

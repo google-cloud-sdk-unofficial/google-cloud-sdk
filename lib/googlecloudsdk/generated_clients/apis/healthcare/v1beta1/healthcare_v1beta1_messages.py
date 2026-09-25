@@ -673,10 +673,8 @@ class BulkDeleteResourcesRequest(_messages.Message):
       are deleted. The time uses the format YYYY-MM-DDThh:mm:ss.sss+zz:zz. For
       example, `2015-02-07T13:28:17.239+02:00` or `2017-01-01T00:00:00Z`. The
       time must be specified to the second and include a time zone.
-    validateOnly: Optional. If set to true, the request will only perform a
-      dry run. By default (once the behavior change is fully rolled out), this
-      will default to true. During the transition period, the default depends
-      on the Mendel flag status for the project.
+    validateOnly: Optional. If set to `true`, the request will only perform a
+      dry run. By default this will default to `false`.
     versionConfig: Optional. Specifies which version of the resources to
       delete.
   """
@@ -2134,6 +2132,59 @@ class EvaluateUserConsentsResponse(_messages.Message):
   results = _messages.MessageField('Result', 2, repeated=True)
 
 
+class ExecuteCohortRequest(_messages.Message):
+  r"""Request to execute a cohort definition from a FHIR store based on
+  provided queries and sending the resulting subset of data to a specified
+  sink.
+
+  Fields:
+    _at: Optional. If provided, the queried resources will represent the state
+      of the FHIR store at the given past timestamp. Runs the operation
+      against the state of the store at this timestamp. State of the store is
+      represented by the resource versions that were the current versions
+      during the time specified or the resources that have not been updated
+      since. Only works if the store has history enabled. Although users
+      should be able to use this field to reproduce previous runs of the
+      operation and get consistent results, there are a few cases where the
+      past state of the store can be altered, thus resulting in no guarantee
+      of reproducibility. For example, resource versions can be deleted using
+      the purge method, or modified using ImportResourcesHistory.
+    fhirpathQuery: Return resources that match the specified FHIRPath
+      expressions.
+    gcsDestination: The Cloud Storage output destination. The Healthcare
+      Service Agent account requires the `roles/storage.objectAdmin` role on
+      the Cloud Storage location. The exported outputs are organized by FHIR
+      resource types. The server creates one or more objects per resource type
+      depending on the volume of the resources exported. When there is only
+      one object per resource type, the object name is in the form of
+      `{operation_id}_{resource_type}`. When there are multiple objects for a
+      given resource type, the object names are in the form of
+      `{operation_id}_{resource_type}-{index}-of-{total}`. Each object
+      contains newline delimited JSON, and each line is a FHIR resource.
+    validateOnly: Optional. If true, the request will be validated but no
+      cohort execution will be run.
+  """
+
+  _at = _messages.StringField(1)
+  fhirpathQuery = _messages.MessageField('FHIRPathQuery', 2)
+  gcsDestination = _messages.MessageField('GoogleCloudHealthcareV1beta1FhirGcsDestination', 3)
+  validateOnly = _messages.BooleanField(4)
+
+
+class ExecuteCohortResponse(_messages.Message):
+  r"""Response when ExecuteCohort operation finishes querying all resources
+  and sends them to a sink destination. This structure will be included in the
+  response when the operation finishes successfully.
+
+  Fields:
+    fhirStore: The name of the queried FHIR store, in the format `projects/{pr
+      oject_id}/locations/{location_id}/datasets/{dataset_id}/fhirStores/{fhir
+      _store_id}`.
+  """
+
+  fhirStore = _messages.StringField(1)
+
+
 class ExplainDataAccessConsentInfo(_messages.Message):
   r"""The enforcing consent's metadata.
 
@@ -2457,6 +2508,50 @@ class Expr(_messages.Message):
   expression = _messages.StringField(2)
   location = _messages.StringField(3)
   title = _messages.StringField(4)
+
+
+class Expression(_messages.Message):
+  r"""A FHIRPath expression.
+
+  Fields:
+    fhirpathExpression: Required. FHIRPath expression used for evaluation
+      against FHIR resources. Must be in the format
+      `[/"Resource"/"DomainResource"].[expression]` Expressions are applied
+      per single FHIR resource, so they can't span multiple base resource
+      types. For example, expressions like `Patient.union(Encounter)` are
+      invalid. For expressions involving more than one resource or resource
+      type, consider using the FHIRPath `resolve()` method. Expressions are
+      only allowed to evaluate to a boolean type or a single or collection of
+      [FHIR.Resource](https://hl7.org/fhir/resource.html) types. Expressions
+      evaluating to boolean would include the base resource in the result if
+      the expression evaluates to `true`. Expressions evaluating to one or
+      more FHIR.Resource types will include those resources in the result,
+      e.g. `CareTeam.member.resolve()`.
+    label: Optional. Expressions with the same label will be grouped together
+      under the same directory when exporting to Cloud Storage.
+  """
+
+  fhirpathExpression = _messages.StringField(1)
+  label = _messages.StringField(2)
+
+
+class FHIRPathQuery(_messages.Message):
+  r"""A set of FHIRPath expressions that are used to filter the FHIR
+  resources. These expressions do not maintain referential integrity on the
+  resulting resources. Users are responsible for making sure the expressions
+  are written in a way to ensure that if desired.
+
+  Fields:
+    engineVersion: Optional. FHIRPath engine version number, for example
+      "1.0". Will use the latest version if not specified. For more details
+      about the supported versions, see https://cloud.google.com/healthcare-
+      api/private/docs/how-tos/fhir-execute-cohort#fhirpath-engine-versions.
+    expressions: Required. List of FHIRPath expressions used for filtering the
+      data.
+  """
+
+  engineVersion = _messages.StringField(1)
+  expressions = _messages.MessageField('Expression', 2, repeated=True)
 
 
 class Feature(_messages.Message):
@@ -5269,6 +5364,22 @@ class HealthcareProjectsLocationsDatasetsFhirStoresDeleteRequest(_messages.Messa
   """
 
   name = _messages.StringField(1, required=True)
+
+
+class HealthcareProjectsLocationsDatasetsFhirStoresExecuteCohortRequest(_messages.Message):
+  r"""A HealthcareProjectsLocationsDatasetsFhirStoresExecuteCohortRequest
+  object.
+
+  Fields:
+    executeCohortRequest: A ExecuteCohortRequest resource to be passed as the
+      request body.
+    name: Required. The name of the FHIR store to query, in the format `projec
+      ts/{project_id}/locations/{location_id}/datasets/{dataset_id}/fhirStores
+      /{fhir_store_id}`.
+  """
+
+  executeCohortRequest = _messages.MessageField('ExecuteCohortRequest', 1)
+  name = _messages.StringField(2, required=True)
 
 
 class HealthcareProjectsLocationsDatasetsFhirStoresExplainDataAccessRequest(_messages.Message):

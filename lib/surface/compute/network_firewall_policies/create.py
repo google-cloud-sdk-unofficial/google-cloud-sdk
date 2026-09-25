@@ -108,6 +108,7 @@ class CreateBeta(Create):
   """
 
   support_falcon_policy_type = True
+  support_policy_source = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

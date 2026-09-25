@@ -23,6 +23,7 @@ from googlecloudsdk.command_lib.compute.interconnects import flags
 
 @base.UniverseCompatible
 @base.ReleaseTracks(
+    base.ReleaseTrack.BETA,
     base.ReleaseTrack.ALPHA,
 )
 class InterconnectSetName(base.SilentCommand):

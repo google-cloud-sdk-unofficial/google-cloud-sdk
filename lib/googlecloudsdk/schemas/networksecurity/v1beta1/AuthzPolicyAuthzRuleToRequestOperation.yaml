@@ -39,10 +39,10 @@ properties:
       $ref: AuthzPolicyAuthzRuleStringMatch.yaml
   mcp:
     description: |-
-      Optional. Defines the MCP protocol attributes to match on. If the MCP
-      payload in the request body cannot be successfully parsed, the
-      request will be denied. This field can be set only for AuthzPolicies
-      targeting AgentGateway resources.
+      Defines the MCP protocol attributes to match on. If the MCP payload in
+      the request body cannot be successfully parsed, the request will be
+      denied. This field can be set only for AuthzPolicies targeting
+      AgentGateway resources.
     $ref: AuthzPolicyAuthzRuleToRequestOperationMCP.yaml
   methods:
     description: |-
@@ -66,11 +66,12 @@ properties:
       $ref: AuthzPolicyAuthzRuleStringMatch.yaml
   snis:
     description: |-
-      A list of SNIs to match against. The match can be one of exact, prefix,
-      suffix, or contains (substring match). If there is no SNI (i.e. plaintext
-      HTTP traffic), the request will be denied. Matches are always case
-      sensitive unless the ignoreCase is set. Limited to 10 SNIs per
-      Authorization Policy.
+      A list of SNIs to match against. The match can be one of
+      exact, prefix, suffix, or contains (substring match). If there
+      is no SNI (i.e. plaintext HTTP traffic), the request will be
+      denied. Matches are always case sensitive unless the
+      ignoreCase is set. Limited to 10 SNIs per Authorization
+      Policy.
     type: array
     items:
       $ref: AuthzPolicyAuthzRuleStringMatch.yaml

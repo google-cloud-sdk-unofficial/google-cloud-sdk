@@ -20,6 +20,7 @@ import sys
 from googlecloudsdk.api_lib.services import services_util
 from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.services import common_flags
 
 
@@ -77,6 +78,16 @@ class ListAlpha(base.ListCommand):
         ),
     )
 
+    parser.add_argument(
+        '--show-details',
+        action='store_true',
+        hidden=True,
+        help=(
+            'Show details about inheritance and catalog. Can only be used'
+            ' with the `--enabled` flag.'
+        ),
+    )
+
     common_flags.add_resource_args(parser)
 
     base.PAGE_SIZE_FLAG.SetDefault(parser, 1000)
@@ -86,8 +97,7 @@ class ListAlpha(base.ListCommand):
 
     parser.display_info.AddFormat("""
         table(
-            name:label=NAME:sort=1,
-            title
+            name:label=NAME:sort=1
         )
       """)
 
@@ -101,14 +111,20 @@ class ListAlpha(base.ListCommand):
     Returns:
       The list of services for this project.
     """
+    if args.available and args.show_details:
+      raise calliope_exceptions.ConflictingArgumentsException(
+          '--show-details', '--available'
+      )
+
     # Default mode is --enabled, so if no flags were specified,
     # turn on the args.enabled flag.
     if not (args.enabled or args.available):
       args.enabled = True
-    if args.IsSpecified('project'):
-      project = args.project
-    else:
-      project = services_util.GetValidatedProject(args.project)
+    project = (
+        services_util.GetValidatedProject(args.project)
+        if not (args.IsSpecified('folder') or args.IsSpecified('organization'))
+        else None
+    )
     if args.IsSpecified('folder'):
       folder = args.folder
     else:
@@ -123,14 +139,26 @@ class ListAlpha(base.ListCommand):
     else:
       limit = sys.maxsize
 
-    return serviceusage.ListServicesV2Beta(
+    result = serviceusage.ListServicesV2Beta(
         project,
         args.enabled,
         args.page_size,
         limit,
         folder=folder,
         organization=organization,
+        show_details=args.show_details,
     )
+
+    if args.show_details:
+      args.GetDisplayInfo().AddFormat("""
+          table(
+              name:label=NAME:sort=1,
+              inheritance:label=INHERITANCE,
+              catalog:label=CATALOG
+          )
+      """)
+
+    return result
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

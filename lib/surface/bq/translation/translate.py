@@ -14,8 +14,6 @@
 # limitations under the License.
 """Implements command to translate a SQL query."""
 
-import functools
-import json
 import os
 import typing
 
@@ -26,6 +24,7 @@ from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bq import command_utils
+from googlecloudsdk.command_lib.bq import translation_utils as utils
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -33,71 +32,6 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core import yaml
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
-
-
-@functools.cache
-def _get_dialect_registry():
-  """Gets dialect registry: input_dialects, output_dialects, dialect_pairs.
-
-  The mapping is loaded from a JSON resource file.
-
-  Returns:
-    A dict with dialect registry.
-
-  Raises:
-    exceptions.Error: If the dialect registry fails to load.
-  """
-  try:
-    file_path = os.path.join(os.path.dirname(__file__), 'dialect_registry.json')
-    registry = json.loads(files.ReadFileContents(file_path))
-    return registry
-  except Exception as e:
-    raise exceptions.Error(f'Failed to load dialect registry: {e}')
-
-
-def _get_task_type(source_dialect: str, target_dialect: str) -> str:
-  """Returns the migration task type based on the source dialect."""
-  registry = _get_dialect_registry()
-  source_dialect_map = {}
-  for dialect in registry.get('input_dialects', []):
-    legacy_name = dialect.get('legacy_batch_name')
-    name = dialect.get('name')
-    if legacy_name:
-      if name:
-        source_dialect_map[name.lower()] = legacy_name
-      source_dialect_map[legacy_name.lower()] = legacy_name
-    elif name:
-      source_dialect_map[name.lower()] = name
-  source_legacy_batch_name = source_dialect_map.get(
-      source_dialect.lower(), source_dialect
-  )
-  target_dialect_map = {}
-  for dialect in registry.get('output_dialects', []):
-    legacy_name = dialect.get('legacy_batch_name')
-    name = dialect.get('name')
-    if legacy_name:
-      if name:
-        target_dialect_map[name.lower()] = legacy_name
-      target_dialect_map[legacy_name.lower()] = legacy_name
-    elif name:
-      target_dialect_map[name.lower()] = name
-  target_legacy_batch_name = target_dialect_map.get(
-      target_dialect.lower(), target_dialect
-  )
-  task_type = (
-      f'{source_legacy_batch_name}2{target_legacy_batch_name}_Translation'
-  )
-  valid_task_type = False
-  for pair in registry['dialect_pairs']:
-    if task_type in pair.get('legacy_batch_name', []):
-      valid_task_type = True
-      break
-  if not valid_task_type:
-    raise exceptions.Error(
-        f'Translation from {source_dialect} to {target_dialect} is not'
-        ' supported.'
-    )
-  return task_type
 
 
 def _build_translation_details(
@@ -108,7 +42,7 @@ def _build_translation_details(
     metadata_gcs_uri=None,
     source_ddl_output_file=None,
 ):
-  """Builds the translation details message for the migration task."""
+  """Builds the translation details message for the translation task."""
   target_return_literals = ['sql/query.sql']
   target_types = ['sql']
 
@@ -193,8 +127,8 @@ def _build_migration_workflow(
     metadata_gcs_uri=None,
     source_ddl_output_file=None,
 ):
-  """Builds the migration workflow message and returns it with the task type."""
-  task_type = _get_task_type(source_dialect, target_dialect)
+  """Builds the translation message and returns it with the task type."""
+  task_type = utils.get_task_type(source_dialect, target_dialect)
   translation_details = _build_translation_details(
       messages,
       query,
@@ -222,7 +156,7 @@ def _build_migration_workflow(
 
 
 def _parse_task_result(wait_response):
-  """Parses the workflow wait response into component task details."""
+  """Parses the wait response into component task details."""
   translated_sql = None
   explanation = None
   generated_ddl = None
@@ -329,7 +263,7 @@ def _handle_task_failure(wait_response, result_task):
 
 
 def _process_workflow_result(wait_response, task_type, args):
-  """Processes the completed workflow and handles output/logging."""
+  """Processes the completed translation and handles output/logging."""
   (
       result_task,
       translated_sql,
@@ -534,7 +468,7 @@ To translate a Snowflake query from a file and save the output and logs to files
     wait_response = waiter.WaitFor(
         poller=poller,
         operation_ref=workflow_ref,
-        message='Running translation workflow [{}]'.format(response.name),
+        message='Running translation [{}]'.format(response.name),
     )
 
     return _process_workflow_result(wait_response, task_type, args)

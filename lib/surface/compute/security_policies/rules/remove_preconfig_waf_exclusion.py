@@ -55,7 +55,8 @@ class RemovePreconfigWafExclusionHelper(object):
        \
        --request-header-to-exclude=op=EQUALS,val=abc \
        --request-header-to-exclude=op=STARTS_WITH,val=xyz \
-       --request-uri-to-exclude=op=EQUALS_ANY
+       --request-uri-to-exclude=op=EQUALS_ANY \
+       --request-body-to-exclude=op=CONTAINS,val=bad_data
 
   To remove all the request field exclusions that are associated with the target
   of 'sqli-stable': ['owasp-crs-v030001-id942110-sqli',
@@ -82,7 +83,7 @@ class RemovePreconfigWafExclusionHelper(object):
   """
 
   @classmethod
-  def Args(cls, parser, support_request_body_to_exclude=False):
+  def Args(cls, parser):
     """Generates the flagset for a RemovePreconfigWafExclusion command."""
     cls.NAME_ARG = flags.PriorityArgument(
         'remove the exclusion configuration for preconfigured WAF evaluation'
@@ -107,8 +108,7 @@ class RemovePreconfigWafExclusionHelper(object):
     flags.AddRequestCookie(parser=parser, is_add=False)
     flags.AddRequestQueryParam(parser=parser, is_add=False)
     flags.AddRequestUri(parser=parser, is_add=False)
-    if support_request_body_to_exclude:
-      flags.AddRequestBody(parser=parser, is_add=False)
+    flags.AddRequestBody(parser=parser, is_add=False)
 
   @classmethod
   def _IsIdenticalTarget(cls,
@@ -269,26 +269,21 @@ class RemovePreconfigWafExclusionHelper(object):
   @classmethod
   def Run(cls, release_track, args):
     """Validates arguments and patches a security policy rule."""
-    support_request_body = release_track in [
-        base.ReleaseTrack.ALPHA,
-        base.ReleaseTrack.BETA,
-    ]
     if args.target_rule_set == '*':
-      if (args.IsSpecified('target_rule_ids') or
-          args.IsSpecified('request_header_to_exclude') or
-          args.IsSpecified('request_cookie_to_exclude') or
-          args.IsSpecified('request_query_param_to_exclude') or
-          args.IsSpecified('request_uri_to_exclude') or
-          (support_request_body and
-           args.IsSpecified('request_body_to_exclude'))):
+      if (
+          args.IsSpecified('target_rule_ids')
+          or args.IsSpecified('request_header_to_exclude')
+          or args.IsSpecified('request_cookie_to_exclude')
+          or args.IsSpecified('request_query_param_to_exclude')
+          or args.IsSpecified('request_uri_to_exclude')
+          or args.IsSpecified('request_body_to_exclude')
+      ):
         msg = (
             'Arguments in [--target-rule-ids, --request-header-to-exclude, '
             '--request-cookie-to-exclude, --request-query-param-to-exclude, '
-            '--request-uri-to-exclude'
+            '--request-uri-to-exclude, --request-body-to-exclude] cannot be '
+            'specified when --target-rule-set is set to *.'
         )
-        if support_request_body:
-          msg += ', --request-body-to-exclude'
-        msg += '] cannot be specified when --target-rule-set is set to *.'
         raise exceptions.InvalidArgumentException('target-rule-set', msg)
 
     for request_fields in [
@@ -373,7 +368,8 @@ class RemovePreconfigWafExclusionGA(base.UpdateCommand):
        \
        --request-header-to-exclude=op=EQUALS,val=abc \
        --request-header-to-exclude=op=STARTS_WITH,val=xyz \
-       --request-uri-to-exclude=op=EQUALS_ANY
+       --request-uri-to-exclude=op=EQUALS_ANY \
+       --request-body-to-exclude=op=CONTAINS,val=bad_data
 
   To remove all the request field exclusions that are associated with the target
   of 'sqli-stable': ['owasp-crs-v030001-id942110-sqli',
@@ -472,13 +468,6 @@ class RemovePreconfigWafExclusionBeta(RemovePreconfigWafExclusionGA):
        --security-policy=my-policy \
        --target-rule-set=*
   """
-
-  @classmethod
-  def Args(cls, parser):
-    RemovePreconfigWafExclusionHelper.Args(
-        parser,
-        support_request_body_to_exclude=True,
-    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

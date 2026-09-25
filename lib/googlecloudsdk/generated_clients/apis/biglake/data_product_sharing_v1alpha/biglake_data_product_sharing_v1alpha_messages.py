@@ -184,10 +184,23 @@ class UnpublishDataProductRequest(_messages.Message):
   r"""Request message for UnpublishDataProduct.
 
   Fields:
+    dataProduct: Reference to a Knowledge Catalog Data Product.
+    icebergCatalog: Reference to an Iceberg REST Catalog.
+    sapFederatedIdentityProvider: Optional. Internal test override: The
+      Workload Identity Federation (WIF) provider resource name representing
+      SAP's federated identity provider. Example:
+      projects/123456789012/locations/global/workloadIdentityPools/sap-bdc-
+      pool/providers/sap-bdc-provider If not specified, will be retrieved from
+      SAP BDC share metadata if available. If provided along with `source`,
+      table-level WIF IAM permissions (roles/biglake.viewer) granted during
+      publish will be automatically revoked.
     share: Required. The name of the Share to unpublish from SAP BDC.
   """
 
-  share = _messages.StringField(1)
+  dataProduct = _messages.MessageField('DataProductReference', 1)
+  icebergCatalog = _messages.MessageField('IcebergCatalogReference', 2)
+  sapFederatedIdentityProvider = _messages.StringField(3)
+  share = _messages.StringField(4)
 
 
 class UnpublishDataProductResponse(_messages.Message):

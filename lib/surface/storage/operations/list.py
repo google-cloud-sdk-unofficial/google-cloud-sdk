@@ -69,13 +69,14 @@ class List(base.ListCommand):
     )
 
     # Unnecessary and unimplemented flags built into `ListCommand` base class.
-    base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
     if operations_util.is_location_parent_resource(args.parent_resource_name):
       return operations_api.OperationsApi().list(
-          args.parent_resource_name, server_side_filter=args.server_filter
+          args.parent_resource_name,
+          server_side_filter=args.server_filter,
+          page_size=args.page_size,
       )
 
     url_object = storage_url.storage_url_from_string(args.parent_resource_name)

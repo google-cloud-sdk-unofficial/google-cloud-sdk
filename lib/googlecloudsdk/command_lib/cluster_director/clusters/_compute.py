@@ -90,12 +90,16 @@ def _MakeOnDemandComputeResource(
   Returns:
     A message_module.ComputeResource object for on-demand instances.
   """
+  new_on_demand_instances = message_module.NewOnDemandInstancesConfig(
+      zone=instance.get("zone"),
+      machineType=instance.get("machineType"),
+  )
+  tags = instance.get("networkTags")
+  if tags:
+    new_on_demand_instances.networkTags = tags
   return message_module.ComputeResource(
       config=message_module.ComputeResourceConfig(
-          newOnDemandInstances=message_module.NewOnDemandInstancesConfig(
-              zone=instance.get("zone"),
-              machineType=instance.get("machineType"),
-          ),
+          newOnDemandInstances=new_on_demand_instances,
       ),
   )
 
@@ -112,13 +116,17 @@ def _MakeSpotComputeResource(
   Returns:
     A message_module.ComputeResource object for spot instances.
   """
+  new_spot_instances = message_module.NewSpotInstancesConfig(
+      zone=instance.get("zone"),
+      machineType=instance.get("machineType"),
+      terminationAction=instance.get("terminationAction"),
+  )
+  tags = instance.get("networkTags")
+  if tags:
+    new_spot_instances.networkTags = tags
   return message_module.ComputeResource(
       config=message_module.ComputeResourceConfig(
-          newSpotInstances=message_module.NewSpotInstancesConfig(
-              zone=instance.get("zone"),
-              machineType=instance.get("machineType"),
-              terminationAction=instance.get("terminationAction"),
-          ),
+          newSpotInstances=new_spot_instances,
       ),
   )
 
@@ -155,33 +163,29 @@ def _MakeReservedComputeResource(
         " reservationSubBlock must be provided for reserved instances."
     )
   if reservation:
-    return message_module.ComputeResource(
-        config=message_module.ComputeResourceConfig(
-            newReservedInstances=message_module.NewReservedInstancesConfig(
-                reservation=_GetReservationName(cluster_ref, reservation),
-            ),
-        ),
+    new_reserved_instances = message_module.NewReservedInstancesConfig(
+        reservation=_GetReservationName(cluster_ref, reservation),
     )
   elif reservation_block:
-    return message_module.ComputeResource(
-        config=message_module.ComputeResourceConfig(
-            newReservedInstances=message_module.NewReservedInstancesConfig(
-                reservationBlock=_GetReservationName(
-                    cluster_ref, reservation_block
-                ),
-            ),
+    new_reserved_instances = message_module.NewReservedInstancesConfig(
+        reservationBlock=_GetReservationName(
+            cluster_ref, reservation_block
         ),
     )
   else:
-    return message_module.ComputeResource(
-        config=message_module.ComputeResourceConfig(
-            newReservedInstances=message_module.NewReservedInstancesConfig(
-                reservationSubBlock=_GetReservationName(
-                    cluster_ref, reservation_sub_block
-                ),
-            ),
+    new_reserved_instances = message_module.NewReservedInstancesConfig(
+        reservationSubBlock=_GetReservationName(
+            cluster_ref, reservation_sub_block
         ),
     )
+  tags = instance.get("networkTags")
+  if tags:
+    new_reserved_instances.networkTags = tags
+  return message_module.ComputeResource(
+      config=message_module.ComputeResourceConfig(
+          newReservedInstances=new_reserved_instances,
+      ),
+  )
 
 
 def _MakeFlexStartComputeResource(
@@ -196,13 +200,17 @@ def _MakeFlexStartComputeResource(
   Returns:
     A message_module.ComputeResource object for flex start instances.
   """
+  new_flex_start_instances = message_module.NewFlexStartInstancesConfig(
+      zone=instance.get("zone"),
+      machineType=instance.get("machineType"),
+      maxDuration=instance.get("maxDuration"),
+  )
+  tags = instance.get("networkTags")
+  if tags:
+    new_flex_start_instances.networkTags = tags
   return message_module.ComputeResource(
       config=message_module.ComputeResourceConfig(
-          newFlexStartInstances=message_module.NewFlexStartInstancesConfig(
-              zone=instance.get("zone"),
-              machineType=instance.get("machineType"),
-              maxDuration=instance.get("maxDuration"),
-          ),
+          newFlexStartInstances=new_flex_start_instances,
       ),
   )
 

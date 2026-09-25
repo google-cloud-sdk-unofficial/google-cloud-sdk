@@ -25,6 +25,10 @@
 
           $ {command} my-cci-aws --activation-key ABC1234 --network default
 
+        To create a transport with an NCC hub:
+
+          $ {command} my-cci-aws --bandwidth 1G --profile aws-us-east-1 --remote-account-id 12345 --hub projects/12345/locations/us-central1/hubs/my-hub --auto-accept
+
   output:
     format: yaml
 
@@ -65,7 +69,6 @@
               transport.network: "{__relative_name__}"
           help_text: VPC that will be peered to the provider via the Transport.
         - group:
-            release_tracks: [BETA]
             help_text: Parameters for creating a transport with an NCC hub.
             required: false
             mutex: false

@@ -106,6 +106,8 @@ class FeatureConfigApi:
       raise errors.CloudApiError(
           f'Operation [{operation.name}] finished without returning a result.'
       )
+    if not has_result:
+      return None
     return result
 
   def create_feature_config(

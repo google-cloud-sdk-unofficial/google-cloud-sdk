@@ -1557,6 +1557,25 @@ class PubSubLiteExportConfig(_messages.Message):
   topic = _messages.StringField(3)
 
 
+class PublishOperation(_messages.Message):
+  r"""Telemetry about a `Publish` operation which may or may not be common
+  across individual RPCs.
+
+  Fields:
+    hedgedAttemptCount: Optional. If the publisher client is using publish
+      hedging, provides the attempt count for the hedge (starting at 1). A
+      value of 0 indicates that the request was not hedged.
+    publishStartTime: Optional. Time at which the `publish()` call was
+      initiated in the client library, meaning across all RPC retry attempts,
+      see [grpc retries](https://grpc.io/docs/guides/retry/). Provides a sense
+      of the end-to-end publish duration from the client perspective, across
+      retries.
+  """
+
+  hedgedAttemptCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  publishStartTime = _messages.StringField(2)
+
+
 class PublishRequest(_messages.Message):
   r"""Request for the Publish method.
 
@@ -1577,6 +1596,18 @@ class PublishResponse(_messages.Message):
   """
 
   messageIds = _messages.StringField(1, repeated=True)
+
+
+class PubsubClientTelemetry(_messages.Message):
+  r"""Client-side telemetry about Pub/Sub requests, useful for debugging
+  purposes. If the client opts to provide this information, it will be passed
+  as a serialized proto in the `x-goog-pubsub-client-telemetry` header.
+
+  Fields:
+    publishOperation: Optional. Telemetry about a `Publish` operation.
+  """
+
+  publishOperation = _messages.MessageField('PublishOperation', 1)
 
 
 class PubsubMessage(_messages.Message):

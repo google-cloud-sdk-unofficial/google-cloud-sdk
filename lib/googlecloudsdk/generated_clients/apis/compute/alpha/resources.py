@@ -128,7 +128,7 @@ class Collections(enum.Enum):
       '{+folder}/global/vmExtensionPolicies/{globalVmExtensionPolicy}',
       {
           '':
-              'folders/{foldersId}/global/vmExtensionPolicies/'
+              'folders/{folder}/global/vmExtensionPolicies/'
               '{globalVmExtensionPolicy}',
       },
       ['folder', 'globalVmExtensionPolicy'],
@@ -139,7 +139,7 @@ class Collections(enum.Enum):
       '{+folder}/zones/{zone}/vmExtensionPolicies/{vmExtensionPolicy}',
       {
           '':
-              'folders/{foldersId}/zones/{zone}/vmExtensionPolicies/'
+              'folders/{folder}/zones/{zone}/vmExtensionPolicies/'
               '{vmExtensionPolicy}',
       },
       ['folder', 'zone', 'vmExtensionPolicy'],
@@ -511,7 +511,7 @@ class Collections(enum.Enum):
       '{+organization}/global/vmExtensionPolicies/{globalVmExtensionPolicy}',
       {
           '':
-              'organizations/{organizationsId}/global/vmExtensionPolicies/'
+              'organizations/{organization}/global/vmExtensionPolicies/'
               '{globalVmExtensionPolicy}',
       },
       ['organization', 'globalVmExtensionPolicy'],
@@ -561,8 +561,8 @@ class Collections(enum.Enum):
       '{+organization}/zones/{zone}/vmExtensionPolicies/{vmExtensionPolicy}',
       {
           '':
-              'organizations/{organizationsId}/zones/{zone}/'
-              'vmExtensionPolicies/{vmExtensionPolicy}',
+              'organizations/{organization}/zones/{zone}/vmExtensionPolicies/'
+              '{vmExtensionPolicy}',
       },
       ['organization', 'zone', 'vmExtensionPolicy'],
       True

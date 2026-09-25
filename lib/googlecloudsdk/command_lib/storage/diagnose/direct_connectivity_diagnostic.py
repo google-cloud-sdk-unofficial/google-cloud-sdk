@@ -41,6 +41,7 @@ _METADATA_BASE_URL = (  # gcloud-disable-gdu-domain
 _METADATA_ZONE_URL = _METADATA_BASE_URL + 'zone'
 _METADATA_MTU_URL = _METADATA_BASE_URL + 'network-interfaces/0/mtu'
 _METADATA_NETWORK_URL = _METADATA_BASE_URL + 'network-interfaces/0/network'
+_METADATA_SERVICE_ACCOUNTS_URL = _METADATA_BASE_URL + 'service-accounts/'
 
 
 def _get_metadata_service_response(url):
@@ -79,21 +80,21 @@ def _check_zone_prefix(region, zone):
   return zone.lower().startswith(region.lower())
 
 
-def _exec_and_return_stdout(command):
-  """Returns standard output from executing a command."""
+def _exec_and_return_code_and_stdout(command):
+  """Returns exit code and standard output from executing a command."""
   out = io.StringIO()
-  execution_utils.Exec(
+  ret_code = execution_utils.Exec(
       command,
       no_exit=True,
       out_func=out.write,
   )
-  return out.getvalue().strip()
+  return ret_code, out.getvalue().strip()
 
 
-def _exec_gcloud_and_return_stdout(command_args):
-  """Returns standard output from executing gcloud command."""
+def _exec_gcloud_and_return_code_and_stdout(command_args):
+  """Returns exit code and standard output from executing gcloud command."""
   command = execution_utils.ArgsForGcloud() + command_args
-  return _exec_and_return_stdout(command)
+  return _exec_and_return_code_and_stdout(command)
 
 
 def _get_zone():
@@ -231,11 +232,15 @@ class DirectConnectivityDiagnostic(diagnostic.Diagnostic):
         'storage.googleapis.com',
         # gcloud-disable-gdu-domain
     ) + _get_ips('directpath-pa.googleapis.com', 'Traffic Director')
-    firewall_response = json.loads(
-        _exec_gcloud_and_return_stdout(
-            ['compute', 'firewall-rules', 'list', '--format=json']
-        )
+    ret_code, stdout = _exec_gcloud_and_return_code_and_stdout(
+        ['compute', 'firewall-rules', 'list', '--format=json']
     )
+    if ret_code != 0:
+      return 'Could not retrieve firewall rules. See STDERR messages.'
+    try:
+      firewall_response = json.loads(stdout)
+    except (ValueError, json.JSONDecodeError):
+      return 'Could not parse firewall rules response.'
     found_any_problem = False
     for firewall in firewall_response:
       if firewall['direction'] != 'EGRESS' or firewall['disabled']:
@@ -335,18 +340,10 @@ class DirectConnectivityDiagnostic(diagnostic.Diagnostic):
 
   def _check_vm_has_service_account(self):
     """Checks if VM has a service account."""
-    if not self._vm_zone:
-      return 'Found no VM zone and, therefore, could not check service account.'
-    service_accounts = _exec_gcloud_and_return_stdout([
-        'compute',
-        'instances',
-        'describe',
-        socket.gethostname(),
-        '--zone={}'.format(self._vm_zone),
-        '--format=table[csv,no-heading](serviceAccounts)',
-    ])
-    if service_accounts and service_accounts.startswith('[{'):
-      # VM with SA will respond with a string like: "[{'email': ..."
+    service_accounts = _get_metadata_service_response(
+        _METADATA_SERVICE_ACCOUNTS_URL
+    )
+    if service_accounts and service_accounts.strip():
       return _SUCCESS
     return (
         'Compute VM missing service account. See: '

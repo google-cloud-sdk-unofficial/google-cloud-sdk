@@ -23,8 +23,8 @@ from googlecloudsdk.command_lib.tasks import parsers
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateHttp(base.CreateCommand):
   """Create and add a task that targets a HTTP endpoint."""
   detailed_help = {
@@ -41,27 +41,79 @@ class CreateHttp(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddCreateHttpTaskFlags(parser)
+    flags.AddCreateHttpTaskFlags(parser, release_track=base.ReleaseTrack.GA)
     flags.AddLocationFlag(parser)
 
   def Run(self, args):
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      # This functionality doesn't exist in the alpha API so use beta.
-      api_release_track = base.ReleaseTrack.BETA
-    else:
-      api_release_track = self.ReleaseTrack()
-
-    api = GetApiAdapter(api_release_track)
+    api = GetApiAdapter(self.ReleaseTrack())
     tasks_client = api.tasks
     queue_ref = parsers.ParseQueue(args.queue, args.location)
     task_ref = parsers.ParseTask(args.task,
                                  queue_ref) if args.task else None
     task_config = parsers.ParseCreateTaskArgs(
         args, constants.HTTP_TASK, api.messages,
-        release_track=api_release_track)
+        release_track=self.ReleaseTrack())
     create_response = tasks_client.Create(
         queue_ref, task_ref,
         schedule_time=task_config.scheduleTime,
         http_request=task_config.httpRequest)
     log.CreatedResource(create_response.name, 'task')
     return create_response
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class BetaCreateHttp(CreateHttp):
+  """Create and add a task that targets a HTTP endpoint."""
+
+  @staticmethod
+  def Args(parser):
+    flags.AddCreateHttpTaskFlags(parser, release_track=base.ReleaseTrack.BETA)
+    flags.AddLocationFlag(parser)
+
+  def Run(self, args):
+    api = GetApiAdapter(self.ReleaseTrack())
+    tasks_client = api.tasks
+    queue_ref = parsers.ParseQueue(args.queue, args.location)
+    task_ref = parsers.ParseTask(args.task,
+                                 queue_ref) if args.task else None
+    task_config = parsers.ParseCreateTaskArgs(
+        args, constants.HTTP_TASK, api.messages,
+        release_track=self.ReleaseTrack())
+    create_response = tasks_client.Create(
+        queue_ref, task_ref,
+        schedule_time=task_config.scheduleTime,
+        http_request=task_config.httpRequest,
+        retry_config=getattr(task_config, 'retryConfig', None))
+    log.CreatedResource(create_response.name, 'task')
+    return create_response
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaCreateHttp(CreateHttp):
+  """Create and add a task that targets a HTTP endpoint."""
+
+  @staticmethod
+  def Args(parser):
+    flags.AddCreateHttpTaskFlags(parser, release_track=base.ReleaseTrack.ALPHA)
+    flags.AddLocationFlag(parser)
+
+  def Run(self, args):
+    # This functionality doesn't exist in the alpha API so use beta.
+    api = GetApiAdapter(base.ReleaseTrack.BETA)
+    tasks_client = api.tasks
+    queue_ref = parsers.ParseQueue(args.queue, args.location)
+    task_ref = parsers.ParseTask(args.task,
+                                 queue_ref) if args.task else None
+    task_config = parsers.ParseCreateTaskArgs(
+        args, constants.HTTP_TASK, api.messages,
+        release_track=base.ReleaseTrack.BETA)
+    create_response = tasks_client.Create(
+        queue_ref, task_ref,
+        schedule_time=task_config.scheduleTime,
+        http_request=task_config.httpRequest,
+        retry_config=getattr(task_config, 'retryConfig', None))
+    log.CreatedResource(create_response.name, 'task')
+    return create_response
+

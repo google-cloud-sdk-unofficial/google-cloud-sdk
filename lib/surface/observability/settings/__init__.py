@@ -18,7 +18,7 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class Settings(base.Group):
   """Manage Observability settings."""

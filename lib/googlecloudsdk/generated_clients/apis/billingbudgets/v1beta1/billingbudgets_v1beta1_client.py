@@ -13,7 +13,7 @@ class BillingbudgetsV1beta1(base_api.BaseApiClient):
   MTLS_BASE_URL = 'https://billingbudgets.mtls.googleapis.com/'
 
   _PACKAGE = 'billingbudgets'
-  _SCOPES = ['https://www.googleapis.com/auth/cloud-billing', 'https://www.googleapis.com/auth/cloud-platform']
+  _SCOPES = ['https://www.googleapis.com/auth/cloud-platform']
   _VERSION = 'v1beta1'
   _CLIENT_ID = 'CLIENT_ID'
   _CLIENT_SECRET = 'CLIENT_SECRET'

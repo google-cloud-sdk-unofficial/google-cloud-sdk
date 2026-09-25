@@ -14,7 +14,8 @@
 # limitations under the License.
 """Utilities for the GCP Device Cloud (device-run) API."""
 
-from typing import Any
+from collections.abc import Iterator
+from typing import Any, Optional
 
 from apitools.base.py import encoding
 from apitools.base.py import list_pager
@@ -215,6 +216,44 @@ class DevicesClient(DeviceRunClient):
         batch_size=page_size,
         limit=limit,
         field='devices',
+        batch_size_attribute='pageSize',
+    )
+
+
+class SoftwareVersionsClient(DeviceRunClient):
+  """Client for the Software Versions service under Device Run API."""
+
+  def __init__(self, api_version: str = 'v1alpha'):
+    super(SoftwareVersionsClient, self).__init__(api_version)
+    self._service = self.client.projects_locations_softwareVersions
+
+  def Get(self, software_version_ref: resources.Resource) -> Any:
+    """Gets information about a specific software version."""
+    request = (
+        self.messages.DevicerunProjectsLocationsSoftwareVersionsGetRequest(
+            name=software_version_ref.RelativeName()
+        )
+    )
+    return self._service.Get(request)
+
+  def List(
+      self,
+      location_ref: resources.Resource,
+      limit: Optional[int] = None,
+      page_size: int = 100,
+  ) -> Iterator[Any]:
+    """Lists software versions."""
+    request = (
+        self.messages.DevicerunProjectsLocationsSoftwareVersionsListRequest(
+            parent=location_ref.RelativeName(),
+        )
+    )
+    return list_pager.YieldFromList(
+        self._service,
+        request,
+        batch_size=page_size,
+        limit=limit,
+        field='softwareVersions',
         batch_size_attribute='pageSize',
     )
 

@@ -14,6 +14,18 @@
 # limitations under the License.
 """Run constants."""
 
+import enum
+
+
+class WorkloadType(enum.Enum):
+  """The type of the Cloud Run deployment."""
+
+  WORKER_POOL = 'worker_pool'
+  JOB = 'job'
+  SERVICE = 'service'
+  INSTANCE = 'instance'
+
+
 # Common field names in Cloud Run (K8s-style) resources.
 METADATA = 'metadata'
 NAMESPACE = 'namespace'

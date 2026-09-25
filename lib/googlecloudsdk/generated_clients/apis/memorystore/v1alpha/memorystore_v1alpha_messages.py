@@ -2482,8 +2482,8 @@ class Instance(_messages.Message):
   r"""A Memorystore instance.
 
   Enums:
-    AuthorizationModeValueValuesEnum: Optional. Immutable. Authorization mode
-      of the instance.
+    AuthorizationModeValueValuesEnum: Optional. Authorization mode of the
+      instance.
     ModeValueValuesEnum: Optional. Immutable. The mode config for the
       instance.
     NodeTypeValueValuesEnum: Optional. Machine type for individual nodes of
@@ -2510,8 +2510,7 @@ class Instance(_messages.Message):
       endpoints that are created and registered by customers can be deleted
       asynchronously. That is, such an instance endpoint can be de-registered
       before the forwarding rules in the instance endpoint are deleted.
-    authorizationMode: Optional. Immutable. Authorization mode of the
-      instance.
+    authorizationMode: Optional. Authorization mode of the instance.
     automatedBackupConfig: Optional. The automated backup config for the
       instance.
     availableMaintenanceVersions: Output only. This field is used to determine
@@ -2595,7 +2594,7 @@ class Instance(_messages.Message):
   """
 
   class AuthorizationModeValueValuesEnum(_messages.Enum):
-    r"""Optional. Immutable. Authorization mode of the instance.
+    r"""Optional. Authorization mode of the instance.
 
     Values:
       AUTHORIZATION_MODE_UNSPECIFIED: Not set.

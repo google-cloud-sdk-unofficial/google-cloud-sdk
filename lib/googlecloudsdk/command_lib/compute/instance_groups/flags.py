@@ -323,43 +323,47 @@ def CreateGroupReference(client, resources, args):
       args, resources, default_scope=default_scope,
       scope_lister=scope_lister)
 
+_COLOR_BLUE = 'blue'
+_COLOR_GREEN = 'green'
+_COLOR_RED = 'red'
+_COLOR_YELLOW = 'yellow'
+
 _ACTION_COLOR_MAP = {
-    'CREATING_ATOMICALLY': 'blue',
-    'CREATING_IN_BULK': 'blue',
-    'QUEUING': 'blue',
-    'ABANDONING': 'yellow',
-    'ADOPTING': 'yellow',
-    'CREATING': 'yellow',
-    'CREATING_WITHOUT_RETRIES': 'yellow',
-    'DELETING': 'yellow',
-    'RECREATING': 'yellow',
-    'REFRESHING': 'yellow',
-    'RESTARTING': 'yellow',
-    'RESTARTING_IN_PLACE': 'yellow',
-    'RESUMING': 'yellow',
-    'STARTING': 'yellow',
-    'STOPPING': 'yellow',
-    'SUSPENDING': 'yellow',
-    'VERIFYING': 'yellow',
+    'CREATING_ATOMICALLY': _COLOR_BLUE,
+    'CREATING_IN_BULK': _COLOR_BLUE,
+    'QUEUING': _COLOR_BLUE,
+    'ADOPTING': _COLOR_BLUE,
+    'CREATING': _COLOR_BLUE,
+    'CREATING_WITHOUT_RETRIES': _COLOR_BLUE,
+    'RESTARTING': _COLOR_BLUE,
+    'RESTARTING_IN_PLACE': _COLOR_BLUE,
+    'RESUMING': _COLOR_BLUE,
+    'STARTING': _COLOR_BLUE,
+    'VERIFYING': _COLOR_BLUE,
+    'RECREATING': _COLOR_YELLOW,
+    'REFRESHING': _COLOR_YELLOW,
+    'ABANDONING': _COLOR_YELLOW,
+    'STOPPING': _COLOR_YELLOW,
+    'SUSPENDING': _COLOR_YELLOW,
+    'DELETING': _COLOR_RED,
 }
 _STATUS_COLOR_MAP = {
-    'RUNNING': 'green',
-    'PENDING': 'blue',
-    'PENDING_STOP': 'blue',
-    'DEPROVISIONING': 'yellow',
-    'PROVISIONING': 'yellow',
-    'REPAIRING': 'yellow',
-    'STAGING': 'yellow',
-    'STOPPING': 'yellow',
-    'SUSPENDING': 'yellow',
-    'TERMINATED': 'red',
+    'RUNNING': _COLOR_GREEN,
+    'PENDING': _COLOR_BLUE,
+    'PROVISIONING': _COLOR_BLUE,
+    'REPAIRING': _COLOR_BLUE,
+    'STAGING': _COLOR_BLUE,
+    'PENDING_STOP': _COLOR_YELLOW,
+    'DEPROVISIONING': _COLOR_YELLOW,
+    'STOPPING': _COLOR_YELLOW,
+    'SUSPENDING': _COLOR_YELLOW,
+    'TERMINATED': _COLOR_RED,
 }
 _HEALTH_STATE_COLOR_MAP = {
-    'HEALTHY': 'green',
-    'UNKNOWN': 'blue',
-    'DRAINING': 'yellow',
-    'TIMEOUT': 'red',
-    'UNHEALTHY': 'red',
+    'HEALTHY': _COLOR_GREEN,
+    'DRAINING': _COLOR_YELLOW,
+    'TIMEOUT': _COLOR_RED,
+    'UNHEALTHY': _COLOR_RED,
 }
 
 

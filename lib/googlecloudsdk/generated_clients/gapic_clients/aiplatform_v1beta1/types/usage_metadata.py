@@ -93,6 +93,8 @@ class UsageMetadata(proto.Message):
                 Type for Priority Pay-As-You-Go traffic.
             ON_DEMAND_FLEX (4):
                 Type for Flex traffic.
+            ON_DEMAND_OFFPEAK (5):
+                Type for Off-Peak Pay-As-You-Go traffic.
             PROVISIONED_THROUGHPUT (2):
                 Type for Provisioned Throughput traffic.
         """
@@ -100,6 +102,7 @@ class UsageMetadata(proto.Message):
         ON_DEMAND = 1
         ON_DEMAND_PRIORITY = 3
         ON_DEMAND_FLEX = 4
+        ON_DEMAND_OFFPEAK = 5
         PROVISIONED_THROUGHPUT = 2
 
     prompt_token_count: int = proto.Field(

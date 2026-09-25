@@ -17,7 +17,24 @@
 
 from collections.abc import Mapping, Sequence
 import json
+import logging
 from typing import Any
+
+
+def _warn_if_multiple_forwarded_ports(forwarded_ports: Any) -> None:
+  """Warns that only the first port is configured if multiple are specified.
+
+  Args:
+    forwarded_ports: The value of the forwarded ports field from the input data.
+  """
+  if isinstance(forwarded_ports, list) and len(forwarded_ports) > 1:
+    logging.warning(
+        'Multiple forwarded ports specified: %s. Cloud Run only supports a'
+        ' single container port per service. Configuring port %s;'
+        ' additional ports are ignored.',
+        forwarded_ports,
+        forwarded_ports[0],
+    )
 
 
 def translate_network_features(
@@ -45,6 +62,7 @@ def translate_network_features(
       'network.forwardedPorts'
   )
   if forwarded_ports:
+    _warn_if_multiple_forwarded_ports(forwarded_ports)
     output_flags.append(f'--port={forwarded_ports[0]}')
 
   instance_ip_mode = input_data.get(
@@ -97,9 +115,13 @@ def update_service_yaml_with_network(
   network_interface = {}
   if network_name := input_data.get('network.name'):
     network_interface['network'] = network_name
-  if subnetwork_name := input_data.get('network.subnetwork_name'):
+  if subnetwork_name := input_data.get(
+      'network.subnetwork_name'
+  ) or input_data.get('network.subnetworkName'):
     network_interface['subnetwork'] = subnetwork_name
-  if tag_data := input_data.get('network.instance_tag'):
+  if tag_data := input_data.get('network.instance_tag') or input_data.get(
+      'network.instanceTag'
+  ):
     network_interface['tags'] = (
         tag_data if isinstance(tag_data, list) else [tag_data]
     )
@@ -112,16 +134,22 @@ def update_service_yaml_with_network(
   vpc_connector = input_data.get('vpc_access_connector.name') or input_data.get(
       'vpcAccessConnector.name'
   )
-  if vpc_connector:
+  if network_interface and vpc_connector:
+    logging.warning(
+        'Both Direct VPC and VPC Access Connector are specified; Cloud Run does'
+        ' not support both simultaneously. Prioritizing Direct VPC and'
+        ' ignoring VPC Access Connector.'
+    )
+  elif vpc_connector:
     template_annotations['run.googleapis.com/vpc-access-connector'] = (
         vpc_connector
     )
 
-  vpc_egress = input_data.get(
-      'vpc_access_connector.egress_setting'
-  ) or input_data.get('vpcAccessConnector.egressSetting')
-  if vpc_egress:
-    template_annotations['run.googleapis.com/vpc-access-egress'] = vpc_egress
+    vpc_egress = input_data.get(
+        'vpc_access_connector.egress_setting'
+    ) or input_data.get('vpcAccessConnector.egressSetting')
+    if vpc_egress:
+      template_annotations['run.googleapis.com/vpc-access-egress'] = vpc_egress
 
   # 4. Container level settings
   template_spec = template.setdefault('spec', {})
@@ -132,5 +160,6 @@ def update_service_yaml_with_network(
       'network.forwardedPorts'
   )
   if forwarded_ports:
+    _warn_if_multiple_forwarded_ports(forwarded_ports)
     container_ports = container.setdefault('ports', [])
     container_ports.append({'containerPort': int(forwarded_ports[0])})

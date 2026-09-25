@@ -971,6 +971,33 @@ class CloudcommerceconsumerprocurementV1alpha1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Review(self, request, global_params=None):
+      r"""Reviews an Entitlement and generates a token for writing a product review.
+
+      Args:
+        request: (CloudcommerceconsumerprocurementProjectsEntitlementsReviewRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudCommerceConsumerProcurementV1alpha1ReviewEntitlementResponse) The response message.
+      """
+      config = self.GetMethodConfig('Review')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Review.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/entitlements/{entitlementsId}:review',
+        http_method='POST',
+        method_id='cloudcommerceconsumerprocurement.projects.entitlements.review',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}:review',
+        request_field='googleCloudCommerceConsumerProcurementV1alpha1ReviewEntitlementRequest',
+        request_type_name='CloudcommerceconsumerprocurementProjectsEntitlementsReviewRequest',
+        response_type_name='GoogleCloudCommerceConsumerProcurementV1alpha1ReviewEntitlementResponse',
+        supports_download=False,
+    )
+
   class ProjectsFreeTrialsService(base_api.BaseApiService):
     """Service class for the projects_freeTrials resource."""
 

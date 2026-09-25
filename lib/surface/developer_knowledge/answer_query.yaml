@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   hints:
     read_only: true
   help_text:
@@ -28,12 +28,14 @@
 
         $ {command} --query="How do I deploy a Cloud Run function?" --query-filter='data_source = "docs.cloud.google.com"'
 
-# LINT.IfChange
   request:
     ALPHA:
       collection: developerknowledge.v1alpha
       api_version: v1alpha
     BETA:
+      collection: developerknowledge.v1
+      api_version: v1
+    GA:
       collection: developerknowledge.v1
       api_version: v1
     method: developerknowledge.answerQuery
@@ -50,7 +52,6 @@
       api_field: filter
       help_text: |
         Apply a strict filter to the search results used to ground the answer. Supported filter fields: `content_length_bytes`, `data_source`, `update_time`, `uri`. Example: `data_source = "docs.cloud.google.com"`.
-# LINT.ThenChange(//google/developers/knowledge/v1main/developerknowledge.proto)
 
   guidance:
     content: |

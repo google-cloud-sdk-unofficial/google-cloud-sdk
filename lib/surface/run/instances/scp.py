@@ -14,6 +14,7 @@
 # limitations under the License.
 """Command to scp into a Cloud Run instance."""
 
+from googlecloudsdk.api_lib.run import constants
 from googlecloudsdk.api_lib.run import ssh as run_ssh
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import exceptions
@@ -96,7 +97,7 @@ class Scp(scp_command.BaseScpCommand):
 
     return self.RunScp(
         args,
-        run_ssh.Ssh.WorkloadType.INSTANCE,
+        constants.WorkloadType.INSTANCE,
         instance_name,
         sources,
         destination,

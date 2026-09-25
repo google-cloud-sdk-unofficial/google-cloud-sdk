@@ -59,6 +59,20 @@ _DETAILED_HELP = {
             --disks=disk-3,disk-4 \\
             --labels=''
 
+        If a disk has multiple labels and you want to remove particular labels,
+        specify all the labels that you want to keep and omit the labels that
+        you want to remove. This is because the `{command}` command replaces
+        the entire label map.
+
+        For example, if `disk-5` has the labels `env=production` and
+        `team=sre`, then to remove the `env` label, include the `team=sre`
+        label in the `--labels` argument:
+
+        $ {command} \\
+            --zone=us-central1-a \\
+            --disks=disk-5 \\
+            --labels=team=sre
+
         To set labels based on a JSON file named `disk_labels.json`, run:
 
         Example `disk_labels.json` content:
@@ -79,7 +93,6 @@ _DETAILED_HELP = {
         $ {command} \\
             --zone=us-central1-a \\
             --source=disk_labels.json
-        ```
 
         To clear all labels on `disk-3` and `disk-4` in zone `europe-west1-b`
         provide an empty labels value in the JSON file, run:
@@ -100,6 +113,23 @@ _DETAILED_HELP = {
 
         $ {command} \\
             --zone=europe-west1-b \\
+            --source=disk_labels.json
+
+        To remove the `env` label from `disk-5` using a JSON file, omit the
+        `env` label and include all the labels that you want to keep.
+
+        Example `disk_labels.json` content:
+        ```json
+        [
+          {
+            "name": "disk-5",
+            "labels": { "team": "sre" }
+          }
+        ]
+        ```
+
+        $ {command} \\
+            --zone=us-central1-a \\
             --source=disk_labels.json
         """
     ),

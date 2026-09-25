@@ -16,8 +16,11 @@
 
 from __future__ import annotations
 
+import collections
+from collections.abc import Container, Mapping
 import dataclasses
 import re
+from typing import Any
 
 from googlecloudsdk.core import exceptions as core_exceptions
 
@@ -81,6 +84,10 @@ LINK_TYPE_IDS: tuple[str, ...] = (
     SCHEMA_JOIN_LINK_TYPE,
 )
 
+# dbt resource types that materialize to a physical relation, and so are what a
+# `ref()` or a foreign key's `to:` can point at.
+MATERIALIZED_RESOURCE_TYPES = frozenset(['model', 'seed', 'snapshot'])
+
 
 def entry_id(unique_id: str) -> str:
   """Maps a dbt unique_id to a Dataplex entry id.
@@ -97,6 +104,156 @@ def entry_id(unique_id: str) -> str:
     The Dataplex entry id (lowercased, with dots replaced by underscores).
   """
   return unique_id.lower().replace('.', '_')
+
+
+def version_string(value: Any) -> str:
+  """Renders a dbt ``version`` / ``latest_version`` value as a string.
+
+  dbt lets a version be a number or a label, and a single model can declare
+  both (``v: 1`` alongside ``v: beta``), so the two are only comparable once
+  rendered.
+
+  Args:
+    value: the raw dbt version value, or None on an unversioned resource.
+
+  Returns:
+    The version as a string, or '' when the resource declares none.
+  """
+  return '' if value is None else str(value)
+
+
+def resource_name(node: dict[str, Any]) -> str:
+  """The name identifying a dbt resource within its fullyQualifiedName.
+
+  Every version of a versioned model carries the same ``name``, so the version
+  is folded into it as ``<name>_v<version>``. That is dbt's own default alias
+  and warehouse relation name for the version, and it keeps the dbt FQN at the
+  three segments the Dataplex FQN grammar accepts. An unversioned resource
+  keeps the name it already has, so nothing already imported churns.
+
+  A dbt version may be a decimal, and a dot here would open a fourth segment,
+  which the grammar rejects. dbt writes such a version as ``_v1_5`` in the
+  relation name; the FQN follows it.
+
+  Args:
+    node: the dbt resource.
+
+  Returns:
+    The resource-name segment of the FQN, or '' when the resource is unnamed.
+  """
+  name = node.get('name') or ''
+  version = version_string(node.get('version')).replace('.', '_')
+  return f'{name}_v{version}' if name and version else name
+
+
+def display_name(node: dict[str, Any]) -> str:
+  """The label a dbt resource is shown under.
+
+  A versioned model is shown as ``<name>.v<version>``, dbt's own notation for
+  one version of a model, so that its versions are told apart in the catalog.
+
+  Args:
+    node: the dbt resource.
+
+  Returns:
+    The display name, or '' when the resource is unnamed.
+  """
+  name = node.get('name') or ''
+  version = version_string(node.get('version'))
+  return f'{name}.v{version}' if name and version else name
+
+
+def _latest_version(holders: list[tuple[str, dict[str, Any]]]) -> str | None:
+  """The latest version's unique_id, when one model holds a whole name.
+
+  Args:
+    holders: the (unique_id, node) pairs sharing one resource name.
+
+  Returns:
+    The unique_id of the version a version-less ``ref()`` resolves to, or None
+    when the name is held by anything other than the versions of one model.
+  """
+  if len({node.get('package_name') for _, node in holders}) != 1:
+    return None
+  latest = None
+  for uid, node in holders:
+    version = version_string(node.get('version'))
+    if not version:
+      return None
+    if version != version_string(node.get('latest_version')):
+      continue
+    if latest is not None:
+      return None
+    latest = uid
+  return latest
+
+
+def index_by_name(
+    nodes: Mapping[str, Any], resource_types: Container[str]
+) -> dict[str, str]:
+  """Indexes dbt nodes by name, for resolving a ``ref()`` target.
+
+  A ``ref()`` names a resource without saying which package or version it comes
+  from, so a bare name has to be resolved back to a unique_id. A name held by
+  more than one resource is left out rather than resolved to an arbitrary one
+  of them, with one exception: when the holders are all versions of one model,
+  the name resolves to the latest version, which is what dbt itself resolves a
+  version-less ``ref()`` to.
+
+  Args:
+    nodes: the manifest ``nodes`` section.
+    resource_types: the dbt resource types to index.
+
+  Returns:
+    A dict of resource name -> unique_id.
+  """
+  holders_by_name = collections.defaultdict(list)
+  for uid, node in nodes.items():
+    if node.get('resource_type') not in resource_types:
+      continue
+    name = node.get('name')
+    if name:
+      holders_by_name[name].append((uid, node))
+  index = {}
+  for name, holders in holders_by_name.items():
+    uid = holders[0][0] if len(holders) == 1 else _latest_version(holders)
+    if uid:
+      index[name] = uid
+  return index
+
+
+def index_by_name_and_version(
+    nodes: Mapping[str, Any], resource_types: Container[str]
+) -> dict[tuple[str, str], str]:
+  """Indexes dbt nodes by (name, version), for a version-pinned ``ref()``.
+
+  A ``ref()`` that pins a version names one model outright, so it is resolved
+  against the version rather than through the name alone, which would answer
+  with the latest. Unversioned resources are left out, as are pairs held by
+  more than one resource.
+
+  Args:
+    nodes: the manifest ``nodes`` section.
+    resource_types: the dbt resource types to index.
+
+  Returns:
+    A dict of (resource name, version) -> unique_id.
+  """
+  index = {}
+  ambiguous = set()
+  for uid, node in nodes.items():
+    if node.get('resource_type') not in resource_types:
+      continue
+    key = (node.get('name'), version_string(node.get('version')))
+    if not all(key):
+      continue
+    if key in index:
+      ambiguous.add(key)
+    else:
+      index[key] = uid
+  for key in ambiguous:
+    del index[key]
+  return index
 
 
 # Matches a dbt `ref(...)` call and captures the raw arguments string inside.
@@ -118,6 +275,13 @@ _SOURCE_CALL = re.compile(r'source\(([^)]*)\)')
 #   - "'my_model'" -> captures: "my_model"
 #   - '"events"' -> captures: "events"
 _QUOTED = re.compile(r"""['"]([^'"]+)['"]""")
+
+# Matches the version a dbt `ref(...)` pins, spelled `v=` or `version=`, with or
+# without quotes around the value.
+# Examples:
+#   - ref('model', v=1) -> captures: "1"
+#   - ref('model', version='beta') -> captures: "beta"
+_REF_VERSION = re.compile(r"""\b(?:v|version)\s*=\s*['"]?([^'",)]+)['"]?""")
 
 
 def parse_ref(s: str | None) -> str | None:
@@ -149,6 +313,28 @@ def parse_ref(s: str | None) -> str | None:
     if quoted:
       model = quoted.group(1).strip()
   return model
+
+
+def parse_ref_version(s: str | None) -> str | None:
+  """Returns the version a dbt ``ref(...)`` expression pins, if it pins one.
+
+  ``ref('model', v=1)`` names one version of a versioned model, and resolving
+  it by name alone would answer with the latest instead.
+
+  Args:
+    s: The raw dbt ``ref(...)`` expression, or None.
+
+  Returns:
+    The pinned version as a string, or None when the expression is not a
+    ``ref()`` or names no version.
+  """
+  if not s:
+    return None
+  call = _REF_CALL.search(s)
+  if not call:
+    return None
+  version = _REF_VERSION.search(call.group(1))
+  return version.group(1).strip() if version else None
 
 
 def parse_source(s: str | None) -> tuple[str, str] | None:
@@ -224,12 +410,12 @@ class Context:
     )
 
   def dbt_resource_fqn(
-      self, entry_type: str, project_name: str, resource_name: str
+      self, entry_type: str, project_name: str, resource: str
   ) -> str:
     """Returns the FQN for a standard dbt resource (model, seed, etc.)."""
     subtype = entry_type.removeprefix('dbt-').replace('-', '_')
     return 'dbt:{0}:{1}.{2}.{3}'.format(
-        subtype, self.eg_project_id, project_name, resource_name
+        subtype, self.eg_project_id, project_name, resource
     )
 
   def entry_name(self, resource_entry_id: str) -> str:

@@ -6708,10 +6708,18 @@ class User(_messages.Message):
         based authentication.
       ALLOYDB_IAM_USER: Database user that can authenticate via IAM-Based
         authentication.
+      ALLOYDB_IAM_GROUP: Database user that represents an IAM group whose
+        members can authenticate via IAM group-based authentication.
+      ALLOYDB_IAM_GROUP_USER: Represents a user that belongs to an IAM group.
+      ALLOYDB_IAM_GROUP_SERVICE_ACCOUNT: Represents a service account that
+        belongs to an IAM group.
     """
     USER_TYPE_UNSPECIFIED = 0
     ALLOYDB_BUILT_IN = 1
     ALLOYDB_IAM_USER = 2
+    ALLOYDB_IAM_GROUP = 3
+    ALLOYDB_IAM_GROUP_USER = 4
+    ALLOYDB_IAM_GROUP_SERVICE_ACCOUNT = 5
 
   databaseRoles = _messages.StringField(1, repeated=True)
   keepExtraRoles = _messages.BooleanField(2)

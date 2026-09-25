@@ -14,8 +14,6 @@
 # limitations under the License.
 """Command to submit a Device Run iOS XCTest session."""
 
-import uuid
-
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib import device_run
 from googlecloudsdk.api_lib.storage import storage_api
@@ -61,7 +59,7 @@ class SessionNameNotFoundError(exceptions.Error):
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class XcTest(base.Command):
   """Submit a Device Run session with an iOS XCTest job."""
 
@@ -130,7 +128,7 @@ class XcTest(base.Command):
             'The catalog ID or version string of the Xcode version to use for'
             ' the test run (e.g. `xcode-16-4` or `16.4`). If not specified, a'
             ' system default Xcode version is used. Available versions can be'
-            ' queried using `gcloud alpha device-run catalog software-versions'
+            ' queried using `gcloud device-run catalog software-versions'
             ' list`.'
         ),
     )
@@ -382,9 +380,14 @@ class XcTest(base.Command):
     )
 
     session = messages.Session(sessionConfig=session_config)
-    request_id = str(uuid.uuid4())
+    # The session ID is generated client-side so that the request stays
+    # idempotent if it is retried; see GenerateSessionAndRequestIds.
+    session_id, request_id = session_submit_ops.GenerateSessionAndRequestIds()
     operation = client.Create(
-        location_ref, session=session, request_id=request_id
+        location_ref,
+        session=session,
+        session_id=session_id,
+        request_id=request_id,
     )
     operation_id = operation.name.split('/')[-1]
 
@@ -423,14 +426,14 @@ XcTest.detailed_help = {
     'DESCRIPTION': 'Submit a Device Run session with an iOS XCTest job.',
     'EXAMPLES': (
         """\
-To submit an XCTest session on an iPhone 15 Pro, run:
+To submit an XCTest session on an iPhone 16 Pro, run:
 
-  $ {command} --device=iphone15pro-17.2 --test=gs://my-bucket/SmokeTests.zip --bucket-name=my-bucket
+  $ {command} --device=iphone16pro-18-3 --test=gs://my-bucket/SmokeTests.zip --bucket-name=my-bucket
 
 To submit an XCTest session asynchronously without waiting for it to
 complete, run:
 
-  $ {command} --device=iphone15pro-17.2 --test=gs://my-bucket/SmokeTests.zip --bucket-name=my-bucket --async
+  $ {command} --device=iphone16pro-18-3 --test=gs://my-bucket/SmokeTests.zip --bucket-name=my-bucket --async
 """
     ),
 }

@@ -58,12 +58,12 @@ class UpdateCatalog(base.UpdateCommand):
   detailed_help = {
       'EXAMPLES': help_text,
   }
-  # Not supported in GA yet.
-  _support_service_directory_name = False
-  _support_federated_catalog = False
-  _support_unity_service_principal_application_id = False
-  _support_glue_catalog = False
-  _support_snowflake_catalog = False
+
+  _support_service_directory_name = True
+  _support_federated_catalog = True
+  _support_unity_service_principal_application_id = True
+  _support_glue_catalog = True
+  _support_snowflake_catalog = True
 
   @classmethod
   def Args(cls, parser):
@@ -348,9 +348,11 @@ class UpdateBeta(UpdateCatalog):
   detailed_help = {
       'EXAMPLES': help_text + '\n\n' + help_text_alpha,
   }
+  _support_service_directory_name = True
   _support_federated_catalog = True
   _support_unity_service_principal_application_id = True
   _support_glue_catalog = True
+  _support_snowflake_catalog = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

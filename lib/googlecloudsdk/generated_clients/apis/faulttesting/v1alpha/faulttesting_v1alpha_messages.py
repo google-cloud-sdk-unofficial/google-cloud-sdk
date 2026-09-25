@@ -122,6 +122,11 @@ class ExclusionWindow(_messages.Message):
   r"""A time period during which new fault injection experiments are blocked
   from starting.
 
+  Messages:
+    TagsValue: Optional. Input only. Immutable. Tag keys/values directly bound
+      to this resource. For example: "123/environment": "production",
+      "123/costCenter": "marketing"
+
   Fields:
     description: Optional. Description of the exclusion window's purpose (for
       example, "Black Friday freeze"). Max length is 2000 characters.
@@ -134,13 +139,43 @@ class ExclusionWindow(_messages.Message):
       ects/{project}/locations/{location}/exclusionWindows/{exclusion_window}`
     startTime: Output only. The timestamp when the exclusion window was
       started. This field is empty if the window has not been started.
+    tags: Optional. Input only. Immutable. Tag keys/values directly bound to
+      this resource. For example: "123/environment": "production",
+      "123/costCenter": "marketing"
   """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class TagsValue(_messages.Message):
+    r"""Optional. Input only. Immutable. Tag keys/values directly bound to
+    this resource. For example: "123/environment": "production",
+    "123/costCenter": "marketing"
+
+    Messages:
+      AdditionalProperty: An additional property for a TagsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type TagsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a TagsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   description = _messages.StringField(1)
   duration = _messages.StringField(2)
   endTime = _messages.StringField(3)
   name = _messages.StringField(4)
   startTime = _messages.StringField(5)
+  tags = _messages.MessageField('TagsValue', 6)
 
 
 class Experiment(_messages.Message):
@@ -153,6 +188,11 @@ class Experiment(_messages.Message):
       Example: It finished normally, or was cancelled by a user.
     StateValueValuesEnum: Output only. The current state of the experiment.
       Example: `PREPARING`, `INJECTED`, `COMPLETED`.
+
+  Messages:
+    TagsValue: Optional. Input only. Immutable. Tag keys/values directly bound
+      to this resource. For example: "123/environment": "production",
+      "123/costCenter": "marketing"
 
   Fields:
     createTime: Output only. The date and time when the experiment record was
@@ -185,6 +225,9 @@ class Experiment(_messages.Message):
       state was last updated.
     stopTime: Output only. The date and time when the experiment entered the
       REVERTING state.
+    tags: Optional. Input only. Immutable. Tag keys/values directly bound to
+      this resource. For example: "123/environment": "production",
+      "123/costCenter": "marketing"
     templateDescription: Output only. The description from the experiment
       template used for the experiment. Minimum length is 0, maximum length is
       2000.
@@ -237,6 +280,32 @@ class Experiment(_messages.Message):
     REVERTING = 5
     COMPLETED = 6
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class TagsValue(_messages.Message):
+    r"""Optional. Input only. Immutable. Tag keys/values directly bound to
+    this resource. For example: "123/environment": "production",
+    "123/costCenter": "marketing"
+
+    Messages:
+      AdditionalProperty: An additional property for a TagsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type TagsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a TagsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   createTime = _messages.StringField(1)
   description = _messages.StringField(2)
   displayName = _messages.StringField(3)
@@ -250,9 +319,10 @@ class Experiment(_messages.Message):
   state = _messages.EnumField('StateValueValuesEnum', 11)
   stateUpdateTime = _messages.StringField(12)
   stopTime = _messages.StringField(13)
-  templateDescription = _messages.StringField(14)
-  templateDisplayName = _messages.StringField(15)
-  templateDuration = _messages.StringField(16)
+  tags = _messages.MessageField('TagsValue', 14)
+  templateDescription = _messages.StringField(15)
+  templateDisplayName = _messages.StringField(16)
+  templateDuration = _messages.StringField(17)
 
 
 class ExperimentTemplate(_messages.Message):
@@ -1480,6 +1550,11 @@ class Validation(_messages.Message):
     StateValueValuesEnum: Output only. The current state of the `Validation`
       dry run. Either `PREPARING` or `COMPLETED`.
 
+  Messages:
+    TagsValue: Optional. Input only. Immutable. Tag keys/values directly bound
+      to this resource. For example: "123/environment": "production",
+      "123/costCenter": "marketing"
+
   Fields:
     action: Required. The fault injection action being checked.
     createTime: Output only. The date and time when this `Validation` dry run
@@ -1493,6 +1568,9 @@ class Validation(_messages.Message):
       `PREPARING` or `COMPLETED`.
     stopTime: Output only. The date and time when this `Validation` dry run
       finished (RFC3339 UTC "Zulu" format).
+    tags: Optional. Input only. Immutable. Tag keys/values directly bound to
+      this resource. For example: "123/environment": "production",
+      "123/costCenter": "marketing"
   """
 
   class StateValueValuesEnum(_messages.Enum):
@@ -1523,6 +1601,32 @@ class Validation(_messages.Message):
     REVERTING = 5
     COMPLETED = 6
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class TagsValue(_messages.Message):
+    r"""Optional. Input only. Immutable. Tag keys/values directly bound to
+    this resource. For example: "123/environment": "production",
+    "123/costCenter": "marketing"
+
+    Messages:
+      AdditionalProperty: An additional property for a TagsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type TagsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a TagsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   action = _messages.MessageField('Action', 1)
   createTime = _messages.StringField(2)
   description = _messages.StringField(3)
@@ -1530,6 +1634,7 @@ class Validation(_messages.Message):
   name = _messages.StringField(5)
   state = _messages.EnumField('StateValueValuesEnum', 6)
   stopTime = _messages.StringField(7)
+  tags = _messages.MessageField('TagsValue', 8)
 
 
 class ValidationResource(_messages.Message):

@@ -104,6 +104,12 @@ apis:
       gcloud_gapic_library:
         google/cloud/aiplatform/v1beta1:aiplatform_v1beta1_py
       resources:
+        # Manual `projects` parent registration required to satisfy the
+        # ConflictingCollection check in gcloud's regen script for aiplatform
+        # v1beta1. Mirrors the same fix on aiplatform.v1.resources; see
+        # b/538601144 and go/yaqs/7381979231888080896.
+        projects:
+          path: projects/{projectsId}
         projects.locations:
           path: projects/{projectsId}/locations/{locationsId}
         projects.locations.models.operations:
@@ -118,6 +124,19 @@ apis:
         projects.locations.indexEndpoints.operations:
           path:
             projects/{projectsId}/locations/{locationsId}/indexEndpoints/{indexEndpointsId}/operations/{operationsId}
+        # Intermediate parent collections for the publisher-scoped variant of
+        # PredictionService.GetResponse / DeleteResponse (from cl/962641563).
+        # Auto-generation produces broken paths for these because the RPCs use
+        # `additional_bindings` with a routing-only URI shape; declaring them
+        # here makes the regen use these correct paths instead. Mirrors the
+        # same fix on aiplatform.v1.resources; see
+        # go/yaqs/7381979231888080896.
+        projects.locations.publishers:
+          path:
+            projects/{projectsId}/locations/{locationsId}/publishers/{publishersId}
+        projects.locations.publishers.v1:
+          path:
+            projects/{projectsId}/locations/{locationsId}/publishers/{publishersId}/v1
         projects.locations.semanticGovernancePolicies:
           path:
             projects/{projectsId}/locations/{locationsId}/semanticGovernancePolicies/{semanticGovernancePoliciesId}
@@ -127,8 +146,6 @@ apis:
         projects.locations.semanticGovernancePolicyEngine:
           path:
             projects/{projectsId}/locations/{locationsId}/semanticGovernancePolicyEngine
-      skip:
-        bug: b/538601144
     v1:
       discovery_doc: aiplatform_v1.json
       gcloud_gapic_library: google/cloud/aiplatform/v1:aiplatform_v1_py
@@ -332,8 +349,6 @@ apis:
     v1:
       discovery_doc: biglake_v1.json
       default: true
-      skip:
-        bug: b/555192601
     delta_v1:
       discovery_doc: biglake_delta_v1.json
       default: false
@@ -672,9 +687,21 @@ apis:
     alpha:
       discovery_doc: compute_alpha.json
       resources:
+        folderGlobalVmExtensionPolicies:
+          path:
+            folders/{folder}/global/vmExtensionPolicies/{globalVmExtensionPolicy}
+        folderZoneVmExtensionPolicies:
+          path:
+            folders/{folder}/zones/{zone}/vmExtensionPolicies/{vmExtensionPolicy}
         globalVmExtensionPolicies:
           path:
             projects/{project}/global/vmExtensionPolicies/{globalVmExtensionPolicy}
+        organizationGlobalVmExtensionPolicies:
+          path:
+            organizations/{organization}/global/vmExtensionPolicies/{globalVmExtensionPolicy}
+        organizationZoneVmExtensionPolicies:
+          path:
+            organizations/{organization}/zones/{zone}/vmExtensionPolicies/{vmExtensionPolicy}
         regionAcceleratorTypes:
           path:
             projects/{project}/regions/{region}/acceleratorTypes/{acceleratorType}
@@ -1096,6 +1123,8 @@ apis:
       discovery_doc: domains_v1.json
       enable_mtls: true
       default: true
+      skip:
+        bug: b/560130573
     v1beta1:
       discovery_doc: domains_v1beta1.json
       enable_mtls: true
@@ -1275,8 +1304,6 @@ apis:
       resources:
         projects.locations:
           path: projects/{projectsId}/locations/{locationsId}
-      skip:
-        bug: b/541258803
     v1beta:
       discovery_doc: hypercomputecluster_v1beta.json
     v1:
@@ -1493,6 +1520,12 @@ apis:
           path: projects/{projectsId}/serviceAccounts/{serviceAccountsId}
         projects.networks:
           path: projects/{projectsId}/global/networks/{networksId}
+        projects.locations.resourcePolicies:
+          path: projects/{projectsId}/locations/{locationsId}/resourcePolicies/{resourcePoliciesId}
+        projects.regions.resourcePolicies:
+          path: projects/{projectsId}/regions/{regionsId}/resourcePolicies/{resourcePoliciesId}
+        projects.locations.keyRings.cryptoKeys:
+          path: projects/{projectsId}/locations/{locationsId}/keyRings/{keyRingsId}/cryptoKeys/{cryptoKeysId}
     v1alpha:
       discovery_doc: lustre_v1alpha.json
       default: true
@@ -1501,6 +1534,12 @@ apis:
           path: projects/{projectsId}/serviceAccounts/{serviceAccountsId}
         projects.networks:
           path: projects/{projectsId}/global/networks/{networksId}
+        projects.locations.resourcePolicies:
+          path: projects/{projectsId}/locations/{locationsId}/resourcePolicies/{resourcePoliciesId}
+        projects.regions.resourcePolicies:
+          path: projects/{projectsId}/regions/{regionsId}/resourcePolicies/{resourcePoliciesId}
+        projects.locations.keyRings.cryptoKeys:
+          path: projects/{projectsId}/locations/{locationsId}/keyRings/{keyRingsId}/cryptoKeys/{cryptoKeysId}
   managedflink:
     v1alpha:
       discovery_doc: managedflink_v1alpha.json
@@ -1875,8 +1914,6 @@ apis:
     v2:
       discovery_doc: run_v2.json
       gcloud_gapic_library: google/cloud/run/v2:run_v2_py
-      skip:
-        bug: b/558690633
   runtimeconfig:
     v1beta1:
       discovery_doc: runtimeconfig_v1beta1.json
@@ -2061,17 +2098,20 @@ apis:
       unelidable_request_methods:
       - sql.databases.insert
       - sql.instances.insert
-      - sql.instances.startWorkloadCapture
-      - sql.instances.startWorkloadReplay
-      - sql.instances.stopWorkloadCapture
-      - sql.instances.stopWorkloadReplay
       - sql.users.insert
+      - sql.workloadCaptures.start
+      - sql.workloadCaptures.stop
+      - sql.workloadCaptures.startReplay
+      - sql.workloadCaptures.stopReplay
+      - sql.workloadCaptures.list
       resources:
         projects:
           path: projects/{project}
         blueGreenDeployments:
           path:
             projects/{project}/locations/{location}/blueGreenDeployments/{blueGreenDeploymentsId}
+        workloadCaptures:
+          path: projects/{project}/instances/{instance}/workloadCaptures/{workloadId}
   stream:
     v1:
       discovery_doc: stream_v1.json
@@ -2104,8 +2144,6 @@ apis:
         projects.locations.keyRings.cryptoKeys:
           path:
             projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}
-      skip:
-        bug: b/558690151
   storagebatchoperations:
     v1:
       discovery_doc: storagebatchoperations_v1.json
@@ -2346,7 +2384,8 @@ apis:
           path:
             projects/{projectsId}/locations/{locationsId}/skills/{skillsId}/revisions/{revisionsId}
         projects.locations.findings:
-          path: projects/{projectsId}/locations/{locationsId}/findings/{findingsId}
+          path:
+            projects/{projectsId}/locations/{locationsId}/findings/{findingsId}
     v1:
       discovery_doc: agentregistry_v1.json
       default: true

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   hints:
     read_only: true
   help_text:
@@ -32,12 +32,14 @@
 
         $ {command} documents/docs.cloud.google.com/storage/docs/creating-buckets --view=full
 
-# LINT.IfChange
   request:
     ALPHA:
       collection: developerknowledge.documents
       api_version: v1alpha
     BETA:
+      collection: developerknowledge.documents
+      api_version: v1
+    GA:
       collection: developerknowledge.documents
       api_version: v1
     method: get
@@ -66,4 +68,3 @@
       - arg_value: full
         enum_value: DOCUMENT_VIEW_FULL
         help_text: Include all document fields.
-# LINT.ThenChange(//google/developers/knowledge/v1main/developerknowledge.proto)

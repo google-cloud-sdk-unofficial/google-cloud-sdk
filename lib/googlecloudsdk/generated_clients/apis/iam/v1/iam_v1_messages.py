@@ -56,6 +56,17 @@ class AdminAuditData(_messages.Message):
   permissionDelta = _messages.MessageField('PermissionDelta', 1)
 
 
+class AppMetadata(_messages.Message):
+  r"""Represents the metadata for an installed app.
+
+  Fields:
+    clientId: Required. Immutable. The OAuth client ID of the app to be
+      installed.
+  """
+
+  clientId = _messages.StringField(1)
+
+
 class AttestationRule(_messages.Message):
   r"""Defines which workloads can receive an identity within a pool. When an
   AttestationRule is defined under a managed identity, matching workloads may
@@ -797,6 +808,109 @@ class IamLocationsWorkforcePoolsGetRequest(_messages.Message):
   """
 
   name = _messages.StringField(1, required=True)
+
+
+class IamLocationsWorkforcePoolsInstalledAppsCreateRequest(_messages.Message):
+  r"""A IamLocationsWorkforcePoolsInstalledAppsCreateRequest object.
+
+  Fields:
+    parent: Required. The pool to create this workforce pool installed app in.
+      Format: `locations/{location}/workforcePools/{workforce_pool}`
+    workforcePoolInstalledApp: A WorkforcePoolInstalledApp resource to be
+      passed as the request body.
+    workforcePoolInstalledAppId: Required. The ID to use for the workforce
+      pool installed app, which becomes the final component of the resource
+      name. This value should be 4-32 characters, and may contain the
+      characters `[a-z0-9-]`. The prefix `gcp-` is reserved for use by Google,
+      and may not be specified.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  workforcePoolInstalledApp = _messages.MessageField('WorkforcePoolInstalledApp', 2)
+  workforcePoolInstalledAppId = _messages.StringField(3)
+
+
+class IamLocationsWorkforcePoolsInstalledAppsDeleteRequest(_messages.Message):
+  r"""A IamLocationsWorkforcePoolsInstalledAppsDeleteRequest object.
+
+  Fields:
+    name: Required. The name of the workforce pool installed app to delete.
+      Format: `locations/{location}/workforcePools/{workforce_pool}/installedA
+      pps/{installed_app}`
+    validateOnly: Optional. If set, validate the request and preview the
+      response, but do not actually post it.
+  """
+
+  name = _messages.StringField(1, required=True)
+  validateOnly = _messages.BooleanField(2)
+
+
+class IamLocationsWorkforcePoolsInstalledAppsGetRequest(_messages.Message):
+  r"""A IamLocationsWorkforcePoolsInstalledAppsGetRequest object.
+
+  Fields:
+    name: Required. The name of the workforce pool installed app to retrieve.
+      Format: `locations/{location}/workforcePools/{workforce_pool}/installedA
+      pps/{installed_app}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class IamLocationsWorkforcePoolsInstalledAppsListRequest(_messages.Message):
+  r"""A IamLocationsWorkforcePoolsInstalledAppsListRequest object.
+
+  Fields:
+    pageSize: Optional. The maximum number of workforce pool installed apps to
+      return. If unspecified, at most 50 workforce pool installed apps will be
+      returned. The maximum value is 100; values above 100 are truncated to
+      100.
+    pageToken: Optional. A page token, received from a previous
+      `ListWorkforcePoolInstalledApps` call. Provide this to retrieve the
+      subsequent page.
+    parent: Required. The parent to list installed apps, format:
+      'locations/{location}/workforcePools/{workforce_pool}'
+    showDeleted: Optional. Whether to return soft-deleted workforce pool
+      installed apps.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  showDeleted = _messages.BooleanField(4)
+
+
+class IamLocationsWorkforcePoolsInstalledAppsPatchRequest(_messages.Message):
+  r"""A IamLocationsWorkforcePoolsInstalledAppsPatchRequest object.
+
+  Fields:
+    name: Identifier. The resource name of the workforce pool installed app.
+      Format: `locations/{location}/workforcePools/{workforce_pool}/installedA
+      pps/{installed_app}`
+    updateMask: Required. The list of fields to update.
+    workforcePoolInstalledApp: A WorkforcePoolInstalledApp resource to be
+      passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  updateMask = _messages.StringField(2)
+  workforcePoolInstalledApp = _messages.MessageField('WorkforcePoolInstalledApp', 3)
+
+
+class IamLocationsWorkforcePoolsInstalledAppsUndeleteRequest(_messages.Message):
+  r"""A IamLocationsWorkforcePoolsInstalledAppsUndeleteRequest object.
+
+  Fields:
+    name: Required. The name of the workforce pool installed app to undelete.
+      Format: `locations/{location}/workforcePools/{workforce_pool}/installedA
+      pps/{installed_app}`
+    undeleteWorkforcePoolInstalledAppRequest: A
+      UndeleteWorkforcePoolInstalledAppRequest resource to be passed as the
+      request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  undeleteWorkforcePoolInstalledAppRequest = _messages.MessageField('UndeleteWorkforcePoolInstalledAppRequest', 2)
 
 
 class IamLocationsWorkforcePoolsListRequest(_messages.Message):
@@ -3800,8 +3914,8 @@ class InlineCertificateIssuanceConfig(_messages.Message):
       percentage of remaining lifetime after which certificate rotation is
       initiated. Must be between 50 and 80. If no value is specified, rotation
       window percentage is defaulted to 50.
-    useDefaultSharedCa: Optional. If set to true, the trust domain will
-      utilize the GCP-provisioned default CA. A default CA in the same region
+    useDefaultSharedCa: Optional. Determines whether the trust domain utilizes
+      the Google Cloud-provisioned default CA. A default CA in the same region
       as the workload will be selected to issue the certificate. Enabling this
       will clear any existing `ca_pools` configuration to provision the
       certificates. NOTE: This field is mutually exclusive with `ca_pools`. If
@@ -4182,6 +4296,21 @@ class ListServiceAccountsResponse(_messages.Message):
 
   accounts = _messages.MessageField('ServiceAccount', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
+
+
+class ListWorkforcePoolInstalledAppsResponse(_messages.Message):
+  r"""Response message for ListWorkforcePoolInstalledApps.
+
+  Fields:
+    nextPageToken: Optional. A token, which can be sent as `page_token` to
+      retrieve the next page. If this field is omitted, there are no
+      subsequent pages.
+    workforcePoolInstalledApps: Output only. A list of workforce pool
+      installed apps.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  workforcePoolInstalledApps = _messages.MessageField('WorkforcePoolInstalledApp', 2, repeated=True)
 
 
 class ListWorkforcePoolProviderKeysResponse(_messages.Message):
@@ -5652,8 +5781,8 @@ class TrustStore(_messages.Message):
     trustAnchors: Required. List of trust anchors to be used while performing
       validation against a given TrustStore. The incoming end entity's
       certificate must be in the trust chain of one of the trust anchors here.
-    trustDefaultSharedCa: Optional. If set to True, the trust bundle will
-      include the private ca managed identity regional root public
+    trustDefaultSharedCa: Optional. Determines whether the trust bundle
+      includes the private CA managed identity regional root public
       certificates. Important: `trust_default_shared_ca` is only supported for
       managed identity trust domain resource.
   """
@@ -5696,6 +5825,17 @@ class UndeleteServiceAccountResponse(_messages.Message):
   """
 
   restoredAccount = _messages.MessageField('ServiceAccount', 1)
+
+
+class UndeleteWorkforcePoolInstalledAppRequest(_messages.Message):
+  r"""Request message for UndeleteWorkforcePoolInstalledApp.
+
+  Fields:
+    validateOnly: Optional. If set, validate the request and preview the
+      response, but do not actually post it.
+  """
+
+  validateOnly = _messages.BooleanField(1)
 
 
 class UndeleteWorkforcePoolProviderKeyRequest(_messages.Message):
@@ -5826,6 +5966,65 @@ class WorkforcePool(_messages.Message):
   sessionDuration = _messages.StringField(8)
   state = _messages.EnumField('StateValueValuesEnum', 9)
   workspaceLinkConfig = _messages.MessageField('WorkspaceLinkConfig', 10)
+
+
+class WorkforcePoolInstalledApp(_messages.Message):
+  r"""Represents a workforce pool installed app. Used to indicate that a
+  workforce pool administrator has completed the installation process, thereby
+  giving consent for the installed app, that is, OAuth Client, to access
+  workforce pool users' information and resources.
+
+  Enums:
+    StateValueValuesEnum: Output only. The state of the workforce pool
+      installed app.
+
+  Fields:
+    allScopesGranted: All scopes supported by Workforce Identity Federation
+      are granted for the installed application.
+    appMetadata: Immutable. Metadata for the app.
+    createTime: Output only. The timestamp when the workforce pool installed
+      app was created.
+    deleteTime: Output only. The timestamp that the workforce pool installed
+      app was soft deleted.
+    description: Optional. A description of the workforce pool installed app.
+      Cannot exceed 256 characters.
+    displayName: Optional. A display name of the workforce pool installed app
+      Cannot exceed 32 characters.
+    expireTime: Output only. Time after which the workforce pool installed app
+      will be permanently purged and cannot be recovered.
+    name: Identifier. The resource name of the workforce pool installed app.
+      Format: `locations/{location}/workforcePools/{workforce_pool}/installedA
+      pps/{installed_app}`
+    state: Output only. The state of the workforce pool installed app.
+    updateTime: Output only. The timestamp for the last update of the
+      workforce pool installed app.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the workforce pool installed app.
+
+    Values:
+      STATE_UNSPECIFIED: Default value. This value is unused.
+      ACTIVE: The workforce pool installed app is active.
+      DELETED: The workforce pool installed app is soft-deleted. Soft-deleted
+        workforce pool installed apps are permanently deleted after
+        approximately 30 days unless restored via
+        UndeleteWorkforcePoolInstalledApp.
+    """
+    STATE_UNSPECIFIED = 0
+    ACTIVE = 1
+    DELETED = 2
+
+  allScopesGranted = _messages.BooleanField(1)
+  appMetadata = _messages.MessageField('AppMetadata', 2)
+  createTime = _messages.StringField(3)
+  deleteTime = _messages.StringField(4)
+  description = _messages.StringField(5)
+  displayName = _messages.StringField(6)
+  expireTime = _messages.StringField(7)
+  name = _messages.StringField(8)
+  state = _messages.EnumField('StateValueValuesEnum', 9)
+  updateTime = _messages.StringField(10)
 
 
 class WorkforcePoolProvider(_messages.Message):
@@ -6448,9 +6647,9 @@ class WorkloadIdentityPool(_messages.Message):
       again.
     displayName: Optional. A display name for the pool. Cannot exceed 32
       characters.
-    enableMeshCaCompatibility: Optional. If set to true, - the generated trust
-      bundle for the workloads in this trust domain will include the Cloud
-      Service Mesh certificate authority's root CA certificates. - the
+    enableMeshCaCompatibility: Optional. If set to `true`, - the generated
+      trust bundle for the workloads in this trust domain will include the
+      Cloud Service Mesh certificate authority's root CA certificates. - the
       certificate chain for the workload in this trust domain will be signed
       by the Cloud Service Mesh certificate authority root CA.
     expireTime: Output only. Time after which the workload identity pool will
@@ -6711,8 +6910,11 @@ class WorkloadIdentityPoolProvider(_messages.Message):
       `google`: The Google attributes mapped from the assertion in the
       `attribute_mappings`. * `attribute`: The custom attributes mapped from
       the assertion in the `attribute_mappings`. The maximum length of the
-      attribute condition expression is 4096 characters. If unspecified, all
-      valid authentication credential are accepted. The following example
+      `attribute_condition` expression is 4,096 characters. Providing a
+      condition longer than this will result in an error. If unspecified, all
+      valid authentication credentials are accepted. However, multi-tenant
+      identity providers (such as GitHub or Terraform Cloud) require an
+      `attribute_condition` to prevent token spoofing. The following example
       shows how to only allow credentials with a mapped `google.groups` value
       of `admins`: ``` "'admins' in google.groups" ```
     attributeMapping: Optional. Maps attributes from authentication

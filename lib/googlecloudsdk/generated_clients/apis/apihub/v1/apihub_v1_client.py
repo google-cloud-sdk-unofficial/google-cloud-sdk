@@ -372,7 +372,7 @@ class ApihubV1(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Delete an operation in an API version and we can delete only the operations created via create API. If the operation was created by parsing the spec, then it can be deleted by editing or deleting the spec.
+      r"""Delete an operation in an API version and we can delete only the operations created via create API. If the operation was created by parsing the spec, then it can be deleted by editing or deleting the spec. Deleting an operation will also remove any links between the operation and deployments.
 
       Args:
         request: (ApihubProjectsLocationsApisVersionsOperationsDeleteRequest) input message
@@ -517,7 +517,7 @@ class ApihubV1(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Delete a spec. Deleting a spec will also delete the associated operations from the version.
+      r"""Delete a spec. Deleting a spec will also delete the associated operations from the version and remove any links between the spec and deployments.
 
       Args:
         request: (ApihubProjectsLocationsApisVersionsSpecsDeleteRequest) input message
@@ -1468,7 +1468,7 @@ class ApihubV1(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Delete a deployment resource in the API hub.
+      r"""Deletes a deployment resource in the API hub. A deployment can only be deleted after its links to any versions, specs, and API operations have been removed.
 
       Args:
         request: (ApihubProjectsLocationsDeploymentsDeleteRequest) input message

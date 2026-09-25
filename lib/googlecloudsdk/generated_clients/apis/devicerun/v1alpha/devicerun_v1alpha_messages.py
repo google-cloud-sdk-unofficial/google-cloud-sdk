@@ -52,16 +52,41 @@ class AndroidDumpsysDeviceAction(_messages.Message):
 
 
 class AndroidInstallPackagesDeviceAction(_messages.Message):
-  r"""Installs Android packages on the device.
+  r"""Installs Android packages on the device. At least one installable is
+  specified when using this device action. Limits: - A maximum of 20
+  installables in total are allowed. - A maximum of 100 files are allowed in
+  total across all installables.
 
   Fields:
-    installables: Required. The Android packages to install on the device. The
-      installation will be performed in the order specified. Limits: - A
-      maximum of 20 installables are allowed. - A maximum of 100 files are
-      allowed in total across all installables.
+    installables: Optional. Deprecated: use `pre_target_app_installables`,
+      `target_app` and `post_target_app_installables` instead. The Android
+      packages to install on the device. The installation will be performed in
+      the order specified, before the installables of all other fields.
+    postTargetAppInstallables: Optional. The Android packages to install on
+      the device after `target_app` (if specified) is installed. The
+      installation will be performed in the order specified.
+    preTargetAppInstallables: Optional. The Android packages to install on the
+      device before `target_app` (if specified) is installed. The installation
+      will be performed in the order specified.
+    targetApp: Optional. The primary Android package to install, serving as
+      the target package for subsequent actions and as the installation
+      ordering anchor. Whether this package is treated as the application
+      under test depends on the job action: - Actions that require an explicit
+      target package (such as Android Robo tests, performance metrics
+      collection, or accessibility scans) use this package to identify the
+      application to inspect or drive. - Actions that discover or manage
+      targets independently (such as Android instrumentation tests, where
+      target packages are defined in the test runner manifest) treat this
+      field primarily as an installation order anchor between pre- and post-
+      installables. Optional. If omitted, all packages in
+      `pre_target_app_installables` and `post_target_app_installables` are
+      installed without a designated target package.
   """
 
   installables = _messages.MessageField('AndroidInstallable', 1, repeated=True)
+  postTargetAppInstallables = _messages.MessageField('AndroidInstallable', 2, repeated=True)
+  preTargetAppInstallables = _messages.MessageField('AndroidInstallable', 3, repeated=True)
+  targetApp = _messages.MessageField('AndroidInstallable', 4)
 
 
 class AndroidInstallable(_messages.Message):
@@ -943,6 +968,8 @@ class DeviceAction(_messages.Message):
     iosPushFiles: Pushes files to the iOS device sandbox at the beginning of
       the run.
     iosRecordVideo: Records a video of the iOS device screen during the run.
+    iosSwitchLocale: Switches the locale (language and region) of the iOS
+      application.
   """
 
   androidBugreport = _messages.MessageField('AndroidBugreportDeviceAction', 1)
@@ -960,6 +987,7 @@ class DeviceAction(_messages.Message):
   iosPullFiles = _messages.MessageField('IosPullFilesDeviceAction', 13)
   iosPushFiles = _messages.MessageField('IosPushFilesDeviceAction', 14)
   iosRecordVideo = _messages.MessageField('IosRecordVideoDeviceAction', 15)
+  iosSwitchLocale = _messages.MessageField('IosSwitchLocaleDeviceAction', 16)
 
 
 class DeviceConfig(_messages.Message):
@@ -1654,6 +1682,18 @@ class IosRecordVideoDeviceAction(_messages.Message):
   discardOnPass = _messages.BooleanField(1)
 
 
+class IosSwitchLocaleDeviceAction(_messages.Message):
+  r"""Switches the locale (language and region) of the iOS application.
+
+  Fields:
+    localeCode: Required. The locale (language and region) to switch the app
+      to. The format is `language-region` or `language`, e.g. "en-US", "zh-
+      CN", "ja", etc.
+  """
+
+  localeCode = _messages.StringField(1)
+
+
 class IosXcTest(_messages.Message):
   r"""The configuration of an iOS XCTest.
 
@@ -2108,7 +2148,14 @@ class RetrySettingsFlakyTestRetryStrategy(_messages.Message):
         Will default to `NO_REDUCTION`.
       NO_REDUCTION: Runs the same set of test cases of the previous attempt.
       REDUCE_TO_FAILED_TEST_CASES: Only runs the failed test cases of the
-        previous attempt.
+        previous attempt. For Android Instrumentation tests, this reduction
+        mode only works when the tests in the test APK use one of the
+        following test runners: -
+        `androidx.test.ext.junit.runners.AndroidJUnit4` -
+        `org.junit.runners.JUnit4` -
+        `com.google.testing.junit.testparameterinjector.TestParameterInjector`
+        - `org.junit.runners.Parameterized` Otherwise, its behavior will fall
+        back to `NO_REDUCTION`.
     """
     TEST_REDUCTION_MODE_UNSPECIFIED = 0
     NO_REDUCTION = 1

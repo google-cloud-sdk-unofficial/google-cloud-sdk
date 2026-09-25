@@ -17,7 +17,9 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.DefaultUniverseOnly
 class Documents(base.Group):
   """Explore and search Developer Knowledge documents."""

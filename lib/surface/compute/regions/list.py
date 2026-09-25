@@ -29,10 +29,10 @@ class List(base.ListCommand):
     parser.display_info.AddFormat("""\
         table(
           name,
-          quotas.metric.CPUS.quota():label=CPUS,
-          quotas.metric.DISKS_TOTAL_GB.quota():label=DISKS_GB,
-          quotas.metric.IN_USE_ADDRESSES.quota():label=ADDRESSES,
-          quotas.metric.STATIC_ADDRESSES.quota():label=RESERVED_ADDRESSES,
+          quotas.metric.CPUS.quota():optional:label=CPUS,
+          quotas.metric.DISKS_TOTAL_GB.quota():optional:label=DISKS_GB,
+          quotas.metric.IN_USE_ADDRESSES.quota():optional:label=ADDRESSES,
+          quotas.metric.STATIC_ADDRESSES.quota():optional:label=RESERVED_ADDRESSES,
           status():label=STATUS,
           deprecated.deleted:label=TURNDOWN_DATE
         )""")

@@ -1,0 +1,31 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  hints:
+    read_only: true
+  help_text:
+    brief: List Backup Insight Plans.
+    description: Displays all backup insight plans in a project.
+    examples: |
+      To list backup insight plans for all backup vaults and locations, run:
+
+        $ {command}
+
+      To list all backup insight plans for a backup vault 'my-vault' in location 'my-location', run:
+
+        $ {command} --backup-vault=my-vault --location=my-location
+  request:
+    ALPHA:
+      api_version: v1alpha
+    collection: backupdr.projects.locations.backupVaults.backupInsightPlans
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Backup vault to list backup insight plans from.
+      spec: !REF googlecloudsdk.command_lib.backupdr.resources:backupVaultDefault
+      is_positional: false
+
+  output:
+    format: json

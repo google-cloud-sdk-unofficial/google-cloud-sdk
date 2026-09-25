@@ -14,12 +14,13 @@
 # limitations under the License.
 """Allows you to write surfaces in terms of logical Cloud Run V2 WorkerPools API operations."""
 
-
 import functools
+
 from googlecloudsdk.api_lib.run import metric_names
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import stages
 from googlecloudsdk.command_lib.run.sourcedeploys import deployer
+from googlecloudsdk.command_lib.run.sourcedeploys import source_container_context
 from googlecloudsdk.command_lib.run.v2 import config_changes as config_changes_mod
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import metrics
@@ -146,11 +147,9 @@ class WorkerPoolsOperations(object):
       release_track=base.ReleaseTrack.ALPHA,
       tracker=None,
       prefetch=False,
-      build_image=None,
-      build_pack=None,
-      build_source=None,
-      build_from_source_container_name=None,
-      repo_to_create=None,
+      legacy_build_context: (
+          source_container_context.LegacyBuildSourceContainerContext | None
+      ) = None,
       skip_activation_prompt=False,
       force_new_revision=False,
       dry_run=False,
@@ -168,14 +167,8 @@ class WorkerPoolsOperations(object):
       prefetch: the worker pool, pre-fetched for ReleaseWorkerPool. `False`
         indicates the caller did not perform a prefetch; `None` indicates a
         nonexistent worker pool.
-      build_image: The build image reference to the build.
-      build_pack: The build pack reference to the build.
-      build_source: The build source reference to the build.
-      build_from_source_container_name: The name of the container to be deployed
-        from source.
-      repo_to_create: Optional
-        googlecloudsdk.command_lib.artifacts.docker_util.DockerRepo defining a
-        repository to be created.
+      legacy_build_context: Context for building source using the SubmitBuild
+        API and local orchestration.
       skip_activation_prompt: bool. If true, skip activation prompts for
         services
       force_new_revision: bool to force a new revision to be created.
@@ -184,18 +177,24 @@ class WorkerPoolsOperations(object):
     Returns:
       A WorkerPool object.
     """
+    has_legacy_build = bool(legacy_build_context)
+    has_create_repo = bool(
+        legacy_build_context and legacy_build_context.repo_to_create
+    )
+
     if tracker is None:
       tracker = progress_tracker.NoOpStagedProgressTracker(
           stages.WorkerPoolStages(
-              include_build=build_source is not None,
-              include_create_repo=repo_to_create is not None,
+              include_build=has_legacy_build,
+              include_create_repo=has_create_repo,
+              include_upload_source=has_legacy_build,
           ),
           interruptable=True,
           aborted_message='aborted',
       )
 
     # Deploying from a source.
-    if build_source is not None and not dry_run:
+    if has_legacy_build and not dry_run:
       (
           image_digest,
           _,  # build_base_image
@@ -204,10 +203,10 @@ class WorkerPoolsOperations(object):
           _,  # build_name
       ) = deployer.CreateImage(
           tracker,
-          build_image,
-          build_source,
-          build_pack,
-          repo_to_create,
+          legacy_build_context.build_image,
+          legacy_build_context.build_source,
+          legacy_build_context.build_pack,
+          legacy_build_context.repo_to_create,
           release_track,
           skip_activation_prompt,
           worker_pool_ref.locationsId,  # region
@@ -217,7 +216,7 @@ class WorkerPoolsOperations(object):
         return
       config_changes.append(
           config_changes_mod.AddDigestToImageChange(
-              container_name=build_from_source_container_name,
+              container_name=legacy_build_context.deploy_from_source_container_name,
               non_ingress_type=True,
               image_digest=image_digest,
           )
@@ -225,7 +224,7 @@ class WorkerPoolsOperations(object):
 
     if prefetch is None:
       worker_pool = None
-    elif build_source:
+    elif has_legacy_build:
       # if we're building from source, we want to force a new fetch
       # because building takes a while which leaves a long time for
       # potential write conflicts.

@@ -77,6 +77,8 @@ _IGNORED_MISSING_COMPONENTS = {
     'gae-go': _GAE_REDIRECT_MSG,
     'gae-python-launcher-mac': _GAE_REDIRECT_MSG,
     'gae-python-launcher-win': _GAE_REDIRECT_MSG,
+    'kpt': None,
+    'kustomize': None,
     'pkg-core': None,
     'pkg-java': None,
     'pkg-python': None,

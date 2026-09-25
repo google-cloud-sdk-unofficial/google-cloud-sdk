@@ -27,21 +27,26 @@ DETAILED_HELP = {
         """,
     'EXAMPLES':
         """
-          To create a management DNS zone binding called `my-mgmt-dns-zone-binding` that corresponds to the vmware engine network `sample-vmware-engine-network` in private cloud
+          To create a management DNS zone binding called `my-mgmt-dns-zone-binding` that corresponds to the vmware engine network `projects/my-project/locations/global/vmwareEngineNetworks/sample-vmware-engine-network` in private cloud
           `my-private-cloud`, in location `us-east2-b`, run:
 
-            $ {command} my-mgmt-dns-zone-binding --project=my-project --private-cloud=my-private-cloud --location=us-east2-b --vmware-engine-network=sample-vmware-engine-network
+            $ {command} my-mgmt-dns-zone-binding --project=my-project --private-cloud=my-private-cloud --location=us-east2-b --vmware-engine-network=projects/my-project/locations/global/vmwareEngineNetworks/sample-vmware-engine-network
 
           Or:
 
-            $ {command} my-mgmt-dns-zone-binding --private-cloud=my-private-cloud --vmware-engine-network=sample-vmware-engine-network
+            $ {command} my-mgmt-dns-zone-binding --private-cloud=my-private-cloud --vmware-engine-network=projects/my-project/locations/global/vmwareEngineNetworks/sample-vmware-engine-network
 
           In the second example, the project and location are taken from gcloud properties `core/project` and `compute/zone` respectively.
+
+          To create a management DNS zone binding called `my-mgmt-dns-zone-binding` that corresponds to the VPC network `projects/my-project/global/networks/sample-vpc-network` in private cloud `my-private-cloud`, in location `us-east2-b`, run:
+
+            $ {command} my-mgmt-dns-zone-binding --project=my-project --private-cloud=my-private-cloud --location=us-east2-b --vpc-network=projects/my-project/global/networks/sample-vpc-network
     """,
 }
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a management DNS zone binding."""
 

@@ -16,11 +16,20 @@
 
 from __future__ import annotations
 
+import types
+from typing import Any
+
+from apitools.base.py import base_api
+from apitools.base.py import exceptions as apitools_exceptions
+from googlecloudsdk.api_lib.firebase import util as firebase_util
 from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.util import waiter
 
 _API_NAME = 'firebase'
 _API_VERSION = 'v1alpha'
 _DEFAULT_LOCATION = 'us-west1'
+_MAX_WAIT_MS = 300000
+_WAIT_POLL_INTERVAL_MS = 2000
 
 
 def GetClientInstance(no_http=False):
@@ -60,6 +69,66 @@ def ProvisionFirebaseApp(
       displayName=effective_display_name,
       location=_DEFAULT_LOCATION,
       parent=parent,
+      # The Provisioning API requires a platform details field (oneof
+      # platform_details) to be set, otherwise failing with
+      # MISSING_PLATFORM_DETAILS. Since this command provisions a Firebase Web
+      # App, webInput is required.
+      webInput=messages.WebInput(),
   )
 
   return client.firebase.ProvisionFirebaseApp(request)
+
+
+def EnsureFirebaseAdded(
+    project_id: str,
+    client: base_api.BaseApiClient | None = None,
+    messages: types.ModuleType | None = None,
+) -> Any:
+  """Ensures Firebase resources and services are enabled in the Google Cloud project.
+
+  Checks whether the project is already an active Firebase project. If not,
+  calls AddFirebase and waits for the operation to complete.
+
+  Args:
+    project_id: Google Cloud project ID.
+    client: Optional Apitools client instance. If not provided, a client
+      instance for v1beta1 is used.
+    messages: Optional Apitools messages module. If not provided, messages
+      module for v1beta1 is used.
+
+  Returns:
+    FirebaseProject or None if already present.
+  """
+  client = client or firebase_util.GetClientInstance(api_version='v1beta1')
+  messages = messages or firebase_util.GetMessagesModule(api_version='v1beta1')
+
+  parent = firebase_util.GetProjectRef(project_id).RelativeName()
+
+  # Check if project already has Firebase enabled.
+  try:
+    return client.projects.Get(messages.FirebaseProjectsGetRequest(name=parent))
+  except apitools_exceptions.HttpNotFoundError:
+    pass
+
+  # If not found, add Firebase to the project.
+  add_req = messages.FirebaseProjectsAddFirebaseRequest(
+      project=parent,
+      addFirebaseRequest=messages.AddFirebaseRequest(),
+  )
+  try:
+    operation = client.projects.AddFirebase(add_req)
+  except apitools_exceptions.HttpConflictError:
+    # Another caller or concurrent request already initiated or completed
+    # adding Firebase.
+    return client.projects.Get(messages.FirebaseProjectsGetRequest(name=parent))
+
+  poller = waiter.CloudOperationPollerNoResources(
+      client.operations, get_name_func=lambda x: x
+  )
+  return waiter.WaitFor(
+      poller,
+      operation.name,
+      f'Adding Firebase to project [{project_id}]...',
+      max_wait_ms=_MAX_WAIT_MS,
+      sleep_ms=_WAIT_POLL_INTERVAL_MS,
+  )

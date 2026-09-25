@@ -1054,13 +1054,27 @@ class GoogleCloudVectorsearchV1SearchHintIndexHint(_messages.Message):
   r"""Message to specify the index to use for the search.
 
   Fields:
+    denseScannParams: Optional. Dense ScaNN parameters.
     name: Required. The resource name of the index to use for the search. The
       index must be in the same project, location, and collection. Format: `pr
       ojects/{project}/locations/{location}/collections/{collection}/indexes/{
       index}`
   """
 
-  name = _messages.StringField(1)
+  denseScannParams = _messages.MessageField('GoogleCloudVectorsearchV1SearchHintIndexHintDenseScannParams', 1)
+  name = _messages.StringField(2)
+
+
+class GoogleCloudVectorsearchV1SearchHintIndexHintDenseScannParams(_messages.Message):
+  r"""Parameters for dense ScaNN.
+
+  Fields:
+    targetRecall: Optional. The target recall for the search. Must be a double
+      in the range [0, 1]. While the search aims to achieve this level of
+      recall, it is not guaranteed.
+  """
+
+  targetRecall = _messages.FloatField(1)
 
 
 class GoogleCloudVectorsearchV1SearchHintKnnHint(_messages.Message):

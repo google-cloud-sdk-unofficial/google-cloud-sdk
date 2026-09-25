@@ -2061,8 +2061,8 @@ class TemplateMetadata(_messages.Message):
       failures should be ignored.
     logSanitizeOperations: Optional. If true, log sanitize operations.
     logTemplateOperations: Optional. If true, log template crud operations.
-    modalities: Optional. Specifies the modalities to scan. If empty, only
-      text modality will be scanned.
+    modalities: Optional. Specifies the modalities to scan. If not specified
+      or empty, only text modality will be scanned.
     multiLanguageDetection: Optional. Metadata for multi language detection.
   """
 

@@ -2622,7 +2622,6 @@ class Empty(_messages.Message):
   """
 
 
-
 class ExecuteSqlPayload(_messages.Message):
   r"""The request payload used to execute SQL statements.
 
@@ -3602,6 +3601,8 @@ class InitialUser(_messages.Message):
       CLOUD_IAM_WORKFORCE_IDENTITY: Cloud IAM workforce identity.
       ENTRAID_USER: Microsoft Entra ID user. Not supported for initial user
         creation.
+      ACTIVE_DIRECTORY_USER: Active Directory user. Not supported for initial
+        user creation.
     """
     BUILT_IN = 0
     CLOUD_IAM_USER = 1
@@ -3611,6 +3612,7 @@ class InitialUser(_messages.Message):
     CLOUD_IAM_GROUP_SERVICE_ACCOUNT = 5
     CLOUD_IAM_WORKFORCE_IDENTITY = 6
     ENTRAID_USER = 7
+    ACTIVE_DIRECTORY_USER = 8
 
   name = _messages.StringField(1)
   roles = _messages.StringField(2, repeated=True)
@@ -8765,11 +8767,32 @@ class SqlWorkloadCapturesListRequest(_messages.Message):
 
 
 class SqlWorkloadCapturesStartReplayRequest(_messages.Message):
+  r"""A SqlWorkloadCapturesStartReplayRequest object.
+
+  Fields:
+    instance: Required. Cloud SQL instance ID. This does not include the
+      project ID.
+    project: Required. Project ID of the project that contains the instance.
+    sqlWorkloadCapturesStartReplayRequestBody: A
+      SqlWorkloadCapturesStartReplayRequestBody resource to be passed as the
+      request body.
+    workloadId: Required. The ID of the workload to replay.
+  """
+
+  instance = _messages.StringField(1, required=True)
+  project = _messages.StringField(2, required=True)
+  sqlWorkloadCapturesStartReplayRequestBody = _messages.MessageField(
+      'SqlWorkloadCapturesStartReplayRequestBody', 3
+  )
+  workloadId = _messages.StringField(4, required=True)
+
+
+class SqlWorkloadCapturesStartReplayRequestBody(_messages.Message):
   r"""Request to start executing a captured workload on a replay instance (the
   Cloud SQL instance where the recorded SQL queries are executed).
 
   Fields:
-    startWorkloadReplayContext: Optional. Contains details about the start
+    startWorkloadReplayContext: Required. Contains details about the start
       workload replay operation.
   """
 
@@ -8777,6 +8800,24 @@ class SqlWorkloadCapturesStartReplayRequest(_messages.Message):
 
 
 class SqlWorkloadCapturesStartRequest(_messages.Message):
+  r"""A SqlWorkloadCapturesStartRequest object.
+
+  Fields:
+    instance: Required. Cloud SQL instance ID. This does not include the
+      project ID.
+    project: Required. Project ID of the project that contains the instance.
+    sqlWorkloadCapturesStartRequestBody: A SqlWorkloadCapturesStartRequestBody
+      resource to be passed as the request body.
+  """
+
+  instance = _messages.StringField(1, required=True)
+  project = _messages.StringField(2, required=True)
+  sqlWorkloadCapturesStartRequestBody = _messages.MessageField(
+      'SqlWorkloadCapturesStartRequestBody', 3
+  )
+
+
+class SqlWorkloadCapturesStartRequestBody(_messages.Message):
   r"""Request to start recording traffic from the primary instance (captured
   workload).
 
@@ -8789,10 +8830,31 @@ class SqlWorkloadCapturesStartRequest(_messages.Message):
 
 
 class SqlWorkloadCapturesStopReplayRequest(_messages.Message):
+  r"""A SqlWorkloadCapturesStopReplayRequest object.
+
+  Fields:
+    instance: Required. Cloud SQL instance ID. This does not include the
+      project ID.
+    project: Required. Project ID of the project that contains the instance.
+    sqlWorkloadCapturesStopReplayRequestBody: A
+      SqlWorkloadCapturesStopReplayRequestBody resource to be passed as the
+      request body.
+    workloadId: Required. The ID of the workload to replay.
+  """
+
+  instance = _messages.StringField(1, required=True)
+  project = _messages.StringField(2, required=True)
+  sqlWorkloadCapturesStopReplayRequestBody = _messages.MessageField(
+      'SqlWorkloadCapturesStopReplayRequestBody', 3
+  )
+  workloadId = _messages.StringField(4, required=True)
+
+
+class SqlWorkloadCapturesStopReplayRequestBody(_messages.Message):
   r"""Request to stop executing a captured workload on a replay instance.
 
   Fields:
-    stopWorkloadReplayContext: Optional. Contains details about the stop
+    stopWorkloadReplayContext: Required. Contains details about the stop
       workload replay operation.
   """
 
@@ -8800,6 +8862,24 @@ class SqlWorkloadCapturesStopReplayRequest(_messages.Message):
 
 
 class SqlWorkloadCapturesStopRequest(_messages.Message):
+  r"""A SqlWorkloadCapturesStopRequest object.
+
+  Fields:
+    instance: Required. Cloud SQL instance ID. This does not include the
+      project ID.
+    project: Required. Project ID of the project that contains the instance.
+    sqlWorkloadCapturesStopRequestBody: A SqlWorkloadCapturesStopRequestBody
+      resource to be passed as the request body.
+  """
+
+  instance = _messages.StringField(1, required=True)
+  project = _messages.StringField(2, required=True)
+  sqlWorkloadCapturesStopRequestBody = _messages.MessageField(
+      'SqlWorkloadCapturesStopRequestBody', 3
+  )
+
+
+class SqlWorkloadCapturesStopRequestBody(_messages.Message):
   r"""Request to stop recording traffic from the primary instance.
 
   Fields:
@@ -9654,6 +9734,7 @@ class User(_messages.Message):
       CLOUD_IAM_WORKFORCE_IDENTITY: Cloud IAM workforce identity managed by
         Workforce Identity Federation.
       ENTRAID_USER: Microsoft Entra ID user.
+      ACTIVE_DIRECTORY_USER: Active Directory user.
     """
     BUILT_IN = 0
     CLOUD_IAM_USER = 1
@@ -9663,6 +9744,7 @@ class User(_messages.Message):
     CLOUD_IAM_GROUP_SERVICE_ACCOUNT = 5
     CLOUD_IAM_WORKFORCE_IDENTITY = 6
     ENTRAID_USER = 7
+    ACTIVE_DIRECTORY_USER = 8
 
   databaseRoles = _messages.StringField(1, repeated=True)
   dualPasswordType = _messages.EnumField('DualPasswordTypeValueValuesEnum', 2)

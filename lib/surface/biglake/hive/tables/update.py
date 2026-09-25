@@ -79,9 +79,9 @@ class Update(base.UpdateCommand):
           ' --parameters, --location-uri, or --columns-from-file.'
       )
 
-    # We use v1beta client for Hive metastore operations.
-    client = apis.GetClientInstance('biglake', 'v1beta')
-    messages = apis.GetMessagesModule('biglake', 'v1beta')
+    # We use v1 client for Hive metastore operations.
+    client = apis.GetClientInstance('biglake', 'v1')
+    messages = apis.GetMessagesModule('biglake', 'v1')
 
     hive_table = messages.HiveTable()
 
@@ -125,14 +125,14 @@ class Update(base.UpdateCommand):
     update_mask = ','.join(mask_paths)
 
     request = (
-        messages.BiglakeHiveV1betaProjectsCatalogsDatabasesTablesPatchRequest(
+        messages.BiglakeHiveV1ProjectsCatalogsDatabasesTablesPatchRequest(
             name=name,
             hiveTable=hive_table,
             updateMask=update_mask,
         )
     )
 
-    response = client.hive_v1beta_projects_catalogs_databases_tables.Patch(
+    response = client.hive_v1_projects_catalogs_databases_tables.Patch(
         request
     )
 

@@ -22,8 +22,7 @@ import struct
 import sys
 
 import certifi
-
-from googlecloudsdk.api_lib.run import ssh as run_ssh
+from googlecloudsdk.api_lib.run import constants as run_constants
 from googlecloudsdk.core import context_aware
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
@@ -124,7 +123,7 @@ def _ValidateCloudRunArgs(tunnel_target):
   if (
       not tunnel_target.cloud_run_args.workload_type
       or tunnel_target.cloud_run_args.workload_type
-      not in [e.value for e in run_ssh.Ssh.WorkloadType]
+      not in [e.value for e in run_constants.WorkloadType]
   ):
     raise MissingTunnelParameter(
         'Missing or invalid required tunnel argument: workload_type'

@@ -74,6 +74,14 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_KEYRINGS_CRYPTOKEYS = (
+      'projects.locations.keyRings.cryptoKeys',
+      'projects/{projectsId}/locations/{locationsId}/keyRings/{keyRingsId}/'
+      'cryptoKeys/{cryptoKeysId}',
+      {},
+      ['projectsId', 'locationsId', 'keyRingsId', 'cryptoKeysId'],
+      True
+  )
   PROJECTS_LOCATIONS_OPERATIONS = (
       'projects.locations.operations',
       '{+name}',
@@ -85,11 +93,27 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_RESOURCEPOLICIES = (
+      'projects.locations.resourcePolicies',
+      'projects/{projectsId}/locations/{locationsId}/resourcePolicies/'
+      '{resourcePoliciesId}',
+      {},
+      ['projectsId', 'locationsId', 'resourcePoliciesId'],
+      True
+  )
   PROJECTS_NETWORKS = (
       'projects.networks',
       'projects/{projectsId}/global/networks/{networksId}',
       {},
       ['projectsId', 'networksId'],
+      True
+  )
+  PROJECTS_REGIONS_RESOURCEPOLICIES = (
+      'projects.regions.resourcePolicies',
+      'projects/{projectsId}/regions/{regionsId}/resourcePolicies/'
+      '{resourcePoliciesId}',
+      {},
+      ['projectsId', 'regionsId', 'resourcePoliciesId'],
       True
   )
   PROJECTS_SERVICEACCOUNTS = (

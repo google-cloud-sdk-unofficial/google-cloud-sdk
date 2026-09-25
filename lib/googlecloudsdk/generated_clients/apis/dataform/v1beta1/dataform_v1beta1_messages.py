@@ -2590,7 +2590,7 @@ class FileSearchResult(_messages.Message):
   r"""Client-facing representation of a file entry in search results.
 
   Fields:
-    path: File system path relative to the workspace root.
+    path: File system path relative to the file tree root.
   """
 
   path = _messages.StringField(1)

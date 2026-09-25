@@ -858,7 +858,7 @@ class RolloutKind(_messages.Message):
       filter string against Unit. The filter will be applied to determine the
       eligible unit population. This filter can only reduce, but not expand
       the scope of the rollout.
-    unitKind: Required. Immutable. UnitKind that this rollout kind corresponds
+    unitKind: Optional. Immutable. UnitKind that this rollout kind corresponds
       to. Rollouts stemming from this rollout kind will target the units of
       this unit kind. In other words, this defines the population of target
       units to be upgraded by rollouts.

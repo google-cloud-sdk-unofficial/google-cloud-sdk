@@ -54,6 +54,7 @@ _V1BETA1_VERSION = 'v1beta1'
 _V1ALPHA_VERSION = 'v1alpha'
 _V2ALPHA_VERSION = 'v2alpha'
 _V2BETA_VERSION = 'v2beta'
+_V2_VERSION = 'v2'
 _TOO_MANY_REQUESTS = 429
 
 # Map of services which should be protected from being disabled by
@@ -102,6 +103,36 @@ def GetConsumerPolicyV2Beta(policy_name):
     message.GoogleApiServiceusageV2betaConsumerPolicy: The consumer policy
   """
   client = _GetClientInstance(version=_V2BETA_VERSION)
+  messages = client.MESSAGES_MODULE
+
+  request = messages.ServiceusageConsumerPoliciesGetRequest(name=policy_name)
+
+  try:
+    return client.consumerPolicies.Get(request)
+  except (
+      apitools_exceptions.HttpForbiddenError,
+      apitools_exceptions.HttpNotFoundError,
+  ) as e:
+    exceptions.ReraiseError(e, exceptions.GetConsumerPolicyException)
+
+
+def GetConsumerPolicyV2(policy_name):
+  """Make API call to get a consumer policy.
+
+  Args:
+    policy_name: The name of a consumer policy. Currently supported format
+      '{resource_type}/{resource_name}/consumerPolicies/default'. For example,
+      'projects/100/consumerPolicies/default'.
+
+  Raises:
+    exceptions.GetConsumerPolicyException: when getting a
+      consumer policy fails.
+    apitools_exceptions.HttpError: Another miscellaneous error with the service.
+
+  Returns:
+    message.ConsumerPolicy: The consumer policy
+  """
+  client = _GetClientInstance(version=_V2_VERSION)
   messages = client.MESSAGES_MODULE
 
   request = messages.ServiceusageConsumerPoliciesGetRequest(name=policy_name)
@@ -322,6 +353,47 @@ def GetEffectivePolicyV2Beta(name: str, view: str = 'BASIC'):
     exceptions.ReraiseError(e, exceptions.GetEffectivePolicyException)
 
 
+def GetEffectivePolicyV2(name: str, view: str = 'BASIC'):
+  """Make API call to get effective policy using serviceusage V2 API.
+
+  Args:
+    name: The parent of the effective policy. Currently supported format
+      '{resource_type}/{resource_name}/effectivePolicy'. For example,
+      'projects/100/effectivePolicy'.
+    view: The view of the effective policy to use. The default view is 'BASIC'.
+
+  Raises:
+    exceptions.GetEffectivePolicyException: when getting a effective policy
+      fails.
+    apitools_exceptions.HttpError: Another miscellaneous error with the service.
+
+  Returns:
+    message.EffectivePolicy: The effective policy
+  """
+  client = _GetClientInstance(version=_V2_VERSION)
+  messages = client.MESSAGES_MODULE
+  if view == 'BASIC':
+    view_type = (
+        messages.ServiceusageGetEffectivePolicyRequest.ViewValueValuesEnum.EFFECTIVE_POLICY_VIEW_BASIC
+    )
+  else:
+    view_type = (
+        messages.ServiceusageGetEffectivePolicyRequest.ViewValueValuesEnum.EFFECTIVE_POLICY_VIEW_FULL
+    )
+
+  request = messages.ServiceusageGetEffectivePolicyRequest(
+      name=name, view=view_type
+  )
+
+  try:
+    return client.effectivePolicies.Get(request)
+  except (
+      apitools_exceptions.HttpForbiddenError,
+      apitools_exceptions.HttpNotFoundError,
+  ) as e:
+    exceptions.ReraiseError(e, exceptions.GetEffectivePolicyException)
+
+
 def GetEffectiveMcpPolicy(name: str, view: str = 'BASIC'):
   """Make API call to get a effective MCP policy.
 
@@ -431,13 +503,80 @@ def BatchGetServiceV2Beta(parent, services):
     exceptions.ReraiseError(e, exceptions.BatchGetServiceException)
 
 
+def GetServiceV2(service):
+  """Make API call to get service state for a service .
+
+  Args:
+    service: Service to get service state for. format-
+      "{resource}/{resource_Id}/services/{service}".
+
+  Raises:
+    exceptions.GetServiceException: when getting service state for the service
+      in the resource.
+    apitools_exceptions.HttpError: Another miscellaneous error with the service.
+
+  Returns:
+    Message.ServiceState: Service state of the given resource.
+  """
+  client = _GetClientInstance(version=_V2_VERSION)
+  messages = client.MESSAGES_MODULE
+
+  request = messages.ServiceusageServicesGetRequest(
+      name=service,
+      view=messages.ServiceusageServicesGetRequest.ViewValueValuesEnum.SERVICE_STATE_VIEW_FULL,
+  )
+
+  try:
+    return client.services.Get(request)
+  except (
+      apitools_exceptions.HttpForbiddenError,
+      apitools_exceptions.HttpNotFoundError,
+  ) as e:
+    exceptions.ReraiseError(e, exceptions.GetServiceException)
+
+
+def BatchGetServiceV2(parent, services):
+  """Make API call to get service state for multiple services .
+
+  Args:
+    parent: Parent resource to get service state for. format-"projects/100",
+      "folders/101" or "organizations/102".
+    services: Services. Current supported value:(format:
+      "{resource}/{resource_Id}/services/{service}").
+
+  Raises:
+    exceptions.BatchGetServiceException: when getting batch
+      service state for services in the resource.
+    apitools_exceptions.HttpError: Another miscellaneous error with the service.
+
+  Returns:
+    Message.BatchGetServicesResponse: Service state of the given resource.
+  """
+  client = _GetClientInstance(version=_V2_VERSION)
+  messages = client.MESSAGES_MODULE
+
+  request = messages.ServiceusageServiceStatesBatchGetRequest(
+      parent=parent,
+      services=services,
+      view=messages.ServiceusageServiceStatesBatchGetRequest.ViewValueValuesEnum.SERVICE_STATE_VIEW_FULL,
+  )
+
+  try:
+    return client.serviceStates.BatchGet(request)
+  except (
+      apitools_exceptions.HttpForbiddenError,
+      apitools_exceptions.HttpNotFoundError,
+  ) as e:
+    exceptions.ReraiseError(e, exceptions.BatchGetServiceException)
+
+
 def ListCategoryServices(resource, category, page_size=200, limit=sys.maxsize):
   """Make API call to list category services .
 
   Args:
     resource: resource to get list for. format-"projects/100", "folders/101" or
       "organizations/102".
-    category: category to get list for. format-"catgeory/<category>".
+    category: category to get list for. format-"category/<category>".
     page_size: The page size to list.default=200
     limit: The max number of services to display.
 
@@ -548,6 +687,52 @@ def UpdateConsumerPolicyV2Beta(
 
   request = messages.ServiceusageConsumerPoliciesPatchRequest(
       googleApiServiceusageV2betaConsumerPolicy=consumerpolicy,
+      name=name,
+      force=force,
+      validateOnly=validateonly,
+  )
+
+  try:
+    return client.consumerPolicies.Patch(request)
+  except (
+      apitools_exceptions.HttpForbiddenError,
+      apitools_exceptions.HttpNotFoundError,
+  ) as e:
+    exceptions.ReraiseError(e, exceptions.UpdateConsumerPolicyException)
+  except apitools_exceptions.HttpBadRequestError as e:
+    log.status.Print(
+        'Provide the --force flag if you wish to force disable services.'
+    )
+    exceptions.ReraiseError(e, exceptions.Error)
+
+
+def UpdateConsumerPolicyV2(
+    consumerpolicy, name, force=False, validateonly=False
+):
+  """Make API call to update a consumer policy.
+
+  Args:
+    consumerpolicy: The consumer policy to update.
+    name: The resource name of the policy. Currently supported format
+      '{resource_type}/{resource_name}/consumerPolicies/default. For example,
+      'projects/100/consumerPolicies/default'.
+    force: Skip breaking change detections.
+    validateonly: If set, validate the request and preview the result but do not
+      actually commit it. The default is false.
+
+  Raises:
+    exceptions.UpdateConsumerPolicyException: when updating a
+      consumer policy fails.
+    apitools_exceptions.HttpError: Another miscellaneous error with the service.
+
+  Returns:
+    Updated consumer policy
+  """
+  client = _GetClientInstance(_V2_VERSION)
+  messages = client.MESSAGES_MODULE
+
+  request = messages.ServiceusageConsumerPoliciesPatchRequest(
+      consumerPolicy=consumerpolicy,
       name=name,
       force=force,
       validateOnly=validateonly,
@@ -711,6 +896,140 @@ def ListExpandedMembers(resource: str, service_group: str, page_size: int = 50):
       exceptions.ReraiseError(e, exceptions.ListExpandedMembersException)
 
 
+def ListExpandedMembersV2(
+    resource: str, service_group: str, page_size: int = 50
+):
+  """Make API call to list expanded members of a specific service group.
+
+  Args:
+    resource: The target resource in the format:
+      '{resource_type}/{resource_name}'.
+    service_group: Service group, for example,
+      'services/compute.googleapis.com/groups/dependencies'.
+    page_size: The page size to list. The default page_size is 50.
+
+  Raises:
+    exceptions.ListExpandedMembersException: when listing
+      expanded members fails.
+    apitools_exceptions.HttpError: Another miscellaneous error with the service.
+
+  Returns:
+    Message. ExpandedMember.serviceName : Service names of the expanded members
+    of the service group.
+  """
+  client = _GetClientInstance(_V2_VERSION)
+  messages = client.MESSAGES_MODULE
+
+  request = messages.ServiceusageServicesGroupsExpandedMembersListRequest(
+      parent='{}/{}'.format(resource, service_group)
+  )
+
+  try:
+    response = list_pager.YieldFromList(
+        _Lister(client.services_groups_expandedMembers),
+        request,
+        batch_size_attribute='pageSize',
+        batch_size=page_size,
+        field='members',
+    )
+    members = []
+    for member in response:
+      members.append(member.serviceName)
+    return members
+  except (
+      apitools_exceptions.HttpForbiddenError,
+      apitools_exceptions.HttpNotFoundError,
+  ) as e:
+    if 'SU_GROUP_NOT_FOUND' in str(e):
+      return []
+    else:
+      exceptions.ReraiseError(e, exceptions.ListExpandedMembersException)
+
+
+def ListCatalogMembers(resource: str, catalog: str, page_size: int = 50):
+  """Make API call to list members of a specific catalog.
+
+  Args:
+    resource: The target resource in the format:
+      '{resource_type}/{resource_name}'.
+    catalog: Catalog name, for example, 'catalogs/default-cloud-services'.
+    page_size: The page size to list. The default page_size is 50.
+
+  Raises:
+    exceptions.ListCatalogMembersException: when listing catalog members fails.
+    apitools_exceptions.HttpError: Another miscellaneous error with the service.
+
+  Returns:
+    List of service names belonging to the catalog.
+  """
+  client = _GetClientInstance(_V2BETA_VERSION)
+  messages = client.MESSAGES_MODULE
+
+  request = messages.ServiceusageCatalogsMembersListRequest(
+      parent=f'{resource}/{catalog}'
+  )
+
+  try:
+    response = list_pager.YieldFromList(
+        _Lister(client.catalogs_members),
+        request,
+        batch_size_attribute='pageSize',
+        batch_size=page_size,
+        field='members',
+    )
+    service_names = []
+    for member in response:
+      service_names.append(member.service)
+    return service_names
+  except (
+      apitools_exceptions.HttpForbiddenError,
+      apitools_exceptions.HttpNotFoundError,
+  ) as e:
+    exceptions.ReraiseError(e, exceptions.ListCatalogMembersException)
+
+
+def ListCatalogMembersV2(resource: str, catalog: str, page_size: int = 50):
+  """Make API call to list members of a specific catalog.
+
+  Args:
+    resource: The target resource in the format:
+      '{resource_type}/{resource_name}'.
+    catalog: Catalog name, for example, 'catalogs/default-cloud-services'.
+    page_size: The page size to list. The default page_size is 50.
+
+  Raises:
+    exceptions.ListCatalogMembersException: when listing catalog members fails.
+    apitools_exceptions.HttpError: Another miscellaneous error with the service.
+
+  Returns:
+    List of service names belonging to the catalog.
+  """
+  client = _GetClientInstance(_V2_VERSION)
+  messages = client.MESSAGES_MODULE
+
+  request = messages.ServiceusageCatalogsMembersListRequest(
+      parent=f'{resource}/{catalog}'
+  )
+
+  try:
+    response = list_pager.YieldFromList(
+        _Lister(client.catalogs_members),
+        request,
+        batch_size_attribute='pageSize',
+        batch_size=page_size,
+        field='members',
+    )
+    service_names = []
+    for member in response:
+      service_names.append(member.service)
+    return service_names
+  except (
+      apitools_exceptions.HttpForbiddenError,
+      apitools_exceptions.HttpNotFoundError,
+  ) as e:
+    exceptions.ReraiseError(e, exceptions.ListCatalogMembersException)
+
+
 def ListAncestorGroups(resource: str, service: str, page_size: int = 50):
   """Make API call to list ancestor groups that depend on the service.
 
@@ -770,6 +1089,44 @@ def AnalyzeConsumerPolicy(
     message.
   """
   client = _GetClientInstance(version=_V2BETA_VERSION)
+  messages = client.MESSAGES_MODULE
+
+  request = messages.ServiceusageConsumerPoliciesAnalyzeRequest(
+      analyzeConsumerPolicyRequest=messages.AnalyzeConsumerPolicyRequest(
+          proposedPolicy=proposed_policy,
+          analysisTypes=[
+              messages.AnalyzeConsumerPolicyRequest.AnalysisTypesValueListEntryValuesEnum.ANALYSIS_TYPE_DEPENDENCY,
+          ],
+      ),
+      name=proposed_policy.name,
+  )
+  try:
+    return client.consumerPolicies.Analyze(request)
+  except (
+      apitools_exceptions.HttpForbiddenError,
+      apitools_exceptions.HttpNotFoundError,
+  ) as e:
+    exceptions.ReraiseError(e, exceptions.AnalyzeConsumerPolicyException)
+
+
+def AnalyzeConsumerPolicyV2(
+    proposed_policy,
+):
+  """Make API call to analyze a consumer policy for dependencies.
+
+  Args:
+    proposed_policy: The consumer policy to analyze. type :
+      message.ConsumerPolicy
+
+  Raises:
+    exceptions.AnalyzeConsumerPolicyException: when analyzing a
+      consumer policy fails.
+    apitools_exceptions.HttpError: Another miscellaneous error with the service.
+
+  Returns:
+    message.Operation
+  """
+  client = _GetClientInstance(version=_V2_VERSION)
   messages = client.MESSAGES_MODULE
 
   request = messages.ServiceusageConsumerPoliciesAnalyzeRequest(
@@ -1041,10 +1398,8 @@ def AddEnableRule(
   messages = client.MESSAGES_MODULE
 
   resource_name = _PROJECT_RESOURCE % project
-
   if folder:
     resource_name = _FOLDER_RESOURCE % folder
-
   if organization:
     resource_name = _ORGANIZATION_RESOURCE % organization
 
@@ -1053,16 +1408,23 @@ def AddEnableRule(
   try:
     policy = GetConsumerPolicyV2Beta(policy_name)
 
-    prefixed_services = _GetPrefixedServiceNames(services)
-    services_to_enabled = set()
-    existing_services = set()
-    if policy.enableRules:
-      existing_services = set(policy.enableRules[0].services)
+    prefixed_services = _GetPrefixedServiceNames(
+        [s for s in services if not s.startswith('catalogs/')]
+    )
+    prefixed_catalogs = _GetPrefixedCatalogNames(
+        [s for s in services if s.startswith('catalogs/')]
+    )
+    services_to_enable = set(prefixed_services)
+    catalogs_to_enable = set(prefixed_catalogs)
 
-    for service in prefixed_services:
-      # Check if services to add is not already present in the policy.
-      if service not in existing_services:
-        services_to_enabled.add(service)
+    existing_services = set()
+    existing_catalogs = set()
+    if policy.enableRules:
+      existing_services = set(policy.enableRules[0].services or [])
+      existing_catalogs = set(policy.enableRules[0].catalogs or [])
+
+    services_to_enabled = services_to_enable - existing_services
+    catalogs_to_enabled = catalogs_to_enable - existing_catalogs
 
     if not group.startswith('groups/'):
       prefixed_group = f'groups/{group}'
@@ -1081,10 +1443,139 @@ def AddEnableRule(
             raise exceptions.EmptyMembersError(
                 util.GetGroupName(service, prefixed_group)
             )
-          else:
-            log.warning(
-                f'The service {service} does not have dependencies for the '
-                f'group {prefixed_group}.'
+
+        for dependent_service in list_expanded_members:
+          # dependent_service is in format services/{service_name}
+          dependent_service_name = dependent_service.split('/')[-1]
+          # Check if dependent services to add is not already present in the
+          # input services.
+          if dependent_service_name not in services:
+            dependent_services.add(dependent_service)
+
+      for service in list(dependent_services):
+        # check if dependent services are already enabled
+        if service not in existing_services:
+          services_to_enabled.add(service)
+
+    if not services_to_enabled and not catalogs_to_enabled:
+      log.status.Print(
+          ', '.join(prefixed_services + prefixed_catalogs)
+          + ' are already enabled and present in the consumer policy.'
+      )
+      return None
+
+    if policy.enableRules:
+      rule = policy.enableRules[0]
+      if rule.services is None:
+        rule.services = []
+      if rule.catalogs is None:
+        rule.catalogs = []
+      for service in list(services_to_enabled):
+        rule.services.append(service)
+      for catalog in list(catalogs_to_enabled):
+        rule.catalogs.append(catalog)
+    else:
+      policy.enableRules.append(
+          messages.GoogleApiServiceusageV2betaEnableRule(
+              services=list(services_to_enabled),
+              catalogs=list(catalogs_to_enabled),
+          )
+      )
+
+    return UpdateConsumerPolicyV2Beta(
+        policy, policy_name, validateonly=validate_only
+    )
+  except (
+      apitools_exceptions.HttpForbiddenError,
+      apitools_exceptions.HttpNotFoundError,
+  ) as e:
+    exceptions.ReraiseError(e, exceptions.EnableServiceException)
+
+
+def AddEnableRuleV2(
+    services: List[str],
+    project: str,
+    consumer_policy_name: str = 'default',
+    folder: str = None,
+    organization: str = None,
+    validate_only: bool = False,
+    skip_dependency: bool = False,
+    group: str = 'dependencies',
+    inputted_group: bool = False,
+):
+  """Make API call to enable a specific service.
+
+  Args:
+    services: The identifier of the service to enable, for example
+      'serviceusage.googleapis.com'.
+    project: The project for which to enable the service.
+    consumer_policy_name: Name of consumer policy. The default name is
+      "default".
+    folder: The folder for which to enable the service.
+    organization: The organization for which to enable the service.
+    validate_only: If True, the action will be validated and result will be
+      preview but not exceuted.
+    skip_dependency: If True, the dependencies of the service to be enabled will
+      not be enabled.
+    group: The group to check for dependencies.
+    inputted_group: If True, the group is inputted by the user. If False, the
+      group is automatically set to 'dependencies'.
+
+  Raises:
+    exceptions.EnableServiceException: when enabling API fails.
+    apitools_exceptions.HttpError: Another miscellaneous error with the service.
+
+  Returns:
+    The result of the operation
+  """
+  client = _GetClientInstance(version=_V2_VERSION)
+  messages = client.MESSAGES_MODULE
+
+  resource_name = _PROJECT_RESOURCE % project
+  if folder:
+    resource_name = _FOLDER_RESOURCE % folder
+  if organization:
+    resource_name = _ORGANIZATION_RESOURCE % organization
+
+  policy_name = resource_name + _CONSUMER_POLICY_DEFAULT % consumer_policy_name
+
+  try:
+    policy = GetConsumerPolicyV2(policy_name)
+
+    prefixed_services = _GetPrefixedServiceNames(
+        [s for s in services if not s.startswith('catalogs/')]
+    )
+    prefixed_catalogs = _GetPrefixedCatalogNames(
+        [s for s in services if s.startswith('catalogs/')]
+    )
+    services_to_enable = set(prefixed_services)
+    catalogs_to_enable = set(prefixed_catalogs)
+
+    existing_services = set()
+    existing_catalogs = set()
+    if policy.enableRules:
+      existing_services = set(policy.enableRules[0].services or [])
+      existing_catalogs = set(policy.enableRules[0].catalogs or [])
+
+    services_to_enabled = services_to_enable - existing_services
+    catalogs_to_enabled = catalogs_to_enable - existing_catalogs
+
+    if not group.startswith('groups/'):
+      prefixed_group = f'groups/{group}'
+    else:
+      prefixed_group = group
+
+    dependent_services = set()
+
+    if not skip_dependency:
+      for service in prefixed_services:
+        list_expanded_members = ListExpandedMembersV2(
+            resource_name, f'{service}/{prefixed_group}'
+        )
+        if not list_expanded_members and inputted_group:
+          if prefixed_group != 'groups/dependencies':
+            raise exceptions.EmptyMembersError(
+                util.GetGroupName(service, prefixed_group)
             )
 
         for dependent_service in list_expanded_members:
@@ -1100,40 +1591,32 @@ def AddEnableRule(
         if service not in existing_services:
           services_to_enabled.add(service)
 
-    if not services_to_enabled:
-      if skip_dependency:
-        log.warning(
-            'The service(s) '
-            + ','.join(services)
-            + ' are already enabled and present in the consumer policy.'
-        )
-        return None
-      else:
-        service_list_str = ','.join(services)
-        message = f'The service(s) {service_list_str}'
-
-        if dependent_services:
-          # if dependent services are present and not in services,
-          # add them to the error message.
-
-          dependent_list_str = ','.join(list(dependent_services))
-          message += f' and their dependencies {dependent_list_str}'
-
-        message += ' are already enabled and present in the consumer policy'
-        log.warning(message)
-        return None
+    if not services_to_enabled and not catalogs_to_enabled:
+      log.status.Print(
+          ', '.join(prefixed_services + prefixed_catalogs)
+          + ' are already enabled and present in the consumer policy.'
+      )
+      return None
 
     if policy.enableRules:
+      rule = policy.enableRules[0]
+      if rule.services is None:
+        rule.services = []
+      if rule.catalogs is None:
+        rule.catalogs = []
       for service in list(services_to_enabled):
-        policy.enableRules[0].services.append(service)
+        rule.services.append(service)
+      for catalog in list(catalogs_to_enabled):
+        rule.catalogs.append(catalog)
     else:
       policy.enableRules.append(
-          messages.GoogleApiServiceusageV2betaEnableRule(
-              services=list(services_to_enabled)
+          messages.EnableRule(
+              services=list(services_to_enabled),
+              catalogs=list(catalogs_to_enabled),
           )
       )
 
-    return UpdateConsumerPolicyV2Beta(
+    return UpdateConsumerPolicyV2(
         policy, policy_name, validateonly=validate_only
     )
   except (
@@ -1183,10 +1666,8 @@ def RemoveEnableRule(
     The result of the operation
   """
   resource_name = _PROJECT_RESOURCE % project
-
   if folder:
     resource_name = _FOLDER_RESOURCE % folder
-
   if organization:
     resource_name = _ORGANIZATION_RESOURCE % organization
 
@@ -1195,29 +1676,47 @@ def RemoveEnableRule(
   try:
     current_policy = GetConsumerPolicyV2Beta(policy_name)
 
-    prefixed_services = _GetPrefixedServiceNames(services)
-    services_to_remove = {
+    prefixed_services = _GetPrefixedServiceNames(
+        [s for s in services if not s.startswith('catalogs/')]
+    )
+    prefixed_catalogs = _GetPrefixedCatalogNames(
+        [s for s in services if s.startswith('catalogs/')]
+    )
+    services_to_remove = set(prefixed_services)
+    catalogs_to_remove = set(prefixed_catalogs)
+
+    matching_services = {
         service
-        for service in prefixed_services
+        for service in services_to_remove
         if any(
-            service in enable_rule.services
+            service in (enable_rule.services or [])
+            for enable_rule in current_policy.enableRules
+        )
+    }
+    matching_catalogs = {
+        catalog
+        for catalog in catalogs_to_remove
+        if any(
+            catalog in (enable_rule.catalogs or [])
             for enable_rule in current_policy.enableRules
         )
     }
 
-    if not services_to_remove:
-      log.warning(
-          'The service(s) '
-          + ','.join(prefixed_services)
+    if not matching_services and not matching_catalogs:
+      log.status.Print(
+          ', '.join(prefixed_services + prefixed_catalogs)
           + ' are not enabled in the consumer policy.'
       )
       return None
 
     proposed_policy = copy.deepcopy(current_policy)
     for enable_rule in proposed_policy.enableRules:
-      for service in services_to_remove:
+      for service in matching_services:
         if service in enable_rule.services:
           enable_rule.services.remove(service)
+      for catalog in matching_catalogs:
+        if catalog in enable_rule.catalogs:
+          enable_rule.catalogs.remove(catalog)
 
     to_remove = []
 
@@ -1227,25 +1726,23 @@ def RemoveEnableRule(
 
       op = services_util.WaitOperation(op.name, GetOperationV2Beta)
 
-      analysis_reponse = encoding.MessageToDict(op.response)
+      analysis_response = encoding.MessageToDict(op.response)
 
       missing_dependency = {}
 
-      if 'analysis' in analysis_reponse:
-        for analysis in analysis_reponse['analysis']:
+      if 'analysis' in analysis_response:
+        for analysis in analysis_response['analysis']:
           for warning in analysis['analysisResult']['warnings']:
-            for service in services_to_remove:
-              ## check if analysis is related to service to be removed.
-              if service == warning['missingDependency']:
-                if service not in missing_dependency:
-                  missing_dependency[service] = []
-                missing_dependency[service].append(analysis['service'])
-                to_remove.append(analysis['service'])
+            missing_dep = warning['missingDependency']
+            if missing_dep not in missing_dependency:
+              missing_dependency[missing_dep] = []
+            missing_dependency[missing_dep].append(analysis['service'])
+            to_remove.append(analysis['service'])
 
       if not disable_dependency_services and to_remove:
         json_string = json.dumps(missing_dependency)
         raise exceptions.ConfigError(
-            'The services are depended on by the following active service(s) '
+            'These services are dependent on the following active service(s) '
             + json_string
             + ' . Please remove the active dependent services or provide the'
             ' --disable-dependency-services flag to disable them, or'
@@ -1262,10 +1759,164 @@ def RemoveEnableRule(
       for service_name in enable_rule.services:
         if service_name in to_remove:
           rule.services.remove(service_name)
-      if rule.services:
+      if rule.services or rule.catalogs:
         updated_consumer_poicy.enableRules.append(rule)
 
     return UpdateConsumerPolicyV2Beta(
+        updated_consumer_poicy,
+        policy_name,
+        force=force,
+        validateonly=validate_only,
+    )
+  except (
+      apitools_exceptions.HttpForbiddenError,
+      apitools_exceptions.HttpNotFoundError,
+  ) as e:
+    exceptions.ReraiseError(e, exceptions.EnableServiceException)
+  except apitools_exceptions.HttpBadRequestError as e:
+    log.status.Print(
+        'Provide the --force flag if you wish to force disable services.'
+    )
+    exceptions.ReraiseError(e, exceptions.Error)
+
+
+def RemoveEnableRuleV2(
+    project: str,
+    services: List[str],
+    consumer_policy_name: str = 'default',
+    force: bool = False,
+    folder: str = None,
+    organization: str = None,
+    validate_only: bool = False,
+    skip_dependency_check: bool = False,
+    disable_dependency_services: bool = False,
+):
+  """Make API call to disable a specific service.
+
+  Args:
+    project: The project for which to disable the service.
+    services: The list of identifiers of the services to disable, for example
+      ['serviceusage.googleapis.com', 'apikeys.googleapis.com'].
+    consumer_policy_name: Name of consumer policy. The default name is
+      "default".
+    force: Disable service with usage within last 30 days or disable recently
+      enabled service or disable the service even if there are enabled services
+      which depend on it. This also disables the services which depend on the
+      service to be disabled.
+    folder: The folder for which to disable the service.
+    organization: The organization for which to disable the service.
+    validate_only: If True, the action will be validated and result will be
+      preview but not exceuted.`
+    skip_dependency_check: If True, the enabled dependent services of the
+      service to be disabled will remian enabled.
+    disable_dependency_services: If True, the services which depend on the
+      service to be disabled will also be disabled.
+
+  Raises:
+    exceptions.EnableServiceException: when disabling API fails.
+    apitools_exceptions.HttpError: Another miscellaneous error with the service.
+
+  Returns:
+    The result of the operation
+  """
+  resource_name = _PROJECT_RESOURCE % project
+  if folder:
+    resource_name = _FOLDER_RESOURCE % folder
+  if organization:
+    resource_name = _ORGANIZATION_RESOURCE % organization
+
+  policy_name = resource_name + _CONSUMER_POLICY_DEFAULT % consumer_policy_name
+
+  try:
+    current_policy = GetConsumerPolicyV2(policy_name)
+
+    prefixed_services = _GetPrefixedServiceNames(
+        [s for s in services if not s.startswith('catalogs/')]
+    )
+    prefixed_catalogs = _GetPrefixedCatalogNames(
+        [s for s in services if s.startswith('catalogs/')]
+    )
+    services_to_remove = set(prefixed_services)
+    catalogs_to_remove = set(prefixed_catalogs)
+
+    matching_services = {
+        service
+        for service in services_to_remove
+        if any(
+            service in (enable_rule.services or [])
+            for enable_rule in current_policy.enableRules
+        )
+    }
+    matching_catalogs = {
+        catalog
+        for catalog in catalogs_to_remove
+        if any(
+            catalog in (enable_rule.catalogs or [])
+            for enable_rule in current_policy.enableRules
+        )
+    }
+
+    if not matching_services and not matching_catalogs:
+      log.status.Print(
+          ', '.join(prefixed_services + prefixed_catalogs)
+          + ' are not enabled in the consumer policy.'
+      )
+      return None
+
+    proposed_policy = copy.deepcopy(current_policy)
+    for enable_rule in proposed_policy.enableRules:
+      for service in matching_services:
+        if service in enable_rule.services:
+          enable_rule.services.remove(service)
+      for catalog in matching_catalogs:
+        if catalog in enable_rule.catalogs:
+          enable_rule.catalogs.remove(catalog)
+
+    to_remove = []
+
+    if not skip_dependency_check:
+
+      op = AnalyzeConsumerPolicyV2(proposed_policy)
+
+      op = services_util.WaitOperation(op.name, GetOperationV2)
+
+      analysis_response = encoding.MessageToDict(op.response)
+
+      missing_dependency = {}
+
+      if 'analysis' in analysis_response:
+        for analysis in analysis_response['analysis']:
+          for warning in analysis['analysisResult']['warnings']:
+            missing_dep = warning['missingDependency']
+            if missing_dep not in missing_dependency:
+              missing_dependency[missing_dep] = []
+            missing_dependency[missing_dep].append(analysis['service'])
+            to_remove.append(analysis['service'])
+
+      if not disable_dependency_services and to_remove:
+        json_string = json.dumps(missing_dependency)
+        raise exceptions.ConfigError(
+            'These services are dependent on the following active service(s) '
+            + json_string
+            + ' . Please remove the active dependent services or provide the'
+            ' --disable-dependency-services flag to disable them, or'
+            ' --bypass-dependency-service-check to ignore this check.'
+        )
+
+    to_remove = set(to_remove)
+
+    updated_consumer_poicy = copy.deepcopy(proposed_policy)
+    updated_consumer_poicy.enableRules.clear()
+
+    for enable_rule in proposed_policy.enableRules:
+      rule = copy.deepcopy(enable_rule)
+      for service_name in enable_rule.services:
+        if service_name in to_remove:
+          rule.services.remove(service_name)
+      if rule.services or rule.catalogs:
+        updated_consumer_poicy.enableRules.append(rule)
+
+    return UpdateConsumerPolicyV2(
         updated_consumer_poicy,
         policy_name,
         force=force,
@@ -1422,6 +2073,31 @@ class _Lister:
     return self.service_usage.List(request, global_params=global_params)
 
 
+def _GetInheritance(metadata_sources, key: str, target_resource: str):
+  """Parses inheritance metadata from policies."""
+  if not metadata_sources or not metadata_sources.additionalProperties:
+    return '-'
+
+  for vals in metadata_sources.additionalProperties:
+    if vals.key == key:
+      if vals.value and vals.value.policies:
+        if len(vals.value.policies) > 1:
+          return 'Multiple levels'
+        source = vals.value.policies[0].split('/consumerPolicies/')[0]
+        # Target resource may be specified as a project ID (e.g.
+        # 'projects/my-id') while backend metadata returns numeric project
+        # number (e.g. 'projects/12345'). Since projects cannot have project
+        # ancestors, any 'projects/...' source on a project query is the target
+        # resource itself.
+        if target_resource == source or (
+            target_resource.startswith('projects/')
+            and source.startswith('projects/')
+        ):
+          return '-'
+        return source
+  return '-'
+
+
 def ListServicesV2Beta(
     project: str,
     enabled: bool,
@@ -1429,6 +2105,7 @@ def ListServicesV2Beta(
     limit: int,
     folder: str = None,
     organization: str = None,
+    show_details: bool = False,
 ):
   """Make API call to list services.
 
@@ -1439,6 +2116,7 @@ def ListServicesV2Beta(
     limit: The max number of services to display.
     folder: The folder for which to list services.
     organization: The organization for which to list services.
+    show_details: Show details about inheritance and catalog.
 
   Raises:
     exceptions.ListServicesException: when listing services
@@ -1456,44 +2134,251 @@ def ListServicesV2Beta(
     resource_name = _ORGANIZATION_RESOURCE % organization
 
   services = {}
-  parent = []
+  detailed_services = []
   try:
     if enabled:
       policy_name = resource_name + _EFFECTIVE_POLICY
-      effectivepolicy = GetEffectivePolicyV2Beta(policy_name)
+      view = 'FULL' if show_details else 'BASIC'
+      effectivepolicy = GetEffectivePolicyV2Beta(policy_name, view=view)
 
       for rules in effectivepolicy.enableRules:
-        for value in rules.services:
+        # Check if catalog enabled and expand to services with catalog and
+        # inheritance fields.
+        for catalog in (rules.catalogs or []):
           if limit == 0:
             break
-          parent.append(f'{resource_name}/{value}')
-          services[value] = ''
-          limit -= 1
+          catalog_members = ListCatalogMembers(
+              resource_name, catalog, page_size
+          )
+          if show_details:
+            catalog_inheritance = '-'
+            for metadata in (effectivepolicy.enableRuleMetadata or []):
+              catalog_inheritance = _GetInheritance(
+                  metadata.catalogSources,
+                  catalog,
+                  target_resource=resource_name,
+              )
+              if catalog_inheritance != '-':
+                break
 
-      for value in range(0, len(parent), 20):
-        response = BatchGetServiceV2Beta(
-            resource_name, parent[value : value + 20]
-        )
-        for service_state in response.services:
-          service_name = '/'.join(service_state.name.split('/')[2:])
-          services[service_name] = service_state.service.displayName
+            for member_service in catalog_members:
+              if limit == 0:
+                break
+              service_name = member_service
+              detailed_services.append({
+                  'name': service_name,
+                  'inheritance': catalog_inheritance,
+                  'catalog': catalog,
+              })
+              limit -= 1
+          else:
+            for member_service in catalog_members:
+              if limit == 0:
+                break
+              if member_service not in services:
+                services[member_service] = ''
+                limit -= 1
+
+        # Check per-service enablement and populate the fields.
+        for value in (rules.services or []):
+          if limit == 0:
+            break
+          service_name = value
+          if show_details:
+            explicit_inheritance = '-'
+            for metadata in (effectivepolicy.enableRuleMetadata or []):
+              explicit_inheritance = _GetInheritance(
+                  metadata.serviceSources,
+                  service_name,
+                  target_resource=resource_name,
+              )
+              if explicit_inheritance != '-':
+                break
+
+            detailed_services.append({
+                'name': service_name,
+                'inheritance': explicit_inheritance,
+                'catalog': '-',
+            })
+            limit -= 1
+          else:
+            if service_name not in services:
+              services[service_name] = ''
+              limit -= 1
 
     else:
       for public_service in _ListPublicServices(
           page_size=page_size, limit=limit
       ):
-        services[public_service.name] = public_service.displayName
+        services[public_service.name] = ''
       for shared_service in _ListSharedServices(
           resource_name, page_size=page_size, limit=limit
       ):
-        services[shared_service.service.name] = (
-            shared_service.service.displayName
-        )
+        services[shared_service.service.name] = ''
 
     result = []
-    service_info = collections.namedtuple('ServiceList', ['name', 'title'])
-    for service in services:
-      result.append(service_info(name=service, title=services[service]))
+    if show_details and enabled:
+      service_info = collections.namedtuple(
+          'ServiceList', ['name', 'inheritance', 'catalog']
+      )
+      for entry in detailed_services:
+        result.append(
+            service_info(
+                name=entry['name'],
+                inheritance=entry['inheritance'],
+                catalog=entry['catalog'],
+            )
+        )
+      result.sort(key=lambda x: (x.name, x.catalog, x.inheritance))
+    else:
+      service_info = collections.namedtuple('ServiceList', ['name'])
+      for service in sorted(services):
+        result.append(service_info(name=service))
+
+    return result
+  except (
+      apitools_exceptions.HttpForbiddenError,
+      apitools_exceptions.HttpNotFoundError,
+  ) as e:
+    exceptions.ReraiseError(e, exceptions.ListServicesException)
+
+
+def ListServicesV2(
+    project: str,
+    enabled: bool,
+    page_size: int,
+    limit: int,
+    folder: str = None,
+    organization: str = None,
+    show_details: bool = False,
+):
+  """Make API call to list services.
+
+  Args:
+    project: The project for which to list services.
+    enabled: List only enabled services.
+    page_size: The page size to list.
+    limit: The max number of services to display.
+    folder: The folder for which to list services.
+    organization: The organization for which to list services.
+    show_details: Show details about inheritance and catalog.
+
+  Raises:
+    exceptions.ListServicesException: when listing services
+    fails.
+    apitools_exceptions.HttpError: Another miscellaneous error with the service.
+
+  Returns:
+    The list of services
+  """
+  resource_name = _PROJECT_RESOURCE % project
+  if folder:
+    resource_name = _FOLDER_RESOURCE % folder
+
+  if organization:
+    resource_name = _ORGANIZATION_RESOURCE % organization
+
+  services = {}
+  detailed_services = []
+  try:
+    if enabled:
+      policy_name = resource_name + _EFFECTIVE_POLICY
+      view = 'FULL' if show_details else 'BASIC'
+      effectivepolicy = GetEffectivePolicyV2(policy_name, view=view)
+
+      for rules in effectivepolicy.enableRules:
+        # Check if catalog enabled and expand to services with catalog and
+        # inheritance fields.
+        for catalog in (rules.catalogs or []):
+          if limit == 0:
+            break
+          catalog_members = ListCatalogMembersV2(
+              resource_name, catalog, page_size
+          )
+          if show_details:
+            catalog_inheritance = '-'
+            for metadata in (effectivepolicy.enableRuleMetadata or []):
+              catalog_inheritance = _GetInheritance(
+                  metadata.catalogSources,
+                  catalog,
+                  target_resource=resource_name,
+              )
+              if catalog_inheritance != '-':
+                break
+
+            for member_service in catalog_members:
+              if limit == 0:
+                break
+              service_name = member_service
+              detailed_services.append({
+                  'name': service_name,
+                  'inheritance': catalog_inheritance,
+                  'catalog': catalog,
+              })
+              limit -= 1
+          else:
+            for member_service in catalog_members:
+              if limit == 0:
+                break
+              if member_service not in services:
+                services[member_service] = ''
+                limit -= 1
+
+        # Check per-service enablement and populate the fields.
+        for value in (rules.services or []):
+          if limit == 0:
+            break
+          service_name = value
+          if show_details:
+            explicit_inheritance = '-'
+            for metadata in (effectivepolicy.enableRuleMetadata or []):
+              explicit_inheritance = _GetInheritance(
+                  metadata.serviceSources,
+                  service_name,
+                  target_resource=resource_name,
+              )
+              if explicit_inheritance != '-':
+                break
+
+            detailed_services.append({
+                'name': service_name,
+                'inheritance': explicit_inheritance,
+                'catalog': '-',
+            })
+            limit -= 1
+          else:
+            if service_name not in services:
+              services[service_name] = ''
+              limit -= 1
+
+    else:
+      for public_service in _ListPublicServices(
+          page_size=page_size, limit=limit
+      ):
+        services[public_service.name] = ''
+      for shared_service in _ListSharedServices(
+          resource_name, page_size=page_size, limit=limit
+      ):
+        services[shared_service.service.name] = ''
+
+    result = []
+    if show_details and enabled:
+      service_info = collections.namedtuple(
+          'ServiceList', ['name', 'inheritance', 'catalog']
+      )
+      for entry in detailed_services:
+        result.append(
+            service_info(
+                name=entry['name'],
+                inheritance=entry['inheritance'],
+                catalog=entry['catalog'],
+            )
+        )
+      result.sort(key=lambda x: (x.name, x.catalog, x.inheritance))
+    else:
+      service_info = collections.namedtuple('ServiceList', ['name'])
+      for service in sorted(services):
+        result.append(service_info(name=service))
 
     return result
   except (
@@ -1606,6 +2491,32 @@ def GetOperationV2Beta(name: str):
     The message.Operation object with response and error.
   """
   client = _GetClientInstance(version=_V2BETA_VERSION)
+  messages = client.MESSAGES_MODULE
+  request = messages.ServiceusageOperationsGetRequest(name=name)
+  try:
+    return client.operations.Get(request)
+  except (
+      apitools_exceptions.HttpForbiddenError,
+      apitools_exceptions.HttpNotFoundError,
+  ) as e:
+    exceptions.ReraiseError(e, exceptions.OperationErrorException)
+
+
+def GetOperationV2(name: str):
+  """Make API call to get an operation using serviceusageV2 api.
+
+  Args:
+    name: The name of the operation resource. Format
+      'operations/<operation_id>'.
+
+  Raises:
+    exceptions.OperationErrorException: when the getting operation API fails.
+    apitools_exceptions.HttpError: Another miscellaneous error with the service.
+
+  Returns:
+    The message.Operation object with response and error.
+  """
+  client = _GetClientInstance(version=_V2_VERSION)
   messages = client.MESSAGES_MODULE
   request = messages.ServiceusageOperationsGetRequest(name=name)
   try:
@@ -1938,4 +2849,11 @@ def _GetPrefixedServiceNames(services: List[str]) -> List[str]:
   """Prefixes service names with 'services/' if not already present."""
   return [
       f'services/{s}' if not s.startswith('services/') else s for s in services
+  ]
+
+
+def _GetPrefixedCatalogNames(catalogs: List[str]) -> List[str]:
+  """Prefixes catalog names with 'catalogs/' if not already present."""
+  return [
+      f'catalogs/{c}' if not c.startswith('catalogs/') else c for c in catalogs
   ]

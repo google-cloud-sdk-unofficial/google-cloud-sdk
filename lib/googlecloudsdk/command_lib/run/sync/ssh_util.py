@@ -19,6 +19,7 @@ import hashlib
 import os
 import subprocess
 
+from googlecloudsdk.api_lib.run import constants
 from googlecloudsdk.api_lib.run import ssh as run_ssh
 from googlecloudsdk.command_lib.util.ssh import ssh
 from googlecloudsdk.core import exceptions
@@ -45,7 +46,7 @@ class MultiplexedSshSession:
   def __init__(
       self,
       args: argparse.Namespace,
-      workload_type: run_ssh.Ssh.WorkloadType,
+      workload_type: constants.WorkloadType,
   ):
     self._ssh = run_ssh.Ssh(args, workload_type)
     self._cached_ssh_command_components = None

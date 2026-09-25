@@ -3945,13 +3945,13 @@ class StorageProjectsBucketsCreateAuthSessionRequest(_messages.Message):
   Fields:
     createAuthSessionRequest: A CreateAuthSessionRequest resource to be passed
       as the request body.
-    resource: Required. REQUIRED: The Bucket resource for which the session
-      token is being requested. The `resource` field should be
-      `projects/_/buckets/{bucket}`.
+    requestedResource: Required. REQUIRED: The Bucket resource for which the
+      session token is being requested. The `requested_resource` field should
+      be `projects/_/buckets/{bucket}`.
   """
 
   createAuthSessionRequest = _messages.MessageField('CreateAuthSessionRequest', 1)
-  resource = _messages.StringField(2, required=True)
+  requestedResource = _messages.StringField(2, required=True)
 
 
 class StorageProjectsBucketsFoldersBulkDeleteRequest(_messages.Message):

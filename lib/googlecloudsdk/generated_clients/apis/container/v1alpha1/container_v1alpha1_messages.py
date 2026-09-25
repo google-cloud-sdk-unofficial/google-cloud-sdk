@@ -4223,6 +4223,8 @@ class EphemeralStorageLocalSsdConfig(_messages.Message):
 
   Fields:
     dataCacheCount: Number of local SSDs to use for GKE Data Cache.
+    ephemeralCapacityGb: Capacity set aside for Ephemeral Storage if using mixed
+      Local SSD modes. The remaining capacity is Raw Block.
     localSsdCount: Number of local SSDs to use to back ephemeral storage. Uses
       NVMe interfaces. A zero (or unset) value has different meanings
       depending on machine type being used: 1. For pre-Gen3 machines, which
@@ -4240,7 +4242,8 @@ class EphemeralStorageLocalSsdConfig(_messages.Message):
   """
 
   dataCacheCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  localSsdCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  ephemeralCapacityGb = _messages.IntegerField(2)
+  localSsdCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
 
 
 class EtcHostsEntry(_messages.Message):

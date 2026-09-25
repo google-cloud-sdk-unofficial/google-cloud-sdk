@@ -14,7 +14,7 @@
 # limitations under the License.
 """Command to SSH into a Cloud Run service."""
 
-from googlecloudsdk.api_lib.run import ssh as run_ssh
+from googlecloudsdk.api_lib.run import constants
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import ssh_command
@@ -57,7 +57,7 @@ class Ssh(ssh_command.BaseSshCommand):
     """Connect to a running Cloud Run service deployment."""
     self.RunSsh(
         args,
-        run_ssh.Ssh.WorkloadType.SERVICE,
+        constants.WorkloadType.SERVICE,
         args.service,
         getattr(args, 'instance', None),
     )

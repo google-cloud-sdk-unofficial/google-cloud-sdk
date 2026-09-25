@@ -263,6 +263,27 @@ def _HumanReadableByteAmountValidator(size_string):
     raise InvalidValueError(str(e))
 
 
+_VALID_ASSERTIONS = ('readonly',)
+
+
+def _AssertValidator(val):
+  """Validates the assert property value.
+
+  Args:
+    val: str or None, The assert property value to validate.
+
+  Raises:
+    InvalidValueError: If the value is not a valid assertion.
+  """
+  if val is None:
+    return
+  if val not in _VALID_ASSERTIONS:
+    raise InvalidValueError(
+        f'The assert property value [{val}] is not valid. '
+        f'Possible values: [{", ".join(_VALID_ASSERTIONS)}].'
+    )
+
+
 def _UserAgentHeaderValueValidator(value):
   """Validates user-agent header values to prevent header injection."""
   if value is None:
@@ -2147,6 +2168,15 @@ class _SectionCore(_Section):
         help_text=(
             'Account `gcloud` should use for authentication. '
             'Run `gcloud auth list` to see your currently available accounts.'
+        ),
+    )
+    self.assert_ = self._Add(
+        'assert',
+        hidden=True,
+        choices=list(_VALID_ASSERTIONS),
+        validator=_AssertValidator,
+        help_text=(
+            'Assertions required for command execution, such as `readonly`.'
         ),
     )
     self.disable_collection_path_deprecation_warning = self._AddBool(

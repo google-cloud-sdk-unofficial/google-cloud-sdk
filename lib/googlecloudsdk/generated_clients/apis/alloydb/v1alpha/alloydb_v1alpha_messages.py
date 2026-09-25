@@ -3939,7 +3939,8 @@ class ObservabilityInstanceConfig(_messages.Message):
       set, this flag is "off" by default.
     trackActiveQueryPlan: Indicates whether to track active query plans for an
       instance. If not set, the default value is "off". Can only be enabled if
-      track_active_queries is enabled.
+      track_active_queries is enabled. Deprecated: Use track_active_queries
+      instead.
     trackClientAddress: Track client address for an instance. If not set,
       default value is "off".
     trackWaitEventTypes: Output only. Track wait event types during query

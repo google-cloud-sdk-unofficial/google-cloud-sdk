@@ -29,7 +29,7 @@ from googlecloudsdk.core import ecp_proxy_manager
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.core import transport
+from googlecloudsdk.core import transport_base
 from googlecloudsdk.core.ecp_proxy_manager import ECPProxyError
 from googlecloudsdk.core.util import encoding
 from googlecloudsdk.core.util import http_proxy_types
@@ -74,7 +74,8 @@ def GetSession(
   Args:
     timeout: double, The timeout in seconds. This is the socket level timeout.
       If timeout is None, timeout is infinite. If default argument 'unset' is
-      given, a sensible default is selected using transport.GetDefaultTimeout().
+      given, a sensible default is selected using
+      transport_base.GetDefaultTimeout().
     ca_certs: str, absolute filename of a ca_certs file that overrides the
       default. The gcloud config property for ca_certs, in turn, overrides this
       argument.
@@ -167,10 +168,41 @@ class HTTPAdapter(requests.adapters.HTTPAdapter):
     kwargs['ssl_context'] = context
 
 
-# Extracted GetProxyInfo to http_proxy_types module to prevent circular
-# dependency
-def GetProxyInfo(properties_module=properties):
-  return http_proxy_types.GetProxyInfo(properties_module)
+def GetProxyInfo():
+  """Returns the proxy string for use by requests from gcloud properties.
+
+  Returns:
+    str or None: The proxy URL string if configured, otherwise None.
+
+  Raises:
+    properties.InvalidValueError: If a partial proxy configuration is set.
+
+  See https://requests.readthedocs.io/en/master/user/advanced/#proxies.
+  """
+  proxy_type = properties.VALUES.proxy.proxy_type.Get()
+  proxy_address = properties.VALUES.proxy.address.Get()
+  proxy_port = properties.VALUES.proxy.port.GetInt()
+
+  # Validate the core proxy properties before reading the optional ones, so
+  # that a malformed optional property cannot mask this error.
+  try:
+    proxy_configured = http_proxy_types.IsProxyConfigured(
+        proxy_type, proxy_address, proxy_port
+    )
+  except ValueError as e:
+    raise properties.InvalidValueError(str(e))
+
+  if not proxy_configured:
+    return None
+
+  return http_proxy_types.FormatProxyUrl(
+      proxy_type=proxy_type,
+      proxy_address=proxy_address,
+      proxy_port=proxy_port,
+      proxy_rdns=properties.VALUES.proxy.rdns.GetBool(),
+      proxy_user=properties.VALUES.proxy.username.Get(),
+      proxy_pass=properties.VALUES.proxy.password.Get(),
+  )
 
 
 class _LocalECPProxyAdapter(requests.adapters.HTTPAdapter):
@@ -443,7 +475,7 @@ def _CreateRawSession(
   if timeout != 'unset':
     effective_timeout = timeout
   else:
-    effective_timeout = transport.GetDefaultTimeout()
+    effective_timeout = transport_base.GetDefaultTimeout()
 
   no_validate = properties.VALUES.auth.disable_ssl_validation.GetBool() or False
   ca_certs_property = properties.VALUES.core.custom_ca_certs_file.Get()
@@ -477,7 +509,7 @@ def _GetURIFromRequestArgs(url, params):
   return urllib.parse.urlunsplit(url_parts)
 
 
-class Request(transport.Request):
+class Request(transport_base.Request):
   """Encapsulates parameters for making a general HTTP request.
 
   This implementation does additional manipulation to ensure that the request
@@ -510,7 +542,7 @@ class Request(transport.Request):
     return args, kwargs
 
 
-class Response(transport.Response):
+class Response(transport_base.Response):
   """Encapsulates responses from making a general HTTP request."""
 
   @classmethod
@@ -518,7 +550,7 @@ class Response(transport.Response):
     return cls(response.status_code, response.headers, response.content)
 
 
-class RequestWrapper(transport.RequestWrapper):
+class RequestWrapper(transport_base.RequestWrapper):
   """Class for wrapping request.Session requests."""
 
   request_class = Request

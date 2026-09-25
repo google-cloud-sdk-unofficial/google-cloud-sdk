@@ -29,7 +29,6 @@ gke-gcloud-auth-plugin: google-cloud-cli-gke-gcloud-auth-plugin
 gsutil: google-cloud-cli
 spanner-migration-tool: google-cloud-cli-spanner-migration-tool
 istioctl: google-cloud-cli-istioctl
-kpt: google-cloud-cli-kpt
 kubectl: kubectl
 kubectl-oidc: google-cloud-cli-kubectl-oidc
 log-streaming: google-cloud-cli-log-streaming
@@ -40,7 +39,6 @@ nomos: google-cloud-cli-nomos
 preview: google-cloud-cli
 pubsub-emulator: google-cloud-cli-pubsub-emulator
 skaffold: google-cloud-cli-skaffold
-kustomize: unavailable
 config-connector: google-cloud-cli-config-connector
 terraform-tools: google-cloud-cli-terraform-tools
 bundled-python3-unix: google-cloud-cli-bundled-python3

@@ -154,8 +154,13 @@ def GetApiEnablementInfo(exception):
   return None
 
 
-def PromptToEnableApi(project, service_token, exception,
-                      is_batch_request=False):
+def PromptToEnableApi(
+    project,
+    service_token,
+    exception,
+    is_batch_request=False,
+    enable_by_default=False,
+):
   """Prompts to enable the API and throws if the answer is no.
 
   Args:
@@ -165,13 +170,15 @@ def PromptToEnableApi(project, service_token, exception,
       is denied.
     is_batch_request: If the request is a batch request. This determines how to
       get apitools to retry the request.
+    enable_by_default (bool): The default choice for the enablement prompt.
 
   Raises:
     api_exceptions.HttpException: API not enabled error if the user chooses to
       not enable the API.
   """
   api_enable_attempted = api_enablement.PromptToEnableApi(
-      project, service_token)
+      project, service_token, enable_by_default=enable_by_default
+  )
   if api_enable_attempted:
     if not is_batch_request:
       raise apitools_exceptions.RequestError('Retry')
@@ -179,7 +186,11 @@ def PromptToEnableApi(project, service_token, exception,
     raise exception
 
 
-def CheckResponse(skip_activation_prompt=False, should_retry_if_disabled=True):
+def CheckResponse(
+    skip_activation_prompt=False,
+    should_retry_if_disabled=True,
+    enable_by_default=False,
+):
   """Returns a callback for checking API errors."""
   state = {'already_prompted_to_enable': False}
 
@@ -195,7 +206,7 @@ def CheckResponse(skip_activation_prompt=False, should_retry_if_disabled=True):
           raise apitools_exceptions.RequestError('Retry')
         return
       state['already_prompted_to_enable'] = True
-      PromptToEnableApi(*enablement_info)
+      PromptToEnableApi(*enablement_info, enable_by_default=enable_by_default)
 
   def _CheckResponse(response):
     """Checks API error.
@@ -263,6 +274,7 @@ def GetClientInstance(
     skip_activation_prompt=False,
     location=None,
     should_retry_if_disabled=True,
+    enable_by_default=False,
 ):
   """Returns an instance of the API client specified in the args.
 
@@ -276,6 +288,7 @@ def GetClientInstance(
       endpoints (REP).
     should_retry_if_disabled: bool, if true, retry the request when the API is
       disabled and skip_activation_prompt is true.
+    enable_by_default: bool, The default choice for the enablement prompt.
 
   Returns:
     base_api.BaseApiClient, An instance of the specified API client.
@@ -289,6 +302,7 @@ def GetClientInstance(
       CheckResponse(
           skip_activation_prompt,
           should_retry_if_disabled=should_retry_if_disabled,
+          enable_by_default=enable_by_default,
       ),
       http_timeout_sec=http_timeout_sec,
       region=regional.LocationToRegion(location) if location else None,

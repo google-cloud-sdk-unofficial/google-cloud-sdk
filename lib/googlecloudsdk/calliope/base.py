@@ -23,13 +23,14 @@ import enum
 from functools import wraps  # pylint:disable=g-importing-member
 import itertools
 import json
+import os
 import re
 import sys
 import typing
 
-from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import display
+from googlecloudsdk.calliope import property_actions
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -404,6 +405,22 @@ FORMAT_FLAG = Argument(
     ),
 )
 
+
+ASSERT_FLAG = Argument(
+    '--assert',
+    dest='assert_',
+    choices=['readonly'],
+    action=property_actions.StoreProperty(properties.VALUES.core.assert_),
+    metavar='ASSERTION',
+    category=COMMONLY_USED_FLAGS,
+    hidden=True,
+    help="""\
+    Assert properties about the command execution. If the assertion fails, the
+    command is not executed and an error is raised. Supported assertions:
+    `readonly`.
+    """,
+)
+
 LIST_COMMAND_FLAGS = 'LIST COMMAND'
 
 ASYNC_FLAG = Argument(
@@ -580,12 +597,23 @@ class _BaseSidecarDescriptor(object):
   """A base descriptor that lazily loads the YAML sidecar file."""
 
   def _LoadSidecarYAMLContent(self, owner):
-    """Loads the content of the YAML sidecar file if it exists."""
-    module_name = owner.__module__
-    resource_name = module_name.split('.')[-1] + '.yaml'
+    """Loads the content of the YAML sidecar file if it exists.
+
+    Args:
+      owner: type, The command class that owns the sidecar file.
+
+    Returns:
+      str or None, The YAML file content if found, else None.
+    """
+    mod = sys.modules.get(owner.__module__)
+    mod_file = getattr(mod, '__file__', None)
+    if not mod_file:
+      return None
+
+    yaml_path = os.path.splitext(mod_file)[0] + '.yaml'
     try:
-      return pkg_resources.GetResource(module_name, resource_name)
-    except FileNotFoundError:
+      return pkg_resources.GetResourceFromFile(yaml_path)
+    except OSError:
       return None
 
   def _Parse(self, content):
@@ -911,7 +939,7 @@ class Command(six.with_metaclass(abc.ABCMeta, _Common)):
           This differs from global endpoints, which may process parts of the
           request outside the target region.
           """,
-          action=actions.StoreProperty(
+          action=property_actions.StoreProperty(
               properties.VALUES.regional.endpoint_mode
           ),
       )

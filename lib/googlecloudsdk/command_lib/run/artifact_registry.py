@@ -71,7 +71,10 @@ def RepoRegion(args, cluster_location=None):
 
 
 def ShouldCreateRepository(
-    repo, skip_activation_prompt=False, skip_console_prompt=False
+    repo,
+    skip_activation_prompt=False,
+    skip_console_prompt=False,
+    enable_by_default=False,
 ):
   """Checks for the existence of the provided repository.
 
@@ -85,6 +88,8 @@ def ShouldCreateRepository(
       API isn't activated.
     skip_console_prompt: bool determining if the client should prompt the user
       if the repository doesn't exist.
+    enable_by_default: bool determining the default choice for the enablement
+      prompt.
 
   Returns:
     A boolean indicating whether a repository needs to be created.
@@ -94,6 +99,7 @@ def ShouldCreateRepository(
         repo.GetRepositoryName(),
         skip_activation_prompt,
         location=repo.location,
+        enable_by_default=enable_by_default,
     )
     return False
   except base_exceptions.HttpForbiddenError:
@@ -121,13 +127,16 @@ def ShouldCreateRepository(
   return True
 
 
-def CreateRepository(repo, skip_activation_prompt=False):
+def CreateRepository(
+    repo, skip_activation_prompt=False, enable_by_default=True
+):
   """Creates an Artifact Registry repostiory and waits for the operation.
 
   Args:
     repo: googlecloudsdk.command_lib.artifacts.docker_util.DockerRepo defining
       the repository to be created.
-    skip_activation_prompt: True if
+    skip_activation_prompt: True if skipping activation prompt.
+    enable_by_default: True if enablement prompt defaults to yes.
   """
   messages = requests.GetMessages()
   repository_message = messages.Repository(
@@ -137,13 +146,19 @@ def CreateRepository(repo, skip_activation_prompt=False):
   )
 
   op = requests.CreateRepository(
-      repo.project, repo.location, repository_message, skip_activation_prompt
+      repo.project,
+      repo.location,
+      repository_message,
+      skip_activation_prompt,
+      enable_by_default=enable_by_default,
   )
   op_resource = resources.REGISTRY.ParseRelativeName(
       op.name, collection='artifactregistry.projects.locations.operations'
   )
 
-  client = requests.GetClient(location=repo.location)
+  client = requests.GetClient(
+      location=repo.location, enable_by_default=enable_by_default
+  )
   waiter.WaitFor(
       waiter.CloudOperationPoller(
           client.projects_locations_repositories,
@@ -154,7 +169,9 @@ def CreateRepository(repo, skip_activation_prompt=False):
 
 
 def ValidateAndGetArRepository(
-    annotated_build_image_uri, skip_activation_prompt
+    annotated_build_image_uri,
+    skip_activation_prompt,
+    enable_by_default=False,
 ):
   """Checks the format and existence of the repository in Artifact Registry."""
   is_default_universe = properties.IsDefaultUniverse()
@@ -176,6 +193,7 @@ def ValidateAndGetArRepository(
         ar_repo,
         skip_activation_prompt=skip_activation_prompt,
         skip_console_prompt=True,
+        enable_by_default=enable_by_default,
     ):
       raise c_exceptions.InvalidArgumentException(
           '--image',
@@ -204,4 +222,3 @@ def ValidateAndGetArRepository(
       ' please try again. \n'
       f'Retrieved value was: {annotated_build_image_uri}',
   )
-

@@ -102,6 +102,7 @@ class CreateGA(base.CreateCommand):
 
   _support_tagging_at_creation = True
   _support_capacity_tier = False
+  _support_pqc = False
 
   @classmethod
   def _AddCommonFlags(cls, parser):
@@ -161,6 +162,77 @@ class CreateGA(base.CreateCommand):
                         metavar='ALGORITHMS',
                         type=arg_parsers.ArgList(min_length=1),
                         help='Phase 2 perfect forward secrecy algorithms.')
+
+  @classmethod
+  def _AddPqcFlags(cls, parser):
+    parser.add_argument(
+        '--pqc-phase1-mode',
+        choices=['DISABLED', 'ENABLED'],
+        help=("""\
+        Mode of Post-Quantum Cryptography (PQC) for Phase 1. Must be one of:
+        *DISABLED*, *ENABLED*.
+        """),
+    )
+
+    valid_kems = ['KE_NONE', 'ML_KEM_768', 'ML_KEM_1024']
+    ke_spec = {
+        'ke1': arg_parsers.ArgList(choices=valid_kems),
+        'ke2': arg_parsers.ArgList(choices=valid_kems),
+        'ke3': arg_parsers.ArgList(choices=valid_kems),
+        'ke4': arg_parsers.ArgList(choices=valid_kems),
+        'ke5': arg_parsers.ArgList(choices=valid_kems),
+        'ke6': arg_parsers.ArgList(choices=valid_kems),
+        'ke7': arg_parsers.ArgList(choices=valid_kems),
+    }
+    pqc_parser = arg_parsers.ArgDict(spec=ke_spec)
+    pqc_parser.custom_delim_char = ';'
+
+    parser.add_argument(
+        '--pqc-phase1-key-exchanges',
+        type=pqc_parser,
+        metavar='KEY_EXCHANGES',
+        help=("""\
+        Post-Quantum Cryptography (PQC) key exchange mechanisms for Phase 1.
+
+        The value is a semicolon-separated list of key-value pairs (ke1 to ke7),
+        where each key corresponds to an additional key exchange slot and maps
+        to a comma-separated list of key exchange mechanisms. Valid mechanisms
+        are KE_NONE, ML_KEM_768, and ML_KEM_1024.
+
+        If this flag is specified, `--pqc-phase1-mode` should be set to
+        *ENABLED*.
+
+        Example:
+          --pqc-phase1-key-exchanges="ke1=ML_KEM_768,ML_KEM_1024;ke2=ML_KEM_1024"
+        """),
+    )
+    parser.add_argument(
+        '--pqc-phase2-mode',
+        choices=['DISABLED', 'ENABLED'],
+        help=("""\
+        Mode of Post-Quantum Cryptography (PQC) for Phase 2. Must be one of:
+        *DISABLED*, *ENABLED*.
+        """),
+    )
+    parser.add_argument(
+        '--pqc-phase2-key-exchanges',
+        type=pqc_parser,
+        metavar='KEY_EXCHANGES',
+        help=("""\
+        Post-Quantum Cryptography (PQC) key exchange mechanisms for Phase 2.
+
+        The value is a semicolon-separated list of key-value pairs (ke1 to ke7),
+        where each key corresponds to an additional key exchange slot and maps
+        to a comma-separated list of key exchange mechanisms. Valid mechanisms
+        are KE_NONE, ML_KEM_768, and ML_KEM_1024.
+
+        If this flag is specified, `--pqc-phase2-mode` should be set to
+        *ENABLED*.
+
+        Example:
+          --pqc-phase2-key-exchanges="ke1=ML_KEM_768,ML_KEM_1024;ke2=ML_KEM_1024"
+        """),
+    )
 
   @classmethod
   def Args(cls, parser):
@@ -247,6 +319,9 @@ class CreateGA(base.CreateCommand):
         a Highly Available VPN gateway to an External Vpn Gateway.""")
 
     cls._AddCipherSuiteFlags(parser)
+
+    if cls._support_pqc:
+      cls._AddPqcFlags(parser)
 
     if cls._support_tagging_at_creation:
       parser.add_argument(
@@ -405,6 +480,37 @@ class CreateGA(base.CreateCommand):
           args.capacity_tier
       )
 
+    pqc_phase1 = None
+    pqc_phase2 = None
+
+    if self._support_pqc:
+
+      # Build Phase 1 Keys
+      ke_args_p1 = {}
+      if args.IsSpecified('pqc_phase1_key_exchanges'):
+        for k, v in args.pqc_phase1_key_exchanges.items():
+          ke_args_p1[k + 's'] = v
+      p1_keys = helper.GetVpnTunnelAdditionalKeyExchanges(**ke_args_p1)
+      pqc_phase1 = helper.GetVpnTunnelPqc(
+          mode=args.pqc_phase1_mode
+          if args.IsSpecified('pqc_phase1_mode')
+          else None,
+          keys=p1_keys,
+      )
+
+      # Build Phase 2 Keys
+      ke_args_p2 = {}
+      if args.IsSpecified('pqc_phase2_key_exchanges'):
+        for k, v in args.pqc_phase2_key_exchanges.items():
+          ke_args_p2[k + 's'] = v
+      p2_keys = helper.GetVpnTunnelAdditionalKeyExchanges(**ke_args_p2)
+      pqc_phase2 = helper.GetVpnTunnelPqc(
+          mode=args.pqc_phase2_mode
+          if args.IsSpecified('pqc_phase2_mode')
+          else None,
+          keys=p2_keys,
+      )
+
     if target_vpn_gateway:
       phase1_algo = helper.GetVpnTunnelPhase1Algorithms(
           phase1_encryption=args.phase1_encryption,
@@ -424,20 +530,20 @@ class CreateGA(base.CreateCommand):
         cipher_suite.phase2 = phase2_algo
       if not cipher_suite.phase1 and not cipher_suite.phase2:
         cipher_suite = None
-      vpn_tunnel_to_insert = (
-          helper.GetClassicVpnTunnelForInsertWithCipherSuite(
-              name=vpn_tunnel_ref.Name(),
-              description=args.description,
-              ike_version=args.ike_version,
-              peer_ip=args.peer_address,
-              shared_secret=args.shared_secret,
-              target_vpn_gateway=target_vpn_gateway,
-              local_traffic_selector=args.local_traffic_selector,
-              remote_traffic_selector=args.remote_traffic_selector,
-              cipher_suite=cipher_suite,
-              params=resource_manager_tags,
-              support_tagging_at_creation=self._support_tagging_at_creation,
-          )
+      vpn_tunnel_to_insert = helper.GetClassicVpnTunnelForInsertWithCipherSuite(
+          name=vpn_tunnel_ref.Name(),
+          description=args.description,
+          ike_version=args.ike_version,
+          peer_ip=args.peer_address,
+          shared_secret=args.shared_secret,
+          target_vpn_gateway=target_vpn_gateway,
+          local_traffic_selector=args.local_traffic_selector,
+          remote_traffic_selector=args.remote_traffic_selector,
+          cipher_suite=cipher_suite,
+          params=resource_manager_tags,
+          support_tagging_at_creation=self._support_tagging_at_creation,
+          pqc_phase1=pqc_phase1,
+          pqc_phase2=pqc_phase2,
       )
     else:
       phase1_algo = helper.GetVpnTunnelPhase1Algorithms(
@@ -476,6 +582,8 @@ class CreateGA(base.CreateCommand):
               support_tagging_at_creation=self._support_tagging_at_creation,
               support_capacity_tier=self._support_capacity_tier,
               capacity_tier=capacity_tier,
+              pqc_phase1=pqc_phase1,
+              pqc_phase2=pqc_phase2,
           )
       )
 
@@ -529,3 +637,4 @@ class CreateAlpha(CreateBeta):
   Highly Available VPN tunnel between HA VPN gateway and an external VPN
   gateway.
   """
+  _support_pqc = True

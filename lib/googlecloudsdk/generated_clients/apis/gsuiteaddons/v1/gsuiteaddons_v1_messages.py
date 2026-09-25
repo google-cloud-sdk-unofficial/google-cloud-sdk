@@ -66,8 +66,13 @@ class GoogleAppsScriptTypeCalendarCalendarAddOnManifest(_messages.Message):
       ons/guides/alternate-runtimes) using [`CalendarSubscriptionActionMarkup`
       ](https://developers.google.com/workspace/add-ons/reference/rpc/apps.ext
       ensions.markup#apps.extensions.markup.CalendarClientActionMarkup.Calenda
-      rSubscriptionActionMarkup). Not applicable to `Apps Script add-ons` and
-      [`Apps Script installable triggers`](https://developers.google.com/apps-
+      rSubscriptionActionMarkup). To prevent recursive notification loops,
+      when an add-on modifies a Google Calendar event using Calendar API with
+      authentication credentials from the same Google Cloud project that hosts
+      the add-on deployment, the platform suppresses modification
+      notifications. Self-triggering your own project's Calendar API calls
+      isn't supported. Not applicable to `Apps Script add-ons` and [`Apps
+      Script installable triggers`](https://developers.google.com/apps-
       script/guides/triggers/installable).
     conferenceSolution: Optional. Defines conference solutions provided by
       this add-on.

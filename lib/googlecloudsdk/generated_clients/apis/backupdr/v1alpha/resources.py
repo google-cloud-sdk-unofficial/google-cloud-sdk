@@ -120,6 +120,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_BACKUPVAULTS_BACKUPINSIGHTPLANS = (
+      'projects.locations.backupVaults.backupInsightPlans',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/backupVaults/'
+              '{backupVaultsId}/backupInsightPlans/{backupInsightPlansId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_BACKUPVAULTS_DATASOURCES = (
       'projects.locations.backupVaults.dataSources',
       '{+name}',
